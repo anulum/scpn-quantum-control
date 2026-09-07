@@ -14,6 +14,8 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 _AUDIT_TOOL = ROOT / "tools" / "audit_e2e_contract_boundaries.py"
 _SPEC = importlib.util.spec_from_file_location("audit_e2e_contract_boundaries", _AUDIT_TOOL)
@@ -65,7 +67,9 @@ def test_boundary_audit_summary_lists_missing_boundaries(tmp_path: Path) -> None
     assert "hardware_qpu: missing" in summary
 
 
-def test_boundary_audit_cli_fail_on_missing(tmp_path: Path, capsys: object) -> None:
+def test_boundary_audit_cli_fail_on_missing(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     (tmp_path / "test_bridge_contract.py").write_text("def test_bridge():\n    assert True\n")
 
     assert main(["--tests-root", str(tmp_path), "--json"]) == 0

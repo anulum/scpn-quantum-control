@@ -146,7 +146,9 @@ def test_sanitise_json_files_write_updates_public_file(tmp_path: Path) -> None:
     assert "created_utc" not in decoded
 
 
-def test_cli_writes_manifest_without_rewriting_by_default(tmp_path: Path, capsys: object) -> None:
+def test_cli_writes_manifest_without_rewriting_by_default(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     data = tmp_path / "data"
     data.mkdir()
     artefact = data / "run.json"

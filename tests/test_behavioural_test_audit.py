@@ -14,6 +14,8 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 _AUDIT_TOOL = ROOT / "tools" / "audit_test_behaviour.py"
 _SPEC = importlib.util.spec_from_file_location("audit_test_behaviour", _AUDIT_TOOL)
@@ -152,7 +154,9 @@ def test_behaviour_audit_tree_and_summary_cover_multiple_modules(tmp_path: Path)
     assert "test_b" in summary
 
 
-def test_behaviour_audit_cli_json_and_smoke_gate(tmp_path: Path, capsys: object) -> None:
+def test_behaviour_audit_cli_json_and_smoke_gate(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     (tmp_path / "test_a.py").write_text("def test_a():\n    pass\n", encoding="utf-8")
 
     assert main(["--tests-root", str(tmp_path), "--json"]) == 0

@@ -17,6 +17,8 @@ Every Rust function is tested for:
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
+from typing import Any, TypeVar
 
 import numpy as np
 import pytest
@@ -36,13 +38,16 @@ pytestmark = pytest.mark.skipif(not _RUST_OK, reason="scpn-quantum-engine not av
 # ---------------------------------------------------------------------------
 
 
-def _timed(fn, *a, **kw):
+T = TypeVar("T")
+
+
+def _timed(fn: Callable[..., T], *a: Any, **kw: Any) -> tuple[T, float]:
     t0 = time.perf_counter()
     r = fn(*a, **kw)
     return r, (time.perf_counter() - t0) * 1000
 
 
-def _perf(label, dt_rust, dt_py=None):
+def _perf(label: str, dt_rust: float, dt_py: float | None = None) -> None:
     extra = ""
     if dt_py is not None:
         speedup = dt_py / max(dt_rust, 1e-6)
@@ -63,12 +68,12 @@ def _assert_benchmark_time(dt_ms: float) -> None:
 
 class TestBuildKnm:
     @pytest.mark.parametrize("n", [4, 8, 16])
-    def test_shape_and_symmetry(self, n):
+    def test_shape_and_symmetry(self, n: int) -> None:
         K = np.array(eng.build_knm(n, 0.45, 0.3))
         assert K.shape == (n, n)
         np.testing.assert_allclose(K, K.T, atol=1e-14)
 
-    def test_parity_with_python_paper27(self):
+    def test_parity_with_python_paper27(self) -> None:
         """Rust build_knm matches Python build_knm_paper27 (includes overrides)."""
         from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
 
@@ -83,11 +88,11 @@ class TestBuildKnm:
         np.testing.assert_allclose(K_rust, K_py, atol=1e-12)
         _perf("build_knm (16×16)", dt_r, dt_p)
 
-    def test_non_negative(self):
+    def test_non_negative(self) -> None:
         K = np.array(eng.build_knm(8, 0.45, 0.3))
         assert np.all(K >= 0)
 
-    def test_diagonal_equals_base(self):
+    def test_diagonal_equals_base(self) -> None:
         K = np.array(eng.build_knm(4, 0.45, 0.3))
         np.testing.assert_allclose(np.diag(K), 0.45, atol=1e-14)
 
@@ -98,14 +103,14 @@ class TestBuildKnm:
 
 
 class TestKuramotoEuler:
-    def test_output_shape(self):
+    def test_output_shape(self) -> None:
         theta0 = np.zeros(4, dtype=np.float64)
         omega = np.ones(4, dtype=np.float64)
         K = np.eye(4, dtype=np.float64) * 0.3
         result = np.array(eng.kuramoto_euler(theta0, omega, K, 0.01, 10))
         assert result.shape == (4,)
 
-    def test_deterministic(self):
+    def test_deterministic(self) -> None:
         theta0 = np.array([0.1, 0.2, 0.3, 0.4], dtype=np.float64)
         omega = np.array([1.0, 2.0, 1.5, 0.5], dtype=np.float64)
         K = np.eye(4, dtype=np.float64) * 0.5
@@ -113,14 +118,14 @@ class TestKuramotoEuler:
         r2 = np.array(eng.kuramoto_euler(theta0, omega, K, 0.01, 100))
         np.testing.assert_array_equal(r1, r2)
 
-    def test_finite_output(self):
+    def test_finite_output(self) -> None:
         theta0 = np.random.default_rng(42).uniform(0, 2 * np.pi, 8).astype(np.float64)
         omega = np.ones(8, dtype=np.float64)
         K = np.eye(8, dtype=np.float64) * 0.3
         result = np.array(eng.kuramoto_euler(theta0, omega, K, 0.01, 100))
         assert np.all(np.isfinite(result))
 
-    def test_performance_vs_python(self):
+    def test_performance_vs_python(self) -> None:
         from scpn_quantum_control.hardware.classical import classical_kuramoto_reference
 
         n = 8
@@ -141,17 +146,17 @@ class TestKuramotoEuler:
 
 
 class TestOrderParameter:
-    def test_all_equal_R_one(self):
+    def test_all_equal_R_one(self) -> None:
         theta = np.zeros(16, dtype=np.float64)
         R = eng.order_parameter(theta)
         np.testing.assert_allclose(R, 1.0, atol=1e-14)
 
-    def test_opposite_phases_R_zero(self):
+    def test_opposite_phases_R_zero(self) -> None:
         theta = np.array([0.0, np.pi, 0.0, np.pi], dtype=np.float64)
         R = eng.order_parameter(theta)
         np.testing.assert_allclose(R, 0.0, atol=1e-14)
 
-    def test_bounded(self):
+    def test_bounded(self) -> None:
         rng = np.random.default_rng(42)
         for _ in range(20):
             theta = rng.uniform(0, 2 * np.pi, 16).astype(np.float64)
@@ -165,7 +170,7 @@ class TestOrderParameter:
 
 
 class TestKuramotoTrajectory:
-    def test_output_structure(self):
+    def test_output_structure(self) -> None:
         """Trajectory returns (R_series, theta_flat) tuple."""
         n, steps = 4, 50
         theta0 = np.zeros(n, dtype=np.float64)
@@ -177,7 +182,7 @@ class TestKuramotoTrajectory:
         R_arr = np.array(result[0])
         assert len(R_arr) == steps + 1
 
-    def test_R_bounded_throughout(self):
+    def test_R_bounded_throughout(self) -> None:
         theta0 = np.array([0.1, 0.2, 0.3, 0.4], dtype=np.float64)
         omega = np.ones(4, dtype=np.float64)
         K = np.eye(4, dtype=np.float64) * 0.3
@@ -186,7 +191,7 @@ class TestKuramotoTrajectory:
         assert np.all(R_arr >= 0)
         assert np.all(R_arr <= 1.0 + 1e-10)
 
-    def test_performance(self):
+    def test_performance(self) -> None:
         n = 16
         theta0 = np.zeros(n, dtype=np.float64)
         omega = np.ones(n, dtype=np.float64)
@@ -203,7 +208,7 @@ class TestKuramotoTrajectory:
 
 class TestKoopmanGenerator:
     @pytest.mark.parametrize("n", [4, 8, 16])
-    def test_parity_with_python_generator(self, n):
+    def test_parity_with_python_generator(self, n: int, monkeypatch: pytest.MonkeyPatch) -> None:
         from scpn_quantum_control.analysis import koopman
         from scpn_quantum_control.analysis.koopman import (
             build_koopman_generator,
@@ -216,7 +221,7 @@ class TestKoopmanGenerator:
         np.fill_diagonal(K, 0.0)
         omega = rng.uniform(-0.5, 0.5, size=n)
         theta_ref = rng.uniform(-0.3, 0.3, size=n)
-        koopman.optional_rust_engine = lambda: eng
+        monkeypatch.setattr(koopman, "optional_rust_engine", lambda: eng)
 
         python_L, python_labels = build_koopman_generator(
             K, omega, theta_ref=theta_ref, max_oscillators=n
@@ -232,7 +237,7 @@ class TestKoopmanGenerator:
         np.testing.assert_allclose(rust_L, python_L, atol=1e-12)
         assert rust_labels == python_labels
 
-    def test_performance_vs_python(self):
+    def test_performance_vs_python(self, monkeypatch: pytest.MonkeyPatch) -> None:
         from scpn_quantum_control.analysis import koopman
         from scpn_quantum_control.analysis.koopman import (
             build_koopman_generator,
@@ -246,7 +251,7 @@ class TestKoopmanGenerator:
         np.fill_diagonal(K, 0.0)
         omega = rng.uniform(-0.5, 0.5, size=n)
         theta_ref = rng.uniform(-0.3, 0.3, size=n)
-        koopman.optional_rust_engine = lambda: eng
+        monkeypatch.setattr(koopman, "optional_rust_engine", lambda: eng)
 
         _, dt_r = _timed(
             build_koopman_generator_rust,
@@ -268,7 +273,7 @@ class TestKoopmanGenerator:
 
 
 class TestBuildXYHamiltonianDense:
-    def test_output_size(self):
+    def test_output_size(self) -> None:
         n = 3
         K = np.eye(n, dtype=np.float64).ravel() * 0.3
         omega = np.ones(n, dtype=np.float64)
@@ -276,7 +281,7 @@ class TestBuildXYHamiltonianDense:
         dim = 2**n
         assert H.shape == (dim * dim,) or H.shape == (dim, dim)
 
-    def test_parity_with_qiskit(self):
+    def test_parity_with_qiskit(self) -> None:
         from scpn_quantum_control.bridge.knm_hamiltonian import (
             OMEGA_N_16,
             build_knm_paper27,
@@ -301,7 +306,7 @@ class TestBuildXYHamiltonianDense:
         np.testing.assert_allclose(H_rust, H_qiskit, atol=1e-10)
         _perf(f"build_xy_hamiltonian_dense ({n}q)", dt_r)
 
-    def test_hermitian(self):
+    def test_hermitian(self) -> None:
         n = 4
         K_flat = np.ascontiguousarray(np.eye(n, dtype=np.float64).ravel() * 0.3)
         omega = np.ones(n, dtype=np.float64)
@@ -315,7 +320,7 @@ class TestBuildXYHamiltonianDense:
 
 
 class TestBuildSparseXYHamiltonian:
-    def test_returns_tuple(self):
+    def test_returns_tuple(self) -> None:
         n = 3
         K_flat = np.ascontiguousarray(np.eye(n, dtype=np.float64).ravel() * 0.3)
         omega = np.ones(n, dtype=np.float64)
@@ -330,7 +335,7 @@ class TestBuildSparseXYHamiltonian:
 
 
 class TestExpectationPauliFast:
-    def test_z_on_ground_state(self):
+    def test_z_on_ground_state(self) -> None:
         n = 4
         psi_re = np.zeros(2**n, dtype=np.float64)
         psi_re[0] = 1.0
@@ -340,7 +345,7 @@ class TestExpectationPauliFast:
             z = eng.expectation_pauli_fast(psi_re, psi_im, n, q, 2)
             np.testing.assert_allclose(z, 1.0, atol=1e-14)
 
-    def test_x_on_ground_state_zero(self):
+    def test_x_on_ground_state_zero(self) -> None:
         n = 3
         psi_re = np.zeros(2**n, dtype=np.float64)
         psi_re[0] = 1.0
@@ -349,7 +354,7 @@ class TestExpectationPauliFast:
             x = eng.expectation_pauli_fast(psi_re, psi_im, n, q, 0)
             np.testing.assert_allclose(x, 0.0, atol=1e-14)
 
-    def test_performance(self):
+    def test_performance(self) -> None:
         n = 10
         dim = 2**n
         rng = np.random.default_rng(42)
@@ -369,7 +374,7 @@ class TestExpectationPauliFast:
 
 
 class TestAllXYExpectations:
-    def test_shape(self):
+    def test_shape(self) -> None:
         n = 4
         psi_re = np.zeros(2**n, dtype=np.float64)
         psi_re[0] = 1.0
@@ -377,7 +382,7 @@ class TestAllXYExpectations:
         exps = np.array(eng.all_xy_expectations(psi_re, psi_im, n))
         assert exps.shape == (2, n)
 
-    def test_ground_state_zero_xy(self):
+    def test_ground_state_zero_xy(self) -> None:
         """|0...0> has <X>=<Y>=0 for all qubits."""
         n = 4
         psi_re = np.zeros(2**n, dtype=np.float64)
@@ -393,7 +398,7 @@ class TestAllXYExpectations:
 
 
 class TestOrderParamFromStatevector:
-    def test_ground_state_R_zero(self):
+    def test_ground_state_R_zero(self) -> None:
         """|0...0> has R=0 (all Z=+1, X=Y=0)."""
         n = 4
         psi_re = np.zeros(2**n, dtype=np.float64)
@@ -402,7 +407,7 @@ class TestOrderParamFromStatevector:
         R = eng.order_param_from_statevector(psi_re, psi_im, n)
         np.testing.assert_allclose(R, 0.0, atol=1e-14)
 
-    def test_bounded(self):
+    def test_bounded(self) -> None:
         n = 4
         rng = np.random.default_rng(42)
         psi = rng.standard_normal(2**n) + 1j * rng.standard_normal(2**n)
@@ -419,16 +424,16 @@ class TestOrderParamFromStatevector:
 
 
 class TestPECCoefficients:
-    def test_length_4(self):
+    def test_length_4(self) -> None:
         coeffs = np.array(eng.pec_coefficients(0.01))
         assert len(coeffs) == 4
 
-    def test_sum_to_one(self):
+    def test_sum_to_one(self) -> None:
         """Quasi-probability coefficients should sum to ~1."""
         coeffs = np.array(eng.pec_coefficients(0.01))
         np.testing.assert_allclose(np.sum(coeffs), 1.0, atol=0.05)
 
-    def test_parity_with_python(self):
+    def test_parity_with_python(self) -> None:
         from scpn_quantum_control.mitigation.pec import pauli_twirl_decompose
 
         coeffs_rust = np.array(eng.pec_coefficients(0.01))
@@ -436,7 +441,7 @@ class TestPECCoefficients:
         np.testing.assert_allclose(coeffs_rust, coeffs_py, atol=1e-10)
 
     @pytest.mark.parametrize("p", [0.001, 0.01, 0.05, 0.1])
-    def test_various_error_rates(self, p):
+    def test_various_error_rates(self, p: float) -> None:
         coeffs = np.array(eng.pec_coefficients(p))
         assert len(coeffs) == 4
         assert coeffs[0] > 0  # identity term always positive
@@ -448,17 +453,17 @@ class TestPECCoefficients:
 
 
 class TestPECSampleParallel:
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         result = eng.pec_sample_parallel(0.01, 3, 1000, 0.5, 42)
         assert result is not None
 
-    def test_deterministic_with_seed(self):
+    def test_deterministic_with_seed(self) -> None:
         s1 = eng.pec_sample_parallel(0.01, 3, 100, 0.5, 42)
         s2 = eng.pec_sample_parallel(0.01, 3, 100, 0.5, 42)
         # Same seed → same result
         assert s1 == s2
 
-    def test_performance(self):
+    def test_performance(self) -> None:
         _, dt = _timed(eng.pec_sample_parallel, 0.01, 5, 100000, 0.5, 42)
         _assert_benchmark_time(dt)
         _perf("pec_sample_parallel (100k samples, 5 gates)", dt)
@@ -470,20 +475,20 @@ class TestPECSampleParallel:
 
 
 class TestMCXYSimulate:
-    def test_returns_tuple(self):
+    def test_returns_tuple(self) -> None:
         n = 4
         K_flat = np.ascontiguousarray(np.eye(n, dtype=np.float64).ravel() * 0.3)
         result = eng.mc_xy_simulate(K_flat, n, 1.0, 100, 50, 42)
         assert isinstance(result, tuple)
         assert len(result) == 3  # (magnetisation, energy, R)
 
-    def test_R_bounded(self):
+    def test_R_bounded(self) -> None:
         n = 4
         K_flat = np.ascontiguousarray(np.eye(n, dtype=np.float64).ravel() * 2.0)
         _, _, R = eng.mc_xy_simulate(K_flat, n, 0.1, 500, 200, 42)
         assert 0.0 <= R <= 1.0 + 1e-10
 
-    def test_performance(self):
+    def test_performance(self) -> None:
         n = 8
         K_flat = np.ascontiguousarray(np.eye(n, dtype=np.float64).ravel() * 0.5)
         _, dt = _timed(eng.mc_xy_simulate, K_flat, n, 1.0, 5000, 2000, 42)
@@ -498,11 +503,11 @@ class TestMCXYSimulate:
 
 class TestMagnetisationLabels:
     @pytest.mark.parametrize("n", [2, 3, 4])
-    def test_length(self, n):
+    def test_length(self, n: int) -> None:
         labels = np.array(eng.magnetisation_labels(n))
         assert len(labels) == 2**n
 
-    def test_range(self):
+    def test_range(self) -> None:
         labels = np.array(eng.magnetisation_labels(4))
         assert np.min(labels) == -4
         assert np.max(labels) == 4
@@ -514,7 +519,7 @@ class TestMagnetisationLabels:
 
 
 class TestDLADimension:
-    def test_basic(self):
+    def test_basic(self) -> None:
         # 2-qubit XY: generators = sigma_x ⊗ sigma_x, sigma_y ⊗ sigma_y, sigma_z ⊗ I, I ⊗ sigma_z
         dim = 4
         sx = np.array([[0, 1], [1, 0]], dtype=np.float64)
@@ -538,13 +543,13 @@ class TestDLADimension:
 
 
 class TestBruteMPC:
-    def test_basic(self):
+    def test_basic(self) -> None:
         B = np.ascontiguousarray(np.eye(2, dtype=np.float64).ravel())
         target = np.array([1.0, 0.0], dtype=np.float64)
         result = eng.brute_mpc(B, target, 2, 3)
         assert result is not None
 
-    def test_performance(self):
+    def test_performance(self) -> None:
         B = np.ascontiguousarray(np.eye(3, dtype=np.float64).ravel())
         target = np.ones(3, dtype=np.float64)
         _, dt = _timed(eng.brute_mpc, B, target, 3, 4)
@@ -558,7 +563,7 @@ class TestBruteMPC:
 
 
 class TestLanczosBCoefficients:
-    def test_basic(self):
+    def test_basic(self) -> None:
         n = 2
         dim = 2**n
         # Non-trivial Hamiltonian to produce Lanczos coefficients
@@ -582,7 +587,7 @@ class TestLanczosBCoefficients:
 
 
 class TestOTOCFromEigendecomp:
-    def test_basic(self):
+    def test_basic(self) -> None:
         n = 2
         dim = 2**n
         eigenvalues = np.arange(dim, dtype=np.float64)
@@ -614,7 +619,7 @@ class TestOTOCFromEigendecomp:
 
 
 class TestStateOrderParamSparse:
-    def test_ground_state(self):
+    def test_ground_state(self) -> None:
         n = 4
         psi_re = np.zeros(2**n, dtype=np.float64)
         psi_re[0] = 1.0
@@ -622,7 +627,7 @@ class TestStateOrderParamSparse:
         R = eng.state_order_param_sparse(psi_re, psi_im, n)
         assert 0.0 <= R <= 1.0 + 1e-10
 
-    def test_approximately_matches_dense(self):
+    def test_approximately_matches_dense(self) -> None:
         """Sparse and dense R computations agree within numerical tolerance."""
         n = 4
         rng = np.random.default_rng(42)
@@ -644,7 +649,7 @@ class TestStateOrderParamSparse:
 
 class TestCorrelationMatrixXY:
     @pytest.mark.parametrize("n", [2, 3, 4, 5])
-    def test_shape_and_symmetry(self, n):
+    def test_shape_and_symmetry(self, n: int) -> None:
         rng = np.random.default_rng(42)
         psi = rng.standard_normal(2**n) + 1j * rng.standard_normal(2**n)
         psi /= np.linalg.norm(psi)
@@ -652,7 +657,7 @@ class TestCorrelationMatrixXY:
         assert C.shape == (n, n)
         np.testing.assert_allclose(C, C.T, atol=1e-12)
 
-    def test_diagonal_zero(self):
+    def test_diagonal_zero(self) -> None:
         n = 4
         rng = np.random.default_rng(42)
         psi = rng.standard_normal(2**n) + 1j * rng.standard_normal(2**n)
@@ -660,7 +665,7 @@ class TestCorrelationMatrixXY:
         C = np.array(eng.correlation_matrix_xy(psi.real.copy(), psi.imag.copy(), n))
         np.testing.assert_allclose(np.diag(C), 0.0)
 
-    def test_parity_with_qiskit(self):
+    def test_parity_with_qiskit(self) -> None:
         """Rust correlation matrix matches Qiskit expectation values."""
         from qiskit.quantum_info import SparsePauliOp, Statevector
 
@@ -692,7 +697,7 @@ class TestCorrelationMatrixXY:
         np.testing.assert_allclose(C_rust, C_py, atol=1e-10)
         _perf(f"correlation_matrix_xy (n={n})", dt_r, dt_p)
 
-    def test_benchmark_scaling(self):
+    def test_benchmark_scaling(self) -> None:
         """Benchmark correlation_matrix_xy for increasing system sizes."""
         for n in [4, 6, 8]:
             rng = np.random.default_rng(42)
@@ -709,7 +714,7 @@ class TestCorrelationMatrixXY:
 
 
 class TestLindbladJumpOpsCOO:
-    def test_operator_count(self):
+    def test_operator_count(self) -> None:
         """Number of jump operators matches Python construction."""
         K = np.array([[0, 0.5, 0.1], [0.5, 0, 0.3], [0.1, 0.3, 0]])
         n = 3
@@ -717,7 +722,7 @@ class TestLindbladJumpOpsCOO:
         # 6 active directed pairs (i,j): (0,1),(1,0),(0,2),(2,0),(1,2),(2,1)
         assert n_ops == 6
 
-    def test_sparse_matrix_reconstruction(self):
+    def test_sparse_matrix_reconstruction(self) -> None:
         """COO data can reconstruct valid sparse matrices."""
         from scipy.sparse import csr_matrix
 
@@ -736,7 +741,7 @@ class TestLindbladJumpOpsCOO:
             # Each L should have exactly 1 non-zero per column (at most)
             assert L.nnz <= dim
 
-    def test_parity_with_python(self):
+    def test_parity_with_python(self) -> None:
         """Rust COO data matches Python loop construction."""
         K = np.array([[0, 0.5, 0], [0.5, 0, 0.3], [0, 0.3, 0]])
         n = 3
@@ -770,7 +775,7 @@ class TestLindbladJumpOpsCOO:
 
         _perf(f"lindblad_jump_ops_coo (n={n})", dt_r, dt_p)
 
-    def test_benchmark_scaling(self):
+    def test_benchmark_scaling(self) -> None:
         for n in [3, 5, 7]:
             rng = np.random.default_rng(42)
             K = rng.random((n, n)) * 0.3
@@ -787,7 +792,7 @@ class TestLindbladJumpOpsCOO:
 
 
 class TestLindbladAntiHermitianDiag:
-    def test_parity_with_python(self):
+    def test_parity_with_python(self) -> None:
         K = np.array([[0, 0.5, 0.1], [0.5, 0, 0.3], [0.1, 0.3, 0]])
         n = 3
         dim = 1 << n
@@ -808,7 +813,7 @@ class TestLindbladAntiHermitianDiag:
         np.testing.assert_allclose(diag_rust, diag_py)
         _perf(f"lindblad_anti_hermitian_diag (n={n})", dt_r, dt_p)
 
-    def test_non_negative(self):
+    def test_non_negative(self) -> None:
         n = 4
         rng = np.random.default_rng(42)
         K = rng.random((n, n)) * 0.5
@@ -817,7 +822,7 @@ class TestLindbladAntiHermitianDiag:
         diag = np.array(eng.lindblad_anti_hermitian_diag(K.ravel(), n, 1e-5))
         assert np.all(diag >= 0)
 
-    def test_ground_state_zero(self):
+    def test_ground_state_zero(self) -> None:
         """All-zeros state |0...0> has zero jump channels."""
         K = np.ones((3, 3)) - np.eye(3)
         n = 3
@@ -831,7 +836,7 @@ class TestLindbladAntiHermitianDiag:
 
 
 class TestParityFilterMask:
-    def test_known_parities(self):
+    def test_known_parities(self) -> None:
         bs = np.array([0, 1, 2, 3, 4, 5, 6, 7], dtype=np.uint64)
         even = np.array(eng.parity_filter_mask(bs, 0))
         odd = np.array(eng.parity_filter_mask(bs, 1))
@@ -841,12 +846,12 @@ class TestParityFilterMask:
         assert list(even) == expected_even
         assert list(odd) == expected_odd
 
-    def test_empty_input(self):
+    def test_empty_input(self) -> None:
         bs = np.array([], dtype=np.uint64)
         result = np.array(eng.parity_filter_mask(bs, 0))
         assert len(result) == 0
 
-    def test_benchmark_large(self):
+    def test_benchmark_large(self) -> None:
         """Benchmark parity filtering on 10k bitstrings."""
         rng = np.random.default_rng(42)
         bs = rng.integers(0, 2**20, size=10_000).astype(np.uint64)

@@ -22,7 +22,7 @@ pytestmark = pytest.mark.skipif(not HAS_RUST, reason="scpn_quantum_engine not in
 
 
 class TestRustPythonParity:
-    def test_knm_16_exact_parity(self):
+    def test_knm_16_exact_parity(self) -> None:
         import scpn_quantum_engine as engine
         from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
 
@@ -30,7 +30,7 @@ class TestRustPythonParity:
         K_python = build_knm_paper27(L=16)
         np.testing.assert_allclose(K_rust, K_python, atol=1e-12)
 
-    def test_knm_7_parity(self):
+    def test_knm_7_parity(self) -> None:
         import scpn_quantum_engine as engine
         from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
 
@@ -38,13 +38,13 @@ class TestRustPythonParity:
         K_python = build_knm_paper27(L=7)
         np.testing.assert_allclose(K_rust, K_python, atol=1e-12)
 
-    def test_knm_diagonal(self):
+    def test_knm_diagonal(self) -> None:
         import scpn_quantum_engine as engine
 
         K = np.array(engine.build_knm(4, 0.45, 0.3))
         assert K[0, 0] == pytest.approx(0.45, abs=1e-12)
 
-    def test_knm_calibration_anchors(self):
+    def test_knm_calibration_anchors(self) -> None:
         import scpn_quantum_engine as engine
 
         K = np.array(engine.build_knm(16, 0.45, 0.3))
@@ -53,7 +53,7 @@ class TestRustPythonParity:
         assert K[2, 3] == pytest.approx(0.252, abs=1e-12)
         assert K[3, 4] == pytest.approx(0.154, abs=1e-12)
 
-    def test_knm_cross_hierarchy_max(self):
+    def test_knm_cross_hierarchy_max(self) -> None:
         import scpn_quantum_engine as engine
 
         K = np.array(engine.build_knm(16, 0.45, 0.3))
@@ -61,7 +61,7 @@ class TestRustPythonParity:
         assert K[4, 6] > 0.15
         assert K[0, 15] >= 0.05
 
-    def test_pec_coefficients_parity(self):
+    def test_pec_coefficients_parity(self) -> None:
         import scpn_quantum_engine as engine
         from scpn_quantum_control.mitigation.pec import pauli_twirl_decompose
 
@@ -70,7 +70,7 @@ class TestRustPythonParity:
             python = pauli_twirl_decompose(p)
             np.testing.assert_allclose(rust, python, atol=1e-12)
 
-    def test_order_parameter_parity(self):
+    def test_order_parameter_parity(self) -> None:
         import scpn_quantum_engine as engine
 
         theta = np.array([0.0, 0.1, 0.2, 0.3])
@@ -79,7 +79,7 @@ class TestRustPythonParity:
         python_R = float(np.abs(z))
         assert rust_R == pytest.approx(python_R, abs=1e-10)
 
-    def test_kuramoto_euler_parity(self):
+    def test_kuramoto_euler_parity(self) -> None:
         import scpn_quantum_engine as engine
         from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 
@@ -104,7 +104,7 @@ class TestRustPythonParity:
     # --- New Rust functions ---
 
     @pytest.mark.parametrize("n", [2, 3, 4, 6, 8])
-    def test_state_order_param_sparse_parity(self, n):
+    def test_state_order_param_sparse_parity(self, n: int) -> None:
         """Rust state_order_param_sparse matches Python _state_order_param_sparse."""
         import scpn_quantum_engine as engine
         from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16
@@ -138,7 +138,7 @@ class TestRustPythonParity:
         np.testing.assert_allclose(R_rust, R_python, atol=1e-12)
 
     @pytest.mark.parametrize("n", [2, 3, 4, 6])
-    def test_state_order_param_random_states(self, n):
+    def test_state_order_param_random_states(self, n: int) -> None:
         """Rust matches Python on random normalised statevectors."""
         import scpn_quantum_engine as engine
 
@@ -167,7 +167,7 @@ class TestRustPythonParity:
 
     @pytest.mark.parametrize("pauli,pauli_idx", [("X", 0), ("Y", 1), ("Z", 2)])
     @pytest.mark.parametrize("qubit", [0, 1, 2])
-    def test_expectation_pauli_fast_parity(self, pauli, pauli_idx, qubit):
+    def test_expectation_pauli_fast_parity(self, pauli: str, pauli_idx: int, qubit: int) -> None:
         """Rust expectation_pauli_fast matches Python kron-based _expectation_pauli."""
         import scpn_quantum_engine as engine
 
@@ -197,7 +197,7 @@ class TestRustPythonParity:
         np.testing.assert_allclose(R_rust, R_python, atol=1e-10)
 
     @pytest.mark.parametrize("horizon", [1, 2, 3, 4])
-    def test_brute_mpc_parity(self, horizon):
+    def test_brute_mpc_parity(self, horizon: int) -> None:
         """Rust brute_mpc matches Python classical_brute_mpc."""
         import scpn_quantum_engine as engine
 

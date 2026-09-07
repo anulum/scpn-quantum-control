@@ -12,11 +12,12 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 eng = pytest.importorskip("scpn_quantum_engine")
 
 
-def _system(n: int = 4):
+def _system(n: int = 4) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
     omega = np.linspace(0.8, 1.2, n)
     return K, omega
@@ -26,13 +27,13 @@ def _system(n: int = 4):
 # build_sparse_xy_hamiltonian
 # =====================================================================
 class TestRustSparseHamiltonian:
-    def test_returns_triplets(self):
+    def test_returns_triplets(self) -> None:
         K, omega = _system(4)
         rows, cols, vals = eng.build_sparse_xy_hamiltonian(K.ravel(), omega, 4)
         assert len(rows) == len(cols) == len(vals)
         assert len(vals) > 0
 
-    def test_matches_dense_rust(self):
+    def test_matches_dense_rust(self) -> None:
         K, omega = _system(4)
         rows, cols, vals = eng.build_sparse_xy_hamiltonian(K.ravel(), omega, 4)
         from scipy import sparse
@@ -45,7 +46,7 @@ class TestRustSparseHamiltonian:
         H_dense = np.array(eng.build_xy_hamiltonian_dense(K.ravel(), omega, 4)).reshape(16, 16)
         np.testing.assert_allclose(H_sparse, H_dense, atol=1e-12)
 
-    def test_matches_python_sparse(self):
+    def test_matches_python_sparse(self) -> None:
         from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
 
         K, omega = _system(6)
@@ -59,7 +60,7 @@ class TestRustSparseHamiltonian:
         ).toarray()
         np.testing.assert_allclose(H_rust, H_python, atol=1e-12)
 
-    def test_hermitian(self):
+    def test_hermitian(self) -> None:
         K, omega = _system(4)
         rows, cols, vals = eng.build_sparse_xy_hamiltonian(K.ravel(), omega, 4)
         from scipy import sparse
@@ -70,14 +71,14 @@ class TestRustSparseHamiltonian:
         ).toarray()
         np.testing.assert_allclose(H, H.T, atol=1e-12)
 
-    def test_n8_nnz(self):
+    def test_n8_nnz(self) -> None:
         K, omega = _system(8)
         rows, cols, vals = eng.build_sparse_xy_hamiltonian(K.ravel(), omega, 8)
         dim = 256
         assert len(vals) < dim * dim  # sparse, not dense
         assert len(vals) > dim  # more than diagonal
 
-    def test_eigenvalues_match(self):
+    def test_eigenvalues_match(self) -> None:
         from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
 
         K, omega = _system(6)
@@ -99,7 +100,7 @@ class TestRustSparseHamiltonian:
 # magnetisation_labels
 # =====================================================================
 class TestRustMagnetisationLabels:
-    def test_n2_values(self):
+    def test_n2_values(self) -> None:
         labels = eng.magnetisation_labels(2)
         # |00⟩=M+2, |01⟩=M0, |10⟩=M0, |11⟩=M-2
         assert labels[0] == 2  # |00⟩
@@ -107,18 +108,18 @@ class TestRustMagnetisationLabels:
         assert labels[2] == 0  # |10⟩
         assert labels[3] == -2  # |11⟩
 
-    def test_n4_range(self):
+    def test_n4_range(self) -> None:
         labels = eng.magnetisation_labels(4)
         assert len(labels) == 16
         assert min(labels) == -4
         assert max(labels) == 4
 
-    def test_all_up_all_down(self):
+    def test_all_up_all_down(self) -> None:
         labels = eng.magnetisation_labels(8)
         assert labels[0] == 8  # |00000000⟩ = all up
         assert labels[255] == -8  # |11111111⟩ = all down
 
-    def test_matches_python(self):
+    def test_matches_python(self) -> None:
         from scpn_quantum_control.analysis.magnetisation_sectors import _magnetisation
 
         n = 6
@@ -126,13 +127,13 @@ class TestRustMagnetisationLabels:
         labels_python = [_magnetisation(k, n) for k in range(2**n)]
         np.testing.assert_array_equal(labels_rust, labels_python)
 
-    def test_sum_is_zero_for_even_n(self):
+    def test_sum_is_zero_for_even_n(self) -> None:
         # Equal number of positive and negative M states
         labels = eng.magnetisation_labels(4)
         # Sum of all M labels weighted by degeneracy = 0
         assert sum(labels) == 0
 
-    def test_popcount_consistency(self):
+    def test_popcount_consistency(self) -> None:
         labels = eng.magnetisation_labels(8)
         for k in range(256):
             expected = 8 - 2 * bin(k).count("1")
@@ -143,7 +144,7 @@ class TestRustMagnetisationLabels:
 # order_param_from_statevector
 # =====================================================================
 class TestRustOrderParam:
-    def test_all_up_state(self):
+    def test_all_up_state(self) -> None:
         n = 4
         psi = np.zeros(16, dtype=np.complex128)
         psi[0] = 1.0  # |0000⟩
@@ -151,7 +152,7 @@ class TestRustOrderParam:
         # All up: ⟨X⟩=0, ⟨Y⟩=0 for each qubit → R=0
         assert abs(R) < 0.01
 
-    def test_normalised_state(self):
+    def test_normalised_state(self) -> None:
         n = 4
         rng = np.random.default_rng(42)
         psi = rng.standard_normal(16) + 1j * rng.standard_normal(16)
@@ -159,13 +160,13 @@ class TestRustOrderParam:
         R = eng.order_param_from_statevector(psi.real.copy(), psi.imag.copy(), n)
         assert 0 <= R <= 1.01
 
-    def test_matches_python(self):
+    def test_matches_python(self) -> None:
         n = 4
         rng = np.random.default_rng(123)
         psi = rng.standard_normal(16) + 1j * rng.standard_normal(16)
         psi /= np.linalg.norm(psi)
 
-        def python_only(psi_in, n_in):
+        def python_only(psi_in: NDArray[np.complex128], n_in: int) -> float:
             z = 0.0 + 0.0j
             dim = 2**n_in
             for i in range(n_in):
@@ -183,7 +184,7 @@ class TestRustOrderParam:
         R_rust = eng.order_param_from_statevector(psi.real.copy(), psi.imag.copy(), n)
         np.testing.assert_allclose(R_rust, R_python, atol=1e-10)
 
-    def test_n8_performance(self):
+    def test_n8_performance(self) -> None:
         import time
 
         n = 8
@@ -195,7 +196,7 @@ class TestRustOrderParam:
         elapsed = (time.perf_counter() - t0) / 1000
         assert elapsed < 0.001  # should be <1ms at n=8
 
-    def test_deterministic(self):
+    def test_deterministic(self) -> None:
         n = 4
         psi = np.array([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], dtype=np.complex128)
         psi /= np.linalg.norm(psi)

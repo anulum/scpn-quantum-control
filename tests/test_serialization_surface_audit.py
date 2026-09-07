@@ -14,6 +14,8 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 _TOOL = ROOT / "tools" / "audit_serialization_surface.py"
 _SPEC = importlib.util.spec_from_file_location("audit_serialization_surface", _TOOL)
@@ -104,7 +106,7 @@ def test_serialization_audit_json_output_is_deterministic() -> None:
 
 
 def test_serialization_audit_cli_returns_nonzero_on_findings(
-    tmp_path: Path, capsys: object
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     fixture = tmp_path / "unsafe.py"
     fixture.write_text("import marshal\nmarshal.loads(payload)\n", encoding="utf-8")
@@ -113,7 +115,9 @@ def test_serialization_audit_cli_returns_nonzero_on_findings(
     assert "marshal.loads" in capsys.readouterr().out
 
 
-def test_serialization_audit_cli_returns_zero_on_safe_file(tmp_path: Path, capsys: object) -> None:
+def test_serialization_audit_cli_returns_zero_on_safe_file(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     fixture = tmp_path / "safe.py"
     fixture.write_text("import json\njson.load(handle)\n", encoding="utf-8")
 

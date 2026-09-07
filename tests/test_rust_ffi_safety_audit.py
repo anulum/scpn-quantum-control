@@ -15,6 +15,8 @@ import sys
 from pathlib import Path
 from types import ModuleType
 
+import pytest
+
 
 def _load_tool_module(module_name: str, filename: str) -> ModuleType:
     module_path = Path(__file__).resolve().parents[1] / "tools" / filename
@@ -131,7 +133,7 @@ def test_rust_ffi_safety_json_output_is_deterministic(tmp_path: Path) -> None:
 
 
 def test_rust_ffi_safety_cli_writes_json_and_returns_status(
-    tmp_path: Path, capsys: object
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     crate = _write_rust_fixture(
         tmp_path,
