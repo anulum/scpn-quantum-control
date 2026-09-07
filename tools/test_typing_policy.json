@@ -345,6 +345,8 @@
         "tests/test_identity_ground_state.py",
         "tests/test_identity_key.py",
         "tests/test_identity_pipeline_contracts.py",
+        "tests/test_jax_accel_contracts.py",
+        "tests/test_jax_nqs.py",
         "tests/test_kuramoto_variants.py",
         "tests/test_kuramoto_variants_quality_gate.py",
         "tests/test_lean_phase_import.py",

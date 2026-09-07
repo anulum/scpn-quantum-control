@@ -9,10 +9,13 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.dense_budget import DenseAllocationError
@@ -22,93 +25,79 @@ from scpn_quantum_control.hardware import jax_accel as jax_mod
 class _FakeJnp:
     """Minimal jax.numpy mock backed by real numpy."""
 
-    def zeros(self, shape):
-        return np.zeros(shape)
+    def zeros(self, shape: int | tuple[int, ...]) -> _FakeJnpArray:
+        return _FakeJnpArray(np.zeros(shape))
 
-    def array(self, x):
-        return np.asarray(x)
+    def array(self, x: Any) -> _FakeJnpArray:
+        return _FakeJnpArray(np.asarray(x))
 
     class linalg:
         @staticmethod
-        def eigvalsh(H):
+        def eigvalsh(H: Any) -> NDArray[np.float64]:
             return np.linalg.eigvalsh(H)
 
         @staticmethod
-        def eigh(H):
+        def eigh(H: Any) -> Any:
             return np.linalg.eigh(H)
 
         @staticmethod
-        def svd(M, compute_uv=True):
+        def svd(M: Any, compute_uv: bool = True) -> Any:
             if compute_uv:
                 return np.linalg.svd(M)
             return np.linalg.svd(M, compute_uv=False)
 
-    def where(self, cond, x, y):
+    def where(self, cond: Any, x: Any, y: Any) -> Any:
         return np.where(cond, x, y)
 
-    def sum(self, x, **kw):
+    def sum(self, x: Any, **kw: Any) -> Any:
         return np.sum(x, **kw)
 
-    def log2(self, x):
+    def log2(self, x: Any) -> Any:
         return np.log2(x)
 
-    def sort(self, x):
+    def sort(self, x: Any) -> NDArray[Any]:
         return np.sort(x)
 
 
 class _FakeJnpArray(np.ndarray):
     """Array that supports .at[].set() and .at[].add() for JAX-style mutation."""
 
-    def __new__(cls, arr):
+    def __new__(cls, arr: Any) -> _FakeJnpArray:
         return np.asarray(arr).view(cls)
 
     @property
-    def at(self):
+    def at(self) -> _AtHelper:
         return _AtHelper(self)
 
 
 class _AtHelper:
-    def __init__(self, arr):
+    def __init__(self, arr: _FakeJnpArray) -> None:
         self._arr = arr
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: Any) -> _AtIdx:
         return _AtIdx(self._arr, idx)
 
 
 class _AtIdx:
-    def __init__(self, arr, idx):
+    def __init__(self, arr: _FakeJnpArray, idx: Any) -> None:
         self._arr = arr
         self._idx = idx
 
-    def set(self, val):
+    def set(self, val: Any) -> _FakeJnpArray:
         out = self._arr.copy().view(_FakeJnpArray)
         out[self._idx] = val
         return out
 
-    def add(self, val):
+    def add(self, val: Any) -> _FakeJnpArray:
         out = self._arr.copy().view(_FakeJnpArray)
         out[self._idx] += val
         return out
 
 
 @pytest.fixture()
-def mock_jax(monkeypatch):
+def mock_jax(monkeypatch: pytest.MonkeyPatch) -> _FakeJnp:
     """Patch jax_accel to think JAX is available with a numpy-backed mock."""
     fake_jnp = _FakeJnp()
-
-    # Override zeros to return _FakeJnpArray
-    orig_zeros = fake_jnp.zeros
-
-    def patched_zeros(shape):
-        return _FakeJnpArray(orig_zeros(shape))
-
-    fake_jnp.zeros = patched_zeros
-
-    # Override array to return _FakeJnpArray
-    def patched_array(x):
-        return _FakeJnpArray(np.asarray(x))
-
-    fake_jnp.array = patched_array
 
     monkeypatch.setattr(jax_mod, "_JAX_AVAILABLE", True)
     monkeypatch.setattr(jax_mod, "_JAX_GPU", True)
@@ -116,20 +105,20 @@ def mock_jax(monkeypatch):
     return fake_jnp
 
 
-def test_is_jax_available_true(mock_jax):
+def test_is_jax_available_true(mock_jax: _FakeJnp) -> None:
     assert jax_mod.is_jax_available() is True
 
 
-def test_is_jax_gpu_available_true(mock_jax):
+def test_is_jax_gpu_available_true(mock_jax: _FakeJnp) -> None:
     assert jax_mod.is_jax_gpu_available() is True
 
 
-def test_jax_device_name_unavailable(monkeypatch):
+def test_jax_device_name_unavailable(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(jax_mod, "_JAX_AVAILABLE", False)
     assert jax_mod.jax_device_name() == "unavailable"
 
 
-def test_jax_device_name_available(monkeypatch):
+def test_jax_device_name_available(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(jax_mod, "_JAX_AVAILABLE", True)
     mock_jax = MagicMock()
     mock_jax.devices.return_value = [MagicMock(__str__=lambda s: "cuda:0")]
@@ -138,7 +127,7 @@ def test_jax_device_name_available(monkeypatch):
     assert isinstance(name, str)
 
 
-def test_build_xy_hamiltonian_jax(mock_jax):
+def test_build_xy_hamiltonian_jax(mock_jax: _FakeJnp) -> None:
     K = _FakeJnpArray(np.array([[0, 0.5], [0.5, 0]]))
     omega = _FakeJnpArray(np.array([1.0, 2.0]))
     H = jax_mod._build_xy_hamiltonian_jax(K, omega, 2)
@@ -147,7 +136,7 @@ def test_build_xy_hamiltonian_jax(mock_jax):
     np.testing.assert_allclose(H, H.T, atol=1e-12)
 
 
-def test_eigensolve_batch_jax(mock_jax, monkeypatch):
+def test_eigensolve_batch_jax(mock_jax: _FakeJnp, monkeypatch: pytest.MonkeyPatch) -> None:
     K_topo = np.array([[0, 1.0], [1.0, 0]])
     omega = np.array([1.0, 2.0])
     k_range = np.array([0.1, 0.5, 1.0])
@@ -168,19 +157,19 @@ def test_eigensolve_batch_jax(mock_jax, monkeypatch):
     assert len(result["k_values"]) == 3
 
 
-def test_eigensolve_batch_jax_unavailable(monkeypatch):
+def test_eigensolve_batch_jax_unavailable(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(jax_mod, "_JAX_AVAILABLE", False)
     with pytest.raises(RuntimeError, match="JAX not available"):
         jax_mod.eigensolve_batch_jax(np.eye(2), np.ones(2), np.array([1.0]))
 
 
-def test_entanglement_scan_jax_unavailable(monkeypatch):
+def test_entanglement_scan_jax_unavailable(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(jax_mod, "_JAX_AVAILABLE", False)
     with pytest.raises(RuntimeError, match="JAX not available"):
         jax_mod.entanglement_scan_jax(np.eye(2), np.ones(2), np.array([1.0]))
 
 
-def test_entanglement_scan_jax(mock_jax, monkeypatch):
+def test_entanglement_scan_jax(mock_jax: _FakeJnp, monkeypatch: pytest.MonkeyPatch) -> None:
     K_topo = np.array([[0, 1.0], [1.0, 0]])
     omega = np.array([1.0, 2.0])
     k_range = np.array([0.5, 1.0])
@@ -188,8 +177,8 @@ def test_entanglement_scan_jax(mock_jax, monkeypatch):
     mock_jax_module = MagicMock()
     mock_jax_module.jit = lambda fn: fn
 
-    def fake_vmap(fn):
-        def inner(batch):
+    def fake_vmap(fn: Callable[..., Any]) -> Callable[..., Any]:
+        def inner(batch: Any) -> Any:
             results = [fn(h) for h in batch]
             return tuple(np.array(x) for x in zip(*results, strict=True))
 
@@ -207,12 +196,14 @@ def test_entanglement_scan_jax(mock_jax, monkeypatch):
     assert len(result["k_values"]) == 2
 
 
-def test_entanglement_scan_jax_rejects_dense_batch_budget(mock_jax, monkeypatch):
+def test_entanglement_scan_jax_rejects_dense_batch_budget(
+    mock_jax: _FakeJnp, monkeypatch: pytest.MonkeyPatch
+) -> None:
     K_topo = np.eye(4)
     omega = np.ones(4)
     k_range = np.array([0.5, 1.0])
 
-    def fail_dense(*args, **kwargs):
+    def fail_dense(*args: object, **kwargs: object) -> Any:
         raise AssertionError("dense builder must not run after JAX batch budget rejection")
 
     monkeypatch.setattr(
@@ -229,7 +220,7 @@ def test_entanglement_scan_jax_rejects_dense_batch_budget(mock_jax, monkeypatch)
         )
 
 
-def test_jax_hamiltonian_hermitian(mock_jax):
+def test_jax_hamiltonian_hermitian(mock_jax: _FakeJnp) -> None:
     """JAX-built H must be Hermitian (real symmetric for XY model)."""
     K = _FakeJnpArray(np.array([[0, 0.3, 0.1], [0.3, 0, 0.2], [0.1, 0.2, 0]]))
     omega = _FakeJnpArray(np.array([1.0, 1.5, 2.0]))
@@ -237,7 +228,7 @@ def test_jax_hamiltonian_hermitian(mock_jax):
     np.testing.assert_allclose(H, H.T, atol=1e-12)
 
 
-def test_jax_hamiltonian_traceless(mock_jax):
+def test_jax_hamiltonian_traceless(mock_jax: _FakeJnp) -> None:
     """XY Hamiltonian should be traceless (all Pauli terms)."""
     K = _FakeJnpArray(np.array([[0, 0.5], [0.5, 0]]))
     omega = _FakeJnpArray(np.array([1.0, 2.0]))
@@ -245,7 +236,7 @@ def test_jax_hamiltonian_traceless(mock_jax):
     assert abs(np.trace(H)) < 1e-8
 
 
-def test_jax_unavailable_fallback(monkeypatch):
+def test_jax_unavailable_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
     """When JAX unavailable, is_jax_available returns False."""
     monkeypatch.setattr(jax_mod, "_JAX_AVAILABLE", False)
     assert jax_mod.is_jax_available() is False

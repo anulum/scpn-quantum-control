@@ -12,9 +12,13 @@ from __future__ import annotations
 import importlib
 import sys
 import time
+from collections.abc import Sequence
+from types import ModuleType
+from typing import Any
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.dense_budget import DenseAllocationError
@@ -36,12 +40,12 @@ _SKIP = pytest.mark.skipif(not _JAX_OK, reason="JAX not available")
 class TestJaxAvailability:
     """Tests that always run regardless of JAX installation."""
 
-    def test_is_jax_available_returns_bool(self):
+    def test_is_jax_available_returns_bool(self) -> None:
         from scpn_quantum_control.phase.jax_nqs import is_jax_available
 
         assert isinstance(is_jax_available(), bool)
 
-    def test_module_importable(self):
+    def test_module_importable(self) -> None:
         from scpn_quantum_control.phase import jax_nqs
 
         assert hasattr(jax_nqs, "is_jax_available")
@@ -53,7 +57,7 @@ class TestJaxAvailability:
 class TestJaxRBMEnergy:
     """Tests for jax_rbm_energy."""
 
-    def test_returns_scalar(self):
+    def test_returns_scalar(self) -> None:
         import jax
         import jax.numpy as jnp
 
@@ -75,7 +79,7 @@ class TestJaxRBMEnergy:
         energy = jax_rbm_energy(params, H, n)
         assert np.isfinite(float(energy))
 
-    def test_energy_real(self):
+    def test_energy_real(self) -> None:
         import jax
         import jax.numpy as jnp
 
@@ -97,7 +101,7 @@ class TestJaxRBMEnergy:
         energy = jax_rbm_energy(params, H, n)
         assert float(jnp.imag(energy)) == pytest.approx(0.0, abs=1e-5)
 
-    def test_energy_bounded_by_spectrum(self):
+    def test_energy_bounded_by_spectrum(self) -> None:
         import jax
         import jax.numpy as jnp
 
@@ -127,13 +131,15 @@ class TestJaxRBMEnergy:
 class TestJaxVMCGroundState:
     """Tests for jax_vmc_ground_state."""
 
-    def test_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+    def test_rejects_dense_budget_before_hamiltonian_allocation(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         import scpn_quantum_control.bridge.knm_hamiltonian as bridge_module
 
         K = build_knm_paper27(L=10)
         omega = OMEGA_N_16[:10]
 
-        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+        def fail_if_dense_hamiltonian_is_requested(*args: object, **kwargs: object) -> Any:  # noqa: ARG001
             raise AssertionError("dense Hamiltonian allocation happened before budget gate")
 
         monkeypatch.setattr(
@@ -143,15 +149,19 @@ class TestJaxVMCGroundState:
         with pytest.raises(DenseAllocationError, match="JAX NQS dense"):
             jax_vmc_ground_state(K, omega, n_iterations=1, max_dense_gib=1e-12)
 
-    def test_passes_dense_budget_to_bridge(self, monkeypatch):
+    def test_passes_dense_budget_to_bridge(self, monkeypatch: pytest.MonkeyPatch) -> None:
         import scpn_quantum_control.bridge.knm_hamiltonian as bridge_module
 
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         seen_budgets: list[float | None] = []
 
-        def fake_dense_matrix(K_arg, omega_arg, **kwargs):  # noqa: ARG001
-            seen_budgets.append(kwargs.get("max_dense_gib"))
+        def fake_dense_matrix(
+            K_arg: NDArray[np.float64], omega_arg: NDArray[np.float64], **kwargs: object
+        ) -> NDArray[np.complex128]:  # noqa: ARG001
+            budget = kwargs.get("max_dense_gib")
+            assert budget is None or isinstance(budget, float)
+            seen_budgets.append(budget)
             return np.zeros((4, 4), dtype=complex)
 
         monkeypatch.setattr(bridge_module, "knm_to_dense_matrix", fake_dense_matrix)
@@ -207,11 +217,17 @@ class TestJaxVMCGroundState:
             (np.zeros((2, 2)), np.zeros(2), {"seed": 1.5}, "seed"),
         ),
     )
-    def test_rejects_invalid_public_inputs(self, K, omega, kwargs, message):
+    def test_rejects_invalid_public_inputs(
+        self,
+        K: NDArray[np.float64],
+        omega: NDArray[np.float64],
+        kwargs: dict[str, Any],
+        message: str,
+    ) -> None:
         with pytest.raises(ValueError, match=message):
             jax_vmc_ground_state(K, omega, **kwargs)
 
-    def test_zero_hidden_width_does_not_silently_select_default(self):
+    def test_zero_hidden_width_does_not_silently_select_default(self) -> None:
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         with pytest.raises(ValueError, match="n_hidden"):
@@ -247,7 +263,9 @@ class TestJaxVMCGroundState:
             ),
         ),
     )
-    def test_rejects_invalid_bridge_hamiltonian(self, monkeypatch, hamiltonian, message):
+    def test_rejects_invalid_bridge_hamiltonian(
+        self, monkeypatch: pytest.MonkeyPatch, hamiltonian: NDArray[np.complex128], message: str
+    ) -> None:
         import scpn_quantum_control.bridge.knm_hamiltonian as bridge_module
 
         monkeypatch.setattr(
@@ -258,7 +276,7 @@ class TestJaxVMCGroundState:
         with pytest.raises(ValueError, match=message):
             jax_vmc_ground_state(np.zeros((2, 2)), np.zeros(2), n_iterations=1)
 
-    def test_returns_dict(self):
+    def test_returns_dict(self) -> None:
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = jax_vmc_ground_state(K, omega, n_iterations=10, seed=42)
@@ -268,13 +286,13 @@ class TestJaxVMCGroundState:
         assert "params" in result
         assert "n_params" in result
 
-    def test_energy_finite(self):
+    def test_energy_finite(self) -> None:
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = jax_vmc_ground_state(K, omega, n_iterations=10)
         assert np.isfinite(result["energy"])
 
-    def test_energy_decreases(self):
+    def test_energy_decreases(self) -> None:
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = jax_vmc_ground_state(K, omega, n_iterations=50, seed=42)
@@ -282,7 +300,7 @@ class TestJaxVMCGroundState:
         assert len(history) > 2
         assert history[-1] <= history[0] + 0.5
 
-    def test_params_shapes(self):
+    def test_params_shapes(self) -> None:
         n = 3
         K = build_knm_paper27(L=n)
         omega = OMEGA_N_16[:n]
@@ -291,7 +309,7 @@ class TestJaxVMCGroundState:
         assert result["params"]["b"].shape == (6,)
         assert result["params"]["W"].shape == (6, n)
 
-    def test_n_params_correct(self):
+    def test_n_params_correct(self) -> None:
         n = 2
         n_hid = 4
         K = build_knm_paper27(L=n)
@@ -300,13 +318,13 @@ class TestJaxVMCGroundState:
         expected = n + n_hid + n_hid * n
         assert result["n_params"] == expected
 
-    def test_rejects_large_n(self):
+    def test_rejects_large_n(self) -> None:
         K = build_knm_paper27(L=16)
         omega = OMEGA_N_16[:16]
         with pytest.raises(ValueError, match="n<=12"):
             jax_vmc_ground_state(K, omega, n_iterations=1)
 
-    def test_deterministic_with_seed(self):
+    def test_deterministic_with_seed(self) -> None:
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         r1 = jax_vmc_ground_state(K, omega, n_iterations=10, seed=99)
@@ -317,11 +335,16 @@ class TestJaxVMCGroundState:
 class TestJaxNQSImportErrors:
     """Cover ImportError paths when JAX unavailable (lines 50, 89)."""
 
-    def test_import_guard_reports_unavailable_when_jax_import_fails(self):
+    def test_import_guard_reports_unavailable_when_jax_import_fails(self) -> None:
         import scpn_quantum_control.phase.jax_nqs as jax_mod
 
         class BlockJaxImport:
-            def find_spec(self, fullname, path=None, target=None):
+            def find_spec(
+                self,
+                fullname: str,
+                path: Sequence[str] | None = None,
+                target: ModuleType | None = None,
+            ) -> None:
                 if fullname == "jax" or fullname.startswith("jax."):
                     raise ImportError("blocked jax")
                 return None
@@ -345,7 +368,7 @@ class TestJaxNQSImportErrors:
             sys.modules.update(saved_modules)
             importlib.reload(jax_mod)
 
-    def test_jax_rbm_energy_raises_without_jax(self):
+    def test_jax_rbm_energy_raises_without_jax(self) -> None:
         import scpn_quantum_control.phase.jax_nqs as jax_mod
 
         orig = jax_mod._JAX_AVAILABLE
@@ -356,7 +379,7 @@ class TestJaxNQSImportErrors:
         finally:
             jax_mod._JAX_AVAILABLE = orig
 
-    def test_jax_vmc_raises_without_jax(self):
+    def test_jax_vmc_raises_without_jax(self) -> None:
         import scpn_quantum_control.phase.jax_nqs as jax_mod
 
         orig = jax_mod._JAX_AVAILABLE
@@ -372,7 +395,7 @@ class TestJaxNQSImportErrors:
 class TestJaxNQSPipeline:
     """Pipeline integration tests."""
 
-    def test_pipeline_knm_to_jax_vmc(self):
+    def test_pipeline_knm_to_jax_vmc(self) -> None:
         """Full pipeline: Knm → JAX VMC → energy convergence."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
@@ -387,7 +410,7 @@ class TestJaxNQSPipeline:
         print(f"\n  PIPELINE Knm→JAX VMC (3q, 30 iter): {dt:.1f} ms")
         print(f"  Final energy: {result['energy']:.4f}")
 
-    def test_pipeline_jax_vs_exact(self):
+    def test_pipeline_jax_vs_exact(self) -> None:
         """JAX VMC energy should approach exact ground state."""
         from scpn_quantum_control.hardware.classical import classical_exact_diag
 
