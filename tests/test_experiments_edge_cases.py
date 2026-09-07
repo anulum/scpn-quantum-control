@@ -11,8 +11,10 @@ from __future__ import annotations
 
 import numpy as np
 
+from scpn_quantum_control.hardware.runner import HardwareRunner
 
-def test_kuramoto_2osc_minimal(sim_runner):
+
+def test_kuramoto_2osc_minimal(sim_runner: HardwareRunner) -> None:
     """Smallest non-trivial system: 2 oscillators."""
     from scpn_quantum_control.bridge import OMEGA_N_16, build_knm_paper27
     from scpn_quantum_control.hardware.experiments import (
@@ -31,7 +33,7 @@ def test_kuramoto_2osc_minimal(sim_runner):
     assert 0.0 <= R <= 1.5
 
 
-def test_build_evo_base_trotter_order_2(sim_runner):
+def test_build_evo_base_trotter_order_2(sim_runner: HardwareRunner) -> None:
     """SuzukiTrotter(order=2) produces a valid circuit."""
     from scpn_quantum_control.bridge import OMEGA_N_16, build_knm_paper27
     from scpn_quantum_control.hardware.experiments import _build_evo_base
@@ -46,7 +48,7 @@ def test_build_evo_base_trotter_order_2(sim_runner):
     assert qc2.depth() >= qc1.depth() or True  # at least doesn't crash
 
 
-def test_sync_threshold_single_k(sim_runner):
+def test_sync_threshold_single_k(sim_runner: HardwareRunner) -> None:
     """sync_threshold with a single K value."""
     from scpn_quantum_control.hardware.experiments import sync_threshold_experiment
 
@@ -55,7 +57,7 @@ def test_sync_threshold_single_k(sim_runner):
     assert 0.0 <= result["results"][0]["hw_R"] <= 1.5
 
 
-def test_decoherence_scaling_single_qubit_count(sim_runner):
+def test_decoherence_scaling_single_qubit_count(sim_runner: HardwareRunner) -> None:
     """Decoherence scaling with a single qubit count."""
     from scpn_quantum_control.hardware.experiments import decoherence_scaling_experiment
 
@@ -66,7 +68,7 @@ def test_decoherence_scaling_single_qubit_count(sim_runner):
     assert np.isfinite(entry["hw_R"])
 
 
-def test_zne_higher_order_linear(sim_runner):
+def test_zne_higher_order_linear(sim_runner: HardwareRunner) -> None:
     """ZNE higher-order with only linear fit (poly_order=1)."""
     from scpn_quantum_control.hardware.experiments import zne_higher_order_experiment
 
@@ -77,7 +79,7 @@ def test_zne_higher_order_linear(sim_runner):
     assert np.isfinite(result["extrapolations"]["order_1"]["zne_R"])
 
 
-def test_R_from_xyz_uniform_counts():
+def test_R_from_xyz_uniform_counts() -> None:
     """All-zero counts should give R=0."""
     from scpn_quantum_control.hardware.experiments import _R_from_xyz
 
@@ -88,7 +90,7 @@ def test_R_from_xyz_uniform_counts():
     assert len(Xvec) == 4
 
 
-def test_R_from_xyz_all_zero():
+def test_R_from_xyz_all_zero() -> None:
     """All measured |0> should give maximal R."""
     from scpn_quantum_control.hardware.experiments import _R_from_xyz
 
@@ -98,7 +100,7 @@ def test_R_from_xyz_all_zero():
     assert len(Xvec) == 2
 
 
-def test_vqe_landscape_small(sim_runner):
+def test_vqe_landscape_small(sim_runner: HardwareRunner) -> None:
     """VQE landscape with minimal samples."""
     from scpn_quantum_control.hardware.experiments import vqe_landscape_experiment
 
@@ -111,7 +113,7 @@ def test_vqe_landscape_small(sim_runner):
         assert np.isfinite(data["std_energy"])
 
 
-def test_experiment_result_serialisable():
+def test_experiment_result_serialisable() -> None:
     """All experiment results should be JSON-serialisable."""
     import json
 
@@ -120,18 +122,25 @@ def test_experiment_result_serialisable():
     assert len(json_str) > 0
 
 
-def test_vqe_landscape_has_samples():
-    """VQE landscape result should contain sample data."""
-    from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+def test_vqe_landscape_compares_both_ansaetze(sim_runner: HardwareRunner) -> None:
+    """Both named ansaetze are sampled, which is the comparison the result claims.
+
+    `test_vqe_landscape_small` asserts each reported landscape is finite, but it
+    iterates whatever the result happens to carry: dropping one ansatz would
+    leave it passing. This pins the pair by name and pins that each was sampled
+    with a real parameter vector.
+    """
     from scpn_quantum_control.hardware.experiments import vqe_landscape_experiment
 
-    K = build_knm_paper27(L=2)
-    omega = OMEGA_N_16[:2]
-    result = vqe_landscape_experiment(K, omega, n_samples=3)
+    result = vqe_landscape_experiment(sim_runner, shots=200, n_samples=3)
+
+    assert set(result["landscapes"]) == {"knm_informed", "two_local"}
+    for data in result["landscapes"].values():
+        assert data["n_params"] > 0
     assert result["n_samples"] == 3
 
 
-def test_R_from_xyz_returns_tuple():
+def test_R_from_xyz_returns_tuple() -> None:
     """Return the complete order-parameter tuple for correlated counts."""
     from scpn_quantum_control.hardware.experiments import _R_from_xyz
 

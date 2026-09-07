@@ -19,23 +19,23 @@ from scpn_quantum_control.hardware.experiments import ALL_EXPERIMENTS
 
 
 class TestRegistryCompleteness:
-    def test_all_keys_resolve_to_callables(self):
+    def test_all_keys_resolve_to_callables(self) -> None:
         for name, func in ALL_EXPERIMENTS.items():
             assert callable(func), f"{name} maps to non-callable {func}"
 
-    def test_no_duplicate_names(self):
+    def test_no_duplicate_names(self) -> None:
         assert len(ALL_EXPERIMENTS) == len(set(ALL_EXPERIMENTS.keys()))
 
-    def test_registry_not_empty(self):
+    def test_registry_not_empty(self) -> None:
         assert len(ALL_EXPERIMENTS) > 0
 
-    def test_registry_size_at_least_15(self):
+    def test_registry_size_at_least_15(self) -> None:
         """Should have ≥15 registered experiments."""
         assert len(ALL_EXPERIMENTS) >= 15
 
 
 class TestExperimentSignatures:
-    def test_first_param_is_runner(self):
+    def test_first_param_is_runner(self) -> None:
         for name, func in ALL_EXPERIMENTS.items():
             sig = inspect.signature(func)
             params = list(sig.parameters.keys())
@@ -43,7 +43,7 @@ class TestExperimentSignatures:
                 f"{name}: first param is '{params[0]}', expected 'runner'"
             )
 
-    def test_all_have_shots_param(self):
+    def test_all_have_shots_param(self) -> None:
         """Most experiments should accept a shots parameter."""
         has_shots = 0
         for _name, func in ALL_EXPERIMENTS.items():
@@ -53,7 +53,7 @@ class TestExperimentSignatures:
         # At least half should have shots
         assert has_shots >= len(ALL_EXPERIMENTS) // 2
 
-    def test_signatures_have_at_least_2_params(self):
+    def test_signatures_have_at_least_2_params(self) -> None:
         """Every experiment should have runner + at least 1 other param."""
         for name, func in ALL_EXPERIMENTS.items():
             sig = inspect.signature(func)
@@ -61,16 +61,16 @@ class TestExperimentSignatures:
 
 
 class TestNamingConventions:
-    def test_names_are_lowercase(self):
+    def test_names_are_lowercase(self) -> None:
         for name in ALL_EXPERIMENTS:
             assert name == name.lower(), f"{name} should be lowercase"
 
-    def test_names_use_underscores(self):
+    def test_names_use_underscores(self) -> None:
         for name in ALL_EXPERIMENTS:
             assert " " not in name, f"{name} should use underscores, not spaces"
             assert "-" not in name, f"{name} should use underscores, not hyphens"
 
-    def test_names_are_strings(self):
+    def test_names_are_strings(self) -> None:
         for name in ALL_EXPERIMENTS:
             assert isinstance(name, str)
 
@@ -81,7 +81,7 @@ class TestNamingConventions:
 
 
 class TestRegistryWiring:
-    def test_runner_param_annotated(self):
+    def test_runner_param_annotated(self) -> None:
         """First param should be typed (not bare name)."""
         for name, func in ALL_EXPERIMENTS.items():
             sig = inspect.signature(func)
@@ -89,13 +89,13 @@ class TestRegistryWiring:
             # At minimum, param name is 'runner'
             assert first.name == "runner", f"{name}: first param is {first.name}"
 
-    def test_experiments_have_docstrings(self):
+    def test_experiments_have_docstrings(self) -> None:
         """Every registered experiment must have a docstring."""
         for name, func in ALL_EXPERIMENTS.items():
             assert func.__doc__ is not None, f"{name} has no docstring"
             assert len(func.__doc__.strip()) > 10, f"{name} docstring too short"
 
-    def test_no_private_experiments(self):
+    def test_no_private_experiments(self) -> None:
         """No experiment name starts with underscore."""
         for name in ALL_EXPERIMENTS:
             assert not name.startswith("_"), f"{name} is private"
@@ -107,7 +107,7 @@ class TestRegistryWiring:
 
 
 class TestRegistryPipeline:
-    def test_pipeline_list_all_experiments(self):
+    def test_pipeline_list_all_experiments(self) -> None:
         """Full pipeline: list all registered experiments with their param counts.
         Verifies registry is functional infrastructure, not decorative.
         """

@@ -17,7 +17,7 @@ from scpn_quantum_control.hardware.experiments import (
 )
 
 
-def test_expectation_per_qubit_all_zeros():
+def test_expectation_per_qubit_all_zeros() -> None:
     """All |0> outcomes should give <Z> = +1 for each qubit."""
     counts = {"00": 1000}
     exp, std = _expectation_per_qubit(counts, 2)
@@ -25,14 +25,14 @@ def test_expectation_per_qubit_all_zeros():
     assert std.shape == (2,)
 
 
-def test_expectation_per_qubit_all_ones():
+def test_expectation_per_qubit_all_ones() -> None:
     """All |1> outcomes should give <Z> = -1 for each qubit."""
     counts = {"11": 1000}
     exp, std = _expectation_per_qubit(counts, 2)
     np.testing.assert_allclose(exp, [-1.0, -1.0])
 
 
-def test_expectation_per_qubit_mixed():
+def test_expectation_per_qubit_mixed() -> None:
     """50/50 split should give <Z> ~ 0."""
     counts = {"00": 500, "11": 500}
     exp, std = _expectation_per_qubit(counts, 2)
@@ -40,14 +40,14 @@ def test_expectation_per_qubit_mixed():
     assert all(s > 0 for s in std)
 
 
-def test_expectation_per_qubit_single_qubit_asymmetric():
+def test_expectation_per_qubit_single_qubit_asymmetric() -> None:
     """For one qubit: P(0)=0.7, P(1)=0.3 => <Z> = 0.4."""
     counts = {"0": 700, "1": 300}
     exp, std = _expectation_per_qubit(counts, 1)
     np.testing.assert_allclose(exp, [0.4])
 
 
-def test_R_from_xyz_perfect_x_alignment():
+def test_R_from_xyz_perfect_x_alignment() -> None:
     """All qubits measured as |+> in X-basis should give R ~ 1."""
     n = 4
     z_counts = {"0000": 500, "1111": 500}
@@ -58,7 +58,7 @@ def test_R_from_xyz_perfect_x_alignment():
     assert R > 0.5
 
 
-def test_R_from_xyz_random_counts():
+def test_R_from_xyz_random_counts() -> None:
     """Random counts should give finite R in [0, 1]."""
     n = 3
     rng = np.random.default_rng(42)
@@ -70,7 +70,7 @@ def test_R_from_xyz_random_counts():
     assert len(ex) == n
 
 
-def test_build_evo_base_circuit_structure():
+def test_build_evo_base_circuit_structure() -> None:
     """Evolution base circuit should have n qubits and contain Ry + PauliEvolution."""
     from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 
@@ -82,7 +82,7 @@ def test_build_evo_base_circuit_structure():
     assert qc.num_clbits == 0  # no measurement
 
 
-def test_build_xyz_circuits_measurement_count():
+def test_build_xyz_circuits_measurement_count() -> None:
     """XYZ circuits should each have n classical bits."""
     from qiskit import QuantumCircuit
 
@@ -93,7 +93,7 @@ def test_build_xyz_circuits_measurement_count():
         assert qc.num_clbits == 3
 
 
-def test_build_xyz_circuits_z_has_no_extra_gates():
+def test_build_xyz_circuits_z_has_no_extra_gates() -> None:
     """Z-basis circuit should only add measurements, no basis rotations."""
     from qiskit import QuantumCircuit
 
@@ -105,7 +105,7 @@ def test_build_xyz_circuits_z_has_no_extra_gates():
     assert "sdg" not in ops  # no Y-basis rotation
 
 
-def test_build_xyz_circuits_y_has_sdg():
+def test_build_xyz_circuits_y_has_sdg() -> None:
     """Y-basis circuit should include Sdg gates."""
     from qiskit import QuantumCircuit
 
@@ -116,7 +116,7 @@ def test_build_xyz_circuits_y_has_sdg():
     assert "sdg" in ops
 
 
-def test_all_experiments_registry_complete():
+def test_all_experiments_registry_complete() -> None:
     """ALL_EXPERIMENTS must contain every *_experiment function in the module."""
     import inspect
 

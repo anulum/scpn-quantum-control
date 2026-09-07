@@ -326,7 +326,7 @@ Pre-defined experiment configurations for systematic QPU characterisation.
 
 ### `ALL_EXPERIMENTS`
 
-Registry of all 19 experiment functions:
+Registry of all 20 experiment functions:
 
 | Experiment | Qubits | Description |
 |------------|--------|-------------|
@@ -349,6 +349,7 @@ Registry of all 19 experiment functions:
 | `zne_higher_order` | 4 | Higher-order ZNE extrapolation |
 | `bell_test_4q` | 4 | CHSH Bell test on hardware |
 | `correlator_4q` | 4 | XY correlator measurement |
+| `qkd_qber_4q` | 4 | QBER measurement for BB84-family validation |
 
 Each experiment function returns a dict with `circuit`, `shots`,
 `n_qubits`, and experiment-specific metadata.

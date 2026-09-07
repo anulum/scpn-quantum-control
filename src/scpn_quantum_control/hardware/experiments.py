@@ -19,6 +19,9 @@ continue to work unchanged.
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import Any
+
 from ._experiment_helpers import (
     _build_evo_base,
     _build_xyz_circuits,
@@ -94,7 +97,11 @@ __all__ = [
     "ALL_EXPERIMENTS",
 ]
 
-ALL_EXPERIMENTS = {
+# Every experiment takes `runner` first and returns a result mapping; the shape
+# is pinned by `tests/test_experiment_registry.py`. Without this annotation the
+# inferred value type is the join of the concrete function types, which is not
+# `Callable`, so callers cannot introspect the registry under strict typing.
+ALL_EXPERIMENTS: dict[str, Callable[..., dict[str, Any]]] = {
     "kuramoto_4osc": kuramoto_4osc_experiment,
     "kuramoto_8osc": kuramoto_8osc_experiment,
     "vqe_4q": vqe_4q_experiment,
