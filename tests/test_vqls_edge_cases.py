@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import contextlib
+from typing import Any
 from unittest.mock import patch
 
 import numpy as np
@@ -24,30 +25,30 @@ from scpn_quantum_control.control.vqls_gs import VQLS_GradShafranov
 
 
 class TestVQLSInit:
-    def test_default_n_qubits(self):
+    def test_default_n_qubits(self) -> None:
         v = VQLS_GradShafranov()
         assert v.n_qubits == 4
         assert v.grid_size == 16
 
-    def test_custom_n_qubits(self):
+    def test_custom_n_qubits(self) -> None:
         v = VQLS_GradShafranov(n_qubits=3)
         assert v.n_qubits == 3
         assert v.grid_size == 8
 
-    def test_default_source_width(self):
+    def test_default_source_width(self) -> None:
         v = VQLS_GradShafranov()
         assert v.source_width == 0.05
 
-    def test_default_imag_tol(self):
+    def test_default_imag_tol(self) -> None:
         v = VQLS_GradShafranov()
         assert v.imag_tol == 0.1
 
-    def test_custom_imag_tol(self):
+    def test_custom_imag_tol(self) -> None:
         v = VQLS_GradShafranov(imag_tol=0.5)
         assert v.imag_tol == 0.5
 
     @pytest.mark.parametrize("n", [2, 3, 4, 5])
-    def test_grid_size_is_power_of_two(self, n):
+    def test_grid_size_is_power_of_two(self, n: int) -> None:
         v = VQLS_GradShafranov(n_qubits=n)
         assert v.grid_size == 2**n
 
@@ -58,18 +59,18 @@ class TestVQLSInit:
 
 
 class TestDiscretize:
-    def test_returns_A_and_b(self):
+    def test_returns_A_and_b(self) -> None:
         v = VQLS_GradShafranov(n_qubits=2)
         A, b = v.discretize()
         assert A.shape == (4, 4)
         assert b.shape == (4,)
 
-    def test_laplacian_is_symmetric(self):
+    def test_laplacian_is_symmetric(self) -> None:
         v = VQLS_GradShafranov(n_qubits=3)
         A, _ = v.discretize()
         np.testing.assert_allclose(A, A.T, atol=1e-14)
 
-    def test_laplacian_is_tridiagonal(self):
+    def test_laplacian_is_tridiagonal(self) -> None:
         v = VQLS_GradShafranov(n_qubits=3)
         A, _ = v.discretize()
         N = 8
@@ -78,31 +79,31 @@ class TestDiscretize:
                 if abs(i - j) > 1:
                     assert A[i, j] == 0.0
 
-    def test_laplacian_diagonal_positive(self):
+    def test_laplacian_diagonal_positive(self) -> None:
         v = VQLS_GradShafranov(n_qubits=3)
         A, _ = v.discretize()
         assert np.all(np.diag(A) > 0)
 
-    def test_source_vector_normalised(self):
+    def test_source_vector_normalised(self) -> None:
         v = VQLS_GradShafranov(n_qubits=3)
         _, b = v.discretize()
         np.testing.assert_allclose(np.linalg.norm(b), 1.0, atol=1e-14)
 
-    def test_source_vector_all_positive(self):
+    def test_source_vector_all_positive(self) -> None:
         """Gaussian source profile should be strictly positive on interior."""
         v = VQLS_GradShafranov(n_qubits=3)
         _, b = v.discretize()
         assert np.all(b > 0)
 
     @pytest.mark.parametrize("n", [2, 3, 4])
-    def test_various_sizes(self, n):
+    def test_various_sizes(self, n: int) -> None:
         v = VQLS_GradShafranov(n_qubits=n)
         A, b = v.discretize()
         N = 2**n
         assert A.shape == (N, N)
         assert b.shape == (N,)
 
-    def test_stores_A_and_b_internally(self):
+    def test_stores_A_and_b_internally(self) -> None:
         v = VQLS_GradShafranov(n_qubits=2)
         v.discretize()
         assert v._A is not None
@@ -115,24 +116,24 @@ class TestDiscretize:
 
 
 class TestBuildAnsatz:
-    def test_returns_quantum_circuit(self):
+    def test_returns_quantum_circuit(self) -> None:
         from qiskit import QuantumCircuit
 
         v = VQLS_GradShafranov(n_qubits=2)
         qc = v.build_ansatz(reps=1)
         assert isinstance(qc, QuantumCircuit)
 
-    def test_correct_qubit_count(self):
+    def test_correct_qubit_count(self) -> None:
         v = VQLS_GradShafranov(n_qubits=3)
         qc = v.build_ansatz(reps=2)
         assert qc.num_qubits == 3
 
-    def test_has_parameters(self):
+    def test_has_parameters(self) -> None:
         v = VQLS_GradShafranov(n_qubits=2)
         qc = v.build_ansatz(reps=2)
         assert qc.num_parameters > 0
 
-    def test_more_reps_more_params(self):
+    def test_more_reps_more_params(self) -> None:
         v = VQLS_GradShafranov(n_qubits=2)
         qc1 = v.build_ansatz(reps=1)
         qc2 = v.build_ansatz(reps=3)
@@ -145,30 +146,31 @@ class TestBuildAnsatz:
 
 
 class TestSolve:
-    def test_output_shape_n2(self):
+    def test_output_shape_n2(self) -> None:
         v = VQLS_GradShafranov(n_qubits=2)
         result = v.solve(reps=1, maxiter=5, seed=42)
         assert result.shape == (4,)
 
-    def test_output_is_real(self):
+    def test_output_is_real(self) -> None:
         v = VQLS_GradShafranov(n_qubits=2)
         result = v.solve(reps=1, maxiter=5, seed=42)
         assert result.dtype in (np.float64, np.float32)
 
-    def test_output_all_finite(self):
+    def test_output_all_finite(self) -> None:
         v = VQLS_GradShafranov(n_qubits=2)
         result = v.solve(reps=1, maxiter=5, seed=42)
         assert np.all(np.isfinite(result))
 
-    def test_auto_discretize(self):
+    def test_auto_discretize(self) -> None:
         """solve() should auto-call discretize() if not done explicitly."""
         v = VQLS_GradShafranov(n_qubits=2)
-        assert v._A is None
+        before = v._A
+        assert before is None
         result = v.solve(reps=1, maxiter=1, seed=0)
         assert v._A is not None
         assert result.shape == (4,)
 
-    def test_seed_determinism(self):
+    def test_seed_determinism(self) -> None:
         """Same seed → same result."""
         v1 = VQLS_GradShafranov(n_qubits=2)
         v2 = VQLS_GradShafranov(n_qubits=2)
@@ -176,7 +178,7 @@ class TestSolve:
         r2 = v2.solve(reps=1, maxiter=5, seed=123)
         np.testing.assert_array_equal(r1, r2)
 
-    def test_stores_optimal_params(self):
+    def test_stores_optimal_params(self) -> None:
         v = VQLS_GradShafranov(n_qubits=2)
         v.solve(reps=1, maxiter=5, seed=42)
         assert v._optimal_params is not None
@@ -189,20 +191,20 @@ class TestSolve:
 
 
 class TestSolveEdgeCases:
-    def test_imag_tol_zero_raises(self):
+    def test_imag_tol_zero_raises(self) -> None:
         """imag_tol=0 guarantees ValueError since any state has epsilon imaginary."""
         v = VQLS_GradShafranov(n_qubits=2, imag_tol=0.0)
         with pytest.raises(ValueError, match="imaginary norm"):
             v.solve(reps=1, maxiter=1, seed=0)
 
-    def test_degenerate_denominator(self):
+    def test_degenerate_denominator(self) -> None:
         """Near-zero xAtAx returns cost=1.0 gracefully (line 101-102)."""
         v = VQLS_GradShafranov(n_qubits=2)
         v.discretize()
         result = v.solve(reps=1, maxiter=5, seed=42)
         assert result.shape == (4,)
 
-    def test_denominator_guard_path(self):
+    def test_denominator_guard_path(self) -> None:
         """Force the xAtAx < VQLS_DENOMINATOR_EPS path."""
         v = VQLS_GradShafranov(n_qubits=2)
         v.discretize()
@@ -213,7 +215,7 @@ class TestSolveEdgeCases:
         call_count = [0]
         original_from_instruction = Statevector.from_instruction
 
-        def mock_from_instruction(circuit):
+        def mock_from_instruction(circuit: Any) -> Statevector:
             call_count[0] += 1
             if call_count[0] <= 5:
                 return Statevector(tiny_sv / max(np.linalg.norm(tiny_sv), 1e-30))
@@ -227,20 +229,20 @@ class TestSolveEdgeCases:
 
         assert call_count[0] >= 1
 
-    def test_large_imag_tol_succeeds(self):
+    def test_large_imag_tol_succeeds(self) -> None:
         """Very large tolerance should always pass."""
         v = VQLS_GradShafranov(n_qubits=2, imag_tol=1e6)
         result = v.solve(reps=1, maxiter=1, seed=0)
         assert result.shape == (4,)
 
-    def test_different_source_width(self):
+    def test_different_source_width(self) -> None:
         """Changing source_width should still produce valid output."""
         v = VQLS_GradShafranov(n_qubits=2, source_width=0.2)
         result = v.solve(reps=1, maxiter=5, seed=42)
         assert result.shape == (4,)
         assert np.all(np.isfinite(result))
 
-    def test_maxiter_boosted_for_many_params(self):
+    def test_maxiter_boosted_for_many_params(self) -> None:
         """effective_maxiter = max(maxiter, n_params + 10) — verify convergence still works."""
         v = VQLS_GradShafranov(n_qubits=2)
         result = v.solve(reps=1, maxiter=1, seed=42)
