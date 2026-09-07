@@ -82,6 +82,16 @@ FORBIDDEN_SEAT_IDS = frozenset(
     }
 )
 
+# A commit message is a public surface, so no trailer may attribute the work to
+# a vendor or model identity (BROADCAST_2026-04-17 agent-name hygiene, and the
+# single-authorship-line rule). Agent harnesses append these automatically —
+# `Co-Authored-By: <model> <noreply@vendor>` and `<Vendor>-Session: <url>` are
+# the two shapes seen in practice — so the check is on the trailer shape rather
+# than on one vendor's wording. The one permitted `Co-Authored-By` is the
+# project's own legacy Arcane Sapience trailer.
+VENDOR_ATTRIBUTION_TOKENS = tuple(sorted(FORBIDDEN_SEAT_IDS | {"chatgpt", "copilot"}))
+TRAILER_SHAPED_LINE_RE = re.compile(r"^[A-Za-z][A-Za-z0-9-]*:\s")
+
 # Banned tokens per `feedback_no_internal_quality_labels` and
 # `feedback_anti_slop_policy`. Case-insensitive whole-word match.
 # Domain-technical uses (e.g. "STRONG correlation" in statistics)
@@ -212,6 +222,35 @@ def _has_required_authorship_line(msg: str) -> bool:
     return any(line.strip() == REQUIRED_AUTHORSHIP_LINE for line in msg.splitlines())
 
 
+def _vendor_attribution_violations(msg: str) -> list[str]:
+    """Return violations for trailer lines that attribute the work to a vendor.
+
+    Parameters
+    ----------
+    msg : str
+        The full commit message.
+
+    Returns
+    -------
+    list[str]
+        One entry per offending line, empty when the message is clean.
+    """
+    violations: list[str] = []
+    for line in msg.splitlines():
+        stripped = line.strip()
+        if not TRAILER_SHAPED_LINE_RE.match(stripped):
+            continue
+        if LEGACY_COAUTHOR_TRAILER_RE.match(stripped):
+            continue
+        if SEAT_TRAILER_PREFIX_RE.match(stripped):
+            continue  # the seat trailer has its own dedicated check
+        lowered = stripped.lower()
+        hit = next((token for token in VENDOR_ATTRIBUTION_TOKENS if token in lowered), None)
+        if hit is not None:
+            violations.append(f"vendor attribution trailer is forbidden ({hit}): {stripped!r}")
+    return violations
+
+
 def _seat_trailer_violations(msg: str) -> list[str]:
     """Return violations for the forward-only agent seat trailer."""
     lines = msg.splitlines()
@@ -254,6 +293,7 @@ def _message_violations(
     check_body_banned: bool = False,
     allow_legacy_trailer: bool = False,
     require_seat_trailer: bool = False,
+    check_vendor_attribution: bool = False,
 ) -> list[str]:
     """Return a list of violations for this commit message.
 
@@ -262,6 +302,12 @@ def _message_violations(
     subject line (first non-empty line). That is where self-praise or
     slop would read as a tone failure; the body often cites banned
     words in the course of removing them, which is legitimate.
+
+    `check_vendor_attribution` is forward-only and set by the commit-msg hook:
+    it rejects a message before the commit exists. The CI auditor leaves it off
+    because the range it walks contains published commits that carry these
+    trailers, and the only way to remove those is a force-push to `main`, which
+    the commit gate forbids. Those commits are recorded debt, not a clean bill.
     """
     violations: list[str] = []
     has_current_line = _has_required_authorship_line(msg)
@@ -270,6 +316,8 @@ def _message_violations(
         violations.append(f"missing `{REQUIRED_AUTHORSHIP_LINE}` authorship line")
     if require_seat_trailer:
         violations.extend(_seat_trailer_violations(msg))
+    if check_vendor_attribution:
+        violations.extend(_vendor_attribution_violations(msg))
     # Extract subject line (Keep a Changelog / Conventional Commits)
     subject = next((line for line in msg.splitlines() if line.strip()), "")
     scope = msg if check_body_banned else subject
@@ -290,7 +338,7 @@ def _message_violations(
 def _commit_msg_hook(path: Path) -> int:
     """Run the forward-only commit-message hook against one message file."""
     msg = path.read_text(encoding="utf-8")
-    violations = _message_violations(msg, require_seat_trailer=True)
+    violations = _message_violations(msg, require_seat_trailer=True, check_vendor_attribution=True)
     if violations:
         print("Commit message rejected:", file=sys.stderr)
         for v in violations:

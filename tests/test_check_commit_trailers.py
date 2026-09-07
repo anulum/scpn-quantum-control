@@ -416,3 +416,87 @@ def test_main_dispatches_audit_ranges(monkeypatch: pytest.MonkeyPatch) -> None:
         _check_commit_trailers.DEFAULT_AUDIT_RANGE,
         _check_commit_trailers.DEFAULT_AUDIT_RANGE,
     ]
+
+
+def _vendor_token() -> str:
+    """Return one vendor token, taken from the tool so no literal lives here."""
+    token: str = _check_commit_trailers.VENDOR_ATTRIBUTION_TOKENS[0]
+    return token
+
+
+def test_every_vendor_token_is_rejected_in_a_coauthor_trailer() -> None:
+    """Each policed vendor token is caught in a `Co-Authored-By` trailer."""
+    for token in _check_commit_trailers.VENDOR_ATTRIBUTION_TOKENS:
+        message = (
+            f"fix(scope): summary\n\n{VALID_SEAT_TRAILER}\n\n{REQUIRED_AUTHORSHIP_LINE}\n\n"
+            f"Co-Authored-By: Model <noreply@{token}.example>\n"
+        )
+        violations = _check_commit_trailers._vendor_attribution_violations(message)
+        assert violations, f"{token} passed unnoticed"
+        assert token in violations[0]
+
+
+def test_vendor_session_trailer_is_rejected() -> None:
+    """A `<Vendor>-Session:` trailer is rejected on its own, without a co-author line."""
+    token = _vendor_token()
+    message = (
+        f"fix(scope): summary\n\n{VALID_SEAT_TRAILER}\n\n{REQUIRED_AUTHORSHIP_LINE}\n\n"
+        f"{token.capitalize()}-Session: https://example.invalid/session_1\n"
+    )
+    assert _check_commit_trailers._vendor_attribution_violations(message)
+
+
+def test_legacy_arcane_coauthor_trailer_is_not_vendor_attribution() -> None:
+    """The project's own legacy co-author trailer stays permitted."""
+    message = (
+        f"fix(scope): summary\n\n{VALID_SEAT_TRAILER}\n\n"
+        f"{REQUIRED_AUTHORSHIP_LINE}\n\n{LEGACY_COAUTHOR_TRAILER}\n"
+    )
+    assert _check_commit_trailers._vendor_attribution_violations(message) == []
+
+
+def test_vendor_prefixed_seat_trailer_is_left_to_the_seat_check() -> None:
+    """A vendor-prefixed seat trailer is reported once, by the seat check only."""
+    token = _vendor_token()
+    message = f"fix(scope): summary\n\nSeat: {token}-fcb0\n\n{REQUIRED_AUTHORSHIP_LINE}\n"
+    assert _check_commit_trailers._vendor_attribution_violations(message) == []
+    assert _check_commit_trailers._seat_trailer_violations(message)
+
+
+def test_clean_message_has_no_vendor_attribution_violation() -> None:
+    """A compliant message reports nothing."""
+    message = f"fix(scope): summary\n\n{VALID_SEAT_TRAILER}\n\n{REQUIRED_AUTHORSHIP_LINE}\n"
+    assert _check_commit_trailers._vendor_attribution_violations(message) == []
+
+
+def test_commit_msg_hook_rejects_vendor_attribution(tmp_path: Path) -> None:
+    """The forward-only hook refuses a message carrying a vendor trailer."""
+    token = _vendor_token()
+    path = _message_file(
+        tmp_path,
+        f"fix(scope): summary\n\n{VALID_SEAT_TRAILER}\n\n{REQUIRED_AUTHORSHIP_LINE}\n\n"
+        f"Co-Authored-By: Model <noreply@{token}.example>\n",
+    )
+    assert _check_commit_trailers._commit_msg_hook(path) == 1
+
+
+def test_auditor_leaves_vendor_attribution_off() -> None:
+    """The auditor walks published commits, so the check stays off by default."""
+    token = _vendor_token()
+    message = (
+        f"fix(scope): summary\n\n{VALID_SEAT_TRAILER}\n\n{REQUIRED_AUTHORSHIP_LINE}\n\n"
+        f"Co-Authored-By: Model <noreply@{token}.example>\n"
+    )
+    assert _check_commit_trailers._message_violations(message) == []
+    assert _check_commit_trailers._message_violations(message, check_vendor_attribution=True)
+
+
+def test_benign_trailer_shaped_lines_pass_through() -> None:
+    """The repository's own `Parity:`/`Benchmark:` body lines are not attribution."""
+    message = (
+        "fix(scope): summary\n\n"
+        "Parity: N/A - Python only. Benchmark: N/A - no benchmarked path.\n"
+        "Refs: docs/test_infrastructure.md\n\n"
+        f"{VALID_SEAT_TRAILER}\n\n{REQUIRED_AUTHORSHIP_LINE}\n"
+    )
+    assert _check_commit_trailers._vendor_attribution_violations(message) == []

@@ -144,6 +144,14 @@ Every commit must include the repository authorship line enforced by
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)
 ```
 
+That line is the only attribution a commit carries. A commit message is a
+public surface, so the same checker rejects any additional trailer that
+attributes the work to a tool vendor or model identity — for example a
+`Co-Authored-By:` line naming an assistant, or a `<Vendor>-Session:` link.
+Several assistant tools append such trailers automatically; strip them before
+committing. The check runs at the `commit-msg` stage, so it refuses the message
+rather than leaving the commit to be corrected afterwards.
+
 ## Pull Requests
 
 - Keep the PR scoped to one logical change.
