@@ -15,7 +15,7 @@ from scpn_quantum_control.qec import (
 )
 
 
-def test_analyse_biological_surface_code_metrics_and_domains():
+def test_analyse_biological_surface_code_metrics_and_domains() -> None:
     """Diagnostics returns stable topology and domain-coupling metrics."""
     K = np.array(
         [
@@ -46,7 +46,7 @@ def test_analyse_biological_surface_code_metrics_and_domains():
     assert report.metadata["campaign"] == "bio-qec"
 
 
-def test_analyse_export_through_qec_namespace():
+def test_analyse_export_through_qec_namespace() -> None:
     """Diagnostics API must be exported through qec namespace."""
     K = np.array([[0.0, 1.0], [1.0, 0.0]], dtype=float)
     code = BiologicalSurfaceCode(K, threshold=1e-8)

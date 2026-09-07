@@ -9,6 +9,7 @@
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.qec.biological_surface_code import (
     BiologicalMWPMDecoder,
@@ -16,7 +17,7 @@ from scpn_quantum_control.qec.biological_surface_code import (
 )
 
 
-def test_biological_surface_code_commutation():
+def test_biological_surface_code_commutation() -> None:
     # Simple 4-node ring graph
     K = np.array(
         [[0.0, 1.0, 0.0, 1.0], [1.0, 0.0, 1.0, 0.0], [0.0, 1.0, 0.0, 1.0], [1.0, 0.0, 1.0, 0.0]]
@@ -30,7 +31,7 @@ def test_biological_surface_code_commutation():
     assert bool(code.verify_css_commutation()) is True
 
 
-def test_biological_mwpm_decoder_single_error():
+def test_biological_mwpm_decoder_single_error() -> None:
     # 4-node string (line graph)
     K = np.array(
         [[0.0, 1.0, 0.0, 0.0], [1.0, 0.0, 1.0, 0.0], [0.0, 1.0, 0.0, 1.0], [0.0, 0.0, 1.0, 0.0]]
@@ -53,7 +54,7 @@ def test_biological_mwpm_decoder_single_error():
     assert np.array_equal(correction, err_z)
 
 
-def test_mwpm_decoder_no_defects():
+def test_mwpm_decoder_no_defects() -> None:
     """Empty syndrome → zero correction."""
     K = np.array(
         [[0.0, 1.0, 0.0, 0.0], [1.0, 0.0, 1.0, 0.0], [0.0, 1.0, 0.0, 1.0], [0.0, 0.0, 1.0, 0.0]]
@@ -65,7 +66,7 @@ def test_mwpm_decoder_no_defects():
     assert np.all(correction == 0)
 
 
-def test_mwpm_decoder_odd_defects():
+def test_mwpm_decoder_odd_defects() -> None:
     """Odd syndrome parity is invalid without an explicit boundary model."""
     K = np.array(
         [[0.0, 1.0, 0.0, 0.0], [1.0, 0.0, 1.0, 0.0], [0.0, 1.0, 0.0, 1.0], [0.0, 0.0, 1.0, 0.0]]
@@ -81,7 +82,7 @@ def test_mwpm_decoder_odd_defects():
         decoder.decode_z_errors(syn_x)
 
 
-def test_mwpm_decoder_disconnected_nodes():
+def test_mwpm_decoder_disconnected_nodes() -> None:
     """Disconnected components must each have even syndrome parity."""
     # Block-diagonal coupling: nodes {0,1} coupled, nodes {2,3} coupled, no cross
     K = np.array(
@@ -97,7 +98,7 @@ def test_mwpm_decoder_disconnected_nodes():
         decoder.decode_z_errors(syn_x)
 
 
-def test_mwpm_decoder_rejects_malformed_syndrome():
+def test_mwpm_decoder_rejects_malformed_syndrome() -> None:
     """Decoder accepts only binary one-dimensional X-syndrome vectors."""
     K = np.array(
         [[0.0, 1.0, 0.0, 0.0], [1.0, 0.0, 1.0, 0.0], [0.0, 1.0, 0.0, 1.0], [0.0, 0.0, 1.0, 0.0]]
@@ -111,7 +112,7 @@ def test_mwpm_decoder_rejects_malformed_syndrome():
         decoder.decode_z_errors(np.array([0, 1, 2, 0], dtype=np.int8))
 
 
-def test_correction_clears_syndrome():
+def test_correction_clears_syndrome() -> None:
     """Error + correction must zero the syndrome (mod 2)."""
     K = np.array([[0, 1, 0, 0], [1, 0, 1, 0], [0, 1, 0, 1], [0, 0, 1, 0]], dtype=float)
     code = BiologicalSurfaceCode(K)
@@ -125,7 +126,7 @@ def test_correction_clears_syndrome():
     assert np.all(residual_syn == 0)
 
 
-def test_complete_graph_css_commutation():
+def test_complete_graph_css_commutation() -> None:
     """Complete graph (all-to-all) must still satisfy CSS commutation."""
     n = 5
     K = np.ones((n, n)) - np.eye(n)
@@ -134,7 +135,7 @@ def test_complete_graph_css_commutation():
     assert code.num_data == n * (n - 1) // 2
 
 
-def test_two_error_correction():
+def test_two_error_correction() -> None:
     """Decoder handles two non-adjacent errors."""
     K = np.array(
         [
@@ -158,7 +159,7 @@ def test_two_error_correction():
     assert np.all(residual == 0)
 
 
-def test_six_node_ring():
+def test_six_node_ring() -> None:
     """6-node ring has 6 edges, 6 X-stabilisers, and >= 1 Z-stabiliser."""
     n = 6
     K = np.zeros((n, n))
@@ -172,14 +173,14 @@ def test_six_node_ring():
     assert code.verify_css_commutation()
 
 
-def test_threshold_filters_weak_edges():
+def test_threshold_filters_weak_edges() -> None:
     """Edges below threshold are excluded from the code."""
     K = np.array([[0, 1.0, 0.001], [1.0, 0, 0.5], [0.001, 0.5, 0]])
     code = BiologicalSurfaceCode(K, threshold=0.01)
     assert code.num_data == 2  # Only (0,1) and (1,2)
 
 
-def test_tree_graph_zero_z_stabs():
+def test_tree_graph_zero_z_stabs() -> None:
     """Cover line 78: tree graph has no cycles → num_z_stabs = 0.
 
     Chain graph (no cycles) → cycle_basis empty → Hz has 0 rows.
@@ -194,7 +195,7 @@ def test_tree_graph_zero_z_stabs():
     assert code.verify_css_commutation() is True
 
 
-def test_no_edges_raises():
+def test_no_edges_raises() -> None:
     """Zero-edge coupling matrix must raise ValueError."""
     K = np.zeros((3, 3))
     with pytest.raises(ValueError, match="no edges"):
@@ -212,14 +213,18 @@ def test_no_edges_raises():
         (np.array([[0.0, 1.0], [1.0, 0.0]]), "threshold"),
     ],
 )
-def test_surface_code_rejects_malformed_coupling_matrix(K, match):
+def test_surface_code_rejects_malformed_coupling_matrix(
+    K: NDArray[np.float64], match: str
+) -> None:
     """Biological graph-code construction requires a valid undirected K matrix."""
     threshold = float("nan") if match == "threshold" else 1e-5
     with pytest.raises(ValueError, match=match):
         BiologicalSurfaceCode(K, threshold=threshold)
 
 
-def test_decoder_raises_when_perfect_matching_is_unavailable(monkeypatch):
+def test_decoder_raises_when_perfect_matching_is_unavailable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """Decoder must reject incomplete MWPM results for non-empty defect sets."""
     K = np.array([[0, 1, 0], [1, 0, 1], [0, 1, 0]], dtype=float)
     code = BiologicalSurfaceCode(K)
@@ -235,7 +240,7 @@ def test_decoder_raises_when_perfect_matching_is_unavailable(monkeypatch):
         decoder.decode_z_errors(syn_x)
 
 
-def test_qec_namespace_exports_biological_surface_code():
+def test_qec_namespace_exports_biological_surface_code() -> None:
     """Biological surface-code APIs must be available through qec package exports."""
     from scpn_quantum_control.qec import BiologicalMWPMDecoder as ExportedDecoder
     from scpn_quantum_control.qec import BiologicalSurfaceCode as ExportedCode
@@ -244,7 +249,7 @@ def test_qec_namespace_exports_biological_surface_code():
     assert ExportedDecoder is BiologicalMWPMDecoder
 
 
-def test_code_summary_contains_structural_parameters():
+def test_code_summary_contains_structural_parameters() -> None:
     """Code summary must expose stable structural metadata."""
     K = np.array(
         [[0.0, 1.0, 0.0, 1.0], [1.0, 0.0, 1.0, 0.0], [0.0, 1.0, 0.0, 1.0], [1.0, 0.0, 1.0, 0.0]]
@@ -258,7 +263,7 @@ def test_code_summary_contains_structural_parameters():
     assert summary["css_commutes"] is True
 
 
-def test_decode_and_apply_clears_residual_syndrome():
+def test_decode_and_apply_clears_residual_syndrome() -> None:
     """decode_and_apply must return residual with zero X-syndrome."""
     K = np.array([[0, 1, 0, 0], [1, 0, 1, 0], [0, 1, 0, 1], [0, 0, 1, 0]], dtype=float)
     code = BiologicalSurfaceCode(K)
@@ -271,7 +276,7 @@ def test_decode_and_apply_clears_residual_syndrome():
     assert np.all(residual_syndrome == 0)
 
 
-def test_error_helpers_reject_non_binary_inputs():
+def test_error_helpers_reject_non_binary_inputs() -> None:
     """Syndrome and correction helpers require binary vectors."""
     K = np.array([[0, 1], [1, 0]], dtype=float)
     code = BiologicalSurfaceCode(K)
@@ -281,7 +286,7 @@ def test_error_helpers_reject_non_binary_inputs():
         code.apply_z_correction(np.array([0], dtype=np.int8), np.array([2], dtype=np.int8))
 
 
-def test_rust_biological_decoder_matches_python_fallback():
+def test_rust_biological_decoder_matches_python_fallback() -> None:
     """Rust biological decoder must preserve correction parity with Python path."""
     rust_engine = pytest.importorskip("scpn_quantum_engine")
     if not hasattr(rust_engine, "biological_decode_z_errors"):
@@ -322,7 +327,7 @@ def test_rust_biological_decoder_matches_python_fallback():
     )
 
 
-def test_rust_limit_falls_back_to_python_decoder():
+def test_rust_limit_falls_back_to_python_decoder() -> None:
     """Syndromes above Rust exact-MWPM defect limit must decode via Python path."""
     rust_engine = pytest.importorskip("scpn_quantum_engine")
     if not hasattr(rust_engine, "biological_decode_z_errors"):
@@ -350,7 +355,7 @@ def test_rust_limit_falls_back_to_python_decoder():
     assert decoder.last_decoder_backend == "python_fallback_high_defect"
 
 
-def test_decoder_backend_marker_updates():
+def test_decoder_backend_marker_updates() -> None:
     """Decoder exposes backend marker for campaign-level observability."""
     K = np.array(
         [[0.0, 1.0, 0.0, 0.0], [1.0, 0.0, 1.0, 0.0], [0.0, 1.0, 0.0, 1.0], [0.0, 0.0, 1.0, 0.0]]

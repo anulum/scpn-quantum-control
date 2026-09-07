@@ -15,7 +15,7 @@ from scpn_quantum_control.qec import (
 )
 
 
-def test_run_biological_qec_execution_success_payload():
+def test_run_biological_qec_execution_success_payload() -> None:
     """E2E biological pipeline returns successful decode and serialisable payload."""
     K = np.array(
         [[0.0, 1.0, 0.0, 0.0], [1.0, 0.0, 1.0, 0.0], [0.0, 1.0, 0.0, 1.0], [0.0, 0.0, 1.0, 0.0]],
@@ -45,7 +45,7 @@ def test_run_biological_qec_execution_success_payload():
     }
 
 
-def test_run_biological_qec_batch_execution_aggregate_payload():
+def test_run_biological_qec_batch_execution_aggregate_payload() -> None:
     """Batch biological pipeline returns aggregate campaign-level metrics."""
     K = np.array(
         [[0.0, 1.0, 0.0, 0.0], [1.0, 0.0, 1.0, 0.0], [0.0, 1.0, 0.0, 1.0], [0.0, 0.0, 1.0, 0.0]],

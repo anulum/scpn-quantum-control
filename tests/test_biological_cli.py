@@ -10,13 +10,14 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import numpy as np
 
 from scpn_quantum_control.qec.biological_cli import main
 
 
-def test_biological_qec_cli_generates_json_report(tmp_path):
+def test_biological_qec_cli_generates_json_report(tmp_path: Path) -> None:
     """CLI emits a complete biological QEC execution payload."""
     k_path = tmp_path / "K.npy"
     z_path = tmp_path / "z.npy"
@@ -56,7 +57,7 @@ def test_biological_qec_cli_generates_json_report(tmp_path):
     assert payload["diagnostics"]["n_nodes"] == 4
 
 
-def test_biological_qec_cli_generates_batch_report(tmp_path):
+def test_biological_qec_cli_generates_batch_report(tmp_path: Path) -> None:
     """CLI accepts 2D z-error matrix and emits aggregate batch payload."""
     k_path = tmp_path / "K.npy"
     z_path = tmp_path / "z_batch.npy"
