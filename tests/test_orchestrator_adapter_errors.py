@@ -11,31 +11,33 @@ field resolution, payload conversion.
 
 from __future__ import annotations
 
+from typing import Any
+
 import pytest
 
 from scpn_quantum_control.bridge.orchestrator_adapter import PhaseOrchestratorAdapter
 
 
 class TestBuildKnmErrors:
-    def test_empty_layers_raises(self):
+    def test_empty_layers_raises(self) -> None:
         with pytest.raises(ValueError, match="at least one oscillator"):
             PhaseOrchestratorAdapter.build_knm_from_binding_spec({"layers": []})
 
-    def test_none_layers_raises(self):
+    def test_none_layers_raises(self) -> None:
         with pytest.raises((ValueError, TypeError, KeyError)):
             PhaseOrchestratorAdapter.build_knm_from_binding_spec({"layers": None})
 
-    def test_missing_layers_raises(self):
+    def test_missing_layers_raises(self) -> None:
         with pytest.raises((ValueError, TypeError, KeyError, AttributeError)):
             PhaseOrchestratorAdapter.build_knm_from_binding_spec({})
 
 
 class TestBuildOmegaErrors:
-    def test_empty_layers_raises(self):
+    def test_empty_layers_raises(self) -> None:
         with pytest.raises(ValueError, match="at least one oscillator"):
             PhaseOrchestratorAdapter.build_omega_from_binding_spec({"layers": []})
 
-    def test_none_layers_raises(self):
+    def test_none_layers_raises(self) -> None:
         with pytest.raises((ValueError, TypeError, KeyError)):
             PhaseOrchestratorAdapter.build_omega_from_binding_spec({"layers": None})
 
@@ -43,14 +45,14 @@ class TestBuildOmegaErrors:
 class TestFieldResolution:
     """Test _read_field helper via public API behaviour."""
 
-    def test_layers_as_list(self):
+    def test_layers_as_list(self) -> None:
         """Layers field accessed correctly when it's a list."""
         # Empty oscillator_ids means zero oscillators
-        spec = {"layers": [{"oscillator_ids": []}]}
+        spec: dict[str, Any] = {"layers": [{"oscillator_ids": []}]}
         with pytest.raises(ValueError, match="at least one oscillator"):
             PhaseOrchestratorAdapter.build_knm_from_binding_spec(spec)
 
-    def test_layers_no_oscillator_ids_raises(self):
+    def test_layers_no_oscillator_ids_raises(self) -> None:
         """Layer without oscillator_ids → 0 oscillators → error."""
         spec = {"layers": [{"name": "L0"}]}
         with pytest.raises(ValueError, match="at least one oscillator"):
@@ -58,7 +60,7 @@ class TestFieldResolution:
 
 
 class TestStaticMethods:
-    def test_adapter_methods_are_static(self):
+    def test_adapter_methods_are_static(self) -> None:
         assert isinstance(
             PhaseOrchestratorAdapter.__dict__["build_knm_from_binding_spec"],
             staticmethod,
@@ -68,11 +70,11 @@ class TestStaticMethods:
             staticmethod,
         )
 
-    def test_adapter_has_from_orchestrator_state(self):
+    def test_adapter_has_from_orchestrator_state(self) -> None:
         assert hasattr(PhaseOrchestratorAdapter, "from_orchestrator_state")
         assert callable(PhaseOrchestratorAdapter.from_orchestrator_state)
 
-    def test_adapter_has_to_orchestrator_payload(self):
+    def test_adapter_has_to_orchestrator_payload(self) -> None:
         assert hasattr(PhaseOrchestratorAdapter, "to_orchestrator_payload")
         assert callable(PhaseOrchestratorAdapter.to_orchestrator_payload)
 
@@ -83,7 +85,7 @@ class TestStaticMethods:
 
 
 class TestPayloadErrors:
-    def test_missing_regime_id_raises(self):
+    def test_missing_regime_id_raises(self) -> None:
         payload = {
             "layers": [{"R": 0.5, "psi": 0.0, "lock_signatures": {}}],
             "cross_layer_alignment": [[1.0]],
@@ -92,7 +94,7 @@ class TestPayloadErrors:
         with pytest.raises((KeyError, ValueError)):
             PhaseOrchestratorAdapter.from_orchestrator_state(payload)
 
-    def test_missing_stability_raises(self):
+    def test_missing_stability_raises(self) -> None:
         payload = {
             "layers": [{"R": 0.5, "psi": 0.0}],
             "cross_layer_alignment": [[1.0]],
@@ -101,7 +103,7 @@ class TestPayloadErrors:
         with pytest.raises((KeyError, ValueError)):
             PhaseOrchestratorAdapter.from_orchestrator_state(payload)
 
-    def test_empty_layers_valid(self):
+    def test_empty_layers_valid(self) -> None:
         """Empty layers list should fail at alignment shape validation."""
         payload = {
             "layers": [],
@@ -119,7 +121,7 @@ class TestPayloadErrors:
 
 
 class TestErrorPipeline:
-    def test_pipeline_binding_spec_validation(self):
+    def test_pipeline_binding_spec_validation(self) -> None:
         """Full pipeline: invalid binding spec → clear error → no crash.
         Verifies error handling is wired, not silently passing garbage.
         """

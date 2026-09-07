@@ -9,13 +9,15 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pytest
 
 from scpn_quantum_control.bridge.orchestrator_adapter import PhaseOrchestratorAdapter
 
 
-def _make_state(n_layers=2, regime="stable"):
+def _make_state(n_layers: int = 2, regime: str = "stable") -> dict[str, Any]:
     """Minimal orchestrator state dict."""
     return {
         "layers": [
@@ -32,20 +34,20 @@ def _make_state(n_layers=2, regime="stable"):
     }
 
 
-def test_read_field_raises_on_missing_required():
+def test_read_field_raises_on_missing_required() -> None:
     from scpn_quantum_control.bridge.orchestrator_adapter import _read_field
 
     with pytest.raises(KeyError, match="Missing required field"):
         _read_field({"a": 1}, "x", "y")
 
 
-def test_read_field_returns_default():
+def test_read_field_returns_default() -> None:
     from scpn_quantum_control.bridge.orchestrator_adapter import _read_field
 
     assert _read_field({"a": 1}, "x", default=42) == 42
 
 
-def test_read_field_getattr_path():
+def test_read_field_getattr_path() -> None:
     from scpn_quantum_control.bridge.orchestrator_adapter import _read_field
 
     class Obj:
@@ -54,13 +56,13 @@ def test_read_field_getattr_path():
     assert _read_field(Obj(), "foo") == 99
 
 
-def test_infer_layer_pair_non_digit_key():
+def test_infer_layer_pair_non_digit_key() -> None:
     from scpn_quantum_control.bridge.orchestrator_adapter import _infer_layer_pair
 
     assert _infer_layer_pair("lock_a", 5) == (5, 5)
 
 
-def test_to_orchestrator_payload():
+def test_to_orchestrator_payload() -> None:
     state = _make_state()
     artifact = PhaseOrchestratorAdapter.from_orchestrator_state(state)
     payload = PhaseOrchestratorAdapter.to_orchestrator_payload(artifact)
@@ -68,7 +70,7 @@ def test_to_orchestrator_payload():
     assert "regime_id" in payload
 
 
-def test_build_knm_zero_diagonal():
+def test_build_knm_zero_diagonal() -> None:
     binding = {
         "layers": [
             {"oscillator_ids": [0, 1], "natural_frequency": 1.0},
@@ -81,27 +83,27 @@ def test_build_knm_zero_diagonal():
     assert knm.shape == (4, 4)
 
 
-def test_from_orchestrator_state_roundtrip():
+def test_from_orchestrator_state_roundtrip() -> None:
     state = _make_state(3, "NOMINAL")
     artifact = PhaseOrchestratorAdapter.from_orchestrator_state(state)
     assert artifact.regime_id == "NOMINAL"
     assert len(artifact.layers) == 3
 
 
-def test_read_field_first_match():
+def test_read_field_first_match() -> None:
     from scpn_quantum_control.bridge.orchestrator_adapter import _read_field
 
     d = {"a": 1, "b": 2}
     assert _read_field(d, "a", "b") == 1
 
 
-def test_infer_layer_pair_digit_key():
+def test_infer_layer_pair_digit_key() -> None:
     from scpn_quantum_control.bridge.orchestrator_adapter import _infer_layer_pair
 
     assert _infer_layer_pair("3_7", 0) == (3, 7)
 
 
-def test_telemetry_output():
+def test_telemetry_output() -> None:
     state = _make_state(2, "OK")
     artifact = PhaseOrchestratorAdapter.from_orchestrator_state(state)
     telemetry = PhaseOrchestratorAdapter.to_scpn_control_telemetry(artifact)
@@ -109,7 +111,7 @@ def test_telemetry_output():
     assert len(telemetry["layers"]) == 2
 
 
-def test_pipeline_adapter_roundtrip():
+def test_pipeline_adapter_roundtrip() -> None:
     """Full pipeline: dict → adapter → artifact → telemetry → wired."""
     import time
 
