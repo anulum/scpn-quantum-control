@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, NoReturn
+
 import numpy as np
 import pytest
 
@@ -21,6 +23,9 @@ from scpn_quantum_control.analysis.pairing_correlator import (
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16
 from scpn_quantum_control.dense_budget import DenseAllocationError
 
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+
 
 def _ring(n: int) -> np.ndarray:
     T = np.zeros((n, n))
@@ -31,12 +36,14 @@ def _ring(n: int) -> np.ndarray:
 
 
 class TestPairingMap:
-    def test_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+    def test_rejects_dense_budget_before_hamiltonian_allocation(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         n = 10
         T = _ring(n)
         omega = OMEGA_N_16[:n]
 
-        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+        def fail_if_dense_hamiltonian_is_requested(*args: object, **kwargs: object) -> NoReturn:  # noqa: ARG001
             raise AssertionError("dense Hamiltonian allocation happened before budget gate")
 
         monkeypatch.setattr(
@@ -46,12 +53,14 @@ class TestPairingMap:
         with pytest.raises(DenseAllocationError, match="pairing dense"):
             pairing_map(omega, T, K_base=1.0, max_dense_gib=1e-12)
 
-    def test_passes_dense_budget_to_bridge(self, monkeypatch):
+    def test_passes_dense_budget_to_bridge(self, monkeypatch: pytest.MonkeyPatch) -> None:
         T = _ring(2)
         omega = OMEGA_N_16[:2]
         seen_budgets: list[float | None] = []
 
-        def fake_dense_matrix(K_arg, omega_arg, **kwargs):  # noqa: ARG001
+        def fake_dense_matrix(
+            K_arg: NDArray[np.float64], omega_arg: NDArray[np.float64], **kwargs: float | None
+        ) -> NDArray[np.complex128]:  # noqa: ARG001
             seen_budgets.append(kwargs.get("max_dense_gib"))
             return np.zeros((4, 4), dtype=complex)
 
@@ -61,7 +70,7 @@ class TestPairingMap:
 
         assert seen_budgets == [0.25]
 
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         n = 3
         T = _ring(n)
         omega = OMEGA_N_16[:n]
@@ -69,7 +78,7 @@ class TestPairingMap:
         assert isinstance(result, PairingResult)
         assert result.pairing_matrix.shape == (3, 3)
 
-    def test_pairing_bounded(self):
+    def test_pairing_bounded(self) -> None:
         """Pairing magnitude should be ≤ 0.5 (max for singlet, spin-1/2)."""
         n = 3
         T = _ring(n)
@@ -77,7 +86,7 @@ class TestPairingMap:
         result = pairing_map(omega, T, K_base=3.0, delta=0.5)
         assert result.max_pairing <= 0.5 + 1e-6
 
-    def test_pairing_changes_with_delta(self):
+    def test_pairing_changes_with_delta(self) -> None:
         """Pairing should differ between XY (Δ=0) and Heisenberg (Δ=1)."""
         n = 3
         T = _ring(n)
@@ -89,7 +98,7 @@ class TestPairingMap:
             np.abs(p_heis.pairing_matrix),
         )
 
-    def test_hermitian_conjugate(self):
+    def test_hermitian_conjugate(self) -> None:
         """⟨S_i⁺ S_j⁻⟩ = ⟨S_j⁺ S_i⁻⟩*."""
         n = 3
         T = _ring(n)
@@ -100,7 +109,7 @@ class TestPairingMap:
             for j in range(i + 1, n):
                 assert abs(P[i, j] - P[j, i].conjugate()) < 1e-10
 
-    def test_4qubit(self):
+    def test_4qubit(self) -> None:
         n = 4
         T = _ring(n)
         omega = OMEGA_N_16[:n]
@@ -110,21 +119,23 @@ class TestPairingMap:
 
 
 class TestPairingVsAnisotropy:
-    def test_propagates_dense_budget_to_each_delta(self, monkeypatch):
+    def test_propagates_dense_budget_to_each_delta(self, monkeypatch: pytest.MonkeyPatch) -> None:
         T = _ring(2)
         omega = OMEGA_N_16[:2]
         seen: list[float | None] = []
 
         def fake_pairing_map(
-            omega_arg,  # noqa: ARG001
-            K_topology_arg,  # noqa: ARG001
-            K_base,
-            delta=0.0,
+            omega_arg: NDArray[np.float64],  # noqa: ARG001
+            K_topology_arg: NDArray[np.float64],  # noqa: ARG001
+            K_base: float,
+            delta: float = 0.0,
             *,
-            max_dense_gib=None,
-        ):
+            max_dense_gib: float | None = None,
+        ) -> PairingResult:
             seen.append(max_dense_gib)
-            return PairingResult(np.zeros((2, 2)), 0.0, 0.0, 0.0, 2, delta, K_base)
+            return PairingResult(
+                np.zeros((2, 2), dtype=np.complex128), 0.0, 0.0, 0.0, 2, delta, K_base
+            )
 
         monkeypatch.setattr(pairing_module, "pairing_map", fake_pairing_map)
 
@@ -138,7 +149,7 @@ class TestPairingVsAnisotropy:
 
         assert seen == [0.5, 0.5, 0.5]
 
-    def test_returns_dict(self):
+    def test_returns_dict(self) -> None:
         n = 3
         T = _ring(n)
         omega = OMEGA_N_16[:n]
@@ -147,7 +158,7 @@ class TestPairingVsAnisotropy:
         assert "max_pairing" in result
         assert len(result["delta"]) == 3
 
-    def test_all_values_finite(self):
+    def test_all_values_finite(self) -> None:
         n = 3
         T = _ring(n)
         omega = OMEGA_N_16[:n]
@@ -156,21 +167,21 @@ class TestPairingVsAnisotropy:
             assert all(np.isfinite(v) for v in result[key])
 
 
-def test_pairing_map_2q():
+def test_pairing_map_2q() -> None:
     T = _ring(2)
     omega = OMEGA_N_16[:2]
     result = pairing_map(omega, T, K_base=2.0)
     assert result.n_qubits == 2
 
 
-def test_pairing_map_finite():
+def test_pairing_map_finite() -> None:
     T = _ring(3)
     omega = OMEGA_N_16[:3]
     result = pairing_map(omega, T, K_base=2.0)
     assert np.all(np.isfinite(result.pairing_matrix))
 
 
-def test_pairing_vs_anisotropy_length():
+def test_pairing_vs_anisotropy_length() -> None:
     T = _ring(3)
     omega = OMEGA_N_16[:3]
     deltas = np.array([0.0, 0.5, 1.0, 1.5])
@@ -179,7 +190,7 @@ def test_pairing_vs_anisotropy_length():
     assert len(result["max_pairing"]) == 4
 
 
-def test_pairing_map_4q():
+def test_pairing_map_4q() -> None:
     T = _ring(4)
     omega = OMEGA_N_16[:4]
     result = pairing_map(omega, T, K_base=1.5)
@@ -192,14 +203,14 @@ def test_pairing_map_4q():
 
 
 class TestPairingCorrelatorInternal:
-    def test_product_state_low_pairing(self):
+    def test_product_state_low_pairing(self) -> None:
         from scpn_quantum_control.analysis.pairing_correlator import _pairing_correlator
 
         psi = np.array([1, 0, 0, 0], dtype=complex)  # |00⟩
         c = _pairing_correlator(psi, 0, 1, 2)
         assert abs(c) < 0.1
 
-    def test_bell_state_nonzero(self):
+    def test_bell_state_nonzero(self) -> None:
         from scpn_quantum_control.analysis.pairing_correlator import _pairing_correlator
 
         psi = np.array([0, 1, 1, 0], dtype=complex) / np.sqrt(2)  # |01⟩+|10⟩
@@ -208,13 +219,13 @@ class TestPairingCorrelatorInternal:
 
 
 class TestPairingVsAnisotropyDefaults:
-    def test_default_delta_range(self):
+    def test_default_delta_range(self) -> None:
         T = _ring(2)
         omega = OMEGA_N_16[:2]
         result = pairing_vs_anisotropy(omega, T, K_base=2.0)
         assert len(result["delta"]) == 6  # default linspace 0-1, 6 pts
 
-    def test_topology_correlation_bounded(self):
+    def test_topology_correlation_bounded(self) -> None:
         T = _ring(3)
         omega = OMEGA_N_16[:3]
         result = pairing_vs_anisotropy(omega, T, K_base=2.0, delta_range=np.array([0.5]))
@@ -222,7 +233,7 @@ class TestPairingVsAnisotropyDefaults:
 
 
 class TestPairingZeroCoupling:
-    def test_zero_coupling_low_pairing(self):
+    def test_zero_coupling_low_pairing(self) -> None:
         K_zero = np.zeros((3, 3))
         omega = OMEGA_N_16[:3]
         result = pairing_map(omega, K_zero, K_base=0.0)

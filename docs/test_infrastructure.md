@@ -99,16 +99,17 @@ reported 6,301 errors in 388 of 968 tracked Python test files; 5,076 were
 `no-untyped-def`. Adding the whole directory to one gate would therefore mix
 mechanical annotations with intentional invalid-input tests and hide ownership.
 
-`tools/test_typing_policy.json` is the machine-readable policy. The 697-file enforced cohort set
+`tools/test_typing_policy.json` is the machine-readable policy. The 703-file enforced cohort set
 consists of the 27-file `repository_policy` cohort covering coverage,
 coverage debt, licence, release, generated-surface, commit, secret, TODO, version,
 branch, module-responsibility, CI/pre-push, local preflight, and built-wheel
 publication gate tests, the 3-file `claim_release_contracts`
 entanglement-sync scientific and evidence slice, which also holds the
-isolated-benchmark host-readiness gate, and the 100-file
+isolated-benchmark host-readiness gate, and the 103-file
 `hardware_provider_boundaries` cohort covering the provider adapters, HAL
-contract and conformance guards, approval, budget, attestation and result-pack
-tests, and the 567-file `scientific_runtime_contracts` cohort holding the whole differentiable and phase
+contract and conformance guards, the Cirq adapter, the device noise model, the
+UltraScale HLS emission surface, approval, budget, attestation and result-pack
+tests, and the 570-file `scientific_runtime_contracts` cohort holding the whole differentiable and phase
 families, the shared `tests/conftest.py` fixture and hypothesis-strategy module,
 plus the smaller runtime-contract groups, which are promoted together
 because none of them reaches a sliceable size alone — every file of

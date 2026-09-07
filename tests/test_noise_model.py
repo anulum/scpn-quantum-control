@@ -7,6 +7,10 @@
 # SCPN Quantum Control — Tests for Noise Model
 """Tests for noisy simulator support — multi-angle coverage."""
 
+from __future__ import annotations
+
+from pathlib import Path
+
 import pytest
 from qiskit import QuantumCircuit
 from qiskit_aer.noise import NoiseModel
@@ -26,7 +30,7 @@ from scpn_quantum_control.hardware.runner import HardwareRunner
 
 
 @pytest.fixture
-def noisy_runner(tmp_path):
+def noisy_runner(tmp_path: Path) -> HardwareRunner:
     nm = heron_r2_noise_model()
     runner = HardwareRunner(
         use_simulator=True, noise_model=nm, results_dir=str(tmp_path / "results")
@@ -36,7 +40,7 @@ def noisy_runner(tmp_path):
 
 
 @pytest.fixture
-def clean_runner(tmp_path):
+def clean_runner(tmp_path: Path) -> HardwareRunner:
     runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "results"))
     runner.connect()
     return runner
@@ -48,22 +52,22 @@ def clean_runner(tmp_path):
 
 
 class TestNoiseModelConstruction:
-    def test_returns_noise_model(self):
+    def test_returns_noise_model(self) -> None:
         nm = heron_r2_noise_model()
         assert isinstance(nm, NoiseModel)
 
-    def test_default_params_match_constants(self):
+    def test_default_params_match_constants(self) -> None:
         # ibm_fez 2026-03-29 median snapshot (retrieved read-only 2026-07-18)
         assert T1_US == 146.7
         assert T2_US == 109.3
         assert CZ_ERROR_RATE == 0.00262
         assert READOUT_ERROR_RATE == 0.01508
 
-    def test_custom_params(self):
+    def test_custom_params(self) -> None:
         nm = heron_r2_noise_model(t1_us=100.0, t2_us=80.0, cz_error=0.02)
         assert isinstance(nm, NoiseModel)
 
-    def test_different_params_different_model(self):
+    def test_different_params_different_model(self) -> None:
         nm1 = heron_r2_noise_model(cz_error=0.001)
         nm2 = heron_r2_noise_model(cz_error=0.05)
         # Models should be structurally different (different error rates)
@@ -76,10 +80,10 @@ class TestNoiseModelConstruction:
 
 
 class TestNoisyRunner:
-    def test_connects(self, noisy_runner):
+    def test_connects(self, noisy_runner: HardwareRunner) -> None:
         assert noisy_runner.backend is not None
 
-    def test_transpile_works(self, noisy_runner):
+    def test_transpile_works(self, noisy_runner: HardwareRunner) -> None:
         qc = QuantumCircuit(2)
         qc.h(0)
         qc.cx(0, 1)
@@ -94,7 +98,7 @@ class TestNoisyRunner:
 
 
 class TestNoiseEffects:
-    def test_noisy_produces_error_events(self, noisy_runner):
+    def test_noisy_produces_error_events(self, noisy_runner: HardwareRunner) -> None:
         """GHZ on noisy sim should show non-ideal counts."""
         qc = QuantumCircuit(4)
         qc.h(0)
@@ -104,9 +108,12 @@ class TestNoiseEffects:
 
         results = noisy_runner.run_sampler(qc, shots=5000, name="ghz_noisy")
         counts = results[0].counts
+        assert counts is not None
         assert len(counts) > 2
 
-    def test_bell_pair_noisy_vs_noiseless(self, noisy_runner, clean_runner):
+    def test_bell_pair_noisy_vs_noiseless(
+        self, noisy_runner: HardwareRunner, clean_runner: HardwareRunner
+    ) -> None:
         """Noisy Bell pair should have lower fidelity than noiseless."""
         qc = QuantumCircuit(2)
         qc.h(0)
@@ -118,13 +125,17 @@ class TestNoiseEffects:
 
         noisy_counts = noisy_result[0].counts
         clean_counts = clean_result[0].counts
+        assert noisy_counts is not None
+        assert clean_counts is not None
 
         # Ideal Bell: 50% "00" + 50% "11". Noise introduces "01", "10".
         noisy_non_ideal = sum(v for k, v in noisy_counts.items() if k not in ("00", "11"))
         clean_non_ideal = sum(v for k, v in clean_counts.items() if k not in ("00", "11"))
         assert noisy_non_ideal > clean_non_ideal
 
-    def test_noisy_R_lower_than_noiseless(self, noisy_runner, clean_runner):
+    def test_noisy_R_lower_than_noiseless(
+        self, noisy_runner: HardwareRunner, clean_runner: HardwareRunner
+    ) -> None:
         """Noisy order parameter should be worse than noiseless."""
         from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
         from scpn_quantum_control.hardware.experiments import (
@@ -154,7 +165,7 @@ class TestNoiseEffects:
 
 
 class TestNoisePhysics:
-    def test_higher_error_more_noise(self):
+    def test_higher_error_more_noise(self) -> None:
         """Higher CZ error rate → more non-ideal counts in Bell pair."""
         from scpn_quantum_control.hardware.noise_model import heron_r2_noise_model
 
@@ -174,8 +185,12 @@ class TestNoisePhysics:
         r_low = runner_low.run_sampler(qc, shots=5000, name="low")
         r_high = runner_high.run_sampler(qc, shots=5000, name="high")
 
-        err_low = sum(v for k, v in r_low[0].counts.items() if k not in ("00", "11"))
-        err_high = sum(v for k, v in r_high[0].counts.items() if k not in ("00", "11"))
+        counts_low = r_low[0].counts
+        counts_high = r_high[0].counts
+        assert counts_low is not None
+        assert counts_high is not None
+        err_low = sum(v for k, v in counts_low.items() if k not in ("00", "11"))
+        err_high = sum(v for k, v in counts_high.items() if k not in ("00", "11"))
         assert err_high > err_low
 
 
@@ -185,7 +200,9 @@ class TestNoisePhysics:
 
 
 class TestNoisePipeline:
-    def test_pipeline_knm_noise_degradation(self, noisy_runner, clean_runner):
+    def test_pipeline_knm_noise_degradation(
+        self, noisy_runner: HardwareRunner, clean_runner: HardwareRunner
+    ) -> None:
         """Full pipeline: Knm → Trotter → noisy/clean → R comparison.
         Verifies noise model is wired and degrades observables as expected.
         """

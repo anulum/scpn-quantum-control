@@ -19,6 +19,7 @@ import re
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -43,31 +44,30 @@ from scpn_quantum_control.phase.pulse_shaping import build_hypergeometric_pulse
 _GPP = shutil.which("g++")
 
 try:
-    import scpn_quantum_engine as _engine
+    import scpn_quantum_engine
 
-    _HAS_RUST = hasattr(_engine, "quantise_q_format")
+    _HAS_RUST = hasattr(scpn_quantum_engine, "quantise_q_format")
 except ImportError:  # pragma: no cover - engine optional
-    _engine = None
     _HAS_RUST = False
 
 
 # --------------------------------------------------------------------------- #
 # Q-format quantisation
 # --------------------------------------------------------------------------- #
-def test_quantise_known_vectors():
+def test_quantise_known_vectors() -> None:
     """Quantize representative values with saturation and fixed-point scaling."""
     # Q7.8: scale 256, range [-32768, 32767]; round half toward +inf, saturate.
     codes = hls._python_quantise([0.0, 1.0, -1.0, 0.5, -0.5, 200.0, -200.0], 8, 16)
     assert codes == [0, 256, -256, 128, -128, 32767, -32768]
 
 
-def test_quantise_round_half_toward_plus_infinity():
+def test_quantise_round_half_toward_plus_infinity() -> None:
     """Round exact half steps toward positive infinity."""
     # 0.5 LSB ties resolve toward +inf in both paths.
     assert hls._python_quantise([1.5 / 256, -1.5 / 256], 8, 16) == [2, -1]
 
 
-def test_quantise_rejects_bad_widths():
+def test_quantise_rejects_bad_widths() -> None:
     """Reject invalid fixed-point width and fractional-bit combinations."""
     with pytest.raises(ValueError):
         hls._python_quantise([0.0], 8, 1)
@@ -85,19 +85,23 @@ def test_quantise_rejects_bad_widths():
     ),
     frac_bits=st.integers(min_value=1, max_value=14),
 )
-def test_quantise_rust_parity(values, frac_bits):
+def test_quantise_rust_parity(values: list[float], frac_bits: int) -> None:
     """Match the optional Rust quantizer on bounded input vectors."""
+    import scpn_quantum_engine as engine
+
     total_bits = 16
-    rust = list(_engine.quantise_q_format(values, frac_bits, total_bits))
+    rust = list(engine.quantise_q_format(values, frac_bits, total_bits))
     python = hls._python_quantise(values, frac_bits, total_bits)
     assert rust == python
 
 
 @pytest.mark.skipif(not _HAS_RUST, reason="scpn_quantum_engine quantise kernel not built")
-def test_quantise_rust_saturates_like_python():
+def test_quantise_rust_saturates_like_python() -> None:
     """Match Python saturation limits in the optional Rust path."""
+    import scpn_quantum_engine as engine
+
     big = [1e9, -1e9, 1e-9]
-    assert list(_engine.quantise_q_format(big, 8, 16)) == hls._python_quantise(big, 8, 16)
+    assert list(engine.quantise_q_format(big, 8, 16)) == hls._python_quantise(big, 8, 16)
 
 
 # --------------------------------------------------------------------------- #
@@ -109,7 +113,7 @@ def _demo_waveform(n: int = 96) -> np.ndarray:
     ).envelope
 
 
-def test_bundle_structure_and_rom():
+def test_bundle_structure_and_rom() -> None:
     """Generate a deterministic bundle with the expected ROM and interfaces."""
     wave = _demo_waveform(96)
     bundle = pulse_to_vivado_hls(wave, sample_rate_hz=125e6, target_sku="zu3eg")
@@ -127,14 +131,14 @@ def test_bundle_structure_and_rom():
     assert rom_codes == expected
 
 
-def test_bundle_zu9eg_part():
+def test_bundle_zu9eg_part() -> None:
     """Target the declared UltraScale+ ZU9EG part in generated scripts."""
     bundle = pulse_to_vivado_hls(_demo_waveform(32), 100e6, "zu9eg")
     assert "xczu9eg-ffvb1156-2-e" in bundle.cpp_source
     assert "xczu9eg-ffvb1156-2-e" in bundle.constraints_xdc
 
 
-def test_custom_fixed_point_and_fifo():
+def test_custom_fixed_point_and_fifo() -> None:
     """Carry custom fixed-point widths and FIFO depth into the bundle."""
     bundle = pulse_to_vivado_hls(
         _demo_waveform(16),
@@ -167,16 +171,18 @@ def test_custom_fixed_point_and_fifo():
         },
     ],
 )
-def test_pulse_to_vivado_hls_rejects_bad_input(kwargs):
+def test_pulse_to_vivado_hls_rejects_bad_input(kwargs: dict[str, object]) -> None:
     """Reject invalid waveform, width, clock, and FIFO settings."""
     with pytest.raises(ValueError):
-        pulse_to_vivado_hls(**kwargs)
+        # The rows mix waveforms, widths and clock rates; a **dict splat is
+        # matched against every keyword and cannot be narrowed per row.
+        pulse_to_vivado_hls(**kwargs)  # type: ignore[arg-type]
 
 
 # --------------------------------------------------------------------------- #
 # XDC constraints
 # --------------------------------------------------------------------------- #
-def test_xdc_clock_period_tracks_sample_rate():
+def test_xdc_clock_period_tracks_sample_rate() -> None:
     """Derive an XDC clock period from the requested sample rate."""
     bundle = pulse_to_vivado_hls(_demo_waveform(8), 125e6, "zu3eg")
     assert "create_clock -name ap_clk -period 8.000 [get_ports ap_clk]" in bundle.constraints_xdc
@@ -184,7 +190,7 @@ def test_xdc_clock_period_tracks_sample_rate():
     assert "1.25e+08 Hz" in bundle.constraints_xdc
 
 
-def test_xdc_caps_clock_at_fabric_floor():
+def test_xdc_caps_clock_at_fabric_floor() -> None:
     """Clamp generated timing constraints at the fabric clock floor."""
     # 1 GHz request exceeds the 250 MHz floor → pinned at 4.000 ns with a warning.
     bundle = pulse_to_vivado_hls(_demo_waveform(8), 1e9, "zu3eg")
@@ -195,7 +201,7 @@ def test_xdc_caps_clock_at_fabric_floor():
 # --------------------------------------------------------------------------- #
 # write_bundle
 # --------------------------------------------------------------------------- #
-def test_write_bundle(tmp_path):
+def test_write_bundle(tmp_path: Path) -> None:
     """Write every generated HLS bundle member to an isolated directory."""
     bundle = pulse_to_vivado_hls(_demo_waveform(16), 100e6, "zu3eg")
     write_bundle(bundle, tmp_path)
@@ -211,7 +217,7 @@ def test_write_bundle(tmp_path):
 # --------------------------------------------------------------------------- #
 # Versioned artifact manifest
 # --------------------------------------------------------------------------- #
-def test_emit_versioned_hls_artifact_manifest(tmp_path):
+def test_emit_versioned_hls_artifact_manifest(tmp_path: Path) -> None:
     """Emit and verify a digest-bound versioned HLS artifact manifest."""
     wave = _demo_waveform(24)
     manifest = emit_versioned_hls_artifact(
@@ -243,7 +249,7 @@ def test_emit_versioned_hls_artifact_manifest(tmp_path):
     assert verify_hls_artifact_manifest(artifact_dir / "manifest.json").valid
 
 
-def test_verify_hls_artifact_manifest_detects_tamper(tmp_path):
+def test_verify_hls_artifact_manifest_detects_tamper(tmp_path: Path) -> None:
     """Reject an artifact whose generated source no longer matches its digest."""
     emit_versioned_hls_artifact(
         _demo_waveform(16),
@@ -260,7 +266,7 @@ def test_verify_hls_artifact_manifest_detects_tamper(tmp_path):
     assert "byte_size mismatch for pulse_axi_stream.hpp" in result.errors
 
 
-def test_verify_hls_artifact_manifest_rejects_unreadable_payload(tmp_path):
+def test_verify_hls_artifact_manifest_rejects_unreadable_payload(tmp_path: Path) -> None:
     """Reject missing, malformed, and non-mapping manifest payloads."""
     missing = verify_hls_artifact_manifest(tmp_path / "missing.json")
     assert not missing.valid
@@ -279,7 +285,7 @@ def test_verify_hls_artifact_manifest_rejects_unreadable_payload(tmp_path):
     assert structured.errors == ("manifest must be a JSON object",)
 
 
-def test_verify_hls_artifact_manifest_rejects_bad_files_shape(tmp_path):
+def test_verify_hls_artifact_manifest_rejects_bad_files_shape(tmp_path: Path) -> None:
     """Reject a manifest whose file inventory is not a list."""
     manifest_path = tmp_path / "manifest.json"
     manifest_path.write_text(
@@ -297,7 +303,7 @@ def test_verify_hls_artifact_manifest_rejects_bad_files_shape(tmp_path):
     assert result.errors == ("files must be a list",)
 
 
-def test_verify_hls_artifact_manifest_reports_malformed_file_records(tmp_path):
+def test_verify_hls_artifact_manifest_reports_malformed_file_records(tmp_path: Path) -> None:
     """Report malformed file rows and unsafe or missing artifact members."""
     manifest_path = tmp_path / "manifest.json"
     manifest_path.write_text(
@@ -345,7 +351,9 @@ def test_verify_hls_artifact_manifest_reports_malformed_file_records(tmp_path):
 
 
 @pytest.mark.parametrize("artifact_id", ["", "../escape", "nested/path", "."])
-def test_emit_versioned_hls_artifact_rejects_unsafe_artifact_id(tmp_path, artifact_id):
+def test_emit_versioned_hls_artifact_rejects_unsafe_artifact_id(
+    tmp_path: Path, artifact_id: str
+) -> None:
     """Reject artifact identifiers that escape the requested output directory."""
     with pytest.raises(ValueError, match="artifact_id"):
         emit_versioned_hls_artifact(
@@ -360,8 +368,9 @@ def test_emit_versioned_hls_artifact_rejects_unsafe_artifact_id(tmp_path, artifa
 # Host-compiled bit-true AXI4-Stream co-simulation
 # --------------------------------------------------------------------------- #
 @pytest.mark.skipif(_GPP is None, reason="g++ not available for HLS co-simulation")
-def test_axi_stream_cosimulation(tmp_path):
+def test_axi_stream_cosimulation(tmp_path: Path) -> None:
     """Compile and run the generated AXI-stream testbench on the host."""
+    assert _GPP is not None  # guaranteed by the skipif above
     bundle = pulse_to_vivado_hls(_demo_waveform(128), 125e6, "zu3eg")
     write_bundle(bundle, tmp_path)
     binary = tmp_path / "tb"
@@ -393,7 +402,7 @@ def test_axi_stream_cosimulation(tmp_path):
     os.environ.get("MIF_FPGA_VIVADO_CI") != "1",
     reason="Vivado HLS synthesis gated behind MIF_FPGA_VIVADO_CI=1",
 )
-def test_vivado_hls_synthesis(tmp_path):  # pragma: no cover - hardware-gated CI only
+def test_vivado_hls_synthesis(tmp_path: Path) -> None:  # pragma: no cover - hardware-gated CI only
     """Synthesize the bundle only when an explicit Vivado HLS gate is enabled."""
     vitis = shutil.which("vitis_hls") or shutil.which("vivado_hls")
     if vitis is None:

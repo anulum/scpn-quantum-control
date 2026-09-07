@@ -13,6 +13,7 @@ import sys
 import types
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.bridge.snn_adapter import (
     ArcaneNeuronBridge,
@@ -22,44 +23,44 @@ from scpn_quantum_control.bridge.snn_adapter import (
 )
 
 
-def test_spike_to_rotations_all_firing():
+def test_spike_to_rotations_all_firing() -> None:
     spikes = np.ones((10, 3))
     angles = spike_train_to_rotations(spikes, window=5)
     np.testing.assert_allclose(angles, np.pi, atol=1e-10)
 
 
-def test_spike_to_rotations_none_firing():
+def test_spike_to_rotations_none_firing() -> None:
     spikes = np.zeros((10, 3))
     angles = spike_train_to_rotations(spikes, window=5)
     np.testing.assert_allclose(angles, 0.0, atol=1e-10)
 
 
-def test_spike_to_rotations_1d():
+def test_spike_to_rotations_1d() -> None:
     spikes = np.array([1, 0, 1, 0, 1])
     angles = spike_train_to_rotations(spikes, window=5)
     assert angles.shape == (5,)
 
 
-def test_measurement_to_current_scaling():
+def test_measurement_to_current_scaling() -> None:
     probs = np.array([0.0, 0.5, 1.0])
     currents = quantum_measurement_to_current(probs, scale=2.0)
     np.testing.assert_allclose(currents, [0.0, 1.0, 2.0])
 
 
-def test_bridge_init():
+def test_bridge_init() -> None:
     bridge = SNNQuantumBridge(n_neurons=2, n_inputs=3, seed=42)
     assert bridge.n_neurons == 2
     assert bridge.n_inputs == 3
 
 
-def test_bridge_forward_shape():
+def test_bridge_forward_shape() -> None:
     bridge = SNNQuantumBridge(n_neurons=2, n_inputs=3, seed=42)
     spikes = np.random.default_rng(0).integers(0, 2, (10, 3))
     result = bridge.forward(spikes)
     assert result.shape == (2,)
 
 
-def test_bridge_forward_bounded():
+def test_bridge_forward_bounded() -> None:
     bridge = SNNQuantumBridge(n_neurons=2, n_inputs=2, scale=1.0, seed=0)
     spikes = np.random.default_rng(0).integers(0, 2, (5, 2))
     result = bridge.forward(spikes)
@@ -67,7 +68,7 @@ def test_bridge_forward_bounded():
     assert np.all(result <= 1.0)
 
 
-def test_bridge_deterministic():
+def test_bridge_deterministic() -> None:
     b1 = SNNQuantumBridge(n_neurons=2, n_inputs=2, seed=42)
     b2 = SNNQuantumBridge(n_neurons=2, n_inputs=2, seed=42)
     spikes = np.ones((5, 2))
@@ -79,7 +80,7 @@ def test_bridge_deterministic():
 # ---------------------------------------------------------------------------
 
 
-def test_rotation_angle_bounded_0_pi():
+def test_rotation_angle_bounded_0_pi() -> None:
     """Rotation angles must be in [0, pi] for any spike pattern."""
     rng = np.random.default_rng(42)
     for _ in range(10):
@@ -89,7 +90,7 @@ def test_rotation_angle_bounded_0_pi():
         assert np.all(angles <= np.pi + 1e-10)
 
 
-def test_rotation_monotonic_with_rate():
+def test_rotation_monotonic_with_rate() -> None:
     """Higher firing rate → larger rotation angle (monotonicity)."""
     low = np.zeros((10, 2))
     low[:2, :] = 1  # 20% rate
@@ -99,7 +100,7 @@ def test_rotation_monotonic_with_rate():
     assert np.all(a_high >= a_low)
 
 
-def test_measurement_to_current_default_scale():
+def test_measurement_to_current_default_scale() -> None:
     probs = np.array([0.5, 0.8])
     currents = quantum_measurement_to_current(probs)
     np.testing.assert_allclose(currents, probs)
@@ -110,7 +111,7 @@ def test_measurement_to_current_default_scale():
 # ---------------------------------------------------------------------------
 
 
-def test_pipeline_spikes_to_currents():
+def test_pipeline_spikes_to_currents() -> None:
     """Full pipeline: spike history → SNNQuantumBridge → output currents.
     Verifies the adapter is not decorative — data flows through quantum layer.
     """
@@ -131,11 +132,11 @@ def test_pipeline_spikes_to_currents():
     print(f"  Output currents: {currents}")
 
 
-def test_arcane_neuron_bridge_with_fake_neurocore(monkeypatch):
+def test_arcane_neuron_bridge_with_fake_neurocore(monkeypatch: pytest.MonkeyPatch) -> None:
     """ArcaneNeuronBridge drives the documented optional dependency surface."""
 
     class FakeArcaneNeuron:
-        def __init__(self):
+        def __init__(self) -> None:
             self.v_deep = 0.0
             self.confidence = 0.25
             self.reset_count = 0
@@ -154,7 +155,9 @@ def test_arcane_neuron_bridge_with_fake_neurocore(monkeypatch):
     package = types.ModuleType("sc_neurocore")
     neurons = types.ModuleType("sc_neurocore.neurons")
     models = types.ModuleType("sc_neurocore.neurons.models")
-    models.ArcaneNeuron = FakeArcaneNeuron
+    # A freshly created ModuleType has no declared attributes; the module dict
+    # is where a stand-in class is installed.
+    vars(models)["ArcaneNeuron"] = FakeArcaneNeuron
 
     monkeypatch.setitem(sys.modules, "sc_neurocore", package)
     monkeypatch.setitem(sys.modules, "sc_neurocore.neurons", neurons)

@@ -20,10 +20,13 @@ from numpy.typing import NDArray
 from ..qsnn.qlayer import QuantumDenseLayer
 
 
-def spike_train_to_rotations(spikes: NDArray[np.float64], window: int = 10) -> NDArray[np.float64]:
+def spike_train_to_rotations(
+    spikes: NDArray[np.number[Any]], window: int = 10
+) -> NDArray[np.float64]:
     """Convert spike history to Ry rotation angles.
 
-    spikes: (timesteps, n_neurons) binary array.
+    spikes: (timesteps, n_neurons) binary array of any numeric dtype; the
+    integer spike trains an SNN produces are accepted and coerced to float64.
     Returns (n_neurons,) angles = firing_rate * pi, in [0, pi].
     """
     spikes = np.asarray(spikes, dtype=np.float64)
@@ -69,10 +72,11 @@ class SNNQuantumBridge:
         self.scale = scale
         self.layer = QuantumDenseLayer(n_neurons, n_inputs, seed=seed)
 
-    def forward(self, spike_history: NDArray[np.float64]) -> NDArray[np.float64]:
+    def forward(self, spike_history: NDArray[np.number[Any]]) -> NDArray[np.float64]:
         """Full forward pass: spike history -> quantum -> output currents.
 
-        spike_history: (timesteps, n_inputs) binary spike array.
+        spike_history: (timesteps, n_inputs) binary spike array of any numeric
+        dtype; integer spike trains are accepted and coerced to float64.
         Returns (n_neurons,) input currents for next SNN layer.
         """
         angles = spike_train_to_rotations(spike_history, self.window)
