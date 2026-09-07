@@ -19,6 +19,7 @@ If any import fails or function returns garbage, the module is decorative → FA
 from __future__ import annotations
 
 import time
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -65,7 +66,7 @@ class TestTopLevelExports:
     """Every __all__ symbol must be importable and non-None."""
 
     @pytest.mark.parametrize("name", sqc.__all__)
-    def test_export_exists(self, name):
+    def test_export_exists(self, name: str) -> None:
         obj = getattr(sqc, name, None)
         assert obj is not None, f"{name} is None — not wired"
 
@@ -77,7 +78,7 @@ class TestTopLevelExports:
 
 class TestBridgePipeline:
     @pytest.mark.parametrize("L", [2, 4, 8, 16])
-    def test_knm_to_hamiltonian_pipeline(self, L):
+    def test_knm_to_hamiltonian_pipeline(self, L: int) -> None:
         K, dt_k = _timed(build_knm_paper27, L=L)
         omega = OMEGA_N_16[:L]
         H, dt_h = _timed(sqc.knm_to_hamiltonian, K, omega)
@@ -85,7 +86,7 @@ class TestBridgePipeline:
         _report(f"Knm→H (L={L})", dt_k + dt_h, f"qubits={L}")
 
     @pytest.mark.parametrize("L", [2, 4, 8])
-    def test_knm_to_ansatz_pipeline(self, L):
+    def test_knm_to_ansatz_pipeline(self, L: int) -> None:
         K = build_knm_paper27(L=L)
         qc, dt = _timed(sqc.knm_to_ansatz, K, reps=2)
         assert qc.num_qubits == L
@@ -99,7 +100,7 @@ class TestBridgePipeline:
 
 
 class TestPhaseSolverPipeline:
-    def test_phase_vqe_pipeline(self):
+    def test_phase_vqe_pipeline(self) -> None:
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         vqe = sqc.PhaseVQE(K, omega, ansatz_reps=1)
@@ -108,7 +109,7 @@ class TestPhaseSolverPipeline:
         assert result["ground_energy"] < 0
         _report("PhaseVQE (2q)", dt, f"E={result['ground_energy']:.4f}")
 
-    def test_trotter_upde_pipeline(self):
+    def test_trotter_upde_pipeline(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         solver = sqc.QuantumUPDESolver(K=K, omega=omega)
@@ -116,7 +117,7 @@ class TestPhaseSolverPipeline:
         assert len(result["R"]) == 6
         _report("TrotterUPDE (3q, 5 steps)", dt, f"R_final={result['R'][-1]:.4f}")
 
-    def test_kuramoto_solver_pipeline(self):
+    def test_kuramoto_solver_pipeline(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         solver = sqc.QuantumKuramotoSolver(4, K, omega)
@@ -131,7 +132,7 @@ class TestPhaseSolverPipeline:
 
 
 class TestHardwarePipeline:
-    def test_hardware_runner_full_pipeline(self, tmp_path):
+    def test_hardware_runner_full_pipeline(self, tmp_path: Path) -> None:
         from qiskit import QuantumCircuit
 
         runner = sqc.HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "results"))
@@ -150,7 +151,7 @@ class TestHardwarePipeline:
         assert total == 1000
         _report("HW sampler (4q GHZ)", dt_t + dt_r, f"depth={stats['depth']}")
 
-    def test_noise_model_pipeline(self, tmp_path):
+    def test_noise_model_pipeline(self, tmp_path: Path) -> None:
         from scpn_quantum_control.hardware.noise_model import heron_r2_noise_model
 
         nm, dt_n = _timed(heron_r2_noise_model)
@@ -175,7 +176,7 @@ class TestHardwarePipeline:
 
 
 class TestMitigationPipeline:
-    def test_zne_pipeline(self):
+    def test_zne_pipeline(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         solver = sqc.QuantumKuramotoSolver(3, K, omega)
@@ -199,7 +200,7 @@ class TestMitigationPipeline:
         assert np.isfinite(zne_result.zero_noise_estimate)
         _report("ZNE (3q Kuramoto)", dt, f"R_zne={zne_result.zero_noise_estimate:.4f}")
 
-    def test_pec_pipeline(self):
+    def test_pec_pipeline(self) -> None:
         decomp, dt = _timed(sqc.pauli_twirl_decompose, 0.01, n_qubits=1)
         assert decomp.shape[0] > 0
         _report("PEC decompose (1q, p=0.01)", dt, f"shape={decomp.shape}")
@@ -211,7 +212,7 @@ class TestMitigationPipeline:
 
 
 class TestQECPipeline:
-    def test_control_qec_pipeline(self):
+    def test_control_qec_pipeline(self) -> None:
         qec, dt_init = _timed(sqc.ControlQEC, distance=3)
         n_data = 2 * 3**2
         err_x = np.zeros(n_data, dtype=np.int8)
@@ -220,7 +221,7 @@ class TestQECPipeline:
         assert int(syn_z.sum()) == 0
         _report("ControlQEC (d=3)", dt_init)
 
-    def test_surface_code_pipeline(self):
+    def test_surface_code_pipeline(self) -> None:
         upde, dt = _timed(sqc.SurfaceCodeUPDE, n_osc=4, code_distance=3)
         assert upde is not None
         assert upde.n_osc == 4
@@ -233,7 +234,7 @@ class TestQECPipeline:
 
 
 class TestQSNNPipeline:
-    def test_synapse_pipeline(self):
+    def test_synapse_pipeline(self) -> None:
         syn = sqc.QuantumSynapse(0.7)
         from qiskit import QuantumCircuit
 
@@ -242,7 +243,7 @@ class TestQSNNPipeline:
         assert qc.size() > 0
         _report("QuantumSynapse", 0, f"theta={syn.theta:.4f}")
 
-    def test_lif_neuron_pipeline(self):
+    def test_lif_neuron_pipeline(self) -> None:
         neuron = sqc.QuantumLIFNeuron()
         spike, dt = _timed(neuron.step, 1.5)
         assert spike in (0, 1)
@@ -250,7 +251,7 @@ class TestQSNNPipeline:
         assert qc is not None
         _report("QuantumLIFNeuron step", dt, f"spike={spike}")
 
-    def test_stdp_pipeline(self):
+    def test_stdp_pipeline(self) -> None:
         stdp = sqc.QuantumSTDP()
         syn = sqc.QuantumSynapse(0.5)
         w_before = syn.weight
@@ -266,12 +267,12 @@ class TestQSNNPipeline:
 
 
 class TestIdentityPipeline:
-    def test_identity_attractor_pipeline(self):
+    def test_identity_attractor_pipeline(self) -> None:
         attractor, dt = _timed(sqc.build_identity_attractor)
         assert attractor is not None
         _report("IdentityAttractor (default spec)", dt)
 
-    def test_identity_key_pipeline(self):
+    def test_identity_key_pipeline(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         fp, dt = _timed(sqc.identity_fingerprint, K, omega, maxiter=10)
@@ -286,7 +287,7 @@ class TestIdentityPipeline:
 
 
 class TestCryptoPipeline:
-    def test_key_hierarchy_pipeline(self):
+    def test_key_hierarchy_pipeline(self) -> None:
         from scpn_quantum_control.crypto.hierarchical_keys import (
             key_hierarchy,
             verify_key_chain,
@@ -301,7 +302,7 @@ class TestCryptoPipeline:
         assert ok
         _report("key_hierarchy (4 layers)", dt)
 
-    def test_qkd_protocol_pipeline(self):
+    def test_qkd_protocol_pipeline(self) -> None:
         from scpn_quantum_control.crypto.entanglement_qkd import scpn_qkd_protocol
 
         K = build_knm_paper27(L=4)
@@ -318,7 +319,7 @@ class TestCryptoPipeline:
 
 
 class TestAnalysisPipeline:
-    def test_finite_size_scaling_pipeline(self):
+    def test_finite_size_scaling_pipeline(self) -> None:
         from scpn_quantum_control.analysis.finite_size_scaling import finite_size_scaling
 
         result, dt = _timed(
@@ -327,7 +328,7 @@ class TestAnalysisPipeline:
         assert len(result.k_c_values) == 2
         _report("FSS (L=2,3)", dt, f"K_c={result.k_c_values}")
 
-    def test_h1_persistence_pipeline(self):
+    def test_h1_persistence_pipeline(self) -> None:
         from scpn_quantum_control.analysis.h1_persistence import scan_h1_persistence
 
         omega = OMEGA_N_16[:3]
@@ -335,7 +336,7 @@ class TestAnalysisPipeline:
         assert result.k_critical > 0
         _report("H1 persistence (3 osc)", dt, f"K_c={result.k_critical:.4f}")
 
-    def test_otoc_pipeline(self):
+    def test_otoc_pipeline(self) -> None:
         from scpn_quantum_control.analysis.otoc_sync_probe import otoc_sync_scan
 
         K = build_knm_paper27(L=2)
@@ -344,7 +345,7 @@ class TestAnalysisPipeline:
         assert result.n_qubits == 2
         _report("OTOC scan (2q)", dt, f"n_K={len(result.K_base_values)}")
 
-    def test_xxz_phase_diagram_pipeline(self):
+    def test_xxz_phase_diagram_pipeline(self) -> None:
         from scpn_quantum_control.analysis.xxz_phase_diagram import anisotropy_phase_diagram
 
         T = np.array([[0, 1, 0], [1, 0, 1], [0, 1, 0]], dtype=float)
@@ -366,15 +367,15 @@ class TestAnalysisPipeline:
 
 
 class TestSSGFPipeline:
-    def test_ssgf_full_loop(self):
+    def test_ssgf_full_loop(self) -> None:
         class _NS:
-            def __init__(self):
+            def __init__(self) -> None:
                 self.W = build_knm_paper27(L=4).copy()
                 np.fill_diagonal(self.W, 0.0)
                 self.theta = np.random.default_rng(42).uniform(0, 2 * np.pi, 4)
 
         class _Engine:
-            def __init__(self):
+            def __init__(self) -> None:
                 self.ns = _NS()
 
         engine = _Engine()
@@ -391,7 +392,7 @@ class TestSSGFPipeline:
 
 
 class TestOrchestratorPipeline:
-    def test_full_adapter_roundtrip(self):
+    def test_full_adapter_roundtrip(self) -> None:
         payload = {
             "layers": [
                 {"R": 0.8, "psi": 0.5, "locks": {"0_1": {"plv": 0.9, "lag": 0.1}}},
@@ -414,7 +415,7 @@ class TestOrchestratorPipeline:
 
 
 class TestCuttingPipeline:
-    def test_cutting_24_oscillators(self):
+    def test_cutting_24_oscillators(self) -> None:
         from scpn_quantum_control.hardware.cutting_runner import run_cutting_simulation
 
         result, dt = _timed(
@@ -440,18 +441,18 @@ class TestCuttingPipeline:
 
 
 class TestControlPipeline:
-    def test_vqls_pipeline(self):
+    def test_vqls_pipeline(self) -> None:
         vqls = sqc.VQLS_GradShafranov(n_qubits=2)
         result, dt = _timed(vqls.solve, reps=1, maxiter=5, seed=42)
         assert result.shape == (4,)
         assert np.all(np.isfinite(result))
         _report("VQLS Grad-Shafranov (2q)", dt)
 
-    def test_qaoa_mpc_importable(self):
+    def test_qaoa_mpc_importable(self) -> None:
         assert sqc.QAOA_MPC is not None
         _report("QAOA_MPC", 0, "importable ✓")
 
-    def test_quantum_petri_net_importable(self):
+    def test_quantum_petri_net_importable(self) -> None:
         assert sqc.QuantumPetriNet is not None
         _report("QuantumPetriNet", 0, "importable ✓")
 
@@ -462,7 +463,7 @@ class TestControlPipeline:
 
 
 class TestBenchmarkPipeline:
-    def test_scaling_benchmark(self):
+    def test_scaling_benchmark(self) -> None:
         result, dt = _timed(sqc.run_scaling_benchmark, sizes=[2, 3])
         assert len(result) > 0
         _report("Scaling benchmark (L=2,3)", dt, f"n_results={len(result)}")
@@ -474,7 +475,7 @@ class TestBenchmarkPipeline:
 
 
 class TestMSQECPipeline:
-    def test_build_multiscale_qec(self):
+    def test_build_multiscale_qec(self) -> None:
         from scpn_quantum_control.qec.multiscale_qec import build_multiscale_qec
 
         K = build_knm_paper27()
@@ -488,7 +489,7 @@ class TestMSQECPipeline:
             f"levels={result.concatenation_depth}, qubits={result.total_physical_qubits}",
         )
 
-    def test_concatenated_logical_rate(self):
+    def test_concatenated_logical_rate(self) -> None:
         from scpn_quantum_control.qec.multiscale_qec import concatenated_logical_rate
 
         result, dt = _timed(concatenated_logical_rate, 0.001, [5, 5, 5, 5, 5])
@@ -497,7 +498,7 @@ class TestMSQECPipeline:
         assert dt < 1, f"concatenated_logical_rate must complete in <1ms, took {dt:.1f}ms"
         _report("Concatenated rates (5 levels)", dt, f"p_L_final={result[-1]:.2e}")
 
-    def test_syndrome_flow(self):
+    def test_syndrome_flow(self) -> None:
         from scpn_quantum_control.qec.multiscale_qec import build_multiscale_qec
         from scpn_quantum_control.qec.syndrome_flow import syndrome_flow_analysis
 
@@ -519,7 +520,7 @@ class TestMSQECPipeline:
 
 
 class TestFEPPipeline:
-    def test_variational_free_energy(self):
+    def test_variational_free_energy(self) -> None:
         from scpn_quantum_control.fep.variational_free_energy import variational_free_energy
 
         K = build_knm_paper27()
@@ -532,7 +533,7 @@ class TestFEPPipeline:
         assert dt < 5, f"variational_free_energy must complete in <5ms, took {dt:.1f}ms"
         _report("Variational free energy (n=16)", dt, f"F={result.free_energy:.4f}")
 
-    def test_predictive_coding_step(self):
+    def test_predictive_coding_step(self) -> None:
         from scpn_quantum_control.fep.predictive_coding import predictive_coding_step
 
         K = build_knm_paper27(L=4)
@@ -547,7 +548,7 @@ class TestFEPPipeline:
             f"F={result.free_energy:.4f}, error_norm={result.total_error_norm:.4f}",
         )
 
-    def test_free_energy_gradient(self):
+    def test_free_energy_gradient(self) -> None:
         from scpn_quantum_control.fep.variational_free_energy import free_energy_gradient
 
         K = build_knm_paper27()
@@ -567,7 +568,7 @@ class TestFEPPipeline:
 
 
 class TestPsiFieldPipeline:
-    def test_scpn_to_lattice(self):
+    def test_scpn_to_lattice(self) -> None:
         from scpn_quantum_control.psi_field.scpn_mapping import scpn_to_lattice
 
         lattice, dt = _timed(scpn_to_lattice, beta=2.0, seed=42)
@@ -580,7 +581,7 @@ class TestPsiFieldPipeline:
             f"edges={lattice.gauge.n_edges}, plaq={len(lattice.gauge.plaquettes)}",
         )
 
-    def test_hmc_update(self):
+    def test_hmc_update(self) -> None:
         from scpn_quantum_control.psi_field.lattice import U1LatticGauge, hmc_update
 
         K = build_knm_paper27(L=4)
@@ -590,7 +591,7 @@ class TestPsiFieldPipeline:
         assert dt < 10, f"HMC step must complete in <10ms, took {dt:.1f}ms"
         _report("HMC step (n=4, 10 leapfrog)", dt, f"accepted={accepted}, dH={dH:.4f}")
 
-    def test_topological_charge(self):
+    def test_topological_charge(self) -> None:
         from scpn_quantum_control.psi_field.observables import topological_charge
         from scpn_quantum_control.psi_field.scpn_mapping import scpn_to_lattice
 
@@ -600,7 +601,7 @@ class TestPsiFieldPipeline:
         assert dt < 5, f"topological_charge must complete in <5ms, took {dt:.1f}ms"
         _report("Topological charge (16 layers, Rust)", dt, f"Q={q:.4f}")
 
-    def test_gauge_covariant_kinetic(self):
+    def test_gauge_covariant_kinetic(self) -> None:
         from scpn_quantum_control.psi_field.infoton import gauge_covariant_kinetic
         from scpn_quantum_control.psi_field.scpn_mapping import scpn_to_lattice
 
@@ -617,7 +618,7 @@ class TestPsiFieldPipeline:
 
 
 class TestGUESSPipeline:
-    def test_learn_decay(self):
+    def test_learn_decay(self) -> None:
         from scpn_quantum_control.mitigation.symmetry_decay import learn_symmetry_decay
 
         model, dt = _timed(learn_symmetry_decay, 4.0, [3.8, 3.5, 3.0, 2.5, 2.0], [1, 3, 5, 7, 9])
@@ -625,7 +626,7 @@ class TestGUESSPipeline:
         assert dt < 2, f"learn_symmetry_decay must complete in <2ms, took {dt:.1f}ms"
         _report("GUESS learn (5 scales, Rust)", dt, f"alpha={model.alpha:.4f}")
 
-    def test_extrapolate(self):
+    def test_extrapolate(self) -> None:
         from scpn_quantum_control.mitigation.symmetry_decay import (
             guess_extrapolate,
             learn_symmetry_decay,
@@ -644,7 +645,7 @@ class TestGUESSPipeline:
 
 
 class TestDynQPipeline:
-    def test_community_detection(self):
+    def test_community_detection(self) -> None:
         import numpy as np
 
         from scpn_quantum_control.hardware.qubit_mapper import (
@@ -664,7 +665,7 @@ class TestDynQPipeline:
         assert dt < 50, f"156-qubit detection must complete in <50ms, took {dt:.1f}ms"
         _report("DynQ detection (156 qubits)", dt, f"n_regions={len(regions)}")
 
-    def test_full_pipeline(self):
+    def test_full_pipeline(self) -> None:
         import numpy as np
 
         from scpn_quantum_control.hardware.qubit_mapper import dynq_initial_layout
@@ -690,7 +691,7 @@ class TestDynQPipeline:
 class TestPulseShapingPipeline:
     """Pipeline wiring tests for pulse_shaping module."""
 
-    def test_ici_pulse_build(self):
+    def test_ici_pulse_build(self) -> None:
         from scpn_quantum_control.phase.pulse_shaping import build_ici_pulse
 
         pulse, dt = _timed(build_ici_pulse, 1.0, 10.0, 0.1)
@@ -699,7 +700,7 @@ class TestPulseShapingPipeline:
         assert dt < 5, f"ICI build must complete in <5ms, took {dt:.1f}ms"
         _report("ICI pulse build", dt, f"fidelity={pulse.fidelity:.4f}")
 
-    def test_hypergeometric_envelope(self):
+    def test_hypergeometric_envelope(self) -> None:
         import numpy as np
 
         from scpn_quantum_control.phase.pulse_shaping import build_hypergeometric_pulse
@@ -710,7 +711,7 @@ class TestPulseShapingPipeline:
         assert dt < 50, f"Hypergeometric build must complete in <50ms, took {dt:.1f}ms"
         _report("Hypergeometric pulse build", dt, f"peak={np.max(pulse.envelope):.4f}")
 
-    def test_trotter_pulse_schedule(self):
+    def test_trotter_pulse_schedule(self) -> None:
         import numpy as np
 
         from scpn_quantum_control.phase.pulse_shaping import build_trotter_pulse_schedule

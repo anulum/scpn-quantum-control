@@ -25,21 +25,21 @@ from scpn_quantum_control.analysis.sync_witness import (
 
 
 class TestTwoPointCorrelator:
-    def test_all_zeros(self):
+    def test_all_zeros(self) -> None:
         counts = {"0000": 1000}
         corr = _two_point_correlator(counts, 4)
         # All qubits in |0⟩ → all ⟨Z_i⟩ = +1 → ⟨Z_iZ_j⟩ = +1
         expected = np.ones((4, 4))
         np.testing.assert_array_almost_equal(corr, expected)
 
-    def test_all_ones(self):
+    def test_all_ones(self) -> None:
         counts = {"1111": 1000}
         corr = _two_point_correlator(counts, 4)
         # All qubits in |1⟩ → all ⟨Z_i⟩ = -1 → ⟨Z_iZ_j⟩ = +1
         expected = np.ones((4, 4))
         np.testing.assert_array_almost_equal(corr, expected)
 
-    def test_alternating(self):
+    def test_alternating(self) -> None:
         counts = {"0101": 1000}
         corr = _two_point_correlator(counts, 4)
         # Qubits 0,2 → +1; qubits 1,3 → -1
@@ -47,7 +47,7 @@ class TestTwoPointCorrelator:
         expected = np.outer(vals, vals)
         np.testing.assert_array_almost_equal(corr, expected)
 
-    def test_mixed_state(self):
+    def test_mixed_state(self) -> None:
         counts = {"00": 500, "11": 500}
         corr = _two_point_correlator(counts, 2)
         # ⟨Z_0Z_1⟩ = (500 * (+1)(+1) + 500 * (-1)(-1)) / 1000 = 1.0
@@ -56,7 +56,7 @@ class TestTwoPointCorrelator:
         # But ⟨Z_0Z_0⟩ = ⟨Z_0²⟩ = 1.0 always
         assert corr[0, 0] == pytest.approx(1.0)
 
-    def test_uncorrelated(self):
+    def test_uncorrelated(self) -> None:
         counts = {"00": 250, "01": 250, "10": 250, "11": 250}
         corr = _two_point_correlator(counts, 2)
         # Uniformly random → ⟨Z_0Z_1⟩ ≈ 0
@@ -64,7 +64,7 @@ class TestTwoPointCorrelator:
 
 
 class TestCorrelationWitness:
-    def test_synchronized_state_fires(self):
+    def test_synchronized_state_fires(self) -> None:
         # Perfectly correlated: all same bitstring
         # XX correlator = 1.0 for each pair, YY correlator = 1.0 → sum = 2.0
         x_counts = {"0000": 1000}
@@ -74,7 +74,7 @@ class TestCorrelationWitness:
         assert result.expectation_value < 0
         assert result.raw_observable == pytest.approx(2.0)
 
-    def test_incoherent_state_does_not_fire(self):
+    def test_incoherent_state_does_not_fire(self) -> None:
         # All 16 bitstrings equally likely → ⟨Z_iZ_j⟩ ≈ 0 → correlator ≈ 0
         rng = np.random.default_rng(42)
         x_counts = {
@@ -87,14 +87,14 @@ class TestCorrelationWitness:
         assert not result.is_synchronized
         assert result.expectation_value >= 0
 
-    def test_returns_correct_type(self):
+    def test_returns_correct_type(self) -> None:
         result = correlation_witness_from_counts({"00": 100}, {"00": 100}, 2, 0.0)
         assert isinstance(result, WitnessResult)
         assert result.witness_name == "correlation"
 
 
 class TestFiedlerWitness:
-    def test_fully_connected_fires(self):
+    def test_fully_connected_fires(self) -> None:
         # All-ones correlation matrix → Fiedler eigenvalue = N
         corr = np.ones((4, 4))
         np.fill_diagonal(corr, 0)
@@ -102,14 +102,14 @@ class TestFiedlerWitness:
         assert result.is_synchronized
         assert result.raw_observable > 1.0
 
-    def test_disconnected_does_not_fire(self):
+    def test_disconnected_does_not_fire(self) -> None:
         # Zero correlation → Fiedler eigenvalue = 0
         corr = np.zeros((4, 4))
         result = fiedler_witness_from_correlator(corr, threshold=0.5)
         assert not result.is_synchronized
         assert result.raw_observable == pytest.approx(0.0)
 
-    def test_from_counts(self):
+    def test_from_counts(self) -> None:
         x_counts = {"0000": 1000}
         y_counts = {"0000": 1000}
         result = fiedler_witness_from_counts(x_counts, y_counts, 4, threshold=1.0)
@@ -118,7 +118,7 @@ class TestFiedlerWitness:
 
 
 class TestTopologicalWitness:
-    def test_rank_one_is_synchronized(self):
+    def test_rank_one_is_synchronized(self) -> None:
         # Nearly rank-1 → no persistent holes → p_H1 ≈ 0 → synced
         corr = np.ones((4, 4)) * 0.9
         np.fill_diagonal(corr, 1.0)
@@ -127,7 +127,7 @@ class TestTopologicalWitness:
             pytest.skip("ripser not installed")
         assert result.is_synchronized
 
-    def test_returns_witness_result(self):
+    def test_returns_witness_result(self) -> None:
         corr = np.eye(4)
         result = topological_witness_from_correlator(corr, threshold=0.5)
         assert isinstance(result, WitnessResult)
@@ -135,7 +135,7 @@ class TestTopologicalWitness:
 
 
 class TestEvaluateAll:
-    def test_returns_three_witnesses(self):
+    def test_returns_three_witnesses(self) -> None:
         x_counts = {"0000": 1000}
         y_counts = {"0000": 1000}
         results = evaluate_all_witnesses(x_counts, y_counts, 4)
@@ -143,7 +143,7 @@ class TestEvaluateAll:
         assert "fiedler" in results
         assert "topological" in results
 
-    def test_all_fire_for_synchronized(self):
+    def test_all_fire_for_synchronized(self) -> None:
         x_counts = {"0000": 1000}
         y_counts = {"0000": 1000}
         results = evaluate_all_witnesses(
@@ -159,7 +159,7 @@ class TestEvaluateAll:
 
 
 class TestCalibrateThresholds:
-    def test_returns_three_thresholds(self):
+    def test_returns_three_thresholds(self) -> None:
         from scpn_quantum_control.bridge.knm_hamiltonian import (
             OMEGA_N_16,
             build_knm_paper27,
@@ -182,7 +182,7 @@ class TestCalibrateThresholds:
 class TestSyncWitnessCoverage:
     """Cover missing lines: n_pairs=0, topological witness, operator builder."""
 
-    def test_correlation_witness_single_qubit(self):
+    def test_correlation_witness_single_qubit(self) -> None:
         """Cover line 91: n_pairs=0 for single qubit system."""
         x_counts = {"0": 500, "1": 500}
         y_counts = {"0": 500, "1": 500}
@@ -190,7 +190,7 @@ class TestSyncWitnessCoverage:
         assert isinstance(result, WitnessResult)
         assert result.n_qubits == 1
 
-    def test_topological_witness_with_ripser(self):
+    def test_topological_witness_with_ripser(self) -> None:
         """Cover lines 219-231: topological witness using ripser (installed)."""
         rng = np.random.default_rng(42)
         corr = rng.uniform(0.1, 0.9, (4, 4))
@@ -200,7 +200,7 @@ class TestSyncWitnessCoverage:
         assert isinstance(result, WitnessResult)
         assert result.witness_name == "topological"
 
-    def test_topological_witness_h1_features(self):
+    def test_topological_witness_h1_features(self) -> None:
         """Cover lines 223-229: H1 branch with uniform phases on circle.
 
         Uniformly spaced phases produce a clear 1-cycle in persistent homology.
@@ -211,7 +211,7 @@ class TestSyncWitnessCoverage:
         assert isinstance(result, WitnessResult)
         assert isinstance(result.expectation_value, float)
 
-    def test_build_correlation_witness_operator(self):
+    def test_build_correlation_witness_operator(self) -> None:
         """Cover lines 345-368: build SparsePauliOp witness operator."""
         from scpn_quantum_control.analysis.sync_witness import (
             build_correlation_witness_operator,
@@ -220,7 +220,7 @@ class TestSyncWitnessCoverage:
         W = build_correlation_witness_operator(3, threshold=0.5)
         assert W.num_qubits == 3
 
-    def test_build_correlation_witness_operator_single_qubit(self):
+    def test_build_correlation_witness_operator_single_qubit(self) -> None:
         """Cover line 349: n_pairs=0 for single qubit."""
         from scpn_quantum_control.analysis.sync_witness import (
             build_correlation_witness_operator,
@@ -229,7 +229,7 @@ class TestSyncWitnessCoverage:
         W = build_correlation_witness_operator(1, threshold=0.5)
         assert W.num_qubits == 1
 
-    def test_calibrate_thresholds_r_always_above_half(self):
+    def test_calibrate_thresholds_r_always_above_half(self) -> None:
         """Cover line 328: R stays > 0.5 for all K → trans_idx = midpoint."""
         from scpn_quantum_control.bridge.knm_hamiltonian import (
             OMEGA_N_16,

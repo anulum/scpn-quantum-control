@@ -36,7 +36,7 @@ def _inputs():
     return K, omega
 
 
-def test_circuit_qed_program_contains_signed_exchange_terms():
+def test_circuit_qed_program_contains_signed_exchange_terms() -> None:
     K, omega = _inputs()
     program = compile_analog_kuramoto(
         K,
@@ -58,7 +58,7 @@ def test_circuit_qed_program_contains_signed_exchange_terms():
     assert program.feedback_terms == ()
 
 
-def test_neutral_atom_program_adds_register_and_rydberg_radii():
+def test_neutral_atom_program_adds_register_and_rydberg_radii() -> None:
     K, omega = _inputs()
     program = compile_analog_kuramoto(
         K,
@@ -75,7 +75,7 @@ def test_neutral_atom_program_adds_register_and_rydberg_radii():
     assert first.radius == pytest.approx((1.0 / first.strength) ** (1.0 / 6.0))
 
 
-def test_continuous_variable_program_uses_rotation_and_beamsplitter_operations():
+def test_continuous_variable_program_uses_rotation_and_beamsplitter_operations() -> None:
     K, omega = _inputs()
     program = compile_analog_kuramoto(
         K,
@@ -93,14 +93,14 @@ def test_continuous_variable_program_uses_rotation_and_beamsplitter_operations()
     assert rotations[1]["angle"] == pytest.approx(omega[1] * 0.5)
 
 
-def test_backend_registry_exposes_analog_compiler():
+def test_backend_registry_exposes_analog_compiler() -> None:
     backend = be.get_backend("analog_kuramoto")
     assert backend.name == "analog_kuramoto"
     assert backend.is_available() is True
     assert "analog_kuramoto" in be.list_backends(auto_discover=False)
 
 
-def test_kuramoto_core_facade_compiles_analog_program():
+def test_kuramoto_core_facade_compiles_analog_program() -> None:
     K, omega = _inputs()
     problem = build_kuramoto_problem(K, omega, metadata={"case": "facade"})
     program = compile_analog_program(
@@ -112,7 +112,7 @@ def test_kuramoto_core_facade_compiles_analog_program():
     assert program.n_couplers == 3
 
 
-def test_backend_validation_rejects_invalid_platform_and_limits():
+def test_backend_validation_rejects_invalid_platform_and_limits() -> None:
     K, omega = _inputs()
     problem = build_kuramoto_problem(K, omega)
     with pytest.raises(ValueError, match="Unknown analog platform"):
@@ -128,7 +128,7 @@ def test_backend_validation_rejects_invalid_platform_and_limits():
         AnalogKuramotoBackend().compile(problem, duration=1.0, lambda_fim=-1.0)
 
 
-def test_numpy_kernel_filters_zero_edges_and_matches_sign_phase():
+def test_numpy_kernel_filters_zero_edges_and_matches_sign_phase() -> None:
     K, _omega = _inputs()
     K[1, 2] = K[2, 1] = 0.0
     rows, cols, strengths, phases, radii = _analog_terms_numpy(
@@ -145,7 +145,7 @@ def test_numpy_kernel_filters_zero_edges_and_matches_sign_phase():
     np.testing.assert_allclose(radii, (64.0 / strengths) ** (1.0 / 6.0))
 
 
-def test_fim_feedback_terms_encode_collective_magnetisation_pair_term():
+def test_fim_feedback_terms_encode_collective_magnetisation_pair_term() -> None:
     K, omega = _inputs()
     program = compile_analog_kuramoto(
         K,
@@ -166,7 +166,7 @@ def test_fim_feedback_terms_encode_collective_magnetisation_pair_term():
     assert program.payload["fim_cross_kerr_feedback"][0]["coefficient"] == pytest.approx(-2.0)
 
 
-def test_pulser_export_wraps_neutral_atom_program_without_submission():
+def test_pulser_export_wraps_neutral_atom_program_without_submission() -> None:
     K, omega = _inputs()
     program = compile_analog_kuramoto(
         K,
@@ -189,7 +189,7 @@ def test_pulser_export_wraps_neutral_atom_program_without_submission():
     assert "export_only_no_cloud_submission" in export.limitations
 
 
-def test_bloqade_export_uses_neutral_atom_ahs_shape():
+def test_bloqade_export_uses_neutral_atom_ahs_shape() -> None:
     K, omega = _inputs()
     program = compile_analog_kuramoto(
         K,
@@ -207,7 +207,7 @@ def test_bloqade_export_uses_neutral_atom_ahs_shape():
     assert export.to_dict()["can_submit"] is False
 
 
-def test_ibm_pulse_export_requires_circuit_qed_program():
+def test_ibm_pulse_export_requires_circuit_qed_program() -> None:
     K, omega = _inputs()
     program = compile_analog_kuramoto(
         K,
@@ -225,7 +225,7 @@ def test_ibm_pulse_export_requires_circuit_qed_program():
     assert export.payload["fim_cross_kerr_feedback"][0]["coefficient"] == pytest.approx(-2.0)
 
 
-def test_provider_export_rejects_incompatible_platform_and_unknown_provider():
+def test_provider_export_rejects_incompatible_platform_and_unknown_provider() -> None:
     K, omega = _inputs()
     circuit_qed_program = compile_analog_kuramoto(
         K,
@@ -248,7 +248,7 @@ def test_provider_export_rejects_incompatible_platform_and_unknown_provider():
         export_provider_payload(neutral_atom_program, "not-a-provider")
 
 
-def test_provider_execution_plan_is_approval_and_calibration_gated():
+def test_provider_execution_plan_is_approval_and_calibration_gated() -> None:
     K, omega = _inputs()
     program = compile_analog_kuramoto(
         K,
@@ -283,7 +283,7 @@ def test_provider_execution_plan_is_approval_and_calibration_gated():
     assert approved.can_execute is export.sdk_available
 
 
-def test_provider_execution_plan_rejects_missing_calibration_and_cloud_submission():
+def test_provider_execution_plan_rejects_missing_calibration_and_cloud_submission() -> None:
     K, omega = _inputs()
     program = compile_analog_kuramoto(
         K,

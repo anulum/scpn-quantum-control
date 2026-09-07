@@ -35,7 +35,7 @@ def _inputs():
     return K, omega
 
 
-def test_partition_selects_largest_couplings_and_preserves_residual():
+def test_partition_selects_largest_couplings_and_preserves_residual() -> None:
     K, _omega = _inputs()
     partition = partition_kuramoto_couplings(K, max_analog_couplers=2)
 
@@ -56,7 +56,7 @@ def test_partition_selects_largest_couplings_and_preserves_residual():
     assert partition.n_digital_couplings == 3
 
 
-def test_hybrid_program_contains_analog_block_and_digital_residual():
+def test_hybrid_program_contains_analog_block_and_digital_residual() -> None:
     K, omega = _inputs()
     program = compile_hybrid_digital_analog(
         K,
@@ -80,7 +80,7 @@ def test_hybrid_program_contains_analog_block_and_digital_residual():
     assert program.metadata["digital_local_detunings"] == "zero_residual_to_avoid_double_counting"
 
 
-def test_threshold_can_route_only_hardware_native_large_terms():
+def test_threshold_can_route_only_hardware_native_large_terms() -> None:
     K, omega = _inputs()
     program = compile_hybrid_digital_analog(
         K,
@@ -100,7 +100,7 @@ def test_threshold_can_route_only_hardware_native_large_terms():
     assert program.partition.n_digital_couplings == 3
 
 
-def test_zero_analog_budget_compiles_identity_analog_couplers_and_digital_work():
+def test_zero_analog_budget_compiles_identity_analog_couplers_and_digital_work() -> None:
     K, omega = _inputs()
     program = compile_hybrid_digital_analog(
         K,
@@ -116,7 +116,7 @@ def test_zero_analog_budget_compiles_identity_analog_couplers_and_digital_work()
     assert program.payload["schedule"][1]["payload"]["has_residual"] is True
 
 
-def test_all_analog_route_uses_empty_residual_circuit():
+def test_all_analog_route_uses_empty_residual_circuit() -> None:
     K, omega = _inputs()
     program = compile_hybrid_digital_analog(
         K,
@@ -133,14 +133,14 @@ def test_all_analog_route_uses_empty_residual_circuit():
     assert program.payload["schedule"][1]["payload"]["has_residual"] is False
 
 
-def test_backend_registry_exposes_hybrid_compiler():
+def test_backend_registry_exposes_hybrid_compiler() -> None:
     backend = be.get_backend("hybrid_digital_analog")
     assert backend.name == "hybrid_digital_analog"
     assert backend.is_available() is True
     assert "hybrid_digital_analog" in be.list_backends(auto_discover=False)
 
 
-def test_kuramoto_core_facade_compiles_hybrid_program():
+def test_kuramoto_core_facade_compiles_hybrid_program() -> None:
     K, omega = _inputs()
     problem = build_kuramoto_problem(K, omega, metadata={"case": "hybrid_facade"})
     program = compile_hybrid_program(
@@ -154,7 +154,7 @@ def test_kuramoto_core_facade_compiles_hybrid_program():
     assert program.n_digital_couplers == 4
 
 
-def test_backend_validation_rejects_invalid_split_parameters():
+def test_backend_validation_rejects_invalid_split_parameters() -> None:
     K, omega = _inputs()
     problem = build_kuramoto_problem(K, omega)
     backend = HybridDigitalAnalogBackend()
@@ -168,7 +168,7 @@ def test_backend_validation_rejects_invalid_split_parameters():
         backend.compile(problem, duration=1.0, trotter_steps=0)
 
 
-def test_numpy_partition_matches_expected_route_codes():
+def test_numpy_partition_matches_expected_route_codes() -> None:
     K, _omega = _inputs()
     analog, digital, rows, cols, codes = _partition_numpy(
         K,

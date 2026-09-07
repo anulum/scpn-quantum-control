@@ -55,14 +55,14 @@ def _load_power_grid_builder():
     return module
 
 
-def test_compare_measured_couplings_marks_missing_dataset_open():
+def test_compare_measured_couplings_marks_missing_dataset_open() -> None:
     result = compare_measured_couplings(np.ones((2, 2)), None)
 
     assert result["available"] is False
     assert result["status"] == "missing_measured_system_dataset"
 
 
-def test_compare_measured_couplings_validates_with_uncertainty():
+def test_compare_measured_couplings_validates_with_uncertainty() -> None:
     K = np.array([[0.0, 0.302], [0.302, 0.0]])
     measured = {
         "system": "unit-test",
@@ -79,7 +79,7 @@ def test_compare_measured_couplings_validates_with_uncertainty():
     assert result["matched_edges"] == 1
 
 
-def test_measured_system_promotion_readiness_blocks_without_null_gate():
+def test_measured_system_promotion_readiness_blocks_without_null_gate() -> None:
     K = np.array([[0.0, 0.302], [0.302, 0.0]])
     measured = {
         "system": "unit-test",
@@ -99,7 +99,7 @@ def test_measured_system_promotion_readiness_blocks_without_null_gate():
     assert "candidate must beat node-label and edge-value null models" in readiness["blockers"]
 
 
-def test_measured_system_promotion_readiness_blocks_association_observable_units():
+def test_measured_system_promotion_readiness_blocks_association_observable_units() -> None:
     K = np.array([[0.0, 0.302], [0.302, 0.0]])
     measured = {
         "system": "unit-test PLV observable",
@@ -124,7 +124,7 @@ def test_measured_system_promotion_readiness_blocks_association_observable_units
     )
 
 
-def test_compare_measured_couplings_requires_locked_normalisation():
+def test_compare_measured_couplings_requires_locked_normalisation() -> None:
     K = np.array([[0.0, 0.302], [0.302, 0.0]])
     measured = {
         "system": "unit-test",
@@ -140,7 +140,7 @@ def test_compare_measured_couplings_requires_locked_normalisation():
     assert result["normalisation_locked"] is False
 
 
-def test_compare_measured_couplings_reports_null_model_diagnostics():
+def test_compare_measured_couplings_reports_null_model_diagnostics() -> None:
     K = np.array(
         [
             [0.0, 0.3, 0.2],
@@ -170,7 +170,7 @@ def test_compare_measured_couplings_reports_null_model_diagnostics():
     assert result["null_models"]["gate_rule"]
 
 
-def test_compare_measured_couplings_reports_spectral_diagnostics():
+def test_compare_measured_couplings_reports_spectral_diagnostics() -> None:
     K = np.array(
         [
             [0.0, 0.3, 0.2],
@@ -203,21 +203,21 @@ def test_compare_measured_couplings_reports_spectral_diagnostics():
     )
 
 
-def test_null_model_diagnostics_marks_empty_rows_unavailable():
+def test_null_model_diagnostics_marks_empty_rows_unavailable() -> None:
     result = null_model_diagnostics([])
 
     assert result["available"] is False
     assert result["reason"] == "no matched measured-system edges"
 
 
-def test_spectral_diagnostics_marks_empty_rows_unavailable():
+def test_spectral_diagnostics_marks_empty_rows_unavailable() -> None:
     result = spectral_diagnostics([])
 
     assert result["available"] is False
     assert result["reason"] == "no matched measured-system edges"
 
 
-def test_load_measured_couplings_requires_couplings_list(tmp_path):
+def test_load_measured_couplings_requires_couplings_list(tmp_path: Path) -> None:
     path = tmp_path / "bad.json"
     path.write_text("[]", encoding="utf-8")
 
@@ -241,7 +241,7 @@ def test_load_measured_couplings_requires_couplings_list(tmp_path):
         raise AssertionError("Expected invalid measured coupling schema to fail")
 
 
-def test_evaluate_candidate_systems_marks_curated_topology_as_non_closing(tmp_path):
+def test_evaluate_candidate_systems_marks_curated_topology_as_non_closing(tmp_path: Path) -> None:
     candidate_dir = tmp_path / "candidates"
     candidate_dir.mkdir()
     candidate_path = candidate_dir / "unit_candidate.json"
@@ -280,7 +280,7 @@ def test_evaluate_candidate_systems_marks_curated_topology_as_non_closing(tmp_pa
     assert scan["systems"][0]["decision"]["status"] == "does_not_close_exact_magnitude_gap"
 
 
-def test_build_audit_payload_records_candidate_scan_without_closing_gap(tmp_path):
+def test_build_audit_payload_records_candidate_scan_without_closing_gap(tmp_path: Path) -> None:
     candidate_dir = tmp_path / "empty-candidates"
     candidate_dir.mkdir()
     payload = build_audit_payload(
@@ -305,7 +305,7 @@ def test_build_audit_payload_records_candidate_scan_without_closing_gap(tmp_path
     )
 
 
-def test_ieee14_power_grid_payload_is_non_promotional_physical_unit_candidate():
+def test_ieee14_power_grid_payload_is_non_promotional_physical_unit_candidate() -> None:
     builder = _load_power_grid_builder()
     payload = builder.build_ieee14_payload(
         command=["python", "scripts/build_power_grid_measured_couplings.py", "--case", "ieee14"]

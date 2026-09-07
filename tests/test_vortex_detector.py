@@ -24,19 +24,19 @@ from scpn_quantum_control.gauge.vortex_detector import (
 
 
 class TestAngleDiff:
-    def test_zero_diff(self):
+    def test_zero_diff(self) -> None:
         assert _angle_diff(0.0, 0.0) == pytest.approx(0.0)
 
-    def test_small_positive(self):
+    def test_small_positive(self) -> None:
         d = _angle_diff(0.0, 0.1)
         assert d == pytest.approx(0.1, abs=1e-10)
 
-    def test_wrapping(self):
+    def test_wrapping(self) -> None:
         """3.0 - (-3.0) = 6.0, but wrapped should be ≈ 6.0 - 2π ≈ -0.28."""
         d = _angle_diff(-3.0, 3.0)
         assert abs(d) < np.pi
 
-    def test_range(self):
+    def test_range(self) -> None:
         for _ in range(100):
             a, b = np.random.uniform(-np.pi, np.pi, 2)
             d = _angle_diff(a, b)
@@ -44,23 +44,23 @@ class TestAngleDiff:
 
 
 class TestFindPlaquettes:
-    def test_complete_graph_has_plaquettes(self):
+    def test_complete_graph_has_plaquettes(self) -> None:
         K = build_knm_paper27(L=4)
         plaquettes = _find_plaquettes(K)
         assert len(plaquettes) > 0
 
-    def test_plaquettes_are_triangles(self):
+    def test_plaquettes_are_triangles(self) -> None:
         K = build_knm_paper27(L=4)
         plaquettes = _find_plaquettes(K)
         for p in plaquettes:
             assert len(p) == 3
 
-    def test_disconnected_no_plaquettes(self):
+    def test_disconnected_no_plaquettes(self) -> None:
         K = np.zeros((4, 4))
         plaquettes = _find_plaquettes(K)
         assert len(plaquettes) == 0
 
-    def test_n4_complete_has_4_triangles(self):
+    def test_n4_complete_has_4_triangles(self) -> None:
         """C(4,3) = 4 triangles on complete graph."""
         K = build_knm_paper27(L=4)
         plaquettes = _find_plaquettes(K)
@@ -68,18 +68,18 @@ class TestFindPlaquettes:
 
 
 class TestPlaquetteVorticity:
-    def test_aligned_phases_zero_vorticity(self):
+    def test_aligned_phases_zero_vorticity(self) -> None:
         phases = np.array([0.0, 0.1, 0.2, 0.3])
         v = plaquette_vorticity(phases, [0, 1, 2])
         assert v == 0
 
-    def test_winding_phases(self):
+    def test_winding_phases(self) -> None:
         """Phase winds by 2π around plaquette → vorticity = 1."""
         phases = np.array([0.0, 2 * np.pi / 3, -2 * np.pi / 3])
         v = plaquette_vorticity(phases, [0, 1, 2])
         assert v == 1 or v == -1  # direction depends on convention
 
-    def test_integer_valued(self):
+    def test_integer_valued(self) -> None:
         rng = np.random.default_rng(42)
         for _ in range(50):
             phases = rng.uniform(-np.pi, np.pi, 4)
@@ -88,38 +88,38 @@ class TestPlaquetteVorticity:
 
 
 class TestMeasureVortexDensity:
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = measure_vortex_density(K, omega)
         assert isinstance(result, VortexResult)
 
-    def test_density_bounded(self):
+    def test_density_bounded(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = measure_vortex_density(K, omega)
         assert 0 <= result.vortex_density <= 1.0
 
-    def test_phases_shape(self):
+    def test_phases_shape(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = measure_vortex_density(K, omega)
         assert result.phases.shape == (4,)
 
-    def test_net_charge_integer(self):
+    def test_net_charge_integer(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = measure_vortex_density(K, omega)
         assert isinstance(result.net_charge, int)
 
-    def test_n_plaquettes_matches(self):
+    def test_n_plaquettes_matches(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = measure_vortex_density(K, omega)
         assert result.n_plaquettes == 4  # C(4,3) = 4
         assert len(result.plaquette_vorticities) == 4
 
-    def test_scpn_default_vortices(self):
+    def test_scpn_default_vortices(self) -> None:
         """Record vortex density at SCPN default parameters."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
@@ -132,7 +132,7 @@ class TestMeasureVortexDensity:
 
 
 class TestVortexDensityVsCoupling:
-    def test_scan_returns_keys(self):
+    def test_scan_returns_keys(self) -> None:
         omega = OMEGA_N_16[:4]
         k_vals = np.array([0.1, 0.5, 1.0])
         results = vortex_density_vs_coupling(omega, k_vals)
@@ -140,7 +140,7 @@ class TestVortexDensityVsCoupling:
         assert "vortex_density" in results
         assert len(results["k_base"]) == 3
 
-    def test_density_non_negative(self):
+    def test_density_non_negative(self) -> None:
         omega = OMEGA_N_16[:4]
         k_vals = np.array([0.1, 1.0, 3.0])
         results = vortex_density_vs_coupling(omega, k_vals)

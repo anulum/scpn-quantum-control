@@ -32,7 +32,7 @@ def _ring(n: int) -> np.ndarray:
 
 
 class TestLanczosCoefficients:
-    def test_returns_coefficients(self):
+    def test_returns_coefficients(self) -> None:
         K = 2.0 * _ring(3)
         omega = OMEGA_N_16[:3]
         H = knm_to_hamiltonian(K, omega).to_matrix()
@@ -41,7 +41,7 @@ class TestLanczosCoefficients:
         assert len(b) > 0
         assert len(basis) == len(b) + 1
 
-    def test_b_positive(self):
+    def test_b_positive(self) -> None:
         K = 2.0 * _ring(3)
         omega = OMEGA_N_16[:3]
         H = knm_to_hamiltonian(K, omega).to_matrix()
@@ -49,7 +49,7 @@ class TestLanczosCoefficients:
         b, _ = lanczos_coefficients(H, Z0)
         assert np.all(b > 0)
 
-    def test_identity_operator_no_growth(self):
+    def test_identity_operator_no_growth(self) -> None:
         """[H, I] = 0 → b_1 = 0, Krylov space is 1D."""
         K = 2.0 * _ring(2)
         omega = OMEGA_N_16[:2]
@@ -60,7 +60,7 @@ class TestLanczosCoefficients:
 
 
 class TestKrylovComplexity:
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         K = 2.0 * _ring(3)
         omega = OMEGA_N_16[:3]
         H = knm_to_hamiltonian(K, omega).to_matrix()
@@ -69,7 +69,7 @@ class TestKrylovComplexity:
         assert isinstance(result, KrylovResult)
         assert len(result.krylov_complexity) == 30
 
-    def test_starts_at_zero(self):
+    def test_starts_at_zero(self) -> None:
         """K(0) = 0 (operator starts in first Krylov basis element)."""
         K = 2.0 * _ring(3)
         omega = OMEGA_N_16[:3]
@@ -78,7 +78,7 @@ class TestKrylovComplexity:
         result = krylov_complexity(H, Z0, t_max=5.0, n_times=30)
         assert result.krylov_complexity[0] < 1e-10
 
-    def test_nonnegative(self):
+    def test_nonnegative(self) -> None:
         K = 2.0 * _ring(3)
         omega = OMEGA_N_16[:3]
         H = knm_to_hamiltonian(K, omega).to_matrix()
@@ -86,7 +86,7 @@ class TestKrylovComplexity:
         result = krylov_complexity(H, Z0, t_max=10.0, n_times=50)
         assert np.all(result.krylov_complexity >= -1e-10)
 
-    def test_4qubit(self):
+    def test_4qubit(self) -> None:
         K = 1.5 * _ring(4)
         omega = OMEGA_N_16[:4]
         H = knm_to_hamiltonian(K, omega).to_matrix()
@@ -98,7 +98,9 @@ class TestKrylovComplexity:
 
 
 class TestKrylovVsCoupling:
-    def test_rejects_dense_budget_before_probe_allocation(self, monkeypatch):
+    def test_rejects_dense_budget_before_probe_allocation(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         n = 10
         T = _ring(n)
         omega = OMEGA_N_16[:n]
@@ -113,7 +115,7 @@ class TestKrylovVsCoupling:
         with pytest.raises(DenseAllocationError, match="Krylov dense probe"):
             krylov_vs_coupling(omega, T, k_range=np.array([1.0]), max_dense_gib=1e-12)
 
-    def test_passes_dense_budget_to_bridge(self, monkeypatch):
+    def test_passes_dense_budget_to_bridge(self, monkeypatch: pytest.MonkeyPatch) -> None:
         T = _ring(2)
         omega = OMEGA_N_16[:2]
         seen_budgets: list[float | None] = []
@@ -141,20 +143,20 @@ class TestKrylovVsCoupling:
         assert seen_budgets == [0.25, 0.25]
         assert seen_max_lanczos == [7, 7]
 
-    def test_returns_dict(self):
+    def test_returns_dict(self) -> None:
         T = _ring(3)
         omega = OMEGA_N_16[:3]
         result = krylov_vs_coupling(omega, T, k_range=np.array([1.0, 3.0]))
         assert "peak_complexity" in result
         assert len(result["K_base"]) == 2
 
-    def test_complexity_varies(self):
+    def test_complexity_varies(self) -> None:
         T = _ring(3)
         omega = OMEGA_N_16[:3]
         result = krylov_vs_coupling(omega, T, k_range=np.linspace(0.5, 5.0, 5))
         assert not all(c == result["peak_complexity"][0] for c in result["peak_complexity"])
 
-    def test_all_finite(self):
+    def test_all_finite(self) -> None:
         T = _ring(3)
         omega = OMEGA_N_16[:3]
         result = krylov_vs_coupling(omega, T, k_range=np.array([1.0, 2.0, 4.0]))
@@ -168,7 +170,7 @@ class TestKrylovVsCoupling:
 
 
 class TestKrylovPhysics:
-    def test_lanczos_b_coefficients_decay(self):
+    def test_lanczos_b_coefficients_decay(self) -> None:
         """Lanczos b_n should eventually decrease (finite Hilbert space)."""
         K = 2.0 * _ring(3)
         omega = OMEGA_N_16[:3]
@@ -179,7 +181,7 @@ class TestKrylovPhysics:
             # In finite dim, b_n eventually hits zero (Krylov exhaustion)
             assert b[-1] <= b[0] + 1e-10 or len(b) < 20
 
-    def test_complexity_bounded_by_dimension(self):
+    def test_complexity_bounded_by_dimension(self) -> None:
         """K(t) ≤ dim(Krylov space) ≤ d² where d=2^n."""
         K = 2.0 * _ring(3)
         omega = OMEGA_N_16[:3]
@@ -196,7 +198,7 @@ class TestKrylovPhysics:
 
 
 class TestKrylovRust:
-    def test_rust_lanczos_parity(self):
+    def test_rust_lanczos_parity(self) -> None:
         """Rust lanczos_b_coefficients should produce similar results."""
         try:
             import scpn_quantum_engine as eng
@@ -234,7 +236,7 @@ class TestKrylovRust:
 
 
 class TestKrylovPipeline:
-    def test_pipeline_knm_to_krylov(self):
+    def test_pipeline_knm_to_krylov(self) -> None:
         """Full pipeline: Knm → Hamiltonian → Krylov complexity → peak.
         Verifies Krylov module is wired end-to-end, not decorative.
         """
@@ -264,7 +266,7 @@ class TestKrylovPipeline:
 
 
 class TestInternalHelpers:
-    def test_liouvillian_action_commutator(self):
+    def test_liouvillian_action_commutator(self) -> None:
         from scpn_quantum_control.analysis.krylov_complexity import _liouvillian_action
 
         H = np.array([[1, 0], [0, -1]], dtype=complex)
@@ -273,7 +275,7 @@ class TestInternalHelpers:
         expected = H @ X - X @ H
         np.testing.assert_allclose(L_X, expected, atol=1e-12)
 
-    def test_liouvillian_identity_is_zero(self):
+    def test_liouvillian_identity_is_zero(self) -> None:
         from scpn_quantum_control.analysis.krylov_complexity import _liouvillian_action
 
         H = np.diag([1.0, 2.0, 3.0, 4.0]).astype(complex)
@@ -281,7 +283,7 @@ class TestInternalHelpers:
         L_I = _liouvillian_action(H, I_op)
         np.testing.assert_allclose(L_I, 0.0, atol=1e-12)
 
-    def test_operator_inner_product_self(self):
+    def test_operator_inner_product_self(self) -> None:
         from scpn_quantum_control.analysis.krylov_complexity import (
             _operator_inner_product,
         )
@@ -290,7 +292,7 @@ class TestInternalHelpers:
         ip = _operator_inner_product(A, A)
         assert ip > 0
 
-    def test_operator_inner_product_orthogonal(self):
+    def test_operator_inner_product_orthogonal(self) -> None:
         from scpn_quantum_control.analysis.krylov_complexity import (
             _operator_inner_product,
         )
@@ -300,7 +302,7 @@ class TestInternalHelpers:
         ip = _operator_inner_product(X, Z)
         assert abs(ip) < 1e-10  # Tr(X†Z)/d = 0
 
-    def test_operator_inner_product_normalisation(self):
+    def test_operator_inner_product_normalisation(self) -> None:
         from scpn_quantum_control.analysis.krylov_complexity import (
             _operator_inner_product,
         )
@@ -311,7 +313,7 @@ class TestInternalHelpers:
 
 
 class TestLanczosEdgeCases:
-    def test_zero_operator(self):
+    def test_zero_operator(self) -> None:
         K = 2.0 * _ring(2)
         omega = OMEGA_N_16[:2]
         H = knm_to_hamiltonian(K, omega).to_matrix()
@@ -320,7 +322,7 @@ class TestLanczosEdgeCases:
         assert len(b) == 1
         assert b[0] == 0.0
 
-    def test_max_steps_respected(self):
+    def test_max_steps_respected(self) -> None:
         K = 2.0 * _ring(3)
         omega = OMEGA_N_16[:3]
         H = knm_to_hamiltonian(K, omega).to_matrix()
@@ -330,7 +332,7 @@ class TestLanczosEdgeCases:
 
 
 class TestKrylovComplexityEdgeCases:
-    def test_trivial_operator(self):
+    def test_trivial_operator(self) -> None:
         """Operator that commutes with H → constant zero complexity."""
         H = np.diag([1.0, 2.0, 3.0, 4.0]).astype(complex)
         D = np.diag([0.5, 0.3, 0.1, 0.7]).astype(complex)
@@ -341,7 +343,9 @@ class TestKrylovComplexityEdgeCases:
 class TestLanczosPythonFallback:
     """Cover lines 98-133: Python Lanczos when Rust unavailable."""
 
-    def test_lanczos_coefficients_never_returns_uncomputed_basis_from_rust_path(self, monkeypatch):
+    def test_lanczos_coefficients_never_returns_uncomputed_basis_from_rust_path(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """A coefficient-only accelerator must not fabricate basis vectors."""
         import sys
         from types import SimpleNamespace
@@ -365,7 +369,7 @@ class TestLanczosPythonFallback:
         assert all(vector.shape == H.shape for vector in basis)
         assert all(vector.size > 0 for vector in basis)
 
-    def test_python_lanczos_no_rust(self):
+    def test_python_lanczos_no_rust(self) -> None:
         """Mock Rust import to fail → Python Lanczos executes."""
         from unittest.mock import patch
 
@@ -386,7 +390,7 @@ class TestLanczosPythonFallback:
         # Python path returns actual basis vectors
         assert len(basis) == len(b) + 1
 
-    def test_python_lanczos_zero_operator(self):
+    def test_python_lanczos_zero_operator(self) -> None:
         """Zero initial operator → b=[0], basis=[zero]."""
         from unittest.mock import patch
 
@@ -399,7 +403,7 @@ class TestLanczosPythonFallback:
         assert len(b) == 1
         assert b[0] == 0.0
 
-    def test_krylov_complexity_python_fallback(self):
+    def test_krylov_complexity_python_fallback(self) -> None:
         """Full krylov_complexity via Python Lanczos path."""
         from unittest.mock import patch
 
@@ -420,7 +424,7 @@ class TestLanczosPythonFallback:
 
 
 class TestKrylovVsCouplingDefaults:
-    def test_default_k_range(self):
+    def test_default_k_range(self) -> None:
         T = _ring(2)
         omega = OMEGA_N_16[:2]
         result = krylov_vs_coupling(omega, T)

@@ -27,12 +27,12 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 class TestKoopmanDimension:
     """Verify finite observable-basis dimension scaling."""
 
-    def test_formula(self):
+    def test_formula(self) -> None:
         """Match the finite closure dimension to the square of oscillator count."""
         assert koopman_dimension(4) == 16
         assert koopman_dimension(16) == 256
 
-    def test_scales_quadratically(self):
+    def test_scales_quadratically(self) -> None:
         """Scale the basis dimension quadratically with oscillator count."""
         d4 = koopman_dimension(4)
         d8 = koopman_dimension(8)
@@ -42,21 +42,21 @@ class TestKoopmanDimension:
 class TestBuildKoopmanGenerator:
     """Verify Python/native finite local generator construction."""
 
-    def test_shape(self):
+    def test_shape(self) -> None:
         """Build the expected square closure for four oscillators."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         L, labels = build_koopman_generator(K, omega)
         assert L.shape == (16, 16)  # n + 2 × n(n-1)/2 = 4 + 12 = 16
 
-    def test_labels_count(self):
+    def test_labels_count(self) -> None:
         """Return one label for every observable coordinate."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         _L, labels = build_koopman_generator(K, omega)
         assert len(labels) == 16
 
-    def test_labels_structure(self):
+    def test_labels_structure(self) -> None:
         """Order identity, cosine-pair, and sine-pair labels canonically."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
@@ -67,7 +67,7 @@ class TestBuildKoopmanGenerator:
         assert "cos" in labels[3]
         assert "sin" in labels[6]
 
-    def test_zero_coupling_block_diagonal(self):
+    def test_zero_coupling_block_diagonal(self) -> None:
         """With K=0, pairs decouple: only frequency terms remain."""
         n = 3
         K = np.zeros((n, n))
@@ -76,7 +76,7 @@ class TestBuildKoopmanGenerator:
         # θ rows should be zero (no coupling)
         np.testing.assert_allclose(L[:n, :], 0.0, atol=1e-12)
 
-    def test_custom_reference(self):
+    def test_custom_reference(self) -> None:
         """Build the finite closure at an explicit reference phase."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
@@ -84,7 +84,7 @@ class TestBuildKoopmanGenerator:
         L, _labels = build_koopman_generator(K, omega, theta_ref=theta_ref)
         assert L.shape[0] == 9
 
-    def test_rust_wrapper_matches_python_generator_with_reference(self):
+    def test_rust_wrapper_matches_python_generator_with_reference(self) -> None:
         """Match fallback/native-wrapper output to Python at a reference point."""
         K = np.array([[0.0, 0.5], [0.5, 0.0]])
         omega = np.array([1.0, 1.5])
@@ -100,7 +100,9 @@ class TestBuildKoopmanGenerator:
         np.testing.assert_allclose(rust_L, python_L)
         assert rust_labels == python_labels
 
-    def test_rust_wrapper_uses_available_native_kernel(self, monkeypatch):
+    def test_rust_wrapper_uses_available_native_kernel(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Route contiguous finite inputs through an available native kernel."""
         from scpn_quantum_control.analysis import koopman
 
@@ -123,7 +125,7 @@ class TestBuildKoopmanGenerator:
         assert rust_labels == ["θ_0", "θ_1", "cos(1-0)", "sin(1-0)"]
         assert calls == [((2, 2), (2,), (2,))]
 
-    def test_rust_wrapper_can_require_native_kernel(self, monkeypatch):
+    def test_rust_wrapper_can_require_native_kernel(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Fail closed when native execution is required but unavailable."""
         from scpn_quantum_control.analysis import koopman
 
@@ -139,14 +141,14 @@ class TestBuildKoopmanGenerator:
 class TestKoopmanAnalysis:
     """Verify finite closure spectrum result construction."""
 
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         """Return the public Koopman result record."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = koopman_analysis(K, omega)
         assert isinstance(result, KoopmanResult)
 
-    def test_n_observables(self):
+    def test_n_observables(self) -> None:
         """Record closure and oscillator dimensions consistently."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
@@ -154,14 +156,14 @@ class TestKoopmanAnalysis:
         assert result.n_observables == 16
         assert result.n_oscillators == 4
 
-    def test_eigenvalue_count(self):
+    def test_eigenvalue_count(self) -> None:
         """Return one dense eigenvalue per observable coordinate."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = koopman_analysis(K, omega)
         assert len(result.eigenvalues) == 16
 
-    def test_eigenvalues_sorted_by_magnitude(self):
+    def test_eigenvalues_sorted_by_magnitude(self) -> None:
         """Sort closure eigenvalues by descending absolute magnitude."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
@@ -170,7 +172,7 @@ class TestKoopmanAnalysis:
         for i in range(len(mags) - 1):
             assert mags[i] >= mags[i + 1] - 1e-10
 
-    def test_scpn_koopman_spectrum(self):
+    def test_scpn_koopman_spectrum(self) -> None:
         """Record Koopman spectrum at SCPN default."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
@@ -184,7 +186,7 @@ class TestKoopmanAnalysis:
 class TestKoopmanToHamiltonian:
     """Verify anti-Hermitian projection into a Hermitian matrix."""
 
-    def test_hermitian(self):
+    def test_hermitian(self) -> None:
         """Produce an exactly Hermitian numerical projection."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
@@ -192,7 +194,7 @@ class TestKoopmanToHamiltonian:
         H = koopman_to_hamiltonian(L)
         np.testing.assert_allclose(H, H.conj().T, atol=1e-12)
 
-    def test_shape_preserved(self):
+    def test_shape_preserved(self) -> None:
         """Preserve closure matrix dimensions during projection."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
@@ -200,7 +202,7 @@ class TestKoopmanToHamiltonian:
         H = koopman_to_hamiltonian(L)
         assert H.shape == L.shape
 
-    def test_real_eigenvalues(self):
+    def test_real_eigenvalues(self) -> None:
         """Give real eigenvalues for the Hermitian projection."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
@@ -218,11 +220,11 @@ class TestKoopmanToHamiltonian:
 class TestKoopman2Oscillator:
     """Verify the smallest nontrivial two-oscillator closure."""
 
-    def test_2osc_dimension(self):
+    def test_2osc_dimension(self) -> None:
         """Use four observables for two oscillators."""
         assert koopman_dimension(2) == 4
 
-    def test_2osc_generator(self):
+    def test_2osc_generator(self) -> None:
         """Build two identity and one cosine/sine pair coordinate."""
         K = np.array([[0, 0.5], [0.5, 0]])
         omega = np.array([1.0, 1.5])
@@ -231,7 +233,7 @@ class TestKoopman2Oscillator:
         assert L.shape == (4, 4)
         assert len(labels) == 4
 
-    def test_2osc_analysis(self):
+    def test_2osc_analysis(self) -> None:
         """Record two oscillators and four observables in the analysis."""
         K = np.array([[0, 0.5], [0.5, 0]])
         omega = np.array([1.0, 1.5])
@@ -239,7 +241,7 @@ class TestKoopman2Oscillator:
         assert result.n_oscillators == 2
         assert result.n_observables == 4
 
-    def test_2osc_hamiltonian_size(self):
+    def test_2osc_hamiltonian_size(self) -> None:
         """Preserve the four-dimensional two-oscillator closure size."""
         K = np.array([[0, 0.5], [0.5, 0]])
         omega = np.array([1.0, 1.5])
@@ -251,7 +253,7 @@ class TestKoopman2Oscillator:
 class TestKoopmanGeneratorPhysics:
     """Verify finite closure structure and numerical finiteness."""
 
-    def test_identical_frequencies_block(self):
+    def test_identical_frequencies_block(self) -> None:
         """Identical frequencies → Δω=0 → cos-sin coupling vanishes."""
         K = np.array([[0, 1.0], [1.0, 0]])
         omega = np.array([1.0, 1.0])
@@ -260,7 +262,7 @@ class TestKoopmanGeneratorPhysics:
         assert abs(L[2, 3]) < 1e-10
         assert abs(L[3, 2]) < 1e-10
 
-    def test_generator_finite(self):
+    def test_generator_finite(self) -> None:
         """Keep every generated closure coefficient finite."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
@@ -280,28 +282,28 @@ class TestKoopmanInputValidation:
         """Provide a finite two-oscillator coupling and frequency pair."""
         return np.array([[0.0, 0.5], [0.5, 0.0]]), np.array([1.0, 1.5])
 
-    def test_default_max_oscillators_is_sane(self):
+    def test_default_max_oscillators_is_sane(self) -> None:
         """Keep the default dense-allocation cap at its reviewed bound."""
         # 32 oscillators → dim=1024, ~8 MB. Higher would let a stray
         # caller silently allocate hundreds of MB and queue eigvals
         # for many minutes.
         assert MAX_OSCILLATORS_DEFAULT == 32
 
-    def test_non_square_matrix_rejected(self):
+    def test_non_square_matrix_rejected(self) -> None:
         """Reject rectangular coupling matrices."""
         K = np.zeros((3, 4))
         omega = np.array([1.0, 1.5, 2.0])
         with pytest.raises(ValueError, match="square 2-D matrix"):
             build_koopman_generator(K, omega)
 
-    def test_one_dimensional_K_rejected(self):
+    def test_one_dimensional_K_rejected(self) -> None:
         """Reject a one-dimensional coupling input."""
         K = np.array([0.0, 0.5, 0.0, 0.0])
         omega = np.array([1.0, 1.5])
         with pytest.raises(ValueError, match="square 2-D matrix"):
             build_koopman_generator(K, omega)
 
-    def test_empty_K_rejected(self):
+    def test_empty_K_rejected(self) -> None:
         """Reject an empty oscillator system."""
         K = np.zeros((0, 0))
         omega = np.array([])
@@ -342,7 +344,7 @@ class TestKoopmanInputValidation:
         with pytest.raises(ValueError, match="theta_ref"):
             build_koopman_generator(K, omega, theta_ref=np.array([0.0, 0.0, 0.0]))
 
-    def test_n_above_default_rejected(self):
+    def test_n_above_default_rejected(self) -> None:
         """Reject implicit allocation beyond the default oscillator cap."""
         n = MAX_OSCILLATORS_DEFAULT + 1
         K = np.zeros((n, n))
@@ -350,7 +352,7 @@ class TestKoopmanInputValidation:
         with pytest.raises(ValueError, match="exceeds max_oscillators"):
             build_koopman_generator(K, omega)
 
-    def test_explicit_max_oscillators_allows_larger_n(self):
+    def test_explicit_max_oscillators_allows_larger_n(self) -> None:
         """Allow a bounded larger closure after explicit allocation opt-in."""
         # Caller explicitly opts in. Use a modestly larger size that
         # still completes quickly so the test stays fast.
@@ -361,14 +363,14 @@ class TestKoopmanInputValidation:
         assert L.shape == (n * n, n * n)
         assert len(labels) == n * n
 
-    def test_koopman_analysis_propagates_validation(self):
+    def test_koopman_analysis_propagates_validation(self) -> None:
         """Propagate coupling-shape validation through spectrum analysis."""
         K = np.zeros((3, 4))
         omega = np.array([1.0, 1.5, 2.0])
         with pytest.raises(ValueError, match="square 2-D matrix"):
             koopman_analysis(K, omega)
 
-    def test_koopman_analysis_propagates_max_oscillators(self):
+    def test_koopman_analysis_propagates_max_oscillators(self) -> None:
         """Propagate the allocation cap through spectrum analysis."""
         n = MAX_OSCILLATORS_DEFAULT + 1
         K = np.zeros((n, n))

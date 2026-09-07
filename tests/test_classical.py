@@ -32,7 +32,7 @@ SIZES = [2, 3, 4, 6]
 
 
 @pytest.mark.parametrize("n", SIZES)
-def test_kuramoto_returns_correct_shapes(n):
+def test_kuramoto_returns_correct_shapes(n: int) -> None:
     result = classical_kuramoto_reference(n, t_max=0.5, dt=0.1)
     n_steps = 6
     assert result["times"].shape == (n_steps,)
@@ -41,13 +41,13 @@ def test_kuramoto_returns_correct_shapes(n):
 
 
 @pytest.mark.parametrize("n", SIZES)
-def test_kuramoto_R_bounded(n):
+def test_kuramoto_R_bounded(n: int) -> None:
     result = classical_kuramoto_reference(n, t_max=1.0, dt=0.05)
     for r in result["R"]:
         assert 0.0 <= r <= 1.0 + 1e-10
 
 
-def test_kuramoto_identical_frequencies_stay_locked():
+def test_kuramoto_identical_frequencies_stay_locked() -> None:
     """Identical frequencies with coupling should maintain synchrony."""
     K = np.array([[0, 1.0], [1.0, 0]])
     omega = np.array([1.0, 1.0])
@@ -57,7 +57,7 @@ def test_kuramoto_identical_frequencies_stay_locked():
     assert result["R"][-1] > 0.9
 
 
-def test_kuramoto_zero_coupling_free_rotation():
+def test_kuramoto_zero_coupling_free_rotation() -> None:
     """Zero coupling: phases advance linearly at natural frequencies."""
     K = np.zeros((2, 2))
     omega = np.array([1.0, 2.0])
@@ -67,7 +67,7 @@ def test_kuramoto_zero_coupling_free_rotation():
     np.testing.assert_allclose(result["theta"][-1], omega * 0.5, atol=0.01)
 
 
-def test_kuramoto_default_params():
+def test_kuramoto_default_params() -> None:
     """Default params use Paper 27 values."""
     result = classical_kuramoto_reference(4, t_max=0.2, dt=0.05)
     assert len(result["R"]) == 5  # 0.2/0.05 = 4 steps + 1
@@ -77,26 +77,26 @@ def test_kuramoto_default_params():
 
 
 @pytest.mark.parametrize("n", SIZES)
-def test_exact_diag_returns_real_eigenvalues(n):
+def test_exact_diag_returns_real_eigenvalues(n: int) -> None:
     result = classical_exact_diag(n)
     assert np.all(np.isreal(result["eigenvalues"]))
 
 
 @pytest.mark.parametrize("n", SIZES)
-def test_exact_diag_ground_below_first_excited(n):
+def test_exact_diag_ground_below_first_excited(n: int) -> None:
     result = classical_exact_diag(n)
     assert result["spectral_gap"] > 0.0
 
 
 @pytest.mark.parametrize("n", SIZES)
-def test_exact_diag_eigenvalues_sorted(n):
+def test_exact_diag_eigenvalues_sorted(n: int) -> None:
     result = classical_exact_diag(n)
     evals = result["eigenvalues"]
     np.testing.assert_array_less(evals[:-1], evals[1:] + 1e-12)
 
 
 @pytest.mark.parametrize("n", [3, 4, 6])
-def test_exact_diag_sparse_path(n):
+def test_exact_diag_sparse_path(n: int) -> None:
     """k_eigenvalues triggers sparse solver. Needs k < 2^n - 1."""
     k = min(3, 2**n - 2)
     result = classical_exact_diag(n, k_eigenvalues=k)
@@ -105,7 +105,7 @@ def test_exact_diag_sparse_path(n):
 
 
 @pytest.mark.parametrize("n", SIZES)
-def test_exact_diag_ground_state_normalised(n):
+def test_exact_diag_ground_state_normalised(n: int) -> None:
     result = classical_exact_diag(n)
     norm = np.linalg.norm(result["ground_state"])
     np.testing.assert_allclose(norm, 1.0, atol=1e-12)
@@ -115,34 +115,34 @@ def test_exact_diag_ground_state_normalised(n):
 
 
 @pytest.mark.parametrize("n", SIZES)
-def test_exact_evolution_shapes(n):
+def test_exact_evolution_shapes(n: int) -> None:
     result = classical_exact_evolution(n, t_max=0.3, dt=0.1)
     assert result["times"].shape == (4,)
     assert result["R"].shape == (4,)
 
 
 @pytest.mark.parametrize("n", SIZES)
-def test_exact_evolution_R_bounded(n):
+def test_exact_evolution_R_bounded(n: int) -> None:
     result = classical_exact_evolution(n, t_max=0.5, dt=0.05)
     for r in result["R"]:
         assert 0.0 <= r <= 1.0 + 1e-10
 
 
 @pytest.mark.parametrize("n", SIZES)
-def test_exact_evolution_unitarity(n):
+def test_exact_evolution_unitarity(n: int) -> None:
     """Exact evolution preserves initial R at t=0."""
     result = classical_exact_evolution(n, t_max=0.3, dt=0.1)
     assert result["R"][0] > 0.0
 
 
 @pytest.mark.parametrize("n", SIZES)
-def test_exact_evolution_default_params(n):
+def test_exact_evolution_default_params(n: int) -> None:
     """Default K and omega from Paper 27."""
     result = classical_exact_evolution(n, t_max=0.2, dt=0.1)
     assert len(result["R"]) == 3
 
 
-def test_exact_evolution_dense_branch_propagates_dense_budget():
+def test_exact_evolution_dense_branch_propagates_dense_budget() -> None:
     n = 4
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n].copy()
@@ -155,7 +155,7 @@ def test_exact_evolution_dense_branch_propagates_dense_budget():
 
 
 @pytest.mark.parametrize("horizon", [2, 3, 4, 5])
-def test_brute_mpc_optimal_cost_minimal(horizon):
+def test_brute_mpc_optimal_cost_minimal(horizon: int) -> None:
     B = np.eye(2)
     target = np.array([0.8, 0.6])
     result = classical_brute_mpc(B, target, horizon=horizon)
@@ -163,7 +163,7 @@ def test_brute_mpc_optimal_cost_minimal(horizon):
 
 
 @pytest.mark.parametrize("horizon", [2, 3, 4, 5])
-def test_brute_mpc_binary_actions(horizon):
+def test_brute_mpc_binary_actions(horizon: int) -> None:
     B = np.array([[1.0]])
     target = np.array([1.0])
     result = classical_brute_mpc(B, target, horizon=horizon)
@@ -171,13 +171,13 @@ def test_brute_mpc_binary_actions(horizon):
     assert set(np.unique(result["optimal_actions"])).issubset({0, 1})
 
 
-def test_brute_mpc_enumerates_all():
+def test_brute_mpc_enumerates_all() -> None:
     result = classical_brute_mpc(np.eye(2), np.array([1.0, 0.0]), horizon=3)
     assert result["n_evaluated"] == 8
     assert result["all_costs"].shape == (8,)
 
 
-def test_brute_mpc_zero_target():
+def test_brute_mpc_zero_target() -> None:
     """Zero target: all-zeros action should be optimal (cost = 0)."""
     B = np.eye(2)
     target = np.array([0.0, 0.0])
@@ -189,7 +189,7 @@ def test_brute_mpc_zero_target():
 # --- bloch_vectors_from_json ---
 
 
-def test_bloch_vectors_from_json_roundtrip():
+def test_bloch_vectors_from_json_roundtrip() -> None:
     data = {
         "exp_x": [0.5, 0.3, 0.1],
         "exp_y": [0.4, 0.2, 0.0],
@@ -212,7 +212,7 @@ def test_bloch_vectors_from_json_roundtrip():
     np.testing.assert_allclose(result["bloch_magnitudes"], expected_mag, atol=1e-12)
 
 
-def test_bloch_vectors_pure_state():
+def test_bloch_vectors_pure_state() -> None:
     """Pure state on Bloch sphere: magnitude = 1."""
     data = {"exp_x": [1.0], "exp_y": [0.0], "exp_z": [0.0]}
     with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
@@ -228,7 +228,7 @@ def test_bloch_vectors_pure_state():
 class TestSparseKrylovEvolution:
     """Cover lines 180-185: sparse Krylov path for n >= 13."""
 
-    def test_sparse_krylov_13_qubit(self):
+    def test_sparse_krylov_13_qubit(self) -> None:
         """n=13 triggers sparse expm_multiply instead of dense matrix exp.
 
         Cover lines 180-185: sparse Krylov path with expm_multiply.
@@ -246,7 +246,9 @@ class TestSparseKrylovEvolution:
 class TestClassicalAccelerationContracts:
     """Behavioural contracts for optional acceleration paths."""
 
-    def test_order_param_numpy_fallback_when_accel_import_fails(self, monkeypatch):
+    def test_order_param_numpy_fallback_when_accel_import_fails(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Minimal installs still compute the Kuramoto order parameter."""
         import builtins
 
@@ -265,7 +267,9 @@ class TestClassicalAccelerationContracts:
 
         assert result == pytest.approx(0.0, abs=1e-12)
 
-    def test_expectation_pauli_delegates_to_engine_fast_path(self, monkeypatch):
+    def test_expectation_pauli_delegates_to_engine_fast_path(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """The engine path receives contiguous real/imag arrays and Pauli index."""
         import sys
         from types import SimpleNamespace

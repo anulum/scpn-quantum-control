@@ -30,7 +30,7 @@ def _ring_topology(n: int) -> np.ndarray:
 
 
 class TestBerryPhaseScan:
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         n = 3
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -38,7 +38,7 @@ class TestBerryPhaseScan:
         assert isinstance(result, BerryPhaseResult)
         assert len(result.k_values) == 5  # n_k - 1 midpoints
 
-    def test_fidelity_near_one_for_small_steps(self):
+    def test_fidelity_near_one_for_small_steps(self) -> None:
         """Fidelity between adjacent ground states should be close to 1 for small dK."""
         n = 3
         T = _ring_topology(n)
@@ -46,7 +46,7 @@ class TestBerryPhaseScan:
         result = berry_phase_scan(omega, T, k_range=np.linspace(1.0, 1.5, 20))
         assert np.all(result.fidelity > 0.9)
 
-    def test_fidelity_drops_across_transition(self):
+    def test_fidelity_drops_across_transition(self) -> None:
         """Fidelity should be lower where ground state changes character (near K_c)."""
         n = 3
         T = _ring_topology(n)
@@ -56,7 +56,7 @@ class TestBerryPhaseScan:
         # Minimum fidelity should be < 1 (not all steps are trivial)
         assert np.min(result.fidelity) < 0.999
 
-    def test_berry_curvature_has_peak(self):
+    def test_berry_curvature_has_peak(self) -> None:
         """Curvature should peak near the transition."""
         n = 3
         T = _ring_topology(n)
@@ -67,7 +67,7 @@ class TestBerryPhaseScan:
         assert result.curvature_peak_k >= 0.3
         assert result.curvature_peak_k <= 6.0
 
-    def test_fidelity_susceptibility_peaks_near_transition(self):
+    def test_fidelity_susceptibility_peaks_near_transition(self) -> None:
         """χ_F (gauge-invariant) should peak where ground state changes fastest."""
         n = 3
         T = _ring_topology(n)
@@ -76,7 +76,7 @@ class TestBerryPhaseScan:
         # χ_F should have a nonzero maximum somewhere in the scan
         assert np.max(result.fidelity_susceptibility) > 0
 
-    def test_fidelity_susceptibility_positive(self):
+    def test_fidelity_susceptibility_positive(self) -> None:
         """Fidelity susceptibility should be non-negative."""
         n = 3
         T = _ring_topology(n)
@@ -84,14 +84,14 @@ class TestBerryPhaseScan:
         result = berry_phase_scan(omega, T, k_range=np.linspace(0.5, 5.0, 10))
         assert np.all(result.fidelity_susceptibility >= -1e-10)
 
-    def test_gap_varies(self):
+    def test_gap_varies(self) -> None:
         n = 3
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
         result = berry_phase_scan(omega, T, k_range=np.linspace(0.5, 5.0, 8))
         assert result.spectral_gap[0] != result.spectral_gap[-1]
 
-    def test_4qubit_scan(self):
+    def test_4qubit_scan(self) -> None:
         n = 4
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -99,7 +99,7 @@ class TestBerryPhaseScan:
         assert isinstance(result, BerryPhaseResult)
         assert len(result.berry_connection) == 3
 
-    def test_2qubit_smooth(self):
+    def test_2qubit_smooth(self) -> None:
         """2-qubit system should have smooth Berry connection."""
         n = 2
         T = _ring_topology(n)
@@ -115,7 +115,7 @@ class TestBerryPhaseScan:
 
 
 class TestBerryPhasePhysics:
-    def test_fidelity_bounded_0_1(self):
+    def test_fidelity_bounded_0_1(self) -> None:
         """Fidelity |<ψ(K)|ψ(K+dK)>|² must be in [0, 1]."""
         n = 3
         T = _ring_topology(n)
@@ -124,7 +124,7 @@ class TestBerryPhasePhysics:
         assert np.all(result.fidelity >= -1e-10)
         assert np.all(result.fidelity <= 1.0 + 1e-10)
 
-    def test_spectral_gap_positive(self):
+    def test_spectral_gap_positive(self) -> None:
         """Energy gap E_1 - E_0 > 0 (non-degenerate ground state)."""
         n = 3
         T = _ring_topology(n)
@@ -132,7 +132,7 @@ class TestBerryPhasePhysics:
         result = berry_phase_scan(omega, T, k_range=np.linspace(0.5, 5.0, 6))
         assert np.all(np.array(result.spectral_gap) > 0)
 
-    def test_berry_curvature_finite(self):
+    def test_berry_curvature_finite(self) -> None:
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -146,7 +146,7 @@ class TestBerryPhasePhysics:
 
 
 class TestBerryPipeline:
-    def test_pipeline_knm_to_berry_curvature(self):
+    def test_pipeline_knm_to_berry_curvature(self) -> None:
         """Full pipeline: Knm topology → Berry phase scan → curvature → peak K_c.
         Verifies Berry phase module is wired and produces topological data.
         """
@@ -175,7 +175,7 @@ class TestBerryPipeline:
 
 
 class TestGroundState:
-    def test_returns_vector_and_gap(self):
+    def test_returns_vector_and_gap(self) -> None:
         from scpn_quantum_control.analysis.berry_phase import _ground_state
 
         T = _ring_topology(2)
@@ -186,7 +186,9 @@ class TestGroundState:
         assert gap > 0
         np.testing.assert_allclose(np.linalg.norm(psi), 1.0, atol=1e-10)
 
-    def test_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+    def test_rejects_dense_budget_before_hamiltonian_allocation(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         from scpn_quantum_control.analysis.berry_phase import _ground_state
 
         T = _ring_topology(4)
@@ -206,7 +208,9 @@ class TestGroundState:
 
 
 class TestBerryPhaseBudget:
-    def test_scan_rejects_retained_state_budget_before_ground_state_calls(self, monkeypatch):
+    def test_scan_rejects_retained_state_budget_before_ground_state_calls(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         omega = np.ones(20)
         topology = _ring_topology(20)
 
@@ -226,7 +230,9 @@ class TestBerryPhaseBudget:
                 max_dense_gib=1e-6,
             )
 
-    def test_scan_propagates_dense_budget_to_ground_state(self, monkeypatch):
+    def test_scan_propagates_dense_budget_to_ground_state(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         omega = OMEGA_N_16[:2]
         topology = _ring_topology(2)
         seen_budgets = []
@@ -256,7 +262,7 @@ class TestBerryPhaseBudget:
 
 
 class TestFixGauge:
-    def test_aligned_overlap_real_positive(self):
+    def test_aligned_overlap_real_positive(self) -> None:
         from scpn_quantum_control.analysis.berry_phase import _fix_gauge
 
         psi_ref = np.array([1, 0, 0, 0], dtype=complex)
@@ -266,7 +272,7 @@ class TestFixGauge:
         overlap = np.vdot(psi_ref, psi_fixed)
         assert overlap.real > 0.99
 
-    def test_zero_overlap_unchanged(self):
+    def test_zero_overlap_unchanged(self) -> None:
         from scpn_quantum_control.analysis.berry_phase import _fix_gauge
 
         psi_ref = np.array([1, 0, 0, 0], dtype=complex)
@@ -277,7 +283,7 @@ class TestFixGauge:
 
 
 class TestBerryPhaseDefaults:
-    def test_default_k_range(self):
+    def test_default_k_range(self) -> None:
         T = _ring_topology(2)
         omega = OMEGA_N_16[:2]
         result = berry_phase_scan(omega, T)
@@ -285,7 +291,7 @@ class TestBerryPhaseDefaults:
 
 
 class TestBerryPhaseSingleStep:
-    def test_two_k_values(self):
+    def test_two_k_values(self) -> None:
         T = _ring_topology(2)
         omega = OMEGA_N_16[:2]
         result = berry_phase_scan(omega, T, k_range=np.array([1.0, 2.0]))

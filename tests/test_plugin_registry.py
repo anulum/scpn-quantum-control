@@ -26,17 +26,17 @@ from scpn_quantum_control.hardware.plugin_registry import PluginRegistry, regist
 
 
 class TestPluginRegistryInit:
-    def test_default_lazy_loaders(self):
+    def test_default_lazy_loaders(self) -> None:
         r = PluginRegistry()
         assert "qiskit" in r._lazy_loaders
         assert "pennylane" in r._lazy_loaders
         assert "cirq" in r._lazy_loaders
 
-    def test_empty_backends_at_init(self):
+    def test_empty_backends_at_init(self) -> None:
         r = PluginRegistry()
         assert len(r._backends) == 0
 
-    def test_list_includes_lazy(self):
+    def test_list_includes_lazy(self) -> None:
         r = PluginRegistry()
         backends = r.list_backends()
         assert "qiskit" in backends
@@ -45,7 +45,7 @@ class TestPluginRegistryInit:
 
 
 class TestRegister:
-    def test_decorator_register(self):
+    def test_decorator_register(self) -> None:
         r = PluginRegistry()
 
         @r.register("test_backend")
@@ -56,7 +56,7 @@ class TestRegister:
         assert "test_backend" in r._backends
         assert r._backends["test_backend"] is TestRunner
 
-    def test_register_class(self):
+    def test_register_class(self) -> None:
         r = PluginRegistry()
 
         class MyRunner:
@@ -65,32 +65,32 @@ class TestRegister:
         r.register_class("my_runner", MyRunner)
         assert "my_runner" in r._backends
 
-    def test_registered_appears_in_list(self):
+    def test_registered_appears_in_list(self) -> None:
         r = PluginRegistry()
         r.register_class("custom", type("Custom", (), {}))
         assert "custom" in r.list_backends()
 
 
 class TestIsAvailable:
-    def test_registered_is_available(self):
+    def test_registered_is_available(self) -> None:
         r = PluginRegistry()
         r.register_class("mock_be", type("MockBE", (), {}))
         assert r.is_available("mock_be") is True
 
-    def test_qiskit_lazy_available(self):
+    def test_qiskit_lazy_available(self) -> None:
         r = PluginRegistry()
         assert r.is_available("qiskit") is True
 
-    def test_unknown_not_available(self):
+    def test_unknown_not_available(self) -> None:
         r = PluginRegistry()
         assert r.is_available("nonexistent_backend") is False
 
-    def test_lazy_import_failure(self):
+    def test_lazy_import_failure(self) -> None:
         r = PluginRegistry()
         r._lazy_loaders["broken"] = ("nonexistent.module.path", "Cls")
         assert r.is_available("broken") is False
 
-    def test_lazy_attribute_error(self):
+    def test_lazy_attribute_error(self) -> None:
         r = PluginRegistry()
         r._lazy_loaders["bad_attr"] = (
             "scpn_quantum_control.phase.xy_kuramoto",
@@ -100,7 +100,7 @@ class TestIsAvailable:
 
 
 class TestGetRunner:
-    def test_registered_runner(self):
+    def test_registered_runner(self) -> None:
         r = PluginRegistry()
 
         class FakeRunner:
@@ -115,7 +115,7 @@ class TestGetRunner:
         assert isinstance(runner, FakeRunner)
         np.testing.assert_array_equal(runner.K, K)
 
-    def test_qiskit_lazy_runner(self):
+    def test_qiskit_lazy_runner(self) -> None:
         """Qiskit lazy loading uses n_qubits as first arg."""
         r = PluginRegistry()
         K = np.eye(3) * 0.5
@@ -123,7 +123,7 @@ class TestGetRunner:
         runner = r.get_runner("qiskit", K, omega)
         assert runner is not None
 
-    def test_lazy_caches_class(self):
+    def test_lazy_caches_class(self) -> None:
         """After lazy load, class is cached in _backends."""
         r = PluginRegistry()
         K = np.eye(3) * 0.5
@@ -131,7 +131,7 @@ class TestGetRunner:
         r.get_runner("qiskit", K, omega)
         assert "qiskit" in r._backends
 
-    def test_non_qiskit_lazy_runner(self):
+    def test_non_qiskit_lazy_runner(self) -> None:
         """Non-qiskit lazy loading passes (K, omega) directly via actual lazy path."""
         r = PluginRegistry()
         # Register a custom lazy loader pointing to a real importable class
@@ -151,30 +151,30 @@ class TestGetRunner:
             mock_cls.assert_called_once()
             assert "fake_lazy" in r._backends
 
-    def test_unknown_raises(self):
+    def test_unknown_raises(self) -> None:
         r = PluginRegistry()
         with pytest.raises(ValueError, match="Unknown backend"):
             r.get_runner("nonexistent", np.eye(2), np.ones(2))
 
 
 class TestAvailableBackends:
-    def test_returns_subset_of_list(self):
+    def test_returns_subset_of_list(self) -> None:
         r = PluginRegistry()
         available = r.available_backends()
         all_backends = r.list_backends()
         for b in available:
             assert b in all_backends
 
-    def test_qiskit_available(self):
+    def test_qiskit_available(self) -> None:
         r = PluginRegistry()
         assert "qiskit" in r.available_backends()
 
 
 class TestGlobalRegistry:
-    def test_singleton_exists(self):
+    def test_singleton_exists(self) -> None:
         assert isinstance(registry, PluginRegistry)
 
-    def test_list_backends_works(self):
+    def test_list_backends_works(self) -> None:
         backends = registry.list_backends()
         assert isinstance(backends, list)
         assert len(backends) > 0

@@ -31,41 +31,41 @@ def _ring(n: int) -> np.ndarray:
 
 
 class TestLoschmidtQuench:
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         T = _ring(3)
         omega = OMEGA_N_16[:3]
         result = loschmidt_quench(omega, T, K_initial=0.5, K_final=3.0)
         assert isinstance(result, LoschmidtResult)
         assert len(result.times) == 200
 
-    def test_amplitude_starts_at_one(self):
+    def test_amplitude_starts_at_one(self) -> None:
         """G(0) = ⟨ψ_i|ψ_i⟩ = 1."""
         T = _ring(3)
         omega = OMEGA_N_16[:3]
         result = loschmidt_quench(omega, T, K_initial=1.0, K_final=3.0)
         assert abs(result.loschmidt_amplitude[0] - 1.0) < 1e-6
 
-    def test_no_quench_stays_one(self):
+    def test_no_quench_stays_one(self) -> None:
         """K_i = K_f → |G(t)| = 1 for all t (no dynamics)."""
         T = _ring(3)
         omega = OMEGA_N_16[:3]
         result = loschmidt_quench(omega, T, K_initial=2.0, K_final=2.0, n_times=50)
         assert np.all(result.loschmidt_amplitude > 0.99)
 
-    def test_amplitude_bounded(self):
+    def test_amplitude_bounded(self) -> None:
         T = _ring(3)
         omega = OMEGA_N_16[:3]
         result = loschmidt_quench(omega, T, K_initial=0.5, K_final=4.0)
         assert np.all(result.loschmidt_amplitude >= 0)
         assert np.all(result.loschmidt_amplitude <= 1.0 + 1e-6)
 
-    def test_rate_function_nonnegative(self):
+    def test_rate_function_nonnegative(self) -> None:
         T = _ring(3)
         omega = OMEGA_N_16[:3]
         result = loschmidt_quench(omega, T, K_initial=0.5, K_final=3.0)
         assert np.all(result.rate_function >= -1e-6)
 
-    def test_large_quench_has_oscillations(self):
+    def test_large_quench_has_oscillations(self) -> None:
         """Large quench on 4 qubits should produce amplitude oscillations.
 
         3-qubit weak-coupling ground state is |000⟩ (Sz=+3/2 sector,
@@ -77,13 +77,15 @@ class TestLoschmidtQuench:
         result = loschmidt_quench(omega, T, K_initial=2.0, K_final=5.0, t_max=10.0)
         assert np.std(result.loschmidt_amplitude) > 0.001
 
-    def test_4qubit(self):
+    def test_4qubit(self) -> None:
         T = _ring(4)
         omega = OMEGA_N_16[:4]
         result = loschmidt_quench(omega, T, K_initial=1.0, K_final=3.0, n_times=50)
         assert len(result.loschmidt_amplitude) == 50
 
-    def test_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+    def test_rejects_dense_budget_before_hamiltonian_allocation(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
             raise AssertionError("dense Hamiltonian allocation happened before budget gate")
 
@@ -103,7 +105,7 @@ class TestLoschmidtQuench:
 
 
 class TestQuenchScan:
-    def test_returns_dict(self):
+    def test_returns_dict(self) -> None:
         T = _ring(3)
         omega = OMEGA_N_16[:3]
         result = quench_scan(
@@ -113,7 +115,7 @@ class TestQuenchScan:
         assert "n_cusps" in result
         assert len(result["K_final"]) == 2
 
-    def test_all_finite(self):
+    def test_all_finite(self) -> None:
         T = _ring(3)
         omega = OMEGA_N_16[:3]
         result = quench_scan(
@@ -129,20 +131,20 @@ class TestQuenchScan:
 
 
 class TestLoschmidtPhysics:
-    def test_rate_function_zero_at_t_zero(self):
+    def test_rate_function_zero_at_t_zero(self) -> None:
         """r(0) = -ln|G(0)|²/N = -ln(1)/N = 0."""
         T = _ring(3)
         omega = OMEGA_N_16[:3]
         result = loschmidt_quench(omega, T, K_initial=1.0, K_final=3.0)
         assert abs(result.rate_function[0]) < 1e-6
 
-    def test_times_monotonic(self):
+    def test_times_monotonic(self) -> None:
         T = _ring(3)
         omega = OMEGA_N_16[:3]
         result = loschmidt_quench(omega, T, K_initial=0.5, K_final=3.0)
         assert np.all(np.diff(result.times) > 0)
 
-    def test_has_n_cusps_attribute(self):
+    def test_has_n_cusps_attribute(self) -> None:
         T = _ring(3)
         omega = OMEGA_N_16[:3]
         result = loschmidt_quench(omega, T, K_initial=0.5, K_final=3.0)
@@ -156,7 +158,7 @@ class TestLoschmidtPhysics:
 
 
 class TestLoschmidtPipeline:
-    def test_pipeline_knm_to_dqpt(self):
+    def test_pipeline_knm_to_dqpt(self) -> None:
         """Full pipeline: build_knm → quench → Loschmidt echo → rate function.
         Verifies DQPT module is wired and produces topological time data.
         """
@@ -185,13 +187,13 @@ class TestLoschmidtPipeline:
 
 
 class TestQuenchScanDefaults:
-    def test_default_k_final_range(self):
+    def test_default_k_final_range(self) -> None:
         T = _ring(3)
         omega = OMEGA_N_16[:3]
         result = quench_scan(omega, T, K_initial=0.5, n_times=20)
         assert len(result["K_final"]) == 10  # default linspace 0.5-5.0, 10 pts
 
-    def test_max_rate_positive(self):
+    def test_max_rate_positive(self) -> None:
         T = _ring(3)
         omega = OMEGA_N_16[:3]
         result = quench_scan(omega, T, K_initial=0.5, K_final_range=np.array([3.0]), n_times=50)
@@ -199,7 +201,7 @@ class TestQuenchScanDefaults:
 
 
 class TestLoschmidtCuspDetection:
-    def test_cusp_times_sorted(self):
+    def test_cusp_times_sorted(self) -> None:
         T = _ring(4)
         omega = OMEGA_N_16[:4]
         result = loschmidt_quench(omega, T, K_initial=1.0, K_final=5.0, t_max=10.0, n_times=200)
@@ -207,7 +209,7 @@ class TestLoschmidtCuspDetection:
             for i in range(len(result.cusp_times) - 1):
                 assert result.cusp_times[i] < result.cusp_times[i + 1]
 
-    def test_stores_ki_kf(self):
+    def test_stores_ki_kf(self) -> None:
         T = _ring(3)
         omega = OMEGA_N_16[:3]
         result = loschmidt_quench(omega, T, K_initial=1.5, K_final=3.5)
@@ -216,7 +218,7 @@ class TestLoschmidtCuspDetection:
 
 
 class TestLoschmidtSmallNtimes:
-    def test_n_times_4(self):
+    def test_n_times_4(self) -> None:
         """Very few time steps should still work (edge for cusp detection)."""
         T = _ring(3)
         omega = OMEGA_N_16[:3]
@@ -226,7 +228,7 @@ class TestLoschmidtSmallNtimes:
 
 
 class TestRateFunctionCap:
-    def test_rate_cap_for_near_zero_amplitude(self):
+    def test_rate_cap_for_near_zero_amplitude(self) -> None:
         """Rate function caps at 30/N when amplitude is near zero.
 
         Construct a quench where overlaps with final eigenstates sum
@@ -240,7 +242,9 @@ class TestRateFunctionCap:
         # Rate should never exceed cap
         assert np.all(result.rate_function <= 30.0 / 4 + 1e-6)
 
-    def test_rate_cap_for_exact_destructive_interference(self, monkeypatch):
+    def test_rate_cap_for_exact_destructive_interference(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         initial_hamiltonian = np.array([[0.0, -1.0], [-1.0, 0.0]])
         final_hamiltonian = np.diag([0.0, np.pi])
         calls = iter([initial_hamiltonian, final_hamiltonian])

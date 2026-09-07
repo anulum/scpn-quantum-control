@@ -20,35 +20,35 @@ from scpn_quantum_control.hardware.runner import HardwareRunner, JobResult
 
 
 class TestHardwareRunnerInit:
-    def test_default_resilience_level_is_2(self):
+    def test_default_resilience_level_is_2(self) -> None:
         runner = HardwareRunner(use_simulator=True)
         assert runner.resilience_level == 2
 
-    def test_resilience_level_override_zero(self):
+    def test_resilience_level_override_zero(self) -> None:
         runner = HardwareRunner(use_simulator=True, resilience_level=0)
         assert runner.resilience_level == 0
 
-    def test_resilience_level_override_one(self):
+    def test_resilience_level_override_one(self) -> None:
         runner = HardwareRunner(use_simulator=True, resilience_level=1)
         assert runner.resilience_level == 1
 
-    def test_default_optimization_level(self):
+    def test_default_optimization_level(self) -> None:
         runner = HardwareRunner(use_simulator=True)
         assert runner.optimization_level == 2
 
-    def test_default_use_fractional_gates(self):
+    def test_default_use_fractional_gates(self) -> None:
         runner = HardwareRunner(use_simulator=True)
         assert runner.use_fractional_gates is True
 
-    def test_use_simulator_flag(self):
+    def test_use_simulator_flag(self) -> None:
         runner = HardwareRunner(use_simulator=True)
         assert runner.use_simulator is True
 
-    def test_backend_name_before_connect(self):
+    def test_backend_name_before_connect(self) -> None:
         runner = HardwareRunner(use_simulator=True)
         assert runner.backend_name == "not_connected"
 
-    def test_backend_none_before_connect(self):
+    def test_backend_none_before_connect(self) -> None:
         runner = HardwareRunner(use_simulator=True)
         assert runner.backend is None
 
@@ -59,12 +59,12 @@ class TestHardwareRunnerInit:
 
 
 class TestSimulatorConnect:
-    def test_connect_simulator(self):
+    def test_connect_simulator(self) -> None:
         runner = HardwareRunner(use_simulator=True)
         runner.connect()
         assert runner.backend is not None
 
-    def test_transpile_after_connect(self):
+    def test_transpile_after_connect(self) -> None:
         runner = HardwareRunner(use_simulator=True)
         runner.connect()
         qc = QuantumCircuit(2)
@@ -74,7 +74,7 @@ class TestSimulatorConnect:
         isa = runner.transpile(qc)
         assert isa.num_qubits >= 2
 
-    def test_circuit_stats(self):
+    def test_circuit_stats(self) -> None:
         runner = HardwareRunner(use_simulator=True)
         runner.connect()
         qc = QuantumCircuit(2)
@@ -96,7 +96,7 @@ class TestSimulatorConnect:
 
 
 class TestJobResult:
-    def test_to_dict_basic(self):
+    def test_to_dict_basic(self) -> None:
         jr = JobResult(
             job_id="test_1",
             backend_name="aer_simulator",
@@ -108,7 +108,7 @@ class TestJobResult:
         assert d["backend"] == "aer_simulator"
         assert "counts" not in d
 
-    def test_to_dict_with_counts(self):
+    def test_to_dict_with_counts(self) -> None:
         jr = JobResult(
             job_id="test_2",
             backend_name="aer",
@@ -118,7 +118,7 @@ class TestJobResult:
         d = jr.to_dict()
         assert d["counts"]["00"] == 500
 
-    def test_to_dict_with_expectation_values(self):
+    def test_to_dict_with_expectation_values(self) -> None:
         evs = np.array([0.5, -0.3])
         jr = JobResult(
             job_id="test_3",
@@ -129,10 +129,10 @@ class TestJobResult:
         d = jr.to_dict()
         assert d["expectation_values"] == [0.5, -0.3]
 
-    def test_default_metadata(self):
+    def test_default_metadata(self) -> None:
         jr = JobResult(job_id="x", backend_name="y", experiment_name="z")
         assert jr.metadata == {}
 
-    def test_default_wall_time(self):
+    def test_default_wall_time(self) -> None:
         jr = JobResult(job_id="x", backend_name="y", experiment_name="z")
         assert jr.wall_time_s == 0.0

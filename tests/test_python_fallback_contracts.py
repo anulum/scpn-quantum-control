@@ -12,6 +12,7 @@ from __future__ import annotations
 import json
 import sys
 import time
+from pathlib import Path
 from unittest.mock import patch
 
 import numpy as np
@@ -32,7 +33,7 @@ def _hide_engine():
 class TestClassicalPythonFallback:
     """Test classical.py code paths when Rust engine is unavailable."""
 
-    def test_state_order_param_python(self):
+    def test_state_order_param_python(self) -> None:
         from scpn_quantum_control.hardware.classical import _state_order_param
 
         n = 2
@@ -42,7 +43,7 @@ class TestClassicalPythonFallback:
         assert isinstance(r, float)
         assert 0 <= r <= 1
 
-    def test_state_order_param_sparse_python(self):
+    def test_state_order_param_sparse_python(self) -> None:
         from scpn_quantum_control.hardware.classical import _state_order_param_sparse
 
         n = 2
@@ -51,7 +52,7 @@ class TestClassicalPythonFallback:
             r = _state_order_param_sparse(psi, n)
         assert isinstance(r, float)
 
-    def test_expectation_pauli_python(self):
+    def test_expectation_pauli_python(self) -> None:
         from scpn_quantum_control.hardware.classical import _expectation_pauli
 
         psi = np.array([1, 0, 0, 0], dtype=complex)
@@ -60,7 +61,7 @@ class TestClassicalPythonFallback:
                 val = _expectation_pauli(psi, 2, 0, pauli)
             assert isinstance(val, float)
 
-    def test_vectorized_xy_expectations_match_known_product_state(self):
+    def test_vectorized_xy_expectations_match_known_product_state(self) -> None:
         from scpn_quantum_control.hardware.classical import _xy_expectations_vectorized
 
         plus_y = np.array([1.0, 1j], dtype=complex) / np.sqrt(2.0)
@@ -73,7 +74,7 @@ class TestClassicalPythonFallback:
         np.testing.assert_allclose(exp_x, [1.0, 0.0], atol=1e-12)
         np.testing.assert_allclose(exp_y, [0.0, 1.0], atol=1e-12)
 
-    def test_classical_brute_mpc_python(self):
+    def test_classical_brute_mpc_python(self) -> None:
         from scpn_quantum_control.hardware.classical import classical_brute_mpc
 
         B = np.array([[1.0, 0.5], [0.5, 1.0]])
@@ -84,7 +85,7 @@ class TestClassicalPythonFallback:
         assert "optimal_cost" in result
         assert result["n_evaluated"] == 8
 
-    def test_classical_exact_diag_dense_no_gpu(self):
+    def test_classical_exact_diag_dense_no_gpu(self) -> None:
         from scpn_quantum_control.hardware.classical import classical_exact_diag
 
         result = classical_exact_diag(3)
@@ -92,7 +93,7 @@ class TestClassicalPythonFallback:
         assert result["n_qubits"] == 3
         assert result["spectral_gap"] >= 0
 
-    def test_classical_exact_evolution_dense(self):
+    def test_classical_exact_evolution_dense(self) -> None:
         from scpn_quantum_control.hardware.classical import classical_exact_evolution
 
         result = classical_exact_evolution(2, t_max=0.5, dt=0.1)
@@ -100,7 +101,7 @@ class TestClassicalPythonFallback:
         assert "R" in result
         assert len(result["R"]) > 1
 
-    def test_classical_exact_evolution_sparse(self):
+    def test_classical_exact_evolution_sparse(self) -> None:
         """Trigger the sparse Krylov path by passing n_osc >= 13.
 
         We use n=3 but pass a custom K/omega sized for 3 qubits.
@@ -116,7 +117,7 @@ class TestClassicalPythonFallback:
         result = cls_mod.classical_exact_evolution(3, 0.2, 0.1, K=K, omega=omega)
         assert len(result["R"]) > 0
 
-    def test_bloch_vectors_from_json(self, tmp_path):
+    def test_bloch_vectors_from_json(self, tmp_path: Path) -> None:
         from scpn_quantum_control.hardware.classical import bloch_vectors_from_json
 
         data = {
@@ -138,7 +139,7 @@ class TestClassicalPythonFallback:
             ),
         )
 
-    def test_classical_kuramoto_python_fallback(self):
+    def test_classical_kuramoto_python_fallback(self) -> None:
         from scpn_quantum_control.hardware.classical import classical_kuramoto_reference
 
         with _hide_engine():
@@ -147,7 +148,7 @@ class TestClassicalPythonFallback:
         assert "R" in result
         assert result["theta"].shape[0] > 1
 
-    def test_classical_kuramoto_validation(self):
+    def test_classical_kuramoto_validation(self) -> None:
         from scpn_quantum_control.hardware.classical import classical_kuramoto_reference
 
         with pytest.raises(ValueError, match="dt must be positive"):
@@ -158,7 +159,7 @@ class TestClassicalPythonFallback:
 
 
 class TestFallbackPhysics:
-    def test_python_R_bounded(self):
+    def test_python_R_bounded(self) -> None:
         """Python fallback R must be in [0, 1]."""
         from scpn_quantum_control.hardware.classical import _state_order_param
 
@@ -169,7 +170,7 @@ class TestFallbackPhysics:
             r = _state_order_param(psi, 3)
         assert 0 <= r <= 1.0 + 1e-10
 
-    def test_python_Z_expectation_ground_state(self):
+    def test_python_Z_expectation_ground_state(self) -> None:
         """<Z> = +1 for |0> state (Python fallback)."""
         from scpn_quantum_control.hardware.classical import _expectation_pauli
 
@@ -180,7 +181,7 @@ class TestFallbackPhysics:
 
 
 class TestFallbackPipeline:
-    def test_pipeline_python_fallback_kuramoto(self):
+    def test_pipeline_python_fallback_kuramoto(self) -> None:
         """Full pipeline: Python Kuramoto → R trajectory (no Rust).
         Verifies Python fallback is wired end-to-end.
         """

@@ -48,7 +48,7 @@ class TestOrderParameterProperties:
 
     @given(st.integers(min_value=2, max_value=8))
     @settings(max_examples=20)
-    def test_R_identical_angles(self, n):
+    def test_R_identical_angles(self, n: int) -> None:
         """All identical angles -> R = 1."""
         angle = 0.7
         theta = np.full(n, angle)
@@ -72,19 +72,19 @@ class TestOrderParameterProperties:
 class TestCouplingMatrixProperties:
     @given(st.integers(min_value=2, max_value=16))
     @settings(max_examples=30)
-    def test_paper27_symmetric(self, n):
+    def test_paper27_symmetric(self, n: int) -> None:
         K = build_knm_paper27(L=n)
         np.testing.assert_allclose(K, K.T, atol=1e-14)
 
     @given(st.integers(min_value=2, max_value=16))
     @settings(max_examples=30)
-    def test_paper27_nonneg(self, n):
+    def test_paper27_nonneg(self, n: int) -> None:
         K = build_knm_paper27(L=n)
         assert np.all(K >= -1e-14)
 
     @given(st.integers(min_value=2, max_value=16))
     @settings(max_examples=30)
-    def test_paper27_constant_diagonal(self, n):
+    def test_paper27_constant_diagonal(self, n: int) -> None:
         """K_nm diagonal = K_base * exp(-alpha*0) = K_base for all n."""
         K = build_knm_paper27(L=n)
         diag = np.diag(K)
@@ -96,7 +96,7 @@ class TestCouplingMatrixProperties:
         st.floats(min_value=0.0, max_value=5.0, allow_nan=False, allow_infinity=False),
     )
     @settings(max_examples=30)
-    def test_ring_symmetric(self, n, coupling):
+    def test_ring_symmetric(self, n: int, coupling: float) -> None:
         K, _ = build_kuramoto_ring(n, coupling=coupling, rng_seed=0)
         np.testing.assert_allclose(K, K.T, atol=1e-14)
 
@@ -105,7 +105,7 @@ class TestCouplingMatrixProperties:
         st.floats(min_value=0.01, max_value=5.0, allow_nan=False, allow_infinity=False),
     )
     @settings(max_examples=30)
-    def test_ring_correct_nonzeros(self, n, coupling):
+    def test_ring_correct_nonzeros(self, n: int, coupling: float) -> None:
         """Ring graph has exactly 2*n non-zero entries (n >= 3, coupling > 0).
 
         n=2 excluded: ring of 2 nodes has only 2 entries (single bidirectional edge).
@@ -123,7 +123,7 @@ class TestCouplingMatrixProperties:
 class TestHamiltonianProperties:
     @given(st.integers(min_value=2, max_value=6))
     @settings(max_examples=15)
-    def test_hermiticity_paper27(self, n):
+    def test_hermiticity_paper27(self, n: int) -> None:
         K = build_knm_paper27(L=n)
         omega = np.ones(n)
         H = knm_to_hamiltonian(K, omega)
@@ -170,7 +170,7 @@ class TestHamiltonianProperties:
 
     @given(st.integers(min_value=2, max_value=5))
     @settings(max_examples=10)
-    def test_hamiltonian_dimension(self, n):
+    def test_hamiltonian_dimension(self, n: int) -> None:
         K = build_knm_paper27(L=n)
         omega = np.ones(n)
         H = knm_to_hamiltonian(K, omega)
@@ -187,14 +187,14 @@ class TestHamiltonianProperties:
 class TestStatePreparationProperties:
     @given(st.integers(min_value=1, max_value=8))
     @settings(max_examples=20)
-    def test_normalised(self, n):
+    def test_normalised(self, n: int) -> None:
         omega = np.ones(n) * 0.5
         psi = _build_initial_state(n, omega)
         np.testing.assert_allclose(np.linalg.norm(psi), 1.0, atol=1e-14)
 
     @given(st.integers(min_value=1, max_value=8))
     @settings(max_examples=20)
-    def test_dimension(self, n):
+    def test_dimension(self, n: int) -> None:
         omega = np.ones(n) * 0.5
         psi = _build_initial_state(n, omega)
         assert len(psi) == 2**n
@@ -243,7 +243,7 @@ class TestBruteMPCProperties:
         st.integers(min_value=1, max_value=3),
     )
     @settings(max_examples=30)
-    def test_enumerates_all(self, dim, horizon):
+    def test_enumerates_all(self, dim: int, horizon: int) -> None:
         B = np.eye(dim)
         target = np.ones(dim)
         result = classical_brute_mpc(B, target, horizon)
@@ -255,7 +255,7 @@ class TestBruteMPCProperties:
         st.integers(min_value=1, max_value=4),
     )
     @settings(max_examples=20)
-    def test_optimal_is_minimum(self, dim, horizon):
+    def test_optimal_is_minimum(self, dim: int, horizon: int) -> None:
         B = np.eye(dim)
         target = np.ones(dim) * 0.5
         result = classical_brute_mpc(B, target, horizon)
@@ -263,7 +263,7 @@ class TestBruteMPCProperties:
 
     @given(st.integers(min_value=1, max_value=4))
     @settings(max_examples=10)
-    def test_binary_actions(self, horizon):
+    def test_binary_actions(self, horizon: int) -> None:
         B = np.eye(2)
         target = np.ones(2)
         result = classical_brute_mpc(B, target, horizon)
@@ -281,14 +281,14 @@ class TestKuramotoSimulationProperties:
         st_dt(min_val=0.01, max_val=0.1),
     )
     @settings(max_examples=30)
-    def test_R_bounded(self, n, dt):
+    def test_R_bounded(self, n: int, dt: float) -> None:
         result = classical_kuramoto_reference(n, t_max=0.3, dt=dt)
         for r in result["R"]:
             assert -1e-10 <= r <= 1.0 + 1e-10
 
     @given(st.integers(min_value=2, max_value=6))
     @settings(max_examples=15)
-    def test_shapes_consistent(self, n):
+    def test_shapes_consistent(self, n: int) -> None:
         dt = 0.05
         result = classical_kuramoto_reference(n, t_max=0.5, dt=dt)
         n_steps = max(1, round(0.5 / dt))

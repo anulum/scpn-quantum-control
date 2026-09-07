@@ -24,82 +24,82 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 
 
 class TestIEEE5BusData:
-    def test_susceptance_symmetric(self):
+    def test_susceptance_symmetric(self) -> None:
         np.testing.assert_allclose(IEEE_5BUS_SUSCEPTANCE, IEEE_5BUS_SUSCEPTANCE.T, atol=1e-10)
 
-    def test_susceptance_5x5(self):
+    def test_susceptance_5x5(self) -> None:
         assert IEEE_5BUS_SUSCEPTANCE.shape == (5, 5)
 
-    def test_susceptance_non_negative(self):
+    def test_susceptance_non_negative(self) -> None:
         assert np.all(IEEE_5BUS_SUSCEPTANCE >= 0)
 
 
 class TestIEEE5BusCouplingMatrix:
-    def test_builtin_reference_requires_explicit_opt_in(self):
+    def test_builtin_reference_requires_explicit_opt_in(self) -> None:
         with pytest.raises(RuntimeError, match="allow_builtin_reference"):
             ieee_5bus_coupling_matrix()
 
-    def test_shape(self):
+    def test_shape(self) -> None:
         K, omega = ieee_5bus_coupling_matrix(allow_builtin_reference=True)
         assert K.shape == (5, 5)
         assert omega.shape == (5,)
 
-    def test_symmetric(self):
+    def test_symmetric(self) -> None:
         K, _ = ieee_5bus_coupling_matrix(allow_builtin_reference=True)
         np.testing.assert_allclose(K, K.T, atol=1e-10)
 
-    def test_non_negative(self):
+    def test_non_negative(self) -> None:
         K, _ = ieee_5bus_coupling_matrix(allow_builtin_reference=True)
         assert np.all(K >= 0)
 
-    def test_zero_diagonal(self):
+    def test_zero_diagonal(self) -> None:
         K, _ = ieee_5bus_coupling_matrix(allow_builtin_reference=True)
         np.testing.assert_allclose(np.diag(K), 0.0, atol=1e-10)
 
-    def test_sparse_topology(self):
+    def test_sparse_topology(self) -> None:
         """IEEE 5-bus is NOT fully connected — has zeros."""
         K, _ = ieee_5bus_coupling_matrix(allow_builtin_reference=True)
         assert np.any(K == 0)
 
 
 class TestPowerGridBenchmark:
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         K = build_knm_paper27(L=5)
         omega = OMEGA_N_16[:5]
         result = power_grid_benchmark(K, omega, allow_builtin_reference=True)
         assert isinstance(result, PowerGridBenchmarkResult)
 
-    def test_n_generators(self):
+    def test_n_generators(self) -> None:
         K = build_knm_paper27(L=5)
         omega = OMEGA_N_16[:5]
         result = power_grid_benchmark(K, omega, allow_builtin_reference=True)
         assert result.n_generators == 5
 
-    def test_correlation_bounded(self):
+    def test_correlation_bounded(self) -> None:
         K = build_knm_paper27(L=5)
         omega = OMEGA_N_16[:5]
         result = power_grid_benchmark(K, omega, allow_builtin_reference=True)
         assert -1 <= result.topology_correlation <= 1
 
-    def test_coupling_ratio_positive(self):
+    def test_coupling_ratio_positive(self) -> None:
         K = build_knm_paper27(L=5)
         omega = OMEGA_N_16[:5]
         result = power_grid_benchmark(K, omega, allow_builtin_reference=True)
         assert result.coupling_ratio > 0
 
-    def test_summary_string(self):
+    def test_summary_string(self) -> None:
         K = build_knm_paper27(L=5)
         omega = OMEGA_N_16[:5]
         result = power_grid_benchmark(K, omega, allow_builtin_reference=True)
         assert "SCPN vs IEEE-5bus" in result.summary
 
-    def test_fewer_oscillators(self):
+    def test_fewer_oscillators(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = power_grid_benchmark(K, omega, allow_builtin_reference=True)
         assert result.n_generators == 3
 
-    def test_constant_frequency_vector_returns_zero_correlation(self):
+    def test_constant_frequency_vector_returns_zero_correlation(self) -> None:
         K = build_knm_paper27(L=5)
         omega = np.ones(5)
         with warnings.catch_warnings():
@@ -109,20 +109,20 @@ class TestPowerGridBenchmark:
         assert result.n_generators == 5
         assert "freq r=0.000" in result.summary
 
-    def test_benchmark_refuses_implicit_builtin_reference(self):
+    def test_benchmark_refuses_implicit_builtin_reference(self) -> None:
         K = build_knm_paper27(L=5)
         omega = OMEGA_N_16[:5]
         with pytest.raises(RuntimeError, match="allow_builtin_reference"):
             power_grid_benchmark(K, omega)
 
-    def test_result_labels_builtin_reference_source_mode(self):
+    def test_result_labels_builtin_reference_source_mode(self) -> None:
         K = build_knm_paper27(L=5)
         omega = OMEGA_N_16[:5]
         result = power_grid_benchmark(K, omega, allow_builtin_reference=True)
         assert result.source_mode == "curated"
         assert result.publication_safe is True
 
-    def test_result_labels_artifact_reference_source_mode(self):
+    def test_result_labels_artifact_reference_source_mode(self) -> None:
         K_grid, omega_grid = ieee_5bus_coupling_matrix(allow_builtin_reference=True)
         result = power_grid_benchmark(
             K_grid,
@@ -134,12 +134,12 @@ class TestPowerGridBenchmark:
         assert result.source_mode == "curated"
         assert result.publication_safe is True
 
-    def test_reference_matrix_and_frequency_vector_must_be_supplied_together(self):
+    def test_reference_matrix_and_frequency_vector_must_be_supplied_together(self) -> None:
         K_grid, omega_grid = ieee_5bus_coupling_matrix(allow_builtin_reference=True)
         with pytest.raises(ValueError, match="grid_coupling and grid_frequencies"):
             power_grid_benchmark(K_grid, omega_grid, grid_coupling=K_grid)
 
-    def test_scpn_vs_grid(self):
+    def test_scpn_vs_grid(self) -> None:
         """Record SCPN vs IEEE-5bus comparison — Gap 1 data."""
         K = build_knm_paper27(L=5)
         omega = OMEGA_N_16[:5]
@@ -147,32 +147,32 @@ class TestPowerGridBenchmark:
         print(f"\n  {result.summary}")
         assert isinstance(result.topology_correlation, float)
 
-    def test_rejects_non_square_scpn_coupling(self):
+    def test_rejects_non_square_scpn_coupling(self) -> None:
         K = np.ones((2, 3))
         omega = np.ones(2)
         with pytest.raises(ValueError, match="K_scpn must be a square"):
             power_grid_benchmark(K, omega, allow_builtin_reference=True)
 
-    def test_rejects_scpn_frequency_shape_mismatch(self):
+    def test_rejects_scpn_frequency_shape_mismatch(self) -> None:
         K = build_knm_paper27(L=4)
         omega = np.ones(3)
         with pytest.raises(ValueError, match="omega_scpn must match"):
             power_grid_benchmark(K, omega, allow_builtin_reference=True)
 
-    def test_rejects_non_finite_scpn_coupling(self):
+    def test_rejects_non_finite_scpn_coupling(self) -> None:
         K = build_knm_paper27(L=4)
         K[0, 1] = np.nan
         omega = OMEGA_N_16[:4]
         with pytest.raises(ValueError, match="K_scpn must contain only finite"):
             power_grid_benchmark(K, omega, allow_builtin_reference=True)
 
-    def test_rejects_too_small_comparison_system(self):
+    def test_rejects_too_small_comparison_system(self) -> None:
         K = np.array([[0.0]])
         omega = np.array([0.0])
         with pytest.raises(ValueError, match="at least two coupled grid nodes"):
             power_grid_benchmark(K, omega, allow_builtin_reference=True)
 
-    def test_rejects_grid_coupling_asymmetry(self):
+    def test_rejects_grid_coupling_asymmetry(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         grid_K = np.array(
@@ -186,7 +186,7 @@ class TestPowerGridBenchmark:
         with pytest.raises(ValueError, match="grid_coupling must be symmetric"):
             power_grid_benchmark(K, omega, grid_coupling=grid_K, grid_frequencies=grid_omega)
 
-    def test_rejects_negative_grid_coupling(self):
+    def test_rejects_negative_grid_coupling(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         grid_K = np.array(
@@ -200,7 +200,7 @@ class TestPowerGridBenchmark:
         with pytest.raises(ValueError, match="grid_coupling values must be non-negative"):
             power_grid_benchmark(K, omega, grid_coupling=grid_K, grid_frequencies=grid_omega)
 
-    def test_rejects_grid_coupling_nonzero_diagonal(self):
+    def test_rejects_grid_coupling_nonzero_diagonal(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         grid_K = np.array(

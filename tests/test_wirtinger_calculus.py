@@ -22,7 +22,7 @@ from scpn_quantum_control.wirtinger_calculus import (
 # --------------------------------------------------------------------------- #
 # Wirtinger partials against textbook results
 # --------------------------------------------------------------------------- #
-def test_holomorphic_square():
+def test_holomorphic_square() -> None:
     """Recover the analytic derivative of a holomorphic square."""
     z = np.array([1.3 - 0.7j])
     derivative = wirtinger_partials(lambda v: v[0] ** 2, z)
@@ -31,7 +31,7 @@ def test_holomorphic_square():
     assert derivative.holomorphic_residual < 1e-6
 
 
-def test_modulus_squared_is_non_holomorphic():
+def test_modulus_squared_is_non_holomorphic() -> None:
     """Recover both nonzero partials of the squared modulus."""
     z = np.array([1.3 - 0.7j])
     derivative = wirtinger_partials(lambda v: np.abs(v[0]) ** 2, z)
@@ -40,7 +40,7 @@ def test_modulus_squared_is_non_holomorphic():
     assert np.allclose(derivative.df_dconj_z, z, atol=1e-6)
 
 
-def test_conjugate_derivative():
+def test_conjugate_derivative() -> None:
     """Recover the pure conjugate Wirtinger derivative."""
     z = np.array([0.4 + 0.9j])
     derivative = wirtinger_partials(lambda v: np.conj(v[0]), z)
@@ -48,7 +48,7 @@ def test_conjugate_derivative():
     assert np.allclose(derivative.df_dconj_z, 1.0, atol=1e-6)
 
 
-def test_real_part_derivative():
+def test_real_part_derivative() -> None:
     """Recover equal Wirtinger partials for the real part."""
     z = np.array([0.5 - 0.2j])
     derivative = wirtinger_partials(lambda v: np.real(v[0]) + 0.0j, z)
@@ -57,7 +57,7 @@ def test_real_part_derivative():
     assert np.allclose(derivative.df_dconj_z, 0.5, atol=1e-6)
 
 
-def test_multivariate_partials():
+def test_multivariate_partials() -> None:
     """Recover analytic partials for a mixed multivariate objective."""
     z = np.array([0.5 + 0.2j, -0.3 + 0.9j])
     derivative = wirtinger_partials(lambda v: v[0] ** 2 + v[1] * np.conj(v[1]), z)
@@ -65,7 +65,7 @@ def test_multivariate_partials():
     assert np.allclose(derivative.df_dconj_z, [0.0, z[1]], atol=1e-6)
 
 
-def test_wirtinger_product_rule():
+def test_wirtinger_product_rule() -> None:
     """Satisfy the Wirtinger product rule."""
     z = np.array([0.7 + 0.3j])
 
@@ -86,21 +86,21 @@ def test_wirtinger_product_rule():
 # --------------------------------------------------------------------------- #
 # Holomorphicity test and gradient
 # --------------------------------------------------------------------------- #
-def test_is_holomorphic():
+def test_is_holomorphic() -> None:
     """Distinguish holomorphic and non-holomorphic objectives."""
     z = np.array([1.0 + 0.5j, -0.4 + 0.2j])
     assert is_holomorphic(lambda v: np.exp(v[0]) * v[1], z)
     assert not is_holomorphic(lambda v: np.abs(v[0]) ** 2, z)
 
 
-def test_holomorphic_gradient_matches_complex_derivative():
+def test_holomorphic_gradient_matches_complex_derivative() -> None:
     """Match the analytic complex derivative for a cubic."""
     z = np.array([1.0 + 1.0j])
     gradient = holomorphic_gradient(lambda v: v[0] ** 3, z)
     assert np.allclose(gradient, 3.0 * z**2, atol=1e-6)
 
 
-def test_holomorphic_gradient_rejects_non_holomorphic():
+def test_holomorphic_gradient_rejects_non_holomorphic() -> None:
     """Refuse an ordinary complex derivative for a non-holomorphic loss."""
     with pytest.raises(ValueError):
         holomorphic_gradient(lambda v: np.abs(v[0]) ** 2, np.array([1.0 + 1.0j]))
@@ -109,7 +109,7 @@ def test_holomorphic_gradient_rejects_non_holomorphic():
 # --------------------------------------------------------------------------- #
 # Real-valued objective gradient and descent
 # --------------------------------------------------------------------------- #
-def test_real_objective_gradient_is_conjugate_of_df_dz():
+def test_real_objective_gradient_is_conjugate_of_df_dz() -> None:
     """Return the conjugate Wirtinger gradient of a real loss."""
     z = np.array([0.6 - 0.2j, 0.1 + 0.4j])
     target = np.array([0.8 - 0.3j, -0.4 + 0.6j])
@@ -122,7 +122,7 @@ def test_real_objective_gradient_is_conjugate_of_df_dz():
     assert np.allclose(gradient, z - target, atol=1e-6)
 
 
-def test_complex_descent_converges_to_target():
+def test_complex_descent_converges_to_target() -> None:
     """Converge locally to the complex quadratic target."""
     target = np.array([0.8 - 0.3j, -0.4 + 0.6j])
 
@@ -136,7 +136,7 @@ def test_complex_descent_converges_to_target():
     assert "claim_boundary" in result.provenance
 
 
-def test_descent_reduces_holomorphic_modulus_objective():
+def test_descent_reduces_holomorphic_modulus_objective() -> None:
     """Reduce a squared-modulus objective toward zero."""
     # L(z) = |z|^2 has minimum at 0; CR descent must drive z -> 0.
     result = minimise_real_objective(
@@ -173,7 +173,7 @@ def test_wirtinger_rejects_bad_step(step):
         wirtinger_partials(lambda v: v[0], np.array([1.0 + 0j]), step=step)
 
 
-def test_is_holomorphic_rejects_negative_tolerance():
+def test_is_holomorphic_rejects_negative_tolerance() -> None:
     """Reject a negative holomorphicity tolerance."""
     with pytest.raises(ValueError):
         is_holomorphic(lambda v: v[0], np.array([1.0 + 0j]), tolerance=-1.0)

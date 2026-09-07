@@ -22,23 +22,23 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 
 
 class TestFMOData:
-    def test_fmo_coupling_symmetric(self):
+    def test_fmo_coupling_symmetric(self) -> None:
         np.testing.assert_allclose(FMO_COUPLING, FMO_COUPLING.T, atol=1e-10)
 
-    def test_fmo_coupling_7x7(self):
+    def test_fmo_coupling_7x7(self) -> None:
         assert FMO_COUPLING.shape == (7, 7)
 
-    def test_fmo_site_energies_7(self):
+    def test_fmo_site_energies_7(self) -> None:
         assert FMO_SITE_ENERGIES.shape == (7,)
 
-    def test_fmo_diagonal_zero(self):
+    def test_fmo_diagonal_zero(self) -> None:
         np.testing.assert_allclose(np.diag(FMO_COUPLING), 0.0)
 
-    def test_builtin_reference_requires_explicit_opt_in(self):
+    def test_builtin_reference_requires_explicit_opt_in(self) -> None:
         with pytest.raises(RuntimeError, match="allow_builtin_reference"):
             fmo_coupling_matrix()
 
-    def test_fmo_coupling_matrix_units(self):
+    def test_fmo_coupling_matrix_units(self) -> None:
         K, omega = fmo_coupling_matrix(allow_builtin_reference=True)
         assert K.shape == (7, 7)
         assert omega.shape == (7,)
@@ -47,7 +47,7 @@ class TestFMOData:
 
 
 class TestFMOBenchmark:
-    def test_benchmark_returns_result(self):
+    def test_benchmark_returns_result(self) -> None:
         K = build_knm_paper27(L=7)
         omega = OMEGA_N_16[:7]
         result = fmo_benchmark(K, omega, allow_builtin_reference=True)
@@ -57,20 +57,20 @@ class TestFMOBenchmark:
         assert result.coupling_ratio > 0
         assert result.frequency_ratio > 0
 
-    def test_benchmark_self_comparison(self):
+    def test_benchmark_self_comparison(self) -> None:
         """FMO compared against itself should have perfect correlation."""
         K_fmo, omega_fmo = fmo_coupling_matrix(allow_builtin_reference=True)
         result = fmo_benchmark(K_fmo, omega_fmo, allow_builtin_reference=True)
         assert result.topology_correlation == pytest.approx(1.0, abs=0.01)
 
-    def test_benchmark_4_oscillators(self):
+    def test_benchmark_4_oscillators(self) -> None:
         """Works with fewer than 7 oscillators."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = fmo_benchmark(K, omega, allow_builtin_reference=True)
         assert result.n_oscillators == 4
 
-    def test_low_topology_match_reports_no_correlation(self):
+    def test_low_topology_match_reports_no_correlation(self) -> None:
         rng = np.random.default_rng(1)
         K = rng.random((7, 7))
         K = (K + K.T) / 2.0
@@ -79,20 +79,20 @@ class TestFMOBenchmark:
         assert abs(result.topology_correlation) <= 0.3
         assert "no proxy agreement" in result.summary
 
-    def test_benchmark_refuses_implicit_builtin_reference(self):
+    def test_benchmark_refuses_implicit_builtin_reference(self) -> None:
         K = build_knm_paper27(L=7)
         omega = OMEGA_N_16[:7]
         with pytest.raises(RuntimeError, match="allow_builtin_reference"):
             fmo_benchmark(K, omega)
 
-    def test_result_labels_builtin_reference_source_mode(self):
+    def test_result_labels_builtin_reference_source_mode(self) -> None:
         K = build_knm_paper27(L=7)
         omega = OMEGA_N_16[:7]
         result = fmo_benchmark(K, omega, allow_builtin_reference=True)
         assert result.source_mode == "builtin_literature_reference"
         assert result.publication_safe is False
 
-    def test_result_labels_measured_reference_source_mode(self):
+    def test_result_labels_measured_reference_source_mode(self) -> None:
         K_fmo, omega_fmo = fmo_coupling_matrix(allow_builtin_reference=True)
         result = fmo_benchmark(
             K_fmo,
@@ -103,12 +103,12 @@ class TestFMOBenchmark:
         assert result.source_mode == "measured"
         assert result.publication_safe is True
 
-    def test_reference_matrix_and_frequency_vector_must_be_supplied_together(self):
+    def test_reference_matrix_and_frequency_vector_must_be_supplied_together(self) -> None:
         K_fmo, omega_fmo = fmo_coupling_matrix(allow_builtin_reference=True)
         with pytest.raises(ValueError, match="fmo_coupling and fmo_frequencies"):
             fmo_benchmark(K_fmo, omega_fmo, fmo_coupling=K_fmo)
 
-    def test_scpn_vs_fmo_topology(self):
+    def test_scpn_vs_fmo_topology(self) -> None:
         """Record SCPN vs FMO topology correlation — this is Gap 1 data."""
         K = build_knm_paper27(L=7)
         omega = OMEGA_N_16[:7]
@@ -120,39 +120,39 @@ class TestFMOBenchmark:
         # No assertion on the value — this is measurement, not validation
         assert isinstance(result.topology_correlation, float)
 
-    def test_summary_string(self):
+    def test_summary_string(self) -> None:
         K = build_knm_paper27(L=7)
         omega = OMEGA_N_16[:7]
         result = fmo_benchmark(K, omega, allow_builtin_reference=True)
         assert "SCPN vs FMO" in result.summary
         assert "topology" in result.summary
 
-    def test_rejects_non_square_scpn_coupling(self):
+    def test_rejects_non_square_scpn_coupling(self) -> None:
         K = np.ones((2, 3))
         omega = np.ones(2)
         with pytest.raises(ValueError, match="K_scpn must be a square"):
             fmo_benchmark(K, omega, allow_builtin_reference=True)
 
-    def test_rejects_scpn_frequency_shape_mismatch(self):
+    def test_rejects_scpn_frequency_shape_mismatch(self) -> None:
         K = build_knm_paper27(L=4)
         omega = np.ones(3)
         with pytest.raises(ValueError, match="omega_scpn must match"):
             fmo_benchmark(K, omega, allow_builtin_reference=True)
 
-    def test_rejects_non_finite_scpn_coupling(self):
+    def test_rejects_non_finite_scpn_coupling(self) -> None:
         K = build_knm_paper27(L=4)
         K[0, 1] = np.nan
         omega = OMEGA_N_16[:4]
         with pytest.raises(ValueError, match="K_scpn must contain only finite"):
             fmo_benchmark(K, omega, allow_builtin_reference=True)
 
-    def test_rejects_too_small_comparison_system(self):
+    def test_rejects_too_small_comparison_system(self) -> None:
         K = np.array([[0.0]])
         omega = np.array([1.0])
         with pytest.raises(ValueError, match="at least two coupled sites"):
             fmo_benchmark(K, omega, allow_builtin_reference=True)
 
-    def test_rejects_fmo_coupling_asymmetry(self):
+    def test_rejects_fmo_coupling_asymmetry(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         fmo_K = np.array(
@@ -166,7 +166,7 @@ class TestFMOBenchmark:
         with pytest.raises(ValueError, match="fmo_coupling must be symmetric"):
             fmo_benchmark(K, omega, fmo_coupling=fmo_K, fmo_frequencies=fmo_omega)
 
-    def test_rejects_fmo_coupling_nonzero_diagonal(self):
+    def test_rejects_fmo_coupling_nonzero_diagonal(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         fmo_K = np.array(
@@ -180,7 +180,7 @@ class TestFMOBenchmark:
         with pytest.raises(ValueError, match="fmo_coupling diagonal must be zero"):
             fmo_benchmark(K, omega, fmo_coupling=fmo_K, fmo_frequencies=fmo_omega)
 
-    def test_rejects_fmo_frequency_shape_mismatch(self):
+    def test_rejects_fmo_frequency_shape_mismatch(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         fmo_K = np.array(
@@ -200,12 +200,12 @@ class TestFMOBenchmark:
 
 
 class TestFMOPhysics:
-    def test_fmo_coupling_non_negative(self):
+    def test_fmo_coupling_non_negative(self) -> None:
         """FMO coupling (absolute) must be non-negative."""
         K, _ = fmo_coupling_matrix(allow_builtin_reference=True)
         assert np.all(K >= 0)
 
-    def test_fmo_site_energies_ordered(self):
+    def test_fmo_site_energies_ordered(self) -> None:
         """FMO site energies span a range (not all equal)."""
         assert FMO_SITE_ENERGIES.max() > FMO_SITE_ENERGIES.min()
 
@@ -216,7 +216,7 @@ class TestFMOPhysics:
 
 
 class TestFMOPipeline:
-    def test_pipeline_fmo_to_benchmark(self):
+    def test_pipeline_fmo_to_benchmark(self) -> None:
         """Full pipeline: FMO coupling → benchmark → topology correlation.
         Verifies FMO benchmark is wired and produces cross-domain data.
         """

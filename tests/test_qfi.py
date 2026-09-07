@@ -19,7 +19,7 @@ from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 class TestQFI:
-    def test_2qubit_qfi_positive(self):
+    def test_2qubit_qfi_positive(self) -> None:
         """Strong coupling relative to frequencies → entangled ground state → nonzero QFI."""
         K = np.array([[0, 2.0], [2.0, 0]])
         omega = np.array([0.1, 0.15])
@@ -27,7 +27,7 @@ class TestQFI:
         assert result.qfi_matrix.shape == (1, 1)
         assert result.qfi_matrix[0, 0] > 0
 
-    def test_4qubit_qfi_shape(self):
+    def test_4qubit_qfi_shape(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = compute_qfi(K, omega)
@@ -35,20 +35,20 @@ class TestQFI:
         assert result.qfi_matrix.shape == (n_pairs, n_pairs)
         assert n_pairs == 6  # 4 choose 2
 
-    def test_qfi_symmetric(self):
+    def test_qfi_symmetric(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_qfi(K, omega)
         np.testing.assert_allclose(result.qfi_matrix, result.qfi_matrix.T, atol=1e-10)
 
-    def test_qfi_positive_semidefinite(self):
+    def test_qfi_positive_semidefinite(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_qfi(K, omega)
         eigenvalues = np.linalg.eigvalsh(result.qfi_matrix)
         assert np.all(eigenvalues >= -1e-10)
 
-    def test_precision_bounds(self):
+    def test_precision_bounds(self) -> None:
         """Precision bounds are positive. Some may be inf if QFI diagonal = 0
         (ground state insensitive to that coupling parameter)."""
         K = build_knm_paper27(L=3)
@@ -57,7 +57,7 @@ class TestQFI:
         for bound in result.precision_bounds:
             assert bound > 0  # always positive (finite or inf)
 
-    def test_stronger_coupling_higher_qfi(self):
+    def test_stronger_coupling_higher_qfi(self) -> None:
         """With coupling-dominated parameters, strongly coupled pairs are more estimable."""
         K = build_knm_paper27(L=4) * 5.0  # amplify coupling to dominate frequencies
         omega = OMEGA_N_16[:4] * 0.1  # reduce frequencies
@@ -65,7 +65,7 @@ class TestQFI:
         diag = np.diag(result.qfi_matrix)
         assert np.max(diag) > 0  # at least one pair estimable
 
-    def test_scpn_default_qfi_near_zero(self):
+    def test_scpn_default_qfi_near_zero(self) -> None:
         """At default SCPN parameters, QFI is near zero — ground state is product-like.
 
         This is a finding: SCPN frequencies are too heterogeneous for the
@@ -79,13 +79,13 @@ class TestQFI:
         # All QFI near zero = product ground state = classically estimable
         assert np.max(diag) < 1.0
 
-    def test_spectral_gap_positive(self):
+    def test_spectral_gap_positive(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_qfi(K, omega)
         assert result.spectral_gap > 0
 
-    def test_gap_tradeoff(self):
+    def test_gap_tradeoff(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         tradeoff = qfi_gap_tradeoff(K, omega)
@@ -93,7 +93,7 @@ class TestQFI:
         assert tradeoff["max_qfi_diagonal"] >= 0
         assert tradeoff["gap_squared_over_16"] > 0
 
-    def test_gap_tradeoff_strong_coupling(self):
+    def test_gap_tradeoff_strong_coupling(self) -> None:
         """With strong coupling, QFI is nonzero and tradeoff ratio is positive."""
         K = np.array([[0, 3, 1], [3, 0, 2], [1, 2, 0]], dtype=float)
         omega = np.array([0.1, 0.15, 0.12])
@@ -102,14 +102,14 @@ class TestQFI:
         assert tradeoff["max_qfi_diagonal"] > 0
         assert tradeoff["tradeoff_ratio"] > 0
 
-    def test_gap_tradeoff_propagates_dense_budget(self):
+    def test_gap_tradeoff_propagates_dense_budget(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
 
         with pytest.raises(DenseAllocationError, match="QFI dense eigensolver"):
             qfi_gap_tradeoff(K, omega, max_dense_gib=1e-6)
 
-    def test_qfi_result_precision_method(self):
+    def test_qfi_result_precision_method(self) -> None:
         result = QFIResult(
             qfi_matrix=np.array([[4.0]]),
             coupling_pairs=[(0, 1)],
@@ -120,7 +120,7 @@ class TestQFI:
         prec = result.precision_for(0, 1, n_measurements=100)
         assert prec == pytest.approx(1.0 / 400, rel=1e-10)
 
-    def test_precision_method_zero_qfi_is_infinite(self):
+    def test_precision_method_zero_qfi_is_infinite(self) -> None:
         result = QFIResult(
             qfi_matrix=np.array([[0.0]]),
             coupling_pairs=[(0, 1)],
@@ -131,14 +131,16 @@ class TestQFI:
 
         assert result.precision_for(1, 0, n_measurements=100) == float("inf")
 
-    def test_custom_pairs(self):
+    def test_custom_pairs(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = compute_qfi(K, omega, pairs=[(0, 1), (2, 3)])
         assert len(result.coupling_pairs) == 2
         assert result.qfi_matrix.shape == (2, 2)
 
-    def test_rejects_dense_qfi_before_hamiltonian_allocation(self, monkeypatch):
+    def test_rejects_dense_qfi_before_hamiltonian_allocation(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
 
@@ -150,7 +152,7 @@ class TestQFI:
         with pytest.raises(DenseAllocationError, match="QFI dense eigensolver"):
             compute_qfi(K, omega, max_dense_gib=1e-6)
 
-    def test_degenerate_excited_level_is_skipped(self, monkeypatch):
+    def test_degenerate_excited_level_is_skipped(self, monkeypatch: pytest.MonkeyPatch) -> None:
         def fake_hamiltonian(K, omega):
             del K, omega
             return None

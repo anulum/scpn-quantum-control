@@ -21,46 +21,46 @@ from scpn_quantum_control.hardware.qiskit_compat import (
 
 
 class TestQiskitCompat:
-    def test_version_string(self):
+    def test_version_string(self) -> None:
         v = qiskit_version()
         assert isinstance(v, str)
         assert "." in v
 
-    def test_major_is_int(self):
+    def test_major_is_int(self) -> None:
         m = qiskit_major()
         assert isinstance(m, int)
         assert m >= 1
 
-    def test_pauli_evolution_gate(self):
+    def test_pauli_evolution_gate(self) -> None:
         PEG = get_pauli_evolution_gate()
         assert PEG is not None
 
-    def test_lie_trotter(self):
+    def test_lie_trotter(self) -> None:
         LT = get_lie_trotter()
         assert LT is not None
 
-    def test_statevector(self):
+    def test_statevector(self) -> None:
         SV = get_statevector()
         assert SV is not None
 
-    def test_sparse_pauli_op(self):
+    def test_sparse_pauli_op(self) -> None:
         SPO = get_sparse_pauli_op()
         assert SPO is not None
 
-    def test_check_compatibility(self):
+    def test_check_compatibility(self) -> None:
         result = check_qiskit_compatibility()
         assert "version" in result
         assert "compatible" in result
         assert isinstance(result["compatible"], bool)
 
 
-def test_qiskit_version_string():
+def test_qiskit_version_string() -> None:
     result = check_qiskit_compatibility()
     assert isinstance(result["version"], str)
     assert len(result["version"]) > 0
 
 
-def test_all_imports_succeed():
+def test_all_imports_succeed() -> None:
     """All compatibility functions return non-None."""
     assert get_pauli_evolution_gate() is not None
     assert get_lie_trotter() is not None
@@ -68,13 +68,13 @@ def test_all_imports_succeed():
     assert get_sparse_pauli_op() is not None
 
 
-def test_statevector_class_callable():
+def test_statevector_class_callable() -> None:
     SV = get_statevector()
     sv = SV.from_label("00")
     assert len(sv) == 4
 
 
-def test_sparse_pauli_op_constructable():
+def test_sparse_pauli_op_constructable() -> None:
     SPO = get_sparse_pauli_op()
     op = SPO.from_list([("ZZ", 1.0)])
     assert op.num_qubits == 2
@@ -84,7 +84,7 @@ def test_sparse_pauli_op_constructable():
 
 
 class TestQiskit2xMocked:
-    def test_v2_compatibility_check(self):
+    def test_v2_compatibility_check(self) -> None:
         """Mock Qiskit 2.x to cover the v2 warning branch."""
         from unittest.mock import patch
 
@@ -103,7 +103,7 @@ class TestQiskit2xMocked:
             assert result["compatible"] is False
             assert any("GH #15476" in issue for issue in result["issues"])
 
-    def test_pauli_evolution_gate_except_branch(self):
+    def test_pauli_evolution_gate_except_branch(self) -> None:
         """Cover the except ImportError fallback for PauliEvolutionGate.
 
         The source except block re-imports from the same location. We use
@@ -137,7 +137,7 @@ class TestQiskit2xMocked:
             if cached is not None:
                 sys.modules["qiskit.circuit.library"] = cached
 
-    def test_lie_trotter_except_branch(self):
+    def test_lie_trotter_except_branch(self) -> None:
         """Cover the except ImportError fallback for LieTrotter."""
         import builtins
         import sys

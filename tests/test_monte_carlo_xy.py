@@ -12,6 +12,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.analysis.monte_carlo_xy import (
     AHPResult,
@@ -25,49 +26,49 @@ from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
 
 
 class TestMCSimulate:
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         K = build_knm_paper27(L=8)
         result = mc_simulate(K, temperature=0.05, n_thermalize=500, n_measure=500)
         assert isinstance(result, MCResult)
 
-    def test_low_temp_high_order(self):
+    def test_low_temp_high_order(self) -> None:
         K = build_knm_paper27(L=8)
         result = mc_simulate(K, temperature=0.01, n_thermalize=1000, n_measure=1000)
         assert result.order_parameter > 0.5
 
-    def test_high_temp_low_order(self):
+    def test_high_temp_low_order(self) -> None:
         K = build_knm_paper27(L=8)
         result = mc_simulate(K, temperature=1.0, n_thermalize=1000, n_measure=1000)
         assert result.order_parameter < 0.8
 
-    def test_energy_negative(self):
+    def test_energy_negative(self) -> None:
         K = build_knm_paper27(L=8)
         result = mc_simulate(K, temperature=0.05, n_thermalize=500, n_measure=500)
         assert result.energy < 0
 
-    def test_helicity_positive_low_temp(self):
+    def test_helicity_positive_low_temp(self) -> None:
         K = build_knm_paper27(L=8)
         result = mc_simulate(K, temperature=0.01, n_thermalize=1000, n_measure=1000)
         assert result.helicity_modulus > 0
 
 
 class TestExtractAHP:
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         K = build_knm_paper27(L=8)
         result = extract_a_hp(K, n_temps=8, n_thermalize=500, n_measure=500)
         assert isinstance(result, AHPResult)
 
-    def test_a_hp_positive(self):
+    def test_a_hp_positive(self) -> None:
         K = build_knm_paper27(L=8)
         result = extract_a_hp(K, n_temps=8, n_thermalize=500, n_measure=500)
         assert result.a_hp_graph > 0
 
-    def test_t_bkt_positive(self):
+    def test_t_bkt_positive(self) -> None:
         K = build_knm_paper27(L=8)
         result = extract_a_hp(K, n_temps=8, n_thermalize=500, n_measure=500)
         assert result.t_bkt > 0
 
-    def test_gap3_mc_verification(self):
+    def test_gap3_mc_verification(self) -> None:
         """THE definitive Gap 3 test: A_HP on actual K_nm graph."""
         K = build_knm_paper27(L=16)
         result = extract_a_hp(K, n_temps=12, n_thermalize=2000, n_measure=2000)
@@ -84,7 +85,7 @@ class TestExtractAHP:
 class TestMCPythonFallback:
     """Force the Python MC path to validate fallback sampling behaviour."""
 
-    def test_python_mc_sweep(self):
+    def test_python_mc_sweep(self) -> None:
         import numpy as np
 
         from scpn_quantum_control.analysis.monte_carlo_xy import _mc_sweep
@@ -134,13 +135,13 @@ class TestMCPythonFallback:
 
 
 class TestFiniteSizeScaling:
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         result = finite_size_scaling(
             n_values=[4, 8], n_seeds=2, n_thermalize=300, n_measure=300, n_temps=6
         )
         assert isinstance(result, FiniteSizeResult)
 
-    def test_correct_lengths(self):
+    def test_correct_lengths(self) -> None:
         result = finite_size_scaling(
             n_values=[4, 8], n_seeds=2, n_thermalize=300, n_measure=300, n_temps=6
         )
@@ -148,13 +149,13 @@ class TestFiniteSizeScaling:
         assert len(result.a_hp_stds) == 2
         assert len(result.p_h1_means) == 2
 
-    def test_a_hp_positive(self):
+    def test_a_hp_positive(self) -> None:
         result = finite_size_scaling(
             n_values=[4], n_seeds=2, n_thermalize=300, n_measure=300, n_temps=6
         )
         assert result.a_hp_means[0] > 0
 
-    def test_default_n_values_are_used(self, monkeypatch):
+    def test_default_n_values_are_used(self, monkeypatch: pytest.MonkeyPatch) -> None:
         from scpn_quantum_control.analysis import monte_carlo_xy as mc_mod
         from scpn_quantum_control.bridge import knm_hamiltonian as knm_mod
 

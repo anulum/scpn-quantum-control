@@ -20,7 +20,7 @@ from scpn_quantum_control.control.q_disruption_iter import (
 )
 
 
-def test_iter_feature_spec_defaults():
+def test_iter_feature_spec_defaults() -> None:
     spec = ITERFeatureSpec()
     assert len(spec.names) == 11
     assert len(spec.mins) == 11
@@ -28,7 +28,7 @@ def test_iter_feature_spec_defaults():
     assert all(mn < mx for mn, mx in zip(spec.mins, spec.maxs, strict=True))
 
 
-def test_normalize_clamps_to_unit():
+def test_normalize_clamps_to_unit() -> None:
     spec = ITERFeatureSpec()
     raw = spec.maxs + 100
     normed = normalize_iter_features(raw, spec)
@@ -36,14 +36,14 @@ def test_normalize_clamps_to_unit():
     assert np.all(normed >= 0.0)
 
 
-def test_normalize_preserves_center():
+def test_normalize_preserves_center() -> None:
     spec = ITERFeatureSpec()
     mid = (spec.mins + spec.maxs) / 2
     normed = normalize_iter_features(mid, spec)
     np.testing.assert_allclose(normed, 0.5, atol=1e-10)
 
 
-def test_scpn_control_bridge_dependency_contract_advertises_required_surface():
+def test_scpn_control_bridge_dependency_contract_advertises_required_surface() -> None:
     contract = scpn_control_bridge_dependency_contract()
 
     assert contract["control_facade_owner"] == "scpn-control"
@@ -70,7 +70,7 @@ def test_scpn_control_bridge_dependency_contract_advertises_required_surface():
     assert validate_scpn_control_bridge_dependency_contract(contract) == contract
 
 
-def test_scpn_control_bridge_dependency_contract_rejects_feature_order_drift():
+def test_scpn_control_bridge_dependency_contract_rejects_feature_order_drift() -> None:
     contract = scpn_control_bridge_dependency_contract()
     drifted = {
         **contract,
@@ -87,7 +87,7 @@ def test_scpn_control_bridge_dependency_contract_rejects_feature_order_drift():
         validate_scpn_control_bridge_dependency_contract(drifted)
 
 
-def test_generate_synthetic_shapes():
+def test_generate_synthetic_shapes() -> None:
     X, y = generate_synthetic_iter_data(
         200, disruption_fraction=0.3, rng=np.random.default_rng(0), allow_synthetic=True
     )
@@ -96,43 +96,43 @@ def test_generate_synthetic_shapes():
     assert set(np.unique(y)) == {0.0, 1.0}
 
 
-def test_generate_disruption_fraction():
+def test_generate_disruption_fraction() -> None:
     X, y = generate_synthetic_iter_data(
         100, disruption_fraction=0.4, rng=np.random.default_rng(0), allow_synthetic=True
     )
     assert int(np.sum(y)) == 40
 
 
-def test_generate_normalized_range():
+def test_generate_normalized_range() -> None:
     X, y = generate_synthetic_iter_data(500, rng=np.random.default_rng(0), allow_synthetic=True)
     assert np.all(X >= 0.0)
     assert np.all(X <= 1.0)
 
 
-def test_generate_deterministic():
+def test_generate_deterministic() -> None:
     X1, y1 = generate_synthetic_iter_data(50, rng=np.random.default_rng(42), allow_synthetic=True)
     X2, y2 = generate_synthetic_iter_data(50, rng=np.random.default_rng(42), allow_synthetic=True)
     np.testing.assert_array_equal(X1, X2)
     np.testing.assert_array_equal(y1, y2)
 
 
-def test_generate_synthetic_requires_explicit_opt_in():
+def test_generate_synthetic_requires_explicit_opt_in() -> None:
     with pytest.raises(RuntimeError, match="allow_synthetic"):
         generate_synthetic_iter_data(50, rng=np.random.default_rng(42))
 
 
-def test_benchmark_init():
+def test_benchmark_init() -> None:
     bench = DisruptionBenchmark(n_train=20, n_test=10, seed=0, allow_synthetic=True)
     assert bench.X_train.shape == (20, 11)
     assert bench.X_test.shape == (10, 11)
 
 
-def test_benchmark_requires_explicit_synthetic_opt_in():
+def test_benchmark_requires_explicit_synthetic_opt_in() -> None:
     with pytest.raises(RuntimeError, match="allow_synthetic"):
         DisruptionBenchmark(n_train=20, n_test=10, seed=0)
 
 
-def test_benchmark_run_returns_accuracy():
+def test_benchmark_run_returns_accuracy() -> None:
     bench = DisruptionBenchmark(n_train=10, n_test=5, seed=0, allow_synthetic=True)
     result = bench.run(epochs=1, lr=0.01)
     assert "accuracy" in result
@@ -142,7 +142,7 @@ def test_benchmark_run_returns_accuracy():
     assert result["publication_safe"] is False
 
 
-def test_benchmark_classifier_predicts():
+def test_benchmark_classifier_predicts() -> None:
     bench = DisruptionBenchmark(n_train=10, n_test=5, seed=0, allow_synthetic=True)
     pred = bench.classifier.predict(bench.X_test[0])
     assert 0.0 <= pred <= 1.0
@@ -153,7 +153,7 @@ def test_benchmark_classifier_predicts():
 # ---------------------------------------------------------------------------
 
 
-def test_normalize_extreme_values():
+def test_normalize_extreme_values() -> None:
     """Values far outside ITER operating range should clamp to [0,1]."""
     spec = ITERFeatureSpec()
     extreme = np.full(11, 1e10)
@@ -161,7 +161,7 @@ def test_normalize_extreme_values():
     np.testing.assert_allclose(normed, 1.0)
 
 
-def test_benchmark_training_reduces_loss():
+def test_benchmark_training_reduces_loss() -> None:
     """Training for more epochs should reduce or maintain loss."""
     bench = DisruptionBenchmark(n_train=15, n_test=5, seed=42, allow_synthetic=True)
     r1 = bench.run(epochs=1, lr=0.1)
@@ -177,7 +177,7 @@ def test_benchmark_training_reduces_loss():
 # ---------------------------------------------------------------------------
 
 
-def test_pipeline_iter_to_disruption():
+def test_pipeline_iter_to_disruption() -> None:
     """Full pipeline: synthetic ITER data → normalise → quantum classify → risk.
     Verifies ITER disruption module is wired end-to-end.
     """
