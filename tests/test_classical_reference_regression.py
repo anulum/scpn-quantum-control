@@ -14,6 +14,9 @@ indicates a code change broke numerical accuracy.
 
 from __future__ import annotations
 
+import functools
+from typing import Any
+
 import numpy as np
 import pytest
 
@@ -23,6 +26,19 @@ from scpn_quantum_control.hardware.classical import (
 )
 
 REFERENCE_EVOLUTION_MAX_DENSE_GIB = 0.5
+
+
+@functools.cache
+def _diagonalise_once(n: int) -> dict[str, Any]:
+    """Diagonalise one Hamiltonian size and share it across every assertion.
+
+    The ground energy and the spectral gap are two properties of one
+    eigendecomposition. Computing them from separate calls doubled the cost of
+    every size, and at n=12 that was 413 s of a 1,076 s suite spent
+    diagonalising the same 4096x4096 matrix twice.
+    """
+    return classical_exact_diag(n)
+
 
 # ---------------------------------------------------------------------------
 # Exact evolution R values — dense path (n < 13)
@@ -44,7 +60,7 @@ class TestEvolutionRegression:
         ],
         ids=["2q", "4q", "6q", "8q", "10q", "12q"],
     )
-    def test_evolution_R_dt01(self, n, expected_R):
+    def test_evolution_R_dt01(self, n: int, expected_R: float) -> None:
         """R at t=dt=0.1 (single step) must match reference to 10 digits."""
         result = classical_exact_evolution(
             n,
@@ -64,7 +80,7 @@ class TestEvolutionRegression:
         ],
         ids=["2q", "4q", "6q", "8q"],
     )
-    def test_evolution_R_dt01_multi_step(self, n, expected_R):
+    def test_evolution_R_dt01_multi_step(self, n: int, expected_R: float) -> None:
         """Multi-step evolution with same total time should give same final R."""
         # dt=0.1, t_max=0.1 -> 1 step
         result_1 = classical_exact_evolution(
@@ -102,8 +118,9 @@ class TestDiagRegression:
         ],
         ids=["2q", "4q", "6q", "8q", "10q", "12q"],
     )
-    def test_ground_energy(self, n, expected_E0):
-        result = classical_exact_diag(n)
+    def test_ground_energy(self, n: int, expected_E0: float) -> None:
+        """Pin the ground-state energy of each Hamiltonian size."""
+        result = _diagonalise_once(n)
         assert result["ground_energy"] == pytest.approx(expected_E0, abs=1e-6)
 
     @pytest.mark.parametrize(
@@ -118,9 +135,23 @@ class TestDiagRegression:
         ],
         ids=["2q", "4q", "6q", "8q", "10q", "12q"],
     )
-    def test_spectral_gap(self, n, expected_gap):
-        result = classical_exact_diag(n)
+    def test_spectral_gap(self, n: int, expected_gap: float) -> None:
+        """Pin the gap between the two lowest eigenvalues of each size."""
+        result = _diagonalise_once(n)
         assert result["spectral_gap"] == pytest.approx(expected_gap, abs=1e-6)
+
+    def test_diagonalisation_repeats_exactly(self) -> None:
+        """Return bit-identical values when the same size is diagonalised again.
+
+        The two tests above now read one cached eigendecomposition, so the
+        guarantee that a fresh call reproduces it is asserted here instead of
+        being implied by them. A cheap size keeps the guarantee without paying
+        for a second large diagonalisation.
+        """
+        first = classical_exact_diag(6)
+        second = classical_exact_diag(6)
+        assert first["ground_energy"] == second["ground_energy"]
+        assert first["spectral_gap"] == second["spectral_gap"]
 
 
 # ---------------------------------------------------------------------------
@@ -129,7 +160,7 @@ class TestDiagRegression:
 
 
 class TestTrajectoryRegression:
-    def test_16q_8step_trajectory(self, classical_reference):
+    def test_16q_8step_trajectory(self, classical_reference: dict[str, Any]) -> None:
         """Pin the 16-qubit 8-step trajectory from UpCloud computation.
 
         Uses the session-scoped fixture to avoid re-reading JSON per test.
@@ -144,7 +175,7 @@ class TestTrajectoryRegression:
         for i in range(len(R_trajectory) - 1):
             assert R_trajectory[i] > R_trajectory[i + 1]
 
-    def test_reference_data_completeness(self, classical_reference):
+    def test_reference_data_completeness(self, classical_reference: dict[str, Any]) -> None:
         """Reference file must contain all expected entries."""
         expected_keys = [
             "diag_16q",
@@ -172,7 +203,7 @@ class TestTrajectoryRegression:
         for key in expected_keys:
             assert key in classical_reference, f"Missing key: {key}"
 
-    def test_reference_R_values_bounded(self, classical_reference):
+    def test_reference_R_values_bounded(self, classical_reference: dict[str, Any]) -> None:
         """Every R value in the reference file is in [0, 1]."""
         for key, val in classical_reference.items():
             if "R" in val and isinstance(val["R"], float):
@@ -191,7 +222,9 @@ class TestTrajectoryRegression:
         ],
         ids=["2q", "4q", "6q", "8q"],
     )
-    def test_reference_matches_live_computation(self, classical_reference, key, expected_R):
+    def test_reference_matches_live_computation(
+        self, classical_reference: dict[str, Any], key: str, expected_R: float
+    ) -> None:
         """Reference file values must match what we compute now."""
         assert classical_reference[key]["R"] == pytest.approx(expected_R, abs=1e-14)
 
@@ -205,7 +238,10 @@ class TestTrajectoryRegression:
         ],
         ids=["2q", "4q", "6q", "8q"],
     )
-    def test_reference_diag_matches_live(self, classical_reference, key, expected_E0):
+    def test_reference_diag_matches_live(
+        self, classical_reference: dict[str, Any], key: str, expected_E0: float
+    ) -> None:
+        """Pin the ground energy recorded for each size in the reference file."""
         assert classical_reference[key]["ground_energy"] == pytest.approx(expected_E0, abs=1e-6)
 
 
@@ -215,7 +251,7 @@ class TestTrajectoryRegression:
 
 
 class TestRustParity:
-    def test_rust_kuramoto_euler_direction(self):
+    def test_rust_kuramoto_euler_direction(self) -> None:
         """Rust kuramoto_euler evolves in the same direction as exact evolution."""
         try:
             import scpn_quantum_engine as eng
@@ -251,7 +287,7 @@ class TestRustParity:
 
 
 class TestClassicalPipeline:
-    def test_pipeline_diag_and_evolution_consistent(self):
+    def test_pipeline_diag_and_evolution_consistent(self) -> None:
         """Pipeline: exact_diag E_0 < 0 and evolution R ∈ [0,1] — wired together."""
         import time
 
