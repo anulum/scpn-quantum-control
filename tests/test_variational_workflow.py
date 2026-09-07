@@ -9,10 +9,15 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
-def _system(n: int = 4):
+
+def _system(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[np.float64]]:
     """Standard heterogeneous Kuramoto-XY system."""
     K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
     np.fill_diagonal(K, 0.0)
@@ -20,7 +25,7 @@ def _system(n: int = 4):
     return n, K, omega
 
 
-def _homogeneous_system(n: int = 4):
+def _homogeneous_system(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[np.float64]]:
     """Circulant K + uniform omega for translation symmetry."""
     K = np.zeros((n, n))
     for i in range(n):
@@ -35,7 +40,7 @@ class TestVariationalPipeline:
     """Multiple variational methods should converge toward the exact ground
     state energy, with NQS and param-shift giving consistent results."""
 
-    def test_nqs_approaches_exact(self):
+    def test_nqs_approaches_exact(self) -> None:
         """RBM VMC energy should be within 20% of exact ground state."""
         from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
         from scpn_quantum_control.phase.nqs_ansatz import vmc_ground_state
@@ -53,11 +58,11 @@ class TestVariationalPipeline:
             f"(relative error {relative_error:.2%})"
         )
 
-    def test_param_shift_vqe_converges(self):
+    def test_param_shift_vqe_converges(self) -> None:
         """Parameter-shift VQE should reduce energy over iterations."""
         from scpn_quantum_control.phase.param_shift import vqe_with_param_shift
 
-        def cost(params):
+        def cost(params: NDArray[np.float64]) -> float:
             return float(sum((p - 0.5) ** 2 for p in params))
 
         result = vqe_with_param_shift(
@@ -68,12 +73,14 @@ class TestVariationalPipeline:
             seed=42,
         )
 
-        assert result["energy"] < result["energy_history"][0], (
-            "VQE should reduce energy over iterations"
-        )
-        assert result["grad_norms"][-1] < result["grad_norms"][0], "Gradient norms should decrease"
+        energy_history = result["energy_history"]
+        grad_norms = result["grad_norms"]
+        assert isinstance(energy_history, list)
+        assert isinstance(grad_norms, list)
+        assert result["energy"] < energy_history[0], "VQE should reduce energy over iterations"
+        assert grad_norms[-1] < grad_norms[0], "Gradient norms should decrease"
 
-    def test_batch_vqe_finds_better_than_random(self):
+    def test_batch_vqe_finds_better_than_random(self) -> None:
         """Batch VQE scan should find energy lower than mean random."""
         from scpn_quantum_control.phase.gpu_batch_vqe import batch_vqe_scan
 
@@ -86,7 +93,7 @@ class TestVariationalPipeline:
             "Best energy should be below mean of random samples"
         )
 
-    def test_nqs_and_sparse_agree_on_ground(self):
+    def test_nqs_and_sparse_agree_on_ground(self) -> None:
         """NQS VMC and sparse eigsh should find comparable ground energies.
         NQS is variational (upper bound) so E_nqs >= E_exact."""
         from scpn_quantum_control.bridge.sparse_hamiltonian import sparse_eigsh
@@ -102,7 +109,7 @@ class TestVariationalPipeline:
             f"NQS {result_nqs['energy']:.4f} suspiciously below exact {E_sparse:.4f}"
         )
 
-    def test_contraction_optimiser_in_pipeline(self):
+    def test_contraction_optimiser_in_pipeline(self) -> None:
         """Contraction optimiser should give same results as np.einsum."""
         from scpn_quantum_control.phase.contraction_optimiser import contract
 

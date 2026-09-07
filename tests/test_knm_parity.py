@@ -12,6 +12,7 @@ from __future__ import annotations
 import sys
 from importlib import import_module
 from pathlib import Path
+from types import ModuleType
 
 import numpy as np
 import pytest
@@ -24,7 +25,7 @@ from scpn_quantum_control.bridge.control_plasma_knm import (
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 
 
-def _import_local_module(repo_name: str, module_name: str):
+def _import_local_module(repo_name: str, module_name: str) -> ModuleType:
     repo_root = Path(__file__).resolve().parents[1]
     src_path = repo_root.parent / repo_name / "src"
     if not src_path.is_dir():
@@ -120,7 +121,9 @@ def test_plasma_knm_from_config_bridge_parity_with_scpn_control() -> None:
     mod = _import_local_module("scpn-control", "scpn_control.phase.plasma_knm")
     repo_src = _scpn_control_src_path()
     cfg = {"R0": 6.2, "a": 2.0, "B0": 5.3, "Ip": 15.0, "n_e": 10.1}
-    k_quantum = build_knm_plasma_from_config(repo_src=repo_src, **cfg)
+    # A **dict splat is matched against every keyword of the signature,
+    # including the string and integer parameters, and cannot be narrowed here.
+    k_quantum = build_knm_plasma_from_config(repo_src=repo_src, **cfg)  # type: ignore[arg-type]
     k_control = np.asarray(mod.build_knm_plasma_from_config(**cfg).K, dtype=np.float64)
     np.testing.assert_allclose(k_quantum, k_control, atol=1e-12)
 
@@ -133,41 +136,41 @@ def test_plasma_knm_from_config_bridge_parity_with_scpn_control() -> None:
 class TestKnmSelfContainedProperties:
     """Knm invariants that must hold regardless of external implementations."""
 
-    def test_knm_paper27_symmetric(self):
+    def test_knm_paper27_symmetric(self) -> None:
         for L in (4, 8, 16):
             K = build_knm_paper27(L=L)
             np.testing.assert_allclose(K, K.T, atol=1e-12)
 
-    def test_knm_paper27_non_negative(self):
+    def test_knm_paper27_non_negative(self) -> None:
         for L in (4, 8, 16):
             K = build_knm_paper27(L=L)
             assert np.all(K >= 0)
 
-    def test_knm_paper27_shape(self):
+    def test_knm_paper27_shape(self) -> None:
         for L in (2, 4, 8, 16):
             K = build_knm_paper27(L=L)
             assert K.shape == (L, L)
 
-    def test_omega_n_16_length(self):
+    def test_omega_n_16_length(self) -> None:
         assert len(OMEGA_N_16) == 16
 
-    def test_omega_n_16_finite(self):
+    def test_omega_n_16_finite(self) -> None:
         assert np.all(np.isfinite(OMEGA_N_16))
 
-    def test_omega_n_16_positive(self):
+    def test_omega_n_16_positive(self) -> None:
         assert np.all(OMEGA_N_16 > 0)
 
     @pytest.mark.parametrize("L", [4, 8, 16])
-    def test_knm_exponential_decay(self, L):
+    def test_knm_exponential_decay(self, L: int) -> None:
         """Coupling decays with distance: K[0,1] > K[0,L//2]."""
         K = build_knm_paper27(L=L)
         assert K[0, 1] > K[0, L // 2]
 
-    def test_knm_deterministic(self):
+    def test_knm_deterministic(self) -> None:
         K1 = build_knm_paper27(L=8)
         K2 = build_knm_paper27(L=8)
         np.testing.assert_array_equal(K1, K2)
 
-    def test_knm_dtype_float64(self):
+    def test_knm_dtype_float64(self) -> None:
         K = build_knm_paper27(L=4)
         assert K.dtype == np.float64

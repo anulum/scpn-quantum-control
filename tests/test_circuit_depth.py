@@ -9,19 +9,29 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from qiskit import transpile
 
 from scpn_quantum_control.bridge import OMEGA_N_16, build_knm_paper27, knm_to_ansatz
 from scpn_quantum_control.hardware.experiments import _build_evo_base
 
+if TYPE_CHECKING:
+    import numpy as np
+    from numpy.typing import NDArray
+    from qiskit import QuantumCircuit
 
-def _transpiled_depth(qc) -> int:
+
+def _transpiled_depth(qc: QuantumCircuit) -> int:
     """Transpile to CX+U3 basis and return depth."""
     t = transpile(qc, basis_gates=["cx", "u3", "u2", "u1", "id"], optimization_level=0)
-    return t.depth()
+    depth: int = t.depth()
+    return depth
 
 
-def test_4osc_1rep_trotter_depth(knm_4q):
+def test_4osc_1rep_trotter_depth(
+    knm_4q: tuple[NDArray[np.float64], NDArray[np.float64]],
+) -> None:
     """4-qubit, 1 Trotter rep: depth should not exceed 100."""
     K, omega = knm_4q
     qc = _build_evo_base(4, K, omega, t=1.0, trotter_reps=1)
@@ -29,7 +39,9 @@ def test_4osc_1rep_trotter_depth(knm_4q):
     assert d < 100, f"4q 1-rep depth={d}, expected <100"
 
 
-def test_8osc_1rep_trotter_depth(knm_8q):
+def test_8osc_1rep_trotter_depth(
+    knm_8q: tuple[NDArray[np.float64], NDArray[np.float64]],
+) -> None:
     """8-qubit, 1 Trotter rep: depth should not exceed 300."""
     K, omega = knm_8q
     qc = _build_evo_base(8, K, omega, t=1.0, trotter_reps=1)
@@ -37,7 +49,7 @@ def test_8osc_1rep_trotter_depth(knm_8q):
     assert d < 300, f"8q 1-rep depth={d}, expected <300"
 
 
-def test_16q_1rep_trotter_depth():
+def test_16q_1rep_trotter_depth() -> None:
     """16-qubit, 1 Trotter rep: depth should not exceed 1000."""
     K = build_knm_paper27(L=16)
     omega = OMEGA_N_16
@@ -46,7 +58,9 @@ def test_16q_1rep_trotter_depth():
     assert d < 1000, f"16q 1-rep depth={d}, expected <1000"
 
 
-def test_depth_scales_with_reps(knm_4q):
+def test_depth_scales_with_reps(
+    knm_4q: tuple[NDArray[np.float64], NDArray[np.float64]],
+) -> None:
     """More Trotter reps → proportionally deeper circuit."""
     K, omega = knm_4q
     qc1 = _build_evo_base(4, K, omega, t=1.0, trotter_reps=1)
@@ -57,7 +71,9 @@ def test_depth_scales_with_reps(knm_4q):
     assert d3 < 4 * d1, f"3-rep depth ({d3}) should be < 4x 1-rep depth ({d1})"
 
 
-def test_ansatz_depth_scales_with_reps(knm_4q):
+def test_ansatz_depth_scales_with_reps(
+    knm_4q: tuple[NDArray[np.float64], NDArray[np.float64]],
+) -> None:
     """Ansatz depth grows with reps."""
     K, _ = knm_4q
     qc1 = knm_to_ansatz(K, reps=1)
@@ -67,7 +83,7 @@ def test_ansatz_depth_scales_with_reps(knm_4q):
     assert d3 > d1
 
 
-def test_2osc_1rep_trotter_depth():
+def test_2osc_1rep_trotter_depth() -> None:
     """2-qubit, 1 Trotter rep: depth should be very shallow."""
     K = build_knm_paper27(L=2)
     omega = OMEGA_N_16[:2]
@@ -76,7 +92,7 @@ def test_2osc_1rep_trotter_depth():
     assert d < 50, f"2q 1-rep depth={d}, expected <50"
 
 
-def test_depth_increases_with_system_size():
+def test_depth_increases_with_system_size() -> None:
     """Larger systems → deeper circuits for same Trotter parameters."""
     depths = {}
     for L in [2, 4, 8]:
@@ -87,7 +103,9 @@ def test_depth_increases_with_system_size():
     assert depths[2] < depths[4] < depths[8]
 
 
-def test_circuit_gate_count_4q(knm_4q):
+def test_circuit_gate_count_4q(
+    knm_4q: tuple[NDArray[np.float64], NDArray[np.float64]],
+) -> None:
     """4-qubit circuit should have reasonable gate counts."""
     from qiskit import transpile
 
@@ -100,7 +118,7 @@ def test_circuit_gate_count_4q(knm_4q):
     assert total < 500
 
 
-def test_depth_finite_for_all_sizes():
+def test_depth_finite_for_all_sizes() -> None:
     """Depth should be finite and positive for all standard sizes."""
     for L in [2, 3, 4, 6, 8]:
         K = build_knm_paper27(L=L)
@@ -110,7 +128,9 @@ def test_depth_finite_for_all_sizes():
         assert 0 < d < 2000, f"L={L}: depth={d}"
 
 
-def test_ansatz_qubit_count_matches_K(knm_4q):
+def test_ansatz_qubit_count_matches_K(
+    knm_4q: tuple[NDArray[np.float64], NDArray[np.float64]],
+) -> None:
     """Ansatz qubit count must match coupling matrix dimension."""
     K, _ = knm_4q
     qc = knm_to_ansatz(K, reps=2)
@@ -122,7 +142,7 @@ def test_ansatz_qubit_count_matches_K(knm_4q):
 # ---------------------------------------------------------------------------
 
 
-def test_pipeline_depth_regression():
+def test_pipeline_depth_regression() -> None:
     """Full pipeline: build_knm → Trotter circuit → transpile → depth metrics.
     Verifies circuit depth module is wired and produces actionable data.
     """

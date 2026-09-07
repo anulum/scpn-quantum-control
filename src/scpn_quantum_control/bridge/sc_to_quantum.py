@@ -13,6 +13,8 @@ The core identity: P(|1>) = sin^2(theta/2) for Ry(theta)|0>.
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 from numpy.typing import NDArray
 
@@ -34,8 +36,11 @@ def angle_to_probability(theta: float) -> float:
     return float(np.sin(theta / 2.0) ** 2)
 
 
-def bitstream_to_statevector(bits: NDArray[np.float64]) -> NDArray[np.float64]:
+def bitstream_to_statevector(bits: NDArray[np.number[Any]]) -> NDArray[np.float64]:
     """Decode bitstream mean probability, return single-qubit statevector [alpha, beta].
+
+    bits: any numeric dtype; the uint8 bitstreams stochastic computing produces
+    are accepted and reduced by ``np.mean``.
 
     |psi> = cos(theta/2)|0> + sin(theta/2)|1>  where  sin^2(theta/2) = mean(bits)
     """

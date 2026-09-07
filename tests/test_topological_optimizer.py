@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
@@ -18,9 +19,12 @@ import scpn_quantum_control.control.topological_optimizer as topology
 from scpn_quantum_control.analysis.quantum_persistent_homology import _RIPSER_AVAILABLE
 from scpn_quantum_control.control.topological_optimizer import TopologicalCouplingOptimizer
 
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+
 
 class TestTopologicalOptimizer:
-    def test_topological_optimizer_step(self):
+    def test_topological_optimizer_step(self) -> None:
         """Verify one cycle of topological gradient descent on p_h1."""
         if not _RIPSER_AVAILABLE:
             pytest.skip("ripser not available")
@@ -44,7 +48,7 @@ class TestTopologicalOptimizer:
         # Verify symmetry
         np.testing.assert_allclose(res["K_updated"], res["K_updated"].T)
 
-    def test_optimize_loop(self):
+    def test_optimize_loop(self) -> None:
         if not _RIPSER_AVAILABLE:
             pytest.skip("ripser not available")
 
@@ -59,7 +63,7 @@ class TestTopologicalOptimizer:
         history = opt.optimize(steps=2, n_samples=1)
         assert len(history) == 2
 
-    def test_k_symmetry_preserved(self):
+    def test_k_symmetry_preserved(self) -> None:
         """K must remain symmetric after optimization steps."""
         if not _RIPSER_AVAILABLE:
             pytest.skip("ripser not available")
@@ -75,7 +79,7 @@ class TestTopologicalOptimizer:
         res = opt.step(n_samples=2)
         np.testing.assert_allclose(res["K_updated"], res["K_updated"].T, atol=1e-12)
 
-    def test_k_non_negative(self):
+    def test_k_non_negative(self) -> None:
         """K entries must remain >= 0."""
         if not _RIPSER_AVAILABLE:
             pytest.skip("ripser not available")
@@ -88,7 +92,7 @@ class TestTopologicalOptimizer:
         res = opt.step(n_samples=3)
         assert np.all(res["K_updated"] >= -1e-15)
 
-    def test_diagonal_stays_zero(self):
+    def test_diagonal_stays_zero(self) -> None:
         """Self-coupling K[i,i] must remain zero."""
         if not _RIPSER_AVAILABLE:
             pytest.skip("ripser not available")
@@ -103,7 +107,7 @@ class TestTopologicalOptimizer:
         for step in history:
             np.testing.assert_allclose(np.diag(step["K_updated"]), 0.0)
 
-    def test_gradient_norm_finite(self):
+    def test_gradient_norm_finite(self) -> None:
         """Gradient norm must be a finite non-negative number."""
         if not _RIPSER_AVAILABLE:
             pytest.skip("ripser not available")
@@ -115,7 +119,7 @@ class TestTopologicalOptimizer:
         assert np.isfinite(res["gradient_norm"])
         assert res["gradient_norm"] >= 0
 
-    def test_initialiser_enforces_physical_coupling_constraints(self):
+    def test_initialiser_enforces_physical_coupling_constraints(self) -> None:
         K0 = np.array([[1.0, 0.1, 0.4], [0.5, 2.0, 0.3], [0.2, 0.9, 3.0]])
         omega = np.array([5.0, 7.0, 9.0])
 
@@ -125,7 +129,9 @@ class TestTopologicalOptimizer:
         np.testing.assert_allclose(np.diag(opt.K), 0.0)
         np.testing.assert_allclose(opt.K[0, 1], 0.3)
 
-    def test_step_requires_persistent_homology_backend(self, monkeypatch):
+    def test_step_requires_persistent_homology_backend(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         monkeypatch.setattr(topology, "_RIPSER_AVAILABLE", False)
         opt = TopologicalCouplingOptimizer(
             n_qubits=2,
@@ -136,16 +142,31 @@ class TestTopologicalOptimizer:
         with pytest.raises(ImportError, match="ripser"):
             opt.step(n_samples=1)
 
-    def test_finite_difference_measures_candidate_couplings(self, monkeypatch):
+    def test_finite_difference_measures_candidate_couplings(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         monkeypatch.setattr(topology, "_RIPSER_AVAILABLE", True)
         initial_K = np.array([[0.0, 0.2], [0.2, 0.0]], dtype=float)
         delta = np.array([[0.0, 0.05], [0.05, 0.0]], dtype=float)
         observed_couplings: list[np.ndarray] = []
 
-        def fake_fast_sparse_evolution(K, omega, *, t_total, n_steps):
+        def fake_fast_sparse_evolution(
+            K: NDArray[np.float64],
+            omega: NDArray[np.float64],
+            *,
+            t_total: float,
+            n_steps: int,
+        ) -> dict[str, NDArray[np.complex128]]:
             return {"final_state": np.array([1.0, 0.0, 0.0, 0.0], dtype=complex)}
 
-        def fake_measurement(self, psi, shots=5000, *, K_candidate=None):
+        def fake_measurement(
+            self: TopologicalCouplingOptimizer,
+            psi: NDArray[np.complex128],
+            shots: int = 5000,
+            *,
+            K_candidate: NDArray[np.float64] | None = None,
+        ) -> tuple[dict[str, float], dict[str, float]]:
+            assert K_candidate is not None
             observed_couplings.append(np.array(K_candidate, dtype=float).copy())
             score = float(np.sum(K_candidate))
             return {"score": score}, {"score": score}
@@ -154,7 +175,7 @@ class TestTopologicalOptimizer:
         monkeypatch.setattr(
             TopologicalCouplingOptimizer, "_simulate_measurement_counts", fake_measurement
         )
-        monkeypatch.setattr(topology.np.random, "normal", lambda *args, **kwargs: delta)
+        monkeypatch.setattr(np.random, "normal", lambda *args, **kwargs: delta)
         monkeypatch.setattr(
             topology,
             "quantum_persistent_homology",

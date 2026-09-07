@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, NoReturn
+
 import numpy as np
 import pytest
 
@@ -20,6 +22,9 @@ from scpn_quantum_control.analysis.critical_concordance import (
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16
 from scpn_quantum_control.dense_budget import DenseAllocationError
 
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+
 
 def _ring_topology(n: int) -> np.ndarray:
     T = np.zeros((n, n))
@@ -30,7 +35,7 @@ def _ring_topology(n: int) -> np.ndarray:
 
 
 class TestCriticalConcordance:
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         n = 3
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -38,7 +43,7 @@ class TestCriticalConcordance:
         assert isinstance(result, ConcordanceResult)
         assert len(result.k_values) == 3
 
-    def test_all_arrays_correct_length(self):
+    def test_all_arrays_correct_length(self) -> None:
         n = 3
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -50,14 +55,14 @@ class TestCriticalConcordance:
         assert len(result.fiedler_values) == 5
         assert len(result.n_entangled_pairs) == 5
 
-    def test_gap_always_positive(self):
+    def test_gap_always_positive(self) -> None:
         n = 3
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
         result = critical_concordance(omega, T, k_range=np.linspace(0.5, 5.0, 5))
         assert np.all(result.gap_values > 0)
 
-    def test_k_c_estimates_exist(self):
+    def test_k_c_estimates_exist(self) -> None:
         """At least gap-based K_c should always be found."""
         n = 3
         T = _ring_topology(n)
@@ -65,7 +70,7 @@ class TestCriticalConcordance:
         result = critical_concordance(omega, T, k_range=np.linspace(0.5, 5.0, 8))
         assert result.k_c_from_gap is not None
 
-    def test_R_derivative_k_c(self):
+    def test_R_derivative_k_c(self) -> None:
         n = 3
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -74,7 +79,7 @@ class TestCriticalConcordance:
         assert result.k_c_from_R_deriv >= 0.5
         assert result.k_c_from_R_deriv <= 5.0
 
-    def test_concordance_spread_finite(self):
+    def test_concordance_spread_finite(self) -> None:
         """If multiple estimates exist, spread should be finite."""
         n = 3
         T = _ring_topology(n)
@@ -83,7 +88,7 @@ class TestCriticalConcordance:
         if result.concordance_spread is not None:
             assert np.isfinite(result.concordance_spread)
 
-    def test_4qubit_concordance(self):
+    def test_4qubit_concordance(self) -> None:
         n = 4
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -91,7 +96,7 @@ class TestCriticalConcordance:
         assert isinstance(result, ConcordanceResult)
         assert result.k_c_from_gap is not None
 
-    def test_wide_scan_finds_transition(self):
+    def test_wide_scan_finds_transition(self) -> None:
         """A wide scan should show gap varying and QFI nonzero somewhere."""
         n = 3
         T = _ring_topology(n)
@@ -100,12 +105,14 @@ class TestCriticalConcordance:
         # Gap should vary across the scan
         assert result.gap_values[0] != result.gap_values[-1]
 
-    def test_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+    def test_rejects_dense_budget_before_hamiltonian_allocation(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         n = 4
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
 
-        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+        def fail_if_dense_hamiltonian_is_requested(*args: object, **kwargs: object) -> NoReturn:  # noqa: ARG001
             raise AssertionError("dense Hamiltonian allocation happened before budget gate")
 
         monkeypatch.setattr(
@@ -122,17 +129,22 @@ class TestCriticalConcordance:
                 max_dense_gib=1e-5,
             )
 
-    def test_reuses_concordance_eigendecomposition_for_qfi(self, monkeypatch):
+    def test_reuses_concordance_eigendecomposition_for_qfi(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
-        original_dense = concordance_module.knm_to_dense_matrix
+        # knm_to_dense_matrix is imported by the module under test, not defined
+        # there, so the module dict is where the counting stand-in goes.
+        original_dense = vars(concordance_module)["knm_to_dense_matrix"]
         dense_calls = 0
 
-        def counting_dense(*args, **kwargs):
+        def counting_dense(*args: object, **kwargs: object) -> NDArray[np.complex128]:
             nonlocal dense_calls
             dense_calls += 1
-            return original_dense(*args, **kwargs)
+            dense: NDArray[np.complex128] = original_dense(*args, **kwargs)
+            return dense
 
         monkeypatch.setattr(
             concordance_module,
@@ -151,7 +163,7 @@ class TestCriticalConcordance:
         assert np.all(np.isfinite(result.qfi_values))
 
 
-def test_concordance_k_range_length():
+def test_concordance_k_range_length() -> None:
     n = 3
     T = _ring_topology(n)
     omega = OMEGA_N_16[:n]
@@ -160,7 +172,7 @@ def test_concordance_k_range_length():
     assert len(result.k_values) == 8
 
 
-def test_concordance_gap_positive():
+def test_concordance_gap_positive() -> None:
     n = 3
     T = _ring_topology(n)
     omega = OMEGA_N_16[:n]
@@ -168,7 +180,7 @@ def test_concordance_gap_positive():
     assert np.all(np.array(result.gap_values) > 0)
 
 
-def test_concordance_2q():
+def test_concordance_2q() -> None:
     n = 2
     T = _ring_topology(n)
     omega = OMEGA_N_16[:n]

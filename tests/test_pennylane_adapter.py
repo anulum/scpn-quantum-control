@@ -30,35 +30,35 @@ _SKIP_NO_PL = pytest.mark.skipif(not _PL_OK, reason="PennyLane not available or 
 
 @_SKIP_NO_PL
 class TestPennyLaneRunner:
-    def test_trotter_returns_result(self):
+    def test_trotter_returns_result(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         runner = PennyLaneRunner(K, omega)
         result = runner.run_trotter(t=0.5, reps=2)
         assert isinstance(result, PennyLaneResult)
 
-    def test_energy_finite(self):
+    def test_energy_finite(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         runner = PennyLaneRunner(K, omega)
         result = runner.run_trotter(t=0.5, reps=2)
         assert np.isfinite(result.energy)
 
-    def test_r_global_bounded(self):
+    def test_r_global_bounded(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         runner = PennyLaneRunner(K, omega)
         result = runner.run_trotter(t=0.5, reps=2)
         assert 0 <= result.order_parameter <= 1.0
 
-    def test_n_qubits(self):
+    def test_n_qubits(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         runner = PennyLaneRunner(K, omega)
         result = runner.run_trotter(t=0.1, reps=1)
         assert result.n_qubits == 4
 
-    def test_vqe_returns_result(self):
+    def test_vqe_returns_result(self) -> None:
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         runner = PennyLaneRunner(K, omega)
@@ -66,7 +66,7 @@ class TestPennyLaneRunner:
         assert isinstance(result, PennyLaneResult)
         assert np.isfinite(result.energy)
 
-    def test_device_name(self):
+    def test_device_name(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         runner = PennyLaneRunner(K, omega, device="default.qubit")
@@ -82,19 +82,19 @@ class TestPennyLaneRunner:
 class TestPennyLaneAvailability:
     """These tests always run, regardless of PennyLane installation."""
 
-    def test_is_pennylane_available_returns_bool(self):
+    def test_is_pennylane_available_returns_bool(self) -> None:
         from scpn_quantum_control.hardware.pennylane_adapter import is_pennylane_available
 
         assert isinstance(is_pennylane_available(), bool)
 
-    def test_module_importable(self):
+    def test_module_importable(self) -> None:
         from scpn_quantum_control.hardware import pennylane_adapter
 
         assert hasattr(pennylane_adapter, "is_pennylane_available")
         assert hasattr(pennylane_adapter, "PennyLaneRunner")
         assert hasattr(pennylane_adapter, "PennyLaneResult")
 
-    def test_pennylane_result_dataclass(self):
+    def test_pennylane_result_dataclass(self) -> None:
         from scpn_quantum_control.hardware.pennylane_adapter import PennyLaneResult
 
         r = PennyLaneResult(
@@ -102,12 +102,12 @@ class TestPennyLaneAvailability:
             order_parameter=0.8,
             n_qubits=4,
             device_name="sim",
-            statevector=np.zeros(16),
+            statevector=np.zeros(16, dtype=np.complex128),
         )
         assert r.energy == -1.5
         assert r.order_parameter == 0.8
 
-    def test_runner_raises_without_pennylane(self):
+    def test_runner_raises_without_pennylane(self) -> None:
         if _PL_OK:
             pytest.skip("PennyLane is installed")
         from scpn_quantum_control.hardware.pennylane_adapter import PennyLaneRunner
@@ -117,7 +117,7 @@ class TestPennyLaneAvailability:
         with pytest.raises(ImportError):
             PennyLaneRunner(K, omega)
 
-    def test_pipeline_pennylane_availability(self):
+    def test_pipeline_pennylane_availability(self) -> None:
         """Pipeline: check availability → import module → verify API.
         Verifies PennyLane adapter is wired into the package.
         """

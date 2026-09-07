@@ -13,15 +13,15 @@ from scpn_quantum_control.hardware.runner import HardwareRunner
 
 
 class TestFractionalGates:
-    def test_default_fractional_enabled(self):
+    def test_default_fractional_enabled(self) -> None:
         runner = HardwareRunner(use_simulator=True)
         assert runner.use_fractional_gates is True
 
-    def test_fractional_disabled(self):
+    def test_fractional_disabled(self) -> None:
         runner = HardwareRunner(use_simulator=True, use_fractional_gates=False)
         assert runner.use_fractional_gates is False
 
-    def test_simulator_basis_includes_rzz_when_fractional(self):
+    def test_simulator_basis_includes_rzz_when_fractional(self) -> None:
         runner = HardwareRunner(use_simulator=True, use_fractional_gates=True)
         runner.connect()
         # Transpile a simple circuit and check that rzz is available
@@ -35,7 +35,7 @@ class TestFractionalGates:
         ops = isa.count_ops()
         assert "rzz" in ops or isa.depth() <= qc.depth() + 5
 
-    def test_simulator_without_fractional_decomposes_rzz(self):
+    def test_simulator_without_fractional_decomposes_rzz(self) -> None:
         runner = HardwareRunner(use_simulator=True, use_fractional_gates=False)
         runner.connect()
         from qiskit import QuantumCircuit
@@ -48,7 +48,7 @@ class TestFractionalGates:
         # Without fractional, rzz should be decomposed into basis gates
         assert "rzz" not in ops
 
-    def test_kuramoto_circuit_depth_reduction(self):
+    def test_kuramoto_circuit_depth_reduction(self) -> None:
         from scpn_quantum_control import OMEGA_N_16, QuantumKuramotoSolver, build_knm_paper27
 
         K = build_knm_paper27(L=4)
@@ -66,7 +66,7 @@ class TestFractionalGates:
         # Fractional gates should produce shallower or equal depth circuits
         assert isa_frac.depth() <= isa_no.depth()
 
-    def test_fractional_gate_count_comparison(self):
+    def test_fractional_gate_count_comparison(self) -> None:
         """Fractional gates should reduce 2q gate count."""
         from scpn_quantum_control import OMEGA_N_16, QuantumKuramotoSolver, build_knm_paper27
 
@@ -87,7 +87,7 @@ class TestFractionalGates:
         assert stats_frac["depth"] <= stats_no["depth"]
         assert stats_frac["total_gates"] <= stats_no["total_gates"] + 10
 
-    def test_simple_bell_both_modes(self):
+    def test_simple_bell_both_modes(self) -> None:
         """Bell pair should work correctly in both gate modes."""
         from qiskit import QuantumCircuit
 
@@ -100,13 +100,14 @@ class TestFractionalGates:
             qc.measure_all()
             results = runner.run_sampler(qc, shots=1000, name="bell")
             counts = results[0].counts
+            assert counts is not None
             total = sum(counts.values())
             assert total == 1000
             # Bell pair should have mostly "00" and "11"
             ideal = counts.get("00", 0) + counts.get("11", 0)
             assert ideal > 900
 
-    def test_fractional_preserves_qubit_count(self):
+    def test_fractional_preserves_qubit_count(self) -> None:
         from qiskit import QuantumCircuit
 
         runner = HardwareRunner(use_simulator=True, use_fractional_gates=True)
@@ -119,7 +120,7 @@ class TestFractionalGates:
         isa = runner.transpile(qc)
         assert isa.num_qubits >= 3
 
-    def test_optimization_level_affects_depth(self):
+    def test_optimization_level_affects_depth(self) -> None:
         """Higher optimization should reduce depth."""
         from qiskit import QuantumCircuit
 
@@ -141,7 +142,7 @@ class TestFractionalGates:
 
         assert isa_o2.depth() <= isa_o0.depth() + 5
 
-    def test_transpiled_circuit_valid(self):
+    def test_transpiled_circuit_valid(self) -> None:
         """Transpiled circuit must have positive depth and gate count."""
         from qiskit import QuantumCircuit
 
@@ -158,7 +159,7 @@ class TestFractionalGates:
         assert stats["total_gates"] > 0
         assert stats["n_qubits"] >= 4
 
-    def test_pipeline_knm_to_fractional_execution(self):
+    def test_pipeline_knm_to_fractional_execution(self) -> None:
         """Full pipeline: Knm → Kuramoto circuit → fractional transpile → execute.
         Verifies fractional gate path is wired end-to-end with performance data.
         """

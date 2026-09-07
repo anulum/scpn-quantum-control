@@ -18,44 +18,44 @@ from scpn_quantum_control.bridge.sc_to_quantum import (
 )
 
 
-def test_prob_angle_roundtrip():
+def test_prob_angle_roundtrip() -> None:
     for p in [0.0, 0.25, 0.5, 0.75, 1.0]:
         theta = probability_to_angle(p)
         assert abs(angle_to_probability(theta) - p) < 1e-12
 
 
-def test_boundary_clipping():
+def test_boundary_clipping() -> None:
     assert probability_to_angle(-0.1) == probability_to_angle(0.0)
     assert probability_to_angle(1.5) == probability_to_angle(1.0)
 
 
-def test_bitstream_to_statevector_norm():
+def test_bitstream_to_statevector_norm() -> None:
     bits = np.array([1, 1, 0, 0, 1, 0])
     sv = bitstream_to_statevector(bits)
     assert abs(np.linalg.norm(sv) - 1.0) < 1e-12
 
 
-def test_bitstream_to_statevector_all_ones():
+def test_bitstream_to_statevector_all_ones() -> None:
     bits = np.ones(100, dtype=np.uint8)
     sv = bitstream_to_statevector(bits)
     # p=1.0 -> theta=pi -> sv = [0, 1]
     assert abs(sv[1] - 1.0) < 1e-10
 
 
-def test_measurement_to_bitstream_length():
+def test_measurement_to_bitstream_length() -> None:
     counts = {"0": 70, "1": 30}
     bs = measurement_to_bitstream(counts, 256)
     assert len(bs) == 256
     assert set(np.unique(bs)).issubset({0, 1})
 
 
-def test_measurement_to_bitstream_bias():
+def test_measurement_to_bitstream_bias() -> None:
     counts = {"0": 0, "1": 1000}
     bs = measurement_to_bitstream(counts, 500)
     assert np.all(bs == 1)
 
 
-def test_measurement_to_bitstream_seeded():
+def test_measurement_to_bitstream_seeded() -> None:
     """Seeded rng should produce reproducible bitstreams."""
     counts = {"0": 60, "1": 40}
     rng1 = np.random.default_rng(99)
@@ -65,7 +65,7 @@ def test_measurement_to_bitstream_seeded():
     np.testing.assert_array_equal(bs1, bs2)
 
 
-def test_probability_to_angle_range():
+def test_probability_to_angle_range() -> None:
     from scpn_quantum_control.bridge.sc_to_quantum import probability_to_angle
 
     for p in np.linspace(0, 1, 20):
@@ -73,21 +73,21 @@ def test_probability_to_angle_range():
         assert 0 <= a <= np.pi + 1e-10
 
 
-def test_probability_to_angle_zero():
+def test_probability_to_angle_zero() -> None:
     from scpn_quantum_control.bridge.sc_to_quantum import probability_to_angle
 
     a = probability_to_angle(0.0)
     assert a == pytest.approx(0.0)
 
 
-def test_probability_to_angle_one():
+def test_probability_to_angle_one() -> None:
     from scpn_quantum_control.bridge.sc_to_quantum import probability_to_angle
 
     a = probability_to_angle(1.0)
     assert a == pytest.approx(np.pi)
 
 
-def test_measurement_to_bitstream_length_100():
+def test_measurement_to_bitstream_length_100() -> None:
     counts = {"0": 50, "1": 50}
     bs = measurement_to_bitstream(counts, 100)
     assert len(bs) == 100

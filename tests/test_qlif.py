@@ -12,13 +12,13 @@ import numpy as np
 from scpn_quantum_control.qsnn.qlif import QuantumLIFNeuron
 
 
-def test_no_input_no_spike():
+def test_no_input_no_spike() -> None:
     neuron = QuantumLIFNeuron(n_shots=0)
     spike = neuron.step(0.0)
     assert spike == 0
 
 
-def test_strong_input_spikes():
+def test_strong_input_spikes() -> None:
     neuron = QuantumLIFNeuron(v_threshold=1.0, tau_mem=1.0, dt=1.0, n_shots=0)
     for _ in range(10):
         neuron.step(2.0)
@@ -28,7 +28,7 @@ def test_strong_input_spikes():
     assert neuron.get_circuit() is not None
 
 
-def test_reset_on_spike():
+def test_reset_on_spike() -> None:
     neuron = QuantumLIFNeuron(v_threshold=0.1, tau_mem=100.0, dt=1.0, n_shots=0)
     neuron.v = 0.2  # above threshold
     spike = neuron.step(0.0)
@@ -36,14 +36,15 @@ def test_reset_on_spike():
         assert neuron.v == neuron.v_rest
 
 
-def test_circuit_is_single_qubit():
+def test_circuit_is_single_qubit() -> None:
     neuron = QuantumLIFNeuron()
     neuron.step(0.5)
     qc = neuron.get_circuit()
+    assert qc is not None
     assert qc.num_qubits == 1
 
 
-def test_reset_clears_state():
+def test_reset_clears_state() -> None:
     neuron = QuantumLIFNeuron()
     neuron.step(1.0)
     neuron.reset()
@@ -51,7 +52,7 @@ def test_reset_clears_state():
     assert neuron.get_circuit() is None
 
 
-def test_statistical_spike_rate():
+def test_statistical_spike_rate() -> None:
     """Strong sustained input -> spikes over many steps."""
     neuron = QuantumLIFNeuron(v_threshold=0.5, tau_mem=2.0, dt=1.0, n_shots=0)
     spikes = 0
@@ -62,7 +63,7 @@ def test_statistical_spike_rate():
     assert rate > 0.5
 
 
-def test_stochastic_mode_seeded():
+def test_stochastic_mode_seeded() -> None:
     """n_shots > 0 with seeded rng should be reproducible."""
     rng1 = np.random.default_rng(42)
     rng2 = np.random.default_rng(42)
@@ -73,7 +74,7 @@ def test_stochastic_mode_seeded():
     assert spikes1 == spikes2
 
 
-def test_stochastic_mode_fires():
+def test_stochastic_mode_fires() -> None:
     """n_shots > 0 with strong input should eventually spike."""
     neuron = QuantumLIFNeuron(
         v_threshold=0.5, tau_mem=2.0, dt=1.0, n_shots=50, rng=np.random.default_rng(7)
@@ -82,7 +83,7 @@ def test_stochastic_mode_fires():
     assert total >= 5
 
 
-def test_spike_output_binary():
+def test_spike_output_binary() -> None:
     """Spike must be 0 or 1."""
     neuron = QuantumLIFNeuron(n_shots=0)
     for _ in range(20):
@@ -90,7 +91,7 @@ def test_spike_output_binary():
         assert s in (0, 1)
 
 
-def test_membrane_voltage_finite():
+def test_membrane_voltage_finite() -> None:
     """Membrane voltage must stay finite even under strong input."""
     neuron = QuantumLIFNeuron(tau_mem=5.0, dt=1.0, n_shots=0)
     for _ in range(100):
@@ -98,7 +99,7 @@ def test_membrane_voltage_finite():
     assert np.isfinite(neuron.v)
 
 
-def test_zero_input_membrane_decays():
+def test_zero_input_membrane_decays() -> None:
     """No input → membrane decays toward v_rest."""
     neuron = QuantumLIFNeuron(v_rest=0.0, v_threshold=5.0, tau_mem=2.0, dt=1.0, n_shots=0)
     neuron.v = 2.0  # artificially set high
@@ -106,7 +107,7 @@ def test_zero_input_membrane_decays():
     assert neuron.v < 2.0  # decayed
 
 
-def test_custom_v_rest():
+def test_custom_v_rest() -> None:
     neuron = QuantumLIFNeuron(v_rest=-0.5)
     assert neuron.v_rest == -0.5
     neuron.reset()
