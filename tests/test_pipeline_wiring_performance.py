@@ -19,10 +19,13 @@ If any import fails or function returns garbage, the module is decorative → FA
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
 from pathlib import Path
+from typing import TypeVar
 
 import numpy as np
 import pytest
+from qiskit import QuantumCircuit
 
 import scpn_quantum_control as sqc
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
@@ -32,7 +35,10 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 # ---------------------------------------------------------------------------
 
 
-def _timed(fn, *args, **kwargs):
+T = TypeVar("T")
+
+
+def _timed(fn: Callable[..., T], *args: object, **kwargs: object) -> tuple[T, float]:
     """Run fn, return (result, wall_time_ms)."""
     t0 = time.perf_counter()
     result = fn(*args, **kwargs)
@@ -40,7 +46,9 @@ def _timed(fn, *args, **kwargs):
     return result, dt
 
 
-def _timed_median(fn, *args, repeats=5, **kwargs):
+def _timed_median(
+    fn: Callable[..., T], *args: object, repeats: int = 5, **kwargs: object
+) -> tuple[T | None, float]:
     """Run a tiny benchmark more than once so CI scheduler stalls do not dominate."""
     result = None
     samples = []
@@ -51,7 +59,7 @@ def _timed_median(fn, *args, repeats=5, **kwargs):
     return result, samples[len(samples) // 2]
 
 
-def _report(name, dt_ms, extra=""):
+def _report(name: str, dt_ms: float, extra: str = "") -> None:
     """Print pipeline performance line."""
     tag = f"  [{dt_ms:7.1f} ms]"
     print(f"\n  PIPELINE {name}: {tag} {extra}")
@@ -105,9 +113,11 @@ class TestPhaseSolverPipeline:
         omega = OMEGA_N_16[:2]
         vqe = sqc.PhaseVQE(K, omega, ansatz_reps=1)
         result, dt = _timed(vqe.solve, maxiter=20, seed=42)
-        assert np.isfinite(result["ground_energy"])
-        assert result["ground_energy"] < 0
-        _report("PhaseVQE (2q)", dt, f"E={result['ground_energy']:.4f}")
+        energy = result["ground_energy"]
+        assert isinstance(energy, float)
+        assert np.isfinite(energy)
+        assert energy < 0
+        _report("PhaseVQE (2q)", dt, f"E={energy:.4f}")
 
     def test_trotter_upde_pipeline(self) -> None:
         K = build_knm_paper27(L=3)
@@ -166,7 +176,9 @@ class TestHardwarePipeline:
         qc.cx(0, 1)
         qc.measure_all()
         results, dt_r = _timed(runner.run_sampler, qc, shots=2000, name="noisy")
-        assert len(results[0].counts) > 0
+        counts = results[0].counts
+        assert counts is not None
+        assert len(counts) > 0
         _report("Noisy sim (2q Bell)", dt_n + dt_r)
 
 
@@ -184,7 +196,7 @@ class TestMitigationPipeline:
 
         from qiskit.quantum_info import Statevector
 
-        def measure_R(circuit):
+        def measure_R(circuit: QuantumCircuit) -> float:
             sv = Statevector.from_instruction(circuit)
             R, _ = solver.measure_order_parameter(sv)
             return R

@@ -567,6 +567,7 @@
         "tests/test_phase_vqe.py",
         "tests/test_physics_accuracy.py",
         "tests/test_physics_invariants.py",
+        "tests/test_pipeline_wiring_performance.py",
         "tests/test_power_grid.py",
         "tests/test_power_grid_measured_couplings.py",
         "tests/test_prepare_iqm_paper_replication.py",
