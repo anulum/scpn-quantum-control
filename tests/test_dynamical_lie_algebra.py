@@ -24,7 +24,7 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 
 
 class TestDLAComputation:
-    def test_single_qubit_z(self):
+    def test_single_qubit_z(self) -> None:
         """Single Z generator has DLA dimension 1."""
         from qiskit.quantum_info import SparsePauliOp
 
@@ -33,7 +33,7 @@ class TestDLAComputation:
         assert result.dimension == 1
         assert result.n_qubits == 1
 
-    def test_two_qubit_xy(self):
+    def test_two_qubit_xy(self) -> None:
         """XX + YY + Z_1 + Z_2 generates a finite DLA."""
         K = np.array([[0, 0.5], [0.5, 0]])
         omega = np.array([1.0, 1.5])
@@ -43,7 +43,7 @@ class TestDLAComputation:
         assert result.n_qubits == 2
 
     @pytest.mark.slow
-    def test_xy_4qubit_dla_dimension(self):
+    def test_xy_4qubit_dla_dimension(self) -> None:
         """4-qubit XY model DLA dimension: characterize the algebra.
 
         For all-to-all XY with heterogeneous frequencies (our K_nm),
@@ -59,7 +59,7 @@ class TestDLAComputation:
         assert result.dimension <= 255  # at most su(2^4)
 
     @pytest.mark.slow
-    def test_tcbo_zz_expands_dla(self):
+    def test_tcbo_zz_expands_dla(self) -> None:
         """Adding ZZ terms (TCBO) should expand the DLA beyond pure XY."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
@@ -73,7 +73,7 @@ class TestDLAComputation:
         assert tcbo_result.dimension >= xy_result.dimension
 
     @pytest.mark.slow
-    def test_full_scpn_generators(self):
+    def test_full_scpn_generators(self) -> None:
         """Full SCPN generators include XY + SSGF + PGBO + TCBO."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
@@ -88,7 +88,7 @@ class TestDLAComputation:
         assert result.dimension > 0
         assert result.n_generators == len(gens)
 
-    def test_dla_result_properties(self):
+    def test_dla_result_properties(self) -> None:
         """DLAResult properties work correctly."""
         result = DLAResult(
             dimension=16,
@@ -104,7 +104,7 @@ class TestDLAComputation:
         assert result.dimension == 16
 
     @pytest.mark.slow
-    def test_xy_vs_full_scpn_comparison(self):
+    def test_xy_vs_full_scpn_comparison(self) -> None:
         """Full SCPN should have equal or larger DLA than pure XY."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
@@ -120,7 +120,7 @@ class TestDLAComputation:
 
         assert full_result.dimension >= xy_result.dimension
 
-    def test_ssgf_generators_include_geometry(self):
+    def test_ssgf_generators_include_geometry(self) -> None:
         """SSGF generators have more terms than base XY."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
@@ -132,7 +132,7 @@ class TestDLAComputation:
         assert len(ssgf_gens) >= len(xy_gens)
 
 
-def test_dla_dimension_2q():
+def test_dla_dimension_2q() -> None:
     K = build_knm_paper27(L=2)
     omega = OMEGA_N_16[:2]
     gens = build_xy_generators(K, omega)
@@ -141,7 +141,7 @@ def test_dla_dimension_2q():
     assert result.n_qubits == 2
 
 
-def test_dla_dimension_finite():
+def test_dla_dimension_finite() -> None:
     K = build_knm_paper27(L=3)
     omega = OMEGA_N_16[:3]
     gens = build_xy_generators(K, omega)
@@ -149,7 +149,7 @@ def test_dla_dimension_finite():
     assert np.isfinite(result.dimension)
 
 
-def test_xy_generators_nonempty():
+def test_xy_generators_nonempty() -> None:
     K = build_knm_paper27(L=2)
     omega = OMEGA_N_16[:2]
     gens = build_xy_generators(K, omega)
@@ -162,49 +162,49 @@ def test_xy_generators_nonempty():
 
 
 class TestInternalHelpers:
-    def test_commutator_antisymmetric(self):
+    def test_commutator_antisymmetric(self) -> None:
         from scpn_quantum_control.analysis.dynamical_lie_algebra import _commutator
 
-        A = np.array([[0, 1], [0, 0]], dtype=complex)
-        B = np.array([[0, 0], [1, 0]], dtype=complex)
+        A = np.array([[0, 1], [0, 0]], dtype=np.complex128)
+        B = np.array([[0, 0], [1, 0]], dtype=np.complex128)
         ab = _commutator(A, B)
         ba = _commutator(B, A)
         np.testing.assert_allclose(ab, -ba, atol=1e-12)
 
-    def test_commutator_diagonal_is_zero(self):
+    def test_commutator_diagonal_is_zero(self) -> None:
         from scpn_quantum_control.analysis.dynamical_lie_algebra import _commutator
 
         A = np.diag([1.0, 2.0, 3.0]).astype(complex)
         np.testing.assert_allclose(_commutator(A, A), 0.0, atol=1e-12)
 
-    def test_is_independent_empty_basis(self):
+    def test_is_independent_empty_basis(self) -> None:
         from scpn_quantum_control.analysis.dynamical_lie_algebra import _is_independent
 
-        op = np.eye(2, dtype=complex)
+        op = np.eye(2, dtype=np.complex128)
         assert _is_independent(op, []) is True
 
-    def test_is_independent_zero_op(self):
+    def test_is_independent_zero_op(self) -> None:
         from scpn_quantum_control.analysis.dynamical_lie_algebra import _is_independent
 
-        op = np.zeros((2, 2), dtype=complex)
+        op = np.zeros((2, 2), dtype=np.complex128)
         assert _is_independent(op, []) is False
 
-    def test_is_independent_duplicate(self):
+    def test_is_independent_duplicate(self) -> None:
         from scpn_quantum_control.analysis.dynamical_lie_algebra import _is_independent
 
-        op = np.eye(2, dtype=complex)
+        op = np.eye(2, dtype=np.complex128)
         assert _is_independent(op, [op]) is False
 
-    def test_is_independent_orthogonal(self):
+    def test_is_independent_orthogonal(self) -> None:
         from scpn_quantum_control.analysis.dynamical_lie_algebra import _is_independent
 
-        A = np.array([[1, 0], [0, 0]], dtype=complex)
-        B = np.array([[0, 0], [0, 1]], dtype=complex)
+        A = np.array([[1, 0], [0, 0]], dtype=np.complex128)
+        B = np.array([[0, 0], [0, 1]], dtype=np.complex128)
         assert _is_independent(B, [A]) is True
 
 
 class TestComputeDlaEdgeCases:
-    def test_max_dimension_cap(self):
+    def test_max_dimension_cap(self) -> None:
         """When max_dimension is reached, DLA stops expanding."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
@@ -215,7 +215,7 @@ class TestComputeDlaEdgeCases:
         result_uncapped = compute_dla(gens, max_iterations=50, max_dimension=500)
         assert result_capped.dimension <= result_uncapped.dimension
 
-    def test_polynomial_degree_n_cube_branch(self):
+    def test_polynomial_degree_n_cube_branch(self) -> None:
         """DLA between N² and N³ classified as polynomial degree 3."""
         result = DLAResult(
             dimension=50,
@@ -229,7 +229,7 @@ class TestComputeDlaEdgeCases:
         )
         assert result.classical_simulable is True
 
-    def test_exponential_regime(self):
+    def test_exponential_regime(self) -> None:
         result = DLAResult(
             dimension=200,
             n_qubits=4,
@@ -244,7 +244,7 @@ class TestComputeDlaEdgeCases:
 
 
 class TestComputeDlaRust:
-    def test_rust_fallback_to_python(self):
+    def test_rust_fallback_to_python(self) -> None:
         """compute_dla_rust falls back to Python when Rust unavailable."""
         from unittest.mock import patch
 
@@ -259,7 +259,7 @@ class TestComputeDlaRust:
             assert result.dimension >= 1
             assert result.n_qubits == 2
 
-    def test_rust_vs_python_parity(self):
+    def test_rust_vs_python_parity(self) -> None:
         """If Rust is available, results should match Python."""
         from scpn_quantum_control.analysis.dynamical_lie_algebra import compute_dla_rust
 
@@ -274,7 +274,7 @@ class TestComputeDlaRust:
 
 
 class TestBuildPgboGenerators:
-    def test_pgbo_more_generators(self):
+    def test_pgbo_more_generators(self) -> None:
         from scpn_quantum_control.analysis.dynamical_lie_algebra import build_pgbo_generators
 
         K = build_knm_paper27(L=3)
@@ -288,7 +288,7 @@ class TestBuildPgboGenerators:
         pgbo_gens = build_pgbo_generators(K, omega, h, pgbo_weight=0.1)
         assert len(pgbo_gens) >= len(xy_gens)
 
-    def test_pgbo_zero_weight_equals_xy(self):
+    def test_pgbo_zero_weight_equals_xy(self) -> None:
         from scpn_quantum_control.analysis.dynamical_lie_algebra import build_pgbo_generators
 
         K = build_knm_paper27(L=2)
@@ -302,7 +302,7 @@ class TestBuildPgboGenerators:
 
 
 class TestBuildTcboConnectivity:
-    def test_full_connectivity(self):
+    def test_full_connectivity(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         gens_near = build_tcbo_generators(K, omega, connectivity="nearest")
@@ -311,7 +311,7 @@ class TestBuildTcboConnectivity:
 
 
 class TestBuildFullScpnNoneInputs:
-    def test_no_ssgf_no_pgbo(self):
+    def test_no_ssgf_no_pgbo(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         gens = build_full_scpn_generators(K, omega, W=None, h_munu=None)
@@ -323,7 +323,7 @@ class TestBuildFullScpnNoneInputs:
 class TestDLACoverage:
     """Cover polynomial degree branches and sparse coupling continues."""
 
-    def test_sparse_coupling_skips_zero_entries(self):
+    def test_sparse_coupling_skips_zero_entries(self) -> None:
         """Cover lines 231, 263: continue when K[i,j] < eps."""
         K = np.zeros((3, 3))
         K[0, 1] = K[1, 0] = 0.5  # Only one pair coupled
@@ -333,7 +333,7 @@ class TestDLACoverage:
         xx_yy_count = sum(1 for g in gens if g.num_qubits == 3 and len(g) == 1)
         assert xx_yy_count < 6  # fewer than all-to-all
 
-    def test_ssgf_generators_sparse_W(self):
+    def test_ssgf_generators_sparse_W(self) -> None:
         """Cover line 263: continue when sigma_g * W < eps in SSGF generators."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
@@ -342,7 +342,7 @@ class TestDLACoverage:
         xy_only = build_xy_generators(K, omega)
         assert len(gens) == len(xy_only)  # No SSGF terms added
 
-    def test_full_scpn_sparse_W_and_h(self):
+    def test_full_scpn_sparse_W_and_h(self) -> None:
         """Cover lines 373, 389: continue when W/h_munu coupling < eps."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
@@ -357,7 +357,7 @@ class TestDLACoverage:
     # is always ≤ 2*n³ for n ≤ 5 qubits. Larger n requires hours of DLA
     # computation. Both DLAResult-level tests exist in TestDLAResult.
 
-    def test_compute_dla_rust_fallback(self):
+    def test_compute_dla_rust_fallback(self) -> None:
         """Cover Rust fallback in compute_dla_rust."""
         from unittest.mock import patch
 

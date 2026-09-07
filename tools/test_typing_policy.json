@@ -329,6 +329,8 @@
         "tests/test_dla_topology_control_parity.py",
         "tests/test_dla_topology_control_projection.py",
         "tests/test_dla_topology_control_schema.py",
+        "tests/test_dynamical_lie_algebra.py",
+        "tests/test_dynamical_lie_algebra_contracts.py",
         "tests/test_entanglement_entropy.py",
         "tests/test_entanglement_percolation.py",
         "tests/test_entanglement_spectrum.py",

@@ -17,43 +17,43 @@ from qiskit.quantum_info import SparsePauliOp
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 
 
-def test_dla_commutator():
+def test_dla_commutator() -> None:
     """Test _commutator computes [A, B] = AB - BA."""
     from scpn_quantum_control.analysis.dynamical_lie_algebra import _commutator
 
-    A = np.array([[0, 1], [0, 0]], dtype=complex)
-    B = np.array([[0, 0], [1, 0]], dtype=complex)
+    A = np.array([[0, 1], [0, 0]], dtype=np.complex128)
+    B = np.array([[0, 0], [1, 0]], dtype=np.complex128)
     C = _commutator(A, B)
     expected = A @ B - B @ A
     np.testing.assert_allclose(C, expected)
 
 
-def test_dla_is_independent_empty_basis():
+def test_dla_is_independent_empty_basis() -> None:
     """Test _is_independent with empty basis."""
     from scpn_quantum_control.analysis.dynamical_lie_algebra import _is_independent
 
-    op = np.array([[1, 0], [0, -1]], dtype=complex)
+    op = np.array([[1, 0], [0, -1]], dtype=np.complex128)
     assert _is_independent(op, []) is True
 
 
-def test_dla_is_independent_dependent():
+def test_dla_is_independent_dependent() -> None:
     """Test _is_independent returns False for dependent operator."""
     from scpn_quantum_control.analysis.dynamical_lie_algebra import _is_independent
 
-    op = np.array([[1, 0], [0, -1]], dtype=complex)
+    op = np.array([[1, 0], [0, -1]], dtype=np.complex128)
     basis = [op.copy()]
     assert _is_independent(op * 2.0, basis) is False
 
 
-def test_dla_is_independent_zero_operator():
+def test_dla_is_independent_zero_operator() -> None:
     """Test _is_independent returns False for zero operator."""
     from scpn_quantum_control.analysis.dynamical_lie_algebra import _is_independent
 
-    op = np.zeros((2, 2), dtype=complex)
+    op = np.zeros((2, 2), dtype=np.complex128)
     assert _is_independent(op, []) is False
 
 
-def test_compute_dla_2q_xy():
+def test_compute_dla_2q_xy() -> None:
     """Test compute_dla for 2-qubit XY model (small, fast)."""
     from scpn_quantum_control.analysis.dynamical_lie_algebra import (
         build_xy_generators,
@@ -69,7 +69,7 @@ def test_compute_dla_2q_xy():
     assert result.classical_simulable == result.is_polynomial
 
 
-def test_compute_dla_trivial():
+def test_compute_dla_trivial() -> None:
     """Test compute_dla with single generator → dimension 1."""
     from scpn_quantum_control.analysis.dynamical_lie_algebra import compute_dla
 
@@ -79,7 +79,7 @@ def test_compute_dla_trivial():
     assert result.is_polynomial is True
 
 
-def test_compute_dla_reaches_max_dimension():
+def test_compute_dla_reaches_max_dimension() -> None:
     """Test compute_dla stops at max_dimension cap."""
     from scpn_quantum_control.analysis.dynamical_lie_algebra import (
         build_xy_generators,
@@ -93,7 +93,7 @@ def test_compute_dla_reaches_max_dimension():
     assert result.dimension >= 1
 
 
-def test_compute_dla_polynomial_degree_estimation():
+def test_compute_dla_polynomial_degree_estimation() -> None:
     """Test polynomial degree estimation for intermediate DLA dimensions."""
     from scpn_quantum_control.analysis.dynamical_lie_algebra import (
         build_xy_generators,
@@ -107,7 +107,7 @@ def test_compute_dla_polynomial_degree_estimation():
     assert result.polynomial_degree > 0
 
 
-def test_compute_dla_cap_classification_branch():
+def test_compute_dla_cap_classification_branch() -> None:
     """Dimension cap behaviour classifies a saturated one-qubit algebra."""
     from scpn_quantum_control.analysis.dynamical_lie_algebra import compute_dla
 
@@ -120,7 +120,7 @@ def test_compute_dla_cap_classification_branch():
     assert result.polynomial_degree == float("inf")
 
 
-def test_compute_dla_intermediate_degree_branch():
+def test_compute_dla_intermediate_degree_branch() -> None:
     """Intermediate DLA dimensions estimate degree from log scaling."""
     from itertools import product
 
@@ -139,7 +139,7 @@ def test_compute_dla_intermediate_degree_branch():
     assert not result.is_polynomial
 
 
-def test_compute_dla_rust_fallback():
+def test_compute_dla_rust_fallback() -> None:
     """Test compute_dla_rust falls back to Python when Rust unavailable."""
     from scpn_quantum_control.analysis.dynamical_lie_algebra import (
         build_xy_generators,
@@ -153,7 +153,7 @@ def test_compute_dla_rust_fallback():
     assert result.dimension > 0
 
 
-def test_compute_dla_rust_with_mock():
+def test_compute_dla_rust_with_mock() -> None:
     """Test compute_dla_rust with mocked Rust engine."""
     from scpn_quantum_control.analysis.dynamical_lie_algebra import (
         build_xy_generators,
@@ -172,7 +172,7 @@ def test_compute_dla_rust_with_mock():
         assert result.n_qubits == 2
 
 
-def test_compute_dla_rust_toarray_and_cubic_branch():
+def test_compute_dla_rust_toarray_and_cubic_branch() -> None:
     """Rust path accepts sparse-like matrices and classifies cubic scaling."""
     from scipy.sparse import csr_matrix
 
@@ -181,7 +181,7 @@ def test_compute_dla_rust_toarray_and_cubic_branch():
     class FakeGenerator:
         num_qubits = 2
 
-        def to_matrix(self):
+        def to_matrix(self) -> csr_matrix:
             return csr_matrix([[1.0, 0.0], [0.0, -1.0]])
 
     mock_engine = MagicMock()
@@ -194,7 +194,7 @@ def test_compute_dla_rust_toarray_and_cubic_branch():
     assert result.is_polynomial
 
 
-def test_compute_dla_rust_cap_and_intermediate_branches():
+def test_compute_dla_rust_cap_and_intermediate_branches() -> None:
     """Rust path reports cap and intermediate-degree classifications."""
     from scpn_quantum_control.analysis.dynamical_lie_algebra import compute_dla_rust
 
@@ -213,7 +213,7 @@ def test_compute_dla_rust_cap_and_intermediate_branches():
     assert not intermediate.is_polynomial
 
 
-def test_build_xy_generators():
+def test_build_xy_generators() -> None:
     """Test build_xy_generators creates correct number of generators."""
     from scpn_quantum_control.analysis.dynamical_lie_algebra import build_xy_generators
 
@@ -224,7 +224,7 @@ def test_build_xy_generators():
     assert len(gens) == 9
 
 
-def test_build_ssgf_generators():
+def test_build_ssgf_generators() -> None:
     """Test build_ssgf_generators adds geometry feedback terms."""
     from scpn_quantum_control.analysis.dynamical_lie_algebra import build_ssgf_generators
 
@@ -236,7 +236,7 @@ def test_build_ssgf_generators():
     assert len(gens) > 0
 
 
-def test_build_pgbo_generators():
+def test_build_pgbo_generators() -> None:
     """Test build_pgbo_generators adds tensor field terms."""
     from scpn_quantum_control.analysis.dynamical_lie_algebra import build_pgbo_generators
 
@@ -247,7 +247,7 @@ def test_build_pgbo_generators():
     assert len(gens) > 0
 
 
-def test_build_tcbo_generators_nearest():
+def test_build_tcbo_generators_nearest() -> None:
     """Test build_tcbo_generators with nearest-neighbor connectivity."""
     from scpn_quantum_control.analysis.dynamical_lie_algebra import build_tcbo_generators
 
@@ -258,7 +258,7 @@ def test_build_tcbo_generators_nearest():
     assert len(gens) > 9  # more than pure XY
 
 
-def test_build_tcbo_generators_full():
+def test_build_tcbo_generators_full() -> None:
     """Test build_tcbo_generators with full connectivity."""
     from scpn_quantum_control.analysis.dynamical_lie_algebra import build_tcbo_generators
 
@@ -268,7 +268,7 @@ def test_build_tcbo_generators_full():
     assert len(gens) > 0
 
 
-def test_build_full_scpn_generators():
+def test_build_full_scpn_generators() -> None:
     """Test build_full_scpn_generators combines all terms."""
     from scpn_quantum_control.analysis.dynamical_lie_algebra import build_full_scpn_generators
 
@@ -280,7 +280,7 @@ def test_build_full_scpn_generators():
     assert len(gens) > 0
 
 
-def test_build_full_scpn_generators_no_extras():
+def test_build_full_scpn_generators_no_extras() -> None:
     """Test build_full_scpn_generators with W=None and h_munu=None."""
     from scpn_quantum_control.analysis.dynamical_lie_algebra import build_full_scpn_generators
 
@@ -290,7 +290,7 @@ def test_build_full_scpn_generators_no_extras():
     assert len(gens) > 0
 
 
-def test_dla_result_classical_simulable_property():
+def test_dla_result_classical_simulable_property() -> None:
     """Test DLAResult.classical_simulable property."""
     from scpn_quantum_control.analysis.dynamical_lie_algebra import DLAResult
 
