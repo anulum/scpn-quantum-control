@@ -430,6 +430,8 @@
         "tests/test_topology_control_core.py",
         "tests/test_topology_control_integration.py",
         "tests/test_topology_control_objectives_quality_gate.py",
+        "tests/test_trotter_error.py",
+        "tests/test_trotter_upde.py",
         "tests/test_xxz_phase_diagram.py",
         "tests/test_xy_compiler.py",
         "tests/test_xy_compiler_contracts.py",

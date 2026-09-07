@@ -7,32 +7,51 @@
 # SCPN Quantum Control — Tests for Trotter Error
 """Tests for two-group Trotter error: scaling laws, order-1/2 accuracy, budget gating."""
 
+from typing import NoReturn
+
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 import scpn_quantum_control.phase.trotter_error as trotter_module
-from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+from scpn_quantum_control.bridge.knm_hamiltonian import (
+    OMEGA_N_16,
+    build_knm_paper27,
+    knm_to_dense_matrix,
+)
 from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.phase.trotter_error import trotter_error_norm, trotter_error_sweep
 
+CouplingAndFrequencies = tuple[NDArray[np.float64], NDArray[np.float64]]
+
+
+def _sweep_errors(result: dict[str, object]) -> list[list[float]]:
+    """Return the sweep's error grid, asserting the 2D shape it documents."""
+    errors = result["errors"]
+    assert isinstance(errors, list)
+    return errors
+
 
 @pytest.fixture
-def small_system():
+def small_system() -> CouplingAndFrequencies:
+    """Build the three-oscillator coupling matrix and its frequencies."""
     n = 3
     return build_knm_paper27(L=n), OMEGA_N_16[:n]
 
 
-def test_error_at_t_zero(small_system):
+def test_error_at_t_zero(small_system: CouplingAndFrequencies) -> None:
     K, omega = small_system
     err = trotter_error_norm(K, omega, t=0.0, reps=1)
     assert err < 1e-10
 
 
-def test_error_norm_rejects_dense_budget_before_hamiltonian_allocation(monkeypatch):
+def test_error_norm_rejects_dense_budget_before_hamiltonian_allocation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     K = build_knm_paper27(L=10)
     omega = OMEGA_N_16[:10]
 
-    def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+    def fail_if_dense_hamiltonian_is_requested(*args: object, **kwargs: object) -> NoReturn:  # noqa: ARG001
         raise AssertionError("dense Hamiltonian allocation happened before budget gate")
 
     monkeypatch.setattr(
@@ -43,12 +62,16 @@ def test_error_norm_rejects_dense_budget_before_hamiltonian_allocation(monkeypat
         trotter_error_norm(K, omega, t=0.1, reps=1, max_dense_gib=1e-12)
 
 
-def test_error_norm_passes_dense_budget_to_bridge(monkeypatch):
+def test_error_norm_passes_dense_budget_to_bridge(monkeypatch: pytest.MonkeyPatch) -> None:
     K = build_knm_paper27(L=2)
     omega = OMEGA_N_16[:2]
     seen_budgets: list[float | None] = []
 
-    def fake_dense_matrix(K_arg, omega_arg, **kwargs):  # noqa: ARG001
+    def fake_dense_matrix(  # noqa: ARG001
+        K_arg: NDArray[np.float64],
+        omega_arg: NDArray[np.float64],
+        **kwargs: float | None,
+    ) -> NDArray[np.complex128]:
         seen_budgets.append(kwargs.get("max_dense_gib"))
         return np.zeros((4, 4), dtype=complex)
 
@@ -61,28 +84,28 @@ def test_error_norm_passes_dense_budget_to_bridge(monkeypatch):
     assert seen_budgets == [0.25, 0.25, 0.25]
 
 
-def test_error_decreases_with_reps(small_system):
+def test_error_decreases_with_reps(small_system: CouplingAndFrequencies) -> None:
     K, omega = small_system
     err_1 = trotter_error_norm(K, omega, t=1.0, reps=1)
     err_4 = trotter_error_norm(K, omega, t=1.0, reps=4)
     assert err_4 < err_1
 
 
-def test_error_increases_with_time(small_system):
+def test_error_increases_with_time(small_system: CouplingAndFrequencies) -> None:
     K, omega = small_system
     err_short = trotter_error_norm(K, omega, t=0.05, reps=2)
     err_long = trotter_error_norm(K, omega, t=0.5, reps=2)
     assert err_long > err_short
 
 
-def test_raises_for_large_n():
+def test_raises_for_large_n() -> None:
     K = build_knm_paper27(L=11)
     omega = OMEGA_N_16[:11]
     with pytest.raises(ValueError, match="too large"):
         trotter_error_norm(K, omega, t=0.1, reps=1)
 
 
-def test_trotter_convergence_rate(small_system):
+def test_trotter_convergence_rate(small_system: CouplingAndFrequencies) -> None:
     """Lie-Trotter error scales as O(t^2) at fixed reps.
 
     Halving t should reduce error by ~4x. Accept >2x for finite-size effects.
@@ -94,19 +117,30 @@ def test_trotter_convergence_rate(small_system):
     assert ratio > 2.0, f"expected ~4x improvement, got {ratio:.1f}x"
 
 
-def test_sweep_returns_2d(small_system):
+def test_sweep_returns_2d(small_system: CouplingAndFrequencies) -> None:
     K, omega = small_system
     result = trotter_error_sweep(K, omega, t_values=[0.05, 0.1], reps_values=[1, 2])
-    assert len(result["errors"]) == 2
-    assert len(result["errors"][0]) == 2
-    assert all(e >= 0 for row in result["errors"] for e in row)
+    errors = _sweep_errors(result)
+    assert len(errors) == 2
+    assert len(errors[0]) == 2
+    assert all(e >= 0 for row in errors for e in row)
 
 
-def test_sweep_propagates_dense_budget(monkeypatch, small_system):
+def test_sweep_propagates_dense_budget(
+    monkeypatch: pytest.MonkeyPatch, small_system: CouplingAndFrequencies
+) -> None:
     K, omega = small_system
     seen: list[float | None] = []
 
-    def fake_error_norm(K_arg, omega_arg, t, reps, order=1, *, max_dense_gib=None):  # noqa: ARG001
+    def fake_error_norm(  # noqa: ARG001
+        K_arg: NDArray[np.float64],
+        omega_arg: NDArray[np.float64],
+        t: float,
+        reps: int,
+        order: int = 1,
+        *,
+        max_dense_gib: float | None = None,
+    ) -> float:
         seen.append(max_dense_gib)
         return 0.0
 
@@ -117,21 +151,22 @@ def test_sweep_propagates_dense_budget(monkeypatch, small_system):
     assert seen == [0.5, 0.5, 0.5, 0.5]
 
 
-def test_error_positive_at_nonzero_time(small_system):
+def test_error_positive_at_nonzero_time(small_system: CouplingAndFrequencies) -> None:
     K, omega = small_system
     err = trotter_error_norm(K, omega, t=0.5, reps=1)
     assert err > 0
 
 
-def test_sweep_t_values_in_result(small_system):
+def test_sweep_t_values_in_result(small_system: CouplingAndFrequencies) -> None:
     K, omega = small_system
     result = trotter_error_sweep(K, omega, t_values=[0.1, 0.2, 0.3], reps_values=[1, 2])
-    assert len(result["errors"]) == 3
-    assert len(result["errors"][0]) == 2
+    errors = _sweep_errors(result)
+    assert len(errors) == 3
+    assert len(errors[0]) == 2
 
 
 @pytest.mark.parametrize("n", [2, 3, 4])
-def test_error_norm_various_sizes(n):
+def test_error_norm_various_sizes(n: int) -> None:
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]
     err = trotter_error_norm(K, omega, t=0.1, reps=2)
@@ -139,7 +174,7 @@ def test_error_norm_various_sizes(n):
     assert err >= 0
 
 
-def test_error_norm_high_reps_small(small_system):
+def test_error_norm_high_reps_small(small_system: CouplingAndFrequencies) -> None:
     """At very high reps, error should be very small."""
     K, omega = small_system
     err = trotter_error_norm(K, omega, t=0.1, reps=20)
@@ -151,7 +186,7 @@ def test_error_norm_high_reps_small(small_system):
 # ---------------------------------------------------------------------------
 
 
-def test_error_scales_quadratically_with_t(small_system):
+def test_error_scales_quadratically_with_t(small_system: CouplingAndFrequencies) -> None:
     """First-order Trotter: ε ~ O(t²/n) at fixed reps."""
     K, omega = small_system
     err_t1 = trotter_error_norm(K, omega, t=0.1, reps=1)
@@ -166,7 +201,7 @@ def test_error_scales_quadratically_with_t(small_system):
 # ---------------------------------------------------------------------------
 
 
-def test_pipeline_knm_to_trotter_sweep(small_system):
+def test_pipeline_knm_to_trotter_sweep(small_system: CouplingAndFrequencies) -> None:
     """Full pipeline: Knm → error sweep → 2D error map.
     Verifies Trotter error module is wired and produces actionable data.
     """
@@ -178,15 +213,16 @@ def test_pipeline_knm_to_trotter_sweep(small_system):
     result = trotter_error_sweep(K, omega, t_values=[0.05, 0.1, 0.2], reps_values=[1, 2, 5])
     dt = (time.perf_counter() - t0) * 1000
 
-    assert len(result["errors"]) == 3
-    assert len(result["errors"][0]) == 3
+    errors = _sweep_errors(result)
+    assert len(errors) == 3
+    assert len(errors[0]) == 3
     # Error should decrease with more reps
-    for row in result["errors"]:
+    for row in errors:
         assert row[0] >= row[-1] - 1e-10  # reps=1 ≥ reps=5
 
     print(f"\n  PIPELINE Knm→TrotterSweep (3q, 3×3): {dt:.1f} ms")
-    print(f"  ε(t=0.05,reps=1)={result['errors'][0][0]:.6f}")
-    print(f"  ε(t=0.2,reps=5)={result['errors'][2][2]:.6f}")
+    print(f"  ε(t=0.05,reps=1)={errors[0][0]:.6f}")
+    print(f"  ε(t=0.2,reps=5)={errors[2][2]:.6f}")
 
 
 # ---------------------------------------------------------------------------
@@ -194,7 +230,9 @@ def test_pipeline_knm_to_trotter_sweep(small_system):
 # ---------------------------------------------------------------------------
 
 
-def test_spectral_norm_below_frobenius_of_same_difference(small_system):
+def test_spectral_norm_below_frobenius_of_same_difference(
+    small_system: CouplingAndFrequencies,
+) -> None:
     """The reported error is the spectral norm, which never exceeds the Frobenius norm."""
     from scipy.linalg import expm
 
@@ -202,9 +240,9 @@ def test_spectral_norm_below_frobenius_of_same_difference(small_system):
 
     K, omega = small_system
     t, reps = 0.5, 2
-    h_full = tm.knm_to_dense_matrix(K, omega)
-    h_xy = tm.knm_to_dense_matrix(K, np.zeros_like(omega))
-    h_z = tm.knm_to_dense_matrix(np.zeros_like(K), omega)
+    h_full = knm_to_dense_matrix(K, omega)
+    h_xy = knm_to_dense_matrix(K, np.zeros_like(omega))
+    h_z = knm_to_dense_matrix(np.zeros_like(K), omega)
     diff = expm(-1j * h_full * t) - tm._two_group_unitary(h_xy, h_z, t, reps, 1)
 
     spectral = trotter_error_norm(K, omega, t=t, reps=reps, order=1)
@@ -212,7 +250,7 @@ def test_spectral_norm_below_frobenius_of_same_difference(small_system):
     assert spectral <= np.linalg.norm(diff, "fro") + 1e-12
 
 
-def test_second_order_more_accurate_than_first(small_system):
+def test_second_order_more_accurate_than_first(small_system: CouplingAndFrequencies) -> None:
     """For the same (t, reps), symmetric Suzuki-Trotter error is below Lie-Trotter."""
     K, omega = small_system
     err1 = trotter_error_norm(K, omega, t=0.6, reps=2, order=1)
@@ -220,7 +258,7 @@ def test_second_order_more_accurate_than_first(small_system):
     assert err2 < err1
 
 
-def test_second_order_cubic_time_scaling(small_system):
+def test_second_order_cubic_time_scaling(small_system: CouplingAndFrequencies) -> None:
     """Symmetric Suzuki-Trotter error scales as O(t³) at fixed reps."""
     K, omega = small_system
     err_t1 = trotter_error_norm(K, omega, t=0.1, reps=1, order=2)
@@ -229,20 +267,20 @@ def test_second_order_cubic_time_scaling(small_system):
     assert ratio > 5.0  # 2³ = 8, accept >5 for finite-size effects
 
 
-def test_invalid_order_rejected(small_system):
+def test_invalid_order_rejected(small_system: CouplingAndFrequencies) -> None:
     K, omega = small_system
     with pytest.raises(ValueError, match="order must be 1 or 2"):
         trotter_error_norm(K, omega, t=0.1, reps=1, order=3)
 
 
-def test_nonpositive_reps_rejected(small_system):
+def test_nonpositive_reps_rejected(small_system: CouplingAndFrequencies) -> None:
     K, omega = small_system
     with pytest.raises(ValueError, match="reps must be"):
         trotter_error_norm(K, omega, t=0.1, reps=0)
 
 
-def test_sweep_carries_order_through_result(small_system):
+def test_sweep_carries_order_through_result(small_system: CouplingAndFrequencies) -> None:
     K, omega = small_system
     result = trotter_error_sweep(K, omega, t_values=[0.1], reps_values=[1, 2], order=2)
     assert result["order"] == 2
-    assert len(result["errors"][0]) == 2
+    assert len(_sweep_errors(result)[0]) == 2
