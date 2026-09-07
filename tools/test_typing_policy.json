@@ -288,6 +288,8 @@
         "tests/test_native_whole_program_linalg_factorisation.py",
         "tests/test_openpulse_control.py",
         "tests/test_openpulse_control_quality_gate.py",
+        "tests/test_param_shift.py",
+        "tests/test_param_shift_contracts.py",
         "tests/test_phase3_entanglement_tomography_analysis.py",
         "tests/test_phase3_entanglement_zne_analysis.py",
         "tests/test_phase3_guess_analysis.py",

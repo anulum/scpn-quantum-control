@@ -10,9 +10,10 @@
 from __future__ import annotations
 
 import numpy as np
+from numpy.typing import NDArray
 
 
-def _system(n: int = 4):
+def _system(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[np.float64]]:
     """Standard heterogeneous Kuramoto-XY system."""
     K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
     np.fill_diagonal(K, 0.0)
@@ -20,7 +21,7 @@ def _system(n: int = 4):
     return n, K, omega
 
 
-def _zero_coupling(n: int = 4):
+def _zero_coupling(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[np.float64]]:
     """Decoupled system — K=0, eigenstates are product states."""
     K = np.zeros((n, n))
     omega = np.linspace(0.8, 1.2, n)
@@ -30,20 +31,22 @@ def _zero_coupling(n: int = 4):
 class TestParamShift:
     """Tests for parameter-shift gradient rule and VQE."""
 
-    def test_gradient_of_quadratic(self):
+    def test_gradient_of_quadratic(self) -> None:
         from scpn_quantum_control.phase.param_shift import parameter_shift_gradient
 
-        def quadratic(x):
+        def quadratic(x: NDArray[np.float64]) -> float:
+            """Return the squared distance of the first two parameters."""
             return float(x[0] ** 2 + x[1] ** 2)
 
         grad = parameter_shift_gradient(quadratic, np.array([1.0, 2.0]), shift=0.01)
         np.testing.assert_allclose(grad, [2.0, 4.0], atol=0.1)
 
-    def test_gradient_of_sinusoidal(self):
+    def test_gradient_of_sinusoidal(self) -> None:
         """Parameter-shift is exact for sinusoidal functions."""
         from scpn_quantum_control.phase.param_shift import parameter_shift_gradient
 
-        def sinusoidal(x):
+        def sinusoidal(x: NDArray[np.float64]) -> float:
+            """Return a separable sinusoid whose shift rule is exact."""
             return float(np.sin(x[0]) + np.cos(x[1]))
 
         params = np.array([0.5, 1.0])
@@ -51,16 +54,17 @@ class TestParamShift:
         expected = np.array([np.cos(0.5), -np.sin(1.0)])
         np.testing.assert_allclose(grad, expected, atol=1e-10)
 
-    def test_gradient_zero_at_minimum(self):
+    def test_gradient_zero_at_minimum(self) -> None:
         from scpn_quantum_control.phase.param_shift import parameter_shift_gradient
 
-        def cost(x):
+        def cost(x: NDArray[np.float64]) -> float:
+            """Return a parabola with its minimum at the origin."""
             return float(x[0] ** 2)
 
         grad = parameter_shift_gradient(cost, np.array([0.0]), shift=0.01)
         assert abs(grad[0]) < 0.01
 
-    def test_gradient_shape_matches_params(self):
+    def test_gradient_shape_matches_params(self) -> None:
         from scpn_quantum_control.phase.param_shift import parameter_shift_gradient
 
         for n_params in [1, 3, 5, 10]:
@@ -71,10 +75,11 @@ class TestParamShift:
             )
             assert grad.shape == (n_params,)
 
-    def test_vqe_converges_to_minimum(self):
+    def test_vqe_converges_to_minimum(self) -> None:
         from scpn_quantum_control.phase.param_shift import vqe_with_param_shift
 
-        def cost(params):
+        def cost(params: NDArray[np.float64]) -> float:
+            """Return the squared distance from a known off-origin minimum."""
             return float((params[0] - 1.0) ** 2 + (params[1] + 0.5) ** 2)
 
         result = vqe_with_param_shift(
@@ -84,9 +89,9 @@ class TestParamShift:
             n_iterations=100,
             seed=42,
         )
-        assert result["energy"] < 0.1, "Should converge near minimum"
+        assert result.best_energy < 0.1, "Should converge near minimum"
 
-    def test_vqe_energy_monotonically_decreases(self):
+    def test_vqe_energy_monotonically_decreases(self) -> None:
         """Energy should generally decrease (allow small fluctuations)."""
         from scpn_quantum_control.phase.param_shift import vqe_with_param_shift
 
@@ -98,9 +103,9 @@ class TestParamShift:
             seed=42,
         )
         # First energy should be higher than last
-        assert result["energy_history"][0] > result["energy_history"][-1]
+        assert result.energies[0] > result.energies[-1]
 
-    def test_vqe_output_keys_and_types(self):
+    def test_vqe_output_keys_and_types(self) -> None:
         from scpn_quantum_control.phase.param_shift import vqe_with_param_shift
 
         result = vqe_with_param_shift(
@@ -117,10 +122,16 @@ class TestParamShift:
         }
         assert isinstance(result["optimal_params"], np.ndarray)
         assert isinstance(result["energy"], float)
-        assert len(result["energy_history"]) >= 5
-        assert len(result["grad_norms"]) >= 5
+        # This test owns the legacy mapping contract, so it keeps reading through
+        # `__getitem__` and states the list shape that surface promises.
+        energy_history = result["energy_history"]
+        grad_norms = result["grad_norms"]
+        assert isinstance(energy_history, list)
+        assert isinstance(grad_norms, list)
+        assert len(energy_history) >= 5
+        assert len(grad_norms) >= 5
 
-    def test_vqe_reproducible_with_seed(self):
+    def test_vqe_reproducible_with_seed(self) -> None:
         from scpn_quantum_control.phase.param_shift import vqe_with_param_shift
 
         cost = lambda x: float(sum(x**2))  # noqa: E731

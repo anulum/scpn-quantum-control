@@ -66,31 +66,31 @@ def _cost_zero(p: np.ndarray) -> float:
 
 
 class TestParameterShiftGradient:
-    def test_sin_gradient(self):
+    def test_sin_gradient(self) -> None:
         """∂sin(θ)/∂θ = cos(θ), exact for parameter-shift with shift=π/2."""
         params = np.array([0.7])
         grad = parameter_shift_gradient(_cost_sin, params)
         np.testing.assert_allclose(grad[0], np.cos(0.7), atol=1e-12)
 
-    def test_cos_gradient(self):
+    def test_cos_gradient(self) -> None:
         """∂cos(θ)/∂θ = -sin(θ)."""
         params = np.array([1.3])
         grad = parameter_shift_gradient(_cost_cos, params)
         np.testing.assert_allclose(grad[0], -np.sin(1.3), atol=1e-12)
 
-    def test_multivariate_gradient(self):
+    def test_multivariate_gradient(self) -> None:
         """f(θ₀, θ₁) = sin(θ₀) + cos(θ₁), gradient is [cos(θ₀), -sin(θ₁)]."""
         params = np.array([0.5, 1.2])
         grad = parameter_shift_gradient(_cost_sin_cos_multi, params)
         np.testing.assert_allclose(grad, [np.cos(0.5), -np.sin(1.2)], atol=1e-12)
 
-    def test_zero_gradient_at_extremum(self):
+    def test_zero_gradient_at_extremum(self) -> None:
         """∂sin(θ)/∂θ = 0 at θ = π/2."""
         params = np.array([np.pi / 2])
         grad = parameter_shift_gradient(_cost_sin, params)
         np.testing.assert_allclose(grad[0], 0.0, atol=1e-12)
 
-    def test_matches_finite_difference(self):
+    def test_matches_finite_difference(self) -> None:
         """Parameter-shift should match central finite differences for sin-based cost."""
         params = np.array([0.3, 0.8, 1.5])
         grad_ps = parameter_shift_gradient(_cost_sin_cos_prod, params)
@@ -106,7 +106,7 @@ class TestParameterShiftGradient:
 
         np.testing.assert_allclose(grad_ps, grad_fd, atol=1e-5)
 
-    def test_custom_shift(self):
+    def test_custom_shift(self) -> None:
         """Non-standard shift value still gives correct gradient for sin."""
         shift = np.pi / 4
         params = np.array([0.9])
@@ -114,14 +114,14 @@ class TestParameterShiftGradient:
         expected = (np.sin(0.9 + shift) - np.sin(0.9 - shift)) / (2 * np.sin(shift))
         np.testing.assert_allclose(grad[0], expected, atol=1e-12)
 
-    def test_single_parameter(self):
+    def test_single_parameter(self) -> None:
         """Works correctly for single parameter."""
         params = np.array([0.0])
         grad = parameter_shift_gradient(_cost_quadratic, params)
         # At 0, gradient of x² via param-shift: ((π/2)² - (-π/2)²)/(2sin(π/2)) = 0
         np.testing.assert_allclose(grad[0], 0.0, atol=1e-12)
 
-    def test_gradient_shape(self):
+    def test_gradient_shape(self) -> None:
         """Output shape matches input shape."""
         for n in [1, 3, 7, 15]:
             params = np.zeros(n)
@@ -133,24 +133,24 @@ class TestParameterShiftGradient:
 
 
 class TestVQEWithParamShift:
-    def test_converges_to_minimum(self):
+    def test_converges_to_minimum(self) -> None:
         """VQE should find minimum of sum-of-cosines cost."""
         result = vqe_with_param_shift(
             _cost_sum_cos, n_params=2, learning_rate=0.3, n_iterations=100, seed=42
         )
-        assert result["energy"] < -1.8, f"energy={result['energy']}"
+        assert result.best_energy < -1.8, f"energy={result.best_energy}"
 
-    def test_energy_history_length(self):
+    def test_energy_history_length(self) -> None:
         """Energy history has n_iterations + 1 entries."""
         result = vqe_with_param_shift(_cost_sum_sq, 3, n_iterations=50, seed=1)
-        assert len(result["energy_history"]) == 51
+        assert len(result.energies) == 51
 
-    def test_grad_norms_length(self):
+    def test_grad_norms_length(self) -> None:
         """Gradient norms has n_iterations entries."""
         result = vqe_with_param_shift(_cost_sum_sq, 3, n_iterations=50, seed=1)
-        assert len(result["grad_norms"]) == 50
+        assert len(result.gradient_norms) == 50
 
-    def test_output_keys(self):
+    def test_output_keys(self) -> None:
         """Result dict has all expected keys."""
         result = vqe_with_param_shift(_cost_zero, 2, n_iterations=5, seed=0)
         assert set(result.keys()) == {
@@ -160,28 +160,28 @@ class TestVQEWithParamShift:
             "grad_norms",
         }
 
-    def test_optimal_params_shape(self):
+    def test_optimal_params_shape(self) -> None:
         """optimal_params has correct shape."""
         result = vqe_with_param_shift(_cost_sum_sin, n_params=5, n_iterations=10, seed=7)
-        assert result["optimal_params"].shape == (5,)
+        assert result.optimal_params.shape == (5,)
 
-    def test_seed_reproducibility(self):
+    def test_seed_reproducibility(self) -> None:
         """Same seed gives identical results."""
         r1 = vqe_with_param_shift(_cost_sum_cos, 3, n_iterations=20, seed=42)
         r2 = vqe_with_param_shift(_cost_sum_cos, 3, n_iterations=20, seed=42)
-        np.testing.assert_array_equal(r1["optimal_params"], r2["optimal_params"])
-        assert r1["energy"] == r2["energy"]
+        np.testing.assert_array_equal(r1.optimal_params, r2.optimal_params)
+        assert r1.best_energy == r2.best_energy
 
-    def test_gradient_norm_decreases(self):
+    def test_gradient_norm_decreases(self) -> None:
         """For a well-behaved cost, gradient norm should generally decrease."""
         result = vqe_with_param_shift(
             _cost_sum_cos, 2, learning_rate=0.2, n_iterations=80, seed=42
         )
-        norms = result["grad_norms"]
+        norms = result.gradient_norms
         assert np.mean(norms[-10:]) < np.mean(norms[:10])
 
-    def test_single_iteration(self):
+    def test_single_iteration(self) -> None:
         """Works with n_iterations=1."""
         result = vqe_with_param_shift(_cost_sum_sq, 2, n_iterations=1, seed=0)
-        assert len(result["energy_history"]) == 2
-        assert len(result["grad_norms"]) == 1
+        assert len(result.energies) == 2
+        assert len(result.gradient_norms) == 1
