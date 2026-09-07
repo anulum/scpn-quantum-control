@@ -11,14 +11,17 @@ from __future__ import annotations
 
 import builtins
 import importlib
+from collections.abc import Mapping, Sequence
+from types import ModuleType
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.qsnn.dynamic_coupling import DynamicCouplingEngine
 
 
 class TestDynamicCoupling:
-    def test_dynamic_coupling_engine_step(self):
+    def test_dynamic_coupling_engine_step(self) -> None:
         """Verify one cycle of the strange loop."""
         n = 3
         # Weak initial coupling
@@ -38,7 +41,7 @@ class TestDynamicCoupling:
         # Verify symmetry
         np.testing.assert_allclose(res["K_updated"], res["K_updated"].T)
 
-    def test_run_coevolution(self):
+    def test_run_coevolution(self) -> None:
         n = 2
         # Fully disconnected initially
         initial_K = np.zeros((n, n))
@@ -51,7 +54,7 @@ class TestDynamicCoupling:
         history = engine.run_coevolution(steps=3, dt=0.5)
         assert len(history) == 3
 
-    def test_k_symmetry_preserved(self):
+    def test_k_symmetry_preserved(self) -> None:
         """K must remain symmetric after every step."""
         n = 3
         K0 = np.array([[0, 0.2, 0.1], [0.2, 0, 0.15], [0.1, 0.15, 0]])
@@ -61,7 +64,7 @@ class TestDynamicCoupling:
         for step in history:
             np.testing.assert_allclose(step["K_updated"], step["K_updated"].T, atol=1e-12)
 
-    def test_correlation_matrix_symmetric(self):
+    def test_correlation_matrix_symmetric(self) -> None:
         """Correlation matrix C_nm must be symmetric."""
         n = 3
         K0 = np.array([[0, 0.3, 0], [0.3, 0, 0.3], [0, 0.3, 0]])
@@ -71,7 +74,7 @@ class TestDynamicCoupling:
         C = res["correlation_matrix"]
         np.testing.assert_allclose(C, C.T, atol=1e-12)
 
-    def test_k_diagonal_stays_zero(self):
+    def test_k_diagonal_stays_zero(self) -> None:
         """Self-coupling K[i,i] must remain zero."""
         n = 3
         K0 = np.ones((n, n)) * 0.1
@@ -82,7 +85,7 @@ class TestDynamicCoupling:
         for step in history:
             np.testing.assert_allclose(np.diag(step["K_updated"]), 0.0)
 
-    def test_k_non_negative(self):
+    def test_k_non_negative(self) -> None:
         """K entries must remain >= 0 (physical constraint)."""
         n = 2
         K0 = np.array([[0, 0.05], [0.05, 0]])
@@ -94,7 +97,7 @@ class TestDynamicCoupling:
         for step in history:
             assert np.all(step["K_updated"] >= -1e-15)
 
-    def test_decay_drives_k_toward_zero(self):
+    def test_decay_drives_k_toward_zero(self) -> None:
         """With zero learning rate and high decay, K should shrink."""
         n = 2
         K0 = np.array([[0, 1.0], [1.0, 0]])
@@ -106,7 +109,7 @@ class TestDynamicCoupling:
         K_final = history[-1]["K_updated"]
         assert K_final[0, 1] < K0[0, 1]
 
-    def test_statevector_normalised(self):
+    def test_statevector_normalised(self) -> None:
         """Returned statevector must be normalised."""
         n = 2
         K0 = np.array([[0, 0.3], [0.3, 0]])
@@ -115,7 +118,7 @@ class TestDynamicCoupling:
         res = engine.step(dt=0.5)
         assert abs(np.linalg.norm(res["statevector"]) - 1.0) < 1e-10
 
-    def test_rust_python_correlation_parity(self):
+    def test_rust_python_correlation_parity(self) -> None:
         """Rust correlation_matrix_xy matches Qiskit expectations."""
         try:
             import scpn_quantum_engine as eng
@@ -155,13 +158,19 @@ class TestDynamicCoupling:
 class TestDynamicCouplingPythonFallback:
     """Cover lines 76-95: Qiskit fallback when Rust unavailable."""
 
-    def test_module_import_without_rust_engine(self, monkeypatch):
+    def test_module_import_without_rust_engine(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Missing Rust extension selects the documented Python fallback."""
         import scpn_quantum_control.qsnn.dynamic_coupling as dc_mod
 
         real_import = builtins.__import__
 
-        def blocked_import(name, globals=None, locals=None, fromlist=(), level=0):
+        def blocked_import(
+            name: str,
+            globals: Mapping[str, object] | None = None,
+            locals: Mapping[str, object] | None = None,
+            fromlist: Sequence[str] = (),
+            level: int = 0,
+        ) -> ModuleType:
             if name == "scpn_quantum_engine":
                 raise ImportError("blocked optional engine")
             return real_import(name, globals, locals, fromlist, level)
@@ -174,7 +183,7 @@ class TestDynamicCouplingPythonFallback:
         restored = importlib.reload(dc_mod)
         assert hasattr(restored, "_HAS_RUST")
 
-    def test_measure_correlation_no_rust(self):
+    def test_measure_correlation_no_rust(self) -> None:
         """Mock _HAS_RUST=False → Qiskit SparsePauliOp path executes."""
         import scpn_quantum_control.qsnn.dynamic_coupling as dc_mod
 
@@ -197,7 +206,7 @@ class TestDynamicCouplingPythonFallback:
         np.testing.assert_allclose(C, C.T, atol=1e-12)
         np.testing.assert_allclose(np.diag(C), 0.0, atol=1e-12)
 
-    def test_step_no_rust(self):
+    def test_step_no_rust(self) -> None:
         """Full step via Qiskit fallback path."""
         import scpn_quantum_control.qsnn.dynamic_coupling as dc_mod
 

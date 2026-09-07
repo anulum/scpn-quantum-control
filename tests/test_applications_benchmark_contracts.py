@@ -14,7 +14,7 @@ import numpy as np
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 
 
-def test_fmo_no_correlation_verdict():
+def test_fmo_no_correlation_verdict() -> None:
     """Verifies 127: abs(rho_topo) <= 0.3 gives 'no correlation'."""
     from scpn_quantum_control.applications.fmo_benchmark import fmo_benchmark
 
@@ -28,7 +28,7 @@ def test_fmo_no_correlation_verdict():
     assert hasattr(result, "summary")
 
 
-def test_eeg_unknown_band():
+def test_eeg_unknown_band() -> None:
     """Verifies 80: eeg_coupling_matrix raises for unknown band."""
     import pytest
 
@@ -38,7 +38,7 @@ def test_eeg_unknown_band():
         eeg_coupling_matrix(band="delta", allow_builtin_reference=True)
 
 
-def test_eeg_benchmark_small_scpn():
+def test_eeg_benchmark_small_scpn() -> None:
     """Verifies 106: topo_corr = 0.0 when < 3 upper-triangle elements."""
     from scpn_quantum_control.applications.eeg_benchmark import eeg_benchmark
 
@@ -50,7 +50,7 @@ def test_eeg_benchmark_small_scpn():
     assert "topology similarity proxy" in result.summary
 
 
-def test_eeg_benchmark_freq_corr_small():
+def test_eeg_benchmark_freq_corr_small() -> None:
     """Verifies 111-113: freq_corr = 0.0 when n < 3."""
     from scpn_quantum_control.applications.eeg_benchmark import eeg_benchmark
 
@@ -60,7 +60,7 @@ def test_eeg_benchmark_freq_corr_small():
     assert result.frequency_correlation == 0.0
 
 
-def test_iter_benchmark_small_scpn():
+def test_iter_benchmark_small_scpn() -> None:
     """Verifies 106: topo_corr = 0.0 when < 3 elements."""
     from scpn_quantum_control.applications.iter_benchmark import iter_benchmark
 
@@ -72,7 +72,7 @@ def test_iter_benchmark_small_scpn():
     assert "topology similarity proxy" in result.summary
 
 
-def test_iter_benchmark_freq_corr_small():
+def test_iter_benchmark_freq_corr_small() -> None:
     """Verifies 111-113: freq_corr = 0.0 when n < 3."""
     from scpn_quantum_control.applications.iter_benchmark import iter_benchmark
 
@@ -82,7 +82,7 @@ def test_iter_benchmark_freq_corr_small():
     assert result.frequency_correlation == 0.0
 
 
-def test_josephson_unknown_topology():
+def test_josephson_unknown_topology() -> None:
     """Verifies 93: jja_coupling_matrix raises for unknown topology."""
     import pytest
 
@@ -100,7 +100,7 @@ def test_josephson_unknown_topology():
         )
 
 
-def test_josephson_benchmark_small():
+def test_josephson_benchmark_small() -> None:
     """Verifies 116: topo_corr = 0.0 when < 3 nonzero pairs."""
     from scpn_quantum_control.applications.josephson_array import (
         JosephsonArrayParameters,
@@ -120,7 +120,7 @@ def test_josephson_benchmark_small():
     assert "topology similarity proxy" in result.summary
 
 
-def test_josephson_freq_corr_small():
+def test_josephson_freq_corr_small() -> None:
     """Verifies 127: freq_corr = 0.0 when n < 3."""
     from scpn_quantum_control.applications.josephson_array import (
         JosephsonArrayParameters,
@@ -138,7 +138,7 @@ def test_josephson_freq_corr_small():
     assert result.frequency_correlation == 0.0
 
 
-def test_power_grid_unknown_grid():
+def test_power_grid_unknown_grid() -> None:
     """Verifies 109: power_grid_benchmark raises for unknown grid."""
     import pytest
 
@@ -150,7 +150,7 @@ def test_power_grid_unknown_grid():
         power_grid_benchmark(K, omega, grid_name="IEEE-9bus", allow_builtin_reference=True)
 
 
-def test_power_grid_small_scpn():
+def test_power_grid_small_scpn() -> None:
     """Verifies 126: topo_corr = 0.0 when < 3 elements."""
     from scpn_quantum_control.applications.power_grid import power_grid_benchmark
 
@@ -162,7 +162,7 @@ def test_power_grid_small_scpn():
     assert "topology similarity proxy" in result.summary
 
 
-def test_power_grid_freq_corr_small():
+def test_power_grid_freq_corr_small() -> None:
     """Verifies 139-141: freq_corr = 0.0 when n < 3."""
     from scpn_quantum_control.applications.power_grid import power_grid_benchmark
 

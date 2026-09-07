@@ -28,7 +28,7 @@ from scpn_quantum_control.phase.xy_kuramoto import QuantumKuramotoSolver
 
 
 class TestKnmToVQEPipeline:
-    def test_4q_ground_state_negative(self):
+    def test_4q_ground_state_negative(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         H = knm_to_hamiltonian(K, omega)
@@ -38,13 +38,13 @@ class TestKnmToVQEPipeline:
         eigvals = np.linalg.eigvalsh(mat)
         assert eigvals[0] < 0
 
-    def test_4q_ansatz_dimensions(self):
+    def test_4q_ansatz_dimensions(self) -> None:
         K = build_knm_paper27(L=4)
         ansatz = knm_to_ansatz(K, reps=2)
         assert ansatz.num_qubits == 4
         assert ansatz.num_parameters == 16
 
-    def test_hamiltonian_is_hermitian(self):
+    def test_hamiltonian_is_hermitian(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         H = knm_to_hamiltonian(K, omega)
@@ -54,7 +54,7 @@ class TestKnmToVQEPipeline:
         np.testing.assert_allclose(mat, mat.conj().T, atol=1e-12)
 
     @pytest.mark.parametrize("L", [2, 3, 4])
-    def test_various_sizes(self, L):
+    def test_various_sizes(self, L: int) -> None:
         K = build_knm_paper27(L=L)
         omega = OMEGA_N_16[:L]
         H = knm_to_hamiltonian(K, omega)
@@ -69,7 +69,7 @@ class TestKnmToVQEPipeline:
 
 
 class TestKnmToTrotterPipeline:
-    def test_4q_trotter_energy_finite(self):
+    def test_4q_trotter_energy_finite(self) -> None:
         from qiskit import transpile
 
         K = build_knm_paper27(L=4)
@@ -86,7 +86,7 @@ class TestKnmToTrotterPipeline:
         assert np.isfinite(E)
         assert qc.num_qubits == 4
 
-    def test_2q_trotter(self):
+    def test_2q_trotter(self) -> None:
         from qiskit import transpile
 
         K = build_knm_paper27(L=2)
@@ -109,7 +109,7 @@ class TestKnmToTrotterPipeline:
 
 
 class TestHamiltonianSpectrum:
-    def test_8q_spectrum_sorted(self):
+    def test_8q_spectrum_sorted(self) -> None:
         K = build_knm_paper27(L=8)
         omega = OMEGA_N_16[:8]
         H = knm_to_hamiltonian(K, omega)
@@ -119,7 +119,7 @@ class TestHamiltonianSpectrum:
         eigvals = np.linalg.eigvalsh(mat)
         assert np.all(np.diff(eigvals) >= -1e-12)
 
-    def test_8q_bandwidth(self):
+    def test_8q_bandwidth(self) -> None:
         K = build_knm_paper27(L=8)
         omega = OMEGA_N_16[:8]
         H = knm_to_hamiltonian(K, omega)
@@ -130,7 +130,7 @@ class TestHamiltonianSpectrum:
         bandwidth = eigvals[-1] - eigvals[0]
         assert bandwidth > 1.0
 
-    def test_4q_spectrum_all_real(self):
+    def test_4q_spectrum_all_real(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         H = knm_to_hamiltonian(K, omega)
@@ -148,13 +148,13 @@ class TestHamiltonianSpectrum:
 
 
 class TestFull16Layer:
-    def test_hamiltonian_construction(self):
+    def test_hamiltonian_construction(self) -> None:
         K = build_knm_paper27(L=16)
         omega = OMEGA_N_16
         H = knm_to_hamiltonian(K, omega)
         assert H.num_qubits == 16
 
-    def test_pauli_term_counts(self):
+    def test_pauli_term_counts(self) -> None:
         K = build_knm_paper27(L=16)
         omega = OMEGA_N_16
         H = knm_to_hamiltonian(K, omega)

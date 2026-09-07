@@ -20,7 +20,7 @@ from scpn_quantum_control.bridge import (
 )
 
 
-def test_12q_hamiltonian_structure():
+def test_12q_hamiltonian_structure() -> None:
     """12-qubit Hamiltonian: correct qubit count, Hermitian, real spectrum."""
     K = build_knm_paper27(L=12)
     omega = OMEGA_N_16[:12]
@@ -33,7 +33,7 @@ def test_12q_hamiltonian_structure():
     assert n_xx == 12 * 11 // 2
 
 
-def test_16q_hamiltonian_structure():
+def test_16q_hamiltonian_structure() -> None:
     """Full 16-qubit Hamiltonian: all 120 XX+YY pairs + 16 Z field terms."""
     K = build_knm_paper27(L=16)
     omega = OMEGA_N_16
@@ -45,7 +45,7 @@ def test_16q_hamiltonian_structure():
     assert n_terms > 100
 
 
-def test_12q_ansatz_depth():
+def test_12q_ansatz_depth() -> None:
     """12-qubit ansatz at reps=2: reasonable gate count."""
     K = build_knm_paper27(L=12)
     qc = knm_to_ansatz(K, reps=2)
@@ -54,7 +54,7 @@ def test_12q_ansatz_depth():
     assert qc.depth() >= 2, "12q ansatz at reps=2 must have depth >= 2"
 
 
-def test_16q_ansatz_reps1():
+def test_16q_ansatz_reps1() -> None:
     """16-qubit ansatz at reps=1."""
     K = build_knm_paper27(L=16)
     qc = knm_to_ansatz(K, reps=1)
@@ -63,7 +63,7 @@ def test_16q_ansatz_reps1():
 
 
 @pytest.mark.slow
-def test_8q_hamiltonian_diagonalization():
+def test_8q_hamiltonian_diagonalization() -> None:
     """8-qubit exact diagonalization: ground state is real, spectrum bandwidth > 1."""
     K = build_knm_paper27(L=8)
     omega = OMEGA_N_16[:8]
@@ -77,7 +77,7 @@ def test_8q_hamiltonian_diagonalization():
     assert np.all(np.isreal(eigvals))
 
 
-def test_knm_16x16_exponential_decay():
+def test_knm_16x16_exponential_decay() -> None:
     """K[0,15] (distance 15) << K[0,1] (distance 1) — exponential decay holds."""
     K = build_knm_paper27(L=16)
     # Natural: K_base * exp(-alpha * d)
@@ -86,28 +86,28 @@ def test_knm_16x16_exponential_decay():
     assert K[0, 15] == pytest.approx(0.05, abs=0.001)
 
 
-def test_knm_symmetric():
+def test_knm_symmetric() -> None:
     """K_nm must be symmetric for all sizes."""
     for L in (4, 8, 12, 16):
         K = build_knm_paper27(L=L)
         np.testing.assert_allclose(K, K.T, atol=1e-12)
 
 
-def test_knm_non_negative():
+def test_knm_non_negative() -> None:
     """All coupling strengths must be >= 0."""
     K = build_knm_paper27(L=16)
     assert np.all(K >= 0)
 
 
 @pytest.mark.parametrize("L", [2, 4, 6, 8, 12])
-def test_hamiltonian_qubit_count(L):
+def test_hamiltonian_qubit_count(L: int) -> None:
     K = build_knm_paper27(L=L)
     omega = OMEGA_N_16[:L]
     H = knm_to_hamiltonian(K, omega)
     assert H.num_qubits == L
 
 
-def test_ansatz_params_scale_linearly():
+def test_ansatz_params_scale_linearly() -> None:
     """n_params = 2 * L * reps for all sizes."""
     for L in (4, 8, 12, 16):
         K = build_knm_paper27(L=L)
@@ -121,7 +121,7 @@ def test_ansatz_params_scale_linearly():
 # ---------------------------------------------------------------------------
 
 
-def test_ground_energy_decreases_with_size():
+def test_ground_energy_decreases_with_size() -> None:
     """Larger systems → more negative ground energy (more coupling terms)."""
     energies = []
     for L in [2, 4, 8]:
@@ -135,7 +135,7 @@ def test_ground_energy_decreases_with_size():
     assert energies[0] > energies[1] > energies[2]
 
 
-def test_16q_hamiltonian_hermitian():
+def test_16q_hamiltonian_hermitian() -> None:
     """16-qubit Hamiltonian must be Hermitian (Pauli structure)."""
     K = build_knm_paper27(L=16)
     omega = OMEGA_N_16
@@ -149,7 +149,7 @@ def test_16q_hamiltonian_hermitian():
 # ---------------------------------------------------------------------------
 
 
-def test_pipeline_stress_16q():
+def test_pipeline_stress_16q() -> None:
     """Full pipeline: 16-qubit Knm → Hamiltonian → Pauli structure.
     Verifies the system compiles at full SCPN scale.
     """

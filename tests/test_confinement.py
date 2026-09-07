@@ -24,31 +24,31 @@ from scpn_quantum_control.gauge.confinement import (
 
 
 class TestExtractStringTension:
-    def test_equal_wilson_zero_tension(self):
+    def test_equal_wilson_zero_tension(self) -> None:
         sigma = extract_string_tension(0.5, 0.5)
         assert sigma is not None
         assert sigma == pytest.approx(0.0, abs=1e-10)
 
-    def test_decaying_wilson_positive_tension(self):
+    def test_decaying_wilson_positive_tension(self) -> None:
         sigma = extract_string_tension(0.8, 0.5)
         assert sigma is not None
         assert sigma > 0
 
-    def test_none_for_zero_wilson(self):
+    def test_none_for_zero_wilson(self) -> None:
         sigma = extract_string_tension(0.0, 0.5)
         assert sigma is None
 
-    def test_none_for_equal_areas(self):
+    def test_none_for_equal_areas(self) -> None:
         sigma = extract_string_tension(0.5, 0.3, area_small=1.0, area_large=1.0)
         assert sigma is None
 
-    def test_none_for_zero_ratio(self):
+    def test_none_for_zero_ratio(self) -> None:
         sigma = extract_string_tension(np.inf, 0.5)
         assert sigma is None
 
 
 class TestAverageWilsonByLength:
-    def test_zero_when_requested_length_missing(self, monkeypatch):
+    def test_zero_when_requested_length_missing(self, monkeypatch: pytest.MonkeyPatch) -> None:
         class Loop:
             loop_length = 2
             magnitude = 0.75
@@ -62,38 +62,38 @@ class TestAverageWilsonByLength:
 
 
 class TestConfinementAnalysis:
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = confinement_analysis(K, omega)
         assert isinstance(result, ConfinementResult)
 
-    def test_n_qubits(self):
+    def test_n_qubits(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = confinement_analysis(K, omega)
         assert result.n_qubits == 4
 
-    def test_wilson_averages_non_negative(self):
+    def test_wilson_averages_non_negative(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = confinement_analysis(K, omega)
         assert result.wilson_triangle_avg >= 0
         assert result.wilson_square_avg >= 0
 
-    def test_confinement_ratio_type(self):
+    def test_confinement_ratio_type(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = confinement_analysis(K, omega)
         assert isinstance(result.confinement_ratio, float)
 
-    def test_is_confined_bool(self):
+    def test_is_confined_bool(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = confinement_analysis(K, omega)
         assert isinstance(result.is_confined, bool)
 
-    def test_scpn_confinement(self):
+    def test_scpn_confinement(self) -> None:
         """Record confinement at SCPN defaults."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
@@ -107,7 +107,7 @@ class TestConfinementAnalysis:
 
 
 class TestConfinementVsCoupling:
-    def test_scan_returns_keys(self):
+    def test_scan_returns_keys(self) -> None:
         omega = OMEGA_N_16[:4]
         k_vals = np.array([0.1, 0.5, 1.0])
         results = confinement_vs_coupling(omega, k_vals)
@@ -115,14 +115,14 @@ class TestConfinementVsCoupling:
             assert key in results
             assert len(results[key]) == 3
 
-    def test_string_tension_non_negative(self):
+    def test_string_tension_non_negative(self) -> None:
         omega = OMEGA_N_16[:4]
         k_vals = np.array([0.5, 1.0])
         results = confinement_vs_coupling(omega, k_vals)
         for st in results["string_tension"]:
             assert st >= 0
 
-    def test_default_scan_uses_fifteen_points(self):
+    def test_default_scan_uses_fifteen_points(self) -> None:
         omega = OMEGA_N_16[:4]
         results = confinement_vs_coupling(omega)
         assert len(results["k_base"]) == 15

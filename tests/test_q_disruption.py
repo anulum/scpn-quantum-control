@@ -14,28 +14,28 @@ from scpn_quantum_control.control.q_disruption import QuantumDisruptionClassifie
 
 
 @pytest.fixture
-def clf():
+def clf() -> QuantumDisruptionClassifier:
     return QuantumDisruptionClassifier(n_features=11, n_layers=2)
 
 
-def test_predict_returns_probability(clf):
+def test_predict_returns_probability(clf: QuantumDisruptionClassifier) -> None:
     features = np.random.default_rng(42).normal(0, 1, 11)
     risk = clf.predict(features)
     assert 0.0 <= risk <= 1.0
 
 
-def test_encode_features_qubit_count(clf):
+def test_encode_features_qubit_count(clf: QuantumDisruptionClassifier) -> None:
     features = np.ones(11)
     qc = clf.encode_features(features)
     assert qc.num_qubits == 5  # 4 data + 1 ancilla
 
 
-def test_classifier_qubit_count(clf):
+def test_classifier_qubit_count(clf: QuantumDisruptionClassifier) -> None:
     qc = clf.build_classifier()
     assert qc.num_qubits == 5
 
 
-def test_train_updates_params():
+def test_train_updates_params() -> None:
     clf = QuantumDisruptionClassifier(n_features=11, n_layers=1)
     original = clf.params.copy()
     rng = np.random.default_rng(0)
@@ -45,7 +45,7 @@ def test_train_updates_params():
     assert not np.allclose(clf.params, original)
 
 
-def test_different_features_different_predictions(clf):
+def test_different_features_different_predictions(clf: QuantumDisruptionClassifier) -> None:
     f1 = np.zeros(11)
     f2 = np.ones(11) * 5
     r1 = clf.predict(f1)
@@ -54,26 +54,26 @@ def test_different_features_different_predictions(clf):
     assert isinstance(r2, float)
 
 
-def test_seed_reproducibility():
+def test_seed_reproducibility() -> None:
     """Same seed produces identical initial params."""
     c1 = QuantumDisruptionClassifier(n_layers=2, seed=99)
     c2 = QuantumDisruptionClassifier(n_layers=2, seed=99)
     np.testing.assert_array_equal(c1.params, c2.params)
 
 
-def test_different_seed_different_params():
+def test_different_seed_different_params() -> None:
     c1 = QuantumDisruptionClassifier(n_layers=2, seed=0)
     c2 = QuantumDisruptionClassifier(n_layers=2, seed=1)
     assert not np.allclose(c1.params, c2.params)
 
 
-def test_zero_feature_vector(clf):
+def test_zero_feature_vector(clf: QuantumDisruptionClassifier) -> None:
     """All-zero features should not crash (amplitude encoding fallback)."""
     risk = clf.predict(np.zeros(11))
     assert 0.0 <= risk <= 1.0
 
 
-def test_feature_normalization(clf):
+def test_feature_normalization(clf: QuantumDisruptionClassifier) -> None:
     """Very large features should be normalized before encoding."""
     risk = clf.predict(np.ones(11) * 1e6)
     assert 0.0 <= risk <= 1.0
@@ -84,13 +84,13 @@ def test_feature_normalization(clf):
 # ---------------------------------------------------------------------------
 
 
-def test_circuit_depth_positive(clf):
+def test_circuit_depth_positive(clf: QuantumDisruptionClassifier) -> None:
     """Classifier circuit must have non-trivial depth."""
     qc = clf.build_classifier()
     assert qc.depth() > 0
 
 
-def test_prediction_stable_across_runs(clf):
+def test_prediction_stable_across_runs(clf: QuantumDisruptionClassifier) -> None:
     """Same features + same params → same prediction (deterministic)."""
     features = np.array([0.5, -0.3, 1.2, 0.0, -1.0, 0.8, 0.1, -0.5, 0.3, 0.7, -0.2])
     r1 = clf.predict(features)
@@ -103,7 +103,7 @@ def test_prediction_stable_across_runs(clf):
 # ---------------------------------------------------------------------------
 
 
-def test_pipeline_features_to_risk():
+def test_pipeline_features_to_risk() -> None:
     """Full pipeline: normalise features → encode → variational → measure → risk.
     Verifies disruption classifier is wired and functional, not decorative.
     """

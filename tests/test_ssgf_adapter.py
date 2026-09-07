@@ -17,14 +17,14 @@ from scpn_quantum_control.bridge.ssgf_adapter import (
 )
 
 
-def test_w_to_hamiltonian_basic():
+def test_w_to_hamiltonian_basic() -> None:
     W = np.array([[0, 0.5], [0.5, 0]])
     omega = np.array([1.0, 2.0])
     H = ssgf_w_to_hamiltonian(W, omega)
     assert H.num_qubits == 2
 
 
-def test_w_to_hamiltonian_hermitian():
+def test_w_to_hamiltonian_hermitian() -> None:
     W = np.array([[0, 0.3, 0.1], [0.3, 0, 0.2], [0.1, 0.2, 0]])
     omega = np.array([1.0, 1.5, 2.0])
     H = ssgf_w_to_hamiltonian(W, omega)
@@ -32,13 +32,13 @@ def test_w_to_hamiltonian_hermitian():
     np.testing.assert_allclose(mat, mat.conj().T, atol=1e-12)
 
 
-def test_state_to_quantum_circuit():
+def test_state_to_quantum_circuit() -> None:
     state = {"theta": np.array([0.5, 1.0, 1.5])}
     qc = ssgf_state_to_quantum(state)
     assert qc.num_qubits == 3
 
 
-def test_state_roundtrip():
+def test_state_roundtrip() -> None:
     theta_orig = np.array([0.5, 1.0])
     state = {"theta": theta_orig}
     qc = ssgf_state_to_quantum(state)
@@ -47,21 +47,21 @@ def test_state_roundtrip():
     np.testing.assert_allclose(recovered["theta"], theta_orig, atol=0.3)
 
 
-def test_quantum_to_ssgf_R_global():
+def test_quantum_to_ssgf_R_global() -> None:
     qc = ssgf_state_to_quantum({"theta": np.array([1.0, 1.0, 1.0])})
     sv = Statevector.from_instruction(qc)
     state = quantum_to_ssgf_state(sv, 3)
     assert 0.0 <= state["R_global"] <= 1.0
 
 
-def test_w_to_hamiltonian_zero_coupling():
+def test_w_to_hamiltonian_zero_coupling() -> None:
     W = np.zeros((3, 3))
     omega = np.array([1.0, 2.0, 3.0])
     H = ssgf_w_to_hamiltonian(W, omega)
     assert H.num_qubits == 3
 
 
-def test_state_to_quantum_zero_angles():
+def test_state_to_quantum_zero_angles() -> None:
     state = {"theta": np.zeros(2)}
     qc = ssgf_state_to_quantum(state)
     sv = Statevector.from_instruction(qc)
@@ -70,7 +70,7 @@ def test_state_to_quantum_zero_angles():
     np.testing.assert_allclose(recovered["theta"], 0.0, atol=0.1)
 
 
-def test_quantum_to_ssgf_coherent():
+def test_quantum_to_ssgf_coherent() -> None:
     theta = np.full(4, 1.0)
     qc = ssgf_state_to_quantum({"theta": theta})
     sv = Statevector.from_instruction(qc)
@@ -83,7 +83,7 @@ def test_quantum_to_ssgf_coherent():
 # ---------------------------------------------------------------------------
 
 
-def test_encoding_preserves_normalisation():
+def test_encoding_preserves_normalisation() -> None:
     """Encoded circuit must produce normalised statevector."""
     theta = np.array([0.3, 1.2, 2.5, 0.8])
     qc = ssgf_state_to_quantum({"theta": theta})
@@ -91,14 +91,14 @@ def test_encoding_preserves_normalisation():
     np.testing.assert_allclose(float(np.sum(np.abs(sv) ** 2)), 1.0, atol=1e-12)
 
 
-def test_encoding_gate_count():
+def test_encoding_gate_count() -> None:
     """Each oscillator gets 2 gates (Ry + Rz)."""
     theta = np.zeros(5)
     qc = ssgf_state_to_quantum({"theta": theta})
     assert qc.size() == 10  # 5 * 2
 
 
-def test_R_global_uniform_phases_high():
+def test_R_global_uniform_phases_high() -> None:
     """All phases equal → R ≈ 1 (synchronised)."""
     theta = np.ones(6) * 2.3
     qc = ssgf_state_to_quantum({"theta": theta})
@@ -107,7 +107,7 @@ def test_R_global_uniform_phases_high():
     assert result["R_global"] > 0.9
 
 
-def test_R_global_opposite_phases_low():
+def test_R_global_opposite_phases_low() -> None:
     """Alternating 0/pi phases → R ≈ 0 (desynchronised)."""
     theta = np.array([0.0, np.pi, 0.0, np.pi])
     qc = ssgf_state_to_quantum({"theta": theta})
@@ -121,7 +121,7 @@ def test_R_global_opposite_phases_low():
 # ---------------------------------------------------------------------------
 
 
-def test_pipeline_w_to_evolution_decode():
+def test_pipeline_w_to_evolution_decode() -> None:
     """Full pipeline: W → H → encode → Trotter evolve → decode.
     Verifies SSGF adapter is not decorative — data flows end-to-end.
     """

@@ -29,7 +29,7 @@ from scpn_quantum_control.phase.ansatz_methodology import (
 
 
 class TestCountEntanglingGates:
-    def test_no_entangling(self):
+    def test_no_entangling(self) -> None:
         from qiskit import QuantumCircuit
 
         qc = QuantumCircuit(2)
@@ -37,14 +37,14 @@ class TestCountEntanglingGates:
         qc.rz(0.3, 1)
         assert _count_entangling_gates(qc) == 0
 
-    def test_cx_counted(self):
+    def test_cx_counted(self) -> None:
         from qiskit import QuantumCircuit
 
         qc = QuantumCircuit(2)
         qc.cx(0, 1)
         assert _count_entangling_gates(qc) == 1
 
-    def test_cz_counted(self):
+    def test_cz_counted(self) -> None:
         from qiskit import QuantumCircuit
 
         qc = QuantumCircuit(2)
@@ -52,7 +52,7 @@ class TestCountEntanglingGates:
         qc.cz(0, 1)
         assert _count_entangling_gates(qc) == 2
 
-    def test_knm_ansatz(self):
+    def test_knm_ansatz(self) -> None:
         K = build_knm_paper27(L=3)
         ansatz = knm_to_ansatz(K, reps=1)
         # K_nm for 3 qubits: at most 3 pairs, reps=1
@@ -62,25 +62,25 @@ class TestCountEntanglingGates:
 
 
 class TestConvergence99pct:
-    def test_monotonic(self):
+    def test_monotonic(self) -> None:
         history = [-1.0, -2.0, -3.0, -3.5, -3.9, -4.0]
         idx = _convergence_99pct(history)
         assert idx < len(history)
 
-    def test_already_converged(self):
+    def test_already_converged(self) -> None:
         history = [-4.0, -4.0, -4.0]
         idx = _convergence_99pct(history)
         assert idx == 0
 
-    def test_empty(self):
+    def test_empty(self) -> None:
         assert _convergence_99pct([]) == 0
 
-    def test_single(self):
+    def test_single(self) -> None:
         assert _convergence_99pct([-3.0]) == 0
 
 
 class TestGradientVariance:
-    def test_returns_nonneg(self):
+    def test_returns_nonneg(self) -> None:
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         H = knm_to_hamiltonian(K, omega)
@@ -88,7 +88,7 @@ class TestGradientVariance:
         var = _gradient_variance(ansatz, H, n_samples=5)
         assert var >= 0.0
 
-    def test_small_circuit_has_variance(self):
+    def test_small_circuit_has_variance(self) -> None:
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         H = knm_to_hamiltonian(K, omega)
@@ -100,7 +100,7 @@ class TestGradientVariance:
 
 class TestBenchmarkSingleAnsatz:
     @pytest.mark.parametrize("name", ["knm_informed", "two_local", "efficient_su2"])
-    def test_all_ansatze_run(self, name):
+    def test_all_ansatze_run(self, name: str) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = benchmark_single_ansatz(K, omega, name, maxiter=20, reps=1, gradient_samples=5)
@@ -111,7 +111,7 @@ class TestBenchmarkSingleAnsatz:
         assert result.exact_energy < 0  # XY ground state is negative
         assert result.relative_error >= 0
 
-    def test_knm_has_fewer_gates(self):
+    def test_knm_has_fewer_gates(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         knm = benchmark_single_ansatz(
@@ -122,7 +122,7 @@ class TestBenchmarkSingleAnsatz:
         # For 4 qubits: K_nm may have fewer or same, never wildly more
         assert knm.n_entangling_gates <= hea.n_entangling_gates * 3
 
-    def test_unknown_ansatz_raises(self):
+    def test_unknown_ansatz_raises(self) -> None:
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         with pytest.raises(ValueError, match="Unknown ansatz"):
@@ -130,7 +130,7 @@ class TestBenchmarkSingleAnsatz:
 
 
 class TestRunFullBenchmark:
-    def test_small_benchmark(self):
+    def test_small_benchmark(self) -> None:
         results = run_full_benchmark(system_sizes=[2, 3], maxiter=10, reps=1, gradient_samples=3)
         # 2 sizes × 3 ansatze = 6 results
         assert len(results) == 6
@@ -141,7 +141,7 @@ class TestRunFullBenchmark:
 
 
 class TestSummarizeBenchmark:
-    def test_produces_table(self):
+    def test_produces_table(self) -> None:
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         results = [

@@ -7,6 +7,8 @@
 # SCPN Quantum Control — Tests for Zne
 """Tests for ZNE error mitigation."""
 
+from pathlib import Path
+
 import numpy as np
 import pytest
 from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister
@@ -20,7 +22,7 @@ from scpn_quantum_control.mitigation.zne import (
 )
 
 
-def test_scale_1_identity():
+def test_scale_1_identity() -> None:
     """scale=1 returns an equivalent circuit."""
     qc = QuantumCircuit(2)
     qc.h(0)
@@ -33,7 +35,7 @@ def test_scale_1_identity():
     assert folded.num_clbits == qc.num_clbits
 
 
-def test_scale_3_triples_unitary_depth():
+def test_scale_3_triples_unitary_depth() -> None:
     """scale=3 should roughly triple the non-measurement gate count."""
     qc = QuantumCircuit(2)
     qc.h(0)
@@ -46,21 +48,21 @@ def test_scale_3_triples_unitary_depth():
     assert folded_gates >= base_gates * 2
 
 
-def test_even_scale_raises():
+def test_even_scale_raises() -> None:
     qc = QuantumCircuit(1)
     qc.h(0)
     with pytest.raises(ValueError, match="odd positive"):
         gate_fold_circuit(qc, scale=2)
 
 
-def test_zero_scale_raises():
+def test_zero_scale_raises() -> None:
     qc = QuantumCircuit(1)
     qc.h(0)
     with pytest.raises(ValueError):
         gate_fold_circuit(qc, scale=0)
 
 
-def test_measurements_preserved():
+def test_measurements_preserved() -> None:
     """Measurements should be present in the folded circuit."""
     qc = QuantumCircuit(2)
     qc.h(0)
@@ -71,7 +73,7 @@ def test_measurements_preserved():
     assert folded.num_clbits > 0
 
 
-def test_folded_measurement_reappend_is_terminal_and_single_round():
+def test_folded_measurement_reappend_is_terminal_and_single_round() -> None:
     """Mutation guard: terminal measurements are stripped before folding and re-appended once."""
     qc = QuantumCircuit(2)
     qc.h(0)
@@ -88,7 +90,7 @@ def test_folded_measurement_reappend_is_terminal_and_single_round():
     assert op_names.count("barrier") == 1
 
 
-def test_linear_extrapolation():
+def test_linear_extrapolation() -> None:
     """Linear extrapolation of y = 1 - 0.1*x should give ~1.0 at x=0."""
     scales = [1, 3, 5]
     evs = [0.9, 0.7, 0.5]
@@ -97,7 +99,7 @@ def test_linear_extrapolation():
     assert abs(result.zero_noise_estimate - 1.0) < 0.01
 
 
-def test_quadratic_extrapolation():
+def test_quadratic_extrapolation() -> None:
     """Quadratic fit should handle curved data."""
     scales = [1, 3, 5]
     evs = [0.9, 0.65, 0.3]
@@ -106,7 +108,7 @@ def test_quadratic_extrapolation():
     assert np.isfinite(result.zero_noise_estimate)
 
 
-def test_zne_result_fields():
+def test_zne_result_fields() -> None:
     scales = [1, 3]
     values = [0.8, 0.6]
     result = zne_extrapolate(scales, values, order=1)
@@ -118,7 +120,7 @@ def test_zne_result_fields():
     assert np.isfinite(result.fit_residual)
 
 
-def test_zne_insufficient_data_points():
+def test_zne_insufficient_data_points() -> None:
     """Need >= order+1 data points for polynomial fit (line 63)."""
     with pytest.raises(ValueError, match="data points"):
         zne_extrapolate([1], [0.9], order=1)
@@ -137,12 +139,14 @@ def test_zne_insufficient_data_points():
         ([1, 3, 5], [0.9, 0.7, 0.5], -1, "order"),
     ],
 )
-def test_zne_extrapolate_rejects_invalid_fit_inputs(scales, values, order, match):
+def test_zne_extrapolate_rejects_invalid_fit_inputs(
+    scales: list[int], values: list[float], order: int, match: str
+) -> None:
     with pytest.raises(ValueError, match=match):
         zne_extrapolate(scales, values, order=order)
 
 
-def test_noisy_sim_zne_pipeline_returns_finite_estimate(tmp_path):
+def test_noisy_sim_zne_pipeline_returns_finite_estimate(tmp_path: Path) -> None:
     """ZNE on a noisy simulator returns finite sampled and extrapolated values.
 
     The sampled noisy simulator is intentionally stochastic; this regression
@@ -189,7 +193,7 @@ def test_noisy_sim_zne_pipeline_returns_finite_estimate(tmp_path):
 # ---------------------------------------------------------------------------
 
 
-def test_folded_circuit_unitary():
+def test_folded_circuit_unitary() -> None:
     """Folded circuit at any odd scale must be unitary (norm-preserving)."""
     from qiskit.quantum_info import Statevector
 
@@ -203,7 +207,7 @@ def test_folded_circuit_unitary():
         np.testing.assert_allclose(float(np.sum(np.abs(sv) ** 2)), 1.0, atol=1e-12)
 
 
-def test_fit_residual_nonnegative():
+def test_fit_residual_nonnegative() -> None:
     """Polynomial fit residual must be ≥ 0."""
     result = zne_extrapolate([1, 3, 5], [0.9, 0.7, 0.5], order=1)
     assert result.fit_residual >= 0
@@ -214,7 +218,7 @@ def test_fit_residual_nonnegative():
 # ---------------------------------------------------------------------------
 
 
-def test_pipeline_knm_to_zne():
+def test_pipeline_knm_to_zne() -> None:
     """Full pipeline: Knm → Trotter → fold → extrapolate → mitigated R.
     Verifies ZNE is wired end-to-end, not decorative.
     """

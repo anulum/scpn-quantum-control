@@ -24,14 +24,14 @@ from scpn_quantum_control.phase.xy_kuramoto import QuantumKuramotoSolver
 from scpn_quantum_control.qec.control_qec import ControlQEC
 
 
-def test_knm_deterministic():
+def test_knm_deterministic() -> None:
     """build_knm_paper27 returns identical matrices on repeated calls."""
     K1 = build_knm_paper27(L=16)
     K2 = build_knm_paper27(L=16)
     assert np.array_equal(K1, K2)
 
 
-def test_hamiltonian_deterministic():
+def test_hamiltonian_deterministic() -> None:
     """Same K + omega → identical SparsePauliOp."""
     K = build_knm_paper27(L=4)
     omega = OMEGA_N_16[:4]
@@ -40,7 +40,7 @@ def test_hamiltonian_deterministic():
     assert H1 == H2
 
 
-def test_ansatz_deterministic():
+def test_ansatz_deterministic() -> None:
     """Same K + reps → identical circuit structure."""
     K = build_knm_paper27(L=4)
     qc1 = knm_to_ansatz(K, reps=2)
@@ -50,7 +50,7 @@ def test_ansatz_deterministic():
     assert qc1.size() == qc2.size()
 
 
-def test_kuramoto_evolve_deterministic():
+def test_kuramoto_evolve_deterministic() -> None:
     """Same params → identical Trotter circuit."""
     K = build_knm_paper27(L=4)
     omega = OMEGA_N_16[:4]
@@ -62,14 +62,14 @@ def test_kuramoto_evolve_deterministic():
     assert qc1.size() == qc2.size()
 
 
-def test_disruption_seed_reproducibility():
+def test_disruption_seed_reproducibility() -> None:
     """Same seed → identical classifier parameters."""
     c1 = QuantumDisruptionClassifier(n_features=5, n_layers=2, seed=42)
     c2 = QuantumDisruptionClassifier(n_features=5, n_layers=2, seed=42)
     assert np.array_equal(c1.params, c2.params)
 
 
-def test_qec_errors_seeded():
+def test_qec_errors_seeded() -> None:
     """Same RNG seed → identical error patterns."""
     qec = ControlQEC(distance=3)
     rng1 = np.random.default_rng(123)
@@ -80,7 +80,7 @@ def test_qec_errors_seeded():
     assert np.array_equal(err_z1, err_z2)
 
 
-def test_statevector_simulation_deterministic():
+def test_statevector_simulation_deterministic() -> None:
     """Same circuit → identical statevector results."""
     qc = QuantumCircuit(2)
     qc.h(0)
@@ -93,13 +93,13 @@ def test_statevector_simulation_deterministic():
     assert np.allclose(sv1, sv2)
 
 
-def test_knm_deterministic_repeat():
+def test_knm_deterministic_repeat() -> None:
     K1 = build_knm_paper27(L=8)
     K2 = build_knm_paper27(L=8)
     np.testing.assert_array_equal(K1, K2)
 
 
-def test_hamiltonian_deterministic_repeat():
+def test_hamiltonian_deterministic_repeat() -> None:
     from scpn_quantum_control.bridge import knm_to_hamiltonian
 
     K = build_knm_paper27(L=4)
@@ -109,7 +109,7 @@ def test_hamiltonian_deterministic_repeat():
     np.testing.assert_array_equal(np.array(H1), np.array(H2))
 
 
-def test_vqe_seed_deterministic():
+def test_vqe_seed_deterministic() -> None:
     from scpn_quantum_control.phase.phase_vqe import PhaseVQE
 
     K = build_knm_paper27(L=2)
@@ -119,7 +119,7 @@ def test_vqe_seed_deterministic():
     assert r1["ground_energy"] == r2["ground_energy"]
 
 
-def test_omega_immutable():
+def test_omega_immutable() -> None:
     omega_copy = OMEGA_N_16.copy()
     _ = build_knm_paper27(L=4)
     np.testing.assert_array_equal(OMEGA_N_16, omega_copy)

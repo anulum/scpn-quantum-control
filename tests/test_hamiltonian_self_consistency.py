@@ -23,7 +23,7 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 
 
 class TestCorrelatorsFromCounts:
-    def test_perfect_correlation(self):
+    def test_perfect_correlation(self) -> None:
         x_counts = {"00": 1000}
         y_counts = {"00": 1000}
         C = correlators_from_counts(x_counts, y_counts, 2)
@@ -31,13 +31,13 @@ class TestCorrelatorsFromCounts:
         assert C[0, 1] == pytest.approx(2.0)
         assert C[0, 0] == pytest.approx(0.0)  # diagonal zeroed
 
-    def test_anticorrelation(self):
+    def test_anticorrelation(self) -> None:
         x_counts = {"01": 500, "10": 500}
         y_counts = {"01": 500, "10": 500}
         C = correlators_from_counts(x_counts, y_counts, 2)
         assert C[0, 1] == pytest.approx(-2.0)
 
-    def test_symmetric(self):
+    def test_symmetric(self) -> None:
         rng = np.random.default_rng(42)
         x_counts = {
             format(i, "03b"): int(c) for i, c in enumerate(rng.multinomial(4000, [1 / 8] * 8))
@@ -50,20 +50,20 @@ class TestCorrelatorsFromCounts:
 
 
 class TestShotNoise:
-    def test_finite_shots(self):
+    def test_finite_shots(self) -> None:
         x_counts = {"00": 4000}
         y_counts = {"00": 4000}
         std = correlator_shot_noise(x_counts, y_counts, 2)
         expected = np.sqrt(2.0 / 4000)
         assert std == pytest.approx(expected)
 
-    def test_zero_shots(self):
+    def test_zero_shots(self) -> None:
         std = correlator_shot_noise({}, {}, 2)
         assert std == float("inf")
 
 
 class TestSelfConsistencyExact:
-    def test_2qubit_runs(self):
+    def test_2qubit_runs(self) -> None:
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = self_consistency_from_exact(K, omega, maxiter=50)
@@ -74,7 +74,7 @@ class TestSelfConsistencyExact:
         # valid solution (loss ≈ 0) but not necessarily K_true.
         assert result.learning_result.loss < 0.1
 
-    def test_3qubit_runs(self):
+    def test_3qubit_runs(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = self_consistency_from_exact(K, omega, maxiter=30)
@@ -83,14 +83,14 @@ class TestSelfConsistencyExact:
 
 
 class TestSelfConsistencyNoisySim:
-    def test_noisy_has_higher_error(self):
+    def test_noisy_has_higher_error(self) -> None:
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         self_consistency_from_exact(K, omega, maxiter=30)
         noisy = self_consistency_from_noisy_sim(K, omega, noise_std=0.2, maxiter=30)
         assert noisy.shot_noise_std > 0
 
-    def test_low_noise_has_low_correlator_error(self):
+    def test_low_noise_has_low_correlator_error(self) -> None:
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = self_consistency_from_noisy_sim(K, omega, noise_std=0.001, maxiter=50)
@@ -105,20 +105,20 @@ class TestSelfConsistencyNoisySim:
 
 
 class TestSelfConsistencyPhysics:
-    def test_learned_K_symmetric(self):
+    def test_learned_K_symmetric(self) -> None:
         """Learned coupling matrix must be symmetric."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = self_consistency_from_exact(K, omega, maxiter=30)
         np.testing.assert_allclose(result.K_learned, result.K_learned.T, atol=1e-8)
 
-    def test_frobenius_error_nonnegative(self):
+    def test_frobenius_error_nonnegative(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = self_consistency_from_exact(K, omega, maxiter=20)
         assert result.frobenius_error >= 0
 
-    def test_learning_loss_nonnegative(self):
+    def test_learning_loss_nonnegative(self) -> None:
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = self_consistency_from_exact(K, omega, maxiter=30)
@@ -131,7 +131,7 @@ class TestSelfConsistencyPhysics:
 
 
 class TestSelfConsistencyPipeline:
-    def test_pipeline_knm_to_learned_K(self):
+    def test_pipeline_knm_to_learned_K(self) -> None:
         """Full pipeline: Knm → exact correlators → learn K_learned.
         Verifies self-consistency loop is wired end-to-end.
         """

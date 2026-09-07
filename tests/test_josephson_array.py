@@ -22,11 +22,11 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 
 
 class TestJJACouplingMatrix:
-    def test_refuses_nominal_parameters_by_default(self):
+    def test_refuses_nominal_parameters_by_default(self) -> None:
         with pytest.raises(ValueError, match="JosephsonArrayParameters"):
             jja_coupling_matrix(5, topology="linear", allow_illustrative_topology=True)
 
-    def test_linear_shape(self):
+    def test_linear_shape(self) -> None:
         K, omega = jja_coupling_matrix(
             5,
             topology="linear",
@@ -36,7 +36,7 @@ class TestJJACouplingMatrix:
         assert K.shape == (5, 5)
         assert omega.shape == (5,)
 
-    def test_linear_tridiagonal(self):
+    def test_linear_tridiagonal(self) -> None:
         K, _ = jja_coupling_matrix(
             5,
             topology="linear",
@@ -48,7 +48,7 @@ class TestJJACouplingMatrix:
                 if abs(i - j) > 1:
                     assert K[i, j] == 0.0
 
-    def test_symmetric(self):
+    def test_symmetric(self) -> None:
         for topo in ["linear", "heavy_hex", "all_to_all"]:
             K, _ = jja_coupling_matrix(
                 6,
@@ -58,7 +58,7 @@ class TestJJACouplingMatrix:
             )
             np.testing.assert_allclose(K, K.T, atol=1e-12)
 
-    def test_non_negative(self):
+    def test_non_negative(self) -> None:
         for topo in ["linear", "heavy_hex", "all_to_all"]:
             K, _ = jja_coupling_matrix(
                 6,
@@ -68,7 +68,7 @@ class TestJJACouplingMatrix:
             )
             assert np.all(K >= 0)
 
-    def test_all_to_all_fully_connected(self):
+    def test_all_to_all_fully_connected(self) -> None:
         K, _ = jja_coupling_matrix(
             4,
             topology="all_to_all",
@@ -82,13 +82,13 @@ class TestJJACouplingMatrix:
 
 
 class TestJosephsonBenchmark:
-    def test_benchmark_refuses_illustrative_defaults(self):
+    def test_benchmark_refuses_illustrative_defaults(self) -> None:
         K = build_knm_paper27(L=5)
         omega = OMEGA_N_16[:5]
         with pytest.raises(ValueError, match="measured parameters"):
             josephson_benchmark(K, omega)
 
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         K = build_knm_paper27(L=5)
         omega = OMEGA_N_16[:5]
         result = josephson_benchmark(
@@ -99,7 +99,7 @@ class TestJosephsonBenchmark:
         )
         assert isinstance(result, JosephsonBenchmarkResult)
 
-    def test_n_junctions(self):
+    def test_n_junctions(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = josephson_benchmark(
@@ -110,7 +110,7 @@ class TestJosephsonBenchmark:
         )
         assert result.n_junctions == 4
 
-    def test_transmon_regime(self):
+    def test_transmon_regime(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = josephson_benchmark(
@@ -121,7 +121,7 @@ class TestJosephsonBenchmark:
         )
         assert result.is_transmon_regime  # E_J/E_C = 60 > 20
 
-    def test_topology_correlation_bounded(self):
+    def test_topology_correlation_bounded(self) -> None:
         K = build_knm_paper27(L=5)
         omega = OMEGA_N_16[:5]
         result = josephson_benchmark(
@@ -132,7 +132,7 @@ class TestJosephsonBenchmark:
         )
         assert -1 <= result.topology_correlation <= 1
 
-    def test_summary_string(self):
+    def test_summary_string(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = josephson_benchmark(
@@ -143,7 +143,7 @@ class TestJosephsonBenchmark:
         )
         assert "SCPN vs JJA" in result.summary
 
-    def test_different_topologies(self):
+    def test_different_topologies(self) -> None:
         K = build_knm_paper27(L=5)
         omega = OMEGA_N_16[:5]
         for topo in ["linear", "heavy_hex", "all_to_all"]:
@@ -156,7 +156,7 @@ class TestJosephsonBenchmark:
             )
             assert isinstance(result.topology_correlation, float)
 
-    def test_scpn_vs_jja(self):
+    def test_scpn_vs_jja(self) -> None:
         """Record SCPN vs JJA — self-simulation data."""
         K = build_knm_paper27(L=5)
         omega = OMEGA_N_16[:5]

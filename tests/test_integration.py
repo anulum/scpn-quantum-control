@@ -9,6 +9,7 @@
 
 import numpy as np
 import pytest
+from qiskit import QuantumCircuit
 
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.hardware.classical import classical_exact_evolution
@@ -16,7 +17,7 @@ from scpn_quantum_control.mitigation.zne import gate_fold_circuit, zne_extrapola
 from scpn_quantum_control.phase.xy_kuramoto import QuantumKuramotoSolver
 
 
-def test_quantum_vs_classical_kuramoto_4osc():
+def test_quantum_vs_classical_kuramoto_4osc() -> None:
     """Quantum Trotter evolution should approximate classical exact evolution.
 
     At high Trotter reps on 4 oscillators, the quantum R(t) should track the
@@ -38,7 +39,7 @@ def test_quantum_vs_classical_kuramoto_4osc():
         assert abs(q_r - c_r) < 0.15, f"quantum R={q_r:.4f} vs classical R={c_r:.4f}"
 
 
-def test_zne_on_kuramoto_noiseless():
+def test_zne_on_kuramoto_noiseless() -> None:
     """ZNE on a noiseless simulator: extrapolated R should match scale=1 R.
 
     On a noiseless backend, folding should not change the result, so all
@@ -54,7 +55,7 @@ def test_zne_on_kuramoto_noiseless():
 
     from qiskit.quantum_info import Statevector
 
-    def measure_R(circuit):
+    def measure_R(circuit: QuantumCircuit) -> float:
         sv = Statevector.from_instruction(circuit)
         R, _ = solver.measure_order_parameter(sv)
         return R
@@ -71,7 +72,7 @@ def test_zne_on_kuramoto_noiseless():
     np.testing.assert_allclose(zne.zero_noise_estimate, R_values[0], atol=1e-10)
 
 
-def test_energy_conservation_trotter():
+def test_energy_conservation_trotter() -> None:
     """Energy should be approximately conserved under Trotter evolution.
 
     For a time-independent Hamiltonian, <H(t)> = <H(0)> exactly.
@@ -106,7 +107,7 @@ def test_energy_conservation_trotter():
 
 
 @pytest.mark.parametrize("n_osc", [2, 3, 4, 6])
-def test_quantum_vs_classical_parametrized(n_osc):
+def test_quantum_vs_classical_parametrized(n_osc: int) -> None:
     """Quantum R(t) tracks classical R(t) at multiple system sizes."""
     K = build_knm_paper27(L=n_osc)
     omega = OMEGA_N_16[:n_osc]
@@ -121,7 +122,7 @@ def test_quantum_vs_classical_parametrized(n_osc):
         assert abs(q_r - c_r) < 0.2, f"n={n_osc}: quantum R={q_r:.4f} vs classical R={c_r:.4f}"
 
 
-def test_exact_diag_ground_energy_matches_hamiltonian():
+def test_exact_diag_ground_energy_matches_hamiltonian() -> None:
     """Ground energy from exact diag should match min eigenvalue of H matrix."""
     from scpn_quantum_control.hardware.classical import classical_exact_diag
 
@@ -140,7 +141,7 @@ def test_exact_diag_ground_energy_matches_hamiltonian():
     np.testing.assert_allclose(result["ground_energy"], evals_direct[0], atol=1e-10)
 
 
-def test_gate_fold_circuit_identity_at_scale_1():
+def test_gate_fold_circuit_identity_at_scale_1() -> None:
     """Folding at scale=1 should produce the same unitary as the original."""
     from qiskit.quantum_info import Statevector
 
@@ -155,7 +156,7 @@ def test_gate_fold_circuit_identity_at_scale_1():
     np.testing.assert_allclose(np.abs(np.vdot(sv_orig, sv_fold)) ** 2, 1.0, atol=1e-10)
 
 
-def test_zne_extrapolate_returns_result():
+def test_zne_extrapolate_returns_result() -> None:
     """ZNE extrapolation returns proper result object."""
     scales = [1, 3, 5]
     values = [0.5, 0.5, 0.5]  # Noiseless: all same
@@ -164,7 +165,7 @@ def test_zne_extrapolate_returns_result():
     assert np.isfinite(result.zero_noise_estimate)
 
 
-def test_quantum_solver_run_returns_R_and_energy():
+def test_quantum_solver_run_returns_R_and_energy() -> None:
     """QuantumKuramotoSolver.run must return R and energies."""
     K = build_knm_paper27(L=3)
     omega = OMEGA_N_16[:3]
@@ -177,7 +178,7 @@ def test_quantum_solver_run_returns_R_and_energy():
         assert 0.0 <= R <= 1.0 + 1e-10
 
 
-def test_classical_evolution_R_bounded():
+def test_classical_evolution_R_bounded() -> None:
     """Classical evolution R must be in [0, 1] at all times."""
     n = 4
     K = build_knm_paper27(L=n)
@@ -187,7 +188,7 @@ def test_classical_evolution_R_bounded():
         assert 0.0 <= R <= 1.0 + 1e-10
 
 
-def test_quantum_and_classical_same_ground_energy():
+def test_quantum_and_classical_same_ground_energy() -> None:
     """VQE-found ground energy matches classical exact diag."""
     from scpn_quantum_control.hardware.classical import classical_exact_diag
     from scpn_quantum_control.phase.phase_vqe import PhaseVQE
@@ -208,7 +209,7 @@ def test_quantum_and_classical_same_ground_energy():
 # ---------------------------------------------------------------------------
 
 
-def test_pipeline_full_integration():
+def test_pipeline_full_integration() -> None:
     """Full integration pipeline: Knm → quantum Trotter → ZNE → classical comparison.
     Verifies all three subsystems (quantum, classical, mitigation) are wired together.
     """

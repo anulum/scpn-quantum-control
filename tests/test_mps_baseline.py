@@ -23,66 +23,66 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 
 
 class TestRequiredBondDimension:
-    def test_zero_entropy_chi_1(self):
+    def test_zero_entropy_chi_1(self) -> None:
         assert required_bond_dimension(0.0) == 1
 
-    def test_one_bit_entropy_chi_2(self):
+    def test_one_bit_entropy_chi_2(self) -> None:
         assert required_bond_dimension(1.0) == 2
 
-    def test_monotonic(self):
+    def test_monotonic(self) -> None:
         c1 = required_bond_dimension(0.5)
         c2 = required_bond_dimension(2.0)
         assert c2 >= c1
 
 
 class TestMemory:
-    def test_mps_positive(self):
+    def test_mps_positive(self) -> None:
         assert mps_memory(10, 4) > 0
 
-    def test_exact_exponential(self):
+    def test_exact_exponential(self) -> None:
         m10 = exact_memory(10)
         m20 = exact_memory(20)
         assert m20 / m10 == pytest.approx(1024.0)
 
 
 class TestQuantumAdvantageN:
-    def test_positive(self):
+    def test_positive(self) -> None:
         n = quantum_advantage_n(chi_max=256)
         assert n > 0
 
-    def test_higher_chi_larger_n(self):
+    def test_higher_chi_larger_n(self) -> None:
         n_low = quantum_advantage_n(chi_max=64)
         n_high = quantum_advantage_n(chi_max=4096)
         assert n_high > n_low
 
 
 class TestMPSBaselineComparison:
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = mps_baseline_comparison(K, omega)
         assert isinstance(result, MPSBaselineResult)
 
-    def test_n_qubits(self):
+    def test_n_qubits(self) -> None:
         K = build_knm_paper27(L=6)
         omega = OMEGA_N_16[:6]
         result = mps_baseline_comparison(K, omega)
         assert result.n_qubits == 6
 
-    def test_compression_positive(self):
+    def test_compression_positive(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = mps_baseline_comparison(K, omega)
         assert result.compression_ratio > 0
 
-    def test_small_system_tractable(self):
+    def test_small_system_tractable(self) -> None:
         """4 qubits should always be MPS-tractable."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = mps_baseline_comparison(K, omega)
         assert result.mps_tractable
 
-    def test_scpn_mps_comparison(self):
+    def test_scpn_mps_comparison(self) -> None:
         """Record MPS baseline for SCPN defaults."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]

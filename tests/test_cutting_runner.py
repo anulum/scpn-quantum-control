@@ -18,13 +18,13 @@ from scpn_quantum_control.hardware.cutting_runner import (
 
 
 class TestCuttingRunner:
-    def test_8_single_partition(self):
+    def test_8_single_partition(self) -> None:
         result = run_cutting_simulation(n_oscillators=8, reps=2, max_partition_size=8)
         assert isinstance(result, CuttingRunResult)
         assert result.n_partitions == 1
         assert result.n_oscillators == 8
 
-    def test_16_two_partitions(self):
+    def test_16_two_partitions(self) -> None:
         result = run_cutting_simulation(
             n_oscillators=16,
             reps=1,
@@ -34,7 +34,7 @@ class TestCuttingRunner:
         assert result.n_partitions == 2
         assert result.partition_sizes == [8, 8]
 
-    def test_r_global_bounded(self):
+    def test_r_global_bounded(self) -> None:
         result = run_cutting_simulation(
             n_oscillators=16,
             reps=1,
@@ -45,7 +45,7 @@ class TestCuttingRunner:
         for r in result.partition_r_globals:
             assert 0 <= r <= 1.0
 
-    def test_energy_finite(self):
+    def test_energy_finite(self) -> None:
         result = run_cutting_simulation(
             n_oscillators=16,
             reps=1,
@@ -57,7 +57,7 @@ class TestCuttingRunner:
         assert result.is_full_system_energy is False
         assert result.omitted_cross_partition_coupling_l1 > 0.0
 
-    def test_24_three_partitions(self):
+    def test_24_three_partitions(self) -> None:
         result = run_cutting_simulation(
             n_oscillators=24,
             reps=1,
@@ -67,7 +67,7 @@ class TestCuttingRunner:
         assert result.n_partitions == 3
         assert result.partition_sizes == [8, 8, 8]
 
-    def test_scpn_24_osc(self):
+    def test_scpn_24_osc(self) -> None:
         """Record 24-oscillator partitioned simulation."""
         result = run_cutting_simulation(
             n_oscillators=24,
@@ -82,12 +82,12 @@ class TestCuttingRunner:
         print(f"  Total energy: {result.total_energy_estimate:.4f}")
         assert result.n_oscillators == 24
 
-    def test_4_single_partition(self):
+    def test_4_single_partition(self) -> None:
         result = run_cutting_simulation(n_oscillators=4, reps=2, max_partition_size=8)
         assert result.n_partitions == 1
         assert result.n_oscillators == 4
 
-    def test_partition_r_globals_length(self):
+    def test_partition_r_globals_length(self) -> None:
         result = run_cutting_simulation(
             n_oscillators=16,
             reps=1,
@@ -96,14 +96,14 @@ class TestCuttingRunner:
         )
         assert len(result.partition_r_globals) == result.n_partitions
 
-    def test_energy_is_float(self):
+    def test_energy_is_float(self) -> None:
         result = run_cutting_simulation(n_oscillators=8, reps=1, max_partition_size=8)
         assert isinstance(result.total_energy_estimate, float)
         import numpy as np
 
         assert np.isfinite(result.total_energy_estimate)
 
-    def test_32_four_partitions(self):
+    def test_32_four_partitions(self) -> None:
         result = run_cutting_simulation(
             n_oscillators=32,
             reps=1,
@@ -113,11 +113,11 @@ class TestCuttingRunner:
         assert result.n_partitions == 4
         assert result.partition_sizes == [8, 8, 8, 8]
 
-    def test_multi_partition_energy_refuses_unlabelled_estimate(self):
+    def test_multi_partition_energy_refuses_unlabelled_estimate(self) -> None:
         with pytest.raises(ValueError, match="allow_partition_energy_estimate"):
             run_cutting_simulation(n_oscillators=16, reps=1, max_partition_size=8)
 
-    def test_pipeline_cutting_with_performance(self):
+    def test_pipeline_cutting_with_performance(self) -> None:
         """Full pipeline: large system → partition → simulate → combine.
         Verifies cutting runner is wired end-to-end with performance data.
         """

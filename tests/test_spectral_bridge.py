@@ -24,37 +24,37 @@ from scpn_quantum_control.ssgf.quantum_spectral import (
 
 
 class TestLaplacianSpectrum:
-    def test_first_eigenvalue_zero(self):
+    def test_first_eigenvalue_zero(self) -> None:
         K = build_knm_paper27(L=4)
         spec = laplacian_spectrum(K)
         assert spec[0] == pytest.approx(0.0, abs=1e-10)
 
-    def test_all_non_negative(self):
+    def test_all_non_negative(self) -> None:
         K = build_knm_paper27(L=4)
         spec = laplacian_spectrum(K)
         assert np.all(spec >= -1e-10)
 
-    def test_sorted(self):
+    def test_sorted(self) -> None:
         K = build_knm_paper27(L=4)
         spec = laplacian_spectrum(K)
         for i in range(len(spec) - 1):
             assert spec[i] <= spec[i + 1] + 1e-10
 
-    def test_length(self):
+    def test_length(self) -> None:
         K = build_knm_paper27(L=6)
         spec = laplacian_spectrum(K)
         assert len(spec) == 6
 
 
 class TestEntrainmentCriterion:
-    def test_strong_coupling_stable(self):
+    def test_strong_coupling_stable(self) -> None:
         K = build_knm_paper27(L=4, K_base=10.0)
         omega = OMEGA_N_16[:4]
         stable, margin = entrainment_criterion(K, omega)
         assert stable
         assert margin > 0
 
-    def test_weak_coupling_unstable(self):
+    def test_weak_coupling_unstable(self) -> None:
         K = build_knm_paper27(L=4, K_base=0.001)
         omega = OMEGA_N_16[:4]
         stable, margin = entrainment_criterion(K, omega)
@@ -63,38 +63,38 @@ class TestEntrainmentCriterion:
 
 
 class TestQPEResourceEstimate:
-    def test_bits_increase_with_precision(self):
+    def test_bits_increase_with_precision(self) -> None:
         K = build_knm_paper27(L=4)
         b1, _ = qpe_resource_estimate(K, epsilon=0.1)
         b2, _ = qpe_resource_estimate(K, epsilon=0.001)
         assert b2 > b1
 
-    def test_depth_positive(self):
+    def test_depth_positive(self) -> None:
         K = build_knm_paper27(L=4)
         _, depth = qpe_resource_estimate(K)
         assert depth > 0
 
 
 class TestSpectralBridgeAnalysis:
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = spectral_bridge_analysis(K, omega)
         assert isinstance(result, SpectralBridgeResult)
 
-    def test_fiedler_positive(self):
+    def test_fiedler_positive(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = spectral_bridge_analysis(K, omega)
         assert result.fiedler_value > 0
 
-    def test_spectrum_length(self):
+    def test_spectrum_length(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = spectral_bridge_analysis(K, omega)
         assert len(result.laplacian_spectrum) == 4
 
-    def test_scpn_spectral_bridge(self):
+    def test_scpn_spectral_bridge(self) -> None:
         """Record spectral bridge at SCPN defaults."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
@@ -109,14 +109,14 @@ class TestSpectralBridgeAnalysis:
 
 
 class TestSpectralBridgeVsCoupling:
-    def test_returns_keys(self):
+    def test_returns_keys(self) -> None:
         omega = OMEGA_N_16[:4]
         k_vals = np.array([0.1, 1.0, 3.0])
         results = spectral_bridge_vs_coupling(omega, k_vals)
         assert "fiedler" in results
         assert len(results["fiedler"]) == 3
 
-    def test_fiedler_increases(self):
+    def test_fiedler_increases(self) -> None:
         omega = OMEGA_N_16[:4]
         k_vals = np.array([0.1, 1.0, 5.0])
         results = spectral_bridge_vs_coupling(omega, k_vals)

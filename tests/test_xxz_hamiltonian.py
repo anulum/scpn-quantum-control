@@ -28,7 +28,7 @@ def _ring(n: int) -> np.ndarray:
 
 
 class TestXXZHamiltonian:
-    def test_delta_zero_equals_xy(self):
+    def test_delta_zero_equals_xy(self) -> None:
         """Δ=0 should reproduce the standard XY Hamiltonian exactly."""
         K = 2.0 * _ring(3)
         omega = OMEGA_N_16[:3]
@@ -36,7 +36,7 @@ class TestXXZHamiltonian:
         H_xxz = knm_to_xxz_hamiltonian(K, omega, delta=0.0).to_matrix()
         assert np.allclose(H_xy, H_xxz, atol=1e-12)
 
-    def test_delta_one_is_heisenberg(self):
+    def test_delta_one_is_heisenberg(self) -> None:
         """Δ=1 should add ZZ terms (Heisenberg model)."""
         K = 1.5 * _ring(2)
         omega = OMEGA_N_16[:2]
@@ -46,7 +46,7 @@ class TestXXZHamiltonian:
         diff = H_xxz - H_xy
         assert np.linalg.norm(diff) > 0.1
 
-    def test_heisenberg_has_su2_symmetry(self):
+    def test_heisenberg_has_su2_symmetry(self) -> None:
         """Δ=1 with uniform ω should commute with total S² (SU(2) symmetric)."""
         K = _ring(2)
         omega = np.zeros(2)  # uniform frequencies → no symmetry breaking
@@ -66,7 +66,7 @@ class TestXXZHamiltonian:
         comm = H @ S2 - S2 @ H
         assert np.allclose(comm, 0, atol=1e-10)
 
-    def test_spectrum_changes_with_delta(self):
+    def test_spectrum_changes_with_delta(self) -> None:
         """Different Δ values should give different spectra."""
         K = 2.0 * _ring(3)
         omega = OMEGA_N_16[:3]
@@ -74,7 +74,7 @@ class TestXXZHamiltonian:
         E_heis = np.linalg.eigvalsh(knm_to_xxz_hamiltonian(K, omega, 1.0).to_matrix())
         assert not np.allclose(E_xy, E_heis)
 
-    def test_gap_varies_with_delta(self):
+    def test_gap_varies_with_delta(self) -> None:
         K = 2.0 * _ring(3)
         omega = OMEGA_N_16[:3]
         E0 = np.linalg.eigvalsh(knm_to_xxz_hamiltonian(K, omega, 0.0).to_matrix())
@@ -83,21 +83,21 @@ class TestXXZHamiltonian:
         gap_heis = E1[1] - E1[0]
         assert gap_xy != gap_heis
 
-    def test_negative_delta_frustrated(self):
+    def test_negative_delta_frustrated(self) -> None:
         """Negative Δ (antiferromagnetic ZZ) should still produce valid Hamiltonian."""
         K = _ring(2)
         omega = OMEGA_N_16[:2]
         H = knm_to_xxz_hamiltonian(K, omega, delta=-0.5)
         assert H.to_matrix().shape == (4, 4)
 
-    def test_4qubit(self):
+    def test_4qubit(self) -> None:
         K = _ring(4)
         omega = OMEGA_N_16[:4]
         H = knm_to_xxz_hamiltonian(K, omega, delta=0.5)
         assert H.to_matrix().shape == (16, 16)
 
 
-def test_xxz_hermitian():
+def test_xxz_hermitian() -> None:
     K = _ring(3)
     omega = OMEGA_N_16[:3]
     H = knm_to_xxz_hamiltonian(K, omega, delta=0.5)
@@ -107,7 +107,7 @@ def test_xxz_hermitian():
     np.testing.assert_allclose(mat, mat.conj().T, atol=1e-12)
 
 
-def test_xxz_traceless():
+def test_xxz_traceless() -> None:
     K = _ring(3)
     omega = OMEGA_N_16[:3]
     H = knm_to_xxz_hamiltonian(K, omega, delta=0.0)
@@ -117,7 +117,7 @@ def test_xxz_traceless():
     assert abs(np.trace(mat)) < 1e-8
 
 
-def test_xxz_2q_spectrum():
+def test_xxz_2q_spectrum() -> None:
     K = _ring(2)
     omega = OMEGA_N_16[:2]
     H = knm_to_xxz_hamiltonian(K, omega, delta=0.5)
@@ -126,7 +126,7 @@ def test_xxz_2q_spectrum():
 
 
 @pytest.mark.parametrize("delta", [0.0, 0.5, 1.0, 2.0])
-def test_xxz_various_deltas(delta):
+def test_xxz_various_deltas(delta: float) -> None:
     K = _ring(3)
     omega = OMEGA_N_16[:3]
     H = knm_to_xxz_hamiltonian(K, omega, delta=delta)

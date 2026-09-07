@@ -14,7 +14,7 @@ from qiskit import QuantumCircuit
 from scpn_quantum_control.mitigation.pec import PECResult, pauli_twirl_decompose, pec_sample
 
 
-def test_decompose_zero_error():
+def test_decompose_zero_error() -> None:
     coeffs = pauli_twirl_decompose(0.0)
     assert coeffs[0] == pytest.approx(1.0)
     assert coeffs[1] == pytest.approx(0.0)
@@ -22,7 +22,7 @@ def test_decompose_zero_error():
     assert coeffs[3] == pytest.approx(0.0)
 
 
-def test_decompose_small_error():
+def test_decompose_small_error() -> None:
     coeffs = pauli_twirl_decompose(0.01)
     assert coeffs[0] > 1.0
     assert coeffs[1] < 0.0
@@ -30,12 +30,12 @@ def test_decompose_small_error():
     assert np.isclose(coeffs[2], coeffs[3])
 
 
-def test_decompose_normalization():
+def test_decompose_normalization() -> None:
     coeffs = pauli_twirl_decompose(0.1)
     assert np.sum(coeffs) == pytest.approx(1.0)
 
 
-def test_decompose_matches_closed_form_coefficients():
+def test_decompose_matches_closed_form_coefficients() -> None:
     """Mutation guard: inverse depolarising coefficients follow the Temme formula."""
     p = 0.2
     coeffs = pauli_twirl_decompose(p)
@@ -47,14 +47,14 @@ def test_decompose_matches_closed_form_coefficients():
     )
 
 
-def test_decompose_rejects_invalid_rate():
+def test_decompose_rejects_invalid_rate() -> None:
     with pytest.raises(ValueError, match="gate_error_rate"):
         pauli_twirl_decompose(1.0)
     with pytest.raises(ValueError, match="gate_error_rate"):
         pauli_twirl_decompose(-0.1)
 
 
-def test_decompose_two_qubit_tensor_product_coefficients():
+def test_decompose_two_qubit_tensor_product_coefficients() -> None:
     one_qubit = pauli_twirl_decompose(0.01, n_qubits=1)
     two_qubit = pauli_twirl_decompose(0.01, n_qubits=2)
 
@@ -64,12 +64,12 @@ def test_decompose_two_qubit_tensor_product_coefficients():
     assert np.sum(np.abs(two_qubit)) == pytest.approx(np.sum(np.abs(one_qubit)) ** 2)
 
 
-def test_decompose_rejects_invalid_qubit_count():
+def test_decompose_rejects_invalid_qubit_count() -> None:
     with pytest.raises(ValueError, match="n_qubits"):
         pauli_twirl_decompose(0.01, n_qubits=0)
 
 
-def test_pec_sample_returns_result():
+def test_pec_sample_returns_result() -> None:
     qc = QuantumCircuit(1)
     qc.x(0)
     result = pec_sample(qc, 0.01, n_samples=50, rng=np.random.default_rng(42))
@@ -79,7 +79,7 @@ def test_pec_sample_returns_result():
     assert set(result.sign_distribution) <= {-1.0, 1.0}
 
 
-def test_pec_zero_noise_recovers_ideal():
+def test_pec_zero_noise_recovers_ideal() -> None:
     qc = QuantumCircuit(1)
     qc.x(0)  # |0> -> |1>, <Z> = -1
     result = pec_sample(qc, 0.0, n_samples=100, rng=np.random.default_rng(42))
@@ -87,7 +87,7 @@ def test_pec_zero_noise_recovers_ideal():
     assert result.overhead == pytest.approx(1.0)
 
 
-def test_pec_overhead_increases_with_error():
+def test_pec_overhead_increases_with_error() -> None:
     qc = QuantumCircuit(1)
     qc.h(0)
     r1 = pec_sample(qc, 0.01, n_samples=10, rng=np.random.default_rng(0))
@@ -95,7 +95,7 @@ def test_pec_overhead_increases_with_error():
     assert r2.overhead > r1.overhead
 
 
-def test_pec_overhead_uses_circuit_gate_count_exponent():
+def test_pec_overhead_uses_circuit_gate_count_exponent() -> None:
     """Mutation guard: total overhead is gamma_single raised to circuit size."""
     qc = QuantumCircuit(1)
     qc.x(0)
@@ -111,7 +111,7 @@ def test_pec_overhead_uses_circuit_gate_count_exponent():
     assert result.overhead == pytest.approx(expected)
 
 
-def test_pec_sample_deterministic_with_seed():
+def test_pec_sample_deterministic_with_seed() -> None:
     qc = QuantumCircuit(1)
     qc.ry(1.0, 0)
     r1 = pec_sample(qc, 0.05, 20, rng=np.random.default_rng(42))
@@ -124,7 +124,7 @@ def test_pec_sample_deterministic_with_seed():
 # ---------------------------------------------------------------------------
 
 
-def test_coefficients_quasi_probability():
+def test_coefficients_quasi_probability() -> None:
     """Identity coefficient > 1, error coefficients < 0 for p > 0."""
     coeffs = pauli_twirl_decompose(0.05)
     assert coeffs[0] > 1.0  # quasi-probability > 1
@@ -132,7 +132,7 @@ def test_coefficients_quasi_probability():
         assert c < 0.0  # negative quasi-probabilities
 
 
-def test_overhead_formula():
+def test_overhead_formula() -> None:
     """PEC overhead = (1 + 2p/(1-p))^n for n gates. For 1 gate: 1/(1-4p/3)."""
     result = pec_sample(QuantumCircuit(1), 0.0, n_samples=10, rng=np.random.default_rng(0))
     assert result.overhead == pytest.approx(1.0, abs=0.01)
@@ -143,7 +143,7 @@ def test_overhead_formula():
 # ---------------------------------------------------------------------------
 
 
-def test_rust_pec_coefficients_parity():
+def test_rust_pec_coefficients_parity() -> None:
     """Rust pec_coefficients should match Python pauli_twirl_decompose."""
     try:
         import scpn_quantum_engine as eng
@@ -161,7 +161,7 @@ def test_rust_pec_coefficients_parity():
 # ---------------------------------------------------------------------------
 
 
-def test_pipeline_circuit_to_mitigated_value():
+def test_pipeline_circuit_to_mitigated_value() -> None:
     """Full pipeline: build circuit → PEC sample → mitigated <Z>.
     Verifies PEC is not decorative — produces corrected expectation values.
     """

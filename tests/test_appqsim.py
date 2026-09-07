@@ -20,43 +20,43 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 
 
 class TestAppQSimBenchmark:
-    def test_returns_metrics(self):
+    def test_returns_metrics(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = appqsim_benchmark(K, omega)
         assert isinstance(result, AppQSimMetrics)
 
-    def test_order_parameter_error_small(self):
+    def test_order_parameter_error_small(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = appqsim_benchmark(K, omega)
         assert result.order_parameter_error < 1.0
 
-    def test_energy_error_finite(self):
+    def test_energy_error_finite(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = appqsim_benchmark(K, omega)
         assert result.energy_relative_error_pct >= 0
 
-    def test_correlation_fidelity_bounded(self):
+    def test_correlation_fidelity_bounded(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = appqsim_benchmark(K, omega)
         assert result.correlation_fidelity <= 1.0
 
-    def test_n_qubits(self):
+    def test_n_qubits(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = appqsim_benchmark(K, omega)
         assert result.n_qubits == 4
 
-    def test_gate_count_positive(self):
+    def test_gate_count_positive(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = appqsim_benchmark(K, omega)
         assert result.n_gates > 0
 
-    def test_scpn_appqsim(self):
+    def test_scpn_appqsim(self) -> None:
         """Record AppQSim metrics for SCPN."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
@@ -70,7 +70,7 @@ class TestAppQSimBenchmark:
 
 
 @pytest.mark.parametrize("L", [2, 3, 4])
-def test_appqsim_various_sizes(L):
+def test_appqsim_various_sizes(L: int) -> None:
     K = build_knm_paper27(L=L)
     omega = OMEGA_N_16[:L]
     result = appqsim_benchmark(K, omega)
@@ -78,14 +78,14 @@ def test_appqsim_various_sizes(L):
     assert np.isfinite(result.order_parameter_error)
 
 
-def test_appqsim_energy_negative():
+def test_appqsim_energy_negative() -> None:
     K = build_knm_paper27(L=3)
     omega = OMEGA_N_16[:3]
     result = appqsim_benchmark(K, omega)
     assert result.circuit_depth > 0
 
 
-def test_appqsim_result_has_all_fields():
+def test_appqsim_result_has_all_fields() -> None:
     K = build_knm_paper27(L=3)
     omega = OMEGA_N_16[:3]
     result = appqsim_benchmark(K, omega)
@@ -96,7 +96,7 @@ def test_appqsim_result_has_all_fields():
     assert hasattr(result, "circuit_depth")
 
 
-def test_appqsim_error_nonnegative():
+def test_appqsim_error_nonnegative() -> None:
     K = build_knm_paper27(L=3)
     omega = OMEGA_N_16[:3]
     result = appqsim_benchmark(K, omega)

@@ -22,21 +22,21 @@ from scpn_quantum_control.gauge.universality import (
 
 
 class TestCorrelationVsDistance:
-    def test_returns_two_lists(self):
+    def test_returns_two_lists(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         distances, correlations = correlation_vs_distance(K, omega)
         assert len(distances) > 0
         assert len(correlations) == len(distances)
 
-    def test_distances_positive(self):
+    def test_distances_positive(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         distances, _corr = correlation_vs_distance(K, omega)
         for d in distances:
             assert d > 0
 
-    def test_correlations_bounded(self):
+    def test_correlations_bounded(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         _dist, correlations = correlation_vs_distance(K, omega)
@@ -45,20 +45,20 @@ class TestCorrelationVsDistance:
 
 
 class TestFitCorrelationExponent:
-    def test_positive_correlations(self):
+    def test_positive_correlations(self) -> None:
         distances = [1.0, 2.0, 3.0]
         correlations = [1.0, 0.5, 0.33]
         eta = fit_correlation_exponent(distances, correlations)
         assert eta is not None
         assert eta > 0
 
-    def test_none_for_negative_correlations(self):
+    def test_none_for_negative_correlations(self) -> None:
         distances = [1.0, 2.0]
         correlations = [-0.5, -0.3]
         eta = fit_correlation_exponent(distances, correlations)
         assert eta is None
 
-    def test_known_exponent(self):
+    def test_known_exponent(self) -> None:
         """C(r) = r^{-0.25} should give η ≈ 0.25."""
         distances = [1.0, 2.0, 3.0, 4.0, 5.0]
         correlations = [d ** (-0.25) for d in distances]
@@ -68,14 +68,14 @@ class TestFitCorrelationExponent:
 
 
 class TestCheckNelsonKosterlitz:
-    def test_returns_ratio_and_deviation(self):
+    def test_returns_ratio_and_deviation(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         ratio, dev = check_nelson_kosterlitz(K, omega)
         assert isinstance(ratio, float)
         assert dev >= 0
 
-    def test_deviation_finite(self):
+    def test_deviation_finite(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         _ratio, dev = check_nelson_kosterlitz(K, omega)
@@ -83,25 +83,25 @@ class TestCheckNelsonKosterlitz:
 
 
 class TestUniversalityAnalysis:
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = universality_analysis(K, omega)
         assert isinstance(result, UniversalityResult)
 
-    def test_n_qubits(self):
+    def test_n_qubits(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = universality_analysis(K, omega)
         assert result.n_qubits == 4
 
-    def test_eta_type(self):
+    def test_eta_type(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = universality_analysis(K, omega)
         assert result.eta_exponent is None or isinstance(result.eta_exponent, float)
 
-    def test_scpn_universality(self):
+    def test_scpn_universality(self) -> None:
         """Record universality check at SCPN defaults."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
@@ -116,7 +116,7 @@ class TestUniversalityAnalysis:
 class TestNelsonKosterlitzZeroCoupling:
     """Cover line 148: ratio = 0.0 when T_BKT below precision."""
 
-    def test_zero_coupling_gives_zero_ratio(self):
+    def test_zero_coupling_gives_zero_ratio(self) -> None:
         import numpy as np
 
         K = np.zeros((4, 4))

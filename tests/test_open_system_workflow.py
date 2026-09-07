@@ -10,9 +10,10 @@
 from __future__ import annotations
 
 import numpy as np
+from numpy.typing import NDArray
 
 
-def _system(n: int = 4):
+def _system(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[np.float64]]:
     """Standard heterogeneous Kuramoto-XY system."""
     K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
     np.fill_diagonal(K, 0.0)
@@ -20,7 +21,7 @@ def _system(n: int = 4):
     return n, K, omega
 
 
-def _homogeneous_system(n: int = 4):
+def _homogeneous_system(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[np.float64]]:
     """Circulant K + uniform omega for translation symmetry."""
     K = np.zeros((n, n))
     for i in range(n):
@@ -35,7 +36,7 @@ class TestOpenSystemPipeline:
     """Lindblad density matrix and MCWF quantum jumps should agree on R(t)
     within statistical error for the same physical parameters."""
 
-    def test_lindblad_mcwf_agreement_2q(self):
+    def test_lindblad_mcwf_agreement_2q(self) -> None:
         """At n=2, MCWF ensemble R(T) should match Lindblad R(T) within 0.3.
 
         Note: Lindblad and MCWF use different propagators (scipy ODE vs
@@ -74,7 +75,7 @@ class TestOpenSystemPipeline:
             f"MCWF R={mcwf['R_mean'][-1]:.3f} ± {mcwf['R_std'][-1]:.3f}"
         )
 
-    def test_lindblad_mcwf_agreement_4q(self):
+    def test_lindblad_mcwf_agreement_4q(self) -> None:
         """Same test at n=4 — ensures scaling behaviour is consistent."""
         from scpn_quantum_control.phase.lindblad import LindbladKuramotoSolver
         from scpn_quantum_control.phase.tensor_jump import mcwf_ensemble
@@ -101,7 +102,7 @@ class TestOpenSystemPipeline:
             f"n=4: Lindblad R={lindblad['R'][-1]:.3f} vs MCWF R={mcwf['R_mean'][-1]:.3f}"
         )
 
-    def test_zero_dissipation_lindblad_mcwf_agree(self):
+    def test_zero_dissipation_lindblad_mcwf_agree(self) -> None:
         """With zero damping, both methods should give similar R(t).
 
         Note: Even at zero dissipation, Lindblad uses scipy ODE (RK45)
@@ -139,7 +140,7 @@ class TestOpenSystemPipeline:
         )
         assert mcwf["total_jumps"] == 0, "No jumps expected at zero damping"
 
-    def test_ancilla_circuit_consistent_with_lindblad(self):
+    def test_ancilla_circuit_consistent_with_lindblad(self) -> None:
         """Ancilla Lindblad circuit should produce a valid circuit for the
         same physical parameters used by the Lindblad solver."""
         from scpn_quantum_control.phase.ancilla_lindblad import (
@@ -182,7 +183,7 @@ class TestOpenSystemPipeline:
 class TestHardwareReadyPipeline:
     """End-to-end: build ancilla circuit → check stats → export → mitigate."""
 
-    def test_ancilla_build_stats_export(self):
+    def test_ancilla_build_stats_export(self) -> None:
         """Build ancilla circuit, check stats, export to QASM."""
         from qiskit import qasm2
 
@@ -219,7 +220,7 @@ class TestHardwareReadyPipeline:
         qasm_str = qasm2.dumps(qc)
         assert len(qasm_str) > 100
 
-    def test_open_system_methods_all_run(self):
+    def test_open_system_methods_all_run(self) -> None:
         """All three open-system methods should produce valid output
         for the same physical system."""
         from scpn_quantum_control.phase.ancilla_lindblad import (
@@ -258,7 +259,7 @@ class TestHardwareReadyPipeline:
 class TestFullPipeline:
     """End-to-end: recommend_backend → auto_solve → export → mitigate."""
 
-    def test_recommend_then_solve(self):
+    def test_recommend_then_solve(self) -> None:
         """recommend_backend → auto_solve should produce consistent results."""
         from scpn_quantum_control.phase.backend_selector import (
             auto_solve,
@@ -275,7 +276,7 @@ class TestFullPipeline:
         assert "ground_energy" in result["result"]
         assert result["result"]["ground_energy"] < 0
 
-    def test_solve_then_export(self):
+    def test_solve_then_export(self) -> None:
         """auto_solve for ground energy, then export circuit for same system."""
         from scpn_quantum_control.hardware.circuit_export import export_all
         from scpn_quantum_control.phase.backend_selector import auto_solve
@@ -293,7 +294,7 @@ class TestFullPipeline:
         assert export_result["n_qubits"] == 4
         assert len(export_result["qasm3"]) > 50
 
-    def test_solve_open_system_then_ancilla(self):
+    def test_solve_open_system_then_ancilla(self) -> None:
         """auto_solve for open system, then build ancilla circuit."""
         from scpn_quantum_control.phase.ancilla_lindblad import (
             build_ancilla_lindblad_circuit,
@@ -316,7 +317,7 @@ class TestFullPipeline:
         qc = build_ancilla_lindblad_circuit(K, omega, t=0.5, gamma=0.05)
         assert qc.num_qubits == 5
 
-    def test_symmetry_then_sparse_then_level_spacing(self):
+    def test_symmetry_then_sparse_then_level_spacing(self) -> None:
         """U(1) decomposition → sparse eigsh → level spacing analysis."""
         from scpn_quantum_control.analysis.magnetisation_sectors import (
             eigh_by_magnetisation,

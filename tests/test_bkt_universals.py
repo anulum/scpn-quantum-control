@@ -16,29 +16,29 @@ from scpn_quantum_control.analysis.bkt_universals import (
 
 
 class TestBKTUniversals:
-    def test_returns_summary(self):
+    def test_returns_summary(self) -> None:
         result = check_all_candidates()
         assert isinstance(result, BKTUniversalsSummary)
 
-    def test_at_least_5_candidates(self):
+    def test_at_least_5_candidates(self) -> None:
         result = check_all_candidates()
         assert len(result.candidates) >= 5
 
-    def test_sorted_by_deviation(self):
+    def test_sorted_by_deviation(self) -> None:
         result = check_all_candidates()
         for i in range(len(result.candidates) - 1):
             assert result.candidates[i].deviation <= result.candidates[i + 1].deviation
 
-    def test_best_is_first(self):
+    def test_best_is_first(self) -> None:
         result = check_all_candidates()
         assert result.best_value == result.candidates[0].value
 
-    def test_best_within_10_percent(self):
+    def test_best_within_10_percent(self) -> None:
         """At least one candidate should be within 10% of 0.72."""
         result = check_all_candidates()
         assert result.best_deviation < 0.072  # 10% of 0.72
 
-    def test_hasenbusch_pinn_candidate(self):
+    def test_hasenbusch_pinn_candidate(self) -> None:
         """A_HP × sqrt(2/π) should be among the best."""
         result = check_all_candidates()
         hp_candidates = [c for c in result.candidates if "A_HP" in c.expression]
@@ -46,7 +46,7 @@ class TestBKTUniversals:
         best_hp = min(hp_candidates, key=lambda c: c.deviation)
         assert best_hp.relative_deviation_pct < 5.0
 
-    def test_gap3_report(self):
+    def test_gap3_report(self) -> None:
         """Record Gap 3 findings."""
         result = check_all_candidates()
         print("\n  Gap 3: BKT universal candidates for p_h1 = 0.72:")
@@ -58,26 +58,26 @@ class TestBKTUniversals:
         assert result.best_deviation < 0.1
 
 
-def test_all_candidates_have_expression():
+def test_all_candidates_have_expression() -> None:
     result = check_all_candidates()
     for c in result.candidates:
         assert isinstance(c.expression, str)
         assert len(c.expression) > 0
 
 
-def test_all_candidates_have_positive_value():
+def test_all_candidates_have_positive_value() -> None:
     result = check_all_candidates()
     for c in result.candidates:
         assert c.value > 0
 
 
-def test_deviations_all_nonnegative():
+def test_deviations_all_nonnegative() -> None:
     result = check_all_candidates()
     for c in result.candidates:
         assert c.deviation >= 0
 
 
-def test_result_has_best_fields():
+def test_result_has_best_fields() -> None:
     result = check_all_candidates()
     assert hasattr(result, "best_value")
     assert hasattr(result, "best_expression")

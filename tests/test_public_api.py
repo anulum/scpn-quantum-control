@@ -14,7 +14,7 @@ from pathlib import Path
 import numpy as np
 
 
-def test_top_level_version():
+def test_top_level_version() -> None:
     """Package exposes __version__ matching pyproject.toml."""
     import importlib.metadata
 
@@ -30,7 +30,7 @@ def test_top_level_version():
         assert len(scpn_quantum_control.__version__.split(".")) >= 3
 
 
-def test_top_level_version_is_not_hardcoded_carrier():
+def test_top_level_version_is_not_hardcoded_carrier() -> None:
     """Runtime version is resolved from package metadata, not duplicated by hand."""
 
     init_source = (
@@ -51,42 +51,42 @@ def _check_exports(submod: str) -> int:
     return len(mod.__all__)
 
 
-def test_bridge_exports():
+def test_bridge_exports() -> None:
     """bridge.__all__ exports are importable and typed."""
     assert _check_exports("bridge") > 0
 
 
-def test_phase_exports():
+def test_phase_exports() -> None:
     """phase.__all__ exports are importable and typed."""
     assert _check_exports("phase") > 0
 
 
-def test_control_exports():
+def test_control_exports() -> None:
     """control.__all__ exports are importable and typed."""
     assert _check_exports("control") > 0
 
 
-def test_qsnn_exports():
+def test_qsnn_exports() -> None:
     """qsnn.__all__ exports are importable and typed."""
     assert _check_exports("qsnn") > 0
 
 
-def test_mitigation_exports():
+def test_mitigation_exports() -> None:
     """mitigation.__all__ exports are importable and typed."""
     assert _check_exports("mitigation") > 0
 
 
-def test_hardware_exports():
+def test_hardware_exports() -> None:
     """hardware.__all__ exports are importable and typed."""
     assert _check_exports("hardware") > 0
 
 
-def test_benchmark_exports():
+def test_benchmark_exports() -> None:
     """benchmarks.__all__ exports are importable and typed."""
     assert _check_exports("benchmarks") > 0
 
 
-def test_no_private_in_all():
+def test_no_private_in_all() -> None:
     """No __all__ contains underscore-prefixed names."""
 
     for submod_name in [
@@ -110,25 +110,25 @@ def test_no_private_in_all():
 # ---------------------------------------------------------------------------
 
 
-def test_top_level_all_nonempty():
+def test_top_level_all_nonempty() -> None:
     import scpn_quantum_control
 
     assert len(scpn_quantum_control.__all__) > 50
 
 
-def test_top_level_all_no_duplicates():
+def test_top_level_all_no_duplicates() -> None:
     import scpn_quantum_control
 
     names = scpn_quantum_control.__all__
     assert len(names) == len(set(names))
 
 
-def test_qec_exports():
+def test_qec_exports() -> None:
     """qec.__all__ exports are importable and typed."""
     assert _check_exports("qec") > 0
 
 
-def test_all_submodules_importable():
+def test_all_submodules_importable() -> None:
     """Every known subpackage imports without error."""
     for submod in [
         "bridge",

@@ -18,40 +18,40 @@ from scpn_quantum_control.analysis.p_h1_derivation import (
 
 
 class TestDeriveP_H1:
-    def test_returns_derivation(self):
+    def test_returns_derivation(self) -> None:
         result = derive_p_h1()
         assert isinstance(result, P_H1_Derivation)
 
-    def test_prediction_near_072(self):
+    def test_prediction_near_072(self) -> None:
         result = derive_p_h1()
         assert abs(result.p_h1_predicted - 0.72) < 0.01
 
-    def test_square_lattice_relative_deviation_under_1_pct(self):
+    def test_square_lattice_relative_deviation_under_1_pct(self) -> None:
         result = derive_p_h1()
         assert result.relative_deviation_pct < 1.0
 
-    def test_is_not_derivable_on_knm_graph(self):
+    def test_is_not_derivable_on_knm_graph(self) -> None:
         result = derive_p_h1()
         assert not result.is_derivable
         assert result.status == "OPEN_QUESTION"
         assert result.graph_p_h1_predicted == pytest.approx(0.9689, abs=5e-4)
         assert result.graph_relative_deviation_pct > 30.0
 
-    def test_derivation_chain_length(self):
+    def test_derivation_chain_length(self) -> None:
         result = derive_p_h1()
         assert len(result.derivation_chain) >= 5
 
-    def test_hasenbusch_pinn_value(self):
+    def test_hasenbusch_pinn_value(self) -> None:
         result = derive_p_h1()
         assert result.a_hp == pytest.approx(0.8983)
 
-    def test_nk_sqrt_value(self):
+    def test_nk_sqrt_value(self) -> None:
         result = derive_p_h1()
         import numpy as np
 
         assert result.nk_sqrt == pytest.approx(np.sqrt(2 / np.pi), abs=1e-6)
 
-    def test_gap3_final(self):
+    def test_gap3_final(self) -> None:
         """The definitive Gap 3 result is an open question, not a derivation."""
         result = derive_p_h1()
         print("\n  === GAP 3 DERIVATION AUDIT ===")
@@ -73,20 +73,20 @@ class TestDeriveP_H1:
 
 
 class TestDerivationInvariants:
-    def test_absolute_deviation_nonnegative(self):
+    def test_absolute_deviation_nonnegative(self) -> None:
         result = derive_p_h1()
         assert result.absolute_deviation >= 0
 
-    def test_target_is_072(self):
+    def test_target_is_072(self) -> None:
         result = derive_p_h1()
         assert result.p_h1_target == pytest.approx(0.72)
 
-    def test_derivation_chain_strings(self):
+    def test_derivation_chain_strings(self) -> None:
         result = derive_p_h1()
         for step in result.derivation_chain:
             assert isinstance(step, str)
             assert len(step) > 0
 
-    def test_predicted_positive(self):
+    def test_predicted_positive(self) -> None:
         result = derive_p_h1()
         assert result.p_h1_predicted > 0

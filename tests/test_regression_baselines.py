@@ -16,6 +16,7 @@ Aer statevector.
 from __future__ import annotations
 
 import numpy as np
+from qiskit.quantum_info import SparsePauliOp
 from qiskit_aer import AerSimulator
 
 from scpn_quantum_control.bridge import OMEGA_N_16, build_knm_paper27, knm_to_hamiltonian
@@ -27,7 +28,7 @@ from scpn_quantum_control.hardware.experiments import (
 # --- Knm parameter baselines (Paper 27) ---
 
 
-def test_knm_calibration_anchors():
+def test_knm_calibration_anchors() -> None:
     """K[1,2]=0.302, K[2,3]=0.201, K[3,4]=0.252, K[4,5]=0.154."""
     K = build_knm_paper27(L=16)
     assert abs(K[0, 1] - 0.302) < 0.001
@@ -36,7 +37,7 @@ def test_knm_calibration_anchors():
     assert abs(K[3, 4] - 0.154) < 0.001
 
 
-def test_knm_cross_hierarchy_boosts():
+def test_knm_cross_hierarchy_boosts() -> None:
     """L1-L16 boost to 0.05; L5-L7 boost floor at 0.15 (natural value is higher)."""
     K = build_knm_paper27(L=16)
     assert abs(K[0, 15] - 0.05) < 0.001
@@ -44,7 +45,7 @@ def test_knm_cross_hierarchy_boosts():
     assert K[4, 6] >= 0.15
 
 
-def test_omega_n_16_values():
+def test_omega_n_16_values() -> None:
     """First and last omega values from Paper 27."""
     assert abs(OMEGA_N_16[0] - 1.329) < 0.001
     assert abs(OMEGA_N_16[15] - 0.991) < 0.001
@@ -54,7 +55,7 @@ def test_omega_n_16_values():
 # --- Hamiltonian baselines ---
 
 
-def test_4q_ground_energy_baseline():
+def test_4q_ground_energy_baseline() -> None:
     """4-qubit exact ground state energy: -6.303 ± 0.01."""
     K = build_knm_paper27(L=4)
     omega = OMEGA_N_16[:4]
@@ -94,7 +95,7 @@ def _simulate_R(n_osc: int, t: float, trotter_reps: int) -> float:
     return float(abs(z_complex))
 
 
-def _pauli_op(pauli: str, qubit: int, n: int):
+def _pauli_op(pauli: str, qubit: int, n: int) -> SparsePauliOp:
     """Single-qubit Pauli on qubit `qubit` in n-qubit system."""
     from qiskit.quantum_info import SparsePauliOp
 
@@ -103,13 +104,13 @@ def _pauli_op(pauli: str, qubit: int, n: int):
     return SparsePauliOp("".join(reversed(label)))
 
 
-def test_4osc_statevector_R_baseline():
+def test_4osc_statevector_R_baseline() -> None:
     """4-osc statevector from |0⟩: R is finite and positive."""
     R = _simulate_R(4, t=1.0, trotter_reps=1)
     assert 0.0 < R < 1.5, f"R={R}, out of physical range"
 
 
-def test_R_monotonic_with_time():
+def test_R_monotonic_with_time() -> None:
     """R changes monotonically from initial state over short evolution."""
     R_short = _simulate_R(4, t=0.1, trotter_reps=1)
     R_long = _simulate_R(4, t=1.0, trotter_reps=1)
@@ -118,7 +119,7 @@ def test_R_monotonic_with_time():
     assert R_short != R_long, "Evolution should change R"
 
 
-def test_R_from_xyz_known_distribution():
+def test_R_from_xyz_known_distribution() -> None:
     """_R_from_xyz: equal 0/1 counts → <X>=<Y>=0 → R=0."""
     # 50/50 on each qubit: <X_i>=0, <Y_i>=0
     counts_x = {"0000": 5000, "1111": 5000}
@@ -128,25 +129,25 @@ def test_R_from_xyz_known_distribution():
     assert abs(R) < 0.01, f"Balanced counts should give R≈0, got {R}"
 
 
-def test_R_positive_for_all_sizes():
+def test_R_positive_for_all_sizes() -> None:
     for n in [2, 3, 4]:
         R = _simulate_R(n, t=0.5, trotter_reps=2)
         assert np.isfinite(R)
         assert R >= 0
 
 
-def test_R_from_xyz_uniform_counts():
+def test_R_from_xyz_uniform_counts() -> None:
     counts = {"0000": 2500, "0001": 2500, "0010": 2500, "0011": 2500}
     R, *_ = _R_from_xyz(counts, counts, counts, n_qubits=4)
     assert np.isfinite(R)
 
 
-def test_R_from_xyz_single_state():
+def test_R_from_xyz_single_state() -> None:
     counts = {"0000": 10000}
     R, *_ = _R_from_xyz(counts, counts, counts, n_qubits=4)
     assert np.isfinite(R)
 
 
-def test_simulate_R_2q():
+def test_simulate_R_2q() -> None:
     R = _simulate_R(2, t=0.3, trotter_reps=3)
     assert 0 <= R <= 1.5

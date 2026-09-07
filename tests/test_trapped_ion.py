@@ -21,31 +21,31 @@ from scpn_quantum_control.hardware.trapped_ion import (
 )
 
 
-def test_noise_model_returns_model():
+def test_noise_model_returns_model() -> None:
     model = trapped_ion_noise_model()
     assert model is not None
     assert len(model.noise_instructions) > 0
 
 
-def test_noise_model_custom_params():
+def test_noise_model_custom_params() -> None:
     model = trapped_ion_noise_model(ms_error=0.01, t1_us=50_000.0)
     assert model is not None
 
 
-def test_constants_physical_ranges():
+def test_constants_physical_ranges() -> None:
     assert 0 < MS_ERROR < 1
     assert T1_US > T2_US > 0
     assert MS_GATE_TIME_US > SQ_GATE_TIME_US > 0
 
 
-def test_transpile_single_qubit():
+def test_transpile_single_qubit() -> None:
     qc = QuantumCircuit(1)
     qc.h(0)
     result = transpile_for_trapped_ion(qc)
     assert result.num_qubits == 1
 
 
-def test_transpile_removes_swaps():
+def test_transpile_removes_swaps() -> None:
     qc = QuantumCircuit(4)
     qc.cx(0, 3)
     qc.cx(1, 3)
@@ -54,7 +54,7 @@ def test_transpile_removes_swaps():
     assert "swap" not in ops
 
 
-def test_transpile_preserves_unitarity():
+def test_transpile_preserves_unitarity() -> None:
     qc = QuantumCircuit(2)
     qc.h(0)
     qc.cx(0, 1)
@@ -64,7 +64,7 @@ def test_transpile_preserves_unitarity():
     assert original.equiv(result)
 
 
-def test_transpile_all_to_all_connectivity():
+def test_transpile_all_to_all_connectivity() -> None:
     qc = QuantumCircuit(3)
     qc.cx(0, 2)
     qc.cx(1, 0)
@@ -73,14 +73,14 @@ def test_transpile_all_to_all_connectivity():
     assert "swap" not in ops
 
 
-def test_transpile_empty_circuit():
+def test_transpile_empty_circuit() -> None:
     qc = QuantumCircuit(2)
     result = transpile_for_trapped_ion(qc)
     assert result.num_qubits == 2
     assert result.metadata["trapped_ion_basis_model"] == "no_entangling_proxy_required"
 
 
-def test_transpile_ghz_circuit():
+def test_transpile_ghz_circuit() -> None:
     """GHZ state circuit should transpile without error."""
     qc = QuantumCircuit(4)
     qc.h(0)
@@ -91,7 +91,7 @@ def test_transpile_ghz_circuit():
     assert result.depth() > 0
 
 
-def test_transpile_preserves_qubit_count():
+def test_transpile_preserves_qubit_count() -> None:
     """Transpiled circuit should have same number of qubits."""
     for n in (2, 3, 4):
         qc = QuantumCircuit(n)
@@ -101,7 +101,7 @@ def test_transpile_preserves_qubit_count():
         assert result.num_qubits == n
 
 
-def test_transpile_requires_explicit_proxy_basis_for_multiqubit():
+def test_transpile_requires_explicit_proxy_basis_for_multiqubit() -> None:
     """CX-basis trapped-ion proxy compilation must be explicit."""
     qc = QuantumCircuit(2)
     qc.cx(0, 1)
@@ -113,7 +113,7 @@ def test_transpile_requires_explicit_proxy_basis_for_multiqubit():
         raise AssertionError("proxy trapped-ion transpilation must require explicit opt-in")
 
 
-def test_transpile_records_proxy_metadata():
+def test_transpile_records_proxy_metadata() -> None:
     """Returned circuit metadata labels the representative proxy basis."""
     qc = QuantumCircuit(2)
     qc.cx(0, 1)
@@ -122,12 +122,12 @@ def test_transpile_records_proxy_metadata():
     assert result.metadata["hardware_claim"] == "representative_noise_model_not_device_calibration"
 
 
-def test_noise_model_has_error_instructions():
+def test_noise_model_has_error_instructions() -> None:
     model = trapped_ion_noise_model()
     assert len(model.noise_instructions) > 0
 
 
-def test_pipeline_knm_to_trapped_ion():
+def test_pipeline_knm_to_trapped_ion() -> None:
     """Pipeline: build Kuramoto circuit → transpile to trapped-ion basis."""
     from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
     from scpn_quantum_control.phase.xy_kuramoto import QuantumKuramotoSolver

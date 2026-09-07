@@ -23,26 +23,26 @@ from scpn_quantum_control.l16.quantum_director import (
 
 
 class TestLoschmidtEcho:
-    def test_at_t0_is_one(self):
+    def test_at_t0_is_one(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         le = loschmidt_echo(K, omega, t=0.0)
         assert le == pytest.approx(1.0, abs=1e-10)
 
-    def test_bounded(self):
+    def test_bounded(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         le = loschmidt_echo(K, omega, t=1.0)
         assert 0 <= le <= 1.0 + 1e-10
 
-    def test_ground_state_is_eigenstate(self):
+    def test_ground_state_is_eigenstate(self) -> None:
         """Ground state echo should stay near 1 (eigenstate doesn't evolve)."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         le = loschmidt_echo(K, omega, t=0.5)
         assert le > 0.99
 
-    def test_propagates_dense_budget(self):
+    def test_propagates_dense_budget(self) -> None:
         n = 4
         K = build_knm_paper27(L=n)
         omega = OMEGA_N_16[:n]
@@ -52,20 +52,20 @@ class TestLoschmidtEcho:
 
 
 class TestEnergyVariance:
-    def test_ground_state_near_zero(self):
+    def test_ground_state_near_zero(self) -> None:
         """Exact ground state has ΔE² ≈ 0."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         var = energy_variance(K, omega)
         assert var < 1e-10
 
-    def test_non_negative(self):
+    def test_non_negative(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         var = energy_variance(K, omega)
         assert var >= -1e-10
 
-    def test_propagates_dense_budget(self):
+    def test_propagates_dense_budget(self) -> None:
         n = 4
         K = build_knm_paper27(L=n)
         omega = OMEGA_N_16[:n]
@@ -75,13 +75,13 @@ class TestEnergyVariance:
 
 
 class TestFidelitySusceptibility:
-    def test_non_negative(self):
+    def test_non_negative(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         fs = fidelity_susceptibility(K, omega)
         assert fs >= 0
 
-    def test_finite(self):
+    def test_finite(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         fs = fidelity_susceptibility(K, omega)
@@ -89,31 +89,31 @@ class TestFidelitySusceptibility:
 
 
 class TestComputeL16Lyapunov:
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_l16_lyapunov(K, omega)
         assert isinstance(result, L16Result)
 
-    def test_stability_score_bounded(self):
+    def test_stability_score_bounded(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_l16_lyapunov(K, omega)
         assert 0 <= result.stability_score <= 1.0
 
-    def test_action_valid(self):
+    def test_action_valid(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_l16_lyapunov(K, omega)
         assert result.action in ("continue", "adjust", "halt")
 
-    def test_r_global_bounded(self):
+    def test_r_global_bounded(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_l16_lyapunov(K, omega)
         assert 0 <= result.order_parameter <= 1.0
 
-    def test_scpn_l16(self):
+    def test_scpn_l16(self) -> None:
         """Record L16 assessment at SCPN defaults."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
@@ -126,7 +126,7 @@ class TestComputeL16Lyapunov:
         print(f"  Stability: {result.stability_score:.4f} → {result.action}")
         assert isinstance(result.action, str)
 
-    def test_adjust_action_threshold(self, monkeypatch):
+    def test_adjust_action_threshold(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Moderate composite score selects an adjustment action."""
         from scpn_quantum_control.l16 import quantum_director as qd
 
@@ -147,7 +147,7 @@ class TestComputeL16Lyapunov:
         assert result.action == "adjust"
         assert 0.4 < result.stability_score <= 0.7
 
-    def test_halt_action_threshold(self, monkeypatch):
+    def test_halt_action_threshold(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Low composite score selects a halt action."""
         from scpn_quantum_control.l16 import quantum_director as qd
 

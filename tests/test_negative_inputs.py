@@ -19,44 +19,44 @@ from scpn_quantum_control.control.vqls_gs import VQLS_GradShafranov
 from scpn_quantum_control.qsnn.qlif import QuantumLIFNeuron
 
 
-def test_probability_to_angle_nan():
+def test_probability_to_angle_nan() -> None:
     """NaN input should produce NaN output (not crash)."""
     result = probability_to_angle(float("nan"))
     assert np.isnan(result)
 
 
-def test_probability_to_angle_clamps_negative():
+def test_probability_to_angle_clamps_negative() -> None:
     """Negative probability clamps to 0 → angle = 0."""
     theta = probability_to_angle(-0.5)
     assert theta == pytest.approx(0.0, abs=1e-10)
 
 
-def test_probability_to_angle_clamps_above_one():
+def test_probability_to_angle_clamps_above_one() -> None:
     """p > 1 clamps to 1 → angle = pi."""
     theta = probability_to_angle(1.5)
     assert theta == pytest.approx(np.pi, abs=1e-10)
 
 
-def test_bitstream_single_zero():
+def test_bitstream_single_zero() -> None:
     """Single-element bitstream [0] → p=0 → |0⟩."""
     sv = bitstream_to_statevector(np.array([0], dtype=np.uint8))
     assert len(sv) == 2
     assert sv[0] ** 2 > 0.99
 
 
-def test_bitstream_all_ones():
+def test_bitstream_all_ones() -> None:
     """All-ones bitstream → p=1 → |1⟩ state."""
     sv = bitstream_to_statevector(np.ones(100, dtype=np.uint8))
     assert sv[1] ** 2 > 0.99
 
 
-def test_bitstream_all_zeros():
+def test_bitstream_all_zeros() -> None:
     """All-zeros bitstream → p=0 → |0⟩ state."""
     sv = bitstream_to_statevector(np.zeros(100, dtype=np.uint8))
     assert sv[0] ** 2 > 0.99
 
 
-def test_hamiltonian_2q_minimal():
+def test_hamiltonian_2q_minimal() -> None:
     """2-qubit Hamiltonian from 2x2 K matrix."""
     K = np.array([[0.45, 0.3], [0.3, 0.45]])
     omega = np.array([1.0, 0.8])
@@ -64,7 +64,7 @@ def test_hamiltonian_2q_minimal():
     assert H.num_qubits == 2
 
 
-def test_qaoa_horizon_1():
+def test_qaoa_horizon_1() -> None:
     """QAOA with horizon=1 should produce a single action."""
     B = np.eye(2)
     target = np.array([0.5, 0.5])
@@ -74,7 +74,7 @@ def test_qaoa_horizon_1():
     assert actions[0] in (0, 1)
 
 
-def test_vqls_small_system():
+def test_vqls_small_system() -> None:
     """VQLS with minimal qubits (3) converges without error."""
     solver = VQLS_GradShafranov(n_qubits=3)
     psi = solver.solve(maxiter=3)
@@ -82,14 +82,14 @@ def test_vqls_small_system():
     assert len(psi) == 2**3
 
 
-def test_qlif_zero_current():
+def test_qlif_zero_current() -> None:
     """QuantumLIFNeuron with zero input current → no spike."""
     neuron = QuantumLIFNeuron(v_rest=0.0, v_threshold=1.0)
     spike = neuron.step(0.0)
     assert spike in (0, 1)
 
 
-def test_qlif_large_current():
+def test_qlif_large_current() -> None:
     """QuantumLIFNeuron with large input current → spike."""
     neuron = QuantumLIFNeuron(v_rest=0.0, v_threshold=0.1)
     # Multiple steps with large current should eventually spike

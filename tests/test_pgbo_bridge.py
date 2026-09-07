@@ -19,13 +19,13 @@ from scpn_quantum_control.pgbo.quantum_bridge import (
 
 
 class TestComputePGBOTensor:
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_pgbo_tensor(K, omega)
         assert isinstance(result, PGBOResult)
 
-    def test_metric_shape(self):
+    def test_metric_shape(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_pgbo_tensor(K, omega)
@@ -33,46 +33,46 @@ class TestComputePGBOTensor:
         assert result.metric_tensor.shape == (3, 3)
         assert result.berry_curvature.shape == (3, 3)
 
-    def test_metric_symmetric(self):
+    def test_metric_symmetric(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_pgbo_tensor(K, omega)
         np.testing.assert_allclose(result.metric_tensor, result.metric_tensor.T, atol=1e-8)
 
-    def test_metric_positive_semidefinite(self):
+    def test_metric_positive_semidefinite(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_pgbo_tensor(K, omega)
         eigenvalues = np.linalg.eigvalsh(result.metric_tensor)
         assert np.all(eigenvalues >= -1e-6)
 
-    def test_n_parameters(self):
+    def test_n_parameters(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = compute_pgbo_tensor(K, omega)
         assert result.n_parameters == 6  # C(4,2) = 6
 
-    def test_parameter_labels(self):
+    def test_parameter_labels(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_pgbo_tensor(K, omega)
         assert len(result.parameter_labels) == 3
         assert "K_01" in result.parameter_labels
 
-    def test_total_curvature_non_negative(self):
+    def test_total_curvature_non_negative(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_pgbo_tensor(K, omega)
         assert result.total_curvature >= 0
 
-    def test_curvature_antisymmetric(self):
+    def test_curvature_antisymmetric(self) -> None:
         """Berry curvature F_μν = -F_νμ."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_pgbo_tensor(K, omega)
         np.testing.assert_allclose(result.berry_curvature, -result.berry_curvature.T, atol=1e-6)
 
-    def test_scpn_pgbo(self):
+    def test_scpn_pgbo(self) -> None:
         """Record PGBO tensor at SCPN defaults."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
@@ -90,21 +90,21 @@ class TestComputePGBOTensor:
 
 
 class TestPGBOPhysics:
-    def test_metric_determinant_nonnegative(self):
+    def test_metric_determinant_nonnegative(self) -> None:
         """det(g) ≥ 0 for PSD metric."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_pgbo_tensor(K, omega)
         assert result.metric_determinant >= -1e-10
 
-    def test_different_K_different_metric(self):
+    def test_different_K_different_metric(self) -> None:
         """Different coupling → different quantum geometry."""
         omega = OMEGA_N_16[:3]
         r1 = compute_pgbo_tensor(build_knm_paper27(L=3, K_base=0.1), omega)
         r2 = compute_pgbo_tensor(build_knm_paper27(L=3, K_base=2.0), omega)
         assert not np.allclose(r1.metric_tensor, r2.metric_tensor)
 
-    def test_curvature_traceless(self):
+    def test_curvature_traceless(self) -> None:
         """Antisymmetric F_μν has zero trace."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
@@ -118,7 +118,7 @@ class TestPGBOPhysics:
 
 
 class TestPGBOPipeline:
-    def test_pipeline_knm_to_pgbo(self):
+    def test_pipeline_knm_to_pgbo(self) -> None:
         """Full pipeline: build_knm → PGBO tensor → metric + curvature.
         Verifies PGBO module is wired and produces quantum geometric data.
         """

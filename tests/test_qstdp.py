@@ -13,7 +13,7 @@ from scpn_quantum_control.qsnn.qstdp import QuantumSTDP
 from scpn_quantum_control.qsnn.qsynapse import QuantumSynapse
 
 
-def test_no_update_without_pre_spike():
+def test_no_update_without_pre_spike() -> None:
     syn = QuantumSynapse(0.5)
     stdp = QuantumSTDP(learning_rate=0.1)
     original = syn.weight
@@ -21,7 +21,7 @@ def test_no_update_without_pre_spike():
     assert syn.weight == original
 
 
-def test_update_changes_weight():
+def test_update_changes_weight() -> None:
     syn = QuantumSynapse(0.5)
     stdp = QuantumSTDP(learning_rate=0.1)
     original = syn.weight
@@ -29,13 +29,13 @@ def test_update_changes_weight():
     assert syn.weight != original
 
 
-def test_gradient_is_finite():
+def test_gradient_is_finite() -> None:
     stdp = QuantumSTDP()
     exp = stdp._expectation_z(np.pi / 4)
     assert np.isfinite(exp)
 
 
-def test_weight_stays_bounded():
+def test_weight_stays_bounded() -> None:
     syn = QuantumSynapse(0.5, w_min=0.0, w_max=1.0)
     stdp = QuantumSTDP(learning_rate=0.5)
     for _ in range(20):
@@ -43,7 +43,7 @@ def test_weight_stays_bounded():
     assert 0.0 <= syn.weight <= 1.0
 
 
-def test_stdp_ltp_increases_weight():
+def test_stdp_ltp_increases_weight() -> None:
     """Hebbian LTP: pre=1 + post=1 should increase synapse weight."""
     syn = QuantumSynapse(0.3, w_min=0.0, w_max=1.0)
     stdp = QuantumSTDP(learning_rate=0.1)
@@ -52,7 +52,7 @@ def test_stdp_ltp_increases_weight():
     assert syn.weight > w_before
 
 
-def test_stdp_ltd_decreases_weight():
+def test_stdp_ltd_decreases_weight() -> None:
     """Hebbian LTD: pre=1 + post=0 should decrease synapse weight."""
     syn = QuantumSynapse(0.5, w_min=0.0, w_max=1.0)
     stdp = QuantumSTDP(learning_rate=0.1)
@@ -61,7 +61,7 @@ def test_stdp_ltd_decreases_weight():
     assert syn.weight < w_before
 
 
-def test_stdp_gradient_sign_at_half():
+def test_stdp_gradient_sign_at_half() -> None:
     """At theta = pi/2 (weight=0.5), <Z> = 0, gradient magnitude should be nonzero."""
     stdp = QuantumSTDP()
     exp_plus = stdp._expectation_z(np.pi / 2 + np.pi / 2)
@@ -71,7 +71,7 @@ def test_stdp_gradient_sign_at_half():
     assert abs(gradient) > 0.5
 
 
-def test_stdp_no_spike_no_change():
+def test_stdp_no_spike_no_change() -> None:
     """No pre spike → no weight change."""
     syn = QuantumSynapse(0.5, w_min=0.0, w_max=1.0)
     stdp = QuantumSTDP(learning_rate=0.1)
@@ -80,7 +80,7 @@ def test_stdp_no_spike_no_change():
     assert syn.weight == w_before
 
 
-def test_stdp_learning_rate_effect():
+def test_stdp_learning_rate_effect() -> None:
     """Higher learning rate → bigger weight change."""
     syn_slow = QuantumSynapse(0.5)
     syn_fast = QuantumSynapse(0.5)
@@ -89,7 +89,7 @@ def test_stdp_learning_rate_effect():
     assert abs(syn_fast.weight - 0.5) > abs(syn_slow.weight - 0.5)
 
 
-def test_stdp_weight_stays_bounded():
+def test_stdp_weight_stays_bounded() -> None:
     """Repeated LTP shouldn't exceed w_max."""
     syn = QuantumSynapse(0.9, w_min=0.0, w_max=1.0)
     stdp = QuantumSTDP(learning_rate=0.5)
@@ -98,7 +98,7 @@ def test_stdp_weight_stays_bounded():
     assert syn.weight <= 1.0
 
 
-def test_stdp_expectation_z_range():
+def test_stdp_expectation_z_range() -> None:
     stdp = QuantumSTDP()
     for theta in np.linspace(0, 2 * np.pi, 20):
         z = stdp._expectation_z(theta)

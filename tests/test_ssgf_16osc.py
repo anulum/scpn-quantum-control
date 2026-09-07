@@ -44,19 +44,19 @@ class CanonicalSSGFEngine:
 
 
 class TestSSGFWToHamiltonian:
-    def test_16q_construction(self):
+    def test_16q_construction(self) -> None:
         W = build_knm_paper27(L=16)
         H = ssgf_w_to_hamiltonian(W, OMEGA_N_16)
         assert H.num_qubits == 16
 
     @pytest.mark.parametrize("L", [2, 4, 8])
-    def test_various_sizes(self, L):
+    def test_various_sizes(self, L: int) -> None:
         W = build_knm_paper27(L=L)
         omega = OMEGA_N_16[:L]
         H = ssgf_w_to_hamiltonian(W, omega)
         assert H.num_qubits == L
 
-    def test_hermitian(self):
+    def test_hermitian(self) -> None:
         W = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         H = ssgf_w_to_hamiltonian(W, omega)
@@ -72,20 +72,20 @@ class TestSSGFWToHamiltonian:
 
 
 class TestStateToQuantum:
-    def test_16q_circuit(self):
+    def test_16q_circuit(self) -> None:
         theta = np.random.default_rng(42).uniform(0, 2 * np.pi, 16)
         qc = ssgf_state_to_quantum({"theta": theta})
         assert qc.num_qubits == 16
         assert qc.size() == 32  # 16 Ry + 16 Rz
 
     @pytest.mark.parametrize("n", [2, 4, 8])
-    def test_various_sizes(self, n):
+    def test_various_sizes(self, n: int) -> None:
         theta = np.zeros(n)
         qc = ssgf_state_to_quantum({"theta": theta})
         assert qc.num_qubits == n
         assert qc.size() == 2 * n
 
-    def test_normalised_output(self):
+    def test_normalised_output(self) -> None:
         theta = np.array([0.5, 1.0, 2.0, 3.0])
         qc = ssgf_state_to_quantum({"theta": theta})
         sv = Statevector.from_instruction(qc)
@@ -98,7 +98,7 @@ class TestStateToQuantum:
 
 
 class TestQuantumToSSGFState:
-    def test_8osc_roundtrip(self):
+    def test_8osc_roundtrip(self) -> None:
         theta = np.random.default_rng(42).uniform(-np.pi, np.pi, 8)
         qc = ssgf_state_to_quantum({"theta": theta})
         sv = Statevector.from_instruction(qc)
@@ -106,7 +106,7 @@ class TestQuantumToSSGFState:
         diff = np.angle(np.exp(1j * (recovered["theta"] - theta)))
         np.testing.assert_allclose(diff, 0.0, atol=1e-6)
 
-    def test_returns_R_global(self):
+    def test_returns_R_global(self) -> None:
         theta = np.zeros(4)
         qc = ssgf_state_to_quantum({"theta": theta})
         sv = Statevector.from_instruction(qc)
@@ -114,7 +114,7 @@ class TestQuantumToSSGFState:
         assert "R_global" in result
         assert 0.0 <= result["R_global"] <= 1.0
 
-    def test_uniform_phases_high_R(self):
+    def test_uniform_phases_high_R(self) -> None:
         """All phases equal → R ≈ 1."""
         theta = np.ones(4) * 1.5
         qc = ssgf_state_to_quantum({"theta": theta})
@@ -129,17 +129,17 @@ class TestQuantumToSSGFState:
 
 
 class TestCanonicalWProperties:
-    def test_symmetric(self):
+    def test_symmetric(self) -> None:
         W = build_knm_paper27(L=16)
         np.fill_diagonal(W, 0.0)
         np.testing.assert_allclose(W, W.T, atol=1e-12)
 
-    def test_non_negative(self):
+    def test_non_negative(self) -> None:
         W = build_knm_paper27(L=16)
         np.fill_diagonal(W, 0.0)
         assert np.all(W >= 0)
 
-    def test_zero_diagonal(self):
+    def test_zero_diagonal(self) -> None:
         W = build_knm_paper27(L=16)
         np.fill_diagonal(W, 0.0)
         np.testing.assert_allclose(np.diag(W), 0.0)
@@ -152,7 +152,7 @@ class TestCanonicalWProperties:
 
 class TestSSGFQuantumLoop:
     @pytest.mark.slow
-    def test_16osc_quantum_step(self):
+    def test_16osc_quantum_step(self) -> None:
         engine = CanonicalSSGFEngine(16)
         theta_before = engine.ns.theta.copy()
         loop = SSGFQuantumLoop(engine, dt=0.05, trotter_reps=1)
@@ -164,14 +164,14 @@ class TestSSGFQuantumLoop:
         assert 0.0 <= result["R_global"] <= 1.0
         assert not np.allclose(engine.ns.theta, theta_before, atol=1e-10)
 
-    def test_4osc_quantum_step(self):
+    def test_4osc_quantum_step(self) -> None:
         engine = CanonicalSSGFEngine(4)
         loop = SSGFQuantumLoop(engine, dt=0.1, trotter_reps=2)
         result = loop.quantum_step()
         assert len(result["theta"]) == 4
         assert np.all(np.isfinite(result["theta"]))
 
-    def test_writes_back_to_engine(self):
+    def test_writes_back_to_engine(self) -> None:
         engine = CanonicalSSGFEngine(4)
         loop = SSGFQuantumLoop(engine, dt=0.1, trotter_reps=1)
         result = loop.quantum_step()

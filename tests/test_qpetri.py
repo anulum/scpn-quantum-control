@@ -14,19 +14,19 @@ from scpn_quantum_control.control.qpetri import QuantumPetriNet
 
 
 @pytest.fixture
-def simple_net():
+def simple_net() -> QuantumPetriNet:
     W_in = np.array([[0.8, 0.0], [0.0, 0.6]])  # 2 transitions, 2 places
     W_out = np.array([[0.0, 0.7], [0.5, 0.0]])  # 2 places, 2 transitions
     thresholds = np.array([0.5, 0.5])
     return QuantumPetriNet(2, 2, W_in, W_out, thresholds)
 
 
-def test_encode_marking(simple_net):
+def test_encode_marking(simple_net: QuantumPetriNet) -> None:
     qc = simple_net.encode_marking(np.array([0.5, 0.3]))
     assert qc.num_qubits == 2
 
 
-def test_step_returns_marking(simple_net):
+def test_step_returns_marking(simple_net: QuantumPetriNet) -> None:
     marking = np.array([0.7, 0.3])
     new_marking = simple_net.step(marking)
     assert new_marking.shape == (2,)
@@ -34,7 +34,7 @@ def test_step_returns_marking(simple_net):
     assert np.all(new_marking <= 1.0)
 
 
-def test_from_matrices():
+def test_from_matrices() -> None:
     W_in = np.array([[0.5, 0.3]])
     W_out = np.array([[0.4], [0.6]])
     thresholds = np.array([0.5])
@@ -43,7 +43,7 @@ def test_from_matrices():
     assert net.n_transitions == 1
 
 
-def test_zero_marking():
+def test_zero_marking() -> None:
     W_in = np.array([[0.5]])
     W_out = np.array([[0.5]])
     thresholds = np.array([0.5])
@@ -52,7 +52,7 @@ def test_zero_marking():
     assert new_m.shape == (1,)
 
 
-def test_controlled_output_depends_on_input():
+def test_controlled_output_depends_on_input() -> None:
     """Output place token density should differ depending on input place state.
 
     With input place at |0⟩ vs |1⟩, the CRy-controlled output should differ.
@@ -68,7 +68,7 @@ def test_controlled_output_depends_on_input():
     assert abs(out_a[1] - out_b[1]) > 1e-4
 
 
-def test_multi_input_conjunctive_gating():
+def test_multi_input_conjunctive_gating() -> None:
     """Multi-input transition: output depends on ALL inputs, not just the first.
 
     Place 0 and Place 1 are both inputs to transition 0. Output goes to Place 2.
@@ -87,7 +87,7 @@ def test_multi_input_conjunctive_gating():
     assert out_both[2] > out_low[2] + 1e-4
 
 
-def test_multiple_transitions_preserve_bounds():
+def test_multiple_transitions_preserve_bounds() -> None:
     """Token densities stay in [0, 1] after multiple steps."""
     W_in = np.array([[0.5, 0.0], [0.0, 0.5]])
     W_out = np.array([[0.0, 0.4], [0.4, 0.0]])
@@ -99,7 +99,7 @@ def test_multiple_transitions_preserve_bounds():
         assert np.all(marking >= 0) and np.all(marking <= 1.0)
 
 
-def test_from_matrices_basic():
+def test_from_matrices_basic() -> None:
     W_in = np.array([[0.5, 0.3]])
     W_out = np.array([[0.0], [0.6]])
     thresholds = np.array([0.8])
@@ -107,7 +107,7 @@ def test_from_matrices_basic():
     assert net is not None
 
 
-def test_step_output_shape():
+def test_step_output_shape() -> None:
     W_in = np.array([[0.5, 0.0], [0.0, 0.5]])
     W_out = np.array([[0.0, 0.4], [0.4, 0.0]])
     thresholds = np.array([0.8, 0.8])
@@ -116,7 +116,7 @@ def test_step_output_shape():
     assert len(marking) == 2
 
 
-def test_step_preserves_bounds():
+def test_step_preserves_bounds() -> None:
     W_in = np.array([[0.5]])
     W_out = np.array([[0.5]])
     thresholds = np.array([0.5])
@@ -127,7 +127,7 @@ def test_step_preserves_bounds():
         assert np.all(marking <= 1.0)
 
 
-def test_zero_input_stable():
+def test_zero_input_stable() -> None:
     W_in = np.array([[0.5, 0.0]])
     W_out = np.array([[0.0], [0.5]])
     thresholds = np.array([0.8])

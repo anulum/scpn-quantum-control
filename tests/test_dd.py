@@ -13,7 +13,7 @@ from qiskit import QuantumCircuit
 from scpn_quantum_control.mitigation.dd import DDSequence, insert_dd_sequence
 
 
-def test_xy4_adds_gates():
+def test_xy4_adds_gates() -> None:
     qc = QuantumCircuit(3)
     qc.h(0)
     qc.cx(0, 1)
@@ -24,7 +24,7 @@ def test_xy4_adds_gates():
     assert ops.get("y", 0) >= 2
 
 
-def test_x2_adds_gates():
+def test_x2_adds_gates() -> None:
     qc = QuantumCircuit(2)
     qc.h(0)
 
@@ -33,26 +33,26 @@ def test_x2_adds_gates():
     assert ops.get("x", 0) >= 2
 
 
-def test_qubit_count_preserved():
+def test_qubit_count_preserved() -> None:
     qc = QuantumCircuit(4)
     qc.h(0)
     result = insert_dd_sequence(qc, idle_qubits=[1, 2, 3])
     assert result.num_qubits == 4
 
 
-def test_invalid_qubit_raises():
+def test_invalid_qubit_raises() -> None:
     qc = QuantumCircuit(2)
     with pytest.raises(ValueError, match="out of range"):
         insert_dd_sequence(qc, idle_qubits=[5])
 
 
-def test_negative_qubit_raises():
+def test_negative_qubit_raises() -> None:
     qc = QuantumCircuit(2)
     with pytest.raises(ValueError, match="out of range"):
         insert_dd_sequence(qc, idle_qubits=[-1])
 
 
-def test_empty_idle_qubits():
+def test_empty_idle_qubits() -> None:
     qc = QuantumCircuit(2)
     qc.h(0)
     result = insert_dd_sequence(qc, idle_qubits=[])
@@ -61,7 +61,7 @@ def test_empty_idle_qubits():
     assert result_ops == original_ops
 
 
-def test_multiple_idle_qubits():
+def test_multiple_idle_qubits() -> None:
     qc = QuantumCircuit(4)
     qc.h(0)
     result = insert_dd_sequence(qc, idle_qubits=[1, 2, 3], sequence=DDSequence.XY4)
@@ -71,7 +71,7 @@ def test_multiple_idle_qubits():
     assert ops.get("y", 0) >= 6
 
 
-def test_cpmg_adds_gates():
+def test_cpmg_adds_gates() -> None:
     """CPMG sequence (YXYX) should add both x and y gates."""
     qc = QuantumCircuit(2)
     qc.h(0)
@@ -81,7 +81,7 @@ def test_cpmg_adds_gates():
     assert ops.get("x", 0) >= 2
 
 
-def test_xy4_adds_expected_gates():
+def test_xy4_adds_expected_gates() -> None:
     qc = QuantumCircuit(2)
     qc.h(0)
     result = insert_dd_sequence(qc, idle_qubits=[1], sequence=DDSequence.XY4)
@@ -90,7 +90,7 @@ def test_xy4_adds_expected_gates():
     assert ops.get("y", 0) >= 2
 
 
-def test_dd_preserves_active_qubit():
+def test_dd_preserves_active_qubit() -> None:
     """Active qubit should keep its original gates."""
     qc = QuantumCircuit(2)
     qc.h(0)
@@ -100,14 +100,14 @@ def test_dd_preserves_active_qubit():
     assert ops.get("h", 0) >= 1
 
 
-def test_dd_single_qubit_circuit():
+def test_dd_single_qubit_circuit() -> None:
     qc = QuantumCircuit(1)
     qc.h(0)
     result = insert_dd_sequence(qc, idle_qubits=[])
     assert result.num_qubits == 1
 
 
-def test_dd_3_idle_3_active():
+def test_dd_3_idle_3_active() -> None:
     qc = QuantumCircuit(6)
     for i in range(3):
         qc.h(i)
@@ -115,7 +115,7 @@ def test_dd_3_idle_3_active():
     assert result.num_qubits == 6
 
 
-def test_dd_appends_exact_sequence_without_mutating_input():
+def test_dd_appends_exact_sequence_without_mutating_input() -> None:
     qc = QuantumCircuit(2)
     qc.h(0)
 
