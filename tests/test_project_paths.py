@@ -11,11 +11,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from scpn_quantum_control._paths import DATA_ROOT_ENV, project_data_path, project_data_root
 
 
 def test_project_data_root_prefers_explicit_environment_root(
-    monkeypatch,
+    monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
     marker = Path("data/public_application_benchmarks")
@@ -27,7 +29,7 @@ def test_project_data_root_prefers_explicit_environment_root(
 
 
 def test_project_data_root_falls_back_to_current_working_tree(
-    monkeypatch,
+    monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
     marker = Path("docker-only-fixture/marker.txt")

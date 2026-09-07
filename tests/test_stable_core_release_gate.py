@@ -12,6 +12,8 @@ from __future__ import annotations
 
 import sys
 
+import pytest
+
 from scripts.run_stable_core_release_gate import (
     CAPABILITY_GATE_SCRIPT,
     CONTRACT_GATE_SCRIPT,
@@ -33,7 +35,7 @@ def test_gate_helper_builds_commands_in_stable_order() -> None:
     )
 
 
-def test_gate_main_calls_release_steps_in_order(monkeypatch) -> None:
+def test_gate_main_calls_release_steps_in_order(monkeypatch: pytest.MonkeyPatch) -> None:
     """Release gate commands must execute in fixed, ordered sequence."""
 
     executed_commands: list[tuple[str, ...]] = []
@@ -49,7 +51,7 @@ def test_gate_main_calls_release_steps_in_order(monkeypatch) -> None:
     assert tuple(executed_commands) == build_stable_core_release_gate_commands()
 
 
-def test_gate_main_fails_closed_on_first_failure(monkeypatch) -> None:
+def test_gate_main_fails_closed_on_first_failure(monkeypatch: pytest.MonkeyPatch) -> None:
     """A non-zero exit in the first command must stop and propagate as SystemExit."""
 
     executed_commands: list[tuple[str, ...]] = []

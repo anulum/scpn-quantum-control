@@ -12,13 +12,14 @@ from __future__ import annotations
 import importlib.util
 import json
 from pathlib import Path
+from types import ModuleType
 
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
-def _load_generator(relative_path: str):
+def _load_generator(relative_path: str) -> ModuleType:
     script_path = REPO_ROOT / relative_path
     spec = importlib.util.spec_from_file_location(
         f"{script_path.parent.name}_generate_params_for_test", script_path

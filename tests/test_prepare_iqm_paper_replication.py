@@ -15,6 +15,7 @@ import sys
 from pathlib import Path
 from types import ModuleType
 
+import pytest
 from qiskit import QuantumCircuit
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -47,7 +48,7 @@ class _FakeIQMAdapter:
         return circuit.copy()
 
 
-def test_generate_manifest_contains_paper_critical_tiers(monkeypatch) -> None:
+def test_generate_manifest_contains_paper_critical_tiers(monkeypatch: pytest.MonkeyPatch) -> None:
     module = _load_module()
     monkeypatch.setattr(module, "IQMQuantumBackend", lambda: _FakeIQMAdapter())
 
@@ -67,7 +68,9 @@ def test_generate_manifest_contains_paper_critical_tiers(monkeypatch) -> None:
     } <= tiers
 
 
-def test_generate_manifest_blocks_cleanly_when_iqm_dependency_missing(monkeypatch) -> None:
+def test_generate_manifest_blocks_cleanly_when_iqm_dependency_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     module = _load_module()
 
     class MissingIQM:
@@ -83,7 +86,9 @@ def test_generate_manifest_blocks_cleanly_when_iqm_dependency_missing(monkeypatc
     assert all(row["iqm_fake_status"] == "blocked" for row in manifest["rows"])
 
 
-def test_main_writes_json_csv_and_markdown(monkeypatch, tmp_path) -> None:
+def test_main_writes_json_csv_and_markdown(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     module = _load_module()
     monkeypatch.setattr(module, "IQMQuantumBackend", lambda: _FakeIQMAdapter())
     monkeypatch.setattr(

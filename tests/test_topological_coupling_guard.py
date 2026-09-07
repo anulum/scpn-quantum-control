@@ -15,7 +15,7 @@ import numpy as np
 import pytest
 
 
-def test_step_requires_ripser(monkeypatch):
+def test_step_requires_ripser(monkeypatch: pytest.MonkeyPatch) -> None:
     module = importlib.import_module(
         "scpn_quantum_control.control.topological_" + "optimiz" + "er"
     )

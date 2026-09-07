@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.mitigation.readout_matrix import (
     bitstring_index,
@@ -115,7 +116,9 @@ def test_pseudo_inverse_recovers_known_distribution() -> None:
         np.array([0.0, 0.0]),
     ],
 )
-def test_mitigation_rejects_invalid_observed_probability_vectors(observed) -> None:
+def test_mitigation_rejects_invalid_observed_probability_vectors(
+    observed: NDArray[np.float64],
+) -> None:
     calibrations = {
         "0": {"0": 100},
         "1": {"1": 100},

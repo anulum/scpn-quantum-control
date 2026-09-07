@@ -10,6 +10,9 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
+
+import pytest
 
 from scripts import prepare_s1_ibm_live_readiness as readiness
 
@@ -48,7 +51,7 @@ class _Backend:
 
 
 def test_build_live_readiness_document_is_no_submit_and_ready_for_pair_runner(
-    monkeypatch,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(
         readiness,
@@ -84,7 +87,7 @@ def test_build_live_readiness_document_is_no_submit_and_ready_for_pair_runner(
     assert document["blockers"] == []
 
 
-def test_write_readiness_markdown_preserves_no_submission_boundary(tmp_path) -> None:
+def test_write_readiness_markdown_preserves_no_submission_boundary(tmp_path: Path) -> None:
     document = {
         "date": "2026-05-06",
         "preregistration_date": "2026-05-06",

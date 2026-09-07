@@ -29,6 +29,7 @@ falsifier for claim **C4** in `docs/falsification.md`.
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
 
 import numpy as np
 import pytest
@@ -48,13 +49,15 @@ pytestmark = pytest.mark.skipif(not _RUST_OK, reason="scpn-quantum-engine not av
 MIN_SPEEDUP = 2.0
 
 
-def _timed(fn, *args, **kwargs) -> tuple[object, float]:
+def _timed(fn: Callable[..., object], *args: object, **kwargs: object) -> tuple[object, float]:
     t0 = time.perf_counter()
     r = fn(*args, **kwargs)
     return r, (time.perf_counter() - t0) * 1000.0
 
 
-def _timed_mean(fn, *args, repeats: int = 5, **kwargs) -> float:
+def _timed_mean(
+    fn: Callable[..., object], *args: object, repeats: int = 5, **kwargs: object
+) -> float:
     """Take the median of `repeats` runs in milliseconds.
 
     Median of 5 is robust to a single scheduler hiccup and stays
