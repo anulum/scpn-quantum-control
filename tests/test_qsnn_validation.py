@@ -24,27 +24,27 @@ from scpn_quantum_control.qsnn.qstdp import QuantumSTDP
 from scpn_quantum_control.qsnn.qsynapse import QuantumSynapse
 
 
-def test_qlif_rejects_equal_thresholds():
+def test_qlif_rejects_equal_thresholds() -> None:
     with pytest.raises(ValueError, match="v_threshold.*must exceed.*v_rest"):
         QuantumLIFNeuron(v_rest=1.0, v_threshold=1.0)
 
 
-def test_qlif_rejects_zero_tau_mem():
+def test_qlif_rejects_zero_tau_mem() -> None:
     with pytest.raises(ValueError, match="tau_mem must be positive"):
         QuantumLIFNeuron(tau_mem=0.0)
 
 
-def test_qsynapse_rejects_equal_bounds():
+def test_qsynapse_rejects_equal_bounds() -> None:
     with pytest.raises(ValueError, match="w_max.*must exceed.*w_min"):
         QuantumSynapse(weight=0.5, w_min=1.0, w_max=1.0)
 
 
-def test_qstdp_rejects_zero_sin_shift():
+def test_qstdp_rejects_zero_sin_shift() -> None:
     with pytest.raises(ValueError, match="sin\\(shift\\)~0"):
         QuantumSTDP(shift=0.0)
 
 
-def test_vqe_solve_returns_exact_energy():
+def test_vqe_solve_returns_exact_energy() -> None:
     n = 4
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]
@@ -54,14 +54,16 @@ def test_vqe_solve_returns_exact_energy():
     assert isinstance(sol["exact_energy"], float)
 
 
-def test_vqe_solve_returns_energy_gap():
+def test_vqe_solve_returns_energy_gap() -> None:
     n = 4
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]
     vqe = PhaseVQE(K, omega, ansatz_reps=1)
     sol = vqe.solve(maxiter=50, seed=0)
     assert "energy_gap" in sol
-    assert sol["energy_gap"] >= 0.0
+    energy_gap = sol["energy_gap"]
+    assert isinstance(energy_gap, float)
+    assert energy_gap >= 0.0
     assert "relative_error_pct" in sol
     assert "n_params" in sol
     assert sol["n_params"] == vqe.n_params
@@ -70,12 +72,12 @@ def test_vqe_solve_returns_energy_gap():
 # --- QLiF extra validation ---
 
 
-def test_qlif_rejects_zero_dt():
+def test_qlif_rejects_zero_dt() -> None:
     with pytest.raises(ValueError, match="dt must be positive"):
         QuantumLIFNeuron(dt=0.0)
 
 
-def test_qlif_rejects_negative_nshots():
+def test_qlif_rejects_negative_nshots() -> None:
     with pytest.raises(ValueError, match="n_shots must be >= 0"):
         QuantumLIFNeuron(n_shots=-1)
 
@@ -83,17 +85,17 @@ def test_qlif_rejects_negative_nshots():
 # --- QAOA-MPC validation ---
 
 
-def test_qaoa_mpc_rejects_zero_horizon():
+def test_qaoa_mpc_rejects_zero_horizon() -> None:
     with pytest.raises(ValueError, match="horizon must be positive"):
         QAOA_MPC(B_matrix=np.eye(2), target_state=np.ones(2), horizon=0)
 
 
-def test_qaoa_mpc_rejects_negative_horizon():
+def test_qaoa_mpc_rejects_negative_horizon() -> None:
     with pytest.raises(ValueError, match="horizon must be positive"):
         QAOA_MPC(B_matrix=np.eye(2), target_state=np.ones(2), horizon=-3)
 
 
-def test_qaoa_mpc_rejects_zero_p_layers():
+def test_qaoa_mpc_rejects_zero_p_layers() -> None:
     with pytest.raises(ValueError, match="p_layers must be positive"):
         QAOA_MPC(B_matrix=np.eye(2), target_state=np.ones(2), horizon=2, p_layers=0)
 
@@ -101,17 +103,17 @@ def test_qaoa_mpc_rejects_zero_p_layers():
 # --- QuantumPetriNet validation ---
 
 
-def test_qpetri_rejects_zero_places():
+def test_qpetri_rejects_zero_places() -> None:
     with pytest.raises(ValueError, match="must be positive"):
         QuantumPetriNet(0, 1, np.zeros((1, 0)), np.zeros((0, 1)), np.array([1.0]))
 
 
-def test_qpetri_rejects_wrong_w_in_shape():
+def test_qpetri_rejects_wrong_w_in_shape() -> None:
     with pytest.raises(ValueError, match="W_in shape"):
         QuantumPetriNet(2, 1, np.zeros((2, 2)), np.zeros((2, 1)), np.array([1.0]))
 
 
-def test_qpetri_rejects_wrong_threshold_length():
+def test_qpetri_rejects_wrong_threshold_length() -> None:
     with pytest.raises(ValueError, match="thresholds length"):
         QuantumPetriNet(2, 1, np.zeros((1, 2)), np.zeros((2, 1)), np.array([1.0, 2.0]))
 
@@ -119,7 +121,7 @@ def test_qpetri_rejects_wrong_threshold_length():
 # --- Entanglement QKD validation ---
 
 
-def test_bell_rejects_out_of_range_qubits():
+def test_bell_rejects_out_of_range_qubits() -> None:
     from qiskit.quantum_info import Statevector
 
     sv = Statevector.from_label("00")
@@ -130,13 +132,13 @@ def test_bell_rejects_out_of_range_qubits():
 # --- Percolation validation ---
 
 
-def test_percolation_rejects_out_of_range_source():
+def test_percolation_rejects_out_of_range_source() -> None:
     K = build_knm_paper27(L=4)
     with pytest.raises(ValueError, match="out of range"):
         best_entanglement_path(K, source=10, target=0)
 
 
-def test_percolation_rejects_negative_target():
+def test_percolation_rejects_negative_target() -> None:
     K = build_knm_paper27(L=4)
     with pytest.raises(ValueError, match="out of range"):
         best_entanglement_path(K, source=0, target=-1)
@@ -145,11 +147,11 @@ def test_percolation_rejects_negative_target():
 # --- Classical reference validation ---
 
 
-def test_classical_kuramoto_rejects_zero_dt():
+def test_classical_kuramoto_rejects_zero_dt() -> None:
     with pytest.raises(ValueError, match="dt must be positive"):
         classical_kuramoto_reference(n_osc=4, t_max=1.0, dt=0.0)
 
 
-def test_classical_kuramoto_rejects_negative_tmax():
+def test_classical_kuramoto_rejects_negative_tmax() -> None:
     with pytest.raises(ValueError, match="t_max must be non-negative"):
         classical_kuramoto_reference(n_osc=4, t_max=-1.0, dt=0.1)

@@ -23,7 +23,7 @@ from scpn_quantum_control.qsnn.quantum_neuromorphic_bridge import (
 )
 
 
-def test_bridge_step_returns_complete_finite_state():
+def test_bridge_step_returns_complete_finite_state() -> None:
     """Return finite bounded spike, membrane, weight, circuit, and claim state."""
     bridge = QuantumNeuromorphicBridge(
         n_inputs=2,
@@ -48,7 +48,7 @@ def test_bridge_step_returns_complete_finite_state():
     assert result.claim_boundary == CLAIM_BOUNDARY
 
 
-def test_bridge_is_exported_from_public_api():
+def test_bridge_is_exported_from_public_api() -> None:
     """Expose the bridge, result record, and claim boundary through the facade."""
     bridge = sqc.QuantumNeuromorphicBridge(n_inputs=1, n_neurons=1, seed=1)
     result = bridge.step(np.array([1.0]))
@@ -57,7 +57,7 @@ def test_bridge_is_exported_from_public_api():
     assert sqc.CLAIM_BOUNDARY == CLAIM_BOUNDARY
 
 
-def test_trace_stdp_potentiates_causal_pre_before_post_input_weight():
+def test_trace_stdp_potentiates_causal_pre_before_post_input_weight() -> None:
     """Potentiate an input weight for causal pre-before-post spike timing."""
     bridge = QuantumNeuromorphicBridge(
         n_inputs=1,
@@ -76,7 +76,7 @@ def test_trace_stdp_potentiates_causal_pre_before_post_input_weight():
     assert bridge.input_weights[0, 0] > before
 
 
-def test_trace_stdp_depresses_anti_causal_post_before_pre_input_weight():
+def test_trace_stdp_depresses_anti_causal_post_before_pre_input_weight() -> None:
     """Depress an input weight for anti-causal post-before-pre timing."""
     bridge = QuantumNeuromorphicBridge(
         n_inputs=1,
@@ -95,7 +95,7 @@ def test_trace_stdp_depresses_anti_causal_post_before_pre_input_weight():
     assert bridge.input_weights[0, 0] < before
 
 
-def test_dynamic_coupling_updates_recurrent_weights_without_self_loops():
+def test_dynamic_coupling_updates_recurrent_weights_without_self_loops() -> None:
     """Update bounded recurrent coupling while retaining a zero diagonal."""
     bridge = QuantumNeuromorphicBridge(
         n_inputs=2,
@@ -116,17 +116,20 @@ def test_dynamic_coupling_updates_recurrent_weights_without_self_loops():
     assert result.coupling_delta.shape == (3, 3)
 
 
-def test_seeded_stochastic_bridge_is_reproducible():
+def test_seeded_stochastic_bridge_is_reproducible() -> None:
     """Reproduce finite-shot spike sequences from the same seed."""
-    kwargs = dict(
-        n_inputs=2,
-        n_neurons=2,
-        lif=QuantumLIFConfig(v_threshold=0.3, tau_mem=2.0, dt=1.0, n_shots=32),
-        seed=123,
-        deterministic=False,
-    )
-    bridge_a = QuantumNeuromorphicBridge(**kwargs)
-    bridge_b = QuantumNeuromorphicBridge(**kwargs)
+
+    def build() -> QuantumNeuromorphicBridge:
+        return QuantumNeuromorphicBridge(
+            n_inputs=2,
+            n_neurons=2,
+            lif=QuantumLIFConfig(v_threshold=0.3, tau_mem=2.0, dt=1.0, n_shots=32),
+            seed=123,
+            deterministic=False,
+        )
+
+    bridge_a = build()
+    bridge_b = build()
 
     spikes_a = [bridge_a.step(np.array([0.7, 0.2])).spikes.tolist() for _ in range(6)]
     spikes_b = [bridge_b.step(np.array([0.7, 0.2])).spikes.tolist() for _ in range(6)]
@@ -134,7 +137,7 @@ def test_seeded_stochastic_bridge_is_reproducible():
     assert spikes_a == spikes_b
 
 
-def test_bridge_rejects_invalid_shapes_and_nonfinite_inputs():
+def test_bridge_rejects_invalid_shapes_and_nonfinite_inputs() -> None:
     """Reject malformed weight/current shapes and non-finite drive values."""
     with pytest.raises(ValueError, match="input_weights shape"):
         QuantumNeuromorphicBridge(n_inputs=2, n_neurons=3, input_weights=np.ones((2, 3)))
@@ -148,9 +151,13 @@ def test_bridge_rejects_invalid_shapes_and_nonfinite_inputs():
         bridge.step(np.array([1.0, np.nan]))
 
 
-def test_trace_state_decay_is_bounded_and_finite():
+def test_trace_state_decay_is_bounded_and_finite() -> None:
     """Keep exponentially decayed traces finite and strictly bounded."""
     state = TraceSTDPState(n_pre=2, n_post=2)
+    # The buffers are public and mutable, so the constructor's guarantee
+    # holds only until someone reassigns them; this test needs them present.
+    assert state.pre_trace is not None
+    assert state.post_trace is not None
     state.pre_trace[:] = 1.0
     state.post_trace[:] = 1.0
 
