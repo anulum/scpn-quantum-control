@@ -30,6 +30,7 @@ from pathlib import Path
 ZERO_OID = "0" * 40
 MAIN_REF = "refs/heads/main"
 RefOidResolver = Callable[[str], str | None]
+RefPruneVerifier = Callable[[str, str], bool]
 FORBIDDEN_AGENTIC_TOKENS = (
     "agent",
     "codex",
@@ -93,6 +94,7 @@ def evaluate_reference_transaction(
     lines: Iterable[str],
     state: str,
     ref_oid_resolver: RefOidResolver | None = None,
+    ref_prune_verifier: RefPruneVerifier | None = None,
 ) -> tuple[BranchPolicyFinding, ...]:
     """Evaluate ``reference-transaction`` hook input lines."""
     if state != "prepared":
@@ -108,6 +110,12 @@ def evaluate_reference_transaction(
         if ref == MAIN_REF and _is_branch_update(new_oid):
             continue
         if ref == MAIN_REF:
+            if (
+                old_oid != ZERO_OID
+                and ref_prune_verifier is not None
+                and ref_prune_verifier(ref, old_oid)
+            ):
+                continue
             findings.append(BranchPolicyFinding(ref=ref, reason="main branch may not be deleted"))
             continue
         if _is_branch_deletion(old_oid, new_oid):
@@ -215,6 +223,28 @@ def _current_ref_oid(ref: str) -> str | None:
     return oid[0]
 
 
+def _is_packed_ref_prune(ref: str, old_oid: str) -> bool:
+    """Verify that a loose-ref removal preserves an identical packed ref.
+
+    Git's files backend locks packed-refs for real deletion, even if no packed
+    copy exists. Packing has already published and unlocked the packed copy
+    before pruning a loose ref. Require that copy and an absent packed lock;
+    checking only the currently resolved OID would also allow real deletion.
+    Unavailable or unexpected storage fails closed. This is a files-backend
+    storage check, not permission to delete main or a hook bypass token.
+    """
+    try:
+        packed = _git_path(Path.cwd(), "packed-refs")
+        lock = packed.with_name("packed-refs.lock")
+        if lock.exists():
+            return False
+        records = packed.read_text(encoding="ascii").splitlines()
+        matches = [line.split() for line in records if line.split()[-1:] == [ref]]
+        return matches == [[old_oid, ref]] and not lock.exists()
+    except (OSError, UnicodeError, subprocess.CalledProcessError, RuntimeError):
+        return False
+
+
 def install_reference_transaction_hook(repo_root: Path) -> Path:
     """Install the local reference-transaction hook for ``repo_root``.
 
@@ -277,7 +307,9 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     if args.command == "reference-transaction":
         return _fail_if_needed(
-            evaluate_reference_transaction(sys.stdin, args.state, _current_ref_oid)
+            evaluate_reference_transaction(
+                sys.stdin, args.state, _current_ref_oid, _is_packed_ref_prune
+            )
         )
     if args.command == "pre-push":
         return _fail_if_needed(evaluate_pre_push(sys.stdin))

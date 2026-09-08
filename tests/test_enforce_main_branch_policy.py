@@ -15,6 +15,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
+from tools import enforce_main_branch_policy as policy
 from tools.enforce_main_branch_policy import (
     ZERO_OID,
     evaluate_pre_push,
@@ -47,6 +50,17 @@ def test_reference_transaction_blocks_main_deletion() -> None:
 
     assert len(findings) == 1
     assert findings[0].ref == "refs/heads/main"
+    assert "may not be deleted" in findings[0].reason
+
+
+def test_zero_old_deletion_cannot_use_prune_exception() -> None:
+    """A packed delete transaction has no old OID and must always be refused."""
+    findings = evaluate_reference_transaction(
+        [f"{ZERO_OID} {ZERO_OID} refs/heads/main"],
+        "prepared",
+        ref_prune_verifier=lambda ref, oid: True,
+    )
+    assert len(findings) == 1
     assert "may not be deleted" in findings[0].reason
 
 
@@ -143,6 +157,98 @@ def _run_git(*arguments: str, cwd: Path) -> subprocess.CompletedProcess[str]:
     )
 
 
+@pytest.mark.parametrize("storage", ["loose", "packed", "mixed", "stale-packed"])
+@pytest.mark.parametrize("compare_old", [False, True])
+def test_pack_refs_preserves_main_and_deletion_remains_blocked(
+    tmp_path: Path, storage: str, compare_old: bool
+) -> None:
+    """Real Git packing preserves refs while deletion fails in every storage state."""
+    assert _run_git("init", "--initial-branch=main", str(tmp_path), cwd=tmp_path).returncode == 0
+    assert _run_git("commit", "--allow-empty", "-m", "seed", cwd=tmp_path).returncode == 0
+    tools_dir = tmp_path / "tools"
+    tools_dir.mkdir()
+    source = Path(__file__).resolve().parents[1] / "tools/enforce_main_branch_policy.py"
+    (tools_dir / source.name).write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+    install_reference_transaction_hook(tmp_path)
+    before = _run_git("show-ref", cwd=tmp_path).stdout
+    if storage != "loose":
+        packed = _run_git("pack-refs", "--all", "--prune", cwd=tmp_path)
+        assert packed.returncode == 0, packed.stderr
+        assert _run_git("show-ref", cwd=tmp_path).stdout == before
+        assert not (tmp_path / ".git/refs/heads/main").exists()
+        if storage in ("mixed", "stale-packed"):
+            assert _run_git("commit", "--allow-empty", "-m", "next", cwd=tmp_path).returncode == 0
+            if storage == "mixed":
+                assert _run_git("pack-refs", "--all", "--no-prune", cwd=tmp_path).returncode == 0
+    before = _run_git("show-ref", cwd=tmp_path).stdout
+    old_oid = _run_git("rev-parse", "HEAD", cwd=tmp_path).stdout.strip()
+    arguments = (old_oid,) if compare_old else ()
+    deleted = _run_git("update-ref", "-d", "refs/heads/main", *arguments, cwd=tmp_path)
+    assert deleted.returncode != 0
+    assert "main branch may not be deleted" in deleted.stderr
+    assert _run_git("show-ref", cwd=tmp_path).stdout == before
+    assert _run_git("rev-parse", "--verify", "HEAD", cwd=tmp_path).returncode == 0
+
+
+@pytest.mark.parametrize(
+    "contents",
+    [
+        None,
+        b"",
+        b"\xff",
+        b"garbage refs/heads/main\n",
+        b"# packed refs\n",
+        (f"{'1' * 40} refs/heads/main\n" * 2).encode(),
+        f"{'2' * 40} refs/heads/main\n".encode(),
+    ],
+)
+def test_prune_verification_fails_closed_for_missing_or_ambiguous_storage(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, contents: bytes | None
+) -> None:
+    """Unavailable, stale, duplicate and malformed packed copies cannot permit deletion."""
+    packed = tmp_path / "packed-refs"
+    if contents is not None:
+        packed.write_bytes(contents)
+    monkeypatch.setattr(policy, "_git_path", lambda root, name: packed)
+    assert not policy._is_packed_ref_prune("refs/heads/main", "1" * 40)
+
+
+def test_prune_verification_requires_unlocked_identical_packed_copy(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Packed storage proof never permits a transaction holding its deletion lock."""
+    packed = tmp_path / "packed-refs"
+    packed.write_text(f"# pack-refs with: peeled\n{'1' * 40} refs/heads/main\n", encoding="ascii")
+    monkeypatch.setattr(policy, "_git_path", lambda root, name: packed)
+    line = f"{'1' * 40} {ZERO_OID} refs/heads/main"
+    assert (
+        evaluate_reference_transaction(
+            [line], "prepared", ref_prune_verifier=policy._is_packed_ref_prune
+        )
+        == ()
+    )
+    (tmp_path / "packed-refs.lock").touch()
+    assert evaluate_reference_transaction(
+        [line], "prepared", ref_prune_verifier=policy._is_packed_ref_prune
+    )
+
+
+def test_prune_verification_rechecks_lock_after_read(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A lock appearing during inspection prevents a positive storage verdict."""
+    packed = tmp_path / "packed-refs"
+    monkeypatch.setattr(policy, "_git_path", lambda root, name: packed)
+
+    def read_with_lock(path: Path, encoding: str) -> str:
+        """Model a concurrent packed-ref transaction taking its lock."""
+        (tmp_path / "packed-refs.lock").touch()
+        return f"{'1' * 40} refs/heads/main\n"
+
+    monkeypatch.setattr(Path, "read_text", read_with_lock)
+    assert not policy._is_packed_ref_prune("refs/heads/main", "1" * 40)
+
+
 def test_cli_passes_through_undocumented_reference_transaction_states(tmp_path: Path) -> None:
     """Unknown git hook phases (e.g. ``preparing``) must not abort ref updates."""
     script = Path(__file__).resolve().parents[1] / "tools" / "enforce_main_branch_policy.py"
@@ -203,3 +309,7 @@ def test_hook_falls_back_to_primary_checkout_for_treeless_worktrees(tmp_path: Pa
     branch_update = _run_git("branch", "forbidden-branch", cwd=worktree)
     assert branch_update.returncode != 0
     assert "branch policy violation" in (branch_update.stderr + branch_update.stdout)
+    before = _run_git("show-ref", cwd=worktree).stdout
+    packed = _run_git("pack-refs", "--all", "--prune", cwd=worktree)
+    assert packed.returncode == 0, packed.stderr
+    assert _run_git("show-ref", cwd=worktree).stdout == before

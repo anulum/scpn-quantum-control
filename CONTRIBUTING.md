@@ -6,6 +6,20 @@ Contact: protoscience@anulum.li
 This repository accepts focused changes with tests, clear claim boundaries, and
 no live hardware side effects in automated checks.
 
+## Local reference maintenance
+
+The main-only reference hook permits `git pack-refs` to remove a loose copy
+only when an identical packed ref remains and no `packed-refs.lock` exists.
+This is Git files-backend maintenance, not permission to delete `main`.
+Missing, ambiguous or locked storage fails closed; pre-push deletion rules
+are unchanged. Do not bypass the hook to resolve a maintenance failure.
+
+The dedicated `tests/test_enforce_main_branch_policy.py` suite exercises real
+packing and refused main deletion in loose, packed, mixed and stale-packed
+states, both with and without an expected old OID. Recheck these behaviours
+when changing Git versions or ref backends. Storage inference does not defend
+against an operator directly editing Git's own files.
+
 ## Setup
 
 Use Python 3.11 or newer.
