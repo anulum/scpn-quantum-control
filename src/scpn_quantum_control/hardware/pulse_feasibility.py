@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
+from math import isfinite
 from typing import Any, Literal
 
 from scpn_quantum_control.phase.pulse_shaping import PulseSchedule
@@ -20,7 +21,12 @@ PulseFeasibilityStatus = Literal["ready", "blocked", "manual_review", "unknown"]
 
 @dataclass(frozen=True)
 class PulseProviderSnapshot:
-    """Provider metadata needed for S3 pulse feasibility without submission."""
+    """Validated metadata for S3 feasibility, never submission authority.
+
+    Capacities are positive integers excluding booleans; capability flags are
+    exact booleans. Optional time limits are finite positive numbers in seconds.
+    Invalid identity, capacity, capability or time fields raise ValueError.
+    """
 
     provider: str
     backend_name: str
@@ -35,18 +41,21 @@ class PulseProviderSnapshot:
 
     def __post_init__(self) -> None:
         """Reject snapshots with unusable identity, capacity, or limits."""
-        if not self.provider:
-            raise ValueError("provider must be non-empty")
-        if not self.backend_name:
-            raise ValueError("backend_name must be non-empty")
-        if self.n_qubits < 1:
-            raise ValueError("n_qubits must be positive")
-        if self.min_time_step is not None and self.min_time_step <= 0.0:
-            raise ValueError("min_time_step must be positive when provided")
-        if self.max_pulse_duration is not None and self.max_pulse_duration <= 0.0:
-            raise ValueError("max_pulse_duration must be positive when provided")
-        if self.max_pulses is not None and self.max_pulses < 1:
-            raise ValueError("max_pulses must be positive when provided")
+        fields = {
+            "provider": self.provider,
+            "backend_name": self.backend_name,
+            "n_qubits": self.n_qubits,
+            "supports_pulse_control": self.supports_pulse_control,
+            "supports_native_xy": self.supports_native_xy,
+        }
+        _required_text(fields, "provider")
+        _required_text(fields, "backend_name")
+        _required_int(fields, "n_qubits")
+        _required_bool(fields, "supports_pulse_control")
+        _required_bool(fields, "supports_native_xy")
+        _optional_float(self.min_time_step, "min_time_step")
+        _optional_float(self.max_pulse_duration, "max_pulse_duration")
+        _optional_int(self.max_pulses, "max_pulses")
 
 
 @dataclass(frozen=True)
@@ -207,7 +216,7 @@ def _required_text(metadata: Mapping[str, Any], key: str) -> str:
 
 def _required_int(metadata: Mapping[str, Any], key: str) -> int:
     value = metadata.get(key)
-    if not isinstance(value, int) or value < 1:
+    if isinstance(value, bool) or not isinstance(value, int) or value < 1:
         raise ValueError(f"{key} must be a positive integer")
     return value
 
@@ -222,15 +231,21 @@ def _required_bool(metadata: Mapping[str, Any], key: str) -> bool:
 def _optional_float(value: Any, key: str) -> float | None:
     if value is None:
         return None
-    if not isinstance(value, int | float) or value <= 0.0:
+    if isinstance(value, bool) or not isinstance(value, int | float) or value <= 0.0:
         raise ValueError(f"{key} must be positive when provided")
-    return float(value)
+    try:
+        numeric = float(value)
+    except OverflowError as exc:
+        raise ValueError(f"{key} must be finite when provided") from exc
+    if not isfinite(numeric):
+        raise ValueError(f"{key} must be finite when provided")
+    return numeric
 
 
 def _optional_int(value: Any, key: str) -> int | None:
     if value is None:
         return None
-    if not isinstance(value, int) or value < 1:
+    if isinstance(value, bool) or not isinstance(value, int) or value < 1:
         raise ValueError(f"{key} must be positive when provided")
     return value
 

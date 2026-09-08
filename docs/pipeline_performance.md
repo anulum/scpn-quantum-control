@@ -186,6 +186,12 @@ The probe compares schedule duration, sample spacing, pulse count, qubit count,
 and declared pulse or native-XY support. It does not open a provider session or
 submit hardware jobs.
 
+Direct snapshots and decoded provider metadata require nonempty text identities,
+positive integer capacities (not booleans), and boolean capability flags.
+Optional pulse time limits are finite positive seconds: NaN, infinity, booleans
+and unrepresentable numbers are rejected before readiness assessment. A `ready`
+result is a metadata feasibility assessment, not hardware execution authority.
+
 Human-reviewable hardware-job dossiers are exported with:
 
 ```bash

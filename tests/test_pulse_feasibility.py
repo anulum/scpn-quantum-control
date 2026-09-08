@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import json
 from typing import NotRequired, TypedDict
 
 import pytest
@@ -55,6 +56,42 @@ class _SnapshotParameters(TypedDict):
 def _schedule() -> PulseSchedule:
     """Build the four-qubit Trotter schedule every feasibility case measures."""
     return build_trotter_pulse_schedule(4, build_knm_paper27(4), t_step=0.2)
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        '{"min_time_step": NaN}',
+        '{"min_time_step": Infinity}',
+        '{"min_time_step": true}',
+        '{"min_time_step": ' + "1" + "0" * 400 + "}",
+        '{"max_pulse_duration": NaN}',
+        '{"max_pulse_duration": Infinity}',
+        '{"max_pulse_duration": true}',
+        '{"max_pulse_duration": ' + "1" + "0" * 400 + "}",
+        '{"n_qubits": true}',
+        '{"n_qubits": 4.5}',
+        '{"max_pulses": true}',
+        '{"max_pulses": 6.5}',
+        '{"supports_pulse_control": "false"}',
+        '{"supports_native_xy": 1}',
+        '{"provider": 4}',
+        '{"backend_name": true}',
+    ],
+)
+def test_pulse_snapshot_rejects_untrusted_fields_at_both_boundaries(payload: str) -> None:
+    """Reject malformed decoded fields before they can yield readiness."""
+    metadata = json.loads(
+        '{"provider":"pulse","backend_name":"target","n_qubits":4,'
+        '"supports_pulse_control":true,"supports_native_xy":false}'
+    )
+    invalid = json.loads(payload)
+    metadata.update(invalid)
+    field = next(iter(invalid))
+    with pytest.raises(ValueError, match=field):
+        PulseProviderSnapshot(**metadata)
+    with pytest.raises(ValueError, match=field):
+        pulse_snapshot_from_metadata(metadata)
 
 
 def test_pulse_provider_ready_when_metadata_satisfies_schedule() -> None:
