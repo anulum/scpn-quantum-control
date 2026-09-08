@@ -83,6 +83,10 @@ def test_partial_evidence_leaves_other_verbs_unknown() -> None:
     """Recording one operation must not imply anything about the others."""
     entries = build_provider_route_catalogue(
         observed_at=_OBSERVED_AT,
+        conformance_root=_REPO_ROOT,
+        conformance_owners={
+            ("direct/iqm", "metadata"): "tests/test_hardware_hal_iqm_adapters.py",
+        },
         evidence={
             "direct/iqm": (
                 RouteVerbSupport(
@@ -125,6 +129,11 @@ def test_every_observed_verb_names_an_existing_conformance_owner() -> None:
     """An advertised demonstration must resolve to a real test file in the tree."""
     entries = build_provider_route_catalogue(
         observed_at=_OBSERVED_AT,
+        conformance_root=_REPO_ROOT,
+        conformance_owners={
+            ("direct/iqm", "metadata"): "tests/test_hardware_hal_iqm_adapters.py",
+            ("qbraid/iqm", "metadata"): "tests/test_hardware_hal_qbraid_adapters.py",
+        },
         evidence={
             "direct/iqm": (
                 RouteVerbSupport(
@@ -178,6 +187,186 @@ def test_every_route_is_inventoried_with_canonical_verbs() -> None:
             assert entry.broker is None
         else:
             assert entry.broker == route.aggregator
+
+
+def test_declared_support_requires_a_conformance_owner() -> None:
+    """A dated declaration must still identify its direct conformance owner."""
+    with pytest.raises(ValueError, match="conformance_owner"):
+        RouteVerbSupport(
+            verb="submit",
+            declared=True,
+            declared_source="route table",
+            declared_on=_OBSERVED_AT,
+        )
+
+
+@pytest.mark.parametrize(
+    "owner",
+    [
+        "tests/test_missing_conformance_owner.py",
+        "tests/test_provider_route_catalogue.py/../test_hardware_hal_iqm_adapters.py",
+        "tests/test_provider_route_catalogue.py/../../docs/hardware_guide.md",
+        "tests/test_provider_route_catalogue.py/",
+        "tests/test_provider_route_catalogue.txt",
+    ],
+)
+def test_positive_evidence_refuses_unresolvable_owner(owner: str) -> None:
+    """Even a registered owner must resolve to a canonical Python test file."""
+    with pytest.raises(ValueError, match="conformance_owner"):
+        record = RouteVerbSupport(
+            verb="metadata",
+            observed=True,
+            observed_on=_OBSERVED_AT,
+            conformance_owner=owner,
+        )
+        build_provider_route_catalogue(
+            observed_at=_OBSERVED_AT,
+            evidence={"direct/iqm": (record,)},
+            conformance_root=_REPO_ROOT,
+            conformance_owners={("direct/iqm", "metadata"): owner},
+        )
+
+
+@pytest.mark.parametrize(
+    "route_id, verb, owner",
+    [
+        ("qbraid/iqm", "metadata", "tests/test_hardware_hal_iqm_adapters.py"),
+        ("direct/iqm", "submit", "tests/test_hardware_hal_iqm_adapters.py"),
+        ("direct/iqm", "metadata", "tests/test_hardware_hal_qbraid_adapters.py"),
+    ],
+)
+def test_evidence_cannot_borrow_another_route_or_verbs_owner(
+    route_id: str,
+    verb: str,
+    owner: str,
+) -> None:
+    """A real but misattributed test cannot qualify the submitted observation."""
+    record = RouteVerbSupport(
+        verb="metadata",
+        observed=True,
+        observed_on=_OBSERVED_AT,
+        conformance_owner="tests/test_hardware_hal_iqm_adapters.py",
+    )
+    with pytest.raises(ValueError, match="conformance_owner.*registered"):
+        build_provider_route_catalogue(
+            observed_at=_OBSERVED_AT,
+            evidence={"direct/iqm": (record,)},
+            conformance_root=_REPO_ROOT,
+            conformance_owners={(route_id, verb): owner},
+        )
+
+
+def test_positive_catalogue_and_direct_entry_require_explicit_authority() -> None:
+    """Neither public construction path may qualify an unanchored assertion."""
+    record = RouteVerbSupport(
+        verb="metadata",
+        observed=True,
+        observed_on=_OBSERVED_AT,
+        conformance_owner="tests/test_hardware_hal_iqm_adapters.py",
+    )
+    with pytest.raises(ValueError, match="conformance"):
+        build_provider_route_catalogue(
+            observed_at=_OBSERVED_AT,
+            evidence={"direct/iqm": (record,)},
+        )
+    with pytest.raises(ValueError, match="conformance"):
+        ProviderRouteCatalogueEntry(
+            route_id="direct/iqm",
+            provider="iqm",
+            broker=None,
+            device="iqm_cloud",
+            modality="iqm",
+            observed_at=_OBSERVED_AT,
+            verbs=tuple(
+                record if verb == "metadata" else RouteVerbSupport(verb=verb)
+                for verb in ROUTE_VERBS
+            ),
+        )
+
+
+@pytest.mark.parametrize("relative", [False, True])
+def test_positive_support_refuses_missing_or_relative_root(
+    tmp_path: Path,
+    relative: bool,
+) -> None:
+    """No implicit checkout or missing directory may anchor evidence."""
+    owner = "tests/test_hardware_hal_iqm_adapters.py"
+    record = RouteVerbSupport(
+        verb="metadata",
+        observed=True,
+        observed_on=_OBSERVED_AT,
+        conformance_owner=owner,
+    )
+    with pytest.raises(ValueError, match="conformance_root"):
+        build_provider_route_catalogue(
+            observed_at=_OBSERVED_AT,
+            evidence={"direct/iqm": (record,)},
+            conformance_root=Path(".") if relative else tmp_path / "missing",
+            conformance_owners={("direct/iqm", "metadata"): owner},
+        )
+
+
+@pytest.mark.parametrize("as_directory", [False, True])
+def test_owner_reference_refuses_symlink_escape_and_directory(
+    tmp_path: Path,
+    as_directory: bool,
+) -> None:
+    """An owner-looking name cannot resolve outside the designated source tree."""
+    owner = "tests/test_hardware_hal_iqm_adapters.py"
+    candidate = tmp_path / owner
+    candidate.parent.mkdir()
+    if as_directory:
+        candidate.mkdir()
+    else:
+        candidate.symlink_to(_REPO_ROOT / owner)
+    record = RouteVerbSupport(
+        verb="metadata",
+        observed=True,
+        observed_on=_OBSERVED_AT,
+        conformance_owner=owner,
+    )
+    with pytest.raises(ValueError, match="conformance_owner.*regular"):
+        build_provider_route_catalogue(
+            observed_at=_OBSERVED_AT,
+            evidence={"direct/iqm": (record,)},
+            conformance_root=tmp_path,
+            conformance_owners={("direct/iqm", "metadata"): owner},
+        )
+
+
+def test_declared_owner_resolution_never_promotes_observed_support(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Source declarations resolve independently of cwd without inventing runs."""
+    monkeypatch.chdir(tmp_path)
+    owner = "tests/test_hardware_hal_iqm_adapters.py"
+    record = RouteVerbSupport(
+        verb="metadata",
+        declared=True,
+        declared_source="hardware/aggregators.py",
+        declared_on=_OBSERVED_AT,
+        conformance_owner=owner,
+    )
+    with pytest.raises(ValueError, match="conformance_owner.*registered"):
+        build_provider_route_catalogue(
+            observed_at=_OBSERVED_AT,
+            evidence={"direct/iqm": (record,)},
+            conformance_root=_REPO_ROOT,
+        )
+    entries = build_provider_route_catalogue(
+        observed_at=_OBSERVED_AT,
+        evidence={"direct/iqm": (record,)},
+        conformance_root=_REPO_ROOT,
+        conformance_owners={("direct/iqm", "metadata"): owner},
+    )
+    row = _entry(entries, "direct/iqm")
+    assert row.support("metadata").declared is True
+    assert row.support("metadata").observed is None
+    assert row.unverified and row.observed_verbs == ()
+    exported = json.dumps(row.to_dict())
+    assert str(_REPO_ROOT) not in exported
+    assert "conformance_root" not in exported and "conformance_owners" not in exported
 
 
 @pytest.mark.parametrize(

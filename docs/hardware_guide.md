@@ -497,8 +497,9 @@ and is preserved as unknown; it is never narrowed to `True` or `False` to make a
 row look complete.
 
 Provenance is mandatory for any positive claim. Declaring support requires the
-source it was read from and the date it was read. Recording an observation
-requires the date and a repository-relative `tests/test_*` conformance owner,
+source it was read from, the date it was read and a conformance owner. Recording
+an observation requires the date and a canonical repository-relative
+`tests/test_*.py` conformance owner,
 and an observation that contradicts an explicit non-declaration is refused
 outright rather than silently accepted.
 
@@ -516,9 +517,30 @@ RouteVerbSupport(
 )
 ```
 
-A route with no evidence reports `unverified` and every operation unknown. That
-is the honest default: the inventory records what is declared and what has been
-demonstrated, and never infers one from the other.
+Positive records require explicit `conformance_root` (an absolute source checkout
+directory) and `conformance_owners` when constructing the catalogue or an entry
+directly. The latter maps `(route_id, verb)` to its independently reviewed test
+owner. Do not construct this registry from the incoming claims: doing so would
+merely echo their assertions. A positive record must match the exact route and
+operation binding and resolve to a regular, non-symlink Python test file under
+the given root. Missing owners, unregistered bindings, traversal paths and
+relative roots raise `ValueError`. The current working directory is not used
+as a default source root, and private absolute paths are not exported.
+
+For example, a reviewed metadata-owner binding can be supplied as
+`conformance_owners={("direct/iqm", "metadata"):
+"tests/test_hardware_hal_iqm_adapters.py"}` together with the absolute checkout
+path as `conformance_root=Path(...)`. The caller must retain the independent
+review and dated observation evidence. This lookup does not execute a test or
+certify a real provider run. `observed_verbs` reflects supplied observations with
+resolved owners; `unverified=False` is not a hardware-readiness or approval gate.
+
+A route with no evidence reports `unverified` and every operation unknown;
+unknown-only inventory needs no source checkout. A source declaration with a
+resolved owner still does not imply observed support. Existing positive-evidence
+callers must now supply the explicit context; a `RouteVerbSupport` alone remains
+a provenance-shaped assertion, not a qualified catalogue row. Reconstructing a
+positive row (including dataclass replacement) requires the context again.
 
 ## Circuit Tools
 

@@ -11,8 +11,9 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import InitVar, dataclass, field
 from datetime import date
+from pathlib import Path
 from typing import Any, Literal, get_args
 
 from .aggregators import (
@@ -334,8 +335,9 @@ class RouteVerbSupport:
         ``YYYY-MM-DD`` date of the observation, required when ``observed`` is
         ``True``.
     conformance_owner
-        Repository-relative ``tests/test_*`` path that owns the demonstration,
-        required when ``observed`` is ``True``.
+        Canonical repository-relative ``tests/test_*.py`` path, required for
+        declared or observed positive support. This record validates its shape;
+        catalogue construction resolves it against explicit route/verb owners.
 
     Raises
     ------
@@ -344,6 +346,11 @@ class RouteVerbSupport:
         in ASCII ``YYYY-MM-DD`` format, a required
         provenance field is missing for an advertised or observed operation, or
         an observation contradicts an explicit non-declaration.
+
+    Notes
+    -----
+    This is a supplied assertion, not a test execution receipt. Neither a valid
+    record nor a resolvable owner certifies a provider run or authorises hardware.
 
     """
 
@@ -368,10 +375,6 @@ class RouteVerbSupport:
             _require_observation_date(self.declared_on, "declared_on")
         if self.observed is True:
             _require_observation_date(self.observed_on, "observed_on")
-            _require_text(self.conformance_owner, "conformance_owner")
-            owner = str(self.conformance_owner)
-            if not owner.startswith("tests/test_"):
-                raise ValueError("conformance_owner must be a tests/test_* path")
             if self.declared is False:
                 raise ValueError(
                     "observed support contradicts an explicit non-declaration; "
@@ -381,6 +384,12 @@ class RouteVerbSupport:
             value = getattr(self, field_name)
             if value is not None:
                 _require_observation_date(value, field_name)
+        if self.declared is True or self.observed is True:
+            _require_text(self.conformance_owner, "conformance_owner")
+        if self.conformance_owner is not None and not re.fullmatch(
+            r"tests/test_[A-Za-z0-9_]+\.py", self.conformance_owner
+        ):
+            raise ValueError("conformance_owner must be a tests/test_* path ending in .py")
 
     def to_dict(self) -> dict[str, Any]:
         """Return the verb record with unknown support preserved as null."""
@@ -422,12 +431,28 @@ class ProviderRouteCatalogueEntry:
         One record per operation, in ``ROUTE_VERBS`` order.
     submit_requires_approval
         Whether the declared route marks submission as approval-gated.
+    conformance_root
+        Absolute source checkout root used to resolve positive support owners.
+        Required only for positive support; never inferred from the working
+        directory. Consumed at construction, not retained or exported.
+    conformance_owners
+        Trusted caller's registry mapping ``(route_id, verb)`` to its test owner.
+        Every positive record must match this registry and a regular test file
+        under ``conformance_root``. Consumed at construction, not exported.
 
     Raises
     ------
     ValueError
         If an identity field is empty, the date is malformed or impossible, or the verb
-        records are not exactly one per operation in canonical order.
+        records are not exactly one per operation in canonical order, or a
+        positive record lacks an explicitly registered, resolvable owner.
+
+    Notes
+    -----
+    Owner resolution is a construction-time provenance check, not a test runner
+    or hardware readiness verdict. The caller must supply a reviewed registry
+    independently of the evidence being checked. Do not derive it from the
+    incoming claims. Reconstructing a positive row requires this context again.
 
     """
 
@@ -439,8 +464,14 @@ class ProviderRouteCatalogueEntry:
     observed_at: str
     verbs: tuple[RouteVerbSupport, ...]
     submit_requires_approval: bool = True
+    conformance_root: InitVar[Path | None] = None
+    conformance_owners: InitVar[Mapping[tuple[str, str], str] | None] = None
 
-    def __post_init__(self) -> None:
+    def __post_init__(
+        self,
+        conformance_root: Path | None,
+        conformance_owners: Mapping[tuple[str, str], str] | None,
+    ) -> None:
         """Validate inventory identity and canonical verb coverage."""
         for field_name in ("route_id", "provider", "device", "modality"):
             _require_text(getattr(self, field_name), field_name)
@@ -453,6 +484,11 @@ class ProviderRouteCatalogueEntry:
             raise ValueError(
                 f"verbs must hold exactly one record per operation in {ROUTE_VERBS} order"
             )
+        for record in self.verbs:
+            if record.declared is True or record.observed is True:
+                _resolve_conformance_owner(
+                    self.route_id, record, conformance_root, conformance_owners
+                )
 
     @property
     def inventory_key(self) -> tuple[str, str | None, str, str, str]:
@@ -490,12 +526,12 @@ class ProviderRouteCatalogueEntry:
 
     @property
     def observed_verbs(self) -> tuple[RouteVerb, ...]:
-        """Operations with demonstrated support, in canonical order."""
+        """Recorded observations with resolved owners, not certified device runs."""
         return tuple(record.verb for record in self.verbs if record.observed is True)
 
     @property
     def unverified(self) -> bool:
-        """Whether no operation on this route has been demonstrated."""
+        """Whether the row lacks observations; False is not hardware readiness."""
         return not self.observed_verbs
 
     def to_dict(self) -> dict[str, Any]:
@@ -519,6 +555,8 @@ def build_provider_route_catalogue(
     observed_at: str,
     routes: Sequence[AggregatorProviderRoute] | None = None,
     evidence: Mapping[str, Sequence[RouteVerbSupport]] | None = None,
+    conformance_root: Path | None = None,
+    conformance_owners: Mapping[tuple[str, str], str] | None = None,
 ) -> tuple[ProviderRouteCatalogueEntry, ...]:
     """Inventory declared provider routes without contacting any provider.
 
@@ -536,6 +574,13 @@ def build_provider_route_catalogue(
     evidence
         Per-route support records, keyed by ``route_id``. Records for an unknown
         route or a duplicated verb are rejected rather than ignored.
+    conformance_root
+        Absolute source root for positive-support owner resolution. No default
+        checkout is assumed; unknown-only inventories need no filesystem access.
+    conformance_owners
+        Independently reviewed ``(route_id, verb)`` to test-path registry. Positive
+        claims must match its binding and resolve under ``conformance_root``.
+        Resolution does not run tests, certify a provider, or grant approval.
 
     Returns
     -------
@@ -546,7 +591,8 @@ def build_provider_route_catalogue(
     ------
     ValueError
         If the date is malformed, the routes contain a duplicate ``route_id``,
-        or the evidence names an unknown route or repeats a verb.
+        or the evidence names an unknown route, repeats a verb, or has a positive
+        claim without a registered and resolvable conformance owner.
 
     """
     _require_observation_date(observed_at, "observed_at")
@@ -580,9 +626,27 @@ def build_provider_route_catalogue(
                     by_verb.get(verb, RouteVerbSupport(verb=verb)) for verb in ROUTE_VERBS
                 ),
                 submit_requires_approval=route.submit_requires_approval,
+                conformance_root=conformance_root,
+                conformance_owners=conformance_owners,
             )
         )
     return tuple(entries)
+
+
+def _resolve_conformance_owner(
+    route_id: str,
+    record: RouteVerbSupport,
+    root: Path | None,
+    owners: Mapping[tuple[str, str], str] | None,
+) -> None:
+    if root is None or not root.is_absolute() or not root.is_dir():
+        raise ValueError("conformance_root must be an explicit absolute source directory")
+    owner = record.conformance_owner
+    if owner is None or owners is None or owners.get((route_id, record.verb)) != owner:
+        raise ValueError(f"{route_id}/{record.verb}: conformance_owner is not registered")
+    candidate = root.resolve() / owner
+    if not candidate.is_file() or candidate.resolve() != candidate:
+        raise ValueError("conformance_owner must resolve to a regular non-symlink test file")
 
 
 def _require_observation_date(value: Any, field_name: str) -> None:
