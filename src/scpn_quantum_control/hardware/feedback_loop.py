@@ -21,6 +21,7 @@ import math
 import time
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
+from numbers import Integral
 from typing import Any, Protocol
 
 from ..control.realtime_feedback import FeedbackStep, RealtimeSyncFeedbackController
@@ -85,7 +86,13 @@ class FeedbackCommand:
 
 @dataclass(frozen=True)
 class FeedbackResult:
-    """Observed result returned by a feedback scheduler."""
+    """Observed result with non-negative integer counts and finite metrics.
+
+    Boolean counts/metrics and non-finite metrics raise ValueError. Counts and
+    metrics are copied at construction so provider-owned dictionaries cannot
+    rewrite an admitted result. Their mappings remain editable for compatibility;
+    consumers must validate values again before using them for control.
+    """
 
     counts: Mapping[str, int] = field(default_factory=dict)
     metrics: Mapping[str, float] = field(default_factory=dict)
@@ -96,12 +103,15 @@ class FeedbackResult:
     def __post_init__(self) -> None:
         """Validate observed counts, metrics, and QPU consumption."""
         _require_non_negative(self.qpu_seconds, "qpu_seconds")
-        for bitstring, count in self.counts.items():
-            if count < 0:
-                raise ValueError(f"count for {bitstring!r} must be non-negative")
-        for name, value in self.metrics.items():
-            if not isinstance(value, int | float):
-                raise ValueError(f"metric {name!r} must be numeric")
+        counts = {
+            bitstring: _validated_feedback_count(count, bitstring)
+            for bitstring, count in self.counts.items()
+        }
+        metrics = dict(self.metrics)
+        for name, value in metrics.items():
+            _validate_feedback_metric(value, name)
+        object.__setattr__(self, "counts", counts)
+        object.__setattr__(self, "metrics", metrics)
 
 
 @dataclass(frozen=True)
@@ -317,7 +327,9 @@ class ProportionalMetricObserver:
         """Update the parameter toward the configured target metric."""
         if self.metric_name not in result.metrics:
             raise KeyError(f"missing feedback metric {self.metric_name!r}")
-        observed = float(result.metrics[self.metric_name])
+        value = result.metrics[self.metric_name]
+        _validate_feedback_metric(value, self.metric_name)
+        observed = float(value)
         error = self.target - observed
         state = {"observed": observed, "error": error, "value_in": self.current}
         if abs(error) <= self.tolerance:
@@ -327,6 +339,21 @@ class ProportionalMetricObserver:
             FeedbackCommand(payload={"value": self.current}, label=self.label),
             state | {"value_out": self.current, "converged": False},
         )
+
+
+def _validated_feedback_count(value: object, bitstring: str) -> int:
+    """Return an exact non-negative integer without accepting lossy coercion."""
+    if isinstance(value, bool) or not isinstance(value, Integral):
+        raise ValueError(f"count for {bitstring!r} must be an integer, not a boolean")
+    if value < 0:
+        raise ValueError(f"count for {bitstring!r} must be non-negative")
+    return int(value)
+
+
+def _validate_feedback_metric(value: float, name: str) -> None:
+    """Reject ambiguous or non-finite observed control metrics."""
+    if isinstance(value, bool) or not isinstance(value, int | float) or not math.isfinite(value):
+        raise ValueError(f"metric {name!r} must be finite numeric data, excluding booleans")
 
 
 def _require_non_negative(value: float, name: str) -> None:

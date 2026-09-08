@@ -257,6 +257,46 @@ def test_proportional_observer_clips_and_requires_metric() -> None:
         observer.update(FeedbackResult(metrics={"other": 0.5}), ())
 
 
+@pytest.mark.parametrize("encoded", ["1.5", "true", "NaN", "Infinity"])
+def test_feedback_result_rejects_invalid_counts(encoded: str) -> None:
+    """Shot counts cannot be fractional, boolean or non-finite values."""
+    import json
+
+    with pytest.raises(ValueError, match="count"):
+        FeedbackResult(counts={"0": json.loads(encoded)})
+
+
+@pytest.mark.parametrize("encoded", ["NaN", "Infinity", "-Infinity", "true"])
+def test_feedback_result_rejects_invalid_control_metric(encoded: str) -> None:
+    """Invalid metrics must fail before they can generate a control command."""
+    import json
+
+    with pytest.raises(ValueError, match="metric"):
+        FeedbackResult(metrics={"r": json.loads(encoded)})
+
+
+def test_result_snapshots_caller_owned_counts_and_metrics() -> None:
+    """Later edits to provider dictionaries cannot rewrite admitted results."""
+    counts = {"0": 4}
+    metrics = {"r": 0.5}
+    result = FeedbackResult(counts=counts, metrics=metrics)
+    counts["0"] = 9
+    metrics["r"] = float("nan")
+    assert dict(result.counts) == {"0": 4}
+    assert dict(result.metrics) == {"r": 0.5}
+
+
+def test_observer_rejects_corrupted_metric_without_changing_control_state() -> None:
+    """A mutated result must not poison the observer's next control command."""
+    result = FeedbackResult(metrics={"r": 0.5})
+    assert isinstance(result.metrics, dict)
+    result.metrics["r"] = float("nan")
+    observer = ProportionalMetricObserver(initial_value=0.1, metric_name="r", target=0.5, gain=1.0)
+    with pytest.raises(ValueError, match="metric"):
+        observer.update(result, ())
+    assert observer.initial_command().payload == {"value": 0.1}
+
+
 def test_realtime_controller_scheduler_runs_deterministic_simulator_steps() -> None:
     """Run seeded simulator steps with complete provenance metadata."""
     controller = RealtimeSyncFeedbackController(

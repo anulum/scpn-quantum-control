@@ -107,6 +107,13 @@ with:
 
 ### Dispatch and recovery boundary
 
+`FeedbackResult` rejects fractional/boolean shot counts and non-finite/boolean
+control metrics. It snapshots the provider's counts and metrics at construction;
+retain raw provider evidence separately. Its mappings remain editable, so the
+proportional observer also validates its selected metric immediately before use
+and rejects corrupted data without changing its control parameter. Do not repair
+invalid measurements by coercing counts or replacing NaN with a synthetic value.
+
 `FeedbackRunner` accepts only exact boolean approval and scheduler hardware flags.
 It rechecks approval when `run()` starts and before every dispatch, including
 after observer callbacks; revocation blocks the next command. Malformed or absent
