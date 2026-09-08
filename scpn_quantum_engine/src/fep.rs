@@ -69,7 +69,7 @@ fn log_det_spd_with_ridge(
 ///
 /// ∂F/∂μ = K_reg × μ − Γ × (x − μ)
 ///
-/// where K_reg = K + ridge×I (prior precision), Γ = sensory precision.
+/// where K_reg = sym(K) + ridge×I and Γ = sym(sensory_precision).
 /// With identity generative model and Jacobian.
 ///
 /// # Contract
@@ -80,9 +80,10 @@ fn log_det_spd_with_ridge(
 /// four, and `ridge`, must be finite. Non-contiguous views are supported and
 /// read through their strides rather than rejected.
 ///
-/// Symmetry is deliberately not required here. The gradient uses `k_precision`
-/// as a general linear map, so an asymmetric matrix is a meaningful input; the
-/// free-energy export, which needs a log-determinant, does require it.
+/// Symmetry is not required by this quadratic-gradient interface. Only symmetric
+/// parts contribute to a scalar quadratic form, so both weights are symmetrised
+/// in the derivative. This does not certify nonsymmetric weights as Gaussian
+/// precisions; the free-energy export still requires a valid prior precision.
 ///
 /// # Errors
 ///
@@ -118,7 +119,8 @@ pub fn free_energy_gradient_rust<'py>(
     // Prior contribution: (K + ridge×I) × μ
     for i in 0..n {
         for j in 0..n {
-            let k_val = k_arr[[i, j]] + if i == j { ridge } else { 0.0 };
+            let k_val =
+                0.5 * k_arr[[i, j]] + 0.5 * k_arr[[j, i]] + if i == j { ridge } else { 0.0 };
             grad[i] += k_val * mu_arr[j];
         }
     }
@@ -127,7 +129,8 @@ pub fn free_energy_gradient_rust<'py>(
     for i in 0..n {
         let mut error_contrib = 0.0;
         for j in 0..n {
-            error_contrib += gamma[[i, j]] * (x_arr[j] - mu_arr[j]);
+            let weight = 0.5 * gamma[[i, j]] + 0.5 * gamma[[j, i]];
+            error_contrib += weight * (x_arr[j] - mu_arr[j]);
         }
         grad[i] -= error_contrib;
     }

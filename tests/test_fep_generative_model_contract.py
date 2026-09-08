@@ -375,6 +375,16 @@ class TestRectangularModels:
 class TestMalformedModelOutput:
     """Model and Jacobian returns are rejected by contract, not by broadcasting."""
 
+    @pytest.mark.parametrize("complex_part", ["model", "jacobian"])
+    def test_complex_output_is_not_projected_onto_real_values(self, complex_part: str) -> None:
+        """A real-valued model contract must not silently discard imaginary components."""
+        model = _untyped_model(lambda values: values + (1j if complex_part == "model" else 0))
+        jacobian = _untyped_model(
+            lambda values: np.eye(values.size) + (1j if complex_part == "jacobian" else 0)
+        )
+        with pytest.raises(ValueError, match="real"):
+            self._gradient_with(model, jacobian)
+
     @staticmethod
     def _gradient_with(model: Any, model_jacobian: Any) -> NDArray[np.float64]:
         """Call the gradient on a fixed two-dimensional system.
@@ -442,6 +452,22 @@ class TestMalformedModelOutput:
 class TestArgumentDomain:
     """Arguments outside the admitted domain are named in the refusal."""
 
+    @pytest.mark.parametrize(
+        "argument", ["mu", "sigma", "x_observed", "K_precision", "sensory_precision"]
+    )
+    def test_energy_rejects_complex_inputs(self, argument: str) -> None:
+        """Real energy parameters are not obtained by projecting complex arrays."""
+        values: dict[str, Any] = dict(
+            mu=np.zeros(2),
+            sigma=np.eye(2),
+            x_observed=np.zeros(2),
+            K_precision=np.eye(2),
+            sensory_precision=np.eye(2),
+        )
+        values[argument] = values[argument] + 1j
+        with pytest.raises(ValueError, match="real-valued"):
+            variational_free_energy(**values)
+
     def test_non_finite_belief_is_refused(self) -> None:
         """An infinite belief mean cannot start a gradient step."""
         with pytest.raises(ValueError, match="mu must be finite"):
@@ -500,6 +526,50 @@ class TestArgumentDomain:
 
 class TestIdentityModelUnchanged:
     """The identity path keeps the semantics the Rust engine implements."""
+
+    @pytest.mark.parametrize("custom", [False, True])
+    def test_nonsymmetric_sensory_weight_matches_energy(self, custom: bool) -> None:
+        """Only the symmetric part of a quadratic weight contributes to its derivative."""
+        mu = np.array([0.2, -0.1])
+        x = np.array([0.5, 0.25])
+        sensory = np.array([[1.0, 2.0], [0.0, 1.0]])
+        model = (lambda values: 2.0 * values) if custom else None
+        jacobian = (lambda values: 2.0 * np.eye(values.size)) if custom else None
+        gradient = free_energy_gradient(mu, np.eye(2), x, np.eye(2), sensory, model, jacobian)
+        expected = _central_difference(mu, np.eye(2), x, np.eye(2), sensory, model)
+        np.testing.assert_allclose(gradient, expected, rtol=0, atol=1e-6)
+
+    @pytest.mark.parametrize("surface", ["energy", "gradient"])
+    def test_inplace_model_does_not_mutate_beliefs(self, surface: str) -> None:
+        """Callbacks receive private arguments and cannot alter caller belief arrays."""
+        mu = np.array([0.2, -0.1])
+        before = mu.copy()
+
+        def model(values: NDArray[np.float64]) -> NDArray[np.float64]:
+            values *= 2.0
+            return values
+
+        def jacobian(values: NDArray[np.float64]) -> NDArray[np.float64]:
+            np.testing.assert_array_equal(values, before)
+            values[:] = 99.0
+            return 2.0 * np.eye(2)
+
+        if surface == "energy":
+            actual = variational_free_energy(
+                mu, np.eye(2), np.zeros(2), np.eye(2), generative_fn=model
+            )
+            expected = variational_free_energy(
+                before, np.eye(2), np.zeros(2), np.eye(2), generative_fn=lambda v: 2 * v
+            )
+            assert actual.free_energy == pytest.approx(expected.free_energy)
+        else:
+            actual_gradient = free_energy_gradient(
+                mu, np.eye(2), np.zeros(2), np.eye(2), generative_fn=model, generative_jac=jacobian
+            )
+            np.testing.assert_allclose(
+                actual_gradient, (5.0 + PRECISION_RIDGE) * before, rtol=0, atol=1e-12
+            )
+        np.testing.assert_array_equal(mu, before)
 
     def test_identity_gradient_matches_its_analytic_form(self) -> None:
         """Π_z μ − Γ (x − μ) with the documented ridge."""

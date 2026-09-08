@@ -970,7 +970,7 @@ def _fep_domain_contract_reference_gradient(
     sensory_precision: NDArray[np.float64],
     ridge: float,
 ) -> NDArray[np.float64]:
-    """Return ``(K + ridge·I) μ − Γ (x − μ)`` computed independently in NumPy.
+    """Return the derivative of the two quadratic forms independently in NumPy.
 
     Parameters
     ----------
@@ -984,7 +984,10 @@ def _fep_domain_contract_reference_gradient(
     """
     ridged = np.asarray(k_precision, dtype=np.float64) + ridge * np.eye(mu.size)
     gamma = np.asarray(sensory_precision, dtype=np.float64)
-    return np.asarray(ridged @ mu - gamma @ (x_observed - mu), dtype=np.float64)
+    return np.asarray(
+        0.5 * (ridged + ridged.T) @ mu - 0.5 * (gamma + gamma.T) @ (x_observed - mu),
+        dtype=np.float64,
+    )
 
 
 def _fep_domain_contract_reference_free_energy(
@@ -1152,13 +1155,17 @@ def test_fep_domain_contract_gradient_supports_non_contiguous_views() -> None:
     np.testing.assert_allclose(strided_result, contiguous_result, atol=0.0)
 
 
-def test_fep_domain_contract_gradient_matches_an_independent_reference() -> None:
+@pytest.mark.parametrize("asymmetric", [False, True])
+def test_fep_domain_contract_gradient_matches_an_independent_reference(asymmetric: bool) -> None:
     """The admitted domain still computes the documented gradient."""
     gradient, _ = _fep_domain_contract_exports()
     mu = np.array([0.2, -0.1, 0.7])
     x_observed = np.array([0.5, 0.25, -0.3])
     k_precision = np.array([[2.0, 0.1, 0.0], [0.1, 1.5, 0.2], [0.0, 0.2, 1.1]])
     sensory_precision = np.diag([3.0, 4.0, 0.5])
+    if asymmetric:
+        k_precision[0, 1] = 0.7
+        sensory_precision[0, 2] = 2.0
 
     native = np.asarray(gradient(mu, x_observed, k_precision, sensory_precision, 1e-10))
     expected = _fep_domain_contract_reference_gradient(

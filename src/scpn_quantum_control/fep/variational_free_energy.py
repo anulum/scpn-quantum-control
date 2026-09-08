@@ -94,6 +94,13 @@ with the matrix, so changing physical units cannot admit material asymmetry.
 """
 
 
+def _real_array(values: NDArray[np.float64], name: str) -> NDArray[np.float64]:
+    """Convert real values to float64 without discarding imaginary components."""
+    if np.iscomplexobj(values):
+        raise ValueError(f"{name} must be real-valued")
+    return np.asarray(values, dtype=np.float64)
+
+
 def _validated_mean(mu: NDArray[np.float64], name: str) -> NDArray[np.float64]:
     """Return ``mu`` as a finite one-dimensional float vector.
 
@@ -115,12 +122,12 @@ def _validated_mean(mu: NDArray[np.float64], name: str) -> NDArray[np.float64]:
         If ``mu`` is not one-dimensional or contains a non-finite entry.
 
     """
-    vector = np.asarray(mu, dtype=np.float64)
+    vector = _real_array(mu, name)
     if vector.ndim != 1:
         raise ValueError(f"{name} must be a one-dimensional vector, got shape {vector.shape}")
     if not np.all(np.isfinite(vector)):
         raise ValueError(f"{name} must be finite")
-    return vector
+    return vector.copy()
 
 
 def _cholesky_of_covariance(
@@ -156,7 +163,7 @@ def _cholesky_of_covariance(
         positive-definite matrix.
 
     """
-    matrix = np.asarray(sigma, dtype=np.float64)
+    matrix = _real_array(sigma, name)
     if matrix.shape != (size, size):
         raise ValueError(f"{name} must have shape ({size}, {size}), got {matrix.shape}")
     if not np.all(np.isfinite(matrix)):
@@ -219,7 +226,7 @@ def _validated_prediction(
     Returns
     -------
     numpy.ndarray
-        Shape ``(expected_size,)`` float64 view of ``predicted``.
+        Shape ``(expected_size,)`` float64 copy of ``predicted``.
 
     Raises
     ------
@@ -228,14 +235,14 @@ def _validated_prediction(
         ``expected_size``.
 
     """
-    vector = np.asarray(predicted, dtype=np.float64)
+    vector = _real_array(predicted, name)
     if vector.ndim != 1:
         raise ValueError(f"{name} must return a one-dimensional vector, got shape {vector.shape}")
     if vector.size != expected_size:
         raise ValueError(f"{name} must return {expected_size} values, got {vector.size}")
     if not np.all(np.isfinite(vector)):
         raise ValueError(f"{name} must return finite values")
-    return vector
+    return vector.copy()
 
 
 def _validated_jacobian(
@@ -271,7 +278,7 @@ def _validated_jacobian(
         If the Jacobian does not have shape ``(rows, columns)`` or is not finite.
 
     """
-    array = np.asarray(matrix, dtype=np.float64)
+    array = _real_array(matrix, name)
     if array.shape != (rows, columns):
         raise ValueError(f"{name} must return shape ({rows}, {columns}), got {array.shape}")
     if not np.all(np.isfinite(array)):
@@ -304,7 +311,7 @@ def _validated_square_matrix(
         If the matrix is not ``size``-by-``size`` or is not finite.
 
     """
-    array = np.asarray(matrix, dtype=np.float64)
+    array = _real_array(matrix, name)
     if array.shape != (size, size):
         raise ValueError(f"{name} must have shape ({size}, {size}), got {array.shape}")
     if not np.all(np.isfinite(array)):
@@ -416,7 +423,7 @@ def _complexity_term(
 ) -> float:
     """KL[q(z) || prior] where prior = N(0, K⁻¹)."""
     n = len(mu)
-    K_reg = np.asarray(K_precision, dtype=np.float64) + PRECISION_RIDGE * np.eye(n)
+    K_reg = _real_array(K_precision, "K_precision") + PRECISION_RIDGE * np.eye(n)
     prior_factor = _cholesky_of_covariance(K_reg, n, "K_precision + ridge")
     prior_cov = cho_solve(prior_factor, np.eye(n), check_finite=False)
     prior_cov = 0.5 * (prior_cov + prior_cov.T)
@@ -468,7 +475,7 @@ def _accuracy_term(
         predicted = mean
     else:
         predicted = _validated_prediction(
-            generative_fn(mean), observation.size, "generative_fn(mu)"
+            generative_fn(mean.copy()), observation.size, "generative_fn(mu)"
         )
     gamma = _validated_precision(sensory_precision, predicted.size, "sensory_precision")
     error = observation - predicted
@@ -505,6 +512,8 @@ def variational_free_energy(
         Forward model ``g``, or ``None`` for the identity model. It must return
         a finite one-dimensional vector of length ``m``; a scalar or column
         vector is rejected rather than broadcast against the observation.
+        The callback receives a private copy of the mean. All parameters and
+        model outputs must be real-valued; imaginary components are never discarded.
 
     Returns
     -------
@@ -516,7 +525,7 @@ def variational_free_energy(
     ValueError
         If any argument violates the shape, finiteness or definiteness contract
         above, or if the generative model does not return a length-``m`` finite
-        vector.
+        real vector. Complex parameters are rejected.
 
     """
     complexity = _complexity_term(mu, sigma, K_precision)
@@ -593,6 +602,15 @@ def free_energy_gradient(
     ``(m, n)`` and the sensory precision is ``(m, m)``; the returned gradient
     always has length ``n``.
 
+    For admitted nonsymmetric weights, the derivative uses their symmetric
+    parts: ``½ vᵀ A v`` differentiates to ``½(A + Aᵀ)v``, not ``Av``.
+    Such weights remain general quadratic weights, not certified Gaussian
+    precisions. Each callback receives a separate copy of the original mean;
+    its in-place argument edits cannot mutate caller state or the other callback's
+    evaluation point. Prediction results are copied before the Jacobian runs.
+    Inputs, model predictions and Jacobians must be real-valued; complex values
+    are rejected instead of discarding their imaginary components.
+
     ``sigma`` is accepted for signature symmetry with
     :func:`variational_free_energy` and does not enter the gradient: the terms
     of ``F`` that carry the belief covariance are constant in ``μ``.
@@ -662,14 +680,16 @@ def free_energy_gradient(
         jacobian = np.eye(n)
     else:
         predicted = _validated_prediction(
-            generative_fn(mean), observation.size, "generative_fn(mu)"
+            generative_fn(mean.copy()), observation.size, "generative_fn(mu)"
         )
         jacobian = _validated_jacobian(
-            generative_jac(mean), predicted.size, n, "generative_jac(mu)"
+            generative_jac(mean.copy()), predicted.size, n, "generative_jac(mu)"
         )
 
     prior_precision = _validated_square_matrix(K_precision, n, "K_precision")
     gamma = _validated_precision(sensory_precision, predicted.size, "sensory_precision")
+    prior_precision = 0.5 * prior_precision + 0.5 * prior_precision.T
+    gamma = 0.5 * gamma + 0.5 * gamma.T
 
     if _HAS_RUST and generative_fn is None:
         return np.asarray(
