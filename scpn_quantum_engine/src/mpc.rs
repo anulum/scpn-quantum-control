@@ -36,7 +36,7 @@ type BruteMpcResult<'py> = PyResult<(
 )>;
 
 /// Brute-force optimal binary MPC: enumerate all 2^horizon action sequences.
-/// Parallelised with rayon for horizon > 10.
+/// Cost enumeration uses rayon for every admitted horizon.
 ///
 /// Evaluates `C(u) = sum_t ||u_t * v - r||^2` where `v = B * 1` is the row-sum
 /// actuation vector of the `dim x dim` matrix `b_flat` (row-major) and `r` is
@@ -71,6 +71,28 @@ pub fn brute_mpc<'py>(
     }
     validate_finite(b_data, "b_flat")?;
     validate_finite(t_data, "target")?;
+    let (best_actions, best_cost, costs, n_actions) = solve_mpc(b_data, t_data, dim, horizon);
+    let actions_arr = Array1::from_vec(best_actions);
+    let costs_arr = Array1::from_vec(costs);
+
+    Ok((
+        PyArray1::from_owned_array(py, actions_arr),
+        best_cost,
+        PyArray1::from_owned_array(py, costs_arr),
+        n_actions,
+    ))
+}
+
+/// Evaluate the validated binary tracking problem used by the Python boundary.
+///
+/// Inputs must satisfy the shape, finite-value and horizon guards in `brute_mpc`.
+/// Returns little-endian actions, minimum cost, full landscape and its size.
+fn solve_mpc(
+    b_data: &[f64],
+    t_data: &[f64],
+    dim: usize,
+    horizon: usize,
+) -> (Vec<i64>, f64, Vec<f64>, usize) {
     let n_actions = 1usize << horizon;
 
     let actuation: Vec<f64> = (0..dim)
@@ -105,19 +127,23 @@ pub fn brute_mpc<'py>(
         .map(|bit| ((best_idx >> bit) & 1) as i64)
         .collect();
 
-    let actions_arr = Array1::from_vec(best_actions);
-    let costs_arr = Array1::from_vec(costs);
-
-    Ok((
-        PyArray1::from_owned_array(py, actions_arr),
-        best_cost,
-        PyArray1::from_owned_array(py, costs_arr),
-        n_actions,
-    ))
+    (best_actions, best_cost, costs, n_actions)
 }
 
 #[cfg(test)]
 mod tests {
+    use super::solve_mpc;
+
+    /// Equal-cost sequences select the first little-endian enumeration index.
+    #[test]
+    fn tied_landscape_keeps_first_sequence() {
+        let (actions, best, costs, evaluated) = solve_mpc(&[0.0], &[2.0], 1, 3);
+        assert_eq!(actions, vec![0, 0, 0]);
+        assert_eq!(best, 12.0);
+        assert_eq!(costs, vec![12.0; 8]);
+        assert_eq!(evaluated, 8);
+    }
+
     /// Independent oracle: the cost straight from its definition, with no
     /// algebraic rearrangement shared with the kernel under test.
     fn oracle(b_flat: &[f64], target: &[f64], dim: usize, horizon: usize) -> Vec<f64> {
@@ -144,12 +170,15 @@ mod tests {
     /// selected `u = 1`; the documented cost is `(u + 1)^2 = [1, 4]`.
     #[test]
     fn signed_target_is_not_collapsed_to_a_norm() {
-        let costs = oracle(&[1.0], &[-1.0], 1, 1);
+        let (actions, best, costs, evaluated) = solve_mpc(&[1.0], &[-1.0], 1, 1);
+        assert_eq!(actions, vec![0]);
+        assert_eq!(evaluated, 2);
+        assert!((best - 1.0).abs() < 1e-12);
         assert!((costs[0] - 1.0).abs() < 1e-12, "u=0 costs (0+1)^2 = 1");
         assert!((costs[1] - 4.0).abs() < 1e-12, "u=1 costs (1+1)^2 = 4");
         assert!(costs[0] < costs[1], "the optimum is u=0, not u=1");
 
-        let flipped = oracle(&[1.0], &[1.0], 1, 1);
+        let flipped = solve_mpc(&[1.0], &[1.0], 1, 1).2;
         assert!(
             (flipped[1] - 0.0).abs() < 1e-12,
             "flipping the target's sign must change the landscape"
@@ -162,8 +191,10 @@ mod tests {
     #[test]
     fn rotated_target_changes_the_optimum() {
         let b = vec![0.6, -0.8, 0.8, 0.6];
-        let aligned = oracle(&b, &[-0.2, 1.4], 2, 2);
-        let rotated = oracle(&b, &[1.4, -0.2], 2, 2);
+        let aligned = solve_mpc(&b, &[-0.2, 1.4], 2, 2).2;
+        let rotated = solve_mpc(&b, &[1.4, -0.2], 2, 2).2;
+        assert_eq!(aligned, oracle(&b, &[-0.2, 1.4], 2, 2));
+        assert_eq!(rotated, oracle(&b, &[1.4, -0.2], 2, 2));
         assert!(
             aligned
                 .iter()
@@ -178,7 +209,11 @@ mod tests {
     fn multi_step_landscape_matches_the_definition() {
         let b = vec![1.0, 0.0, 0.0, 1.0];
         let target = vec![0.8, 0.6];
-        let costs = oracle(&b, &target, 2, 3);
+        let (actions, best, costs, evaluated) = solve_mpc(&b, &target, 2, 3);
+        assert_eq!(costs, oracle(&b, &target, 2, 3));
+        assert_eq!(actions, vec![1, 1, 1]);
+        assert_eq!(evaluated, 8);
+        assert!((best - costs[7]).abs() < 1e-12);
         assert_eq!(costs.len(), 8);
         let per_step_off = 0.8f64.powi(2) + 0.6f64.powi(2);
         let per_step_on = (1.0f64 - 0.8).powi(2) + (1.0f64 - 0.6).powi(2);
