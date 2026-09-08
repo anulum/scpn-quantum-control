@@ -115,6 +115,31 @@ def test_binary_evidence_rejects_lossy_array_conversion(values: list[object]) ->
         replace(dataset, test_labels=invalid)
 
 
+@pytest.mark.parametrize("changes", [{"row_ids": ("a", " a ")}, {"column_ids": ("a", "a\t")}])
+def test_matrix_rejects_normalized_identifier_collisions(changes: _MatrixChanges) -> None:
+    """Reject axis identities that collide after whitespace normalization."""
+    with pytest.raises(ValueError, match="unique"):
+        replace(_matrix(), **changes)
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [{"train_ids": ("a", " a ", "c", "d")}, {"test_ids": ("e", "e\t")}],
+)
+def test_dataset_rejects_normalized_identifier_collisions(changes: _DatasetChanges) -> None:
+    """Reject collisions within either normalized dataset split."""
+    with pytest.raises(ValueError, match="unique"):
+        replace(_dataset(), **changes)
+
+
+def test_dataset_checks_disjointness_after_identifier_normalization() -> None:
+    """Reject cross-split aliasing and preserve valid normalized identities."""
+    with pytest.raises(ValueError, match="disjoint"):
+        replace(_dataset(), test_ids=(" a ", "f"))
+    dataset = replace(_dataset(), test_ids=(" e ", " f\t"))
+    assert dataset.test_ids == ("e", "f")
+
+
 def test_config_defaults_and_feature_dimension_are_explicit() -> None:
     """Expose bounded defaults and the canonical edge-feature dimension."""
     config = TopologyKernelConfig()

@@ -52,11 +52,13 @@ def _require_digest(value: str, name: str) -> str:
 
 
 def _require_ids(values: tuple[str, ...], name: str) -> tuple[str, ...]:
-    if not values or len(set(values)) != len(values):
-        raise ValueError(f"{name} must be non-empty and unique")
+    """Normalize identifiers before checking uniqueness of stored identities."""
     if any(not isinstance(value, str) or not value.strip() for value in values):
         raise ValueError(f"{name} entries must be non-empty strings")
-    return tuple(value.strip() for value in values)
+    normalized = tuple(value.strip() for value in values)
+    if not normalized or len(set(normalized)) != len(normalized):
+        raise ValueError(f"{name} must be non-empty and unique")
+    return normalized
 
 
 @dataclass(frozen=True, slots=True)
