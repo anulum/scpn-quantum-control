@@ -105,6 +105,29 @@ with:
 - approved QPU-second ceiling;
 - session-log reference in `notes`.
 
+### Dispatch and recovery boundary
+
+`ApprovalGatedFeedbackHardwareScheduler` allows one in-flight call per instance;
+concurrent and reentrant calls fail immediately without reaching the provider.
+Its provider, callback, approval and descriptor are construction-time settings.
+Provider callbacks receive detached command and manifest copies.
+
+A provider exception, cancellation or malformed result leaves an unknown
+outcome. The attempt remains in `submissions` with `result_qpu_seconds=None`
+(not zero); `requires_reconciliation=True` blocks every subsequent dispatch.
+The original exception propagates. `spent_qpu_seconds` includes only known
+reported usage; it is not the total bill when an attempt is unresolved.
+Reported overruns remain charged and recorded even when submission raises.
+
+This wrapper is in-memory, not a persistent or multi-process budget ledger.
+Do not retry through a fresh instance or reuse the original allowance after
+restart. Archive available attempt records and query the provider's job and
+usage records outside the scheduler. Resolve uncertain consumption and obtain
+an explicit approval for the remaining budget before constructing a replacement.
+There is intentionally no automatic retry or reconciliation-reset API.
+These guards do not certify real-provider execution or command membership in a
+scientific protocol; the campaign's preregistration checks remain mandatory.
+
 ## Stop Conditions
 
 Stop and do not submit if any of the following occurs:

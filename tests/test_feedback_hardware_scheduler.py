@@ -10,7 +10,9 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
+from threading import Event
 from typing import Any, TypedDict
 
 import pytest
@@ -132,6 +134,162 @@ def test_approval_gated_scheduler_records_approved_submission() -> None:
     assert scheduler.submissions[0].metadata["package_hash"] == hash_package_manifest(manifest)
     assert scheduler.submissions[0].metadata["backend_descriptor"] == "qiskit_ibm"
     assert scheduler.submissions[0].metadata["provider"] == "ibm_quantum"
+
+
+def test_concurrent_dispatch_cannot_spend_the_same_remaining_budget() -> None:
+    """Reject a second provider dispatch while the first outcome is unknown."""
+    entered, finish = Event(), Event()
+    calls = 0
+
+    def submitter(command: FeedbackCommand, package: Mapping[str, Any]) -> FeedbackResult:
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            entered.set()
+            assert finish.wait(3.0), "first provider callback was not released"
+        return FeedbackResult(qpu_seconds=3.0)
+
+    manifest = _manifest()
+    scheduler = ApprovalGatedFeedbackHardwareScheduler(
+        provider="ibm_runtime",
+        package_manifest=manifest,
+        approval=_approval(manifest),
+        submitter=submitter,
+    )
+    command = FeedbackCommand(payload={}, estimated_qpu_seconds=3.0)
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        first = executor.submit(scheduler.submit, command)
+        try:
+            assert entered.wait(3.0), "first provider callback never entered"
+            with pytest.raises(RuntimeError, match="in progress"):
+                scheduler.submit(command)
+        finally:
+            finish.set()
+            first_error = first.exception(timeout=3.0)
+    assert first_error is None
+    assert calls == 1 and scheduler.spent_qpu_seconds == 3.0
+    assert len(scheduler.submissions) == 1
+
+
+@pytest.mark.parametrize("error", [TimeoutError, KeyboardInterrupt])
+def test_unknown_provider_outcome_blocks_retry(error: type[BaseException]) -> None:
+    """An exception after dispatch is not evidence that no QPU usage occurred."""
+    calls = 0
+
+    def submitter(command: FeedbackCommand, package: Mapping[str, Any]) -> FeedbackResult:
+        nonlocal calls
+        calls += 1
+        raise error("provider outcome unavailable")
+
+    manifest = _manifest()
+    scheduler = ApprovalGatedFeedbackHardwareScheduler(
+        provider="ibm_runtime",
+        package_manifest=manifest,
+        approval=_approval(manifest),
+        submitter=submitter,
+    )
+    command = FeedbackCommand(payload={}, estimated_qpu_seconds=1.0)
+    with pytest.raises(error):
+        scheduler.submit(command)
+    with pytest.raises(RuntimeError, match="reconciliation"):
+        scheduler.submit(command)
+    assert calls == 1
+    assert scheduler.requires_reconciliation
+    assert scheduler.spent_qpu_seconds == 0.0
+    assert len(scheduler.submissions) == 1
+    assert scheduler.submissions[0].result_qpu_seconds is None
+    assert scheduler.submissions[0].job_id is None
+    assert scheduler.submissions[0].estimated_qpu_seconds == 1.0
+
+
+def test_unknown_outcome_preserves_previously_reported_usage() -> None:
+    """An uncertain second job neither erases known usage nor fabricates a refund."""
+    calls = 0
+
+    def submitter(command: FeedbackCommand, package: Mapping[str, Any]) -> FeedbackResult:
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            return FeedbackResult(job_id="known-job", qpu_seconds=1.5)
+        raise TimeoutError("unknown job")
+
+    manifest = _manifest()
+    scheduler = ApprovalGatedFeedbackHardwareScheduler(
+        provider="ibm_runtime",
+        package_manifest=manifest,
+        approval=_approval(manifest),
+        submitter=submitter,
+    )
+    command = FeedbackCommand(payload={}, estimated_qpu_seconds=1.0)
+    scheduler.submit(command)
+    with pytest.raises(TimeoutError):
+        scheduler.submit(command)
+    assert scheduler.spent_qpu_seconds == 1.5
+    assert [row.result_qpu_seconds for row in scheduler.submissions] == [1.5, None]
+    assert scheduler.submissions[0].job_id == "known-job"
+    assert scheduler.requires_reconciliation
+
+
+def test_invalid_provider_result_quarantines_dispatch() -> None:
+    """Malformed decoded provider output cannot silently authorize a retry."""
+    import json
+
+    manifest = _manifest()
+    scheduler = ApprovalGatedFeedbackHardwareScheduler(
+        provider="ibm_runtime",
+        package_manifest=manifest,
+        approval=_approval(manifest),
+        submitter=lambda command, package: json.loads("null"),
+    )
+    with pytest.raises(TypeError, match="FeedbackResult"):
+        scheduler.submit(FeedbackCommand(payload={}))
+    assert scheduler.requires_reconciliation
+    assert scheduler.submissions[0].result_qpu_seconds is None
+
+
+def test_reentrant_refusal_and_provider_edits_preserve_caller_state() -> None:
+    """Reject reentry without deadlock; provider edits never mutate the caller."""
+    manifest = _manifest()
+    payload = {"gates": ["x"]}
+
+    def submitter(command: FeedbackCommand, package: Mapping[str, Any]) -> FeedbackResult:
+        command.payload["gates"].append("provider-local")
+        with pytest.raises(RuntimeError, match="in progress"):
+            scheduler.submit(command)
+        return FeedbackResult(qpu_seconds=1.0)
+
+    scheduler = ApprovalGatedFeedbackHardwareScheduler(
+        provider="ibm_runtime",
+        package_manifest=manifest,
+        approval=_approval(manifest),
+        submitter=submitter,
+    )
+    command = FeedbackCommand(payload=payload, estimated_qpu_seconds=1.0)
+    scheduler.submit(command)
+    scheduler.submit(command)
+    assert payload == {"gates": ["x"]}
+    assert scheduler.spent_qpu_seconds == 2.0
+    assert not scheduler.requires_reconciliation
+    record_metadata = scheduler.submissions[0].metadata
+    assert isinstance(record_metadata, dict)
+    record_metadata["package_hash"] = "tampered"
+    assert scheduler.submissions[0].metadata["package_hash"] == scheduler.package_hash
+
+
+@pytest.mark.parametrize("attribute", ["provider", "backend_descriptor", "approval", "submitter"])
+def test_dispatch_configuration_cannot_be_replaced(attribute: str) -> None:
+    """Configuration replacement must not bypass or retag an active approval."""
+    manifest = _manifest()
+    scheduler = ApprovalGatedFeedbackHardwareScheduler(
+        provider="ibm_runtime",
+        package_manifest=manifest,
+        approval=_approval(manifest),
+        submitter=lambda command, package: FeedbackResult(),
+    )
+    original = getattr(scheduler, attribute)
+    with pytest.raises(AttributeError):
+        setattr(scheduler, attribute, None)
+    assert getattr(scheduler, attribute) is original
 
 
 def test_scheduler_snapshots_nested_approved_manifest() -> None:
@@ -309,6 +467,9 @@ def test_approval_gated_scheduler_enforces_estimated_and_reported_qpu_budget() -
     with pytest.raises(RuntimeError, match="command would exceed"):
         scheduler.submit(FeedbackCommand(payload={}, estimated_qpu_seconds=5.0))
     assert provider_calls == 0
+    assert not scheduler.requires_reconciliation
+    assert scheduler.submissions == ()
+    assert scheduler.spent_qpu_seconds == 0.0
     with pytest.raises(RuntimeError, match="provider result would exceed"):
         scheduler.submit(FeedbackCommand(payload={}, estimated_qpu_seconds=1.0))
     assert provider_calls == 1

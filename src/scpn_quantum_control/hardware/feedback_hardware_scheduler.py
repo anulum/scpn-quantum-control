@@ -21,6 +21,7 @@ import math
 from collections.abc import Callable, Mapping
 from copy import deepcopy
 from dataclasses import dataclass, field
+from threading import Lock
 from typing import Any
 
 from .backends import QuantumBackendDescriptor, describe_backend
@@ -64,13 +65,13 @@ class HardwareApprovalRecord:
 
 @dataclass(frozen=True)
 class HardwareSubmissionRecord:
-    """Auditable record for one approved provider submission."""
+    """One dispatch attempt; None usage means the provider outcome is unknown."""
 
     approval_id: str
     provider: str
     command_label: str
     estimated_qpu_seconds: float
-    result_qpu_seconds: float
+    result_qpu_seconds: float | None
     job_id: str | None
     metadata: Mapping[str, Any] = field(default_factory=dict)
 
@@ -92,18 +93,40 @@ class ApprovalGatedFeedbackHardwareScheduler:
             raise ValueError("provider must be non-empty")
         if not package_manifest:
             raise ValueError("package_manifest must be non-empty")
-        self.provider = provider
-        self.backend_descriptor = _resolve_backend_descriptor(provider)
+        self._provider = provider
+        self._backend_descriptor = _resolve_backend_descriptor(provider)
         self._package_manifest = deepcopy(dict(package_manifest))
         self._package_hash = hash_package_manifest(self._package_manifest)
-        self.approval = approval
-        self.submitter = submitter
+        self._approval = approval
+        self._submitter = submitter
         self._spent_qpu_seconds = 0.0
         self._submissions: list[HardwareSubmissionRecord] = []
+        self._submission_lock = Lock()
+        self._requires_reconciliation = False
+
+    @property
+    def provider(self) -> str:
+        """Construction-time provider identity; cannot be replaced during dispatch."""
+        return self._provider
+
+    @property
+    def backend_descriptor(self) -> QuantumBackendDescriptor | None:
+        """Construction-time capability descriptor, or None for an unknown alias."""
+        return self._backend_descriptor
+
+    @property
+    def approval(self) -> HardwareApprovalRecord:
+        """Fixed approval governing this instance's cumulative usage."""
+        return self._approval
+
+    @property
+    def submitter(self) -> ProviderSubmitter:
+        """Fixed provider callback; replacing it requires a new scheduler."""
+        return self._submitter
 
     @property
     def package_manifest(self) -> dict[str, Any]:
-        """Return a detached copy of the construction-time approved package.
+        """Detached copy of the construction-time approved package.
 
         Neither inspection nor provider-local edits change future dispatches.
         To change a package, construct a new scheduler with matching approval.
@@ -117,50 +140,105 @@ class ApprovalGatedFeedbackHardwareScheduler:
 
     @property
     def spent_qpu_seconds(self) -> float:
-        """Cumulative QPU seconds reported through this scheduler."""
+        """Known reported usage, excluding unresolved attempts; never a refund."""
         return self._spent_qpu_seconds
 
     @property
+    def requires_reconciliation(self) -> bool:
+        """Whether an uncertain provider outcome permanently blocks this instance.
+
+        Provider exceptions, including cancellation, do not prove zero usage.
+        Reconcile external job/usage records before obtaining a fresh approval;
+        this in-memory wrapper has no automatic retry or reset mechanism.
+
+        """
+        return self._requires_reconciliation
+
+    @property
     def submissions(self) -> tuple[HardwareSubmissionRecord, ...]:
-        """Immutable submission records."""
-        return tuple(self._submissions)
+        """Detached attempt records, including unknown provider outcomes."""
+        return deepcopy(tuple(self._submissions))
 
     def submit(self, command: FeedbackCommand) -> FeedbackResult:
-        """Submit after approval and record actual usage before raising on overspend.
+        """Dispatch one isolated command under the fixed approval and usage limit.
 
-        A returned over-budget result has already consumed provider resources:
-        its usage and job record remain visible even though this method raises
-        ``RuntimeError``. Subsequent submissions fail the cumulative budget
-        gate. This in-memory accounting cannot undo a provider-side overrun
-        or recover usage when a submitter raises without returning a result.
+        Parameters
+        ----------
+        command : FeedbackCommand
+            Command with an estimated QPU cost in seconds. The provider receives
+            deep copies of the command and approved manifest.
+
+        Returns
+        -------
+        FeedbackResult
+            Provider result, with reported QPU usage charged to this instance.
+
+        Raises
+        ------
+        PermissionError
+            Approval, provider capability or package identity does not match.
+        RuntimeError
+            Another call is active, an outcome needs reconciliation, or the
+            estimated or reported cumulative usage exceeds the approval.
+        TypeError
+            The provider does not return a FeedbackResult.
+
+        Notes
+        -----
+        Provider exceptions (including interruption) propagate after recording
+        unknown usage as None and permanently blocking further dispatch on this
+        instance. A reported overrun retains its actual usage and job record.
+        Pre-dispatch refusals do not consume budget or quarantine the instance.
+        This is in-memory accounting, not a durable, cross-process billing ledger:
+        reconcile uncertain jobs and obtain a remaining-budget approval before
+        constructing a replacement. It cannot undo provider-side consumption.
         """
-        self._check_approval(command)
-        result = self.submitter(command, self.package_manifest)
-        projected_spend = self._spent_qpu_seconds + result.qpu_seconds
-        self._spent_qpu_seconds = projected_spend
-        self._submissions.append(
-            HardwareSubmissionRecord(
-                approval_id=self.approval.approval_id,
-                provider=self.provider,
-                command_label=command.label,
-                estimated_qpu_seconds=command.estimated_qpu_seconds,
-                result_qpu_seconds=result.qpu_seconds,
-                job_id=result.job_id,
-                metadata={
-                    "package_hash": self.package_hash,
-                    "approval_notes": self.approval.notes,
-                    "backend_descriptor": (
-                        self.backend_descriptor.name if self.backend_descriptor else ""
-                    ),
-                    "provider": self.backend_descriptor.provider
-                    if self.backend_descriptor
-                    else self.provider,
-                },
-            )
+        if not self._submission_lock.acquire(blocking=False):
+            raise RuntimeError("provider submission already in progress")
+        try:
+            if self.requires_reconciliation:
+                raise RuntimeError("provider outcome requires reconciliation before further work")
+            self._check_approval(command)
+            submitted_command = deepcopy(command)
+            manifest = self.package_manifest
+            try:
+                result = self.submitter(submitted_command, manifest)
+                if not isinstance(result, FeedbackResult):
+                    raise TypeError("submitter must return FeedbackResult")
+            except BaseException:
+                self._requires_reconciliation = True
+                self._submissions.append(self._submission_record(command, None))
+                raise
+            projected_spend = self._spent_qpu_seconds + result.qpu_seconds
+            self._spent_qpu_seconds = projected_spend
+            self._submissions.append(self._submission_record(command, result))
+            if projected_spend > self.approval.max_qpu_seconds:
+                raise RuntimeError("provider result would exceed approved QPU budget")
+            return result
+        finally:
+            self._submission_lock.release()
+
+    def _submission_record(
+        self, command: FeedbackCommand, result: FeedbackResult | None
+    ) -> HardwareSubmissionRecord:
+        return HardwareSubmissionRecord(
+            approval_id=self.approval.approval_id,
+            provider=self.provider,
+            command_label=command.label,
+            estimated_qpu_seconds=command.estimated_qpu_seconds,
+            result_qpu_seconds=result.qpu_seconds if result is not None else None,
+            job_id=result.job_id if result is not None else None,
+            metadata={
+                "package_hash": self.package_hash,
+                "approval_notes": self.approval.notes,
+                "backend_descriptor": (
+                    self.backend_descriptor.name if self.backend_descriptor else ""
+                ),
+                "provider": self.backend_descriptor.provider
+                if self.backend_descriptor
+                else self.provider,
+            },
         )
-        if projected_spend > self.approval.max_qpu_seconds:
-            raise RuntimeError("provider result would exceed approved QPU budget")
-        return result
 
     def _check_approval(self, command: FeedbackCommand) -> None:
         if not self.approval.approved:
