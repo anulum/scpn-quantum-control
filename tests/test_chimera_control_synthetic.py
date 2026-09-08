@@ -10,12 +10,12 @@
 from __future__ import annotations
 
 import math
-from typing import cast
+from typing import TypedDict, cast
 
 import numpy as np
 import pytest
 
-from scpn_quantum_control.chimera_control.schema import SyntheticRegime
+from scpn_quantum_control.chimera_control.schema import FloatArray, SyntheticRegime
 from scpn_quantum_control.chimera_control.synthetic import (
     SYNTHETIC_CHIMERA_SOURCE,
     SyntheticChimeraConfig,
@@ -23,6 +23,16 @@ from scpn_quantum_control.chimera_control.synthetic import (
     build_two_population_coupling,
     generate_two_population_chimera,
 )
+
+
+class RunChanges(TypedDict, total=False):
+    """Correctly typed fields with intentionally invalid array custody."""
+
+    phases: FloatArray
+    times: FloatArray
+    coupling: FloatArray
+    source: str
+    content_digest: str
 
 
 def test_reference_regime_factories_freeze_published_couplings() -> None:
@@ -77,8 +87,8 @@ def test_reference_regime_factories_freeze_published_couplings() -> None:
 def test_synthetic_config_rejects_invalid_values(kwargs: dict[str, object], message: str) -> None:
     """Reject invalid configuration values at the public construction boundary."""
     with pytest.raises(ValueError, match=message):
-        # The parametrised mapping carries one invalid field per case; the
-        # rejection is the subject and mypy cannot express a failing call.
+        # This heterogeneous negative-input table includes fractional integer
+        # fields and a string enum; the constructor must reject each at runtime.
         SyntheticChimeraConfig(**kwargs)  # type: ignore[arg-type]
 
 
@@ -140,27 +150,22 @@ def test_default_generator_uses_reference_chimera_configuration() -> None:
         ({"content_digest": "z" * 64}, "content_digest"),
     ],
 )
-def test_run_contract_rejects_inconsistent_custody(
-    changes: dict[str, object], message: str
-) -> None:
+def test_run_contract_rejects_inconsistent_custody(changes: RunChanges, message: str) -> None:
     """Reject custody objects whose arrays or digest contradict the configuration."""
     valid = generate_two_population_chimera(
         SyntheticChimeraConfig(population_size=2, steps=2, settle_steps=0)
     )
-    values: dict[str, object] = {
-        "config": valid.config,
-        "hierarchy": valid.hierarchy,
-        "phases": valid.phases,
-        "times": valid.times,
-        "coupling": valid.coupling,
-        "diagnostics": valid.diagnostics,
-        "source": valid.source,
-        "content_digest": valid.content_digest,
-    }
-    values.update(changes)
     with pytest.raises(ValueError, match=message):
-        # As above: one field is overridden with an invalid value per case.
-        SyntheticChimeraRun(**values)  # type: ignore[arg-type]
+        SyntheticChimeraRun(
+            config=valid.config,
+            hierarchy=valid.hierarchy,
+            phases=changes.get("phases", valid.phases),
+            times=changes.get("times", valid.times),
+            coupling=changes.get("coupling", valid.coupling),
+            diagnostics=valid.diagnostics,
+            source=changes.get("source", valid.source),
+            content_digest=changes.get("content_digest", valid.content_digest),
+        )
 
 
 def test_run_contract_rejects_non_finite_or_wrong_rank_arrays() -> None:

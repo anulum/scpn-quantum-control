@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import Literal, NotRequired, TypedDict
+
 import numpy as np
 import pytest
 
@@ -19,10 +21,31 @@ from scpn_quantum_control.chimera_control.objectives import (
 )
 from scpn_quantum_control.chimera_control.schema import (
     ChimeraControlSpecification,
+    FloatArray,
     HierarchyTarget,
     two_population_hierarchy,
 )
 from scpn_quantum_control.phase.objectives import ComposedPhaseObjective, ObjectiveTerm
+
+
+class SearchOptions(TypedDict, total=False):
+    """Correctly typed search parameters with deliberately invalid values."""
+
+    initial_step_size: float
+    max_backtracks: int
+
+
+class ProposalFields(TypedDict):
+    """Typed constructor fields for proposal custody checks."""
+
+    original_value: float
+    proposed_value: float
+    step_size: float
+    backtracks: int
+    accepted: bool
+    phase_delta: FloatArray
+    proposed_phases: FloatArray
+    claim_boundary: NotRequired[str]
 
 
 def _specification() -> ChimeraControlSpecification:
@@ -143,14 +166,13 @@ def test_zero_gradient_and_no_decrease_return_unchanged_unapplied_proposals() ->
     ],
 )
 def test_phase_proposal_rejects_invalid_search_arguments(
-    kwargs: dict[str, object], message: str
+    kwargs: SearchOptions, message: str
 ) -> None:
     """Reject invalid backtracking arguments and malformed phase vectors."""
     objective = build_chimera_control_objective(_specification())
-    # The search arguments are deliberately invalid; mypy cannot express a
-    # call that is meant to fail.
+    # These Python types are valid; the runtime search constraints are not.
     with pytest.raises(ValueError, match=message):
-        propose_phase_control_step(objective, np.zeros(6), **kwargs)  # type: ignore[arg-type]
+        propose_phase_control_step(objective, np.zeros(6), **kwargs)
     with pytest.raises(ValueError, match="phases"):
         propose_phase_control_step(objective, np.zeros((2, 3)))
     with pytest.raises(ValueError, match="phases"):
@@ -159,7 +181,7 @@ def test_phase_proposal_rejects_invalid_search_arguments(
 
 def test_phase_control_proposal_contract_rejects_invalid_custody() -> None:
     """Reject proposal records with contradictory scalar or array custody."""
-    valid = dict(
+    valid: ProposalFields = dict(
         original_value=1.0,
         proposed_value=0.5,
         step_size=0.1,
@@ -168,23 +190,28 @@ def test_phase_control_proposal_contract_rejects_invalid_custody() -> None:
         phase_delta=np.array([0.1, -0.1]),
         proposed_phases=np.array([0.2, 0.3]),
     )
-    # Each construction overrides one field with an invalid value to prove it
-    # is rejected; mypy cannot express a call that is meant to fail.
-    for key in ("original_value", "proposed_value", "step_size"):
-        values = valid | {key: -1.0}
+    scalar_fields: tuple[Literal["original_value", "proposed_value", "step_size"], ...] = (
+        "original_value",
+        "proposed_value",
+        "step_size",
+    )
+    for key in scalar_fields:
+        values = valid.copy()
+        values[key] = -1.0
         with pytest.raises(ValueError, match=key):
-            PhaseControlProposal(**values)  # type: ignore[arg-type]
+            PhaseControlProposal(**values)
     with pytest.raises(ValueError, match="backtracks"):
-        PhaseControlProposal(**(valid | {"backtracks": True}))  # type: ignore[arg-type]
+        PhaseControlProposal(**(valid | {"backtracks": True}))
     with pytest.raises(ValueError, match="backtracks"):
+        # Deliberately violate the integer field; all other fixture types remain checked.
         PhaseControlProposal(**(valid | {"backtracks": 1.5}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="equal non-empty vectors"):
-        PhaseControlProposal(**(valid | {"phase_delta": np.zeros((1, 2))}))  # type: ignore[arg-type]
+        PhaseControlProposal(**(valid | {"phase_delta": np.zeros((1, 2))}))
     with pytest.raises(ValueError, match="finite"):
-        PhaseControlProposal(**(valid | {"proposed_phases": np.array([np.nan, 0.0])}))  # type: ignore[arg-type]
+        PhaseControlProposal(**(valid | {"proposed_phases": np.array([np.nan, 0.0])}))
     with pytest.raises(ValueError, match="claim_boundary"):
-        PhaseControlProposal(**(valid | {"claim_boundary": " "}))  # type: ignore[arg-type]
+        PhaseControlProposal(**(valid | {"claim_boundary": " "}))
     with pytest.raises(ValueError, match="accepted proposals"):
-        PhaseControlProposal(**(valid | {"step_size": 0.0}))  # type: ignore[arg-type]
+        PhaseControlProposal(**(valid | {"step_size": 0.0}))
     with pytest.raises(ValueError, match="rejected proposals"):
-        PhaseControlProposal(**(valid | {"accepted": False}))  # type: ignore[arg-type]
+        PhaseControlProposal(**(valid | {"accepted": False}))

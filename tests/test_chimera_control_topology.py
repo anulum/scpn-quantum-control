@@ -9,10 +9,13 @@
 
 from __future__ import annotations
 
+from typing import NotRequired, TypedDict
+
 import numpy as np
 import pytest
 
 from scpn_quantum_control.chimera_control.schema import (
+    FloatArray,
     HierarchyLevel,
     MultiscaleHierarchy,
     two_population_hierarchy,
@@ -23,9 +26,23 @@ from scpn_quantum_control.chimera_control.topology import (
     project_chimera_coupling,
 )
 from scpn_quantum_control.topology_control.constraints import (
+    ConstraintViolation,
     CouplingGraphBounds,
     TopologyConstraintLedger,
 )
+
+
+class ProjectionFields(TypedDict):
+    """Constructor fields preserve types while varying runtime invariants."""
+
+    candidate: FloatArray
+    projected: FloatArray
+    violations_before: ConstraintViolation
+    violations_after: ConstraintViolation
+    summaries_before: tuple[HierarchyCouplingSummary, ...]
+    summaries_after: tuple[HierarchyCouplingSummary, ...]
+    content_digest: str
+    claim_boundary: NotRequired[str]
 
 
 def test_projection_uses_existing_ledger_and_reports_multiscale_means() -> None:
@@ -93,7 +110,7 @@ def test_projection_report_contract_rejects_inconsistent_custody() -> None:
     """Reject projection reports with inconsistent arrays, levels, or digests."""
     hierarchy = two_population_hierarchy(2)
     valid = project_chimera_coupling(np.ones((4, 4)), hierarchy, TopologyConstraintLedger())
-    values: dict[str, object] = {
+    values: ProjectionFields = {
         "candidate": valid.candidate,
         "projected": valid.projected,
         "violations_before": valid.violations_before,
@@ -102,24 +119,23 @@ def test_projection_report_contract_rejects_inconsistent_custody() -> None:
         "summaries_after": valid.summaries_after,
         "content_digest": valid.content_digest,
     }
-    # Each construction overrides one field with an invalid value to prove it
-    # is rejected; mypy cannot express a call that is meant to fail.
+    # Each replacement has the correct Python type but violates custody.
     with pytest.raises(ValueError, match="equal non-empty"):
-        TopologyProjectionReport(**(values | {"projected": np.zeros((2, 2))}))  # type: ignore[arg-type]
+        TopologyProjectionReport(**(values | {"projected": np.zeros((2, 2))}))
     bad = np.array(valid.candidate, copy=True)
     bad[0, 0] = np.nan
     with pytest.raises(ValueError, match="finite"):
-        TopologyProjectionReport(**(values | {"candidate": bad}))  # type: ignore[arg-type]
+        TopologyProjectionReport(**(values | {"candidate": bad}))
     with pytest.raises(ValueError, match="identical levels"):
-        TopologyProjectionReport(**(values | {"summaries_after": tuple()}))  # type: ignore[arg-type]
+        TopologyProjectionReport(**(values | {"summaries_after": tuple()}))
     with pytest.raises(ValueError, match="non-empty"):
         TopologyProjectionReport(
-            **(values | {"summaries_before": tuple(), "summaries_after": tuple()})  # type: ignore[arg-type]
+            **(values | {"summaries_before": tuple(), "summaries_after": tuple()})
         )
     with pytest.raises(ValueError, match="content_digest"):
-        TopologyProjectionReport(**(values | {"content_digest": "bad"}))  # type: ignore[arg-type]
+        TopologyProjectionReport(**(values | {"content_digest": "bad"}))
     with pytest.raises(ValueError, match="claim_boundary"):
-        TopologyProjectionReport(**(values | {"claim_boundary": " "}))  # type: ignore[arg-type]
+        TopologyProjectionReport(**(values | {"claim_boundary": " "}))
 
 
 def test_projection_supports_a_valid_singleton_fine_level() -> None:
