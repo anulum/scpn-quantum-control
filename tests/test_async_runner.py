@@ -1044,6 +1044,54 @@ class TestSubmissionIsIssuedOnce:
             runner, ansatz=object(), observable=object()
         )
 
+    @pytest.mark.parametrize("fails", [False, True])
+    def test_completion_is_recorded_without_a_remaining_awaiter(self, fails: bool) -> None:
+        """Cancelling the last waiter cannot hide a later terminal outcome."""
+        from threading import Event
+
+        started, release = Event(), Event()
+        wrapper = self._wrapper()
+        calls = 0
+        failure = RuntimeError("outcome requires reconciliation")
+
+        def submit() -> dict[str, Any]:
+            nonlocal calls
+            calls += 1
+            started.set()
+            assert release.wait(3.0)
+            if fails:
+                raise failure
+            return {"attempt": calls}
+
+        wrapper._run_blocking = submit
+
+        async def drive() -> None:
+            waiter = asyncio.create_task(wrapper.result())
+            try:
+                assert await asyncio.to_thread(started.wait, 3.0)
+                waiter.cancel()
+                with pytest.raises(asyncio.CancelledError):
+                    await waiter
+                release.set()
+
+                async def terminal() -> None:
+                    while wrapper.submission_state == "in_flight":
+                        await asyncio.sleep(0.001)
+
+                await asyncio.wait_for(terminal(), timeout=3.0)
+                assert wrapper.submission_state == ("ambiguous" if fails else "completed")
+                assert wrapper.submission_error is (failure if fails else None)
+            finally:
+                release.set()
+                if fails:
+                    with pytest.raises(RuntimeError):
+                        await wrapper.result()
+                else:
+                    assert await wrapper.result() == {"attempt": 1}
+
+        asyncio.run(drive())
+        assert calls == 1
+
     def test_sequential_awaits_reuse_one_submission(self) -> None:
         """Awaiting twice must not submit twice."""
         calls = {"n": 0}
@@ -1063,6 +1111,39 @@ class TestSubmissionIsIssuedOnce:
         assert calls["n"] == 1
         assert first == second == {"attempt": 1}
         assert wrapper.submission_state == "completed"
+
+    def test_foreign_event_loop_cannot_poison_an_active_submission(self) -> None:
+        """Reject cross-loop retrieval without caching it as a provider failure."""
+        from threading import Event
+
+        started, release = Event(), Event()
+        wrapper = self._wrapper()
+        calls = 0
+
+        def submit() -> dict[str, Any]:
+            nonlocal calls
+            calls += 1
+            started.set()
+            assert release.wait(3.0)
+            return {"attempt": calls}
+
+        wrapper._run_blocking = submit
+
+        async def drive() -> None:
+            original = asyncio.create_task(wrapper.result())
+            try:
+                assert await asyncio.to_thread(started.wait, 3.0)
+                with pytest.raises(RuntimeError):
+                    await asyncio.to_thread(lambda: asyncio.run(wrapper.result()))
+                assert wrapper.submission_error is None
+                assert wrapper.submission_state == "in_flight"
+            finally:
+                release.set()
+                assert await original == {"attempt": 1}
+            assert wrapper.submission_state == "completed"
+
+        asyncio.run(drive())
+        assert calls == 1
 
     def test_concurrent_awaits_share_one_in_flight_submission(self) -> None:
         """Three awaits started together join a single provider call."""

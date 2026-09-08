@@ -542,11 +542,21 @@ class AsyncHardwareRunner:
                 """
                 return self._failure
 
+            def _capture_completion(self, task: asyncio.Task[dict[str, Any]]) -> None:
+                """Record completion even when no client remains to await it."""
+                try:
+                    self._result = task.result()
+                except BaseException as exc:
+                    self._failure = exc
+
             async def _shared_submission(self) -> asyncio.Task[dict[str, Any]]:
                 """Return the one in-flight submission task, starting it once."""
                 async with self._start_lock:
                     if self._task is None:
                         self._task = asyncio.ensure_future(asyncio.to_thread(self._run_blocking))
+                        self._task.add_done_callback(self._capture_completion)
+                    elif self._task.get_loop() is not asyncio.get_running_loop():
+                        raise RuntimeError("active submission belongs to another event loop")
                     return self._task
 
             async def result(self) -> dict[str, Any]:
@@ -558,6 +568,12 @@ class AsyncHardwareRunner:
                 issuing a second one. Once the submission has failed, every
                 later await re-raises the recorded failure rather than
                 resubmitting.
+                Completion is recorded independently of surviving awaiters;
+                cancelling the last client does not leave a completed job
+                labelled in_flight or an unobserved failure unrecorded.
+                An active task must be awaited on its owning event loop;
+                cross-loop retrieval is refused without marking provider work
+                as failed. Completed cached outcomes may be read subsequently.
 
                 Returns
                 -------
