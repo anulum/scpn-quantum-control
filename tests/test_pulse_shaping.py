@@ -14,6 +14,7 @@ integration, roundtrip, performance.
 from __future__ import annotations
 
 import time
+from typing import TypedDict
 
 import numpy as np
 import pytest
@@ -32,6 +33,24 @@ from scpn_quantum_control.phase.pulse_shaping import (
 )
 
 # ===== 1. Empty/Null Inputs =====
+
+
+class ICIOverrides(TypedDict, total=False):
+    """Typed ICI fields with deliberately nonphysical numeric values."""
+
+    t_total: float
+    omega_0: float
+    gamma_decay: float
+    n_points: int
+
+
+class HypergeometricOverrides(TypedDict, total=False):
+    """Typed hypergeometric fields for numeric boundary rejection."""
+
+    t_total: float
+    omega_0: float
+    gamma_width: float
+    n_points: int
 
 
 class TestEmptyNull:
@@ -108,15 +127,13 @@ class TestErrorHandling:
         ],
     )
     def test_ici_rejects_nonphysical_grid_and_rate_parameters(
-        self, kwargs: dict[str, object], match: str
+        self, kwargs: ICIOverrides, match: str
     ) -> None:
         """Reject invalid ICI grids and rates."""
-        params: dict[str, object] = {"t_total": 1.0, "omega_0": 10.0, "gamma_decay": 0.1}
+        params: ICIOverrides = {"t_total": 1.0, "omega_0": 10.0, "gamma_decay": 0.1}
         params.update(kwargs)
-        # One parameter per case is replaced with a non-physical value; the
-        # rejection is the subject and mypy cannot express a failing call.
         with pytest.raises(ValueError, match=match):
-            build_ici_pulse(**params)  # type: ignore[arg-type]
+            build_ici_pulse(**params)
 
     @pytest.mark.parametrize(
         ("kwargs", "match"),
@@ -128,15 +145,13 @@ class TestErrorHandling:
         ],
     )
     def test_hypergeometric_rejects_nonphysical_grid_and_rate_parameters(
-        self, kwargs: dict[str, object], match: str
+        self, kwargs: HypergeometricOverrides, match: str
     ) -> None:
         """Reject invalid hypergeometric grids and rates."""
-        params: dict[str, object] = {"t_total": 1.0, "omega_0": 10.0}
+        params: HypergeometricOverrides = {"t_total": 1.0, "omega_0": 10.0}
         params.update(kwargs)
-        # One parameter per case is replaced with a non-physical value; the
-        # rejection is the subject and mypy cannot express a failing call.
         with pytest.raises(ValueError, match=match):
-            build_hypergeometric_pulse(**params)  # type: ignore[arg-type]
+            build_hypergeometric_pulse(**params)
 
     @pytest.mark.parametrize("n_points", [True, "200"])
     def test_builders_reject_non_integer_grid_points(self, n_points: object) -> None:

@@ -13,6 +13,7 @@ import sys
 from importlib import import_module
 from pathlib import Path
 from types import ModuleType
+from typing import TypedDict
 
 import numpy as np
 import pytest
@@ -23,6 +24,16 @@ from scpn_quantum_control.bridge.control_plasma_knm import (
     plasma_omega,
 )
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+
+
+class PlasmaConfig(TypedDict):
+    """Shared numeric inputs to the real plasma coupling implementations."""
+
+    R0: float
+    a: float
+    B0: float
+    Ip: float
+    n_e: float
 
 
 def _import_local_module(repo_name: str, module_name: str) -> ModuleType:
@@ -120,10 +131,8 @@ def test_plasma_omega_bridge_parity_with_scpn_control() -> None:
 def test_plasma_knm_from_config_bridge_parity_with_scpn_control() -> None:
     mod = _import_local_module("scpn-control", "scpn_control.phase.plasma_knm")
     repo_src = _scpn_control_src_path()
-    cfg = {"R0": 6.2, "a": 2.0, "B0": 5.3, "Ip": 15.0, "n_e": 10.1}
-    # A **dict splat is matched against every keyword of the signature,
-    # including the string and integer parameters, and cannot be narrowed here.
-    k_quantum = build_knm_plasma_from_config(repo_src=repo_src, **cfg)  # type: ignore[arg-type]
+    cfg: PlasmaConfig = {"R0": 6.2, "a": 2.0, "B0": 5.3, "Ip": 15.0, "n_e": 10.1}
+    k_quantum = build_knm_plasma_from_config(repo_src=repo_src, **cfg)
     k_control = np.asarray(mod.build_knm_plasma_from_config(**cfg).K, dtype=np.float64)
     np.testing.assert_allclose(k_quantum, k_control, atol=1e-12)
 

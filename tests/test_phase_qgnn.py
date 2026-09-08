@@ -7,6 +7,8 @@
 # SCPN Quantum Control — Tests for the bounded quantum graph neural network
 """Tests for phase/qgnn.py: graph validation, exact chain-rule gradients, and training."""
 
+from typing import TypedDict
+
 import numpy as np
 import pytest
 from numpy.typing import NDArray
@@ -22,6 +24,15 @@ from scpn_quantum_control.phase.qgnn import (
     train,
     validate_graph,
 )
+
+
+class ConfigOverrides(TypedDict, total=False):
+    """Type-valid configuration fields used to test invalid boundaries."""
+
+    hidden_dim: int
+    n_message_layers: int
+    angles_per_node: int
+    edge_threshold: float
 
 
 def _random_graph(rng: np.random.Generator, n: int) -> KnmGraph:
@@ -66,13 +77,9 @@ def test_validate_graph_rejects_bad_input(
         {"edge_threshold": -1.0},
     ],
 )
-def test_config_rejects_bad_input(kwargs: dict[str, float]) -> None:
+def test_config_rejects_bad_input(kwargs: ConfigOverrides) -> None:
     with pytest.raises(ValueError):
-        # The point of the test is that these values are rejected at runtime.
-        # mypy cannot express "this call is meant to fail", and the mapping is
-        # heterogeneous by key, so the narrow suppression is the policy's answer
-        # rather than widening the annotation to Any and silencing everything.
-        QGNNConfig(**kwargs)  # type: ignore[arg-type]
+        QGNNConfig(**kwargs)
 
 
 # --------------------------------------------------------------------------- #
