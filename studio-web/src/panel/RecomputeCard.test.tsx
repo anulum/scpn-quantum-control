@@ -45,6 +45,22 @@ function deferred<T>(): { promise: Promise<T>; resolve: (value: T) => void } {
 afterEach(cleanup);
 
 describe("RecomputeCard", () => {
+  it.each([
+    { schema: "unsupported" },
+    { verifiabilityMode: "unverifiable" },
+    { exactnessClass: "tolerance" },
+  ])("clears a match when unchanged payload receives a new contract %j", async (change) => {
+    const { rerender } = render(
+      <RecomputeCard unit={UNIT} loadKernel={async () => matchingKernel} />,
+    );
+    fireEvent.click(screen.getByRole("button"));
+    await waitFor(() => expect(screen.getByRole("status").textContent).toMatch(/matches/));
+    rerender(<RecomputeCard unit={{ ...UNIT, ...change }} loadKernel={async () => matchingKernel} />);
+    expect(screen.queryByRole("status")).toBeNull();
+    fireEvent.click(screen.getByRole("button"));
+    await waitFor(() => expect(screen.getByRole("status").textContent).toMatch(/unverifiable/));
+  });
+
   it("shows the signed claim before any recompute", () => {
     render(<RecomputeCard unit={UNIT} loadKernel={async () => matchingKernel} />);
     expect(screen.getByText(UNIT.claimedDigest)).toBeTruthy();

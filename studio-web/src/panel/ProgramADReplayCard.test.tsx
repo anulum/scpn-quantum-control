@@ -63,6 +63,23 @@ function deferred<T>(): { promise: Promise<T>; resolve: (value: T) => void } {
 afterEach(cleanup);
 
 describe("ProgramADReplayCard", () => {
+  it.each([
+    { expectedValue: 99 },
+    { expectedGradient: [6, 99] },
+    { schema: "unsupported" },
+    { claimBoundary: "a different claim boundary" },
+    { parameterTargets: ["different", "targets"] },
+    { inputHex: "00" },
+  ])("clears a verdict when the same artifact receives changed content %j", async (change) => {
+    const { rerender } = render(
+      <ProgramADReplayCard unit={unit()} loadKernel={async () => replay} />,
+    );
+    fireEvent.click(screen.getByRole("button"));
+    await waitFor(() => expect(screen.getByRole("status").textContent).toMatch(/match/));
+    rerender(<ProgramADReplayCard unit={{ ...unit(), ...change }} loadKernel={async () => replay} />);
+    expect(screen.queryByRole("status")).toBeNull();
+  });
+
   it("shows the claimed gradient and boundary before running", () => {
     render(<ProgramADReplayCard unit={unit()} loadKernel={async () => replay} />);
     expect(screen.getByText(/\[6, 2\]/)).toBeTruthy();

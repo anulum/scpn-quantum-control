@@ -22,15 +22,20 @@ const DISPLAY_LABEL: Record<RecomputeVerdict["display"], string> = {
 /**
  * Identity of the unit a verdict belongs to.
  *
- * Both fields are content-bound and immutable: the digest that was claimed, and
- * the input it was claimed over. Two units agreeing on both are the same
- * verification; any difference is a different one.
+ * Include schema, verification mode and exactness alongside digest and payload.
+ * A claim with a changed verification contract cannot reuse a previous verdict.
  *
  * @param unit - The unit currently displayed.
  * @returns A stable identity string for that unit.
  */
 function unitIdentity(unit: RecomputeUnit): string {
-  return `${unit.claimedDigest}\u0000${unit.inputHex}`;
+  return JSON.stringify([
+    unit.schema,
+    unit.verifiabilityMode,
+    unit.exactnessClass,
+    unit.claimedDigest,
+    unit.inputHex,
+  ]);
 }
 
 /**

@@ -22,15 +22,24 @@ const DISPLAY_LABEL: Record<ReplayVerdict["display"], string> = {
 /**
  * Identity of the unit a verdict belongs to.
  *
- * Both fields are content-bound and immutable: the artifact the claim was made
- * about, and the digest of the input it was made over. Two units agreeing on
- * both are the same verification; any difference is a different one.
+ * Include the complete verification contract, not only the artifact and input
+ * digest. A changed expected result, schema or displayed boundary invalidates
+ * an earlier verdict even when the artifact identifier has not changed.
  *
  * @param unit - The unit currently displayed.
  * @returns A stable identity string for that unit.
  */
 function unitIdentity(unit: ProgramAdUnit): string {
-  return `${unit.artifactId}\u0000${unit.inputSha256}`;
+  return JSON.stringify([
+    unit.schema,
+    unit.artifactId,
+    unit.claimBoundary,
+    unit.inputHex,
+    unit.inputSha256,
+    unit.expectedValue,
+    unit.expectedGradient,
+    unit.parameterTargets,
+  ]);
 }
 
 /**
