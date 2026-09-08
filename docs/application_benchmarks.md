@@ -62,9 +62,13 @@ be adapted to the public `KuramotoProblem` facade.
 | `friston_fep_6node` | `friston_fep` | Precision graph + observations → QPU artifact → variational free energy + predictive-coding step. |
 
 Third-party plugins register factories under the
-`scpn_quantum_control.application_plugins` entry-point group. A broken
-plugin is logged and skipped so one domain adapter cannot block the
-rest of the benchmark suite.
+`scpn_quantum_control.application_plugins` entry-point group. Discovery logs
+and skips entry-point import or registration failures. Factory construction,
+plugin validation and benchmark execution errors propagate to the caller;
+`run_all()` does not silently return a partial suite on those failures.
+Plugins must expose a non-empty tuple of unique, non-blank string dataset IDs.
+Invalid factory results are rejected before caching; a subsequent lookup retries
+construction, and unrelated registered plugins remain available.
 
 ## Honesty and privacy boundary
 

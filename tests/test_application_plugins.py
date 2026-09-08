@@ -158,9 +158,41 @@ def test_application_registry_skips_broken_entry_points() -> None:
 def test_application_registry_rejects_duplicate_factory_rebinding() -> None:
     registry = ApplicationPluginRegistry()
     registry.register("eeg_alpha", EEGApplicationPlugin)
+    original = registry.get("eeg_alpha")
 
     with pytest.raises(ValueError, match="already registered"):
         registry.register("eeg_alpha", FEPApplicationPlugin)
+    assert registry.get("eeg_alpha") is original
+    assert original.load_dataset().domain == "eeg"
+
+
+@pytest.mark.parametrize("dataset_ids", ["dataset", ["dataset"], ("",), ("  ",), (1,), ("x", "x")])
+def test_application_registry_rejects_malformed_dataset_contract(
+    dataset_ids: object, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Invalid plugin metadata is refused before caching, and remains recoverable."""
+    registry = ApplicationPluginRegistry()
+    plugin = EEGApplicationPlugin()
+    # Simulate a third-party factory mutating its runtime metadata incorrectly.
+    monkeypatch.setattr(plugin, "dataset_ids", dataset_ids)
+    attempts = 0
+
+    def factory() -> EEGApplicationPlugin:
+        nonlocal attempts
+        attempts += 1
+        return plugin
+
+    registry.register("eeg_alpha", factory)
+    registry.register("friston_fep", FEPApplicationPlugin)
+    healthy = registry.get("friston_fep")
+    with pytest.raises((TypeError, ValueError), match="dataset"):
+        registry.get("eeg_alpha")
+    assert attempts == 1
+    assert registry.get("friston_fep") is healthy
+    plugin.dataset_ids = ("eeg_alpha_plv_8ch",)
+    assert registry.get("eeg_alpha") is plugin
+    assert attempts == 2
+    assert plugin.load_dataset().domain == "eeg"
 
 
 def test_application_registry_rejects_empty_name_and_non_callable_factory() -> None:

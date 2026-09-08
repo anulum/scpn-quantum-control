@@ -68,7 +68,11 @@ class ApplicationPluginBenchmark:
 
 @runtime_checkable
 class ApplicationPlugin(Protocol):
-    """Protocol implemented by application-specific benchmark plugins."""
+    """Benchmark plugin contract with non-empty, unique dataset identifiers.
+
+    ``dataset_ids`` is a non-empty tuple of non-blank strings. Registry
+    admission validates this runtime contract before caching the instance.
+    """
 
     name: str
     domain: str
@@ -123,7 +127,12 @@ class ApplicationPluginRegistry:
         return sorted(self._factories)
 
     def get(self, name: str) -> ApplicationPlugin:
-        """Instantiate and return one plugin."""
+        """Instantiate, validate and cache one plugin.
+
+        Invalid factories or dataset metadata raise without caching a failed
+        instance. A subsequent call retries construction; unrelated entries
+        remain registered. Discovery does not validate factory results.
+        """
         self.discover()
         if name not in self._factories:
             known = ", ".join(self.names())
@@ -458,6 +467,13 @@ def _validate_plugin(name: str, plugin: ApplicationPlugin) -> None:
         raise ValueError(f"application plugin factory for {name!r} returned {plugin.name!r}")
     if not plugin.dataset_ids:
         raise ValueError(f"application plugin {name!r} must expose at least one dataset")
+    if not isinstance(plugin.dataset_ids, tuple):
+        raise TypeError(f"application plugin {name!r} dataset_ids must be a tuple")
+    for dataset_id in plugin.dataset_ids:
+        if not isinstance(dataset_id, str) or not dataset_id.strip():
+            raise ValueError(f"application plugin {name!r} dataset IDs must be non-blank strings")
+    if len(set(plugin.dataset_ids)) != len(plugin.dataset_ids):
+        raise ValueError(f"application plugin {name!r} dataset IDs must be unique")
 
 
 def _finite_metric(name: str, value: float) -> float:
