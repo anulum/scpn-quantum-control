@@ -60,6 +60,9 @@ not sufficient by itself.
 - [ ] Requested S1 execution estimate was recorded.
 - [ ] Queue/calibration uncertainty was recorded separately from execution estimate.
 - [ ] Approval record `max_qpu_seconds` is greater than or equal to the planned spend.
+- [ ] The limit is finite and non-negative; NaN and infinity are invalid.
+- [ ] Approval is the boolean `True`, not a string or integer. Invalid approval
+      types fail at record construction; boolean `False` refuses dispatch.
 - [ ] Approval record provider matches selected backend provider.
 - [ ] Approval record package hash matches the exact preregistration manifest.
 

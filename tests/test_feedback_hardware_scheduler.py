@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from dataclasses import replace
 from typing import Any
 
 import pytest
@@ -40,6 +41,46 @@ def _approval(manifest: dict[str, object], *, approved: bool = True) -> Hardware
         approved=approved,
         notes="explicit S1 approval",
     )
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), -float("inf")])
+def test_approval_rejects_nonfinite_budget_before_provider(value: float) -> None:
+    """An unbounded approval must fail before a provider can receive work."""
+    calls = 0
+
+    def submitter(command: FeedbackCommand, package: Mapping[str, Any]) -> FeedbackResult:
+        nonlocal calls
+        calls += 1
+        return FeedbackResult(qpu_seconds=0.0)
+
+    manifest = _manifest()
+    with pytest.raises(ValueError, match="max_qpu_seconds"):
+        scheduler = ApprovalGatedFeedbackHardwareScheduler(
+            provider="ibm_runtime",
+            package_manifest=manifest,
+            approval=replace(_approval(manifest), max_qpu_seconds=value),
+            submitter=submitter,
+        )
+        scheduler.submit(FeedbackCommand(payload={}, estimated_qpu_seconds=1.0))
+    assert calls == 0
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), -float("inf")])
+def test_command_and_result_reject_nonfinite_qpu_accounting(value: float) -> None:
+    """Invalid estimates and provider usage cannot enter budget arithmetic."""
+    with pytest.raises(ValueError, match="estimated_qpu_seconds"):
+        FeedbackCommand(payload={}, estimated_qpu_seconds=value)
+    with pytest.raises(ValueError, match="qpu_seconds"):
+        FeedbackResult(qpu_seconds=value)
+
+
+@pytest.mark.parametrize("payload", ['"false"', '"true"', "1"])
+def test_approval_requires_exact_boolean(payload: str) -> None:
+    """Decoded truthy values are not explicit boolean approval."""
+    import json
+
+    with pytest.raises(ValueError, match="approved"):
+        replace(_approval(_manifest()), approved=json.loads(payload))
 
 
 def test_approval_gated_scheduler_fails_closed_without_approval() -> None:

@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from typing import Any
@@ -29,7 +30,12 @@ ProviderSubmitter = Callable[[FeedbackCommand, Mapping[str, Any]], FeedbackResul
 
 @dataclass(frozen=True)
 class HardwareApprovalRecord:
-    """Explicit approval needed before an S1 hardware scheduler can submit."""
+    """Explicit boolean approval and finite QPU-second limit for submission.
+
+    Non-finite or negative limits and non-boolean approval values raise
+    ``ValueError`` during construction, before provider dispatch is possible.
+    A valid record with ``approved=False`` still refuses submission.
+    """
 
     approval_id: str
     approver: str
@@ -47,8 +53,10 @@ class HardwareApprovalRecord:
             raise ValueError("approver must be non-empty")
         if not self.package_hash:
             raise ValueError("package_hash must be non-empty")
-        if self.max_qpu_seconds < 0.0:
-            raise ValueError("max_qpu_seconds must be non-negative")
+        if not math.isfinite(self.max_qpu_seconds) or self.max_qpu_seconds < 0.0:
+            raise ValueError("max_qpu_seconds must be finite and non-negative")
+        if type(self.approved) is not bool:
+            raise ValueError("approved must be a boolean")
         if not self.allowed_provider:
             raise ValueError("allowed_provider must be non-empty")
 
