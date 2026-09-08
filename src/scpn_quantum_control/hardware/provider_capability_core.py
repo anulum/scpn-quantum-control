@@ -12,6 +12,7 @@ from __future__ import annotations
 import re
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
+from datetime import date
 from typing import Any, Literal, get_args
 
 from .aggregators import (
@@ -37,7 +38,7 @@ DIRECT_AGGREGATOR = "direct"
 
 ROUTE_CATALOGUE_CONTRACT = "provider_route_catalogue.v1"
 
-_OBSERVATION_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+_OBSERVATION_DATE_RE = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
 
 
 ProviderMetadataProbe = Callable[[ResolvedAggregatorProviderRoute], "ProviderCapabilitySnapshot"]
@@ -339,7 +340,8 @@ class RouteVerbSupport:
     Raises
     ------
     ValueError
-        If the verb is unknown, a date is not ``YYYY-MM-DD``, a required
+        If the verb is unknown, a date is not a valid Gregorian calendar date
+        in ASCII ``YYYY-MM-DD`` format, a required
         provenance field is missing for an advertised or observed operation, or
         an observation contradicts an explicit non-declaration.
 
@@ -414,7 +416,8 @@ class ProviderRouteCatalogueEntry:
     modality
         Target family of the device.
     observed_at
-        ``YYYY-MM-DD`` date this row's evidence was assembled.
+        Valid Gregorian calendar date this row's evidence was assembled,
+        in zero-padded ASCII ``YYYY-MM-DD`` format (years 0001 through 9999).
     verbs
         One record per operation, in ``ROUTE_VERBS`` order.
     submit_requires_approval
@@ -423,7 +426,7 @@ class ProviderRouteCatalogueEntry:
     Raises
     ------
     ValueError
-        If an identity field is empty, the date is malformed, or the verb
+        If an identity field is empty, the date is malformed or impossible, or the verb
         records are not exactly one per operation in canonical order.
 
     """
@@ -584,8 +587,12 @@ def build_provider_route_catalogue(
 
 def _require_observation_date(value: Any, field_name: str) -> None:
     _require_text(value, field_name)
-    if not _OBSERVATION_DATE_RE.match(str(value)):
+    if not _OBSERVATION_DATE_RE.fullmatch(value):
         raise ValueError(f"{field_name} must be an ISO YYYY-MM-DD observation date")
+    try:
+        date.fromisoformat(value)
+    except ValueError as exc:
+        raise ValueError(f"{field_name} must be a valid calendar date") from exc
 
 
 def _require_text(value: Any, field_name: str) -> None:

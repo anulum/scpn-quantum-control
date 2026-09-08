@@ -466,6 +466,13 @@ A route reached without a broker records `broker` as `None`, so the same
 provider and device offered through a broker is a separate row rather than a
 merged one.
 
+`observed_at`, `declared_on` and `observed_on` must be real Gregorian calendar
+dates in zero-padded ASCII `YYYY-MM-DD` format, with years 0001–9999. Impossible
+dates, non-ASCII digits, whitespace and timestamps raise `ValueError` naming
+the affected field. Optional evidence dates may remain `None`; when provided,
+they are validated even for unknown or negative support. Validation does not
+compare against the workstation clock or certify that an observation occurred.
+
 ```python
 from scpn_quantum_control.hardware.provider_capability_core import (
     build_provider_route_catalogue,

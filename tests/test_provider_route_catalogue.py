@@ -314,6 +314,91 @@ def test_malformed_observation_date_is_refused(observed_at: str) -> None:
         build_provider_route_catalogue(observed_at=observed_at)
 
 
+@pytest.mark.parametrize(
+    "value",
+    [
+        "2026-99-99",
+        "2026-00-01",
+        "2026-01-00",
+        "2026-04-31",
+        "2026-02-29",
+        "1900-02-29",
+        "0000-01-01",
+        "10000-01-01",
+        "2026-9-05",
+        "2026-09-5",
+        "2026-09-05\n",
+        " 2026-09-05",
+        "２０２６-０９-０５",
+        "20260905",
+        "2026-W36-6",
+        "2026-09-05T00:00:00",
+    ],
+)
+def test_invalid_calendar_dates_are_refused_at_public_boundaries(value: str) -> None:
+    """Inventory builders and direct rows reject impossible or noncanonical dates."""
+    with pytest.raises(ValueError, match="observed_at"):
+        build_provider_route_catalogue(observed_at=value)
+    with pytest.raises(ValueError, match="observed_at"):
+        ProviderRouteCatalogueEntry(
+            route_id="direct/iqm",
+            provider="iqm",
+            broker=None,
+            device="iqm_cloud",
+            modality="iqm",
+            observed_at=value,
+            verbs=tuple(RouteVerbSupport(verb=verb) for verb in ROUTE_VERBS),
+        )
+    for support in (True, False, None):
+        with pytest.raises(ValueError, match="declared_on"):
+            RouteVerbSupport(
+                verb="metadata",
+                declared=support,
+                declared_source="hardware/aggregators.py",
+                declared_on=value,
+            )
+        with pytest.raises(ValueError, match="observed_on"):
+            RouteVerbSupport(
+                verb="metadata",
+                observed=support,
+                observed_on=value,
+                conformance_owner="tests/test_provider_route_catalogue.py",
+            )
+
+
+@pytest.mark.parametrize("value", ["0001-01-01", "2000-02-29", "2024-02-29", "9999-12-31"])
+def test_valid_calendar_dates_round_trip_without_promoting_support(value: str) -> None:
+    """Valid dates survive JSON export without depending on the workstation clock."""
+    evidence = RouteVerbSupport(
+        verb="metadata",
+        declared_on=value,
+        observed_on=value,
+    )
+    row = _entry(
+        build_provider_route_catalogue(
+            observed_at=value,
+            evidence={"direct/iqm": (evidence,)},
+        ),
+        "direct/iqm",
+    )
+    assert row.inventory_key[-1] == value
+    assert row.unverified
+    exported = json.loads(json.dumps(row.support("metadata").to_dict()))
+    assert exported["declared_on"] == exported["observed_on"] == value
+    assert exported["declared"] is None and exported["observed"] is None
+    positive = RouteVerbSupport(
+        verb="metadata",
+        declared=True,
+        declared_on=value,
+        declared_source="hardware/aggregators.py",
+        observed=True,
+        observed_on=value,
+        conformance_owner="tests/test_provider_route_catalogue.py",
+    )
+    assert positive.to_dict()["declared_on"] == value
+    assert positive.to_dict()["observed_on"] == value
+
+
 def test_duplicate_route_identifiers_are_refused() -> None:
     """A repeated route identifier would collapse two rows into one."""
     routes = built_in_aggregator_provider_routes()
@@ -326,4 +411,4 @@ def test_unknown_verb_lookup_raises_key_error() -> None:
     """Looking up an operation outside the canonical set is an error, not None."""
     entries = build_provider_route_catalogue(observed_at=_OBSERVED_AT)
     with pytest.raises(KeyError):
-        _entry(entries, "direct/iqm").support("teleport")  # type: ignore[arg-type]
+        _entry(entries, "direct/iqm").support("teleport")  # type: ignore[arg-type]  # invalid verb rejection
