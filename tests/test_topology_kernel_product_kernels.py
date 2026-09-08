@@ -31,6 +31,40 @@ from scpn_quantum_control.topology_kernel_product import (
 from scpn_quantum_control.topology_kernel_product.kernels import _float_bytes
 
 
+@pytest.mark.parametrize("quantum", [False, True])
+def test_kernel_digest_uses_stored_normalized_identifiers(quantum: bool) -> None:
+    """Equivalent canonical identities produce identical public kernel custody."""
+    config = TopologyKernelConfig(n_qubits=2)
+    features = np.array([[0.0], [1.0]])
+    outputs = []
+    for rows, columns in [(("a", "b"), ("c", "d")), ((" a ", "b\t"), (" c", "d "))]:
+        if quantum:
+            result = fidelity_kernel_matrix(
+                features,
+                features,
+                ring_topology(2),
+                config,
+                row_ids=rows,
+                column_ids=columns,
+            )
+        else:
+            result = rbf_kernel_matrix(
+                features,
+                features,
+                config,
+                gamma=1.0,
+                row_ids=rows,
+                column_ids=columns,
+            )
+        outputs.append(result)
+    canonical, padded = outputs
+    assert canonical.row_ids == padded.row_ids == ("a", "b")
+    assert canonical.column_ids == padded.column_ids == ("c", "d")
+    np.testing.assert_array_equal(canonical.values, padded.values)
+    assert canonical.topology_digest == padded.topology_digest
+    assert canonical.content_digest == padded.content_digest
+
+
 def test_kernel_custody_bytes_normalise_subprecision_and_signed_zero() -> None:
     """Normalize subprecision values and signed zero in custody bytes."""
     left = np.asarray([-0.0, 0.12345678901231], dtype=np.float64)

@@ -19,7 +19,7 @@ from scpn_quantum_control.applications.quantum_kernel import (
     encode_topology_edge_features,
 )
 
-from .schema import FloatArray, TopologyKernelConfig, TopologyKernelMatrix
+from .schema import FloatArray, TopologyKernelConfig, TopologyKernelMatrix, _require_ids
 
 _NUMERIC_CUSTODY_DECIMALS = 12
 
@@ -165,6 +165,8 @@ def fidelity_kernel_matrix(
     columns = validate_feature_matrix(column_features, config, name="column_features")
     if len(row_ids) != rows.shape[0] or len(column_ids) != columns.shape[0]:
         raise ValueError("sample identifiers must match their feature axes")
+    row_ids = _require_ids(row_ids, "row_ids")
+    column_ids = _require_ids(column_ids, "column_ids")
     coupling = validate_topology(topology, config)
     digest = topology_digest(coupling, config)
     row_states = np.vstack(
@@ -226,6 +228,8 @@ def rbf_kernel_matrix(
         raise ValueError("sample identifiers must match their feature axes")
     if not np.isfinite(gamma) or gamma <= 0.0:
         raise ValueError("gamma must be finite and positive")
+    row_ids = _require_ids(row_ids, "row_ids")
+    column_ids = _require_ids(column_ids, "column_ids")
     distances = np.sum((rows[:, None, :] - columns[None, :, :]) ** 2, axis=2)
     values = np.asarray(np.exp(-float(gamma) * distances), dtype=np.float64)
     digest = hashlib.sha256(f"classical-rbf:{float(gamma):.17g}".encode()).hexdigest()
