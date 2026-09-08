@@ -99,7 +99,7 @@ reported 6,301 errors in 388 of 968 tracked Python test files; 5,076 were
 `no-untyped-def`. Adding the whole directory to one gate would therefore mix
 mechanical annotations with intentional invalid-input tests and hide ownership.
 
-`tools/test_typing_policy.json` is the machine-readable policy. The 1215-file enforced cohort set
+`tools/test_typing_policy.json` is the machine-readable policy. The 1255-file enforced cohort set
 consists of the 32-file `repository_policy` cohort covering coverage,
 coverage debt, licence, release, generated-surface, commit, secret, TODO, version,
 branch, module-responsibility, CI/pre-push, local preflight, and built-wheel
@@ -114,6 +114,11 @@ families, the shared `tests/conftest.py` fixture and hypothesis-strategy module,
 plus the smaller runtime-contract groups, which are promoted together
 because none of them reaches a sliceable size alone — every file of
 them that passes strict mypy, added in slices under the policy's 40-file cap.
+
+A fifth enforced cohort, the 520-file `completed_test_surface`, holds the
+remainder of the tracked test tree, promoted after the whole unenrolled set
+measured clean in one strict run. It carries no per-family risk ordering,
+because at that point there was none left to carry.
 
 A fifth enforced cohort, the 480-file `completed_test_surface`, holds the
 remainder of the tracked test tree, promoted after the whole unenrolled set
