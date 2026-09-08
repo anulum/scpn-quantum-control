@@ -23,6 +23,7 @@ import shutil
 import stat
 import subprocess  # nosec B404
 import sys
+import tempfile
 from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -246,40 +247,76 @@ def _is_packed_ref_prune(ref: str, old_oid: str) -> bool:
 
 
 def install_reference_transaction_hook(repo_root: Path) -> Path:
-    """Install the local reference-transaction hook for ``repo_root``.
+    """Install a reference hook without replacing an existing owner chain.
 
     The shim resolves the policy script from the current worktree first and
     falls back to the primary checkout (the parent of the common git
     directory), because linked worktrees checked out at commits that predate
     this script would otherwise fail every reference update with a missing
-    file instead of a policy verdict.
+    file instead of a policy verdict. If neither script exists, the shim
+    refuses the transaction. An identical executable installation is a no-op.
+
+    Parameters
+    ----------
+    repo_root
+        Existing repository whose Git-configured hook directory is used.
+
+    Returns
+    -------
+    Path
+        Installed or already identical executable hook path.
+
+    Raises
+    ------
+    FileExistsError
+        If the target is an existing nonidentical hook, symlink, nonexecutable
+        hook, or another process creates the target during installation.
+        Review existing chains explicitly; no automatic migration is attempted.
+    OSError
+        If hook storage cannot be read or the complete executable cannot be
+        published. The installer never falls back to overwriting a target.
     """
-    hook_path = _git_path(repo_root, "hooks/reference-transaction")
+    # Resolve the directory only: resolving the leaf would follow an existing
+    # hook symlink and potentially overwrite a different owner's script.
+    hook_path = _git_path(repo_root, "hooks") / "reference-transaction"
     hook_path.parent.mkdir(parents=True, exist_ok=True)
-    hook_path.write_text(
-        "\n".join(
-            (
-                "#!/usr/bin/env sh",
-                "# Installed by tools/enforce_main_branch_policy.py",
-                'python_bin="${SCPN_QC_PYTHON:-python3}"',
-                'repo_root="$(git rev-parse --show-toplevel)" || exit 1',
-                'script="$repo_root/tools/enforce_main_branch_policy.py"',
-                'if [ ! -f "$script" ]; then',
-                '    common_dir="$(git rev-parse --path-format=absolute --git-common-dir)" '
-                "|| exit 1",
-                '    script="$(dirname "$common_dir")/tools/enforce_main_branch_policy.py"',
-                "fi",
-                'if [ ! -f "$script" ]; then',
-                '    echo "enforce_main_branch_policy.py not found; skipping branch policy" >&2',
-                "    exit 0",
-                "fi",
-                'exec "$python_bin" "$script" reference-transaction "$@"',
-                "",
-            )
-        ),
-        encoding="utf-8",
+    content = "\n".join(
+        (
+            "#!/usr/bin/env sh",
+            "# Installed by tools/enforce_main_branch_policy.py",
+            'python_bin="${SCPN_QC_PYTHON:-python3}"',
+            'repo_root="$(git rev-parse --show-toplevel)" || exit 1',
+            'script="$repo_root/tools/enforce_main_branch_policy.py"',
+            'if [ ! -f "$script" ]; then',
+            '    common_dir="$(git rev-parse --path-format=absolute --git-common-dir)" || exit 1',
+            '    script="$(dirname "$common_dir")/tools/enforce_main_branch_policy.py"',
+            "fi",
+            'if [ ! -f "$script" ]; then',
+            '    echo "enforce_main_branch_policy.py not found; refusing transaction" >&2',
+            "    exit 1",
+            "fi",
+            'exec "$python_bin" "$script" reference-transaction "$@"',
+            "",
+        )
     )
-    hook_path.chmod(hook_path.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+    if hook_path.is_symlink():
+        raise FileExistsError(f"preserve existing hook symlink: {hook_path}")
+    if hook_path.exists():
+        if (
+            hook_path.is_file()
+            and hook_path.read_bytes() == content.encode("utf-8")
+            and hook_path.stat().st_mode & stat.S_IXUSR
+        ):
+            return hook_path
+        raise FileExistsError(f"preserve existing hook; review its chain: {hook_path}")
+    # A same-directory hard link atomically publishes the complete executable
+    # and fails if any competing installer created the target. Never replace.
+    with tempfile.NamedTemporaryFile(dir=hook_path.parent, prefix=".reference-hook-") as staged:
+        staged.write(content.encode("utf-8"))
+        staged.flush()
+        os.fchmod(staged.fileno(), 0o755)
+        os.fsync(staged.fileno())
+        os.link(staged.name, hook_path)
     return hook_path
 
 

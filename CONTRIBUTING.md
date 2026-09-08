@@ -20,6 +20,18 @@ states, both with and without an expected old OID. Recheck these behaviours
 when changing Git versions or ref backends. Storage inference does not defend
 against an operator directly editing Git's own files.
 
+The project hook installer never replaces an existing hook or symlink.
+Reinstalling its identical executable is a no-op; an older, modified or
+nonexecutable hook requires explicit review of the existing chain. This also
+protects shared GOTM wrappers: do not remove them to make installation pass.
+New hooks are published as complete executables through an atomic, exclusive
+hard link; unsupported storage or competing installation fails without an
+overwrite fallback. Git's configured hook directory is respected.
+If neither the current nor primary checkout contains the policy script, the
+installed shim refuses the transaction. Restore the actual policy owner rather
+than disabling the hook. Installer regressions live in
+`tests/test_main_branch_hook_installation.py`.
+
 ## Setup
 
 Use Python 3.11 or newer.

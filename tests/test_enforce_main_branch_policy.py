@@ -135,7 +135,7 @@ def test_install_writes_executable_reference_transaction_hook(tmp_path: Path) ->
     hook_text = hook_path.read_text(encoding="utf-8")
     assert hook_text.startswith("#!/usr/bin/env sh")
     assert "--git-common-dir" in hook_text
-    assert "skipping branch policy" in hook_text
+    assert "refusing transaction" in hook_text
     assert hook_path.stat().st_mode & stat.S_IXUSR
 
 
