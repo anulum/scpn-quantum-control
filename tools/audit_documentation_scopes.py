@@ -95,14 +95,26 @@ def scan(repo: Path, scopes: Sequence[str]) -> list[dict[str, object]]:
     Raises
     ------
     RuntimeError
-        When Ruff exits for a reason other than finding violations.
+        When Ruff fails, emits an invalid finding list, or reports an exit
+        status inconsistent with that list.
+    ValueError
+        When the repository is absent, no scopes are selected, a selected
+        scope is not a directory, or the entire inventory has no Python source.
+        An existing non-Python scope is valid; a missing scope is not.
 
     """
-    present = [scope for scope in scopes if (repo / scope).exists()]
-    if not present:
-        return []
+    if not repo.is_dir():
+        raise ValueError(f"repository is not a directory: {repo}")
+    if not scopes:
+        raise ValueError("select at least one documentation scope")
+    for scope in scopes:
+        directory = repo / scope
+        if not directory.is_dir():
+            raise ValueError(f"required documentation scope is not a directory: {scope}")
+    if not any(path.is_file() for scope in scopes for path in (repo / scope).rglob("*.py")):
+        raise ValueError("documentation inventory contains no Python files")
     completed = subprocess.run(  # noqa: S603
-        [sys.executable, *SCAN, *present],
+        [sys.executable, *SCAN, *scopes],
         capture_output=True,
         text=True,
         cwd=repo,
@@ -110,7 +122,15 @@ def scan(repo: Path, scopes: Sequence[str]) -> list[dict[str, object]]:
     )
     if completed.returncode not in {0, 1}:
         raise RuntimeError(f"ruff failed: {completed.stderr.strip()}")
-    findings: list[dict[str, object]] = json.loads(completed.stdout or "[]")
+    try:
+        decoded: object = json.loads(completed.stdout)
+    except ValueError as error:
+        raise RuntimeError(f"ruff emitted invalid JSON: {completed.stderr.strip()}") from error
+    if not isinstance(decoded, list) or any(not isinstance(item, dict) for item in decoded):
+        raise RuntimeError("ruff did not emit a list of finding objects")
+    findings: list[dict[str, object]] = decoded
+    if bool(findings) != (completed.returncode == 1):
+        raise RuntimeError("ruff exit status disagrees with its finding list")
     return findings
 
 
@@ -144,7 +164,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--repo", type=Path, default=Path(__file__).resolve().parent.parent)
     arguments = parser.parse_args(argv)
 
-    findings = scan(arguments.repo, ENFORCED_SCOPES)
+    try:
+        findings = scan(arguments.repo, ENFORCED_SCOPES)
+    except (OSError, ValueError, RuntimeError) as error:
+        print(f"documentation scan could not complete: {error}", file=sys.stderr)
+        return 2
     offenders = unexempt(findings, arguments.repo)
     if offenders:
         print(f"{len(offenders)} documentation finding(s) in a scope required to hold at zero:")
@@ -154,9 +178,12 @@ def main(argv: list[str] | None = None) -> int:
         print("re-opening the scope; an exemption needs a reason recorded in EXEMPT.")
         return 1
     print(
-        f"documentation scopes clean: {len(ENFORCED_SCOPES)} scopes, "
+        f"documentation scopes clean: {len(ENFORCED_SCOPES)} scopes inspected, "
         f"{len(EXEMPT)} recorded exemption(s)"
     )
+    for scope in ENFORCED_SCOPES:
+        count = sum(path.is_file() for path in (arguments.repo / scope).rglob("*.py"))
+        print(f"    {scope}: {count} Python file(s)")
     return 0
 
 

@@ -127,6 +127,18 @@ that also passes focused pytest, Ruff check/format, and strict mypy. Keep
 intentional invalid-input calls and use a narrow error-code suppression only
 where the type system cannot express the negative case.
 
+## Documentation Scope Gate
+
+The closed Python documentation scopes are checked with
+`python tools/audit_documentation_scopes.py`. Every configured scope must exist
+as a directory, and the combined inventory must contain Python source. Each
+scope's Python file count is reported, including zero for non-Python areas.
+A missing scope is an input error, not evidence of zero documentation debt.
+Exit status 0 means all listed
+scopes were inspected without unexempted findings, 1 reports documentation debt,
+and 2 reports an incomplete scan. This gate does not certify test documentation,
+other languages or the semantic accuracy of docstrings.
+
 ## Commit Messages
 
 Use conventional subjects:
