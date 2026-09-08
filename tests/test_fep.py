@@ -492,6 +492,13 @@ def _kl_gaussian_1d(mu_q: float, sd_q: float, mu_p: float, sd_p: float) -> float
 class TestGaussianKLContract:
     """The divergence must match analysis and refuse anything that is not a covariance."""
 
+    @pytest.mark.parametrize("scale", [1e-12, 1.0, 1e12])
+    def test_material_asymmetry_is_rejected_at_every_scale(self, scale: float) -> None:
+        """An absolute threshold must not admit relatively large covariance errors."""
+        sigma = scale * np.array([[1.0, 90.0], [0.5, 1.0]])
+        with pytest.raises(ValueError, match="symmetric"):
+            kl_divergence_gaussian(np.zeros(2), sigma, np.zeros(2), sigma)
+
     @pytest.mark.parametrize(
         ("mu_q", "sd_q", "mu_p", "sd_p"),
         [(0.0, 1.0, 0.0, 2.0), (1.5, 0.3, -2.0, 1.7), (0.0, 5.0, 0.0, 0.2)],

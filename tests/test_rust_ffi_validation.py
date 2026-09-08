@@ -1192,14 +1192,15 @@ def test_fep_domain_contract_free_energy_rejects_undersized_sensory_precision() 
         free_energy(np.array([0.2, -0.1]), np.zeros(2), np.eye(2), np.eye(1), 0.1, 1e-10)
 
 
-def test_fep_domain_contract_free_energy_rejects_asymmetric_precision() -> None:
+@pytest.mark.parametrize("scale", [1e-12, 1.0, 1e12])
+def test_fep_domain_contract_free_energy_rejects_asymmetric_precision(scale: float) -> None:
     """An asymmetric precision used to yield its symmetrised triangle's value.
 
     The Cholesky factorisation reads only the lower triangle, so the call
     succeeded and returned a free energy for a matrix the caller never supplied.
     """
     _, free_energy = _fep_domain_contract_exports()
-    asymmetric = np.array([[2.0, 1.0], [0.0, 2.0]])
+    asymmetric = scale * np.array([[2.0, 1.0], [0.0, 2.0]])
 
     with pytest.raises(ValueError, match=r"k_precision must be symmetric within"):
         free_energy(np.array([0.2, -0.1]), np.zeros(2), asymmetric, np.eye(2), 0.1, 1e-10)

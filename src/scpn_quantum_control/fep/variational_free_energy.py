@@ -87,7 +87,11 @@ rejected rather than nudged into range.
 """
 
 COVARIANCE_SYMMETRY_ATOL: Final[float] = 1e-10
-"""Absolute tolerance admitted between a covariance and its transpose."""
+"""Symmetry tolerance on a covariance normalised by its largest absolute entry.
+
+The historical name is retained for import compatibility. The tolerance scales
+with the matrix, so changing physical units cannot admit material asymmetry.
+"""
 
 
 def _validated_mean(mu: NDArray[np.float64], name: str) -> NDArray[np.float64]:
@@ -157,8 +161,11 @@ def _cholesky_of_covariance(
         raise ValueError(f"{name} must have shape ({size}, {size}), got {matrix.shape}")
     if not np.all(np.isfinite(matrix)):
         raise ValueError(f"{name} must be finite")
-    if not np.allclose(matrix, matrix.T, rtol=0.0, atol=COVARIANCE_SYMMETRY_ATOL):
-        raise ValueError(f"{name} must be symmetric within {COVARIANCE_SYMMETRY_ATOL}")
+    scale = float(np.max(np.abs(matrix), initial=0.0)) or 1.0
+    if not np.allclose(matrix / scale, matrix.T / scale, rtol=0.0, atol=COVARIANCE_SYMMETRY_ATOL):
+        raise ValueError(
+            f"{name} must be symmetric within relative tolerance {COVARIANCE_SYMMETRY_ATOL}"
+        )
     try:
         # scipy carries no stubs here, so the factor is given its declared type
         # at this boundary rather than leaking Any into every caller.
@@ -366,6 +373,9 @@ def kl_divergence_gaussian(
         Finite mean vectors of shape ``(n,)``.
     sigma_q, sigma_p
         Finite symmetric positive-definite covariances of shape ``(n, n)``.
+        Symmetry is checked after normalising by each matrix's largest absolute
+        entry, with tolerance ``COVARIANCE_SYMMETRY_ATOL``. No absolute unit-sized
+        tolerance is applied to small covariances.
 
     Returns
     -------

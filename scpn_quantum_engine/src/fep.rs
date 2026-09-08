@@ -25,11 +25,13 @@ use crate::validation::{
     validate_n, validate_square_matrix, validate_symmetric, validate_vector_len,
 };
 
-/// Absolute tolerance admitted between a covariance-like matrix and its transpose.
+/// Symmetry tolerance relative to the largest absolute regularised matrix entry.
 ///
 /// Mirrors `COVARIANCE_SYMMETRY_ATOL` in
 /// `scpn_quantum_control.fep.variational_free_energy`, so both tiers admit the
 /// same domain.
+/// The historical name remains for source compatibility; the absolute tolerance
+/// passed to validation is this value times the matrix scale, not a unit-sized floor.
 pub const COVARIANCE_SYMMETRY_ATOL: f64 = 1e-10;
 
 fn log_det_spd_with_ridge(
@@ -217,7 +219,8 @@ pub fn prediction_error_inner(
 /// finite.
 ///
 /// `k_precision` must additionally be symmetric within
-/// [`COVARIANCE_SYMMETRY_ATOL`] and positive definite once the ridge is added.
+/// [`COVARIANCE_SYMMETRY_ATOL`] times the largest absolute entry of `K + ridge I`,
+/// and positive definite once the ridge is added.
 /// Its log-determinant is taken from a Cholesky factor, which reads only the
 /// lower triangle: without the symmetry check an asymmetric matrix would
 /// silently yield the determinant of its symmetrised triangle rather than an
@@ -253,7 +256,12 @@ pub fn variational_free_energy_rust(
     validate_finite_array(&k_arr, "k_precision")?;
     validate_finite_array(&gamma, "sensory_precision")?;
     validate_finite_scalar(ridge, "ridge")?;
-    validate_symmetric(&k_arr, COVARIANCE_SYMMETRY_ATOL, "k_precision")?;
+    let scale = k_arr
+        .indexed_iter()
+        .fold(0.0_f64, |largest, ((i, j), value)| {
+            largest.max((value + if i == j { ridge } else { 0.0 }).abs())
+        });
+    validate_symmetric(&k_arr, COVARIANCE_SYMMETRY_ATOL * scale, "k_precision")?;
 
     // Complexity: KL[q || prior] for diagonal Σ = sigma_diag × I
     // KL = 0.5 × (tr(K_reg × Σ) + μᵀ K_reg μ − n − log|K_reg| − log|Σ|)
@@ -334,27 +342,13 @@ mod tests {
     }
 
     #[test]
-    fn test_free_energy_zero_observation_zero_belief() {
-        // μ=0, x=0, K=I → complexity = KL only, accuracy = 0
-        let n = 2;
-        let mu = vec![0.0; n];
-        let x = vec![0.0; n];
-        let _k = Array2::<f64>::eye(n);
-        let _gamma = Array2::<f64>::eye(n);
-        let _sigma_diag = 1.0;
-        let _ridge = 1e-10;
-
-        let mu_a = Array1::from_vec(mu);
-        let x_a = Array1::from_vec(x);
-
-        // Manual: accuracy = 0
-        let mut accuracy = 0.0f64;
-        for i in 0..n {
-            let diff: f64 = x_a[i] - mu_a[i];
-            accuracy += diff * diff;
+    fn test_log_det_identity_with_ridge() {
+        let precision = Array2::<f64>::eye(2);
+        for ridge in [0.0_f64, 1e-10, 0.5] {
+            let actual = log_det_spd_with_ridge(&precision.view(), ridge).unwrap();
+            let expected = 2.0 * ridge.ln_1p();
+            assert!((actual - expected).abs() < 1e-15);
         }
-        accuracy *= 0.5;
-        assert!(accuracy.abs() < 1e-20);
     }
 
     #[test]
