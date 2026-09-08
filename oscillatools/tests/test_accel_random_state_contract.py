@@ -21,6 +21,7 @@ against the historical algorithm written out in full, so a later switch to
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from typing import Any
 
 import numpy as np
@@ -32,6 +33,16 @@ from oscillatools.accel import (
     RANDOM_STATE_BYTES_PER_AMPLITUDE,
     rust_random_state,
 )
+
+
+@pytest.fixture(autouse=True)
+def preserve_callers_global_rng() -> Iterator[None]:
+    """The test's own legacy seed probes must not perturb subsequent callers."""
+    original = np.random.get_state()
+    try:
+        yield
+    finally:
+        np.random.set_state(original)
 
 
 def _historical_state(n_qubits: int, seed: int) -> NDArray[np.complex128]:
@@ -210,6 +221,33 @@ class TestArgumentDomain:
 
 class TestMemoryAdmission:
     """A large request refuses before it draws anything."""
+
+    @pytest.mark.parametrize("n_qubits", [4096, 10**12])
+    def test_native_impossible_size_refuses_before_generator(
+        self, n_qubits: int, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Huge metadata must not cause huge shifts, diagnostics or random draws."""
+
+        def forbidden(*args: Any, **kwargs: Any) -> None:
+            raise AssertionError("generator constructed for impossible state")
+
+        monkeypatch.setattr(np.random, "RandomState", forbidden)
+        with pytest.raises(MemoryError, match="addressability"):
+            rust_random_state(n_qubits)
+
+    @pytest.mark.parametrize("budget", [True, np.bool_(True), "1", None, 1e308, 10**400])
+    def test_budget_cannot_coerce_or_overflow(self, budget: Any) -> None:
+        """Malformed or unrepresentable budgets are named input errors."""
+        with pytest.raises(ValueError, match="positive and finite"):
+            rust_random_state(1, max_gib=budget)
+
+    def test_seed_domain_matches_local_legacy_generator(self) -> None:
+        """The largest uint32 seed works; the next integer is refused explicitly."""
+        np.testing.assert_array_equal(
+            rust_random_state(1, seed=2**32 - 1), _historical_state(1, 2**32 - 1)
+        )
+        with pytest.raises(ValueError, match="smaller than"):
+            rust_random_state(1, seed=2**32)
 
     def test_a_large_request_refuses(self) -> None:
         """Forty qubits would need tens of terabytes at peak."""

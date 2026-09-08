@@ -1050,6 +1050,7 @@ __all__ = [
 ]
 
 import math
+import sys
 from typing import Final
 
 import numpy as np
@@ -1103,10 +1104,12 @@ def rust_random_state(
         Non-negative qubit count. The returned vector has ``2**n_qubits``
         amplitudes.
     seed
-        Non-negative seed for the local generator. The same seed always gives
+        Integer seed in ``[0, 2**32)`` for the local generator. The same seed gives
         the same vector, and different seeds give different vectors.
     max_gib
-        Admission budget in GiB for the peak memory of one call. See
+        Positive finite real budget in GiB, with a finite byte conversion.
+        Booleans are rejected. This admits declared dense buffers, not total
+        process memory or allocator overhead. See
         :data:`RANDOM_STATE_BYTES_PER_AMPLITUDE`.
 
     Returns
@@ -1121,18 +1124,35 @@ def rust_random_state(
         ``max_gib`` is not positive and finite, or if the draw degenerates to a
         zero vector that cannot be normalised.
     MemoryError
-        If the peak allocation for ``n_qubits`` exceeds ``max_gib``.
+        If the declared peak exceeds ``max_gib`` or native addressability.
     """
     if isinstance(n_qubits, bool) or not isinstance(n_qubits, int) or n_qubits < 0:
         raise ValueError(f"n_qubits must be a non-negative integer, got {n_qubits!r}")
     if isinstance(seed, bool) or not isinstance(seed, int) or seed < 0:
         raise ValueError(f"seed must be a non-negative integer, got {seed!r}")
-    if not (math.isfinite(max_gib) and max_gib > 0.0):
-        raise ValueError(f"max_gib must be positive and finite, got {max_gib!r}")
+    if seed >= 2**32:
+        raise ValueError("seed must be smaller than 2**32")
+    if isinstance(max_gib, (bool, np.bool_)) or not isinstance(
+        max_gib, (int, float, np.integer, np.floating)
+    ):
+        raise ValueError("max_gib must be positive and finite")
+    try:
+        budget = float(max_gib)
+        budget_as_bytes = budget * _GIB
+    except (OverflowError, ValueError) as exc:
+        raise ValueError("max_gib must be positive and finite") from exc
+    if not (math.isfinite(budget_as_bytes) and budget > 0.0):
+        raise ValueError("max_gib must be positive and finite")
+
+    if (
+        n_qubits >= sys.maxsize.bit_length()
+        or (sys.maxsize >> n_qubits) < RANDOM_STATE_BYTES_PER_AMPLITUDE
+    ):
+        raise MemoryError("random state exceeds native addressability")
 
     dimension = 2**n_qubits
     peak_bytes = dimension * RANDOM_STATE_BYTES_PER_AMPLITUDE
-    budget_bytes = int(max_gib * _GIB)
+    budget_bytes = int(budget_as_bytes)
     if peak_bytes > budget_bytes:
         raise MemoryError(
             f"random state for n_qubits={n_qubits} needs about "
