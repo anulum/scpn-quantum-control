@@ -134,6 +134,67 @@ def test_approval_gated_scheduler_records_approved_submission() -> None:
     assert scheduler.submissions[0].metadata["provider"] == "ibm_quantum"
 
 
+def test_scheduler_snapshots_nested_approved_manifest() -> None:
+    """Caller-owned nested lists must not alter the approved provider payload."""
+    circuits = ["approved"]
+    manifest: dict[str, object] = {"circuits": circuits}
+    approval = _approval(manifest)
+    received: list[str] = []
+
+    def submitter(command: FeedbackCommand, package: Mapping[str, Any]) -> FeedbackResult:
+        received.append(hash_package_manifest(package))
+        return FeedbackResult(qpu_seconds=0.0)
+
+    scheduler = ApprovalGatedFeedbackHardwareScheduler(
+        provider="ibm_runtime",
+        package_manifest=manifest,
+        approval=approval,
+        submitter=submitter,
+    )
+    circuits.append("unapproved")
+    scheduler.submit(FeedbackCommand(payload={}))
+    assert received == [approval.package_hash]
+    assert scheduler.package_hash == approval.package_hash
+
+
+def test_provider_cannot_mutate_future_submission_manifest() -> None:
+    """Each dispatch receives an isolated copy of the approved package."""
+    manifest: dict[str, object] = {"circuits": ["approved"]}
+    approval = _approval(manifest)
+    received: list[str] = []
+
+    def submitter(command: FeedbackCommand, package: Mapping[str, Any]) -> FeedbackResult:
+        received.append(hash_package_manifest(package))
+        package["circuits"].append("provider-local")
+        return FeedbackResult(qpu_seconds=0.0)
+
+    scheduler = ApprovalGatedFeedbackHardwareScheduler(
+        provider="ibm_runtime",
+        package_manifest=manifest,
+        approval=approval,
+        submitter=submitter,
+    )
+    scheduler.submit(FeedbackCommand(payload={}))
+    scheduler.submit(FeedbackCommand(payload={}))
+    assert received == [approval.package_hash, approval.package_hash]
+    assert hash_package_manifest(scheduler.package_manifest) == approval.package_hash
+    assert hash_package_manifest(manifest) == approval.package_hash
+
+
+def test_manifest_inspection_cannot_change_dispatch_payload() -> None:
+    """A caller inspecting a manifest cannot edit the stored approval snapshot."""
+    manifest: dict[str, object] = {"circuits": ["approved"]}
+    approval = _approval(manifest)
+    scheduler = ApprovalGatedFeedbackHardwareScheduler(
+        provider="ibm_runtime",
+        package_manifest=manifest,
+        approval=approval,
+        submitter=lambda command, package: FeedbackResult(qpu_seconds=0.0),
+    )
+    scheduler.package_manifest["circuits"].append("inspection-edit")
+    assert hash_package_manifest(scheduler.package_manifest) == approval.package_hash
+
+
 def test_approval_gated_scheduler_rejects_provider_and_hash_mismatch() -> None:
     """Reject provider and package evidence that diverges from approval."""
     manifest = _manifest()

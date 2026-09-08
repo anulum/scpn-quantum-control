@@ -19,6 +19,7 @@ import hashlib
 import json
 import math
 from collections.abc import Callable, Mapping
+from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -93,12 +94,26 @@ class ApprovalGatedFeedbackHardwareScheduler:
             raise ValueError("package_manifest must be non-empty")
         self.provider = provider
         self.backend_descriptor = _resolve_backend_descriptor(provider)
-        self.package_manifest = dict(package_manifest)
-        self.package_hash = hash_package_manifest(package_manifest)
+        self._package_manifest = deepcopy(dict(package_manifest))
+        self._package_hash = hash_package_manifest(self._package_manifest)
         self.approval = approval
         self.submitter = submitter
         self._spent_qpu_seconds = 0.0
         self._submissions: list[HardwareSubmissionRecord] = []
+
+    @property
+    def package_manifest(self) -> dict[str, Any]:
+        """Return a detached copy of the construction-time approved package.
+
+        Neither inspection nor provider-local edits change future dispatches.
+        To change a package, construct a new scheduler with matching approval.
+        """
+        return deepcopy(self._package_manifest)
+
+    @property
+    def package_hash(self) -> str:
+        """SHA256 of the stored package snapshot, fixed at construction."""
+        return self._package_hash
 
     @property
     def spent_qpu_seconds(self) -> float:

@@ -78,6 +78,9 @@ not sufficient by itself.
       types fail at record construction; boolean `False` refuses dispatch.
 - [ ] Approval record provider matches selected backend provider.
 - [ ] Approval record package hash matches the exact preregistration manifest.
+- [ ] The scheduler snapshots the manifest at construction and gives each
+      provider call a detached copy. Changing the package requires a new
+      scheduler and matching approval; editing an inspected copy has no effect.
 
 ## Data and Reproducibility Gates
 
