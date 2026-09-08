@@ -9,6 +9,10 @@
 
 from __future__ import annotations
 
+import json
+from dataclasses import replace
+from typing import TypedDict
+
 import numpy as np
 import pytest
 
@@ -23,6 +27,32 @@ from scpn_quantum_control.hardware.feedback_submission import (
     FeedbackSubmissionPackage,
     build_s1_feedback_submission_package,
 )
+
+
+class SnapshotOverrides(TypedDict, total=False):
+    """Typed semantic-invalid snapshot overrides."""
+
+    provider: str
+    backend_name: str
+    n_qubits: int
+    max_shots: int | None
+    max_circuits: int | None
+
+
+@pytest.mark.parametrize("field", ["n_qubits", "max_shots", "max_circuits"])
+@pytest.mark.parametrize("payload", ["true", "1.5", '"8"', "NaN", "Infinity"])
+def test_snapshot_rejects_invalid_capacity_types(field: str, payload: str) -> None:
+    """Malformed metadata cannot bypass capacity comparisons."""
+    snapshot = BackendCapabilitySnapshot(provider="ibm", backend_name="target", n_qubits=8)
+    with pytest.raises(ValueError, match=field):
+        replace(snapshot, **{field: json.loads(payload)})
+
+
+@pytest.mark.parametrize("payload", ['"false"', "1", "null"])
+def test_snapshot_rejects_nonboolean_simulator_identity(payload: str) -> None:
+    """Simulator provenance must not accept truthy strings or integers."""
+    with pytest.raises(ValueError, match="simulator"):
+        BackendCapabilitySnapshot("ibm", "target", 8, simulator=json.loads(payload))
 
 
 def _package() -> FeedbackSubmissionPackage:
@@ -146,13 +176,12 @@ def test_feedback_backend_capability_blocks_budget_even_when_features_match() ->
     ),
 )
 def test_backend_capability_snapshot_rejects_invalid_metadata_boundaries(
-    kwargs: dict[str, object],
+    kwargs: SnapshotOverrides,
     message: str,
 ) -> None:
     """Reject empty identity, invalid qubit counts, and non-positive limits."""
-    params = {"provider": "ibm", "backend_name": "target", "n_qubits": 4} | kwargs
+    params: SnapshotOverrides = {"provider": "ibm", "backend_name": "target", "n_qubits": 4}
+    params.update(kwargs)
 
-    # One field per case is replaced with an invalid value; the rejection is
-    # the subject and mypy cannot express a call that is meant to fail.
     with pytest.raises(ValueError, match=message):
-        BackendCapabilitySnapshot(**params)  # type: ignore[arg-type]
+        BackendCapabilitySnapshot(**params)

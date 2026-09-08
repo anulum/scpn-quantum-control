@@ -20,7 +20,12 @@ CapabilityStatus = Literal["ready", "blocked", "unknown"]
 
 @dataclass(frozen=True)
 class BackendCapabilitySnapshot:
-    """Provider metadata snapshot needed for S1 without submitting jobs."""
+    """Provider metadata snapshot needed for S1 without submitting jobs.
+
+    Capacities must be positive Python integers, not booleans or floats.
+    Optional limits may be ``None`` (undeclared). ``simulator`` must be a
+    boolean; malformed capacities or simulator flags raise ``ValueError``.
+    """
 
     provider: str
     backend_name: str
@@ -38,12 +43,17 @@ class BackendCapabilitySnapshot:
             raise ValueError("provider must be non-empty")
         if not self.backend_name:
             raise ValueError("backend_name must be non-empty")
-        if self.n_qubits < 1:
-            raise ValueError("n_qubits must be positive")
-        if self.max_shots is not None and self.max_shots < 1:
-            raise ValueError("max_shots must be positive when provided")
-        if self.max_circuits is not None and self.max_circuits < 1:
-            raise ValueError("max_circuits must be positive when provided")
+        for name, value in (
+            ("n_qubits", self.n_qubits),
+            ("max_shots", self.max_shots),
+            ("max_circuits", self.max_circuits),
+        ):
+            if value is None and name != "n_qubits":
+                continue
+            if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+                raise ValueError(f"{name} must be positive and an integer when provided")
+        if type(self.simulator) is not bool:
+            raise ValueError("simulator must be a boolean")
 
 
 @dataclass(frozen=True)

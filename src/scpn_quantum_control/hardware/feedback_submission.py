@@ -38,7 +38,12 @@ ReadinessStatus = Literal["ready", "blocked", "manual_review"]
 
 @dataclass(frozen=True)
 class FeedbackPlatformCapability:
-    """Capabilities relevant to S1 feedback-loop execution."""
+    """Capabilities relevant to S1 feedback-loop execution.
+
+    Capacity is a positive Python integer. Capability and policy flags are
+    exact booleans, never truthy strings or integers. Invalid values raise
+    ``ValueError`` before readiness assessment.
+    """
 
     name: str
     kind: FeedbackPlatformKind
@@ -59,8 +64,19 @@ class FeedbackPlatformCapability:
         """Reject capabilities without a usable platform identity or size."""
         if not self.name:
             raise ValueError("platform name must be non-empty")
-        if self.max_qubits < 1:
-            raise ValueError("max_qubits must be positive")
+        _require_positive_int(self.max_qubits, "max_qubits")
+        for name, value in (
+            ("supports_mid_circuit_measurement", self.supports_mid_circuit_measurement),
+            ("supports_conditional_reset", self.supports_conditional_reset),
+            ("supports_conditional_rotation", self.supports_conditional_rotation),
+            ("supports_cross_shot_batches", self.supports_cross_shot_batches),
+            ("supports_native_xy", self.supports_native_xy),
+            ("supports_native_global_feedback", self.supports_native_global_feedback),
+            ("can_submit", self.can_submit),
+            ("submit_requires_approval", self.submit_requires_approval),
+        ):
+            if type(value) is not bool:
+                raise ValueError(f"{name} must be a boolean")
 
 
 @dataclass(frozen=True)

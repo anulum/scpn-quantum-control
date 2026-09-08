@@ -43,6 +43,9 @@ not sufficient by itself.
 ## Provider Capability Gates
 
 - [ ] Live backend metadata was captured without submitting a job.
+- [ ] Declared capacities are positive Python integers; optional snapshot
+      limits may be undeclared (`None`). Capability, simulator and submission
+      policy flags are booleans, not truthy strings or integers.
 - [ ] Capability probe reports `ready` for the selected backend.
 - [ ] Backend supports required qubit count.
 - [ ] Backend supports required shot count.

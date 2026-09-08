@@ -56,6 +56,36 @@ def _controller() -> RealtimeSyncFeedbackController:
     )
 
 
+@pytest.mark.parametrize(
+    "field",
+    [
+        "supports_mid_circuit_measurement",
+        "supports_conditional_reset",
+        "supports_conditional_rotation",
+        "supports_cross_shot_batches",
+        "supports_native_xy",
+        "supports_native_global_feedback",
+        "can_submit",
+        "submit_requires_approval",
+    ],
+)
+@pytest.mark.parametrize("payload", ['"false"', "1", "null"])
+def test_platform_requires_boolean_capabilities(field: str, payload: str) -> None:
+    """Planning claims and submission policy require actual boolean metadata."""
+    platform = FeedbackPlatformCapability("target", "simulator", 8, True, True, True, True)
+    with pytest.raises(ValueError, match=field):
+        replace(platform, **{field: json.loads(payload)})
+
+
+@pytest.mark.parametrize("payload", ["true", "1.5", '"8"', "NaN", "Infinity"])
+def test_platform_rejects_noninteger_capacity(payload: str) -> None:
+    """A noninteger qubit capacity cannot produce a ready platform."""
+    with pytest.raises(ValueError, match="max_qubits"):
+        FeedbackPlatformCapability(
+            "target", "simulator", json.loads(payload), True, True, True, True
+        )
+
+
 @pytest.mark.parametrize("payload", ["true", "1.5", '"2"'])
 def test_package_rejects_noninteger_workloads(payload: str) -> None:
     """Decoded counts must not silently become a ready workload."""
