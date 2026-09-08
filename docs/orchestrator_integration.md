@@ -132,6 +132,26 @@ Parity tests now cover:
 - quantum base-kernel invariance on untouched edges
 
 See:
+
 - `tests/test_knm_parity.py`
 - `tests/test_phase_artifact.py`
 - `tests/test_orchestrator_adapter.py`
+
+For non-sibling checkouts, set `SCPN_CONTROL_SRC` and
+`SCPN_PHASE_ORCHESTRATOR_SRC` to the respective absolute `src` directories:
+
+```bash
+SCPN_CONTROL_SRC=/path/to/control/src \
+SCPN_PHASE_ORCHESTRATOR_SRC=/path/to/orchestrator/src \
+python -m pytest tests/test_knm_parity.py -q --no-cov -rs
+```
+
+Without overrides, the tests retain the sibling checkout layout. An explicit
+missing source path fails rather than skipping. Imported module origins must
+match the selected checkout; a cached or installed copy is not parity evidence
+for another source tree. Record both peer revisions with the result.
+
+The built-in plasma frequency hierarchy supports 1–8 or 16 layers in the
+current control contract. Parity includes both those outputs and matching
+errors for unsupported counts (including 12); the bridge does not invent
+frequencies for an undefined hierarchy.

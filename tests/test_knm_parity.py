@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import os
 import sys
 from importlib import import_module
 from pathlib import Path
@@ -36,14 +37,32 @@ class PlasmaConfig(TypedDict):
     n_e: float
 
 
-def _import_local_module(repo_name: str, module_name: str) -> ModuleType:
+def _peer_src(repo_name: str) -> Path:
+    """Resolve explicit peer source overrides or the portable sibling layout.
+
+    An explicitly configured missing directory fails instead of skipping.
+    """
     repo_root = Path(__file__).resolve().parents[1]
-    src_path = repo_root.parent / repo_name / "src"
+    variable = repo_name.upper().replace("-", "_") + "_SRC"
+    configured = os.environ.get(variable)
+    if configured == "":
+        pytest.fail(f"{variable} must not be empty")
+    src_path = Path(configured).resolve() if configured else repo_root.parent / repo_name / "src"
     if not src_path.is_dir():
+        if configured is not None:
+            pytest.fail(f"{variable} does not select an existing source directory: {src_path}")
         pytest.skip(f"{repo_name} source not available at {src_path}")
+    return src_path
+
+
+def _import_local_module(repo_name: str, module_name: str) -> ModuleType:
+    src_path = _peer_src(repo_name)
     sys.path.insert(0, str(src_path))
     try:
-        return import_module(module_name)
+        module = import_module(module_name)
+        if module.__file__ is None or not Path(module.__file__).resolve().is_relative_to(src_path):
+            pytest.fail(f"{module_name} was imported outside selected source {src_path}")
+        return module
     finally:
         # Remove temporary path to avoid import-order side effects in later tests.
         if sys.path and sys.path[0] == str(src_path):
@@ -51,7 +70,36 @@ def _import_local_module(repo_name: str, module_name: str) -> ModuleType:
 
 
 def _scpn_control_src_path() -> Path:
-    return Path(__file__).resolve().parents[1].parent / "scpn-control" / "src"
+    return _peer_src("scpn-control")
+
+
+def test_explicit_peer_source_path_is_used(monkeypatch: pytest.MonkeyPatch) -> None:
+    """An explicit directory wins over legacy sibling discovery."""
+    source = Path(__file__).resolve().parent
+    monkeypatch.setenv("SCPN_CONTROL_SRC", str(source))
+    assert _peer_src("scpn-control") == source
+    assert _scpn_control_src_path() == source
+
+
+@pytest.mark.parametrize("value", ["", __file__])
+def test_invalid_explicit_peer_source_fails_not_skips(
+    monkeypatch: pytest.MonkeyPatch, value: str
+) -> None:
+    """Empty overrides and files are configuration failures, not absent peers."""
+    monkeypatch.setenv("SCPN_CONTROL_SRC", value)
+    with pytest.raises(pytest.fail.Exception, match="SCPN_CONTROL_SRC"):
+        _peer_src("scpn-control")
+
+
+def test_wrong_module_origin_fails_and_restores_search_path(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A module from outside the selected peer is not accepted as evidence."""
+    monkeypatch.setenv("SCPN_CONTROL_SRC", str(Path(__file__).resolve().parent))
+    original = list(sys.path)
+    with pytest.raises(pytest.fail.Exception, match="outside selected source"):
+        _import_local_module("scpn-control", "pathlib")
+    assert sys.path == original
 
 
 def test_knm_parity_with_scpn_control() -> None:
@@ -122,10 +170,21 @@ def test_plasma_knm_bridge_parity_with_scpn_control(mode: str) -> None:
 def test_plasma_omega_bridge_parity_with_scpn_control() -> None:
     mod = _import_local_module("scpn-control", "scpn_control.phase.plasma_knm")
     repo_src = _scpn_control_src_path()
-    for n_layers in (4, 8, 12):
+    for n_layers in (*range(1, 9), 16):
         w_quantum = plasma_omega(L=n_layers, repo_src=repo_src)
         w_control = np.asarray(mod.plasma_omega(L=n_layers), dtype=np.float64)
         np.testing.assert_allclose(w_quantum, w_control, atol=1e-12)
+
+
+@pytest.mark.parametrize("n_layers", [0, 9, 12, 15, 17])
+def test_plasma_omega_bridge_preserves_unsupported_layer_errors(n_layers: int) -> None:
+    """Unsupported plasma hierarchies fail identically across the bridge."""
+    mod = _import_local_module("scpn-control", "scpn_control.phase.plasma_knm")
+    with pytest.raises(ValueError) as quantum_error:
+        plasma_omega(L=n_layers, repo_src=_scpn_control_src_path())
+    with pytest.raises(ValueError) as control_error:
+        mod.plasma_omega(L=n_layers)
+    assert str(quantum_error.value) == str(control_error.value)
 
 
 def test_plasma_knm_from_config_bridge_parity_with_scpn_control() -> None:
