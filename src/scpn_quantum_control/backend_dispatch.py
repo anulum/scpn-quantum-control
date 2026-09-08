@@ -125,6 +125,8 @@ def to_numpy(arr: Any) -> NDArray[Any]:
       the original tensor if it is needed. ``.cpu()`` copies a device tensor
       and is a no-op for one already on the host, in which case the returned
       array shares memory with the tensor.
+      Lazy conjugation or negation is resolved before export and requires a
+      copy when present. The original tensor and its autograd graph are unchanged.
     - Anything else, including JAX arrays, lists, tuples, ranges and scalars,
       goes through :func:`numpy.asarray`, which copies only when it must.
 
@@ -148,7 +150,12 @@ def to_numpy(arr: Any) -> NDArray[Any]:
     if isinstance(arr, np.ndarray):
         return arr
     if _has_torch_tensor_protocol(arr):
-        detached: NDArray[Any] = arr.detach().cpu().numpy()
+        host = arr.detach().cpu()
+        for name in ("resolve_conj", "resolve_neg"):
+            resolve = getattr(host, name, None)
+            if callable(resolve):
+                host = resolve()
+        detached: NDArray[Any] = host.numpy()
         return detached
     return np.asarray(arr)
 

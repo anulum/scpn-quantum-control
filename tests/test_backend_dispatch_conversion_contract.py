@@ -14,11 +14,9 @@ was chosen from the module-global backend selection rather than from the object,
 so an array that outlived a :func:`set_backend` call, or a caller passing an
 object from a backend that is not currently selected, took the wrong path.
 
-Neither JAX nor PyTorch is installed in this environment, and none was
-installed to run these tests. The torch path is therefore exercised with an
-object that implements the same conversion protocol, which proves the dispatch
-and the documented gradient and device behaviour, and does not prove anything
-about a real ``torch.Tensor``. That distinction is deliberate.
+Protocol doubles here prove call ordering and interface dispatch only, not real
+gradient, device or storage behaviour. Optional real CPU Torch and JAX contracts
+live in test_backend_dispatch.py; their results require those actual frameworks.
 """
 
 from __future__ import annotations
@@ -254,7 +252,11 @@ class TestNumpyInputsAreUnchanged:
 
     def test_a_subclass_is_returned_unchanged(self) -> None:
         """``isinstance`` admits subclasses, and the identity holds for them."""
-        matrix = np.asarray([[1.0, 2.0]]).view(np.ndarray)
+
+        class TaggedArray(np.ndarray[Any, np.dtype[np.float64]]):
+            """Actual ndarray subclass used to verify identity-preserving dispatch."""
+
+        matrix = np.asarray([[1.0, 2.0]]).view(TaggedArray)
 
         assert to_numpy(matrix) is matrix
 

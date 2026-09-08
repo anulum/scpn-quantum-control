@@ -20,6 +20,8 @@ Covers:
 from __future__ import annotations
 
 from collections.abc import Iterator
+from types import ModuleType
+from typing import Any
 from unittest.mock import patch
 
 import numpy as np
@@ -33,6 +35,12 @@ from scpn_quantum_control.backend_dispatch import (
     set_backend,
     to_numpy,
 )
+
+
+class _JaxModule(ModuleType):
+    """Import-boundary double with an explicit dynamically mocked numpy member."""
+
+    numpy: Any
 
 
 @pytest.fixture(autouse=True)
@@ -91,24 +99,26 @@ class TestJAXBackend:
             set_backend("jax")
 
     def test_jax_if_available(self) -> None:
+        """A real JAX array retained across a backend switch exports its values."""
         try:
-            import jax.numpy as _jnp  # noqa: F401
-
-            set_backend("jax")
-            assert get_backend() == "jax"
-            # to_numpy converts back
-            arr = np.array([1.0, 2.0])
-            jnp_arr = from_numpy(arr)
-            back = to_numpy(jnp_arr)
-            np.testing.assert_allclose(back, arr)
-        except Exception as exc:
+            import jax.numpy as jnp
+        except ImportError as exc:
             pytest.skip(f"JAX unavailable in this environment: {exc}")
+        set_backend("jax")
+        assert get_array_module() is jnp
+        arr = np.array([1.0, 2.0], dtype=np.float32)
+        jnp_arr = from_numpy(arr)
+        set_backend("numpy")
+        back = to_numpy(jnp_arr)
+        np.testing.assert_array_equal(back, arr)
 
 
 # ── Torch backend ─────────────────────────────────────────────────────
 
 
 class TestTorchBackend:
+    """Optional real CPU tensor conversion and unavailable-provider errors."""
+
     def test_torch_import_error(self) -> None:
         with (
             patch.dict("sys.modules", {"torch": None}),
@@ -124,19 +134,41 @@ class TestTorchBackend:
         ):
             set_backend("pytorch")
 
-    def test_torch_if_available(self) -> None:
+    @pytest.mark.parametrize("view", ["plain", "conjugate", "negative", "transpose"])
+    def test_torch_if_available(self, view: str) -> None:
+        """Real CPU views export values, preserve autograd and honour copy boundaries."""
         try:
             import torch
-
-            set_backend("torch")
-            assert get_backend() == "torch"
-            arr = np.array([1.0, 2.0, 3.0])
-            t = from_numpy(arr)
-            assert isinstance(t, torch.Tensor)
-            back = to_numpy(t)
-            np.testing.assert_allclose(back, arr)
         except ImportError:
             pytest.skip("PyTorch not installed")
+        set_backend("torch")
+        arr = np.array([[1 + 2j, 3 - 4j]], dtype=np.complex128)
+        tensor = from_numpy(arr.copy()).requires_grad_()
+        assert isinstance(tensor, torch.Tensor)
+        if view == "conjugate":
+            tensor = tensor.conj()
+            expected = arr.conj()
+        elif view == "negative":
+            tensor = torch._neg_view(tensor)
+            expected = -arr
+        elif view == "transpose":
+            tensor = tensor.T
+            expected = arr.T
+        else:
+            expected = arr
+        set_backend("numpy")
+        back = to_numpy(tensor)
+        np.testing.assert_array_equal(back, expected)
+        assert tensor.requires_grad
+        gradient = torch.autograd.grad(tensor.real.sum(), tensor)[0]
+        torch.testing.assert_close(gradient, torch.ones_like(tensor))
+        if view in ("plain", "transpose"):
+            assert np.shares_memory(back, tensor.detach().numpy())
+        else:
+            back.flat[0] = 99
+            np.testing.assert_array_equal(
+                tensor.detach().resolve_conj().resolve_neg().numpy(), expected
+            )
 
 
 # ── Invalid backend ───────────────────────────────────────────────────
@@ -224,8 +256,10 @@ class TestMockedJaxPath:
         try:
             # Deliberately the numpy selection: the object decides, not this.
             mod._STATE.backend = "numpy"
-            mock_tensor = MagicMock()
-            mock_tensor.detach.return_value.cpu.return_value.numpy.return_value = np.array([3.0])
+            mock_tensor = MagicMock(spec=["detach", "cpu", "numpy"])
+            mock_tensor.detach.return_value = mock_tensor
+            mock_tensor.cpu.return_value = mock_tensor
+            mock_tensor.numpy.return_value = np.array([3.0])
             result = to_numpy(mock_tensor)
             np.testing.assert_array_equal(result, [3.0])
             mock_tensor.detach.assert_called_once()
@@ -247,7 +281,6 @@ class TestMockedJaxPath:
 
     def test_from_numpy_jax_branch(self) -> None:
         """Exercise from_numpy jax branch with mock jnp."""
-        from types import ModuleType
         from unittest.mock import MagicMock
 
         import scpn_quantum_control.backend_dispatch as mod
@@ -257,8 +290,8 @@ class TestMockedJaxPath:
             mod._STATE.backend = "jax"
             mock_jnp = MagicMock()
             mock_jnp.array.return_value = "jax_array"
-            fake_jax = ModuleType("jax")
-            fake_jax.numpy = mock_jnp  # type: ignore[attr-defined]
+            fake_jax = _JaxModule("jax")
+            fake_jax.numpy = mock_jnp
             with patch.dict("sys.modules", {"jax": fake_jax, "jax.numpy": mock_jnp}):
                 arr = np.array([1.0])
                 result = from_numpy(arr)
@@ -300,12 +333,11 @@ class TestMockedJaxPath:
 class TestAvailableBackendsMocked:
     def test_jax_detected_when_importable(self) -> None:
         """available_backends includes jax when import succeeds."""
-        from types import ModuleType
         from unittest.mock import MagicMock
 
         fake_jnp = MagicMock()
-        fake_jax = ModuleType("jax")
-        fake_jax.numpy = fake_jnp  # type: ignore[attr-defined]
+        fake_jax = _JaxModule("jax")
+        fake_jax.numpy = fake_jnp
         with patch.dict("sys.modules", {"jax": fake_jax, "jax.numpy": fake_jnp}):
             backends = available_backends()
             assert "jax" in backends
@@ -330,14 +362,13 @@ class TestAvailableBackendsMocked:
 class TestSetBackendMockedSuccess:
     def test_set_jax_success(self) -> None:
         """set_backend('jax') success path with a mock jax.numpy module."""
-        from types import ModuleType
         from unittest.mock import MagicMock
 
         import scpn_quantum_control.backend_dispatch as mod
 
         fake_jnp = MagicMock()
-        fake_jax = ModuleType("jax")
-        fake_jax.numpy = fake_jnp  # type: ignore[attr-defined]
+        fake_jax = _JaxModule("jax")
+        fake_jax.numpy = fake_jnp
         old_backend = mod._STATE.backend
         try:
             with patch.dict("sys.modules", {"jax": fake_jax, "jax.numpy": fake_jnp}):
