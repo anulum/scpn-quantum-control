@@ -360,8 +360,16 @@ def assess_platform_readiness(
     circuit: FeedbackCircuitSummary,
     budget: FeedbackBudgetEstimate,
 ) -> PlatformReadiness:
-    """Assess whether one platform can execute the S1 dynamic feedback payload."""
+    """Assess S1 feature support and a positive execution-time reservation.
+
+    Cross-shot batches are required even for a single circuit. Queue and
+    calibration time cannot substitute for execution time. Incompatible
+    native-XY targets remain manual-review candidates, never ready targets.
+    This metadata assessment does not grant permission to submit a job.
+    """
     reasons: list[str] = []
+    if not platform.supports_cross_shot_batches:
+        reasons.append("payload requires cross-shot batches")
     if circuit.n_qubits > platform.max_qubits:
         reasons.append(
             f"requires {circuit.n_qubits} qubits but platform declares {platform.max_qubits}"
@@ -372,7 +380,7 @@ def assess_platform_readiness(
         reasons.append("payload requires conditional rotations")
     if circuit.has_conditional_reset and not platform.supports_conditional_reset:
         reasons.append("payload requires conditional reset")
-    if budget.total_reserved_seconds <= 0.0:
+    if budget.estimated_execution_seconds <= 0.0:
         reasons.append("budget estimate must reserve positive execution time")
 
     if reasons:

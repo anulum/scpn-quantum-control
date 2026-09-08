@@ -157,6 +157,51 @@ def test_s1_feedback_submission_package_marks_dynamic_backends_ready() -> None:
     assert "## Claim Boundary" in package.dossier.to_markdown()
 
 
+@pytest.mark.parametrize("native_xy", [False, True])
+def test_package_excludes_cross_shot_incapable_platform(native_xy: bool) -> None:
+    """Package readiness must honour the S1 cross-shot requirement."""
+    platform = FeedbackPlatformCapability(
+        "no-batches",
+        "gate_based_dynamic_circuits",
+        8,
+        True,
+        True,
+        True,
+        False,
+        supports_native_xy=native_xy,
+    )
+    package = build_s1_feedback_submission_package(
+        _controller(), n_rounds=1, circuits=1, platforms=[platform]
+    )
+    decision = package.platform_readiness[0]
+    assert decision.status == ("manual_review" if native_xy else "blocked")
+    assert "payload requires cross-shot batches" in decision.reasons
+    assert package.ready_platforms == ()
+    assert package.to_dict()["ready_platforms"] == []
+
+
+@pytest.mark.parametrize(("queue", "calibration"), [(1.0, 0.0), (0.0, 1.0), (1.0, 1.0)])
+def test_readiness_does_not_count_overhead_as_execution(queue: float, calibration: float) -> None:
+    """Queue/calibration overhead cannot qualify zero execution time."""
+    package = build_s1_feedback_submission_package(_controller(), n_rounds=1)
+    budget = replace(
+        package.budget,
+        estimated_execution_seconds=0.0,
+        queue_seconds=queue,
+        calibration_seconds=calibration,
+    )
+    decision = assess_platform_readiness(
+        package.platform_readiness[0].platform, package.circuit, budget
+    )
+    assert budget.total_reserved_seconds > 0.0
+    assert decision.status == "blocked"
+    assert decision.reasons == ("budget estimate must reserve positive execution time",)
+    positive = assess_platform_readiness(
+        decision.platform, package.circuit, replace(budget, estimated_execution_seconds=1.0)
+    )
+    assert positive.status == "ready"
+
+
 def test_default_s1_platforms_carry_backend_descriptor_policy() -> None:
     """Carry registered backend policy into default platform decisions."""
     package = build_s1_feedback_submission_package(_controller(), n_rounds=1)

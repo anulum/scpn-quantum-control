@@ -50,6 +50,7 @@ not sufficient by itself.
 - [ ] Backend supports required qubit count.
 - [ ] Backend supports required shot count.
 - [ ] Backend supports required circuit-batch count.
+- [ ] Backend supports cross-shot batches, including single-circuit S1 packages.
 - [ ] Backend supports mid-circuit measurement.
 - [ ] Backend supports conditional reset.
 - [ ] Backend supports conditional control.
@@ -61,6 +62,8 @@ not sufficient by itself.
 
 - [ ] Remaining QPU budget was checked.
 - [ ] Requested S1 execution estimate was recorded.
+- [ ] Execution time itself is positive; queue/calibration overhead cannot
+      make a zero-execution reservation ready.
 - [ ] Package rounds, circuit count, shots and repetitions are positive Python
       integers, not booleans or fractional values. Reservation components and
       their total are finite and non-negative; preparation rejects overflow.
