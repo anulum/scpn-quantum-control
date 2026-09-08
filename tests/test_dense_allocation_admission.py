@@ -106,7 +106,10 @@ class TestQaoaMpcAdmission:
         with pytest.raises(DenseAllocationError, match="QAOA-MPC statevector"):
             controller.optimize(seed=1, max_dense_gib=TINY_BUDGET_GIB)
 
-    def test_refusal_precedes_the_allocator(self, monkeypatch: pytest.MonkeyPatch) -> None:
+    @pytest.mark.parametrize("boundary", ["minimize", "QuantumCircuit", "Statevector"])
+    def test_refusal_precedes_the_allocator(
+        self, monkeypatch: pytest.MonkeyPatch, boundary: str
+    ) -> None:
         """COBYLA calls the cost function up to two hundred times.
 
         The check therefore has to run once before the optimiser starts, not
@@ -116,10 +119,12 @@ class TestQaoaMpcAdmission:
         ----------
         monkeypatch
             Used to install the allocation spy.
+        boundary
+            Optimiser, circuit constructor or statevector boundary to observe.
 
         """
-        spy = _AllocationSpy("Statevector.from_instruction")
-        monkeypatch.setattr(qaoa_mpc_module, "Statevector", spy)
+        spy = _AllocationSpy(boundary)
+        monkeypatch.setattr(qaoa_mpc_module, boundary, spy)
         controller = QAOA_MPC(np.eye(2), np.array([1.0, 0.0]), horizon=3)
 
         with pytest.raises(DenseAllocationError):
@@ -260,17 +265,22 @@ class TestQecAdmission:
         with pytest.raises(DenseAllocationError, match="QEC protected-step statevector"):
             code.step_with_qec(max_dense_gib=TINY_BUDGET_GIB)
 
-    def test_refusal_precedes_circuit_construction(self, monkeypatch: pytest.MonkeyPatch) -> None:
+    @pytest.mark.parametrize("boundary", ["QuantumCircuit", "Statevector"])
+    def test_refusal_precedes_circuit_construction(
+        self, monkeypatch: pytest.MonkeyPatch, boundary: str
+    ) -> None:
         """Neither the circuit nor the statevector is built.
 
         Parameters
         ----------
         monkeypatch
             Used to install the allocation spy.
+        boundary
+            Circuit constructor or statevector boundary to observe.
 
         """
-        spy = _AllocationSpy("Statevector.from_instruction")
-        monkeypatch.setattr(fault_tolerant_module, "Statevector", spy)
+        spy = _AllocationSpy(boundary)
+        monkeypatch.setattr(fault_tolerant_module, boundary, spy)
         code = RepetitionCodeUPDE(n_osc=2, code_distance=3)
 
         with pytest.raises(DenseAllocationError):
