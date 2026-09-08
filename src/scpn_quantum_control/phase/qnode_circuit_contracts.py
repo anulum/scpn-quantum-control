@@ -10,13 +10,17 @@
 This NumPy/stdlib-only leaf owns the immutable circuit vocabulary shared by
 builders, support analysis, execution, gradients, measurements, and framework
 bridges. It has no dependency on the executable QNode facade.
+
+Executable qubit counts, qubit indices and parameter indices require exact
+Python or NumPy integers. Floats (even integral ones), booleans and numeric
+strings raise ValueError before normalization; they never retarget operations.
 """
 
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from typing import TypeAlias, cast
+from typing import TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
@@ -134,17 +138,15 @@ class PhaseQNodeOperation:
         gate = str(self.gate).strip().lower()
         if not gate:
             raise ValueError("gate must be non-empty")
-        qubits = tuple(self.qubits)
+        qubits = tuple(_as_index(qubit, "operation qubits") for qubit in self.qubits)
         if not qubits:
             raise ValueError("operation qubits must be non-empty")
-        if any(isinstance(qubit, bool) or qubit < 0 for qubit in qubits):
-            raise ValueError("operation qubits must be non-negative integers")
         if len(set(qubits)) != len(qubits):
             raise ValueError("operation qubits must be unique")
-        if self.parameter_index is not None and (
-            isinstance(self.parameter_index, bool) or self.parameter_index < 0
-        ):
-            raise ValueError("parameter_index must be a non-negative integer or None")
+        if self.parameter_index is not None:
+            object.__setattr__(
+                self, "parameter_index", _as_index(self.parameter_index, "parameter_index")
+            )
         object.__setattr__(self, "gate", gate)
         object.__setattr__(self, "qubits", qubits)
 
@@ -162,11 +164,9 @@ class PhaseQNodeNoiseChannel:
         channel = str(self.channel).strip().lower()
         if not channel:
             raise ValueError("noise channel must be non-empty")
-        qubits = tuple(self.qubits)
+        qubits = tuple(_as_index(qubit, "noise channel qubits") for qubit in self.qubits)
         if not qubits:
             raise ValueError("noise channel qubits must be non-empty")
-        if any(isinstance(qubit, bool) or qubit < 0 for qubit in qubits):
-            raise ValueError("noise channel qubits must be non-negative integers")
         if len(set(qubits)) != len(qubits):
             raise ValueError("noise channel qubits must be unique")
         probability = _as_probability(self.probability)
@@ -190,8 +190,7 @@ class PauliTerm:
         if not self.factors:
             raise ValueError("PauliTerm factors must be non-empty")
         for qubit, label in self.factors:
-            if isinstance(qubit, bool) or qubit < 0:
-                raise ValueError("PauliTerm qubits must be non-negative integers")
+            qubit = _as_index(qubit, "PauliTerm qubits")
             normalized = str(label).strip().lower().replace("pauli_", "")
             if normalized not in _PAULI_MATRICES:
                 raise ValueError("PauliTerm labels must be x, y, or z")
@@ -340,8 +339,7 @@ class PhaseQNodeCircuit:
 
     def __post_init__(self) -> None:
         """Normalize and validate a bounded statevector circuit."""
-        if isinstance(self.n_qubits, bool) or self.n_qubits < 1:
-            raise ValueError("n_qubits must be a positive integer")
+        object.__setattr__(self, "n_qubits", _as_index(self.n_qubits, "n_qubits", minimum=1))
         parsed = tuple(_parse_operation(operation) for operation in self.operations)
         if not parsed:
             raise ValueError("operations must be non-empty")
@@ -369,8 +367,7 @@ class PhaseQNodeDensityCircuit:
 
     def __post_init__(self) -> None:
         """Normalize and validate a bounded noisy density circuit."""
-        if isinstance(self.n_qubits, bool) or self.n_qubits < 1:
-            raise ValueError("n_qubits must be a positive integer")
+        object.__setattr__(self, "n_qubits", _as_index(self.n_qubits, "n_qubits", minimum=1))
         parsed = tuple(_parse_density_operation(operation) for operation in self.operations)
         if not parsed:
             raise ValueError("operations must be non-empty")
@@ -384,7 +381,12 @@ class PhaseQNodeDensityCircuit:
 
 @dataclass(frozen=True)
 class PhaseQNodeTemplateSpec:
-    """Registered multi-qubit Phase-QNode template declaration."""
+    """Multi-qubit template declaration, including string observable descriptors.
+
+    String descriptors follow the circuit contract: known aliases normalize
+    to Pauli terms; unknown names remain inspectable but fail support analysis
+    and cannot execute. Indices in the executable circuit must be exact integers.
+    """
 
     name: str
     n_qubits: int
@@ -393,7 +395,11 @@ class PhaseQNodeTemplateSpec:
     parameter_count: int
     operations: tuple[PhaseQNodeOperation, ...]
     observable: (
-        PauliTerm | SparsePauliHamiltonian | PauliCovarianceObservable | DenseHermitianObservable
+        str
+        | PauliTerm
+        | SparsePauliHamiltonian
+        | PauliCovarianceObservable
+        | DenseHermitianObservable
     )
     claim_boundary: str
 
@@ -733,8 +739,8 @@ def _parse_operation(operation: PhaseQNodeOperation | OperationSpec) -> PhaseQNo
     qubits_raw = operation[1]
     if not isinstance(qubits_raw, Iterable):
         raise ValueError("operation qubits must be an iterable of integer qubits")
-    qubits = tuple(int(qubit) for qubit in cast(Iterable[int], qubits_raw))
-    parameter_index = None if len(operation) == 2 else int(cast(int, operation[2]))
+    qubits = tuple(_as_index(qubit, "operation qubits") for qubit in qubits_raw)
+    parameter_index = None if len(operation) == 2 else _as_index(operation[2], "parameter_index")
     return PhaseQNodeOperation(gate=gate, qubits=qubits, parameter_index=parameter_index)
 
 
@@ -752,11 +758,11 @@ def _parse_density_operation(
     qubits_raw = operation[1]
     if not isinstance(qubits_raw, Iterable):
         raise ValueError("density operation qubits must be an iterable of integer qubits")
-    qubits = tuple(int(qubit) for qubit in cast(Iterable[int], qubits_raw))
+    qubits = tuple(_as_index(qubit, "noise channel qubits") for qubit in qubits_raw)
     if name in _REGISTERED_NOISE_CHANNELS:
         if len(operation) != 3:
             raise ValueError("noise channel specs must include a probability")
-        return PhaseQNodeNoiseChannel(name, qubits, float(cast(float, operation[2])))
+        return PhaseQNodeNoiseChannel(name, qubits, _as_probability(operation[2]))
     return _parse_operation(operation)
 
 
@@ -799,6 +805,17 @@ def _normalise_observable(
     if max_qubit >= n_qubits:
         raise ValueError("observable qubit exceeds n_qubits")
     return observable
+
+
+def _as_index(value: object, name: str, *, minimum: int = 0) -> int:
+    """Normalize exact Python/NumPy integers without truncation or text coercion."""
+    if isinstance(value, bool) or not isinstance(value, int | np.integer) or value < minimum:
+        domain = "positive" if minimum == 1 else "non-negative"
+        requirement = (
+            "non-negative integers" if name.endswith(" qubits") else f"a {domain} integer"
+        )
+        raise ValueError(f"{name} must be {requirement}")
+    return int(value)
 
 
 def _as_finite_scalar(name: str, value: object) -> float:

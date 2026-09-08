@@ -25,6 +25,20 @@ Claim boundary:
 
 ## Public API
 
+### Circuit input contracts
+
+Executable qubit counts, qubit indices and parameter indices accept exact
+Python or NumPy integers. Boolean values, numeric strings and floats (including
+`1.0`) raise `ValueError`; fractional indices are never truncated to another
+qubit. Tuple-form operations use the same validation as record constructors.
+Noise probabilities in tuple form also retain the finite-real validation of
+their record form.
+
+Template observable descriptors follow the circuit contract: known string
+aliases such as `z` normalize to Pauli terms. Unknown names can be serialized
+and inspected, but execution raises `PhaseQNodeSupportError`; serialization is
+not evidence that an observable can execute.
+
 ```python
 from scpn_quantum_control.phase_qnode_product import (
     assert_phase_qnode_product_integrity,

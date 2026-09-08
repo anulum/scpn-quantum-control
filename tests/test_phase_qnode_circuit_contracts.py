@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import ast
 import inspect
+import json
 from collections.abc import Callable
 
 import numpy as np
@@ -231,6 +232,60 @@ def test_public_pauli_term_rejects_non_scalar_real_coefficients(value: object) -
         contracts.PauliTerm(value, ((0, "z"),))  # type: ignore[arg-type]
 
 
+@pytest.mark.parametrize("payload", ["0.5", "1.0", '"0"', "true", "NaN"])
+@pytest.mark.parametrize(
+    "surface",
+    ["pauli", "gate", "noise", "parameter", "tuple", "density", "tuple_parameter", "size"],
+)
+def test_public_indices_refuse_coercion(payload: str, surface: str) -> None:
+    """Reject malformed indices before records can retarget an operation."""
+    value = json.loads(payload)
+    with pytest.raises(ValueError, match="integer"):
+        if surface == "pauli":
+            contracts.PauliTerm(1.0, ((value, "z"),))
+        elif surface == "gate":
+            contracts.PhaseQNodeOperation("x", (value,))
+        elif surface == "noise":
+            contracts.PhaseQNodeNoiseChannel("bit_flip", (value,), 0.1)
+        elif surface == "parameter":
+            contracts.PhaseQNodeOperation("rx", (0,), value)
+        elif surface == "tuple":
+            contracts.PhaseQNodeCircuit(2, (("x", (value,)),), "z")
+        elif surface == "density":
+            contracts.PhaseQNodeDensityCircuit(2, (("bit_flip", (value,), 0.1),), "z")
+        elif surface == "tuple_parameter":
+            contracts.PhaseQNodeCircuit(1, (("rx", (0,), value),), "z")
+        else:
+            contracts.PhaseQNodeCircuit(value, (("x", (0,)),), "z")
+
+
+def test_numpy_integer_specs_keep_real_execution_semantics() -> None:
+    """Exact NumPy integer indices stay supported without lossy coercion."""
+    circuit = contracts.PhaseQNodeCircuit(1, (("x", (np.int64(0),)),), "z")
+    result = qnode_circuit.execute_phase_qnode_circuit(circuit, np.array([]))
+    assert result.value == pytest.approx(-1.0)
+    np.testing.assert_array_equal(result.state, [0.0, 1.0])
+
+
+@pytest.mark.parametrize("payload", ["true", '"0.1"', "NaN"])
+def test_density_tuple_preserves_probability_validation(payload: str) -> None:
+    """Tuple decoding must not coerce invalid noise probabilities to floats."""
+    with pytest.raises(ValueError, match="finite real scalar"):
+        contracts.PhaseQNodeDensityCircuit(1, (("bit_flip", (0,), json.loads(payload)),), "z")
+
+
+def test_template_string_alias_executes_through_circuit_contract() -> None:
+    """Supported template aliases use the existing observable normalizer."""
+    template = contracts.PhaseQNodeTemplateSpec(
+        "plain", 1, 1, "none", 0, (contracts.PhaseQNodeOperation("x", (0,)),), "z", "local only"
+    )
+    circuit = template.circuit()
+    assert circuit.observable == contracts.PauliTerm(1.0, ((0, "z"),))
+    assert qnode_circuit.execute_phase_qnode_circuit(circuit, np.array([])).value == pytest.approx(
+        -1.0
+    )
+
+
 def test_public_records_serialize_optional_and_fallback_paths() -> None:
     """Exercise result serialization and optional-value branches."""
     report = contracts.PhaseQNodeSupportReport(True, ("x",), "pauli_z", (), (), (), (), "", ())
@@ -239,6 +294,8 @@ def test_public_records_serialize_optional_and_fallback_paths() -> None:
         "plain", 1, 1, "none", 0, (operation,), "custom", "local only"
     )
     assert template.to_dict()["observable"] == "custom"
+    with pytest.raises(contracts.PhaseQNodeSupportError):
+        qnode_circuit.execute_phase_qnode_circuit(template.circuit(), np.array([]))
     assert contracts.PhaseQNodeExecutionResult(
         1.0, np.array([1.0, 0.0], dtype=np.complex128), report
     ).to_dict()["state_real"] == [1.0, 0.0]
