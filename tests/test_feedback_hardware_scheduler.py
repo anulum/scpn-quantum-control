@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import replace
-from typing import Any
+from typing import Any, TypedDict
 
 import pytest
 
@@ -21,6 +21,16 @@ from scpn_quantum_control.hardware.feedback_hardware_scheduler import (
     hash_package_manifest,
 )
 from scpn_quantum_control.hardware.feedback_loop import FeedbackCommand, FeedbackResult
+
+
+class ApprovalOverrides(TypedDict, total=False):
+    """Type-valid approval fields with invalid semantic boundaries."""
+
+    approval_id: str
+    approver: str
+    package_hash: str
+    max_qpu_seconds: float
+    allowed_provider: str
 
 
 def _manifest() -> dict[str, object]:
@@ -241,7 +251,37 @@ def test_approval_gated_scheduler_enforces_estimated_and_reported_qpu_budget() -
     with pytest.raises(RuntimeError, match="provider result would exceed"):
         scheduler.submit(FeedbackCommand(payload={}, estimated_qpu_seconds=1.0))
     assert provider_calls == 1
-    assert scheduler.submissions == ()
+    assert scheduler.spent_qpu_seconds == 5.0
+    assert len(scheduler.submissions) == 1
+    assert scheduler.submissions[0].result_qpu_seconds == 5.0
+    assert scheduler.submissions[0].estimated_qpu_seconds == 1.0
+
+
+@pytest.mark.parametrize("estimate", [0.0, 1.0])
+def test_overbudget_result_blocks_repeat_provider_dispatch(estimate: float) -> None:
+    """Actual overspend must block even a zero-estimate follow-up."""
+    manifest = _manifest()
+    calls = 0
+
+    def submitter(command: FeedbackCommand, package: Mapping[str, Any]) -> FeedbackResult:
+        nonlocal calls
+        calls += 1
+        return FeedbackResult(job_id="overspent-job", qpu_seconds=5.0)
+
+    scheduler = ApprovalGatedFeedbackHardwareScheduler(
+        provider="ibm_runtime",
+        package_manifest=manifest,
+        approval=_approval(manifest),
+        submitter=submitter,
+    )
+    with pytest.raises(RuntimeError, match="provider result would exceed"):
+        scheduler.submit(FeedbackCommand(payload={}, estimated_qpu_seconds=1.0))
+    with pytest.raises(RuntimeError, match="command would exceed"):
+        scheduler.submit(FeedbackCommand(payload={}, estimated_qpu_seconds=estimate))
+    assert calls == 1
+    assert scheduler.spent_qpu_seconds == 5.0
+    assert len(scheduler.submissions) == 1
+    assert scheduler.submissions[0].job_id == "overspent-job"
 
 
 @pytest.mark.parametrize(
@@ -255,22 +295,21 @@ def test_approval_gated_scheduler_enforces_estimated_and_reported_qpu_budget() -
     ),
 )
 def test_hardware_approval_record_rejects_invalid_boundaries(
-    kwargs: dict[str, object],
+    kwargs: ApprovalOverrides,
     message: str,
 ) -> None:
     """Reject empty identifiers and negative approval budgets."""
-    params = {
+    params: ApprovalOverrides = {
         "approval_id": "approval",
         "approver": "Miroslav Sotek",
         "package_hash": "hash",
         "max_qpu_seconds": 1.0,
         "allowed_provider": "ibm_runtime",
-    } | kwargs
+    }
+    params.update(kwargs)
 
     with pytest.raises(ValueError, match=message):
-        # Each case overrides one field with an invalid value; the rejection is
-        # the subject of the test and mypy cannot express a call meant to fail.
-        HardwareApprovalRecord(**params)  # type: ignore[arg-type]
+        HardwareApprovalRecord(**params)
 
 
 def test_approval_gated_scheduler_rejects_empty_provider_and_manifest() -> None:

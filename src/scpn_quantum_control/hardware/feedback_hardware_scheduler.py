@@ -111,12 +111,17 @@ class ApprovalGatedFeedbackHardwareScheduler:
         return tuple(self._submissions)
 
     def submit(self, command: FeedbackCommand) -> FeedbackResult:
-        """Submit one command only after all approval gates pass."""
+        """Submit after approval and record actual usage before raising on overspend.
+
+        A returned over-budget result has already consumed provider resources:
+        its usage and job record remain visible even though this method raises
+        ``RuntimeError``. Subsequent submissions fail the cumulative budget
+        gate. This in-memory accounting cannot undo a provider-side overrun
+        or recover usage when a submitter raises without returning a result.
+        """
         self._check_approval(command)
         result = self.submitter(command, self.package_manifest)
         projected_spend = self._spent_qpu_seconds + result.qpu_seconds
-        if projected_spend > self.approval.max_qpu_seconds:
-            raise RuntimeError("provider result would exceed approved QPU budget")
         self._spent_qpu_seconds = projected_spend
         self._submissions.append(
             HardwareSubmissionRecord(
@@ -138,6 +143,8 @@ class ApprovalGatedFeedbackHardwareScheduler:
                 },
             )
         )
+        if projected_spend > self.approval.max_qpu_seconds:
+            raise RuntimeError("provider result would exceed approved QPU budget")
         return result
 
     def _check_approval(self, command: FeedbackCommand) -> None:

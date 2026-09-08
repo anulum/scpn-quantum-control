@@ -61,6 +61,10 @@ not sufficient by itself.
 ## Budget Gates
 
 - [ ] Remaining QPU budget was checked.
+- [ ] Reconcile any previous provider overrun. The scheduler records returned
+      usage and job identity before raising on an exceeded limit and refuses
+      follow-up commands against the exhausted approval. This in-memory ledger
+      does not undo spend or reconcile interrupted/provider-exception jobs.
 - [ ] Requested S1 execution estimate was recorded.
 - [ ] Execution time itself is positive; queue/calibration overhead cannot
       make a zero-execution reservation ready.
