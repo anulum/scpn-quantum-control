@@ -10,9 +10,11 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from typing import TypedDict
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.topology_kernel_product import (
     TOPOLOGY_KERNEL_CLAIM_BOUNDARY,
@@ -23,6 +25,43 @@ from scpn_quantum_control.topology_kernel_product import (
 )
 
 DIGEST = "a" * 64
+
+
+class _MatrixChanges(TypedDict, total=False):
+    """Type-correct matrix fields with invalid geometry or custody values."""
+
+    values: NDArray[np.float64]
+    row_ids: tuple[str, ...]
+    column_ids: tuple[str, ...]
+    topology_digest: str
+    content_digest: str
+    claim_boundary: str
+
+
+class _DatasetChanges(TypedDict, total=False):
+    """Dataset field types retained while testing invalid split contracts."""
+
+    train_features: NDArray[np.float64]
+    test_features: NDArray[np.float64]
+    teacher_prototypes: NDArray[np.float64]
+    train_labels: NDArray[np.int64]
+    train_ids: tuple[str, ...]
+    test_ids: tuple[str, ...]
+    teacher_topology_digest: str
+    content_digest: str
+    claim_boundary: str
+
+
+class _EvaluationChanges(TypedDict, total=False):
+    """Evaluation field types with deliberately inconsistent evidence values."""
+
+    name: str
+    predictions: NDArray[np.int64]
+    labels: NDArray[np.int64]
+    correct: int
+    total: int
+    accuracy: float
+    kernel_digest: str
 
 
 def _matrix() -> TopologyKernelMatrix:
@@ -114,12 +153,10 @@ def test_kernel_matrix_is_read_only_and_normalises_identifiers() -> None:
         {"claim_boundary": " "},
     ],
 )
-def test_kernel_matrix_rejects_invalid_contract(changes: dict[str, object]) -> None:
+def test_kernel_matrix_rejects_invalid_contract(changes: _MatrixChanges) -> None:
     """Reject malformed matrix values, custody metadata, and claim bounds."""
-    # Each case replaces one field with an invalid value to prove it is
-    # rejected; mypy cannot express a call that is meant to fail.
     with pytest.raises(ValueError):
-        replace(_matrix(), **changes)  # type: ignore[arg-type]
+        replace(_matrix(), **changes)
 
 
 def test_dataset_is_balanced_disjoint_and_read_only() -> None:
@@ -149,12 +186,10 @@ def test_dataset_is_balanced_disjoint_and_read_only() -> None:
         {"claim_boundary": ""},
     ],
 )
-def test_dataset_rejects_invalid_contract(changes: dict[str, object]) -> None:
+def test_dataset_rejects_invalid_contract(changes: _DatasetChanges) -> None:
     """Reject malformed split geometry, labels, identifiers, and custody."""
-    # Each case replaces one field with an invalid value to prove it is
-    # rejected; mypy cannot express a call that is meant to fail.
     with pytest.raises(ValueError):
-        replace(_dataset(), **changes)  # type: ignore[arg-type]
+        replace(_dataset(), **changes)
 
 
 def test_kernel_evaluation_recomputes_accuracy_and_freezes_arrays() -> None:
@@ -187,7 +222,7 @@ def test_kernel_evaluation_recomputes_accuracy_and_freezes_arrays() -> None:
         {"kernel_digest": "bad"},
     ],
 )
-def test_kernel_evaluation_rejects_invalid_contract(changes: dict[str, object]) -> None:
+def test_kernel_evaluation_rejects_invalid_contract(changes: _EvaluationChanges) -> None:
     """Reject inconsistent evaluation identity, vectors, counts, and digest."""
     valid = KernelEvaluation(
         name="ring",
@@ -198,7 +233,5 @@ def test_kernel_evaluation_rejects_invalid_contract(changes: dict[str, object]) 
         accuracy=0.5,
         kernel_digest=DIGEST,
     )
-    # Each case replaces one field with an invalid value to prove it is
-    # rejected; mypy cannot express a call that is meant to fail.
     with pytest.raises(ValueError):
-        replace(valid, **changes)  # type: ignore[arg-type]
+        replace(valid, **changes)
