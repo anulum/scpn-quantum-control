@@ -16,7 +16,7 @@ from dataclasses import dataclass
 import numpy as np
 from numpy.typing import NDArray
 
-from ..dense_budget import require_dense_allocation
+from ._readout_svd import admit_readout_svd, readout_svd_condition
 
 
 @dataclass(frozen=True)
@@ -174,6 +174,9 @@ def build_readout_confusion_matrix(
     checked before the basis labels are enumerated, because that tuple is itself
     ``2**n_qubits`` entries long and would be the first exponential allocation
     to run.
+    The condition-number SVD also admits its input copy, queried LAPACK work
+    arrays and singular values before enumeration. This covers declared numeric
+    buffers, not Python metadata or total process memory.
 
     Parameters
     ----------
@@ -193,19 +196,14 @@ def build_readout_confusion_matrix(
     Raises
     ------
     DenseAllocationError
-        If the full-basis matrix exceeds the budget.
+        If the matrix and declared SVD buffers exceed the budget or native limits.
+    numpy.linalg.LinAlgError
+        If the SVD workspace query fails or the decomposition does not converge.
     ValueError
         If a prepared computational-basis state has no calibration counts.
 
     """
-    require_dense_allocation(
-        n_qubits,
-        dtype=np.float64,
-        rank=2,
-        object_count=1,
-        max_gib=max_dense_gib,
-        label="readout confusion matrix",
-    )
+    lwork = admit_readout_svd(n_qubits, max_dense_gib)
     labels = computational_basis_labels(n_qubits)
     missing = [label for label in labels if label not in calibration_counts]
     if missing:
@@ -223,7 +221,7 @@ def build_readout_confusion_matrix(
         n_qubits=n_qubits,
         labels=labels,
         matrix=matrix,
-        condition_number=float(np.linalg.cond(matrix)),
+        condition_number=readout_svd_condition(matrix, lwork),
         shots_by_prepared_state=shots_by_prepared_state,
     )
 

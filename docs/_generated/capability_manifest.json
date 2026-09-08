@@ -10,10 +10,10 @@
     "public_api_exports": 841,
     "public_documentation_pages": 376,
     "python_model_classes": 1378,
-    "python_model_source_modules": 700,
+    "python_model_source_modules": 701,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1375
+    "test_files": 1376
   },
   "documentation": {
     "examples": [
@@ -702,7 +702,7 @@
       {
         "package": "mitigation",
         "path": "src/scpn_quantum_control/mitigation",
-        "python_modules": 13
+        "python_modules": 14
       },
       {
         "package": "ml_examples",
@@ -6716,6 +6716,7 @@
       "src/scpn_quantum_control/logging_setup.py",
       "src/scpn_quantum_control/metamorphic_ad_verification.py",
       "src/scpn_quantum_control/migration_guides_product.py",
+      "src/scpn_quantum_control/mitigation/_readout_svd.py",
       "src/scpn_quantum_control/mitigation/compound_mitigation.py",
       "src/scpn_quantum_control/mitigation/cpdr.py",
       "src/scpn_quantum_control/mitigation/dd.py",
@@ -9255,6 +9256,7 @@
       "tests/test_readout_matrix.py",
       "tests/test_readout_matrix_branches.py",
       "tests/test_readout_mitigation_eligibility_audit.py",
+      "tests/test_readout_svd.py",
       "tests/test_real_data_sync_forecasting.py",
       "tests/test_real_data_sync_validation.py",
       "tests/test_real_eeg_plv_validation_dataset.py",

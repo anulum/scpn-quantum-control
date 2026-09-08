@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **700 modules** across **39 package families**
-- **3921 documented public module-level symbols**
+- **701 modules** across **39 package families**
+- **3923 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -3260,6 +3260,14 @@ Quantum L16 indicator bundle for heuristic cybernetic routing.
 **Functions:** `loschmidt_echo()`, `energy_variance()`, `fidelity_susceptibility()`, `compute_l16_lyapunov()`
 
 ## `mitigation`
+
+### `scpn_quantum_control.mitigation._readout_svd`
+
+Explicit LAPACK workspace for readout spectral condition numbers.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/mitigation/_readout_svd.py) · Public symbols: **2**
+
+**Functions:** `admit_readout_svd()`, `readout_svd_condition()`
 
 ### `scpn_quantum_control.mitigation.compound_mitigation`
 
