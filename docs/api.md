@@ -1099,11 +1099,16 @@ QSNNTrainer(layer: QuantumDenseLayer, lr: float = 0.01, *, max_dense_gib: float 
 ```
 
 Every forward pass simulates the layer densely, so the layer's qubit count
-fixes a `2**n_qubits` statevector. The constructor checks that against the
-active dense budget and raises `DenseAllocationError` if it does not fit, before
-any training run starts; `max_dense_gib` overrides the budget for a single
-trainer. The check lives in the constructor because the size is fixed there and
-no entry point can bypass it.
+fixes a `2**n_qubits` statevector. Admission runs at construction and before each
+forward-pass circuit is built, using the current layer size and process budget.
+`DenseAllocationError` refuses an oversized state and its probability workspace;
+two complex-vector equivalents cover the state plus real absolute-value/square
+buffers. `max_dense_gib` overrides the budget for the lifetime of that trainer.
+Replacing the layer does not reuse admission for its previous size.
+
+The direct `QuantumDenseLayer.forward(input_values, *, max_dense_gib=None)` NumPy
+path independently checks its statevector before allocation. It evolves in-place
+and accumulates marginal probabilities without a full probability-vector copy.
 
 `QSNNTrainer.parameter_shift_gradient()` delegates to the native
 `scpn_quantum_control.differentiable` parameter-shift primitive. The training

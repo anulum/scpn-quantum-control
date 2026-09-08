@@ -96,12 +96,12 @@ class QSNNParameterShiftDescentRun:
 
     @property
     def loss_history(self) -> tuple[float, ...]:
-        """The optimizer value history as a QSNN loss history."""
+        """Optimiser objective values recorded as QSNN loss history."""
         return self.training.value_history
 
     @property
     def best_loss(self) -> float:
-        """The best observed full-batch QSNN loss."""
+        """Lowest full-batch QSNN loss observed during descent."""
         return self.training.best_value
 
     def to_dict(self) -> dict[str, object]:
@@ -153,11 +153,11 @@ class QSNNTrainer:
         """Bind a layer to the parameter-shift trainer.
 
         Every forward pass simulates the layer densely, so the qubit count fixes
-        a ``2**n_qubits`` statevector. Admission is checked here rather than in
-        the forward pass: the size is known at construction and cannot change,
-        so an inadmissible layer is refused before a training run starts instead
-        of part way through an epoch. No public entry point can bypass this
-        check, because all of them go through this constructor.
+        a ``2**n_qubits`` statevector. Admission is checked at construction and
+        again before each forward-pass circuit is built, since the layer and
+        active process budget may change. The saved explicit budget, when given,
+        applies to later passes too. Two complex-vector equivalents account for
+        the state and the real absolute-value/square probability buffers.
 
         Parameters
         ----------
@@ -175,17 +175,22 @@ class QSNNTrainer:
             If a forward-pass statevector for the layer exceeds the budget.
 
         """
-        require_dense_allocation(
-            layer.n_qubits,
-            dtype=np.complex128,
-            rank=1,
-            object_count=1,
-            max_gib=max_dense_gib,
-            label="QSNN forward-pass statevector",
-        )
         self.layer = layer
+        self._max_dense_gib = max_dense_gib
+        self._admit_forward()
         self.lr = lr
         self.optimizer = DifferentiableOptimizer(learning_rate=lr)
+
+    def _admit_forward(self) -> None:
+        """Check the current layer and budget before circuit/state construction."""
+        require_dense_allocation(
+            self.layer.n_qubits,
+            dtype=np.complex128,
+            rank=1,
+            object_count=2,
+            max_gib=self._max_dense_gib,
+            label="QSNN forward-pass statevector",
+        )
 
     def _build_circuit(
         self,
@@ -217,6 +222,7 @@ class QSNNTrainer:
         angle_override: tuple[int, int, float] | None = None,
     ) -> NDArray[np.float64]:
         """Forward pass returning neuron P(|1>) (continuous, not thresholded)."""
+        self._admit_forward()
         qc = self._build_circuit(inputs, angle_override)
         sv = Statevector.from_instruction(qc)
         probs: NDArray[np.float64] = np.array(

@@ -155,6 +155,57 @@ class TestQaoaMpcAdmission:
 class TestQsnnAdmission:
     """Every trainer entry point goes through the constructor."""
 
+    def test_runtime_budget_reduction_refuses_before_circuit(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """An earlier construction permit does not override the current process budget."""
+        trainer = QSNNTrainer(QuantumDenseLayer(1, 1, seed=3))
+        spy = _AllocationSpy("QuantumCircuit")
+        monkeypatch.setattr(qsnn_training_module, "QuantumCircuit", spy)
+        monkeypatch.setenv("SCPN_MAX_DENSE_GIB", str(TINY_BUDGET_GIB))
+        with pytest.raises(DenseAllocationError):
+            trainer.train_epoch(np.array([[0.5]]), np.array([[1.0]]))
+        assert spy.calls == 0
+
+    def test_replaced_layer_is_rechecked_against_explicit_budget(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """A larger replacement cannot reuse admission for the original layer."""
+        trainer = QSNNTrainer(QuantumDenseLayer(1, 1), max_dense_gib=256 / GIB)
+        trainer.layer = QuantumDenseLayer(2, 2)
+        spy = _AllocationSpy("QuantumCircuit")
+        monkeypatch.setattr(qsnn_training_module, "QuantumCircuit", spy)
+        with pytest.raises(DenseAllocationError):
+            trainer.train_epoch(np.array([[0.5, 0.2]]), np.array([[1.0, 0.0]]))
+        assert spy.calls == 0
+
+    def test_probability_workspace_is_included(self) -> None:
+        """State plus absolute-value and square buffers exceed a single-vector budget."""
+        with pytest.raises(DenseAllocationError, match="2 objects"):
+            QSNNTrainer(QuantumDenseLayer(1, 1), max_dense_gib=80 / GIB)
+
+    def test_direct_layer_forward_refuses_tiny_budget(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """The direct NumPy layer path also admits its exponential state before allocation."""
+        layer = QuantumDenseLayer(1, 1)
+        inputs = np.array([0.5])
+        monkeypatch.setenv("SCPN_MAX_DENSE_GIB", str(TINY_BUDGET_GIB))
+        spy = _AllocationSpy("numpy.zeros")
+        monkeypatch.setattr(np, "zeros", spy)
+        with pytest.raises(DenseAllocationError):
+            layer.forward(inputs)
+        assert spy.calls == 0
+
+    def test_explicit_forward_budget_preserves_the_real_numpy_path(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """An admitted zero-synapse layer emits no spike even with encoded input one."""
+        layer = QuantumDenseLayer(1, 1, weights=np.zeros((1, 1)))
+        monkeypatch.setenv("SCPN_MAX_DENSE_GIB", str(TINY_BUDGET_GIB))
+        spikes = layer.forward(np.ones(1), max_dense_gib=64 / GIB)
+        np.testing.assert_array_equal(spikes, [0])
+
     def test_tiny_budget_refuses_at_construction(self) -> None:
         """An inadmissible layer is refused before a run starts."""
         layer = QuantumDenseLayer(n_inputs=2, n_neurons=2)
@@ -194,6 +245,13 @@ class TestQsnnAdmission:
 
 class TestQecAdmission:
     """The protected circuit carries data and ancilla qubits together."""
+
+    def test_probability_workspace_is_included(self) -> None:
+        """The retained state and probability temporaries require more than one vector."""
+        code = RepetitionCodeUPDE(n_osc=2, code_distance=3)
+        one_vector = 16 * (1 << code.physical_qubit_count())
+        with pytest.raises(DenseAllocationError, match="2 objects"):
+            code.step_with_qec(max_dense_gib=(one_vector + 32) / GIB)
 
     def test_tiny_budget_refuses(self) -> None:
         """The refusal names the physical-qubit statevector."""

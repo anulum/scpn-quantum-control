@@ -145,7 +145,8 @@ class RepetitionCodeUPDE:
         The protected circuit carries both data and ancilla qubits, so the dense
         state is ``2**physical_qubit_count()``. Admission is checked before the
         circuit is built, so an inadmissible code distance refuses without
-        entering the allocator.
+        entering the allocator. Two complex-vector equivalents cover the state
+        and the real absolute-value/square buffers used to obtain probabilities.
 
         Parameters
         ----------
@@ -170,7 +171,7 @@ class RepetitionCodeUPDE:
             self.physical_qubit_count(),
             dtype=np.complex128,
             rank=1,
-            object_count=1,
+            object_count=2,
             max_gib=max_dense_gib,
             label="QEC protected-step statevector",
         )

@@ -19,6 +19,7 @@ from __future__ import annotations
 import numpy as np
 from numpy.typing import NDArray
 
+from ..dense_budget import require_dense_allocation
 from .qsynapse import QuantumSynapse
 
 
@@ -123,21 +124,39 @@ class QuantumDenseLayer:
             for n in range(n_neurons)
         ]
 
-    def forward(self, input_values: NDArray[np.float64]) -> NDArray[np.int64]:
-        """Build circuit, measure neuron register, return spike array.
+    def forward(
+        self, input_values: NDArray[np.float64], *, max_dense_gib: float | None = None
+    ) -> NDArray[np.int64]:
+        """Evolve the dense state in-place and threshold neuron probabilities.
 
         Parameters
         ----------
         input_values
             Input vector with shape ``(n_inputs,)``. Values are clipped to
             ``[0, 1]`` before angle encoding.
+        max_dense_gib
+            Optional statevector budget in GiB; otherwise the current process
+            budget applies. Checked before allocating the dense state.
 
         Returns
         -------
         NDArray[np.int64]
             Binary spike vector with shape ``(n_neurons,)``.
 
+        Raises
+        ------
+        DenseAllocationError
+            If the statevector exceeds the active budget.
+
         """
+        require_dense_allocation(
+            self.n_qubits,
+            dtype=np.complex128,
+            rank=1,
+            object_count=1,
+            max_gib=max_dense_gib,
+            label="QSNN layer statevector",
+        )
         state = np.zeros(1 << self.n_qubits, dtype=np.complex128)
         state[0] = 1.0
 
