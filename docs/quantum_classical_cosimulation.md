@@ -12,7 +12,8 @@ core and a classical cost linear in the bath couplings.
 This is a **local mean-field embedding**: the quantum/classical boundary
 couplings are treated at mean-field level, with no cross-boundary entanglement.
 It is not an exact treatment of the full network and not a hardware path. The
-partition `cross_fraction` bounds the decoupling approximation.
+partition `cross_fraction` reports a coupling-weight ratio, not a certified
+bound on the trajectory error of this approximation.
 
 ## Partitioning
 
@@ -21,6 +22,9 @@ a classical-weak bath. It seeds the core with the highest-weighted-degree node
 and greedily adds the node with the strongest coupling into the current core,
 stopping at `max_quantum_nodes` (capped at 14, the statevector ceiling) or when
 the best coupling falls below `coupling_threshold`. The result is deterministic.
+The core-size cap must be an integer, not a boolean, string or fractional value.
+The coupling threshold must be finite and non-negative; `NaN` and infinities
+are rejected instead of silently influencing core selection.
 
 ```python
 from scpn_quantum_control.cosimulation import partition_knm
@@ -33,11 +37,17 @@ The split is **edge-exact**: every coupling lands in exactly one of the
 quantum-internal, classical-internal, or cross buckets, and the
 `ConservationReport` proves `total = quantum_internal + classical_internal +
 cross` to floating-point rounding. `cross_fraction = cross / total` is the
-quality signal — the smaller it is, the better the mean-field decoupling holds.
+coupling-exposure diagnostic. This ratio alone does not establish the accuracy
+of the mean-field trajectory.
 
 ## Co-simulation
 
 `cosimulate` interleaves the two subsystems:
+
+`n_steps` must be a positive integer. Boolean, string and fractional counts
+raise `ValueError` before partitioning or quantum-state preparation. Python
+and NumPy integer scalars remain accepted. This validation does not replace
+the dense-allocation budget or qualify a run's numerical convergence.
 
 * the **quantum core** evolves under its internal XY Hamiltonian
   `H = -Σ K_ij (X_iX_j + Y_iY_j) - Σ ω_i Z_i` with a second-order Trotter split

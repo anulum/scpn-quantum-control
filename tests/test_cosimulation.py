@@ -9,8 +9,9 @@
 
 from __future__ import annotations
 
+import json
 from types import SimpleNamespace
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NotRequired, TypedDict
 
 import numpy as np
 import pytest
@@ -27,6 +28,23 @@ from scpn_quantum_control.cosimulation import quantum_classical as qc
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
+
+
+class PartitionOptions(TypedDict):
+    """Typed partition inputs whose values may violate runtime constraints."""
+
+    K: NDArray[np.float64]
+    omega: NDArray[np.float64]
+    max_quantum_nodes: NotRequired[int]
+    coupling_threshold: NotRequired[float]
+
+
+class IntegrationOptions(TypedDict):
+    """Typed integration controls for runtime range tests."""
+
+    dt: float
+    n_steps: int
+
 
 try:
     import scpn_quantum_engine
@@ -121,12 +139,10 @@ def test_partition_threshold_limits_core_growth() -> None:
         {"K": np.zeros((4, 4)), "omega": np.zeros(4), "coupling_threshold": -1.0},
     ],
 )
-def test_partition_rejects_bad_input(kwargs: dict[str, object]) -> None:
+def test_partition_rejects_bad_input(kwargs: PartitionOptions) -> None:
     """Reject malformed partition matrices and controls."""
     with pytest.raises(ValueError):
-        # The parametrised rows mix arrays, ints and floats; a **dict splat is
-        # matched against every keyword and cannot be narrowed per row.
-        partition_knm(**kwargs)  # type: ignore[arg-type]
+        partition_knm(**kwargs)
 
 
 # --------------------------------------------------------------------------- #
@@ -336,13 +352,37 @@ def test_provenance_and_claim_boundary() -> None:
         {"dt": 0.01, "n_steps": 0},
     ],
 )
-def test_cosimulate_rejects_bad_args(kwargs: dict[str, float]) -> None:
+def test_cosimulate_rejects_bad_args(kwargs: IntegrationOptions) -> None:
     """Reject invalid integration steps and durations."""
     K, omega = _two_scale_network(n_core=4, n_total=12)
     with pytest.raises(ValueError):
-        # A **dict splat is matched against every keyword of the signature,
-        # including n_steps: int, which mypy cannot narrow per row.
-        cosimulate(K, omega, max_quantum_nodes=4, **kwargs)  # type: ignore[arg-type]
+        cosimulate(K, omega, max_quantum_nodes=4, **kwargs)
+
+
+@pytest.mark.parametrize("payload", ["true", "1.5", '"2"'])
+def test_integer_controls_reject_nonintegers_from_json(
+    payload: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Reject decoded invalid counts before partitioning or quantum allocation."""
+    value = json.loads(payload)
+    K, omega = _two_scale_network(n_core=2, n_total=4)
+    with pytest.raises(ValueError, match="max_quantum_nodes"):
+        partition_knm(K, omega, max_quantum_nodes=value)
+
+    def forbidden_partition(*args: object, **kwargs: object) -> None:
+        raise AssertionError("invalid step count reached quantum preparation")
+
+    monkeypatch.setattr(qc, "partition_knm", forbidden_partition)
+    with pytest.raises(ValueError, match="n_steps"):
+        cosimulate(K, omega, dt=0.01, n_steps=value, max_quantum_nodes=2)
+
+
+@pytest.mark.parametrize("threshold", [np.nan, np.inf, -np.inf])
+def test_partition_rejects_nonfinite_threshold(threshold: float) -> None:
+    """A non-finite threshold cannot silently select a quantum partition."""
+    K, omega = _two_scale_network(n_core=2, n_total=4)
+    with pytest.raises(ValueError, match="coupling_threshold"):
+        partition_knm(K, omega, max_quantum_nodes=2, coupling_threshold=threshold)
 
 
 def test_cosimulate_rejects_bad_initial_state() -> None:

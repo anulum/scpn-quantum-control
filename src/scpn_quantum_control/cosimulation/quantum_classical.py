@@ -259,7 +259,8 @@ def cosimulate(
         K: symmetric ``(N, N)`` coupling matrix.
         omega: length-``N`` natural-frequency vector.
         dt: positive time step.
-        n_steps: number of co-simulation steps (>= 1).
+        n_steps: positive integer number of steps; boolean, fractional and
+            string counts are rejected before partition or state preparation.
         partition: a precomputed :class:`KnmPartition`; built via
             :func:`partition_knm` when omitted.
         max_quantum_nodes: core-size cap when building the partition.
@@ -279,7 +280,7 @@ def cosimulate(
     """
     if not np.isfinite(dt) or dt <= 0.0:
         raise ValueError("dt must be a positive finite value")
-    if n_steps < 1:
+    if isinstance(n_steps, bool) or not isinstance(n_steps, (int, np.integer)) or n_steps < 1:
         raise ValueError("n_steps must be a positive integer")
 
     if partition is None:

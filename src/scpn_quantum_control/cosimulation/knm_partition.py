@@ -172,9 +172,10 @@ def partition_knm(
         K: symmetric ``(N, N)`` coupling matrix (asymmetry is symmetrised and
             recorded in provenance).
         omega: length-``N`` natural-frequency vector.
-        max_quantum_nodes: core-size cap; must be ``1 <= m <= 14`` and ``<= N``.
+        max_quantum_nodes: integer core-size cap (not boolean); must be
+            ``1 <= m <= 14`` and ``<= N``. No fractional or string coercion.
         coupling_threshold: stop growing the core once the best coupling into it
-            falls below this magnitude.
+            falls below this finite, non-negative magnitude.
 
     Returns
     -------
@@ -185,12 +186,16 @@ def partition_knm(
     """
     K_sym, omega, asymmetry = _validate(K, omega)
     n = K_sym.shape[0]
-    if not 1 <= max_quantum_nodes <= MAX_QUANTUM_CORE_NODES:
+    if (
+        isinstance(max_quantum_nodes, bool)
+        or not isinstance(max_quantum_nodes, (int, np.integer))
+        or not 1 <= max_quantum_nodes <= MAX_QUANTUM_CORE_NODES
+    ):
         raise ValueError(f"max_quantum_nodes must be in 1..{MAX_QUANTUM_CORE_NODES}")
     if max_quantum_nodes > n:
         raise ValueError("max_quantum_nodes cannot exceed the number of oscillators")
-    if coupling_threshold < 0.0:
-        raise ValueError("coupling_threshold must be non-negative")
+    if not np.isfinite(coupling_threshold) or coupling_threshold < 0.0:
+        raise ValueError("coupling_threshold must be finite and non-negative")
 
     abs_k = np.abs(K_sym)
     core, growth_scores = _grow_strong_core(abs_k, max_quantum_nodes, coupling_threshold)
