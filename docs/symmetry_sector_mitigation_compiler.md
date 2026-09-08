@@ -87,6 +87,12 @@ computational-basis counts, then:
 The adapter does not mutate circuits, does not submit hardware jobs, and does
 not infer GUESS correction from raw counts alone.
 
+Shot counts must be non-negative Python integers with a positive total.
+Booleans are rejected even though Python treats them as integer subclasses;
+fractional and textual values are not coerced. Integer zero is valid in a
+nonzero-total map. Empty maps and invalid bitstrings raise `ValueError`.
+Replay leaves the caller's mapping unchanged, including on validation failure.
+
 The same `scpn-bench symmetry-sector-mitigation-gate` command now locks both
 planner fixtures and replay fixtures. Replay fixture rows cover the applied
 postselection/expansion path and the blocked missing-counts path.

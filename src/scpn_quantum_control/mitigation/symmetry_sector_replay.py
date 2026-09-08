@@ -67,7 +67,7 @@ def _normalise_counts(counts: dict[str, int], *, n_qubits: int) -> dict[str, int
             raise ValueError(
                 f"raw count key must be a {n_qubits}-bit computational-basis string: {bitstring!r}"
             )
-        if not isinstance(count, int) or count < 0:
+        if isinstance(count, bool) or not isinstance(count, int) or count < 0:
             raise ValueError(f"raw count value must be a non-negative integer: {bitstring!r}")
         normalised[clean] = normalised.get(clean, 0) + count
     if sum(normalised.values()) <= 0:
@@ -84,6 +84,28 @@ def replay_symmetry_sector_counts(
     The function is fail-closed. Blocked planner outputs raise ``ValueError``
     and invalid counts never reach mitigation primitives. The returned result
     reports GUESS as deferred rather than silently approximating it from counts.
+
+    Parameters
+    ----------
+    problem
+        Descriptor accepted by the symmetry-sector planner.
+    counts
+        Nonempty raw measurement mapping. Values must be non-negative Python
+        integers, excluding booleans, with a positive total. Keys contain one
+        binary digit per qubit; embedded spaces are removed before merging.
+        The input mapping is not modified.
+
+    Returns
+    -------
+    SymmetrySectorReplayResult
+        Normalised counts, shot accounting and mitigation results with explicit
+        deferred operations and evidence limitations.
+
+    Raises
+    ------
+    ValueError
+        If the planner is blocked, bitstrings are invalid, counts are empty,
+        non-integer, boolean or negative, or the total shot count is zero.
     """
     plan = plan_symmetry_sector_mitigation(problem)
     if plan.status != "eligible" or plan.expected_parity is None:

@@ -10,6 +10,8 @@
 
 from __future__ import annotations
 
+import json
+
 import pytest
 
 from scpn_quantum_control.mitigation import (
@@ -18,31 +20,26 @@ from scpn_quantum_control.mitigation import (
 )
 
 
-def _problem(**overrides: object) -> SymmetrySectorProblem:
-    """Build the four-qubit replay problem, with any field overridden per case."""
-    kwargs: dict[str, object] = {
-        "n_qubits": 4,
-        "coupling_matrix": (
+def _problem(*, has_raw_counts: bool = True) -> SymmetrySectorProblem:
+    """Build the typed replay problem with optional missing-count evidence."""
+    return SymmetrySectorProblem(
+        n_qubits=4,
+        coupling_matrix=(
             (0.0, 0.45, 0.0, 0.45),
             (0.45, 0.0, 0.45, 0.0),
             (0.0, 0.45, 0.0, 0.45),
             (0.45, 0.0, 0.45, 0.0),
         ),
-        "omega": (0.8, 0.9333333333, 1.0666666667, 1.2),
-        "initial_state": "0011",
-        "measurement_basis": "counts",
-        "has_raw_counts": True,
-        "has_noise_scaled_symmetry_observables": True,
-    }
-    kwargs.update(overrides)
-    # Callers override one field at a time, sometimes with a value the contract
-    # must reject, so mypy cannot type this construction for every caller.
-    return SymmetrySectorProblem(**kwargs)  # type: ignore[arg-type]
+        omega=(0.8, 0.9333333333, 1.0666666667, 1.2),
+        initial_state="0011",
+        measurement_basis="counts",
+        has_raw_counts=has_raw_counts,
+        has_noise_scaled_symmetry_observables=True,
+    )
 
 
 def test_replay_applies_raw_count_primitives_and_defers_guess() -> None:
     """Replay preserves shot accounting and reports non-count GUESS as deferred."""
-
     result = replay_symmetry_sector_counts(
         _problem(),
         {"0011": 40, "0000": 10, "0001": 5, "1110": 7},
@@ -65,14 +62,12 @@ def test_replay_applies_raw_count_primitives_and_defers_guess() -> None:
 
 def test_replay_rejects_blocked_planner_output() -> None:
     """Replay does not run when planner evidence is incomplete."""
-
     with pytest.raises(ValueError, match="raw measurement counts"):
         replay_symmetry_sector_counts(_problem(has_raw_counts=False), {"0011": 10})
 
 
 def test_replay_rejects_invalid_count_keys_and_values() -> None:
     """Replay validates count shape before invoking mitigation primitives."""
-
     with pytest.raises(ValueError, match="4-bit computational-basis"):
         replay_symmetry_sector_counts(_problem(), {"011": 10})
 
@@ -85,8 +80,44 @@ def test_replay_rejects_invalid_count_keys_and_values() -> None:
 
 def test_replay_merges_equivalent_spaced_bitstrings() -> None:
     """Counts are normalised before postselection and expansion."""
-
     result = replay_symmetry_sector_counts(_problem(), {"00 11": 3, "0011": 4})
 
     assert result.raw_counts == {"0011": 7}
     assert result.postselected_counts == {"0011": 7}
+
+
+@pytest.mark.parametrize("value", [True, False])
+def test_replay_rejects_boolean_shot_counts(value: bool) -> None:
+    """Boolean flags must not masquerade as integer measurement counts."""
+    with pytest.raises(ValueError, match="non-negative integer"):
+        replay_symmetry_sector_counts(_problem(), {"0011": value, "0000": 2})
+
+
+@pytest.mark.parametrize("payload", ['{"0011": 1.5}', '{"0011": "2"}'])
+def test_replay_rejects_noninteger_counts_from_json(payload: str) -> None:
+    """Decoded transport values must not be silently truncated or coerced."""
+    counts = json.loads(payload)
+    with pytest.raises(ValueError, match="non-negative integer"):
+        replay_symmetry_sector_counts(_problem(), counts)
+    assert counts == json.loads(payload)
+
+
+@pytest.mark.parametrize("counts", [{}, {"00x1": 2}])
+def test_replay_rejects_empty_or_nonbinary_counts(counts: dict[str, int]) -> None:
+    """Empty and nonbinary measurement maps cannot enter mitigation."""
+    before = counts.copy()
+    with pytest.raises(ValueError, match="empty|computational-basis"):
+        replay_symmetry_sector_counts(_problem(), counts)
+    assert counts == before
+
+
+def test_replay_preserves_integer_zero_and_input_mapping() -> None:
+    """Integer zero remains valid while normalised results export without mutation."""
+    counts = {"00 11": 2, "0011": 4, "0000": 0}
+    before = counts.copy()
+    result = replay_symmetry_sector_counts(_problem(), counts)
+    exported = json.loads(json.dumps(result.to_dict()))
+    assert counts == before
+    assert result.raw_shots == result.expanded_shots == 6
+    assert exported["raw_counts"] == {"0011": 6, "0000": 0}
+    assert exported["raw_shots"] == 6
