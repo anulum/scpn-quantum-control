@@ -9,12 +9,13 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypedDict
 
 import numpy as np
 import pytest
+from scipy.linalg import expm
 
-from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16
+from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, knm_to_dense_matrix
 from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.phase import adiabatic_preparation as adiabatic_module
 from scpn_quantum_control.phase.adiabatic_preparation import (
@@ -27,7 +28,15 @@ if TYPE_CHECKING:
     from numpy.typing import NDArray
 
 
-def _ring_topology(n: int) -> np.ndarray:
+class RampOptions(TypedDict, total=False):
+    """Typed overrides for semantically invalid ramp parameters."""
+
+    K_target: float
+    T_total: float
+    n_steps: int
+
+
+def _ring_topology(n: int) -> NDArray[np.float64]:
     T = np.zeros((n, n))
     for i in range(n):
         j = (i + 1) % n
@@ -36,6 +45,33 @@ def _ring_topology(n: int) -> np.ndarray:
 
 
 class TestAdiabaticRamp:
+    def test_one_step_matches_zero_initialized_evolution(self) -> None:
+        """Public fidelity agrees with direct midpoint propagation from K=0."""
+        omega = np.array([1.0, -2.0])
+        topology = 50.0 * _ring_topology(2)
+        duration = 0.2
+        target = 0.03
+        _, initial_vectors = np.linalg.eigh(knm_to_dense_matrix(np.zeros((2, 2)), omega))
+        midpoint = knm_to_dense_matrix(0.5 * target * topology, omega)
+        final_values, final_vectors = np.linalg.eigh(knm_to_dense_matrix(target * topology, omega))
+        evolved = expm(-1j * midpoint * duration) @ initial_vectors[:, 0]
+        expected = float(abs(np.vdot(final_vectors[:, 0], evolved)) ** 2)
+        result = adiabatic_ramp(omega, topology, K_target=target, T_total=duration, n_steps=1)
+        assert result.final_fidelity == pytest.approx(expected, abs=1e-12)
+        assert result.gap[-1] == pytest.approx(final_values[1] - final_values[0])
+
+    def test_initial_gap_matches_reported_zero_coupling(self) -> None:
+        """The first spectral sample must belong to the reported schedule point."""
+        omega = np.array([1.0, 2.0])
+        topology = 50.0 * _ring_topology(2)
+        before = topology.copy()
+        result = adiabatic_ramp(omega, topology, K_target=0.0, T_total=1.0, n_steps=4)
+        spectrum = np.linalg.eigvalsh(knm_to_dense_matrix(np.zeros((2, 2)), omega))
+        assert result.K_schedule[0] == 0.0
+        np.testing.assert_allclose(result.gap, spectrum[1] - spectrum[0], atol=1e-12)
+        np.testing.assert_allclose(result.fidelity, 1.0, atol=1e-12)
+        np.testing.assert_array_equal(topology, before)
+
     def test_returns_result(self) -> None:
         n = 2
         T = _ring_topology(n)
@@ -131,15 +167,13 @@ class TestAdiabaticRamp:
         self,
         omega: NDArray[np.float64],
         topology: NDArray[np.float64],
-        kwargs: dict[str, float],
+        kwargs: RampOptions,
         match: str,
     ) -> None:
-        call_kwargs = {"K_target": 2.0, "T_total": 5.0, "n_steps": 10}
+        call_kwargs: RampOptions = {"K_target": 2.0, "T_total": 5.0, "n_steps": 10}
         call_kwargs.update(kwargs)
         with pytest.raises(ValueError, match=match):
-            # A **dict splat is matched against every keyword of the signature,
-            # including n_steps: int, which mypy cannot narrow per row.
-            adiabatic_ramp(omega, topology, **call_kwargs)  # type: ignore[arg-type]
+            adiabatic_ramp(omega, topology, **call_kwargs)
 
     def test_rejects_string_topology_coercion(self) -> None:
         omega = OMEGA_N_16[:2]

@@ -312,9 +312,15 @@ thermodynamic-limit proof.
 
 ### `adiabatic_preparation` — Adiabatic State Preparation
 
-Finite-size dense exact adiabatic path from a weak-coupling initial ground
+Finite-size dense exact adiabatic path from a zero-coupling initial ground
 state to the target XY Hamiltonian. Computes instantaneous gap and fidelity
 along the selected schedule.
+The initial state and gap are evaluated at exactly the reported `K_schedule[0]=0`,
+without an implicit weak-coupling offset. In a degenerate ground space the dense
+eigensolver selects one ground vector; the reported fidelity is eigenvector
+overlap, not overlap with the entire ground-space projector. Historical results
+using the previous implicit `K=0.01` initialization are not equivalent and must
+be recomputed if zero-coupling initialization is required.
 
 ```python
 from scpn_quantum_control.phase.adiabatic_preparation import (

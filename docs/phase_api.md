@@ -388,10 +388,12 @@ from scpn_quantum_control.phase.adiabatic_preparation import (
 )
 ```
 
-The adiabatic theorem guarantees convergence if the spectral gap never closes along
-the path. At the BKT transition ($K \approx K_c$), the gap closes exponentially (Gem 23),
-making adiabatic preparation exponentially slow. This module is most useful for
-$K \neq K_c$, where the gap remains open and adiabatic preparation is efficient.
+This finite-size diagnostic reports the measured spectral gap and eigenvector
+fidelity for the specified duration and midpoint discretization. A nonzero
+sampled gap alone does not certify the accuracy of that finite-time evolution,
+an asymptotic BKT scaling law, or computational efficiency. Initialization and
+the first gap sample use exactly zero coupling. Degenerate ground spaces use
+one eigensolver-selected ground vector, not a ground-space fidelity projector.
 Inputs are accepted only as explicit real numeric values: `omega`,
 `K_topology`, `K_target`, `T_total`, and optional scan grids must not rely on
 string, boolean, object, or complex coercion before validation.

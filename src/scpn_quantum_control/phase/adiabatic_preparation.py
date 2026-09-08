@@ -134,7 +134,10 @@ def adiabatic_ramp(
 ) -> AdiabaticResult:
     """Adiabatic preparation: ramp K from 0 to K_target over time T_total.
 
-    Linear schedule: K(t) = K_target * t / T_total.
+    Linear schedule: K(t) = K_target * t / T_total. The initial state and
+    first gap sample use exactly K=0. For a degenerate initial ground space,
+    the dense eigensolver chooses one normalized ground vector; fidelity is
+    overlap with a selected eigenvector, not a ground-space projector.
     """
     omega, K_topology, K_target, T_total, n_steps = _validate_adiabatic_inputs(
         omega,
@@ -160,9 +163,8 @@ def adiabatic_ramp(
     )
     dt = T_total / n_steps
 
-    # Initial state: ground state of H(K≈0) — product state
-    # Use small K to avoid degeneracy at K=0
-    K_init = 0.01 * K_topology
+    # Use the same zero-coupling Hamiltonian reported by K_schedule[0].
+    K_init = np.zeros_like(K_topology)
     H_init = knm_to_dense_matrix(K_init, omega, max_dense_gib=max_dense_gib)
     eigvals_init, eigvecs_init = np.linalg.eigh(H_init)
     psi: ComplexArray = np.ascontiguousarray(eigvecs_init[:, 0]).astype(np.complex128)
