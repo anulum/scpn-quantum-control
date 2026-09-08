@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import json
 from collections.abc import Callable
 from typing import Any
 
@@ -25,6 +26,63 @@ from scpn_quantum_control.mitigation.symmetry_verification import (
     parity_verified_R,
     symmetry_expand,
 )
+
+
+@pytest.mark.parametrize(
+    "payload", ['{"00": true}', '{"00": false}', '{"00": 1.5}', '{"00": "2"}']
+)
+def test_public_primitives_reject_coerced_measurement_counts(payload: str) -> None:
+    """All public count consumers reject invalid decoded multiplicities without mutation."""
+    counts = json.loads(payload)
+    with pytest.raises(ValueError, match="counts must be non-negative integers"):
+        parity_postselect(counts, 0)
+    with pytest.raises(ValueError, match="counts must be non-negative integers"):
+        symmetry_expand(counts, 0)
+    with pytest.raises(ValueError, match="counts must be non-negative integers"):
+        parity_verified_expectation(counts, 2, 0)
+    for axis in range(3):
+        maps = [{"00": 2}, {"00": 2}, {"00": 2}]
+        maps[axis] = counts
+        with pytest.raises(ValueError, match="counts must be non-negative integers"):
+            parity_verified_R(maps[0], maps[1], maps[2], n_qubits=2, expected_parity=0)
+    assert counts == json.loads(payload)
+
+
+def test_integral_scalar_counts_keep_exact_shots() -> None:
+    """NumPy integer scalars retain existing runtime support and become Python counts."""
+    counts = {"00": np.int64(4), "01": np.uint64(3), "11": np.int64(0)}
+    selected = parity_postselect(counts, 0)
+    expanded = symmetry_expand(counts, 0)
+    assert selected.raw_shots == 7 and selected.verified_shots == 4
+    assert expanded == {"00": 7, "11": 0}
+    assert all(type(value) is int for value in selected.raw_counts.values())
+    assert all(type(value) is int for value in expanded.values())
+    assert type(counts["00"]) is np.int64
+    expected, spread, rejected = parity_verified_expectation(counts, 2, 0)
+    np.testing.assert_array_equal(expected, [1.0, 1.0])
+    np.testing.assert_array_equal(spread, [0.0, 0.0])
+    assert rejected == pytest.approx(3 / 7)
+    observed = parity_verified_R(counts, counts, counts, 2, 0)
+    python_counts = {key: int(value) for key, value in counts.items()}
+    assert observed == parity_verified_R(python_counts, python_counts, python_counts, 2, 0)
+
+
+@pytest.mark.parametrize("axis", [0, 1, 2])
+def test_invalid_xyz_counts_never_reach_observable_reduction(
+    monkeypatch: pytest.MonkeyPatch, axis: int
+) -> None:
+    """Any invalid measurement axis is rejected before the raw reduction consumer."""
+    from scpn_quantum_control.hardware import experiments
+
+    def unexpected_reduction(*args: object) -> tuple[float, ...]:
+        """Detect an observable calculation before count validation."""
+        pytest.fail("invalid counts reached observable reduction")
+
+    monkeypatch.setattr(experiments, "_R_from_xyz", unexpected_reduction)
+    maps = [{"00": 2}, {"00": 2}, {"00": 2}]
+    maps[axis] = json.loads('{"00": 1.5}')
+    with pytest.raises(ValueError, match="counts must be non-negative integers"):
+        parity_verified_R(maps[0], maps[1], maps[2], 2, 0)
 
 
 class TestBitstringParity:

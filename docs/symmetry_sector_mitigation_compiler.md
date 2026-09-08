@@ -93,6 +93,13 @@ fractional and textual values are not coerced. Integer zero is valid in a
 nonzero-total map. Empty maps and invalid bitstrings raise `ValueError`.
 Replay leaves the caller's mapping unchanged, including on validation failure.
 
+The direct `parity_postselect`, `symmetry_expand`,
+`parity_verified_expectation` and `parity_verified_R` primitives likewise
+reject boolean, fractional and textual multiplicities rather than truncating
+or coercing them. They retain support for non-negative integral scalars such
+as NumPy integers and preserve their existing empty-map behaviour. The XYZ
+entry point validates every measurement axis before computing observables.
+
 The same `scpn-bench symmetry-sector-mitigation-gate` command now locks both
 planner fixtures and replay fixtures. Replay fixture rows cover the applied
 postselection/expansion path and the blocked missing-counts path.
