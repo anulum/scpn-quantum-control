@@ -46,10 +46,11 @@ explicit caller decision, readable through ``submission_state`` and
 The device and the shot count are reported, never substituted quietly. A named
 backend that cannot be resolved raises :class:`BackendSubstitutionError` instead
 of running elsewhere; passing ``allow_backend_substitution=True`` accepts a
-different device and records the swap. IBM Runtime caps a sampler job at
-``_IBM_RUNTIME_MAX_SHOTS`` shots, so a larger request is capped and reported
-rather than silently reduced — statistical error follows the effective count,
-not the requested one. Every submission returns ``requested_backend``,
+different device and records the swap. Execution opt-ins require actual booleans,
+not truthy strings or integers. Positive integer shot requests are passed unchanged
+to the provider; this adapter does not invent a universal shot limit or reduce a
+request to make it fit. Provider rejection is not permission to retry with fewer
+shots. Queued and completed submission receipts return ``requested_backend``,
 ``backend_name``, ``backend_substituted``, ``requested_shots``,
 ``effective_shots`` and ``shots_capped``.
 
@@ -83,13 +84,18 @@ import logging
 import time
 from copy import deepcopy
 from dataclasses import dataclass, field
+from numbers import Integral
 from typing import Any
 
 from ..dense_budget import DenseAllocationError
 from .runner import HardwareRunner, JobResult, _require_local_statevector_simulator
 
-_IBM_RUNTIME_MAX_SHOTS = 4000
-"""Maximum shots IBM Runtime accepts in a single sampler job."""
+
+def _require_shots(shots: object) -> int:
+    """Accept positive integer counts without boolean or fractional coercion."""
+    if isinstance(shots, bool) or not isinstance(shots, Integral) or shots <= 0:
+        raise ValueError("shots must be a positive integer")
+    return int(shots)
 
 
 class BackendSubstitutionError(RuntimeError):
@@ -250,6 +256,34 @@ class AsyncHardwareRunner:
         queued. Observables are evaluated only when real counts are available.
         Local simulation and ZNE are opt-in because both change the scientific
         meaning and resource profile of a campaign.
+
+        Parameters
+        ----------
+        ansatz:
+            Object providing ``build_circuit()``.
+        observable:
+            Callable or list of callables consuming measured counts.
+        **kwargs:
+            ``shots`` overrides the runner default with a positive integer.
+            ``allow_backend_substitution``, ``allow_local_simulation`` and
+            ``enable_zne`` require booleans and default to False. Per-call
+            options override runner options. Admission occurs on first await,
+            before circuit construction or SDK loading. Shot counts are never
+            capped; provider-specific rejection propagates after dispatch.
+            Failed requested ZNE propagates without an unmitigated replacement.
+            Known IDs remain available through the wrapper's ``job_ids``.
+            IBM receipts record transpiler settings and whether optional
+            dynamical decoupling succeeded (or its skip reason).
+
+        Returns
+        -------
+        Any
+            Memory-only job wrapper with an async ``result()`` method.
+
+        Raises
+        ------
+        ValueError
+            On first await if shots or execution opt-ins are malformed.
         """
 
         class JobWrapper:
@@ -274,8 +308,20 @@ class AsyncHardwareRunner:
                 self._start_lock = asyncio.Lock()
                 self._provider_job: Any = None
                 self._provider_dispatch_started = False
+                self._job_ids: list[str] = []
 
             def _run_blocking(self) -> dict[str, Any]:
+                shots = _require_shots(self.kwargs.get("shots", self.runner_obj.default_shots))
+                options = {}
+                for name in ("allow_local_simulation", "allow_backend_substitution", "enable_zne"):
+                    value = self.kwargs.get(name, self.runner_obj.runner_kwargs.get(name, False))
+                    if not isinstance(value, bool):
+                        raise ValueError(f"{name} must be a boolean")
+                    options[name] = value
+                allow_local_simulation = options["allow_local_simulation"]
+                allow_backend_substitution = options["allow_backend_substitution"]
+                enable_zne = options["enable_zne"]
+
                 import os
 
                 from qiskit.providers import JobTimeoutError
@@ -284,27 +330,14 @@ class AsyncHardwareRunner:
                 from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2
 
                 zne_sync_order = None  # set on IBM path if explicit ZNE succeeds
-                ibm_job_ids: list[str] = []
+                ibm_job_ids = self._job_ids
                 zne_job_ids: list[str] = []
                 counts = None
                 status = "NOT_SUBMITTED"
                 execution_provenance: dict[str, Any] = {}
-                shots = self.kwargs.get("shots", self.runner_obj.default_shots)
-                allow_local_simulation = bool(
-                    self.kwargs.get(
-                        "allow_local_simulation",
-                        self.runner_obj.runner_kwargs.get("allow_local_simulation", False),
-                    )
-                )
                 max_dense_gib = self.kwargs.get(
                     "max_dense_gib",
                     self.runner_obj.runner_kwargs.get("max_dense_gib"),
-                )
-                enable_zne = bool(
-                    self.kwargs.get(
-                        "enable_zne",
-                        self.runner_obj.runner_kwargs.get("enable_zne", False),
-                    )
                 )
                 qc = self.ansatz.build_circuit()
                 if qc.num_clbits == 0:
@@ -312,6 +345,8 @@ class AsyncHardwareRunner:
 
                 token = os.environ.get("SCPN_IBM_TOKEN")
                 crn = os.environ.get("SCPN_IBM_CRN") or os.environ.get("SCPN_IBM_INSTANCE")
+                if not token and enable_zne and allow_local_simulation:
+                    raise RuntimeError("requested ZNE is unavailable on the local simulation path")
 
                 try:
                     if token:
@@ -323,14 +358,6 @@ class AsyncHardwareRunner:
                             "ibm_fez"
                             if self.runner_obj.backend == "ibm_heron_r2"
                             else self.runner_obj.backend
-                        )
-                        allow_backend_substitution = bool(
-                            self.kwargs.get(
-                                "allow_backend_substitution",
-                                self.runner_obj.runner_kwargs.get(
-                                    "allow_backend_substitution", False
-                                ),
-                            )
                         )
                         try:
                             backend = service.backend(target)
@@ -355,6 +382,13 @@ class AsyncHardwareRunner:
                             optimization_level=3, backend=backend, seed_transpiler=42
                         )
                         isa_qc = pm.run(qc)
+                        execution_provenance["transpilation"] = {
+                            "optimization_level": 3,
+                            "seed_transpiler": 42,
+                            "backend_name": execution_provenance["backend_name"],
+                        }
+                        execution_provenance["dd_applied"] = False
+                        execution_provenance["zne_requested"] = enable_zne
 
                         # Dynamical decoupling — Qiskit 2.4.0 verified pattern:
                         # ALAPScheduleAnalysis must run first (in PassManager) to
@@ -378,25 +412,21 @@ class AsyncHardwareRunner:
                                 ]
                             )
                             isa_qc = dd_pm.run(isa_qc)
+                            execution_provenance["dd_applied"] = True
                         except Exception as dd_err:
+                            execution_provenance["dd_skip_reason"] = str(dd_err)
                             print(f"DD skipped ({dd_err}); submitting without DD.", flush=True)
 
                         sampler = SamplerV2(mode=backend)
-                        effective_shots = min(shots, _IBM_RUNTIME_MAX_SHOTS)
+                        effective_shots = shots
                         sampler.options.default_shots = effective_shots
                         execution_provenance["requested_shots"] = shots
                         execution_provenance["effective_shots"] = effective_shots
-                        execution_provenance["shots_capped"] = effective_shots < shots
-                        if effective_shots < shots:
-                            print(
-                                f"IBM Runtime caps shots at {_IBM_RUNTIME_MAX_SHOTS}: "
-                                f"requested {shots}, submitting {effective_shots}. "
-                                "Statistical error follows the effective count.",
-                                flush=True,
-                            )
+                        execution_provenance["shots_capped"] = False
 
                         print(
-                            "IBM Runtime: Dispatching circuit with DD + opt_level=3"
+                            "IBM Runtime: Dispatching circuit with opt_level=3"
+                            f" (DD applied={execution_provenance['dd_applied']})"
                             f" to {backend.name}...",
                             flush=True,
                         )
@@ -405,38 +435,36 @@ class AsyncHardwareRunner:
                             # Mitiq ZNE must operate on scalar observables, not
                             # counts dictionaries. This path blocks until each
                             # scaled job returns and records every IBM job id.
-                            try:
-                                from mitiq import zne
-                                from mitiq.zne.inference import RichardsonFactory
-                                from mitiq.zne.scaling import fold_global
+                            from mitiq import zne
+                            from mitiq.zne.inference import RichardsonFactory
+                            from mitiq.zne.scaling import fold_global
 
-                                from scpn_quantum_control.analysis import SyncOrderParameter
+                            from scpn_quantum_control.analysis import SyncOrderParameter
 
-                                def _zne_executor(circ: Any) -> float:
-                                    """Run scaled circuit and return sync_order for extrapolation."""
-                                    _job = sampler.run([circ])
-                                    zne_job_id = str(_job.job_id())
-                                    ibm_job_ids.append(zne_job_id)
-                                    zne_job_ids.append(zne_job_id)
-                                    _res = _job.result()
-                                    _counts = _res[0].data.meas.get_counts()
-                                    return SyncOrderParameter()(counts=_counts)["sync_order"]
+                            def _zne_executor(circ: Any) -> float:
+                                """Run scaled circuit and return sync_order for extrapolation."""
+                                self._provider_dispatch_started = True
+                                _job = sampler.run([circ])
+                                zne_job_id = str(_job.job_id())
+                                self.job_id = zne_job_id
+                                ibm_job_ids.append(zne_job_id)
+                                zne_job_ids.append(zne_job_id)
+                                _res = _job.result()
+                                from .runner import _extract_counts
 
-                                zne_sync_order = zne.execute_with_zne(
-                                    isa_qc,
-                                    _zne_executor,
-                                    factory=RichardsonFactory([1, 2, 3]),
-                                    scale_noise=fold_global,
-                                )
-                                print(
-                                    f"ZNE complete: extrapolated sync_order={zne_sync_order:.4f}",
-                                    flush=True,
-                                )
-                            except Exception as zne_err:
-                                print(
-                                    f"ZNE skipped ({zne_err}); running unmitigated.",
-                                    flush=True,
-                                )
+                                _counts = _extract_counts(_res[0])
+                                return SyncOrderParameter()(counts=_counts)["sync_order"]
+
+                            zne_sync_order = zne.execute_with_zne(
+                                isa_qc,
+                                _zne_executor,
+                                factory=RichardsonFactory([1, 2, 3]),
+                                scale_noise=fold_global,
+                            )
+                            print(
+                                f"ZNE complete: extrapolated sync_order={zne_sync_order:.4f}",
+                                flush=True,
+                            )
 
                         # Scale=1 run — collects full counts for all observables
                         self._provider_dispatch_started = True
@@ -453,7 +481,7 @@ class AsyncHardwareRunner:
                             counts = _extract_counts(res[0])
                             status = "DONE"
                         except (TimeoutError, JobTimeoutError):
-                            print(f"Job {self.job_id} still queued on IBM.", flush=True)
+                            print(f"Job {self.job_id}: result not yet available.", flush=True)
                     elif allow_local_simulation:
                         from qiskit.primitives import StatevectorSampler
 
@@ -471,7 +499,11 @@ class AsyncHardwareRunner:
                 except BackendSubstitutionError:
                     raise
                 except Exception as e:
-                    if isinstance(e, DenseAllocationError) or self._provider_dispatch_started:
+                    if (
+                        isinstance(e, DenseAllocationError)
+                        or self._provider_dispatch_started
+                        or enable_zne
+                    ):
                         raise
                     if allow_local_simulation:
                         print(
@@ -492,6 +524,18 @@ class AsyncHardwareRunner:
                         self.job_id = None
                         status = "IBM_SUBMISSION_ERROR"
 
+                if status == "DONE_LOCAL_SIMULATION":
+                    execution_provenance = {
+                        "requested_backend": self.runner_obj.backend,
+                        "backend_name": "StatevectorSampler",
+                        "backend_substituted": True,
+                        "requested_shots": shots,
+                        "effective_shots": shots,
+                        "shots_capped": False,
+                        "dd_applied": False,
+                        "zne_requested": False,
+                        "transpilation": None,
+                    }
                 final_result = self._evaluate_observables(counts)
 
                 # Overwrite sync_order with ZNE-extrapolated value if available
@@ -544,6 +588,20 @@ class AsyncHardwareRunner:
             def _awaiting_provider_result(self) -> bool:
                 """Whether the cached submission receipt still lacks provider counts."""
                 return self._result is not None and self._result.get("status") == "QUEUED_ON_IBM"
+
+            @property
+            def job_ids(self) -> tuple[str, ...]:
+                """Known provider job IDs, retained even if later mitigation fails.
+
+                Returns
+                -------
+                tuple[str, ...]
+                    Immutable snapshot in dispatch order. Missing IDs on an
+                    ambiguous dispatch must be reconciled with the provider;
+                    an empty tuple is not proof of zero resource consumption.
+
+                """
+                return tuple(self._job_ids)
 
             @property
             def submission_state(self) -> str:
@@ -675,7 +733,10 @@ class AsyncHardwareRunner:
 
         The actual ``sampler.run(...)`` call happens inside
         ``asyncio.to_thread`` so the event loop stays responsive.
+        ``shots`` must be a positive integer and is forwarded unchanged;
+        malformed counts raise ValueError before runner selection/transpilation.
         """
+        shots = _require_shots(shots)
         chosen = runner or self._next_runner()
         async with self._semaphore:
             return await asyncio.to_thread(
@@ -698,7 +759,10 @@ class AsyncHardwareRunner:
         Each sub-list becomes one submission; sub-list *i* is dispatched
         to runner ``i % len(runners)`` unless constrained further by
         the ``max_concurrent`` semaphore.
+        Positive integer ``shots`` are validated before any sub-batch starts,
+        including an empty batch; invalid counts raise ValueError.
         """
+        shots = _require_shots(shots)
         coros = [
             self.submit_one_async(
                 batch,

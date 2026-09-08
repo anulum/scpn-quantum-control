@@ -384,7 +384,10 @@ class TestAsyncPipelineSmoke:
 class TestSubmitCircuitBatchProvenance:
     """Exercise provider provenance and labelled fallback boundaries."""
 
-    def test_zne_records_all_ibm_job_ids(self, monkeypatch: pytest.MonkeyPatch) -> None:
+    @pytest.mark.parametrize("failure", [None, "setup", "scaled_result"])
+    def test_zne_records_all_ibm_job_ids(
+        self, monkeypatch: pytest.MonkeyPatch, failure: str | None
+    ) -> None:
         """ZNE scale runs and the final counts run must all keep real IBM job ids."""
 
         class _FakeCircuit:
@@ -431,6 +434,8 @@ class TestSubmitCircuitBatchProvenance:
                 return self._job_id
 
             def result(self, *args: Any, **kwargs: Any) -> list[Any]:
+                if failure == "scaled_result":
+                    raise RuntimeError("scaled job failed")
                 pub = _pub_result({"0000": 256})
                 return [pub]
 
@@ -454,6 +459,8 @@ class TestSubmitCircuitBatchProvenance:
                 self.scale_factors = scale_factors
 
         def _execute_with_zne(circuit: Any, executor: Any, **kwargs: Any) -> float:
+            if failure == "setup":
+                raise RuntimeError("mitigation setup failed")
             return float(sum(executor(circuit) for _ in range(3)) / 3.0)
 
         qiskit_ibm = types.ModuleType("qiskit_ibm_runtime")
@@ -504,7 +511,18 @@ class TestSubmitCircuitBatchProvenance:
             _FakeAnsatz(),
             lambda **kwargs: {"observable_seen": 1.0},
             enable_zne=True,
+            allow_local_simulation=True,
         )
+
+        if failure is not None:
+            with pytest.raises(RuntimeError):
+                asyncio.run(job.result())
+            with pytest.raises(RuntimeError):
+                asyncio.run(job.result())
+            assert _FakeSampler.counter == (1 if failure == "scaled_result" else 0)
+            assert job.job_ids == (("ibm_job_1",) if failure == "scaled_result" else ())
+            assert job.job_id == ("ibm_job_1" if failure == "scaled_result" else None)
+            return
 
         result = asyncio.run(job.result())
 
@@ -517,6 +535,8 @@ class TestSubmitCircuitBatchProvenance:
             "ibm_job_4",
         ]
         assert result["zne_applied"] is True
+        assert result["zne_requested"] is True
+        assert result["dd_applied"] is True
         assert result["status"] == "DONE"
         assert service_kwargs_seen["instance"] == "legacy-instance"
 
@@ -632,8 +652,9 @@ class TestSubmitCircuitBatchProvenance:
         assert result["job_id"] is None
         observable.assert_not_called()
 
+    @pytest.mark.parametrize("enable_zne", [False, True])
     def test_submit_circuit_batch_local_simulation_requires_explicit_opt_in(
-        self, monkeypatch: pytest.MonkeyPatch
+        self, monkeypatch: pytest.MonkeyPatch, enable_zne: bool
     ) -> None:
         """Explicit local simulation is labelled and still evaluates observables."""
 
@@ -672,13 +693,24 @@ class TestSubmitCircuitBatchProvenance:
             _FakeAnsatz(),
             lambda **kwargs: {"observable_seen": float(sum(kwargs["counts"].values()))},
             allow_local_simulation=True,
+            enable_zne=enable_zne,
         )
+
+        if enable_zne:
+            with pytest.raises(RuntimeError, match="ZNE"):
+                asyncio.run(job.result())
+            assert job.job_id is None
+            return
 
         result = asyncio.run(job.result())
 
         assert result["status"] == "DONE_LOCAL_SIMULATION"
         assert result["job_id"] == "local_simulated"
         assert result["observable_seen"] == 4.0
+        assert result["requested_backend"] == "ibm_fez"
+        assert result["backend_name"] == "StatevectorSampler"
+        assert result["requested_shots"] == result["effective_shots"] == 4
+        assert result["dd_applied"] is False
 
     def test_submit_circuit_batch_local_simulation_rejects_dense_budget(
         self, monkeypatch: pytest.MonkeyPatch
@@ -737,10 +769,10 @@ class TestSubmitCircuitBatchProvenance:
             ("decode_error", "recovery"),
         ],
     )
-    def test_submit_circuit_batch_backend_fallback_zne_skip_and_timeout(
+    def test_submit_circuit_batch_backend_fallback_and_timeout(
         self, monkeypatch: pytest.MonkeyPatch, outcome: str, failure_phase: str
     ) -> None:
-        """Backend fallback, ZNE skip, measurement insertion, and queue timeout stay auditable."""
+        """Explicit backend fallback and original-job retrieval preserve provenance."""
         provider_calls = 0
         retrieval_calls = 0
         retrieval_started = threading.Event()
@@ -812,10 +844,6 @@ class TestSubmitCircuitBatchProvenance:
                     raise RuntimeError("submission acceptance unknown")
                 return _FakeJob()
 
-        class _FakeFactory:
-            def __init__(self, scale_factors: list[int]) -> None:
-                self.scale_factors = scale_factors
-
         qiskit_ibm = types.ModuleType("qiskit_ibm_runtime")
         qiskit_ibm.QiskitRuntimeService = _FakeService  # type: ignore[attr-defined]
         qiskit_ibm.SamplerV2 = _FakeSampler  # type: ignore[attr-defined]
@@ -832,22 +860,6 @@ class TestSubmitCircuitBatchProvenance:
         passes.PadDynamicalDecoupling = object  # type: ignore[attr-defined]
         monkeypatch.setitem(sys.modules, "qiskit.transpiler.passes", passes)
 
-        mitiq = types.ModuleType("mitiq")
-        mitiq_zne = types.ModuleType("mitiq.zne")
-
-        def _raise_zne(*args: Any, **kwargs: Any) -> float:
-            raise RuntimeError("zne unavailable")
-
-        mitiq_zne.execute_with_zne = _raise_zne  # type: ignore[attr-defined]
-        mitiq.zne = mitiq_zne  # type: ignore[attr-defined]
-        mitiq_inference = types.ModuleType("mitiq.zne.inference")
-        mitiq_inference.RichardsonFactory = _FakeFactory  # type: ignore[attr-defined]
-        mitiq_scaling = types.ModuleType("mitiq.zne.scaling")
-        mitiq_scaling.fold_global = lambda circuit, scale_factor: circuit  # type: ignore[attr-defined]
-        monkeypatch.setitem(sys.modules, "mitiq", mitiq)
-        monkeypatch.setitem(sys.modules, "mitiq.zne", mitiq_zne)
-        monkeypatch.setitem(sys.modules, "mitiq.zne.inference", mitiq_inference)
-        monkeypatch.setitem(sys.modules, "mitiq.zne.scaling", mitiq_scaling)
         monkeypatch.setenv("SCPN_IBM_TOKEN", "test-token")
 
         ansatz = _FakeAnsatz()
@@ -870,7 +882,7 @@ class TestSubmitCircuitBatchProvenance:
         job = runner.submit_circuit_batch(
             ansatz,
             lambda **kwargs: {"should_not_run": 1.0},
-            enable_zne=True,
+            enable_zne=False,
             allow_backend_substitution=True,
             allow_local_simulation=outcome != "done",
         )
@@ -900,6 +912,14 @@ class TestSubmitCircuitBatchProvenance:
         assert result["requested_shots"] == 8
         assert result["effective_shots"] == 8
         assert result["shots_capped"] is False
+        assert result["dd_applied"] is False
+        assert result["dd_skip_reason"]
+        assert result["zne_requested"] is False
+        assert result["transpilation"] == {
+            "optimization_level": 3,
+            "seed_transpiler": 42,
+            "backend_name": "least_busy_backend",
+        }
         assert job.submission_state == "awaiting_result"
 
         if outcome in {"provider_error", "decode_error"}:
@@ -950,10 +970,11 @@ class TestSubmitCircuitBatchProvenance:
         assert provider_calls == 1
         assert retrieval_calls == (3 if outcome == "timeout_then_done" else 2)
 
-    def test_submit_circuit_batch_records_the_runtime_shot_cap(
-        self, monkeypatch: pytest.MonkeyPatch
+    @pytest.mark.parametrize("shots", [4001, 4096, 20000])
+    def test_submit_circuit_batch_preserves_authorised_shots(
+        self, monkeypatch: pytest.MonkeyPatch, shots: int
     ) -> None:
-        """A capped shot count is reported, not silently substituted."""
+        """Submission and provenance retain exactly the requested shot count."""
 
         class _FakeCircuit:
             num_clbits = 0
@@ -1017,14 +1038,14 @@ class TestSubmitCircuitBatchProvenance:
         monkeypatch.setitem(sys.modules, "qiskit.transpiler.passes", passes)
         monkeypatch.setenv("SCPN_IBM_TOKEN", "test-token")
 
-        runner = ar.AsyncHardwareRunner(backend="ibm_fez", shots=20000)
+        runner = ar.AsyncHardwareRunner(backend="ibm_fez", shots=shots)
         job = runner.submit_circuit_batch(_FakeAnsatz(), lambda **kwargs: {})
         result = asyncio.run(job.result())
 
-        assert recorded["default_shots"] == ar._IBM_RUNTIME_MAX_SHOTS
-        assert result["requested_shots"] == 20000
-        assert result["effective_shots"] == ar._IBM_RUNTIME_MAX_SHOTS
-        assert result["shots_capped"] is True
+        assert recorded["default_shots"] == shots
+        assert result["requested_shots"] == shots
+        assert result["effective_shots"] == shots
+        assert result["shots_capped"] is False
         assert result["backend_name"] == "ibm_fez"
         assert result["backend_substituted"] is False
 
@@ -1065,8 +1086,9 @@ class TestSubmitCircuitBatchProvenance:
         assert result["counts_available"] is False
         assert result["job_id"] is None
 
+    @pytest.mark.parametrize("enable_zne", [False, True])
     def test_submit_circuit_batch_submission_error_can_use_labelled_local_fallback(
-        self, monkeypatch: pytest.MonkeyPatch
+        self, monkeypatch: pytest.MonkeyPatch, enable_zne: bool
     ) -> None:
         """Run an explicit local fallback and ignore non-callable observers."""
 
@@ -1112,13 +1134,62 @@ class TestSubmitCircuitBatchProvenance:
                 object(),
             ],
             allow_local_simulation=True,
+            enable_zne=enable_zne,
         )
+
+        if enable_zne:
+            with pytest.raises(RuntimeError, match="service unavailable"):
+                asyncio.run(job.result())
+            assert job.job_id is None
+            return
 
         result = asyncio.run(job.result())
 
         assert result["status"] == "DONE_LOCAL_SIMULATION"
         assert result["job_id"] == "local_simulated"
         assert result["observable_seen"] == 2.0
+        assert result["requested_backend"] == "ibm_fez"
+        assert result["backend_name"] == "StatevectorSampler"
+        assert result["effective_shots"] == 2
+
+
+class TestSubmissionAdmission:
+    """Refuse malformed execution authority before constructing any circuit."""
+
+    @pytest.mark.parametrize(
+        "option", ["allow_local_simulation", "allow_backend_substitution", "enable_zne"]
+    )
+    @pytest.mark.parametrize("value", ["false", "true", 0, 1, None, []])
+    @pytest.mark.parametrize("location", ["runner", "call"])
+    def test_permission_options_require_booleans(
+        self, option: str, value: Any, location: str
+    ) -> None:
+        """Truthy strings and integer flags cannot authorise a different execution."""
+        options = {option: value}
+        runner = ar.AsyncHardwareRunner(**(options if location == "runner" else {}))
+        ansatz = MagicMock()
+        job = runner.submit_circuit_batch(ansatz, None, **(options if location == "call" else {}))
+        with pytest.raises(ValueError, match=option):
+            asyncio.run(job.result())
+        ansatz.build_circuit.assert_not_called()
+
+    @pytest.mark.parametrize("shots", [True, False, 0, -1, 1.5, "8", None])
+    @pytest.mark.parametrize("surface", ["wrapper", "single", "batch"])
+    def test_invalid_shots_fail_before_execution(self, shots: Any, surface: str) -> None:
+        """Every submission surface rejects invalid counts without transpilation."""
+        backend = _StubRunner()
+        runner = ar.AsyncHardwareRunner(cast(Any, backend))
+        ansatz = MagicMock()
+        with pytest.raises(ValueError, match="shots"):
+            if surface == "wrapper":
+                asyncio.run(runner.submit_circuit_batch(ansatz, None, shots=shots).result())
+            elif surface == "single":
+                asyncio.run(runner.submit_one_async(_fake_circuits(), shots=shots))
+            else:
+                asyncio.run(runner.submit_batch_async([_fake_circuits()], shots=shots))
+        ansatz.build_circuit.assert_not_called()
+        assert backend.transpiled == []
+        assert backend.jobs_logged == []
 
 
 class TestSubmissionIsIssuedOnce:

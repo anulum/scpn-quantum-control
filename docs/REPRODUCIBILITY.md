@@ -97,7 +97,7 @@ After this fix: `import mitiq; from mitiq import zne` imports cleanly.
 | Architecture | IBM Heron r2 |
 | Qubit count | 156 |
 | Native gate set | CZ, RZ, SX, X |
-| Shots per job | min(requested, 4000) |
+| Shots per job | Historical campaign: min(requested, 4000); current async adapter forwards the positive integer request unchanged |
 
 ---
 
@@ -316,11 +316,11 @@ print(job.result())
 
 ## 9. Known Limitations
 
-1. **Shot cap:** `min(shots, 4000)` — higher shot requests are silently capped.
+1. **Historical shot cap:** This campaign used `min(shots, 4000)`. The current async adapter no longer reduces requests: it passes the positive integer count unchanged and propagates provider rejection without resubmission. Provider-specific limits must be checked for the intended campaign; this change does not revise historical measurements or authorise new runs.
 2. **N=160 skipped:** IBM Heron r2 has 156 qubits; T1 N=160 point is always skipped.
 3. **Integrated information:** `IntegratedInformationPhi` does not report Φ from output counts. Near-uniform entropy over 12–20 qubits at 4000 shots is available only as a labelled entropy diagnostic and is not a meaningful IIT measurement.
 4. **T2 hardware run not executed:** `scpn_neurocore.bridge.load_live_stream` now exposes a replayable artifact contract for the live-loop script, but the historical T2 IBM hardware run remains unexecuted in this record.
-5. **ZNE job_id:** When ZNE succeeds, `job_id` is set to `"zne_mitigated"` — individual scale-factor job IDs are managed internally by mitiq and not exposed in result JSON.
+5. **ZNE provenance:** Current results retain the final primary `job_id`, all `job_ids` and the separate `zne_job_ids`; `zne_applied` labels a completed extrapolation. Known IDs also remain available on the wrapper after a failure. Failed requested mitigation stops execution instead of submitting an unmitigated replacement. This does not reconstruct IDs absent from historical artifacts.
 6. **ZNE cost:** Each ZNE run submits 3 circuits (scale=1,2,3) plus 1 final run = 4× IBM job cost vs unmitigated. T4 ZNE = 80 × 4 = 320 IBM jobs.
 7. **Batch 1 baseline:** Run without DD or ZNE; inflated sync_order (0.14) is dominated by noise artefacts, not physical synchronisation.
 8. **Retired injectors:** Legacy local campaign injector modules now fail at import time. Hardware campaigns must use `AsyncHardwareRunner` and source-backed or explicitly labelled smoke-test artifacts.
