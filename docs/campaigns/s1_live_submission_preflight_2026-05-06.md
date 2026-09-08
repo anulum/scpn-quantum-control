@@ -107,6 +107,14 @@ with:
 
 ### Dispatch and recovery boundary
 
+`FeedbackRunner` accepts only exact boolean approval and scheduler hardware flags.
+It rechecks approval when `run()` starts and before every dispatch, including
+after observer callbacks; revocation blocks the next command. Malformed or absent
+hardware identity is rejected instead of assumed to mean simulation. The existing
+explicit `require_hardware_approval=False` opt-out disables only this runner-level
+check; it is not provider approval or authority to operate hardware. S1 live runs
+must retain the default approval requirement and use the approved scheduler below.
+
 `ApprovalGatedFeedbackHardwareScheduler` allows one in-flight call per instance;
 concurrent and reentrant calls fail immediately without reaching the provider.
 Its provider, callback, approval and descriptor are construction-time settings.

@@ -59,6 +59,99 @@ def test_feedback_runner_rejects_unapproved_hardware_scheduler() -> None:
         FeedbackRunner(scheduler, observer, FeedbackLoopConfig(max_steps=1))
 
 
+@pytest.mark.parametrize("encoded", ['"false"', '"true"', "1", "0", "null"])
+def test_runner_rejects_nonboolean_approval(encoded: str) -> None:
+    """Decoded truthy values are not explicit hardware approval."""
+    import json
+
+    scheduler = DummyScheduler(metrics=[0.0], is_hardware=True)
+    observer = ProportionalMetricObserver(initial_value=0.1, metric_name="r", target=0.5, gain=1.0)
+    with pytest.raises(ValueError, match="hardware_approved must be a boolean"):
+        FeedbackRunner(
+            scheduler,
+            observer,
+            FeedbackLoopConfig(max_steps=1),
+            hardware_approved=json.loads(encoded),
+        )
+    assert scheduler.submitted == []
+
+
+@pytest.mark.parametrize("encoded", ['"false"', "0", "null"])
+def test_config_rejects_nonboolean_approval_policy(encoded: str) -> None:
+    """A decoded falsy value cannot disable the approval gate implicitly."""
+    import json
+
+    with pytest.raises(ValueError, match="require_hardware_approval must be a boolean"):
+        FeedbackLoopConfig(max_steps=1, require_hardware_approval=json.loads(encoded))
+
+
+def test_runner_rechecks_hardware_identity_before_dispatch() -> None:
+    """A scheduler switched from simulation to hardware requires fresh approval."""
+    scheduler = DummyScheduler(metrics=[0.0])
+    observer = ProportionalMetricObserver(initial_value=0.1, metric_name="r", target=0.5, gain=1.0)
+    runner = FeedbackRunner(scheduler, observer, FeedbackLoopConfig(max_steps=1))
+    scheduler.is_hardware = True
+    with pytest.raises(PermissionError, match="explicit approval"):
+        runner.run()
+    assert scheduler.submitted == []
+
+
+@pytest.mark.parametrize("encoded", ['"false"', "0", "null"])
+def test_runner_rejects_ambiguous_scheduler_identity(encoded: str) -> None:
+    """Missing or malformed hardware identity is not evidence of simulation."""
+    import json
+
+    scheduler = DummyScheduler(metrics=[0.0])
+    scheduler.is_hardware = json.loads(encoded)
+    observer = ProportionalMetricObserver(initial_value=0.1, metric_name="r", target=0.5, gain=1.0)
+    with pytest.raises(ValueError, match="is_hardware must be a boolean"):
+        FeedbackRunner(scheduler, observer, FeedbackLoopConfig(max_steps=1))
+    assert scheduler.submitted == []
+
+
+@pytest.mark.parametrize("change_at", ["initial", "update"])
+def test_observer_cannot_revoke_approval_then_dispatch(change_at: str) -> None:
+    """A callback's approval revocation takes effect before the next command."""
+    from collections.abc import Mapping, Sequence
+
+    scheduler = DummyScheduler(metrics=[0.0], is_hardware=True)
+
+    class RevokingObserver(ProportionalMetricObserver):
+        def initial_command(self) -> FeedbackCommand:
+            if change_at == "initial":
+                runner.hardware_approved = False
+            return super().initial_command()
+
+        def update(
+            self, result: FeedbackResult, history: Sequence[FeedbackStepRecord]
+        ) -> tuple[FeedbackCommand | None, Mapping[str, object]]:
+            runner.hardware_approved = False
+            return super().update(result, history)
+
+    runner = FeedbackRunner(
+        scheduler,
+        RevokingObserver(initial_value=0.1, metric_name="r", target=0.5, gain=1.0),
+        FeedbackLoopConfig(max_steps=2),
+        hardware_approved=True,
+    )
+    with pytest.raises(PermissionError, match="explicit approval"):
+        runner.run()
+    assert len(scheduler.submitted) == (0 if change_at == "initial" else 1)
+
+
+def test_explicit_approval_policy_opt_out_remains_supported() -> None:
+    """An exact false policy preserves the existing caller-controlled opt-out."""
+    scheduler = DummyScheduler(metrics=[0.5], is_hardware=True)
+    observer = ProportionalMetricObserver(initial_value=0.1, metric_name="r", target=0.5, gain=1.0)
+    runner = FeedbackRunner(
+        scheduler,
+        observer,
+        FeedbackLoopConfig(max_steps=1, require_hardware_approval=False),
+    )
+    assert len(runner.run()) == 1
+    assert len(scheduler.submitted) == 1
+
+
 def test_feedback_runner_records_steps_until_observer_converges() -> None:
     """Record each local step until the observer requests termination."""
     scheduler = DummyScheduler(metrics=[0.2, 0.5])

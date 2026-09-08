@@ -44,6 +44,8 @@ class FeedbackLoopConfig:
         _require_non_negative(self.max_total_latency_s, "max_total_latency_s")
         _require_non_negative(self.max_step_latency_s, "max_step_latency_s")
         _require_non_negative(self.max_qpu_seconds, "max_qpu_seconds")
+        if type(self.require_hardware_approval) is not bool:
+            raise ValueError("require_hardware_approval must be a boolean")
         if self.latency_sla is not None and not isinstance(
             self.latency_sla, FeedbackLoopLatencySLA
         ):
@@ -165,22 +167,36 @@ class FeedbackRunner:
         self.observer = observer
         self.config = config
         self.hardware_approved = hardware_approved
-        if (
-            config.require_hardware_approval
-            and getattr(scheduler, "is_hardware", False)
-            and not hardware_approved
-        ):
+        self._check_hardware_approval()
+
+    def _check_hardware_approval(self) -> None:
+        """Validate explicit approval and current scheduler identity before work."""
+        if type(self.hardware_approved) is not bool:
+            raise ValueError("hardware_approved must be a boolean")
+        is_hardware = getattr(self.scheduler, "is_hardware", None)
+        if type(is_hardware) is not bool:
+            raise ValueError("scheduler is_hardware must be a boolean")
+        if self.config.require_hardware_approval and is_hardware and not self.hardware_approved:
             raise PermissionError(
                 "hardware feedback scheduler requires explicit approval before execution"
             )
 
     def run(self) -> list[FeedbackStepRecord]:
-        """Execute the feedback loop until stop, step, latency, or QPU budget limit."""
+        """Execute until stop, step, latency, or QPU budget limit.
+
+        Approval and the scheduler's exact boolean hardware identity are checked
+        at entry and before each dispatch, including after observer callbacks.
+        Invalid flags raise ValueError; required but absent approval raises
+        PermissionError without submitting the next command. This runner flag
+        does not replace provider-specific approval or a durable usage ledger.
+        """
+        self._check_hardware_approval()
         history: list[FeedbackStepRecord] = []
         command = self.observer.initial_command()
         total_qpu = 0.0
         total_latency = 0.0
         for index in range(self.config.max_steps):
+            self._check_hardware_approval()
             if total_qpu + command.estimated_qpu_seconds > self.config.max_qpu_seconds:
                 raise RuntimeError("feedback loop would exceed configured QPU budget")
             started = time.monotonic()
