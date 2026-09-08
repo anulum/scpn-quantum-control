@@ -81,6 +81,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
+from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -271,10 +272,13 @@ class AsyncHardwareRunner:
                 self._failure: BaseException | None = None
                 self._task: asyncio.Task[dict[str, Any]] | None = None
                 self._start_lock = asyncio.Lock()
+                self._provider_job: Any = None
+                self._provider_dispatch_started = False
 
             def _run_blocking(self) -> dict[str, Any]:
                 import os
 
+                from qiskit.providers import JobTimeoutError
                 from qiskit.transpiler.passes import ALAPScheduleAnalysis, PadDynamicalDecoupling
                 from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
                 from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2
@@ -435,16 +439,20 @@ class AsyncHardwareRunner:
                                 )
 
                         # Scale=1 run — collects full counts for all observables
+                        self._provider_dispatch_started = True
                         job = sampler.run([isa_qc])
+                        self._provider_job = job
                         self.job_id = str(job.job_id())
                         ibm_job_ids.append(self.job_id)
                         print(f"IBM Runtime: Job queued -> {self.job_id}", flush=True)
                         status = "QUEUED_ON_IBM"
                         try:
                             res = job.result(timeout=15)
-                            counts = res[0].data.meas.get_counts()
+                            from .runner import _extract_counts
+
+                            counts = _extract_counts(res[0])
                             status = "DONE"
-                        except Exception:
+                        except (TimeoutError, JobTimeoutError):
                             print(f"Job {self.job_id} still queued on IBM.", flush=True)
                     elif allow_local_simulation:
                         from qiskit.primitives import StatevectorSampler
@@ -463,7 +471,7 @@ class AsyncHardwareRunner:
                 except BackendSubstitutionError:
                     raise
                 except Exception as e:
-                    if isinstance(e, DenseAllocationError):
+                    if isinstance(e, DenseAllocationError) or self._provider_dispatch_started:
                         raise
                     if allow_local_simulation:
                         print(
@@ -484,14 +492,7 @@ class AsyncHardwareRunner:
                         self.job_id = None
                         status = "IBM_SUBMISSION_ERROR"
 
-                final_result: dict[str, Any] = {}
-                if counts is not None:
-                    observables = (
-                        self.observable if isinstance(self.observable, list) else [self.observable]
-                    )
-                    for ob in observables:
-                        if callable(ob):
-                            final_result.update(ob(counts=counts, **self.kwargs))
+                final_result = self._evaluate_observables(counts)
 
                 # Overwrite sync_order with ZNE-extrapolated value if available
                 if zne_sync_order is not None:
@@ -506,10 +507,43 @@ class AsyncHardwareRunner:
                 final_result["runtime"] = time.time() - self.submitted_at
                 final_result["status"] = status
                 final_result.update(execution_provenance)
-                if counts is None:
-                    final_result["counts_available"] = False
+                final_result["counts_available"] = counts is not None
 
                 return final_result
+
+            def _evaluate_observables(self, counts: dict[str, int] | None) -> dict[str, Any]:
+                """Evaluate the existing observable contract only after counts arrive."""
+                result: dict[str, Any] = {}
+                if counts is not None:
+                    observables = (
+                        self.observable if isinstance(self.observable, list) else [self.observable]
+                    )
+                    for observable in observables:
+                        if callable(observable):
+                            result.update(observable(counts=counts, **self.kwargs))
+                return result
+
+            def _retrieve_existing(self, previous: dict[str, Any]) -> dict[str, Any]:
+                """Retrieve the original job without recompiling or resubmitting it."""
+                from qiskit.providers import JobTimeoutError
+
+                from .runner import _extract_counts
+
+                try:
+                    response = self._provider_job.result(timeout=15)
+                except (TimeoutError, JobTimeoutError):
+                    return dict(previous)
+                counts = _extract_counts(response[0])
+                result = self._evaluate_observables(counts)
+                result.update(previous)
+                result["status"] = "DONE"
+                result["counts_available"] = True
+                result["runtime"] = time.time() - self.submitted_at
+                return result
+
+            def _awaiting_provider_result(self) -> bool:
+                """Whether the cached submission receipt still lacks provider counts."""
+                return self._result is not None and self._result.get("status") == "QUEUED_ON_IBM"
 
             @property
             def submission_state(self) -> str:
@@ -519,13 +553,16 @@ class AsyncHardwareRunner:
                 -------
                 str
                     ``"not_started"`` before any submission, ``"in_flight"``
-                    while one is running, ``"completed"`` once a result is
+                    while one is running, ``"awaiting_result"`` after a result
+                    timeout, ``"completed"`` once a final result is
                     held, or ``"ambiguous"`` when the submission raised and it
                     is unknown whether the provider accepted the work.
 
                 """
                 if self._failure is not None:
                     return "ambiguous"
+                if self._awaiting_provider_result():
+                    return "awaiting_result"
                 if self._result is not None:
                     return "completed"
                 if self._task is not None:
@@ -545,7 +582,7 @@ class AsyncHardwareRunner:
             def _capture_completion(self, task: asyncio.Task[dict[str, Any]]) -> None:
                 """Record completion even when no client remains to await it."""
                 try:
-                    self._result = task.result()
+                    self._result = deepcopy(task.result())
                 except BaseException as exc:
                     self._failure = exc
 
@@ -554,6 +591,19 @@ class AsyncHardwareRunner:
                 async with self._start_lock:
                     if self._task is None:
                         self._task = asyncio.ensure_future(asyncio.to_thread(self._run_blocking))
+                        self._task.add_done_callback(self._capture_completion)
+                    elif (
+                        self._result is not None
+                        and self._awaiting_provider_result()
+                        and self._task.done()
+                    ):
+                        previous = self._result
+                        if self._provider_job is None:
+                            raise RuntimeError("pending submission has no original provider job")
+                        self._result = None
+                        self._task = asyncio.ensure_future(
+                            asyncio.to_thread(self._retrieve_existing, previous)
+                        )
                         self._task.add_done_callback(self._capture_completion)
                     elif self._task.get_loop() is not asyncio.get_running_loop():
                         raise RuntimeError("active submission belongs to another event loop")
@@ -574,6 +624,15 @@ class AsyncHardwareRunner:
                 An active task must be awaited on its owning event loop;
                 cross-loop retrieval is refused without marking provider work
                 as failed. Completed cached outcomes may be read subsequently.
+                After a result timeout, the next call polls the same retained
+                provider job; concurrent calls share that retrieval task.
+                The legacy QUEUED_ON_IBM receipt means counts are not available,
+                not a verified provider queue status. Other provider/decoding
+                errors propagate, retain the job identity, and never trigger
+                local fallback after dispatch. Returned dictionaries are detached
+                copies so caller edits cannot change retrieval state or provenance.
+                This wrapper is memory-only; process-restart recovery requires
+                archiving job IDs and using the provider's retrieval interface.
 
                 Returns
                 -------
@@ -589,8 +648,8 @@ class AsyncHardwareRunner:
                 """
                 if self._failure is not None:
                     raise self._failure
-                if self._result is not None:
-                    return self._result
+                if self._result is not None and not self._awaiting_provider_result():
+                    return deepcopy(self._result)
 
                 task = await self._shared_submission()
                 try:
@@ -600,8 +659,7 @@ class AsyncHardwareRunner:
                 except BaseException as exc:
                     self._failure = exc
                     raise
-                self._result = outcome
-                return outcome
+                return deepcopy(outcome)
 
         return JobWrapper(self, ansatz, observable, kwargs)
 

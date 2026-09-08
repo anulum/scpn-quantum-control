@@ -724,10 +724,27 @@ class TestSubmitCircuitBatchProvenance:
         with pytest.raises(DenseAllocationError, match="local statevector simulator"):
             asyncio.run(job.result())
 
+    @pytest.mark.parametrize(
+        ("outcome", "failure_phase"),
+        [
+            ("done", "recovery"),
+            ("timeout_then_done", "recovery"),
+            ("cancel_waiter", "recovery"),
+            ("dispatch_error", "initial"),
+            ("provider_error", "initial"),
+            ("decode_error", "initial"),
+            ("provider_error", "recovery"),
+            ("decode_error", "recovery"),
+        ],
+    )
     def test_submit_circuit_batch_backend_fallback_zne_skip_and_timeout(
-        self, monkeypatch: pytest.MonkeyPatch
+        self, monkeypatch: pytest.MonkeyPatch, outcome: str, failure_phase: str
     ) -> None:
         """Backend fallback, ZNE skip, measurement insertion, and queue timeout stay auditable."""
+        provider_calls = 0
+        retrieval_calls = 0
+        retrieval_started = threading.Event()
+        retrieval_release = threading.Event()
 
         class _FakeCircuit:
             num_clbits = 0
@@ -767,13 +784,32 @@ class TestSubmitCircuitBatchProvenance:
                 return "queued_job"
 
             def result(self, *args: Any, **kwargs: Any) -> list[Any]:
-                raise TimeoutError("still queued")
+                nonlocal retrieval_calls
+                retrieval_calls += 1
+                if retrieval_calls == 1 and failure_phase == "recovery":
+                    raise TimeoutError("still queued")
+                if retrieval_calls == 2 and outcome == "timeout_then_done":
+                    from qiskit.providers import JobTimeoutError
+
+                    raise JobTimeoutError("result still unavailable")
+                if outcome == "cancel_waiter":
+                    retrieval_started.set()
+                    assert retrieval_release.wait(3.0)
+                if outcome == "provider_error":
+                    raise RuntimeError("provider job failed")
+                if outcome == "decode_error":
+                    return [object()]
+                return [_pub_result({"0": 8})]
 
         class _FakeSampler:
             def __init__(self, mode: Any) -> None:
                 self.options = MagicMock()
 
             def run(self, circuits: list[Any]) -> _FakeJob:
+                nonlocal provider_calls
+                provider_calls += 1
+                if outcome == "dispatch_error":
+                    raise RuntimeError("submission acceptance unknown")
                 return _FakeJob()
 
         class _FakeFactory:
@@ -836,7 +872,18 @@ class TestSubmitCircuitBatchProvenance:
             lambda **kwargs: {"should_not_run": 1.0},
             enable_zne=True,
             allow_backend_substitution=True,
+            allow_local_simulation=outcome != "done",
         )
+
+        if failure_phase == "initial":
+            with pytest.raises((RuntimeError, AttributeError)):
+                asyncio.run(job.result())
+            assert job.job_id == (None if outcome == "dispatch_error" else "queued_job")
+            assert job.submission_state == "ambiguous"
+            with pytest.raises((RuntimeError, AttributeError)):
+                asyncio.run(job.result())
+            assert provider_calls == 1
+            return
 
         result = asyncio.run(job.result())
 
@@ -853,6 +900,55 @@ class TestSubmitCircuitBatchProvenance:
         assert result["requested_shots"] == 8
         assert result["effective_shots"] == 8
         assert result["shots_capped"] is False
+        assert job.submission_state == "awaiting_result"
+
+        if outcome in {"provider_error", "decode_error"}:
+            with pytest.raises((RuntimeError, AttributeError)) as failed:
+                asyncio.run(job.result())
+            with pytest.raises(type(failed.value)) as repeated:
+                asyncio.run(job.result())
+            assert repeated.value is failed.value
+            assert job.job_id == "queued_job"
+            assert job.submission_state == "ambiguous"
+            assert provider_calls == 1
+            assert retrieval_calls == 2
+            return
+
+        result["job_id"] = "caller-edit"
+        result["job_ids"].append("caller-edit")
+        result["status"] = "DONE"
+
+        if outcome == "timeout_then_done":
+            pending = asyncio.run(job.result())
+            assert pending["status"] == "QUEUED_ON_IBM"
+            assert job.submission_state == "awaiting_result"
+
+        async def retrieve_together() -> list[dict[str, Any]]:
+            if outcome == "cancel_waiter":
+                waiter = asyncio.create_task(job.result())
+                try:
+                    assert await asyncio.to_thread(retrieval_started.wait, 3.0)
+                    waiter.cancel()
+                    with pytest.raises(asyncio.CancelledError):
+                        await waiter
+                    assert job.submission_state == "in_flight"
+                    assert job.submission_error is None
+                finally:
+                    retrieval_release.set()
+                    await asyncio.gather(waiter, return_exceptions=True)
+            return list(await asyncio.gather(job.result(), job.result(), job.result()))
+
+        recovered, second, third = asyncio.run(retrieve_together())
+        assert recovered == second == third
+        assert recovered["status"] == "DONE"
+        assert recovered["job_id"] == "queued_job"
+        assert recovered["job_ids"] == ["queued_job"]
+        assert recovered["backend_name"] == "least_busy_backend"
+        assert recovered["effective_shots"] == 8
+        assert recovered["counts_available"] is True
+        assert recovered["should_not_run"] == 1.0
+        assert provider_calls == 1
+        assert retrieval_calls == (3 if outcome == "timeout_then_done" else 2)
 
     def test_submit_circuit_batch_records_the_runtime_shot_cap(
         self, monkeypatch: pytest.MonkeyPatch
@@ -1111,6 +1207,24 @@ class TestSubmissionIsIssuedOnce:
         assert calls["n"] == 1
         assert first == second == {"attempt": 1}
         assert wrapper.submission_state == "completed"
+
+    def test_pending_receipt_without_original_job_cannot_resubmit(self) -> None:
+        """A receipt alone does not grant authority to repeat provider dispatch."""
+        wrapper = self._wrapper()
+        calls = 0
+
+        def submit() -> dict[str, Any]:
+            nonlocal calls
+            calls += 1
+            return {"status": "QUEUED_ON_IBM", "job_id": "original"}
+
+        wrapper._run_blocking = submit
+        assert asyncio.run(wrapper.result())["job_id"] == "original"
+        for _ in range(2):
+            with pytest.raises(RuntimeError, match="no original provider job"):
+                asyncio.run(wrapper.result())
+        assert calls == 1
+        assert wrapper.submission_state == "awaiting_result"
 
     def test_foreign_event_loop_cannot_poison_an_active_submission(self) -> None:
         """Reject cross-loop retrieval without caching it as a provider failure."""
