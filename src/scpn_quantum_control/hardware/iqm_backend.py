@@ -18,9 +18,11 @@ lookup.
 from __future__ import annotations
 
 import importlib
+import math
 import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
+from numbers import Integral, Real
 from typing import Any, Literal
 
 from qiskit import QuantumCircuit, transpile
@@ -45,6 +47,9 @@ class IQMBackendConfig:
     ``mode="fake"`` uses local IQM fake backends and never contacts a remote
     service. ``mode="remote"`` requires an explicit ``server_url`` so accidental
     cloud submission cannot happen through defaults or hidden environment state.
+    Shots and optimisation levels require integers, excluding booleans.
+    Timeout is a finite positive real number in seconds, excluding booleans.
+    Malformed values raise ValueError before any backend resolution.
     """
 
     mode: IQMMode = "fake"
@@ -59,11 +64,24 @@ class IQMBackendConfig:
         """Validate execution mode, budgets, and explicit remote routing."""
         if self.mode not in {"fake", "remote"}:
             raise ValueError("mode must be 'fake' or 'remote'")
-        if self.shots <= 0:
-            raise ValueError("shots must be positive")
-        if self.timeout_s <= 0.0:
-            raise ValueError("timeout_s must be positive")
-        if self.optimisation_level not in {0, 1, 2, 3}:
+        if (
+            isinstance(self.shots, bool)
+            or not isinstance(self.shots, (int, Integral))
+            or self.shots <= 0
+        ):
+            raise ValueError("shots must be positive integers, excluding booleans")
+        if (
+            isinstance(self.timeout_s, bool)
+            or not isinstance(self.timeout_s, (int, float, Real))
+            or not math.isfinite(self.timeout_s)
+            or self.timeout_s <= 0.0
+        ):
+            raise ValueError("timeout_s must be positive and finite, excluding booleans")
+        if (
+            isinstance(self.optimisation_level, bool)
+            or not isinstance(self.optimisation_level, (int, Integral))
+            or self.optimisation_level not in {0, 1, 2, 3}
+        ):
             raise ValueError("optimisation_level must be 0, 1, 2, or 3")
         if self.mode == "remote" and not self.server_url:
             raise ValueError("server_url is required for remote IQM execution")
@@ -233,7 +251,35 @@ class IQMQuantumBackend:
         circuit: QuantumCircuit,
         config: IQMBackendConfig | None = None,
     ) -> IQMRunResult:
-        """Run one measured circuit on a fake or approved remote IQM backend."""
+        """Run one measured circuit on a fake or approved remote IQM backend.
+
+        Parameters
+        ----------
+        circuit:
+            Measured logical circuit; compiled and submitted to one resolved target.
+        config:
+            Validated routing, shots and timeout. Defaults to the local fake mode.
+            Remote execution still requires external approval.
+
+        Returns
+        -------
+        IQMRunResult
+            Provider counts with job identity and compilation provenance.
+
+        Raises
+        ------
+        IQMTargetCompilationError
+            Targeted compilation failed; nothing is submitted.
+        ValueError
+            Provider counts contain invalid labels or non-integer/negative values.
+        RuntimeError
+            The single-circuit provider result cannot be decoded.
+
+        Notes
+        -----
+        Provider errors propagate without automatic resubmission. This synchronous
+        adapter does not implement durable job recovery or certify hardware results.
+        """
         cfg = config or IQMBackendConfig()
         backend = self.resolve_backend(cfg)
         isa_circuit = self.transpile_circuit(circuit, cfg, backend=backend)
@@ -319,14 +365,28 @@ def _extract_counts(result: Any) -> dict[str, int]:
             if len(raw) != 1:
                 raise RuntimeError("IQM single-circuit execution returned multiple count maps")
             raw = raw[0]
-        return {str(k): int(v) for k, v in raw.items()}
+        return _validated_counts(raw)
     results = getattr(result, "results", None)
     if isinstance(results, list) and len(results) == 1:
         data = getattr(results[0], "data", None)
         counts = getattr(data, "counts", None)
         if isinstance(counts, dict):
-            return {str(k): int(v) for k, v in counts.items()}
+            return _validated_counts(counts)
     raise RuntimeError("Could not extract IQM counts from backend result")
+
+
+def _validated_counts(raw: object) -> dict[str, int]:
+    """Copy count maps without changing labels or truncating measurements."""
+    if not isinstance(raw, Mapping):
+        raise ValueError("counts must be a mapping")
+    counts = {}
+    for label, value in raw.items():
+        if not isinstance(label, str) or not label:
+            raise ValueError("count labels must be nonempty strings")
+        if isinstance(value, bool) or not isinstance(value, Integral) or value < 0:
+            raise ValueError("counts must be nonnegative integers, excluding booleans")
+        counts[label] = int(value)
+    return counts
 
 
 def _backend_name(backend: Any) -> str:

@@ -111,6 +111,119 @@ def test_iqm_config_rejects_unsafe_values() -> None:
         IQMBackendConfig(mode="remote")
 
 
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("shots", True),
+        ("shots", 1.5),
+        ("shots", "8"),
+        ("timeout_s", True),
+        ("timeout_s", float("nan")),
+        ("timeout_s", float("inf")),
+        ("timeout_s", "10"),
+        ("optimisation_level", True),
+        ("optimisation_level", 1.0),
+    ],
+)
+def test_iqm_config_rejects_coercible_or_nonfinite_budgets(field: str, value: Any) -> None:
+    """Resource admission rejects malformed counts and time limits deterministically."""
+    with pytest.raises(ValueError, match=field):
+        IQMBackendConfig(**{field: value})
+
+
+@pytest.mark.parametrize("value", [True, -1, 1.5, "64", float("nan")])
+@pytest.mark.parametrize("shape", ["method", "raw"])
+def test_iqm_counts_reject_lossy_values(value: Any, shape: str) -> None:
+    """Neither provider result shape may coerce measurement counts."""
+    raw = {"00": value}
+    result = (
+        _FakeResult(raw)
+        if shape == "method"
+        else types.SimpleNamespace(
+            results=[types.SimpleNamespace(data=types.SimpleNamespace(counts=raw))]
+        )
+    )
+    with pytest.raises(ValueError, match="count"):
+        _extract_counts(result)
+
+
+@pytest.mark.parametrize("raw", [{1: 2}, {"": 2}, object()])
+def test_iqm_counts_reject_malformed_maps(raw: Any) -> None:
+    """Reject non-mappings and labels that would change through string coercion."""
+    result = types.SimpleNamespace(get_counts=lambda: raw)
+    with pytest.raises(ValueError, match="count"):
+        _extract_counts(result)
+
+
+def test_iqm_run_uses_real_target_and_local_simulator() -> None:
+    """Targeted Bell preparation survives actual compilation and local execution."""
+    target = GenericBackendV2(
+        num_qubits=3,
+        basis_gates=["rz", "sx", "x", "cx"],
+        coupling_map=[[0, 1], [1, 0], [1, 2], [2, 1]],
+        noise_info=False,
+        seed=7,
+    )
+    resolutions = 0
+
+    class Adapter(IQMQuantumBackend):
+        def resolve_backend(self, config: IQMBackendConfig | None = None) -> Any:
+            nonlocal resolutions
+            resolutions += 1
+            return target
+
+    result = Adapter().run_counts(_bell_circuit(), IQMBackendConfig(shots=64, timeout_s=12.5))
+    assert resolutions == 1
+    assert set(result.counts) <= {"00", "11"}
+    assert sum(result.counts.values()) == 64
+    assert result.metadata["compiled_for"] == target.name
+    assert result.metadata["n_qubits"] == 3
+
+
+def test_failed_target_compilation_never_submits() -> None:
+    """Run entry point refuses an unmappable target before crossing its run boundary."""
+    calls: list[str] = []
+
+    class InvalidBackend:
+        name = "invalid-target"
+
+        def run(self, *args: Any, **kwargs: Any) -> None:
+            calls.append("run")
+
+    class Adapter(IQMQuantumBackend):
+        def resolve_backend(self, config: IQMBackendConfig | None = None) -> Any:
+            calls.append("resolve")
+            return InvalidBackend()
+
+    with pytest.raises(IQMTargetCompilationError):
+        Adapter().run_counts(_bell_circuit())
+    assert calls == ["resolve"]
+
+
+@pytest.mark.parametrize("count", [True, 1.5])
+def test_run_counts_refuses_invalid_provider_measurement(count: Any) -> None:
+    """A malformed provider measurement cannot become a successful public result."""
+    target = _fake_iqm_backend()
+    submissions = 0
+
+    def run(circuits: list[QuantumCircuit], *, shots: int) -> _FakeJob:
+        nonlocal submissions
+        submissions += 1
+        assert circuits[0].layout is not None
+        assert shots == 64
+        return _FakeJob({"00": count})
+
+    target.run = run
+
+    class Adapter(IQMQuantumBackend):
+        def resolve_backend(self, config: IQMBackendConfig | None = None) -> Any:
+            return target
+
+    with pytest.raises(ValueError, match="counts"):
+        Adapter().run_counts(_bell_circuit(), IQMBackendConfig(shots=64, timeout_s=12.5))
+    assert submissions == 1
+
+
 def test_iqm_descriptor_is_registered_and_approval_gated() -> None:
     """The registry exposes IQM submission only behind explicit approval."""
     descriptor = be.describe_backend("iqm")
