@@ -31,24 +31,39 @@ from ..bridge.knm_hamiltonian import (
 )
 
 INTEGRATION_GRID_RELATIVE_TOLERANCE: Final[float] = 1e-9
-"""Relative tolerance used to recognise a duration that is a multiple of ``dt``.
+"""Maximum snapping distance in steps; the historical public name is retained.
 
-``t_max / dt`` is rarely exact in binary floating point: ``0.5 / 0.1`` is
-``4.999999999999999`` and ``2.0 / 0.1`` is ``19.999999999999996``. Taking the
-floor of those would silently drop the last step of a perfectly divisible
-interval, so a quotient within this relative tolerance of an integer is snapped
-to it. Anything further away is genuinely non-divisible and is floored.
+The actual tolerance is the smaller of this cap and four floating-point ULPs
+of the quotient. For example, ``0.3 / 0.1`` is ``2.9999999999999996``;
+rounding noise must not drop its final step. A relative tolerance proportional
+to a large step count can instead admit genuine partial steps and overshoot.
 """
+
+
+def _validated_time(value: object, name: str, *, positive: bool) -> float:
+    """Admit finite real scalar time values without boolean or string coercion."""
+    condition = "positive" if positive else "non-negative"
+    message = f"{name} must be {condition} and finite, got {value}"
+    if isinstance(value, (bool, np.bool_)) or not isinstance(
+        value, (int, float, np.integer, np.floating)
+    ):
+        raise ValueError(message)
+    try:
+        result = float(value)
+    except OverflowError as exc:
+        raise ValueError(message) from exc
+    if not math.isfinite(result) or result < 0.0 or (positive and result == 0.0):
+        raise ValueError(message)
+    return result
 
 
 def integration_step_count(t_max: float, dt: float) -> int:
     """Return how many whole ``dt`` steps fit inside ``t_max``.
 
     This is one half of the shared integration grid contract. The step count
-    never overshoots the requested duration: a caller asking to evolve to
-    ``t_max`` does not get a state from beyond it. A duration shorter than one
-    step therefore yields zero steps, and the trajectory is the initial
-    condition alone.
+    does not overshoot beyond its documented floating-point snapping tolerance.
+    A duration shorter than one step beyond that tolerance yields zero steps,
+    and the trajectory is the initial condition alone.
 
     Parameters
     ----------
@@ -62,22 +77,25 @@ def integration_step_count(t_max: float, dt: float) -> int:
     -------
     int
         Number of steps, ``floor(t_max / dt)`` after snapping a quotient within
-        :data:`INTEGRATION_GRID_RELATIVE_TOLERANCE` of an integer.
+        four quotient ULPs of an integer, capped by
+        :data:`INTEGRATION_GRID_RELATIVE_TOLERANCE` in step units.
 
     Raises
     ------
     ValueError
         If ``dt`` is not strictly positive and finite, or ``t_max`` is negative
-        or not finite.
+        or not finite; also for boolean/non-real parameters or an unrepresentable
+        step count. This validates representation, not available memory.
 
     """
-    if not (math.isfinite(dt) and dt > 0.0):
-        raise ValueError(f"dt must be positive and finite, got {dt}")
-    if not (math.isfinite(t_max) and t_max >= 0.0):
-        raise ValueError(f"t_max must be non-negative and finite, got {t_max}")
+    dt = _validated_time(dt, "dt", positive=True)
+    t_max = _validated_time(t_max, "t_max", positive=False)
     quotient = t_max / dt
+    if not math.isfinite(quotient) or quotient >= 2**53:
+        raise ValueError("step count cannot be represented by distinct float64 sample indices")
     nearest = round(quotient)
-    if abs(quotient - nearest) <= INTEGRATION_GRID_RELATIVE_TOLERANCE * max(1.0, abs(quotient)):
+    tolerance = min(INTEGRATION_GRID_RELATIVE_TOLERANCE, 4.0 * math.ulp(quotient))
+    if abs(quotient - nearest) <= tolerance:
         return int(nearest)
     return int(math.floor(quotient))
 
@@ -103,16 +121,23 @@ def integration_times(n_steps: int, dt: float) -> NDArray[np.float64]:
     -------
     numpy.ndarray
         Shape ``(n_steps + 1,)`` array ``[0, dt, 2·dt, …, n_steps·dt]``. The
-        last entry is the end of the trajectory, which is at most ``t_max``.
+        last entry is the end of the trajectory, allowing only the documented
+        floating-point snapping tolerance above ``t_max``.
 
     Raises
     ------
     ValueError
-        If ``n_steps`` is negative.
+        If ``n_steps`` is not a non-negative non-boolean integer, sample indices
+        or the final time are unrepresentable, or ``dt`` is invalid.
 
     """
+    if isinstance(n_steps, (bool, np.bool_)) or not isinstance(n_steps, (int, np.integer)):
+        raise ValueError("n_steps must be a non-negative integer")
     if n_steps < 0:
         raise ValueError(f"n_steps must be non-negative, got {n_steps}")
+    dt = _validated_time(dt, "dt", positive=True)
+    if n_steps >= 2**53 or not math.isfinite(int(n_steps) * dt):
+        raise ValueError("n_steps and dt must produce representable finite sample times")
     return np.arange(n_steps + 1, dtype=np.float64) * dt
 
 
@@ -294,7 +319,7 @@ def classical_exact_evolution(
 ) -> dict[str, Any]:
     """Exact matrix exponential evolution of XY Hamiltonian.
 
-    Returns per-qubit X,Y expectations and reconstructed R(t).
+    Returns reconstructed R(t) from per-qubit X,Y expectations.
     This is the gold standard the Trotter evolution should match.
 
     For n_osc >= 13, uses scipy.sparse.linalg.expm_multiply (Krylov
@@ -325,8 +350,8 @@ def classical_exact_evolution(
     Returns
     -------
     dict
-        ``times`` of shape ``(n_steps + 1,)``, ``R`` of the same shape, and the
-        per-qubit expectation entries.
+        ``times`` of shape ``(n_steps + 1,)`` and ``R`` of the same shape.
+        No per-qubit expectation arrays are returned.
 
     Raises
     ------
@@ -335,6 +360,8 @@ def classical_exact_evolution(
         finite.
 
     """
+    n_steps = integration_step_count(t_max, dt)
+    times = integration_times(n_steps, dt)
     if K is None:
         K = build_knm_paper27(L=n_osc)
     if omega is None:
@@ -343,8 +370,6 @@ def classical_exact_evolution(
     H_op = knm_to_hamiltonian(K, omega)
     psi = _build_initial_state(n_osc, omega)
 
-    n_steps = integration_step_count(t_max, dt)
-    times = integration_times(n_steps, dt)
     R_history = np.zeros(n_steps + 1)
     R_history[0] = _state_order_param(psi, n_osc)
 

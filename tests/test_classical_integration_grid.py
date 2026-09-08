@@ -22,6 +22,8 @@ the phase after ``s`` steps must equal the reported time to machine precision.
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pytest
 from numpy.typing import NDArray
@@ -71,6 +73,25 @@ def _free_oscillator(
 
 class TestStepCount:
     """``integration_step_count`` never overshoots the requested duration."""
+
+    def test_large_fractional_interval_is_not_rounded_up(self) -> None:
+        """A large quotient must not turn genuine partial steps into whole ones."""
+        assert integration_step_count(999999999.6, 1.0) == 999999999
+
+    def test_unrepresentable_quotient_is_an_ordinary_domain_error(self) -> None:
+        """Finite input division overflow is refused before rounding or allocation."""
+        with pytest.raises(ValueError, match="step count"):
+            integration_step_count(1.0, 1e-320)
+
+    @pytest.mark.parametrize("value", [True, "1", 1j, 10**400])
+    @pytest.mark.parametrize("parameter", ["duration", "step"])
+    def test_nonreal_or_unrepresentable_time_is_refused(self, value: Any, parameter: str) -> None:
+        """Neither grid input is coerced from booleans, strings, complex or overflowing integers."""
+        with pytest.raises(ValueError):
+            if parameter == "duration":
+                integration_step_count(value, 0.1)
+            else:
+                integration_step_count(1.0, value)
 
     @pytest.mark.parametrize(
         ("t_max", "dt", "expected"),
@@ -152,12 +173,12 @@ class TestStepCount:
         assert t_max / dt < expected
         assert integration_step_count(t_max, dt) == expected
 
-    def test_the_snapping_tolerance_is_relative_and_narrow(self) -> None:
+    def test_the_snapping_tolerance_only_admits_rounding_noise(self) -> None:
         """A duration genuinely short of a whole step is not snapped up."""
         dt = 0.1
         just_under = dt * (5 - 10 * INTEGRATION_GRID_RELATIVE_TOLERANCE)
         assert integration_step_count(just_under, dt) == 4
-        within = dt * (5 - 0.01 * INTEGRATION_GRID_RELATIVE_TOLERANCE)
+        within = float(np.nextafter(0.5, 0.0))
         assert integration_step_count(within, dt) == 5
 
     @pytest.mark.parametrize("dt", [0.0, -0.1, float("nan"), float("inf")])
@@ -189,6 +210,26 @@ class TestStepCount:
 
 class TestTimes:
     """``integration_times`` reports where the integrator put each sample."""
+
+    @pytest.mark.parametrize("count", [1.5, True, np.bool_(False)])
+    def test_noninteger_counts_are_refused(self, count: Any) -> None:
+        """Grid shape cannot be inferred by rounding or boolean coercion."""
+        with pytest.raises(ValueError, match="n_steps"):
+            integration_times(count, 0.1)
+
+    @pytest.mark.parametrize("step", [-0.1, 0.0, float("nan"), float("inf"), True])
+    def test_invalid_steps_are_refused(self, step: float) -> None:
+        """The public time generator enforces the same finite positive step contract."""
+        with pytest.raises(ValueError, match="dt must be positive and finite"):
+            integration_times(2, step)
+
+    @pytest.mark.parametrize(("count", "step"), [(2**53, 1.0), (2, 1e308)])
+    def test_unrepresentable_times_are_refused_before_allocation(
+        self, count: int, step: float
+    ) -> None:
+        """Distinct indices and finite timestamps are required without making huge arrays."""
+        with pytest.raises(ValueError, match="representable"):
+            integration_times(count, step)
 
     def test_times_are_multiples_of_the_step(self) -> None:
         """Sample ``s`` sits at ``s · dt``, exactly as the Rust kernel reports."""
@@ -248,7 +289,7 @@ class TestKuramotoGrid:
         assert result["theta"][0, 0] == pytest.approx(0.4)
 
     def test_divisible_duration_keeps_its_final_sample(self) -> None:
-        """0.5 / 0.1 is inexact in binary; the last step must survive it."""
+        """The last sample of a divisible interval must be retained."""
         result = _free_oscillator(0.5, 0.1)
 
         assert result["times"].shape == (6,)
@@ -283,6 +324,31 @@ class TestKuramotoGrid:
 
 class TestExactEvolutionGrid:
     """The exact-evolution sibling uses the same grid."""
+
+    @pytest.mark.parametrize("n_osc", [2, 13])
+    def test_uncoupled_spin_precession_matches_each_timestamp(self, n_osc: int) -> None:
+        """Dense and sparse evolution agree with analytic H=-sum(omega Z) precession."""
+        omega = np.linspace(0.2, 1.0, n_osc)
+        result = classical_exact_evolution(
+            n_osc, 1.0, 0.3, K=np.zeros((n_osc, n_osc)), omega=omega
+        )
+        times = np.array([0.0, 0.3, 0.6, 0.9])
+        expected = np.abs(np.mean(np.sin(omega) * np.exp(-2j * times[:, None] * omega), axis=1))
+        np.testing.assert_allclose(result["times"], times, rtol=0.0, atol=1e-15)
+        np.testing.assert_allclose(result["R"], expected, rtol=0.0, atol=1e-12)
+
+    def test_invalid_grid_precedes_hamiltonian_construction(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Invalid timing must fail before the first potentially exponential owner."""
+        import scpn_quantum_control.hardware.classical as module
+
+        def forbidden(*args: Any, **kwargs: Any) -> None:
+            raise AssertionError("Hamiltonian construction reached before timing admission")
+
+        monkeypatch.setattr(module, "knm_to_hamiltonian", forbidden)
+        with pytest.raises(ValueError, match="dt must be positive and finite"):
+            classical_exact_evolution(2, 1.0, 0.0)
 
     def test_times_are_step_multiples(self) -> None:
         """A non-divisible duration ends short rather than mislabelling."""
