@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Literal, TypedDict
 
 import numpy as np
 import pytest
@@ -37,6 +38,31 @@ from scpn_quantum_control.qpu_compute import (
     write_node_descriptor,
     write_stream_delta,
 )
+
+
+class NodeFields(TypedDict):
+    """Typed node fields for invalid routing classifications."""
+
+    node_id: str
+    access_route: str
+    provider: str
+    modality: str
+    execution_model: str
+    latency_class: str
+    qubit_or_variable_limit: int
+    kernel_capabilities: list[str]
+
+
+class ResultIdentity(TypedDict):
+    """Typed result identity used for semantic rejection tests."""
+
+    request_sha256: str
+    qpu_data_artifact_sha256: str
+    status: str
+    backend_name: str
+    backend_family: str
+    execution_model: str
+    kernel: str
 
 
 def _artifact(source_mode: str = "curated") -> QPUDataArtifact:
@@ -253,10 +279,10 @@ def test_node_descriptor_rejects_unknown_modality() -> None:
     ],
 )
 def test_node_descriptor_rejects_unknown_routing_metadata(
-    field: str, value: str, match: str
+    field: Literal["access_route", "execution_model", "latency_class"], value: str, match: str
 ) -> None:
     """Reject unsupported access, execution, and latency classifications."""
-    kwargs = {
+    kwargs: NodeFields = {
         "node_id": "node",
         "access_route": "local",
         "provider": "local",
@@ -268,10 +294,8 @@ def test_node_descriptor_rejects_unknown_routing_metadata(
     }
     kwargs[field] = value
 
-    # One field per case is replaced with an unsupported value; the rejection
-    # is the subject and mypy cannot express a call that is meant to fail.
     with pytest.raises(ValueError, match=match):
-        QPUNodeDescriptor(**kwargs)  # type: ignore[arg-type]
+        QPUNodeDescriptor(**kwargs)
 
 
 def test_node_descriptor_rejects_empty_kernel_capabilities() -> None:
@@ -406,7 +430,7 @@ def test_compute_result_rejects_negative_counts() -> None:
 
 def test_compute_result_rejects_empty_identity_fields_and_unsupported_kernel() -> None:
     """Reject incomplete result identity and unsupported kernel metadata."""
-    base = {
+    base: ResultIdentity = {
         "request_sha256": "request",
         "qpu_data_artifact_sha256": "artifact",
         "status": "DONE_SIMULATED",
@@ -415,18 +439,21 @@ def test_compute_result_rejects_empty_identity_fields_and_unsupported_kernel() -
         "execution_model": "exact_statevector",
         "kernel": "sync_dla",
     }
-    for field in ("request_sha256", "qpu_data_artifact_sha256", "status"):
-        payload = dict(base)
+    fields: tuple[Literal["request_sha256", "qpu_data_artifact_sha256", "status"], ...] = (
+        "request_sha256",
+        "qpu_data_artifact_sha256",
+        "status",
+    )
+    for field in fields:
+        payload = base.copy()
         payload[field] = " "
-        # Each payload blanks or corrupts one field to prove it is rejected; mypy
-        # cannot express a call that is meant to fail.
         with pytest.raises(ValueError, match=field):
-            QPUComputeResult(**payload)  # type: ignore[arg-type]
+            QPUComputeResult(**payload)
 
-    payload = dict(base)
+    payload = base.copy()
     payload["kernel"] = "unsupported"
     with pytest.raises(ValueError, match="kernel"):
-        QPUComputeResult(**payload)  # type: ignore[arg-type]
+        QPUComputeResult(**payload)
 
 
 def test_compute_result_rejects_tampered_count_hash() -> None:
