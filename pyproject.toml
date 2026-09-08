@@ -239,7 +239,9 @@ enable_error_code = ["ignore-without-code"]
 # below), and it is never added to `files`, so mypy resolves but does not re-check it.
 # ``tests`` is included only for resolving shared strict-cohort helpers; the
 # broad ``files`` inventory below still excludes the legacy test tree.
-mypy_path = ["src", "oscillatools/src", "tests", "tools"]
+# Keep tools as the repository-root namespace package: adding its directory
+# here aliases tools.foo to foo under --explicit-package-bases.
+mypy_path = ["src", "oscillatools/src", "tests"]
 # Test-typing policy (R2-M01, 2026-07-13): tests/ stays outside this broad
 # `files` set because the pre-ratchet census found 6,301 errors in 388 of 968
 # tracked Python test files; 5,076 were mechanical `no-untyped-def` findings. Instead,

@@ -7,11 +7,22 @@
 # SCPN Quantum Control — Symmetry-verification quality-gate tests
 """Lock the symmetry-verification quality gate into preflight and CI."""
 
+import tomllib
 from pathlib import Path
 
 from tools import preflight
 from tools import symmetry_verification_quality_gates as quality_gates
 from tools.ci_workflow_inventory import read_ci_workflow_source
+
+
+def test_explicit_package_gate_has_one_tooling_namespace() -> None:
+    """The strict cohort must not alias tools.name as a second top-level module."""
+    repo_root = Path(__file__).resolve().parents[1]
+    config = tomllib.loads((repo_root / "pyproject.toml").read_text(encoding="utf-8"))
+    search_roots = [(repo_root / path).resolve() for path in config["tool"]["mypy"]["mypy_path"]]
+    assert repo_root / "tools" not in search_roots
+    commands = dict(quality_gates.build_static_quality_gates("/python"))
+    assert "--explicit-package-bases" in commands["mypy-strict-symmetry-verification-quality"]
 
 
 def test_static_gate_is_strict_and_completely_documented() -> None:
