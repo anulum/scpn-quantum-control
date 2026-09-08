@@ -25,9 +25,11 @@ runs, and checks three things a runner would otherwise discover the hard way:
 * a tool pinned by version in more than one workflow is pinned to the same
   version in all of them.
 
-The checks are static. They read the workflow YAML and the requirement locks,
-run anywhere, and need no network, no runner and no interpreter beyond the one
-executing them.
+The checks are static and limited to recognised literal shell commands. They
+read both YAML suffixes and requirement locks without executing workflows.
+Ordering is checked across steps and newline/semicolon/``&&`` command boundaries;
+shell branches, action internals, dynamic expressions and actual package import
+semantics still require runner validation. Success is not hosted job evidence.
 """
 
 from __future__ import annotations
@@ -63,7 +65,7 @@ REQUIREMENT_INSTALL: Final[re.Pattern[str]] = re.compile(
 #: job builds and installs, and a plain ``pip install .``. Recognising only the
 #: editable one reported two jobs as broken that are not.
 PROJECT_INSTALL: Final[re.Pattern[str]] = re.compile(
-    r"pip install[^\n]*(?:-e\s+\S|\.whl|--require-hashes\s+\\?\s*-r\s+/tmp/[^\s]*wheel)",
+    r"^(?:python\s+-m\s+)?pip install[^\n]*(?:-e\s+\S|\.whl|--require-hashes\s+\\?\s*-r\s+/tmp/[^\s]*wheel|\s\.(?:\s|$))",
 )
 
 #: Matches a job writing PYTHONPATH into the step environment for later steps.
@@ -144,7 +146,7 @@ def _makes_first_party_importable(job: dict[str, Any], bodies: list[str]) -> boo
     from the source tree.
     """
     environment = job.get("env")
-    if isinstance(environment, dict) and "PYTHONPATH" in environment:
+    if isinstance(environment, dict) and environment.get("PYTHONPATH"):
         return True
     return any(EXPORTED_PYTHONPATH.search(body) or PROJECT_INSTALL.search(body) for body in bodies)
 
@@ -157,12 +159,15 @@ def audit_job(
     bodies = _step_bodies(job)
 
     provided: set[str] = set()
-    for body in bodies:
-        for lock in REQUIREMENT_INSTALL.findall(body):
-            provided |= distributions_in(repo / lock)
-
-    for body in bodies:
-        for module in MODULE_INVOCATION.findall(body):
+    preceding: list[tuple[int, str]] = []
+    commands = [
+        (step_index, command.strip())
+        for step_index, body in enumerate(bodies)
+        for command in re.split(r"\n|&&|;", body.replace("\\\n", " "))
+        if command.strip() and not command.lstrip().startswith("#")
+    ]
+    for step_index, command in commands:
+        for module in MODULE_INVOCATION.findall(command):
             root = module.split(".")[0]
             if root in STDLIB_MODULES or root in FIRST_PARTY_ROOTS:
                 continue
@@ -176,32 +181,105 @@ def audit_job(
                     )
                 )
 
-    runs_repository_tests = any("pytest" in body and "tests/" in body for body in bodies)
-    if runs_repository_tests and not _makes_first_party_importable(job, bodies):
-        findings.append(
-            Finding(
-                workflow,
-                name,
-                "runs pytest over tests/ without PYTHONPATH or an editable install, "
-                "so tests/conftest.py cannot import the package",
+        if (
+            "pytest" in command
+            and "tests/" in command
+            and not _makes_first_party_importable(
+                job,
+                [
+                    previous
+                    for previous_step, previous in preceding
+                    if previous_step < step_index or not EXPORTED_PYTHONPATH.search(previous)
+                ],
             )
+        ):
+            findings.append(
+                Finding(
+                    workflow,
+                    name,
+                    "runs pytest over tests/ without prior PYTHONPATH or project install, "
+                    "so tests/conftest.py cannot import the package",
+                )
+            )
+        installed_locks = (
+            REQUIREMENT_INSTALL.findall(command)
+            if re.match(r"^(?:python\s+-m\s+)?pip\s+install\b", command)
+            else []
         )
+        for lock in installed_locks:
+            if not (repo / lock).is_file():
+                findings.append(Finding(workflow, name, f"requirement file is missing: {lock}"))
+            provided |= distributions_in(repo / lock)
+        preceding.append((step_index, command))
 
     return findings, _pinned_action_versions(job)
 
 
 def audit(repo: Path) -> list[Finding]:
-    """Check every workflow job and report the contracts that do not hold."""
+    """Check workflow admission and recognised job environment contracts.
+
+    Missing/empty inventories, unreadable YAML and malformed job/step shapes
+    produce findings. Reusable jobs are admitted but not executed or expanded;
+    their local workflow files are independently scanned when present.
+    """
     findings: list[Finding] = []
     pins: dict[str, dict[str, set[str]]] = {}
 
-    for path in sorted((repo / ".github" / "workflows").glob("*.yml")):
-        document = yaml.safe_load(path.read_text(encoding="utf-8"))
+    directory = repo / ".github" / "workflows"
+    paths = sorted([*directory.glob("*.yml"), *directory.glob("*.yaml")])
+    if not repo.is_dir() or not paths:
+        return [Finding("<inventory>", "<input>", f"no workflow files found in {directory}")]
+    for path in paths:
+        try:
+            document = yaml.safe_load(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, yaml.YAMLError) as error:
+            findings.append(Finding(path.name, "<input>", f"cannot read workflow: {error}"))
+            continue
         jobs = document.get("jobs") if isinstance(document, dict) else None
-        if not isinstance(jobs, dict):
+        if not isinstance(jobs, dict) or not jobs:
+            findings.append(Finding(path.name, "<input>", "jobs must be a nonempty mapping"))
             continue
         for name, job in jobs.items():
-            if not isinstance(job, dict):
+            if not isinstance(job, dict) or not job:
+                findings.append(Finding(path.name, str(name), "job must be a nonempty mapping"))
+                continue
+            if "uses" in job and "steps" not in job:
+                if not isinstance(job["uses"], str) or not job["uses"].strip():
+                    findings.append(
+                        Finding(
+                            path.name,
+                            str(name),
+                            "reusable workflow reference must be nonempty text",
+                        )
+                    )
+                continue
+            steps = job.get("steps")
+            if not isinstance(steps, list) or not steps or "uses" in job:
+                findings.append(
+                    Finding(
+                        path.name,
+                        str(name),
+                        "job must define nonempty steps or a reusable workflow",
+                    )
+                )
+                continue
+            if any(
+                not isinstance(step, dict)
+                or ("run" in step and "uses" in step)
+                or sum(
+                    isinstance(step.get(key), str) and bool(step[key].strip())
+                    for key in ("run", "uses")
+                )
+                != 1
+                for step in steps
+            ):
+                findings.append(
+                    Finding(
+                        path.name,
+                        str(name),
+                        "each step must define exactly one nonempty run or uses",
+                    )
+                )
                 continue
             job_findings, job_pins = audit_job(path.name, str(name), job, repo)
             findings.extend(job_findings)
@@ -233,7 +311,9 @@ def main(argv: list[str] | None = None) -> int:
         for finding in findings:
             print(f"    {finding}")
         return 1
-    print("Workflow environment contracts hold for every job")
+    print(
+        "Static workflow environment audit found no violations; runner validation remains required"
+    )
     return 0
 
 

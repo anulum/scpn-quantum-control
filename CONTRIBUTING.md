@@ -69,6 +69,16 @@ than a report, and runs in static analysis and in the local preflight:
 python tools/audit_workflow_environment_contracts.py
 ```
 
+This is a static check of recognised literal commands, not proof that jobs ran.
+It rejects missing or empty workflow inventories, malformed job/step shapes and
+unreadable YAML, and scans both `.yml` and `.yaml`. Requirements and project
+installs must precede their consumers across steps and literal newline, `&&`
+or semicolon boundaries. Reusable workflow references are admitted without
+executing actions or expanding remote workflows. Shell branches, dynamic
+expressions, step conditions and actual package imports still need runner
+validation. Exit status 1 reports findings; 0 means only that these static
+checks found none.
+
 ## Before Opening A PR
 
 Run the relevant focused tests, then the local preflight when the change is not
