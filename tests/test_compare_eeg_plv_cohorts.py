@@ -12,6 +12,7 @@ from __future__ import annotations
 import importlib.util
 import sys
 from pathlib import Path
+from types import ModuleType
 
 import pytest
 
@@ -19,7 +20,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_PATH = REPO_ROOT / "scripts" / "compare_eeg_plv_cohorts.py"
 
 
-def _load_script_module():
+def _load_script_module() -> ModuleType:
     spec = importlib.util.spec_from_file_location("_compare_eeg_plv_cohorts", SCRIPT_PATH)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -33,7 +34,7 @@ compare_payloads = comparison_module.compare_payloads
 coupling_map = comparison_module.coupling_map
 
 
-def _payload(*, condition: str, values: list[float]) -> dict:
+def _payload(*, condition: str, values: list[float]) -> dict[str, object]:
     return {
         "schema_version": "scpn-quantum-control.measured-couplings.v1",
         "unit": "phase_locking_value",
@@ -61,15 +62,17 @@ def _payload(*, condition: str, values: list[float]) -> dict:
     }
 
 
-def test_coupling_map_rejects_duplicate_edges():
+def test_coupling_map_rejects_duplicate_edges() -> None:
     payload = _payload(condition="baseline eyes open", values=[0.2, 0.3])
-    payload["couplings"][1]["j"] = 2
+    couplings = payload["couplings"]
+    assert isinstance(couplings, list)
+    couplings[1]["j"] = 2
 
     with pytest.raises(ValueError, match="Duplicate coupling edge"):
         coupling_map(payload)
 
 
-def test_compare_payloads_reports_descriptive_closed_minus_open_summary():
+def test_compare_payloads_reports_descriptive_closed_minus_open_summary() -> None:
     payload = compare_payloads(
         open_payload=_payload(condition="baseline eyes open", values=[0.2, 0.4]),
         closed_payload=_payload(condition="baseline eyes closed", values=[0.3, 0.35]),
@@ -94,9 +97,11 @@ def test_compare_payloads_reports_descriptive_closed_minus_open_summary():
     assert payload["edges"][1]["delta_closed_minus_open"] == pytest.approx(-0.05)
 
 
-def test_compare_payloads_requires_matching_edge_sets():
+def test_compare_payloads_requires_matching_edge_sets() -> None:
     closed_payload = _payload(condition="baseline eyes closed", values=[0.3, 0.35])
-    closed_payload["couplings"].pop()
+    closed_couplings = closed_payload["couplings"]
+    assert isinstance(closed_couplings, list)
+    closed_couplings.pop()
 
     with pytest.raises(ValueError, match="same edge set"):
         compare_payloads(

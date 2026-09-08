@@ -228,12 +228,11 @@ class TestAgainstRealFakeGarnet:
     def test_fake_garnet_extraction_is_complete(self) -> None:
         # The IQM provider SDK is an optional extra and is absent from the pinned
         # type-check environment; the class-level `find_spec` guard above skips
-        # this test when it is missing. Suppressed here rather than in
-        # `pyproject.toml`, because a global override would be the only one
-        # unused by the `src/` file set and would report on every run.
-        from iqm.qiskit_iqm.fake_backends.fake_garnet import (  # type: ignore[import-not-found]
-            IQMFakeGarnet,
-        )
+        # this test when it is missing. Resolution is handled by the scoped
+        # `iqm.*` override in `pyproject.toml`, which a second test now needs as
+        # well — the earlier site suppression was placed here only because that
+        # override would then have been the sole unused one.
+        from iqm.qiskit_iqm.fake_backends.fake_garnet import IQMFakeGarnet
 
         cal = lattice_calibration_from_backend(IQMFakeGarnet())
         assert cal.num_qubits == 20

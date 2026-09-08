@@ -228,7 +228,8 @@ def stable_core_contract_fixtures_payload() -> dict[str, Any]:
         "experiments": [experiment.to_dict() for experiment in experiments],
         "results": [result.to_dict() for result in results],
     }
-    return json.loads(json.dumps(payload, sort_keys=True))
+    normalised: dict[str, Any] = json.loads(json.dumps(payload, sort_keys=True))
+    return normalised
 
 
 def stable_core_contract_fixtures_json(payload: dict[str, Any]) -> str:
@@ -494,7 +495,8 @@ def _normalised_json(payload: dict[str, Any]) -> str:
 def _load_json(path: Path, blockers: list[str]) -> dict[str, Any] | None:
     """Load JSON payload with deterministic blocker recording."""
     try:
-        return json.loads(_load_text(path, blockers))
+        loaded: dict[str, Any] = json.loads(_load_text(path, blockers))
+        return loaded
     except json.JSONDecodeError as exc:
         blockers.append(f"{path} must contain valid JSON: {exc}")
         return None

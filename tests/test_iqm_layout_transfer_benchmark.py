@@ -303,10 +303,12 @@ class TestAgainstRealFakeGarnet:
         for block in plan.blocks:
             assert block.exact_reference == pytest.approx(0.5)
             optimised = block.arms[0]
+            layout = optimised.requested_initial_layout
+            assert layout is not None
             edges = set(calibration.edges)
             for a, b in zip(
-                optimised.requested_initial_layout,
-                optimised.requested_initial_layout[1:],
+                layout,
+                layout[1:],
                 strict=False,
             ):
                 assert (min(a, b), max(a, b)) in edges

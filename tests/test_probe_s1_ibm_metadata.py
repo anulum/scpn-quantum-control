@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 from scripts.probe_s1_ibm_metadata import (
     build_decision_document,
@@ -17,7 +18,7 @@ from scripts.probe_s1_ibm_metadata import (
 )
 
 
-def test_load_snapshot_from_metadata_json_and_build_decision(tmp_path) -> None:
+def test_load_snapshot_from_metadata_json_and_build_decision(tmp_path: Path) -> None:
     metadata_path = tmp_path / "metadata.json"
     metadata_path.write_text(
         json.dumps(

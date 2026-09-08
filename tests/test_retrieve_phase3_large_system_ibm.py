@@ -91,8 +91,10 @@ def _synthetic_submission() -> dict[str, object]:
 
 def _synthetic_result_rows(submission: dict[str, object]) -> list[dict[str, object]]:
     expectations = {1: 0.8, 3: 0.6, 5: 0.4}
-    rows = []
-    for meta in submission["metadata_rows"]:
+    rows: list[dict[str, object]] = []
+    metadata_rows = submission["metadata_rows"]
+    assert isinstance(metadata_rows, list)
+    for meta in metadata_rows:
         metadata = dict(meta)
         if metadata["block"] == "main":
             counts = _counts_for_expectation(expectations[int(metadata["zne_noise_scale"])])

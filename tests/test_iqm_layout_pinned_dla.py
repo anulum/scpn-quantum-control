@@ -51,7 +51,7 @@ def test_build_plan_pairs_even_odd_on_same_layout() -> None:
     assert sum(row["kind"] == "dla_parity" for row in rows) == 6
     assert sum(row["kind"] == "readout_baseline" for row in rows) == 2
     assert {tuple(row["requested_initial_layout"]) for row in rows} == {(9, 4, 3, 8)}
-    by_depth = {}
+    by_depth: dict[int, set[str]] = {}
     for row in rows:
         if row["kind"] == "dla_parity":
             by_depth.setdefault(row["meta"]["depth"], set()).add(row["meta"]["sector"])

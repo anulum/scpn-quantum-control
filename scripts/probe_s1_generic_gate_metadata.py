@@ -28,6 +28,7 @@ from scpn_quantum_control.hardware.feedback_provider_metadata import (
     snapshot_from_generic_metadata,
 )
 from scpn_quantum_control.hardware.feedback_submission import (
+    FeedbackSubmissionPackage,
     build_s1_feedback_submission_package,
 )
 
@@ -61,7 +62,7 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _package():
+def _package() -> FeedbackSubmissionPackage:
     controller = RealtimeSyncFeedbackController(
         np.array(
             [[0.0, 0.35, 0.20], [0.35, 0.0, 0.25], [0.20, 0.25, 0.0]],

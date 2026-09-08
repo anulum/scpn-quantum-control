@@ -501,7 +501,7 @@ def _analyse_rows(
         paired_by_channel[(row["policy_variant"], row["observable"])].append(row)
 
     channel_rows: list[dict[str, Any]] = []
-    for key, scale_group in sorted(paired_by_channel.items()):
+    for channel_key, scale_group in sorted(paired_by_channel.items()):
         by_scale_arm = {(int(row["zne_noise_scale"]), str(row["arm"])): row for row in scale_group}
         scale_values: list[int] = []
         raw_deltas: list[float] = []
@@ -528,8 +528,8 @@ def _analyse_rows(
             quadratic_mitigated = zne_extrapolate(scale_values, mitigated_deltas, order=2)
         channel_rows.append(
             {
-                "policy_variant": key[0],
-                "observable": key[1],
+                "policy_variant": channel_key[0],
+                "observable": channel_key[1],
                 "noise_scales": scale_values,
                 "scale_feedback_minus_control": raw_deltas,
                 "readout_mitigated_scale_feedback_minus_control": mitigated_deltas,

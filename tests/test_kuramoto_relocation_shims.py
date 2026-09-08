@@ -61,7 +61,12 @@ def test_shim_warns_and_reexports(old_path: str, new_path: str, symbol: str) -> 
 def test_accel_submodule_identity_preserved() -> None:
     """The accel shim resolves submodules to the *same* object as the new package."""
     from oscillatools.accel.networked_kuramoto import networked_kuramoto_force as canonical
-    from scpn_quantum_control.accel.networked_kuramoto import networked_kuramoto_force as shimmed
+
+    # The shim submodule is installed at import time, so no static stub exists;
+    # resolving it is exactly what this test asserts.
+    from scpn_quantum_control.accel.networked_kuramoto import (  # type: ignore[import-not-found]
+        networked_kuramoto_force as shimmed,
+    )
 
     assert shimmed is canonical
 

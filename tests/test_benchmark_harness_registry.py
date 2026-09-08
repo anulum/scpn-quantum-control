@@ -46,4 +46,6 @@ def test_registry_payload_counts_statuses() -> None:
     assert payload["implemented_count"] == 1
     assert payload["planned_count"] == 4
     assert payload["blocked_count"] == 0
-    assert len(payload["families"]) == 5
+    families = payload["families"]
+    assert isinstance(families, list)
+    assert len(families) == 5

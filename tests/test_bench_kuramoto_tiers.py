@@ -26,7 +26,7 @@ from types import ModuleType
 import numpy as np
 import pytest
 
-from scpn_quantum_control.accel import dispatcher as _dispatcher
+import oscillatools.accel.dispatcher as _dispatcher
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 

@@ -14,7 +14,7 @@ import pytest
 
 pytest.importorskip("jax")
 
-from scpn_quantum_control.benchmarks.kyma_v2 import baselines, task, teacher  # noqa: E402
+from scpn_quantum_control.benchmarks.kyma_v2 import baselines, models, task, teacher  # noqa: E402
 
 
 def _tiny_cfg() -> task.ProbeConfigV2:
@@ -51,7 +51,7 @@ def test_gnn_param_count_matches_init() -> None:
 def test_deep_mlp_logits_shape() -> None:
     cfg = _tiny_cfg()
     batch = task.build_trials(cfg, 0)
-    feats = baselines._mlp_features(batch.theta0, batch.code)
+    feats = models._mlp_features(batch.theta0, batch.code)
     params = baselines.deep_mlp_init(0, 16, cfg.n_bins)
     logits = np.asarray(baselines.deep_mlp_logits(params, feats))
     assert logits.shape == (len(batch), cfg.n_bins)

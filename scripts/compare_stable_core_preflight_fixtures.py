@@ -71,7 +71,8 @@ def stable_core_preflight_fixtures_json(payload: dict[str, Any]) -> str:
             ),
         )
         if candidate is not None:
-            return candidate(payload)
+            rendered: str = candidate(payload)
+            return rendered
 
     return json.dumps(payload, indent=2, sort_keys=True) + "\n"
 
@@ -89,7 +90,8 @@ def stable_core_preflight_fixtures_markdown(payload: dict[str, Any]) -> str:
             ),
         )
         if candidate is not None:
-            return candidate(payload)
+            rendered: str = candidate(payload)
+            return rendered
 
     lines = [
         "<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->",
@@ -303,7 +305,8 @@ def _normalised_json(payload: dict[str, Any]) -> str:
 
 def _normalised_json_payload(payload: dict[str, Any]) -> dict[str, Any]:
     """Return canonical payload shape for stable comparisons."""
-    return json.loads(json.dumps(payload, sort_keys=True))
+    normalised: dict[str, Any] = json.loads(json.dumps(payload, sort_keys=True))
+    return normalised
 
 
 def _normalise_markdown(text: str) -> str:
@@ -323,7 +326,8 @@ def _load_text(path: Path, blockers: list[str]) -> str:
 def _load_json(path: Path, blockers: list[str]) -> dict[str, Any] | None:
     """Load JSON with deterministic blocker recording."""
     try:
-        return json.loads(_load_text(path, blockers))
+        loaded: dict[str, Any] = json.loads(_load_text(path, blockers))
+        return loaded
     except json.JSONDecodeError as exc:
         blockers.append(f"{path} must contain valid JSON: {exc}")
         return None
@@ -366,8 +370,6 @@ def _load_stable_core_preflight_module() -> ModuleType | None:
         return module
     except ImportError:
         return None
-
-    return None
 
 
 def _resolve_callable(module: ModuleType, candidates: tuple[str, ...]) -> Any:

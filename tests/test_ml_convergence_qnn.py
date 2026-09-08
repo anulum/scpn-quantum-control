@@ -13,7 +13,6 @@ import importlib.util
 
 import pytest
 
-import scpn_quantum_control.ml_examples.qnn_convergence as qnn_convergence
 from scpn_quantum_control.ml_examples import (
     FrameworkStatus,
     qnn_example_spec,
@@ -65,7 +64,7 @@ def test_qnn_required_missing_framework_fails_closed(
     """Turn a simulated absent TensorFlow dependency into a failed required gate."""
     actual_find_spec = importlib.util.find_spec
     monkeypatch.setattr(
-        qnn_convergence.importlib.util,
+        importlib.util,
         "find_spec",
         lambda dependency: None if dependency == "tensorflow" else actual_find_spec(dependency),
     )

@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import copy
+from pathlib import Path
 
 import pytest
 
@@ -20,7 +21,7 @@ from scpn_quantum_control.benchmark_harness.synchronisation_runner import (
 )
 
 
-def _payload() -> dict:
+def _payload() -> dict[str, object]:
     return run_kuramoto_ring_n4_linear_omega(command="test", commit="abc123")
 
 
@@ -41,7 +42,9 @@ def test_compare_payloads_rejects_tolerance_drift() -> None:
 
     expected = _payload()
     actual = copy.deepcopy(expected)
-    actual["rows"][0]["observables"][0]["value"] += 0.1
+    rows = actual["rows"]
+    assert isinstance(rows, list)
+    rows[0]["observables"][0]["value"] += 0.1
 
     result = compare_payloads(expected, actual)
 
@@ -65,13 +68,15 @@ def test_compare_payloads_rejects_hardware_submission_rows() -> None:
 
     expected = _payload()
     actual = copy.deepcopy(expected)
-    actual["rows"][0]["hardware_submission"] = True
+    rows = actual["rows"]
+    assert isinstance(rows, list)
+    rows[0]["hardware_submission"] = True
 
     with pytest.raises(ValueError, match="hardware_submission=false"):
         compare_payloads(expected, actual)
 
 
-def test_compare_default_artifacts_checks_all_committed_paths(tmp_path) -> None:
+def test_compare_default_artifacts_checks_all_committed_paths(tmp_path: Path) -> None:
     """The multi-instance gate reports every configured benchmark artefact."""
 
     import json

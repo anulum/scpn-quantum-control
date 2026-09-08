@@ -31,7 +31,7 @@ def test_jax_detection_propagates_present_runtime_failure() -> None:
 
     fake_jax = ModuleType("jax")
 
-    def fail_devices():
+    def fail_devices() -> None:
         raise RuntimeError("jax runtime failed")
 
     fake_jax.devices = fail_devices  # type: ignore[attr-defined]
@@ -59,10 +59,13 @@ def test_cupy_detection_propagates_present_runtime_failure() -> None:
 
     fake_cupy = ModuleType("cupy")
 
-    def fail_device_count():
+    def fail_device_count() -> None:
         raise RuntimeError("cuda runtime failed")
 
-    fake_cupy.cuda = SimpleNamespace(runtime=SimpleNamespace(getDeviceCount=fail_device_count))
+    # A freshly created ModuleType has no declared attributes.
+    vars(fake_cupy)["cuda"] = SimpleNamespace(
+        runtime=SimpleNamespace(getDeviceCount=fail_device_count)
+    )
 
     with (
         patch.dict("sys.modules", {"cupy": fake_cupy}),

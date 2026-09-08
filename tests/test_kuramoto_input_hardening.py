@@ -99,7 +99,8 @@ def test_rejects_complex_coupling_dtype() -> None:
     """A complex coupling matrix is not a real numeric array."""
     K = np.zeros((2, 2), dtype=np.complex128)
     with pytest.raises(ValueError, match="real numeric"):
-        build_kuramoto_problem(K, np.zeros(2))
+        # A complex coupling matrix is the input under test.
+        build_kuramoto_problem(K, np.zeros(2))  # type: ignore[arg-type]
 
 
 def test_rejects_string_coupling_dtype() -> None:

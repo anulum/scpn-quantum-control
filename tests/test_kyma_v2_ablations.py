@@ -18,7 +18,7 @@ from scpn_quantum_control.benchmarks.kyma_v2 import ablations, coupling, task, t
 
 
 def _tiny_cfg(**kw: object) -> task.ProbeConfigV2:
-    base = dict(
+    base: dict[str, object] = dict(
         g_sync=0.5,
         steps=20,
         dt=0.1,

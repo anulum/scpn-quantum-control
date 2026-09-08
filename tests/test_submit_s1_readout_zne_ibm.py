@@ -12,9 +12,8 @@ from __future__ import annotations
 
 from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister
 
+from scpn_quantum_control.hardware.s1_feedback_ibm import S1_CONTROL_ARM, S1_FEEDBACK_ARM
 from scripts.submit_s1_readout_zne_ibm import (
-    S1_CONTROL_ARM,
-    S1_FEEDBACK_ARM,
     _analyse_rows,
     _build_calibration_entries,
     _lane_config,

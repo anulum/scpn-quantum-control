@@ -20,7 +20,6 @@ from typing import Any, cast
 
 import pytest
 
-import scpn_quantum_control.ml_examples.qnn_convergence as qnn_convergence
 from scpn_quantum_control.ml_examples import (
     ModelFamily,
     evidence_payload,
@@ -72,7 +71,7 @@ def test_evidence_writer_refuses_failed_required_framework(
     markdown_path = tmp_path / "invalid.md"
     actual_find_spec = importlib.util.find_spec
     monkeypatch.setattr(
-        qnn_convergence.importlib.util,
+        importlib.util,
         "find_spec",
         lambda dependency: None if dependency == "tensorflow" else actual_find_spec(dependency),
     )

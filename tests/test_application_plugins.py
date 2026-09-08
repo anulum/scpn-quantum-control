@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import importlib.metadata
 import math
+from typing import NoReturn
 from unittest.mock import patch
 
 import numpy as np
@@ -168,7 +169,8 @@ def test_application_registry_rejects_empty_name_and_non_callable_factory() -> N
     with pytest.raises(ValueError, match="non-empty"):
         registry.register(" ", EEGApplicationPlugin)
     with pytest.raises(TypeError, match="callable"):
-        registry.register("not_callable", object())
+        # A non-callable factory is the input the guard under test refuses.
+        registry.register("not_callable", object())  # type: ignore[arg-type]
 
 
 def test_application_registry_unregisters_and_clears_cached_plugins() -> None:
@@ -203,10 +205,10 @@ def test_application_registry_rejects_plugin_without_dataset_ids() -> None:
         required_extra = "app-empty"
         dataset_ids: tuple[str, ...] = ()
 
-        def load_dataset(self, dataset_id=None):
+        def load_dataset(self, dataset_id: str | None = None) -> NoReturn:
             raise AssertionError("not reached")
 
-        def benchmark_dataset(self, dataset_id=None):
+        def benchmark_dataset(self, dataset_id: str | None = None) -> NoReturn:
             raise AssertionError("not reached")
 
     registry = ApplicationPluginRegistry()

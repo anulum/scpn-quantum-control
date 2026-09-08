@@ -22,6 +22,7 @@ import numpy as np
 
 from scpn_quantum_control.control.realtime_feedback import RealtimeSyncFeedbackController
 from scpn_quantum_control.hardware.feedback_capability_probe import (
+    BackendCapabilitySnapshot,
     assess_feedback_backend_capability,
 )
 from scpn_quantum_control.hardware.feedback_provider_metadata import (
@@ -29,6 +30,7 @@ from scpn_quantum_control.hardware.feedback_provider_metadata import (
     snapshot_from_qiskit_backend,
 )
 from scpn_quantum_control.hardware.feedback_submission import (
+    FeedbackSubmissionPackage,
     build_s1_feedback_submission_package,
 )
 from scpn_quantum_control.hardware.provider_capability_discovery import (
@@ -86,7 +88,7 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _package():
+def _package() -> FeedbackSubmissionPackage:
     controller = RealtimeSyncFeedbackController(
         np.array(
             [[0.0, 0.35, 0.20], [0.35, 0.0, 0.25], [0.20, 0.25, 0.0]],
@@ -105,7 +107,7 @@ def _package():
     )
 
 
-def load_snapshot_from_metadata_json(path: Path):
+def load_snapshot_from_metadata_json(path: Path) -> BackendCapabilitySnapshot:
     """Load a capability snapshot from offline metadata JSON."""
     metadata = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(metadata, Mapping):
@@ -132,7 +134,7 @@ def load_snapshot_from_authenticated_backend(
     backend_name: str,
     instance: str | None,
     credentials_vault: Path | None = None,
-):
+) -> BackendCapabilitySnapshot:
     """Load a capability snapshot from an already-authenticated Qiskit Runtime account."""
     backend = load_authenticated_backend(backend_name, instance, credentials_vault)
     return snapshot_from_qiskit_backend(backend, provider="ibm")
@@ -142,7 +144,7 @@ def load_authenticated_backend(
     backend_name: str,
     instance: str | None,
     credentials_vault: Path | None = None,
-):
+) -> Any:
     """Load a Qiskit Runtime backend from saved auth or the local credentials vault."""
     try:
         from qiskit_ibm_runtime import QiskitRuntimeService
@@ -161,7 +163,7 @@ def load_authenticated_backend(
     return service.backend(backend_name)
 
 
-def build_decision_document(snapshot) -> dict[str, Any]:
+def build_decision_document(snapshot: BackendCapabilitySnapshot) -> dict[str, Any]:
     """Build the no-submit capability decision document."""
     package = _package()
     decision = assess_feedback_backend_capability(snapshot, package)

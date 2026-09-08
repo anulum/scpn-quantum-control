@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 
+import numpy as np
 import pytest
 
 from scpn_quantum_control.stable_core import (
@@ -234,11 +235,8 @@ def test_kuramoto_facade_adapter_round_trip() -> None:
     from scpn_quantum_control.kuramoto_core import build_kuramoto_problem
 
     facade_problem = build_kuramoto_problem(
-        K_nm=[
-            [0.0, 0.5],
-            [0.5, 0.0],
-        ],
-        omega=[0.8, 1.2],
+        K_nm=np.array([[0.0, 0.5], [0.5, 0.0]]),
+        omega=np.array([0.8, 1.2]),
         metadata={"domain": "adapter"},
     )
 
