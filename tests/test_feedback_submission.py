@@ -9,6 +9,10 @@
 
 from __future__ import annotations
 
+import json
+from dataclasses import replace
+from typing import TypedDict
+
 import numpy as np
 import pytest
 
@@ -24,12 +28,74 @@ from scpn_quantum_control.hardware.feedback_submission import (
 )
 
 
+class PackageOverrides(TypedDict, total=False):
+    """Typed workload overrides for semantic-invalidity tests."""
+
+    circuits: int
+    shots_per_circuit: int
+    repetitions: int
+    estimated_seconds_per_circuit: float
+
+
+class BudgetOverrides(TypedDict, total=False):
+    """Typed reservation fields, including invalid numeric boundaries."""
+
+    circuits: int
+    shots_per_circuit: int
+    repetitions: int
+    estimated_execution_seconds: float
+    queue_seconds: float
+    calibration_seconds: float
+
+
 def _controller() -> RealtimeSyncFeedbackController:
     return RealtimeSyncFeedbackController(
         np.array([[0.0, 0.25], [0.25, 0.0]], dtype=np.float64),
         np.array([0.1, 0.4], dtype=np.float64),
         config=RealtimeFeedbackConfig(base_dt=0.02, trotter_steps=1, measurement_shots=32),
     )
+
+
+@pytest.mark.parametrize("payload", ["true", "1.5", '"2"'])
+def test_package_rejects_noninteger_workloads(payload: str) -> None:
+    """Decoded counts must not silently become a ready workload."""
+    value = json.loads(payload)
+    controller = _controller()
+    for field in ("circuits", "shots_per_circuit", "repetitions", "n_rounds"):
+        with pytest.raises(ValueError, match=field):
+            build_s1_feedback_submission_package(controller, **{field: value})
+
+
+@pytest.mark.parametrize("payload", ["true", "1.5", '"2"'])
+def test_budget_rejects_noninteger_workloads(payload: str) -> None:
+    """Direct reservation construction enforces the same workload contract."""
+    value = json.loads(payload)
+    budget = FeedbackBudgetEstimate(1, 32, 1, 1.0)
+    for field in ("circuits", "shots_per_circuit", "repetitions"):
+        with pytest.raises(ValueError, match=field):
+            replace(budget, **{field: value})
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), -float("inf")])
+def test_reservation_rejects_nonfinite_components(value: float) -> None:
+    """Every reservation component and package estimate must be finite."""
+    budget = FeedbackBudgetEstimate(1, 32, 1, 1.0)
+    with pytest.raises(ValueError, match="estimated_execution_seconds"):
+        replace(budget, estimated_execution_seconds=value)
+    with pytest.raises(ValueError, match="queue_seconds"):
+        replace(budget, queue_seconds=value)
+    with pytest.raises(ValueError, match="calibration_seconds"):
+        replace(budget, calibration_seconds=value)
+    with pytest.raises(ValueError, match="estimated_seconds_per_circuit"):
+        build_s1_feedback_submission_package(_controller(), estimated_seconds_per_circuit=value)
+
+
+def test_reservation_rejects_overflowed_total_and_execution_estimate() -> None:
+    """Finite components must not overflow into an unbounded manifest."""
+    with pytest.raises(ValueError, match="total_reserved_seconds"):
+        FeedbackBudgetEstimate(1, 32, 1, 1e308, queue_seconds=1e308)
+    with pytest.raises(ValueError, match="estimated_execution_seconds"):
+        build_s1_feedback_submission_package(_controller(), estimated_seconds_per_circuit=1e308)
 
 
 def test_s1_feedback_submission_package_marks_dynamic_backends_ready() -> None:
@@ -161,14 +227,12 @@ def test_platform_readiness_blocks_zero_reserved_budget_without_submitting() -> 
     ),
 )
 def test_s1_feedback_submission_package_rejects_invalid_budget_boundaries(
-    kwargs: dict[str, object],
+    kwargs: PackageOverrides,
     message: str,
 ) -> None:
     """Reject invalid workload boundaries while building packages."""
-    # One boundary per case is replaced with an invalid value; the rejection
-    # is the subject and mypy cannot express a call that is meant to fail.
     with pytest.raises(ValueError, match=message):
-        build_s1_feedback_submission_package(_controller(), **kwargs)  # type: ignore[arg-type]
+        build_s1_feedback_submission_package(_controller(), **kwargs)
 
 
 def test_feedback_platform_capability_rejects_invalid_target_metadata() -> None:
@@ -206,18 +270,17 @@ def test_feedback_platform_capability_rejects_invalid_target_metadata() -> None:
     ),
 )
 def test_feedback_budget_estimate_rejects_invalid_boundaries(
-    kwargs: dict[str, object],
+    kwargs: BudgetOverrides,
     message: str,
 ) -> None:
     """Reject invalid workload counts and negative timing components."""
-    params = {
+    params: BudgetOverrides = {
         "circuits": 1,
         "shots_per_circuit": 32,
         "repetitions": 1,
         "estimated_execution_seconds": 1.0,
-    } | kwargs
+    }
+    params.update(kwargs)
 
-    # One field per case is replaced with an invalid value; the rejection is
-    # the subject and mypy cannot express a call that is meant to fail.
     with pytest.raises(ValueError, match=message):
-        FeedbackBudgetEstimate(**params)  # type: ignore[arg-type]
+        FeedbackBudgetEstimate(**params)

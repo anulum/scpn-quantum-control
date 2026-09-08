@@ -15,6 +15,7 @@ expected to reserve. It does not read credentials or submit jobs.
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Literal
@@ -64,7 +65,12 @@ class FeedbackPlatformCapability:
 
 @dataclass(frozen=True)
 class FeedbackBudgetEstimate:
-    """Conservative QPU reservation estimate for a feedback package."""
+    """QPU reservation with positive integer counts and finite seconds.
+
+    Boolean/fractional counts, negative or non-finite time components and
+    overflow of the total reservation raise ``ValueError``. Zero time is
+    representable but does not establish platform readiness.
+    """
 
     circuits: int
     shots_per_circuit: int
@@ -75,15 +81,13 @@ class FeedbackBudgetEstimate:
 
     def __post_init__(self) -> None:
         """Reject non-positive workloads and negative reservation times."""
-        if self.circuits < 1:
-            raise ValueError("circuits must be positive")
-        if self.shots_per_circuit < 1:
-            raise ValueError("shots_per_circuit must be positive")
-        if self.repetitions < 1:
-            raise ValueError("repetitions must be positive")
+        _require_positive_int(self.circuits, "circuits")
+        _require_positive_int(self.shots_per_circuit, "shots_per_circuit")
+        _require_positive_int(self.repetitions, "repetitions")
         _require_non_negative(self.estimated_execution_seconds, "estimated_execution_seconds")
         _require_non_negative(self.queue_seconds, "queue_seconds")
         _require_non_negative(self.calibration_seconds, "calibration_seconds")
+        _require_non_negative(self.total_reserved_seconds, "total_reserved_seconds")
 
     @property
     def total_reserved_seconds(self) -> float:
@@ -260,23 +264,19 @@ def build_s1_feedback_submission_package(
     """Build a provider-neutral no-submission S1 readiness package."""
     if not experiment_id:
         raise ValueError("experiment_id must be non-empty")
-    if n_rounds < 1:
-        raise ValueError("n_rounds must be positive")
-    if circuits < 1:
-        raise ValueError("circuits must be positive")
-    if shots_per_circuit < 1:
-        raise ValueError("shots_per_circuit must be positive")
-    if repetitions < 1:
-        raise ValueError("repetitions must be positive")
+    _require_positive_int(n_rounds, "n_rounds")
+    _require_positive_int(circuits, "circuits")
+    _require_positive_int(shots_per_circuit, "shots_per_circuit")
+    _require_positive_int(repetitions, "repetitions")
     _require_non_negative(estimated_seconds_per_circuit, "estimated_seconds_per_circuit")
-    circuit = controller.build_monitored_circuit(n_rounds)
-    summary = summarise_feedback_circuit(circuit, n_rounds=n_rounds)
     budget = FeedbackBudgetEstimate(
         circuits=circuits,
         shots_per_circuit=shots_per_circuit,
         repetitions=repetitions,
         estimated_execution_seconds=estimated_seconds_per_circuit * repetitions * circuits,
     )
+    circuit = controller.build_monitored_circuit(n_rounds)
+    summary = summarise_feedback_circuit(circuit, n_rounds=n_rounds)
     targets = tuple(platforms or default_s1_platforms())
     decisions = tuple(assess_platform_readiness(platform, summary, budget) for platform in targets)
     claim_boundary = (
@@ -421,5 +421,10 @@ def _circuit_has_conditional_operation(circuit: QuantumCircuit, operation_name: 
 
 
 def _require_non_negative(value: float, name: str) -> None:
-    if value < 0.0:
-        raise ValueError(f"{name} must be non-negative")
+    if not math.isfinite(value) or value < 0.0:
+        raise ValueError(f"{name} must be finite and non-negative")
+
+
+def _require_positive_int(value: int, name: str) -> None:
+    if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+        raise ValueError(f"{name} must be positive and an integer")

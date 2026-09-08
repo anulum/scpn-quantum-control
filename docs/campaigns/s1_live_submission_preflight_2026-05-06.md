@@ -58,6 +58,9 @@ not sufficient by itself.
 
 - [ ] Remaining QPU budget was checked.
 - [ ] Requested S1 execution estimate was recorded.
+- [ ] Package rounds, circuit count, shots and repetitions are positive Python
+      integers, not booleans or fractional values. Reservation components and
+      their total are finite and non-negative; preparation rejects overflow.
 - [ ] Queue/calibration uncertainty was recorded separately from execution estimate.
 - [ ] Approval record `max_qpu_seconds` is greater than or equal to the planned spend.
 - [ ] The limit is finite and non-negative; NaN and infinity are invalid.
