@@ -14,6 +14,7 @@ import hashlib
 import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
+from numbers import Integral
 from typing import Any
 
 REQUEST_SCHEMA_VERSION = "scpn-quantum-control.qpu-compute-request.v1"
@@ -73,8 +74,20 @@ def json_sha256(payload: Mapping[str, Any]) -> str:
 
 
 def counts_sha256(counts: Mapping[str, int]) -> str:
-    """Stable SHA-256 over a count dictionary."""
-    return json_sha256({str(key): int(value) for key, value in counts.items()})
+    """Hash validated counts without truncating measurement evidence."""
+    return json_sha256(_validated_counts(counts))
+
+
+def _validated_counts(counts: Mapping[str, object]) -> dict[str, int]:
+    """Copy string-keyed non-negative integer counts, excluding booleans."""
+    result: dict[str, int] = {}
+    for key, value in counts.items():
+        if not isinstance(key, str):
+            raise ValueError("counts keys must be strings")
+        if isinstance(value, bool) or not isinstance(value, Integral) or value < 0:
+            raise ValueError("counts must be non-negative integers, excluding booleans")
+        result[key] = int(value)
+    return result
 
 
 @dataclass(frozen=True)
@@ -218,9 +231,7 @@ class QPUComputeResult:
             raise ValueError("status must be non-empty")
         if self.kernel not in SUPPORTED_KERNELS:
             raise ValueError(f"kernel must be one of {sorted(SUPPORTED_KERNELS)}")
-        counts = {str(key): int(value) for key, value in self.counts.items()}
-        if any(value < 0 for value in counts.values()):
-            raise ValueError("counts must be non-negative")
+        counts = _validated_counts(self.counts)
         object.__setattr__(self, "counts", counts)
         object.__setattr__(self, "observables", dict(self.observables))
         object.__setattr__(self, "observable_classification", dict(self.observable_classification))

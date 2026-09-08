@@ -428,6 +428,84 @@ def test_compute_result_rejects_negative_counts() -> None:
         )
 
 
+@pytest.mark.parametrize("payload", ['{"0":1.5}', '{"0":true}', '{"0":"2"}', '{"0":-0.5}'])
+def test_result_counts_reject_lossy_values_at_all_boundaries(payload: str, tmp_path: Path) -> None:
+    """Invalid measurement values cannot be normalized into valid evidence."""
+    from scpn_quantum_control.qpu_compute_types import counts_sha256
+
+    counts = json.loads(payload)
+    base = QPUComputeResult(
+        "request",
+        "artifact",
+        "DONE_SIMULATED",
+        "local",
+        "simulator",
+        "exact_statevector",
+        "sync_dla",
+        counts={"0": 1},
+    )
+    with pytest.raises(ValueError, match="counts"):
+        QPUComputeResult(
+            "request",
+            "artifact",
+            "DONE_SIMULATED",
+            "local",
+            "simulator",
+            "exact_statevector",
+            "sync_dla",
+            counts=counts,
+        )
+    with pytest.raises(ValueError, match="counts"):
+        counts_sha256(counts)
+    data = base.to_dict()
+    data["counts"] = counts
+    with pytest.raises(ValueError, match="counts"):
+        QPUComputeResult.from_dict(data)
+    path = tmp_path / "invalid-result.json"
+    path.write_text(json.dumps(data), encoding="utf-8")
+    with pytest.raises(ValueError, match="counts"):
+        read_compute_result(path)
+
+
+def test_result_counts_preserve_numpy_integers_and_hashes() -> None:
+    """Exact count normalization preserves existing integer evidence hashes."""
+    base = QPUComputeResult(
+        "request",
+        "artifact",
+        "DONE_SIMULATED",
+        "local",
+        "simulator",
+        "exact_statevector",
+        "sync_dla",
+        counts={"0": 2, "1": 0},
+    )
+    data = base.to_dict()
+    data["counts"] = {"0": np.int64(2), "1": np.int64(0)}
+    restored = QPUComputeResult.from_dict(data)
+    assert restored.counts == base.counts
+    assert type(restored.counts["0"]) is int
+    assert restored.counts_sha256 == base.counts_sha256
+    assert restored.result_sha256 == base.result_sha256
+    assert QPUComputeResult.from_dict(json.loads(restored.to_json())).counts == base.counts
+
+
+def test_result_counts_reject_key_coercion_collisions() -> None:
+    """Integer and string keys must not silently collapse onto one outcome."""
+    base = QPUComputeResult(
+        "request",
+        "artifact",
+        "DONE_SIMULATED",
+        "local",
+        "simulator",
+        "exact_statevector",
+        "sync_dla",
+    )
+    data = base.to_dict()
+    data["counts"] = {0: 1, "0": 2}
+    with pytest.raises(ValueError, match="counts keys"):
+        QPUComputeResult.from_dict(data)
+
+
 def test_compute_result_rejects_empty_identity_fields_and_unsupported_kernel() -> None:
     """Reject incomplete result identity and unsupported kernel metadata."""
     base: ResultIdentity = {

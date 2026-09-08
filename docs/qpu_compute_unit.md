@@ -84,6 +84,11 @@ Every completed compute unit call should emit a result artifact with:
 The result artifact is the only object downstream controllers should
 consume. Terminal output is not a result.
 
+Measurement counts require string outcome keys and non-negative integer values
+(including NumPy integers). Floats, booleans, numeric strings and non-string
+keys raise `ValueError`; they are not truncated or merged during construction,
+hashing or result loading. Valid integer payloads retain their existing hashes.
+
 ## Scheduler model
 
 The scheduler is a gate between the pipeline and paid/queued hardware.
