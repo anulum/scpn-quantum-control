@@ -174,6 +174,16 @@ Several assistant tools append such trailers automatically; strip them before
 committing. The check runs at the `commit-msg` stage, so it refuses the message
 rather than leaving the commit to be corrected afterwards.
 
+New commits permit exactly one authorship line and no `Co-Authored-By:` trailer,
+including the former project coauthor trailer. CI checks introduced revisions
+with `python tools/check_commit_trailers.py --strict --range BASE..HEAD` using
+the same rules as the hook. Strict mode requires a nonempty explicit range,
+does not accept historical exemptions and cannot be bypassed by backdating a
+commit. Scheduled checks retain the historical audit and additionally apply
+strict policy after the fixed published review boundary
+`a1760207032178e3b926c2dd25a5d83367daf76b`. This does not certify or waive older
+attribution debt, and no published history needs rewriting.
+
 ## Pull Requests
 
 - Keep the PR scoped to one logical change.

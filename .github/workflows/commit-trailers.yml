@@ -56,15 +56,14 @@ jobs:
               BEFORE="${{ github.event.before }}"
               AFTER="${{ github.event.after }}"
               if [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
-                RANGE="$AFTER^!"
+                # A new ref introduces its complete reachable history.
+                RANGE="$AFTER"
               elif git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
                 RANGE="$BEFORE..$AFTER"
               else
-                # Force-push / history-rewrite events can report a
-                # `before` SHA that no longer exists in the rewritten
-                # checkout. Audit the resulting tip instead of failing
-                # on an invalid revision range.
-                RANGE="$AFTER^!"
+                # An unavailable base cannot prove the introduced range.
+                echo "Cannot audit push: before commit is unavailable" >&2
+                exit 1
               fi
               ;;
             *)
@@ -74,8 +73,22 @@ jobs:
               RANGE="v0.9.6..HEAD"
               ;;
           esac
+          case "${{ github.event_name }}" in
+            push|pull_request) STRICT_RANGE="$RANGE" ;;
+            *)
+              # Fixed pre-review published boundary, not a date-based waiver.
+              # Older attribution debt remains visible in the historical audit.
+              STRICT_RANGE="a1760207032178e3b926c2dd25a5d83367daf76b..HEAD"
+              ;;
+          esac
           echo "range=$RANGE" >> "$GITHUB_OUTPUT"
+          echo "strict-range=$STRICT_RANGE" >> "$GITHUB_OUTPUT"
           echo "Audit range: $RANGE"
       - name: Run commit-authorship auditor
         if: steps.range.outputs.range != ''
-        run: python tools/check_commit_trailers.py --range "${{ steps.range.outputs.range }}"
+        env:
+          AUDIT_RANGE: ${{ steps.range.outputs.range }}
+          STRICT_RANGE: ${{ steps.range.outputs.strict-range }}
+        run: |
+          python tools/check_commit_trailers.py --range "$AUDIT_RANGE"
+          python tools/check_commit_trailers.py --strict --range "$STRICT_RANGE"

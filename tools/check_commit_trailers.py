@@ -21,6 +21,12 @@ Two roles:
    in a weekly CI job rather than on every PR so that historical debt is
    visible but not a merge gate.
 
+Use ``--strict --range BASE..HEAD`` for introduced commits: this applies the
+same seat and sole-authorship rules as the hook, regardless of commit dates,
+and does not honour historical exemptions. The default historical audit does
+not certify these newer checks. An explicit nonempty range is required for
+strict mode so a mistyped invocation cannot silently audit a different scope.
+
 The rules mirror `feedback_branding_headers`,
 `feedback_no_internal_quality_labels`, and
 `feedback_anti_slop_policy`. When those rules change, update the
@@ -87,8 +93,8 @@ FORBIDDEN_SEAT_IDS = frozenset(
 # single-authorship-line rule). Agent harnesses append these automatically —
 # `Co-Authored-By: <model> <noreply@vendor>` and `<Vendor>-Session: <url>` are
 # the two shapes seen in practice — so the check is on the trailer shape rather
-# than on one vendor's wording. The one permitted `Co-Authored-By` is the
-# project's own legacy Arcane Sapience trailer.
+# than on one vendor's wording. The project's legacy trailer is not vendor
+# attribution, but strict sole-authorship checking independently rejects it.
 VENDOR_ATTRIBUTION_TOKENS = tuple(sorted(FORBIDDEN_SEAT_IDS | {"chatgpt", "copilot"}))
 TRAILER_SHAPED_LINE_RE = re.compile(r"^[A-Za-z][A-Za-z0-9-]*:\s")
 
@@ -303,11 +309,9 @@ def _message_violations(
     slop would read as a tone failure; the body often cites banned
     words in the course of removing them, which is legitimate.
 
-    `check_vendor_attribution` is forward-only and set by the commit-msg hook:
-    it rejects a message before the commit exists. The CI auditor leaves it off
-    because the range it walks contains published commits that carry these
-    trailers, and the only way to remove those is a force-push to `main`, which
-    the commit gate forbids. Those commits are recorded debt, not a clean bill.
+    `check_vendor_attribution` also enforces sole authorship. The hook and
+    strict CI mode enable it; historical compatibility mode does not certify
+    these forward checks or waive previously recorded attribution debt.
     """
     violations: list[str] = []
     has_current_line = _has_required_authorship_line(msg)
@@ -317,6 +321,10 @@ def _message_violations(
     if require_seat_trailer:
         violations.extend(_seat_trailer_violations(msg))
     if check_vendor_attribution:
+        if sum(line.strip() == REQUIRED_AUTHORSHIP_LINE for line in msg.splitlines()) > 1:
+            violations.append("exactly one authorship line is required")
+        if re.search(r"^\s*Co-Authored-By:", msg, re.MULTILINE | re.IGNORECASE):
+            violations.append("additional Co-Authored-By trailers are forbidden")
         violations.extend(_vendor_attribution_violations(msg))
     # Extract subject line (Keep a Changelog / Conventional Commits)
     subject = next((line for line in msg.splitlines() if line.strip()), "")
@@ -388,7 +396,8 @@ def _run_git(git_executable: str, *args: str) -> subprocess.CompletedProcess[str
     )
 
 
-def _ci_audit(range_spec: str = DEFAULT_AUDIT_RANGE) -> int:
+def _ci_audit(range_spec: str = DEFAULT_AUDIT_RANGE, *, strict: bool = False) -> int:
+    """Audit an explicit revision set under strict or historical message policy."""
     # Pipe the SHAs through a second git call that fetches each
     # message cleanly — avoids the newline-quoting pitfalls of
     # `git log --format=%B` piped through a single invocation.
@@ -402,11 +411,14 @@ def _ci_audit(range_spec: str = DEFAULT_AUDIT_RANGE) -> int:
         print(f"git rev-list failed: {exc.stderr}", file=sys.stderr)
         return 2
     shas = [line.strip() for line in sha_result.stdout.splitlines() if line.strip()]
+    if strict and not shas:
+        print("strict audit requires a nonempty commit range", file=sys.stderr)
+        return 2
     fails: list[str] = []
     exempt_hits: list[str] = []
     for sha in shas:
         short = sha[:7]
-        if short in HISTORICAL_EXEMPT_SHAS:
+        if not strict and short in HISTORICAL_EXEMPT_SHAS:
             exempt_hits.append(short)
             continue
         msg_result = _run_git(git_executable, "log", "-1", "--format=%B", sha)
@@ -414,11 +426,16 @@ def _ci_audit(range_spec: str = DEFAULT_AUDIT_RANGE) -> int:
         committed_at = datetime.fromisoformat(date_result.stdout.strip())
         violations = _message_violations(
             msg_result.stdout,
-            allow_legacy_trailer=committed_at < AUTHORSHIP_POLICY_EFFECTIVE_UTC,
+            allow_legacy_trailer=not strict and committed_at < AUTHORSHIP_POLICY_EFFECTIVE_UTC,
+            require_seat_trailer=strict,
+            check_vendor_attribution=strict,
         )
         if violations:
             fails.append(f"{short}: {'; '.join(violations)}")
     print(f"Audited {len(shas)} commits in {range_spec}")
+    print(
+        "  Policy: strict" if strict else "  Policy: historical (seat/vendor checks not certified)"
+    )
     print(f"  Exempt (historical debt): {len(exempt_hits)}")
     print(f"  Violations: {len(fails)}")
     for f in fails:
@@ -431,12 +448,23 @@ def main(argv: list[str]) -> int:
     if "--help" in argv or "-h" in argv:
         print(__doc__)
         return 0
+    if "--strict" in argv and "--range" not in argv:
+        print("--strict requires an explicit --range", file=sys.stderr)
+        return 2
     if "--audit" in argv or "--range" in argv:
         range_spec = DEFAULT_AUDIT_RANGE
         if "--range" in argv:
             idx = argv.index("--range")
             if idx + 1 < len(argv):
                 range_spec = argv[idx + 1]
+            else:
+                print("--range requires a revision expression", file=sys.stderr)
+                return 2
+        if not range_spec.strip() or range_spec.startswith("--"):
+            print("--range requires a revision expression", file=sys.stderr)
+            return 2
+        if "--strict" in argv:
+            return _ci_audit(range_spec, strict=True)
         return _ci_audit(range_spec)
     if len(argv) >= 2:
         # commit-msg hook: first arg is path to message file

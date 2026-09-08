@@ -10,12 +10,14 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 import subprocess
 import sys
 from pathlib import Path
 from types import ModuleType
 
 import pytest
+import yaml
 
 
 def _load_tool_module(module_name: str, filename: str) -> ModuleType:
@@ -37,6 +39,7 @@ _check_commit_trailers = _load_tool_module(
 REQUIRED_AUTHORSHIP_LINE = "Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)"
 LEGACY_COAUTHOR_TRAILER = "Co-Authored-By: " + "Arcane Sapience <protoscience@anulum.li>"
 VALID_SEAT_TRAILER = "Seat: 14753"
+TOOL_PATH = Path(__file__).resolve().parents[1] / "tools" / "check_commit_trailers.py"
 
 
 def _message_file(tmp_path: Path, text: str) -> Path:
@@ -46,6 +49,7 @@ def _message_file(tmp_path: Path, text: str) -> Path:
 
 
 def test_commit_message_hook_accepts_required_authorship_line(tmp_path: Path) -> None:
+    """One neutral seat immediately before the sole authorship line is admitted."""
     path = _message_file(
         tmp_path,
         "\n".join(
@@ -65,6 +69,7 @@ def test_commit_message_hook_accepts_required_authorship_line(tmp_path: Path) ->
 def test_commit_message_hook_rejects_missing_authorship_line(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """An otherwise ordinary message must name the required authorship line."""
     path = _message_file(tmp_path, "Add release audit coverage\n")
 
     assert _check_commit_trailers.main(["check_commit_trailers.py", str(path)]) == 1
@@ -74,6 +79,7 @@ def test_commit_message_hook_rejects_missing_authorship_line(
 def test_commit_message_hook_rejects_banned_subject_word(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """A valid authorship trailer does not excuse a prohibited subject label."""
     path = _message_file(
         tmp_path,
         "\n".join(
@@ -92,6 +98,7 @@ def test_commit_message_hook_rejects_banned_subject_word(
 
 
 def test_message_violations_allow_banned_words_in_body_by_default() -> None:
+    """Discussion of prohibited wording in the body is distinct from subject branding."""
     message = "\n".join(
         [
             "Add release audit coverage",
@@ -251,6 +258,7 @@ def test_commit_message_hook_rejects_non_adjacent_seat_trailer(
 
 
 def test_message_violations_deduplicates_repeated_banned_words() -> None:
+    """Repeated subject violations produce one diagnostic per distinct token."""
     message = "\n".join(
         [
             "Add robust robust release audit",
@@ -265,6 +273,7 @@ def test_message_violations_deduplicates_repeated_banned_words() -> None:
 
 
 def test_legacy_coauthor_trailer_is_transition_only() -> None:
+    """Only explicitly selected historical compatibility permits the former trailer."""
     message = "\n".join(
         [
             "Add release audit coverage",
@@ -286,11 +295,13 @@ def test_legacy_coauthor_trailer_is_transition_only() -> None:
 
 
 def test_commit_trailer_checker_help_returns_zero(capsys: pytest.CaptureFixture[str]) -> None:
+    """Help describes both entry modes without requiring a repository audit."""
     assert _check_commit_trailers.main(["check_commit_trailers.py", "--help"]) == 0
     assert "Verify commit-message hygiene" in capsys.readouterr().out
 
 
 def test_ci_audit_default_range_starts_at_clean_public_tag() -> None:
+    """The historical audit retains its established lower revision boundary."""
     assert _check_commit_trailers.DEFAULT_AUDIT_RANGE == "v0.9.6..HEAD"
 
 
@@ -408,12 +419,11 @@ def test_main_dispatches_audit_ranges(monkeypatch: pytest.MonkeyPatch) -> None:
 
     assert _check_commit_trailers.main(["check_commit_trailers.py", "--audit"]) == 0
     assert _check_commit_trailers.main(["check_commit_trailers.py", "--range", "HEAD"]) == 0
-    assert _check_commit_trailers.main(["check_commit_trailers.py", "--range"]) == 0
+    assert _check_commit_trailers.main(["check_commit_trailers.py", "--range"]) == 2
     assert _check_commit_trailers.main(["check_commit_trailers.py"]) == 0
     assert seen == [
         _check_commit_trailers.DEFAULT_AUDIT_RANGE,
         "HEAD",
-        _check_commit_trailers.DEFAULT_AUDIT_RANGE,
         _check_commit_trailers.DEFAULT_AUDIT_RANGE,
     ]
 
@@ -447,7 +457,7 @@ def test_vendor_session_trailer_is_rejected() -> None:
 
 
 def test_legacy_arcane_coauthor_trailer_is_not_vendor_attribution() -> None:
-    """The project's own legacy co-author trailer stays permitted."""
+    """The former project trailer is not vendor attribution; sole-authorship checks reject it."""
     message = (
         f"fix(scope): summary\n\n{VALID_SEAT_TRAILER}\n\n"
         f"{REQUIRED_AUTHORSHIP_LINE}\n\n{LEGACY_COAUTHOR_TRAILER}\n"
@@ -500,3 +510,165 @@ def test_benign_trailer_shaped_lines_pass_through() -> None:
         f"{VALID_SEAT_TRAILER}\n\n{REQUIRED_AUTHORSHIP_LINE}\n"
     )
     assert _check_commit_trailers._vendor_attribution_violations(message) == []
+
+
+@pytest.mark.parametrize("extra", [LEGACY_COAUTHOR_TRAILER, REQUIRED_AUTHORSHIP_LINE])
+def test_cli_rejects_additional_authorship(tmp_path: Path, extra: str) -> None:
+    """A valid seat cannot hide an extra coauthor or duplicate authorship line."""
+    path = _message_file(
+        tmp_path,
+        f"fix: validate input\n\n{VALID_SEAT_TRAILER}\n\n{REQUIRED_AUTHORSHIP_LINE}\n\n{extra}\n",
+    )
+    result = subprocess.run(
+        [sys.executable, str(TOOL_PATH), str(path)],
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=30,
+    )
+    assert result.returncode == 1
+    assert "Commit message rejected" in result.stderr
+
+
+@pytest.mark.parametrize("violation", ["missing_seat", "legacy", "vendor", "duplicate", "none"])
+def test_strict_audit_uses_real_git_objects_without_date_escape(
+    tmp_path: Path, violation: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """CI rejects invalid messages even when object timestamps predate the policy."""
+    environment = {
+        **os.environ,
+        "GIT_AUTHOR_NAME": "Contract Test",
+        "GIT_COMMITTER_NAME": "Contract Test",
+        "GIT_AUTHOR_EMAIL": "test@example.invalid",
+        "GIT_COMMITTER_EMAIL": "test@example.invalid",
+        "GIT_AUTHOR_DATE": "2020-01-01T00:00:00+00:00",
+        "GIT_COMMITTER_DATE": "2020-01-01T00:00:00+00:00",
+    }
+    subprocess.run(
+        ["git", "init", "--bare", str(tmp_path / "objects.git")],
+        check=True,
+        capture_output=True,
+        timeout=10,
+    )
+    git_args = ["git", f"--git-dir={tmp_path / 'objects.git'}"]
+    tree = subprocess.run(
+        [*git_args, "mktree"], input="", capture_output=True, text=True, check=True, timeout=10
+    ).stdout.strip()
+    seat = "" if violation == "missing_seat" else VALID_SEAT_TRAILER
+    extra = {
+        "missing_seat": "",
+        "none": "",
+        "legacy": LEGACY_COAUTHOR_TRAILER,
+        "vendor": f"{_vendor_token()}-Session: https://example.invalid/session",
+        "duplicate": REQUIRED_AUTHORSHIP_LINE,
+    }[violation]
+    message = f"fix: validate input\n\n{seat}\n\n{REQUIRED_AUTHORSHIP_LINE}\n\n{extra}\n"
+    commit = subprocess.run(
+        [*git_args, "commit-tree", tree],
+        input=message,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=10,
+    ).stdout.strip()
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(TOOL_PATH),
+            "--strict",
+            "--range",
+            f"{commit}^!",
+        ],
+        cwd=tmp_path / "objects.git",
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=30,
+    )
+    assert result.returncode == (0 if violation == "none" else 1), result.stdout + result.stderr
+    assert "Audited 1 commits" in result.stdout
+    monkeypatch.chdir(tmp_path / "objects.git")
+    monkeypatch.setattr(_check_commit_trailers, "HISTORICAL_EXEMPT_SHAS", {commit[:7]})
+    assert _check_commit_trailers.main([str(TOOL_PATH), "--strict", "--range", f"{commit}^!"]) == (
+        0 if violation == "none" else 1
+    )
+    assert not subprocess.run(
+        [*git_args, "for-each-ref", "--format=%(refname)"],
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=10,
+    ).stdout
+
+
+@pytest.mark.parametrize(
+    "arguments",
+    [
+        ["--strict"],
+        ["--strict", "--range"],
+        ["--range", ""],
+        ["--range", "--strict"],
+        ["--strict", "--range", "HEAD..HEAD"],
+    ],
+)
+def test_strict_scope_is_explicit_and_nonempty(arguments: list[str]) -> None:
+    """Missing, malformed or empty strict scopes fail rather than changing the audit target."""
+    assert _check_commit_trailers.main([str(TOOL_PATH), *arguments]) == 2
+
+
+@pytest.mark.parametrize(
+    ("event", "before", "expected_returncode"),
+    [
+        ("push", "0" * 40, 0),
+        ("push", "HEAD~1", 0),
+        ("push", "f" * 40, 1),
+        ("pull_request", "0" * 40, 0),
+        ("schedule", "0" * 40, 0),
+        ("workflow_dispatch", "0" * 40, 0),
+    ],
+)
+def test_workflow_selects_and_executes_strict_range(
+    tmp_path: Path, event: str, before: str, expected_returncode: int
+) -> None:
+    """The actual range-selection shell binds event and scheduled audits to strict mode."""
+    workflow_path = TOOL_PATH.parents[1] / ".github" / "workflows" / "commit-trailers.yml"
+    steps = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))["jobs"]["audit"]["steps"]
+    selection = next(step["run"] for step in steps if step.get("id") == "range")
+    substitutions = {
+        "github.event_name": event,
+        "github.actor": "maintainer",
+        "github.event.before": before,
+        "github.event.after": "HEAD",
+        "github.event.pull_request.base.sha": "HEAD~1",
+        "github.event.pull_request.head.sha": "HEAD",
+    }
+    for expression, value in substitutions.items():
+        selection = selection.replace("${{ " + expression + " }}", value)
+    output = tmp_path / "github-output"
+    completed = subprocess.run(
+        ["bash", "-e", "-c", selection],
+        env={**os.environ, "GITHUB_OUTPUT": str(output), "GITHUB_HEAD_REF": "main"},
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=10,
+    )
+    assert completed.returncode == expected_returncode, completed.stderr
+    if expected_returncode:
+        assert "before commit is unavailable" in completed.stderr
+        assert not output.exists()
+        return
+    outputs = dict(line.split("=", 1) for line in output.read_text(encoding="utf-8").splitlines())
+    expected = {
+        "push": "HEAD" if before == "0" * 40 else "HEAD~1..HEAD",
+        "pull_request": "HEAD~1..HEAD",
+        "schedule": "a1760207032178e3b926c2dd25a5d83367daf76b..HEAD",
+        "workflow_dispatch": "a1760207032178e3b926c2dd25a5d83367daf76b..HEAD",
+    }[event]
+    assert outputs["strict-range"] == expected
+    runner = steps[-1]
+    assert runner["env"]["STRICT_RANGE"] == "${{ steps.range.outputs.strict-range }}"
+    assert (
+        'python tools/check_commit_trailers.py --strict --range "$STRICT_RANGE"' in runner["run"]
+    )
