@@ -9,7 +9,9 @@
 
 from __future__ import annotations
 
+import math
 import os
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Final
@@ -72,13 +74,18 @@ class DenseAllocationEstimate:
         return self.budget_bytes / GIB
 
 
+def _positive_integer(value: object, name: str) -> int:
+    """Validate integral allocation metadata without boolean or fractional coercion."""
+    if isinstance(value, (bool, np.bool_)) or not isinstance(value, (int, np.integer)):
+        raise TypeError(f"{name} must be an integer")
+    if value < 1:
+        raise ValueError(f"{name} must be >= 1")
+    return int(value)
+
+
 def hilbert_dimension(n_qubits: int) -> int:
-    """Return ``2**n_qubits`` after validating the qubit count."""
-    if not isinstance(n_qubits, int):
-        raise TypeError("n_qubits must be an integer")
-    if n_qubits < 1:
-        raise ValueError("n_qubits must be >= 1")
-    return 1 << n_qubits
+    """Return ``2**n_qubits`` for a positive non-boolean integer qubit count."""
+    return 1 << _positive_integer(n_qubits, "n_qubits")
 
 
 def dense_object_bytes(
@@ -88,8 +95,7 @@ def dense_object_bytes(
     rank: int = 2,
 ) -> int:
     """Return bytes needed for a dense Hilbert vector/matrix/superoperator."""
-    if rank < 1:
-        raise ValueError("rank must be >= 1")
+    rank = _positive_integer(rank, "rank")
     dim = hilbert_dimension(n_qubits)
     return int((dim**rank) * np.dtype(dtype).itemsize)
 
@@ -218,22 +224,35 @@ def available_memory_bytes(cgroup_root: Path | None = None) -> int | None:
     return min(host, headroom)
 
 
+def _budget_bytes(value: object, name: str) -> int:
+    """Convert a finite positive real GiB budget to an integer byte allowance."""
+    message = f"{name} must be positive, finite and representable in bytes"
+    if isinstance(value, (bool, np.bool_)) or not isinstance(
+        value, (int, float, np.integer, np.floating)
+    ):
+        raise ValueError(message)
+    try:
+        gib = float(value)
+    except OverflowError as exc:
+        raise ValueError(message) from exc
+    byte_count = gib * GIB
+    if not math.isfinite(byte_count) or gib <= 0:
+        raise ValueError(message)
+    return int(byte_count)
+
+
 def dense_budget_bytes(max_gib: float | None = None) -> int:
     """Return the dense-allocation budget in bytes."""
     if max_gib is not None:
-        if max_gib <= 0:
-            raise ValueError("max_gib must be positive")
-        return int(max_gib * GIB)
+        return _budget_bytes(max_gib, "max_gib")
 
     env_value = os.environ.get(DEFAULT_DENSE_BUDGET_ENV)
-    if env_value:
+    if env_value is not None:
         try:
             parsed_gib = float(env_value)
         except ValueError as exc:
             raise ValueError(f"{DEFAULT_DENSE_BUDGET_ENV} must be a positive number") from exc
-        if parsed_gib <= 0:
-            raise ValueError(f"{DEFAULT_DENSE_BUDGET_ENV} must be positive")
-        return int(parsed_gib * GIB)
+        return _budget_bytes(parsed_gib, DEFAULT_DENSE_BUDGET_ENV)
 
     available = available_memory_bytes()
     if available is None:
@@ -251,8 +270,8 @@ def estimate_dense_allocation(
     label: str = "dense Hilbert-space object",
 ) -> DenseAllocationEstimate:
     """Estimate one dense Hilbert-space allocation against the active budget."""
-    if object_count < 1:
-        raise ValueError("object_count must be >= 1")
+    object_count = _positive_integer(object_count, "object_count")
+    rank = _positive_integer(rank, "rank")
     dim = hilbert_dimension(n_qubits)
     object_bytes = dense_object_bytes(n_qubits, dtype=dtype, rank=rank)
     return DenseAllocationEstimate(
@@ -276,7 +295,26 @@ def require_dense_allocation(
     max_gib: float | None = None,
     label: str = "dense Hilbert-space object",
 ) -> DenseAllocationEstimate:
-    """Raise before a dense Hilbert-space allocation exceeds the budget."""
+    """Reject allocations exceeding the budget or native addressable size.
+
+    Validate positive non-boolean integer metadata before constructing dimensions
+    or shape tuples. Impossible native sizes raise ``DenseAllocationError`` using
+    a bounded diagnostic, without building exponential-sized Python integers.
+    Type errors identify invalid counts; invalid budgets raise ``ValueError``.
+    This checks the declared buffers, not total process memory or reservations.
+    """
+    n_qubits = _positive_integer(n_qubits, "n_qubits")
+    rank = _positive_integer(rank, "rank")
+    object_count = _positive_integer(object_count, "object_count")
+    itemsize = np.dtype(dtype).itemsize
+    if itemsize < 1:
+        raise ValueError("dtype must have a positive fixed item size")
+    exponent = n_qubits * rank
+    if (
+        exponent >= sys.maxsize.bit_length()
+        or object_count > (sys.maxsize >> exponent) // itemsize
+    ):
+        raise DenseAllocationError(f"{label} exceeds native addressable memory")
     estimate = estimate_dense_allocation(
         n_qubits,
         dtype=dtype,

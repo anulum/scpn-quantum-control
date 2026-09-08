@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pytest
 
@@ -42,6 +44,72 @@ def test_dense_budget_estimates_complex_hamiltonian_bytes() -> None:
     assert estimate.shape == (16, 16)
     assert estimate.bytes_required == 16 * 16 * np.dtype(np.complex128).itemsize
     assert estimate.budget_gib == pytest.approx(1.0)
+
+
+@pytest.mark.parametrize("value", [True, np.bool_(True), 1.5])
+@pytest.mark.parametrize("field", ["n_qubits", "rank", "object_count"])
+def test_dense_allocation_refuses_noninteger_dimensions(value: Any, field: str) -> None:
+    """Boolean and fractional allocation metadata cannot reduce an estimate."""
+    arguments = {"n_qubits": 2, "rank": 1, "object_count": 1}
+    arguments[field] = value
+    with pytest.raises(TypeError, match=field):
+        require_dense_allocation(
+            arguments["n_qubits"],
+            rank=arguments["rank"],
+            object_count=arguments["object_count"],
+            max_gib=1.0,
+        )
+
+
+def test_unaddressable_allocation_has_a_budget_exception() -> None:
+    """Impossible state size is refused without overflowing diagnostic formatting."""
+    with pytest.raises(DenseAllocationError, match="address"):
+        require_dense_allocation(4096, rank=1, max_gib=1.0)
+
+
+@pytest.mark.parametrize(
+    ("qubits", "rank", "objects"), [(10**12, 1, 1), (1, 10**12, 1), (60, 1, 1), (2, 1, 10**30)]
+)
+def test_native_limit_precedes_estimate_construction(
+    qubits: int, rank: int, objects: int, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Impossible dimensions are checked without constructing exponential integer metadata."""
+
+    def forbidden(*args: Any, **kwargs: Any) -> None:
+        raise AssertionError("estimate construction reached")
+
+    monkeypatch.setattr(dense_budget_mod, "estimate_dense_allocation", forbidden)
+    with pytest.raises(DenseAllocationError, match="address"):
+        require_dense_allocation(qubits, rank=rank, object_count=objects, max_gib=1e30)
+
+
+@pytest.mark.parametrize("value", ["nan", "inf", "1e308", ""])
+def test_invalid_environment_budget_is_not_ignored(
+    value: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Malformed explicit environment policy cannot fall back to a more permissive budget."""
+    monkeypatch.setenv(DEFAULT_DENSE_BUDGET_ENV, value)
+    with pytest.raises(ValueError, match=DEFAULT_DENSE_BUDGET_ENV):
+        dense_budget_bytes()
+
+
+def test_zero_size_dtype_does_not_bypass_admission() -> None:
+    """A zero-byte dtype cannot legitimise a dense Hilbert allocation."""
+    with pytest.raises(ValueError, match="dtype"):
+        require_dense_allocation(2, dtype="V0", max_gib=1.0)
+
+
+def test_overflowing_integer_budget_is_rejected() -> None:
+    """Conversion of an unrepresentable real integer is an explicit budget error."""
+    with pytest.raises(ValueError, match="max_gib"):
+        dense_budget_bytes(10**400)
+
+
+@pytest.mark.parametrize("budget", [True, float("nan"), float("inf"), 1e308])
+def test_budget_must_be_finite_and_representable(budget: float) -> None:
+    """Explicit invalid budgets are domain errors, not implicit coercions or overflow."""
+    with pytest.raises(ValueError, match="max_gib"):
+        dense_budget_bytes(budget)
 
 
 def test_dense_budget_rejects_invalid_qubit_count() -> None:
