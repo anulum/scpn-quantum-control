@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import cast
 
 import numpy as np
@@ -140,23 +141,19 @@ def test_leakage_rejects_zero_state() -> None:
 
 def test_leakage_evaluation_contract_rejects_invalid_custody() -> None:
     """Reject invalid leakage scalars and malformed gradient custody."""
-    valid = {
-        "value": 0.2,
-        "gradient": np.ones(4, dtype=np.complex128),
-        "normalised": False,
-        "state_norm_squared": 1.0,
-    }
-    for key in ("value", "state_norm_squared"):
-        with pytest.raises(ValueError, match=key):
-            # One field per case is replaced with an invalid value; the
-            # rejection is the subject and mypy cannot express a failing call.
-            ParityLeakageEvaluation(**(valid | {key: -1.0}))  # type: ignore[arg-type]
+    valid = ParityLeakageEvaluation(
+        value=0.2,
+        gradient=np.ones(4, dtype=np.complex128),
+        normalised=False,
+        state_norm_squared=1.0,
+    )
+    with pytest.raises(ValueError, match="value"):
+        replace(valid, value=-1.0)
+    with pytest.raises(ValueError, match="state_norm_squared"):
+        replace(valid, state_norm_squared=-1.0)
     with pytest.raises(ValueError, match="gradient"):
-        # One field per case is replaced with an invalid value; the
-        # rejection is the subject and mypy cannot express a failing call.
-        ParityLeakageEvaluation(**(valid | {"gradient": np.ones((2, 2))}))  # type: ignore[arg-type]
+        # Original malformed real matrix deliberately violates the complex-vector type.
+        replace(valid, gradient=np.ones((2, 2)))  # type: ignore[arg-type]
     nan_gradient = np.array([1.0, np.nan], dtype=np.complex128)
     with pytest.raises(ValueError, match="gradient"):
-        # One field per case is replaced with an invalid value; the
-        # rejection is the subject and mypy cannot express a failing call.
-        ParityLeakageEvaluation(**(valid | {"gradient": nan_gradient}))  # type: ignore[arg-type]
+        replace(valid, gradient=nan_gradient)

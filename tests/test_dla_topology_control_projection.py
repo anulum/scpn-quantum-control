@@ -9,13 +9,13 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import cast
 
 import numpy as np
 import pytest
 
 from scpn_quantum_control.dla_topology_control.projection import (
-    TopologyProjectionDifferential,
     topology_projection_jvp,
     topology_projection_support,
     topology_projection_vjp,
@@ -240,20 +240,10 @@ def test_jvp_vjp_reject_shape_mismatch() -> None:
 def test_differential_contract_rejects_invalid_arrays_digest_and_boundary() -> None:
     """Reject inconsistent topology differential custody fields."""
     valid = topology_projection_jvp(_supported_ledger(), _primal(), np.ones((4, 4)))
-    values: dict[str, object] = {
-        "matrix": valid.matrix,
-        "tangent": valid.tangent,
-        "projected": valid.projected,
-        "projected_tangent": valid.projected_tangent,
-        "support": valid.support,
-        "content_digest": valid.content_digest,
-        "claim_boundary": valid.claim_boundary,
-    }
-    # Each construction overrides one field with an invalid value to prove it
-    # is rejected; mypy cannot express a call that is meant to fail.
+    # Replacement invokes the real constructor; only custody values are invalid.
     with pytest.raises(ValueError, match="equal shape"):
-        TopologyProjectionDifferential(**(values | {"tangent": np.ones((3, 3))}))  # type: ignore[arg-type]
+        replace(valid, tangent=np.ones((3, 3)))
     with pytest.raises(ValueError, match="content_digest"):
-        TopologyProjectionDifferential(**(values | {"content_digest": "bad"}))  # type: ignore[arg-type]
+        replace(valid, content_digest="bad")
     with pytest.raises(ValueError, match="claim_boundary"):
-        TopologyProjectionDifferential(**(values | {"claim_boundary": " "}))  # type: ignore[arg-type]
+        replace(valid, claim_boundary=" ")

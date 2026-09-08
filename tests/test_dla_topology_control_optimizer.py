@@ -9,7 +9,8 @@
 
 from __future__ import annotations
 
-from typing import cast
+from dataclasses import replace
+from typing import TypedDict, cast
 
 import numpy as np
 import pytest
@@ -18,13 +19,23 @@ from scpn_quantum_control.dla_topology_control.objectives import (
     ParityProtectedQuadraticObjective,
 )
 from scpn_quantum_control.dla_topology_control.optimizer import (
-    ParityProjectedOptimisationTrace,
     ProjectedGradientConfig,
     ProjectedGradientStep,
     optimise_parity_protected_state,
 )
 from scpn_quantum_control.dla_topology_control.parity import ParitySectorProjector
 from scpn_quantum_control.dla_topology_control.schema import ParitySector
+
+
+class ConfigChanges(TypedDict, total=False):
+    """Correct Python types with invalid search or convergence values."""
+
+    max_steps: int
+    max_backtracks: int
+    initial_step_size: float
+    contraction: float
+    gradient_tolerance: float
+    minimum_step_size: float
 
 
 def _objective() -> ParityProtectedQuadraticObjective:
@@ -138,12 +149,11 @@ def test_backtracking_stops_below_minimum_step_size() -> None:
         ({"initial_step_size": 0.1, "minimum_step_size": 0.2}, "must not exceed"),
     ],
 )
-def test_optimizer_config_rejects_invalid_values(changes: dict[str, object], message: str) -> None:
+def test_optimizer_config_rejects_invalid_values(changes: ConfigChanges, message: str) -> None:
     """Reject invalid step, backtracking, and convergence configuration."""
-    # The parameters are deliberately invalid; mypy cannot express a call
-    # that is meant to fail.
+    # Runtime value validation is distinct from static Python field typing.
     with pytest.raises(ValueError, match=message):
-        ProjectedGradientConfig(**changes)  # type: ignore[arg-type]
+        ProjectedGradientConfig(**changes)
 
 
 def test_optimizer_rejects_wrong_objective_config_and_initial_state() -> None:
@@ -166,40 +176,41 @@ def test_optimizer_rejects_wrong_objective_config_and_initial_state() -> None:
 
 def test_step_contract_rejects_invalid_indices_scalars_and_acceptance() -> None:
     """Reject malformed accepted/rejected step records."""
-    valid: dict[str, object] = {
-        "index": 0,
-        "accepted": True,
-        "backtracks": 0,
-        "step_size": 0.5,
-        "original_value": 1.0,
-        "proposed_value": 0.5,
-        "leakage_before": 0.2,
-        "leakage_after": 0.0,
-        "gradient_norm": 1.0,
-        "state": np.ones(4, dtype=np.complex128),
-    }
-    # Each construction overrides one field with an invalid value to prove it
-    # is rejected; mypy cannot express a call that is meant to fail.
+    valid = ProjectedGradientStep(
+        index=0,
+        accepted=True,
+        backtracks=0,
+        step_size=0.5,
+        original_value=1.0,
+        proposed_value=0.5,
+        leakage_before=0.2,
+        leakage_after=0.0,
+        gradient_norm=1.0,
+        state=np.ones(4, dtype=np.complex128),
+    )
     with pytest.raises(ValueError, match="index"):
-        ProjectedGradientStep(**(valid | {"index": True}))  # type: ignore[arg-type]
+        replace(valid, index=True)
     with pytest.raises(ValueError, match="backtracks"):
-        ProjectedGradientStep(**(valid | {"backtracks": -1}))  # type: ignore[arg-type]
-    for key in (
-        "step_size",
-        "original_value",
-        "proposed_value",
-        "leakage_before",
-        "leakage_after",
-        "gradient_norm",
-    ):
-        with pytest.raises(ValueError, match=key):
-            ProjectedGradientStep(**(valid | {key: -1.0}))  # type: ignore[arg-type]
+        replace(valid, backtracks=-1)
+    with pytest.raises(ValueError, match="step_size"):
+        replace(valid, step_size=-1.0)
+    with pytest.raises(ValueError, match="original_value"):
+        replace(valid, original_value=-1.0)
+    with pytest.raises(ValueError, match="proposed_value"):
+        replace(valid, proposed_value=-1.0)
+    with pytest.raises(ValueError, match="leakage_before"):
+        replace(valid, leakage_before=-1.0)
+    with pytest.raises(ValueError, match="leakage_after"):
+        replace(valid, leakage_after=-1.0)
+    with pytest.raises(ValueError, match="gradient_norm"):
+        replace(valid, gradient_norm=-1.0)
     with pytest.raises(ValueError, match="accepted steps"):
-        ProjectedGradientStep(**(valid | {"proposed_value": 1.0}))  # type: ignore[arg-type]
+        replace(valid, proposed_value=1.0)
     with pytest.raises(ValueError, match="rejected steps"):
-        ProjectedGradientStep(**(valid | {"accepted": False}))  # type: ignore[arg-type]
+        replace(valid, accepted=False)
     with pytest.raises(ValueError, match="state"):
-        ProjectedGradientStep(**(valid | {"state": np.ones((2, 2))}))  # type: ignore[arg-type]
+        # Original real matrix violates the complex-state type as well as its shape.
+        replace(valid, state=np.ones((2, 2)))  # type: ignore[arg-type]
 
 
 def test_trace_contract_rejects_misaligned_arrays_digest_and_boundary() -> None:
@@ -210,18 +221,12 @@ def test_trace_contract_rejects_misaligned_arrays_digest_and_boundary() -> None:
         objective,
         ProjectedGradientConfig(max_steps=1),
     )
-    values: dict[str, object] = {
-        "initial_state": trace.initial_state,
-        "final_state": trace.final_state,
-        "steps": trace.steps,
-        "content_digest": trace.content_digest,
-    }
-    # Each construction overrides one field with an invalid value to prove it
-    # is rejected; mypy cannot express a call that is meant to fail.
     with pytest.raises(ValueError, match="initial_state"):
-        ParityProjectedOptimisationTrace(**(values | {"initial_state": np.ones((2, 2))}))  # type: ignore[arg-type]
+        # Keep the original real matrix at the complex initial-state boundary.
+        replace(trace, initial_state=np.ones((2, 2)))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="final_state"):
-        ParityProjectedOptimisationTrace(**(values | {"final_state": np.ones(7)}))  # type: ignore[arg-type]
+        # Keep the original wrong-length real vector at the complex final-state boundary.
+        replace(trace, final_state=np.ones(7))  # type: ignore[arg-type]
     mismatched_step = ProjectedGradientStep(
         index=0,
         accepted=False,
@@ -235,8 +240,8 @@ def test_trace_contract_rejects_misaligned_arrays_digest_and_boundary() -> None:
         state=np.ones(4, dtype=np.complex128),
     )
     with pytest.raises(ValueError, match="every step"):
-        ParityProjectedOptimisationTrace(**(values | {"steps": (mismatched_step,)}))  # type: ignore[arg-type]
+        replace(trace, steps=(mismatched_step,))
     with pytest.raises(ValueError, match="content_digest"):
-        ParityProjectedOptimisationTrace(**(values | {"content_digest": "bad"}))  # type: ignore[arg-type]
+        replace(trace, content_digest="bad")
     with pytest.raises(ValueError, match="claim_boundary"):
-        ParityProjectedOptimisationTrace(**(values | {"claim_boundary": " "}))  # type: ignore[arg-type]
+        replace(trace, claim_boundary=" ")

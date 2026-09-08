@@ -66,9 +66,8 @@ def test_support_row_rejects_blank_or_non_string_text(field: str) -> None:
     for invalid in (" ", 4):
         values[field] = invalid
         with pytest.raises(ValueError, match=field):
-            # Each iteration puts a blank string or an int where a typed field
-            # belongs, which is the rejection under test; mypy cannot express
-            # that a call is meant to fail.
+            # This heterogeneous negative table includes integer text fields;
+            # retain runtime refusal of those intentional type violations.
             ConstraintSupportRow(**values)  # type: ignore[arg-type]
 
 

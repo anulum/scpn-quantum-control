@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import cast
 
 import numpy as np
@@ -94,25 +95,26 @@ def test_objective_evaluation_rejects_malformed_state_through_projector() -> Non
 
 def test_evaluation_contract_rejects_invalid_scalars_arrays_and_boundary() -> None:
     """Reject contradictory or malformed objective evaluation custody."""
-    valid: dict[str, object] = {
-        "value": 1.0,
-        "target_distance": 0.5,
-        "leakage_mass": 0.25,
-        "state": np.ones(4, dtype=np.complex128),
-        "gradient": np.ones(4, dtype=np.complex128),
-    }
-    # Each construction overrides one field with an invalid value to prove it
-    # is rejected; mypy cannot express a call that is meant to fail.
-    for key in ("value", "target_distance", "leakage_mass"):
-        with pytest.raises(ValueError, match=key):
-            ParityProtectedObjectiveEvaluation(**(valid | {key: -1.0}))  # type: ignore[arg-type]
+    valid = ParityProtectedObjectiveEvaluation(
+        value=1.0,
+        target_distance=0.5,
+        leakage_mass=0.25,
+        state=np.ones(4, dtype=np.complex128),
+        gradient=np.ones(4, dtype=np.complex128),
+    )
+    with pytest.raises(ValueError, match="value"):
+        replace(valid, value=-1.0)
+    with pytest.raises(ValueError, match="target_distance"):
+        replace(valid, target_distance=-1.0)
+    with pytest.raises(ValueError, match="leakage_mass"):
+        replace(valid, leakage_mass=-1.0)
     with pytest.raises(ValueError, match="state"):
-        ParityProtectedObjectiveEvaluation(**(valid | {"state": np.ones((2, 2))}))  # type: ignore[arg-type]
+        # Preserve the original wrong-rank real array at this complex-state boundary.
+        replace(valid, state=np.ones((2, 2)))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="gradient"):
-        ParityProtectedObjectiveEvaluation(**(valid | {"gradient": np.ones(3)}))  # type: ignore[arg-type]
+        # Preserve the original wrong-length real array at this complex-gradient boundary.
+        replace(valid, gradient=np.ones(3))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="gradient"):
-        ParityProtectedObjectiveEvaluation(
-            **(valid | {"gradient": np.array([np.nan] * 4)})  # type: ignore[arg-type]
-        )
+        replace(valid, gradient=np.array([np.nan] * 4))
     with pytest.raises(ValueError, match="claim_boundary"):
-        ParityProtectedObjectiveEvaluation(**(valid | {"claim_boundary": " "}))  # type: ignore[arg-type]
+        replace(valid, claim_boundary=" ")
