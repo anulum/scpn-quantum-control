@@ -53,7 +53,9 @@ def label_index_map(labels: Sequence[str]) -> dict[str, int]:
     ----------
     labels
         Readout labels in the order the probability vector uses. Surrounding
-        spaces inside a label are ignored, as they are in count keys.
+        and embedded ASCII spaces are ignored, as they are in count keys.
+        Labels must be nonempty binary strings of one common register width.
+        Partial and permuted registers are supported.
 
     Returns
     -------
@@ -63,15 +65,24 @@ def label_index_map(labels: Sequence[str]) -> dict[str, int]:
     Raises
     ------
     ValueError
-        If ``labels`` is empty or repeats a label, since a repeated label cannot
-        resolve to one position.
+        If labels are empty, nonbinary, mixed-width or duplicated after space
+        removal. A repeated label cannot resolve to one position.
 
     """
     if not labels:
         raise ValueError("labels must not be empty")
     mapping: dict[str, int] = {}
+    width: int | None = None
     for index, label in enumerate(labels):
+        if not isinstance(label, str):
+            raise ValueError("labels must be binary strings")
         clean = label.replace(" ", "")
+        if not clean or any(bit not in "01" for bit in clean):
+            raise ValueError("labels must be non-empty binary strings")
+        if width is None:
+            width = len(clean)
+        elif len(clean) != width:
+            raise ValueError("labels must have one common bitstring width")
         if clean in mapping:
             raise ValueError(f"labels must not repeat a bitstring: {clean!r}")
         mapping[clean] = index
@@ -103,6 +114,7 @@ def bitstring_index(bitstring: str, labels: Sequence[str] | None = None) -> int:
     """
     clean = bitstring.replace(" ", "")
     if labels is None:
+        label_index_map((bitstring,))
         return int(clean, 2)
     mapping = label_index_map(labels)
     if clean not in mapping:
@@ -123,7 +135,8 @@ def counts_to_probabilities(
     Parameters
     ----------
     counts
-        Observed counts keyed by computational-basis outcome.
+        Non-negative integer observations keyed by computational-basis outcome.
+        Booleans, numeric strings and floating-point values are rejected.
     labels
         Readout label order defining the returned vector's positions.
 
@@ -142,19 +155,20 @@ def counts_to_probabilities(
     mapping = label_index_map(labels)
     total_count = 0
     for value in counts.values():
+        if isinstance(value, (bool, np.bool_)) or not isinstance(value, (int, np.integer)):
+            raise ValueError("counts must be non-negative integers")
         count = int(value)
         if count < 0:
             raise ValueError("counts must be non-negative")
         total_count += count
-    total = float(total_count)
-    if total <= 0.0:
+    if total_count <= 0:
         raise ValueError("empty count dictionary")
     probabilities = np.zeros(len(labels), dtype=np.float64)
     for bitstring, count in counts.items():
         clean = bitstring.replace(" ", "")
         if clean not in mapping:
             raise ValueError(f"count dictionary contains unknown bitstring {bitstring!r}")
-        probabilities[mapping[clean]] += int(count) / total
+        probabilities[mapping[clean]] += int(count) / total_count
     return probabilities
 
 
@@ -232,7 +246,28 @@ def mitigate_probabilities(
     *,
     rcond: float = 1e-10,
 ) -> NDArray[np.float64]:
-    """Invert a readout matrix with clipping and renormalisation."""
+    """Invert a readout matrix with clipping and renormalisation.
+
+    Parameters
+    ----------
+    observed_probabilities
+        Normalised non-negative vector in the calibration's label order.
+    confusion_matrix
+        Calibration whose rows and columns share a unique binary label order.
+    rcond
+        Relative singular-value cutoff passed to the pseudoinverse.
+
+    Returns
+    -------
+    numpy.ndarray
+        Clipped and normalised estimate in the same label order.
+
+    Raises
+    ------
+    ValueError
+        If labels or observed probabilities are invalid, or inversion leaves no mass.
+    """
+    label_index_map(confusion_matrix.labels)
     if observed_probabilities.shape != (len(confusion_matrix.labels),):
         raise ValueError("observed probability vector has incompatible shape")
     observed_total = float(np.sum(observed_probabilities))
@@ -276,7 +311,31 @@ def probability_parity_leakage(
     labels: Sequence[str],
     target_bitstring: str,
 ) -> float:
-    """Return probability mass outside the target parity sector."""
+    """Return mass outside the parity sector of a target in the unique label order.
+
+    Duplicate labels and unknown targets raise ValueError, as for retention.
+    Labels may be partial or permuted; probabilities follow their supplied order.
+
+    Parameters
+    ----------
+    probabilities
+        Probability vector aligned with labels.
+    labels
+        Unique same-width binary labels; ASCII spaces are ignored.
+    target_bitstring
+        Known label defining the target parity.
+
+    Returns
+    -------
+    float
+        Probability mass in the opposite parity sector.
+
+    Raises
+    ------
+    ValueError
+        If labels are invalid, the target is unknown or vector lengths differ.
+    """
+    bitstring_index(target_bitstring, labels)
     target = target_bitstring.count("1") % 2
     return float(
         sum(
@@ -292,7 +351,31 @@ def probability_magnetisation_leakage(
     labels: Sequence[str],
     target_bitstring: str,
 ) -> float:
-    """Return probability mass outside the target magnetisation sector."""
+    """Return mass outside the magnetisation sector of a known target label.
+
+    Duplicate labels and unknown targets raise ValueError, as for retention.
+    Labels may be partial or permuted; probabilities follow their supplied order.
+
+    Parameters
+    ----------
+    probabilities
+        Probability vector aligned with labels.
+    labels
+        Unique same-width binary labels; ASCII spaces are ignored.
+    target_bitstring
+        Known label defining the target magnetisation.
+
+    Returns
+    -------
+    float
+        Probability mass outside the target magnetisation sector.
+
+    Raises
+    ------
+    ValueError
+        If labels are invalid, the target is unknown or vector lengths differ.
+    """
+    bitstring_index(target_bitstring, labels)
     target = _magnetisation(target_bitstring)
     return float(
         sum(
@@ -307,7 +390,29 @@ def probability_mean_magnetisation(
     probabilities: NDArray[np.float64],
     labels: Sequence[str],
 ) -> float:
-    """Return the probability-weighted computational-basis magnetisation."""
+    """Return probability-weighted magnetisation over a unique binary label order.
+
+    Partial and permuted orders are supported; invalid or duplicate labels raise
+    ValueError. Probabilities follow supplied label positions.
+
+    Parameters
+    ----------
+    probabilities
+        Probability vector aligned with labels.
+    labels
+        Unique same-width binary labels; ASCII spaces are ignored.
+
+    Returns
+    -------
+    float
+        Mean of number-of-zeros minus number-of-ones across outcomes.
+
+    Raises
+    ------
+    ValueError
+        If labels are invalid or vector lengths differ.
+    """
+    label_index_map(labels)
     return float(
         sum(
             _magnetisation(label) * probability

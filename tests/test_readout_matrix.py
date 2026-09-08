@@ -10,6 +10,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from dataclasses import replace
+from typing import cast
+
 import numpy as np
 import pytest
 from numpy.typing import NDArray
@@ -31,6 +35,90 @@ from scpn_quantum_control.mitigation.readout_matrix import (
 
 def test_computational_basis_labels_are_big_endian() -> None:
     assert computational_basis_labels(2) == ("00", "01", "10", "11")
+
+
+@pytest.mark.parametrize("count", [True, np.bool_(True), 1.5, -0.5, "2"])
+def test_readout_counts_reject_noninteger_observations(count: object) -> None:
+    """Observation counts cannot be coerced or truncated into different evidence."""
+    with pytest.raises(ValueError, match="integer"):
+        counts_to_probabilities({"0": cast(int, count)}, ("0", "1"))
+
+
+@pytest.mark.parametrize(
+    "metric",
+    [probability_state_retention, probability_parity_leakage, probability_magnetisation_leakage],
+)
+@pytest.mark.parametrize("labels,target", [(("0", "0"), "0"), (("0", "1"), "11")])
+def test_target_metrics_share_duplicate_and_unknown_label_refusal(
+    metric: Callable[[NDArray[np.float64], tuple[str, ...], str], float],
+    labels: tuple[str, ...],
+    target: str,
+) -> None:
+    """Retention and sector leakage use the same unique known-target contract."""
+    with pytest.raises(ValueError):
+        metric(np.array([0.25, 0.75]), labels, target)
+
+
+def test_mean_magnetisation_rejects_duplicate_labels() -> None:
+    """A duplicate label is ambiguous for every public readout metric."""
+    with pytest.raises(ValueError, match="repeat"):
+        probability_mean_magnetisation(np.array([0.25, 0.75]), ("0", "0"))
+
+
+def test_direct_mitigation_rejects_ambiguous_calibration_labels() -> None:
+    """Vector and count mitigation must reject the same duplicate-label calibration."""
+    calibration = build_readout_confusion_matrix({"0": {"0": 1}, "1": {"1": 1}}, 1)
+    malformed = replace(calibration, labels=("0", "0"))
+    with pytest.raises(ValueError, match="repeat"):
+        mitigate_probabilities(np.array([0.25, 0.75]), malformed)
+    with pytest.raises(ValueError, match="repeat"):
+        mitigate_counts({"0": 1}, malformed)
+
+
+@pytest.mark.parametrize("labels", [("",), ("x",), ("0", "11")])
+def test_readout_labels_require_one_binary_register(labels: tuple[str, ...]) -> None:
+    """Nonbinary, empty and mixed-width labels do not describe one readout register."""
+    with pytest.raises(ValueError):
+        label_index_map(labels)
+
+
+def test_permuted_calibration_mitigation_preserves_true_label_probabilities() -> None:
+    """Reordering both matrix axes preserves named-state mitigation results."""
+    calibration = build_readout_confusion_matrix(
+        {"0": {"0": 90, "1": 10}, "1": {"0": 20, "1": 80}}, 1
+    )
+    reordered = replace(calibration, labels=("1", "0"), matrix=calibration.matrix[::-1, ::-1])
+    result = mitigate_counts({"0": 41, "1": 59}, reordered)
+    np.testing.assert_allclose(result, [0.7, 0.3], atol=1e-12)
+    assert probability_state_retention(result, reordered.labels, "0") == pytest.approx(0.3)
+    assert probability_parity_leakage(result, reordered.labels, "0") == pytest.approx(0.7)
+
+
+def test_partial_spaced_labels_preserve_sector_metrics() -> None:
+    """A partial register keeps its declared order after ASCII-space removal."""
+    labels = ("1 1", "0 1")
+    probabilities = counts_to_probabilities({"11": 3, "01": 1}, labels)
+    np.testing.assert_array_equal(probabilities, [0.75, 0.25])
+    assert probability_state_retention(probabilities, labels, "1 1") == 0.75
+    assert probability_parity_leakage(probabilities, labels, "11") == 0.25
+    assert probability_magnetisation_leakage(probabilities, labels, "11") == 0.25
+    assert probability_mean_magnetisation(probabilities, labels) == -1.5
+
+
+def test_large_integer_counts_normalise_without_float_total_overflow() -> None:
+    """Exact integer totals may exceed float range while their ratios remain finite."""
+    counts = {"0": 10**400, "1": 3 * 10**400}
+    np.testing.assert_array_equal(counts_to_probabilities(counts, ("0", "1")), [0.25, 0.75])
+    np.testing.assert_array_equal(
+        counts_to_probabilities({"0": cast(int, np.int64(2))}, ("0", "1")), [1, 0]
+    )
+
+
+def test_nonstring_and_space_colliding_labels_are_refused() -> None:
+    """No nonstring coercion or duplicate introduced by normalisation is accepted."""
+    for labels in [(cast(str, 0), "1"), ("10", "1 0")]:
+        with pytest.raises(ValueError):
+            label_index_map(labels)
 
 
 def test_identity_confusion_matrix_preserves_probabilities() -> None:
