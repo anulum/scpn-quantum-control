@@ -127,8 +127,8 @@ def test_differentiable_baseline_scorecard_rejects_structural_drift(
     scorecard = run_differentiable_baseline_scorecard()
 
     with pytest.raises(ValueError, match=message):
-        # `changes` carries one invalid field per parametrised case; the
-        # rejection is the subject and mypy cannot express a failing call.
+        # This heterogeneous table intentionally violates dataclass field types;
+        # mypy checks replace() fields, while __post_init__ must refuse them too.
         replace(scorecard, **changes)  # type: ignore[arg-type]
 
     with pytest.raises(ValueError, match="categories must contain unique values"):
@@ -241,8 +241,8 @@ def test_differentiable_baseline_scorecard_validation_result_rejects_drift(
     assert validation.passed
 
     with pytest.raises(ValueError, match=message):
-        # `changes` carries one invalid field per parametrised case; the
-        # rejection is the subject and mypy cannot express a failing call.
+        # This heterogeneous table intentionally violates dataclass field types;
+        # mypy checks replace() fields, while __post_init__ must refuse them too.
         replace(validation, **changes)  # type: ignore[arg-type]
 
 
@@ -529,8 +529,8 @@ def test_differentiable_promotion_language_result_rejects_drift(
     assert audit.passed
 
     with pytest.raises(ValueError, match=message):
-        # `changes` carries one invalid field per parametrised case; the
-        # rejection is the subject and mypy cannot express a failing call.
+        # This heterogeneous table intentionally violates dataclass field types;
+        # mypy checks replace() fields, while __post_init__ must refuse them too.
         replace(audit, **changes)  # type: ignore[arg-type]
 
 

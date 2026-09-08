@@ -166,8 +166,8 @@ def test_competitive_baseline_row_rejects_ambiguous_evidence(
     """Row construction must reject coercion, duplicates, and boundary drift."""
     row = run_competitive_baseline_refresh().rows[0]
 
-    # The replacement values are deliberately invalid; mypy cannot express a
-    # call that is meant to fail.
+    # The heterogeneous replacements include intentionally wrong field types;
+    # retain the runtime refusal test alongside mypy's replace() field checks.
     with pytest.raises(ValueError, match=message):
         replace(row, **changes)  # type: ignore[arg-type]
 
@@ -177,7 +177,7 @@ def test_competitive_baseline_age_rejects_datetime_subclass() -> None:
     row = run_competitive_baseline_refresh().rows[0]
 
     with pytest.raises(ValueError, match="as_of must be a date"):
-        row.age_days(as_of=cast(Any, datetime(2026, 6, 28)))
+        row.age_days(as_of=datetime(2026, 6, 28))
 
 
 @pytest.mark.parametrize(
@@ -201,8 +201,8 @@ def test_competitive_baseline_refresh_rejects_structural_drift(
     """Bundle construction must preserve canonical identity and exact runtime types."""
     refresh = run_competitive_baseline_refresh()
 
-    # The replacement values are deliberately invalid; mypy cannot express a
-    # call that is meant to fail.
+    # The heterogeneous replacements include intentionally wrong field types;
+    # retain the runtime refusal test alongside mypy's replace() field checks.
     with pytest.raises(ValueError, match=message):
         replace(refresh, **changes)  # type: ignore[arg-type]
 
@@ -285,8 +285,8 @@ def test_competitive_baseline_validation_result_rejects_incoherence(
         as_of=date(2026, 8, 25),
     )
 
-    # The replacement values are deliberately invalid; mypy cannot express a
-    # call that is meant to fail.
+    # The heterogeneous replacements include intentionally wrong field types;
+    # retain the runtime refusal test alongside mypy's replace() field checks.
     with pytest.raises(ValueError, match=message):
         replace(validation, **changes)  # type: ignore[arg-type]
 
@@ -371,8 +371,8 @@ def test_competitive_baseline_promotion_result_rejects_incoherence(
     )
     assert audit.passed
 
-    # The replacement values are deliberately invalid; mypy cannot express a
-    # call that is meant to fail.
+    # The heterogeneous replacements include intentionally wrong field types;
+    # retain the runtime refusal test alongside mypy's replace() field checks.
     with pytest.raises(ValueError, match=message):
         replace(audit, **changes)  # type: ignore[arg-type]
 
