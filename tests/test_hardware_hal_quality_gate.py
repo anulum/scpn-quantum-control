@@ -9,6 +9,9 @@
 
 from pathlib import Path
 
+import pytest
+import yaml
+
 from tools import hardware_hal_quality_gates as quality_gates
 from tools import preflight
 from tools.ci_workflow_inventory import read_ci_workflow_source
@@ -95,3 +98,31 @@ def test_ci_runs_and_aggregates_hardware_hal_gate() -> None:
     assert "--fail-under=100" in block
     assert quality_gates.HARDWARE_HAL_COVERAGE_INCLUDE in block
     assert "hardware-hal-quality" in workflow[workflow.index("  ci-gate:") :]
+
+
+@pytest.mark.parametrize(
+    "owner",
+    [
+        "tests/test_provider_route_catalogue.py",
+        "tests/test_provider_route_configuration.py",
+    ],
+)
+def test_route_inventory_is_in_each_executable_quality_step(owner: str) -> None:
+    """Catalogue execution, typing and docs cannot be satisfied by another step."""
+    for cohort in (
+        quality_gates.HARDWARE_HAL_COVERAGE_COHORT,
+        quality_gates.HARDWARE_HAL_TYPING_RATCHET,
+        quality_gates.HARDWARE_HAL_DOCSTRING_RATCHET,
+    ):
+        assert owner in cohort
+    workflow = yaml.safe_load(Path(".github/workflows/ci-control-provider.yml").read_text())
+    steps = {
+        step.get("name"): step.get("run", "")
+        for step in workflow["jobs"]["hardware-hal-quality"]["steps"]
+    }
+    for name in (
+        "Type-check hardware HAL quality cohort",
+        "Ruff NumPy docstrings for hardware HAL quality cohort",
+        "Run hardware HAL focused coverage",
+    ):
+        assert owner in steps[name].split()

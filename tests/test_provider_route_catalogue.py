@@ -17,14 +17,18 @@ network call.
 from __future__ import annotations
 
 import json
+import os
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 
 from scpn_quantum_control.hardware import hal as hal_module
+from scpn_quantum_control.hardware import provider_capability_core, provider_capability_discovery
 from scpn_quantum_control.hardware.aggregators import (
     built_in_aggregator_provider_routes,
 )
+from scpn_quantum_control.hardware.hal import built_in_backend_profiles
 from scpn_quantum_control.hardware.provider_capability_core import (
     DIRECT_AGGREGATOR,
     ROUTE_CATALOGUE_CONTRACT,
@@ -36,6 +40,53 @@ from scpn_quantum_control.hardware.provider_capability_core import (
 
 _OBSERVED_AT = "2026-09-05"
 _REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_discovery_facade_exposes_and_executes_the_same_catalogue() -> None:
+    """Consumers use the original facade without a second inventory implementation."""
+    for name in (
+        "DIRECT_AGGREGATOR",
+        "ROUTE_VERBS",
+        "ROUTE_CATALOGUE_CONTRACT",
+        "RouteVerb",
+        "RouteVerbSupport",
+        "ProviderRouteCatalogueEntry",
+        "build_provider_route_catalogue",
+    ):
+        assert name in provider_capability_discovery.__all__
+        assert getattr(provider_capability_discovery, name) is getattr(
+            provider_capability_core, name
+        )
+    entries = provider_capability_discovery.build_provider_route_catalogue(
+        observed_at=_OBSERVED_AT
+    )
+    assert entries == build_provider_route_catalogue(observed_at=_OBSERVED_AT)
+    assert entries and all(entry.unverified for entry in entries)
+
+
+def test_added_metadata_preserves_positional_conformance_arguments() -> None:
+    """New keyword-only metadata cannot reinterpret existing root/owner arguments."""
+    record = RouteVerbSupport(
+        verb="metadata",
+        observed=True,
+        observed_on=_OBSERVED_AT,
+        conformance_owner="tests/test_provider_capability_cloud_adapters.py",
+    )
+    row = ProviderRouteCatalogueEntry(
+        "direct/iqm",
+        "iqm",
+        None,
+        "iqm_cloud",
+        "superconducting_gate_model",
+        _OBSERVED_AT,
+        tuple(
+            record if verb == "metadata" else RouteVerbSupport(verb=verb) for verb in ROUTE_VERBS
+        ),
+        True,
+        _REPO_ROOT,
+        {("direct/iqm", "metadata"): "tests/test_provider_capability_cloud_adapters.py"},
+    )
+    assert row.observed_verbs == ("metadata",) and row.sdk_package is None
 
 
 def _entry(
@@ -125,6 +176,22 @@ def test_inventory_performs_no_submission(monkeypatch: pytest.MonkeyPatch) -> No
     assert all(entry.observed_at == _OBSERVED_AT for entry in entries)
 
 
+def test_inventory_does_not_read_credential_environment(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Configured credential references are projected without reading secret values."""
+
+    def reject_environment_access(*args: object, **kwargs: object) -> str:
+        raise AssertionError("inventory read the credential environment")
+
+    with monkeypatch.context() as isolated:
+        isolated.setattr(type(os.environ), "__getitem__", reject_environment_access)
+        isolated.setattr(os, "getenv", reject_environment_access)
+        entries = provider_capability_discovery.build_provider_route_catalogue(
+            observed_at=_OBSERVED_AT
+        )
+        payload = json.dumps([entry.to_dict() for entry in entries])
+    assert entries and "credential_configuration_refs" in payload
+
+
 def test_every_observed_verb_names_an_existing_conformance_owner() -> None:
     """An advertised demonstration must resolve to a real test file in the tree."""
     entries = build_provider_route_catalogue(
@@ -181,12 +248,102 @@ def test_every_route_is_inventoried_with_canonical_verbs() -> None:
         entry = _entry(entries, route.route_id)
         assert entry.provider == route.provider
         assert entry.device == route.backend_id
-        assert entry.modality == route.target_family
+        assert entry.target_family == route.target_family
+        profile = next(p for p in built_in_backend_profiles() if p.backend_id == route.backend_id)
+        assert entry.modality == profile.modality
+        assert entry.sdk_package == route.sdk_package == profile.sdk_package
+        assert entry.adapter_module == route.adapter_module
+        assert entry.credential_configuration_refs
         assert entry.submit_requires_approval == route.submit_requires_approval
         if route.aggregator == DIRECT_AGGREGATOR:
             assert entry.broker is None
         else:
             assert entry.broker == route.aggregator
+
+
+def test_modality_is_physical_profile_metadata_not_a_provider_label() -> None:
+    """Gate, annealing, photonic and dynamic routes preserve HAL semantics."""
+    entries = build_provider_route_catalogue(observed_at=_OBSERVED_AT)
+    expected = {
+        "direct/iqm": "superconducting_gate_model",
+        "direct/dwave": "quantum_annealing",
+        "direct/quandela": "photonic_gate_model",
+        "direct/quera": "neutral_atom_analog",
+        "qbraid/iqm": "provider_agnostic_runtime",
+    }
+    for route_id, modality in expected.items():
+        row = _entry(entries, route_id)
+        assert row.modality == row.inventory_key[3] == modality
+        payload = json.loads(json.dumps(row.to_dict()))
+        assert payload["contract"] == "provider_route_catalogue.v2"
+        assert payload["modality"] == modality
+        assert payload["sdk_package"] == row.sdk_package
+        assert payload["credential_configuration_refs"] == list(
+            row.credential_configuration_refs or ()
+        )
+        assert row.unverified
+
+
+def test_route_aliases_keep_separate_identity_and_observation_bindings() -> None:
+    """Shared backend identity cannot merge an alias's observation into its peer."""
+    owner = "tests/test_provider_capability_cloud_adapters.py"
+    observed_route = "strangeworks/ibm_quantum"
+    entries = build_provider_route_catalogue(
+        observed_at=_OBSERVED_AT,
+        evidence={
+            observed_route: (
+                RouteVerbSupport(
+                    verb="metadata",
+                    observed=True,
+                    observed_on=_OBSERVED_AT,
+                    conformance_owner=owner,
+                ),
+            )
+        },
+        conformance_root=_REPO_ROOT,
+        conformance_owners={(observed_route, "metadata"): owner},
+    )
+    direct = _entry(entries, observed_route)
+    alias = _entry(entries, "strangeworks/qiskit_runtime")
+    assert direct.inventory_key == alias.inventory_key
+    assert direct.route_key != alias.route_key
+    assert len({row.route_key for row in entries}) == len(entries)
+    assert not direct.unverified
+    assert alias.unverified and alias.support("metadata").observed is None
+    payload = json.loads(json.dumps([direct.to_dict(), alias.to_dict()]))
+    assert payload[0]["route_id"] != payload[1]["route_id"]
+    assert payload[0]["unverified"] is False and payload[1]["unverified"] is True
+
+
+def test_custom_backend_requires_explicit_profile_without_fabricated_credentials() -> None:
+    """Unknown provider metadata must come from an explicit profile, not its name."""
+    base = next(r for r in built_in_aggregator_provider_routes() if r.route_id == "direct/iqm")
+    route = replace(
+        base, route_id="direct/custom", backend_id="custom", adapter_module="custom.provider"
+    )
+    with pytest.raises(ValueError, match="missing backend profile"):
+        build_provider_route_catalogue(observed_at=_OBSERVED_AT, routes=(route,))
+    profile = replace(
+        next(p for p in built_in_backend_profiles() if p.backend_id == base.backend_id),
+        backend_id="custom",
+        modality="declared_custom_modality",
+    )
+    (row,) = build_provider_route_catalogue(
+        observed_at=_OBSERVED_AT, routes=(route,), profiles=(profile,)
+    )
+    assert row.modality == "declared_custom_modality" and row.unverified
+    assert row.credential_configuration_refs is None
+    assert row.to_dict()["credential_configuration_refs"] is None
+    with pytest.raises(ValueError, match="repeat a backend_id"):
+        build_provider_route_catalogue(
+            observed_at=_OBSERVED_AT, routes=(route,), profiles=(profile, profile)
+        )
+    with pytest.raises(ValueError, match="SDK disagrees"):
+        build_provider_route_catalogue(
+            observed_at=_OBSERVED_AT,
+            routes=(replace(route, sdk_package="other-sdk"),),
+            profiles=(profile,),
+        )
 
 
 def test_declared_support_requires_a_conformance_owner() -> None:
@@ -198,6 +355,41 @@ def test_declared_support_requires_a_conformance_owner() -> None:
             declared_source="route table",
             declared_on=_OBSERVED_AT,
         )
+
+
+def test_declared_source_cannot_be_only_whitespace() -> None:
+    """A blank provenance label does not identify a source."""
+    with pytest.raises(ValueError, match="declared_source"):
+        RouteVerbSupport(
+            verb="metadata",
+            declared=True,
+            declared_source=" \t ",
+            declared_on=_OBSERVED_AT,
+            conformance_owner="tests/test_provider_route_catalogue.py",
+        )
+
+
+@pytest.mark.parametrize(
+    "changes, message",
+    [
+        ({"verbs": []}, "verbs"),
+        ({"verbs": (None,)}, "verbs"),
+        ({"submit_requires_approval": 0}, "submit_requires_approval"),
+        ({"submit_requires_approval": 1}, "submit_requires_approval"),
+        ({"submit_requires_approval": "false"}, "submit_requires_approval"),
+        ({"submit_requires_approval": None}, "submit_requires_approval"),
+    ],
+)
+def test_catalogue_rows_refuse_mutable_verbs_and_non_boolean_approval_flags(
+    changes: dict[str, object],
+    message: str,
+) -> None:
+    """Frozen rows must not admit mutable evidence or truthy approval labels."""
+    row = build_provider_route_catalogue(observed_at=_OBSERVED_AT)[0]
+    if isinstance(changes.get("verbs"), list):
+        changes = {"verbs": list(row.verbs)}
+    with pytest.raises(ValueError, match=message):
+        replace(row, **changes)  # type: ignore[arg-type]  # Invalid constructor inputs exercise runtime rejection.
 
 
 @pytest.mark.parametrize(

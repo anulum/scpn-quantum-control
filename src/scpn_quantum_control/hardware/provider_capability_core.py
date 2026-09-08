@@ -22,10 +22,12 @@ from .aggregators import (
     built_in_aggregator_provider_routes,
     resolve_aggregator_provider_route,
 )
+from .hal import BackendProfile, built_in_backend_profiles
 from .openpulse_control import (
     OpenPulseCalibrationWorkflow,
     build_rabi_amplitude_calibration_workflow,
 )
+from .provider_route_configuration import provider_route_credential_refs
 
 CapabilityDecisionStatus = Literal["ready", "blocked", "unknown"]
 
@@ -37,7 +39,7 @@ ROUTE_VERBS: tuple[RouteVerb, ...] = get_args(RouteVerb)
 DIRECT_AGGREGATOR = "direct"
 """Aggregator label meaning the provider is reached without a broker."""
 
-ROUTE_CATALOGUE_CONTRACT = "provider_route_catalogue.v1"
+ROUTE_CATALOGUE_CONTRACT = "provider_route_catalogue.v2"
 
 _OBSERVATION_DATE_RE = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
 
@@ -423,7 +425,7 @@ class ProviderRouteCatalogueEntry:
     device
         Backend identifier the route resolves to.
     modality
-        Target family of the device.
+        Execution modality from the HAL backend profile, not a provider name.
     observed_at
         Valid Gregorian calendar date this row's evidence was assembled,
         in zero-padded ASCII ``YYYY-MM-DD`` format (years 0001 through 9999).
@@ -431,6 +433,15 @@ class ProviderRouteCatalogueEntry:
         One record per operation, in ``ROUTE_VERBS`` order.
     submit_requires_approval
         Whether the declared route marks submission as approval-gated.
+    sdk_package
+        Declared adapter dependency; None means unknown, not installed.
+    adapter_module
+        Declared adapter owner, without importing or instantiating it.
+    credential_configuration_refs
+        Source locators for configured client/factory/credential parameters.
+        None means unknown; no credential values or authentication status.
+    target_family
+        Route's target-family label, retained separately from modality.
     conformance_root
         Absolute source checkout root used to resolve positive support owners.
         Required only for positive support; never inferred from the working
@@ -446,6 +457,7 @@ class ProviderRouteCatalogueEntry:
         If an identity field is empty, the date is malformed or impossible, or the verb
         records are not exactly one per operation in canonical order, or a
         positive record lacks an explicitly registered, resolvable owner.
+        Mutable verb containers and non-boolean approval flags are refused.
 
     Notes
     -----
@@ -464,6 +476,10 @@ class ProviderRouteCatalogueEntry:
     observed_at: str
     verbs: tuple[RouteVerbSupport, ...]
     submit_requires_approval: bool = True
+    sdk_package: str | None = field(default=None, kw_only=True)
+    adapter_module: str | None = field(default=None, kw_only=True)
+    credential_configuration_refs: tuple[str, ...] | None = field(default=None, kw_only=True)
+    target_family: str | None = field(default=None, kw_only=True)
     conformance_root: InitVar[Path | None] = None
     conformance_owners: InitVar[Mapping[tuple[str, str], str] | None] = None
 
@@ -475,11 +491,25 @@ class ProviderRouteCatalogueEntry:
         """Validate inventory identity and canonical verb coverage."""
         for field_name in ("route_id", "provider", "device", "modality"):
             _require_text(getattr(self, field_name), field_name)
+        for field_name in ("sdk_package", "adapter_module", "target_family"):
+            value = getattr(self, field_name)
+            if value is not None:
+                _require_text(value, field_name)
+        if self.credential_configuration_refs is not None:
+            _require_string_tuple(
+                self.credential_configuration_refs, "credential_configuration_refs"
+            )
         if self.broker is not None:
             _require_text(self.broker, "broker")
             if self.broker == DIRECT_AGGREGATOR:
                 raise ValueError("a direct route must record broker as None")
         _require_observation_date(self.observed_at, "observed_at")
+        if not isinstance(self.submit_requires_approval, bool):
+            raise ValueError("submit_requires_approval must be boolean")
+        if not isinstance(self.verbs, tuple) or any(
+            not isinstance(record, RouteVerbSupport) for record in self.verbs
+        ):
+            raise ValueError("verbs must be an immutable tuple of RouteVerbSupport records")
         if tuple(record.verb for record in self.verbs) != ROUTE_VERBS:
             raise ValueError(
                 f"verbs must hold exactly one record per operation in {ROUTE_VERBS} order"
@@ -492,8 +522,19 @@ class ProviderRouteCatalogueEntry:
 
     @property
     def inventory_key(self) -> tuple[str, str | None, str, str, str]:
-        """The provider/broker/device/modality/time inventory key."""
+        """Provider/broker/device/modality/time grouping; aliases may share it."""
         return (self.provider, self.broker, self.device, self.modality, self.observed_at)
+
+    @property
+    def route_key(self) -> tuple[str, str, str | None, str, str, str]:
+        """Unambiguous row identity retaining the declared access route.
+
+        Two route aliases may share the same backend/profile inventory key.
+        Prefixing that key with route_id preserves separate evidence bindings
+        without inventing a distinct physical device or merging observations.
+
+        """
+        return (self.route_id, *self.inventory_key)
 
     @property
     def is_direct(self) -> bool:
@@ -543,6 +584,14 @@ class ProviderRouteCatalogueEntry:
             "broker": self.broker,
             "device": self.device,
             "modality": self.modality,
+            "sdk_package": self.sdk_package,
+            "adapter_module": self.adapter_module,
+            "credential_configuration_refs": (
+                list(self.credential_configuration_refs)
+                if self.credential_configuration_refs is not None
+                else None
+            ),
+            "target_family": self.target_family,
             "observed_at": self.observed_at,
             "submit_requires_approval": self.submit_requires_approval,
             "unverified": self.unverified,
@@ -557,6 +606,7 @@ def build_provider_route_catalogue(
     evidence: Mapping[str, Sequence[RouteVerbSupport]] | None = None,
     conformance_root: Path | None = None,
     conformance_owners: Mapping[tuple[str, str], str] | None = None,
+    profiles: Sequence[BackendProfile] | None = None,
 ) -> tuple[ProviderRouteCatalogueEntry, ...]:
     """Inventory declared provider routes without contacting any provider.
 
@@ -581,6 +631,10 @@ def build_provider_route_catalogue(
         Independently reviewed ``(route_id, verb)`` to test-path registry. Positive
         claims must match its binding and resolve under ``conformance_root``.
         Resolution does not run tests, certify a provider, or grant approval.
+    profiles
+        Authoritative HAL profiles, defaulting to built-ins. Every route must
+        resolve a unique backend profile with the same SDK. Supply explicit
+        profiles for custom backends; modality is never inferred from a name.
 
     Returns
     -------
@@ -593,9 +647,14 @@ def build_provider_route_catalogue(
         If the date is malformed, the routes contain a duplicate ``route_id``,
         or the evidence names an unknown route, repeats a verb, or has a positive
         claim without a registered and resolvable conformance owner.
+        Also raised for missing/duplicate backend profiles or SDK disagreement.
 
     """
     _require_observation_date(observed_at, "observed_at")
+    profile_rows = tuple(profiles) if profiles is not None else built_in_backend_profiles()
+    profile_by_id = {profile.backend_id: profile for profile in profile_rows}
+    if len(profile_by_id) != len(profile_rows):
+        raise ValueError("profiles must not repeat a backend_id")
     declared_routes = (
         tuple(routes) if routes is not None else built_in_aggregator_provider_routes()
     )
@@ -609,6 +668,11 @@ def build_provider_route_catalogue(
 
     entries: list[ProviderRouteCatalogueEntry] = []
     for route in declared_routes:
+        profile = profile_by_id.get(route.backend_id)
+        if profile is None:
+            raise ValueError(f"{route.route_id}: missing backend profile {route.backend_id}")
+        if route.sdk_package != profile.sdk_package:
+            raise ValueError(f"{route.route_id}: SDK disagrees with backend profile")
         records = tuple(supplied.get(route.route_id, ()))
         seen = [record.verb for record in records]
         if len(set(seen)) != len(seen):
@@ -620,7 +684,11 @@ def build_provider_route_catalogue(
                 provider=route.provider,
                 broker=None if route.aggregator == DIRECT_AGGREGATOR else route.aggregator,
                 device=route.backend_id,
-                modality=route.target_family,
+                modality=profile.modality,
+                sdk_package=route.sdk_package,
+                adapter_module=route.adapter_module,
+                credential_configuration_refs=provider_route_credential_refs(route.adapter_module),
+                target_family=route.target_family,
                 observed_at=observed_at,
                 verbs=tuple(
                     by_verb.get(verb, RouteVerbSupport(verb=verb)) for verb in ROUTE_VERBS
@@ -660,7 +728,7 @@ def _require_observation_date(value: Any, field_name: str) -> None:
 
 
 def _require_text(value: Any, field_name: str) -> None:
-    if not isinstance(value, str) or not value:
+    if not isinstance(value, str) or not value.strip():
         raise ValueError(f"{field_name} must be non-empty text")
 
 

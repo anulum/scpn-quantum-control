@@ -114,6 +114,15 @@ from .provider_capability_cloud_adapters import (
     snapshot_from_strangeworks_backend as snapshot_from_strangeworks_backend,
 )
 from .provider_capability_core import (
+    DIRECT_AGGREGATOR as DIRECT_AGGREGATOR,
+)
+from .provider_capability_core import (
+    ROUTE_CATALOGUE_CONTRACT as ROUTE_CATALOGUE_CONTRACT,
+)
+from .provider_capability_core import (
+    ROUTE_VERBS as ROUTE_VERBS,
+)
+from .provider_capability_core import (
     CapabilityDecisionStatus as CapabilityDecisionStatus,
 )
 from .provider_capability_core import (
@@ -129,6 +138,15 @@ from .provider_capability_core import (
     ProviderMetadataProbe as ProviderMetadataProbe,
 )
 from .provider_capability_core import (
+    ProviderRouteCatalogueEntry as ProviderRouteCatalogueEntry,
+)
+from .provider_capability_core import (
+    RouteVerb as RouteVerb,
+)
+from .provider_capability_core import (
+    RouteVerbSupport as RouteVerbSupport,
+)
+from .provider_capability_core import (
     _require_string_tuple as _require_string_tuple,
 )
 from .provider_capability_core import (
@@ -139,6 +157,9 @@ from .provider_capability_core import (
 )
 from .provider_capability_core import (
     build_openpulse_control_readiness as build_openpulse_control_readiness,
+)
+from .provider_capability_core import (
+    build_provider_route_catalogue as build_provider_route_catalogue,
 )
 from .provider_capability_core import (
     probe_aggregator_provider_capability as probe_aggregator_provider_capability,
@@ -334,6 +355,13 @@ from .provider_capability_specialized_adapters import (
 )
 
 __all__ = [
+    "DIRECT_AGGREGATOR",
+    "ROUTE_CATALOGUE_CONTRACT",
+    "ROUTE_VERBS",
+    "ProviderRouteCatalogueEntry",
+    "RouteVerb",
+    "RouteVerbSupport",
+    "build_provider_route_catalogue",
     "CapabilityDecisionStatus",
     "OpenPulseControlReadiness",
     "ProviderCapabilityDecision",

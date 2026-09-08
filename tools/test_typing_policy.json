@@ -1244,6 +1244,7 @@
         "tests/test_provider_gradient_audit_quality_gate.py",
         "tests/test_provider_isolated_smoke_workflow.py",
         "tests/test_provider_route_catalogue.py",
+        "tests/test_provider_route_configuration.py",
         "tests/test_psi_field.py",
         "tests/test_psi_lattice_quality_gate.py",
         "tests/test_public_api_stability.py",

@@ -466,6 +466,38 @@ A route reached without a broker records `broker` as `None`, so the same
 provider and device offered through a broker is a separate row rather than a
 merged one.
 
+The five-field `inventory_key` groups shared backend/profile identity, while
+`route_key` prefixes it with `route_id` for unambiguous row identity. Declared
+aliases such as `strangeworks/ibm_quantum` and `strangeworks/qiskit_runtime`
+share the former but not the latter. Store or index rows by `route_key` (or
+the exported `route_id` plus the five fields); never merge alias observations.
+The inventory retains both rows without inventing different physical devices.
+
+The export contract is `provider_route_catalogue.v2`. `modality` now comes
+from the authoritative HAL profile (for example, `superconducting_gate_model`,
+`quantum_annealing` or `photonic_gate_model`); `target_family` retains the
+route's original family label. Dynamic broker profiles retain their declared
+provider-agnostic modality rather than guessing one from the provider name.
+Version 1 incorrectly used the target-family label as modality. Regenerate
+inventories from route/profile sources when migrating; do not relabel a saved
+v1 row as v2. Consumers must check the exported contract before interpreting
+the inventory key. Raw provider observations are not rewritten.
+
+Rows also expose `sdk_package`, `adapter_module` and
+`credential_configuration_refs`. SDK names are declared dependencies, not
+installation or availability checks. Credential configuration references point
+to real adapter constructor inputs in `module:Class.__init__.parameter` form:
+configured clients, factories, or explicitly named credential parameters.
+They contain no values and do not inspect SDK stores or environment variables.
+For example, direct IQM references `IQMHALAdapter.__init__.backend`; brokered
+IQM references the broker's client/configuration inputs, not IQM's direct ones.
+Authentication remains with the supplied client or SDK. Unknown/custom adapter
+references are `None`, not an assertion that no credentials are needed.
+
+Custom backend routes require explicit `profiles=` when no built-in profile
+exists. Duplicate backend profiles and route/profile SDK disagreement are
+refused. Profile metadata does not promote any verb to observed or ready.
+
 `observed_at`, `declared_on` and `observed_on` must be real Gregorian calendar
 dates in zero-padded ASCII `YYYY-MM-DD` format, with years 0001–9999. Impossible
 dates, non-ASCII digits, whitespace and timestamps raise `ValueError` naming
@@ -474,7 +506,7 @@ they are validated even for unknown or negative support. Validation does not
 compare against the workstation clock or certify that an observation occurred.
 
 ```python
-from scpn_quantum_control.hardware.provider_capability_core import (
+from scpn_quantum_control.hardware.provider_capability_discovery import (
     build_provider_route_catalogue,
 )
 
@@ -484,9 +516,12 @@ brokered = next(row for row in catalogue if row.route_id == "qbraid/iqm")
 
 direct.is_direct        # True; broker is None
 brokered.broker         # "qbraid"
-direct.inventory_key    # ("iqm", None, "iqm_cloud", "iqm", "2026-09-05")
+direct.inventory_key    # ("iqm", None, "iqm_cloud", "superconducting_gate_model", "2026-09-05")
 direct.unverified       # True until evidence is supplied
 ```
+
+The original discovery facade re-exports the exact catalogue classes, constants
+and builder from `provider_capability_core`; it does not keep a second registry.
 
 ### Support is recorded twice, and unknown stays unknown
 
@@ -502,6 +537,9 @@ an observation requires the date and a canonical repository-relative
 `tests/test_*.py` conformance owner,
 and an observation that contradicts an explicit non-declaration is refused
 outright rather than silently accepted.
+Whitespace-only source labels are rejected. Catalogue rows require immutable
+tuples of verb records and an actual boolean approval flag; strings such as
+`"false"` are not interpreted as policy decisions.
 
 ```python
 from scpn_quantum_control.hardware.provider_capability_core import RouteVerbSupport
