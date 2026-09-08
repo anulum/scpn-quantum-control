@@ -148,17 +148,29 @@ pub fn check_finite_scalar(value: f64, name: &str) -> Result<(), String> {
     Ok(())
 }
 
-/// Validate that a square matrix equals its transpose within `atol`.
+/// Validate finite square shape and symmetry within absolute tolerance `atol`.
 ///
 /// A Cholesky factorisation reads only one triangle, so an asymmetric matrix
 /// silently yields the determinant of its symmetrised lower triangle instead of
-/// an error. The tolerance is absolute, matching the Python contract.
+/// an error. Callers using relative symmetry must scale `atol` themselves.
+/// Empty square matrices are admitted; dimension requirements belong to callers.
+///
+/// # Errors
+/// Returns an error for rectangular shape, non-finite entries, non-finite or
+/// negative tolerance, or an off-diagonal difference exceeding the tolerance.
 pub fn check_symmetric(
     matrix: &ArrayView<'_, f64, ndarray::Ix2>,
     atol: f64,
     name: &str,
 ) -> Result<(), String> {
     let n = matrix.nrows();
+    check_square_matrix(n, matrix.ncols(), n, name)?;
+    if !(atol.is_finite() && atol >= 0.0) {
+        return Err(format!(
+            "{name} symmetry tolerance must be finite and non-negative, got {atol}"
+        ));
+    }
+    check_finite_array(matrix, name)?;
     for i in 0..n {
         for j in 0..i {
             let difference = (matrix[[i, j]] - matrix[[j, i]]).abs();
@@ -438,6 +450,36 @@ mod tests {
         // slip through a negated comparison.
         let with_nan = ndarray::arr2(&[[2.0, f64::NAN], [1.0, 3.0]]);
         assert!(check_symmetric(&with_nan.view(), 1e-10, "k").is_err());
+    }
+
+    /// Rectangular input returns an error before any transposed indexing.
+    #[test]
+    fn test_check_symmetric_rejects_rectangular_shape_without_panicking() {
+        for shape in [(2, 1), (1, 2), (0, 1), (1, 0)] {
+            let matrix = ndarray::Array2::<f64>::zeros(shape);
+            assert!(check_symmetric(&matrix.view(), 1e-10, "k").is_err());
+        }
+        let empty = ndarray::Array2::<f64>::zeros((0, 0));
+        assert!(check_symmetric(&empty.view(), 0.0, "k").is_ok());
+    }
+
+    /// Diagonal entries must be finite even when no off-diagonal pairs exist.
+    #[test]
+    fn test_check_symmetric_rejects_nonfinite_diagonal() {
+        for value in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            let matrix = ndarray::arr2(&[[value]]);
+            assert!(check_symmetric(&matrix.view(), 1e-10, "k").is_err());
+        }
+    }
+
+    /// Invalid tolerances fail independently of matrix size; exact symmetry is valid.
+    #[test]
+    fn test_check_symmetric_rejects_invalid_tolerance() {
+        let matrix = ndarray::arr2(&[[1.0]]);
+        for tolerance in [-1.0, f64::NAN, f64::INFINITY] {
+            assert!(check_symmetric(&matrix.view(), tolerance, "k").is_err());
+        }
+        assert!(check_symmetric(&matrix.view(), 0.0, "k").is_ok());
     }
 
     #[test]

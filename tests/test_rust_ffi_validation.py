@@ -946,7 +946,7 @@ def r_values_error_pattern() -> str:
 # PyO3 as pyo3_runtime.PanicException — a BaseException, so ordinary Python
 # error handling does not catch it — and a merely mis-shaped argument, such as
 # a 2x3 read as 2x2, produced a silently wrong number instead. Both tiers now
-# admit the same domain as the Python contract established by R07 and R08.
+# validate dimensions and finite data before evaluating their quadratic forms.
 
 
 def _fep_domain_contract_exports() -> tuple[Any, Any]:
@@ -1300,3 +1300,42 @@ def test_fep_domain_contract_free_energy_supports_non_contiguous_views() -> None
     )
 
     np.testing.assert_allclose(np.asarray(strided_result), np.asarray(contiguous_result))
+
+
+@pytest.mark.parametrize("layout", ["strided", "reversed", "transposed", "fortran"])
+def test_fep_domain_contract_matrix_layouts_preserve_values_and_inputs(layout: str) -> None:
+    """Both native exports respect read-only matrix strides and leave storage unchanged."""
+    gradient, free_energy = _fep_domain_contract_exports()
+    mu = np.array([0.2, -0.1, 0.7])
+    observed = np.array([0.5, 0.25, -0.3])
+    prior = np.array([[2.0, 0.1, 0.0], [0.1, 1.5, 0.2], [0.0, 0.2, 1.1]])
+    sensory = np.array([[3.0, 0.2, 0.0], [0.1, 4.0, 0.3], [0.0, 0.2, 0.5]])
+    matrices = []
+    for values in (prior, sensory):
+        if layout == "strided":
+            storage = np.full((6, 6), np.nan)
+            view = storage[::2, ::2]
+            view[:] = values
+        elif layout == "reversed":
+            view = values[::-1, ::-1]
+        elif layout == "transposed":
+            view = values.T
+        else:
+            view = np.asfortranarray(values)
+        assert not view.flags.c_contiguous
+        view.flags.writeable = False
+        matrices.append(view)
+    k_precision, sensory_precision = matrices
+    before = [array.copy() for array in (mu, observed, *matrices)]
+    native_gradient = gradient(mu, observed, k_precision, sensory_precision, 0.05)
+    native_energy = free_energy(mu, observed, k_precision, sensory_precision, 0.1, 0.05)
+    expected_gradient = _fep_domain_contract_reference_gradient(
+        mu, observed, k_precision, sensory_precision, 0.05
+    )
+    expected_energy = _fep_domain_contract_reference_free_energy(
+        mu, observed, k_precision, sensory_precision, 0.1, 0.05
+    )
+    np.testing.assert_allclose(native_gradient, expected_gradient, rtol=0.0, atol=1e-12)
+    np.testing.assert_allclose(native_energy, expected_energy, rtol=0.0, atol=1e-12)
+    for actual, original in zip((mu, observed, *matrices), before, strict=True):
+        np.testing.assert_array_equal(actual, original)
