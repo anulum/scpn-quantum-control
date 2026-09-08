@@ -20,8 +20,9 @@ from __future__ import annotations
 import math
 import time
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from numbers import Integral
+from threading import Lock
 from typing import Any, Protocol
 
 from ..control.realtime_feedback import FeedbackStep, RealtimeSyncFeedbackController
@@ -125,6 +126,7 @@ class FeedbackStepRecord:
     cumulative_qpu_seconds: float
     stop_requested: bool
     observer_state: Mapping[str, Any] = field(default_factory=dict)
+    observer_completed: bool = field(default=True, kw_only=True)
 
 
 class FeedbackScheduler(Protocol):
@@ -177,7 +179,21 @@ class FeedbackRunner:
         self.observer = observer
         self.config = config
         self.hardware_approved = hardware_approved
+        self._history: list[FeedbackStepRecord] = []
+        self._run_lock = Lock()
         self._check_hardware_approval()
+
+    @property
+    def history(self) -> tuple[FeedbackStepRecord, ...]:
+        """Records from the latest run, retained when execution raises.
+
+        A structural snapshot of completed scheduler returns, not a durable log
+        or a deep copy of arbitrary payloads. Archive it before starting a new
+        run; do not mutate nested command, result or observer mappings.
+        observer_completed=False identifies a result whose observer did not
+        finish, including failures in post-dispatch budget/latency checks.
+        """
+        return tuple(self._history)
 
     def _check_hardware_approval(self) -> None:
         """Validate explicit approval and current scheduler identity before work."""
@@ -199,9 +215,21 @@ class FeedbackRunner:
         Invalid flags raise ValueError; required but absent approval raises
         PermissionError without submitting the next command. This runner flag
         does not replace provider-specific approval or a durable usage ledger.
+        Results enter history before post-dispatch checks or observer execution.
+        Concurrent/reentrant runs raise RuntimeError without clearing history.
         """
+        if not self._run_lock.acquire(blocking=False):
+            raise RuntimeError("feedback run already in progress")
+        try:
+            return self._run()
+        finally:
+            self._run_lock.release()
+
+    def _run(self) -> list[FeedbackStepRecord]:
+        """Execute one invocation while the public runner owns the run lock."""
         self._check_hardware_approval()
-        history: list[FeedbackStepRecord] = []
+        self._history = []
+        history = self._history
         command = self.observer.initial_command()
         total_qpu = 0.0
         total_latency = 0.0
@@ -214,29 +242,35 @@ class FeedbackRunner:
             latency = time.monotonic() - started
             total_latency += latency
             total_qpu += result.qpu_seconds
-            if latency > self.config.max_step_latency_s:
-                raise RuntimeError("feedback step exceeded max_step_latency_s")
-            if total_latency > self.config.max_total_latency_s:
-                raise RuntimeError("feedback loop exceeded max_total_latency_s")
-            if total_qpu > self.config.max_qpu_seconds:
-                raise RuntimeError("feedback loop exceeded max_qpu_seconds")
-            next_command, observer_state = self.observer.update(result, tuple(history))
             record = FeedbackStepRecord(
                 index=index,
                 command=command,
                 result=result,
                 latency_s=latency,
                 cumulative_qpu_seconds=total_qpu,
-                stop_requested=next_command is None,
-                observer_state=dict(observer_state),
+                stop_requested=False,
+                observer_completed=False,
             )
             history.append(record)
+            if latency > self.config.max_step_latency_s:
+                raise RuntimeError("feedback step exceeded max_step_latency_s")
+            if total_latency > self.config.max_total_latency_s:
+                raise RuntimeError("feedback loop exceeded max_total_latency_s")
+            if total_qpu > self.config.max_qpu_seconds:
+                raise RuntimeError("feedback loop exceeded max_qpu_seconds")
+            next_command, observer_state = self.observer.update(result, tuple(history[:-1]))
+            history[-1] = replace(
+                record,
+                stop_requested=next_command is None,
+                observer_state=dict(observer_state),
+                observer_completed=True,
+            )
             if next_command is None:
                 break
             command = next_command
         if self.config.latency_sla is not None and history:
             _enforce_latency_sla(history, self.config.latency_sla)
-        return history
+        return list(history)
 
 
 class RealtimeControllerScheduler:

@@ -107,6 +107,15 @@ with:
 
 ### Dispatch and recovery boundary
 
+After a runner exception, archive `runner.history` before another `run()`. Each
+completed scheduler return is recorded before post-dispatch latency/budget checks
+and observer execution. `observer_completed=False` distinguishes an unprocessed
+result from a completed observer decision; it does not label the provider job as
+failed. Provider exceptions add no invented result; earlier records remain, while
+the approved scheduler owns uncertain-attempt accounting. Concurrent/reentrant
+runner calls are refused. History is a structural, in-memory snapshot, not durable
+storage or deep ownership of arbitrary nested payloads; do not mutate its data.
+
 `FeedbackResult` rejects fractional/boolean shot counts and non-finite/boolean
 control metrics. It snapshots the provider's counts and metrics at construction;
 retain raw provider evidence separately. Its mappings remain editable, so the

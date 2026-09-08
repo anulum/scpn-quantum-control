@@ -236,6 +236,84 @@ def test_feedback_runner_enforces_qpu_budget_after_result() -> None:
 
     with pytest.raises(RuntimeError, match="exceeded max_qpu_seconds"):
         runner.run()
+    assert len(runner.history) == 1
+    assert runner.history[0].result.qpu_seconds == 2.0
+    assert runner.history[0].cumulative_qpu_seconds == 2.0
+    assert not runner.history[0].observer_completed
+
+
+def test_runner_retains_result_when_observer_raises() -> None:
+    """A completed provider result survives a subsequent observer failure."""
+    scheduler = DummyScheduler(metrics=[0.5], qpu_seconds=1.0)
+    observer = ProportionalMetricObserver(
+        initial_value=0.1, metric_name="missing", target=0.5, gain=1.0
+    )
+    runner = FeedbackRunner(
+        scheduler, observer, FeedbackLoopConfig(max_steps=1, max_qpu_seconds=2.0)
+    )
+    with pytest.raises(KeyError, match="missing feedback metric"):
+        runner.run()
+    assert len(runner.history) == 1
+    assert runner.history[0].result.metrics == {"r": 0.5}
+    assert runner.history[0].cumulative_qpu_seconds == 1.0
+    assert not runner.history[0].observer_completed
+
+
+@pytest.mark.parametrize("limit", ["step", "total", "sla"])
+def test_runner_retains_results_on_latency_failure(
+    limit: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Post-dispatch latency failure retains the completed result and its cost."""
+    timestamps = iter([10.0, 11.0])
+    monkeypatch.setattr(
+        "scpn_quantum_control.hardware.feedback_loop.time.monotonic", lambda: next(timestamps)
+    )
+    scheduler = DummyScheduler(metrics=[0.5], qpu_seconds=1.0)
+    observer = ProportionalMetricObserver(initial_value=0.1, metric_name="r", target=0.5, gain=1.0)
+    config = FeedbackLoopConfig(
+        max_steps=1,
+        max_qpu_seconds=2.0,
+        max_step_latency_s=0.5 if limit == "step" else 2.0,
+        max_total_latency_s=0.5 if limit == "total" else 2.0,
+        latency_sla=FeedbackLoopLatencySLA(max_latency_s=0.5) if limit == "sla" else None,
+    )
+    runner = FeedbackRunner(scheduler, observer, config)
+    with pytest.raises(RuntimeError, match="latency"):
+        runner.run()
+    assert len(runner.history) == 1
+    assert runner.history[0].latency_s == 1.0
+    assert runner.history[0].cumulative_qpu_seconds == 1.0
+    assert runner.history[0].observer_completed is (limit == "sla")
+
+
+def test_runner_history_survives_provider_failure_and_reentry() -> None:
+    """No new result is fabricated for a provider exception; prior results survive."""
+
+    class FailingScheduler(DummyScheduler):
+        def submit(self, command: FeedbackCommand) -> FeedbackResult:
+            with pytest.raises(RuntimeError, match="already in progress"):
+                runner.run()
+            if self.submitted:
+                raise TimeoutError("second provider outcome unknown")
+            return super().submit(command)
+
+    scheduler = FailingScheduler(metrics=[0.0], qpu_seconds=1.0)
+    observer = ProportionalMetricObserver(initial_value=0.1, metric_name="r", target=0.5, gain=1.0)
+    runner = FeedbackRunner(
+        scheduler, observer, FeedbackLoopConfig(max_steps=2, max_qpu_seconds=3.0)
+    )
+    with pytest.raises(TimeoutError):
+        runner.run()
+    saved = runner.history
+    assert len(saved) == 1 and saved[0].observer_completed
+    assert saved[0].cumulative_qpu_seconds == 1.0
+    runner.scheduler = DummyScheduler(metrics=[0.5])
+    returned = runner.run()
+    assert len(returned) == 1
+    returned.clear()
+    assert len(runner.history) == 1
+    assert runner.history[0].cumulative_qpu_seconds == 0.0
+    assert saved[0].cumulative_qpu_seconds == 1.0
 
 
 def test_proportional_observer_clips_and_requires_metric() -> None:
