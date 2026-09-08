@@ -15,7 +15,7 @@ from dataclasses import dataclass
 import numpy as np
 from numpy.typing import NDArray
 
-from .schema import FloatArray, IntArray, KernelEvaluation, TopologyKernelMatrix
+from .schema import FloatArray, IntArray, KernelEvaluation, TopologyKernelMatrix, _binary_array
 
 
 def _read_only_float(value: NDArray[np.float64]) -> FloatArray:
@@ -82,7 +82,7 @@ class KernelRidgeClassifier:
 
 def fit_kernel_ridge(
     kernel: TopologyKernelMatrix,
-    labels: NDArray[np.int64],
+    labels: IntArray | FloatArray,
     *,
     alpha: float,
 ) -> KernelRidgeClassifier:
@@ -113,7 +113,7 @@ def fit_kernel_ridge(
         raise ValueError("kernel must be a TopologyKernelMatrix")
     if kernel.values.shape[0] != kernel.values.shape[1] or kernel.row_ids != kernel.column_ids:
         raise ValueError("training kernel must be square with identical axis identifiers")
-    label_array = np.asarray(labels, dtype=np.int64)
+    label_array = _binary_array(labels)
     if label_array.shape != (kernel.values.shape[0],) or not set(label_array.tolist()) <= {-1, 1}:
         raise ValueError("labels must be a binary vector matching the training kernel")
     if not np.isfinite(alpha) or alpha <= 0.0:
@@ -165,7 +165,7 @@ def evaluate_kernel_ridge(
     name: str,
     model: KernelRidgeClassifier,
     cross_kernel: TopologyKernelMatrix,
-    labels: NDArray[np.int64],
+    labels: IntArray | FloatArray,
 ) -> KernelEvaluation:
     """Predict and return a self-consistent named accuracy record.
 
@@ -182,7 +182,7 @@ def evaluate_kernel_ridge(
 
     """
     predictions = predict_kernel_ridge(model, cross_kernel)
-    label_array = np.asarray(labels, dtype=np.int64)
+    label_array = _binary_array(labels)
     if label_array.shape != predictions.shape or not set(label_array.tolist()) <= {-1, 1}:
         raise ValueError("labels must be a binary vector matching cross-kernel rows")
     correct = int(np.sum(predictions == label_array))

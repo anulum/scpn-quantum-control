@@ -88,6 +88,33 @@ def _dataset() -> TopologyKernelDataset:
     )
 
 
+@pytest.mark.parametrize(
+    "values",
+    [[1.5, -1.5], [True, True], ["1", "-1"], [1j, -1j], [np.nan, -1], [np.inf, -1]],
+)
+def test_binary_evidence_rejects_lossy_array_conversion(values: list[object]) -> None:
+    """Reject invalid raw predictions and labels before integer conversion."""
+    invalid = np.asarray(values)
+    evaluation = KernelEvaluation(
+        name="test",
+        predictions=np.array([1, -1]),
+        labels=np.array([1, -1]),
+        correct=2,
+        total=2,
+        accuracy=1.0,
+        kernel_digest=DIGEST,
+    )
+    with pytest.raises(ValueError, match="binary"):
+        replace(evaluation, predictions=invalid)
+    with pytest.raises(ValueError, match="binary"):
+        replace(evaluation, labels=invalid)
+    dataset = _dataset()
+    with pytest.raises(ValueError, match="binary"):
+        replace(dataset, train_labels=np.tile(invalid, 2))
+    with pytest.raises(ValueError, match="binary"):
+        replace(dataset, test_labels=invalid)
+
+
 def test_config_defaults_and_feature_dimension_are_explicit() -> None:
     """Expose bounded defaults and the canonical edge-feature dimension."""
     config = TopologyKernelConfig()

@@ -55,9 +55,23 @@ def _model() -> KernelRidgeClassifier:
     )
 
 
-def test_kernel_ridge_fit_predict_and_evaluate() -> None:
+@pytest.mark.parametrize(
+    "values",
+    [[1.5, -1.5], [True, True], ["1", "-1"], [1j, -1j], [np.nan, -1], [np.inf, -1]],
+)
+def test_classifier_rejects_lossy_labels(values: list[object]) -> None:
+    """Reject malformed labels at fitting and evaluation entry points."""
+    labels = np.asarray(values)
+    with pytest.raises(ValueError, match="binary"):
+        fit_kernel_ridge(_kernel(), labels, alpha=0.1)
+    with pytest.raises(ValueError, match="binary"):
+        evaluate_kernel_ridge("test", _model(), _kernel(), labels)
+
+
+@pytest.mark.parametrize("floating", [False, True])
+def test_kernel_ridge_fit_predict_and_evaluate(floating: bool) -> None:
     """Fit, predict, evaluate, and preserve read-only result custody."""
-    labels = np.array([1, -1])
+    labels = np.array([1, -1], dtype=np.float64) if floating else np.array([1, -1], dtype=np.int64)
     model = fit_kernel_ridge(_kernel(), labels, alpha=0.1)
     predictions = predict_kernel_ridge(model, _kernel())
     result = evaluate_kernel_ridge("identity", model, _kernel(), labels)

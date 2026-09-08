@@ -37,6 +37,14 @@ def _read_only_int(value: NDArray[np.int64]) -> IntArray:
     return result
 
 
+def _binary_array(value: IntArray | FloatArray) -> IntArray:
+    """Validate exact real binary values before lossless integer conversion."""
+    raw = np.asarray(value)
+    if raw.dtype.kind not in "iuf" or not np.all((raw == -1) | (raw == 1)):
+        raise ValueError("labels and predictions must be real binary -1 or +1 values")
+    return np.asarray(raw, dtype=np.int64)
+
+
 def _require_digest(value: str, name: str) -> str:
     if len(value) != 64 or any(char not in "0123456789abcdef" for char in value):
         raise ValueError(f"{name} must be a lowercase SHA-256 digest")
@@ -210,8 +218,8 @@ class TopologyKernelDataset:
             raise ValueError("teacher_prototypes must have shape (2, feature_dim)")
         if not all(np.all(np.isfinite(array)) for array in (train, test, prototypes)):
             raise ValueError("dataset features and prototypes must be finite")
-        train_labels = np.asarray(self.train_labels, dtype=np.int64)
-        test_labels = np.asarray(self.test_labels, dtype=np.int64)
+        train_labels = _binary_array(self.train_labels)
+        test_labels = _binary_array(self.test_labels)
         if train_labels.shape != (train.shape[0],) or test_labels.shape != (test.shape[0],):
             raise ValueError("labels must match their feature split")
         for labels in (train_labels, test_labels):
@@ -274,12 +282,10 @@ class KernelEvaluation:
         """Validate predictions, counts, accuracy, and digest custody."""
         if not isinstance(self.name, str) or not self.name.strip():
             raise ValueError("name must be a non-empty string")
-        predictions = np.asarray(self.predictions, dtype=np.int64)
-        labels = np.asarray(self.labels, dtype=np.int64)
+        predictions = _binary_array(self.predictions)
+        labels = _binary_array(self.labels)
         if predictions.ndim != 1 or predictions.size < 1 or predictions.shape != labels.shape:
             raise ValueError("predictions and labels must be equal non-empty vectors")
-        if not set(predictions.tolist()) <= {-1, 1} or not set(labels.tolist()) <= {-1, 1}:
-            raise ValueError("predictions and labels must be binary")
         observed = int(np.sum(predictions == labels))
         if self.total != predictions.size or self.correct != observed:
             raise ValueError("correct and total must match predictions")
