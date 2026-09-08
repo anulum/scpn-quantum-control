@@ -28,6 +28,7 @@ on:
       - "scpn_quantum_engine/**"
       - "studio-web/**"
       - "pyproject.toml"
+      - "rust-toolchain.toml"
       - "requirements-ci-*.txt"
       - ".github/workflows/docs-strict.yml"
   pull_request:
@@ -40,6 +41,7 @@ on:
       - "scpn_quantum_engine/**"
       - "studio-web/**"
       - "pyproject.toml"
+      - "rust-toolchain.toml"
       - "requirements-ci-*.txt"
       - ".github/workflows/docs-strict.yml"
   workflow_dispatch:

@@ -15,14 +15,16 @@ environment can break this gate. Its trigger filters omitted all three, and the
 pull-request filter also omitted the workflow's own path, so an edit to the
 gate could not run the gate.
 
-These are path-event contract tests: they answer "given this set of changed
-files, does the workflow run?" rather than checking the job bodies, which
-`tests/test_cross_language_api_docs.py` already owns.
+Path-event tests check the repository's configured filters, including the root
+Rust toolchain consumed by Rustdoc. Gate tests execute the actual shell with
+resolved job results; they do not emulate GitHub event delivery. Cross-language
+job bodies are also covered by `tests/test_cross_language_api_docs.py`.
 """
 
 from __future__ import annotations
 
 import re
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -161,6 +163,19 @@ class TestTheThreeRecordedGaps:
     """The edit shapes a docs build must react to."""
 
     @pytest.mark.parametrize("event", ["push", "pull_request"])
+    def test_rust_toolchain_changes_trigger_reference_validation(self, event: str) -> None:
+        """Require the compiler configuration to trigger either event.
+
+        Parameters
+        ----------
+        event
+            Push or pull-request trigger under test.
+
+        """
+        assert Path("rust-toolchain.toml").is_file()
+        assert _runs(event, "rust-toolchain.toml")
+
+    @pytest.mark.parametrize("event", ["push", "pull_request"])
     def test_a_package_only_edit_triggers(self, event: str) -> None:
         """The job installs oscillatools and the strict build imports it.
 
@@ -252,11 +267,42 @@ class TestTriggerContract:
         assert _runs("pull_request", probe)
 
     def test_the_aggregate_gate_is_retained(self) -> None:
-        """Intentionally skipped work still has one required conclusion."""
+        """Every reference job contributes to the gate when this workflow runs."""
         document = _workflow()
         gate = document["jobs"]["docs-gate"]
         assert gate["if"] == "always()"
         assert gate["needs"] == ["build-strict", "rust-reference", "typescript-reference"]
+
+    @pytest.mark.parametrize(
+        "failed_job", ["build-strict", "rust-reference", "typescript-reference"]
+    )
+    @pytest.mark.parametrize("result", ["success", "failure", "cancelled", "skipped"])
+    def test_actual_gate_shell_rejects_unsuccessful_reference(
+        self, failed_job: str, result: str
+    ) -> None:
+        """Execute the configured gate without running reference builds.
+
+        Parameters
+        ----------
+        failed_job
+            Reference job whose terminal result varies.
+        result
+            Success must pass; failure, cancellation and skipping must fail.
+
+        """
+        gate = _workflow()["jobs"]["docs-gate"]
+        script = gate["steps"][0]["run"]
+        for job in gate["needs"]:
+            status = result if job == failed_job else "success"
+            script = script.replace("${{ needs." + job + ".result }}", status)
+        assert "${{" not in script
+        completed = subprocess.run(
+            ["bash", "--noprofile", "--norc", "-e", "-o", "pipefail", "-c", script],
+            capture_output=True,
+            check=False,
+            timeout=5,
+        )
+        assert (completed.returncode == 0) is (result == "success")
 
     def test_manual_dispatch_remains_available(self) -> None:
         """A skipped path set must stay runnable on demand."""
