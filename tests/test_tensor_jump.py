@@ -20,7 +20,7 @@ Covers:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypedDict
 
 import numpy as np
 import pytest
@@ -38,6 +38,15 @@ from scpn_quantum_control.phase.tensor_jump import (
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
+
+
+class _TrajectoryOverrides(TypedDict, total=False):
+    """Floating-point trajectory fields exercised by the rejection table."""
+
+    gamma_amp: float
+    gamma_deph: float
+    t_max: float
+    dt: float
 
 
 def _system(n: int = 3) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
@@ -288,14 +297,11 @@ class TestMCWFTrajectory:
         self,
         K: NDArray[np.float64],
         omega: NDArray[np.float64],
-        kwargs: dict[str, float],
+        kwargs: _TrajectoryOverrides,
         match: str,
     ) -> None:
         with pytest.raises(ValueError, match=match):
-            # The parametrised table holds only float rejection values, but a
-            # **dict splat is matched against every keyword of the signature,
-            # including seed: int | None, which mypy cannot narrow per row.
-            mcwf_trajectory(K, omega, **kwargs)  # type: ignore[arg-type]
+            mcwf_trajectory(K, omega, **kwargs)
 
 
 class TestMCWFEnsemble:

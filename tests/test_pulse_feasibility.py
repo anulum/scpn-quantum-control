@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import NotRequired, TypedDict
+
 import pytest
 
 from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
@@ -22,6 +24,32 @@ from scpn_quantum_control.phase.pulse_shaping import (
     PulseSchedule,
     build_trotter_pulse_schedule,
 )
+
+
+class _SnapshotOverrides(TypedDict, total=False):
+    """Type-correct values whose numerical or identity bounds are invalid."""
+
+    provider: str
+    backend_name: str
+    n_qubits: int
+    supports_pulse_control: bool
+    supports_native_xy: bool
+    min_time_step: float
+    max_pulse_duration: float
+    max_pulses: int
+
+
+class _SnapshotParameters(TypedDict):
+    """Complete provider identity with optional pulse limits for boundary tests."""
+
+    provider: str
+    backend_name: str
+    n_qubits: int
+    supports_pulse_control: bool
+    supports_native_xy: bool
+    min_time_step: NotRequired[float]
+    max_pulse_duration: NotRequired[float]
+    max_pulses: NotRequired[int]
 
 
 def _schedule() -> PulseSchedule:
@@ -262,22 +290,21 @@ def test_pulse_snapshot_from_metadata_rejects_invalid_boundary_fields(
     ),
 )
 def test_pulse_provider_snapshot_rejects_invalid_boundaries(
-    kwargs: dict[str, object],
+    kwargs: _SnapshotOverrides,
     message: str,
 ) -> None:
     """Reject snapshots with invalid identity, capacity, or limit values."""
-    params: dict[str, object] = {
+    params: _SnapshotParameters = {
         "provider": "pulse",
         "backend_name": "target",
         "n_qubits": 4,
         "supports_pulse_control": True,
         "supports_native_xy": False,
-    } | kwargs
+    }
+    params.update(kwargs)
 
-    # One field per case is replaced with an invalid value; the rejection is
-    # the subject and mypy cannot express a call that is meant to fail.
     with pytest.raises(ValueError, match=message):
-        PulseProviderSnapshot(**params)  # type: ignore[arg-type]
+        PulseProviderSnapshot(**params)
 
 
 def test_pulse_snapshot_from_metadata_accepts_single_feature_text_and_ignores_private_blob() -> (
