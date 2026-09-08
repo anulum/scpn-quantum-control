@@ -65,7 +65,9 @@ and extrapolate to zero noise via polynomial fit.
 
 #### `gate_fold_circuit(circuit, scale)`
 
-Global unitary folding. `scale` must be an odd positive integer:
+Global unitary folding. `scale` must be an odd positive integer (Python or NumPy
+integer); booleans, floats, strings and null are rejected without coercion.
+
 - scale=1: original circuit (no folding)
 - scale=3: `G G† G` (one fold, 3x noise)
 - scale=5: `G G† G G† G` (two folds, 5x noise)
@@ -91,6 +93,8 @@ Raises `ValueError` if scale is not a positive odd integer.
 
 Richardson extrapolation to zero noise. Fits polynomial of degree `order`
 through (scale, expectation) data points and evaluates at scale=0.
+Scales use the same strict integer admission as folding and must be distinct.
+Pass `[1, 3, 5]`, not float/string representations of those values.
 
 ```python
 from scpn_quantum_control.mitigation import zne_extrapolate

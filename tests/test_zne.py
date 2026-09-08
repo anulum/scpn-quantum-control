@@ -349,6 +349,47 @@ def test_folded_partial_readout_samples_the_same_distribution() -> None:
     assert folded == original
 
 
+@pytest.mark.parametrize("encoded", ["true", "1.0", "3.0", '"3"', "null"])
+@pytest.mark.parametrize("surface", ["fold", "fit"])
+def test_zne_rejects_noninteger_scales_at_both_surfaces(encoded: str, surface: str) -> None:
+    """Folding and extrapolation must not silently coerce an invalid scale."""
+    import json
+
+    value = json.loads(encoded)
+    circuit = QuantumCircuit(1)
+    circuit.x(0)
+    with pytest.raises(ValueError, match="odd positive integer"):
+        if surface == "fold":
+            gate_fold_circuit(circuit, value)
+        else:
+            zne_extrapolate([value, 5], [0.5, 0.4])
+
+
+@pytest.mark.parametrize("scale", [1, 3, 5])
+def test_named_partial_permuted_readout_keeps_sample_meaning(scale: int) -> None:
+    """Real local sampling preserves named register order and unmeasured bits."""
+    from qiskit import ClassicalRegister, QuantumRegister
+    from qiskit.primitives import StatevectorSampler
+
+    alpha, beta = ClassicalRegister(2, "alpha"), ClassicalRegister(1, "beta")
+    circuit = QuantumCircuit(QuantumRegister(3, "q"), alpha, beta, name="mapped")
+    circuit.metadata = {"observable": "mapped-readout"}
+    circuit.global_phase = 0.37
+    circuit.x(0)
+    circuit.x(2)
+    circuit.measure(0, alpha[1])
+    circuit.barrier(2)
+    circuit.measure(2, beta[0])
+    folded = gate_fold_circuit(circuit, scale)
+    result = StatevectorSampler(seed=19).run([folded], shots=32).result()[0]
+    assert result.data.alpha.get_counts() == {"10": 32}
+    assert result.data.beta.get_counts() == {"1": 32}
+    assert folded.num_clbits == 3
+    assert folded.name == "mapped"
+    assert folded.metadata == circuit.metadata
+    assert folded.global_phase == pytest.approx(0.37)
+
+
 def test_folding_rejects_a_mid_circuit_classical_operation() -> None:
     """A measurement that is not part of the trailing block fails closed."""
     circuit = QuantumCircuit(2, 1)

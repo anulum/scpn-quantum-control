@@ -68,8 +68,7 @@ def gate_fold_circuit(circuit: QuantumCircuit, scale: int) -> QuantumCircuit:
     mitigation", IEEE QCE 2020.
 
     """
-    if scale < 1 or scale % 2 == 0:
-        raise ValueError(f"scale must be odd positive integer, got {scale}")
+    scale = _validate_scale(scale)
     if scale == 1:
         return circuit.copy()
 
@@ -113,19 +112,21 @@ def zne_extrapolate(
     """Richardson extrapolation to zero noise.
 
     ``order`` controls polynomial degree: 1=linear, 2=quadratic.
+    Scales must be distinct odd positive integers; booleans, floats and strings
+    are rejected with ValueError without coercion, as in gate_fold_circuit.
     """
     order = _validate_order(order)
-    x = np.array(noise_scales, dtype=float)
+    raw_scales = np.asarray(noise_scales, dtype=object)
     y = np.array(expectation_values, dtype=float)
-    if x.ndim != 1 or y.ndim != 1:
+    if raw_scales.ndim != 1 or y.ndim != 1:
         raise ValueError("noise_scales and expectation_values must be one-dimensional")
-    if len(x) != len(y):
+    if len(raw_scales) != len(y):
         raise ValueError("noise_scales and expectation_values must have the same length")
+    validated_scales = [_validate_scale(scale) for scale in raw_scales]
+    x = np.array(validated_scales, dtype=float)
     if not np.all(np.isfinite(x)) or not np.all(np.isfinite(y)):
         raise ValueError("noise_scales and expectation_values must be finite")
-    if any(scale < 1 or int(scale) != scale or int(scale) % 2 == 0 for scale in x):
-        raise ValueError("noise_scales must be odd positive integers")
-    if len(set(int(scale) for scale in x)) != len(x):
+    if len(set(validated_scales)) != len(x):
         raise ValueError("noise_scales must be distinct")
     if len(x) < order + 1:
         raise ValueError(f"Need >= {order + 1} data points for order-{order} fit, got {len(x)}")
@@ -136,11 +137,21 @@ def zne_extrapolate(
     residual = float(np.sqrt(np.mean((poly(x) - y) ** 2)))
 
     return ZNEResult(
-        noise_scales=list(noise_scales),
+        noise_scales=validated_scales,
         expectation_values=list(expectation_values),
         zero_noise_estimate=zero_est,
         fit_residual=residual,
     )
+
+
+def _validate_scale(value: object) -> int:
+    """Return an odd positive integer without accepting bool or lossy casts."""
+    if isinstance(value, bool) or not isinstance(value, (int, np.integer)):
+        raise ValueError("scale must be odd positive integer, excluding booleans")
+    scale = int(value)
+    if scale < 1 or scale % 2 == 0:
+        raise ValueError(f"scale must be odd positive integer, got {scale}")
+    return scale
 
 
 def _validate_order(order: Any) -> int:
