@@ -420,3 +420,53 @@ def isolated_companions(raw_digest: str) -> dict[str, dict[str, Any]]:
         parent[field_path[-1]] = value
         payloads[name] = payload
     return payloads
+
+
+def companion_custody_scenarios(raw_record: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """Specify absent-companion and post-capture mutation review scenarios.
+
+    Parameters
+    ----------
+    raw_record
+        Unchanged source envelope produced by the existing raw codec.
+
+    Returns
+    -------
+    dict
+        Concrete test-scenario envelopes with proposed inputs and expected
+        outcomes, not new companion wire fields or executed reader results.
+        Deep copies keep the fixture generator's inputs independent; they do
+        not implement the proposed production capture lifecycle.
+
+    """
+    raw_digest = scp.digest_stable_core_payload(raw_record)
+    companion = valid_companion(raw_digest)
+    return {
+        "missing_companion_qualification_unavailable": {
+            "inputs": {"raw_record": deepcopy(raw_record), "companion": None},
+            "expected_outcome": {
+                "raw_readable": True,
+                "raw_digest": raw_digest,
+                "semantic_qualification": "unavailable",
+                "reason": "missing_companion",
+                "persist_qualified_record": False,
+            },
+        },
+        "companion_capture_survives_source_mutation": {
+            "inputs": {"raw_record": deepcopy(raw_record), "companion": deepcopy(companion)},
+            "after_capture_mutations": [
+                {
+                    "target": "raw_record",
+                    "path": ["body", "problem", "omega"],
+                    "value": [5.0, 6.0],
+                },
+                {"target": "companion", "path": ["fields", "omega", "unit"], "value": "Hz"},
+            ],
+            "expected_outcome": {
+                "raw_record": deepcopy(raw_record),
+                "companion": deepcopy(companion),
+                "raw_digest": raw_digest,
+                "companion_digest": scp.digest_stable_core_payload(companion),
+            },
+        },
+    }

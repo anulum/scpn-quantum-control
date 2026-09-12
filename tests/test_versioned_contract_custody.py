@@ -467,6 +467,49 @@ class TestProducerIdentitySourceFact:
 class TestDesignVectors:
     """Concrete proposed bytes, frozen and deliberately not executed."""
 
+    def test_missing_companion_scenario_preserves_raw_but_declines_qualification(self) -> None:
+        """Execute raw inspection only; verify the separate proposed unavailable outcome."""
+        scenario = _fixture("missing_companion_qualification_unavailable")
+        inputs = scenario["inputs"]
+        assert inputs["companion"] is None
+        raw = inputs["raw_record"]
+        experiment = scp.deserialise_experiment(raw)
+        assert scp.canonical_json_bytes(scp.serialise_experiment(experiment)) == (
+            scp.canonical_json_bytes(raw)
+        )
+        assert scenario["expected_outcome"] == {
+            "raw_readable": True,
+            "raw_digest": scp.digest_stable_core_payload(raw),
+            "semantic_qualification": "unavailable",
+            "reason": "missing_companion",
+            "persist_qualified_record": False,
+        }
+        assert _case("missing_companion_qualification_unavailable")["status"] == "design_vector"
+
+    def test_capture_scenario_specifies_independent_raw_and_companion_snapshots(self) -> None:
+        """Check mutation fixture consistency, not an unimplemented capture owner."""
+        scenario = _fixture("companion_capture_survives_source_mutation")
+        inputs = scenario["inputs"]
+        expected = scenario["expected_outcome"]
+        for target in ("raw_record", "companion"):
+            assert inputs[target] == expected[target]
+        for mutation in scenario["after_capture_mutations"]:
+            parent = inputs[mutation["target"]]
+            for key in mutation["path"][:-1]:
+                parent = parent[key]
+            parent[mutation["path"][-1]] = mutation["value"]
+        for target, digest_key in (
+            ("raw_record", "raw_digest"),
+            ("companion", "companion_digest"),
+        ):
+            assert inputs[target] != expected[target]
+            assert scp.digest_stable_core_payload(inputs[target]) != expected[digest_key]
+            assert scp.digest_stable_core_payload(expected[target]) == expected[digest_key]
+        assert expected["raw_record"] == _fixture("raw_round_trip_preserves_digest")
+        assert expected["companion"] == _fixture("companion_positive_base")
+        assert expected["companion"]["record_reference"]["digest"] == expected["raw_digest"]
+        assert _case("companion_capture_survives_source_mutation")["status"] == "design_vector"
+
     def test_the_proposed_reader_does_not_exist(self) -> None:
         """These vectors are unexecuted for a checkable reason."""
         manifest = _manifest()
@@ -519,12 +562,15 @@ class TestDesignVectors:
         # This isolated fault has its own source100-shot positive, not the
         # default4096-shot base used by ISOLATED_REFUSAL_FIELDS.
         source_paired = {"effective_setting_contradicts_request_refused"}
+        qualification_boundary = {"missing_companion_qualification_unavailable"}
         refusals = {
             row["case_id"]
             for row in _manifest()["cases"]
             if row["status"] == "design_vector" and row["expectation"] == "reject"
         }
-        assert refusals == set(ISOLATED_REFUSAL_FIELDS) | source_paired | compound
+        assert refusals == (
+            set(ISOLATED_REFUSAL_FIELDS) | source_paired | compound | qualification_boundary
+        )
 
     def test_the_positive_base_binds_to_the_real_raw_record(self) -> None:
         """A proposed companion must reference bytes that actually exist."""

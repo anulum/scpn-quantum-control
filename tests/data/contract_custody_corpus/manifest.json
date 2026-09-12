@@ -329,6 +329,28 @@
       "rationale": "The actual100-shot request retains the source100-shot plan and origins; this is a proposed binding, not observed execution.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
       "status": "design_vector"
+    },
+    {
+      "case_id": "missing_companion_qualification_unavailable",
+      "expectation": "reject",
+      "family": "Result/evidence",
+      "fixture": "missing_companion_qualification_unavailable.json",
+      "fixture_sha256": "e22b0e1e9984b42e438371729afbb31f4175ba99eabe8232d4d5df44d9b65a38",
+      "producer": "scientific_semantics.v1",
+      "rationale": "Proposed qualification must remain unavailable without a companion, while the existing raw record remains readable; no qualified persistence.",
+      "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
+      "status": "design_vector"
+    },
+    {
+      "case_id": "companion_capture_survives_source_mutation",
+      "expectation": "accept",
+      "family": "Result/evidence",
+      "fixture": "companion_capture_survives_source_mutation.json",
+      "fixture_sha256": "8fa2205084c15795011e8dfdfdccb43110bc880a967771b8d474ea432a5f9a62",
+      "producer": "scientific_semantics.v1",
+      "rationale": "Proposed captured raw and companion snapshots/digests survive named source mutations; this scenario is not executed capture conformance.",
+      "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
+      "status": "design_vector"
     }
   ],
   "companion_module": "scpn_quantum_control.semantic_record",
