@@ -9,7 +9,9 @@
 
 from __future__ import annotations
 
-from dataclasses import replace
+import json
+from dataclasses import asdict, replace
+from pathlib import Path
 from typing import Any, cast
 
 import pytest
@@ -285,6 +287,69 @@ def _registry(handler: ActionHandler) -> ActionRegistry:
     registry = ActionRegistry()
     registry.register(handler)
     return registry
+
+
+def test_studio_corpus_replays_frozen_profile_and_base_anchor(tmp_path: Path) -> None:
+    """Regenerate the full Studio profile without replacing the base manifest."""
+    from scpn_quantum_control import stable_core_product as codec
+    from tools.contract_custody_corpus import main, write_corpus
+
+    fixtures = Path(__file__).parent / "data" / "contract_custody_corpus"
+    base = write_corpus(tmp_path)
+    base_bytes = (tmp_path / "manifest.json").read_bytes()
+    assert main([str(tmp_path), "--include-studio"]) == 0
+    full = json.loads((tmp_path / "manifest_studio.json").read_text())
+    assert full == json.loads((fixtures / "manifest_studio.json").read_text())
+    assert full["base_manifest_sha256"] == codec.digest_stable_core_payload(base)
+    assert full["cases"][: len(base["cases"])] == base["cases"]
+    assert len(full["cases"]) == len(base["cases"]) + 3
+    assert (tmp_path / "manifest.json").read_bytes() == base_bytes
+    for case in full["cases"]:
+        if case["fixture"] is not None:
+            assert (tmp_path / case["fixture"]).read_bytes() == (
+                fixtures / case["fixture"]
+            ).read_bytes()
+
+
+def test_studio_source_captures_native_plans_without_execution(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Actual producers retain every request/plan field while action methods stay idle."""
+    from scpn_quantum_control import stable_core_product as codec
+    from scpn_quantum_control.studio.executive_cli import build_default_registry
+    from tools.contract_custody_studio_source import studio_plan_sources
+
+    def forbidden(*args: object, **kwargs: object) -> None:
+        raise AssertionError("a preview must not execute or generate a script")
+
+    registry = build_default_registry()
+    for verb in registry.verbs():
+        owner = type(registry.resolve(verb))
+        monkeypatch.setattr(owner, "execute", forbidden)
+        monkeypatch.setattr(owner, "generate_script", forbidden)
+    sources = studio_plan_sources()
+    for source in sources:
+        request = ExecutiveRequest(**source["request"])
+        plan = preview_action(request, registry=registry)
+        assert codec.canonical_json_bytes(asdict(request)) == codec.canonical_json_bytes(
+            source["request"]
+        )
+        assert codec.canonical_json_bytes(asdict(plan)) == codec.canonical_json_bytes(
+            source["plan"]
+        )
+        assert source["plan_sha256"] == codec.digest_stable_core_payload(plan.to_dict())
+        assert source["request_sha256"] == codec.digest_stable_core_payload(request.to_dict())
+        assert source["executed_action"] is False
+        assert source["stage"] == "planning"
+        assert source["requires_approval"] == (request.verb == "execute")
+    assert sources[0]["request"]["backend"] is None
+    assert sources[0]["plan"]["backend"] == "python"
+    assert sources[1]["request"]["backend"] == sources[1]["plan"]["backend"] == "rust"
+    assert sources[2]["request"]["approved"] is False
+    assert sources[2]["plan"]["parameters"]["shots"] == 100
+    sources[0]["request"]["parameters"]["omega"][0] = 999.0
+    assert sources[0]["plan"]["parameters"]["omega"][0] == -0.1
+    assert studio_plan_sources()[0]["request"]["parameters"]["omega"][0] == -0.1
 
 
 def test_preview_returns_plan_without_executing() -> None:

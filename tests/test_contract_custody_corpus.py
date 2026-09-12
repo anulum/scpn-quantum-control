@@ -40,6 +40,40 @@ from tools.contract_custody_corpus import (
 )
 
 
+def test_requested_studio_profile_fails_without_dependency_before_writes(tmp_path: Path) -> None:
+    """Missing optional support must not publish a downgraded or partial corpus."""
+    code = """
+import importlib.abc
+import sys
+from pathlib import Path
+
+class BlockStudio(importlib.abc.MetaPathFinder):
+    def find_spec(self, fullname, path, target=None):
+        if fullname.startswith(('scpn_studio_platform', 'scpn_quantum_control.studio')):
+            raise ModuleNotFoundError('Studio dependency deliberately unavailable')
+        return None
+
+sys.meta_path.insert(0, BlockStudio())
+from tools.contract_custody_corpus import main
+try:
+    main([sys.argv[1], '--include-studio'])
+except ModuleNotFoundError:
+    assert not Path(sys.argv[1]).exists()
+    print('requested Studio profile refused before writes')
+else:
+    raise AssertionError('missing Studio silently downgraded')
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", code, str(tmp_path / "not-created")],
+        text=True,
+        capture_output=True,
+        check=False,
+        timeout=30,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert result.stdout.strip() == "requested Studio profile refused before writes"
+
+
 class TestEvidenceClassification:
     """The three evidence classes must stay separable and honestly labelled."""
 
