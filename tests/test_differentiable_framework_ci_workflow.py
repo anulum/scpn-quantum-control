@@ -11,11 +11,16 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import yaml
+
 WORKFLOW = Path(".github/workflows/differentiable-frameworks.yml")
+"""Scheduled multi-version framework verification owner."""
 PYTHON_VERSIONS = ("3.11", "3.12", "3.13")
+"""Python versions admitted by the workflow matrix."""
 
 
 def test_differentiable_framework_workflow_declares_sparse_and_full_matrices() -> None:
+    """Keep declared CPU profiles, pinned actions and evidence ownership visible."""
     text = WORKFLOW.read_text(encoding="utf-8")
 
     for version in PYTHON_VERSIONS:
@@ -38,6 +43,7 @@ def test_differentiable_framework_workflow_declares_sparse_and_full_matrices() -
 
 
 def test_differentiable_framework_workflow_runs_sparse_and_full_for_each_python() -> None:
+    """Bind every version/profile pair to its version-specific lock file."""
     text = WORKFLOW.read_text(encoding="utf-8")
     rows = _matrix_rows(text)
 
@@ -59,6 +65,7 @@ def test_differentiable_framework_workflow_runs_sparse_and_full_for_each_python(
 
 
 def test_differentiable_framework_workflow_enforces_test_quality_audit() -> None:
+    """Require the existing module-specific test-quality audit step."""
     text = WORKFLOW.read_text(encoding="utf-8")
 
     assert "Run module-specific test audit" in text
@@ -66,6 +73,7 @@ def test_differentiable_framework_workflow_enforces_test_quality_audit() -> None
 
 
 def test_differentiable_framework_workflow_declares_optional_gpu_lane() -> None:
+    """Keep optional GPU contract checks distinct from hardware qualification."""
     text = WORKFLOW.read_text(encoding="utf-8")
 
     assert "optional-gpu-contract" in text
@@ -78,6 +86,19 @@ def test_differentiable_framework_workflow_declares_optional_gpu_lane() -> None:
 
 
 def _matrix_rows(text: str) -> tuple[dict[str, str], ...]:
+    """Extract the workflow's version/profile rows without consuming later steps.
+
+    Parameters
+    ----------
+    text
+        Complete workflow YAML source.
+
+    Returns
+    -------
+    tuple
+        Declared matrix rows with unquoted string values.
+
+    """
     rows: list[dict[str, str]] = []
     current: dict[str, str] | None = None
     in_matrix = False
@@ -101,4 +122,45 @@ def _matrix_rows(text: str) -> tuple[dict[str, str], ...]:
 
 
 def _workflow_value(line: str) -> str:
+    """Extract an unquoted scalar from a matrix key/value line.
+
+    Parameters
+    ----------
+    line
+        Matrix source line containing a colon and scalar value.
+
+    Returns
+    -------
+    str
+        Unquoted scalar value.
+
+    """
     return line.split(": ", maxsplit=1)[1].strip().strip('"')
+
+
+def test_pennylane_hal_runs_in_required_provisioned_framework_job() -> None:
+    """Require native HAL replay after overlay setup, with import failure fatal."""
+    workflow = yaml.safe_load(Path(".github/workflows/ci-framework-parity.yml").read_text())
+    job = workflow["jobs"]["differentiable-parity"]
+    steps = job["steps"]
+    overlay = next(
+        i
+        for i, step in enumerate(steps)
+        if step.get("name") == "Build CPU-only differentiable framework overlay"
+    )
+    native = next(
+        i
+        for i, step in enumerate(steps)
+        if step.get("name") == "Run required native PennyLane HAL contracts"
+    )
+    assert overlay < native
+    assert "--install" in steps[overlay]["run"] and "--verify" in steps[overlay]["run"]
+    assert '>> "$GITHUB_ENV"' in steps[overlay]["run"]
+    assert job.get("continue-on-error", False) is False
+    assert steps[native].get("continue-on-error", False) is False
+    assert "if" not in steps[native]
+    assert steps[native]["timeout-minutes"] == 5
+    assert steps[native]["run"].strip().splitlines() == [
+        'python -c "import pennylane; assert callable(pennylane.device)"',
+        "python -m pytest -q tests/test_hardware_hal_pennylane_adapters.py --no-cov -rs",
+    ]

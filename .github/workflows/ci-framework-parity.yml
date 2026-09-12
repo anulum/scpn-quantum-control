@@ -139,6 +139,11 @@ jobs:
           --precision=2 --show-missing
           --fail-under=100
           --include=*/pennylane_bridge.py
+      - name: Run required native PennyLane HAL contracts
+        timeout-minutes: 5
+        run: |
+          python -c "import pennylane; assert callable(pennylane.device)"
+          python -m pytest -q tests/test_hardware_hal_pennylane_adapters.py --no-cov -rs
       - name: Run Phase-QNode framework parity focused coverage
         run: >-
           python -m coverage run
