@@ -245,7 +245,8 @@ jobs:
           tests/test_studio_program_ad_quality_gate.py
       - name: Ruff NumPy docstrings for Studio Program-AD replay quality cohort
         run: >-
-          python -m ruff check --isolated --select D,D413
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/studio/program_ad_replay_artifact.py
           tests/test_studio_program_ad_replay_artifact.py

@@ -10,6 +10,8 @@
 from __future__ import annotations
 
 import importlib.util
+import shlex
+import subprocess
 import sys
 from pathlib import Path
 from types import ModuleType
@@ -91,9 +93,41 @@ def test_static_gates_include_studio_program_ad_quality_ratchets() -> None:
     assert "--explicit-package-bases" in strict_cmd
     assert strict_cmd[-len(cohort) :] == cohort
     assert "--isolated" in docstring_cmd
-    assert "D,D413" in docstring_cmd
+    assert "D,D413,D417,D420" in docstring_cmd
+    assert "--preview" in docstring_cmd
+    assert "lint.explicit-preview-rules = true" in docstring_cmd
     assert 'lint.pydocstyle.convention = "numpy"' in docstring_cmd
     assert docstring_cmd[-len(cohort) :] == cohort
+
+
+def test_ci_uses_exact_studio_documentation_command() -> None:
+    """Detect profile drift even when every file remains in the CI cohort."""
+    workflow = read_ci_workflow_source()
+    start = workflow.index("      - name: Ruff NumPy docstrings for Studio Program-AD")
+    end = workflow.index("\n      - name:", start + 1)
+    command = workflow[start:end].split("run: >-", 1)[1]
+    expected = program_ad_quality_gates.build_static_quality_gates("python")[1][1]
+    assert shlex.split(command) == expected
+
+
+def test_studio_documentation_command_rejects_undocumented_test() -> None:
+    """Execute the gate with test-path input so repository ignores cannot mask debt."""
+    command = program_ad_quality_gates.build_static_quality_gates(sys.executable)[1][1]
+    cohort = program_ad_quality_gates.STUDIO_PROGRAM_AD_QUALITY_RATCHET
+    command = command[: -len(cohort)] + ["--stdin-filename", cohort[-1], "-"]
+    for source, expected in [
+        (
+            '"""Document the module."""\n\ndef test_probe():\n    """Document the test."""\n    pass\n',
+            0,
+        ),
+        ("def test_probe():\n    pass\n", 1),
+    ]:
+        result = subprocess.run(
+            command, input=source, text=True, capture_output=True, check=False, timeout=15
+        )
+        assert result.returncode == expected, result.stdout + result.stderr
+        if expected:
+            assert "Missing docstring" in result.stdout
 
 
 def test_default_preflight_has_exact_studio_program_ad_coverage() -> None:
