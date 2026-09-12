@@ -52,6 +52,22 @@ OBSERVED_SAMPLING_MODEL: Final = "multinomial_delta_method_raw_count_replay"
 EXPECTED_SAMPLING_MODEL: Final = "multinomial_delta_method_expected_counts"
 """Label the producer records when the estimate rests on expected counts."""
 
+ISOLATED_REFUSAL_FIELDS: Final = {
+    "companion_unknown_major_refused": ("schema",),
+    "companion_bound_to_wrong_raw_digest_refused": ("record_reference", "digest"),
+    "companion_bound_to_wrong_record_kind_refused": ("record_reference", "kind"),
+    "frequency_unit_changed_without_conversion_refused": ("fields", "omega", "unit"),
+    "cross_bound_producer_identity_refused": ("producer_identity",),
+    "companion_bound_to_wrong_raw_schema_refused": ("record_reference", "schema"),
+    "coupling_shape_mismatch_refused": ("fields", "K_nm", "shape"),
+    "coupling_dtype_mismatch_refused": ("fields", "K_nm", "dtype"),
+    "parameter_order_mismatch_refused": ("parameter_order",),
+    "tangent_convention_mismatch_refused": ("tangent_convention",),
+    "trainable_mask_length_mismatch_refused": ("trainable_mask",),
+    "effective_shots_contradict_source_refused": ("settings", "effective", "shots"),
+}
+"""Independent oracle for each single-fault proposed input's exact changed field."""
+
 
 def _manifest() -> dict[str, Any]:
     """Return the frozen corpus manifest.
@@ -413,20 +429,45 @@ class TestDesignVectors:
             assert not hasattr(module, "ScientificSemantics")
             assert not hasattr(module, "validate_semantic_binding")
 
-    def test_every_refusal_vector_departs_from_the_base_in_one_way(self) -> None:
-        """A variant that changes everything tests nothing in particular."""
-        base = _fixture("companion_positive_base")
-        for case_id in (
-            "companion_unknown_major_refused",
-            "companion_bound_to_wrong_raw_digest_refused",
-            "companion_bound_to_wrong_record_kind_refused",
-            "frequency_unit_changed_without_conversion_refused",
-            "cross_bound_producer_identity_refused",
-        ):
-            variant = _fixture(case_id)
-            differing = [key for key in base if base[key] != variant.get(key)]
+    @pytest.mark.parametrize(("case_id", "field_path"), ISOLATED_REFUSAL_FIELDS.items())
+    def test_isolated_refusal_changes_exactly_its_named_field(
+        self, case_id: str, field_path: tuple[str, ...]
+    ) -> None:
+        """Restore the named fault and require full equality with the base.
 
-            assert len(differing) == 1, (case_id, differing)
+        Parameters
+        ----------
+        case_id
+            Frozen design fixture, not an executed validator result.
+        field_path
+            Sole semantic field allowed to differ; list values are one field.
+
+        """
+        base = _fixture("companion_positive_base")
+        variant = _fixture(case_id)
+        original = base
+        changed = variant
+        for key in field_path[:-1]:
+            original = original[key]
+            changed = changed[key]
+        leaf = field_path[-1]
+        assert changed[leaf] != original[leaf]
+        changed[leaf] = original[leaf]
+        assert variant == base
+
+    def test_every_design_refusal_has_an_explicit_fault_class(self) -> None:
+        """No new rejection may silently escape the isolation matrix."""
+        compound = {
+            "declared_shape_and_dtype_cannot_hold_data_refused",
+            "parameter_order_and_tangent_change_refused",
+            "effective_setting_contradicts_request_refused",
+        }
+        refusals = {
+            row["case_id"]
+            for row in _manifest()["cases"]
+            if row["status"] == "design_vector" and row["expectation"] == "reject"
+        }
+        assert refusals == set(ISOLATED_REFUSAL_FIELDS) | compound
 
     def test_the_positive_base_binds_to_the_real_raw_record(self) -> None:
         """A proposed companion must reference bytes that actually exist."""

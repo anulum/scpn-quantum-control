@@ -30,6 +30,7 @@ explicit claim boundary.
 
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import Any, Final
 
 from scpn_quantum_control import stable_core_product as scp
@@ -372,3 +373,49 @@ def cross_bound_producer_identity(raw_digest: str) -> dict[str, Any]:
     payload = valid_companion(raw_digest)
     payload["producer_identity"] = BENCHMARK_PROBLEM_IDENTITY
     return payload
+
+
+def isolated_companions(raw_digest: str) -> dict[str, dict[str, Any]]:
+    """Return additional refusal inputs with exactly one semantic field changed.
+
+    Parameters
+    ----------
+    raw_digest
+        Original raw-record digest retained by every variant.
+
+    Returns
+    -------
+    dict
+        Descriptive fixture names mapped to independent companion snapshots.
+        These remain unexecuted proposed rejections, not validator results.
+        Compound stress cases are retained separately and cannot stand in for
+        these isolated shape, dtype, order, tangent, mask and setting faults.
+
+    """
+    base = valid_companion(raw_digest)
+    faults: tuple[tuple[str, tuple[str, ...], object], ...] = (
+        (
+            "companion_bound_to_wrong_raw_schema_refused",
+            ("record_reference", "schema"),
+            "stable_core.experiment_model.v3",
+        ),
+        ("coupling_shape_mismatch_refused", ("fields", "K_nm", "shape"), [2]),
+        ("coupling_dtype_mismatch_refused", ("fields", "K_nm", "dtype"), "int32"),
+        ("parameter_order_mismatch_refused", ("parameter_order",), ["K_nm", "omega"]),
+        ("tangent_convention_mismatch_refused", ("tangent_convention",), "reverse_holomorphic"),
+        ("trainable_mask_length_mismatch_refused", ("trainable_mask",), [True]),
+        (
+            "effective_shots_contradict_source_refused",
+            ("settings", "effective", "shots"),
+            base["settings"]["effective"]["shots"] + 1,
+        ),
+    )
+    payloads: dict[str, dict[str, Any]] = {}
+    for name, field_path, value in faults:
+        payload = deepcopy(base)
+        parent = payload
+        for key in field_path[:-1]:
+            parent = parent[key]
+        parent[field_path[-1]] = value
+        payloads[name] = payload
+    return payloads

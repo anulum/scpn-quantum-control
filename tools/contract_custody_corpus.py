@@ -420,6 +420,48 @@ def _design_vector_cases() -> tuple[CustodyCase, ...]:
             vectors.cross_bound_producer_identity(digest),
         ),
     )
+    isolated = vectors.isolated_companions(digest)
+    isolation_metadata = (
+        (
+            "companion_bound_to_wrong_raw_schema_refused",
+            "Result/evidence",
+            "The referenced raw schema alone disagrees; digest and kind stay unchanged.",
+        ),
+        (
+            "coupling_shape_mismatch_refused",
+            "Derivative request",
+            "Only matrix shape changes; a correct dtype cannot hide shape validation.",
+        ),
+        (
+            "coupling_dtype_mismatch_refused",
+            "Derivative request",
+            "Only dtype changes; source fractional couplings cannot be preserved as int32.",
+        ),
+        (
+            "parameter_order_mismatch_refused",
+            "Derivative request",
+            "Only parameter order changes; the unchanged tangent cannot mask mislabelling.",
+        ),
+        (
+            "tangent_convention_mismatch_refused",
+            "Derivative request",
+            "Only tangent convention changes; unchanged parameter order cannot mask it.",
+        ),
+        (
+            "trainable_mask_length_mismatch_refused",
+            "Derivative request",
+            "Only mask length changes; every declared parameter still needs a mask entry.",
+        ),
+        (
+            "effective_shots_contradict_source_refused",
+            "Execution plan",
+            "Only effective shots change; the retained source policy contradicts that value.",
+        ),
+    )
+    rows += tuple(
+        (case_id, family, "reject", rationale, isolated[case_id])
+        for case_id, family, rationale in isolation_metadata
+    )
     return tuple(
         CustodyCase(
             case_id=case_id,

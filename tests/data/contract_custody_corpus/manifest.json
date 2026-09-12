@@ -241,6 +241,83 @@
       "rationale": "Binding a core record to the same-named benchmark type must refuse; identity is module-qualified, never a bare class name.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
       "status": "design_vector"
+    },
+    {
+      "case_id": "companion_bound_to_wrong_raw_schema_refused",
+      "expectation": "reject",
+      "family": "Result/evidence",
+      "fixture": "companion_bound_to_wrong_raw_schema_refused.json",
+      "fixture_sha256": "a0fa51a81489235ff952eae9fb035dd981083674068da83bb7e89f489779585d",
+      "producer": "scientific_semantics.v1",
+      "rationale": "The referenced raw schema alone disagrees; digest and kind stay unchanged.",
+      "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
+      "status": "design_vector"
+    },
+    {
+      "case_id": "coupling_shape_mismatch_refused",
+      "expectation": "reject",
+      "family": "Derivative request",
+      "fixture": "coupling_shape_mismatch_refused.json",
+      "fixture_sha256": "b1041749a8ac5586a76878f51f338f834c38455a2e435a2af8eb562a5683ef65",
+      "producer": "scientific_semantics.v1",
+      "rationale": "Only matrix shape changes; a correct dtype cannot hide shape validation.",
+      "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
+      "status": "design_vector"
+    },
+    {
+      "case_id": "coupling_dtype_mismatch_refused",
+      "expectation": "reject",
+      "family": "Derivative request",
+      "fixture": "coupling_dtype_mismatch_refused.json",
+      "fixture_sha256": "a2c3f2a31943ce433a1223593c1b01c6cace58f97fadb34452c0a9be7efb5f38",
+      "producer": "scientific_semantics.v1",
+      "rationale": "Only dtype changes; source fractional couplings cannot be preserved as int32.",
+      "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
+      "status": "design_vector"
+    },
+    {
+      "case_id": "parameter_order_mismatch_refused",
+      "expectation": "reject",
+      "family": "Derivative request",
+      "fixture": "parameter_order_mismatch_refused.json",
+      "fixture_sha256": "a25f19115c89aa8a846fe1c7242ba98602cdde1b269374a9382db005e32057f4",
+      "producer": "scientific_semantics.v1",
+      "rationale": "Only parameter order changes; the unchanged tangent cannot mask mislabelling.",
+      "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
+      "status": "design_vector"
+    },
+    {
+      "case_id": "tangent_convention_mismatch_refused",
+      "expectation": "reject",
+      "family": "Derivative request",
+      "fixture": "tangent_convention_mismatch_refused.json",
+      "fixture_sha256": "90c2b48d387aafa150195994ea2e1130ac11e3b6471db8339e80775f9e303520",
+      "producer": "scientific_semantics.v1",
+      "rationale": "Only tangent convention changes; unchanged parameter order cannot mask it.",
+      "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
+      "status": "design_vector"
+    },
+    {
+      "case_id": "trainable_mask_length_mismatch_refused",
+      "expectation": "reject",
+      "family": "Derivative request",
+      "fixture": "trainable_mask_length_mismatch_refused.json",
+      "fixture_sha256": "f3691372ca92ac46a9c8504c142bc9f4d68692302e54563a6dbfd67e7277e3c4",
+      "producer": "scientific_semantics.v1",
+      "rationale": "Only mask length changes; every declared parameter still needs a mask entry.",
+      "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
+      "status": "design_vector"
+    },
+    {
+      "case_id": "effective_shots_contradict_source_refused",
+      "expectation": "reject",
+      "family": "Execution plan",
+      "fixture": "effective_shots_contradict_source_refused.json",
+      "fixture_sha256": "6264ea59ed8b8f476c2ffdd8c3ff2f6d9e9669deef66b6fe2f10b376e26b2f3b",
+      "producer": "scientific_semantics.v1",
+      "rationale": "Only effective shots change; the retained source policy contradicts that value.",
+      "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
+      "status": "design_vector"
     }
   ],
   "companion_module": "scpn_quantum_control.semantic_record",
