@@ -13,7 +13,7 @@
     "python_model_source_modules": 702,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1377
+    "test_files": 1378
   },
   "documentation": {
     "examples": [
@@ -8311,6 +8311,7 @@
       "tests/test_cgroup_paths.py",
       "tests/test_changelog_consistency.py",
       "tests/test_check_commit_trailers.py",
+      "tests/test_check_container_memory_budget.py",
       "tests/test_check_internal_todo_policy.py",
       "tests/test_check_published_record_freeze.py",
       "tests/test_check_retired_claims.py",

@@ -14,8 +14,8 @@ explicit override existed but did not correct the default, which is what
 unattended callers get.
 
 Every cgroup here is an injected directory tree. Nothing allocates the budget
-and no container is started: the card asks for a bounded hosted container check
-as well, and that part is not done — see the completion record.
+and no container is started. The separate Docker workflow checks live default
+admission in memory-limited containers; these fixtures do not prove that run.
 """
 
 from __future__ import annotations

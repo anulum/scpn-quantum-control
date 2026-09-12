@@ -1,9 +1,11 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-#
+# SCPN Quantum Control — Container reproduction image
+
 # PURPOSE: reproduction / CI test image — NOT a production runtime.
 # This image exists to run the test suite in a clean, pinned container
 # (its default CMD is pytest, and .github/workflows/docker.yml builds it

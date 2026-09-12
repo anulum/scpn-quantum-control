@@ -36,11 +36,26 @@ on:
 jobs:
   docker-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
 
       - name: Build Docker image
         run: docker build -t scpn-quantum-control:test .
+
+      # Admission checks inspect live cgroup metadata without allocating the
+      # declared buffers. Equal memory/swap limits prohibit extra swap allowance.
+      - name: Verify memory-limited dense admission
+        timeout-minutes: 3
+        run: |
+          set -euo pipefail
+          for limit in 1073741824 2147483648; do
+            docker run --rm --network none --cpus 1 \
+              --memory "$limit" --memory-swap "$limit" --pids-limit 128 \
+              --env OPENBLAS_NUM_THREADS=1 --env OMP_NUM_THREADS=1 \
+              scpn-quantum-control:test \
+              timeout 60s python tools/check_container_memory_budget.py --limit-bytes "$limit"
+          done
 
       - name: Run tests in Docker
         run: docker run --rm scpn-quantum-control:test

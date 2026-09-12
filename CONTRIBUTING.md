@@ -32,6 +32,25 @@ installed shim refuses the transaction. Restore the actual policy owner rather
 than disabling the hook. Installer regressions live in
 `tests/test_main_branch_hook_installation.py`.
 
+## Container memory admission
+
+The Docker workflow builds the repository's test image, then runs
+`tools/check_container_memory_budget.py --limit-bytes <bytes>` inside separate
+1 GiB and 2 GiB memory-limited containers before the image's full test command.
+The combined memory/swap limit equals the memory limit, allowing no extra swap;
+each check has one CPU and a 60-second deadline. The checker imports the real
+package, requires positive finite cgroup
+headroom, bounds the default dense budget, admits a two-byte vector and refuses
+an above-limit estimate. It does not allocate either estimated buffer or test
+the kernel OOM killer. JSON output records byte counts in the job log.
+
+An environment budget override or unavailable cgroup allowance fails the check;
+it never treats an unrestricted host as container evidence. Cgroup readings are
+snapshots, not reservations or a guarantee against concurrent memory pressure.
+`tests/test_check_container_memory_budget.py` exercises injected controller
+files and workflow wiring locally. Only an actual successful Docker job at the
+published commit proves the hosted container behaviour.
+
 ## Setup
 
 Use Python 3.11 or newer.
