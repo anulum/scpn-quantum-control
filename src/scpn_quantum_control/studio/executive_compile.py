@@ -110,15 +110,13 @@ def _normalise_compile(parameters: Mapping[str, Any]) -> dict[str, Any]:
     trotter_steps = _as_positive_int(
         "trotter_steps", parameters.get("trotter_steps"), maximum=_MAX_TROTTER_STEPS
     )
-    trotter_order = parameters.get("trotter_order")
-    if trotter_order not in (1, 2) or isinstance(trotter_order, bool):
-        raise ValueError("trotter_order must be 1 or 2")
+    trotter_order = _as_positive_int("trotter_order", parameters.get("trotter_order"), maximum=2)
     return {
         "K_nm": k_nm,
         "omega": omega,
         "time": time,
         "trotter_steps": trotter_steps,
-        "trotter_order": int(trotter_order),
+        "trotter_order": trotter_order,
     }
 
 
@@ -144,6 +142,9 @@ class CompileActionHandler(ActionHandler):
         request : ExecutiveRequest
             The compile request; ``parameters`` must describe a bounded network
             (``K_nm``, ``omega``, ``time``, ``trotter_steps``, ``trotter_order``).
+            Trotter steps and order must be integers, not booleans or floats;
+            the supported orders are 1 and 2. Invalid input raises ValueError
+            before a plan is returned; no order coercion is performed.
         contract : VerbContract
             The resolved ``compile`` contract.
 
