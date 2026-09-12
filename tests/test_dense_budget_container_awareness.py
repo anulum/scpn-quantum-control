@@ -109,8 +109,8 @@ class TestCgroupV2:
 
         assert cgroup_headroom_bytes(tmp_path) == 312 * MIB
 
-    def test_absent_usage_is_read_as_none_used(self, tmp_path: Path) -> None:
-        """A limit without a usage file still bounds the process.
+    def test_absent_usage_has_no_verified_headroom(self, tmp_path: Path) -> None:
+        """A known limit cannot justify allocation when current usage is unknown.
 
         Parameters
         ----------
@@ -120,7 +120,7 @@ class TestCgroupV2:
         """
         _write_v2(tmp_path, limit=str(256 * MIB))
 
-        assert cgroup_headroom_bytes(tmp_path) == 256 * MIB
+        assert cgroup_headroom_bytes(tmp_path) == 0
 
     def test_use_beyond_the_limit_reports_no_headroom(self, tmp_path: Path) -> None:
         """Headroom is clamped at zero rather than going negative.
@@ -238,8 +238,8 @@ class TestUnreadableAndMalformed:
 
         assert cgroup_headroom_bytes(tmp_path) is None
 
-    def test_a_malformed_usage_is_read_as_none_used(self, tmp_path: Path) -> None:
-        """A readable limit still bounds the process when usage is unreadable.
+    def test_a_malformed_usage_has_no_verified_headroom(self, tmp_path: Path) -> None:
+        """Malformed usage cannot be interpreted as a completely unused allowance.
 
         Parameters
         ----------
@@ -249,7 +249,70 @@ class TestUnreadableAndMalformed:
         """
         _write_v2(tmp_path, limit=str(128 * MIB), current="not a number")
 
-        assert cgroup_headroom_bytes(tmp_path) == 128 * MIB
+        assert cgroup_headroom_bytes(tmp_path) == 0
+
+    @pytest.mark.parametrize("version", [1, 2])
+    @pytest.mark.parametrize(
+        "usage", [None, b"", b"abc", b"-1", b"+1", b"1_0", b"\xff", "１２".encode()]
+    )
+    def test_unknown_usage_refuses_default_allocation(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        version: int,
+        usage: bytes | None,
+    ) -> None:
+        """Refuse the public allocation request without allocating any buffers.
+
+        Parameters
+        ----------
+        tmp_path
+            Injected controller filesystem.
+        monkeypatch
+            Bind the default controller root and remove operator overrides.
+        version
+            Controller layout, v1 or v2.
+        usage
+            Missing or invalid current-byte value.
+
+        """
+        monkeypatch.delenv(DEFAULT_DENSE_BUDGET_ENV, raising=False)
+        monkeypatch.setattr(dense_budget, "DEFAULT_CGROUP_ROOT", tmp_path)
+        if version == 2:
+            _write_v2(tmp_path, limit=str(128 * MIB))
+            usage_path = tmp_path / "memory.current"
+        else:
+            _write_v1(tmp_path, limit=str(128 * MIB))
+            usage_path = tmp_path / "memory/memory.usage_in_bytes"
+        if usage is not None:
+            usage_path.write_bytes(usage)
+        assert available_memory_bytes(tmp_path) == 0
+        assert dense_budget_bytes() == 0
+        with pytest.raises(dense_budget.DenseAllocationError, match="above the active"):
+            dense_budget.require_dense_allocation(1)
+        assert dense_budget_bytes(max_gib=1.0) == GIB
+        monkeypatch.setenv(DEFAULT_DENSE_BUDGET_ENV, "2")
+        assert dense_budget_bytes() == 2 * GIB
+
+    @pytest.mark.parametrize("content", [b"+1", b"1_0", b"\xff", "１２".encode()])
+    def test_non_kernel_integer_limit_is_unknown(
+        self,
+        tmp_path: Path,
+        content: bytes,
+    ) -> None:
+        """Reject non-ASCII and Python-only integer syntax without decoding errors.
+
+        Parameters
+        ----------
+        tmp_path
+            Injected v2 controller directory.
+        content
+            Invalid limit bytes; an unknown limit remains distinct from zero.
+
+        """
+        (tmp_path / "memory.max").write_bytes(content)
+        (tmp_path / "memory.current").write_text("0", encoding="utf-8")
+        assert cgroup_headroom_bytes(tmp_path) is None
 
     def test_an_unreadable_file_reports_nothing(self, tmp_path: Path) -> None:
         """Permission denied is a failure to read, not a limit of zero.

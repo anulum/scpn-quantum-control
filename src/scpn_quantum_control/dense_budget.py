@@ -133,8 +133,10 @@ def _read_cgroup_int(path: Path) -> int | None:
 
     Every failure mode a real mount presents is treated the same way: a missing
     file, an unreadable one, the literal ``max``, and any malformed content all
-    yield ``None``, so a control file that cannot be understood never becomes a
-    number that widens the budget.
+    yield ``None``. Only ASCII decimal digits are accepted after whitespace
+    stripping, not Python integer syntax such as signs or underscores. The
+    caller distinguishes an unknown limit from unknown usage under a known
+    limit; the latter cannot establish any available headroom.
 
     Parameters
     ----------
@@ -149,15 +151,15 @@ def _read_cgroup_int(path: Path) -> int | None:
     """
     try:
         raw = path.read_text(encoding="utf-8").strip()
-    except OSError:
+    except (OSError, UnicodeError):
         return None
-    if not raw or raw == "max":
+    if not raw.isascii() or not raw.isdecimal():
         return None
     try:
         value = int(raw)
     except ValueError:
         return None
-    return value if value >= 0 else None
+    return value
 
 
 def cgroup_headroom_bytes(cgroup_root: Path | None = None) -> int | None:
@@ -166,7 +168,9 @@ def cgroup_headroom_bytes(cgroup_root: Path | None = None) -> int | None:
     cgroup v2 is consulted first and v1 second, matching the order a host
     mounts them. Headroom is the limit minus current use, so a container that
     has already consumed most of its allowance reports what is left rather than
-    what it was granted.
+    what it was granted. A known finite limit with unreadable or malformed
+    usage reports zero verified headroom, never an assumed unused allowance.
+    This is an admission snapshot, not a memory reservation or OOM guarantee.
 
     Parameters
     ----------
@@ -178,8 +182,8 @@ def cgroup_headroom_bytes(cgroup_root: Path | None = None) -> int | None:
     Returns
     -------
     int | None
-        Remaining bytes, or ``None`` when no readable limit applies — no cgroup
-        mount, an unlimited limit, or control files that cannot be parsed.
+        Remaining verified bytes, zero when usage under a finite limit cannot
+        be established, or ``None`` when no readable finite limit applies.
 
     """
     root = DEFAULT_CGROUP_ROOT if cgroup_root is None else cgroup_root
@@ -190,8 +194,8 @@ def cgroup_headroom_bytes(cgroup_root: Path | None = None) -> int | None:
         limit = _read_cgroup_int(root / limit_name)
         if limit is None or limit >= CGROUP_UNLIMITED_THRESHOLD:
             continue
-        usage = _read_cgroup_int(root / usage_name) or 0
-        return max(0, limit - usage)
+        usage = _read_cgroup_int(root / usage_name)
+        return 0 if usage is None else max(0, limit - usage)
     return None
 
 
