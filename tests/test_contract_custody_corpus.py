@@ -29,6 +29,7 @@ from tools.contract_custody_corpus import (
     CORPUS_SCHEMA,
     DESIGN_VECTOR,
     EXECUTED,
+    SOURCE_FACT,
     SUPERSEDED_CORPUS_SCHEMAS,
     build_cases,
     build_manifest,
@@ -40,16 +41,40 @@ from tools.contract_custody_corpus import (
 
 
 class TestEvidenceClassification:
-    """The two evidence classes must stay separable and honestly labelled."""
+    """The three evidence classes must stay separable and honestly labelled."""
 
-    def test_every_case_carries_a_producer_reader_and_rationale(self) -> None:
-        """A case without these cannot be reviewed or re-derived."""
+    def test_type_introspection_is_not_executed_reader_evidence(self) -> None:
+        """A source fact has no reader and cannot qualify a binding."""
+        case = next(
+            case
+            for case in build_cases()
+            if case.case_id == "same_named_problem_types_remain_separable"
+        )
+        assert case.status == "source_fact"
+        assert case.reader is None
+        assert case.payload is None
+
+    def test_fisher_mapping_names_the_called_analysis_not_a_hal_backend(self) -> None:
+        """Expected-count analysis supplies no observed backend evidence."""
+        case = next(
+            case
+            for case in build_cases()
+            if case.case_id == "non_count_route_carries_no_measurement_mapping"
+        )
+        assert case.family == "Fidelity"
+        assert case.reader == (
+            "scpn_quantum_control.phase.qnode_circuit_differentiation."
+            "phase_qnode_computational_basis_fisher_information"
+        )
+
+    def test_every_case_declares_its_evidence_class_and_reader_applicability(self) -> None:
+        """Source facts omit readers; executable and proposed cases name them."""
         for case in build_cases():
             assert case.producer
-            assert case.reader
+            assert (case.reader is None) == (case.status == SOURCE_FACT)
             assert case.rationale
             assert case.expectation in {"accept", "reject"}
-            assert case.status in {EXECUTED, DESIGN_VECTOR}
+            assert case.status in {EXECUTED, DESIGN_VECTOR, SOURCE_FACT}
 
     def test_design_vectors_name_the_proposed_reader(self) -> None:
         """A vector is unexecuted because its reader is proposed, not built."""
@@ -57,15 +82,17 @@ class TestEvidenceClassification:
 
         assert proposed
         for case in proposed:
+            assert case.reader is not None
             assert case.reader.endswith("validate_semantic_binding")
             assert case.producer == vectors.COMPANION_SCHEMA
 
-    def test_executed_cases_name_a_reader_that_can_be_imported(self) -> None:
-        """An executed claim may not rest on a module that does not exist."""
+    def test_executed_cases_do_not_name_the_proposed_companion_reader(self) -> None:
+        """This naming guard is not proof of importability or reader execution."""
         executed = [case for case in build_cases() if case.status == EXECUTED]
 
         assert executed
         for case in executed:
+            assert case.reader is not None
             assert "semantic_record" not in case.reader
 
     def test_case_identifiers_are_unique(self) -> None:

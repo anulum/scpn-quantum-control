@@ -7,11 +7,12 @@
 # SCPN Quantum Control — cross-family versioned contract custody
 """Run the custody corpus against the readers that exist, and no others.
 
-Round-trip raw-evidence custody has been asserted per producer and nowhere
-across families. This module is that cross-family owner.
+This module checks the current corpus, not complete seven-family conformance.
+Family labels index requirements; they do not prove actual producer coverage.
 
-The corpus separates two claims and so does this file. Executed cases invoke a
-real production reader with real inputs. Design vectors carry concrete proposed
+The corpus separates reader execution, source facts and design inputs.
+Executed cases invoke a real production reader with real inputs. Design
+vectors carry concrete proposed
 bytes for the semantic companion, which is specified but unbuilt; those are
 checked for byte and digest stability and are never executed, because there is
 nothing to execute them against and a constructor is not a reader.
@@ -178,7 +179,7 @@ class TestCorpusIntegrity:
         assert any(row["expectation"] == "accept" for row in vectors)
 
     def test_every_mapped_family_appears(self) -> None:
-        """A family with no case is a gap, whether executed or proposed."""
+        """Check catalogue labels only, not actual producer conformance."""
         families = {row["family"] for row in _manifest()["cases"]}
 
         assert families == {
@@ -391,7 +392,7 @@ class TestMeasurementMappingApplicability:
 
 
 class TestProducerIdentitySourceFact:
-    """Executed only as a source fact; no production reader binds identity yet."""
+    """Inspected type facts only; no production reader binds identity yet."""
 
     def test_two_types_share_a_bare_name_and_have_disjoint_fields(self) -> None:
         """The producer-identity design vector rests on exactly this fact."""
@@ -407,6 +408,8 @@ class TestProducerIdentitySourceFact:
         qualified = f"{CoreKuramotoProblem.__module__}.{CoreKuramotoProblem.__qualname__}"
 
         assert qualified == _case("same_named_problem_types_remain_separable")["producer"]
+        assert _case("same_named_problem_types_remain_separable")["status"] == "source_fact"
+        assert _case("same_named_problem_types_remain_separable")["reader"] is None
 
 
 class TestDesignVectors:

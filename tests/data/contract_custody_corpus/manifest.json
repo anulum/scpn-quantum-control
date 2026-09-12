@@ -73,7 +73,7 @@
       "fixture": "captured_record_survives_later_mutation.json",
       "fixture_sha256": "ed44b955d44f26065785b6a1359e6489307183c42f61f5436d03ca0d28fc5f2b",
       "producer": "scpn_quantum_control.stable_core_product.serialise_experiment",
-      "rationale": "Mutating the source after capture leaves the captured bytes and their digest unchanged. This is raw byte custody; companion snapshot ownership is a separate design vector.",
+      "rationale": "Mutating the source after capture leaves the captured bytes and their digest unchanged. This is raw byte custody only; companion snapshot ownership is not covered by this case.",
       "reader": "scpn_quantum_control.stable_core_product.canonical_json_bytes",
       "status": "executed"
     },
@@ -102,12 +102,12 @@
     {
       "case_id": "non_count_route_carries_no_measurement_mapping",
       "expectation": "accept",
-      "family": "Backend observation",
+      "family": "Fidelity",
       "fixture": null,
       "fixture_sha256": null,
       "producer": "scpn_quantum_control.phase.qnode_circuit_differentiation.phase_qnode_computational_basis_fisher_information",
       "rationale": "Without observed counts the real producer leaves the measurement mapping absent rather than padding a count vector into existence.",
-      "reader": "scpn_quantum_control.phase.qnode_circuit_contracts.PhaseQNodeClassicalFisherResult",
+      "reader": "scpn_quantum_control.phase.qnode_circuit_differentiation.phase_qnode_computational_basis_fisher_information",
       "status": "executed"
     },
     {
@@ -118,8 +118,8 @@
       "fixture_sha256": null,
       "producer": "scpn_quantum_control.kuramoto_core.KuramotoProblem",
       "rationale": "Both types exist with disjoint fields under one bare name. This is the source fact the producer-identity design vector rests on; no production reader binds producer identity yet.",
-      "reader": "scpn_quantum_control.benchmarks.kuramoto_competitive_types.KuramotoProblem",
-      "status": "executed"
+      "reader": null,
+      "status": "source_fact"
     },
     {
       "case_id": "companion_positive_base",
