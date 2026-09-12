@@ -4,12 +4,12 @@
   "classification": "functional_non_isolated",
   "lockfiles": [
     {
-      "line_count": 492,
+      "line_count": 500,
       "path": "pyproject.toml",
       "pinned_package_count": 0,
       "role": "Package metadata and bounded dependency ranges",
-      "sha256": "8b34b9ce6329f03c84ebd4cef56af9f10f14a56e47fe89029637a3ab0b868df9",
-      "size_bytes": 21153
+      "sha256": "12ec8ad9fac0f40629311beef68ea512b53591adbf1aa46cfcc00232e7b385db",
+      "size_bytes": 21578
     },
     {
       "line_count": 34,
@@ -76,7 +76,7 @@
       "size_bytes": 160
     }
   ],
-  "platform": "Linux-7.0.0-28-generic-x86_64-with-glibc2.39",
-  "python_version": "3.12.3",
+  "platform": "Linux-7.0.0-30-generic-x86_64-with-glibc2.39",
+  "python_version": "3.12.13",
   "schema": "scpn_qc_differentiable_external_validation_environment_lock_v2"
 }
