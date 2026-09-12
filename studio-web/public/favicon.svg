@@ -1,0 +1,15 @@
+<!--
+SPDX-License-Identifier: AGPL-3.0-or-later
+Commercial license available
+© Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+© Code 2020–2026 Miroslav Šotek. All rights reserved.
+ORCID: 0009-0009-3560-0851
+Contact: www.anulum.li | protoscience@anulum.li
+SCPN Quantum Control — Studio portal icon
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <title>Quantum Control</title>
+  <rect width="32" height="32" rx="6" fill="#102132"/>
+  <ellipse cx="16" cy="16" rx="8" ry="11" fill="none" stroke="#67e8f9" stroke-width="3"/>
+  <path d="M8 16h16" stroke="#67e8f9" stroke-width="3"/>
+</svg>
