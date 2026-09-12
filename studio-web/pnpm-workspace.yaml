@@ -7,12 +7,12 @@
 # SCPN Quantum Control Studio — pnpm workspace configuration
 minimumReleaseAgeExclude:
   - '@module-federation/vite@1.16.13'
-# Force the transitive adm-zip (pulled in by
-# @module-federation/third-party-dts-extractor) off the < 0.6.0 range
-# vulnerable to GHSA-xcpc-8h2w-3j85 (crafted ZIP → 4 GB allocation).
-# Dependabot alert #77; patched in adm-zip 0.6.0.
+  - adm-zip@0.6.1
+# The federation DTS plugin pulls in adm-zip. Version 0.6.1 retains the
+# decompression fix and blocks destination-symlink extraction
+# (GHSA-xcpc-8h2w-3j85 and GHSA-vwc7-r8mq-g2x9).
 overrides:
-  'adm-zip@<0.6.0': '>=0.6.0'
+  'adm-zip@<0.6.1': '0.6.1'
   # Dependabot alert #91; patched in postcss 8.5.23.
   'postcss@<=8.5.22': '8.5.23'
   # Dependabot alerts #82-86; patched in undici 7.29.0.
