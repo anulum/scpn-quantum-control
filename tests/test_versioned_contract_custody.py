@@ -58,6 +58,7 @@ ISOLATED_REFUSAL_FIELDS: Final = {
     "companion_bound_to_wrong_raw_digest_refused": ("record_reference", "digest"),
     "companion_bound_to_wrong_record_kind_refused": ("record_reference", "kind"),
     "frequency_unit_changed_without_conversion_refused": ("fields", "omega", "unit"),
+    "frequency_unit_missing_refused": ("fields", "omega", "unit"),
     "cross_bound_producer_identity_refused": ("producer_identity",),
     "companion_bound_to_wrong_raw_schema_refused": ("record_reference", "schema"),
     "coupling_shape_mismatch_refused": ("fields", "K_nm", "shape"),
@@ -68,6 +69,106 @@ ISOLATED_REFUSAL_FIELDS: Final = {
     "effective_shots_contradict_source_refused": ("settings", "effective", "shots"),
 }
 """Independent oracle for each single-fault proposed input's exact changed field."""
+
+
+class TestFidelityDesignBoundaries:
+    """Check source-backed proposal consistency, not future reader conformance."""
+
+    def test_components_replay_native_uncertainty_without_aggregation(self) -> None:
+        """Retain complete native results, separate estimands and explicit fixture units."""
+        from scpn_quantum_control import differentiable as ad
+
+        proposal = _fixture("fidelity_components_preserve_native_uncertainty")
+        inputs = proposal["inputs"]
+        source = inputs["source_records"]["derivative"]
+        request = dict(source["inputs"])
+        request["parameters"] = [ad.Parameter(**row) for row in request["parameters"]]
+        result = ad.parameter_shift_gradient_with_uncertainty(**request)
+        native = result.to_dict()
+        assert native == source["result"]
+        assert scp.digest_stable_core_payload(native) == source["result_sha256"]
+        assert "native_parameter_units" in source["unavailable"]
+        assert inputs["unit_declaration"] == {
+            "origin": "explicit synthetic fixture caller; not native producer metadata",
+            "objective": "1",
+            "parameters": {"z": "1", "a": "1"},
+        }
+        assert [c["kind"] for c in inputs["fidelity_components"]] == [
+            "standard_error",
+            "confidence_radius",
+        ]
+        for component in inputs["fidelity_components"]:
+            kind = component["kind"]
+            assert component["value"] == native[kind]
+            assert component["method"] == native["method"]
+            assert component["unit"] == "1"
+            assert component["estimand"] == "gradient in native parameter_names order"
+            assert len(component["assumptions"]) == 3
+            assert component["evidence_ref"] == {
+                "source": "derivative",
+                "sha256": source["result_sha256"],
+                "field_path": f"result.{kind}",
+                "covariance_path": "result.covariance",
+                "confidence_level_path": "result.confidence_level",
+                "confidence_z_path": "result.confidence_interval.confidence_z",
+            }
+        assert result.confidence_interval is not None
+        np.testing.assert_allclose(
+            result.confidence_radius,
+            result.standard_error * result.confidence_interval.confidence_z,
+            rtol=1e-14,
+            atol=0,
+        )
+        assert inputs["aggregation_request"] is None
+        assert inputs["calibration_reference"] is None
+        assert inputs["supported_transform_composition"] == []
+        assert proposal["expected_outcome"] == {
+            "raw_readable": True,
+            "source_result_sha256": source["result_sha256"],
+            "preserve_components_separately": True,
+            "aggregate_value": None,
+            "decision": "accept_explicit_fixture_components",
+            "executed": False,
+        }
+
+    def test_aggregation_fault_preserves_positive_source_and_units(self) -> None:
+        """Only an unjustified sum request changes the positive proposal input."""
+        base = _fixture("fidelity_components_preserve_native_uncertainty")
+        fault = _fixture("unjustified_error_aggregation_refused")
+        assert fault["inputs"]["aggregation_request"] == {
+            "operation": "sum",
+            "components": ["standard_error", "confidence_radius"],
+            "justification": None,
+        }
+        fault["inputs"]["aggregation_request"] = None
+        assert fault["expected_outcome"]["decision"] == "refuse_unjustified_error_aggregation"
+        fault["expected_outcome"]["decision"] = base["expected_outcome"]["decision"]
+        assert fault == base
+
+    def test_unsupported_conversion_preserves_raw_reader_and_original_values(self) -> None:
+        """An explicit unsupported request cannot authorise conversion or persistence."""
+        scenario = _fixture("unsupported_frequency_conversion_refused")
+        inputs = scenario["inputs"]
+        raw = inputs["raw_record"]
+        assert raw == _fixture("raw_round_trip_preserves_digest")
+        rebuilt = scp.serialise_experiment(scp.deserialise_experiment(raw))
+        assert scp.canonical_json_bytes(rebuilt) == scp.canonical_json_bytes(raw)
+        assert inputs["companion"] == _fixture("companion_positive_base")
+        assert inputs["transform_request"] == {
+            "operation": "unit_conversion",
+            "field_path": "fields.omega",
+            "source_unit": "rad/s",
+            "target_unit": "Hz",
+            "accepted_transform_ref": None,
+        }
+        assert scenario["expected_outcome"] == {
+            "raw_readable": True,
+            "raw_digest": scp.digest_stable_core_payload(raw),
+            "decision": "refuse_unsupported_conversion",
+            "converted_value": None,
+            "persist_qualified_record": False,
+            "executed": False,
+        }
 
 
 def _manifest() -> dict[str, Any]:
@@ -680,9 +781,11 @@ class TestDesignVectors:
         # This isolated fault has its own source100-shot positive, not the
         # default4096-shot base used by ISOLATED_REFUSAL_FIELDS.
         source_paired = {"effective_setting_contradicts_request_refused"}
+        source_paired.add("unjustified_error_aggregation_refused")
         qualification_boundary = {
             "missing_companion_qualification_unavailable",
             "count_only_hal_cannot_qualify_statevector",
+            "unsupported_frequency_conversion_refused",
         }
         refusals = {
             row["case_id"]

@@ -1,5 +1,5 @@
 {
-  "base_manifest_sha256": "319b8a629405769d1ad2b45639d87c40e924ef1e55f9cc30ce6d37fbda413b7d",
+  "base_manifest_sha256": "a4168e1496b3795c7a4792586e2827745b679234366770c21c2fab4dda611670",
   "cases": [
     {
       "case_id": "raw_round_trip_preserves_digest",
@@ -449,6 +449,50 @@
       "fixture_sha256": "14302cd8dc4ddb5e8447ab8b76fcfc6b69853c6affdd8512a5a0e882ae595eff",
       "producer": "scientific_semantics.v1",
       "rationale": "Proposed refusal preserves actual count result; profile capability cannot invent missing amplitudes.",
+      "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
+      "status": "design_vector"
+    },
+    {
+      "case_id": "fidelity_components_preserve_native_uncertainty",
+      "expectation": "accept",
+      "family": "Fidelity",
+      "fixture": "fidelity_components_preserve_native_uncertainty.json",
+      "fixture_sha256": "e7a7d59d3fdeb8dc3cb4e31782b22f324dcbd7ec9485f71c1401ef29d91d30cb",
+      "producer": "scientific_semantics.v1",
+      "rationale": "Proposed explicit component custody or refusal boundary; native source evidence does not execute a companion, conversion or aggregation.",
+      "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
+      "status": "design_vector"
+    },
+    {
+      "case_id": "unjustified_error_aggregation_refused",
+      "expectation": "reject",
+      "family": "Fidelity",
+      "fixture": "unjustified_error_aggregation_refused.json",
+      "fixture_sha256": "f905ddc5044dae954c0c605bac60f36984cdbd1382c6d0eed471678a1b2002a7",
+      "producer": "scientific_semantics.v1",
+      "rationale": "Proposed explicit component custody or refusal boundary; native source evidence does not execute a companion, conversion or aggregation.",
+      "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
+      "status": "design_vector"
+    },
+    {
+      "case_id": "unsupported_frequency_conversion_refused",
+      "expectation": "reject",
+      "family": "Semantic support",
+      "fixture": "unsupported_frequency_conversion_refused.json",
+      "fixture_sha256": "aecc3180ed69aa487f79eac3b7366f02d82d8f32359c9aac8208fcf9cd5684c5",
+      "producer": "scientific_semantics.v1",
+      "rationale": "Proposed explicit component custody or refusal boundary; native source evidence does not execute a companion, conversion or aggregation.",
+      "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
+      "status": "design_vector"
+    },
+    {
+      "case_id": "frequency_unit_missing_refused",
+      "expectation": "reject",
+      "family": "Semantic support",
+      "fixture": "frequency_unit_missing_refused.json",
+      "fixture_sha256": "064fc97789306fcabed23fee3991110abc532e6c222ff721ba132ea5400ea115",
+      "producer": "scientific_semantics.v1",
+      "rationale": "Proposed explicit component custody or refusal boundary; native source evidence does not execute a companion, conversion or aggregation.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
       "status": "design_vector"
     },

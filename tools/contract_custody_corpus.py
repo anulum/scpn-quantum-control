@@ -53,6 +53,7 @@ from scpn_quantum_control.phase.qnode_circuit_differentiation import (
 )
 from tools import contract_custody_design_vectors as vectors
 from tools.contract_custody_derivative_source import derivative_evidence_source
+from tools.contract_custody_fidelity_source import fidelity_design_scenarios
 from tools.contract_custody_hal_source import hal_evidence_source, non_count_qualification_proposal
 from tools.contract_custody_problem_source import benchmark_problem_source
 from tools.contract_custody_registry_source import registry_evidence_source
@@ -738,6 +739,41 @@ def build_cases() -> tuple[CustodyCase, ...]:
         + _derivative_source_cases()
         + _problem_source_cases()
         + _offline_result_source_cases()
+        + _fidelity_design_cases()
+    )
+
+
+def _fidelity_design_cases() -> tuple[CustodyCase, ...]:
+    """Return explicit fidelity and unit refusal proposals without conformance claims.
+
+    Returns
+    -------
+    tuple
+        Appended cases preserving the existing catalogue order and fixtures.
+
+    """
+    raw_record = raw_experiment_record()
+    cases = fidelity_design_scenarios(raw_record)
+    cases["frequency_unit_missing_refused"] = vectors.isolated_companions(
+        scp.digest_stable_core_payload(raw_record)
+    )["frequency_unit_missing_refused"]
+    return tuple(
+        CustodyCase(
+            case_id=case_id,
+            family="Fidelity"
+            if "unit" not in case_id and "frequency" not in case_id
+            else "Semantic support",
+            producer=vectors.COMPANION_SCHEMA,
+            reader=f"{COMPANION_MODULE}.validate_semantic_binding",
+            expectation="reject" if case_id.endswith("refused") else "accept",
+            status=DESIGN_VECTOR,
+            rationale=(
+                "Proposed explicit component custody or refusal boundary; native source "
+                "evidence does not execute a companion, conversion or aggregation."
+            ),
+            payload=payload,
+        )
+        for case_id, payload in cases.items()
     )
 
 

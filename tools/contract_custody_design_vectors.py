@@ -425,6 +425,7 @@ def isolated_companions(raw_digest: str) -> dict[str, dict[str, Any]]:
         ),
         ("coupling_shape_mismatch_refused", ("fields", "K_nm", "shape"), [2]),
         ("coupling_dtype_mismatch_refused", ("fields", "K_nm", "dtype"), "int32"),
+        ("frequency_unit_missing_refused", ("fields", "omega", "unit"), None),
         ("parameter_order_mismatch_refused", ("parameter_order",), ["K_nm", "omega"]),
         ("tangent_convention_mismatch_refused", ("tangent_convention",), "reverse_holomorphic"),
         ("trainable_mask_length_mismatch_refused", ("trainable_mask",), [True]),
