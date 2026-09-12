@@ -203,7 +203,7 @@
       "expectation": "reject",
       "family": "Execution plan",
       "fixture": "effective_setting_contradicts_request_refused.json",
-      "fixture_sha256": "85e1cce42b1529cd0d974084738d4a86384ff7895a3e5e4115a4ec9e01c2e943",
+      "fixture_sha256": "82117eacb5c27be3810d93dce0da72c1e1b0eea3fa9f33107fbbbcd5a17a5c33",
       "producer": "scientific_semantics.v1",
       "rationale": "A hundred requested against two hundred effective, with no recorded accepted transformation, is an unexplained substitution.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
@@ -316,6 +316,17 @@
       "fixture_sha256": "6264ea59ed8b8f476c2ffdd8c3ff2f6d9e9669deef66b6fe2f10b376e26b2f3b",
       "producer": "scientific_semantics.v1",
       "rationale": "Only effective shots change; the retained source policy contradicts that value.",
+      "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
+      "status": "design_vector"
+    },
+    {
+      "case_id": "explicit_shot_request_preserves_source_plan",
+      "expectation": "accept",
+      "family": "Execution plan",
+      "fixture": "explicit_shot_request_preserves_source_plan.json",
+      "fixture_sha256": "4504908d31f9ecca6058e05e7e6d3f03f31212a21b81e5d6682cf6a3f13f5aca",
+      "producer": "scientific_semantics.v1",
+      "rationale": "The actual100-shot request retains the source100-shot plan and origins; this is a proposed binding, not observed execution.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
       "status": "design_vector"
     }

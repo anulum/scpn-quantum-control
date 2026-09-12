@@ -480,6 +480,16 @@ def _design_vector_cases() -> tuple[CustodyCase, ...]:
         (case_id, family, "reject", rationale, isolated[case_id])
         for case_id, family, rationale in isolation_metadata
     )
+    rows += (
+        (
+            "explicit_shot_request_preserves_source_plan",
+            "Execution plan",
+            "accept",
+            "The actual100-shot request retains the source100-shot plan and origins; "
+            "this is a proposed binding, not observed execution.",
+            vectors.valid_companion(digest, shots=100),
+        ),
+    )
     return tuple(
         CustodyCase(
             case_id=case_id,

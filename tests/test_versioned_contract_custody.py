@@ -463,14 +463,16 @@ class TestDesignVectors:
         compound = {
             "declared_shape_and_dtype_cannot_hold_data_refused",
             "parameter_order_and_tangent_change_refused",
-            "effective_setting_contradicts_request_refused",
         }
+        # This isolated fault has its own source100-shot positive, not the
+        # default4096-shot base used by ISOLATED_REFUSAL_FIELDS.
+        source_paired = {"effective_setting_contradicts_request_refused"}
         refusals = {
             row["case_id"]
             for row in _manifest()["cases"]
             if row["status"] == "design_vector" and row["expectation"] == "reject"
         }
-        assert refusals == set(ISOLATED_REFUSAL_FIELDS) | compound
+        assert refusals == set(ISOLATED_REFUSAL_FIELDS) | source_paired | compound
 
     def test_the_positive_base_binds_to_the_real_raw_record(self) -> None:
         """A proposed companion must reference bytes that actually exist."""
@@ -550,12 +552,25 @@ class TestDesignVectors:
         }
 
     def test_the_unauthorised_shot_change_records_no_transformation(self) -> None:
-        """The refusal rests on the missing origin, not on the numbers alone."""
+        """Only effective shots depart from the source-backed positive pair."""
         vector = _fixture("effective_setting_contradicts_request_refused")
-
+        source = vector["source_records"]["planning_policy"]
+        assert source["inputs"]["shots"] == 100
+        explanation = explain_quantum_gradient_method(**source["inputs"])
+        record = explanation.to_dict()
+        assert source["record"] == record
+        assert source["record_sha256"] == scp.digest_stable_core_payload(record)
+        assert explanation.shot_policy.requested_shots == 100
+        assert explanation.shot_policy.planned_shots == 100
+        assert explanation.shot_policy.defaulted is False
+        positive = _fixture("explicit_shot_request_preserves_source_plan")
         assert vector["settings"]["requested"]["shots"] == 100
         assert vector["settings"]["effective"]["shots"] == 200
-        assert vector["settings"]["origins"] == {}
+        assert vector["settings"]["origins"] == positive["settings"]["origins"]
+        assert "transformations" not in vector["settings"]
+        assert positive["settings"]["effective"]["shots"] == 100
+        vector["settings"]["effective"]["shots"] = 100
+        assert vector == positive
 
 
 class TestCorpusReproducibility:

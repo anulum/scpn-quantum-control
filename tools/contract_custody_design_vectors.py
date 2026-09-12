@@ -52,20 +52,25 @@ BENCHMARK_PROBLEM_IDENTITY: Final[str] = (
 """The unrelated type sharing the bare class name, which must never cross-bind."""
 
 
-def planning_policy_source() -> dict[str, Any]:
+def planning_policy_source(shots: int | None = None) -> dict[str, Any]:
     """Capture the real planner's input, output and original output digest.
+
+    Parameters
+    ----------
+    shots
+        Caller-requested planning shots; None preserves the defaulting path.
 
     Returns
     -------
     dict
-        Reproducible source for the proposed default-shot attachment. The
+        Reproducible source for the proposed shot-policy attachment. The
         planner executes locally; attaching its output to an experiment is
         only a design proposal, not an executed semantic binding. No provider
         submission or observed shot count is implied.
 
     """
     record = explain_quantum_gradient_method(
-        "shots", n_params=1, finite_shot=True, shots=None, confidence_level=0.95
+        "shots", n_params=1, finite_shot=True, shots=shots, confidence_level=0.95
     ).to_dict()
     return {
         "producer": "scpn_quantum_control.phase.gradient_backend.explain_quantum_gradient_method",
@@ -73,7 +78,7 @@ def planning_policy_source() -> dict[str, Any]:
             "backend": "shots",
             "n_params": 1,
             "finite_shot": True,
-            "shots": None,
+            "shots": shots,
             "confidence_level": 0.95,
             "shift_terms": 1,
             "method": "auto",
@@ -86,7 +91,7 @@ def planning_policy_source() -> dict[str, Any]:
     }
 
 
-def valid_companion(raw_digest: str) -> dict[str, Any]:
+def valid_companion(raw_digest: str, *, shots: int | None = None) -> dict[str, Any]:
     """Return the positive base every refusal vector is a variant of.
 
     A refusal matrix without a positive base can be satisfied by refusing
@@ -98,6 +103,8 @@ def valid_companion(raw_digest: str) -> dict[str, Any]:
     ----------
     raw_digest
         Digest of the raw stable-core record this companion describes.
+    shots
+        Requested shots passed unchanged to the separately captured planner.
 
     Returns
     -------
@@ -109,7 +116,7 @@ def valid_companion(raw_digest: str) -> dict[str, Any]:
     """
     experiment = scp.build_demo_experiment()
     adapted = problem_to_kuramoto(experiment.problem)
-    source = planning_policy_source()
+    source = planning_policy_source(shots)
     policy = source["record"]["shot_policy"]
     return {
         "schema": COMPANION_SCHEMA,
@@ -293,12 +300,12 @@ def reordered_parameters_and_tangent(raw_digest: str) -> dict[str, Any]:
 
 
 def unauthorised_shot_change(raw_digest: str) -> dict[str, Any]:
-    """Return effective settings that contradict the request without provenance.
+    """Return an effective setting contradicting its retained planning source.
 
     A request of one hundred shots against an effective two hundred is only
     admissible with a recorded accepted transformation. Without one the effective
-    value is unexplained, and an unexplained effective value is the shape a
-    silently substituted device takes.
+    value is unexplained. Original source origins are retained; they are not
+    authority to substitute another value or evidence of an accepted transform.
 
     Parameters
     ----------
@@ -308,17 +315,11 @@ def unauthorised_shot_change(raw_digest: str) -> dict[str, Any]:
     Returns
     -------
     dict
-        The positive base whose effective shots contradict the request.
+        The explicit100-shot positive with only effective shots changed to200.
 
     """
-    payload = valid_companion(raw_digest)
-    payload["settings"] = {
-        "stage": "planning",
-        "requested": {"shots": 100},
-        "effective": {"shots": 200},
-        "origins": {},
-        "rejected_fields": [],
-    }
+    payload = valid_companion(raw_digest, shots=100)
+    payload["settings"]["effective"]["shots"] = 200
     return payload
 
 
