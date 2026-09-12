@@ -133,9 +133,9 @@ class QuantumWorkload:
     program
         Non-empty encoded programme.
     n_qubits
-        Positive logical qubit count.
+        Positive logical qubit count as an integer, never a boolean or float.
     shots
-        Positive requested sample count.
+        Positive requested sample count as an integer, never a boolean or float.
     metadata
         Application-specific JSON-scalar annotations. Adapter-owned submission
         keys are reserved: approval_id, provider_job_id, execution_mode,
@@ -163,9 +163,13 @@ class QuantumWorkload:
         _validate_token(self.ir_format, "ir_format")
         if not isinstance(self.program, str) or not self.program.strip():
             raise ValueError("program must be non-empty")
-        if not isinstance(self.n_qubits, int) or self.n_qubits <= 0:
+        if (
+            isinstance(self.n_qubits, bool)
+            or not isinstance(self.n_qubits, int)
+            or self.n_qubits <= 0
+        ):
             raise ValueError("n_qubits must be a positive integer")
-        if not isinstance(self.shots, int) or self.shots <= 0:
+        if isinstance(self.shots, bool) or not isinstance(self.shots, int) or self.shots <= 0:
             raise ValueError("shots must be a positive integer")
         metadata = _freeze_metadata(self.metadata)
         reserved = _SUBMISSION_METADATA_KEYS.intersection(metadata)
@@ -197,7 +201,13 @@ class QuantumJobRef:
 
 @dataclass(frozen=True)
 class QuantumJobResult:
-    """Provider-neutral result payload for shot-count workloads."""
+    """Provider-neutral result payload for shot-count workloads.
+
+    Shot totals and count values must be nonnegative integers, not booleans or
+    floats. A zero shot total retains the existing unknown-total convention;
+    positive totals must equal the sum when counts are present. Invalid values
+    raise ValueError before the result is accepted.
+    """
 
     job: QuantumJobRef
     status: str
@@ -208,13 +218,13 @@ class QuantumJobResult:
     def __post_init__(self) -> None:
         """Validate result counts and freeze result custody."""
         _validate_token(self.status, "status")
-        if self.shots < 0:
+        if isinstance(self.shots, bool) or not isinstance(self.shots, int) or self.shots < 0:
             raise ValueError("shots must be non-negative")
         frozen_counts: dict[str, int] = {}
         for bitstring, count in self.counts.items():
             if not isinstance(bitstring, str) or not bitstring:
                 raise ValueError("counts keys must be non-empty bitstrings")
-            if not isinstance(count, int) or count < 0:
+            if isinstance(count, bool) or not isinstance(count, int) or count < 0:
                 raise ValueError("counts values must be non-negative integers")
             frozen_counts[bitstring] = count
         if frozen_counts and self.shots and sum(frozen_counts.values()) != self.shots:

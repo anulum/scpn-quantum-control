@@ -14,6 +14,8 @@ HAL registry, approval and delegation guards.
 
 from __future__ import annotations
 
+from typing import Any
+
 import pytest
 
 from scpn_quantum_control.hardware.hal import (
@@ -83,6 +85,46 @@ def _workload(workload_id: str = "w1", *, shots: int = 8) -> QuantumWorkload:
         n_qubits=2,
         shots=shots,
     )
+
+
+@pytest.mark.parametrize("field", ["n_qubits", "shots"])
+@pytest.mark.parametrize("bad", [True, False, 1.0, float("nan"), float("inf"), None, "1", 0, -1])
+def test_workload_rejects_nonpositive_or_noninteger_resources(field: str, bad: Any) -> None:
+    """Reject malformed resources before any workload can reach an adapter."""
+    arguments: dict[str, Any] = {
+        "workload_id": "resource-admission",
+        "ir_format": "openqasm3",
+        "program": "OPENQASM 3;",
+        "n_qubits": 2,
+        "shots": 16,
+    }
+    arguments[field] = bad
+    with pytest.raises(ValueError, match=field):
+        QuantumWorkload(**arguments)
+
+
+@pytest.mark.parametrize("bad", [True, False, 0.0, 1.0, float("nan"), float("inf"), None, "1", -1])
+def test_result_rejects_noninteger_or_negative_shots(bad: Any) -> None:
+    """Result metadata must not admit bool, float, nonfinite or missing shot counts."""
+    job = QuantumJobRef("resource-job", "local_test", "resource-admission", "completed")
+    with pytest.raises(ValueError, match="shots"):
+        QuantumJobResult(job, "completed", shots=bad)
+
+
+@pytest.mark.parametrize("bad", [True, False, 1.0, float("nan"), None, "1", -1])
+def test_result_rejects_noninteger_or_negative_count_values(bad: Any) -> None:
+    """Counts remain nonnegative integers without boolean observations."""
+    job = QuantumJobRef("resource-job", "local_test", "resource-admission", "completed")
+    with pytest.raises(ValueError, match="counts"):
+        QuantumJobResult(job, "completed", counts={"0": bad})
+
+
+def test_result_preserves_zero_shot_unknown_total_convention() -> None:
+    """Stricter types preserve the existing zero-shot sentinel and integer counts."""
+    job = QuantumJobRef("resource-job", "local_test", "resource-admission", "completed")
+    result = QuantumJobResult(job, "completed", counts={"0": 0, "1": 2}, shots=0)
+    assert result.shots == 0
+    assert dict(result.counts) == {"0": 0, "1": 2}
 
 
 def test_profile_rejects_empty_ir_formats() -> None:
