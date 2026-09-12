@@ -35,6 +35,17 @@ def test_repository_has_only_descriptive_production_names() -> None:
     assert unexpected_findings(findings, baseline) == ()
 
 
+def test_calendar_negative_value_does_not_exempt_campaign_names(tmp_path: Path) -> None:
+    """Preserve the ISO week-date refusal fixture without exempting its test owner."""
+    path = "tests/test_provider_route_catalogue.py"
+    _write(tmp_path / path, 'VALUES = ["2026-W36-6", "post_w7_campaign"]\n')
+    findings = audit_paths(tmp_path, (path,))
+    assert [finding.value for finding in findings] == ["post_w7_campaign"]
+    other = "tests/test_other_calendar.py"
+    _write(tmp_path / other, 'VALUE = "2026-W36-6"\n')
+    assert [finding.value for finding in audit_paths(tmp_path, (other,))] == ["2026-W36-6"]
+
+
 def test_python_identifiers_descriptions_and_machine_names_fail(tmp_path: Path) -> None:
     """Python-facing names must describe their domain role."""
     source = tmp_path / "src" / "package" / "surface.py"

@@ -94,7 +94,7 @@ python -m coverage report --rcfile=/dev/null \
 ## Test typing ratchet
 
 Production Python uses repository-wide strict mypy. Test enrolment is governed
-by [the machine-readable policy](../tools/test_typing_policy.json), not by a
+by [the machine-readable policy](https://github.com/anulum/scpn-quantum-control/blob/main/tools/test_typing_policy.json), not by a
 hand-maintained count or a claim that every test is covered.
 
 | Enforced cohort | Responsibility |

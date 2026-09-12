@@ -577,7 +577,11 @@ def test_test_infrastructure_documents_live_policy_baseline() -> None:
     policy = _audit.load_policy(repo_root / "tools" / "test_typing_policy.json")
     documentation = (repo_root / "docs" / "test_infrastructure.md").read_text(encoding="utf-8")
 
-    assert "../tools/test_typing_policy.json" in documentation
+    assert (
+        "https://github.com/anulum/scpn-quantum-control/blob/main/tools/test_typing_policy.json"
+        in documentation
+    )
+    assert "](../tools/test_typing_policy.json)" not in documentation
     assert "dated baseline in the policy records historical debt" in documentation
     assert "--validate-only --json" in documentation
     for cohort in policy.enforced_cohorts:

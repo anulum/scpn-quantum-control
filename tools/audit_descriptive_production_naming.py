@@ -106,6 +106,14 @@ _EXACT_NEGATIVE_FIXTURES: Final[frozenset[str]] = frozenset(
 )
 _EXACT_NEGATIVE_VALUES: Final[frozenset[tuple[str, str]]] = frozenset(
     ("tests/test_binding_spec.py", f"ws_{index}") for index in range(3)
+) | frozenset(
+    {
+        # ISO week-date rejected by the calendar-date-only public contract.
+        # Keep this exact negative fixture; other strings in its owner remain audited.
+        ("tests/test_provider_route_catalogue.py", "2026-W36-6"),
+        # The audited registry must be able to name its exact negative value.
+        ("tools/audit_descriptive_production_naming.py", "2026-W36-6"),
+    }
 )
 
 
