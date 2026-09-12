@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **701 modules** across **39 package families**
-- **3923 documented public module-level symbols**
+- **702 modules** across **39 package families**
+- **3925 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -5152,6 +5152,16 @@ No-submit S9 quantum-thermodynamics readiness model.
 **Functions:** `entropy_production_rate()`, `calibrated_work_identity()`, `irreversibility_residual()`, `heat_dissipation_rate()`, `run_k_sweep_protocol()`, `quantum_thermo_payload()`, `quantum_thermo_markdown()`
 
 ## `top_level`
+
+### `scpn_quantum_control._cgroup_paths`
+
+Resolve visible cgroup memory ancestors from process membership and mounts.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/_cgroup_paths.py) · Public symbols: **2**
+
+**Classes:** `MemoryCgroup`
+
+**Functions:** `memory_cgroup_paths()`
 
 ### `scpn_quantum_control._constants`
 

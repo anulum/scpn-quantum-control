@@ -18,6 +18,8 @@ from typing import Any, Final
 
 import numpy as np
 
+from ._cgroup_paths import memory_cgroup_paths
+
 DEFAULT_DENSE_BUDGET_ENV: Final = "SCPN_MAX_DENSE_GIB"
 DEFAULT_DENSE_RAM_FRACTION: Final = 0.30
 DEFAULT_DENSE_BUDGET_CAP_GIB: Final = 8.0
@@ -25,11 +27,14 @@ DEFAULT_DENSE_EIGENSOLVER_OBJECTS: Final = 4
 GIB: Final = 1024**3
 
 DEFAULT_CGROUP_ROOT: Final = Path("/sys/fs/cgroup")
-"""Mount point the kernel exposes cgroup limits under.
+"""Fallback root when process membership metadata is unavailable.
 
-Overridable per call so the container contract can be tested against an injected
-filesystem instead of a real container.
+Explicit per-call roots retain the flat controller snapshot interface. Default
+Linux calls discover mounted memory controllers through process metadata.
 """
+
+DEFAULT_PROC_ROOT: Final = Path("/proc/self")
+"""Process membership and mount metadata used by default memory admission."""
 
 CGROUP_V2_LIMIT: Final = "memory.max"
 CGROUP_V2_USAGE: Final = "memory.current"
@@ -165,8 +170,9 @@ def _read_cgroup_int(path: Path) -> int | None:
 def cgroup_headroom_bytes(cgroup_root: Path | None = None) -> int | None:
     """Return the memory a cgroup still allows this process, if it is limited.
 
-    cgroup v2 is consulted first and v1 second, matching the order a host
-    mounts them. Headroom is the limit minus current use, so a container that
+    Default calls resolve process membership and visible mount ancestors from
+    proc metadata, taking the minimum headroom across their limits. An explicit
+    root retains the flat v2-then-v1 snapshot interface. A container that
     has already consumed most of its allowance reports what is left rather than
     what it was granted. A known finite limit with unreadable or malformed
     usage reports zero verified headroom, never an assumed unused allowance.
@@ -175,9 +181,11 @@ def cgroup_headroom_bytes(cgroup_root: Path | None = None) -> int | None:
     Parameters
     ----------
     cgroup_root
-        Mount point to read from; defaults to :data:`DEFAULT_CGROUP_ROOT`.
-        Supplying one is how the container contract is tested without a
-        container.
+        Explicit flat snapshot root. When omitted, discover process paths via
+        :data:`DEFAULT_PROC_ROOT`; unavailable proc metadata falls back to
+        :data:`DEFAULT_CGROUP_ROOT`. Malformed or unmappable membership refuses
+        default admission with zero verified headroom. Hidden ancestors above
+        the namespace mount are not observable; this is not an OOM guarantee.
 
     Returns
     -------
@@ -186,6 +194,30 @@ def cgroup_headroom_bytes(cgroup_root: Path | None = None) -> int | None:
         be established, or ``None`` when no readable finite limit applies.
 
     """
+    if cgroup_root is None:
+        try:
+            paths = memory_cgroup_paths(DEFAULT_PROC_ROOT)
+        except ValueError:
+            return 0
+        if paths is not None:
+            headrooms: list[int] = []
+            for entry in paths:
+                if not entry.directory.is_dir():
+                    return 0
+                if (
+                    entry.version == 1
+                    and not entry.leaf
+                    and _read_cgroup_int(entry.directory / "memory.use_hierarchy") == 0
+                ):
+                    continue
+                limit_name = "memory.max" if entry.version == 2 else "memory.limit_in_bytes"
+                usage_name = "memory.current" if entry.version == 2 else "memory.usage_in_bytes"
+                limit = _read_cgroup_int(entry.directory / limit_name)
+                if limit is None or limit >= CGROUP_UNLIMITED_THRESHOLD:
+                    continue
+                usage = _read_cgroup_int(entry.directory / usage_name)
+                headrooms.append(0 if usage is None else max(0, limit - usage))
+            return min(headrooms) if headrooms else None
     root = DEFAULT_CGROUP_ROOT if cgroup_root is None else cgroup_root
     for limit_name, usage_name in (
         (CGROUP_V2_LIMIT, CGROUP_V2_USAGE),
@@ -200,7 +232,7 @@ def cgroup_headroom_bytes(cgroup_root: Path | None = None) -> int | None:
 
 
 def available_memory_bytes(cgroup_root: Path | None = None) -> int | None:
-    """Return the memory this process may actually use.
+    """Return a snapshot of host availability constrained by visible cgroups.
 
     The smaller of free host memory and any cgroup headroom. On an unrestricted
     host this is the host figure unchanged; inside a memory-limited container it
@@ -210,8 +242,9 @@ def available_memory_bytes(cgroup_root: Path | None = None) -> int | None:
     Parameters
     ----------
     cgroup_root
-        Mount point to read cgroup limits from; defaults to
-        :data:`DEFAULT_CGROUP_ROOT`.
+        Explicit flat controller snapshot root, or ``None`` for process
+        membership discovery. See :func:`cgroup_headroom_bytes` for fallback
+        and namespace visibility limits. This does not reserve memory.
 
     Returns
     -------

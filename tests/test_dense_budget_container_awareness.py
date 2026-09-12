@@ -42,6 +42,21 @@ MIB = 1024**2
 """One mebibyte, the scale these fixtures work at."""
 
 
+@pytest.fixture(autouse=True)
+def flat_controller_snapshot(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep these flat-root fixtures independent of the host's proc hierarchy.
+
+    Parameters
+    ----------
+    tmp_path
+        Test-owned root; the proc subdirectory is intentionally absent.
+    monkeypatch
+        Select the documented unavailable-proc fallback. Process discovery
+        itself is exercised by the dedicated cgroup path tests.
+    """
+    monkeypatch.setattr(dense_budget, "DEFAULT_PROC_ROOT", tmp_path / "absent-proc")
+
+
 def _write_v2(root: Path, *, limit: str | None, current: str | None = None) -> Path:
     """Lay out a cgroup v2 memory controller.
 

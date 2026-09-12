@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 841,
     "public_documentation_pages": 376,
-    "python_model_classes": 1378,
-    "python_model_source_modules": 701,
+    "python_model_classes": 1379,
+    "python_model_source_modules": 702,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1376
+    "test_files": 1377
   },
   "documentation": {
     "examples": [
@@ -3389,6 +3389,10 @@
         "path": "src/scpn_quantum_control/error_mitigation_product.py"
       },
       {
+        "name": "MemoryCgroup",
+        "path": "src/scpn_quantum_control/_cgroup_paths.py"
+      },
+      {
         "name": "MetamorphicCheckResult",
         "path": "src/scpn_quantum_control/metamorphic_ad_verification.py"
       },
@@ -6290,6 +6294,7 @@
       }
     ],
     "python_source_modules": [
+      "src/scpn_quantum_control/_cgroup_paths.py",
       "src/scpn_quantum_control/_constants.py",
       "src/scpn_quantum_control/_paths.py",
       "src/scpn_quantum_control/_rust_accel.py",
@@ -8303,6 +8308,7 @@
       "tests/test_campaign_parameter_generators.py",
       "tests/test_capability_manifest.py",
       "tests/test_cft_analysis.py",
+      "tests/test_cgroup_paths.py",
       "tests/test_changelog_consistency.py",
       "tests/test_check_commit_trailers.py",
       "tests/test_check_internal_todo_policy.py",
