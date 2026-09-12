@@ -17,16 +17,12 @@ from __future__ import annotations
 
 import hashlib
 import json
-import sys
 import tarfile
 from pathlib import Path
 
 import pytest
 
-TOOLS_DIR = Path(__file__).resolve().parents[1] / "tools"
-sys.path.insert(0, str(TOOLS_DIR))
-
-import package_studio_release as release_tool  # noqa: E402
+from tools import package_studio_release as release_tool
 
 
 def _fake_bundle(tmp_path: Path) -> Path:

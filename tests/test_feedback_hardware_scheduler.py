@@ -468,15 +468,17 @@ def test_approval_gated_scheduler_enforces_estimated_and_reported_qpu_budget() -
         scheduler.submit(FeedbackCommand(payload={}, estimated_qpu_seconds=5.0))
     assert provider_calls == 0
     assert not scheduler.requires_reconciliation
-    assert scheduler.submissions == ()
+    before_submissions = scheduler.submissions
+    assert before_submissions == ()
     assert scheduler.spent_qpu_seconds == 0.0
     with pytest.raises(RuntimeError, match="provider result would exceed"):
         scheduler.submit(FeedbackCommand(payload={}, estimated_qpu_seconds=1.0))
     assert provider_calls == 1
     assert scheduler.spent_qpu_seconds == 5.0
-    assert len(scheduler.submissions) == 1
-    assert scheduler.submissions[0].result_qpu_seconds == 5.0
-    assert scheduler.submissions[0].estimated_qpu_seconds == 1.0
+    after_submissions = scheduler.submissions
+    assert len(after_submissions) == 1
+    assert after_submissions[0].result_qpu_seconds == 5.0
+    assert after_submissions[0].estimated_qpu_seconds == 1.0
 
 
 @pytest.mark.parametrize("estimate", [0.0, 1.0])

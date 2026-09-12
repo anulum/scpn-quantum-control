@@ -13,15 +13,11 @@ import hashlib
 import json
 import shutil
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
 
-TOOLS_DIR = Path(__file__).resolve().parents[1] / "tools"
-sys.path.insert(0, str(TOOLS_DIR))
-
-import build_studio_wasm_bundle as bundle_tool  # noqa: E402
+from tools import build_studio_wasm_bundle as bundle_tool
 
 
 def _fake_bundle(tmp_path: Path) -> Path:
