@@ -417,6 +417,39 @@
       "rationale": "Actual seeded problem builders preserve distinct full identities; identity-binding refusal remains an unexecuted proposal.",
       "reader": "scpn_quantum_control.benchmarks.kuramoto_competitive_types.build_default_problem",
       "status": "executed"
+    },
+    {
+      "case_id": "offline_hal_preserves_native_result",
+      "expectation": "accept",
+      "family": "Backend observation",
+      "fixture": "offline_hal_preserves_native_result.json",
+      "fixture_sha256": "ca6d33ef9c2a0a97572717481130c0006b65d65cf031d89dc7b534062b542a60",
+      "producer": "scpn_quantum_control.hardware.hal.HardwareAbstractionLayer.result",
+      "rationale": "Actual deterministic offline HAL routing and full native evidence; not physical simulation or QPU execution.",
+      "reader": "scpn_quantum_control.hardware.hal.HardwareAbstractionLayer.result",
+      "status": "executed"
+    },
+    {
+      "case_id": "stable_result_preserves_native_envelope",
+      "expectation": "accept",
+      "family": "Result/evidence",
+      "fixture": "stable_result_preserves_native_envelope.json",
+      "fixture_sha256": "eee439da02b66999a85a7e9d9fbe43d0f91ee9080ccecb74da4cf7e3e70cf728",
+      "producer": "scpn_quantum_control.stable_core.build_result",
+      "rationale": "Actual stable Result codec roundtrip over an explicit test projection, not a shipped HAL adapter.",
+      "reader": "scpn_quantum_control.stable_core_product.deserialise_result",
+      "status": "executed"
+    },
+    {
+      "case_id": "count_only_hal_cannot_qualify_statevector",
+      "expectation": "reject",
+      "family": "Backend observation",
+      "fixture": "count_only_hal_cannot_qualify_statevector.json",
+      "fixture_sha256": "14302cd8dc4ddb5e8447ab8b76fcfc6b69853c6affdd8512a5a0e882ae595eff",
+      "producer": "scientific_semantics.v1",
+      "rationale": "Proposed refusal preserves actual count result; profile capability cannot invent missing amplitudes.",
+      "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
+      "status": "design_vector"
     }
   ],
   "companion_module": "scpn_quantum_control.semantic_record",

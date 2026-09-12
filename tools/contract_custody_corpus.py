@@ -46,8 +46,10 @@ from scpn_quantum_control.phase.qnode_circuit_differentiation import (
 )
 from tools import contract_custody_design_vectors as vectors
 from tools.contract_custody_derivative_source import derivative_evidence_source
+from tools.contract_custody_hal_source import hal_evidence_source, non_count_qualification_proposal
 from tools.contract_custody_problem_source import benchmark_problem_source
 from tools.contract_custody_registry_source import registry_evidence_source
+from tools.contract_custody_result_source import stable_result_evidence_source
 
 CORPUS_SCHEMA: Final[str] = "contract_custody_corpus.v1"
 """Schema of the manifest this module writes."""
@@ -674,6 +676,44 @@ def _problem_source_cases() -> tuple[CustodyCase, ...]:
     )
 
 
+def _offline_result_source_cases() -> tuple[CustodyCase, ...]:
+    """Capture offline HAL/results without promoting unavailable non-count evidence."""
+    hal = hal_evidence_source()
+    result = stable_result_evidence_source()
+    return (
+        CustodyCase(
+            case_id="offline_hal_preserves_native_result",
+            family="Backend observation",
+            producer=hal["producer"],
+            reader=hal["producer"],
+            expectation="accept",
+            status=EXECUTED,
+            payload=hal,
+            rationale="Actual deterministic offline HAL routing and full native evidence; not physical simulation or QPU execution.",
+        ),
+        CustodyCase(
+            case_id="stable_result_preserves_native_envelope",
+            family="Result/evidence",
+            producer=result["producer"],
+            reader=result["reader"],
+            expectation="accept",
+            status=EXECUTED,
+            payload=result,
+            rationale="Actual stable Result codec roundtrip over an explicit test projection, not a shipped HAL adapter.",
+        ),
+        CustodyCase(
+            case_id="count_only_hal_cannot_qualify_statevector",
+            family="Backend observation",
+            producer=vectors.COMPANION_SCHEMA,
+            reader=f"{COMPANION_MODULE}.validate_semantic_binding",
+            expectation="reject",
+            status=DESIGN_VECTOR,
+            payload=non_count_qualification_proposal(),
+            rationale="Proposed refusal preserves actual count result; profile capability cannot invent missing amplitudes.",
+        ),
+    )
+
+
 def build_cases() -> tuple[CustodyCase, ...]:
     """Return every case in stable catalogue order.
 
@@ -690,6 +730,7 @@ def build_cases() -> tuple[CustodyCase, ...]:
         + _registry_source_cases()
         + _derivative_source_cases()
         + _problem_source_cases()
+        + _offline_result_source_cases()
     )
 
 

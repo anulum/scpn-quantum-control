@@ -556,6 +556,32 @@ class TestBenchmarkProblemSourceEvidence:
         assert source["identity_binding"]["executed"] is False
 
 
+class TestOfflineResultSourceEvidence:
+    """Keep real result capture distinct from unexecuted non-count qualification."""
+
+    def test_frozen_hal_and_result_sources_match_public_producers(self) -> None:
+        """Compare complete fixtures and their executed-reader classification."""
+        from tools.contract_custody_hal_source import hal_evidence_source
+        from tools.contract_custody_result_source import stable_result_evidence_source
+
+        for case_id, source in (
+            ("offline_hal_preserves_native_result", hal_evidence_source()),
+            ("stable_result_preserves_native_envelope", stable_result_evidence_source()),
+        ):
+            assert _fixture(case_id) == source
+            assert _case(case_id)["status"] == "executed"
+            assert _case(case_id)["reader"] == source.get("reader", source["producer"])
+
+    def test_frozen_non_count_refusal_remains_a_proposal(self) -> None:
+        """A native capability flag must not promote unavailable amplitudes."""
+        from tools.contract_custody_hal_source import non_count_qualification_proposal
+
+        case_id = "count_only_hal_cannot_qualify_statevector"
+        assert _fixture(case_id) == non_count_qualification_proposal()
+        assert _case(case_id)["status"] == "design_vector"
+        assert _case(case_id)["expectation"] == "reject"
+
+
 class TestDesignVectors:
     """Concrete proposed bytes, frozen and deliberately not executed."""
 
@@ -654,7 +680,10 @@ class TestDesignVectors:
         # This isolated fault has its own source100-shot positive, not the
         # default4096-shot base used by ISOLATED_REFUSAL_FIELDS.
         source_paired = {"effective_setting_contradicts_request_refused"}
-        qualification_boundary = {"missing_companion_qualification_unavailable"}
+        qualification_boundary = {
+            "missing_companion_qualification_unavailable",
+            "count_only_hal_cannot_qualify_statevector",
+        }
         refusals = {
             row["case_id"]
             for row in _manifest()["cases"]
