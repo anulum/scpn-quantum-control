@@ -119,16 +119,14 @@ def _normalise_simulate(parameters: Mapping[str, Any]) -> dict[str, Any]:
     trotter_per_step = _as_positive_int(
         "trotter_per_step", parameters.get("trotter_per_step"), maximum=_MAX_TROTTER_PER_STEP
     )
-    trotter_order = parameters.get("trotter_order")
-    if trotter_order not in (1, 2) or isinstance(trotter_order, bool):
-        raise ValueError("trotter_order must be 1 or 2")
+    trotter_order = _as_positive_int("trotter_order", parameters.get("trotter_order"), maximum=2)
     return {
         "K_nm": k_nm,
         "omega": omega,
         "t_max": t_max,
         "dt": dt,
         "trotter_per_step": trotter_per_step,
-        "trotter_order": int(trotter_order),
+        "trotter_order": trotter_order,
     }
 
 
@@ -149,6 +147,9 @@ class SimulateActionHandler(ActionHandler):
             The simulate request; ``parameters`` must describe a bounded network
             (``K_nm``, ``omega``) and evolution schedule (``t_max``, ``dt``,
             ``trotter_per_step``, ``trotter_order``).
+            Trotter counts and order must be integers, not booleans or floats;
+            the supported orders are 1 and 2. Invalid input raises ValueError
+            before a plan is returned; no order coercion is performed.
         contract : VerbContract
             The resolved ``simulate`` contract.
 

@@ -156,6 +156,13 @@ def test_generated_simulate_script_executes_real_solver(
     assert completed.stdout.rstrip().endswith("verified")
 
 
+@pytest.mark.parametrize("bad", [1.0, 2.0, 1.5, True, False, "1", None, float("nan")])
+def test_simulate_preview_rejects_noninteger_order(bad: object) -> None:
+    """Reject noninteger Trotter orders before producing a simulation plan."""
+    with pytest.raises(ValueError, match="trotter_order"):
+        preview_action(_request(trotter_order=bad), registry=_registry())
+
+
 def test_simulate_trotter_order_two_is_accepted() -> None:
     """Evolve the supported second-order Trotter route."""
     record = run_action(_request(trotter_order=2), registry=_registry())
