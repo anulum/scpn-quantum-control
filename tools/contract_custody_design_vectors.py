@@ -112,10 +112,14 @@ def valid_companion(raw_digest: str, *, shots: int | None = None) -> dict[str, A
         A proposed companion for the demo experiment and its existing
         Kuramoto adapter. Planner output is retained separately; its proposed
         attachment does not assert that the raw experiment was executed.
+        Backend identity references the raw plan only. Missing fidelity,
+        calibration and transform evidence is explicitly unavailable; empty
+        collections do not assert zero error or qualified support.
 
     """
     experiment = scp.build_demo_experiment()
     adapted = problem_to_kuramoto(experiment.problem)
+    backend = experiment.backend
     source = planning_policy_source(shots)
     policy = source["record"]["shot_policy"]
     return {
@@ -137,6 +141,17 @@ def valid_companion(raw_digest: str, *, shots: int | None = None) -> dict[str, A
             },
         },
         "source_records": {"planning_policy": source},
+        "backend_reference": {
+            "source_record": "raw_record",
+            "record_digest": raw_digest,
+            "field_path": "body.backend",
+            "producer_identity": f"{type(backend).__module__}.{type(backend).__qualname__}",
+            "backend_id": backend.backend_id,
+            "stage": "planning",
+        },
+        "fidelity_components": [],
+        "calibration_reference": None,
+        "supported_transform_composition": [],
         "fields": {
             "omega": {
                 "unit": "rad/s",
@@ -170,9 +185,17 @@ def valid_companion(raw_digest: str, *, shots: int | None = None) -> dict[str, A
         "claim_boundary": (
             "proposed semantic binding to the raw experiment and separately captured "
             "planner output; units and derivative conventions are design choices; "
-            "no executed binding, observed counts or hardware execution claim"
+            "no executed binding, observed counts or hardware execution claim; "
+            "empty evidence does not mean zero error or supported transforms"
         ),
-        "unavailable": ["executed_semantic_binding", "observed_execution"],
+        "unavailable": [
+            "executed_semantic_binding",
+            "observed_execution",
+            "fidelity_components",
+            "backend_observation",
+            "calibration_reference",
+            "supported_transform_composition",
+        ],
     }
 
 

@@ -623,6 +623,38 @@ class TestDesignVectors:
             assert base["fields"][field]["shape"] == list(value.shape)
             assert base["fields"][field]["dtype"] == str(value.dtype)
 
+    def test_positive_availability_does_not_manufacture_qualification(self) -> None:
+        """Plan identity is available; absent runtime evidence remains unavailable."""
+        base = _fixture("companion_positive_base")
+        raw = _fixture("raw_round_trip_preserves_digest")
+        experiment = scp.deserialise_experiment(raw)
+        backend = experiment.backend
+        reference = base["backend_reference"]
+        assert reference == {
+            "source_record": "raw_record",
+            "record_digest": scp.digest_stable_core_payload(raw),
+            "field_path": "body.backend",
+            "producer_identity": f"{type(backend).__module__}.{type(backend).__qualname__}",
+            "backend_id": backend.backend_id,
+            "stage": "planning",
+        }
+        assert raw["body"]["backend"]["backend_id"] == reference["backend_id"]
+        assert base["fidelity_components"] == []
+        assert base["calibration_reference"] is None
+        assert base["supported_transform_composition"] == []
+        assert set(base["unavailable"]) == {
+            "executed_semantic_binding",
+            "observed_execution",
+            "fidelity_components",
+            "backend_observation",
+            "calibration_reference",
+            "supported_transform_composition",
+        }
+        assert (
+            "empty evidence does not mean zero error or supported transforms"
+            in base["claim_boundary"]
+        )
+
     def test_default_settings_retain_their_real_planner_source(self) -> None:
         """Recorded defaults are planning evidence, not measured experiment shots."""
         base = _fixture("null_request_with_recorded_default_accepted")
