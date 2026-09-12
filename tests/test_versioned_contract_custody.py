@@ -41,6 +41,7 @@ from scpn_quantum_control.phase.qnode_circuit_contracts import (
 from scpn_quantum_control.phase.qnode_circuit_differentiation import (
     phase_qnode_computational_basis_fisher_information,
 )
+from scpn_quantum_control.stable_core import problem_to_kuramoto
 
 CORPUS_DIRECTORY: Final = Path(__file__).parent / "data" / "contract_custody_corpus"
 """Frozen corpus written by ``tools/contract_custody_corpus.py``."""
@@ -450,7 +451,59 @@ class TestDesignVectors:
             len(problem.coupling_matrix),
             len(problem.coupling_matrix[0]),
         ]
-        assert base["measurement_mapping"]["bit_wires"] == list(range(problem.n_qubits))
+        assert base["measurement_mapping"] == {"kind": "not_applicable"}
+        assert base["modality"] == "experiment_plan"
+
+    def test_positive_identity_names_the_actual_adapter_output(self) -> None:
+        """Bind the proposed field aliases through the existing public adapter."""
+        base = _fixture("companion_positive_base")
+        experiment = scp.deserialise_experiment(_fixture("raw_round_trip_preserves_digest"))
+        adapted = problem_to_kuramoto(experiment.problem)
+
+        assert base["source_binding"] == {
+            "raw_type": f"{type(experiment).__module__}.{type(experiment).__qualname__}",
+            "raw_field": "body.problem",
+            "adapter": "scpn_quantum_control.stable_core.problem_to_kuramoto",
+            "field_paths": {
+                "omega": "body.problem.omega",
+                "K_nm": "body.problem.coupling_matrix",
+            },
+        }
+        assert (
+            base["producer_identity"] == f"{type(adapted).__module__}.{type(adapted).__qualname__}"
+        )
+        np.testing.assert_array_equal(adapted.omega, experiment.problem.omega)
+        np.testing.assert_array_equal(adapted.K_nm, experiment.problem.coupling_matrix)
+        for field in ("omega", "K_nm"):
+            value = getattr(adapted, field)
+            assert base["fields"][field]["shape"] == list(value.shape)
+            assert base["fields"][field]["dtype"] == str(value.dtype)
+
+    def test_default_settings_retain_their_real_planner_source(self) -> None:
+        """Recorded defaults are planning evidence, not measured experiment shots."""
+        base = _fixture("null_request_with_recorded_default_accepted")
+        source = base["source_records"]["planning_policy"]
+        record = explain_quantum_gradient_method(**source["inputs"]).to_dict()
+
+        assert source["producer"] == (
+            "scpn_quantum_control.phase.gradient_backend.explain_quantum_gradient_method"
+        )
+        assert source["record"] == record
+        assert source["record_sha256"] == scp.digest_stable_core_payload(record)
+        assert source["binding_status"] == "proposed_not_executed"
+        assert _fixture("planner_preserves_null_request_beside_default") == source
+        policy = source["record"]["shot_policy"]
+        settings = base["settings"]
+        assert settings["stage"] == "planning"
+        assert settings["requested"]["shots"] is policy["requested_shots"] is None
+        assert settings["effective"]["shots"] == policy["planned_shots"] == 4096
+        assert policy["defaulted"] is True
+        assert settings["origins"]["shots"] == {
+            "source_ref": "planning_policy",
+            "requested_path": "record.shot_policy.requested_shots",
+            "effective_path": "record.shot_policy.planned_shots",
+            "defaulted_path": "record.shot_policy.defaulted",
+        }
 
     def test_the_unauthorised_shot_change_records_no_transformation(self) -> None:
         """The refusal rests on the missing origin, not on the numbers alone."""

@@ -17,6 +17,8 @@ rather than quietly read.
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -139,6 +141,33 @@ class TestSchemaAdmission:
 
 class TestWriting:
     """Writing must produce exactly the bytes the manifest describes."""
+
+    def test_module_command_writes_reproducible_source_records(self, tmp_path: Path) -> None:
+        """Run the actual module command and verify its captured planner bytes.
+
+        Parameters
+        ----------
+        tmp_path
+            Isolated destination; no repository fixture is overwritten.
+
+        """
+        result = subprocess.run(
+            [sys.executable, "-m", "tools.contract_custody_corpus", str(tmp_path)],
+            cwd=Path(__file__).resolve().parents[1],
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=15,
+        )
+        manifest = json.loads((tmp_path / "manifest.json").read_text(encoding="utf-8"))
+        assert manifest == build_manifest(build_cases())
+        assert result.stdout.strip() == f"{len(manifest['cases'])} cases written"
+        source = json.loads(
+            (tmp_path / "planner_preserves_null_request_beside_default.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        assert source == vectors.planning_policy_source()
 
     def test_write_corpus_writes_one_file_per_byte_case(self, tmp_path: Path) -> None:
         """Every declared fixture exists on disk with the declared digest.

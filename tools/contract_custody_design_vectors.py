@@ -18,6 +18,9 @@ reader has accepted or refused these bytes, and nothing here may be cited as
 conformance evidence. They exist so that the acceptance matrix is reviewable
 before implementation rather than invented during it.
 
+Existing adapter and planner outputs are captured as source facts. The proposed
+companion attachment remains unexecuted even when its source producer ran.
+
 The shapes follow the frozen design: a record reference of schema, digest and
 kind plus explicit modality; named field units, shapes and dtypes; parameter
 order, trainable mask and tangent convention; measurement mapping or an explicit
@@ -28,6 +31,10 @@ explicit claim boundary.
 from __future__ import annotations
 
 from typing import Any, Final
+
+from scpn_quantum_control import stable_core_product as scp
+from scpn_quantum_control.phase.gradient_backend import explain_quantum_gradient_method
+from scpn_quantum_control.stable_core import problem_to_kuramoto
 
 COMPANION_SCHEMA: Final[str] = "scientific_semantics.v1"
 """The proposed companion record these vectors are written against."""
@@ -44,12 +51,47 @@ BENCHMARK_PROBLEM_IDENTITY: Final[str] = (
 """The unrelated type sharing the bare class name, which must never cross-bind."""
 
 
+def planning_policy_source() -> dict[str, Any]:
+    """Capture the real planner's input, output and original output digest.
+
+    Returns
+    -------
+    dict
+        Reproducible source for the proposed default-shot attachment. The
+        planner executes locally; attaching its output to an experiment is
+        only a design proposal, not an executed semantic binding. No provider
+        submission or observed shot count is implied.
+
+    """
+    record = explain_quantum_gradient_method(
+        "shots", n_params=1, finite_shot=True, shots=None, confidence_level=0.95
+    ).to_dict()
+    return {
+        "producer": "scpn_quantum_control.phase.gradient_backend.explain_quantum_gradient_method",
+        "inputs": {
+            "backend": "shots",
+            "n_params": 1,
+            "finite_shot": True,
+            "shots": None,
+            "confidence_level": 0.95,
+            "shift_terms": 1,
+            "method": "auto",
+            "seed": None,
+            "allow_hardware": False,
+        },
+        "record": record,
+        "record_sha256": scp.digest_stable_core_payload(record),
+        "binding_status": "proposed_not_executed",
+    }
+
+
 def valid_companion(raw_digest: str) -> dict[str, Any]:
     """Return the positive base every refusal vector is a variant of.
 
     A refusal matrix without a positive base can be satisfied by refusing
-    everything, which is why this vector exists and why the variants below are
-    written as single-field departures from it.
+    everything, which is why this vector exists. Some variants combine faults
+    (shape with dtype, order with tangent); their rejection alone cannot prove
+    that each individual fault would be rejected.
 
     Parameters
     ----------
@@ -59,9 +101,15 @@ def valid_companion(raw_digest: str) -> dict[str, Any]:
     Returns
     -------
     dict
-        A companion payload that the proposed reader must accept.
+        A proposed companion for the demo experiment and its existing
+        Kuramoto adapter. Planner output is retained separately; its proposed
+        attachment does not assert that the raw experiment was executed.
 
     """
+    experiment = scp.build_demo_experiment()
+    adapted = problem_to_kuramoto(experiment.problem)
+    source = planning_policy_source()
+    policy = source["record"]["shot_policy"]
     return {
         "schema": COMPANION_SCHEMA,
         "record_reference": {
@@ -69,24 +117,54 @@ def valid_companion(raw_digest: str) -> dict[str, Any]:
             "kind": "experiment",
             "digest": raw_digest,
         },
-        "modality": "counts",
-        "producer_identity": CORE_PROBLEM_IDENTITY,
+        "modality": "experiment_plan",
+        "producer_identity": f"{type(adapted).__module__}.{type(adapted).__qualname__}",
+        "source_binding": {
+            "raw_type": f"{type(experiment).__module__}.{type(experiment).__qualname__}",
+            "raw_field": "body.problem",
+            "adapter": "scpn_quantum_control.stable_core.problem_to_kuramoto",
+            "field_paths": {
+                "omega": "body.problem.omega",
+                "K_nm": "body.problem.coupling_matrix",
+            },
+        },
+        "source_records": {"planning_policy": source},
         "fields": {
-            "omega": {"unit": "rad/s", "shape": [2], "dtype": "float64"},
-            "K_nm": {"unit": "rad/s", "shape": [2, 2], "dtype": "float64"},
+            "omega": {
+                "unit": "rad/s",
+                "shape": list(adapted.omega.shape),
+                "dtype": str(adapted.omega.dtype),
+            },
+            "K_nm": {
+                "unit": "rad/s",
+                "shape": list(adapted.K_nm.shape),
+                "dtype": str(adapted.K_nm.dtype),
+            },
         },
         "parameter_order": ["omega", "K_nm"],
         "trainable_mask": [True, True],
         "tangent_convention": "forward_real",
-        "measurement_mapping": {"kind": "computational_basis", "bit_wires": [0, 1]},
+        "measurement_mapping": {"kind": "not_applicable"},
         "settings": {
-            "requested": {"shots": None},
-            "effective": {"shots": 4096},
-            "origins": {"shots": "shot_policy.planned_shots/defaulted"},
+            "stage": "planning",
+            "requested": {"shots": policy["requested_shots"]},
+            "effective": {"shots": policy["planned_shots"]},
+            "origins": {
+                "shots": {
+                    "source_ref": "planning_policy",
+                    "requested_path": "record.shot_policy.requested_shots",
+                    "effective_path": "record.shot_policy.planned_shots",
+                    "defaulted_path": "record.shot_policy.defaulted",
+                }
+            },
             "rejected_fields": [],
         },
-        "claim_boundary": "local reference semantics only; no hardware execution claim",
-        "unavailable": [],
+        "claim_boundary": (
+            "proposed semantic binding to the raw experiment and separately captured "
+            "planner output; units and derivative conventions are design choices; "
+            "no executed binding, observed counts or hardware execution claim"
+        ),
+        "unavailable": ["executed_semantic_binding", "observed_execution"],
     }
 
 
@@ -234,6 +312,7 @@ def unauthorised_shot_change(raw_digest: str) -> dict[str, Any]:
     """
     payload = valid_companion(raw_digest)
     payload["settings"] = {
+        "stage": "planning",
         "requested": {"shots": 100},
         "effective": {"shots": 200},
         "origins": {},
@@ -256,14 +335,7 @@ def null_request_with_recorded_default(raw_digest: str) -> dict[str, Any]:
         A companion preserving a null request beside a defaulted effective value.
 
     """
-    payload = valid_companion(raw_digest)
-    payload["settings"] = {
-        "requested": {"shots": None},
-        "effective": {"shots": 4096},
-        "origins": {"shots": "backend default, planner-supplied"},
-        "rejected_fields": [],
-    }
-    return payload
+    return valid_companion(raw_digest)
 
 
 def not_applicable_measurement_mapping(raw_digest: str) -> dict[str, Any]:
@@ -280,10 +352,7 @@ def not_applicable_measurement_mapping(raw_digest: str) -> dict[str, Any]:
         A companion whose modality carries no counts and says so.
 
     """
-    payload = valid_companion(raw_digest)
-    payload["modality"] = "expectation_value"
-    payload["measurement_mapping"] = {"kind": "not_applicable"}
-    return payload
+    return valid_companion(raw_digest)
 
 
 def cross_bound_producer_identity(raw_digest: str) -> dict[str, Any]:

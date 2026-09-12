@@ -262,7 +262,7 @@ def _executed_cases() -> tuple[CustodyCase, ...]:
                 "The real planner keeps a null caller request distinguishable from "
                 "the backend default it supplied, and records why."
             ),
-            payload=None,
+            payload=vectors.planning_policy_source(),
         ),
         CustodyCase(
             case_id="fisher_observed_and_expected_routes_stay_distinct",
