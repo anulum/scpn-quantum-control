@@ -45,6 +45,7 @@ from scpn_quantum_control.phase.qnode_circuit_differentiation import (
     phase_qnode_computational_basis_fisher_information,
 )
 from tools import contract_custody_design_vectors as vectors
+from tools.contract_custody_registry_source import registry_evidence_source
 
 CORPUS_SCHEMA: Final[str] = "contract_custody_corpus.v1"
 """Schema of the manifest this module writes."""
@@ -597,8 +598,38 @@ def _design_vector_cases() -> tuple[CustodyCase, ...]:
     )
 
 
+def _registry_source_cases() -> tuple[CustodyCase, ...]:
+    """Return actual registry support and missing-contract report cases.
+
+    Returns
+    -------
+    tuple
+        Executed metadata reports, not compiled or numerical qualification.
+
+    """
+    reader = (
+        "scpn_quantum_control.program_ad_registry.program_ad_registry_dispatch_coverage_report"
+    )
+    return tuple(
+        CustodyCase(
+            case_id=case_id,
+            family="Semantic support",
+            producer=reader,
+            reader=reader,
+            expectation="reject" if empty else "accept",
+            status=EXECUTED,
+            rationale="Actual registry report preserves declared support and missing-contract blockers; not executable lowering evidence.",
+            payload=registry_evidence_source(empty=empty),
+        )
+        for case_id, empty in (
+            ("registry_dispatch_preserves_declared_support", False),
+            ("registry_dispatch_refuses_missing_contracts", True),
+        )
+    )
+
+
 def build_cases() -> tuple[CustodyCase, ...]:
-    """Return every case, executed ones first.
+    """Return every case in stable catalogue order.
 
     Returns
     -------
@@ -606,7 +637,12 @@ def build_cases() -> tuple[CustodyCase, ...]:
         The whole corpus.
 
     """
-    return _executed_cases() + _source_fact_cases() + _design_vector_cases()
+    return (
+        _executed_cases()
+        + _source_fact_cases()
+        + _design_vector_cases()
+        + _registry_source_cases()
+    )
 
 
 def case_manifest_entry(case: CustodyCase) -> dict[str, Any]:

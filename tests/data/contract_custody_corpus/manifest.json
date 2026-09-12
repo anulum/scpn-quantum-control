@@ -351,6 +351,28 @@
       "rationale": "Proposed captured raw and companion snapshots/digests survive named source mutations; this scenario is not executed capture conformance.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
       "status": "design_vector"
+    },
+    {
+      "case_id": "registry_dispatch_preserves_declared_support",
+      "expectation": "accept",
+      "family": "Semantic support",
+      "fixture": "registry_dispatch_preserves_declared_support.json",
+      "fixture_sha256": "1be2184237871e307813fae14e8ed746e9c1eb9b3b7e5fc07b577504c7688457",
+      "producer": "scpn_quantum_control.program_ad_registry.program_ad_registry_dispatch_coverage_report",
+      "rationale": "Actual registry report preserves declared support and missing-contract blockers; not executable lowering evidence.",
+      "reader": "scpn_quantum_control.program_ad_registry.program_ad_registry_dispatch_coverage_report",
+      "status": "executed"
+    },
+    {
+      "case_id": "registry_dispatch_refuses_missing_contracts",
+      "expectation": "reject",
+      "family": "Semantic support",
+      "fixture": "registry_dispatch_refuses_missing_contracts.json",
+      "fixture_sha256": "1f4fbfab5173381cd19159fcf9ceeeface135c3916ddbea87849eb61eeff07e3",
+      "producer": "scpn_quantum_control.program_ad_registry.program_ad_registry_dispatch_coverage_report",
+      "rationale": "Actual registry report preserves declared support and missing-contract blockers; not executable lowering evidence.",
+      "reader": "scpn_quantum_control.program_ad_registry.program_ad_registry_dispatch_coverage_report",
+      "status": "executed"
     }
   ],
   "companion_module": "scpn_quantum_control.semantic_record",

@@ -464,6 +464,53 @@ class TestProducerIdentitySourceFact:
         assert _case("same_named_problem_types_remain_separable")["reader"] is None
 
 
+class TestRegistrySourceEvidence:
+    """Execute actual registry reports without promoting compiler metadata."""
+
+    @pytest.mark.parametrize("empty", (False, True))
+    def test_registry_report_replays_frozen_supported_and_missing_contracts(
+        self, empty: bool
+    ) -> None:
+        """Compare complete public reports and their original content digests.
+
+        Parameters
+        ----------
+        empty
+            Select a new empty registry or the existing populated default.
+
+        """
+        from scpn_quantum_control.program_ad_registry import (
+            CustomDerivativeRegistry,
+            program_ad_registry_dispatch_coverage_report,
+        )
+
+        case_id = (
+            "registry_dispatch_refuses_missing_contracts"
+            if empty
+            else "registry_dispatch_preserves_declared_support"
+        )
+        source = _fixture(case_id)
+        report = program_ad_registry_dispatch_coverage_report(
+            registry=CustomDerivativeRegistry() if empty else None
+        )
+        assert source["report"] == report.to_dict()
+        assert source["report_sha256"] == scp.digest_stable_core_payload(report.to_dict())
+        assert source["inputs"]["registry"] == ("empty" if empty else "default")
+        assert report.supported is (not empty)
+        assert "not executable Rust, LLVM, JIT" in report.claim_boundary
+        if empty:
+            assert report.covered_primitives == 0
+            assert len(report.blocked_identities) == report.total_primitives
+            assert source["contract"] is None
+        else:
+            assert report.covered_primitives == report.total_primitives
+            probe = source["contract"]["identity"]
+            row = next(row for row in report.rows if row.identity == probe)
+            assert row.complete
+            assert row.has_lowering_rule is False
+            assert source["contract"]["has_lowering_rule"] is False
+
+
 class TestDesignVectors:
     """Concrete proposed bytes, frozen and deliberately not executed."""
 
