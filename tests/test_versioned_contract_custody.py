@@ -292,6 +292,58 @@ class TestExecutionPlanProvenance:
 class TestFidelityEvidenceProvenance:
     """Executed: the real Fisher producer on both count routes."""
 
+    @pytest.mark.parametrize("route", ("expected", "observed"))
+    def test_frozen_fisher_inputs_reproduce_complete_public_uncertainty(self, route: str) -> None:
+        """Rebuild each captured route without dropping uncertainty or source counts.
+
+        Parameters
+        ----------
+        route
+            Expected-count analysis or supplied-count replay, never hardware sampling.
+
+        """
+        payload = _fixture("fisher_observed_and_expected_routes_stay_distinct")
+        producer = phase_qnode_computational_basis_fisher_information
+        assert payload["producer"] == f"{producer.__module__}.{producer.__qualname__}"
+        assert "not acquired hardware evidence" in payload["claim_boundary"]
+        spec = payload["circuit"]
+        observable = PauliTerm(
+            spec["observable"]["coefficient"],
+            tuple(tuple(item) for item in spec["observable"]["factors"]),
+        )
+        circuit = PhaseQNodeCircuit(
+            n_qubits=spec["n_qubits"],
+            operations=tuple((item[0], tuple(item[1]), item[2]) for item in spec["operations"]),
+            observable=observable,
+        )
+        captured = payload["routes"][route]
+        result = phase_qnode_computational_basis_fisher_information(circuit, **captured["inputs"])
+        assert result.to_dict() == captured["result"]
+        assert scp.digest_stable_core_payload(result.to_dict()) == captured["result_sha256"]
+        assert result.fisher_standard_error is not None
+        assert result.fisher_confidence_radius is not None
+        assert result.confidence_level == captured["inputs"]["confidence_level"] == 0.95
+        assert result.confidence_z is not None
+        assert result.confidence_z == captured["inputs"]["confidence_z"]
+        np.testing.assert_allclose(
+            result.fisher_confidence_radius,
+            result.fisher_standard_error * result.confidence_z,
+            rtol=1e-14,
+            atol=0,
+        )
+        assert "no hardware" in result.claim_boundary
+        if route == "expected":
+            assert captured["inputs"]["observed_counts"] is None
+            assert result.count_record is None
+            assert "count_mapping" not in captured["result"]
+            assert result.sampling_model == EXPECTED_SAMPLING_MODEL
+        else:
+            assert captured["inputs"]["observed_counts"] == {"0": 300, "1": 212}
+            assert captured["inputs"]["observed_count_wires"] == [0]
+            assert result.count_record == (300, 212)
+            assert result.count_mapping is not None
+            assert result.sampling_model == OBSERVED_SAMPLING_MODEL
+
     def test_observed_and_expected_routes_are_labelled_apart(self) -> None:
         """Equal shot counts must not conflate replay with expectation."""
         circuit = _one_parameter_circuit()

@@ -34,6 +34,10 @@ from pathlib import Path
 from typing import Any, Final
 
 from scpn_quantum_control import stable_core_product as scp
+from scpn_quantum_control.phase.qnode_circuit_contracts import PauliTerm, PhaseQNodeCircuit
+from scpn_quantum_control.phase.qnode_circuit_differentiation import (
+    phase_qnode_computational_basis_fisher_information,
+)
 from tools import contract_custody_design_vectors as vectors
 
 CORPUS_SCHEMA: Final[str] = "contract_custody_corpus.v1"
@@ -151,6 +155,69 @@ def _with_mismatched_kind() -> dict[str, Any]:
     envelope = raw_experiment_record()
     envelope["kind"] = "problem"
     return envelope
+
+
+def fisher_evidence_source() -> dict[str, Any]:
+    """Capture full public Fisher output for expected and supplied-count routes.
+
+    Returns
+    -------
+    dict
+        Explicit circuit and callable inputs, public result records and their
+        original digests. Counts are a deterministic local test input, not
+        acquired hardware measurements. No companion binding is executed.
+
+    """
+    observable = PauliTerm(1.0, ((0, "z"),))
+    operations = (("ry", (0,), 0),)
+    circuit = PhaseQNodeCircuit(n_qubits=1, operations=operations, observable=observable)
+    routes: dict[str, Any] = {}
+    for route, counts, wires in (
+        ("expected", None, None),
+        ("observed", {"0": 300, "1": 212}, [0]),
+    ):
+        inputs = {
+            "parameters": [0.7],
+            "min_probability": 1e-15,
+            "shot_count": 512,
+            "observed_counts": counts,
+            "observed_count_wires": wires,
+            "confidence_level": 0.95,
+            "confidence_z": 1.959963984540054,
+        }
+        result = phase_qnode_computational_basis_fisher_information(
+            circuit,
+            [0.7],
+            min_probability=1e-15,
+            shot_count=512,
+            observed_counts=counts,
+            observed_count_wires=wires,
+            confidence_level=0.95,
+            confidence_z=1.959963984540054,
+        ).to_dict()
+        routes[route] = {
+            "inputs": inputs,
+            "result": result,
+            "result_sha256": scp.digest_stable_core_payload(result),
+        }
+    return {
+        "producer": (
+            "scpn_quantum_control.phase.qnode_circuit_differentiation."
+            "phase_qnode_computational_basis_fisher_information"
+        ),
+        "circuit": {
+            "n_qubits": circuit.n_qubits,
+            "operations": [
+                [name, list(qubits), parameter] for name, qubits, parameter in operations
+            ],
+            "observable": observable.to_dict(),
+        },
+        "routes": routes,
+        "claim_boundary": (
+            "local reference and uncertainty calculation using deterministic test inputs; "
+            "supplied counts are not acquired hardware evidence; no semantic companion binding"
+        ),
+    }
 
 
 def _executed_cases() -> tuple[CustodyCase, ...]:
@@ -287,7 +354,7 @@ def _executed_cases() -> tuple[CustodyCase, ...]:
                 "analysis differently and retains the raw counts only for the "
                 "observed route, so equal shot counts cannot conflate them."
             ),
-            payload=None,
+            payload=fisher_evidence_source(),
         ),
         CustodyCase(
             case_id="non_count_route_carries_no_measurement_mapping",
