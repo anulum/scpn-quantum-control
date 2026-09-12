@@ -6,7 +6,12 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — differentiable result contracts module
 # scpn-quantum-control -- differentiable derivative result contracts
-"""Validated result records for native differentiable-programming transforms."""
+"""Validated result records for native differentiable-programming transforms.
+
+Method identities and claim boundaries require non-blank strings; they are not
+inferred from payloads or coerced from other types. Evaluation counts require
+non-negative Python integers, never booleans or floating-point approximations.
+"""
 
 from __future__ import annotations
 
@@ -47,10 +52,22 @@ _PARAMETER_SHIFT_RECORD_TOLERANCE = 1.0e-12
 
 
 def _normalise_claim_boundary(label: str, claim_boundary: str) -> str:
-    boundary = str(claim_boundary).strip()
-    if not boundary:
+    """Retain a textual evidence limit without inventing one by coercion."""
+    if not isinstance(claim_boundary, str) or not claim_boundary.strip():
         raise ValueError(f"{label} claim_boundary must be non-empty")
-    return boundary
+    return claim_boundary.strip()
+
+
+def _require_method(label: str, method: str) -> None:
+    """Require a non-blank method identifier while preserving its spelling."""
+    if not isinstance(method, str) or not method.strip():
+        raise ValueError(f"{label} method must be non-empty string provenance")
+
+
+def _require_count(label: str, count: int) -> None:
+    """Reject non-integer counts rather than truncating or coercing evidence."""
+    if isinstance(count, bool) or not isinstance(count, int) or count < 0:
+        raise ValueError(f"{label} must be non-negative integers")
 
 
 def _require_zero_frozen_entries(
@@ -233,8 +250,7 @@ class GradientResult:
         gradient = gradient.copy()
         if not np.all(np.isfinite(gradient)):
             raise ValueError("gradient must contain only finite values")
-        if not isinstance(self.method, str) or not self.method.strip():
-            raise ValueError("gradient method must be non-empty string provenance")
+        _require_method("gradient", self.method)
         shift = None if self.shift is None else _as_real_scalar("gradient shift", self.shift)
         coefficient = (
             None
@@ -243,12 +259,7 @@ class GradientResult:
         )
         if shift is not None and shift <= 0.0:
             raise ValueError("gradient shift must be finite and positive")
-        if (
-            isinstance(self.evaluations, bool)
-            or not isinstance(self.evaluations, int)
-            or self.evaluations < 0
-        ):
-            raise ValueError("gradient evaluations must be non-negative integers")
+        _require_count("gradient evaluations", self.evaluations)
         if len(self.parameter_names) != gradient.size:
             raise ValueError("parameter_names length must match gradient length")
         if len(self.trainable) != gradient.size:
@@ -514,8 +525,8 @@ class StochasticGradientResult:
             raise ValueError("stochastic gradient shift must be finite and positive")
         if coefficient is not None and coefficient <= 0.0:
             raise ValueError("stochastic gradient coefficient must be finite and positive")
-        if self.evaluations < 0:
-            raise ValueError("stochastic gradient evaluations must be non-negative")
+        _require_method("stochastic gradient", self.method)
+        _require_count("stochastic gradient evaluations", self.evaluations)
         if len(self.parameter_names) != gradient.size:
             raise ValueError("parameter_names length must match gradient length")
         if len(self.trainable) != gradient.size:
@@ -719,18 +730,24 @@ class SPSAGradientResult:
             raise ValueError("SPSA uncertainty vectors must be non-negative")
         if self.perturbation_radius <= 0.0 or not np.isfinite(self.perturbation_radius):
             raise ValueError("SPSA perturbation_radius must be finite and positive")
+        _require_count("SPSA repetitions", self.repetitions)
         if self.repetitions <= 0:
             raise ValueError("SPSA repetitions must be positive")
+        _require_method("SPSA", self.method)
+        _require_count("SPSA evaluations", self.evaluations)
         if self.evaluations != 2 * self.repetitions:
             raise ValueError("SPSA evaluations must equal two per repetition")
-        if self.total_shots is not None and self.total_shots <= 0:
-            raise ValueError("SPSA total_shots must be positive or None")
+        if self.total_shots is not None:
+            _require_count("SPSA total_shots", self.total_shots)
+            if self.total_shots <= 0:
+                raise ValueError("SPSA total_shots must be positive or None")
         if len(self.parameter_names) != gradient.size:
             raise ValueError("SPSA parameter_names length must match gradient length")
         if len(self.trainable) != gradient.size:
             raise ValueError("SPSA trainable mask length must match gradient length")
-        if not self.claim_boundary:
-            raise ValueError("SPSA claim_boundary must be non-empty")
+        object.__setattr__(
+            self, "claim_boundary", _normalise_claim_boundary("SPSA", self.claim_boundary)
+        )
         reasons = tuple(str(reason) for reason in self.failure_reasons)
         if self.confidence_interval is not None:
             if self.confidence_interval.lower.shape != gradient.shape:
@@ -858,6 +875,7 @@ class ScoreFunctionGradientResult:
             raise ValueError("score-function covariance shape must be gradient length squared")
         if np.any(standard_error < 0.0) or np.any(confidence_radius < 0.0):
             raise ValueError("score-function uncertainty vectors must be non-negative")
+        _require_count("score-function sample_count", self.sample_count)
         if self.sample_count < 2:
             raise ValueError("score-function sample_count must be at least two")
         if len(self.records) != self.sample_count:
@@ -868,8 +886,12 @@ class ScoreFunctionGradientResult:
             raise ValueError("score-function parameter_names length must match gradient length")
         if len(self.trainable) != gradient.size:
             raise ValueError("score-function trainable mask length must match gradient length")
-        if not self.claim_boundary:
-            raise ValueError("score-function claim_boundary must be non-empty")
+        _require_method("score-function", self.method)
+        object.__setattr__(
+            self,
+            "claim_boundary",
+            _normalise_claim_boundary("score-function", self.claim_boundary),
+        )
         reasons = tuple(str(reason) for reason in self.failure_reasons)
         if self.confidence_interval is not None:
             if self.confidence_interval.lower.shape != gradient.shape:
@@ -967,11 +989,11 @@ class ShotAllocationResult:
             raise ValueError("shot allocation covariance must contain only finite values")
         if target <= 0.0:
             raise ValueError("target_standard_error must be finite and positive")
-        total_shots = int(self.total_shots)
+        _require_count("shot allocation total_shots", self.total_shots)
+        total_shots = self.total_shots
         if total_shots != int(np.sum(shots)):
             raise ValueError("total_shots must equal allocated shot sum")
-        if not self.method:
-            raise ValueError("shot allocation method must be non-empty")
+        _require_method("shot allocation", self.method)
         if len(self.parameter_names) != parameter_count:
             raise ValueError("parameter_names length must match shot columns")
         if len(self.trainable) != parameter_count:
@@ -1062,8 +1084,7 @@ class ArmijoLineSearchResult:
         )
         if not isinstance(self.accepted, bool):
             raise ValueError("line-search accepted flag must be a boolean")
-        if self.evaluations < 0:
-            raise ValueError("line-search evaluations must be non-negative")
+        _require_count("line-search evaluations", self.evaluations)
         if not self.value_history:
             raise ValueError("line-search value_history must be non-empty")
         value_history = tuple(
@@ -1200,13 +1221,11 @@ class JacobianResult:
             raise ValueError("jacobian value must contain only finite values")
         if not np.all(np.isfinite(jacobian)):
             raise ValueError("jacobian must contain only finite values")
-        if not self.method:
-            raise ValueError("jacobian method must be non-empty")
+        _require_method("jacobian", self.method)
         step = _as_real_scalar("jacobian step", self.step)
         if step < 0.0:
             raise ValueError("jacobian step must be finite and non-negative")
-        if self.evaluations < 0:
-            raise ValueError("jacobian evaluations must be non-negative")
+        _require_count("jacobian evaluations", self.evaluations)
         if len(self.parameter_names) != jacobian.shape[1]:
             raise ValueError("parameter_names length must match jacobian column count")
         if len(self.trainable) != jacobian.shape[1]:
@@ -1252,13 +1271,11 @@ class JVPResult:
             raise ValueError("JVP value and product must contain only finite values")
         if not np.all(np.isfinite(tangent)):
             raise ValueError("JVP tangent must contain only finite values")
-        if not self.method:
-            raise ValueError("JVP method must be non-empty")
+        _require_method("JVP", self.method)
         step = _as_real_scalar("JVP step", self.step)
         if step < 0.0:
             raise ValueError("JVP step must be finite and non-negative")
-        if self.evaluations < 0:
-            raise ValueError("JVP evaluations must be non-negative")
+        _require_count("JVP evaluations", self.evaluations)
         if len(self.parameter_names) != tangent.size:
             raise ValueError("parameter_names length must match tangent length")
         if len(self.trainable) != tangent.size:
@@ -1305,13 +1322,11 @@ class VJPResult:
             raise ValueError("VJP value and cotangent must contain only finite values")
         if not np.all(np.isfinite(vjp)):
             raise ValueError("VJP must contain only finite values")
-        if not self.method:
-            raise ValueError("VJP method must be non-empty")
+        _require_method("VJP", self.method)
         step = _as_real_scalar("VJP step", self.step)
         if step < 0.0:
             raise ValueError("VJP step must be finite and non-negative")
-        if self.evaluations < 0:
-            raise ValueError("VJP evaluations must be non-negative")
+        _require_count("VJP evaluations", self.evaluations)
         if len(self.parameter_names) != vjp.size:
             raise ValueError("parameter_names length must match VJP length")
         if len(self.trainable) != vjp.size:
@@ -1350,13 +1365,11 @@ class HessianResult:
             raise ValueError("hessian must be a square two-dimensional array")
         if not np.all(np.isfinite(hessian)):
             raise ValueError("hessian must contain only finite values")
-        if not self.method:
-            raise ValueError("hessian method must be non-empty")
+        _require_method("hessian", self.method)
         step = _as_real_scalar("hessian step", self.step)
         if step <= 0.0:
             raise ValueError("hessian step must be finite and positive")
-        if self.evaluations < 0:
-            raise ValueError("hessian evaluations must be non-negative")
+        _require_count("hessian evaluations", self.evaluations)
         if len(self.parameter_names) != hessian.shape[1]:
             raise ValueError("parameter_names length must match hessian dimension")
         if len(self.trainable) != hessian.shape[1]:
@@ -1411,8 +1424,7 @@ class SparseMatrixResult:
                 raise ValueError("sparse indices must not contain duplicate coordinates")
         if not np.all(np.isfinite(values)):
             raise ValueError("sparse values must contain only finite values")
-        if not self.method:
-            raise ValueError("sparse method must be non-empty")
+        _require_method("sparse", self.method)
         if len(self.parameter_names) != self.shape[1]:
             raise ValueError("parameter_names length must match sparse column count")
         if len(self.trainable) != self.shape[1]:
@@ -1471,13 +1483,11 @@ class HVPResult:
             raise ValueError("HVP tangent shape must match HVP shape")
         if not np.all(np.isfinite(hvp)) or not np.all(np.isfinite(tangent)):
             raise ValueError("HVP and tangent must contain only finite values")
-        if not self.method:
-            raise ValueError("HVP method must be non-empty")
+        _require_method("HVP", self.method)
         step = _as_real_scalar("HVP step", self.step)
         if step <= 0.0:
             raise ValueError("HVP step must be finite and positive")
-        if self.evaluations < 0:
-            raise ValueError("HVP evaluations must be non-negative")
+        _require_count("HVP evaluations", self.evaluations)
         if len(self.parameter_names) != hvp.size:
             raise ValueError("parameter_names length must match HVP length")
         if len(self.trainable) != hvp.size:
@@ -1872,10 +1882,8 @@ class FisherVectorProductResult:
         damping = _as_real_scalar("Fisher-vector damping", self.damping)
         if damping < 0.0:
             raise ValueError("Fisher-vector damping must be finite and non-negative")
-        if not self.method:
-            raise ValueError("Fisher-vector method must be non-empty")
-        if self.evaluations < 0:
-            raise ValueError("Fisher-vector evaluations must be non-negative")
+        _require_method("Fisher-vector", self.method)
+        _require_count("Fisher-vector evaluations", self.evaluations)
         if len(self.parameter_names) != tangent.size:
             raise ValueError("parameter_names length must match Fisher-vector dimension")
         if len(self.trainable) != tangent.size:
@@ -1974,10 +1982,8 @@ class WeightedGradientResult:
             raise ValueError("weighted gradient must contain only finite values")
         if not np.all(np.isfinite(weights)):
             raise ValueError("weights must contain only finite values")
-        if not self.method:
-            raise ValueError("weighted gradient method must be non-empty")
-        if self.evaluations < 0:
-            raise ValueError("weighted gradient evaluations must be non-negative")
+        _require_method("weighted gradient", self.method)
+        _require_count("weighted gradient evaluations", self.evaluations)
         if len(self.parameter_names) != gradient.size:
             raise ValueError("parameter_names length must match gradient length")
         if len(self.trainable) != gradient.size:
@@ -2029,8 +2035,7 @@ class ImplicitSensitivityResult:
         )
         if condition_number < 1.0:
             raise ValueError("implicit condition_number must be at least 1")
-        if not self.method:
-            raise ValueError("implicit method must be non-empty")
+        _require_method("implicit", self.method)
         if len(self.parameter_names) != hessian.shape[0]:
             raise ValueError("parameter_names length must match implicit hessian dimension")
         if len(self.trainable) != hessian.shape[0]:
@@ -2106,8 +2111,7 @@ class FixedPointSensitivityResult:
         )
         if condition_number < 1.0:
             raise ValueError("fixed-point condition_number must be at least 1")
-        if not self.method:
-            raise ValueError("fixed-point method must be non-empty")
+        _require_method("fixed-point", self.method)
         if len(self.parameter_names) != state_jacobian.shape[0]:
             raise ValueError("parameter_names length must match fixed-point state dimension")
         if len(self.trainable) != state_jacobian.shape[0]:

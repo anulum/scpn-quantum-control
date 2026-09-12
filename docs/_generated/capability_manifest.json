@@ -13,7 +13,7 @@
     "python_model_source_modules": 702,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1379
+    "test_files": 1380
   },
   "documentation": {
     "examples": [
@@ -8494,6 +8494,7 @@
       "tests/test_differentiable_residual_weights.py",
       "tests/test_differentiable_residual_weights_quality_gate.py",
       "tests/test_differentiable_result_contracts.py",
+      "tests/test_differentiable_result_provenance.py",
       "tests/test_differentiable_reviewer_evidence_page.py",
       "tests/test_differentiable_rust_python_inventory.py",
       "tests/test_differentiable_scalar_kernels.py",
