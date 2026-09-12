@@ -265,6 +265,7 @@ mod tests {
     }
 
     #[test]
+    /// Preserve value and gradient bytes through the allocated public FFI.
     fn ffi_round_trip_matches_the_reference() {
         let payload = encode(RATIONAL_IR, &[3.0, 5.0]);
         let expected = replay_value_and_gradient(&payload).expect("replay");
@@ -278,10 +279,11 @@ mod tests {
             let status = scpn_program_ad_replay(input_ptr, payload.len(), output_ptr, output_bytes);
             assert_eq!(status, i32::from(ProgramAdStatus::Ok));
             let raw = core::slice::from_raw_parts(output_ptr, output_bytes);
-            for (slot, chunk) in produced.iter_mut().zip(raw.chunks_exact(8)) {
-                let mut buf = [0_u8; 8];
-                buf.copy_from_slice(chunk);
-                *slot = f64::from_le_bytes(buf);
+            let (chunks, remainder) = raw.as_chunks::<8>();
+            assert!(remainder.is_empty());
+            assert_eq!(chunks.len(), produced.len());
+            for (slot, chunk) in produced.iter_mut().zip(chunks) {
+                *slot = f64::from_le_bytes(*chunk);
             }
             scpn_free(input_ptr, payload.len());
             scpn_free(output_ptr, output_bytes);

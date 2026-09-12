@@ -57,13 +57,11 @@ fuzz_target!(|data: &[u8]| {
     let val = read_f64(data, 32);
     let lo = read_f64(data, 40);
     let hi = read_f64(data, 48);
-    let floats: Vec<f64> = data[HEADER..]
-        .chunks_exact(8)
-        .map(|chunk| {
-            let mut raw = [0u8; 8];
-            raw.copy_from_slice(chunk);
-            f64::from_le_bytes(raw)
-        })
+    // Ignore an incomplete trailing float, preserving the input decoding contract.
+    let (chunks, _) = data[HEADER..].as_chunks::<8>();
+    let floats: Vec<f64> = chunks
+        .iter()
+        .map(|chunk| f64::from_le_bytes(*chunk))
         .collect();
 
     // Every validator must return a verdict — never panic, never overflow.
