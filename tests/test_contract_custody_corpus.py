@@ -87,7 +87,7 @@ class TestEvidenceClassification:
             assert case.producer == vectors.COMPANION_SCHEMA
 
     def test_executed_cases_do_not_name_the_proposed_companion_reader(self) -> None:
-        """This naming guard is not proof of importability or reader execution."""
+        """Guard reader names without claiming importability or actual execution."""
         executed = [case for case in build_cases() if case.status == EXECUTED]
 
         assert executed

@@ -24,7 +24,7 @@ import importlib
 import importlib.util
 import json
 from pathlib import Path
-from typing import Any, Final
+from typing import Any, Final, Literal
 
 import numpy as np
 import pytest
@@ -509,6 +509,34 @@ class TestRegistrySourceEvidence:
             assert row.complete
             assert row.has_lowering_rule is False
             assert source["contract"]["has_lowering_rule"] is False
+
+
+class TestDerivativeSourceEvidence:
+    """Keep complete native derivative requests/results reproducible in the corpus."""
+
+    @pytest.mark.parametrize(
+        ("case_id", "method"),
+        [
+            ("forward_gradient_preserves_request_and_result", "forward_mode"),
+            ("reverse_gradient_preserves_request_and_result", "reverse_mode"),
+            ("stochastic_gradient_preserves_uncertainty_source", "parameter_shift"),
+        ],
+    )
+    def test_frozen_derivative_source_matches_native_producer(
+        self, case_id: str, method: Literal["forward_mode", "reverse_mode", "parameter_shift"]
+    ) -> None:
+        """Compare the full frozen source and result hash, without companion claims."""
+        from tools.contract_custody_derivative_source import derivative_evidence_source
+
+        source = _fixture(case_id)
+        assert source == derivative_evidence_source(method)
+        assert source["result_sha256"] == scp.digest_stable_core_payload(source["result"])
+        case = _case(case_id)
+        assert case["status"] == "executed" and case["expectation"] == "accept"
+        assert case["reader"] == source["producer"]
+        assert "semantic_binding" in source["unavailable"]
+        assert source["result"]["parameter_names"] == ["z", "a"]
+        assert source["result"]["trainable"] == [True, False]
 
 
 class TestDesignVectors:

@@ -373,6 +373,39 @@
       "rationale": "Actual registry report preserves declared support and missing-contract blockers; not executable lowering evidence.",
       "reader": "scpn_quantum_control.program_ad_registry.program_ad_registry_dispatch_coverage_report",
       "status": "executed"
+    },
+    {
+      "case_id": "forward_gradient_preserves_request_and_result",
+      "expectation": "accept",
+      "family": "Derivative request",
+      "fixture": "forward_gradient_preserves_request_and_result.json",
+      "fixture_sha256": "66fc41a37a779c416d5e514e6be9ee8dece2327cb907d308ca67c1bd5ebe604a",
+      "producer": "scpn_quantum_control.differentiable_canonical_api.value_and_grad",
+      "rationale": "Actual native derivative request/result with source provenance; not hardware or companion binding conformance.",
+      "reader": "scpn_quantum_control.differentiable_canonical_api.value_and_grad",
+      "status": "executed"
+    },
+    {
+      "case_id": "reverse_gradient_preserves_request_and_result",
+      "expectation": "accept",
+      "family": "Derivative request",
+      "fixture": "reverse_gradient_preserves_request_and_result.json",
+      "fixture_sha256": "996023abad586b23645869097f55ac35b5d728701817500a0aa29e6a9d851010",
+      "producer": "scpn_quantum_control.differentiable_canonical_api.value_and_grad",
+      "rationale": "Actual native derivative request/result with source provenance; not hardware or companion binding conformance.",
+      "reader": "scpn_quantum_control.differentiable_canonical_api.value_and_grad",
+      "status": "executed"
+    },
+    {
+      "case_id": "stochastic_gradient_preserves_uncertainty_source",
+      "expectation": "accept",
+      "family": "Fidelity",
+      "fixture": "stochastic_gradient_preserves_uncertainty_source.json",
+      "fixture_sha256": "fd66cec9d31c2880dca8f4f07d2570010eba16080bffe5a266e10def979260a2",
+      "producer": "scpn_quantum_control.differentiable_parameter_shift.parameter_shift_gradient_with_uncertainty",
+      "rationale": "Actual native derivative request/result with source provenance; not hardware or companion binding conformance.",
+      "reader": "scpn_quantum_control.differentiable_parameter_shift.parameter_shift_gradient_with_uncertainty",
+      "status": "executed"
     }
   ],
   "companion_module": "scpn_quantum_control.semantic_record",

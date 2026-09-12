@@ -22,6 +22,30 @@ from scpn_quantum_control.control import realtime_runtime
 from tools.ci_workflow_inventory import read_ci_workflow_source, workflow_path_for_job
 
 
+def test_custody_source_and_test_families_have_strict_native_gates() -> None:
+    """New corpus extractors/tests must enter strict gates without a hand-edited list."""
+    source = Path(".github/workflows/ci-static-analysis.yml").read_text(encoding="utf-8")
+    for step, command in (
+        (
+            "Type-check contract custody source and tests",
+            "python -m mypy --strict --explicit-package-bases",
+        ),
+        (
+            "Enforce contract custody native documentation",
+            "python -m ruff check --isolated --preview --select D,D413,D417,D420",
+        ),
+    ):
+        marker = f"      - name: {step}\n        run: >-\n"
+        assert source.count(marker) == 1
+        body = source.split(marker, 1)[1].split("      - name:", 1)[0]
+        assert command in body
+        assert "tools/contract_custody*.py tests/test_contract_custody*.py" in body
+        assert "tests/test_versioned_contract_custody.py" in body
+        if "ruff" in command:
+            assert "lint.explicit-preview-rules = true" in body
+            assert 'lint.pydocstyle.convention = "numpy"' in body
+
+
 def test_configured_python_documentation_scope_is_fail_closed() -> None:
     """Allow D exemptions only for named debt trees and gate maintained surfaces."""
     pyproject = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))

@@ -37,7 +37,7 @@ import sys
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Final
+from typing import Any, Final, Literal
 
 from scpn_quantum_control import stable_core_product as scp
 from scpn_quantum_control.phase.qnode_circuit_contracts import PauliTerm, PhaseQNodeCircuit
@@ -45,6 +45,7 @@ from scpn_quantum_control.phase.qnode_circuit_differentiation import (
     phase_qnode_computational_basis_fisher_information,
 )
 from tools import contract_custody_design_vectors as vectors
+from tools.contract_custody_derivative_source import derivative_evidence_source
 from tools.contract_custody_registry_source import registry_evidence_source
 
 CORPUS_SCHEMA: Final[str] = "contract_custody_corpus.v1"
@@ -628,6 +629,33 @@ def _registry_source_cases() -> tuple[CustodyCase, ...]:
     )
 
 
+def _derivative_source_cases() -> tuple[CustodyCase, ...]:
+    """Capture native derivative requests and finite-shot uncertainty sources."""
+    rows: tuple[
+        tuple[str, Literal["forward_mode", "reverse_mode", "parameter_shift"], str], ...
+    ] = (
+        ("forward_gradient_preserves_request_and_result", "forward_mode", "Derivative request"),
+        ("reverse_gradient_preserves_request_and_result", "reverse_mode", "Derivative request"),
+        ("stochastic_gradient_preserves_uncertainty_source", "parameter_shift", "Fidelity"),
+    )
+    cases: list[CustodyCase] = []
+    for case_id, method, family in rows:
+        payload = derivative_evidence_source(method)
+        cases.append(
+            CustodyCase(
+                case_id=case_id,
+                family=family,
+                producer=payload["producer"],
+                reader=payload["producer"],
+                expectation="accept",
+                status=EXECUTED,
+                rationale="Actual native derivative request/result with source provenance; not hardware or companion binding conformance.",
+                payload=payload,
+            )
+        )
+    return tuple(cases)
+
+
 def build_cases() -> tuple[CustodyCase, ...]:
     """Return every case in stable catalogue order.
 
@@ -642,6 +670,7 @@ def build_cases() -> tuple[CustodyCase, ...]:
         + _source_fact_cases()
         + _design_vector_cases()
         + _registry_source_cases()
+        + _derivative_source_cases()
     )
 
 

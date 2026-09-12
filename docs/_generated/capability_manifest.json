@@ -13,7 +13,7 @@
     "python_model_source_modules": 702,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1381
+    "test_files": 1382
   },
   "documentation": {
     "examples": [
@@ -8371,6 +8371,7 @@
       "tests/test_config.py",
       "tests/test_confinement.py",
       "tests/test_contract_custody_corpus.py",
+      "tests/test_contract_custody_derivative_source.py",
       "tests/test_contract_custody_registry_source.py",
       "tests/test_contraction_optimiser.py",
       "tests/test_contraction_optimiser_contracts.py",

@@ -98,6 +98,18 @@ jobs:
         run: python tools/audit_documentation_scopes.py
       - name: Verify the documentation scope gate itself
         run: python -m pytest -q tests/test_audit_documentation_scopes.py
+      - name: Type-check contract custody source and tests
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          tools/contract_custody*.py tests/test_contract_custody*.py
+          tests/test_versioned_contract_custody.py
+      - name: Enforce contract custody native documentation
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          tools/contract_custody*.py tests/test_contract_custody*.py
+          tests/test_versioned_contract_custody.py
       - name: Hold every job to the environment it declares
         # A job that has never run is not a job that passes. `julia-lint` was
         # added running pytest with a tier that carries none, and without a path
