@@ -130,6 +130,7 @@ def project_to_sector(
     -------
     ndarray of shape (len(sector_indices), len(sector_indices))
         The sector block, in the dtype of ``H_full``.
+
     """
     block: NDArray[_ScalarT] = np.asarray(H_full[np.ix_(sector_indices, sector_indices)])
     return block

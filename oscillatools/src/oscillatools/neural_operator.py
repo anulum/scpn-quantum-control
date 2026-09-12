@@ -54,6 +54,7 @@ class KuramotoOperatorDataset:
         The number of oscillators ``N``.
     horizon : float
         The trajectory horizon ``T`` (the un-normalised time of the final sample).
+
     """
 
     branch_inputs: NDArray[np.float64]
@@ -77,6 +78,7 @@ class TrainedKuramotoOperator:
         The number of oscillators ``N``.
     horizon : float
         The horizon ``T`` the trunk times were normalised by.
+
     """
 
     model: Any
@@ -100,6 +102,7 @@ class TrainedKuramotoOperator:
         -------
         numpy.ndarray
             The ``(Q, N)`` forecast phases, reconstructed from the predicted embedding.
+
         """
         torch = _require_torch()
         phases = np.ascontiguousarray(initial_phases, dtype=np.float64)
@@ -168,6 +171,7 @@ def simulate_operator_dataset(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     frequencies = np.ascontiguousarray(omega, dtype=np.float64)
     matrix = np.ascontiguousarray(coupling, dtype=np.float64)
@@ -290,6 +294,7 @@ def train_kuramoto_neural_operator(
         If any hyper-parameter falls outside its documented bound.
     ImportError
         If PyTorch is not installed.
+
     """
     if latent_dim < 1 or hidden_dim < 1:
         raise ValueError("latent_dim and hidden_dim must be positive")

@@ -45,6 +45,7 @@ def open_items(text: str) -> list[tuple[int, str]]:
     list[tuple[int, str]]
         One-based source line and prose for each open or partial checkbox.
         Nested checkboxes retain their own state, independent of their parent.
+
     """
     items: list[tuple[int, list[str]]] = []
     stack: list[tuple[int, list[str]]] = []
@@ -97,6 +98,7 @@ def contradictions(root: Path) -> list[str]:
     -----
     Ruff selection is not evidence that all files are documented; per-file
     exceptions, renderer success and documentation debt remain separate.
+
     """
     data = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
     tools = data["tool"]
@@ -132,6 +134,7 @@ def main(argv: list[str] | None = None) -> int:
     int
         Zero for no recognised contradictions, one for findings, two for input
         failure. An absent private queue never produces a success claim.
+
     """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd())

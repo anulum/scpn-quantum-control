@@ -54,6 +54,7 @@ def main(argv: list[str] | None = None) -> int:
     -----
     Readings are separate snapshots, not reservations. This checks admission,
     not total RSS, hidden namespace ancestors or immunity from concurrent OOM.
+
     """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--limit-bytes", type=int, required=True)

@@ -101,6 +101,7 @@ def coupling_from_networkx(
     ValueError
         If the graph has no nodes, ``nodelist`` is not a permutation of the graph's nodes, or an
         edge weight is non-numeric or non-finite.
+
     """
     graph_nodes = list(graph.nodes())
     if not graph_nodes:
@@ -172,6 +173,7 @@ def graph_from_networked_coupling(
         If ``networkx`` is not installed (install with ``pip install networkx``).
     ValueError
         If ``coupling`` is not a square two-dimensional matrix or ``threshold`` is negative.
+
     """
     try:
         import networkx

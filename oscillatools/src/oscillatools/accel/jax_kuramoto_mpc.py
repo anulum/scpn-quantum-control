@@ -69,6 +69,7 @@ class MpcControlGradients:
     control_gradient : numpy.ndarray
         The ``(horizon, N)`` gradient with respect to the control series; a steepest-descent step is
         ``u ← u − η · control_gradient``.
+
     """
 
     cost: float
@@ -93,6 +94,7 @@ class RecedingHorizonResult:
         The final inner-solve horizon cost at each replan (length ``n_control_steps``).
     target_coherence : float
         The tracked target order parameter ``r*``.
+
     """
 
     times: NDArray[np.float64]
@@ -132,6 +134,7 @@ def _load_backend() -> _MpcBackend:
     ------
     ImportError
         If JAX is not installed.
+
     """
     global _BACKEND
     if _BACKEND is not None:
@@ -309,6 +312,7 @@ def jax_mpc_control_value_and_grad(
         If any argument falls outside its documented bound.
     ImportError
         If JAX is not installed.
+
     """
     state = np.ascontiguousarray(phases, dtype=np.float64)
     series = np.ascontiguousarray(control, dtype=np.float64)
@@ -385,6 +389,7 @@ def jax_mpc_horizon_control(
         If any argument falls outside its documented bound.
     ImportError
         If JAX is not installed.
+
     """
     state = np.ascontiguousarray(phases, dtype=np.float64)
     frequencies = np.ascontiguousarray(omega, dtype=np.float64)
@@ -487,6 +492,7 @@ def receding_horizon_control(
         If any argument falls outside its documented bound.
     ImportError
         If JAX is not installed.
+
     """
     state = np.ascontiguousarray(phases, dtype=np.float64)
     frequencies = np.ascontiguousarray(omega, dtype=np.float64)

@@ -40,6 +40,7 @@ def _validate_coupling(
     ------
     ValueError
         If ``coupling`` is not a square matrix whose order matches ``theta``.
+
     """
     phases = np.ascontiguousarray(theta, dtype=np.float64)
     matrix = np.ascontiguousarray(coupling, dtype=np.float64)
@@ -189,6 +190,7 @@ def sakaguchi_force(
     -----
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_sakaguchi_force_tier_used`.
+
     """
     return np.asarray(_sakaguchi_force_dispatcher(theta, coupling, frustration), dtype=np.float64)
 
@@ -229,6 +231,7 @@ def sakaguchi_jacobian(
     -----
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_sakaguchi_jacobian_tier_used`.
+
     """
     return np.asarray(
         _sakaguchi_jacobian_dispatcher(theta, coupling, frustration), dtype=np.float64

@@ -91,6 +91,7 @@ class MultiLangDispatcher:
         The tier that served the most recent successful call, or
         ``None`` before the first call. Useful for tests and for the
         structured logger.
+
     """
 
     def __init__(self, chain: list[tuple[str, Callable[..., Any]]]) -> None:

@@ -48,6 +48,7 @@ class ForcedCollectiveTrajectory:
         The ``(n_steps + 1,)`` sample times.
     order_parameter : numpy.ndarray
         The ``(n_steps + 1,)`` complex order parameter ``z(t) = r e^{iψ}``.
+
     """
 
     times: NDArray[np.float64]
@@ -73,6 +74,7 @@ class CollectiveControlGradients:
         components, so a steepest-descent step is ``F ← F − η · forcing_gradient``.
     initial_state_gradient : complex
         The gradient with respect to the initial order parameter ``z(0)``.
+
     """
 
     cost: float
@@ -238,6 +240,7 @@ def integrate_forced_collective(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     series = np.ascontiguousarray(forcing, dtype=np.complex128)
     _validate(z0, series, coupling, half_width, dt)
@@ -297,6 +300,7 @@ def collective_control_value_and_grad(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     series = np.ascontiguousarray(forcing, dtype=np.complex128)
     _validate(z0, series, coupling, half_width, dt)
@@ -388,6 +392,7 @@ def optimise_collective_forcing(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     if n_steps < 1:
         raise ValueError(f"n_steps must be positive, got {n_steps}")

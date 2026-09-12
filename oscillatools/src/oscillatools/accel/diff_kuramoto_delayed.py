@@ -59,6 +59,7 @@ class DelayedGradients:
         ``∂L/∂ω`` (length ``N``).
     coupling : numpy.ndarray
         ``∂L/∂K`` (shape ``(N, N)``).
+
     """
 
     initial_history: NDArray[np.float64]
@@ -178,6 +179,7 @@ def delayed_phase_sensitivity(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     history = np.ascontiguousarray(initial_history, dtype=np.float64)
     frequencies = np.ascontiguousarray(omega, dtype=np.float64)
@@ -306,6 +308,7 @@ def delayed_terminal_value_and_grad(
     ValueError
         If any argument falls outside its documented bound, or ``objective_grad`` returns a
         cotangent of the wrong shape.
+
     """
     theta_final, sensitivity = delayed_phase_sensitivity(
         initial_history,

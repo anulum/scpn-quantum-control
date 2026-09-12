@@ -52,6 +52,7 @@ class MultiplexTrajectory:
         The ``(n_steps + 1,)`` sample times.
     phases : numpy.ndarray
         The ``(n_steps + 1, L, N)`` phase trajectory (``L`` layers of ``N`` nodes).
+
     """
 
     times: NDArray[np.float64]
@@ -137,6 +138,7 @@ def multiplex_field(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     angle = np.ascontiguousarray(phases, dtype=np.float64)
     frequencies = np.ascontiguousarray(omega, dtype=np.float64)
@@ -170,6 +172,7 @@ def multiplex_jacobian(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     angle = np.ascontiguousarray(phases, dtype=np.float64)
     frequencies = np.ascontiguousarray(omega, dtype=np.float64)
@@ -217,6 +220,7 @@ def integrate_multiplex(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     angle = np.ascontiguousarray(phases, dtype=np.float64)
     frequencies = np.ascontiguousarray(omega, dtype=np.float64)
@@ -259,6 +263,7 @@ def layer_order_parameters(phases: NDArray[np.float64]) -> NDArray[np.float64]:
     ------
     ValueError
         If ``phases`` is not an ``(L, N)`` array.
+
     """
     angle = np.ascontiguousarray(phases, dtype=np.float64)
     if angle.ndim != 2 or angle.shape[0] < 1 or angle.shape[1] < 1:
@@ -285,6 +290,7 @@ def interlayer_synchronisation(phases: NDArray[np.float64]) -> float:
     ------
     ValueError
         If ``phases`` is not an ``(L, N)`` array.
+
     """
     angle = np.ascontiguousarray(phases, dtype=np.float64)
     if angle.ndim != 2 or angle.shape[0] < 1 or angle.shape[1] < 1:

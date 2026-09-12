@@ -61,7 +61,8 @@ EXEMPT: Final[dict[str, str]] = {
     "data/differentiable_phase_qnode/ml350_full_framework_catalyst_baseline_20260705/runners/catalyst_qjit_runner.py": "frozen benchmark runner; its SHA-256 is recorded beside it",
 }
 
-#: The scan the lane is measured with, so gate and measurement cannot diverge.
+#: Explicit NumPy profile shared with the stricter owned documentation cohorts.
+#: Ruff validates structure, not semantic completeness of contract descriptions.
 SCAN: Final[tuple[str, ...]] = (
     "-m",
     "ruff",
@@ -69,7 +70,9 @@ SCAN: Final[tuple[str, ...]] = (
     "--isolated",
     "--preview",
     "--select",
-    "D",
+    "D,D413,D417,D420",
+    "--config",
+    "lint.explicit-preview-rules = true",
     "--config",
     'lint.pydocstyle.convention = "numpy"',
     "--output-format",

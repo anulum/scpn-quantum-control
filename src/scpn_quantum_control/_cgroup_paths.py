@@ -30,6 +30,7 @@ class MemoryCgroup:
         Memory controller version, one or two.
     leaf
         Whether this directory holds the process rather than an ancestor.
+
     """
 
     directory: Path
@@ -72,6 +73,7 @@ def memory_cgroup_paths(proc_root: Path) -> tuple[MemoryCgroup, ...] | None:
     Mountinfo fields four and five map hierarchy root to namespace mount point.
     See Linux ``proc_pid_mountinfo(5)`` and cgroup v2 membership documentation.
     No filesystem traversal above a reported mount point is performed.
+
     """
     try:
         membership = (proc_root / "cgroup").read_text(encoding="utf-8")

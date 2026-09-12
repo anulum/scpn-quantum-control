@@ -117,6 +117,7 @@ def phase_raster(
     -------
     matplotlib.axes.Axes
         The axis carrying the raster image and its phase colour bar.
+
     """
     trajectory = _validate_trajectory(phases)
     steps, count = trajectory.shape
@@ -165,6 +166,7 @@ def order_parameter_timeseries(
     -------
     matplotlib.axes.Axes
         The axis carrying the order-parameter curve.
+
     """
     trajectory = _validate_trajectory(phases)
     steps = trajectory.shape[0]
@@ -210,6 +212,7 @@ def chimera_snapshot(
     -------
     matplotlib.axes.Axes
         The axis carrying one order-parameter curve per community.
+
     """
     trajectory = _validate_trajectory(phases)
     steps = trajectory.shape[0]
@@ -253,6 +256,7 @@ def network_phase_embedding(
     -------
     matplotlib.axes.Axes
         The axis carrying the coupling edges, the phase-coloured nodes and the phase colour bar.
+
     """
     snapshot = np.ascontiguousarray(phases, dtype=np.float64)
     if snapshot.ndim != 1 or snapshot.size < 1:

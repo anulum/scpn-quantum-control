@@ -56,6 +56,7 @@ class ControlledNetworkTrajectory:
         The ``(n_steps + 1,)`` sample times.
     phases : numpy.ndarray
         The ``(n_steps + 1, N)`` phase trajectory.
+
     """
 
     times: NDArray[np.float64]
@@ -80,6 +81,7 @@ class NetworkControlGradients:
         ``u ← u − η · control_gradient``.
     initial_phase_gradient : numpy.ndarray
         The ``(N,)`` gradient with respect to the initial phases ``θ(0)``.
+
     """
 
     cost: float
@@ -193,6 +195,7 @@ def integrate_controlled_network(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     state = np.ascontiguousarray(phases, dtype=np.float64)
     series = np.ascontiguousarray(control, dtype=np.float64)
@@ -241,6 +244,7 @@ def network_control_value_and_grad(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     state = np.ascontiguousarray(phases, dtype=np.float64)
     series = np.ascontiguousarray(control, dtype=np.float64)
@@ -324,6 +328,7 @@ def optimise_network_control(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     state = np.ascontiguousarray(phases, dtype=np.float64)
     count = state.size

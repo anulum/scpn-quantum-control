@@ -275,6 +275,7 @@ def install_reference_transaction_hook(repo_root: Path) -> Path:
     OSError
         If hook storage cannot be read or the complete executable cannot be
         published. The installer never falls back to overwriting a target.
+
     """
     # Resolve the directory only: resolving the leaf would follow an existing
     # hook symlink and potentially overwrite a different owner's script.

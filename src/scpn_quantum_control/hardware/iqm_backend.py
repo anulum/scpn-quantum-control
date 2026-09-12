@@ -279,6 +279,7 @@ class IQMQuantumBackend:
         -----
         Provider errors propagate without automatic resubmission. This synchronous
         adapter does not implement durable job recovery or certify hardware results.
+
         """
         cfg = config or IQMBackendConfig()
         backend = self.resolve_backend(cfg)

@@ -42,6 +42,7 @@ def _validate_coupling(
     ------
     ValueError
         If ``coupling`` is not a square matrix whose order matches ``theta``.
+
     """
     phases = np.ascontiguousarray(theta, dtype=np.float64)
     matrix = np.ascontiguousarray(coupling, dtype=np.float64)
@@ -243,6 +244,7 @@ def kuramoto_interaction_energy(theta: object, coupling: object) -> float:
     -----
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_kuramoto_interaction_energy_tier_used`.
+
     """
     return float(
         _kuramoto_interaction_energy_dispatcher(
@@ -287,6 +289,7 @@ def kuramoto_interaction_energy_gradient(
     -----
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_kuramoto_interaction_energy_gradient_tier_used`.
+
     """
     template = tensor_template(theta, coupling)
     result = np.asarray(
@@ -336,6 +339,7 @@ def kuramoto_interaction_energy_hessian(
     -----
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_kuramoto_interaction_energy_hessian_tier_used`.
+
     """
     template = tensor_template(theta, coupling)
     result = np.asarray(

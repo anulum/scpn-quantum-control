@@ -192,6 +192,7 @@ class ApprovalGatedFeedbackHardwareScheduler:
         This is in-memory accounting, not a durable, cross-process billing ledger:
         reconcile uncertain jobs and obtain a remaining-budget approval before
         constructing a replacement. It cannot undo provider-side consumption.
+
         """
         if not self._submission_lock.acquire(blocking=False):
             raise RuntimeError("provider submission already in progress")

@@ -51,6 +51,7 @@ class PinningDesignResult:
         The number of iterations performed.
     converged : bool
         ``True`` if the line search could no longer reduce the penalised objective.
+
     """
 
     gains: NDArray[np.float64]
@@ -137,6 +138,7 @@ def pinning_coherence_value_and_grad(
     ------
     ValueError
         If the inputs are inconsistent or ``integrator`` is invalid.
+
     """
     phases, frequencies, matrix, pinning = _validate(theta0, omega, coupling, gains)
     count = phases.size
@@ -249,6 +251,7 @@ def design_pinning(
     ------
     ValueError
         If ``max_iterations`` is not positive or the inputs are inconsistent.
+
     """
     if max_iterations < 1:
         raise ValueError(f"max_iterations must be positive, got {max_iterations}")

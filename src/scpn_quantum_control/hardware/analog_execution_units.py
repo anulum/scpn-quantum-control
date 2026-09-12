@@ -40,6 +40,7 @@ def execution_unit_status(calibration: Mapping[str, object]) -> UnitStatus:
         If the declared triple is neither canonical nor a recognised legacy
         one. Seconds, hertz and nanoseconds need an explicit calibrated
         conversion adapter, never label substitution.
+
     """
     units = tuple(calibration[key] for key in ("duration_unit", "coupling_unit", "detuning_unit"))
     if units == ("us", "rad/us", "rad/us"):

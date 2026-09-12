@@ -42,6 +42,7 @@ def _validate_coupling(
     ------
     ValueError
         If ``coupling`` is not a square matrix whose order matches ``theta``.
+
     """
     phases = np.ascontiguousarray(theta, dtype=np.float64)
     matrix = np.ascontiguousarray(coupling, dtype=np.float64)
@@ -191,6 +192,7 @@ def networked_kuramoto_force(theta: object, coupling: object) -> NDArray[np.floa
     -----
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_networked_kuramoto_force_tier_used`.
+
     """
     template = tensor_template(theta, coupling)
     result = np.asarray(
@@ -237,6 +239,7 @@ def networked_kuramoto_jacobian(theta: object, coupling: object) -> NDArray[np.f
     -----
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_networked_kuramoto_jacobian_tier_used`.
+
     """
     template = tensor_template(theta, coupling)
     result = np.asarray(

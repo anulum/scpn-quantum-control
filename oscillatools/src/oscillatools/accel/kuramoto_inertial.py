@@ -87,6 +87,7 @@ class InertialTrajectory:
         The inertia ``m`` used to generate the trajectory.
     damping : float
         The damping ``γ`` used to generate the trajectory.
+
     """
 
     times: NDArray[np.float64]
@@ -181,6 +182,7 @@ def inertial_vector_field(
     ------
     ValueError
         If the state vectors are mismatched or ``mass``/``damping`` are out of range.
+
     """
     theta = np.ascontiguousarray(phases, dtype=np.float64)
     speed = np.ascontiguousarray(velocities, dtype=np.float64)
@@ -233,6 +235,7 @@ def inertial_jacobian(
     ValueError
         If ``phases`` is not a non-empty 1-D vector, ``mass``/``damping`` are out of range,
         or ``force_jacobian`` does not return an ``(N, N)`` matrix.
+
     """
     theta = np.ascontiguousarray(phases, dtype=np.float64)
     if theta.ndim != 1 or theta.size < 1:
@@ -301,6 +304,7 @@ def integrate_inertial(
     ValueError
         If the state vectors are mismatched, or ``mass``/``damping``/``dt``/``n_steps`` are
         out of range.
+
     """
     theta = np.ascontiguousarray(phases, dtype=np.float64)
     speed = np.ascontiguousarray(velocities, dtype=np.float64)
@@ -376,6 +380,7 @@ def inertial_energy(
     ------
     ValueError
         If the state vectors are mismatched or ``mass`` is not positive.
+
     """
     theta = np.ascontiguousarray(phases, dtype=np.float64)
     speed = np.ascontiguousarray(velocities, dtype=np.float64)

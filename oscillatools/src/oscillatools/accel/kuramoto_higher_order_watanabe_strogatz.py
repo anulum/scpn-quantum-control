@@ -61,6 +61,7 @@ class HigherOrderWatanabeStrogatzTrajectory:
         The ``(n_steps + 1, N)`` reconstructed ``p``-fold phases ``φ_j = pθ_j`` (modulo ``2π``).
     harmonic : int
         The coupling harmonic ``p``.
+
     """
 
     times: NDArray[np.float64]
@@ -116,6 +117,7 @@ def integrate_higher_order_watanabe_strogatz(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     theta = np.ascontiguousarray(initial_phases, dtype=np.float64)
     if theta.ndim != 1 or theta.size < 1:

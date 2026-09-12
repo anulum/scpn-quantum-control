@@ -181,6 +181,7 @@ def sakaguchi_mean_field_force(
     -----
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_sakaguchi_mean_field_force_tier_used`.
+
     """
     return np.asarray(
         _sakaguchi_mean_field_force_dispatcher(theta, coupling, frustration), dtype=np.float64
@@ -217,6 +218,7 @@ def sakaguchi_mean_field_jacobian(
     -----
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_sakaguchi_mean_field_jacobian_tier_used`.
+
     """
     return np.asarray(
         _sakaguchi_mean_field_jacobian_dispatcher(theta, coupling, frustration), dtype=np.float64

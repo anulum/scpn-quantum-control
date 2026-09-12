@@ -63,6 +63,7 @@ class SynchronisationCertificate:
     is_certified : bool
         Whether the configuration lies in a cohesive, contracting region — certified to hold a unique,
         exponentially stable phase-locked state.
+
     """
 
     phase_cohesiveness: float
@@ -173,6 +174,7 @@ def certify_synchronisation(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     _validate(phases, coupling)
     if not 0.0 < cohesiveness_threshold <= np.pi:

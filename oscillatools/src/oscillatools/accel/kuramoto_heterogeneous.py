@@ -62,6 +62,7 @@ class CouplingTerm:
         The Jacobian ``∂F/∂θ`` of this term (see :data:`PhaseJacobian`).
     label : str
         A human-readable label, used to identify the term in error messages.
+
     """
 
     force: PhaseForce
@@ -153,6 +154,7 @@ def heterogeneous_force_components(
     ------
     ValueError
         If ``theta`` is malformed, ``terms`` is empty, or a term's force has the wrong length.
+
     """
     phases = np.ascontiguousarray(theta, dtype=np.float64)
     _validate_terms(phases, terms)
@@ -190,6 +192,7 @@ def heterogeneous_force(
     ------
     ValueError
         If ``theta`` is malformed, ``terms`` is empty, or a term's force has the wrong length.
+
     """
     components = heterogeneous_force_components(theta, terms)
     return np.asarray(np.sum(components, axis=0), dtype=np.float64)
@@ -216,6 +219,7 @@ def heterogeneous_jacobian(
     ------
     ValueError
         If ``theta`` is malformed, ``terms`` is empty, or a term's Jacobian has the wrong shape.
+
     """
     phases = np.ascontiguousarray(theta, dtype=np.float64)
     _validate_terms(phases, terms)

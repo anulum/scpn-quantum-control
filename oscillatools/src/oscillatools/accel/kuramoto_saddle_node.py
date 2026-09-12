@@ -78,6 +78,7 @@ class SaddleNodePoint:
         Newton iterations taken by the refinement.
     converged:
         Whether the refinement reached ``newton_tolerance``.
+
     """
 
     critical_coupling: float
@@ -190,6 +191,7 @@ def fold_defining_residual(
     -------
     numpy.ndarray
         ``[F - Ω\mathbf 1;  J_R v;  ⟨c, v⟩ - 1]``.
+
     """
     count = omega.shape[0]
     theta = np.concatenate([[0.0], unknowns[: count - 1]])
@@ -331,6 +333,7 @@ def locate_saddle_node(
         ``initial_coupling``.
     RuntimeError
         If the continuation reaches zero coupling without bracketing a fold.
+
     """
     count = _validate(omega, structure)
     if initial_coupling <= 0.0:

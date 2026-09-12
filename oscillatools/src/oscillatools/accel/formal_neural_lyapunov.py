@@ -95,6 +95,7 @@ class LyapunovLipschitzBounds:
         The upper bound on ``‖J_f‖`` (the Kuramoto Jacobian spectral norm), holding for all states.
     force_curvature_bound : float
         The upper bound on ``‖∇²f‖`` (the Kuramoto force curvature), holding for all states.
+
     """
 
     decrease_curvature_bound: float
@@ -141,6 +142,7 @@ class FormalLyapunovCertificate:
         The per-axis half-width of the certified box region.
     grid_points : int
         The number of grid states evaluated.
+
     """
 
     is_certified_on_region: bool
@@ -249,6 +251,7 @@ def neural_lyapunov_lipschitz_bounds(
     ------
     ValueError
         If ``outer_radius`` is not positive, or the certificate is not single-hidden-layer.
+
     """
     if outer_radius <= 0.0:
         raise ValueError(f"outer_radius must be positive, got {outer_radius}")
@@ -377,6 +380,7 @@ def formally_certify_neural_lyapunov(
         If any argument falls outside its documented bound.
     ImportError
         If JAX is not installed.
+
     """
     if outer_radius <= 0.0:
         raise ValueError(f"outer_radius must be positive, got {outer_radius}")

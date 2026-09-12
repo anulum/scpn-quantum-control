@@ -63,6 +63,7 @@ class ContinuationBranch:
         The ``(grid, N)`` terminal phase vectors reached at each coupling, the continuation seeds.
     direction : str
         ``"ascending"`` or ``"descending"`` — the monotone direction of ``coupling_values``.
+
     """
 
     coupling_values: NDArray[np.float64]
@@ -104,6 +105,7 @@ class HysteresisLoop:
         The largest branch separation over the grid.
     is_hysteretic : bool
         Whether the branches separate by more than the tolerance anywhere on the grid.
+
     """
 
     forward: ContinuationBranch
@@ -213,6 +215,7 @@ def continuation_sweep(
     ------
     ValueError
         If any input is malformed (see the shape and range checks).
+
     """
     omega = np.ascontiguousarray(omega, dtype=np.float64)
     coupling_grid = np.ascontiguousarray(coupling_grid, dtype=np.float64)
@@ -291,6 +294,7 @@ def hysteresis_loop(
     ValueError
         If ``coupling_grid`` is not strictly ascending, ``separation_tolerance`` is not positive, or
         any sweep input is malformed.
+
     """
     coupling_grid = np.ascontiguousarray(coupling_grid, dtype=np.float64)
     if coupling_grid.ndim != 1 or coupling_grid.size < 2 or np.any(np.diff(coupling_grid) <= 0.0):
@@ -378,6 +382,7 @@ def triadic_hysteresis_loop(
     -------
     HysteresisLoop
         The explosive-synchronisation hysteresis loop of the triadic model.
+
     """
     return hysteresis_loop(
         omega,

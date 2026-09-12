@@ -72,6 +72,7 @@ def coherence_matrix(theta: NDArray[np.float64]) -> NDArray[np.float64]:
     ------
     ValueError
         If ``theta`` is not a non-empty one-dimensional array.
+
     """
     phases = _validate_snapshot(theta)
     cos = np.cos(phases)
@@ -100,6 +101,7 @@ def mean_coherence_matrix(phases: NDArray[np.float64]) -> NDArray[np.float64]:
     ------
     ValueError
         If ``phases`` is not a ``(T, N)`` array with ``T ≥ 1`` and ``N ≥ 1``.
+
     """
     trajectory = _validate_trajectory(phases)
     samples = trajectory.shape[0]
@@ -130,6 +132,7 @@ def phase_locking_matrix(phases: NDArray[np.float64]) -> NDArray[np.float64]:
     ------
     ValueError
         If ``phases`` is not a ``(T, N)`` array with ``T ≥ 1`` and ``N ≥ 1``.
+
     """
     trajectory = _validate_trajectory(phases)
     samples = trajectory.shape[0]
@@ -175,6 +178,7 @@ def coherence_spectrum(
     ------
     ValueError
         If ``matrix`` is not a non-empty square array.
+
     """
     array = _validate_square(matrix)
     values, vectors = np.linalg.eigh(array)
@@ -205,6 +209,7 @@ def leading_coherence_eigenvector(matrix: NDArray[np.float64]) -> NDArray[np.flo
     ------
     ValueError
         If ``matrix`` is not a non-empty square array.
+
     """
     _, vectors = coherence_spectrum(matrix)
     return np.ascontiguousarray(vectors[:, 0], dtype=np.float64)

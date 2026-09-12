@@ -191,6 +191,7 @@ def mean_phase(theta: NDArray[np.float64]) -> float:
     -----
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier
     is recorded on :func:`last_mean_phase_tier_used`.
+
     """
     return float(_mean_phase_dispatcher(theta))
 
@@ -218,6 +219,7 @@ def mean_phase_gradient(theta: NDArray[np.float64]) -> NDArray[np.float64]:
     -----
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier
     is recorded on :func:`last_mean_phase_gradient_tier_used`.
+
     """
     return np.asarray(_mean_phase_gradient_dispatcher(theta), dtype=np.float64)
 
@@ -252,6 +254,7 @@ def mean_phase_hessian(theta: NDArray[np.float64]) -> NDArray[np.float64]:
     -----
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_mean_phase_hessian_tier_used`.
+
     """
     return np.asarray(_mean_phase_hessian_dispatcher(theta), dtype=np.float64)
 

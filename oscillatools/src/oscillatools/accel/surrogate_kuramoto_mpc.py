@@ -87,6 +87,7 @@ class SurrogateStepModel:
         The standard deviation of the control perturbations the surrogate was trained over.
     training_loss : float
         The final mean-squared one-step increment error on the training sample.
+
     """
 
     parameters: _Parameters
@@ -119,6 +120,7 @@ class SurrogateControlComparison:
         The tracked target order parameter ``r*``.
     n_control_steps : int
         The number of closed-loop control steps both controllers ran.
+
     """
 
     surrogate_terminal_coherence: float
@@ -154,6 +156,7 @@ def _load_backend() -> _SurrogateBackend:
     ------
     ImportError
         If JAX is not installed.
+
     """
     global _BACKEND
     if _BACKEND is not None:
@@ -373,6 +376,7 @@ def fit_surrogate_step_model(
         If any argument falls outside its documented bound.
     ImportError
         If JAX is not installed.
+
     """
     frequencies = np.ascontiguousarray(omega, dtype=np.float64)
     matrix = np.ascontiguousarray(coupling, dtype=np.float64)
@@ -446,6 +450,7 @@ def surrogate_step(
         If ``phases`` or ``control`` has the wrong shape.
     ImportError
         If JAX is not installed.
+
     """
     count = model.omega.size
     theta = np.ascontiguousarray(phases, dtype=np.float64)
@@ -514,6 +519,7 @@ def surrogate_receding_horizon_control(
         If any argument falls outside its documented bound.
     ImportError
         If JAX is not installed.
+
     """
     count = model.omega.size
     state = np.ascontiguousarray(phases, dtype=np.float64)
@@ -618,6 +624,7 @@ def compare_surrogate_control(
         If any argument falls outside its documented bound.
     ImportError
         If JAX is not installed.
+
     """
     true_result = receding_horizon_control(
         phases,

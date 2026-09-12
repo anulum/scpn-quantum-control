@@ -67,6 +67,7 @@ def synchronised_frequency_residual(
     -------
     float
         The residual ``ω₀ − K sin(Ω τ) − Ω``.
+
     """
     return float(natural_frequency - coupling * np.sin(frequency * delay) - frequency)
 
@@ -110,6 +111,7 @@ def synchronised_frequency_roots(
     ------
     ValueError
         If ``delay`` is not positive or ``scan_points`` is below ``2``.
+
     """
     if delay <= 0.0:
         raise ValueError(f"delay must be positive, got {delay}")
@@ -165,6 +167,7 @@ def synchronised_branch_stability(
     -------
     float
         The stability indicator ``1 + K τ cos(Ω τ)``.
+
     """
     return 1.0 + coupling * delay * float(np.cos(frequency * delay))
 
@@ -214,6 +217,7 @@ def stable_synchronised_frequencies(
     -------
     numpy.ndarray
         The sorted stable collective frequencies ``Ω``.
+
     """
     roots = synchronised_frequency_roots(
         natural_frequency,

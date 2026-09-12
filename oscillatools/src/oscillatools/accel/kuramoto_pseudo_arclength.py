@@ -63,6 +63,7 @@ class PseudoArclengthBranch:
         The ``(n_points,)`` continuation-parameter values.
     arclengths : numpy.ndarray
         The cumulative arclength at each point (``0, ds, 2 ds, …``).
+
     """
 
     states: NDArray[np.float64]
@@ -141,6 +142,7 @@ def pseudo_arclength_continuation(
         If any argument falls outside its documented bound.
     RuntimeError
         If the Newton corrector fails to converge at a step.
+
     """
     state = np.ascontiguousarray(initial_state, dtype=np.float64)
     if state.ndim != 1 or state.size < 1:

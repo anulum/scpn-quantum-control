@@ -86,6 +86,7 @@ class KuramotoParameters:
         The Sakaguchi phase-lag :math:`\alpha` (radians). ``0`` (the default)
         recovers the plain Kuramoto force; a non-zero value selects the
         phase-frustrated Sakaguchi force of the same topology.
+
     """
 
     natural_frequencies: NDArray[np.float64]
@@ -136,6 +137,7 @@ class KuramotoParameters:
         ------
         ValueError
             If ``name`` is not a tunable parameter.
+
         """
         if name == "natural_frequencies":
             return KuramotoParameters(
@@ -179,6 +181,7 @@ def mean_field_phase_rule(
     ------
     ValueError
         If the parameter coupling is a matrix rather than a scalar.
+
     """
     del time  # autonomous rule; the parameter completes the f(u, p, t) contract
     coupling = parameters.coupling
@@ -214,6 +217,7 @@ def networked_phase_rule(
     ------
     ValueError
         If the parameter coupling is a scalar rather than a matrix.
+
     """
     del time  # autonomous rule; the parameter completes the f(u, p, t) contract
     coupling = parameters.coupling
@@ -252,6 +256,7 @@ def mean_field_phase_rule_jacobian(
     ------
     ValueError
         If the parameter coupling is a matrix rather than a scalar.
+
     """
     del time  # autonomous rule; the parameter completes the f(u, p, t) contract
     coupling = parameters.coupling
@@ -283,6 +288,7 @@ def networked_phase_rule_jacobian(
     ------
     ValueError
         If the parameter coupling is a scalar rather than a matrix.
+
     """
     del time  # autonomous rule; the parameter completes the f(u, p, t) contract
     coupling = parameters.coupling
@@ -328,6 +334,7 @@ class KuramotoSystem:
     ValueError
         On a non-vector or mismatched state, a non-positive ``dt``, or an unknown
         ``scheme``.
+
     """
 
     def __init__(
@@ -384,6 +391,7 @@ class KuramotoSystem:
             The default integration step.
         scheme : str, optional
             ``"rk4"`` or ``"euler"``.
+
         """
         parameters = KuramotoParameters(
             np.asarray(natural_frequencies, dtype=np.float64), float(coupling), frustration
@@ -422,6 +430,7 @@ class KuramotoSystem:
             The default integration step.
         scheme : str, optional
             ``"rk4"`` or ``"euler"``.
+
         """
         parameters = KuramotoParameters(
             np.asarray(natural_frequencies, dtype=np.float64),
@@ -493,6 +502,7 @@ class KuramotoSystem:
         ------
         ValueError
             If ``state`` is not an ``(N,)`` vector matching the system.
+
         """
         new_state = np.asarray(state, dtype=np.float64)
         if new_state.shape != self._state.shape:
@@ -506,6 +516,7 @@ class KuramotoSystem:
         ------
         ValueError
             If ``name`` is unknown, the value is invalid, or it would change ``N``.
+
         """
         updated = self._parameters.with_parameter(name, value)
         if updated.size != self._initial_state.size:
@@ -529,6 +540,7 @@ class KuramotoSystem:
         ------
         ValueError
             If ``state`` is given and does not match the system shape.
+
         """
         if state is None:
             target = self._initial_state.copy()
@@ -549,6 +561,7 @@ class KuramotoSystem:
         ----------
         time : float, optional
             The time to evaluate at; defaults to the current time.
+
         """
         evaluation_time = self._time if time is None else float(time)
         return np.asarray(
@@ -567,6 +580,7 @@ class KuramotoSystem:
         ------
         ValueError
             If the system was built without an analytic Jacobian.
+
         """
         if self._jacobian is None:
             raise ValueError("this system has no analytic Jacobian; supply one at construction")
@@ -599,6 +613,7 @@ class KuramotoSystem:
         ------
         ValueError
             If ``n`` is not positive or ``dt`` is not positive.
+
         """
         if n < 1:
             raise ValueError("n must be a positive integer")
@@ -632,6 +647,7 @@ class KuramotoSystem:
         ------
         ValueError
             If ``n_steps`` is not positive or ``dt`` is not positive.
+
         """
         if n_steps < 1:
             raise ValueError("n_steps must be a positive integer")

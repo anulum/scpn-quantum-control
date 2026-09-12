@@ -68,6 +68,7 @@ class StabilitySpectrum:
     is_symmetric : bool
         ``True`` when the Jacobian is symmetric (an undirected coupling matrix), in which case the
         eigendecomposition used :func:`numpy.linalg.eigh`.
+
     """
 
     eigenvalues: NDArray[np.complex128]
@@ -90,6 +91,7 @@ def _stability_jacobian(
     ValueError
         If ``coupling`` is not a square matrix of order ``N`` or fewer than two oscillators are
         given (a transverse mode needs at least two oscillators).
+
     """
     phases = np.ascontiguousarray(theta, dtype=np.float64)
     count = phases.size
@@ -146,6 +148,7 @@ def stability_spectrum(
     The eigenvalues match a direct :func:`numpy.linalg.eig` of the Jacobian (a symmetric Jacobian
     additionally matches :func:`numpy.linalg.eigh`); the Goldstone eigenvalue is zero to numerical
     precision because every row of ``J`` sums to zero.
+
     """
     jacobian = _stability_jacobian(theta, coupling)
     count = jacobian.shape[0]

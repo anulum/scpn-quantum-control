@@ -230,6 +230,7 @@ def networked_delayed_trajectory(
     ValueError
         If ``delay``/``dt``/``n_steps`` are out of range, ``τ`` is not an integer multiple of ``dt``,
         or ``initial_history``/``omega``/``coupling`` are malformed.
+
     """
     _history, _frequencies, _matrix, _count, delay_steps = _validate_delayed_state(
         initial_history, omega, coupling, delay, dt, n_steps, delay_tolerance

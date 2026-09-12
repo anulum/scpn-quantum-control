@@ -53,6 +53,7 @@ class SwarmalatorTrajectory:
         The ``(n_steps + 1, N, 2)`` planar positions ``x(t)``.
     phases : numpy.ndarray
         The ``(n_steps + 1, N)`` phases ``θ(t)``.
+
     """
 
     times: NDArray[np.float64]
@@ -82,6 +83,7 @@ class SwarmalatorOrderParameters:
         ``S_- = |⟨e^{i(φ_j − θ_j)}⟩|`` — the correlation of spatial angle with ``−θ``.
     phase_coherence : float
         The ordinary Kuramoto phase coherence ``|⟨e^{iθ_j}⟩|``.
+
     """
 
     s_plus: float
@@ -167,6 +169,7 @@ def swarmalator_field(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     location = np.ascontiguousarray(positions, dtype=np.float64)
     angle = np.ascontiguousarray(phases, dtype=np.float64)
@@ -202,6 +205,7 @@ def integrate_swarmalators(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     location = np.ascontiguousarray(positions, dtype=np.float64)
     angle = np.ascontiguousarray(phases, dtype=np.float64)
@@ -253,6 +257,7 @@ def swarmalator_order_parameters(
     ------
     ValueError
         If the inputs are mismatched.
+
     """
     location = np.ascontiguousarray(positions, dtype=np.float64)
     angle = np.ascontiguousarray(phases, dtype=np.float64)

@@ -57,6 +57,7 @@ class BasinStabilityEstimate:
         The number that relaxed back to the synchronised state.
     standard_error : float
         The binomial standard error ``sqrt(p (1 - p) / n)`` of the estimate.
+
     """
 
     basin_fraction: float
@@ -140,6 +141,7 @@ def synchronisation_basin_stability(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     frequencies = np.ascontiguousarray(omega, dtype=np.float64)
     reference = np.ascontiguousarray(synchronised_state, dtype=np.float64)

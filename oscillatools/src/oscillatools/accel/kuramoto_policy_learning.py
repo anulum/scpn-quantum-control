@@ -53,6 +53,7 @@ class DesynchronisingPolicy:
         The ``(M,)`` sine harmonic gains ``a_m``.
     cosine_gains : numpy.ndarray
         The ``(M,)`` cosine harmonic gains ``b_m``.
+
     """
 
     sine_gains: NDArray[np.float64]
@@ -75,6 +76,7 @@ class PolicyRolloutGradients:
         The rollout cost ``Σ_k r(θ_k)² dt + λ(‖a‖² + ‖b‖²)``.
     sine_gradient, cosine_gradient : numpy.ndarray
         The ``(M,)`` gradients with respect to the sine and cosine gains.
+
     """
 
     cost: float
@@ -196,6 +198,7 @@ def policy_rollout_value_and_grad(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     phases = np.ascontiguousarray(initial_phases, dtype=np.float64)
     sine = np.ascontiguousarray(sine_gains, dtype=np.float64)
@@ -292,6 +295,7 @@ def learn_desynchronising_policy(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     batch = np.ascontiguousarray(initial_phases_batch, dtype=np.float64)
     if batch.ndim != 2 or batch.shape[0] < 1 or batch.shape[1] < 2:

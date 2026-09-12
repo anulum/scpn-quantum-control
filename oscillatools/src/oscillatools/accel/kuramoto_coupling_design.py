@@ -55,6 +55,7 @@ class CouplingDesignResult:
     converged : bool
         ``True`` if the line search could no longer reduce the cost (a local optimum was
         reached) before the iteration budget ran out.
+
     """
 
     coupling: NDArray[np.float64]
@@ -78,6 +79,7 @@ def symmetric_nonnegative_projection(coupling: NDArray[np.float64]) -> NDArray[n
     -------
     numpy.ndarray
         The projected ``(N, N)`` matrix.
+
     """
     matrix = np.ascontiguousarray(coupling, dtype=np.float64)
     matrix = 0.5 * (matrix + matrix.T)
@@ -146,6 +148,7 @@ def optimise_coupling(
     ValueError
         If ``max_iterations`` is not positive, or ``integrator`` is invalid (from the
         value-and-grad call).
+
     """
     if max_iterations < 1:
         raise ValueError(f"max_iterations must be positive, got {max_iterations}")

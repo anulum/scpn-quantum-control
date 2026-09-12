@@ -80,6 +80,7 @@ class InertialGradients:
         ``∂L/∂m``.
     damping : float
         ``∂L/∂γ``.
+
     """
 
     initial_phases: NDArray[np.float64]
@@ -234,6 +235,7 @@ def inertial_state_sensitivity(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     theta0 = np.ascontiguousarray(phases, dtype=np.float64)
     velocity0 = np.ascontiguousarray(velocities, dtype=np.float64)
@@ -333,6 +335,7 @@ def inertial_terminal_value_and_grad(
     ValueError
         If any argument falls outside its documented bound, or ``objective_grad`` returns a
         cotangent of the wrong shape.
+
     """
     theta_final, velocity_final, sensitivity = inertial_state_sensitivity(
         phases, velocities, omega, coupling, mass, damping=damping, dt=dt, n_steps=n_steps

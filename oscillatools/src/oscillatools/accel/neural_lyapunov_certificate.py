@@ -93,6 +93,7 @@ class NeuralLyapunovCertificate:
         The number of counterexample-guided rounds actually run.
     counterexamples_added : int
         How many falsifier counterexamples were folded back into training.
+
     """
 
     parameters: _Parameters
@@ -123,6 +124,7 @@ class LyapunovCertificateReport:
     is_certified_on_sample : bool
         Whether ``worst_decrease < -tolerance`` and ``minimum_value > tolerance`` — the Lyapunov
         conditions hold *on the sampled states*. This is a sampling certificate, not a formal proof.
+
     """
 
     worst_decrease: float
@@ -146,6 +148,7 @@ class LyapunovCounterexample:
     violation : float
         ``max(\dot V_ψ, -V_ψ)`` at ``state``; a value above the falsifier tolerance is a genuine
         counterexample (either the flow does not decrease ``V_ψ`` or ``V_ψ`` is non-positive there).
+
     """
 
     state: NDArray[np.float64]
@@ -182,6 +185,7 @@ def _load_backend() -> _NeuralLyapunovBackend:
     ------
     ImportError
         If JAX is not installed.
+
     """
     global _BACKEND
     if _BACKEND is not None:
@@ -514,6 +518,7 @@ def fit_neural_lyapunov_certificate(
         If any argument falls outside its documented bound.
     ImportError
         If JAX is not installed.
+
     """
     star = np.ascontiguousarray(phases_star, dtype=np.float64)
     frequencies = np.ascontiguousarray(omega, dtype=np.float64)
@@ -720,6 +725,7 @@ def certify_neural_lyapunov(
         If any argument falls outside its documented bound.
     ImportError
         If JAX is not installed.
+
     """
     if sample_size < 1:
         raise ValueError(f"sample_size must be positive, got {sample_size}")
@@ -796,6 +802,7 @@ def falsify_neural_lyapunov(
         If any argument falls outside its documented bound.
     ImportError
         If JAX is not installed.
+
     """
     if restarts < 1 or steps < 1:
         raise ValueError("restarts and steps must be positive")
@@ -842,6 +849,7 @@ def neural_lyapunov_value(
         If ``phases`` has the wrong shape.
     ImportError
         If JAX is not installed.
+
     """
     theta = _validate_state(certificate, phases)
     backend = _load_backend()
@@ -877,6 +885,7 @@ def neural_lyapunov_decrease(
         If ``phases`` has the wrong shape.
     ImportError
         If JAX is not installed.
+
     """
     theta = _validate_state(certificate, phases)
     backend = _load_backend()

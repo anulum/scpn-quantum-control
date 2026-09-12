@@ -202,6 +202,7 @@ def networked_noisy_trajectory(
     ValueError
         If the state shapes are inconsistent, or ``diffusion``/``dt``/``n_steps``/``settle_steps`` are
         out of range.
+
     """
     theta, frequencies, matrix, count = _validate_noisy_state(theta0, omega, coupling)
     if diffusion < 0.0:

@@ -71,6 +71,7 @@ class KuramotoIvpSolution:
         The number of right-hand-side evaluations (``nfev``).
     jacobian_evaluations : int
         The number of Jacobian evaluations (``njev``; ``0`` for explicit methods).
+
     """
 
     times: NDArray[np.float64]
@@ -162,6 +163,7 @@ def solve_kuramoto_ivp(
     ValueError
         If ``t_span`` is not a two-element interval, or ``use_jacobian`` is set on
         a system without an analytic Jacobian.
+
     """
     span = tuple(float(value) for value in t_span)
     if len(span) != 2:

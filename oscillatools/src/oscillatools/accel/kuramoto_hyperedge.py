@@ -98,6 +98,7 @@ def hyperedge_force(
     ------
     ValueError
         If ``theta`` is not a non-empty vector, a hyperedge is malformed, or the weights mismatch.
+
     """
     phases = np.ascontiguousarray(theta, dtype=np.float64)
     if phases.ndim != 1 or phases.size < 1:
@@ -143,6 +144,7 @@ def hyperedge_jacobian(
     ------
     ValueError
         If ``theta`` is not a non-empty vector, a hyperedge is malformed, or the weights mismatch.
+
     """
     phases = np.ascontiguousarray(theta, dtype=np.float64)
     if phases.ndim != 1 or phases.size < 1:

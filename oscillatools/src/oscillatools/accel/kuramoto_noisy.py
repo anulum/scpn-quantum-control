@@ -61,6 +61,7 @@ class NoisyKuramotoRun:
         The diffusion / noise intensity ``D`` used for the run.
     settle_steps : int
         The number of trailing steps averaged for ``mean_order_parameter``.
+
     """
 
     order_parameter_series: NDArray[np.float64]
@@ -109,6 +110,7 @@ def noisy_kuramoto_step(
     ------
     ValueError
         If the arrays are mismatched or ``diffusion``/``dt`` are out of range.
+
     """
     theta = np.ascontiguousarray(phases, dtype=np.float64)
     frequencies = np.ascontiguousarray(omega, dtype=np.float64)
@@ -185,6 +187,7 @@ def integrate_noisy_kuramoto(
     ------
     ValueError
         If any input is malformed (see the shape and range checks).
+
     """
     theta = np.ascontiguousarray(initial_phases, dtype=np.float64)
     frequencies = np.ascontiguousarray(omega, dtype=np.float64)

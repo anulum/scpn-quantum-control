@@ -47,6 +47,7 @@ class SystemIdentificationResult:
         The number of iterations performed.
     converged : bool
         ``True`` if the line search could no longer reduce the loss.
+
     """
 
     coupling: NDArray[np.float64]
@@ -128,6 +129,7 @@ def trajectory_match_value_and_grad(
     ------
     ValueError
         If the inputs are inconsistent or ``integrator`` is invalid.
+
     """
     phases, frequencies, matrix, targets, steps = _validate(
         theta0, omega, coupling, observed, observation_steps, n_steps
@@ -249,6 +251,7 @@ def learn_coupling(
     ------
     ValueError
         If ``max_iterations`` is not positive or the inputs are inconsistent.
+
     """
     if max_iterations < 1:
         raise ValueError(f"max_iterations must be positive, got {max_iterations}")

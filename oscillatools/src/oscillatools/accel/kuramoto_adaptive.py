@@ -91,6 +91,7 @@ def hebbian_coupling_equilibrium(phases: NDArray[np.float64]) -> NDArray[np.floa
     ------
     ValueError
         If ``phases`` is not a non-empty one-dimensional array.
+
     """
     theta = np.ascontiguousarray(phases, dtype=np.float64)
     if theta.ndim != 1 or theta.size < 1:
@@ -127,6 +128,7 @@ def hebbian_plasticity_rate(
     ------
     ValueError
         If the shapes are inconsistent or ``plasticity_rate`` is negative.
+
     """
     theta = np.ascontiguousarray(phases, dtype=np.float64)
     weights = np.ascontiguousarray(coupling, dtype=np.float64)
@@ -160,6 +162,7 @@ class AdaptiveTrajectory:
         The ``(n_steps + 1, N, N)`` coupling trajectory ``K(t)``.
     order_parameter_series : numpy.ndarray
         The Kuramoto order parameter ``r(t)`` at every sample (length ``n_steps + 1``).
+
     """
 
     times: NDArray[np.float64]
@@ -222,6 +225,7 @@ def adaptive_vector_field(
     ------
     ValueError
         If the state shapes or ``omega`` are inconsistent.
+
     """
     theta = np.ascontiguousarray(phases, dtype=np.float64)
     weights = np.ascontiguousarray(coupling, dtype=np.float64)
@@ -276,6 +280,7 @@ def hebbian_adaptive_jacobian(
     ------
     ValueError
         If the state shapes are inconsistent or ``plasticity_rate`` is negative.
+
     """
     theta = np.ascontiguousarray(phases, dtype=np.float64)
     weights = np.ascontiguousarray(coupling, dtype=np.float64)
@@ -358,6 +363,7 @@ def integrate_adaptive_kuramoto(
     ------
     ValueError
         If the state shapes / ``omega`` are inconsistent or ``dt`` / ``n_steps`` are out of range.
+
     """
     theta = np.ascontiguousarray(initial_phases, dtype=np.float64)
     weights = np.ascontiguousarray(initial_coupling, dtype=np.float64)

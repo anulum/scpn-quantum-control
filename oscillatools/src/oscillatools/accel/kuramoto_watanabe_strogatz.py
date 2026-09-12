@@ -64,6 +64,7 @@ class WatanabeStrogatzTrajectory:
         The ``N`` fixed constants of motion ``b_j = e^{iθ_j(0)}`` (complex).
     phases : numpy.ndarray
         The reconstructed ``(n_steps + 1, N)`` phase trajectory ``θ(t)``.
+
     """
 
     times: NDArray[np.float64]
@@ -103,6 +104,7 @@ def watanabe_strogatz_constants(initial_phases: NDArray[np.float64]) -> NDArray[
     ------
     ValueError
         If ``initial_phases`` is not a non-empty one-dimensional array.
+
     """
     theta = np.ascontiguousarray(initial_phases, dtype=np.float64)
     if theta.ndim != 1 or theta.size < 1:
@@ -177,6 +179,7 @@ def integrate_watanabe_strogatz(
     ------
     ValueError
         If ``initial_phases`` is malformed or ``dt``/``n_steps`` are out of range.
+
     """
     constants = watanabe_strogatz_constants(initial_phases)
     if dt <= 0.0:

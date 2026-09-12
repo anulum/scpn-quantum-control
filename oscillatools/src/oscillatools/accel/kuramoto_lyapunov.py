@@ -154,6 +154,7 @@ def lyapunov_spectrum(
         If the array shapes are inconsistent, ``dt`` or ``n_steps`` is non-positive,
         ``num_exponents`` is outside ``[1, N]``, ``reorth_interval`` is outside ``[1, n_steps]``,
         or ``transient_steps`` leaves no post-transient reorthonormalisation.
+
     """
     phases = np.ascontiguousarray(theta0, dtype=np.float64)
     frequencies = np.ascontiguousarray(omega, dtype=np.float64)

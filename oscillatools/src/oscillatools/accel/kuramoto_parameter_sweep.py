@@ -92,6 +92,7 @@ class KuramotoParameterGrid:
     ValueError
         If ``axes`` is empty, names a parameter that is not tunable, or gives an
         empty sequence of values for any axis.
+
     """
 
     def __init__(self, axes: Mapping[str, Sequence[SweptValue]]) -> None:
@@ -173,6 +174,7 @@ class Observable:
         The reduction ``measure(trajectory, dt) -> float`` applied at each grid
         cell, where ``trajectory`` is the ``(T, N)`` post-transient phase path and
         ``dt`` is the integration step.
+
     """
 
     name: str
@@ -261,6 +263,7 @@ class ParameterSweepResult:
     measurements : numpy.ndarray
         The ``(grid.size, len(observable_names))`` measured values, row ``k`` being
         the observables at the ``k``-th grid cell (row-major over the axes).
+
     """
 
     grid: KuramotoParameterGrid
@@ -297,6 +300,7 @@ class ParameterSweepResult:
         ------
         ValueError
             If ``name`` was not measured.
+
         """
         column = self.measurements[:, self._observable_index(name)]
         return column.reshape(self.grid_shape)
@@ -335,6 +339,7 @@ class ParameterSweepResult:
         ------
         ValueError
             If ``name`` was not measured.
+
         """
         column = self.measurements[:, self._observable_index(name)]
         cell = int(np.argmax(column) if maximise else np.argmin(column))
@@ -393,6 +398,7 @@ def sweep_parameter_grid(
     ValueError
         If ``observables`` is empty or has duplicate names, ``n_steps`` is not
         positive, or ``transient`` is negative or discards the whole trajectory.
+
     """
     if not observables:
         raise ValueError("at least one observable is required")

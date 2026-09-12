@@ -91,6 +91,7 @@ def order_parameter_gradient(theta: NDArray[np.float64]) -> NDArray[np.float64]:
     -------
     numpy.ndarray
         One-dimensional float64 array of per-phase gradient components.
+
     """
     jl = _load()
     arr = np.ascontiguousarray(theta, dtype=np.float64)
@@ -109,6 +110,7 @@ def order_parameter_hessian(theta: NDArray[np.float64]) -> NDArray[np.float64]:
     -------
     numpy.ndarray
         Two-dimensional ``(N, N)`` float64 Hessian matrix.
+
     """
     jl = _load()
     arr = np.ascontiguousarray(theta, dtype=np.float64)
@@ -127,6 +129,7 @@ def mean_phase(theta: NDArray[np.float64]) -> float:
     -------
     float
         The mean phase in radians.
+
     """
     jl = _load()
     arr = np.ascontiguousarray(theta, dtype=np.float64)
@@ -145,6 +148,7 @@ def mean_phase_gradient(theta: NDArray[np.float64]) -> NDArray[np.float64]:
     -------
     numpy.ndarray
         One-dimensional float64 array of per-phase gradient components.
+
     """
     jl = _load()
     arr = np.ascontiguousarray(theta, dtype=np.float64)
@@ -163,6 +167,7 @@ def mean_phase_hessian(theta: NDArray[np.float64]) -> NDArray[np.float64]:
     -------
     numpy.ndarray
         Two-dimensional ``(N, N)`` float64 Hessian matrix.
+
     """
     jl = _load()
     arr = np.ascontiguousarray(theta, dtype=np.float64)
@@ -183,6 +188,7 @@ def daido_order_parameter(theta: NDArray[np.float64], m: int) -> float:
     -------
     float
         The Daido order parameter ``r_m``.
+
     """
     jl = _load()
     arr = np.ascontiguousarray(theta, dtype=np.float64)
@@ -203,6 +209,7 @@ def daido_order_parameter_gradient(theta: NDArray[np.float64], m: int) -> NDArra
     -------
     numpy.ndarray
         One-dimensional float64 array of per-phase gradient components.
+
     """
     jl = _load()
     arr = np.ascontiguousarray(theta, dtype=np.float64)
@@ -223,6 +230,7 @@ def daido_order_parameter_hessian(theta: NDArray[np.float64], m: int) -> NDArray
     -------
     numpy.ndarray
         Two-dimensional ``(N, N)`` float64 Hessian matrix.
+
     """
     jl = _load()
     arr = np.ascontiguousarray(theta, dtype=np.float64)
@@ -243,6 +251,7 @@ def mean_field_force(theta: NDArray[np.float64], coupling: float) -> NDArray[np.
     -------
     numpy.ndarray
         One-dimensional float64 force array.
+
     """
     jl = _load()
     arr = np.ascontiguousarray(theta, dtype=np.float64)
@@ -263,6 +272,7 @@ def mean_field_jacobian(theta: NDArray[np.float64], coupling: float) -> NDArray[
     -------
     numpy.ndarray
         Two-dimensional ``(N, N)`` float64 Jacobian matrix.
+
     """
     jl = _load()
     arr = np.ascontiguousarray(theta, dtype=np.float64)
@@ -285,6 +295,7 @@ def networked_kuramoto_force(
     -------
     numpy.ndarray
         One-dimensional float64 force array of length ``N``.
+
     """
     jl = _load()
     phases = np.ascontiguousarray(theta, dtype=np.float64)
@@ -308,6 +319,7 @@ def networked_kuramoto_jacobian(
     -------
     numpy.ndarray
         Two-dimensional ``(N, N)`` float64 Jacobian matrix.
+
     """
     jl = _load()
     phases = np.ascontiguousarray(theta, dtype=np.float64)
@@ -331,6 +343,7 @@ def kuramoto_interaction_energy(
     -------
     float
         The scalar interaction energy.
+
     """
     jl = _load()
     phases = np.ascontiguousarray(theta, dtype=np.float64)
@@ -354,6 +367,7 @@ def kuramoto_interaction_energy_gradient(
     -------
     numpy.ndarray
         One-dimensional float64 gradient array of length ``N``.
+
     """
     jl = _load()
     phases = np.ascontiguousarray(theta, dtype=np.float64)
@@ -377,6 +391,7 @@ def kuramoto_interaction_energy_hessian(
     -------
     numpy.ndarray
         Two-dimensional ``(N, N)`` float64 Hessian matrix.
+
     """
     jl = _load()
     phases = np.ascontiguousarray(theta, dtype=np.float64)
@@ -402,6 +417,7 @@ def sakaguchi_force(
     -------
     numpy.ndarray
         One-dimensional float64 force array of length ``N``.
+
     """
     jl = _load()
     phases = np.ascontiguousarray(theta, dtype=np.float64)
@@ -427,6 +443,7 @@ def sakaguchi_jacobian(
     -------
     numpy.ndarray
         Two-dimensional ``(N, N)`` float64 Jacobian matrix.
+
     """
     jl = _load()
     phases = np.ascontiguousarray(theta, dtype=np.float64)
@@ -450,6 +467,7 @@ def local_order_parameter(
     -------
     numpy.ndarray
         One-dimensional float64 array of ``N`` local order parameters.
+
     """
     jl = _load()
     phases = np.ascontiguousarray(theta, dtype=np.float64)
@@ -473,6 +491,7 @@ def local_order_parameter_jacobian(
     -------
     numpy.ndarray
         Two-dimensional ``(N, N)`` float64 Jacobian matrix.
+
     """
     jl = _load()
     phases = np.ascontiguousarray(theta, dtype=np.float64)
@@ -494,6 +513,7 @@ def daido_mode_phase(theta: NDArray[np.float64], m: int) -> float:
     -------
     float
         The mode phase ``ψ_m`` in radians.
+
     """
     jl = _load()
     arr = np.ascontiguousarray(theta, dtype=np.float64)
@@ -514,6 +534,7 @@ def daido_mode_phase_gradient(theta: NDArray[np.float64], m: int) -> NDArray[np.
     -------
     numpy.ndarray
         One-dimensional float64 array of per-phase gradient components.
+
     """
     jl = _load()
     arr = np.ascontiguousarray(theta, dtype=np.float64)
@@ -534,6 +555,7 @@ def daido_mode_phase_hessian(theta: NDArray[np.float64], m: int) -> NDArray[np.f
     -------
     numpy.ndarray
         Two-dimensional ``(N, N)`` float64 Hessian matrix.
+
     """
     jl = _load()
     arr = np.ascontiguousarray(theta, dtype=np.float64)
@@ -558,6 +580,7 @@ def daido_mean_field_force(
     -------
     numpy.ndarray
         One-dimensional float64 force array.
+
     """
     jl = _load()
     arr = np.ascontiguousarray(theta, dtype=np.float64)
@@ -582,6 +605,7 @@ def daido_mean_field_jacobian(
     -------
     numpy.ndarray
         Two-dimensional ``(N, N)`` float64 Jacobian matrix.
+
     """
     jl = _load()
     arr = np.ascontiguousarray(theta, dtype=np.float64)
@@ -604,6 +628,7 @@ def local_mean_phase(
     -------
     numpy.ndarray
         One-dimensional float64 array of ``N`` local mean phases.
+
     """
     jl = _load()
     phases = np.ascontiguousarray(theta, dtype=np.float64)
@@ -627,6 +652,7 @@ def local_mean_phase_jacobian(
     -------
     numpy.ndarray
         Two-dimensional ``(N, N)`` float64 Jacobian matrix.
+
     """
     jl = _load()
     phases = np.ascontiguousarray(theta, dtype=np.float64)
@@ -652,6 +678,7 @@ def sakaguchi_mean_field_force(
     -------
     numpy.ndarray
         One-dimensional float64 force array.
+
     """
     jl = _load()
     arr = np.ascontiguousarray(theta, dtype=np.float64)
@@ -678,6 +705,7 @@ def sakaguchi_mean_field_jacobian(
     -------
     numpy.ndarray
         Two-dimensional ``(N, N)`` float64 Jacobian matrix.
+
     """
     jl = _load()
     arr = np.ascontiguousarray(theta, dtype=np.float64)
@@ -701,6 +729,7 @@ def triadic_mean_field_force(theta: NDArray[np.float64], coupling: float) -> NDA
     -------
     numpy.ndarray
         One-dimensional float64 force array.
+
     """
     jl = _load()
     arr = np.ascontiguousarray(theta, dtype=np.float64)
@@ -723,6 +752,7 @@ def triadic_mean_field_jacobian(
     -------
     numpy.ndarray
         Two-dimensional ``(N, N)`` float64 Jacobian matrix.
+
     """
     jl = _load()
     arr = np.ascontiguousarray(theta, dtype=np.float64)
@@ -755,6 +785,7 @@ def kuramoto_euler_trajectory(
     -------
     numpy.ndarray
         Two-dimensional ``(n_steps + 1, N)`` float64 trajectory.
+
     """
     jl = _load()
     return np.ascontiguousarray(
@@ -792,6 +823,7 @@ def kuramoto_euler_vjp(
     -------
     tuple of numpy.ndarray
         ``(grad_theta0, grad_omega, grad_coupling)``.
+
     """
     jl = _load()
     grad_theta0, grad_omega, grad_coupling = jl.kuramoto_euler_vjp(
@@ -833,6 +865,7 @@ def kuramoto_rk4_trajectory(
     -------
     numpy.ndarray
         Two-dimensional ``(n_steps + 1, N)`` float64 trajectory.
+
     """
     jl = _load()
     return np.ascontiguousarray(
@@ -883,6 +916,7 @@ def kuramoto_dopri_trajectory(
     tuple of numpy.ndarray
         ``(times, phases, steps)`` — the accepted times ``(M + 1,)``, the phases at those times
         ``(M + 1, N)`` and the realised step sizes ``(M,)``.
+
     """
     jl = _load()
     count = int(np.asarray(theta0).size)
@@ -945,6 +979,7 @@ def kuramoto_inertial_trajectory(
     tuple of numpy.ndarray
         ``(times, phases, velocities)`` — the ``(M + 1,)`` sample times, the ``(M + 1, N)`` phases
         and the ``(M + 1, N)`` velocities, with ``M = n_steps``.
+
     """
     jl = _load()
     count = int(np.asarray(theta0).size)
@@ -1005,6 +1040,7 @@ def kuramoto_symplectic_inertial_trajectory(
     tuple of numpy.ndarray
         ``(times, phases, velocities)`` — the ``(M + 1,)`` sample times, the ``(M + 1, N)`` phases
         and the ``(M + 1, N)`` velocities, with ``M = n_steps``.
+
     """
     jl = _load()
     count = int(np.asarray(theta0).size)
@@ -1058,6 +1094,7 @@ def kuramoto_delayed_trajectory(
     tuple of numpy.ndarray
         ``(times, phases)`` — the ``(M + 1,)`` sample times and the ``(M + 1, N)`` phases, with
         ``M = n_steps``.
+
     """
     jl = _load()
     count = int(np.asarray(omega).size)
@@ -1107,6 +1144,7 @@ def kuramoto_noisy_trajectory(
     tuple of numpy.ndarray
         ``(order_parameter_series, terminal_phases)`` — the ``(n_steps,)`` order-parameter series
         and the ``(N,)`` terminal phases.
+
     """
     jl = _load()
     series, terminal = jl.kuramoto_noisy_trajectory(
@@ -1149,6 +1187,7 @@ def kuramoto_rk4_vjp(
     -------
     tuple of numpy.ndarray
         ``(grad_theta0, grad_omega, grad_coupling)``.
+
     """
     jl = _load()
     grad_theta0, grad_omega, grad_coupling = jl.kuramoto_rk4_vjp(

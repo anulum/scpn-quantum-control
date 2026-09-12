@@ -284,6 +284,7 @@ class AsyncHardwareRunner:
         ------
         ValueError
             On first await if shots or execution opt-ins are malformed.
+
         """
 
         class JobWrapper:

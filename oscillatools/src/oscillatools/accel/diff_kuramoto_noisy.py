@@ -62,6 +62,7 @@ class NoisyGradients:
         ``∂L/∂K`` (shape ``(N, N)``).
     diffusion : float
         ``∂L/∂D`` for the frozen noise realisation.
+
     """
 
     initial_phases: NDArray[np.float64]
@@ -139,6 +140,7 @@ def noisy_phase_sensitivity(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     theta = np.ascontiguousarray(phases, dtype=np.float64)
     frequencies = np.ascontiguousarray(omega, dtype=np.float64)
@@ -228,6 +230,7 @@ def noisy_terminal_value_and_grad(
     ValueError
         If any argument falls outside its documented bound, or ``objective_grad`` returns a
         cotangent of the wrong shape.
+
     """
     theta_final, sensitivity = noisy_phase_sensitivity(
         phases, omega, coupling, diffusion=diffusion, dt=dt, n_steps=n_steps, seed=seed

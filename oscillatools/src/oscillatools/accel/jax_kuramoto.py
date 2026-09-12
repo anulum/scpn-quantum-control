@@ -83,6 +83,7 @@ def _load_backend() -> _Backend:
     ------
     ImportError
         If JAX is not installed.
+
     """
     global _BACKEND
     if _BACKEND is not None:
@@ -180,6 +181,7 @@ def jax_kuramoto_rk4_trajectory(
         If ``omega`` or ``coupling`` does not match ``theta0``'s order, or ``n_steps`` is negative.
     ImportError
         If JAX is not installed.
+
     """
     phases, frequencies, matrix = _validate_forward(theta0, omega, coupling, n_steps)
     backend = _load_backend()
@@ -234,6 +236,7 @@ def jax_kuramoto_rk4_gradient(
         If any shape is inconsistent, or ``n_steps`` is not positive.
     ImportError
         If JAX is not installed.
+
     """
     if n_steps < 1:
         raise ValueError(f"n_steps must be positive for a gradient, got {n_steps}")
@@ -313,6 +316,7 @@ def jax_kuramoto_rk4_ensemble(
         inconsistent, or ``n_steps`` is negative.
     ImportError
         If JAX is not installed.
+
     """
     batch, frequencies, matrix = _validate_ensemble(theta0_batch, omega, coupling, n_steps)
     backend = _load_backend()
@@ -365,6 +369,7 @@ def jax_kuramoto_rk4_ensemble_gradient(
         If a shape is inconsistent, or ``n_steps`` is not positive.
     ImportError
         If JAX is not installed.
+
     """
     if n_steps < 1:
         raise ValueError(f"n_steps must be positive for a gradient, got {n_steps}")

@@ -64,6 +64,7 @@ class AdaptiveGradients:
         ``∂L/∂ω`` (length ``N``).
     plasticity_rate : float
         ``∂L/∂ε``.
+
     """
 
     initial_phases: NDArray[np.float64]
@@ -198,6 +199,7 @@ def adaptive_state_sensitivity(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     theta0 = np.ascontiguousarray(phases, dtype=np.float64)
     coupling0 = np.ascontiguousarray(coupling, dtype=np.float64)
@@ -288,6 +290,7 @@ def adaptive_terminal_value_and_grad(
     ValueError
         If any argument falls outside its documented bound, or ``objective_grad`` returns a
         cotangent of the wrong shape.
+
     """
     theta_final, coupling_final, sensitivity = adaptive_state_sensitivity(
         phases, coupling, omega, plasticity_rate=plasticity_rate, dt=dt, n_steps=n_steps

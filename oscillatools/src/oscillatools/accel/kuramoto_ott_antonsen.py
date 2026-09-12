@@ -135,6 +135,7 @@ def ott_antonsen_field(
     -------
     complex
         The time derivative ``ż``.
+
     """
     linear = 0.5 * coupling - half_width
     return complex((linear + 1j * centre) * z - 0.5 * coupling * abs(z) ** 2 * z)
@@ -173,6 +174,7 @@ def ott_antonsen_trajectory(
     ------
     ValueError
         If ``coupling`` or ``half_width`` or ``dt`` is non-positive, or ``n_steps < 1``.
+
     """
     _validate(coupling, half_width, dt, n_steps)
     state = np.array([z0.real, z0.imag], dtype=np.float64)
@@ -213,6 +215,7 @@ def ott_antonsen_steady_state(coupling: float, half_width: float) -> float:
     ------
     ValueError
         If ``coupling`` or ``half_width`` is non-positive.
+
     """
     return lorentzian_order_parameter(coupling, half_width)
 
@@ -255,6 +258,7 @@ def ott_antonsen_terminal_order_parameter_value_and_grad(
     ValueError
         If ``coupling`` or ``half_width`` or ``dt`` is non-positive, ``n_steps < 1``, or the
         terminal state is the origin (where ``r`` is not differentiable).
+
     """
     _validate(coupling, half_width, dt, n_steps)
     augmented = np.array([z0.real, z0.imag, 0.0, 0.0, 0.0, 0.0], dtype=np.float64)

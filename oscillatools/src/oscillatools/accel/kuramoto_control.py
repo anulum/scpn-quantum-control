@@ -63,6 +63,7 @@ def coherence_objective(theta_final: NDArray[np.float64]) -> tuple[float, NDArra
     -------
     tuple[float, numpy.ndarray]
         ``(cost, cotangent)`` with the cotangent of shape ``(N,)``.
+
     """
     radius = float(order_parameter(theta_final))
     gradient = order_parameter_gradient(theta_final)
@@ -85,6 +86,7 @@ def phase_target_objective(target: NDArray[np.float64]) -> TerminalObjective:
     -------
     TerminalObjective
         A callable mapping ``θ_T`` to ``(cost, cotangent)``.
+
     """
     reference = np.ascontiguousarray(target, dtype=np.float64)
 
@@ -117,6 +119,7 @@ def interaction_energy_objective(coupling: NDArray[np.float64]) -> TerminalObjec
     -------
     TerminalObjective
         A callable mapping ``θ_T`` to ``(cost, cotangent)``.
+
     """
     matrix = np.ascontiguousarray(coupling, dtype=np.float64)
 
@@ -175,6 +178,7 @@ def terminal_objective_value_and_grad(
     ------
     ValueError
         If ``integrator`` is not ``"rk4"`` or ``"euler"``.
+
     """
     if integrator == "rk4":
         trajectory = kuramoto_rk4_trajectory(theta0, omega, coupling, dt, n_steps)
@@ -219,6 +223,7 @@ def terminal_objective_value(
     ------
     ValueError
         If ``integrator`` is not ``"rk4"`` or ``"euler"``.
+
     """
     if integrator == "rk4":
         trajectory = kuramoto_rk4_trajectory(theta0, omega, coupling, dt, n_steps)

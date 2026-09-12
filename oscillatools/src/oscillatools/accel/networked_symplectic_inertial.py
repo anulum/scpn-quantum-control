@@ -226,6 +226,7 @@ def networked_symplectic_inertial_trajectory(
     ValueError
         If the state shapes are inconsistent, or ``mass``/``damping``/``dt``/``n_steps`` are out of
         range.
+
     """
     _validate_state(theta0, velocities, omega, coupling)
     if mass <= 0.0:

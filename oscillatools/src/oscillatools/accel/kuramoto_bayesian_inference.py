@@ -63,6 +63,7 @@ class DynamicalBayesianPosterior:
         The ``(N, N)`` posterior standard deviations of the coupling entries (diagonal zero).
     noise : numpy.ndarray
         The ``(N,)`` estimated per-node noise intensities ``E_i``.
+
     """
 
     frequencies: NDArray[np.float64]
@@ -86,6 +87,7 @@ class TimeVaryingCouplingHistory:
         The ``(W, N, N)`` posterior-mean directed coupling per window.
     coupling_std : numpy.ndarray
         The ``(W, N, N)`` posterior standard deviations per window.
+
     """
 
     window_times: NDArray[np.float64]
@@ -205,6 +207,7 @@ def infer_network_bayesian(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     series = np.ascontiguousarray(phases, dtype=np.float64)
     count = _validate(series, dt)
@@ -278,6 +281,7 @@ def track_time_varying_coupling(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     series = np.ascontiguousarray(phases, dtype=np.float64)
     count = _validate(series, dt)

@@ -51,6 +51,7 @@ class WinfreeTrajectory:
         The ``(n_steps + 1,)`` sample times.
     phases : numpy.ndarray
         The ``(n_steps + 1, N)`` phase trajectory.
+
     """
 
     times: NDArray[np.float64]
@@ -129,6 +130,7 @@ def winfree_field(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     angle = np.ascontiguousarray(phases, dtype=np.float64)
     frequencies = np.ascontiguousarray(omega, dtype=np.float64)
@@ -159,6 +161,7 @@ def winfree_jacobian(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     angle = np.ascontiguousarray(phases, dtype=np.float64)
     frequencies = np.ascontiguousarray(omega, dtype=np.float64)
@@ -209,6 +212,7 @@ def integrate_winfree(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     angle = np.ascontiguousarray(phases, dtype=np.float64)
     frequencies = np.ascontiguousarray(omega, dtype=np.float64)

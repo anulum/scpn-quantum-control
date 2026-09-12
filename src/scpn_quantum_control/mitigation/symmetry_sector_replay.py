@@ -106,6 +106,7 @@ def replay_symmetry_sector_counts(
     ValueError
         If the planner is blocked, bitstrings are invalid, counts are empty,
         non-integer, boolean or negative, or the total shot count is zero.
+
     """
     plan = plan_symmetry_sector_mitigation(problem)
     if plan.status != "eligible" or plan.expected_parity is None:

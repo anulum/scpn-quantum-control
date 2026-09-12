@@ -225,6 +225,7 @@ def daido_order_parameter(theta: NDArray[np.float64], m: int) -> float:
     -----
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_daido_tier_used`.
+
     """
     return float(_daido_order_parameter_dispatcher(theta, m))
 
@@ -259,6 +260,7 @@ def daido_order_parameter_gradient(theta: NDArray[np.float64], m: int) -> NDArra
     -----
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_daido_gradient_tier_used`.
+
     """
     return np.asarray(_daido_order_parameter_gradient_dispatcher(theta, m), dtype=np.float64)
 
@@ -304,6 +306,7 @@ def daido_order_parameter_hessian(theta: NDArray[np.float64], m: int) -> NDArray
     -----
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_daido_hessian_tier_used`.
+
     """
     return np.asarray(_daido_order_parameter_hessian_dispatcher(theta, m), dtype=np.float64)
 

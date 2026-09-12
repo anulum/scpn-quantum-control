@@ -68,6 +68,7 @@ def _validate(
         positive, ``delay`` is smaller than ``dt`` (the method-of-steps lag would reference the
         current step), ``n_steps`` is not positive, or ``delay`` is a half-integer multiple of ``dt``
         (a grid node, where ``∂θ_N/∂τ`` does not exist).
+
     """
     if history.ndim != 1:
         raise ValueError(
@@ -231,6 +232,7 @@ def delayed_delay_sensitivity(
     ------
     ValueError
         If any argument falls outside its documented bound (see :func:`_validate`).
+
     """
     history = np.ascontiguousarray(history, dtype=np.float64)
     omega = np.ascontiguousarray(omega, dtype=np.float64)
@@ -341,6 +343,7 @@ def delayed_delay_gradient(
     ValueError
         If any argument falls outside its documented bound, or ``objective_grad`` returns a cotangent
         of the wrong shape.
+
     """
     theta_final, dtheta_dtau = delayed_delay_sensitivity(
         history, omega, coupling, delay=delay, dt=dt, n_steps=n_steps

@@ -67,6 +67,7 @@ def ring_coupling_matrix(
     ------
     ValueError
         If ``n``, ``coupling_range`` or ``coupling`` is out of range.
+
     """
     if n < 3:
         raise ValueError(f"n must be at least 3, got {n}")
@@ -104,6 +105,7 @@ def twisted_state(n: int, winding: int) -> NDArray[np.float64]:
     ------
     ValueError
         If ``n`` is not positive.
+
     """
     if n < 1:
         raise ValueError(f"n must be positive, got {n}")
@@ -130,6 +132,7 @@ def winding_number(theta: NDArray[np.float64]) -> int:
     ------
     ValueError
         If ``theta`` is not a non-empty one-dimensional array.
+
     """
     phases = np.ascontiguousarray(theta, dtype=np.float64)
     if phases.ndim != 1 or phases.size < 1:
@@ -168,6 +171,7 @@ def twisted_state_eigenvalues(
     ------
     ValueError
         If ``n`` or ``coupling_range`` is out of range.
+
     """
     if n < 3:
         raise ValueError(f"n must be at least 3, got {n}")
@@ -208,6 +212,7 @@ def is_twisted_state_stable(
     -------
     bool
         Whether the state is linearly stable.
+
     """
     eigenvalues = twisted_state_eigenvalues(n, winding, coupling_range, coupling=coupling)
     transverse = np.delete(eigenvalues, 0)  # drop the Goldstone mode m = 0 (always λ_0 = 0)
@@ -252,6 +257,7 @@ class BasinEstimate:
     winding_counts : numpy.ndarray
         The number of converged samples landing in each winding number, aligned with
         ``winding_values``.
+
     """
 
     n_samples: int
@@ -333,6 +339,7 @@ def estimate_ring_basins(
     ValueError
         If ``n_samples``, ``dt``, ``max_steps`` or ``force_tolerance`` is out of range (the coupling
         matrix validates ``n``, ``coupling_range`` and ``coupling``).
+
     """
     if n_samples < 1:
         raise ValueError(f"n_samples must be positive, got {n_samples}")

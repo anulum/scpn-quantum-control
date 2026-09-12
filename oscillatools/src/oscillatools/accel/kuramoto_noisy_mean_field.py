@@ -76,6 +76,7 @@ def lorentzian_noisy_critical_coupling(half_width: float, diffusion: float) -> f
     ------
     ValueError
         If ``half_width`` is not positive or ``diffusion`` is negative.
+
     """
     if half_width <= 0.0:
         raise ValueError(f"half_width must be positive, got {half_width}")
@@ -140,6 +141,7 @@ def noisy_critical_coupling(
     ValueError
         If ``diffusion`` is negative, the grid parameters are out of range, or the kernel integral
         is not strictly positive.
+
     """
     _validate_theory(diffusion, frequency_limit, n_frequency)
     if diffusion == 0.0:
@@ -224,6 +226,7 @@ def noisy_stationary_order_parameter(
     ValueError
         If ``coupling`` is not positive, ``diffusion`` is negative, or the grid parameters are out
         of range.
+
     """
     if coupling <= 0.0:
         raise ValueError(f"coupling must be positive, got {coupling}")

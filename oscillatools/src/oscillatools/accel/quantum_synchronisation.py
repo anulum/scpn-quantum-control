@@ -53,6 +53,7 @@ class QuantumVanDerPolTrajectory:
         The ``(n_steps + 1,)`` sample times.
     density_matrices : numpy.ndarray
         The ``(n_steps + 1, D, D)`` complex density matrices in the Fock basis.
+
     """
 
     times: NDArray[np.float64]
@@ -110,6 +111,7 @@ def phase_distribution(
     -------
     tuple of numpy.ndarray
         The phase grid and the (real, normalised) phase distribution.
+
     """
     state = _validate_density_matrix(density_matrix)
     if n_angles < 1:
@@ -178,6 +180,7 @@ def integrate_quantum_vanderpol(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     state = _validate_density_matrix(initial_state)
     dimension = state.shape[0]

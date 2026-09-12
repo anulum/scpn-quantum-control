@@ -66,6 +66,7 @@ def _validate_trajectory(phases: NDArray[np.float64]) -> NDArray[np.float64]:
     ValueError
         If ``phases`` is not a two-dimensional array with at least one time sample and one
         oscillator.
+
     """
     trajectory = np.ascontiguousarray(phases, dtype=np.float64)
     if trajectory.ndim != 2:
@@ -87,6 +88,7 @@ def _resolve_communities(communities: CommunityList, count: int) -> list[NDArray
     ValueError
         If no community is supplied, a community is not a non-empty one-dimensional integer
         index set, an index is out of range, or two communities share an oscillator.
+
     """
     if len(communities) == 0:
         raise ValueError("at least one community must be supplied")
@@ -142,6 +144,7 @@ def community_order_parameters(
     ------
     ValueError
         If the trajectory or the community partition is malformed.
+
     """
     trajectory = _validate_trajectory(phases)
     groups = _resolve_communities(communities, trajectory.shape[1])
@@ -173,6 +176,7 @@ def chimera_index(phases: NDArray[np.float64], communities: CommunityList) -> fl
     ------
     ValueError
         If the trajectory or the community partition is malformed.
+
     """
     phi = community_order_parameters(phases, communities)
     return float(np.var(phi, axis=1).mean())
@@ -201,6 +205,7 @@ def community_metastability(phases: NDArray[np.float64], communities: CommunityL
     ------
     ValueError
         If the trajectory or the community partition is malformed.
+
     """
     phi = community_order_parameters(phases, communities)
     return float(np.var(phi, axis=0).mean())
@@ -227,6 +232,7 @@ def metastability_index(phases: NDArray[np.float64]) -> float:
     ------
     ValueError
         If ``phases`` is not a ``(T, N)`` array with ``T ≥ 1`` and ``N ≥ 1``.
+
     """
     trajectory = _validate_trajectory(phases)
     magnitude = _coherence(trajectory)[2]
@@ -286,6 +292,7 @@ def chimera_index_gradient(
     ------
     ValueError
         If the trajectory or the community partition is malformed.
+
     """
     trajectory = _validate_trajectory(phases)
     samples, count = trajectory.shape
@@ -325,6 +332,7 @@ def metastability_index_gradient(phases: NDArray[np.float64]) -> NDArray[np.floa
     ------
     ValueError
         If ``phases`` is not a ``(T, N)`` array with ``T ≥ 1`` and ``N ≥ 1``.
+
     """
     trajectory = _validate_trajectory(phases)
     samples = trajectory.shape[0]
@@ -348,6 +356,7 @@ class ChimeraDiagnostics:
         The temporal variance of the global order parameter.
     community_metastability : float
         The community-averaged temporal variance of the community order parameters.
+
     """
 
     community_order_parameters: NDArray[np.float64]
@@ -381,6 +390,7 @@ def chimera_diagnostics(
     ------
     ValueError
         If the trajectory or the community partition is malformed.
+
     """
     trajectory = _validate_trajectory(phases)
     phi = community_order_parameters(trajectory, communities)

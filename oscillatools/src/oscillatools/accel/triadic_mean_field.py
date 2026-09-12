@@ -177,6 +177,7 @@ def triadic_mean_field_force(theta: NDArray[np.float64], coupling: float) -> NDA
     -----
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_triadic_mean_field_force_tier_used`.
+
     """
     return np.asarray(_triadic_mean_field_force_dispatcher(theta, coupling), dtype=np.float64)
 
@@ -208,6 +209,7 @@ def triadic_mean_field_jacobian(
     -----
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_triadic_mean_field_jacobian_tier_used`.
+
     """
     return np.asarray(_triadic_mean_field_jacobian_dispatcher(theta, coupling), dtype=np.float64)
 

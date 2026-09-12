@@ -134,6 +134,7 @@ class DopriTrajectory:
         The ``(M + 1, N)`` phases at the accepted times; row ``0`` is the initial state.
     steps : numpy.ndarray
         The ``(M,)`` realised step sizes — the fixed grid the adjoint reverses over.
+
     """
 
     times: NDArray[np.float64]
@@ -364,6 +365,7 @@ def kuramoto_dopri_trajectory(
     ValueError
         If the state shapes are inconsistent, ``t_end``/``rtol``/``atol`` are not positive, or the
         integration exceeds ``max_steps``.
+
     """
     phases, frequencies, matrix = _validate_state(theta0, omega, coupling)
     if t_end <= 0.0:
@@ -479,6 +481,7 @@ def kuramoto_dopri_vjp(
     ------
     ValueError
         If the trajectory, steps, state or cotangent shapes are inconsistent.
+
     """
     path, realised, frequencies, matrix, seed = _validate_vjp(
         phases, steps, omega, coupling, cotangent

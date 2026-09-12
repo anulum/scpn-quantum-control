@@ -126,6 +126,7 @@ def kuramoto_sdre_gain(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     angle = np.ascontiguousarray(phases, dtype=np.float64)
     target = np.ascontiguousarray(target_phases, dtype=np.float64)
@@ -166,6 +167,7 @@ def sdre_control_input(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     angle = np.ascontiguousarray(phases, dtype=np.float64)
     target = np.ascontiguousarray(target_phases, dtype=np.float64)
@@ -218,6 +220,7 @@ def integrate_sdre_controlled_kuramoto(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     angle = np.ascontiguousarray(phases, dtype=np.float64)
     target = np.ascontiguousarray(target_phases, dtype=np.float64)

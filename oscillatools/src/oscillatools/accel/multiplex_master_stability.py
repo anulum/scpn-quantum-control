@@ -61,6 +61,7 @@ class MultiplexSynchronisationStability:
         zero mode removed); negative means the synchronous state is linearly stable.
     is_stable : bool
         Whether every transverse mode decays (``transverse_decay`` below the tolerance).
+
     """
 
     spectrum: NDArray[np.complex128]
@@ -99,6 +100,7 @@ def master_stability_function(
     ------
     ValueError
         If the Jacobians are not matching square matrices.
+
     """
     node = np.ascontiguousarray(node_jacobian, dtype=np.float64)
     coupling = np.ascontiguousarray(coupling_jacobian, dtype=np.float64)
@@ -143,6 +145,7 @@ def multiplex_synchronisation_stability(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     intra = np.ascontiguousarray(intra_coupling, dtype=np.float64)
     inter = np.ascontiguousarray(inter_coupling, dtype=np.float64)

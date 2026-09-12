@@ -52,6 +52,7 @@ def _validate_forward(
     ------
     ValueError
         If ``omega`` or ``coupling`` does not match ``theta0``'s order, or ``n_steps`` < 0.
+
     """
     phases = np.ascontiguousarray(theta0, dtype=np.float64)
     frequencies = np.ascontiguousarray(omega, dtype=np.float64)
@@ -154,6 +155,7 @@ def _validate_vjp(
     ValueError
         If ``trajectory`` is not two-dimensional, or ``coupling``/``cotangent`` do not match its
         oscillator count.
+
     """
     path = np.ascontiguousarray(trajectory, dtype=np.float64)
     matrix = np.ascontiguousarray(coupling, dtype=np.float64)
@@ -309,6 +311,7 @@ def kuramoto_euler_trajectory(
     -----
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_kuramoto_euler_trajectory_tier_used`.
+
     """
     template = tensor_template(theta0, omega, coupling)
     result = np.asarray(
@@ -370,6 +373,7 @@ def kuramoto_euler_vjp(
     -----
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_kuramoto_euler_vjp_tier_used`.
+
     """
     template = tensor_template(trajectory, cotangent, coupling)
     grad_theta0, grad_omega, grad_coupling = _kuramoto_euler_vjp_dispatcher(

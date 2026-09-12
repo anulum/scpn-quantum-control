@@ -69,6 +69,7 @@ def _load_backend() -> _IntegratorBackend:
     ------
     ImportError
         If JAX is not installed.
+
     """
     global _BACKEND
     if _BACKEND is not None:
@@ -321,6 +322,7 @@ def jax_kuramoto_euler_trajectory(
         If the state shapes are inconsistent or ``n_steps`` is negative.
     ImportError
         If JAX is not installed.
+
     """
     phases, frequencies, matrix = _validate_forward(theta0, omega, coupling, n_steps)
     backend = _load_backend()
@@ -383,6 +385,7 @@ def jax_kuramoto_dopri_trajectory(
         If shapes or integration parameters are invalid, or the budget is exhausted.
     ImportError
         If JAX is not installed.
+
     """
     phases, frequencies, matrix = _validate_dopri_state(theta0, omega, coupling)
     if t_end <= 0.0:
@@ -484,6 +487,7 @@ def jax_networked_inertial_trajectory(
         If state shapes or range constraints are invalid.
     ImportError
         If JAX is not installed.
+
     """
     phases, speed, frequencies, matrix = _validate_inertial_state(
         theta0, velocities, omega, coupling
@@ -557,6 +561,7 @@ def jax_networked_symplectic_inertial_trajectory(
         If state shapes or range constraints are invalid.
     ImportError
         If JAX is not installed.
+
     """
     phases, speed, frequencies, matrix = _validate_symplectic_inertial_state(
         theta0, velocities, omega, coupling
@@ -631,6 +636,7 @@ def jax_networked_noisy_trajectory(
         If state shapes or range constraints are invalid.
     ImportError
         If JAX is not installed.
+
     """
     theta, frequencies, matrix, count = _validate_noisy_state(theta0, omega, coupling)
     if diffusion < 0.0:

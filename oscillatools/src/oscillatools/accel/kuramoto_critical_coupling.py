@@ -61,6 +61,7 @@ def critical_coupling(density: _FrequencyDensity) -> float:
     ------
     ValueError
         If ``g(0)`` is not strictly positive.
+
     """
     centre = float(density(0.0))
     if centre <= 0.0:
@@ -80,6 +81,7 @@ def lorentzian_density(half_width: float) -> _FrequencyDensity:
     ------
     ValueError
         If ``half_width`` is not strictly positive.
+
     """
     if half_width <= 0.0:
         raise ValueError(f"half_width must be positive, got {half_width}")
@@ -102,6 +104,7 @@ def gaussian_density(std: float) -> _FrequencyDensity:
     ------
     ValueError
         If ``std`` is not strictly positive.
+
     """
     if std <= 0.0:
         raise ValueError(f"std must be positive, got {std}")
@@ -125,6 +128,7 @@ def lorentzian_critical_coupling(half_width: float) -> float:
     ------
     ValueError
         If ``half_width`` is not strictly positive.
+
     """
     if half_width <= 0.0:
         raise ValueError(f"half_width must be positive, got {half_width}")
@@ -143,6 +147,7 @@ def gaussian_critical_coupling(std: float) -> float:
     ------
     ValueError
         If ``std`` is not strictly positive.
+
     """
     if std <= 0.0:
         raise ValueError(f"std must be positive, got {std}")
@@ -166,6 +171,7 @@ def lorentzian_order_parameter(coupling: float, half_width: float) -> float:
     ------
     ValueError
         If ``coupling`` or ``half_width`` is not strictly positive.
+
     """
     if coupling <= 0.0:
         raise ValueError(f"coupling must be positive, got {coupling}")
@@ -207,6 +213,7 @@ def synchronised_order_parameter(
     ------
     ValueError
         If ``coupling`` is not strictly positive or ``g(0)`` is not strictly positive.
+
     """
     if coupling <= 0.0:
         raise ValueError(f"coupling must be positive, got {coupling}")

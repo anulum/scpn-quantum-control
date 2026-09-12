@@ -64,6 +64,7 @@ def partners_for(
         bridge_mode: ``"both"`` (default, one partner per relation) or ``"r1_only"``
             (the A2 ablation — bridge to the R1 cluster only, making the readout
             depend on a single relation → separable).
+
     """
     r1_pair, r2_pair = (HELD_OUT_R1_PAIR, HELD_OUT_R2_PAIR) if held_out is None else held_out
     r1_partner = CLUSTERS[PAIRS[r1_pair][0]][0]

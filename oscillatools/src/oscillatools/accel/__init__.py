@@ -1125,6 +1125,7 @@ def rust_random_state(
         zero vector that cannot be normalised.
     MemoryError
         If the declared peak exceeds ``max_gib`` or native addressability.
+
     """
     if isinstance(n_qubits, bool) or not isinstance(n_qubits, int) or n_qubits < 0:
         raise ValueError(f"n_qubits must be a non-negative integer, got {n_qubits!r}")

@@ -226,6 +226,7 @@ def daido_mode_phase(theta: NDArray[np.float64], m: int) -> float:
     -----
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_daido_mode_phase_tier_used`.
+
     """
     return float(_daido_mode_phase_dispatcher(theta, m))
 
@@ -261,6 +262,7 @@ def daido_mode_phase_gradient(theta: NDArray[np.float64], m: int) -> NDArray[np.
     -----
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_daido_mode_phase_gradient_tier_used`.
+
     """
     return np.asarray(_daido_mode_phase_gradient_dispatcher(theta, m), dtype=np.float64)
 
@@ -307,6 +309,7 @@ def daido_mode_phase_hessian(theta: NDArray[np.float64], m: int) -> NDArray[np.f
     -----
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_daido_mode_phase_hessian_tier_used`.
+
     """
     return np.asarray(_daido_mode_phase_hessian_dispatcher(theta, m), dtype=np.float64)
 

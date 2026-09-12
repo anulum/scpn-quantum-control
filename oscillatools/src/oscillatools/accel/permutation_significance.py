@@ -66,6 +66,7 @@ class PermutationSignificanceResult:
         The surrogate scheme used (``"circular_shift"`` or ``"phase_shuffle"``).
     alternative : str
         The tested alternative (``"greater"``, ``"less"`` or ``"two-sided"``).
+
     """
 
     observed: float
@@ -156,6 +157,7 @@ def permutation_significance_test(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     series = np.ascontiguousarray(phases, dtype=np.float64)
     if series.ndim != 2 or series.shape[0] < 2 or series.shape[1] < 1:

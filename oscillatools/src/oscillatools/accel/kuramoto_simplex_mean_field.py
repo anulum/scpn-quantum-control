@@ -73,6 +73,7 @@ def simplex_mean_field_force(
     ------
     ValueError
         If ``theta`` is not one-dimensional or ``order`` is below ``1``.
+
     """
     phases = np.ascontiguousarray(theta, dtype=np.float64)
     if phases.ndim != 1:
@@ -120,6 +121,7 @@ def simplex_mean_field_jacobian(
     ------
     ValueError
         If ``theta`` is not one-dimensional or ``order`` is below ``1``.
+
     """
     phases = np.ascontiguousarray(theta, dtype=np.float64)
     if phases.ndim != 1:

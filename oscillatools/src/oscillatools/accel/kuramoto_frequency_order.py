@@ -53,6 +53,7 @@ def _validate_trajectory(phases: NDArray[np.float64], dt: float) -> NDArray[np.f
     ValueError
         If ``phases`` is not a two-dimensional array with at least two time samples and
         one oscillator, or if ``dt`` is not strictly positive.
+
     """
     trajectory = np.ascontiguousarray(phases, dtype=np.float64)
     if trajectory.ndim != 2:
@@ -102,6 +103,7 @@ def effective_frequencies(phases: NDArray[np.float64], *, dt: float) -> NDArray[
     ValueError
         If ``phases`` is not a ``(T, N)`` array with ``T ≥ 2`` and ``N ≥ 1``, or if
         ``dt`` is not strictly positive.
+
     """
     trajectory = _validate_trajectory(phases, dt)
     advance = _wrap(np.diff(trajectory, axis=0))
@@ -134,6 +136,7 @@ def frequency_synchronisation_index(phases: NDArray[np.float64], *, dt: float) -
     ------
     ValueError
         Propagated from :func:`effective_frequencies`.
+
     """
     return float(np.std(effective_frequencies(phases, dt=dt)))
 
@@ -179,6 +182,7 @@ def frequency_synchronisation_index_gradient(
     ------
     ValueError
         Propagated from :func:`effective_frequencies`.
+
     """
     trajectory = _validate_trajectory(phases, dt)
     samples, count = trajectory.shape
@@ -226,6 +230,7 @@ def frequency_locked_fraction(
     ------
     ValueError
         If ``tolerance`` is negative, or propagated from :func:`effective_frequencies`.
+
     """
     if tolerance < 0.0:
         raise ValueError(f"tolerance must be non-negative, got {tolerance}")
@@ -246,6 +251,7 @@ class FrequencyOrder:
         The population standard deviation of ``effective_frequencies``.
     locked_fraction : float
         The fraction of oscillators within the tolerance of the mean effective frequency.
+
     """
 
     effective_frequencies: NDArray[np.float64]
@@ -281,6 +287,7 @@ def frequency_order_diagnostics(
     ------
     ValueError
         If ``tolerance`` is negative, or propagated from :func:`effective_frequencies`.
+
     """
     if tolerance < 0.0:
         raise ValueError(f"tolerance must be non-negative, got {tolerance}")

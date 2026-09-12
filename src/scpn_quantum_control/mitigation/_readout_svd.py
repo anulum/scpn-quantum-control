@@ -48,6 +48,7 @@ def admit_readout_svd(n_qubits: int, max_dense_gib: float | None) -> int:
         If numeric buffers exceed the budget or LAPACK integer range.
     numpy.linalg.LinAlgError
         If the workspace query fails or returns an invalid length.
+
     """
     estimate = require_dense_allocation(
         n_qubits,
@@ -99,6 +100,7 @@ def readout_svd_condition(matrix: NDArray[np.float64], lwork: int) -> float:
     ------
     numpy.linalg.LinAlgError
         If the SVD reports invalid arguments or fails to converge.
+
     """
     scratch = np.array(matrix, dtype=np.float64, order="F", copy=True)
     _, singular_values, _, info = dgesdd(

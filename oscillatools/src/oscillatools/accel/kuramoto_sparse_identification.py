@@ -60,6 +60,7 @@ class SparseDynamicsModel:
         ``cos(m(θ_j − θ_i))``. The diagonal is zero.
     residual : float
         The root-mean-square residual of the discovered model against the supplied derivatives.
+
     """
 
     frequencies: NDArray[np.float64]
@@ -166,6 +167,7 @@ def discover_phase_dynamics(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     snapshots = np.ascontiguousarray(phases, dtype=np.float64)
     velocity = np.ascontiguousarray(derivatives, dtype=np.float64)

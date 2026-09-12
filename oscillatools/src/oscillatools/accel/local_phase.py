@@ -40,6 +40,7 @@ def _validate_adjacency(
     ------
     ValueError
         If ``adjacency`` is not a square matrix whose order matches ``theta``.
+
     """
     phases = np.ascontiguousarray(theta, dtype=np.float64)
     matrix = np.ascontiguousarray(adjacency, dtype=np.float64)
@@ -197,6 +198,7 @@ def local_mean_phase(
     -----
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_local_mean_phase_tier_used`.
+
     """
     return np.asarray(_local_mean_phase_dispatcher(theta, adjacency), dtype=np.float64)
 
@@ -232,6 +234,7 @@ def local_mean_phase_jacobian(
     -----
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_local_mean_phase_jacobian_tier_used`.
+
     """
     return np.asarray(_local_mean_phase_jacobian_dispatcher(theta, adjacency), dtype=np.float64)
 

@@ -55,6 +55,23 @@ def test_undocumented_function_is_reported(tmp_path: Path) -> None:
     assert "bare.py" in offenders[0]
 
 
+def test_last_section_spacing_is_enforced(tmp_path: Path) -> None:
+    """Reject missing final section spacing and accept its documented repair."""
+    body = (
+        '"""A deterministic documented fixture."""\n\n\n'
+        "def value() -> int:\n"
+        '    """Return the fixture value.\n\n'
+        "    Returns\n    -------\n    int\n        Fixture value.\n"
+        '    """\n    return 1\n'
+    )
+    _write_module(tmp_path, "src", "spacing.py", body)
+    findings = gate.scan(tmp_path, ("src",))
+    assert [finding["code"] for finding in findings] == ["D413"]
+    repaired = body.replace("        Fixture value.\n", "        Fixture value.\n\n")
+    _write_module(tmp_path, "src", "spacing.py", repaired)
+    assert gate.scan(tmp_path, ("src",)) == []
+
+
 def test_exempt_file_is_not_reported(tmp_path: Path) -> None:
     """A recorded exemption suppresses its own findings and nothing else."""
     exempt_path = next(iter(gate.EXEMPT))

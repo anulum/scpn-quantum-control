@@ -62,6 +62,7 @@ class CouplingFunctionEstimate:
     residual : float
         The root-mean-square fit residual (the ODE residual for collocation, the trajectory-match
         loss for the differentiable estimator).
+
     """
 
     sine_coefficients: NDArray[np.float64]
@@ -86,6 +87,7 @@ class CouplingFunctionGradients:
         The ``(M,)`` gradient with respect to the sine coefficients.
     cosine_gradient : numpy.ndarray
         The ``(M,)`` gradient with respect to the cosine coefficients.
+
     """
 
     loss: float
@@ -116,6 +118,7 @@ def coupling_function_value(
     ------
     ValueError
         If the coefficient arrays are mismatched or empty.
+
     """
     sine = np.ascontiguousarray(sine_coefficients, dtype=np.float64)
     cosine = np.ascontiguousarray(cosine_coefficients, dtype=np.float64)
@@ -193,6 +196,7 @@ def infer_coupling_function(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     snapshots = np.ascontiguousarray(phases, dtype=np.float64)
     velocity = np.ascontiguousarray(derivatives, dtype=np.float64)
@@ -366,6 +370,7 @@ def coupling_function_trajectory_value_and_grad(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     state = np.ascontiguousarray(initial_phases, dtype=np.float64)
     observed = np.ascontiguousarray(observations, dtype=np.float64)
@@ -450,6 +455,7 @@ def refine_coupling_function(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     if n_harmonics < 1:
         raise ValueError(f"n_harmonics must be positive, got {n_harmonics}")

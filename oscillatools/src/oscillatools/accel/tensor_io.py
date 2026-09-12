@@ -40,6 +40,7 @@ class TensorTemplate:
     source:
         The tensor object whose device and dtype should be mirrored where the
         backend exposes that metadata.
+
     """
 
     kind: TensorKind
@@ -58,6 +59,7 @@ def as_float64_array(value: object) -> NDArray[np.float64]:
     -------
     numpy.ndarray
         Contiguous float64 array consumed by the existing accelerator kernels.
+
     """
     raw_value: object = _torch_tensor_to_numpy(value)
     if raw_value is None:
@@ -79,6 +81,7 @@ def tensor_template(*values: object) -> TensorTemplate | None:
     TensorTemplate | None
         Template for restoring array outputs, or ``None`` when every input is a
         plain NumPy/Python value.
+
     """
     for value in values:
         kind = _tensor_kind(value)
@@ -105,6 +108,7 @@ def restore_array(
     numpy.ndarray | Any
         The original NumPy array when ``template`` is absent, otherwise a Torch
         or JAX tensor created lazily from the NumPy result.
+
     """
     result = np.ascontiguousarray(array, dtype=np.float64)
     if template is None:
@@ -131,6 +135,7 @@ def restore_array_tuple(
     -------
     tuple
         Tuple whose array channels follow the same output namespace.
+
     """
     return tuple(restore_array(array, template) for array in arrays)
 

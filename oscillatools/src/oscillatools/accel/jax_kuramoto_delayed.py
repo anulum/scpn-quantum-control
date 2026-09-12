@@ -96,6 +96,7 @@ def _load_backend() -> _DelayedBackend:
     ------
     ImportError
         If JAX is not installed.
+
     """
     global _BACKEND
     if _BACKEND is not None:
@@ -225,6 +226,7 @@ def jax_kuramoto_delayed_trajectory(
         or ``initial_history``/``omega``/``coupling`` are malformed.
     ImportError
         If JAX is not installed.
+
     """
     history, frequencies, matrix, _, _ = _prepare_single(
         initial_history, omega, coupling, delay, dt, n_steps, delay_tolerance
@@ -294,6 +296,7 @@ def jax_kuramoto_delayed_gradient(
         the wrong shape.
     ImportError
         If JAX is not installed.
+
     """
     history, frequencies, matrix, count, _ = _prepare_single(
         initial_history, omega, coupling, delay, dt, n_steps, delay_tolerance
@@ -386,6 +389,7 @@ def jax_kuramoto_delayed_ensemble(
         parameters are inconsistent.
     ImportError
         If JAX is not installed.
+
     """
     batch, frequencies, matrix, _ = _prepare_ensemble(
         initial_history_batch, omega, coupling, delay, dt, n_steps, delay_tolerance
@@ -451,6 +455,7 @@ def jax_kuramoto_delayed_ensemble_gradient(
         If a shape is inconsistent, or the cotangent batch does not match the batch size.
     ImportError
         If JAX is not installed.
+
     """
     batch, frequencies, matrix, count = _prepare_ensemble(
         initial_history_batch, omega, coupling, delay, dt, n_steps, delay_tolerance

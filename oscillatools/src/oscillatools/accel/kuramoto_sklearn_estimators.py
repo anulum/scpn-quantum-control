@@ -85,6 +85,7 @@ class _KuramotoInferenceEstimator:
         ------
         ValueError
             If a supplied name is not a declared hyperparameter.
+
         """
         for name, value in params.items():
             if name not in self._PARAMETERS:
@@ -134,6 +135,7 @@ class SparseDynamicsEstimator(_KuramotoInferenceEstimator):
         The sparsity threshold (``> 0``); default ``0.05``.
     max_iterations : int, optional
         The maximum sequential-thresholding iterations; default ``10``.
+
     """
 
     _PARAMETERS = ("n_harmonics", "threshold", "max_iterations")
@@ -165,6 +167,7 @@ class SparseDynamicsEstimator(_KuramotoInferenceEstimator):
         ------
         AttributeError
             If called before :meth:`fit`.
+
         """
         if not hasattr(self, "discovered_model_"):
             raise AttributeError("SparseDynamicsEstimator must be fitted before predict")
@@ -187,6 +190,7 @@ class CouplingFunctionEstimator(_KuramotoInferenceEstimator):
         The known ``(N, N)`` coupling matrix ``K``.
     n_harmonics : int, optional
         The number of Fourier harmonics to fit (``>= 1``); default ``1``.
+
     """
 
     _PARAMETERS = ("coupling", "n_harmonics")
@@ -214,6 +218,7 @@ class CouplingFunctionEstimator(_KuramotoInferenceEstimator):
         ------
         AttributeError
             If called before :meth:`fit`.
+
         """
         if not hasattr(self, "estimate_"):
             raise AttributeError("CouplingFunctionEstimator must be fitted before predict")

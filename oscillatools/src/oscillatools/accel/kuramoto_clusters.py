@@ -72,6 +72,7 @@ def phase_clusters(matrix: NDArray[np.float64], *, threshold: float = 0.9) -> ND
     ------
     ValueError
         If ``matrix`` is not a non-empty square array.
+
     """
     array = _validate_square(matrix)
     adjacency = array >= threshold
@@ -102,6 +103,7 @@ def cluster_count(matrix: NDArray[np.float64], *, threshold: float = 0.9) -> int
     ------
     ValueError
         If ``matrix`` is not a non-empty square array.
+
     """
     return int(phase_clusters(matrix, threshold=threshold).max()) + 1
 
@@ -120,6 +122,7 @@ class ClusterPartition:
         The ``(count,)`` cluster sizes, largest first.
     coherences : numpy.ndarray
         The ``(count,)`` mean intra-cluster coherence of each cluster; ``1.0`` for a singleton.
+
     """
 
     labels: NDArray[np.int_]
@@ -151,6 +154,7 @@ def cluster_partition(matrix: NDArray[np.float64], *, threshold: float = 0.9) ->
     ------
     ValueError
         If ``matrix`` is not a non-empty square array.
+
     """
     array = _validate_square(matrix)
     labels = phase_clusters(array, threshold=threshold)

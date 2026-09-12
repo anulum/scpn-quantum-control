@@ -60,6 +60,7 @@ class HodgeStructure:
         The ``(N_nodes, N_edges)`` node–edge boundary operator ``B_1``.
     edge_boundary : numpy.ndarray
         The ``(N_edges, N_triangles)`` edge–triangle boundary operator ``B_2``.
+
     """
 
     node_boundary: NDArray[np.float64]
@@ -99,6 +100,7 @@ class HodgeComponents:
         The curl (triangle-induced) part in ``im B_2``.
     harmonic : numpy.ndarray
         The harmonic part in ``ker L_1``.
+
     """
 
     gradient: NDArray[np.float64]
@@ -116,6 +118,7 @@ class TopologicalKuramotoTrajectory:
         The ``(n_steps + 1,)`` sample times.
     phases : numpy.ndarray
         The ``(n_steps + 1, N_edges)`` edge phases.
+
     """
 
     times: NDArray[np.float64]
@@ -154,6 +157,7 @@ def simplicial_hodge_structure(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     if n_nodes < 2:
         raise ValueError(f"n_nodes must be at least two, got {n_nodes}")
@@ -208,6 +212,7 @@ def hodge_decomposition(
     ------
     ValueError
         If the signal length does not match the number of edges.
+
     """
     signal = np.ascontiguousarray(edge_signal, dtype=np.float64)
     boundary = structure.node_boundary
@@ -266,6 +271,7 @@ def topological_kuramoto_field(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     angle, frequencies = _validate_edges(phases, natural_frequencies, structure)
     if not (np.isfinite(down_coupling) and np.isfinite(up_coupling)):
@@ -334,6 +340,7 @@ def integrate_topological_kuramoto(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     angle, frequencies = _validate_edges(initial_phases, natural_frequencies, structure)
     if not (np.isfinite(down_coupling) and np.isfinite(up_coupling)):

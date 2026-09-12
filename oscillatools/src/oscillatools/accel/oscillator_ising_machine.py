@@ -59,6 +59,7 @@ class OscillatorIsingTrajectory:
     ising_energy_history : numpy.ndarray
         The ``(n_steps + 1,)`` Ising Hamiltonian of the binarised spins at each step (the
         solution-quality curve, well defined throughout the anneal).
+
     """
 
     times: NDArray[np.float64]
@@ -99,6 +100,7 @@ def oscillator_ising_field(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     angle = np.ascontiguousarray(phases, dtype=np.float64)
     matrix = np.ascontiguousarray(coupling, dtype=np.float64)
@@ -132,6 +134,7 @@ def oscillator_ising_energy(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     angle = np.ascontiguousarray(phases, dtype=np.float64)
     matrix = np.ascontiguousarray(coupling, dtype=np.float64)
@@ -226,6 +229,7 @@ def integrate_oscillator_ising_machine(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     angle = np.ascontiguousarray(phases, dtype=np.float64)
     matrix = np.ascontiguousarray(coupling, dtype=np.float64)

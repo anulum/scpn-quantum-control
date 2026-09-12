@@ -99,6 +99,7 @@ def phase_entropy(angles: NDArray[np.float64], *, bins: int = 36) -> float:
     ------
     ValueError
         If ``angles`` is not a non-empty one-dimensional array or ``bins`` is below two.
+
     """
     values = _validate_angles(angles)
     return _entropy_of(_distribution(values, _validate_bins(bins)))
@@ -126,6 +127,7 @@ def normalised_phase_entropy(angles: NDArray[np.float64], *, bins: int = 36) -> 
     ------
     ValueError
         If ``angles`` is not a non-empty one-dimensional array or ``bins`` is below two.
+
     """
     resolved = _validate_bins(bins)
     return phase_entropy(angles, bins=resolved) / float(np.log(resolved))
@@ -155,6 +157,7 @@ def phase_entropy_series(phases: NDArray[np.float64], *, bins: int = 36) -> NDAr
     ValueError
         If ``phases`` is not a ``(T, N)`` array with ``T ≥ 1`` and ``N ≥ 1`` or ``bins`` is
         below two.
+
     """
     trajectory = np.ascontiguousarray(phases, dtype=np.float64)
     if trajectory.ndim != 2:
@@ -194,6 +197,7 @@ def pairwise_mutual_information(
     ValueError
         If the series are not equal-length non-empty one-dimensional arrays or ``bins`` is
         below two.
+
     """
     left = _validate_angles(first)
     right = _validate_angles(second)
@@ -242,6 +246,7 @@ def mutual_information_matrix(
     ValueError
         If ``phases`` is not a ``(T, N)`` array with ``T ≥ 1`` and ``N ≥ 1`` or ``bins`` is
         below two.
+
     """
     trajectory = np.ascontiguousarray(phases, dtype=np.float64)
     if trajectory.ndim != 2:

@@ -88,6 +88,7 @@ def integrate_symplectic_inertial(
     ValueError
         If the state vectors are mismatched, or ``mass``/``damping``/``dt``/``n_steps`` are out of
         range.
+
     """
     theta = np.ascontiguousarray(phases, dtype=np.float64)
     speed = np.ascontiguousarray(velocities, dtype=np.float64)

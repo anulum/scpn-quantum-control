@@ -93,6 +93,7 @@ class MpcOptimumSensitivity:
         The pullback ``∂L/∂ω`` of the seed control cotangent through ``u*(ω)`` (length ``N``).
     coupling_cotangent : numpy.ndarray
         The pullback ``∂L/∂K`` of the seed control cotangent through ``u*(K)`` (shape ``(N, N)``).
+
     """
 
     optimal_control: NDArray[np.float64]
@@ -242,6 +243,7 @@ def mpc_optimum_parameter_sensitivity(
         If any argument falls outside its documented bound.
     ImportError
         If JAX is not installed.
+
     """
     state = np.ascontiguousarray(phases, dtype=np.float64)
     frequencies = np.ascontiguousarray(omega, dtype=np.float64)
@@ -341,6 +343,7 @@ def mpc_plan_energy_gradient(
         If any argument falls outside its documented bound.
     ImportError
         If JAX is not installed.
+
     """
     optimum = jax_mpc_optimum(
         phases,
@@ -408,6 +411,7 @@ def jax_mpc_optimum(
         If any argument falls outside its documented bound.
     ImportError
         If JAX is not installed.
+
     """
     from .jax_kuramoto_mpc import jax_mpc_horizon_control
 

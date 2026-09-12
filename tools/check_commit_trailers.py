@@ -240,6 +240,7 @@ def _vendor_attribution_violations(msg: str) -> list[str]:
     -------
     list[str]
         One entry per offending line, empty when the message is clean.
+
     """
     violations: list[str] = []
     for line in msg.splitlines():

@@ -85,6 +85,7 @@ def delayed_mean_field_force(
     ------
     ValueError
         If the two phase vectors are not matching non-empty 1-D arrays.
+
     """
     current = np.ascontiguousarray(current_phases, dtype=np.float64)
     delayed = np.ascontiguousarray(delayed_phases, dtype=np.float64)
@@ -122,6 +123,7 @@ def delayed_networked_force(
     ------
     ValueError
         If the phase vectors mismatch or the coupling matrix is not ``(N, N)``.
+
     """
     current = np.ascontiguousarray(current_phases, dtype=np.float64)
     delayed = np.ascontiguousarray(delayed_phases, dtype=np.float64)
@@ -162,6 +164,7 @@ class DelayedTrajectory:
         The coupling delay ``τ`` used to generate the trajectory.
     delay_steps : int
         The number of grid steps in one delay, ``τ / dt``.
+
     """
 
     times: NDArray[np.float64]
@@ -198,6 +201,7 @@ class DelayedTrajectory:
         ------
         ValueError
             If ``fraction`` is outside ``(0, 1]`` or the window has fewer than two samples.
+
         """
         if not 0.0 < fraction <= 1.0:
             raise ValueError(f"fraction must be in (0, 1], got {fraction}")
@@ -262,6 +266,7 @@ def integrate_delayed_kuramoto(
     ValueError
         If ``delay``/``dt``/``n_steps`` are out of range, ``τ`` is not an integer multiple of
         ``dt``, or ``initial_history``/``omega`` are malformed.
+
     """
     if dt <= 0.0:
         raise ValueError(f"dt must be positive, got {dt}")

@@ -48,6 +48,7 @@ class StuartLandauTrajectory:
         The ``(n_steps + 1,)`` sample times.
     states : numpy.ndarray
         The ``(n_steps + 1, N)`` complex amplitudes ``z(t)``.
+
     """
 
     times: NDArray[np.float64]
@@ -117,6 +118,7 @@ def stuart_landau_field(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     amplitude = np.ascontiguousarray(state, dtype=np.complex128)
     _validate(amplitude.size, omega, coupling, radius, None)
@@ -148,6 +150,7 @@ def stuart_landau_jacobian(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     amplitude = np.ascontiguousarray(state, dtype=np.complex128)
     count = amplitude.size
@@ -199,6 +202,7 @@ def integrate_stuart_landau(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     amplitude = np.ascontiguousarray(state, dtype=np.complex128)
     _validate(amplitude.size, omega, coupling, radius, dt)
@@ -266,6 +270,7 @@ def is_oscillation_death(
     ------
     ValueError
         If ``velocity_tolerance`` is non-positive (other arguments are validated by the field).
+
     """
     if velocity_tolerance <= 0.0:
         raise ValueError(f"velocity_tolerance must be positive, got {velocity_tolerance}")

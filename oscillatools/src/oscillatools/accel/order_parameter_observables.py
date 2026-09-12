@@ -225,6 +225,7 @@ def order_parameter_gradient(theta: NDArray[np.float64]) -> NDArray[np.float64]:
     -----
     Chain (measured fastest first): Rust → Julia → Python floor. The served
     tier is recorded on :func:`last_gradient_tier_used`.
+
     """
     return np.asarray(_order_parameter_gradient_dispatcher(theta), dtype=np.float64)
 
@@ -260,6 +261,7 @@ def order_parameter_hessian(theta: NDArray[np.float64]) -> NDArray[np.float64]:
     -----
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_hessian_tier_used`.
+
     """
     return np.asarray(_order_parameter_hessian_dispatcher(theta), dtype=np.float64)
 

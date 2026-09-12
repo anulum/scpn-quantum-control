@@ -944,6 +944,7 @@ def describe(category: str | None = None) -> str:
     ------
     ValueError
         If ``category`` is not one of the capability groups.
+
     """
     if category is None:
         return "\n".join(

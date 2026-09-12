@@ -266,6 +266,7 @@ def mitigate_probabilities(
     ------
     ValueError
         If labels or observed probabilities are invalid, or inversion leaves no mass.
+
     """
     label_index_map(confusion_matrix.labels)
     if observed_probabilities.shape != (len(confusion_matrix.labels),):
@@ -334,6 +335,7 @@ def probability_parity_leakage(
     ------
     ValueError
         If labels are invalid, the target is unknown or vector lengths differ.
+
     """
     bitstring_index(target_bitstring, labels)
     target = target_bitstring.count("1") % 2
@@ -374,6 +376,7 @@ def probability_magnetisation_leakage(
     ------
     ValueError
         If labels are invalid, the target is unknown or vector lengths differ.
+
     """
     bitstring_index(target_bitstring, labels)
     target = _magnetisation(target_bitstring)
@@ -411,6 +414,7 @@ def probability_mean_magnetisation(
     ------
     ValueError
         If labels are invalid or vector lengths differ.
+
     """
     label_index_map(labels)
     return float(

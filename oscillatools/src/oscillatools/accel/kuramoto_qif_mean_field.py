@@ -88,6 +88,7 @@ def qif_mean_field_rates(
     ------
     ValueError
         If ``delta`` is negative.
+
     """
     if delta < 0.0:
         raise ValueError(f"delta must be non-negative, got {delta}")
@@ -123,6 +124,7 @@ def qif_mean_field_jacobian(
     -------
     numpy.ndarray
         The ``(2, 2)`` Jacobian in the ``(r, V)`` ordering.
+
     """
     return np.array(
         [
@@ -145,6 +147,7 @@ class QifMeanFieldTrajectory:
         The population firing rate ``r(t)`` (length ``n_steps + 1``).
     mean_potential : numpy.ndarray
         The mean membrane potential ``V(t)`` (length ``n_steps + 1``).
+
     """
 
     times: NDArray[np.float64]
@@ -206,6 +209,7 @@ def integrate_qif_mean_field(
     ------
     ValueError
         If ``delta``/``dt``/``n_steps`` are out of range.
+
     """
     _validate_run(delta, dt, n_steps)
 
@@ -267,6 +271,7 @@ def qif_mean_field_fixed_point(
     ------
     ValueError
         If ``delta``/``max_rate`` are out of range or no fixed point is bracketed.
+
     """
     if delta <= 0.0:
         raise ValueError(f"delta must be positive for a fixed point, got {delta}")
@@ -333,6 +338,7 @@ class QifMeanFieldGradients:
         ``∂L/∂J``.
     current : float
         ``∂L/∂I``.
+
     """
 
     initial_firing_rate: float
@@ -417,6 +423,7 @@ def qif_mean_field_terminal_value_and_grad(
     ------
     ValueError
         If ``delta``/``dt``/``n_steps`` are out of range.
+
     """
     _validate_run(delta, dt, n_steps)
 

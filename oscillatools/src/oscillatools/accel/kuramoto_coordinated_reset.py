@@ -77,6 +77,7 @@ def coordinated_reset_sites(n_oscillators: int, n_sites: int) -> NDArray[np.int_
     ------
     ValueError
         If ``n_sites < 2`` or ``n_oscillators < n_sites``.
+
     """
     if n_sites < 2:
         raise ValueError(f"n_sites must be at least 2, got {n_sites}")
@@ -107,6 +108,7 @@ class CoordinatedResetTrajectory:
         The oscillator-to-site assignment used.
     stimulation_steps : int
         The number of RK4 steps performed during stimulation (the rest are free evolution).
+
     """
 
     order_parameter_series: NDArray[np.float64]
@@ -233,6 +235,7 @@ def integrate_coordinated_reset(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     phases = np.ascontiguousarray(initial_phases, dtype=np.float64)
     frequencies = np.ascontiguousarray(omega, dtype=np.float64)
@@ -299,6 +302,7 @@ class CoordinatedResetGradients:
         ``∂L/∂ω`` (length ``N``).
     coupling : numpy.ndarray
         ``∂L/∂K`` (shape ``(N, N)``).
+
     """
 
     initial_phases: NDArray[np.float64]
@@ -397,6 +401,7 @@ def coordinated_reset_terminal_value_and_grad(
     ValueError
         If any argument falls outside its documented bound, or ``objective_grad`` returns a
         cotangent of the wrong shape.
+
     """
     phases = np.ascontiguousarray(initial_phases, dtype=np.float64)
     frequencies = np.ascontiguousarray(omega, dtype=np.float64)
