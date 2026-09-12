@@ -28,6 +28,7 @@ from typing import Any, Final, Literal
 
 import numpy as np
 import pytest
+from _contract_custody_replay_helpers import assert_corpus_replay, assert_fisher_result
 
 from scpn_quantum_control import stable_core_product as scp
 from scpn_quantum_control.benchmarks.kuramoto_competitive_types import (
@@ -419,8 +420,8 @@ class TestFidelityEvidenceProvenance:
         )
         captured = payload["routes"][route]
         result = phase_qnode_computational_basis_fisher_information(circuit, **captured["inputs"])
-        assert result.to_dict() == captured["result"]
-        assert scp.digest_stable_core_payload(result.to_dict()) == captured["result_sha256"]
+        assert_fisher_result(result.to_dict(), captured["result"], route)
+        assert scp.digest_stable_core_payload(captured["result"]) == captured["result_sha256"]
         assert result.fisher_standard_error is not None
         assert result.fisher_confidence_radius is not None
         assert result.confidence_level == captured["inputs"]["confidence_level"] == 0.95
@@ -941,13 +942,5 @@ class TestCorpusReproducibility:
         """
         from tools.contract_custody_corpus import write_corpus
 
-        rebuilt = write_corpus(tmp_path)
-
-        assert rebuilt == _manifest()
-        for row in rebuilt["cases"]:
-            if row["fixture"] is None:
-                continue
-
-            assert (tmp_path / row["fixture"]).read_bytes() == (
-                CORPUS_DIRECTORY / row["fixture"]
-            ).read_bytes()
+        write_corpus(tmp_path)
+        assert_corpus_replay(tmp_path, CORPUS_DIRECTORY, "manifest.json")

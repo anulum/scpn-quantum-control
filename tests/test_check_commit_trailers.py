@@ -632,6 +632,34 @@ def test_workflow_selects_and_executes_strict_range(
     tmp_path: Path, event: str, before: str, expected_returncode: int
 ) -> None:
     """The actual range-selection shell binds event and scheduled audits to strict mode."""
+    repository = tmp_path / "objects.git"
+    subprocess.run(
+        ["git", "init", "--bare", str(repository)], check=True, capture_output=True, timeout=10
+    )
+    git = ["git", f"--git-dir={repository}"]
+    tree = subprocess.run(
+        [*git, "mktree"], input="", text=True, capture_output=True, check=True, timeout=10
+    ).stdout.strip()
+    environment = {
+        **os.environ,
+        "GIT_AUTHOR_NAME": "Contract Test",
+        "GIT_COMMITTER_NAME": "Contract Test",
+        "GIT_AUTHOR_EMAIL": "test@example.invalid",
+        "GIT_COMMITTER_EMAIL": "test@example.invalid",
+    }
+    parent: list[str] = []
+    for _ in range(2):
+        commit = subprocess.run(
+            [*git, "commit-tree", tree, *parent],
+            input="test: range selection\n",
+            env=environment,
+            text=True,
+            capture_output=True,
+            check=True,
+            timeout=10,
+        ).stdout.strip()
+        parent = ["-p", commit]
+    subprocess.run([*git, "update-ref", "HEAD", commit], check=True, timeout=10)
     workflow_path = TOOL_PATH.parents[1] / ".github" / "workflows" / "commit-trailers.yml"
     steps = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))["jobs"]["audit"]["steps"]
     selection = next(step["run"] for step in steps if step.get("id") == "range")
@@ -648,6 +676,7 @@ def test_workflow_selects_and_executes_strict_range(
     output = tmp_path / "github-output"
     completed = subprocess.run(
         ["bash", "-e", "-c", selection],
+        cwd=repository,
         env={**os.environ, "GITHUB_OUTPUT": str(output), "GITHUB_HEAD_REF": "main"},
         capture_output=True,
         text=True,

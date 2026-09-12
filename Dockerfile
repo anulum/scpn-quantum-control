@@ -59,6 +59,8 @@ COPY requirements-ci-minimal-install-py312-linux.txt requirements-ci-quimb-py312
 # Optional-runtime contract tests inspect these locks without installing the
 # heavyweight runtimes in the reproduction image.
 COPY requirements-ci-jax-py312-linux.txt requirements-ci-torch-cpu-py312-linux.txt ./
+# Reproduction audits inspect these workflow inputs without installing them.
+COPY requirements-ci-julia-tier.txt requirements-integration-sc-neurocore.txt requirements-publish.txt rust-toolchain.toml ./
 COPY src/ src/
 COPY oscillatools/src/ oscillatools/src/
 # The standalone-package decision and real wheel tests require the complete

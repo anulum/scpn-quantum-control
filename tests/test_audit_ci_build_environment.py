@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import importlib.metadata
 import runpy
+import shlex
 import sys
 from pathlib import Path
 from types import ModuleType
@@ -20,6 +21,25 @@ import pytest
 from tools import audit_ci_build_environment as build_audit
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_docker_preserves_optional_workflow_audit_inputs() -> None:
+    """Ship optional lock and toolchain evidence without installing those runtimes."""
+    copied = set()
+    for line in (REPO_ROOT / "Dockerfile").read_text().splitlines():
+        if not line.startswith("COPY "):
+            continue
+        parts = shlex.split(line, comments=True)
+        if parts and parts[0] == "COPY" and parts[-1] == "./":
+            copied.update(parts[1:-1])
+    required = {
+        "requirements-ci-julia-tier.txt",
+        "requirements-integration-sc-neurocore.txt",
+        "requirements-publish.txt",
+        "rust-toolchain.toml",
+    }
+    assert required <= copied
+    assert all((REPO_ROOT / path).is_file() for path in required)
 
 
 def _project(*, root: bool = False, backend: str = build_audit.BUILD_BACKEND) -> str:

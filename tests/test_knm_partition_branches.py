@@ -21,12 +21,13 @@ def test_validate_rejects_non_finite_omega() -> None:
         _validate(np.eye(2, dtype=np.float64), np.array([0.1, np.inf], dtype=np.float64))
 
 
-def test_partition_rejects_negative_coupling_threshold() -> None:
-    """A negative coupling threshold is rejected."""
-    with pytest.raises(ValueError, match="coupling_threshold must be non-negative"):
+@pytest.mark.parametrize("threshold", [-1.0, np.nan, np.inf, -np.inf])
+def test_partition_rejects_negative_coupling_threshold(threshold: float) -> None:
+    """Reject negative or non-finite thresholds through the public partitioner."""
+    with pytest.raises(ValueError, match="^coupling_threshold must be finite and non-negative$"):
         partition_knm(
             np.eye(2, dtype=np.float64),
             np.array([0.1, 0.2], dtype=np.float64),
             max_quantum_nodes=1,
-            coupling_threshold=-1.0,
+            coupling_threshold=threshold,
         )

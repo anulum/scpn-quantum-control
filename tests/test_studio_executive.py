@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import pytest
+from _contract_custody_replay_helpers import assert_corpus_replay
 
 pytest.importorskip("scpn_studio_platform", reason="studio extra not installed")
 
@@ -299,16 +300,11 @@ def test_studio_corpus_replays_frozen_profile_and_base_anchor(tmp_path: Path) ->
     base_bytes = (tmp_path / "manifest.json").read_bytes()
     assert main([str(tmp_path), "--include-studio"]) == 0
     full = json.loads((tmp_path / "manifest_studio.json").read_text())
-    assert full == json.loads((fixtures / "manifest_studio.json").read_text())
+    assert_corpus_replay(tmp_path, fixtures, "manifest_studio.json")
     assert full["base_manifest_sha256"] == codec.digest_stable_core_payload(base)
     assert full["cases"][: len(base["cases"])] == base["cases"]
     assert len(full["cases"]) == len(base["cases"]) + 3
     assert (tmp_path / "manifest.json").read_bytes() == base_bytes
-    for case in full["cases"]:
-        if case["fixture"] is not None:
-            assert (tmp_path / case["fixture"]).read_bytes() == (
-                fixtures / case["fixture"]
-            ).read_bytes()
 
 
 def test_studio_source_captures_native_plans_without_execution(
