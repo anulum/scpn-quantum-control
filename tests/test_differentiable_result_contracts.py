@@ -125,6 +125,70 @@ def test_public_result_contract_validators_have_docstrings() -> None:
     assert missing == []
 
 
+@pytest.mark.parametrize("method", [None, True, 42, [], "", " \t"])
+def test_gradient_result_rejects_invalid_method_provenance(method: object) -> None:
+    """Reject non-string and blank method identities without inventing a name."""
+    with pytest.raises(ValueError, match="gradient method"):
+        replace(_base_gradient(), method=cast(str, method))
+
+
+@pytest.mark.parametrize("count", [None, True, False, -1, 1.5, 1.0, math.nan, "1"])
+def test_gradient_result_rejects_invalid_evaluation_count(count: object) -> None:
+    """Reject fractional, boolean and nonnumeric objective evaluation counts."""
+    with pytest.raises(ValueError, match="gradient evaluations"):
+        replace(_base_gradient(), evaluations=cast(int, count))
+
+
+@pytest.mark.parametrize("count", [0, 1, 10**100])
+def test_gradient_result_preserves_integer_evaluation_count(count: int) -> None:
+    """Preserve valid counts exactly without float conversion or invented limits."""
+    result = replace(_base_gradient(), evaluations=count)
+    assert result.evaluations == count
+    assert type(result.evaluations) is int
+
+
+@pytest.mark.parametrize(
+    ("method", "executed_method"),
+    [("forward_mode", "forward_mode_dual"), ("reverse_mode", "reverse_mode_tape")],
+)
+def test_canonical_gradient_preserves_order_and_frozen_provenance(
+    method: str, executed_method: str
+) -> None:
+    """Prove ordered trainability and provenance through both real AD dispatchers."""
+    values = np.array([3.0, 2.0])
+    parameters = [
+        differentiable_facade.Parameter("z"),
+        differentiable_facade.Parameter("a", trainable=False),
+    ]
+    calls = 0
+
+    def objective(x: Any) -> Any:
+        """Count calls to the public AD objective without changing its arithmetic."""
+        nonlocal calls
+        calls += 1
+        return x[0] ** 2 + 5 * x[1]
+
+    result = differentiable_facade.value_and_grad(
+        objective,
+        values,
+        parameters=parameters,
+        method=method,
+    )
+    assert isinstance(result, GradientResult)
+    assert result.value == 19.0
+    np.testing.assert_array_equal(result.gradient, [6.0, 0.0])
+    assert result.parameter_names == ("z", "a")
+    assert result.trainable == (True, False)
+    assert result.method == executed_method
+    assert result.evaluations == calls == (2 if method == "forward_mode" else 1)
+    assert result.shift is None and result.coefficient is None
+    values[:] = 99.0
+    parameters.reverse()
+    assert result.parameter_names == ("z", "a")
+    np.testing.assert_array_equal(result.gradient, [6.0, 0.0])
+    assert not result.gradient.flags.writeable
+
+
 def test_shared_result_validation_helpers_cover_fail_closed_edges() -> None:
     """Shared normalizers reject malformed custody and uncertainty evidence."""
     with pytest.raises(ValueError, match="claim_boundary"):

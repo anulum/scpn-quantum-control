@@ -191,13 +191,14 @@ class GradientResult:
         per corresponding parameter unit. Frozen parameters must have zero
         entries. Construction copies the array without modifying its source.
     method
-        Non-empty name of the differentiation method actually executed.
+        Non-blank string naming the differentiation method actually executed.
     shift
         Positive finite parameter perturbation, or None if not applicable.
     coefficient
         Finite shift-rule coefficient, or None if not applicable.
     evaluations
-        Non-negative objective evaluation count reported by the backend.
+        Non-negative integer objective evaluation count reported by the backend.
+        Boolean and floating-point values are not counts.
     parameter_names
         Ordered, non-empty names matching the gradient length.
     trainable
@@ -232,8 +233,8 @@ class GradientResult:
         gradient = gradient.copy()
         if not np.all(np.isfinite(gradient)):
             raise ValueError("gradient must contain only finite values")
-        if not self.method:
-            raise ValueError("gradient method must be non-empty")
+        if not isinstance(self.method, str) or not self.method.strip():
+            raise ValueError("gradient method must be non-empty string provenance")
         shift = None if self.shift is None else _as_real_scalar("gradient shift", self.shift)
         coefficient = (
             None
@@ -242,8 +243,12 @@ class GradientResult:
         )
         if shift is not None and shift <= 0.0:
             raise ValueError("gradient shift must be finite and positive")
-        if self.evaluations < 0:
-            raise ValueError("gradient evaluations must be non-negative")
+        if (
+            isinstance(self.evaluations, bool)
+            or not isinstance(self.evaluations, int)
+            or self.evaluations < 0
+        ):
+            raise ValueError("gradient evaluations must be non-negative integers")
         if len(self.parameter_names) != gradient.size:
             raise ValueError("parameter_names length must match gradient length")
         if len(self.trainable) != gradient.size:
