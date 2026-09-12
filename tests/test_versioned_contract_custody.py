@@ -434,6 +434,24 @@ class TestDesignVectors:
 
         assert base["record_reference"]["digest"] == raw_digest
 
+    def test_positive_dimensions_match_the_deserialised_problem(self) -> None:
+        """A proposed positive cannot contradict its actual two-qubit source.
+
+        The legacy public reader, not a duplicated numeric literal, supplies
+        the shapes. This checks fixture consistency only; it does not qualify
+        the companion's proposed units, modality or derivative semantics.
+        """
+        base = _fixture("companion_positive_base")
+        experiment = scp.deserialise_experiment(_fixture("raw_round_trip_preserves_digest"))
+        problem = experiment.problem
+
+        assert base["fields"]["omega"]["shape"] == [len(problem.omega)]
+        assert base["fields"]["K_nm"]["shape"] == [
+            len(problem.coupling_matrix),
+            len(problem.coupling_matrix[0]),
+        ]
+        assert base["measurement_mapping"]["bit_wires"] == list(range(problem.n_qubits))
+
     def test_the_unauthorised_shot_change_records_no_transformation(self) -> None:
         """The refusal rests on the missing origin, not on the numbers alone."""
         vector = _fixture("effective_setting_contradicts_request_refused")

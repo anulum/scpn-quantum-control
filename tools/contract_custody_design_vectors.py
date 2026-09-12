@@ -72,13 +72,13 @@ def valid_companion(raw_digest: str) -> dict[str, Any]:
         "modality": "counts",
         "producer_identity": CORE_PROBLEM_IDENTITY,
         "fields": {
-            "omega": {"unit": "rad/s", "shape": [3], "dtype": "float64"},
-            "K_nm": {"unit": "rad/s", "shape": [3, 3], "dtype": "float64"},
+            "omega": {"unit": "rad/s", "shape": [2], "dtype": "float64"},
+            "K_nm": {"unit": "rad/s", "shape": [2, 2], "dtype": "float64"},
         },
         "parameter_order": ["omega", "K_nm"],
         "trainable_mask": [True, True],
         "tangent_convention": "forward_real",
-        "measurement_mapping": {"kind": "computational_basis", "bit_wires": [0, 1, 2]},
+        "measurement_mapping": {"kind": "computational_basis", "bit_wires": [0, 1]},
         "settings": {
             "requested": {"shots": None},
             "effective": {"shots": 4096},
