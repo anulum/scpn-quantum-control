@@ -87,6 +87,8 @@ jobs:
           tests/test_differentiable_canonical_modes.py
           tests/test_differentiable_package_exports.py
           tests/test_differentiable_result_contracts.py
+          tests/test_differentiable_result_provenance.py
+          tests/test_differentiable_api_quality_gate.py
           tests/test_transform_algebra.py
           -k 'not unified_differentiable_benchmark_report_is_non_performance_evidence'
       - name: Enforce unified differentiable API exact coverage

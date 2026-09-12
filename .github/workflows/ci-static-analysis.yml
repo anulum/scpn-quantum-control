@@ -510,6 +510,8 @@ jobs:
           tests/test_differentiable_canonical_modes.py
           tests/test_differentiable_package_exports.py
           tests/test_differentiable_result_contracts.py
+          tests/test_differentiable_result_provenance.py
+          tests/test_differentiable_api_quality_gate.py
           tools/differentiable_api_quality_gates.py
           tools/differentiable_quality_gates.py
       - name: Ruff NumPy docstrings for unified differentiable API quality cohort
@@ -525,6 +527,8 @@ jobs:
           tests/test_differentiable_canonical_modes.py
           tests/test_differentiable_package_exports.py
           tests/test_differentiable_result_contracts.py
+          tests/test_differentiable_result_provenance.py
+          tests/test_differentiable_api_quality_gate.py
           tools/differentiable_api_quality_gates.py
           tools/differentiable_quality_gates.py
       - name: Type-check differentiable Levenberg-Marquardt quality cohort

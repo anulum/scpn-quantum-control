@@ -205,11 +205,12 @@ ignore = [
 "tests/test_kyma_v2_baselines.py" = ["E402", "I001"]  # importorskip(jax) before local import
 "tests/test_kyma_v2_rigor.py" = ["E402", "I001"]  # importorskip(jax) before local import
 "tests/test_kuramoto_visualisation.py" = ["E402", "I001"]  # importorskip(matplotlib) before local import
-# Docstring (D) scope: the 2026-06-17 broadcast mandates NumPy docstrings on the
-# PUBLIC API. tests/ are not public API (design exemption). examples/, figures/,
-# scripts/, tools/, notebooks/, and the root CLI completed this ratchet on
-# 2026-08-31. The per-file entries below are the shrink-list ratchet: each
-# closeout deletes its line.
+# Historical documentation debt, not a design exemption for tests. Maintained
+# tests require native documentation too. Isolated strict cohorts enforce their
+# test owners independently of these legacy ignores; the documentation-scope
+# gate covers maintained data sources with two explicit frozen-artifact entries.
+# Remaining test debt belongs to the recorded documentation lane. New result
+# tests must enter both strict and runtime cohorts (guarded by the API gate test).
 "tests/**" = ["D"]
 "data/**" = ["D"]
 [tool.ruff.lint.isort]

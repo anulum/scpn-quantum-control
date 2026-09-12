@@ -22,6 +22,8 @@ DIFFERENTIABLE_API_QUALITY_RATCHET = [
     "tests/test_differentiable_canonical_modes.py",
     "tests/test_differentiable_package_exports.py",
     "tests/test_differentiable_result_contracts.py",
+    "tests/test_differentiable_result_provenance.py",
+    "tests/test_differentiable_api_quality_gate.py",
     "tools/differentiable_api_quality_gates.py",
     "tools/differentiable_quality_gates.py",
 ]
@@ -33,6 +35,8 @@ DIFFERENTIABLE_API_COVERAGE_COHORT = [
     "tests/test_differentiable_canonical_modes.py",
     "tests/test_differentiable_package_exports.py",
     "tests/test_differentiable_result_contracts.py",
+    "tests/test_differentiable_result_provenance.py",
+    "tests/test_differentiable_api_quality_gate.py",
     "tests/test_transform_algebra.py",
 ]
 """Tests that own exact unified-API statement and branch coverage."""
@@ -83,6 +87,8 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "--preview",
                 "--select",
                 "D,D413,D417,D420",
+                "--config",
+                "lint.explicit-preview-rules = true",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
                 *DIFFERENTIABLE_API_QUALITY_RATCHET,
