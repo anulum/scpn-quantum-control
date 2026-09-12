@@ -19,7 +19,10 @@ from __future__ import annotations
 
 import json
 import re
+import tomllib
 from pathlib import Path
+
+import yaml
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _VALIDATION = _REPO_ROOT / "VALIDATION.md"
@@ -90,6 +93,7 @@ def _ci_coverage_gate() -> int:
     -------
     int
         The line-coverage gate parsed from ``tools/coverage_policy.json``.
+
     """
     payload = json.loads(_COVERAGE_POLICY.read_text(encoding="utf-8"))
     value = payload.get("line_minimum_percent")
@@ -106,6 +110,7 @@ def _python_floor() -> str:
     -------
     str
         The ``X.Y`` floor from ``requires-python = ">=X.Y"``.
+
     """
     match = re.search(
         r'requires-python\s*=\s*">=(\d+\.\d+)"', _PYPROJECT.read_text(encoding="utf-8")
@@ -122,6 +127,7 @@ def _snapshot_reports_test_files() -> bool:
     bool
         ``True`` when the ``Python test files`` row exists in
         ``docs/_generated/capability_snapshot.md``.
+
     """
     return (
         re.search(r"\|\s*Python test files\s*\|\s*\d+\s*\|", _SNAPSHOT.read_text(encoding="utf-8"))
@@ -138,6 +144,44 @@ def test_claim_docs_carry_no_stale_quality_tokens() -> None:
             f"{path.name}: '{token}'" for token in _FORBIDDEN_STALE_TOKENS if token in text
         )
     assert offenders == [], f"stale quality claims resurfaced: {offenders}"
+
+
+def test_typing_docs_list_each_enforced_cohort_once_without_volatile_counts() -> None:
+    """Keep the public cohort description aligned with policy, not migration snapshots."""
+    text = (_REPO_ROOT / "docs/test_infrastructure.md").read_text(encoding="utf-8")
+    section = text.split("## Test typing ratchet", 1)[1].split("\n## ", 1)[0]
+    policy = json.loads((_REPO_ROOT / "tools/test_typing_policy.json").read_text())
+    enforced = {row["id"] for row in policy["cohorts"] if row["status"] == "enforced"}
+    documented = re.findall(r"^\| `([^`]+)` \|", section, flags=re.MULTILINE)
+    assert set(documented) == enforced
+    assert len(documented) == len(enforced)
+    assert re.search(r"\d[\d,]*-file", section) is None
+    assert "--validate-only --json" in section
+    assert "not evidence that runtime tests passed" in " ".join(section.split())
+
+
+def test_typing_docs_distinguish_optional_type_boundary_from_provisioned_runtime() -> None:
+    """Bind the Studio caveat to actual mypy settings and explicit CI installation."""
+    text = (_REPO_ROOT / "docs/test_infrastructure.md").read_text(encoding="utf-8")
+    section = text.split("## Test typing ratchet", 1)[1].split("\n## ", 1)[0]
+    config = tomllib.loads(_PYPROJECT.read_text())
+    override = next(
+        row
+        for row in config["tool"]["mypy"]["overrides"]
+        if row.get("module") == "scpn_studio_platform.*"
+    )
+    assert override["ignore_missing_imports"] is True
+    assert override["follow_imports"] == "skip"
+    workflow = yaml.safe_load(
+        (_REPO_ROOT / ".github/workflows/ci-application-domain.yml").read_text()
+    )
+    runs = [step.get("run", "") for step in workflow["jobs"]["studio-program-ad-quality"]["steps"]]
+    assert any("--require-hashes -r requirements-ci-studio-platform.txt" in run for run in runs)
+    assert any("tests/test_studio_executive.py" in run for run in runs)
+    assert 'follow_imports = "skip"' in section
+    assert "requirements-ci-studio-platform.txt" in section
+    assert "studio-program-ad-quality" in section
+    assert "neither installs it" not in section
 
 
 def test_validation_quotes_the_enforced_coverage_gate() -> None:

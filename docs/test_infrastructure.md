@@ -93,137 +93,56 @@ python -m coverage report --rcfile=/dev/null \
 
 ## Test typing ratchet
 
-Production Python remains under repository-wide strict mypy. The test tree is
-being migrated additively because a 2026-07-13 census of `mypy --strict tests/`
-reported 6,301 errors in 388 of 968 tracked Python test files; 5,076 were
-`no-untyped-def`. Adding the whole directory to one gate would therefore mix
-mechanical annotations with intentional invalid-input tests and hide ownership.
+Production Python uses repository-wide strict mypy. Test enrolment is governed
+by [the machine-readable policy](../tools/test_typing_policy.json), not by a
+hand-maintained count or a claim that every test is covered.
 
-`tools/test_typing_policy.json` is the machine-readable policy. The 1372-file enforced cohort set
-consists of the 32-file `repository_policy` cohort covering coverage,
-coverage debt, licence, release, generated-surface, commit, secret, TODO, version,
-branch, module-responsibility, CI/pre-push, local preflight, and built-wheel
-publication gate tests, the 4-file `claim_release_contracts`
-entanglement-sync scientific and evidence slice, which also holds the
-isolated-benchmark host-readiness gate, and the 111-file
-`hardware_provider_boundaries` cohort covering the provider adapters, HAL
-contract and conformance guards, the Cirq adapter, the device noise model, the
-UltraScale HLS emission surface, approval, budget, attestation and result-pack
-tests, and the 588-file `scientific_runtime_contracts` cohort holding the whole differentiable and phase
-families, the shared `tests/conftest.py` fixture and hypothesis-strategy module,
-plus the smaller runtime-contract groups, which are promoted together
-because none of them reaches a sliceable size alone — every file of
-them that passes strict mypy, added in slices under the policy's 40-file cap.
+| Enforced cohort | Responsibility |
+| --- | --- |
+| `repository_policy` | Repository policy, release, coverage and build guard tests. |
+| `claim_release_contracts` | Claim/release evidence and isolated-host readiness contracts. |
+| `hardware_provider_boundaries` | Provider, HAL, approval, budget and result-custody tests. |
+| `scientific_runtime_contracts` | Differentiable, phase and other scientific runtime contracts, including shared fixtures. |
+| `completed_test_surface` | Additional explicitly enrolled test paths; the name does not certify runtime or documentation completeness. |
 
-A fifth enforced cohort, the 637-file `completed_test_surface`, holds the
-remainder of the tracked test tree, promoted after the whole unenrolled set
-measured clean in one strict run. It carries no per-family risk ordering,
-because at that point there was none left to carry.
+The policy supplies each cohort's status and exact paths. New test files are
+not enrolled merely because they share a directory or filename prefix.
+`tools/audit_test_typing_policy.py` checks tracked paths and, by default, runs
+strict mypy on the enforced set. Enrolment is not evidence that runtime tests
+passed, that assertions are sufficient, or that every docstring is complete.
+The dated baseline in the policy records historical debt, not current failures.
 
-A fifth enforced cohort, the 600-file `completed_test_surface`, holds the
-remainder of the tracked test tree, promoted after the whole unenrolled set
-measured clean in one strict run. It carries no per-family risk ordering,
-because at that point there was none left to carry.
+Inspect the current inventory without running mypy:
 
-A fifth enforced cohort, the 560-file `completed_test_surface`, holds the
-remainder of the tracked test tree, promoted after the whole unenrolled set
-measured clean in one strict run. It carries no per-family risk ordering,
-because at that point there was none left to carry.
+```bash
+python tools/audit_test_typing_policy.py --validate-only --json
+```
 
-A fifth enforced cohort, the 520-file `completed_test_surface`, holds the
-remainder of the tracked test tree, promoted after the whole unenrolled set
-measured clean in one strict run. It carries no per-family risk ordering,
-because at that point there was none left to carry.
-
-A fifth enforced cohort, the 480-file `completed_test_surface`, holds the
-remainder of the tracked test tree, promoted after the whole unenrolled set
-measured clean in one strict run. It carries no per-family risk ordering,
-because at that point there was none left to carry.
-
-A fifth enforced cohort, the 440-file `completed_test_surface`, holds the
-remainder of the tracked test tree, promoted after the whole unenrolled set
-measured clean in one strict run. It carries no per-family risk ordering,
-because at that point there was none left to carry.
-
-A fifth enforced cohort, the 400-file `completed_test_surface`, holds the
-remainder of the tracked test tree, promoted after the whole unenrolled set
-measured clean in one strict run. It carries no per-family risk ordering,
-because at that point there was none left to carry.
-
-A fifth enforced cohort, the 360-file `completed_test_surface`, holds the
-remainder of the tracked test tree, promoted after the whole unenrolled set
-measured clean in one strict run. It carries no per-family risk ordering,
-because at that point there was none left to carry.
-
-A fifth enforced cohort, the 320-file `completed_test_surface`, holds the
-remainder of the tracked test tree, promoted after the whole unenrolled set
-measured clean in one strict run. It carries no per-family risk ordering,
-because at that point there was none left to carry.
-
-A fifth enforced cohort, the 280-file `completed_test_surface`, holds the
-remainder of the tracked test tree, promoted after the whole unenrolled set
-measured clean in one strict run. It carries no per-family risk ordering,
-because at that point there was none left to carry.
-
-A fifth enforced cohort, the 240-file `completed_test_surface`, holds the
-remainder of the tracked test tree, promoted after the whole unenrolled set
-measured clean in one strict run. It carries no per-family risk ordering,
-because at that point there was none left to carry.
-
-A fifth enforced cohort, the 200-file `completed_test_surface`, holds the
-remainder of the tracked test tree, promoted after the whole unenrolled set
-measured clean in one strict run. It carries no per-family risk ordering,
-because at that point there was none left to carry.
-
-A fifth enforced cohort, the 160-file `completed_test_surface`, holds the
-remainder of the tracked test tree, promoted after the whole unenrolled set
-measured clean in one strict run. It carries no per-family risk ordering,
-because at that point there was none left to carry.
-
-A fifth enforced cohort, the 120-file `completed_test_surface`, holds the
-remainder of the tracked test tree, promoted after the whole unenrolled set
-measured clean in one strict run. It carries no per-family risk ordering,
-because at that point there was none left to carry.
-
-A fifth enforced cohort, the 80-file `completed_test_surface`, holds the
-remainder of the tracked test tree, promoted after the whole unenrolled set
-measured clean in one strict run. It carries no per-family risk ordering,
-because at that point there was none left to carry.
-
-A fifth enforced cohort, the 40-file `completed_test_surface`, holds the
-remainder of the tracked test tree, promoted after the whole unenrolled set
-measured clean in one strict run. It carries no per-family risk ordering,
-because at that point there was none left to carry.
-
-**What strict typing does and does not reach in the Studio slice.** Twenty-six
-of the enrolled `test_studio_*` files import `scpn_studio_platform`, which is an
-optional extra (`pyproject.toml` `[project.optional-dependencies] studio`) and is
-absent from `requirements-ci-py312-linux.txt`. The mypy override for it sets
-`ignore_missing_imports` and `follow_imports = "skip"`, so every value crossing
-that boundary is `Any` — locally and in CI alike, since neither installs it.
-Enrolment therefore enforces strict typing on everything in those files except
-expressions flowing from the Studio platform itself. Most of their runtime tests
-skip for the same reason, so the strict-mypy pass, not the focused pytest run, is
-the evidence these files carry here. Neither of those two slices needed annotation work: every
-file in them already passed strict mypy, and enforcing them converts existing
-quality into something that cannot regress rather than paying debt down. The
-files in the same families that do carry errors are deliberately left out, so
-the enforced count never overstates the work behind it.
-`tools/audit_test_typing_policy.py`
-validates that every enforced path is tracked and runs strict mypy over the
-exact cohort; CI and the no-test local preflight execute the same command.
-
-Migration order is explicit: claim and release contracts first, then hardware
-and provider boundaries, then scientific runtime contracts; legacy fixture
-mechanics are last. Each slice is limited to 40 files and must pass focused
-pytest, strict mypy, Ruff check, and Ruff format. Intentional negative calls keep
-narrow error-code suppressions where a static type cannot represent the invalid
-input.
+CI executes the enforced typing check with:
 
 ```bash
 python tools/audit_test_typing_policy.py
-python tools/audit_test_typing_policy.py --validate-only --json
 ```
+
+Migration follows the policy's ordering and per-change limit. New enrolments
+require focused runtime tests, strict typing, lint and formatting evidence.
+Intentional invalid-input tests retain narrowly justified error-code
+suppressions; an increased enrolled count does not establish semantic coverage.
+
+### Studio: static types and runtime dependencies
+
+The `scpn_studio_platform.*` mypy override currently uses
+`ignore_missing_imports = true` and `follow_imports = "skip"`. Platform-derived
+expressions can therefore remain `Any` even when the package is installed.
+A strict pass does not establish type safety across that skipped interface.
+
+Runtime dependency availability is a separate question.
+`ci-application-domain.yml`'s `studio-program-ad-quality` job explicitly installs
+the hash-locked `requirements-ci-studio-platform.txt` overlay and runs the Studio
+executive and Program-AD owners. Other environments may lack that optional
+dependency and skip dependency-gated tests. Record the actual environment,
+executed tests and skips; neither enrolment nor workflow configuration proves
+that a hosted run passed.
 
 ## Realtime runtime quality ratchet
 
