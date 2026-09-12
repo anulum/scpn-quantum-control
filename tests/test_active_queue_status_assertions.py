@@ -4,196 +4,173 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Active-queue status assertion tests
-"""No open queue item may assert an enforcement that is in fact configured.
+# SCPN Quantum Control — Active queue status CLI contract tests
+"""Exercise the queue checker through its CLI without requiring private records.
 
-The internal queue is append-only and keeps its history, which is right: a
-completed item's original wording is evidence. The hazard is that an item left
-unticked still reads as work to do. Two June items said strict MyPy and Ruff
-``D`` were absent long after `pyproject.toml` adopted both, so anyone picking up
-the queue would have started work that was already done.
-
-This is a cross-check, not a linter for prose. It reads what the configuration
-actually enforces and fails only when an *unticked* item contradicts it, so
-historical text stays exactly as written.
+Temporary files are real checker inputs, not mocks. Run the CLI separately
+against the canonical checkout for live private-queue acceptance. Public CI
+must neither receive the private queue nor pretend its absence is a pass.
 """
 
 from __future__ import annotations
 
-import re
+import runpy
+import subprocess
+import sys
 import tomllib
+from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
 
 import pytest
 
-TODO = Path("docs/internal/TODO.md")
-"""The canonical internal queue."""
-
-PYPROJECT = Path("pyproject.toml")
-"""The configuration the queue's claims are checked against."""
-
-UNTICKED = re.compile(r"^\s*-\s*\[[ ~]\]\s*(?P<text>.+)$")
-"""An item that still reads as open, including the partial ``[~]`` marker."""
-
-STRICT_TYPING_ABSENT = re.compile(
-    r"mypy is not strict|not strict.{0,20}mypy|adopt\s+`?strict\s*=\s*true`?",
-    re.IGNORECASE,
-)
-"""Claims that strict typing is not configured."""
-
-DOCSTRING_ENFORCEMENT_ABSENT = re.compile(
-    r"docstring enforcement absent"
-    r"|no\s+ruff\s+`?D`?|no\s+`?pydocstyle`?"
-    r"|repository-wide ruff `?D`? selection remains open",
-    re.IGNORECASE,
-)
-"""Claims that docstring enforcement is not configured."""
+CHECKER = Path(__file__).resolve().parents[1] / "tools/check_active_queue_status.py"
 
 
-def _configuration() -> dict[str, object]:
-    """Return what the repository configuration enforces today.
-
-    Returns
-    -------
-    dict
-        ``strict_typing`` and ``docstring_enforcement`` booleans, each read from
-        `pyproject.toml` rather than assumed.
-
-    """
-    data = tomllib.loads(PYPROJECT.read_text(encoding="utf-8"))
-    tools = data["tool"]
-    lint = tools["ruff"].get("lint", {})
-    selected = set(lint.get("select", ()))
-    convention = lint.get("pydocstyle", {}).get("convention")
-    return {
-        "strict_typing": bool(tools["mypy"].get("strict")),
-        "docstring_enforcement": "D" in selected and convention == "numpy",
-    }
+def _root(
+    tmp_path: Path,
+    text: str,
+    *,
+    strict: bool = True,
+    selection: str = 'select = ["D"]',
+    ignore: str = "",
+) -> Path:
+    """Create a real queue/configuration pair consumed by the command."""
+    (tmp_path / "docs/internal").mkdir(parents=True)
+    (tmp_path / "docs/internal/TODO.md").write_text(text, encoding="utf-8")
+    config = f"[tool.mypy]\nstrict = {str(strict).lower()}\n"
+    config += f"[tool.ruff.lint]\n{selection}\n{ignore}\n"
+    config += '[tool.ruff.lint.pydocstyle]\nconvention = "numpy"\n'
+    (tmp_path / "pyproject.toml").write_text(config, encoding="utf-8")
+    return tmp_path
 
 
-def _unticked_items() -> list[tuple[int, str]]:
-    """Return every queue item that still reads as open, with its whole body.
-
-    A checkbox item is not one line. The claim that repository-wide Ruff ``D``
-    remained open debt sat on a continuation line, so a first-line-only reader
-    could not see it; this joins the checkbox line with the indented lines that
-    belong to it.
-
-    Returns
-    -------
-    list
-        One ``(checkbox line number, full item text)`` pair per unticked or
-        partial checkbox.
-
-    """
-    lines = TODO.read_text(encoding="utf-8").splitlines()
-    items: list[tuple[int, str]] = []
-    index = 0
-    while index < len(lines):
-        match = UNTICKED.match(lines[index])
-        if match is None:
-            index += 1
-            continue
-        start = index
-        body = [match.group("text")]
-        indent = len(lines[index]) - len(lines[index].lstrip())
-        index += 1
-        while index < len(lines):
-            following = lines[index]
-            if not following.strip():
-                break
-            if len(following) - len(following.lstrip()) <= indent:
-                break
-            body.append(following.strip())
-            index += 1
-        items.append((start + 1, " ".join(body)))
-    return items
-
-
-class TestConfigurationIsWhatWeThink:
-    """Read the configuration first, so the cross-check means something."""
-
-    def test_strict_typing_is_configured(self) -> None:
-        """``[tool.mypy] strict`` is the fact the June item denied."""
-        assert _configuration()["strict_typing"] is True
-
-    def test_docstring_enforcement_is_configured(self) -> None:
-        """Ruff selects ``D`` and pydocstyle uses the NumPy convention."""
-        assert _configuration()["docstring_enforcement"] is True
-
-
-class TestNoOpenItemContradictsIt:
-    """The acceptance: no active claim that either is absent."""
-
-    def test_no_open_item_says_strict_typing_is_absent(self) -> None:
-        """An unticked item claiming this would send someone to redo it."""
-        if not _configuration()["strict_typing"]:
-            pytest.skip("strict typing is not configured, so such a claim would be true")
-        offenders = [
-            f"line {number}: {text}"
-            for number, text in _unticked_items()
-            if STRICT_TYPING_ABSENT.search(text)
-        ]
-        assert offenders == []
-
-    def test_no_open_item_says_docstring_enforcement_is_absent(self) -> None:
-        """Same for Ruff ``D`` and the pydocstyle convention."""
-        if not _configuration()["docstring_enforcement"]:
-            pytest.skip("docstring enforcement is not configured, so such a claim would be true")
-        offenders = [
-            f"line {number}: {text}"
-            for number, text in _unticked_items()
-            if DOCSTRING_ENFORCEMENT_ABSENT.search(text)
-        ]
-        assert offenders == []
-
-
-class TestTheCheckCanFail:
-    """A cross-check that cannot fail is decoration."""
-
-    @pytest.mark.parametrize(
-        ("text", "pattern"),
-        [
-            ("mypy is not strict — `[tool.mypy]` carries only check_untyped_defs", "typing"),
-            ("Adopt `strict = true` (part of the in-progress strict rollout)", "typing"),
-            ("Docstring enforcement absent — no ruff `D`, no `pydocstyle` convention", "docs"),
-            ("Repository-wide Ruff `D` selection remains open debt.", "docs"),
-        ],
+def _run(root: Path) -> subprocess.CompletedProcess[str]:
+    """Compare actual process output with the instrumentable script entrypoint."""
+    completed = subprocess.run(
+        [sys.executable, str(CHECKER), "--root", str(root)],
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=10,
     )
-    def test_the_recorded_wordings_are_recognised(self, text: str, pattern: str) -> None:
-        """The exact sentences this card reconciled must still be detected.
+    argv = sys.argv
+    output = StringIO()
+    try:
+        sys.argv = [str(CHECKER), "--root", str(root)]
+        with redirect_stdout(output), pytest.raises(SystemExit) as exit_info:
+            runpy.run_path(str(CHECKER), run_name="__main__")
+        assert exit_info.value.code == completed.returncode
+        assert output.getvalue() == completed.stdout
+    finally:
+        sys.argv = argv
+    return completed
 
-        Parameters
-        ----------
-        text
-            Wording taken verbatim from the reconciled June items.
-        pattern
-            Which detector should match it.
 
-        """
-        detector = STRICT_TYPING_ABSENT if pattern == "typing" else DOCSTRING_ENFORCEMENT_ABSENT
-        assert detector.search(text) is not None
+@pytest.mark.parametrize(
+    "body",
+    [
+        "- [ ] mypy is not strict",
+        "- [~] Adopt `strict = true`",
+        "- [ ] Review\n\n  mypy is not strict",
+        "- [ ] Parent\n  - [x] Finished child\n\n  mypy is not strict",
+        "- [x] Parent history\n  - [ ] mypy is not strict",
+        "* [ ] Docstring enforcement absent",
+        "+ [~] No ruff `D`",
+        "- [ ] Review\n\n  Repository-wide Ruff `D` selection remains open debt.",
+        "- [ ] No `pydocstyle` convention",
+    ],
+)
+def test_contradictions_fail_through_cli(tmp_path: Path, body: str) -> None:
+    """Detect original wordings, continuation paragraphs and independent children."""
+    result = _run(_root(tmp_path, body))
+    assert result.returncode == 1
+    assert "is configured" in result.stdout
+    assert result.stderr == ""
 
-    @pytest.mark.parametrize(
-        "text",
-        [
-            "Raise the aggregate coverage gate from 90% to the ≥95 minimum.",
-            "Add a dedicated owner for the phase module.",
-            "mypy --strict passes on the changed files.",
-        ],
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        "- [x] mypy is not strict\n  Historical body.",
+        "- [ ] Parent current\n  - [x] mypy is not strict",
+        "- [ ] Current work\n\n## History\nmypy is not strict",
+        "- [ ] Current work\n  > mypy is not strict",
+        "- [ ] Current work\n\n  ```md\n  - [ ] mypy is not strict\n  ```",
+        "- [ ] Current work\n  ~~~~md\n  mypy is not strict\n  ~~~~",
+        "- [ ] Current work\n  ```md\n  ~~~\n  mypy is not strict\n  ```",
+        "- [ ] Raise the aggregate coverage gate from 90% to 95%.",
+        "- [ ] mypy --strict passes on the changed files.",
+        "- [ ] No Ruff diagnostics may remain in changed code.",
+    ],
+)
+def test_history_examples_and_unrelated_work_are_not_active(tmp_path: Path, body: str) -> None:
+    """Preserve completed prose and examples without treating them as live requests."""
+    result = _run(_root(tmp_path, body))
+    assert result.returncode == 0
+    assert "No recognised" in result.stdout
+
+
+@pytest.mark.parametrize(
+    "selection", ['select = ["D"]', 'select = ["ALL"]', 'extend-select = ["D"]']
+)
+def test_effective_doc_selection_is_read(tmp_path: Path, selection: str) -> None:
+    """Recognise direct, complete and additive doc-rule selection."""
+    assert _run(_root(tmp_path, "- [ ] No ruff D", selection=selection)).returncode == 1
+
+
+def test_true_absence_is_not_a_contradiction(tmp_path: Path) -> None:
+    """A real configuration absence must not be misreported as a stale claim."""
+    root = _root(
+        tmp_path,
+        "- [ ] mypy is not strict\n- [ ] No ruff D",
+        strict=False,
+        ignore='ignore = ["D"]',
     )
-    def test_ordinary_items_are_not_flagged(self, text: str) -> None:
-        """The detectors must not fire on unrelated open work.
+    assert _run(root).returncode == 0
 
-        Parameters
-        ----------
-        text
-            An open item that says nothing about missing enforcement.
 
-        """
-        assert STRICT_TYPING_ABSENT.search(text) is None
-        assert DOCSTRING_ENFORCEMENT_ABSENT.search(text) is None
+@pytest.mark.parametrize("missing", ["pyproject.toml", "docs/internal/TODO.md"])
+def test_missing_private_evidence_is_unavailable(tmp_path: Path, missing: str) -> None:
+    """A fresh public checkout cannot claim to have validated private queue state."""
+    root = _root(tmp_path, "- [ ] Current work")
+    (root / missing).unlink()
+    result = _run(root)
+    assert result.returncode == 2
+    assert "unavailable" in result.stdout
+    assert "No recognised" not in result.stdout
 
-    def test_the_queue_still_carries_open_items(self) -> None:
-        """If nothing is unticked the cross-check is vacuous, so say so."""
-        assert _unticked_items() != []
+
+@pytest.mark.parametrize(
+    "config",
+    [
+        "bad TOML [",
+        "[tool]\n",
+        'tool = "wrong type"',
+        '[tool.mypy]\nstrict=true\n[tool.ruff]\nlint="wrong type"',
+    ],
+)
+def test_malformed_configuration_is_unavailable(tmp_path: Path, config: str) -> None:
+    """Broken evidence is neither a queue contradiction nor successful validation."""
+    root = _root(tmp_path, "- [ ] Current work")
+    (root / "pyproject.toml").write_text(config, encoding="utf-8")
+    assert _run(root).returncode == 2
+
+
+def test_current_repository_configuration_matches_recorded_selection() -> None:
+    """Verify only the recorded strict/NumPy selection, not universal compliance."""
+    data = tomllib.loads((CHECKER.parents[1] / "pyproject.toml").read_text(encoding="utf-8"))
+    assert data["tool"]["mypy"]["strict"] is True
+    lint = data["tool"]["ruff"]["lint"]
+    assert "D" in lint["select"]
+    assert lint["pydocstyle"]["convention"] == "numpy"
+
+
+def test_callable_checker_reports_exact_source_lines(tmp_path: Path) -> None:
+    """Programmatic consumers receive stable source locations without private prose."""
+    root = _root(tmp_path, "- [ ] Parent\n\n  mypy is not strict\n- [ ] No ruff D")
+    namespace = runpy.run_path(str(CHECKER))
+    assert namespace["contradictions"](root) == [
+        "line 1: strict typing is configured",
+        "line 4: NumPy docstring selection is configured",
+    ]
