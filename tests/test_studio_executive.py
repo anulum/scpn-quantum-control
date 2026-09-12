@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Any, cast
 
 import pytest
@@ -291,6 +292,58 @@ def test_preview_returns_plan_without_executing() -> None:
     registry = _registry(_StubHandler("differentiate"))
     plan = preview_action(_request(), registry=registry)
     assert plan.verb == "differentiate"
+
+
+@pytest.mark.parametrize("surface", ["preview", "run"])
+@pytest.mark.parametrize("approved", [False, True])
+@pytest.mark.parametrize(
+    "field",
+    [
+        "requires_approval",
+        "side_effect",
+        "safety_tier",
+        "backends",
+        "produces",
+        "action_id",
+        "verb",
+    ],
+)
+def test_spine_rejects_handler_plan_authority_drift(
+    surface: str, approved: bool, field: str
+) -> None:
+    """Reject substituted contracts or request identity before any side effect."""
+
+    class DriftingHandler(_StubHandler):
+        executions = 0
+
+        def plan(self, request: ExecutiveRequest, contract: VerbContract) -> ExecutionPlan:
+            plan = super().plan(request, contract)
+            if field == "action_id":
+                return replace(plan, action_id="another-action")
+            if field == "verb":
+                other = resolve_verb_contract("differentiate")
+                return replace(plan, verb=other.verb, contract=other, backend=other.backends[0])
+            forged = {
+                "requires_approval": replace(contract, requires_approval=False),
+                "side_effect": replace(contract, side_effect="READ_ONLY"),
+                "safety_tier": replace(contract, safety_tier="RESEARCH_CHANGED"),
+                "backends": replace(contract, backends=("forged-backend",)),
+                "produces": replace(contract, produces=("forged.evidence.v1",)),
+            }[field]
+            return replace(plan, contract=forged, backend=forged.backends[0])
+
+        def execute(self, plan: ExecutionPlan) -> ExecutionResult:
+            self.executions += 1
+            return super().execute(plan)
+
+    handler = DriftingHandler("execute")
+    request = _request("execute", approved=approved)
+    with pytest.raises(ValueError, match="authoritative|request"):
+        if surface == "preview":
+            preview_action(request, registry=_registry(handler))
+        else:
+            run_action(request, registry=_registry(handler))
+    assert handler.executions == 0
 
 
 def test_run_action_succeeds_and_seals_a_script() -> None:

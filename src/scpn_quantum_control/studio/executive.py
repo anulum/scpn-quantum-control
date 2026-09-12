@@ -558,6 +558,18 @@ class ActionRegistry:
         return tuple(sorted(self._handlers))
 
 
+def _validated_plan(
+    request: ExecutiveRequest, handler: ActionHandler, contract: VerbContract
+) -> ExecutionPlan:
+    """Reject handler substitution of canonical authority or request identity."""
+    plan = handler.plan(request, contract)
+    if plan.verb != request.verb or plan.action_id != request.action_id:
+        raise ValueError("handler plan must preserve request verb and action_id")
+    if plan.contract != contract:
+        raise ValueError("handler plan must preserve the authoritative verb contract")
+    return plan
+
+
 def preview_action(request: ExecutiveRequest, *, registry: ActionRegistry) -> ExecutionPlan:
     """Resolve and return the plan for ``request`` without executing it.
 
@@ -573,10 +585,16 @@ def preview_action(request: ExecutiveRequest, *, registry: ActionRegistry) -> Ex
     ExecutionPlan
         The inspectable plan.
 
+    Raises
+    ------
+    ValueError
+        If the handler substitutes request identity or the authoritative
+        contract. An invalid plan is never returned as an approved preview.
+
     """
     handler = registry.resolve(request.verb)
     contract = resolve_verb_contract(request.verb)
-    return handler.plan(request, contract)
+    return _validated_plan(request, handler, contract)
 
 
 def run_action(request: ExecutiveRequest, *, registry: ActionRegistry) -> ExecutiveRecord:
@@ -598,10 +616,17 @@ def run_action(request: ExecutiveRequest, *, registry: ActionRegistry) -> Execut
     ExecutiveRecord
         The sealed executive record.
 
+    Raises
+    ------
+    ValueError
+        If the handler substitutes request identity or the authoritative
+        contract, even on an approved request. No execution or script generation
+        occurs for such a plan; owner approval cannot waive contract validation.
+
     """
     handler = registry.resolve(request.verb)
     contract = resolve_verb_contract(request.verb)
-    plan = handler.plan(request, contract)
+    plan = _validated_plan(request, handler, contract)
 
     if plan.requires_approval and not request.approved:
         result = ExecutionResult(
