@@ -406,6 +406,17 @@
       "rationale": "Actual native derivative request/result with source provenance; not hardware or companion binding conformance.",
       "reader": "scpn_quantum_control.differentiable_parameter_shift.parameter_shift_gradient_with_uncertainty",
       "status": "executed"
+    },
+    {
+      "case_id": "benchmark_problem_preserves_distinct_identity",
+      "expectation": "accept",
+      "family": "Problem identity",
+      "fixture": "benchmark_problem_preserves_distinct_identity.json",
+      "fixture_sha256": "e49b73f50759f7065464cd22e86cb543ad3b807d792063cc8217ea49610693da",
+      "producer": "scpn_quantum_control.benchmarks.kuramoto_competitive_types.build_default_problem",
+      "rationale": "Actual seeded problem builders preserve distinct full identities; identity-binding refusal remains an unexecuted proposal.",
+      "reader": "scpn_quantum_control.benchmarks.kuramoto_competitive_types.build_default_problem",
+      "status": "executed"
     }
   ],
   "companion_module": "scpn_quantum_control.semantic_record",

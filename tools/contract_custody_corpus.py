@@ -46,6 +46,7 @@ from scpn_quantum_control.phase.qnode_circuit_differentiation import (
 )
 from tools import contract_custody_design_vectors as vectors
 from tools.contract_custody_derivative_source import derivative_evidence_source
+from tools.contract_custody_problem_source import benchmark_problem_source
 from tools.contract_custody_registry_source import registry_evidence_source
 
 CORPUS_SCHEMA: Final[str] = "contract_custody_corpus.v1"
@@ -656,6 +657,23 @@ def _derivative_source_cases() -> tuple[CustodyCase, ...]:
     return tuple(cases)
 
 
+def _problem_source_cases() -> tuple[CustodyCase, ...]:
+    """Capture the actual benchmark problem and explicit projection-loss boundary."""
+    payload = benchmark_problem_source()
+    return (
+        CustodyCase(
+            case_id="benchmark_problem_preserves_distinct_identity",
+            family="Problem identity",
+            producer=payload["producer"],
+            reader=payload["producer"],
+            expectation="accept",
+            status=EXECUTED,
+            rationale="Actual seeded problem builders preserve distinct full identities; identity-binding refusal remains an unexecuted proposal.",
+            payload=payload,
+        ),
+    )
+
+
 def build_cases() -> tuple[CustodyCase, ...]:
     """Return every case in stable catalogue order.
 
@@ -671,6 +689,7 @@ def build_cases() -> tuple[CustodyCase, ...]:
         + _design_vector_cases()
         + _registry_source_cases()
         + _derivative_source_cases()
+        + _problem_source_cases()
     )
 
 

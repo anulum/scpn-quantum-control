@@ -539,6 +539,23 @@ class TestDerivativeSourceEvidence:
         assert source["result"]["trainable"] == [True, False]
 
 
+class TestBenchmarkProblemSourceEvidence:
+    """Pin actual problem construction separately from proposed identity binding."""
+
+    def test_benchmark_source_is_frozen_without_promoting_projection(self) -> None:
+        """A reproducible core projection must retain its explicit loss boundary."""
+        from tools.contract_custody_problem_source import benchmark_problem_source
+
+        case_id = "benchmark_problem_preserves_distinct_identity"
+        source = _fixture(case_id)
+        assert source == benchmark_problem_source()
+        assert _case(case_id)["status"] == "executed"
+        assert _case(case_id)["reader"] == source["producer"]
+        assert source["benchmark_type"] != source["core_type"]
+        assert source["identity_binding"]["status"] == "proposed_refusal"
+        assert source["identity_binding"]["executed"] is False
+
+
 class TestDesignVectors:
     """Concrete proposed bytes, frozen and deliberately not executed."""
 
