@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control - Zenodo DOI registry checker tests
+# scpn-quantum-control — Zenodo DOI registry checker tests
 """Tests for the Zenodo DOI registry checker."""
 
 from __future__ import annotations
