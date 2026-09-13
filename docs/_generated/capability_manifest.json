@@ -13,7 +13,7 @@
     "python_model_source_modules": 702,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1384
+    "test_files": 1386
   },
   "documentation": {
     "examples": [
@@ -8179,6 +8179,7 @@
       ".github/workflows/studio-remote-release.yml"
     ],
     "test_files": [
+      "tests/_contract_custody_replay_helpers.py",
       "tests/_differentiable_api_test_helpers.py",
       "tests/_differentiable_external_comparison_edges.py",
       "tests/_differentiable_programming_benchmark_edge_helpers.py",
@@ -8375,6 +8376,7 @@
       "tests/test_contract_custody_hal_source.py",
       "tests/test_contract_custody_problem_source.py",
       "tests/test_contract_custody_registry_source.py",
+      "tests/test_contract_custody_replay_helpers.py",
       "tests/test_contraction_optimiser.py",
       "tests/test_contraction_optimiser_contracts.py",
       "tests/test_control_module_contracts.py",
