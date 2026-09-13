@@ -104,14 +104,16 @@ def test_markdown_audit_flags_missing_title_and_stale_status() -> None:
 def test_candidate_files_exclude_cache_and_site(tmp_path: Path) -> None:
     (tmp_path / "src").mkdir()
     (tmp_path / "site").mkdir()
-    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "internal").mkdir(parents=True)
     (tmp_path / "src" / "ok.py").write_text('"""ok"""\n', encoding="utf-8")
     (tmp_path / "site" / "generated.py").write_text("def bad(): pass\n", encoding="utf-8")
     (tmp_path / "docs" / "page.md").write_text("# Page\n", encoding="utf-8")
+    (tmp_path / "docs" / "internal" / "fixture.md").write_text("no title\n", encoding="utf-8")
 
     assert Path("src/ok.py") in candidate_python_files(tmp_path)
     assert Path("site/generated.py") not in candidate_python_files(tmp_path, ("site",))
     assert Path("docs/page.md") in candidate_markdown_files(tmp_path)
+    assert Path("docs/internal/fixture.md") not in candidate_markdown_files(tmp_path)
 
 
 def test_json_and_text_reports_are_deterministic(tmp_path: Path) -> None:

@@ -62,7 +62,10 @@ def _normalise(path: Path) -> str:
 
 
 def _is_excluded(path: Path) -> bool:
-    return any(part in EXCLUDED_PARTS for part in path.parts)
+    parts = path.parts
+    return any(part in EXCLUDED_PARTS for part in parts) or any(
+        parts[index : index + 2] == ("docs", "internal") for index in range(len(parts) - 1)
+    )
 
 
 def _is_public_name(name: str) -> bool:
