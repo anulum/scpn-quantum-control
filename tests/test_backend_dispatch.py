@@ -266,6 +266,21 @@ class TestMockedJaxPath:
         finally:
             mod._STATE.backend = old_backend
 
+    def test_to_numpy_applies_lazy_tensor_resolvers(self) -> None:
+        """Callable conjugate and negative resolvers run before NumPy export."""
+        from unittest.mock import MagicMock
+
+        mock_tensor = MagicMock(spec=["detach", "cpu", "numpy", "resolve_conj", "resolve_neg"])
+        mock_tensor.detach.return_value = mock_tensor
+        mock_tensor.cpu.return_value = mock_tensor
+        mock_tensor.resolve_conj.return_value = mock_tensor
+        mock_tensor.resolve_neg.return_value = mock_tensor
+        mock_tensor.numpy.return_value = np.array([3.0])
+
+        np.testing.assert_array_equal(to_numpy(mock_tensor), [3.0])
+        mock_tensor.resolve_conj.assert_called_once_with()
+        mock_tensor.resolve_neg.assert_called_once_with()
+
     def test_to_numpy_converts_under_an_unknown_selection(self) -> None:
         """An unrecognised selection is simply irrelevant to the conversion."""
         import scpn_quantum_control.backend_dispatch as mod

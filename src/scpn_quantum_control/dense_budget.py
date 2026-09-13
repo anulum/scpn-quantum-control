@@ -160,11 +160,7 @@ def _read_cgroup_int(path: Path) -> int | None:
         return None
     if not raw.isascii() or not raw.isdecimal():
         return None
-    try:
-        value = int(raw)
-    except ValueError:
-        return None
-    return value
+    return int(raw)
 
 
 def cgroup_headroom_bytes(cgroup_root: Path | None = None) -> int | None:
