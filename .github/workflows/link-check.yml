@@ -38,6 +38,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - name: Verify Zenodo DOI records through DataCite
+        run: python3 tools/check_zenodo_dois.py .
       - name: Run lychee
         id: lychee
         uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8  # v2.9.0
@@ -59,7 +61,8 @@ jobs:
             --exclude-path paper
             --exclude-path ARCHITECTURE.md
             --exclude https://www.contributor-covenant.org
-            --exclude https://doi.org/10.5281/zenodo.18821929
+            --exclude '^https://doi\.org/10\.5281/zenodo\.'
+            --exclude '^https://zenodo\.org/(?:badge/DOI/|doi/)10\.5281/zenodo\.'
             --exclude https://ojs.aaai.org/index.php/AAAI-SS/article/view/36900
             --exclude https://www.seco.admin.ch/seco/de/home/Aussenwirtschaftspolitik_Wirtschaftliche_Zusammenarbeit/Wirtschaftsbeziehungen/exportkontrollen-und-sanktionen.html
             --exclude https://www.nature.com/articles/s41534-023-00681-0
@@ -69,7 +72,10 @@ jobs:
             --exclude https://enzyme.mit.edu/
             --exclude https://pyo3.rs/
             './**/*.md'
-          # 403/429/500/502/503 are accepted because many journals and
+          # Zenodo's web surface presents bot challenges to hosted runners;
+          # the preceding fail-closed DataCite step verifies that every
+          # referenced Zenodo DOI remains active and findable. 403/429/500/502/503
+          # are accepted because many journals and
           # vendor pages return those for anonymous HEAD requests yet
           # work for human readers. A zero-false-positive rate matters
           # more than catching every deep dead link. `--max-retries 3`

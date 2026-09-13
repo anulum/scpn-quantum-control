@@ -13,7 +13,7 @@
     "python_model_source_modules": 702,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1386
+    "test_files": 1387
   },
   "documentation": {
     "examples": [
@@ -9562,6 +9562,7 @@
       "tests/test_xy_compiler_contracts.py",
       "tests/test_xy_compiler_quality_gate.py",
       "tests/test_xy_kuramoto.py",
+      "tests/test_zenodo_doi_check.py",
       "tests/test_zne.py",
       "tests/test_zne_branches.py",
       "tests/test_zne_uncertainty.py"
