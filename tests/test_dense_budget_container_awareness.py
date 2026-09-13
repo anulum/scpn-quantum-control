@@ -388,17 +388,22 @@ class TestEffectiveAvailability:
         """
         assert available_memory_bytes(tmp_path) == host_available_memory_bytes()
 
-    def test_a_limit_larger_than_the_host_does_not_inflate_it(self, tmp_path: Path) -> None:
+    def test_a_limit_larger_than_the_host_does_not_inflate_it(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """A generous container cannot conjure memory the host lacks.
 
         Parameters
         ----------
         tmp_path
             Injected cgroup root.
+        monkeypatch
+            Used to hold the host-memory source constant during the assertion.
 
         """
         host = host_available_memory_bytes()
         assert host is not None
+        monkeypatch.setattr(dense_budget, "host_available_memory_bytes", lambda: host)
         _write_v2(tmp_path, limit=str(host + 64 * GIB), current="0")
 
         assert available_memory_bytes(tmp_path) == host
