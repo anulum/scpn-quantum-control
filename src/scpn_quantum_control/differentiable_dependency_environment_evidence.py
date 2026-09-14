@@ -239,7 +239,7 @@ def build_differentiable_dependency_environment_evidence(
                 "num-complex==0.4.6",
                 "rand==0.10.2",
                 "rayon==1.11.0",
-                "reqwest==0.13.4",
+                "reqwest==0.13.5",
                 "scpn-quantum-program-ad-replay==0.1.0",
                 "serde==1.0.229",
                 "serde_json==1.0.151",

@@ -151,7 +151,7 @@
         "num-complex==0.4.6",
         "rand==0.10.2",
         "rayon==1.11.0",
-        "reqwest==0.13.4",
+        "reqwest==0.13.5",
         "scpn-quantum-program-ad-replay==0.1.0",
         "serde==1.0.229",
         "serde_json==1.0.151"
@@ -160,7 +160,7 @@
         "scpn_quantum_engine/Cargo.lock"
       ],
       "evidence_sha256": [
-        "41bb719fe998a9ebcab639da765a5ed51cc979891a66f2e1b0e45cbd8ca28edb"
+        "c8ade65c0ab76f83a25e2e332dfefcbf0152622d50181484c0661e1dc42dad83"
       ],
       "evidence_status": "locked",
       "blockers": [],
