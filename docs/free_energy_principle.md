@@ -600,12 +600,12 @@ Scaling is $O(n^2)$ for gradient (matrix-vector) and $O(n^3)$ for
 
 ### Test Coverage
 
-Two owners cover this surface, both collected on 2026-09-06:
+Two owners cover this surface:
 
-| Test file | Tests | Scope |
-|-----------|-------|-------|
-| `tests/test_fep.py` | 46 | Free energy, KL contract, predictive coding, performance budgets |
-| `tests/test_fep_generative_model_contract.py` | 37 | Generative model and Jacobian contract for the gradient |
+| Test file | Scope |
+|-----------|-------|
+| `tests/test_fep.py` | Free energy, KL contract, predictive coding, performance budgets |
+| `tests/test_fep_generative_model_contract.py` | Generative model and Jacobian contract for the gradient |
 
 `fep/predictive_coding.py` carries an exact 100% statement and branch coverage
 gate, measured from `tests/test_fep.py` alone; see

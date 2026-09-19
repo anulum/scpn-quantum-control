@@ -83,7 +83,7 @@ The proof is not left as prose. It is enforced by the test suite
 and the numerical reference.
 
 * [`tests/test_classical_irreproducibility.py`](https://github.com/anulum/scpn-quantum-control/blob/main/tests/test_classical_irreproducibility.py)
-  (28 tests) performs three independent algebraic checks at every
+  performs three independent algebraic checks at every
   relevant system size:
 
     1. `[H, P] = 0` as a `SparsePauliOp` identity — each term pair

@@ -668,7 +668,7 @@ Rust availability is detected at call time via `try/except ImportError`.
 
 ## Testing
 
-59 tests across 6 test files covering the bridge package:
+The bridge package is covered by these test owners:
 
 - `test_knm_hamiltonian.py` — Hermiticity, eigenvalues, sparsity, XXZ, ansatz
 - `test_sparse_hamiltonian.py` — Sparse vs dense parity, sector Hamiltonian, eigsh

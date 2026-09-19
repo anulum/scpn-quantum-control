@@ -680,12 +680,12 @@ Compare `hw_R` against `exact_R` (from `classical_kuramoto_reference` or
 
 ## Testing
 
-72 tests across 8 test files:
+The hardware surface is covered by these test owners:
 
 - `test_runner.py` — HardwareRunner lifecycle, simulator mode, job serialisation
 - `test_noise_model.py` — NoiseModel construction, error rates, parameter overrides
 - `test_classical.py` — Kuramoto reference, exact diag, evolution parity
-- `test_experiments.py` — All 19 experiment definitions, circuit validity
+- `test_experiments.py` — Registered experiment definitions and circuit validity
 - `test_pennylane_adapter.py` — PennyLane Trotter, VQE, device selection
 - `test_cirq_adapter.py` — Cirq Trotter, simulator parity
 - `test_circuit_cutting.py` — Partitioning, recombination, overhead bounds

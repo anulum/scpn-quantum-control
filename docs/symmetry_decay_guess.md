@@ -706,9 +706,9 @@ checking `fit_residual`: if $r > 0.1$, the exponential model is suspect.
 
 ## 10. Test Coverage
 
-20 tests across 6 dimensions in `tests/test_symmetry_decay.py`:
+`tests/test_symmetry_decay.py` covers the following dimensions:
 
-### 10.1 Empty/Null Inputs (3 tests)
+### 10.1 Empty/Null Inputs
 
 | Test | Description | Assertion |
 |------|-------------|-----------|
@@ -716,7 +716,7 @@ checking `fit_residual`: if $r > 0.1$, the exponential model is suspect.
 | `test_identical_values_zero_alpha` | No decay scenario | $|\alpha| < 10^{-10}$ |
 | `test_guess_with_zero_correction` | $\alpha = 0$ model | Mitigated = raw, $C = 1$ |
 
-### 10.2 Error Handling (4 tests)
+### 10.2 Error Handling
 
 | Test | Description | Expected |
 |------|-------------|----------|
@@ -725,7 +725,7 @@ checking `fit_residual`: if $r > 0.1$, the exponential model is suspect.
 | `test_zero_ideal_value` | $\langle S \rangle_{\text{ideal}} = 0$ | `ValueError` |
 | `test_invalid_initial_state` | Unknown initial state string | `ValueError` |
 
-### 10.3 Negative Cases (3 tests)
+### 10.3 Negative Cases
 
 | Test | Description | Assertion |
 |------|-------------|-----------|
@@ -733,7 +733,7 @@ checking `fit_residual`: if $r > 0.1$, the exponential model is suspect.
 | `test_fully_decayed_symmetry_no_crash` | $\langle S \rangle_{\text{noisy}} = 0$ | Returns raw value |
 | `test_negative_alpha_not_physical` | Increasing symmetry under noise | $\alpha < 0$ |
 
-### 10.4 Pipeline Integration (5 tests)
+### 10.4 Pipeline Integration
 
 | Test | Description | Assertion |
 |------|-------------|-----------|
@@ -743,7 +743,7 @@ checking `fit_residual`: if $r > 0.1$, the exponential model is suspect.
 | `test_top_level_import` | Package re-export check | Callable |
 | `test_decay_model_fields` | Dataclass field types | Correct types |
 
-### 10.5 Roundtrip (3 tests)
+### 10.5 Roundtrip
 
 | Test | Description | Assertion |
 |------|-------------|-----------|
@@ -751,21 +751,21 @@ checking `fit_residual`: if $r > 0.1$, the exponential model is suspect.
 | `test_correction_increases_with_noise` | More noise → larger $C$ | $C_2 > C_1$ |
 | `test_guess_result_fields` | GUESSResult field types | Correct types |
 
-### 10.6 Performance (2 tests)
+### 10.6 Performance
 
 | Test | Description | Threshold |
 |------|-------------|-----------|
 | `test_learn_fast` | 1000 learn calls | < 1 s |
 | `test_extrapolate_fast` | 10000 extrapolate calls | < 1 s |
 
-### 10.7 Pipeline Wiring (2 tests in `test_pipeline_wiring_performance.py`)
+### 10.7 Pipeline Wiring (`test_pipeline_wiring_performance.py`)
 
 | Test | Description | Assertion |
 |------|-------------|-----------|
 | `test_guess_learn_decay` | GUESS in pipeline context | Model created, $\alpha > 0$ |
 | `test_guess_extrapolate` | GUESS extrapolation in pipeline | Correction applied |
 
-### 10.8 Rust Unit Tests (3 tests in `symmetry_decay.rs`)
+### 10.8 Rust Unit Tests (`symmetry_decay.rs`)
 
 | Test | Description |
 |------|-------------|

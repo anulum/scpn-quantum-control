@@ -56,7 +56,7 @@ Entangling gate count scales with coupling graph edge count.
 
 ## Test Coverage
 
-11 tests in `tests/test_structured_ansatz.py`:
+The executable checks in `tests/test_structured_ansatz.py` cover:
 
 - `test_build_empty_graph` — sub-threshold coupling produces no entanglement
 - `test_build_full_graph` — fully connected coupling

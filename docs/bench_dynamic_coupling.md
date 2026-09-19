@@ -56,7 +56,8 @@ Each `.step(dt)` call performs one full loop: evolve + measure + update $K$.
 
 ## Test Coverage
 
-9 tests in `tests/test_dynamic_coupling.py`:
+The real physical and implementation-parity checks in
+`tests/test_dynamic_coupling.py` include:
 
 - `test_dynamic_coupling_engine_step` — single step produces valid output
 - `test_run_coevolution` — multi-step trajectory length and structure

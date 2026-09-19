@@ -895,7 +895,7 @@ comparisons.
 
 ## Testing
 
-35 tests across 4 test files:
+The benchmark surface is covered by these test owners:
 
 - `test_quantum_advantage.py` — Scaling correctness, crossover estimation, edge cases
 - `test_gpu_baseline.py` — Memory estimates, time estimates, comparison logic

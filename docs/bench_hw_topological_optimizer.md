@@ -74,9 +74,9 @@ defined and need not sum to one.
 
 ## Test Coverage
 
-9 tests across 2 files:
+The executable checks are split across two owners:
 
-**`tests/test_topological_optimizer.py`** (6 tests):
+**`tests/test_topological_optimizer.py`**:
 
 - `test_topological_optimizer_step` — single step produces valid output
 - `test_optimize_loop` — multi-step convergence
@@ -85,7 +85,7 @@ defined and need not sum to one.
 - `test_diagonal_stays_zero` — no self-coupling
 - `test_gradient_norm_finite` — numerical stability
 
-**`tests/test_hardware_topological_optimizer.py`** (3 tests):
+**`tests/test_hardware_topological_optimizer.py`**:
 
 - `test_hardware_optimizer_step` — hardware path single step
 - `test_hardware_optimizer_multi_step` — multi-step with mock runner

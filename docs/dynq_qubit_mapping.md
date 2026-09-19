@@ -427,7 +427,7 @@ become essential.
 
 ### 5.4 Rust Unit Tests
 
-1 test in `community.rs`:
+The Rust owner `community.rs` includes:
 - `test_score_regions_logic`: 4-qubit complete graph with uniform 1% error,
   verifies connectivity = 1.0, fidelity = 0.99, composite = 0.99
 
@@ -905,9 +905,9 @@ written to `data/layout_relaxation_experiment/`.
 
 ## 9. Test Coverage
 
-17 tests across 6 dimensions in `tests/test_qubit_mapper.py`:
+The executable checks in `tests/test_qubit_mapper.py` cover six dimensions:
 
-### 9.1 Empty/Null Inputs (3 tests)
+### 9.1 Empty/Null Inputs
 
 | Test | Description | Assertion |
 |------|-------------|-----------|
@@ -915,31 +915,33 @@ written to `data/layout_relaxation_experiment/`.
 | `test_no_regions_too_few_qubits` | High `min_qubits` filter | Empty list |
 | `test_select_none_when_too_small` | Region too small for circuit | Returns `None` |
 
-### 9.2 Error Handling (2 tests)
+### 9.2 Error Handling
 
 | Test | Description | Assertion |
 |------|-------------|-----------|
+| `test_networkx_absence_reports_mapping_unavailable` | Missing optional dependency | Public mapper APIs raise the documented dependency error |
 | `test_zero_error_no_crash` | Perfect gates ($e = 0$) | Weight = $1/\epsilon_0$ |
 | `test_high_error_low_weight` | 50% error rate | Weight < 3.0 |
 
-### 9.3 Negative Cases (2 tests)
+### 9.3 Negative Cases
 
 | Test | Description | Assertion |
 |------|-------------|-----------|
 | `test_uniform_errors_single_community` | All-same errors | $\leq 3$ communities |
 | `test_high_error_bridge_separates_clusters` | Two clusters, bad bridge | $\geq 2$ regions, largest $\geq 4$ |
 
-### 9.4 Pipeline Integration (5 tests)
+### 9.4 Pipeline Integration
 
 | Test | Description | Assertion |
 |------|-------------|-----------|
 | `test_full_dynq_pipeline` | End-to-end with 2-cluster topology | Valid result, layout size = 4 |
+| `test_full_dynq_pipeline_returns_none_when_no_region_fits` | No region fits the circuit width | Returns `None` |
 | `test_layout_qubits_in_region` | Layout qubits subset of region | All layout qubits in region |
 | `test_readout_errors_affect_layout` | Readout-sorted layout | Layout sorted by readout error |
 | `test_region_quality_sorted` | Output ordering | Descending quality |
 | `test_top_level_import` | Package re-export check | Callable |
 
-### 9.5 Roundtrip (3 tests)
+### 9.5 Roundtrip
 
 | Test | Description | Assertion |
 |------|-------------|-----------|
@@ -947,14 +949,14 @@ written to `data/layout_relaxation_experiment/`.
 | `test_connectivity_bounded` | All regions valid | $0 \leq$ connectivity $\leq 1$ |
 | `test_resolution_controls_size` | Resolution parameter effect | Higher $\gamma \to$ smaller avg size |
 
-### 9.6 Performance (2 tests)
+### 9.6 Performance
 
 | Test | Description | Threshold |
 |------|-------------|-----------|
 | `test_community_detection_fast` | 156-qubit heavy-hex | < 50 ms |
 | `test_full_pipeline_fast` | Full DynQ 156 qubits | < 100 ms |
 
-### 9.7 Pipeline Wiring (2 tests in `test_pipeline_wiring_performance.py`)
+### 9.7 Pipeline Wiring (`test_pipeline_wiring_performance.py`)
 
 | Test | Description | Assertion |
 |------|-------------|-----------|
