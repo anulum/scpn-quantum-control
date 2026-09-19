@@ -53,6 +53,7 @@ class TestFMOBenchmark:
         result = fmo_benchmark(K, omega, allow_builtin_reference=True)
         assert result.n_oscillators == 7
         assert -1 <= result.topology_correlation <= 1
+        assert result.topology_similarity_proxy == result.topology_correlation
         assert -1 <= result.frequency_correlation <= 1
         assert result.coupling_ratio > 0
         assert result.frequency_ratio > 0
