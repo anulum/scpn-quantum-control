@@ -392,14 +392,15 @@ jobs, and benchmark claims are outside this evidence lane.
 
 ### 1. Pipeline Wiring Tests (`test_pipeline_wiring_performance.py`)
 
-155 tests that verify **every** symbol in `scpn_quantum_control.__all__` (104 symbols)
-is importable, callable, and produces valid output when wired into a data pipeline.
+These tests verify every symbol in `scpn_quantum_control.__all__` is importable,
+callable, and produces valid output when wired into a data pipeline.
 
 Each test follows the pattern:
 1. Build inputs from canonical SCPN parameters (build_knm_paper27, OMEGA_N_16)
 2. Call the function/class under test
 3. Assert output has correct type, shape, and physical bounds
-4. Print wall-time performance
+4. Print wall-time telemetry labelled `functional_non_isolated`; shared-host
+   timing never decides whether a functional wiring test passes
 
 ```python
 class TestTopLevelExports:
@@ -409,7 +410,7 @@ class TestTopLevelExports:
         assert obj is not None, f"{name} is None — not wired"
 ```
 
-15 subsystems tested end-to-end:
+Subsystems tested end-to-end include:
 - Bridge (Knm→H, Knm→Ansatz)
 - Phase Solvers (VQE, UPDE, Kuramoto)
 - Hardware (Runner, Noise Model)
@@ -425,6 +426,12 @@ class TestTopLevelExports:
 - Control (VQLS, QAOA-MPC, QPetriNet)
 - Benchmarks (Scaling)
 - Applications (Reservoir, Kernel, Disruption)
+- Multi-scale QEC
+- Free Energy Principle
+- Psi-field lattice simulation
+- GUESS symmetry-decay mitigation
+- DynQ qubit mapping
+- Pulse shaping
 
 ### 2. Rust Path Benchmarks (`test_rust_path_benchmarks.py`)
 

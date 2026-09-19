@@ -11,7 +11,7 @@ For each component:
 1. Import succeeds from top-level package
 2. Core function/class is callable
 3. End-to-end data flows through the component
-4. Performance metrics recorded (wall time, output shape/type)
+4. Non-isolated wall-time telemetry recorded without pass/fail thresholds
 
 If any import fails or function returns garbage, the module is decorative → FAIL.
 """
@@ -60,8 +60,8 @@ def _timed_median(
 
 
 def _report(name: str, dt_ms: float, extra: str = "") -> None:
-    """Print pipeline performance line."""
-    tag = f"  [{dt_ms:7.1f} ms]"
+    """Print pipeline timing as functional, non-isolated telemetry."""
+    tag = f"  [functional_non_isolated {dt_ms:7.1f} ms]"
     print(f"\n  PIPELINE {name}: {tag} {extra}")
 
 
@@ -494,7 +494,6 @@ class TestMSQECPipeline:
         result, dt = _timed(build_multiscale_qec, K, p_physical=0.001)
         assert result.concatenation_depth == 5
         assert result.total_physical_qubits > 0
-        assert dt < 100, f"build_multiscale_qec must complete in <100ms, took {dt:.1f}ms"
         _report(
             "MS-QEC build",
             dt,
@@ -506,8 +505,7 @@ class TestMSQECPipeline:
 
         result, dt = _timed(concatenated_logical_rate, 0.001, [5, 5, 5, 5, 5])
         assert len(result) == 5
-        assert all(r < 1.0 for r in result)
-        assert dt < 1, f"concatenated_logical_rate must complete in <1ms, took {dt:.1f}ms"
+        assert all(0.0 <= r < 1.0 for r in result)
         _report("Concatenated rates (5 levels)", dt, f"p_L_final={result[-1]:.2e}")
 
     def test_syndrome_flow(self) -> None:
@@ -518,7 +516,7 @@ class TestMSQECPipeline:
         ms = build_multiscale_qec(K, p_physical=0.001, distances=[3, 3, 3, 3, 3])
         flows, dt = _timed(syndrome_flow_analysis, K, ms)
         assert len(flows) == 4
-        assert dt < 10, f"syndrome_flow_analysis must complete in <10ms, took {dt:.1f}ms"
+        assert all(np.isfinite(flow.syndrome_weight) for flow in flows)
         _report(
             "Syndrome flow (4 edges)",
             dt,
@@ -542,7 +540,7 @@ class TestFEPPipeline:
         x = np.random.default_rng(42).standard_normal(n) * 0.1
         result, dt = _timed(variational_free_energy, mu, sigma, x, K)
         assert isinstance(result.free_energy, float)
-        assert dt < 5, f"variational_free_energy must complete in <5ms, took {dt:.1f}ms"
+        assert np.isfinite(result.free_energy)
         _report("Variational free energy (n=16)", dt, f"F={result.free_energy:.4f}")
 
     def test_predictive_coding_step(self) -> None:
@@ -553,7 +551,7 @@ class TestFEPPipeline:
         beliefs = np.zeros(4)
         result, dt = _timed(predictive_coding_step, x, beliefs, K, learning_rate=0.001)
         assert isinstance(result.free_energy, float)
-        assert dt < 5, f"predictive_coding_step must complete in <5ms, took {dt:.1f}ms"
+        assert np.isfinite(result.free_energy)
         _report(
             "PC step (n=4)",
             dt,
@@ -570,7 +568,7 @@ class TestFEPPipeline:
         x = np.random.default_rng(42).standard_normal(n) * 0.1
         grad, dt = _timed(free_energy_gradient, mu, sigma, x, K)
         assert grad.shape == (n,)
-        assert dt < 2, f"free_energy_gradient must complete in <2ms, took {dt:.1f}ms"
+        assert np.all(np.isfinite(grad))
         _report("FE gradient (n=16, Rust)", dt, f"||grad||={np.linalg.norm(grad):.4f}")
 
 
@@ -586,7 +584,6 @@ class TestPsiFieldPipeline:
         lattice, dt = _timed(scpn_to_lattice, beta=2.0, seed=42)
         assert lattice.n_layers == 16
         assert lattice.gauge.n_edges == 120
-        assert dt < 50, f"scpn_to_lattice must complete in <50ms, took {dt:.1f}ms"
         _report(
             "SCPN→lattice (16 layers)",
             dt,
@@ -600,7 +597,7 @@ class TestPsiFieldPipeline:
         g = U1LatticGauge(K, beta=2.0, seed=42)
         (accepted, dH), dt = _timed(hmc_update, g, n_leapfrog=10, step_size=0.02)
         assert isinstance(accepted, bool)
-        assert dt < 10, f"HMC step must complete in <10ms, took {dt:.1f}ms"
+        assert np.isfinite(dH)
         _report("HMC step (n=4, 10 leapfrog)", dt, f"accepted={accepted}, dH={dH:.4f}")
 
     def test_topological_charge(self) -> None:
@@ -610,7 +607,7 @@ class TestPsiFieldPipeline:
         lattice = scpn_to_lattice(beta=2.0, seed=42)
         q, dt = _timed(topological_charge, lattice.gauge)
         assert isinstance(q, float)
-        assert dt < 5, f"topological_charge must complete in <5ms, took {dt:.1f}ms"
+        assert np.isfinite(q)
         _report("Topological charge (16 layers, Rust)", dt, f"Q={q:.4f}")
 
     def test_gauge_covariant_kinetic(self) -> None:
@@ -620,7 +617,6 @@ class TestPsiFieldPipeline:
         lattice = scpn_to_lattice(beta=2.0, seed=42)
         T, dt = _timed(gauge_covariant_kinetic, lattice.infoton, lattice.gauge)
         assert T >= 0.0
-        assert dt < 5, f"gauge_covariant_kinetic must complete in <5ms, took {dt:.1f}ms"
         _report("Gauge kinetic (16 layers)", dt, f"T={T:.4f}")
 
 
@@ -635,7 +631,6 @@ class TestGUESSPipeline:
 
         model, dt = _timed(learn_symmetry_decay, 4.0, [3.8, 3.5, 3.0, 2.5, 2.0], [1, 3, 5, 7, 9])
         assert model.alpha > 0.0
-        assert dt < 2, f"learn_symmetry_decay must complete in <2ms, took {dt:.1f}ms"
         _report("GUESS learn (5 scales, Rust)", dt, f"alpha={model.alpha:.4f}")
 
     def test_extrapolate(self) -> None:
@@ -647,7 +642,7 @@ class TestGUESSPipeline:
         model = learn_symmetry_decay(4.0, [3.8, 3.0], [1, 3])
         result, dt = _timed(guess_extrapolate, 0.5, 3.8, model)
         assert isinstance(result.mitigated_value, float)
-        assert dt < 1, f"guess_extrapolate must complete in <1ms, took {dt:.1f}ms"
+        assert np.isfinite(result.mitigated_value)
         _report("GUESS extrapolate", dt, f"correction={result.correction_factor:.4f}")
 
 
@@ -674,7 +669,6 @@ class TestDynQPipeline:
         G = build_calibration_graph(errors)
         regions, dt = _timed(detect_execution_regions, G, 3, 1.0, 42)
         assert len(regions) > 0
-        assert dt < 50, f"156-qubit detection must complete in <50ms, took {dt:.1f}ms"
         _report("DynQ detection (156 qubits)", dt, f"n_regions={len(regions)}")
 
     def test_full_pipeline(self) -> None:
@@ -691,7 +685,6 @@ class TestDynQPipeline:
         result, dt = _timed_median(dynq_initial_layout, errors, 5, None, 1.0, 3, 42)
         assert result is not None
         assert len(result.initial_layout) == 5
-        assert dt < 20, f"DynQ pipeline must complete in <20ms, took {dt:.1f}ms"
         _report(
             "DynQ full pipeline (20 qubits)", dt, f"region_size={result.selected_region.n_qubits}"
         )
@@ -709,7 +702,6 @@ class TestPulseShapingPipeline:
         pulse, dt = _timed(build_ici_pulse, 1.0, 10.0, 0.1)
         assert pulse.fidelity > 0.5
         assert len(pulse.times) == 200
-        assert dt < 5, f"ICI build must complete in <5ms, took {dt:.1f}ms"
         _report("ICI pulse build", dt, f"fidelity={pulse.fidelity:.4f}")
 
     def test_hypergeometric_envelope(self) -> None:
@@ -720,7 +712,7 @@ class TestPulseShapingPipeline:
         pulse, dt = _timed(build_hypergeometric_pulse, 1.0, 10.0, 0.5, 0.5)
         assert isinstance(pulse.envelope, np.ndarray)
         assert len(pulse.envelope) == 200
-        assert dt < 50, f"Hypergeometric build must complete in <50ms, took {dt:.1f}ms"
+        assert np.all(np.isfinite(pulse.envelope))
         _report("Hypergeometric pulse build", dt, f"peak={np.max(pulse.envelope):.4f}")
 
     def test_trotter_pulse_schedule(self) -> None:
@@ -734,5 +726,4 @@ class TestPulseShapingPipeline:
         schedule, dt = _timed(build_trotter_pulse_schedule, n, k, 0.1)
         assert len(schedule.pulses) == 6
         assert schedule.infidelity_bound > 0
-        assert dt < 500, f"Schedule build must complete in <500ms, took {dt:.1f}ms"
         _report("Trotter pulse schedule (4q)", dt, f"n_pulses={len(schedule.pulses)}")

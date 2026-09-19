@@ -10,6 +10,7 @@
 
 from __future__ import annotations
 
+import ast
 from pathlib import Path
 
 from _internal_corpus_markers import is_performance_gate, requires_internal_paper0_corpus
@@ -42,3 +43,20 @@ def test_wall_clock_performance_gates_are_explicitly_classified() -> None:
     assert is_performance_gate(Path("tests/test_perf_regression.py"))
     assert is_performance_gate(Path("tests/test_pipeline_wiring_performance.py"))
     assert not is_performance_gate(Path("tests/test_rust_path_benchmarks.py"))
+
+
+def test_pipeline_wiring_timings_are_telemetry_only() -> None:
+    """Shared-host pipeline timings must not decide functional test outcomes."""
+    path = Path("tests/test_pipeline_wiring_performance.py")
+    source = path.read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    timing_assertions: list[int] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Assert):
+            continue
+        names = {child.id for child in ast.walk(node.test) if isinstance(child, ast.Name)}
+        if any(name == "dt" or name.startswith("dt_") for name in names):
+            timing_assertions.append(node.lineno)
+
+    assert not timing_assertions, f"wall-clock assertions at lines {timing_assertions}"
+    assert "functional_non_isolated" in source
