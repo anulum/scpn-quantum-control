@@ -74,3 +74,6 @@ def test_verify_composed_objective_gradient_rejects_invalid_controls() -> None:
 
     with pytest.raises(ValueError, match="params"):
         verify_composed_objective_gradient(objective, np.array([[0.2]], dtype=float))
+
+    with pytest.raises(ValueError, match="params must contain only finite values"):
+        verify_composed_objective_gradient(objective, np.array([np.nan], dtype=float))
