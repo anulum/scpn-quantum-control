@@ -270,8 +270,10 @@ is copied here.
   `dim(DLA) = 2^(2N-1) - 2`, decomposing as `su(2^(N-1)) ⊕ su(2^(N-1))` over the
   two parity sectors. Measured independently 2026-09-20 with `compute_dla` on
   `build_knm_paper27`: N = 3 gives 30, exactly `2^5 - 2`, against `su(2^3) = 63`
-  and a free-fermion scale `so(6) = 15`; `GAP_CLOSURE_STATUS.md` records 126 at
-  N = 4, exactly `2^7 - 2`. The DLA is therefore **exponential**, so there is no
+  and a free-fermion scale `so(6) = 15`; N = 4 gives 126, exactly `2^7 - 2`,
+  against `su(2^4) = 255` and `so(8) = 28`, agreeing with the value
+  `GAP_CLOSURE_STATUS.md` already recorded. The DLA is therefore
+  **exponential**, so there is no
   small algebra to truncate to and the route cannot mean what its name says.
   The theorem's own consequence 2 states this: frequency heterogeneity breaks
   the O(N²) simulability of the uniform XY model. Two honest options, and
