@@ -246,6 +246,22 @@ is copied here.
   the derived requirement. Certification covers repository evidence for a
   public claim only; provider availability, calibration, hardware readiness,
   and submission authority remain separate approval-gated decisions.
+- [ ] **Open the pulse-execution boundary, or retire the RL pulse route.**
+  Blocked on owner authority. `CAP-RL-PULSE` decomposes into two parts, neither
+  of which an agent may settle. The pulse-execution boundary is separately
+  governed in the control stack, where `docs/control_stack_compose_product.md`
+  records pulse execution as explicitly descoped and failing closed to
+  `pulse-boundary/runtime-adapter`, every executable adapter local-simulator
+  only, and even a hardware-authorising policy refused because that product
+  does not own provider submission: opening it is an architecture and ownership
+  decision. The optimiser itself takes a `HardwareRunner` managing the IBM
+  Quantum backend lifecycle, so each training episode is QPU spend needing
+  explicit authorisation and a preregistered dossier. Substituting a simulator
+  runner to make the capability look implemented would contradict the claim
+  boundary in `docs/rl_research_governance.md`, which already excludes provider
+  submission and QPU or pulse execution. `hardware/pulse_feasibility.py`
+  already provides the no-submit feasibility layer, so what is missing is
+  authority and a decision, not analysis code.
 - [ ] **Decide what the DLA tensor-network route should be.** Blocked on an
   owner scope decision, not on effort. `analysis/dla_truncated_tn()` is a
   fail-closed placeholder for a "DLA-truncated" tensor-network route, but this
