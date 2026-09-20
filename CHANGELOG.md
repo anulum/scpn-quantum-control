@@ -2,6 +2,36 @@
 
 ## Unreleased
 
+### Added
+
+- `scpn-provider-certification` and
+  `scpn_quantum_control.hardware.provider_certification` certify the publicly
+  claimed HAL provider matrix. Eight criteria are evaluated per declared
+  backend: profile resolution, adapter import, broker route consistency,
+  no-submit capability inventory, optional dependency smoke, presence in the
+  claimed backend table, a focused adapter suite, and approval-gated submission
+  semantics. The required evidence is derived from the live declared matrix, so
+  a newly declared backend or adapter family is refused until its own
+  documentation row and focused suite exist, and a backend claimed publicly
+  without an implementation blocks the gate. The command reads no credentials,
+  contacts no provider and submits no job.
+
+- `tools/check_toolchain_pin_alignment.py` refuses a quality-tool version that
+  disagrees between `.pre-commit-config.yaml` and the hash-locked
+  `requirements*.txt` pins. It also refuses a distribution pinned to several
+  versions across the matrix files, a mapped hook with no requirements pin, and
+  a remote hook repository classified neither as a mirrored Python distribution
+  nor as a reasoned non-Python hook. It runs in the hook set, the local
+  preflight and static analysis.
+
+### Changed
+
+- The pre-commit `ruff` hook moves from `v0.15.18` to `v0.16.4`, the version the
+  CI requirement files pin, so the hook and CI run one ruff generation.
+
+- The HAL adapter-suite requirement is derived from the declared descriptors
+  instead of a frozen list of sixteen filenames.
+
 ### Fixed
 
 - Reject inputs that are not Gaussian parameters in the variational free-energy

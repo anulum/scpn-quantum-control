@@ -142,6 +142,24 @@ jobs:
           python -m pytest -q -p no:cacheprovider \
             tests/test_check_retired_claims.py
           python tools/check_retired_claims.py
+      - name: Enforce one toolchain generation across hook and CI pins
+        run: |
+          python -m mypy --strict --explicit-package-bases \
+            tools/check_toolchain_pin_alignment.py \
+            tests/test_check_toolchain_pin_alignment.py
+          python -m ruff check --isolated --select D,D413 \
+            --config 'lint.pydocstyle.convention = "numpy"' \
+            tools/check_toolchain_pin_alignment.py \
+            tests/test_check_toolchain_pin_alignment.py
+          python -m coverage run --rcfile=/dev/null \
+            --data-file=/tmp/scpn-qc-toolchain-pin.coverage --branch \
+            -m pytest -q -p no:cacheprovider \
+            tests/test_check_toolchain_pin_alignment.py
+          python -m coverage report --rcfile=/dev/null \
+            --data-file=/tmp/scpn-qc-toolchain-pin.coverage \
+            --precision=2 --show-missing --fail-under=100 \
+            --include=*/tools/check_toolchain_pin_alignment.py
+          python tools/check_toolchain_pin_alignment.py
       - name: Audit tracked module responsibilities
         run: python tools/audit_module_size_policy.py
       - name: Type-check module-responsibility audit

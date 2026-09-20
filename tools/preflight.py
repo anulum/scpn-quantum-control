@@ -1427,6 +1427,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
         ],
     ),
     ("version-sync", [_PY, "scripts/check_version_consistency.py"]),
+    ("toolchain-pin-alignment", [_PY, "tools/check_toolchain_pin_alignment.py"]),
     ("rust-pyi", [_PY, "tools/check_rust_pyi_exports.py"]),
     ("mypy", [_PY, "-m", "mypy"]),
     (

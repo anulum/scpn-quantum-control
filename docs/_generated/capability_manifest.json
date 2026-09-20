@@ -13,7 +13,7 @@
     "python_model_source_modules": 703,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1388
+    "test_files": 1389
   },
   "documentation": {
     "examples": [
@@ -8335,6 +8335,7 @@
       "tests/test_check_retired_claims.py",
       "tests/test_check_rust_pyi_exports.py",
       "tests/test_check_secrets.py",
+      "tests/test_check_toolchain_pin_alignment.py",
       "tests/test_check_version_consistency.py",
       "tests/test_chimera_control_e2e.py",
       "tests/test_chimera_control_evidence.py",

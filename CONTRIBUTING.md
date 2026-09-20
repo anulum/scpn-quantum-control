@@ -124,6 +124,27 @@ expressions, step conditions and actual package imports still need runner
 validation. Exit status 1 reports findings; 0 means only that these static
 checks found none.
 
+A third axis is the repository against itself. A quality tool that runs both as
+a pre-commit hook and from the hash-locked CI requirements has two declarations
+of its version, and neither of the checks above compares them: the parity report
+measures this machine, and the contract gate measures a job's own install. When
+the two declarations drift, a locally clean commit can fail CI and the agreement
+between them is luck. That comparison is a gate, and runs in the hook set, the
+local preflight and static analysis:
+
+```bash
+python tools/check_toolchain_pin_alignment.py
+```
+
+It reads `.pre-commit-config.yaml` and every `requirements*.txt`, and refuses a
+hook revision that names a different version than the requirements pin, a
+distribution pinned to several versions across the matrix files, a mapped hook
+with no requirements pin to compare, and a remote hook repository that is
+classified neither as a mirrored Python distribution nor as a reasoned
+non-Python hook. Adding a hook therefore means classifying it. Exit status 1
+reports findings, 2 means the declarations could not be read, and an unreadable
+configuration is an error rather than a pass.
+
 ## Before Opening A PR
 
 Run the relevant focused tests, then the local preflight when the change is not
