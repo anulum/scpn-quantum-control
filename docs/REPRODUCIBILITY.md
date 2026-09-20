@@ -285,7 +285,7 @@ registry. Generated script text is not a runtime raise and is excluded.
 | Surface | Classification | Contract or local issue |
 |---------|----------------|-------------------------|
 | `qsp_phase_angles()` default route | Closed | `CAP-QSP-PHASE` is implemented in `phase/qsp_phases.py`: symmetric-phase Newton synthesis, dense-grid certification against the target, and a completion-identity check on the extracted complementary polynomial. Uncertified phases are never returned. |
-| `dla_truncated_tn()` | Tracked capability gap | `CAP-DLA-TN`: implement and validate a real tensor-network route before any campaign result; never substitute fabricated synchrony values. |
+| `dla_truncated_tn()` | Tracked capability gap, premise refuted | `CAP-DLA-TN`: the route must never substitute fabricated synchrony values. Its name is not achievable as written: `analysis/dla_parity_theorem.py` proves `dim(DLA) = 2^(2N-1) - 2` for this Hamiltonian, measured independently as 30 at N = 3 and recorded as 126 at N = 4, so the algebra is exponential and there is nothing small to truncate to. A bond-dimension-truncated tensor-network route remains possible and is an owner scope decision recorded in the roadmap. |
 | `RLPulseOptimizer.save_results()` | Tracked capability gap | `CAP-RL-PULSE`: implement the governed optimizer and pulse-execution boundary before results can exist. |
 | `IntegratedInformationPhi.__call__()` | Intentional refusal | No IIT causal-state model is implemented; only explicitly labelled entropy or mutual-information diagnostics are allowed. |
 | `QuantumFisherInformation.__call__()` | Intentional refusal | Production Hamiltonian inputs are required; the legacy estimate needs explicit proxy opt-in. |

@@ -46,6 +46,13 @@
 
 ### Changed
 
+- The reproducibility record for `dla_truncated_tn()` now states that the
+  capability is not achievable as named. `analysis/dla_parity_theorem.py`
+  gives `dim(DLA) = 2^(2N-1) - 2` for the heterogeneous XY Hamiltonian, so the
+  dynamical Lie algebra is exponential and there is no small algebra to
+  truncate to. The route keeps refusing to run, and a bond-dimension-truncated
+  tensor-network alternative is recorded in the roadmap as a scope decision.
+
 - `qsp_phase_angles()` returns certified phase angles for the degree-`d` cosine
   polynomial instead of raising. The angles realise the Chebyshev polynomial
   `T_d`; `allow_initial_guess=True` still returns the published Newton starting

@@ -246,6 +246,31 @@ is copied here.
   the derived requirement. Certification covers repository evidence for a
   public claim only; provider availability, calibration, hardware readiness,
   and submission authority remain separate approval-gated decisions.
+- [ ] **Decide what the DLA tensor-network route should be.** Blocked on an
+  owner scope decision, not on effort. `analysis/dla_truncated_tn()` is a
+  fail-closed placeholder for a "DLA-truncated" tensor-network route, but this
+  repository's own `analysis/dla_parity_theorem.py` proves, and verifies for
+  N = 2..5, that the heterogeneous XY Hamiltonian has
+  `dim(DLA) = 2^(2N-1) - 2`, decomposing as `su(2^(N-1)) ⊕ su(2^(N-1))` over the
+  two parity sectors. Measured independently 2026-09-20 with `compute_dla` on
+  `build_knm_paper27`: N = 3 gives 30, exactly `2^5 - 2`, against `su(2^3) = 63`
+  and a free-fermion scale `so(6) = 15`; `GAP_CLOSURE_STATUS.md` records 126 at
+  N = 4, exactly `2^7 - 2`. The DLA is therefore **exponential**, so there is no
+  small algebra to truncate to and the route cannot mean what its name says.
+  The theorem's own consequence 2 states this: frequency heterogeneity breaks
+  the O(N²) simulability of the uniform XY model. Two honest options, and
+  choosing between them changes what a named capability means, so it is an
+  owner decision: (a) implement a standard bond-dimension-truncated TEBD route
+  on the existing `phase/mps_evolution.py` quimb substrate, citing Vidal (2003,
+  2004) and Schollwöck (2011), using the parity-sector decomposition as the
+  structure actually available, validated against exact diagonalisation where
+  both are computable, and rename the capability to say entanglement-truncated
+  rather than DLA-truncated; or (b) retire the route and keep the
+  exact-diagonalisation ceiling stated honestly. Option (a) additionally needs
+  the pinned `requirements-ci-quimb-py312-linux.txt` tier, which upgrades scipy
+  from 1.17.1 to 1.18.1 and therefore belongs in its own environment as the
+  Julia tier already does. Do not invent a truncation criterion to make the
+  name true.
 - [ ] **Retire the setuptools security waiver by raising the Braket pins.**
   Blocked on owner authorisation for a bounded dependency batch. The repository
   pins `setuptools==81.0.0` in the three hash-locked matrix requirement files
