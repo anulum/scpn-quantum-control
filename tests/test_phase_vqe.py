@@ -9,15 +9,20 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 import numpy as np
 import pytest
 
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
-from scpn_quantum_control.phase.phase_vqe import PhaseVQE
+from scpn_quantum_control.phase import PhaseVQE, PhaseVQEResult
 
 
-def _energy(result: dict[str, object], key: str) -> float:
-    """Return one energy field of a VQE result, asserting the float it documents."""
+def _energy(
+    result: PhaseVQEResult,
+    key: Literal["ground_energy", "exact_energy", "energy_gap"],
+) -> float:
+    """Return one energy field of a VQE result."""
     value = result[key]
     assert isinstance(value, float)
     return value
@@ -70,15 +75,20 @@ class TestSolve:
         result = vqe.solve(maxiter=20, seed=0)
         expected_keys = {
             "ground_energy",
+            "vqe_energy",
             "exact_energy",
             "energy_gap",
             "relative_error_pct",
             "optimal_params",
             "n_evals",
+            "n_grad_evals",
             "n_params",
+            "optimizer",
+            "gradient_method",
+            "gradient_norm",
             "converged",
         }
-        assert expected_keys.issubset(result.keys())
+        assert set(result) == expected_keys
 
     def test_energy_is_finite(self) -> None:
         K = build_knm_paper27(L=3)
@@ -113,6 +123,19 @@ class TestSolve:
         r2 = vqe2.solve(maxiter=20, seed=42)
         assert _energy(r1, "ground_energy") == _energy(r2, "ground_energy")
 
+    def test_parameter_shift_preserves_gradient_optimizer(self) -> None:
+        K = build_knm_paper27(L=2)
+        omega = OMEGA_N_16[:2]
+        result = PhaseVQE(K, omega, ansatz_reps=1).solve(
+            optimizer="BFGS",
+            maxiter=5,
+            seed=0,
+            gradient_method="parameter_shift",
+        )
+        assert result["optimizer"] == "BFGS"
+        assert result["gradient_method"] == "parameter_shift"
+        assert result["n_grad_evals"] > 0
+
     @pytest.mark.parametrize("L", [2, 3, 4])
     def test_various_sizes(self, L: int) -> None:
         K = build_knm_paper27(L=L)
@@ -120,6 +143,26 @@ class TestSolve:
         vqe = PhaseVQE(K, omega, ansatz_reps=1)
         result = vqe.solve(maxiter=20, seed=0)
         assert np.isfinite(_energy(result, "ground_energy"))
+
+
+class TestParameterValidation:
+    def test_rejects_wrong_parameter_width(self) -> None:
+        K = build_knm_paper27(L=2)
+        omega = OMEGA_N_16[:2]
+        vqe = PhaseVQE(K, omega, ansatz_reps=1)
+
+        with pytest.raises(ValueError, match="params must have shape"):
+            vqe.parameter_shift_gradient(np.zeros(vqe.n_params + 1))
+
+    def test_rejects_non_finite_parameters(self) -> None:
+        K = build_knm_paper27(L=2)
+        omega = OMEGA_N_16[:2]
+        vqe = PhaseVQE(K, omega, ansatz_reps=1)
+        params = np.zeros(vqe.n_params)
+        params[0] = np.nan
+
+        with pytest.raises(ValueError, match="params must contain only finite values"):
+            vqe.parameter_shift_gradient(params)
 
 
 # ---------------------------------------------------------------------------

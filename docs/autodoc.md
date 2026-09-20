@@ -53,7 +53,7 @@ or debugging a subsystem, not as the default path for tutorial code.
 
 ::: scpn_quantum_control.phase.phase_vqe
     options:
-      members: [PhaseVQE]
+      members: [PhaseVQE, PhaseVQEResult]
 
 ::: scpn_quantum_control.phase.coupling_learning
     options:

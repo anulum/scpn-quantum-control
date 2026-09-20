@@ -170,15 +170,16 @@ def eeg_plv_to_vqe(
     vqe.n_params = n_params
 
     sol = vqe.solve(maxiter=200, seed=42)
+    sol_payload: dict[str, object] = dict(sol)
 
     # Extract optimized state
-    opt_params = np.asarray(sol.get("optimal_params", np.zeros(n_params)), dtype=float)
+    opt_params = np.asarray(sol_payload.get("optimal_params", np.zeros(n_params)), dtype=float)
     bound = ansatz.assign_parameters(opt_params)
     sv = Statevector.from_instruction(bound).data
-    energy_value = sol.get("vqe_energy", sol.get("ground_energy", 0.0))
+    energy_value = sol_payload.get("vqe_energy", sol_payload.get("ground_energy", 0.0))
     if not isinstance(energy_value, Real):
         raise TypeError("PhaseVQE returned a non-numeric energy")
-    converged_value = sol.get("converged", False)
+    converged_value = sol_payload.get("converged", False)
     if not isinstance(converged_value, (bool, np.bool_)):
         raise TypeError("PhaseVQE returned a non-boolean convergence flag")
 

@@ -5,7 +5,7 @@ module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
 - **702 modules** across **39 package families**
-- **3925 documented public module-level symbols**
+- **3926 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -3935,9 +3935,9 @@ PennyLane provider-plugin gradient artefacts and fail-closed route matrix.
 
 VQE for Kuramoto/XY Hamiltonian ground state.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase/phase_vqe.py) · Public symbols: **1**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase/phase_vqe.py) · Public symbols: **2**
 
-**Classes:** `PhaseVQE`
+**Classes:** `PhaseVQEResult`, `PhaseVQE`
 
 ### `scpn_quantum_control.phase.provider_gradient`
 

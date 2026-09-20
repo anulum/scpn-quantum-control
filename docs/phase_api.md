@@ -145,15 +145,19 @@ the exact small-system nested commutator path is selected.
 Ground state preparation via parametric circuit optimisation.
 
 ```python
-from scpn_quantum_control.phase.phase_vqe import PhaseVQE
+from scpn_quantum_control.phase import PhaseVQE, PhaseVQEResult
 ```
 
 **`PhaseVQE(K, omega, ansatz_reps=2, threshold=0.01)`**
 
 | Method | Description |
 |--------|-------------|
-| `.solve(optimizer="COBYLA", maxiter=200, seed=None)` | Returns ground energy, exact energy, relative error, convergence status |
+| `.solve(optimizer="COBYLA", maxiter=200, seed=None)` | Returns a `PhaseVQEResult` with energy, optimiser, gradient, parameter, evaluation-count, and convergence fields |
 | `.ground_state()` | `Statevector` of the optimised state (or `None` if not yet solved) |
+
+`PhaseVQEResult` is an exact `TypedDict` contract rather than an untyped
+`dict[str, object]`; callers can index its documented fields without rebuilding
+their types locally.
 
 The ansatz is physics-informed: entangling gates (CZ) connect only qubit pairs where
 $K_{ij} > \varepsilon$, respecting the coupling topology. This eliminates barren

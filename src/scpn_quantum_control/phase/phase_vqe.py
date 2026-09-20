@@ -14,7 +14,7 @@ where entanglement topology matches Knm sparsity.
 
 from __future__ import annotations
 
-from typing import TypeAlias
+from typing import TypeAlias, TypedDict
 
 import numpy as np
 from numpy.typing import NDArray
@@ -30,7 +30,24 @@ from ..differentiable import (
 from ..hardware.classical import classical_exact_diag
 
 FloatArray: TypeAlias = NDArray[np.float64]
-PhaseVQEResult: TypeAlias = dict[str, object]
+
+
+class PhaseVQEResult(TypedDict):
+    """Structured result returned by :meth:`PhaseVQE.solve`."""
+
+    ground_energy: float
+    vqe_energy: float
+    exact_energy: float
+    energy_gap: float
+    relative_error_pct: float
+    optimal_params: FloatArray
+    n_evals: int
+    n_grad_evals: int
+    n_params: int
+    optimizer: str
+    gradient_method: str
+    gradient_norm: float
+    converged: bool
 
 
 class PhaseVQE:
@@ -121,32 +138,34 @@ class PhaseVQE:
             options={"maxiter": effective_maxiter},
         )
 
-        self._optimal_params = result.x
-        self._ground_energy = float(result.fun)
+        optimal_params: FloatArray = np.asarray(result.x, dtype=np.float64)
+        ground_energy = float(result.fun)
+        self._optimal_params = optimal_params
+        self._ground_energy = ground_energy
 
         n = len(self.omega)
         exact = classical_exact_diag(n, K=self.K, omega=self.omega)
-        exact_e = exact["ground_energy"]
-        gap = abs(self._ground_energy - exact_e)
+        exact_e = float(exact["ground_energy"])
+        gap = abs(ground_energy - exact_e)
 
         return {
-            "ground_energy": self._ground_energy,
-            "vqe_energy": self._ground_energy,  # alias for backward compatibility
+            "ground_energy": ground_energy,
+            "vqe_energy": ground_energy,  # alias for backward compatibility
             "exact_energy": exact_e,
             "energy_gap": gap,
             "relative_error_pct": gap / abs(exact_e) * 100
             if abs(exact_e) > 1e-15
             else float("nan"),
-            "optimal_params": self._optimal_params,
-            "n_evals": result.nfev,
+            "optimal_params": optimal_params,
+            "n_evals": int(result.nfev),
             "n_grad_evals": n_grad_evals,
             "n_params": self.n_params,
             "optimizer": effective_optimizer,
             "gradient_method": gradient_mode,
-            "gradient_norm": float(np.linalg.norm(self.parameter_shift_gradient(result.x)))
+            "gradient_norm": float(np.linalg.norm(self.parameter_shift_gradient(optimal_params)))
             if gradient_mode == "parameter_shift"
             else float("nan"),
-            "converged": result.success,
+            "converged": bool(result.success),
         }
 
     def ground_state(self) -> Statevector | None:

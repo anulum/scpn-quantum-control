@@ -343,7 +343,7 @@ from .pennylane_provider_plugin import (
     PennyLaneProviderPluginExecutionArtifact,
     run_pennylane_plugin_matrix,
 )
-from .phase_vqe import PhaseVQE
+from .phase_vqe import PhaseVQE, PhaseVQEResult
 from .provider_gradient import (
     ProviderExpectationSample,
     ProviderGradientExecutionResult,
@@ -783,6 +783,7 @@ __all__ = [
     "UPDEStepResult",
     "UPDETrajectoryResult",
     "PhaseVQE",
+    "PhaseVQEResult",
     "trotter_error_norm",
     "trotter_error_sweep",
     "benchmark_ansatz",

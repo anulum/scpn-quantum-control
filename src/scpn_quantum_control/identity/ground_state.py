@@ -67,7 +67,7 @@ class IdentityAttractor:
         Returns dict with ground_energy, exact_energy, energy_gap,
         relative_error_pct, robustness_gap, n_dispositions.
         """
-        self._result = self._vqe.solve(maxiter=maxiter, seed=seed)
+        result: dict[str, Any] = dict(self._vqe.solve(maxiter=maxiter, seed=seed))
 
         n = len(self.omega)
         exact = classical_exact_diag(n, K=self.K, omega=self.omega)
@@ -78,11 +78,12 @@ class IdentityAttractor:
         if len(eigenvalues) >= 2:
             robustness_gap = float(eigenvalues[1] - eigenvalues[0])
 
-        self._result["robustness_gap"] = robustness_gap
-        self._result["n_dispositions"] = n
-        self._result["eigenvalues"] = eigenvalues[: min(4, len(eigenvalues))].tolist()
+        result["robustness_gap"] = robustness_gap
+        result["n_dispositions"] = n
+        result["eigenvalues"] = eigenvalues[: min(4, len(eigenvalues))].tolist()
 
-        return self._result
+        self._result = result
+        return result
 
     def robustness_gap(self) -> float:
         """Energy gap E_1 - E_0. Call solve() first."""
