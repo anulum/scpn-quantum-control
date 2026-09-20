@@ -234,7 +234,8 @@
         "resource-budget-gate-quality",
         "advantage-language-protocol-quality",
         "metamorphic-ad-verification-quality",
-        "competitive-baseline-watch-quality"
+        "competitive-baseline-watch-quality",
+        "semantic-record-contract-quality"
       ]
     },
     {
@@ -514,6 +515,7 @@
     "advantage-language-protocol-quality",
     "metamorphic-ad-verification-quality",
     "competitive-baseline-watch-quality",
+    "semantic-record-contract-quality",
     "whole-program-ad-product-quality",
     "neural-operator-cost-model-quality",
     "neural-operator-baseline-product-quality",

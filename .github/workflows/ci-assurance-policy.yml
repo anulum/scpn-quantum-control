@@ -328,3 +328,35 @@ jobs:
           --data-file=/tmp/.coverage.competitive-baseline-watch-quality
           --precision=2 --show-missing --fail-under=100
           --include=*/competitive_baseline_watch.py,*/benchmarks/reproducible_comparison.py,*/benchmarks/kuramoto_competitive_types.py,*/benchmarks/kuramoto_competitive_benchmark.py,*/benchmarks/kuramoto_external_competitors.py
+  semantic-record-contract-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/semantic_record.py
+          tests/test_semantic_record.py
+          tools/contract_custody_corpus.py
+      - run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/semantic_record.py
+          tests/test_semantic_record.py
+          tools/contract_custody_corpus.py
+          tests/test_versioned_contract_custody.py
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/.coverage.semantic-record-contract-quality --branch
+          -m pytest -q tests/test_semantic_record.py
+          tests/test_versioned_contract_custody.py
+          tests/test_contract_custody_corpus.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/.coverage.semantic-record-contract-quality
+          --precision=2 --show-missing --fail-under=100
+          --include=*/semantic_record.py

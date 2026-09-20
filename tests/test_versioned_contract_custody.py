@@ -11,11 +11,12 @@ This module checks the current corpus, not complete seven-family conformance.
 Family labels index requirements; they do not prove actual producer coverage.
 
 The corpus separates reader execution, source facts and design inputs.
-Executed cases invoke a real production reader with real inputs. Design
-vectors carry concrete proposed
-bytes for the semantic companion, which is specified but unbuilt; those are
-checked for byte and digest stability and are never executed, because there is
-nothing to execute them against and a constructor is not a reader.
+Executed cases invoke a real production reader with real inputs. The semantic
+companion bytes were design vectors while their reader was unbuilt; that reader
+now exists as :mod:`scpn_quantum_control.semantic_record`, so the corpus
+reclassifies them as executed and ``tests/test_semantic_record.py`` is the
+dedicated owner that actually invokes them. This module keeps checking their
+byte and digest stability, which is what it was always for.
 """
 
 from __future__ import annotations
@@ -70,6 +71,23 @@ ISOLATED_REFUSAL_FIELDS: Final = {
     "effective_shots_contradict_source_refused": ("settings", "effective", "shots"),
 }
 """Independent oracle for each single-fault proposed input's exact changed field."""
+
+
+def _companion_cases() -> list[dict[str, Any]]:
+    """Return every manifest row whose reader is the semantic companion.
+
+    Returns
+    -------
+    list[dict[str, Any]]
+        Rows selected by their named reader, not by a derived status.
+
+    """
+    manifest = _manifest()
+    return [
+        row
+        for row in manifest["cases"]
+        if row["reader"] and row["reader"].startswith(manifest["companion_module"])
+    ]
 
 
 class TestFidelityDesignBoundaries:
@@ -255,30 +273,35 @@ class TestCorpusIntegrity:
 
             assert scp.digest_stable_core_payload(payload) == row["fixture_sha256"]
 
-    def test_design_vectors_are_declared_unexecuted(self) -> None:
-        """The manifest must state plainly that proposed inputs are not evidence."""
+    def test_no_case_remains_an_unexecuted_design_vector(self) -> None:
+        """Every named reader now exists, so nothing may still be merely proposed."""
         manifest = _manifest()
-        vectors = [row for row in manifest["cases"] if row["status"] == "design_vector"]
 
         assert manifest["design_vectors_are_unexecuted"] is True
-        assert vectors
-        for row in vectors:
-            assert row["reader"].startswith(manifest["companion_module"])
+        assert manifest["unexecuted_design_vectors"] == 0
+        assert not [row for row in manifest["cases"] if row["status"] == "design_vector"]
 
-    def test_executed_cases_never_name_the_absent_reader(self) -> None:
-        """An executed claim must rest on a reader that exists."""
+    def test_every_named_reader_resolves(self) -> None:
+        """An executed claim must rest on a reader that actually exists.
+
+        Readers are module-qualified down to a function or a bound method, so
+        resolution walks from the longest importable prefix rather than
+        assuming the last dot separates a module from its attribute.
+        """
+        from tools.contract_custody_corpus import reader_exists
+
         manifest = _manifest()
         executed = [row for row in manifest["cases"] if row["status"] == "executed"]
 
         assert executed
         for row in executed:
-            assert not row["reader"].startswith(manifest["companion_module"])
+            assert reader_exists(row["reader"]), row["case_id"]
 
     def test_the_corpus_carries_a_positive_base(self) -> None:
         """A refusal matrix alone can be satisfied by refusing everything."""
-        vectors = [row for row in _manifest()["cases"] if row["status"] == "design_vector"]
+        companion = _companion_cases()
 
-        assert any(row["expectation"] == "accept" for row in vectors)
+        assert any(row["expectation"] == "accept" for row in companion)
 
     def test_every_mapped_family_appears(self) -> None:
         """Check catalogue labels only, not actual producer conformance."""
@@ -659,7 +682,7 @@ class TestBenchmarkProblemSourceEvidence:
 
 
 class TestOfflineResultSourceEvidence:
-    """Keep real result capture distinct from unexecuted non-count qualification."""
+    """Keep real result capture distinct from the non-count qualification boundary."""
 
     def test_frozen_hal_and_result_sources_match_public_producers(self) -> None:
         """Compare complete fixtures and their executed-reader classification."""
@@ -680,12 +703,12 @@ class TestOfflineResultSourceEvidence:
 
         case_id = "count_only_hal_cannot_qualify_statevector"
         assert _fixture(case_id) == non_count_qualification_proposal()
-        assert _case(case_id)["status"] == "design_vector"
+        assert _case(case_id)["status"] == "executed"
         assert _case(case_id)["expectation"] == "reject"
 
 
 class TestDesignVectors:
-    """Concrete proposed bytes, frozen and deliberately not executed."""
+    """Frozen companion bytes, now executed by the dedicated semantic-record owner."""
 
     def test_missing_companion_scenario_preserves_raw_but_declines_qualification(self) -> None:
         """Execute raw inspection only; verify the separate proposed unavailable outcome."""
@@ -704,7 +727,7 @@ class TestDesignVectors:
             "reason": "missing_companion",
             "persist_qualified_record": False,
         }
-        assert _case("missing_companion_qualification_unavailable")["status"] == "design_vector"
+        assert _case("missing_companion_qualification_unavailable")["status"] == "executed"
 
     def test_capture_scenario_specifies_independent_raw_and_companion_snapshots(self) -> None:
         """Check mutation fixture consistency, not an unimplemented capture owner."""
@@ -728,13 +751,17 @@ class TestDesignVectors:
         assert expected["raw_record"] == _fixture("raw_round_trip_preserves_digest")
         assert expected["companion"] == _fixture("companion_positive_base")
         assert expected["companion"]["record_reference"]["digest"] == expected["raw_digest"]
-        assert _case("companion_capture_survives_source_mutation")["status"] == "design_vector"
+        assert _case("companion_capture_survives_source_mutation")["status"] == "executed"
 
-    def test_the_proposed_reader_does_not_exist(self) -> None:
-        """These vectors are unexecuted for a checkable reason."""
+    def test_the_companion_reader_exists_and_owns_these_vectors(self) -> None:
+        """The reader these vectors waited for now exists and carries the contract."""
         manifest = _manifest()
 
-        assert importlib.util.find_spec(manifest["companion_module"]) is None
+        assert importlib.util.find_spec(manifest["companion_module"]) is not None
+        module = importlib.import_module(manifest["companion_module"])
+
+        assert manifest["companion_schema"] == module.SEMANTIC_COMPANION_SCHEMA
+        assert callable(module.validate_semantic_binding)
 
     def test_no_existing_module_already_provides_the_companion_symbols(self) -> None:
         """Nothing may satisfy the companion contract under another name."""
@@ -788,11 +815,7 @@ class TestDesignVectors:
             "count_only_hal_cannot_qualify_statevector",
             "unsupported_frequency_conversion_refused",
         }
-        refusals = {
-            row["case_id"]
-            for row in _manifest()["cases"]
-            if row["status"] == "design_vector" and row["expectation"] == "reject"
-        }
+        refusals = {row["case_id"] for row in _companion_cases() if row["expectation"] == "reject"}
         assert refusals == (
             set(ISOLATED_REFUSAL_FIELDS) | source_paired | compound | qualification_boundary
         )

@@ -1,5 +1,5 @@
 {
-  "base_manifest_sha256": "a4168e1496b3795c7a4792586e2827745b679234366770c21c2fab4dda611670",
+  "base_manifest_sha256": "c91c60460ee6db6235c0eb9b80235a23c6e5132c0f0d258f447eb607c92b0d2f",
   "cases": [
     {
       "case_id": "raw_round_trip_preserves_digest",
@@ -131,7 +131,7 @@
       "producer": "scientific_semantics.v1",
       "rationale": "The positive base, so a matrix of refusals cannot be satisfied by refusing everything.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
-      "status": "design_vector"
+      "status": "executed"
     },
     {
       "case_id": "companion_unknown_major_refused",
@@ -142,7 +142,7 @@
       "producer": "scientific_semantics.v1",
       "rationale": "An unreadable companion major must refuse; this is the companion version, distinct from the raw model version.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
-      "status": "design_vector"
+      "status": "executed"
     },
     {
       "case_id": "companion_bound_to_wrong_raw_digest_refused",
@@ -153,7 +153,7 @@
       "producer": "scientific_semantics.v1",
       "rationale": "A companion pointing at bytes it does not describe must refuse before qualification or persistence.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
-      "status": "design_vector"
+      "status": "executed"
     },
     {
       "case_id": "companion_bound_to_wrong_record_kind_refused",
@@ -164,7 +164,7 @@
       "producer": "scientific_semantics.v1",
       "rationale": "A kind that contradicts the referenced record must refuse.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
-      "status": "design_vector"
+      "status": "executed"
     },
     {
       "case_id": "frequency_unit_changed_without_conversion_refused",
@@ -175,7 +175,7 @@
       "producer": "scientific_semantics.v1",
       "rationale": "Hz against rad/s differ by two pi; no existing contract carries a unit for this family, so nothing today catches a silent re-uniting.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
-      "status": "design_vector"
+      "status": "executed"
     },
     {
       "case_id": "declared_shape_and_dtype_cannot_hold_data_refused",
@@ -186,7 +186,7 @@
       "producer": "scientific_semantics.v1",
       "rationale": "A coupling matrix declared as a short integer vector must refuse rather than be coerced.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
-      "status": "design_vector"
+      "status": "executed"
     },
     {
       "case_id": "parameter_order_and_tangent_change_refused",
@@ -197,7 +197,7 @@
       "producer": "scientific_semantics.v1",
       "rationale": "Reordering parameters or swapping the tangent convention silently relabels a gradient component.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
-      "status": "design_vector"
+      "status": "executed"
     },
     {
       "case_id": "effective_setting_contradicts_request_refused",
@@ -208,7 +208,7 @@
       "producer": "scientific_semantics.v1",
       "rationale": "A hundred requested against two hundred effective, with no recorded accepted transformation, is an unexplained substitution.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
-      "status": "design_vector"
+      "status": "executed"
     },
     {
       "case_id": "null_request_with_recorded_default_accepted",
@@ -219,7 +219,7 @@
       "producer": "scientific_semantics.v1",
       "rationale": "A null request beside a defaulted effective value and its origin is the provenance shape that must survive the companion.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
-      "status": "design_vector"
+      "status": "executed"
     },
     {
       "case_id": "non_count_modality_declines_bit_mapping",
@@ -230,7 +230,7 @@
       "producer": "scientific_semantics.v1",
       "rationale": "A non-count modality states that bit mapping is not applicable rather than padding counts.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
-      "status": "design_vector"
+      "status": "executed"
     },
     {
       "case_id": "cross_bound_producer_identity_refused",
@@ -241,7 +241,7 @@
       "producer": "scientific_semantics.v1",
       "rationale": "Binding a core record to the same-named benchmark type must refuse; identity is module-qualified, never a bare class name.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
-      "status": "design_vector"
+      "status": "executed"
     },
     {
       "case_id": "companion_bound_to_wrong_raw_schema_refused",
@@ -252,7 +252,7 @@
       "producer": "scientific_semantics.v1",
       "rationale": "The referenced raw schema alone disagrees; digest and kind stay unchanged.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
-      "status": "design_vector"
+      "status": "executed"
     },
     {
       "case_id": "coupling_shape_mismatch_refused",
@@ -263,7 +263,7 @@
       "producer": "scientific_semantics.v1",
       "rationale": "Only matrix shape changes; a correct dtype cannot hide shape validation.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
-      "status": "design_vector"
+      "status": "executed"
     },
     {
       "case_id": "coupling_dtype_mismatch_refused",
@@ -274,7 +274,7 @@
       "producer": "scientific_semantics.v1",
       "rationale": "Only dtype changes; source fractional couplings cannot be preserved as int32.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
-      "status": "design_vector"
+      "status": "executed"
     },
     {
       "case_id": "parameter_order_mismatch_refused",
@@ -285,7 +285,7 @@
       "producer": "scientific_semantics.v1",
       "rationale": "Only parameter order changes; the unchanged tangent cannot mask mislabelling.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
-      "status": "design_vector"
+      "status": "executed"
     },
     {
       "case_id": "tangent_convention_mismatch_refused",
@@ -296,7 +296,7 @@
       "producer": "scientific_semantics.v1",
       "rationale": "Only tangent convention changes; unchanged parameter order cannot mask it.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
-      "status": "design_vector"
+      "status": "executed"
     },
     {
       "case_id": "trainable_mask_length_mismatch_refused",
@@ -307,7 +307,7 @@
       "producer": "scientific_semantics.v1",
       "rationale": "Only mask length changes; every declared parameter still needs a mask entry.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
-      "status": "design_vector"
+      "status": "executed"
     },
     {
       "case_id": "effective_shots_contradict_source_refused",
@@ -318,7 +318,7 @@
       "producer": "scientific_semantics.v1",
       "rationale": "Only effective shots change; the retained source policy contradicts that value.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
-      "status": "design_vector"
+      "status": "executed"
     },
     {
       "case_id": "explicit_shot_request_preserves_source_plan",
@@ -329,7 +329,7 @@
       "producer": "scientific_semantics.v1",
       "rationale": "The actual100-shot request retains the source100-shot plan and origins; this is a proposed binding, not observed execution.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
-      "status": "design_vector"
+      "status": "executed"
     },
     {
       "case_id": "missing_companion_qualification_unavailable",
@@ -340,7 +340,7 @@
       "producer": "scientific_semantics.v1",
       "rationale": "Proposed qualification must remain unavailable without a companion, while the existing raw record remains readable; no qualified persistence.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
-      "status": "design_vector"
+      "status": "executed"
     },
     {
       "case_id": "companion_capture_survives_source_mutation",
@@ -351,7 +351,7 @@
       "producer": "scientific_semantics.v1",
       "rationale": "Proposed captured raw and companion snapshots/digests survive named source mutations; this scenario is not executed capture conformance.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
-      "status": "design_vector"
+      "status": "executed"
     },
     {
       "case_id": "registry_dispatch_preserves_declared_support",
@@ -450,7 +450,7 @@
       "producer": "scientific_semantics.v1",
       "rationale": "Proposed refusal preserves actual count result; profile capability cannot invent missing amplitudes.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
-      "status": "design_vector"
+      "status": "executed"
     },
     {
       "case_id": "fidelity_components_preserve_native_uncertainty",
@@ -461,7 +461,7 @@
       "producer": "scientific_semantics.v1",
       "rationale": "Proposed explicit component custody or refusal boundary; native source evidence does not execute a companion, conversion or aggregation.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
-      "status": "design_vector"
+      "status": "executed"
     },
     {
       "case_id": "unjustified_error_aggregation_refused",
@@ -472,7 +472,7 @@
       "producer": "scientific_semantics.v1",
       "rationale": "Proposed explicit component custody or refusal boundary; native source evidence does not execute a companion, conversion or aggregation.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
-      "status": "design_vector"
+      "status": "executed"
     },
     {
       "case_id": "unsupported_frequency_conversion_refused",
@@ -483,7 +483,7 @@
       "producer": "scientific_semantics.v1",
       "rationale": "Proposed explicit component custody or refusal boundary; native source evidence does not execute a companion, conversion or aggregation.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
-      "status": "design_vector"
+      "status": "executed"
     },
     {
       "case_id": "frequency_unit_missing_refused",
@@ -494,7 +494,7 @@
       "producer": "scientific_semantics.v1",
       "rationale": "Proposed explicit component custody or refusal boundary; native source evidence does not execute a companion, conversion or aggregation.",
       "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
-      "status": "design_vector"
+      "status": "executed"
     },
     {
       "case_id": "studio_compile_default_preserves_plan",
@@ -535,5 +535,6 @@
   "design_vectors_are_unexecuted": true,
   "model_schema_version": "stable_core.experiment_model.v2",
   "profile": "with_studio",
-  "schema": "contract_custody_corpus.v1"
+  "schema": "contract_custody_corpus.v1",
+  "unexecuted_design_vectors": 0
 }

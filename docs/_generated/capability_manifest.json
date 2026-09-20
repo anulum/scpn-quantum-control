@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 841,
     "public_documentation_pages": 376,
-    "python_model_classes": 1385,
-    "python_model_source_modules": 704,
+    "python_model_classes": 1397,
+    "python_model_source_modules": 705,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1390
+    "test_files": 1391
   },
   "documentation": {
     "examples": [
@@ -869,6 +869,10 @@
         "path": "src/scpn_quantum_control/entropy/quantum_source.py"
       },
       {
+        "name": "AggregationDecision",
+        "path": "src/scpn_quantum_control/semantic_record.py"
+      },
+      {
         "name": "AggregatorProviderOptionalDependencyRow",
         "path": "src/scpn_quantum_control/hardware/provider_smoke.py"
       },
@@ -1207,6 +1211,10 @@
       {
         "name": "CampaignHarnessRow",
         "path": "src/scpn_quantum_control/campaign_harness_product.py"
+      },
+      {
+        "name": "CapturedSemanticRecord",
+        "path": "src/scpn_quantum_control/semantic_record.py"
       },
       {
         "name": "CatalystCompilerWorkflowComparison",
@@ -1731,6 +1739,14 @@
       {
         "name": "DecisiveRunConfig",
         "path": "src/scpn_quantum_control/benchmarks/decisive_run_harness.py"
+      },
+      {
+        "name": "DeclaredParameterOrder",
+        "path": "src/scpn_quantum_control/semantic_record.py"
+      },
+      {
+        "name": "DeclaredUnit",
+        "path": "src/scpn_quantum_control/semantic_record.py"
       },
       {
         "name": "DecodedXYCompileInput",
@@ -3393,6 +3409,10 @@
         "path": "src/scpn_quantum_control/error_mitigation_product.py"
       },
       {
+        "name": "MeasuredField",
+        "path": "src/scpn_quantum_control/semantic_record.py"
+      },
+      {
         "name": "MemoryCgroup",
         "path": "src/scpn_quantum_control/_cgroup_paths.py"
       },
@@ -3431,6 +3451,10 @@
       {
         "name": "MitigatorTaxonomyRow",
         "path": "src/scpn_quantum_control/error_mitigation_product.py"
+      },
+      {
+        "name": "ModalityQualification",
+        "path": "src/scpn_quantum_control/semantic_record.py"
       },
       {
         "name": "ModelFamily",
@@ -4653,6 +4677,10 @@
         "path": "src/scpn_quantum_control/quantum_sync_challenge_oracle_product.py"
       },
       {
+        "name": "ProducerObservation",
+        "path": "src/scpn_quantum_control/semantic_record.py"
+      },
+      {
         "name": "ProgramADAdjointResult",
         "path": "src/scpn_quantum_control/program_ad_adjoint.py"
       },
@@ -5593,6 +5621,10 @@
         "path": "src/scpn_quantum_control/unsuitable_scenario_registry.py"
       },
       {
+        "name": "ScientificSemantics",
+        "path": "src/scpn_quantum_control/semantic_record.py"
+      },
+      {
         "name": "ScoreFunctionGradientResult",
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
@@ -5619,6 +5651,18 @@
       {
         "name": "SelfConsistencyResult",
         "path": "src/scpn_quantum_control/analysis/hamiltonian_self_consistency.py"
+      },
+      {
+        "name": "SemanticBinding",
+        "path": "src/scpn_quantum_control/semantic_record.py"
+      },
+      {
+        "name": "SemanticRecordError",
+        "path": "src/scpn_quantum_control/semantic_record.py"
+      },
+      {
+        "name": "SemanticRefusal",
+        "path": "src/scpn_quantum_control/semantic_record.py"
       },
       {
         "name": "SensingGainRow",
@@ -6087,6 +6131,10 @@
       {
         "name": "TransformAlgebraSupportMatrixRow",
         "path": "src/scpn_quantum_control/differentiable_transform_support_matrix.py"
+      },
+      {
+        "name": "TransformDecision",
+        "path": "src/scpn_quantum_control/semantic_record.py"
       },
       {
         "name": "TransformSupportMatrixArtifactValidation",
@@ -6947,6 +6995,7 @@
       "src/scpn_quantum_control/quantum_sync_challenge_oracle_product.py",
       "src/scpn_quantum_control/resource_budget_gate.py",
       "src/scpn_quantum_control/scorecard_acceptance_engine.py",
+      "src/scpn_quantum_control/semantic_record.py",
       "src/scpn_quantum_control/sensing/nv_magnetometry_20T.py",
       "src/scpn_quantum_control/ssgf/quantum_costs.py",
       "src/scpn_quantum_control/ssgf/quantum_gradient.py",
@@ -9368,6 +9417,7 @@
       "tests/test_scorecard_acceptance_engine.py",
       "tests/test_scorecard_acceptance_engine_quality_gate.py",
       "tests/test_scpn_upde_edge.py",
+      "tests/test_semantic_record.py",
       "tests/test_sensing_branches.py",
       "tests/test_sensing_readiness_contracts.py",
       "tests/test_serialization_surface_audit.py",

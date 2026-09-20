@@ -106,6 +106,65 @@ policy, public-surface map, and bounded claim text.
 duplicate identifiers, invalid kinds, missing symbols, count drift, a missing
 default experiment contract, and any policy that permits silent field drops.
 
+## Scientific-semantics companion
+
+`stable_core.experiment_model.v2` is unchanged by this companion. A record
+keeps its exact bytes, its digest and its existing readers; the companion is a
+separate `scientific_semantics.v1` document that references the raw record by
+digest and adds the metadata the raw envelope never carried — units, dtypes and
+shapes per field, parameter order and tangent convention, requested against
+effective settings with their provenance, fidelity components, and an explicit
+claim boundary.
+
+A record without a companion stays fully readable. What a missing or refused
+companion withholds is *qualification*, never raw custody, and a refusal never
+rewrites, coerces or substitutes a value.
+
+`validate_semantic_binding(companion, raw_record)` returns a
+`SemanticBinding` carrying `raw_readable`, `raw_digest`, the qualified
+`ScientificSemantics` or `None`, and every `SemanticRefusal` that fired. Each
+refusal names its rule, its field path and the measured evidence that
+contradicted the declaration. Qualification is fail-closed: any refusal
+withholds qualification and forbids persisting a qualified record.
+
+### What the reader measures rather than assumes
+
+Producer identity, dtype and shape are not read from a table. The reader
+resolves the adapter the companion declares, invokes it on the deserialised
+record, and measures what it actually produced. A companion claiming `int32`
+for a `float64` matrix, a `[2]` vector for a `(2, 2)` matrix, or a same-named
+class from a different module is refused against that measurement. Identity is
+module-qualified and is never matched by bare class name.
+
+Physical units are the one thing no existing contract records, so they come
+from `DECLARED_FIELD_UNITS`, where every entry carries the in-repo reference
+that declares it. A field whose unit is not declared anywhere is refused rather
+than accepted on the companion's own label.
+
+`DECLARED_PARAMETER_ORDER` is marked `basis="contract_choice"` because no owner
+in this repository declares a canonical parameter ordering. It is a fixed
+contract, not a measurement, and it says so; changing it is a contract change.
+
+### Operations that refuse by default
+
+| Entry point | Refuses when |
+|---|---|
+| `validate_semantic_binding()` | any declared field, identity, convention or setting contradicts measured or declared evidence |
+| `apply_semantic_transform()` | the request names no accepted transform in `supported_transform_composition` |
+| `aggregate_fidelity_components()` | an aggregation is requested without a recorded justification |
+| `qualify_native_modality()` | the native result does not carry the requested quantity |
+
+An empty `supported_transform_composition` means no transform support exists,
+not that every transform is free. A standard error and a confidence radius
+derived from the same covariance are two descriptions of one uncertainty, so
+summing them is refused and the components are preserved separately. A backend
+profile advertising `supports_statevector` is a declaration about the backend,
+not evidence about a result that came back with counts only; amplitudes are
+never inferred or padded.
+
+`capture_semantic_record()` deep-copies both documents and fixes their digests
+at capture time, so later mutation of either source cannot reach the snapshot.
+
 ## Bounded product status
 
 Shipped: model and product schema version policy · public documentation and API
@@ -114,6 +173,9 @@ registry drift detection · public stability, hermetic reproduction, and
 scorecard acceptance pointers.
 
 Open: broad challenge and scorecard adapter migration onto stable-core types ·
-full historical field compatibility matrix beyond envelope v2.
+full historical field compatibility matrix beyond envelope v2 · companion
+binding across the remaining producer families beyond the frozen custody
+corpus · a declared canonical parameter order owned by each producer rather
+than fixed as a contract choice in the semantics owner.
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)

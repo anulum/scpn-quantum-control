@@ -39,6 +39,7 @@ nor a profile capability declaration proves a planned action actually ran.
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import sys
 from collections.abc import Mapping
@@ -777,6 +778,60 @@ def _fidelity_design_cases() -> tuple[CustodyCase, ...]:
     )
 
 
+def reader_exists(reader: str | None) -> bool:
+    """Return whether a named reader resolves in this checkout.
+
+    Parameters
+    ----------
+    reader
+        Module-qualified reader, or ``None`` for a source fact.
+
+    Returns
+    -------
+    bool
+        ``True`` when the module is importable and carries the attribute.
+
+    """
+    if reader is None:
+        return False
+    parts = reader.split(".")
+    for split in range(len(parts) - 1, 0, -1):
+        try:
+            resolved: object = importlib.import_module(".".join(parts[:split]))
+        except ImportError:
+            continue
+        for attribute in parts[split:]:
+            if not hasattr(resolved, attribute):
+                return False
+            resolved = getattr(resolved, attribute)
+        return True
+    return False
+
+
+def resolved_status(case: CustodyCase) -> str:
+    """Return the case status the current checkout actually supports.
+
+    A design vector is a case whose reader does not exist yet. Once that
+    reader lands, the case stops being a design vector, so this is derived
+    from the live checkout rather than frozen in the catalogue. Nothing
+    downgrades: an executed case never becomes a design vector again.
+
+    Parameters
+    ----------
+    case
+        The case to classify.
+
+    Returns
+    -------
+    str
+        :data:`EXECUTED`, :data:`DESIGN_VECTOR` or :data:`SOURCE_FACT`.
+
+    """
+    if case.status == DESIGN_VECTOR and reader_exists(case.reader):
+        return EXECUTED
+    return case.status
+
+
 def case_manifest_entry(case: CustodyCase) -> dict[str, Any]:
     """Return the manifest row for one case.
 
@@ -797,7 +852,7 @@ def case_manifest_entry(case: CustodyCase) -> dict[str, Any]:
         "producer": case.producer,
         "reader": case.reader,
         "expectation": case.expectation,
-        "status": case.status,
+        "status": resolved_status(case),
         "rationale": case.rationale,
     }
     if case.payload is None:
@@ -823,13 +878,17 @@ def build_manifest(cases: tuple[CustodyCase, ...]) -> dict[str, Any]:
         The manifest, cases in the given order.
 
     """
+    entries = [case_manifest_entry(case) for case in cases]
     return {
         "schema": CORPUS_SCHEMA,
         "companion_schema": vectors.COMPANION_SCHEMA,
         "companion_module": COMPANION_MODULE,
         "model_schema_version": scp.STABLE_CORE_MODEL_SCHEMA_VERSION,
         "design_vectors_are_unexecuted": True,
-        "cases": [case_manifest_entry(case) for case in cases],
+        "cases": entries,
+        "unexecuted_design_vectors": sum(
+            1 for entry in entries if entry["status"] == DESIGN_VECTOR
+        ),
     }
 
 
