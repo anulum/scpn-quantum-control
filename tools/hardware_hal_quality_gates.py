@@ -74,6 +74,10 @@ PROVIDER_CAPABILITY_SPECIALIZED_ADAPTERS_TEST = (
     "tests/test_provider_capability_specialized_adapters.py"
 )
 """Offline specialized-provider metadata, fallback, and ownership tests."""
+PROVIDER_CERTIFICATION_SOURCE = "src/scpn_quantum_control/hardware/provider_certification.py"
+"""Fail-closed certification of the publicly claimed provider matrix."""
+PROVIDER_CERTIFICATION_TEST = "tests/test_hardware_hal_provider_certification.py"
+"""Live-matrix certification plus refusal tests for every criterion."""
 HARDWARE_HAL_COVERAGE_COHORT = [
     "tests/test_hardware_hal.py",
     "tests/test_hardware_hal_contract_guards.py",
@@ -91,6 +95,7 @@ HARDWARE_HAL_COVERAGE_COHORT = [
     PROVIDER_CAPABILITY_CLOUD_ADAPTERS_TEST,
     PROVIDER_CAPABILITY_GATE_ADAPTERS_TEST,
     PROVIDER_CAPABILITY_SPECIALIZED_ADAPTERS_TEST,
+    PROVIDER_CERTIFICATION_TEST,
 ]
 """Offline and fake-adapter tests that own exact HAL coverage."""
 HARDWARE_HAL_TYPING_RATCHET = [
@@ -117,6 +122,8 @@ HARDWARE_HAL_TYPING_RATCHET = [
     PROVIDER_CAPABILITY_GATE_ADAPTERS_TEST,
     PROVIDER_CAPABILITY_SPECIALIZED_ADAPTERS_SOURCE,
     PROVIDER_CAPABILITY_SPECIALIZED_ADAPTERS_TEST,
+    PROVIDER_CERTIFICATION_SOURCE,
+    PROVIDER_CERTIFICATION_TEST,
     "tools/hardware_hal_quality_gates.py",
     "tests/test_hardware_hal_quality_gate.py",
 ]
@@ -134,6 +141,7 @@ HARDWARE_HAL_DOCSTRING_RATCHET = [
     PROVIDER_CAPABILITY_CLOUD_ADAPTERS_SOURCE,
     PROVIDER_CAPABILITY_GATE_ADAPTERS_SOURCE,
     PROVIDER_CAPABILITY_SPECIALIZED_ADAPTERS_SOURCE,
+    PROVIDER_CERTIFICATION_SOURCE,
     "tests/test_hardware_hal.py",
     ASYNC_HARDWARE_RUNNER_TEST,
     HARDWARE_CIRCUIT_CUTTING_TEST,
@@ -146,6 +154,7 @@ HARDWARE_HAL_DOCSTRING_RATCHET = [
     PROVIDER_CAPABILITY_CLOUD_ADAPTERS_TEST,
     PROVIDER_CAPABILITY_GATE_ADAPTERS_TEST,
     PROVIDER_CAPABILITY_SPECIALIZED_ADAPTERS_TEST,
+    PROVIDER_CERTIFICATION_TEST,
     "tools/hardware_hal_quality_gates.py",
     "tests/test_hardware_hal_quality_gate.py",
 ]
@@ -160,7 +169,8 @@ HARDWARE_HAL_COVERAGE_INCLUDE = (
     "*/hardware/provider_route_configuration.py,"
     "*/hardware/provider_capability_cloud_adapters.py,"
     "*/hardware/provider_capability_gate_adapters.py,"
-    "*/hardware/provider_capability_specialized_adapters.py"
+    "*/hardware/provider_capability_specialized_adapters.py,"
+    "*/hardware/provider_certification.py"
 )
 """Provider-neutral, route-matrix, and asynchronous sources under exact coverage."""
 
@@ -262,6 +272,8 @@ __all__ = [
     "PROVIDER_CAPABILITY_GATE_ADAPTERS_TEST",
     "PROVIDER_CAPABILITY_SPECIALIZED_ADAPTERS_SOURCE",
     "PROVIDER_CAPABILITY_SPECIALIZED_ADAPTERS_TEST",
+    "PROVIDER_CERTIFICATION_SOURCE",
+    "PROVIDER_CERTIFICATION_TEST",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]

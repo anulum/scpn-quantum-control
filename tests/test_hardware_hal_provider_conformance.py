@@ -24,6 +24,7 @@ from scpn_quantum_control.hardware.aggregators import (
 )
 from scpn_quantum_control.hardware.backends import list_hal_backend_descriptors
 from scpn_quantum_control.hardware.hal import built_in_backend_profiles
+from scpn_quantum_control.hardware.provider_certification import focused_adapter_test_path
 from scpn_quantum_control.hardware.provider_smoke import (
     aggregator_provider_optional_dependency_matrix,
     isolated_provider_smoke_lanes,
@@ -311,30 +312,21 @@ def test_direct_and_local_provider_routes_do_not_fall_back_to_generic_hal_module
 
 
 def test_every_dedicated_hal_adapter_has_focused_adapter_tests() -> None:
-    """Keep focused adapter suites for every dedicated HAL integration family."""
-    tests_dir = Path(__file__).resolve().parent
-    available = {path.name for path in tests_dir.glob("test_hardware_hal*_adapters.py")}
+    """Require a focused suite for every declared adapter, not a frozen subset.
 
-    expected = {
-        "test_hardware_hal_azure_adapters.py",
-        "test_hardware_hal_braket_adapters.py",
-        "test_hardware_hal_cirq_adapters.py",
-        "test_hardware_hal_dwave_adapters.py",
-        "test_hardware_hal_ionq_adapters.py",
-        "test_hardware_hal_iqm_adapters.py",
-        "test_hardware_hal_oqc_adapters.py",
-        "test_hardware_hal_pasqal_adapters.py",
-        "test_hardware_hal_pennylane_adapters.py",
-        "test_hardware_hal_qbraid_adapters.py",
-        "test_hardware_hal_strangeworks_adapters.py",
-        "test_hardware_hal_qiskit_adapters.py",
-        "test_hardware_hal_quandela_adapters.py",
-        "test_hardware_hal_quantinuum_adapters.py",
-        "test_hardware_hal_quera_bloqade_adapters.py",
-        "test_hardware_hal_rigetti_adapters.py",
+    The required set is derived from the live descriptors, so a newly declared
+    adapter family is refused until its suite exists.
+    """
+    source_root = Path(__file__).resolve().parents[1]
+
+    required = {
+        focused_adapter_test_path(descriptor.adapter_module)
+        for descriptor in list_hal_backend_descriptors()
     }
 
-    assert expected <= available
+    assert len(required) > 1
+    missing = sorted(relative for relative in required if not (source_root / relative).is_file())
+    assert missing == []
 
 
 def test_optional_dependency_matrix_covers_all_non_builtin_provider_modules() -> None:

@@ -361,6 +361,41 @@ matrix. It returns the selected row, executable HAL profile, and backend
 descriptor for a requested aggregator/provider/IR tuple, and raises
 `LookupError` when no row exists or the requested IR format is unsupported.
 
+### Provider certification gate
+
+A backend appears in the claimed table above only after it passes the
+certification gate. The criteria are derived from the live declared matrix, so
+a newly declared backend is refused until its evidence exists rather than
+inheriting the certification of the backends already listed.
+
+| Criterion | Evidence required |
+| --- | --- |
+| `hal_profile_resolution` | The descriptor resolves to a HAL profile that agrees on provider and SDK package. |
+| `adapter_module_import` | The declared adapter module imports without any provider SDK installed. |
+| `broker_route_consistency` | Every declared broker route naming the backend resolves back to it through `resolve_aggregator_provider_route()` for each declared IR format. Not applicable to a direct HAL target no broker row names. |
+| `capability_catalogue_row` | The backend's routes build a no-submit `build_provider_route_catalogue()` inventory whose support stays unknown until evidence is supplied. |
+| `optional_dependency_smoke` | An offline `provider_optional_dependency_matrix()` row probes SDK availability. Not applicable to the in-repository backend that declares no provider SDK. |
+| `public_documentation` | The backend identifier is claimed in the table above. |
+| `focused_adapter_tests` | A focused adapter suite exists at the path derived from the adapter module: `tests/test_hardware_hal_<family>_adapters.py`, or `tests/test_hardware_hal.py` for the generic adapter. |
+| `approval_gated_submission` | Approval, submission, and simulation flags agree with the profile's cloud status. |
+
+Run the gate against a checkout:
+
+```bash
+scpn-provider-certification --source-root .
+scpn-provider-certification --source-root . --format json
+```
+
+The command is metadata-only: it reads no credentials, opens no provider
+session, contacts no network target and submits no job. It exits `0` when every
+declared backend is certified, `1` when a backend is refused or the table
+claims a backend the code does not declare, and `2` when the evidence itself
+cannot be read. An unreadable table is an error, never a pass.
+
+Certification covers the repository evidence behind a public claim. It does not
+certify provider availability, target calibration, hardware readiness, or any
+submission authority; those remain separate approval-gated decisions.
+
 ### HAL API
 
 ```python

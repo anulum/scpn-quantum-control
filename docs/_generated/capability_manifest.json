@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 841,
     "public_documentation_pages": 376,
-    "python_model_classes": 1379,
-    "python_model_source_modules": 702,
+    "python_model_classes": 1383,
+    "python_model_source_modules": 703,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1387
+    "test_files": 1388
   },
   "documentation": {
     "examples": [
@@ -687,7 +687,7 @@
       {
         "package": "hardware",
         "path": "src/scpn_quantum_control/hardware",
-        "python_modules": 77
+        "python_modules": 78
       },
       {
         "package": "identity",
@@ -1215,6 +1215,10 @@
       {
         "name": "CertificateVerifyDecision",
         "path": "src/scpn_quantum_control/polyglot_parity_certificate.py"
+      },
+      {
+        "name": "CertificationCriterion",
+        "path": "src/scpn_quantum_control/hardware/provider_certification.py"
       },
       {
         "name": "ChainRegion",
@@ -4557,6 +4561,10 @@
         "path": "src/scpn_quantum_control/phase/phase_vqe.py"
       },
       {
+        "name": "PhaseVQEResult",
+        "path": "src/scpn_quantum_control/phase/phase_vqe.py"
+      },
+      {
         "name": "PhiResult",
         "path": "src/scpn_quantum_control/analysis/quantum_phi.py"
       },
@@ -4775,6 +4783,14 @@
       {
         "name": "ProviderCapabilitySnapshot",
         "path": "src/scpn_quantum_control/hardware/provider_capability_core.py"
+      },
+      {
+        "name": "ProviderCertificationRecord",
+        "path": "src/scpn_quantum_control/hardware/provider_certification.py"
+      },
+      {
+        "name": "ProviderCertificationReport",
+        "path": "src/scpn_quantum_control/hardware/provider_certification.py"
       },
       {
         "name": "ProviderExpectationSample",
@@ -6687,6 +6703,7 @@
       "src/scpn_quantum_control/hardware/provider_capability_gate_adapters.py",
       "src/scpn_quantum_control/hardware/provider_capability_normalization.py",
       "src/scpn_quantum_control/hardware/provider_capability_specialized_adapters.py",
+      "src/scpn_quantum_control/hardware/provider_certification.py",
       "src/scpn_quantum_control/hardware/provider_route_configuration.py",
       "src/scpn_quantum_control/hardware/provider_smoke.py",
       "src/scpn_quantum_control/hardware/pulse_feasibility.py",
@@ -8675,6 +8692,7 @@
       "tests/test_hardware_hal_oqc_adapters.py",
       "tests/test_hardware_hal_pasqal_adapters.py",
       "tests/test_hardware_hal_pennylane_adapters.py",
+      "tests/test_hardware_hal_provider_certification.py",
       "tests/test_hardware_hal_provider_conformance.py",
       "tests/test_hardware_hal_provider_id_contract.py",
       "tests/test_hardware_hal_qbraid_adapters.py",

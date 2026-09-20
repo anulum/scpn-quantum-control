@@ -226,7 +226,7 @@ is copied here.
   gate basis, shot/circuit limits, queue depth, availability state, simulator
   flag, provider id, and calibration timestamp without calling target
   submission APIs.
-- [ ] **Provider frontier watchlist and certification gate.** Maintain SCPN's
+- [x] **Provider frontier watchlist and certification gate.** Maintain SCPN's
   declared HAL/provider matrix as provider SDKs and broker catalogues evolve. A
   provider may be publicly claimed only when it has descriptor coverage, route
   resolution, optional dependency smoke coverage, no-submit capability snapshot
@@ -234,6 +234,18 @@ is copied here.
   applicable, and a passing provider-conformance gate. New direct adapters
   should be added only for providers not adequately covered by the existing
   direct, qBraid, Strangeworks, Braket, or Azure routes.
+  Gate implemented 2026-09-20: `hardware/provider_certification.py` and
+  `scpn-provider-certification` evaluate eight criteria per declared backend —
+  profile resolution, adapter import, broker route consistency, no-submit
+  capability inventory, optional dependency smoke, public documentation,
+  focused adapter tests, and approval-gated submission semantics. The required
+  evidence is derived from the live declared matrix, so a newly declared
+  backend or adapter family is refused until its own documentation and focused
+  suite exist, and a public claim without an implementation blocks the gate.
+  The frozen adapter-test allow-list in the conformance suite was replaced by
+  the derived requirement. Certification covers repository evidence for a
+  public claim only; provider availability, calibration, hardware readiness,
+  and submission authority remain separate approval-gated decisions.
 - [x] **Stable-core release/repro gate.** Use
   `scpn-bench stable-core-release-gate` before release notes, API changes, or
   public stable-core documentation changes. The bundle runs stable-core

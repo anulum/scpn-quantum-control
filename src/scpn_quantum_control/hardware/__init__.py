@@ -259,6 +259,16 @@ from .provider_capability_discovery import (
     snapshot_from_rigetti_qcs,
     snapshot_from_strangeworks_backend,
 )
+from .provider_certification import (
+    CERTIFICATION_CRITERIA,
+    CertificationCriterion,
+    ProviderCertificationRecord,
+    ProviderCertificationReport,
+    certify_provider_matrix,
+    documented_backend_ids,
+    focused_adapter_test_path,
+    resolve_source_root,
+)
 from .provider_smoke import (
     AggregatorProviderOptionalDependencyRow,
     ProviderOptionalDependencyRow,
@@ -348,8 +358,16 @@ __all__ = [
     "ProviderCapabilitySnapshot",
     "ProviderMetadataProbe",
     "AggregatorProviderOptionalDependencyRow",
+    "CERTIFICATION_CRITERIA",
+    "CertificationCriterion",
+    "ProviderCertificationRecord",
+    "ProviderCertificationReport",
     "ProviderOptionalDependencyRow",
     "assess_provider_capability_snapshot",
+    "certify_provider_matrix",
+    "documented_backend_ids",
+    "focused_adapter_test_path",
+    "resolve_source_root",
     "build_openpulse_control_readiness",
     "assess_platform_readiness",
     "aggregator_provider_optional_dependency_matrix",

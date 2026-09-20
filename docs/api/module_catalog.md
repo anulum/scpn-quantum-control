@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **702 modules** across **39 package families**
-- **3926 documented public module-level symbols**
+- **703 modules** across **39 package families**
+- **3935 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -3058,6 +3058,16 @@ No-submit metadata adapters for specialized quantum provider routes.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/provider_capability_specialized_adapters.py) · Public symbols: **4**
 
 **Functions:** `snapshot_from_dwave_solver()`, `snapshot_from_quera_bloqade()`, `snapshot_from_pasqal_target()`, `snapshot_from_quandela_processor()`
+
+### `scpn_quantum_control.hardware.provider_certification`
+
+Fail-closed certification of the publicly claimed HAL provider matrix.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/provider_certification.py) · Public symbols: **9**
+
+**Classes:** `CertificationCriterion`, `ProviderCertificationRecord`, `ProviderCertificationReport`
+
+**Functions:** `resolve_source_root()`, `documented_backend_ids()`, `focused_adapter_test_path()`, `certify_provider_matrix()`, `render_report_table()`, `main()`
 
 ### `scpn_quantum_control.hardware.provider_route_configuration`
 
