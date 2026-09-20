@@ -17,3 +17,6 @@ overrides:
   'postcss@<=8.5.22': '8.5.23'
   # Dependabot alerts #82-86; patched in undici 7.29.0.
   'undici@<7.29.0': '7.29.0'
+  # GHSA-rgw5-rvv9-x895, reached only through the typedoc docs generator;
+  # patched in brace-expansion 5.0.9.
+  'brace-expansion@<5.0.9': '5.0.9'

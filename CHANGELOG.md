@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Security
+
+- Override the transitive `brace-expansion` resolution in the Studio web
+  workspace to 5.0.9. GHSA-rgw5-rvv9-x895 is a denial of service through
+  unbounded intermediate arrays that bypasses the CVE-2026-14257 mitigation;
+  5.0.8 was reached through `typedoc` and `minimatch`.
+
 ### Added
 
 - `scpn-provider-certification` and
