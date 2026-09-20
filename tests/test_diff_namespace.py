@@ -9,9 +9,13 @@
 
 from __future__ import annotations
 
+import ast
+import hashlib
+import importlib
 import json
 import runpy
 from importlib.metadata import PackageNotFoundError
+from pathlib import Path
 from typing import Any, cast
 
 import numpy as np
@@ -21,7 +25,31 @@ from numpy.typing import NDArray
 import scpn.diff as short_diff
 import scpn_quantum_control as scpn_qc
 import scpn_quantum_control.diff as diff
+import scpn_quantum_control.differentiable as differentiable_facade
 from scpn_quantum_control.differentiable_parameter_contracts import Parameter
+
+_PROGRAM_AD_FACADE_IMPORT_COUNT = 201
+_PROGRAM_AD_FACADE_IMPORT_DIGEST = (
+    "a9601aada785d477cee64787a2e729028bca2727f98701632c0f54c6dc78d222"
+)
+
+
+def _program_ad_facade_imports() -> tuple[tuple[str, str, str], ...]:
+    """Return leaf module, source name, and bound name for Program AD imports."""
+    source_file = differentiable_facade.__file__
+    assert source_file is not None
+    tree = ast.parse(Path(source_file).read_text(encoding="utf-8"))
+    imports: list[tuple[str, str, str]] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.ImportFrom):
+            continue
+        module_name = node.module
+        if module_name is None or not module_name.startswith("program_ad_"):
+            continue
+        imports.extend(
+            (module_name, alias.name, alias.asname or alias.name) for alias in node.names
+        )
+    return tuple(sorted(imports))
 
 
 def _scalar_objective(values: NDArray[np.float64]) -> float:
@@ -59,6 +87,21 @@ def test_short_namespace_reexports_canonical_surface() -> None:
         "vmap",
         "gradient_tape",
     }
+
+
+def test_program_ad_facade_reexports_exact_leaf_objects() -> None:
+    """Every frozen Program AD facade import must retain exact leaf identity."""
+    imports = _program_ad_facade_imports()
+    payload = json.dumps(imports, separators=(",", ":"), ensure_ascii=True).encode()
+    assert len(imports) == _PROGRAM_AD_FACADE_IMPORT_COUNT
+    assert hashlib.sha256(payload).hexdigest() == _PROGRAM_AD_FACADE_IMPORT_DIGEST
+
+    facade_exports = vars(differentiable_facade)
+    for module_name, source_name, bound_name in imports:
+        leaf = importlib.import_module(f"scpn_quantum_control.{module_name}")
+        assert facade_exports[bound_name] is vars(leaf)[source_name], (
+            f"{bound_name} is not the exact {module_name}.{source_name} object"
+        )
 
 
 def test_canonical_transforms_execute_real_numeric_routes() -> None:

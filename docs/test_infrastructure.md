@@ -129,6 +129,14 @@ require focused runtime tests, strict typing, lint and formatting evidence.
 Intentional invalid-input tests retain narrowly justified error-code
 suppressions; an increased enrolled count does not establish semantic coverage.
 
+### Program AD facade parity
+
+`tests/test_diff_namespace.py` freezes the complete `program_ad_*` import set of
+the compatibility `differentiable` facade and verifies exact object identity
+against every owning leaf module. Adding, removing, or rebinding a Program AD
+facade import requires an intentional contract-digest update; an extraction
+cannot silently drop a public or private compatibility export.
+
 ### Studio: static types and runtime dependencies
 
 The `scpn_studio_platform.*` mypy override currently uses
