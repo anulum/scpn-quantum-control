@@ -276,6 +276,23 @@ the phase-coherent regime (Kuramoto critical point ~K_c ≈ 2σ_ω/π).
 > **Publication guidance:** Only ✅ observables are attributable to real QPU measurements.
 > ⚠️ PROXY observables must be labelled as model estimates and must not be reported under production observable keys.
 
+### Unsupported-runtime contract registry
+
+`tests/test_frontier_interface_guards.py` scans executable source ASTs and
+requires every runtime `NotImplementedError` to remain in this reviewed
+registry. Generated script text is not a runtime raise and is excluded.
+
+| Surface | Classification | Contract or local issue |
+|---------|----------------|-------------------------|
+| `qsp_phase_angles()` default route | Tracked capability gap | `CAP-QSP-PHASE`: implement complementary-polynomial synthesis and verification before returning production QSP phases; explicit seed-angle opt-in remains diagnostic only. |
+| `dla_truncated_tn()` | Tracked capability gap | `CAP-DLA-TN`: implement and validate a real tensor-network route before any campaign result; never substitute fabricated synchrony values. |
+| `RLPulseOptimizer.save_results()` | Tracked capability gap | `CAP-RL-PULSE`: implement the governed optimizer and pulse-execution boundary before results can exist. |
+| `IntegratedInformationPhi.__call__()` | Intentional refusal | No IIT causal-state model is implemented; only explicitly labelled entropy or mutual-information diagnostics are allowed. |
+| `QuantumFisherInformation.__call__()` | Intentional refusal | Production Hamiltonian inputs are required; the legacy estimate needs explicit proxy opt-in. |
+| `LogicalSyncWitness.__call__()` | Intentional refusal | Counts or probabilities are required; scalar fidelity needs explicit proxy opt-in. |
+| `RLDiscoveryAgent.run_discovery_loop()` | Intentional refusal | Missing real `K_nm`/`omega` inputs cannot fall back to fabricated phases. |
+| `RLDiscoveryAgent.update_reward()` | Intentional refusal | Ad hoc reward mutation is unsupported; replayable end-to-end discovery owns updates. |
+
 ---
 
 ## 8. Reproducing Results

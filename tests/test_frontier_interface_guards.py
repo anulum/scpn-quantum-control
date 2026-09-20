@@ -9,11 +9,13 @@
 
 from __future__ import annotations
 
+import ast
 import asyncio
 import importlib.util
 import runpy
 import sys
 import types
+from collections import Counter
 from pathlib import Path
 
 import numpy as np
@@ -24,6 +26,56 @@ from scpn_quantum_control.analysis import (
     RLResearchGovernanceError,
     dla_truncated_tn,
 )
+
+_NOT_IMPLEMENTED_CONTRACTS: dict[tuple[str, str], tuple[int, str]] = {
+    ("phase/qsvt_evolution.py", "qsp_phase_angles"): (1, "tracked_capability_gap"),
+    ("analysis/dla_truncated_tn.py", "dla_truncated_tn"): (1, "tracked_capability_gap"),
+    ("analysis/rl_pulse_optimizer.py", "RLPulseOptimizer.save_results"): (
+        1,
+        "tracked_capability_gap",
+    ),
+    ("analysis/integrated_information_phi.py", "IntegratedInformationPhi.__call__"): (
+        2,
+        "intentional_refusal",
+    ),
+    ("analysis/logical_sync_witness.py", "LogicalSyncWitness.__call__"): (
+        1,
+        "intentional_refusal",
+    ),
+    ("analysis/quantum_fisher_information.py", "QuantumFisherInformation.__call__"): (
+        1,
+        "intentional_refusal",
+    ),
+    ("analysis/rl_discovery_agent.py", "RLDiscoveryAgent.run_discovery_loop"): (
+        1,
+        "intentional_refusal",
+    ),
+    ("analysis/rl_discovery_agent.py", "RLDiscoveryAgent.update_reward"): (
+        1,
+        "intentional_refusal",
+    ),
+}
+
+
+def _not_implemented_raise_scopes(path: Path) -> list[str]:
+    """Return qualified scopes containing runtime NotImplementedError raises."""
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    occurrences: list[str] = []
+
+    def visit(node: ast.AST, scope: tuple[str, ...]) -> None:
+        next_scope = scope
+        if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+            next_scope = (*scope, node.name)
+        if isinstance(node, ast.Raise):
+            exception = node.exc
+            target = exception.func if isinstance(exception, ast.Call) else exception
+            if isinstance(target, ast.Name) and target.id == "NotImplementedError":
+                occurrences.append(".".join(scope))
+        for child in ast.iter_child_nodes(node):
+            visit(child, next_scope)
+
+    visit(tree, ())
+    return occurrences
 
 
 def _load_frontier_orchestrator(monkeypatch: pytest.MonkeyPatch) -> types.ModuleType:
@@ -53,6 +105,33 @@ def _load_frontier_orchestrator(monkeypatch: pytest.MonkeyPatch) -> types.Module
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def test_runtime_not_implemented_contracts_are_classified() -> None:
+    """Every runtime implementation gate must be intentional or locally tracked."""
+    source_root = Path(__file__).resolve().parents[1] / "src" / "scpn_quantum_control"
+    actual: Counter[tuple[str, str]] = Counter()
+    for path in sorted(source_root.rglob("*.py")):
+        if "paper0" in path.parts:
+            continue
+        relative_path = path.relative_to(source_root).as_posix()
+        for scope in _not_implemented_raise_scopes(path):
+            actual[(relative_path, scope)] += 1
+
+    expected = Counter(
+        {contract: count for contract, (count, _) in _NOT_IMPLEMENTED_CONTRACTS.items()}
+    )
+    assert actual == expected
+    tracked = {
+        contract
+        for contract, (_, classification) in _NOT_IMPLEMENTED_CONTRACTS.items()
+        if classification == "tracked_capability_gap"
+    }
+    assert tracked == {
+        ("phase/qsvt_evolution.py", "qsp_phase_angles"),
+        ("analysis/dla_truncated_tn.py", "dla_truncated_tn"),
+        ("analysis/rl_pulse_optimizer.py", "RLPulseOptimizer.save_results"),
+    }
 
 
 def _load_credible_runner(monkeypatch: pytest.MonkeyPatch) -> types.ModuleType:
