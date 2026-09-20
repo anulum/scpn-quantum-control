@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 841,
     "public_documentation_pages": 376,
-    "python_model_classes": 1383,
-    "python_model_source_modules": 703,
+    "python_model_classes": 1385,
+    "python_model_source_modules": 704,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1389
+    "test_files": 1390
   },
   "documentation": {
     "examples": [
@@ -717,7 +717,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 117
+        "python_modules": 118
       },
       {
         "package": "psi_field",
@@ -4977,6 +4977,14 @@
         "path": "src/scpn_quantum_control/qsnn/training.py"
       },
       {
+        "name": "QSPPhaseFactors",
+        "path": "src/scpn_quantum_control/phase/qsp_phases.py"
+      },
+      {
+        "name": "QSPSynthesisError",
+        "path": "src/scpn_quantum_control/phase/qsp_phases.py"
+      },
+      {
         "name": "QSVTResourceEstimate",
         "path": "src/scpn_quantum_control/phase/qsvt_evolution.py"
       },
@@ -6845,6 +6853,7 @@
       "src/scpn_quantum_control/phase/qnode_tape.py",
       "src/scpn_quantum_control/phase/qnode_transforms.py",
       "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
+      "src/scpn_quantum_control/phase/qsp_phases.py",
       "src/scpn_quantum_control/phase/qsvt_evolution.py",
       "src/scpn_quantum_control/phase/results.py",
       "src/scpn_quantum_control/phase/structured_ansatz.py",
@@ -9249,6 +9258,7 @@
       "tests/test_qsnn_training.py",
       "tests/test_qsnn_training_validation.py",
       "tests/test_qsnn_validation.py",
+      "tests/test_qsp_phases.py",
       "tests/test_qstdp.py",
       "tests/test_qsvt_evolution.py",
       "tests/test_qsvt_evolution_branches.py",

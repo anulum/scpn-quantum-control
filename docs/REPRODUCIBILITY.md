@@ -284,7 +284,7 @@ registry. Generated script text is not a runtime raise and is excluded.
 
 | Surface | Classification | Contract or local issue |
 |---------|----------------|-------------------------|
-| `qsp_phase_angles()` default route | Tracked capability gap | `CAP-QSP-PHASE`: implement complementary-polynomial synthesis and verification before returning production QSP phases; explicit seed-angle opt-in remains diagnostic only. |
+| `qsp_phase_angles()` default route | Closed | `CAP-QSP-PHASE` is implemented in `phase/qsp_phases.py`: symmetric-phase Newton synthesis, dense-grid certification against the target, and a completion-identity check on the extracted complementary polynomial. Uncertified phases are never returned. |
 | `dla_truncated_tn()` | Tracked capability gap | `CAP-DLA-TN`: implement and validate a real tensor-network route before any campaign result; never substitute fabricated synchrony values. |
 | `RLPulseOptimizer.save_results()` | Tracked capability gap | `CAP-RL-PULSE`: implement the governed optimizer and pulse-execution boundary before results can exist. |
 | `IntegratedInformationPhi.__call__()` | Intentional refusal | No IIT causal-state model is implemented; only explicitly labelled entropy or mutual-information diagnostics are allowed. |

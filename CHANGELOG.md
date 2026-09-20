@@ -11,6 +11,17 @@
 
 ### Added
 
+- `scpn_quantum_control.phase.qsp_phases` synthesises certified quantum
+  signal processing phase factors for a real target polynomial of definite
+  parity in the reflection convention of Gilyén, Su, Low and Wiebe (STOC 2019),
+  using the symmetric-phase Newton method of Dong, Meng, Whaley and Lin,
+  Phys. Rev. A 103, 042419 (2021). Each result carries the node residual, the
+  supremum error against the target over a dense grid, and the residual of the
+  completion identity for the extracted complementary polynomial; a synthesis
+  that cannot be certified raises `QSPSynthesisError`. Jacobi-Anger helpers
+  build the `cos(tau x)` and `sin(tau x)` targets used for QSVT Hamiltonian
+  simulation.
+
 - `scpn-provider-certification` and
   `scpn_quantum_control.hardware.provider_certification` certify the publicly
   claimed HAL provider matrix. Eight criteria are evaluated per declared
@@ -32,6 +43,11 @@
   preflight and static analysis.
 
 ### Changed
+
+- `qsp_phase_angles()` returns certified phase angles for the degree-`d` cosine
+  polynomial instead of raising. The angles realise the Chebyshev polynomial
+  `T_d`; `allow_initial_guess=True` still returns the published Newton starting
+  point, which carries no certificate.
 
 - The pre-commit `ruff` hook moves from `v0.15.18` to `v0.16.4`, the version the
   CI requirement files pin, so the hook and CI run one ruff generation.

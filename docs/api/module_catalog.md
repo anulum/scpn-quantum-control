@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **703 modules** across **39 package families**
-- **3935 documented public module-level symbols**
+- **704 modules** across **39 package families**
+- **3943 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -4236,6 +4236,16 @@ Executable vector-output phase-QNode Jacobian and native vmap evidence.
 **Classes:** `PhaseQNodeVectorTransformResult`, `PhaseQNodeVectorTransformReadinessSuiteResult`
 
 **Functions:** `execute_phase_qnode_vector_jacobian()`, `execute_phase_qnode_vector_hessian()`, `execute_phase_qnode_vector_jvp()`, `execute_phase_qnode_vector_vjp()`, `execute_phase_qnode_vmap_grad()`, `run_phase_qnode_vector_transform_readiness_suite()`
+
+### `scpn_quantum_control.phase.qsp_phases`
+
+Certified quantum-signal-processing phase-factor synthesis.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase/qsp_phases.py) · Public symbols: **8**
+
+**Classes:** `QSPSynthesisError`, `QSPPhaseFactors`
+
+**Functions:** `qsp_unitary()`, `qsp_response()`, `complementary_polynomial()`, `jacobi_anger_cosine_coefficients()`, `jacobi_anger_sine_coefficients()`, `synthesise_qsp_phases()`
 
 ### `scpn_quantum_control.phase.qsvt_evolution`
 

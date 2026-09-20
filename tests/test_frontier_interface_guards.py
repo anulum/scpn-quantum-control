@@ -28,7 +28,6 @@ from scpn_quantum_control.analysis import (
 )
 
 _NOT_IMPLEMENTED_CONTRACTS: dict[tuple[str, str], tuple[int, str]] = {
-    ("phase/qsvt_evolution.py", "qsp_phase_angles"): (1, "tracked_capability_gap"),
     ("analysis/dla_truncated_tn.py", "dla_truncated_tn"): (1, "tracked_capability_gap"),
     ("analysis/rl_pulse_optimizer.py", "RLPulseOptimizer.save_results"): (
         1,
@@ -128,7 +127,6 @@ def test_runtime_not_implemented_contracts_are_classified() -> None:
         if classification == "tracked_capability_gap"
     }
     assert tracked == {
-        ("phase/qsvt_evolution.py", "qsp_phase_angles"),
         ("analysis/dla_truncated_tn.py", "dla_truncated_tn"),
         ("analysis/rl_pulse_optimizer.py", "RLPulseOptimizer.save_results"),
     }

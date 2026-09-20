@@ -18,6 +18,7 @@ from scipy import sparse
 import scpn_quantum_control.phase.qsvt_evolution as qsvt_mod
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.dense_budget import DenseAllocationError
+from scpn_quantum_control.phase.qsp_phases import qsp_response
 from scpn_quantum_control.phase.qsvt_evolution import (
     QSVTResourceEstimate,
     hamiltonian_1norm,
@@ -272,9 +273,16 @@ class TestQSVTResourceEstimate:
 
 
 class TestQSPPhaseAngles:
-    def test_refuses_unoptimised_phase_claim(self) -> None:
-        with pytest.raises(NotImplementedError, match="QSP phase synthesis"):
-            qsp_phase_angles(10)
+    def test_default_route_returns_certified_cosine_phases(self) -> None:
+        """The default route must realise the degree-d Chebyshev cosine polynomial."""
+        degree = 10
+        phases = qsp_phase_angles(degree)
+        grid = np.linspace(-1.0, 1.0, 801)
+        realised = qsp_response(phases, grid).real
+        expected = np.polynomial.chebyshev.Chebyshev.basis(degree)(grid)
+
+        assert len(phases) == degree + 1
+        assert np.max(np.abs(realised - expected)) < 1e-11
 
     @pytest.mark.parametrize("degree", [1.5, True, "4"])
     def test_rejects_non_integer_degree(self, degree: object) -> None:

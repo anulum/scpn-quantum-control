@@ -370,15 +370,68 @@ error-budget checks so invalid budgets cannot be silently clamped or coerced.
 For fewer than 14 qubits, `max_dense_gib` guards the two-matrix dense spectral
 workspace before allocation; larger systems use sparse extremal eigensolves.
 
-This module provides query/step estimates, not executable circuits, verified
-QSP phases, or latency benchmarks. QSVT circuits require a hardware-specific
-block encoding of the Hamiltonian, including ancilla and selection logic that
-is not constructed here. The estimates inform hardware-roadmap planning only.
+This module provides query/step estimates and certified QSP phases, not
+executable circuits or latency benchmarks. QSVT circuits require a
+hardware-specific block encoding of the Hamiltonian, including ancilla and
+selection logic that is not constructed here. The estimates inform
+hardware-roadmap planning only.
 
-`qsp_phase_angles(degree, allow_initial_guess=True)` accepts only a
-non-negative integer `degree`. The returned values are symmetric seed angles for
-offline optimisation only; with `allow_initial_guess=False` the function raises
-until production QSP phase synthesis and verification are wired.
+`qsp_phase_angles(degree)` returns `degree + 1` certified phase angles realising
+the degree-`d` cosine polynomial, which is the Chebyshev polynomial $T_d$ since
+$T_d(\cos\theta) = \cos(d\theta)$. Passing `allow_initial_guess=True` returns
+the published Newton starting point instead; that is a starting point, not a
+solution, and carries no certificate.
+
+### `qsp_phases` — Certified QSP Phase-Factor Synthesis
+
+`scpn_quantum_control.phase.qsp_phases` synthesises phase factors for an
+arbitrary real target polynomial in the reflection (`Wx`) convention of Gilyén,
+Su, Low and Wiebe (STOC 2019), where
+
+$$U(x, \Phi) = e^{i\phi_0 Z} \prod_{k=1}^{d} W(x) e^{i\phi_k Z}, \qquad
+W(x) = \begin{pmatrix} x & i\sqrt{1-x^2} \\ i\sqrt{1-x^2} & x\end{pmatrix}.$$
+
+Synthesis follows the symmetric-phase Newton method of Dong, Meng, Whaley and
+Lin, *Efficient phase-factor evaluation in quantum signal processing*,
+Phys. Rev. A **103**, 042419 (2021). Symmetric phase factors
+$\phi_k = \phi_{d-k}$ reduce the problem to $\lceil (d+1)/2 \rceil$ unknowns
+matched at the same number of Chebyshev nodes, solved by Newton iteration with
+the exact Jacobian of the matrix product from the published initial guess
+$\Phi^0 = (\pi/4, 0, \dots, 0, \pi/4)$.
+
+| Function | Purpose |
+| --- | --- |
+| `synthesise_qsp_phases(coefficients)` | Certified phase factors for a target given by Chebyshev coefficients. |
+| `qsp_response(phases, x)` | $\langle 0 \vert U(x,\Phi) \vert 0 \rangle$, the forward evaluator and certificate. |
+| `qsp_unitary(phases, x)` | The full $2\times2$ QSP unitary at each signal value. |
+| `complementary_polynomial(phases)` | Chebyshev coefficients of $Q$, recovered by projection rather than assumed. |
+| `jacobi_anger_cosine_coefficients(tau, degree)` | Even target for $\cos(\tau x)$. |
+| `jacobi_anger_sine_coefficients(tau, degree)` | Odd target for $\sin(\tau x)$. |
+
+The target must be real, of definite parity, and satisfy $\vert f(x)\vert \le 1$
+on $[-1, 1]$; anything else is refused before Newton runs.
+
+Every result carries its own evidence. `QSPPhaseFactors` records the node
+residual, the supremum error against the target over a dense grid, and the
+residual of the completion identity
+$P(x)^2 + (1-x^2)Q(x)^2 = 1$ for the extracted complementary polynomial. A
+synthesis that cannot be certified within tolerance raises `QSPSynthesisError`;
+no uncertified phases are returned.
+
+```python
+from scpn_quantum_control.phase import (
+    jacobi_anger_cosine_coefficients,
+    synthesise_qsp_phases,
+)
+
+factors = synthesise_qsp_phases(jacobi_anger_cosine_coefficients(tau=10.0, degree=40))
+factors.supremum_error  # certified against cos(10 x) on a dense grid
+```
+
+Phase synthesis is a compile-time step, not an inner loop: a degree-40 target
+takes tens of milliseconds and a degree-100 target a few hundred, so the
+routine has no accelerated counterpart. These figures are workstation
+measurements under load, not isolated-core benchmarks.
 
 ### `adiabatic_preparation` — Ground State via Adiabatic Path
 

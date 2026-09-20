@@ -566,6 +566,16 @@ from .qnode_vector_transforms import (
     execute_phase_qnode_vmap_grad,
     run_phase_qnode_vector_transform_readiness_suite,
 )
+from .qsp_phases import (
+    QSPPhaseFactors,
+    QSPSynthesisError,
+    complementary_polynomial,
+    jacobi_anger_cosine_coefficients,
+    jacobi_anger_sine_coefficients,
+    qsp_response,
+    qsp_unitary,
+    synthesise_qsp_phases,
+)
 from .qsvt_evolution import QSVTResourceEstimate
 from .results import TrajectoryResult
 from .structured_ansatz import build_structured_ansatz
@@ -1339,6 +1349,12 @@ __all__ = [
     "TensorFlowMaintenanceStrategy",
     "run_tensorflow_maintenance_decision",
     "build_structured_ansatz",
+    "complementary_polynomial",
+    "jacobi_anger_cosine_coefficients",
+    "jacobi_anger_sine_coefficients",
+    "qsp_response",
+    "qsp_unitary",
+    "synthesise_qsp_phases",
     "LindbladSyncEngine",
     "OPEN_SYSTEM_OBJECTIVE_CLAIM_BOUNDARY",
     "OPEN_SYSTEM_OBJECTIVE_EVIDENCE_CLASS",
@@ -1396,6 +1412,8 @@ __all__ = [
     "generalised_parameter_shift_gradient",
     "plan_generalised_parameter_shift",
     "value_and_generalised_parameter_shift_grad",
+    "QSPPhaseFactors",
+    "QSPSynthesisError",
     "QSVTResourceEstimate",
     "ICIPulse",
     "HypergeometricPulse",

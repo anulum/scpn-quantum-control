@@ -51,6 +51,7 @@ from ..bridge.knm_hamiltonian import (
     knm_to_sparse_matrix,
 )
 from ..dense_budget import require_dense_allocation
+from .qsp_phases import INITIAL_EDGE_PHASE, synthesise_qsp_phases
 
 
 @dataclass
@@ -412,52 +413,70 @@ def qsvt_resource_estimate(
 
 
 def qsp_phase_angles(degree: int, *, allow_initial_guess: bool = False) -> NDArray[np.float64]:
-    """Return QSP phase angles for a cosine polynomial only when explicit.
+    r"""Return certified QSP phase angles for the degree-``d`` cosine polynomial.
 
-    Production QSP phase synthesis requires a complementary-polynomial
-    optimisation/verification routine. That implementation is not wired here,
-    so the function fails by default rather than returning unverified seed angles.
-
-    Set ``allow_initial_guess=True`` only when a caller needs the historical
-    symmetric seed angles for an offline optimiser. Those angles are not valid
-    compiled QSP phases and must not be used for resource or hardware claims.
+    The cosine polynomial of degree ``d`` is the Chebyshev polynomial
+    :math:`T_d`, since :math:`T_d(\cos\theta) = \cos(d\theta)`. The angles
+    are synthesised and certified by
+    :func:`scpn_quantum_control.phase.qsp_phases.synthesise_qsp_phases`, which
+    refuses to return phases whose realised response does not match the target
+    within tolerance. For an arbitrary target polynomial, call that routine
+    directly with the target's Chebyshev coefficients; the Jacobi--Anger
+    helpers in the same module build the ``cos(tau x)`` and ``sin(tau x)``
+    targets used for QSVT Hamiltonian simulation.
 
     Parameters
     ----------
     degree
         Non-negative polynomial degree.
     allow_initial_guess
-        Explicit opt-in to the unverified historical seed-angle construction.
+        Return the published Newton initial guess instead of synthesising.
+        The guess is the starting point of the symmetric-phase method, not a
+        solution, and must not be used for resource or hardware claims.
 
     Returns
     -------
     numpy.ndarray
-        ``degree + 1`` alternating seed angles with first and last values fixed
-        to ``pi / 4``.
+        ``degree + 1`` phase angles in the ``Wx`` convention.
 
     Raises
     ------
     ValueError
         If ``degree`` is boolean, negative, or not integer-like.
-    NotImplementedError
-        Unless ``allow_initial_guess`` is true, because production phase
-        synthesis and complementary-polynomial verification are not wired.
+    QSPSynthesisError
+        If the phases cannot be certified against the target. No uncertified
+        angles are returned.
 
     """
     degree_value = _validate_non_negative_integer(degree, "degree")
-    if not allow_initial_guess:
-        raise NotImplementedError(
-            "QSP phase synthesis is not implemented. Pass allow_initial_guess=True "
-            "only to obtain non-production seed angles for an external optimiser."
-        )
+    if allow_initial_guess:
+        return _initial_guess_phase_angles(degree_value)
+    target = np.zeros(degree_value + 1, dtype=np.float64)
+    target[degree_value] = 1.0
+    factors = synthesise_qsp_phases(target)
+    return factors.phases
 
-    # Symmetric phase angles for even polynomial (cosine)
-    phases = np.zeros(degree_value + 1)
-    for k in range(degree_value + 1):
-        phases[k] = np.pi / 4 * (-1) ** k
-    # Correct first and last for QSP convention
-    phases[0] = np.pi / 4
-    phases[-1] = np.pi / 4
+
+def _initial_guess_phase_angles(degree: int) -> NDArray[np.float64]:
+    """Return the published symmetric-phase Newton initial guess.
+
+    The guess places ``pi / 4`` on the outermost phases and zero elsewhere, as
+    in Dong, Meng, Whaley and Lin, Phys. Rev. A 103, 042419 (2021).
+
+    Parameters
+    ----------
+    degree
+        Non-negative polynomial degree.
+
+    Returns
+    -------
+    numpy.ndarray
+        ``degree + 1`` starting angles.
+
+    """
+    phases = np.zeros(degree + 1, dtype=np.float64)
+    phases[0] = INITIAL_EDGE_PHASE
+    phases[-1] = INITIAL_EDGE_PHASE
     result: NDArray[np.float64] = phases
     return result
 
