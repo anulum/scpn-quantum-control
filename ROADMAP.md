@@ -246,6 +246,24 @@ is copied here.
   the derived requirement. Certification covers repository evidence for a
   public claim only; provider availability, calibration, hardware readiness,
   and submission authority remain separate approval-gated decisions.
+- [ ] **Retire the setuptools security waiver by raising the Braket pins.**
+  Blocked on owner authorisation for a bounded dependency batch. The repository
+  pins `setuptools==81.0.0` in the three hash-locked matrix requirement files
+  because `amazon-braket-default-simulator` 1.39.3 and `amazon-braket-schemas`
+  1.29.1 each declare `setuptools==81.0.0` exactly, and
+  `tools/audit_dependency_security_waiver.py` keeps the resulting
+  PYSEC-2026-3447 exception narrow and passing. Checked 2026-09-20 against the
+  published index: `amazon-braket-default-simulator` 1.40.2 and
+  `amazon-braket-schemas` 1.32.1.post0 declare no `setuptools` requirement at
+  all, so the upstream constraint that forces the waiver has been lifted.
+  Raising the two Braket distributions and `setuptools` to 83.0.0 means
+  regenerating `requirements-ci-py311-linux.txt`,
+  `requirements-ci-py312-linux.txt` and `requirements-ci-py313-linux.txt` with
+  the documented `pip-compile --allow-unsafe --generate-hashes` command on each
+  supported interpreter, reviewing the whole re-resolved graph, and validating
+  it on the hosted matrix. That is an owner-controlled generated-file batch, not
+  a hand edit, and the waiver plus its audit are removed only once the
+  regenerated locks prove the pin is gone.
 - [x] **Stable-core release/repro gate.** Use
   `scpn-bench stable-core-release-gate` before release notes, API changes, or
   public stable-core documentation changes. The bundle runs stable-core
