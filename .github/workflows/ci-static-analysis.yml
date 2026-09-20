@@ -142,7 +142,7 @@ jobs:
           python -m pytest -q -p no:cacheprovider \
             tests/test_check_retired_claims.py
           python tools/check_retired_claims.py
-      - name: Enforce one toolchain generation across hook and CI pins
+      - name: Enforce one toolchain generation across every declaration
         run: |
           python -m mypy --strict --explicit-package-bases \
             tools/check_toolchain_pin_alignment.py \

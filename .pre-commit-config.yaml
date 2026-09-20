@@ -56,11 +56,13 @@ repos:
         always_run: true
         pass_filenames: false
 
-      - id: toolchain-pin-alignment
-        name: toolchain pin alignment
+      - id: toolchain-declaration-alignment
+        name: toolchain declaration alignment
         entry: python tools/check_toolchain_pin_alignment.py
         language: python
-        additional_dependencies: [pyyaml]
+        # Parsers only, deliberately unpinned: a pinned hook dependency would
+        # itself become a declaration this gate then has to keep aligned.
+        additional_dependencies: [pyyaml, packaging]
         always_run: true
         pass_filenames: false
 

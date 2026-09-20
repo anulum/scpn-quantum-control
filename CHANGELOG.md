@@ -34,13 +34,15 @@
   without an implementation blocks the gate. The command reads no credentials,
   contacts no provider and submits no job.
 
-- `tools/check_toolchain_pin_alignment.py` refuses a quality-tool version that
-  disagrees between `.pre-commit-config.yaml` and the hash-locked
-  `requirements*.txt` pins. It also refuses a distribution pinned to several
-  versions across the matrix files, a mapped hook with no requirements pin, and
-  a remote hook repository classified neither as a mirrored Python distribution
-  nor as a reasoned non-Python hook. It runs in the hook set, the local
-  preflight and static analysis.
+- `tools/check_toolchain_pin_alignment.py` refuses a tool version that
+  disagrees between any two declarations in the repository. It collects
+  pre-commit hook revisions, `requirements*.txt` pins, `pyproject.toml`
+  dependency ranges, workflow action inputs, pinned `cargo install` commands
+  and the setup commands in `CONTRIBUTING.md`, and also refuses a pinned
+  version the project range forbids, a mapped hook with no requirements pin,
+  and a remote hook repository classified neither as a mirrored Python
+  distribution nor as a reasoned non-Python hook. `--list` prints the collected
+  evidence. It runs in the hook set, the local preflight and static analysis.
 
 ### Changed
 

@@ -136,14 +136,28 @@ local preflight and static analysis:
 python tools/check_toolchain_pin_alignment.py
 ```
 
-It reads `.pre-commit-config.yaml` and every `requirements*.txt`, and refuses a
-hook revision that names a different version than the requirements pin, a
-distribution pinned to several versions across the matrix files, a mapped hook
-with no requirements pin to compare, and a remote hook repository that is
-classified neither as a mirrored Python distribution nor as a reasoned
-non-Python hook. Adding a hook therefore means classifying it. Exit status 1
-reports findings, 2 means the declarations could not be read, and an unreadable
-configuration is an error rather than a pass.
+It collects every version this repository states for a tool — pre-commit hook
+revisions, `requirements*.txt` pins, `pyproject.toml` dependency ranges,
+workflow action inputs, pinned `cargo install` commands and the setup commands
+in this file — and refuses any two that disagree. It also refuses a pinned
+version the project range forbids, a mapped hook with no requirements pin to
+compare, and a remote hook repository classified neither as a mirrored Python
+distribution nor as a reasoned non-Python hook. Adding a hook therefore means
+classifying it. Exit status 1 reports findings, 2 means the declarations could
+not be read, and an unreadable configuration is an error rather than a pass.
+
+`--list` prints the evidence behind the verdict, which is the fastest way to
+see every place a tool is declared before changing one of them:
+
+```bash
+python tools/check_toolchain_pin_alignment.py --list
+```
+
+Declarations without a version are deliberately out of scope. A `language:
+system` hook runs whatever the environment installed, so it cannot split from a
+pin. Whether the agreed version is also the newest compatible release is a
+separate, network-bound question for the periodic dependency census, not for a
+commit hook.
 
 ## Before Opening A PR
 
