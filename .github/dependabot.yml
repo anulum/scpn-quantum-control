@@ -23,6 +23,7 @@ updates:
     open-pull-requests-limit: 0
     rebase-strategy: disabled
     ignore:
+      - dependency-name: setuptools
       - dependency-name: "*"
   - package-ecosystem: pip
     directory: "/oscillatools"
