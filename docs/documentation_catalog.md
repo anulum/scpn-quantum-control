@@ -4,7 +4,7 @@ The primary navigation stays intentionally compact. This catalog keeps every
 public guide, evidence note, contract, campaign protocol, and reference page
 discoverable without crowding the main learning path.
 
-Current inventory: **376 public pages**; **162** are in the
+Current inventory: **377 public pages**; **162** are in the
 primary navigation and the remainder are indexed here.
 
 Labels marked `catalog` are intentionally outside the primary navigation; they
@@ -362,6 +362,7 @@ are still built, link-checked, searchable, and public.
 | [Strategic Roadmap — Post-v1.0 Differentiation](strategic_roadmap.md) | primary nav | > **Canonical status note (2026-05-06):** active task selection is > consolidated in ROADMAP.md. This document remains the detailed > deferred/CEO-gated strategic catalogue; items here are not activated > unless copied into the canonical wo |
 | [Studio Executive Actions](studio_executive.md) | primary nav | The QUANTUM studio is an *executive* tool, not only a federation publisher. The Studio Federation surface is the *informative* layer the SCPN-STUDIO hub ingests; the executive spine described here is the layer that actually **runs** a verb, |
 | [Studio Federation](studio_federation.md) | primary nav | The QUANTUM Studio federation surface has two layers: |
+| [Quantum Studio workbench](studio_workbench.md) | catalog | The existing QuantumStudioPanel displays the capability manifest and committed evidence, with bounded local instruments for XY recomputation, Kuramoto playback, 3D trajectory inspection and program-AD replay. Unsupported or unverifiable evi |
 | [Symmetry-Aware Exact Diagonalisation](symmetry.md) | catalog | Three modules exploit symmetries of the XY Hamiltonian to reduce the Hilbert space dimension for exact diagonalisation (ED): |
 | [GUESS: Guiding Extrapolations from Symmetry Decays](symmetry_decay_guess.md) | catalog | Physics-informed zero-noise extrapolation using Hamiltonian symmetry observables to guide the mitigation of target observables on NISQ hardware. |
 | [Symmetry- and Sector-Aware Mitigation Compiler](symmetry_sector_mitigation_compiler.md) | primary nav | This page defines the bounded first contract for the mitigation compiler lane. The current implementation is a planner, not a circuit transformer. It decides whether existing primitives are eligible for a Kuramoto/XY experiment descriptor a |

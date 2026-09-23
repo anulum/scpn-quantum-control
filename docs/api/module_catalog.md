@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **704 modules** across **39 package families**
-- **3943 documented public module-level symbols**
+- **705 modules** across **39 package families**
+- **3961 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -6302,6 +6302,16 @@ Fail-closed baseline-scorecard acceptance / promotion engine.
 **Classes:** `ScorecardCategoryRecord`, `PromoteDecision`
 
 **Functions:** `list_scorecard_category_ids()`, `get_scorecard_category()`, `iter_scorecard_categories()`, `build_scorecard_acceptance_registry()`, `promote_scorecard_category()`, `assert_scorecard_acceptance_integrity()`
+
+### `scpn_quantum_control.semantic_record`
+
+Versioned ``scientific_semantics.v1`` companion for stable-core records.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/semantic_record.py) · Public symbols: **18**
+
+**Classes:** `SemanticRecordError`, `DeclaredUnit`, `SemanticRefusal`, `MeasuredField`, `ProducerObservation`, `DeclaredParameterOrder`, `ScientificSemantics`, `SemanticBinding`, `CapturedSemanticRecord`, `TransformDecision`, `AggregationDecision`, `ModalityQualification`
+
+**Functions:** `observe_producer()`, `validate_semantic_binding()`, `capture_semantic_record()`, `apply_semantic_transform()`, `aggregate_fidelity_components()`, `qualify_native_modality()`
 
 ### `scpn_quantum_control.ssgf_geometry_gradient_product`
 

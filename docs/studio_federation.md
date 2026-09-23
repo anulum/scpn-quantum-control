@@ -413,5 +413,7 @@ The local emitter maps source classes through `evidence_axes(...)`:
 - Blocked or dependency-gated rows retain explicit upstream blockers in the
   bundle boundary. The platform can admit those bundles in boundary mode, but
   the bundle admission remains rejected.
-- The Studio UI module remains absent from the manifest until a real UI binding
-  exists.
+- The Studio UI module is present in the manifest as `./QuantumStudioPanel`.
+  This is a source and historical deployment claim; current hosted availability
+  requires a separate live probe. The panel displays declared verbs and bounded
+  instruments, but does not dispatch every verb from the browser.
