@@ -32,7 +32,7 @@ from scpn_quantum_control.experimental.llm_qpu.manifest import (
     assert_worker_inventory,
 )
 
-_REPO_ROOT = Path(__file__).resolve().parents[4]
+_REPO_ROOT = Path(__file__).resolve().parents[3]
 _EXPERIMENTAL_ROOT = _REPO_ROOT / "src/scpn_quantum_control/experimental"
 _WORKER_ROOT = _REPO_ROOT / "experimental_workers/llm_qpu"
 

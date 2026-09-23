@@ -1,7 +1,7 @@
 {
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
-    "domain_package_families": 38,
+    "domain_package_families": 39,
     "example_files": 37,
     "github_workflows": 44,
     "model_documentation_pages": 14,
@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 841,
     "public_documentation_pages": 377,
-    "python_model_classes": 1400,
-    "python_model_source_modules": 710,
+    "python_model_classes": 1401,
+    "python_model_source_modules": 711,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1396
+    "test_files": 1397
   },
   "documentation": {
     "examples": [
@@ -669,6 +669,11 @@
         "package": "entropy",
         "path": "src/scpn_quantum_control/entropy",
         "python_modules": 4
+      },
+      {
+        "package": "experimental",
+        "path": "src/scpn_quantum_control/experimental",
+        "python_modules": 1
       },
       {
         "package": "fep",
@@ -3132,6 +3137,10 @@
       {
         "name": "LLVMJITClaimGate",
         "path": "src/scpn_quantum_control/compiler/mlir_llvm_jit_claim_gate.py"
+      },
+      {
+        "name": "LaneManifest",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/manifest.py"
       },
       {
         "name": "LatencyDecision",
@@ -6684,6 +6693,7 @@
       "src/scpn_quantum_control/entropy/quantum_source.py",
       "src/scpn_quantum_control/error_mitigation_product.py",
       "src/scpn_quantum_control/execution_surface.py",
+      "src/scpn_quantum_control/experimental/llm_qpu/manifest.py",
       "src/scpn_quantum_control/fault_tolerant_resource_product.py",
       "src/scpn_quantum_control/fep/predictive_coding.py",
       "src/scpn_quantum_control/fep/variational_free_energy.py",
@@ -8284,6 +8294,7 @@
       "tests/_phase_torch_bridge_test_helpers.py",
       "tests/_program_ad_rust_bridge_test_fixtures.py",
       "tests/conftest.py",
+      "tests/experimental/llm_qpu/test_lane_manifest_policy.py",
       "tests/test_accelerator_detection_boundaries.py",
       "tests/test_active_queue_status_assertions.py",
       "tests/test_active_sensing_product.py",

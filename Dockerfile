@@ -62,6 +62,7 @@ COPY requirements-ci-jax-py312-linux.txt requirements-ci-torch-cpu-py312-linux.t
 # Reproduction audits inspect these workflow inputs without installing them.
 COPY requirements-ci-julia-tier.txt requirements-integration-sc-neurocore.txt requirements-publish.txt rust-toolchain.toml ./
 COPY src/ src/
+COPY experimental_workers/ experimental_workers/
 COPY oscillatools/src/ oscillatools/src/
 # The standalone-package decision and real wheel tests require the complete
 # Hatchling metadata pair, including the README declared by its pyproject.

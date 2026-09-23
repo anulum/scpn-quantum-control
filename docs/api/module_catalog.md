@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **710 modules** across **39 package families**
-- **3974 documented public module-level symbols**
+- **711 modules** across **40 package families**
+- **3977 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2262,6 +2262,18 @@ Quantum measurement entropy sources for the QRNG streaming harness.
 **Classes:** `EntropyBackend`, `AerQuantumEntropySource`
 
 **Functions:** `von_neumann_debias()`
+
+## `experimental`
+
+### `scpn_quantum_control.experimental.llm_qpu.manifest`
+
+Inventory and refusal boundary for the opt-in LLM-QPU research lane.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/manifest.py) · Public symbols: **3**
+
+**Classes:** `LaneManifest`
+
+**Functions:** `assert_lane_inventory()`, `assert_worker_inventory()`
 
 ## `fep`
 
