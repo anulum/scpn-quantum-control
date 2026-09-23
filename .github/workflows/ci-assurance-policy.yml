@@ -253,6 +253,8 @@ jobs:
         with: {python-version: "3.12", cache: 'pip'}
       - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
       - run: >-
+          python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt
+      - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/metamorphic_ad_verification.py
           tests/test_metamorphic_ad_verification.py

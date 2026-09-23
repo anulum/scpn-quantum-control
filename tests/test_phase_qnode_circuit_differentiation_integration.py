@@ -328,6 +328,15 @@ def test_phase_qnode_computational_basis_fisher_matches_ry_reference() -> None:
     np.testing.assert_allclose(result.classical_fisher_information, [[1.0]], atol=1e-12)
     assert result.measurement == "computational_basis"
     assert "finite-shot" in result.claim_boundary
+    semantic_source = result.to_semantic_source()
+    assert semantic_source["producer_identity"] == (
+        "scpn_quantum_control.phase.qnode_circuit_contracts.PhaseQNodeClassicalFisherResult"
+    )
+    assert semantic_source["measurement"] == "computational_basis"
+    assert semantic_source["shot_count"] is None
+    np.testing.assert_allclose(
+        semantic_source["classical_fisher_information"], [[1.0]], atol=1e-12
+    )
 
 
 def test_phase_qnode_computational_basis_fisher_is_bounded_by_qfi() -> None:

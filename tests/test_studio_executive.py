@@ -353,6 +353,11 @@ def test_preview_returns_plan_without_executing() -> None:
     registry = _registry(_StubHandler("differentiate"))
     plan = preview_action(_request(), registry=registry)
     assert plan.verb == "differentiate"
+    semantic_source = plan.to_semantic_source()
+    assert semantic_source["producer_identity"] == (
+        "scpn_quantum_control.studio.executive.ExecutionPlan"
+    )
+    assert semantic_source["plan"] == plan.to_dict()
 
 
 @pytest.mark.parametrize("surface", ["preview", "run"])

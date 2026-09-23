@@ -266,9 +266,7 @@ def test_hal_result_refuses_rehashed_raw_rebinding(field: str) -> None:
     assert not binding.qualified
 
 
-@pytest.mark.parametrize(
-    "case", ["failed_status", "cancelled_job", "unknown_shots", "missing_counts"]
-)
+@pytest.mark.parametrize("case", ["failed_status", "cancelled_job", "unknown_shots"])
 def test_hal_result_refuses_incomplete_native_observation(case: str) -> None:
     """A typed failed or unknown-shot result cannot claim completed metadata."""
     raw, companion, owner, _ = _hal_case()
@@ -278,12 +276,16 @@ def test_hal_result_refuses_incomplete_native_observation(case: str) -> None:
         altered = replace(owner, job=replace(owner.job, status="cancelled"))
     elif case == "unknown_shots":
         altered = replace(owner, shots=0)
-    else:
-        altered = replace(owner, counts={})
-
     _, binding = scp.read_result_with_semantics(
         raw, companion, native_sources={"hal_result": altered}
     )
 
     assert binding.raw_readable
     assert not binding.qualified
+
+
+def test_hal_result_refuses_missing_native_counts_at_construction() -> None:
+    """Reject incomplete native counts before they can enter semantic binding."""
+    _, _, owner, _ = _hal_case()
+    with pytest.raises(ValueError, match="counts must sum to shots"):
+        replace(owner, counts={})
