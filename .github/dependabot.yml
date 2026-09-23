@@ -17,10 +17,12 @@ updates:
     schedule:
       interval: weekly
       day: monday
-    # This hash-locked CPU overlay is refreshed by its owner-controlled lock
-    # workflow. Dependabot's resolver cannot read the PyTorch wheel index.
+    # These hash-locked CI overlays are refreshed by their owner-controlled
+    # lock workflow. Dependabot cannot read the PyTorch wheel index and fails
+    # to rewrite the Python 3.12 lock for a newer transitive pydantic pin.
     exclude-paths:
       - "requirements-ci-torch-cpu-py312-linux.txt"
+      - "requirements-ci-py312-linux.txt"
     # Temporary: both Braket pin owners require setuptools==81.0.0. The
     # fail-closed waiver audit requires removal when upstream admits >=83.0.0.
     ignore:
