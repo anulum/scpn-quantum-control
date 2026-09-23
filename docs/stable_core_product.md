@@ -68,7 +68,7 @@ assert rt.digest_sha256
 | `validate_model_schema_version(version)` | Return a supported normalised version; reject blank or unknown versions. |
 | `wrap_model_envelope(kind, body, schema_version=...)` | Bind a non-empty contract body to its kind, version, and claim boundary. |
 | `unwrap_model_envelope(envelope)` | Validate the version, kind, and body before returning them. |
-| `canonical_json_bytes(payload)` | Produce deterministic UTF-8 JSON with sorted keys and compact separators. |
+| `canonical_json_bytes(payload)` | Produce deterministic UTF-8 JSON with sorted keys and compact separators; refuse NaN and infinities. |
 | `digest_stable_core_payload(payload)` | Produce the lowercase SHA-256 digest of the canonical JSON bytes. |
 
 ### Model conversion and round-trip proof
@@ -120,12 +120,75 @@ A record without a companion stays fully readable. What a missing or refused
 companion withholds is *qualification*, never raw custody, and a refusal never
 rewrites, coerces or substitutes a value.
 
+`read_experiment_with_semantics(envelope, companion)` is the experimental
+stable-core consumer of this separation. It returns the native v2 `Experiment`
+and a separate `SemanticBinding`; a missing, unsupported or contradictory
+companion cannot change the experiment. An invalid raw v2 envelope still raises
+through the original reader. The new consumer does not expand the stable-core
+v2 wire schema or turn a qualified plan into a hardware observation.
+An experiment companion always stays at the planning stage. Attaching a real
+but unrelated HAL workload or result cannot qualify observed settings for that
+plan; observed job metadata belongs to the typed result reader.
+The HAL result carries an observed shot total, while the submitted workload's
+requested shots are unavailable from that result alone and remain explicitly
+unqualified.
+
+`read_result_with_semantics(envelope, companion)` gives the same separation for
+a native v2 `Result`. Its first qualified result class is a local,
+caller-supplied synthetic stochastic derivative. The raw result names the
+exact digest of the typed `StochasticGradientResult`; the companion binds its
+native parameter order, trainability, gradient layout, standard error and
+confidence radius to that actual object. Both uncertainty descriptions retain
+their original covariance and are never summed. The dimensionless unit is an
+explicit synthetic caller declaration (`origin: caller_declared_synthetic`);
+native parameter units, calibration,
+hardware execution and a physical-unit claim remain unavailable. A result
+with missing or substituted native evidence stays readable but unqualified.
+
 `validate_semantic_binding(companion, raw_record)` returns a
 `SemanticBinding` carrying `raw_readable`, `raw_digest`, the qualified
 `ScientificSemantics` or `None`, and every `SemanticRefusal` that fired. Each
 refusal names its rule, its field path and the measured evidence that
 contradicted the declaration. Qualification is fail-closed: any refusal
 withholds qualification and forbids persisting a qualified record.
+Raw readability is established by the full versioned envelope reader, including
+its body and schema checks. A previously measured producer observation may be
+reused only for the same raw digest, adapter and source field; a mismatch refuses
+qualification even when the replacement raw record is otherwise valid.
+Required semantic sections must remain explicitly present, including empty
+fidelity evidence, unavailable items and a null calibration reference where
+those facts are absent. Dropping a section cannot silently erase a qualification
+condition.
+The v1 reader also refuses unreviewed top-level claims, extra record or backend
+reference fields, extra source-binding or measurement-mapping fields, extra
+setting-origin fields and unreferenced source records. Referenced planner
+records cannot carry unchecked source-header claims either.
+Requested and effective setting sections must be mappings, and origin keys
+must match their declared setting keys exactly.
+The result-only fidelity-unit declaration cannot be attached to an experiment
+plan as an unchecked claim.
+The experiment consumer binds its backend identity, raw digest and planning
+stage to the actual v2 experiment. It refuses a claimed observed modality,
+calibration or nonempty fidelity component until an independent native owner can
+be checked; their absence remains explicit and does not alter raw evidence.
+The plan-level field eligibility mask requires exact booleans. A `false` entry
+requires a separately captured native derivative request; the plan alone
+cannot establish that a parameter was frozen.
+The claim boundary uses accepted v1 no-execution wording, and unavailable
+evidence remains explicit. Planning settings cannot be relabelled as observed;
+the experiment reader refuses an observation-stage setting even if an unrelated
+HAL result is attached.
+The reader invokes only its admitted pure stable-core adapters. Companion
+adapter text cannot direct an arbitrary Python import or execution.
+For a setting sourced from the local gradient-method planner, a matching hash
+of the retained plan is insufficient: the reader reruns that bounded,
+non-executing planner on the retained inputs and compares the complete output.
+A changed effective shot count with a recomputed self-hash is refused.
+The separate HAL result reader binds its observed shot total to the actual typed
+job result. That result does not retain the submitted workload's requested
+shots, so this companion leaves the requested value empty and names it as
+unavailable. It does not claim that a cloud provider applied every requested
+device setting.
 
 ### What the reader measures rather than assumes
 
@@ -135,6 +198,55 @@ record, and measures what it actually produced. A companion claiming `int32`
 for a `float64` matrix, a `[2]` vector for a `(2, 2)` matrix, or a same-named
 class from a different module is refused against that measurement. Identity is
 module-qualified and is never matched by bare class name.
+
+The Program-AD primitive contract, differentiable parameter, deterministic
+and stochastic gradient results, HAL profile, workload, job handle and count
+result, Studio execution plan and Phase-QNode classical Fisher result each
+expose a detached `to_semantic_source()`
+projection of their actual native metadata.
+The parameter projection retains name and trainability without inventing a
+value or unit. Gradient projections retain order, mask and separate uncertainty
+arrays without inventing caller units. HAL projections keep route capabilities
+as declarations, requested shots and programme digest as request facts, and job identity and
+counts as result facts; they do not infer effective shots, statevector data or
+hardware attestation. The Studio plan projection keeps its verb contract,
+requested parameters and no-submit boundary; it is not execution evidence. A
+projection alone is not a qualified cross-family companion.
+Count-based modalities remain unqualified until a native producer supplies a
+checkable bit/measurement mapping; a companion's mapping label or bit list
+alone cannot establish measured wiring. The raw count record stays readable.
+
+`native_semantic_binding.capture_native_source()` and
+`validate_native_source_record()` provide the experimental custody bridge for
+those native owner types. The Studio plan is resolved only when Studio is
+installed, so core readers do not acquire an optional Studio dependency. Each
+retains a source-specific version, complete detached projection, owner identity
+and SHA-256; validation compares the
+retained content to the actual typed object, so recomputing a hash over a
+substituted copy does not establish its origin. This bridge proves source
+custody only. It does not qualify missing units, count bit order, uncertainty
+aggregation, provider attestation or scientific acceptance.
+The public `read_result_with_semantics()` also binds local Phase-QNode Fisher
+results. The typed producer retains the full reference matrix, finite-shot
+estimate, standard error, confidence radius, sampling model and count record.
+Observed bitstring replay qualifies only with its native versioned bit mapping
+and raw counts; expected-count analysis has no observed-count mapping. Both
+uncertainty components retain their finite-shot delta-method assumptions. The
+unchanged v2 result carries a checked scalar trace and source digest, while the
+native result owns the full evidence. Neither route is acquired QPU data or a
+physical-unit claim.
+For a typed `QuantumJobResult`, `read_result_with_semantics()` qualifies only
+job identity, backend, completion status and observed shot-count metadata. It
+keeps the HAL counts in the source record, but the HAL owner supplies no bit-wire
+mapping; the companion therefore marks count semantics unavailable and must
+not present a count map. A backend profile's statevector capability also does
+not turn a counts-only result into amplitudes or hardware attestation.
+When a companion retains one of these native records in `source_records`,
+`validate_semantic_binding()` requires the actual typed object in
+`native_sources` under the same reference. The experimental
+`read_experiment_with_semantics()` consumer forwards that mapping. Missing
+owners, changed source versions, altered contents and rehashed substitutions
+refuse qualification while the raw experiment remains readable.
 
 Physical units are the one thing no existing contract records, so they come
 from `DECLARED_FIELD_UNITS`, where every entry carries the in-repo reference
@@ -147,15 +259,22 @@ contract, not a measurement, and it says so; changing it is a contract change.
 
 ### Operations that refuse by default
 
+Snapshot capture, transform refusal, component aggregation decisions and native
+modality checks live in `semantic_operations`; the experimental
+`semantic_record` API continues to re-export them for existing callers.
+
 | Entry point | Refuses when |
 |---|---|
 | `validate_semantic_binding()` | any declared field, identity, convention or setting contradicts measured or declared evidence |
-| `apply_semantic_transform()` | the request names no accepted transform in `supported_transform_composition` |
+| `read_result_with_semantics()` | the result's digest, native owner, objective, units or uncertainty components cannot be bound |
+| `apply_semantic_transform()` | no independently verified converter owns the requested transform, even if the companion lists it |
 | `aggregate_fidelity_components()` | an aggregation is requested without a recorded justification |
 | `qualify_native_modality()` | the native result does not carry the requested quantity |
 
-An empty `supported_transform_composition` means no transform support exists,
-not that every transform is free. A standard error and a confidence radius
+An empty `supported_transform_composition` means no transform support exists.
+A reference listed only by the companion is not independent transform authority;
+this reader refuses both until a verified converter owner exists. A standard
+error and a confidence radius
 derived from the same covariance are two descriptions of one uncertainty, so
 summing them is refused and the components are preserved separately. A backend
 profile advertising `supports_statevector` is a declaration about the backend,

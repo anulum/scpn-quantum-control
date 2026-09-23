@@ -81,6 +81,21 @@ class Parameter:
         if not isinstance(self.trainable, bool):
             raise ValueError("parameter trainable flag must be a boolean")
 
+    def to_semantic_source(self) -> dict[str, object]:
+        """Project native derivative-request identity and trainability.
+
+        Returns
+        -------
+        dict[str, object]
+            Name and mask bit without inventing a parameter value or unit.
+
+        """
+        return {
+            "producer_identity": f"{type(self).__module__}.{type(self).__qualname__}",
+            "name": self.name,
+            "trainable": self.trainable,
+        }
+
 
 @dataclass(frozen=True)
 class ParameterBounds:

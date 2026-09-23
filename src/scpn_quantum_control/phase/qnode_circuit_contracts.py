@@ -684,6 +684,13 @@ class PhaseQNodeClassicalFisherResult:
     sampling_model: str | None = None
     count_mapping: _MappedBasisCounts | None = None
 
+    def to_semantic_source(self) -> dict[str, object]:
+        """Capture complete native Fisher evidence with its typed producer identity."""
+        return {
+            "producer_identity": f"{type(self).__module__}.{type(self).__qualname__}",
+            **self.to_dict(),
+        }
+
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready classical Fisher evidence."""
         result: dict[str, object] = {

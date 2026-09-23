@@ -10,6 +10,8 @@
 from __future__ import annotations
 
 import json
+import math
+from pathlib import Path
 from typing import Any, cast
 
 import pytest
@@ -43,6 +45,8 @@ from scpn_quantum_control.stable_core_product import (
     list_stable_core_contract_ids,
     map_stable_core_public_surfaces,
     problem_from_dict,
+    read_experiment_with_semantics,
+    read_result_with_semantics,
     result_from_dict,
     round_trip_experiment,
     round_trip_problem,
@@ -55,6 +59,65 @@ from scpn_quantum_control.stable_core_product import (
     validate_model_schema_version,
     wrap_model_envelope,
 )
+
+_SEMANTIC_CORPUS = Path(__file__).parent / "data" / "contract_custody_corpus"
+
+
+def test_experiment_reader_preserves_raw_with_qualified_or_refused_semantics() -> None:
+    """Read the same native v2 experiment regardless of companion qualification."""
+    raw = json.loads((_SEMANTIC_CORPUS / "raw_round_trip_preserves_digest.json").read_text())
+    companion = json.loads((_SEMANTIC_CORPUS / "companion_positive_base.json").read_text())
+    original_bytes = canonical_json_bytes(raw)
+
+    experiment, qualified = read_experiment_with_semantics(raw, companion)
+    assert qualified.qualified
+    assert experiment == deserialise_experiment(raw)
+    assert canonical_json_bytes(raw) == original_bytes
+
+    companion["settings"]["effective"]["shots"] = 8192
+    same_experiment, refused = read_experiment_with_semantics(raw, companion)
+    assert same_experiment == experiment
+    assert "effective_contradicts_source" in refused.reasons
+    assert not refused.persist_qualified_record
+    assert canonical_json_bytes(raw) == original_bytes
+
+    same_experiment, missing = read_experiment_with_semantics(raw, None)
+    assert same_experiment == experiment
+    assert missing.raw_readable
+    assert missing.reasons == ("missing_companion",)
+
+
+def test_result_reader_preserves_raw_without_semantics_and_refuses_bad_raw() -> None:
+    """The result facade returns original evidence even without qualification."""
+    raw = serialise_result(
+        build_result(
+            experiment_id="synthetic-gradient",
+            backend_id="caller-supplied",
+            status="succeeded",
+            observables={"objective": 0.5},
+        )
+    )
+    original_bytes = canonical_json_bytes(raw)
+
+    result, missing = read_result_with_semantics(raw, None)
+
+    assert result == deserialise_result(raw)
+    assert missing.raw_readable
+    assert missing.reasons == ("missing_companion",)
+    assert canonical_json_bytes(raw) == original_bytes
+
+    raw["schema_version"] = "stable_core.experiment_model.v3"
+    with pytest.raises(ValueError, match="unknown model schema"):
+        read_result_with_semantics(raw, None)
+
+
+@pytest.mark.parametrize("value", [math.nan, math.inf, -math.inf])
+def test_evidence_digest_refuses_non_json_numbers(value: float) -> None:
+    """A canonical evidence digest must not encode non-standard JSON numbers."""
+    with pytest.raises(ValueError, match="Out of range float values"):
+        canonical_json_bytes({"measured": value})
+    with pytest.raises(ValueError, match="Out of range float values"):
+        digest_stable_core_payload({"measured": value})
 
 
 @pytest.mark.parametrize("kind", ["problem", "backend", "experiment", "result"])

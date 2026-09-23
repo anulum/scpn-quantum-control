@@ -23,7 +23,13 @@ from typing import Any, Final
 
 import pytest
 
+from scpn_quantum_control import semantic_record as semantic_owner
 from scpn_quantum_control import stable_core_product as scp
+from scpn_quantum_control.differentiable import value_and_grad
+from scpn_quantum_control.native_semantic_binding import (
+    SYNTHETIC_UNIT_DECLARATION_ORIGIN,
+    capture_native_source,
+)
 from scpn_quantum_control.semantic_record import (
     ACCEPTED_TANGENT_CONVENTIONS,
     DECLARED_FIELD_UNITS,
@@ -31,6 +37,7 @@ from scpn_quantum_control.semantic_record import (
     SEMANTIC_COMPANION_MAJOR,
     SEMANTIC_COMPANION_SCHEMA,
     SEMANTIC_RECORD_CLAIM_BOUNDARY,
+    SYNTHETIC_DERIVATIVE_CLAIM_BOUNDARY,
     CapturedSemanticRecord,
     MeasuredField,
     ProducerObservation,
@@ -105,6 +112,375 @@ def raw_record() -> dict[str, Any]:
 def companion() -> dict[str, Any]:
     """Return the positive companion base document."""
     return _fixture("companion_positive_base")
+
+
+def test_native_source_record_requires_actual_owner_and_refuses_rehashed_substitution(
+    raw_record: dict[str, Any], companion: dict[str, Any]
+) -> None:
+    """The public companion validator binds native metadata to the actual result."""
+    owner = value_and_grad(lambda values: values[0] ** 2, [2.0], method="reverse_mode")
+    retained = capture_native_source(owner)
+    companion["source_records"]["native_gradient"] = retained
+
+    absent = validate_semantic_binding(companion, raw_record)
+    assert not absent.qualified
+    assert "source_producer_unverifiable" in {item.code for item in absent.refusals}
+
+    bound = validate_semantic_binding(
+        companion, raw_record, native_sources={"native_gradient": owner}
+    )
+    assert bound.qualified
+
+    wrong_owner = validate_semantic_binding(
+        companion, raw_record, native_sources={"native_gradient": object()}
+    )
+    assert "source_producer_unverifiable" in {item.code for item in wrong_owner.refusals}
+    unrecorded_owner = validate_semantic_binding(
+        companion, raw_record, native_sources={"native_gradient": owner, "orphan": owner}
+    )
+    assert "source_producer_unverifiable" in {item.code for item in unrecorded_owner.refusals}
+
+    missing_schema = copy.deepcopy(companion)
+    del missing_schema["source_records"]["native_gradient"]["schema"]
+    unversioned = validate_semantic_binding(
+        missing_schema, raw_record, native_sources={"native_gradient": owner}
+    )
+    assert not unversioned.qualified
+    assert "source_record_not_reproduced" in {item.code for item in unversioned.refusals}
+
+    retained["record"]["gradient"] = [999.0]
+    retained["record_sha256"] = scp.digest_stable_core_payload(retained["record"])
+    substituted = validate_semantic_binding(
+        companion, raw_record, native_sources={"native_gradient": owner}
+    )
+    assert not substituted.qualified
+    assert "source_record_not_reproduced" in {item.code for item in substituted.refusals}
+
+
+@pytest.mark.parametrize(
+    "location",
+    [
+        "top",
+        "result_only",
+        "record",
+        "backend",
+        "settings",
+        "origin",
+        "rejected",
+        "source",
+        "source_binding",
+        "source_metadata",
+        "mapping",
+        "origin_extra",
+        "requested_shape",
+    ],
+)
+def test_unreviewed_companion_claim_cannot_qualify(
+    raw_record: dict[str, Any], companion: dict[str, Any], location: str
+) -> None:
+    """Unknown claim fields cannot ride along with otherwise valid semantics."""
+    if location == "top":
+        companion["hardware_execution"] = True
+    elif location == "result_only":
+        companion["fidelity_unit_declaration"] = {"hardware_calibrated": True}
+    elif location == "record":
+        companion["record_reference"]["hardware_execution"] = True
+    elif location == "backend":
+        companion["backend_reference"]["hardware_execution"] = True
+    elif location == "settings":
+        companion["settings"]["hardware_execution"] = True
+    elif location == "origin":
+        companion["settings"]["origins"]["shots"]["hardware_execution"] = True
+    elif location == "rejected":
+        companion["settings"]["rejected_fields"] = ["hardware_execution"]
+    elif location == "source_binding":
+        companion["source_binding"]["hardware_execution"] = True
+    elif location == "source_metadata":
+        companion["source_records"]["planning_policy"]["hardware_execution"] = True
+    elif location == "mapping":
+        companion["measurement_mapping"]["hardware_execution"] = True
+    elif location == "origin_extra":
+        companion["settings"]["origins"]["hardware_execution"] = {"source_ref": "planning_policy"}
+    elif location == "requested_shape":
+        companion["settings"]["requested"] = ["shots"]
+    else:
+        companion["source_records"]["unbound_hardware"] = {"hardware_execution": True}
+
+    _, binding = scp.read_experiment_with_semantics(raw_record, companion)
+
+    assert binding.raw_readable
+    assert not binding.qualified
+
+
+@pytest.fixture
+def stochastic_result_case(
+    companion: dict[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any], object]:
+    """Build one real local derivative result with a source-bound v2 companion."""
+    from scpn_quantum_control import differentiable as ad
+    from scpn_quantum_control.stable_core import Result
+
+    scenario = _fixture("fidelity_components_preserve_native_uncertainty")
+    request = dict(scenario["inputs"]["source_records"]["derivative"]["inputs"])
+    request["parameters"] = [ad.Parameter(**row) for row in request["parameters"]]
+    result = ad.parameter_shift_gradient_with_uncertainty(**request)
+    retained = capture_native_source(result)
+    raw_record = scp.serialise_result(
+        Result(
+            experiment_id="synthetic-gradient",
+            backend_id="caller-supplied",
+            status="succeeded",
+            observables={"objective": result.value},
+            metadata={"native_source_record_sha256": retained["record_sha256"]},
+        )
+    )
+    companion["record_reference"] = {
+        "schema": raw_record["schema_version"],
+        "kind": "result",
+        "digest": scp.digest_stable_core_payload(raw_record),
+    }
+    companion["source_binding"] = {
+        "native_source_ref": "derivative",
+        "raw_field": "body.metadata.native_source_record_sha256",
+    }
+    companion["source_records"] = {"derivative": retained}
+    companion["backend_reference"] = {
+        "source_record": "raw_record",
+        "field_path": "body.backend_id",
+        "record_digest": companion["record_reference"]["digest"],
+        "backend_id": "caller-supplied",
+        "stage": "result",
+    }
+    companion["producer_identity"] = retained["producer_identity"]
+    companion["parameter_order"] = list(result.parameter_names)
+    companion["trainable_mask"] = list(result.trainable)
+    companion["fields"] = {"gradient": {"dtype": "float64", "shape": [2], "unit": "1"}}
+    companion["modality"] = "stochastic_derivative_result"
+    companion["settings"] = {
+        "stage": "observation",
+        "requested": {},
+        "effective": {},
+        "origins": {},
+        "rejected_fields": [],
+    }
+    unit_declaration = copy.deepcopy(scenario["inputs"]["unit_declaration"])
+    assert unit_declaration["origin"] == (
+        "explicit synthetic fixture caller; not native producer metadata"
+    )
+    unit_declaration["origin"] = SYNTHETIC_UNIT_DECLARATION_ORIGIN
+    companion["fidelity_unit_declaration"] = unit_declaration
+    companion["claim_boundary"] = SYNTHETIC_DERIVATIVE_CLAIM_BOUNDARY
+    companion["unavailable"] = [
+        "hardware_execution",
+        "calibration_reference",
+        "unit_conversion",
+        "supported_transform_composition",
+        "native_parameter_units",
+    ]
+    components = copy.deepcopy(scenario["inputs"]["fidelity_components"])
+    for component in components:
+        kind = component["kind"]
+        component["evidence_ref"]["sha256"] = retained["record_sha256"]
+        component["evidence_ref"]["field_path"] = f"record.{kind}"
+        component["evidence_ref"]["covariance_path"] = "record.covariance"
+        component["evidence_ref"]["confidence_level_path"] = "record.confidence_level"
+        component["evidence_ref"]["confidence_z_path"] = "record.confidence_interval.confidence_z"
+    companion["fidelity_components"] = components
+    return raw_record, companion, result
+
+
+def test_native_uncertainty_components_bind_without_aggregation_or_raw_mutation(
+    stochastic_result_case: tuple[dict[str, Any], dict[str, Any], object],
+) -> None:
+    """A real stochastic result owns both component values and their covariance."""
+    raw_record, companion, result = stochastic_result_case
+    original_raw = scp.canonical_json_bytes(raw_record)
+
+    original, accepted = scp.read_result_with_semantics(
+        raw_record, companion, native_sources={"derivative": result}
+    )
+    assert original == scp.deserialise_result(raw_record)
+    assert accepted.qualified
+    assert scp.canonical_json_bytes(raw_record) == original_raw
+    assert accepted.semantics is not None
+    assert accepted.semantics.payload["fidelity_components"] == companion["fidelity_components"]
+
+    changed = copy.deepcopy(companion)
+    changed["fidelity_components"][0]["value"][0] = 999.0
+    unchanged, refused = scp.read_result_with_semantics(
+        raw_record, changed, native_sources={"derivative": result}
+    )
+    assert unchanged == original
+    assert not refused.qualified
+    assert "fidelity_source_unverifiable" in refused.reasons
+
+
+@pytest.mark.parametrize(
+    ("name", "value"),
+    [
+        ("backend_reference", {}),
+        ("producer_identity", "unrelated.Result"),
+        ("modality", "hardware_counts"),
+        ("parameter_order", ["a", "z"]),
+        ("trainable_mask", [True, True]),
+        ("tangent_convention", "reverse_holomorphic"),
+        ("fields", {"gradient": {"dtype": "float32", "shape": [2], "unit": "1"}}),
+        ("claim_boundary", "hardware verified"),
+        ("calibration_reference", "self declared"),
+        ("unavailable", []),
+        ("fidelity_unit_declaration", {"objective": "Hz"}),
+        ("settings", {"stage": "planning"}),
+        ("fidelity_components", []),
+        ("fidelity_components", [None, None]),
+    ],
+)
+def test_stochastic_result_rejects_unbacked_claims(
+    stochastic_result_case: tuple[dict[str, Any], dict[str, Any], object],
+    name: str,
+    value: object,
+) -> None:
+    """Changing one native-bound field cannot retain result qualification."""
+    raw_record, companion, owner = stochastic_result_case
+    companion[name] = value
+
+    _, outcome = scp.read_result_with_semantics(
+        raw_record, companion, native_sources={"derivative": owner}
+    )
+
+    assert outcome.raw_readable
+    assert not outcome.qualified
+
+
+def test_stochastic_result_refuses_missing_or_substituted_owner(
+    stochastic_result_case: tuple[dict[str, Any], dict[str, Any], object],
+) -> None:
+    """A retained self-hash cannot replace the actual typed derivative result."""
+    raw_record, companion, owner = stochastic_result_case
+    _, absent = scp.read_result_with_semantics(raw_record, companion)
+    assert not absent.qualified
+    assert "stochastic_result_mismatch" in absent.reasons
+
+    companion["source_records"]["derivative"]["record"]["gradient"][0] = 999.0
+    companion["source_records"]["derivative"]["record_sha256"] = scp.digest_stable_core_payload(
+        companion["source_records"]["derivative"]["record"]
+    )
+    _, substituted = scp.read_result_with_semantics(
+        raw_record, companion, native_sources={"derivative": owner}
+    )
+    assert not substituted.qualified
+    assert "source_record_not_reproduced" in substituted.reasons
+
+
+def test_stochastic_result_refuses_extra_unbound_source(
+    stochastic_result_case: tuple[dict[str, Any], dict[str, Any], object],
+) -> None:
+    """An unrelated retained source cannot ride a qualified result companion."""
+    raw_record, companion, owner = stochastic_result_case
+    companion["source_records"]["extra"] = copy.deepcopy(companion["source_records"]["derivative"])
+
+    _, outcome = scp.read_result_with_semantics(
+        raw_record, companion, native_sources={"derivative": owner}
+    )
+
+    assert not outcome.qualified
+    assert "stochastic_result_mismatch" in outcome.reasons
+
+
+@pytest.mark.parametrize("kind", ["standard_error", "unsupported", ["standard_error"]])
+def test_stochastic_result_refuses_duplicate_or_malformed_uncertainty_kind(
+    stochastic_result_case: tuple[dict[str, Any], dict[str, Any], object], kind: object
+) -> None:
+    """Two distinct native uncertainty descriptions must remain separable."""
+    raw_record, companion, owner = stochastic_result_case
+    companion["fidelity_components"][1]["kind"] = kind
+
+    _, outcome = scp.read_result_with_semantics(
+        raw_record, companion, native_sources={"derivative": owner}
+    )
+
+    assert not outcome.qualified
+    assert "fidelity_source_unverifiable" in outcome.reasons
+
+
+@pytest.mark.parametrize("field", ["native_source_record_sha256", "objective", "backend_id"])
+def test_stochastic_result_rejects_raw_result_rebinding(
+    stochastic_result_case: tuple[dict[str, Any], dict[str, Any], object], field: str
+) -> None:
+    """Rehashing a changed raw result does not validate its former native source."""
+    raw_record, companion, owner = stochastic_result_case
+    if field == "native_source_record_sha256":
+        raw_record["body"]["metadata"][field] = "0" * 64
+    elif field == "objective":
+        raw_record["body"]["observables"][field] = 999.0
+    else:
+        raw_record["body"][field] = "ibm_brisbane"
+    digest = scp.digest_stable_core_payload(raw_record)
+    companion["record_reference"]["digest"] = digest
+    companion["backend_reference"]["record_digest"] = digest
+    if field == "backend_id":
+        companion["backend_reference"]["backend_id"] = "ibm_brisbane"
+
+    _, outcome = scp.read_result_with_semantics(
+        raw_record, companion, native_sources={"derivative": owner}
+    )
+
+    assert outcome.raw_readable
+    assert not outcome.qualified
+
+
+def test_studio_preview_source_reaches_real_experiment_consumer(
+    raw_record: dict[str, Any], companion: dict[str, Any]
+) -> None:
+    """An actual Studio preview is checked through the public v2 reader."""
+    pytest.importorskip("scpn_studio_platform", reason="studio extra not installed")
+    from scpn_quantum_control.studio.executive import (
+        ActionRegistry,
+        ExecutiveRequest,
+        preview_action,
+    )
+    from scpn_quantum_control.studio.executive_execute import ExecuteActionHandler
+
+    registry = ActionRegistry()
+    registry.register(ExecuteActionHandler())
+    request = ExecutiveRequest(
+        verb="execute",
+        action_id="semantic-studio-preview",
+        parameters={
+            "provider": "ibm-quantum",
+            "endpoint": "ibm_brisbane",
+            "circuit_digest": "sha256:abc123",
+            "circuit_ref": "data/studio/xy_compile_recompute_unit_20260708.json",
+            "shots": 4096,
+        },
+    )
+    plan = preview_action(request, registry=registry)
+    companion["source_records"]["studio_plan"] = capture_native_source(plan)
+
+    experiment, bound = scp.read_experiment_with_semantics(
+        raw_record, companion, native_sources={"studio_plan": plan}
+    )
+
+    assert experiment == scp.deserialise_experiment(raw_record)
+    assert bound.qualified
+    assert bound.semantics is not None
+    assert (
+        bound.semantics.section("source_records")["studio_plan"]["record"]["plan"]["parameters"][
+            "shots"
+        ]
+        == 4096
+    )
+
+    changed = copy.deepcopy(companion)
+    changed["source_records"]["studio_plan"]["record"]["plan"]["parameters"]["shots"] = 1
+    changed["source_records"]["studio_plan"]["record_sha256"] = scp.digest_stable_core_payload(
+        changed["source_records"]["studio_plan"]["record"]
+    )
+    unchanged, refused = scp.read_experiment_with_semantics(
+        raw_record, changed, native_sources={"studio_plan": plan}
+    )
+    assert unchanged == experiment
+    assert not refused.qualified
+    assert "source_record_not_reproduced" in refused.reasons
 
 
 class TestProducerObservation:
@@ -206,7 +582,7 @@ class TestProducerObservation:
         binding = dict(companion["source_binding"])
         binding["adapter"] = "scpn_quantum_control.stable_core.no_such_adapter"
 
-        with pytest.raises(SemanticRecordError, match="cannot resolve"):
+        with pytest.raises(SemanticRecordError, match="not admitted"):
             observe_producer(raw_record, binding)
 
     def test_adapter_without_a_module_refuses(
@@ -219,19 +595,183 @@ class TestProducerObservation:
         with pytest.raises(SemanticRecordError, match="not a module-qualified name"):
             observe_producer(raw_record, binding)
 
-    def test_non_callable_adapter_refuses(
+    def test_unreviewed_same_package_attribute_refuses(
         self, raw_record: dict[str, Any], companion: dict[str, Any]
     ) -> None:
-        """A resolvable attribute that cannot be invoked is refused."""
+        """An importable attribute is not an admitted adapter by proximity."""
         binding = dict(companion["source_binding"])
         binding["adapter"] = "scpn_quantum_control.stable_core_product.STABLE_CORE_PRODUCT_SCHEMA"
 
-        with pytest.raises(SemanticRecordError, match="is not callable"):
+        with pytest.raises(SemanticRecordError, match="not admitted"):
+            observe_producer(raw_record, binding)
+
+    def test_external_adapter_path_cannot_trigger_import(
+        self,
+        raw_record: dict[str, Any],
+        companion: dict[str, Any],
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Untrusted companion text cannot direct a module import."""
+        import builtins
+
+        binding = dict(companion["source_binding"])
+        binding["adapter"] = "untrusted_adapter_module.run"
+        original_import = builtins.__import__
+
+        def guarded_import(name: str, *args: Any, **kwargs: Any) -> Any:
+            if name == "untrusted_adapter_module":
+                raise AssertionError("untrusted import was attempted")
+            return original_import(name, *args, **kwargs)
+
+        monkeypatch.setattr(builtins, "__import__", guarded_import)
+        with pytest.raises(SemanticRecordError, match="not admitted"):
             observe_producer(raw_record, binding)
 
 
 class TestScientificSemantics:
     """The companion snapshot is immutable and hashes its own bytes."""
+
+    @pytest.mark.parametrize("mask", [["true", True], [1, True], [False, True]])
+    def test_unverified_trainable_mask_cannot_qualify(
+        self, raw_record: dict[str, Any], companion: dict[str, Any], mask: list[object]
+    ) -> None:
+        """A declaration cannot invent a typed or frozen derivative request."""
+        companion["trainable_mask"] = mask
+
+        outcome = validate_semantic_binding(companion, raw_record)
+
+        assert outcome.raw_readable
+        assert not outcome.qualified
+        assert "trainable_mask_unverifiable" in {item.code for item in outcome.refusals}
+
+    @pytest.mark.parametrize(
+        "missing",
+        [
+            "backend_reference",
+            "calibration_reference",
+            "claim_boundary",
+            "fidelity_components",
+            "fields",
+            "modality",
+            "settings",
+            "unavailable",
+        ],
+    )
+    def test_required_section_omission_cannot_qualify(
+        self, raw_record: dict[str, Any], companion: dict[str, Any], missing: str
+    ) -> None:
+        """An omitted semantic field cannot disappear from qualification."""
+        del companion[missing]
+
+        outcome = validate_semantic_binding(companion, raw_record)
+
+        assert outcome.raw_readable
+        assert not outcome.qualified
+        assert any(
+            refusal.code == "malformed_companion" and refusal.field_path == missing
+            for refusal in outcome.refusals
+        )
+
+    @pytest.mark.parametrize(
+        ("path", "value"),
+        [
+            (("backend_reference", "backend_id"), "other-backend"),
+            (("backend_reference", "record_digest"), "0" * 64),
+            (("backend_reference", "field_path"), "body.problem"),
+            (("backend_reference", "producer_identity"), "other.Backend"),
+            (("backend_reference", "stage"), "observed"),
+            (("modality",), "statevector"),
+        ],
+    )
+    def test_backend_or_modality_cannot_promote_raw_plan(
+        self,
+        raw_record: dict[str, Any],
+        companion: dict[str, Any],
+        path: tuple[str, ...],
+        value: str,
+    ) -> None:
+        """A raw experiment plan cannot be rebound to another backend or modality."""
+        if len(path) == 1:
+            companion[path[0]] = value
+        else:
+            companion[path[0]][path[1]] = value
+
+        outcome = validate_semantic_binding(companion, raw_record)
+
+        assert outcome.raw_readable
+        assert not outcome.qualified
+
+    @pytest.mark.parametrize("backend", [None, {}])
+    def test_unreadable_raw_backend_cannot_gain_semantic_reference(
+        self, raw_record: dict[str, Any], companion: dict[str, Any], backend: object
+    ) -> None:
+        """A malformed raw backend remains unqualified through the public reader."""
+        raw_record["body"]["backend"] = backend
+        companion["record_reference"]["digest"] = scp.digest_stable_core_payload(raw_record)
+
+        outcome = validate_semantic_binding(companion, raw_record)
+
+        assert not outcome.raw_readable
+        assert not outcome.qualified
+        assert "backend_reference_mismatch" in {item.code for item in outcome.refusals}
+
+    @pytest.mark.parametrize(
+        ("name", "value"),
+        [
+            ("calibration_reference", "self-declared-calibration"),
+            ("fidelity_components", [{"kind": "standard_error", "value": [0.0]}]),
+        ],
+    )
+    def test_unbacked_calibration_or_uncertainty_cannot_qualify(
+        self,
+        raw_record: dict[str, Any],
+        companion: dict[str, Any],
+        name: str,
+        value: object,
+    ) -> None:
+        """A standalone label or component cannot supply missing native evidence."""
+        companion[name] = value
+
+        outcome = validate_semantic_binding(companion, raw_record)
+
+        assert outcome.raw_readable
+        assert not outcome.qualified
+
+    @pytest.mark.parametrize(
+        ("name", "value"),
+        [
+            ("claim_boundary", "hardware results verified"),
+            ("unavailable", []),
+            ("measurement_mapping", {"kind": "identity"}),
+            (
+                "settings",
+                {
+                    "stage": "observed",
+                    "requested": {"shots": None},
+                    "effective": {"shots": 4096},
+                    "origins": {
+                        "shots": {
+                            "source_ref": "planning_policy",
+                            "requested_path": "record.shot_policy.requested_shots",
+                            "effective_path": "record.shot_policy.planned_shots",
+                            "defaulted_path": "record.shot_policy.defaulted",
+                        }
+                    },
+                    "rejected_fields": [],
+                },
+            ),
+        ],
+    )
+    def test_plan_claims_cannot_be_promoted_by_companion_text(
+        self, raw_record: dict[str, Any], companion: dict[str, Any], name: str, value: object
+    ) -> None:
+        """Qualification does not trust assertions of observed evidence in plan metadata."""
+        companion[name] = value
+
+        outcome = validate_semantic_binding(companion, raw_record)
+
+        assert outcome.raw_readable
+        assert not outcome.qualified
 
     def test_snapshot_does_not_alias_its_source(self, companion: dict[str, Any]) -> None:
         """Mutating the source mapping cannot reach a constructed record."""
@@ -410,15 +950,81 @@ class TestQualification:
         assert not outcome.qualified
 
     def test_supplied_observation_is_used_without_reinvoking_the_adapter(
+        self,
+        raw_record: dict[str, Any],
+        companion: dict[str, Any],
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """An exact pre-measured observation bounds repeated qualification work."""
+        observation = observe_producer(raw_record, companion["source_binding"])
+
+        def forbidden_remeasurement(*_args: object, **_kwargs: object) -> ProducerObservation:
+            raise AssertionError("matching cached observation must not rerun the adapter")
+
+        monkeypatch.setattr(semantic_owner, "observe_producer", forbidden_remeasurement)
+
+        outcome = validate_semantic_binding(companion, raw_record, observation=observation)
+
+        assert outcome.qualified
+
+    @pytest.mark.parametrize("damage", ["invalid_body", "future_major"])
+    def test_stale_observation_cannot_qualify_unreadable_raw_record(
+        self, raw_record: dict[str, Any], companion: dict[str, Any], damage: str
+    ) -> None:
+        """A cached producer measurement never makes invalid raw evidence readable.
+
+        Parameters
+        ----------
+        damage
+            Independent malformed body or unsupported raw schema.
+
+        """
+        observation = observe_producer(raw_record, companion["source_binding"])
+        if damage == "invalid_body":
+            raw_record["body"]["problem"]["omega"] = "not a numeric vector"
+        else:
+            raw_record["schema_version"] = "stable_core.experiment_model.v99"
+        companion["record_reference"].update(
+            schema=raw_record["schema_version"],
+            digest=scp.digest_stable_core_payload(raw_record),
+        )
+        before = copy.deepcopy(raw_record)
+
+        outcome = validate_semantic_binding(companion, raw_record, observation=observation)
+
+        assert not outcome.raw_readable
+        assert "unreadable_raw_record" in outcome.reasons
+        assert not outcome.qualified
+        assert not outcome.persist_qualified_record
+        assert raw_record == before
+
+    def test_cached_observation_is_bound_to_exact_raw_digest(
         self, raw_record: dict[str, Any], companion: dict[str, Any]
     ) -> None:
-        """A pre-measured observation bounds repeated qualification work."""
+        """A valid but changed raw record cannot inherit an earlier measurement."""
+        observation = observe_producer(raw_record, companion["source_binding"])
+        raw_record["body"]["problem"]["omega"][0] = 0.125
+        scp.deserialise_experiment(raw_record)
+        companion["record_reference"]["digest"] = scp.digest_stable_core_payload(raw_record)
+
+        outcome = validate_semantic_binding(companion, raw_record, observation=observation)
+
+        assert outcome.raw_readable
+        assert "stale_producer_observation" in outcome.reasons
+        assert not outcome.persist_qualified_record
+
+    def test_cached_observation_is_bound_to_source_adapter(
+        self, raw_record: dict[str, Any], companion: dict[str, Any]
+    ) -> None:
+        """A changed adapter path cannot borrow a valid earlier observation."""
         observation = observe_producer(raw_record, companion["source_binding"])
         companion["source_binding"]["adapter"] = "scpn_quantum_control.stable_core.absent"
 
         outcome = validate_semantic_binding(companion, raw_record, observation=observation)
 
-        assert outcome.qualified
+        assert outcome.raw_readable
+        assert "stale_producer_observation" in outcome.reasons
+        assert not outcome.qualified
 
     def test_field_absent_from_the_producer_refuses(
         self, raw_record: dict[str, Any], companion: dict[str, Any]
@@ -482,11 +1088,34 @@ class TestQualification:
     def test_count_modality_must_carry_a_bit_mapping(
         self, raw_record: dict[str, Any], companion: dict[str, Any]
     ) -> None:
-        """A count-based modality cannot decline the measurement mapping."""
+        """A count modality cannot qualify without producer-backed bit mapping."""
         companion["modality"] = "measurement_counts"
 
         outcome = validate_semantic_binding(companion, raw_record)
 
+        assert "measurement_mapping_missing" in outcome.reasons
+
+    @pytest.mark.parametrize(
+        "mapping",
+        [
+            {"kind": "invented"},
+            {"kind": "bit_mapping", "bits": [0, 1]},
+        ],
+    )
+    def test_count_mapping_label_cannot_invent_source_bit_order(
+        self,
+        raw_record: dict[str, Any],
+        companion: dict[str, Any],
+        mapping: dict[str, Any],
+    ) -> None:
+        """A declared map alone is not evidence of actual measurement wiring."""
+        companion["modality"] = "measurement_counts"
+        companion["measurement_mapping"] = mapping
+
+        outcome = validate_semantic_binding(companion, raw_record)
+
+        assert outcome.raw_readable
+        assert not outcome.qualified
         assert "measurement_mapping_missing" in outcome.reasons
 
     def test_measurement_mapping_must_state_its_kind(
@@ -502,6 +1131,79 @@ class TestQualification:
 
 class TestSettingsProvenance:
     """Requested and effective values are checked against their declared origins."""
+
+    def test_effective_value_without_source_path_refuses_qualification(
+        self, raw_record: dict[str, Any], companion: dict[str, Any]
+    ) -> None:
+        """A named source without a path cannot substantiate effective shots."""
+        del companion["settings"]["origins"]["shots"]["effective_path"]
+
+        outcome = validate_semantic_binding(companion, raw_record)
+
+        assert not outcome.qualified
+        assert "setting_origin_missing" in outcome.reasons
+
+    def test_missing_or_duplicate_setting_source_override(
+        self, raw_record: dict[str, Any], companion: dict[str, Any]
+    ) -> None:
+        """An absent override refuses; a repeated real ref retains one authority."""
+        origin = companion["settings"]["origins"]["shots"]
+        origin["effective_source_ref"] = "missing_result"
+        missing = validate_semantic_binding(companion, raw_record)
+        assert "setting_origin_missing" in missing.reasons
+        assert not missing.qualified
+
+        origin["effective_source_ref"] = "planning_policy"
+        repeated = validate_semantic_binding(companion, raw_record)
+        assert repeated.qualified
+
+    def test_defaulted_setting_can_omit_unrequested_section_path(
+        self, raw_record: dict[str, Any], companion: dict[str, Any]
+    ) -> None:
+        """A recorded default remains interpretable when no request was made."""
+        del companion["settings"]["requested"]["shots"]
+        del companion["settings"]["origins"]["shots"]["requested_path"]
+
+        outcome = validate_semantic_binding(companion, raw_record)
+
+        assert outcome.qualified
+
+    def test_self_consistent_forged_source_cannot_qualify_effective_shots(
+        self, raw_record: dict[str, Any], companion: dict[str, Any]
+    ) -> None:
+        """A matching self-hash is weaker than replaying the actual plan producer."""
+        source = companion["source_records"]["planning_policy"]
+        source["record"]["shot_policy"]["planned_shots"] = 8192
+        source["record_sha256"] = scp.digest_stable_core_payload(source["record"])
+        companion["settings"]["effective"]["shots"] = 8192
+
+        outcome = validate_semantic_binding(companion, raw_record)
+
+        assert outcome.raw_readable
+        assert "source_record_not_reproduced" in outcome.reasons
+        assert not outcome.qualified
+
+    def test_unapproved_source_producer_is_not_invoked(
+        self, raw_record: dict[str, Any], companion: dict[str, Any]
+    ) -> None:
+        """A companion cannot select an arbitrary callable as its evidence source."""
+        companion["source_records"]["planning_policy"]["producer"] = "os.system"
+
+        outcome = validate_semantic_binding(companion, raw_record)
+
+        assert "source_producer_unverifiable" in outcome.reasons
+        assert not outcome.qualified
+
+    def test_malformed_replay_inputs_refuse_without_source_substitution(
+        self, raw_record: dict[str, Any], companion: dict[str, Any]
+    ) -> None:
+        """The named pure producer must accept the retained original inputs."""
+        del companion["source_records"]["planning_policy"]["inputs"]["backend"]
+
+        outcome = validate_semantic_binding(companion, raw_record)
+
+        assert "source_producer_unverifiable" in outcome.reasons
+        assert not outcome.qualified
 
     def test_setting_without_an_origin_refuses(
         self, raw_record: dict[str, Any], companion: dict[str, Any]
@@ -706,10 +1408,8 @@ class TestTransformRefusal:
         assert decision.decision == "refuse_unsupported_conversion"
         assert "not in the companion's supported composition" in decision.detail
 
-    def test_a_listed_transform_is_accepted_without_converting(
-        self, companion: dict[str, Any]
-    ) -> None:
-        """An accepted authority is recorded; this reader still converts nothing."""
+    def test_a_self_listed_transform_is_not_authority(self, companion: dict[str, Any]) -> None:
+        """A companion cannot grant its own unit-conversion authority."""
         companion["supported_transform_composition"] = ["declared.angular_to_ordinary"]
 
         decision = apply_semantic_transform(
@@ -721,9 +1421,37 @@ class TestTransformRefusal:
             },
         )
 
-        assert decision.decision == "accept_declared_transform"
+        assert decision.decision == "refuse_unsupported_conversion"
         assert decision.converted_value is None
         assert not decision.executed
+        assert not decision.persist_qualified_record
+
+    def test_self_listed_transform_cannot_qualify_companion(
+        self, raw_record: dict[str, Any], companion: dict[str, Any]
+    ) -> None:
+        """A valid raw record cannot make a self-listed converter verified."""
+        companion["supported_transform_composition"] = ["declared.angular_to_ordinary"]
+
+        outcome = validate_semantic_binding(companion, raw_record)
+
+        assert outcome.raw_readable
+        assert not outcome.qualified
+        assert "unsupported_transform_authority" in outcome.reasons
+
+    @pytest.mark.parametrize("supported", [None, "declared.converter"])
+    def test_transform_support_requires_an_explicit_list(
+        self,
+        raw_record: dict[str, Any],
+        companion: dict[str, Any],
+        supported: object,
+    ) -> None:
+        """Missing or malformed support metadata cannot qualify semantics."""
+        companion["supported_transform_composition"] = supported
+
+        outcome = validate_semantic_binding(companion, raw_record)
+
+        assert not outcome.qualified
+        assert "malformed_companion" in outcome.reasons
 
     def test_a_non_sequence_composition_supports_nothing(self, companion: dict[str, Any]) -> None:
         """A malformed composition field cannot authorise a conversion."""

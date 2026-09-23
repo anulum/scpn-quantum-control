@@ -25,7 +25,7 @@ import hashlib
 import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any, Final, Literal, cast
+from typing import TYPE_CHECKING, Any, Final, Literal, cast
 
 from .stable_core import (
     Backend,
@@ -38,6 +38,9 @@ from .stable_core import (
     build_result,
     classical_reference_backend,
 )
+
+if TYPE_CHECKING:
+    from .semantic_record import SemanticBinding
 
 ContractKind = Literal["problem", "backend", "experiment", "result", "schema_policy"]
 """Public product contract kinds."""
@@ -804,7 +807,9 @@ def canonical_json_bytes(payload: Mapping[str, Any]) -> bytes:
     """
     if not isinstance(payload, Mapping):
         raise ValueError("payload must be a mapping")
-    text = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    text = json.dumps(
+        payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False
+    )
     return text.encode("utf-8")
 
 
@@ -877,12 +882,81 @@ def deserialise_experiment(envelope: Mapping[str, Any]) -> Experiment:
     return experiment_from_dict(body)
 
 
+def read_experiment_with_semantics(
+    envelope: Mapping[str, Any],
+    companion: Mapping[str, Any] | None,
+    *,
+    native_sources: Mapping[str, object] | None = None,
+) -> tuple[Experiment, SemanticBinding]:
+    """Read an unchanged v2 experiment and qualify its optional companion.
+
+    This experimental consumer returns the native experiment even when the
+    companion cannot be qualified. An unreadable raw v2 envelope still raises
+    through the existing reader; no companion may repair invalid raw evidence.
+
+    Parameters
+    ----------
+    envelope
+        Original stable-core v2 experiment envelope.
+    companion
+        Separate scientific-semantics document, or ``None``.
+    native_sources
+        Actual typed source objects for any retained native source records.
+
+    Returns
+    -------
+    tuple[Experiment, SemanticBinding]
+        Native experiment and independent semantic qualification result.
+
+    Raises
+    ------
+    ValueError
+        If the raw envelope is not a readable v2 experiment.
+
+    """
+    experiment = deserialise_experiment(envelope)
+    from .semantic_record import validate_semantic_binding
+
+    return experiment, validate_semantic_binding(
+        companion, envelope, native_sources=native_sources
+    )
+
+
 def deserialise_result(envelope: Mapping[str, Any]) -> Result:
     """Deserialise a Result from a versioned envelope."""
     _version, kind, body = unwrap_model_envelope(envelope)
     if kind != "result":
         raise ValueError(f"expected result envelope, got {kind!r}")
     return result_from_dict(body)
+
+
+def read_result_with_semantics(
+    envelope: Mapping[str, Any],
+    companion: Mapping[str, Any] | None,
+    *,
+    native_sources: Mapping[str, object] | None = None,
+) -> tuple[Result, SemanticBinding]:
+    """Read unchanged v2 result evidence and qualify a separate companion.
+
+    Parameters
+    ----------
+    envelope
+        Original stable-core result envelope, never modified by qualification.
+    companion
+        Separate versioned semantics, or ``None`` when unavailable.
+    native_sources
+        Actual typed owners of any retained native evidence.
+
+    Returns
+    -------
+    tuple[Result, SemanticBinding]
+        Native result and independent fail-closed semantic outcome.
+
+    """
+    result = deserialise_result(envelope)
+    from .semantic_record import validate_semantic_binding
+
+    return result, validate_semantic_binding(companion, envelope, native_sources=native_sources)
 
 
 def round_trip_problem(problem: Problem) -> StableCoreRoundTripResult:
@@ -1116,6 +1190,8 @@ __all__ = [
     "list_stable_core_contract_ids",
     "map_stable_core_public_surfaces",
     "problem_from_dict",
+    "read_experiment_with_semantics",
+    "read_result_with_semantics",
     "result_from_dict",
     "round_trip_experiment",
     "round_trip_problem",

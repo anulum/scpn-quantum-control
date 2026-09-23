@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **705 modules** across **39 package families**
-- **3961 documented public module-level symbols**
+- **709 modules** across **39 package families**
+- **3969 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -5021,7 +5021,7 @@ Federate the committed offline QEC-readiness decision as a schema-B bundle.
 
 ### `scpn_quantum_control.studio.qpu_result_pack`
 
-Emit and present the attestation-verifiable ``studio.qpu-result-pack.v1`` unit.
+Emit a QPU result-pack unit without promoting unchecked provider signatures.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/qpu_result_pack.py) · Public symbols: **4**
 
@@ -5059,7 +5059,7 @@ Per-claim reference-validation certifications for the Studio frontier.
 
 ### `scpn_quantum_control.studio.result_pack_seal`
 
-Seal a QUANTUM hardware result pack into a verifiable honesty envelope.
+Retain QPU result-pack custody without false provider verification.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/result_pack_seal.py) · Public symbols: **3**
 
@@ -5819,6 +5819,14 @@ Compose existing QEC resource primitives into a conservative fault-tolerant reso
 
 **Functions:** `estimate_ft_resources()`, `build_ft_sensitivity()`, `build_regime_comparison()`, `build_fault_tolerant_resource_product()`, `render_ft_resource_markdown()`
 
+### `scpn_quantum_control.fisher_semantic_binding`
+
+Qualify local Fisher result metadata against its complete native evidence.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/fisher_semantic_binding.py) · Public symbols: **1**
+
+**Functions:** `validate_fisher_result_companion()`
+
 ### `scpn_quantum_control.geometric_control_product`
 
 Fail-closed **geometric quantum control** product surface.
@@ -5848,6 +5856,14 @@ Committed gradient-plan explanations for the Studio cockpit.
 **Classes:** `GradientPlanExplanationArtifactValidation`
 
 **Functions:** `build_gradient_plan_explanation_artifact()`, `validate_gradient_plan_explanation_artifact()`, `render_gradient_plan_explanation_markdown()`, `main()`
+
+### `scpn_quantum_control.hal_semantic_binding`
+
+Bind HAL result metadata without conferring unsupported count semantics.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hal_semantic_binding.py) · Public symbols: **1**
+
+**Functions:** `validate_hal_result_companion()`
 
 ### `scpn_quantum_control.hardware_result_pack_evidence`
 
@@ -5970,6 +5986,16 @@ Fail-closed **Multi-HAL provider federation** product surface.
 **Classes:** `HalCapabilityRecord`, `PathEligibilityDecision`, `MaterialisedFederationDryRunProbe`
 
 **Functions:** `list_hal_backend_ids()`, `list_hal_providers()`, `get_hal_capability()`, `iter_hal_capabilities()`, `build_federation_matrix()`, `decide_federation_route()`, `materialise_federation_dry_run_probe()`, `materialise_demo_federation_dry_run_probe()`, `map_multi_hal_federation_public_surfaces()`, `build_multi_hal_federation_product_registry()`, `assert_multi_hal_federation_product_integrity()`
+
+### `scpn_quantum_control.native_semantic_binding`
+
+Bind native producer metadata to exact, detached semantic source records.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/native_semantic_binding.py) · Public symbols: **4**
+
+**Classes:** `NativeSourceBinding`
+
+**Functions:** `capture_native_source()`, `validate_native_source_record()`, `validate_stochastic_result_companion()`
 
 ### `scpn_quantum_control.neural_operator_baseline_product`
 
@@ -6303,15 +6329,25 @@ Fail-closed baseline-scorecard acceptance / promotion engine.
 
 **Functions:** `list_scorecard_category_ids()`, `get_scorecard_category()`, `iter_scorecard_categories()`, `build_scorecard_acceptance_registry()`, `promote_scorecard_category()`, `assert_scorecard_acceptance_integrity()`
 
+### `scpn_quantum_control.semantic_operations`
+
+Capture semantic snapshots and refuse unsupported transforms or aggregation.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/semantic_operations.py) · Public symbols: **8**
+
+**Classes:** `CapturedSemanticRecord`, `TransformDecision`, `AggregationDecision`, `ModalityQualification`
+
+**Functions:** `capture_semantic_record()`, `apply_semantic_transform()`, `aggregate_fidelity_components()`, `qualify_native_modality()`
+
 ### `scpn_quantum_control.semantic_record`
 
 Versioned ``scientific_semantics.v1`` companion for stable-core records.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/semantic_record.py) · Public symbols: **18**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/semantic_record.py) · Public symbols: **10**
 
-**Classes:** `SemanticRecordError`, `DeclaredUnit`, `SemanticRefusal`, `MeasuredField`, `ProducerObservation`, `DeclaredParameterOrder`, `ScientificSemantics`, `SemanticBinding`, `CapturedSemanticRecord`, `TransformDecision`, `AggregationDecision`, `ModalityQualification`
+**Classes:** `SemanticRecordError`, `DeclaredUnit`, `SemanticRefusal`, `MeasuredField`, `ProducerObservation`, `DeclaredParameterOrder`, `ScientificSemantics`, `SemanticBinding`
 
-**Functions:** `observe_producer()`, `validate_semantic_binding()`, `capture_semantic_record()`, `apply_semantic_transform()`, `aggregate_fidelity_components()`, `qualify_native_modality()`
+**Functions:** `observe_producer()`, `validate_semantic_binding()`
 
 ### `scpn_quantum_control.ssgf_geometry_gradient_product`
 
@@ -6347,11 +6383,11 @@ Backend preflight checks for stable core experiments.
 
 Fail-closed **stable_core experiment model** product surface.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/stable_core_product.py) · Public symbols: **29**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/stable_core_product.py) · Public symbols: **31**
 
 **Classes:** `StableCoreContractRow`, `StableCoreRoundTripResult`
 
-**Functions:** `list_stable_core_contract_ids()`, `get_stable_core_contract()`, `iter_stable_core_contracts()`, `schema_version_policy()`, `validate_model_schema_version()`, `problem_from_dict()`, `backend_from_dict()`, `experiment_from_dict()`, `result_from_dict()`, `wrap_model_envelope()`, `unwrap_model_envelope()`, `canonical_json_bytes()`, `digest_stable_core_payload()`, `serialise_problem()`, `serialise_backend()`, `serialise_experiment()`, `serialise_result()`, `deserialise_problem()`, `deserialise_backend()`, `deserialise_experiment()`, `deserialise_result()`, `round_trip_problem()`, `round_trip_experiment()`, `build_demo_experiment()`, `map_stable_core_public_surfaces()`, `build_stable_core_product_registry()`, `assert_stable_core_product_integrity()`
+**Functions:** `list_stable_core_contract_ids()`, `get_stable_core_contract()`, `iter_stable_core_contracts()`, `schema_version_policy()`, `validate_model_schema_version()`, `problem_from_dict()`, `backend_from_dict()`, `experiment_from_dict()`, `result_from_dict()`, `wrap_model_envelope()`, `unwrap_model_envelope()`, `canonical_json_bytes()`, `digest_stable_core_payload()`, `serialise_problem()`, `serialise_backend()`, `serialise_experiment()`, `serialise_result()`, `deserialise_problem()`, `deserialise_backend()`, `deserialise_experiment()`, `read_experiment_with_semantics()`, `deserialise_result()`, `read_result_with_semantics()`, `round_trip_problem()`, `round_trip_experiment()`, `build_demo_experiment()`, `map_stable_core_public_surfaces()`, `build_stable_core_product_registry()`, `assert_stable_core_product_integrity()`
 
 ### `scpn_quantum_control.stochastic_estimators_product`
 

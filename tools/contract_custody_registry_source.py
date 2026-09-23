@@ -46,27 +46,7 @@ def registry_evidence_source(*, empty: bool = False) -> dict[str, Any]:
         if registry is not None
         else primitive_contract_for(PROBE_IDENTITY)
     )
-    snapshot = (
-        None
-        if contract is None
-        else {
-            "producer_identity": f"{type(contract).__module__}.{type(contract).__qualname__}",
-            "identity": contract.identity.key,
-            "derivative_rule": contract.derivative_rule.name,
-            "parameter_names": list(contract.derivative_rule.parameter_names),
-            "trainable": list(contract.derivative_rule.trainable),
-            "has_jvp_rule": contract.derivative_rule.jvp_rule is not None,
-            "has_vjp_rule": contract.derivative_rule.vjp_rule is not None,
-            "has_batching_rule": contract.batching_rule is not None,
-            "has_lowering_rule": contract.lowering_rule is not None,
-            "has_shape_rule": contract.shape_rule is not None,
-            "has_dtype_rule": contract.dtype_rule is not None,
-            "has_static_argument_rule": contract.static_argument_rule is not None,
-            "lowering_metadata": dict(contract.lowering_metadata),
-            "nondifferentiable_policy": contract.nondifferentiable_policy,
-            "effect": contract.effect,
-        }
-    )
+    snapshot = None if contract is None else contract.to_semantic_source()
     return {
         "producer": "scpn_quantum_control.program_ad_registry.program_ad_registry_dispatch_coverage_report",
         "inputs": {"registry": "empty" if empty else "default", "probe_identity": PROBE_IDENTITY},

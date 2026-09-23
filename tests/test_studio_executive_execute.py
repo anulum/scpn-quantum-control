@@ -107,6 +107,19 @@ def test_execute_plan_defaults_backend_and_is_gated() -> None:
     assert len(plan.steps) == 4
 
 
+def test_execute_plan_projects_native_source_without_submission() -> None:
+    """The public preview preserves its contract and requested settings only."""
+    plan = preview_action(_request(), registry=_registry())
+
+    source = plan.to_semantic_source()
+
+    assert source["producer_identity"] == "scpn_quantum_control.studio.executive.ExecutionPlan"
+    assert source["plan"] == plan.to_dict()
+    assert source["plan"]["parameters"]["shots"] == 4096
+    assert source["plan"]["contract"]["side_effect"] == "LIVE_HARDWARE"
+    assert "submitted" not in source and "observed" not in source
+
+
 def test_execute_accepts_declared_provider_hal_backend() -> None:
     """Accept the provider-HAL backend declared by the verb contract."""
     plan = preview_action(_request(backend="provider-hal"), registry=_registry())

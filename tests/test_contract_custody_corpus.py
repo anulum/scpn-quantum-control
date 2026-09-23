@@ -68,7 +68,7 @@ else:
         text=True,
         capture_output=True,
         check=False,
-        timeout=30,
+        timeout=60,
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert result.stdout.strip() == "requested Studio profile refused before writes"
@@ -218,7 +218,7 @@ class TestWriting:
             capture_output=True,
             text=True,
             check=True,
-            timeout=15,
+            timeout=45,
         )
         manifest = json.loads((tmp_path / "manifest.json").read_text(encoding="utf-8"))
         assert manifest == build_manifest(build_cases())

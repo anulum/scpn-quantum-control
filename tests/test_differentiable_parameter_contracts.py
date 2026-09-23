@@ -23,7 +23,6 @@ from scpn_quantum_control import differentiable_parameter_contracts as contracts
 
 def test_parameter_contracts_are_facade_and_package_root_compatible() -> None:
     """Extracted parameter contracts should preserve existing import identities."""
-
     assert differentiable.Parameter is contracts.Parameter
     assert differentiable.ParameterBounds is contracts.ParameterBounds
     assert differentiable.ParameterShiftRule is contracts.ParameterShiftRule
@@ -35,9 +34,20 @@ def test_parameter_contracts_are_facade_and_package_root_compatible() -> None:
     assert scpn.ParameterShiftRule is contracts.ParameterShiftRule
 
 
+def test_parameter_semantic_source_keeps_trainability_without_invented_units() -> None:
+    """The public request object retains its name and mask bit, not a value."""
+    source = differentiable.Parameter("theta", trainable=False).to_semantic_source()
+
+    assert source == {
+        "producer_identity": "scpn_quantum_control.differentiable_parameter_contracts.Parameter",
+        "name": "theta",
+        "trainable": False,
+    }
+    assert "value" not in source and "unit" not in source
+
+
 def test_real_numeric_validation_accepts_arrays_scalars_and_indices() -> None:
     """Validation helpers should accept finite real arrays, scalars, and index vectors."""
-
     np.testing.assert_allclose(
         contracts._as_real_numeric_array("values", [1, 2.5]),
         np.array([1.0, 2.5], dtype=np.float64),
@@ -55,7 +65,6 @@ def test_real_numeric_validation_accepts_arrays_scalars_and_indices() -> None:
 
 def test_real_numeric_validation_rejects_implicit_or_malformed_inputs() -> None:
     """Validation helpers should fail closed for non-real and non-vector inputs."""
-
     with pytest.raises(ValueError, match="rectangular"):
         contracts._as_real_numeric_array("values", [[1.0], [2.0, 3.0]])
     with pytest.raises(ValueError, match="real numeric scalars"):
@@ -89,7 +98,6 @@ def test_real_numeric_validation_rejects_implicit_or_malformed_inputs() -> None:
 
 def test_parameter_and_bounds_contracts_validate_metadata() -> None:
     """Parameter metadata and bound intervals should reject malformed records."""
-
     assert contracts.Parameter("theta").trainable is True
     frozen = contracts.Parameter("phi", trainable=False)
     assert frozen.name == "phi"
@@ -113,7 +121,6 @@ def test_parameter_and_bounds_contracts_validate_metadata() -> None:
 
 def test_parameter_shift_rule_normalises_single_and_multi_term_rules() -> None:
     """Parameter-shift rules should freeze canonical single- and multi-term metadata."""
-
     single = contracts.ParameterShiftRule()
     assert single.shift == pytest.approx(math.pi / 2.0)
     assert single.coefficient == pytest.approx(0.5)
@@ -134,7 +141,6 @@ def test_parameter_shift_rule_normalises_single_and_multi_term_rules() -> None:
 
 def test_parameter_shift_rule_rejects_malformed_terms() -> None:
     """Parameter-shift rule construction should fail closed for invalid terms."""
-
     with pytest.raises(ValueError, match="provided together"):
         contracts.ParameterShiftRule(shifts=(0.1,))
     with pytest.raises(ValueError, match="positive"):
@@ -157,7 +163,6 @@ def test_parameter_shift_rule_rejects_malformed_terms() -> None:
 
 def test_multi_frequency_parameter_shift_rule_solves_exact_coefficients() -> None:
     """Multi-frequency shift rules should solve finite exact coefficient systems."""
-
     rule = contracts.multi_frequency_parameter_shift_rule([1.0, 2.0, 3.0])
     theta = 0.23
     terms = rule.terms
@@ -184,7 +189,6 @@ def test_multi_frequency_parameter_shift_rule_rejects_bad_systems(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Multi-frequency rule construction should reject invalid and ill-conditioned systems."""
-
     with pytest.raises(ValueError, match="at least one value"):
         contracts.multi_frequency_parameter_shift_rule([])
     with pytest.raises(ValueError, match="positive values"):

@@ -119,6 +119,42 @@ class BackendProfile:
         if self.is_cloud and not self.submit_requires_approval:
             raise ValueError("cloud profiles must require explicit submission approval")
 
+    def to_semantic_source(self) -> dict[str, object]:
+        """Project declared route capabilities without claiming an observation.
+
+        Returns
+        -------
+        dict[str, object]
+            Detached profile identity and declared, not observed, capabilities.
+
+        """
+        cap = self.capabilities
+        return {
+            "producer_identity": f"{type(self).__module__}.{type(self).__qualname__}",
+            "backend_id": self.backend_id,
+            "provider": self.provider,
+            "broker": self.broker,
+            "modality": self.modality,
+            "sdk_package": self.sdk_package,
+            "ir_formats": list(self.ir_formats),
+            "capabilities": {
+                "supports_shots": cap.supports_shots,
+                "supports_counts": cap.supports_counts,
+                "supports_statevector": cap.supports_statevector,
+                "supports_mid_circuit_measurement": cap.supports_mid_circuit_measurement,
+                "supports_analog": cap.supports_analog,
+                "supports_pulse": cap.supports_pulse,
+                "max_qubits": cap.max_qubits,
+                "supports_cancellation": cap.supports_cancellation,
+                "supports_cost_estimate": cap.supports_cost_estimate,
+            },
+            "is_cloud": self.is_cloud,
+            "submit_requires_approval": self.submit_requires_approval,
+            "region": self.region,
+            "target_family": self.target_family,
+            "notes": list(self.notes),
+        }
+
 
 @dataclass(frozen=True)
 class QuantumWorkload:
@@ -179,6 +215,28 @@ class QuantumWorkload:
             )
         object.__setattr__(self, "metadata", metadata)
 
+    def to_semantic_source(self) -> dict[str, object]:
+        """Project the exact submitted request without duplicating programme bytes.
+
+        Returns
+        -------
+        dict[str, object]
+            Requested shots, resource shape, programme digest and annotations.
+            These are request facts, not an effective hardware setting.
+
+        """
+        encoded = self.program.encode("utf-8")
+        return {
+            "producer_identity": f"{type(self).__module__}.{type(self).__qualname__}",
+            "workload_id": self.workload_id,
+            "ir_format": self.ir_format,
+            "program_sha256": f"sha256:{hashlib.sha256(encoded).hexdigest()}",
+            "program_bytes": len(encoded),
+            "n_qubits": self.n_qubits,
+            "requested_shots": self.shots,
+            "metadata": dict(self.metadata),
+        }
+
 
 @dataclass(frozen=True)
 class QuantumJobRef:
@@ -197,6 +255,24 @@ class QuantumJobRef:
         _validate_token(self.workload_id, "workload_id")
         _validate_token(self.status, "status")
         object.__setattr__(self, "metadata", _freeze_metadata(self.metadata))
+
+    def to_semantic_source(self) -> dict[str, object]:
+        """Project the actual adapter handle without inferring a result.
+
+        Returns
+        -------
+        dict[str, object]
+            Detached job, backend and workload identity with handle status.
+
+        """
+        return {
+            "producer_identity": f"{type(self).__module__}.{type(self).__qualname__}",
+            "job_id": self.job_id,
+            "backend_id": self.backend_id,
+            "workload_id": self.workload_id,
+            "status": self.status,
+            "metadata": dict(self.metadata),
+        }
 
 
 @dataclass(frozen=True)
@@ -231,6 +307,32 @@ class QuantumJobResult:
             raise ValueError("counts must sum to shots")
         object.__setattr__(self, "counts", MappingProxyType(frozen_counts))
         object.__setattr__(self, "metadata", _freeze_metadata(self.metadata))
+
+    def to_semantic_source(self) -> dict[str, object]:
+        """Return detached native count evidence for semantic qualification.
+
+        Returns
+        -------
+        dict[str, object]
+            Actual job identity, status, counts, shots and adapter metadata.
+            No statevector, provider attestation or hardware-execution claim is
+            inferred from the count-shaped result.
+
+        """
+        return {
+            "producer_identity": f"{type(self).__module__}.{type(self).__qualname__}",
+            "job": {
+                "job_id": self.job.job_id,
+                "backend_id": self.job.backend_id,
+                "workload_id": self.job.workload_id,
+                "status": self.job.status,
+                "metadata": dict(self.job.metadata),
+            },
+            "status": self.status,
+            "counts": dict(self.counts),
+            "shots": self.shots,
+            "metadata": dict(self.metadata),
+        }
 
 
 @runtime_checkable

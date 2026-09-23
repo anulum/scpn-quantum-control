@@ -10,6 +10,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import replace
 from types import SimpleNamespace
 
@@ -38,6 +39,62 @@ def local_job_route() -> tuple[
     hal.register_backend(backend)
     workload = QuantumWorkload("identity-custody", "mlir", "module {}", 2, shots=16)
     return hal, backend, workload
+
+
+def test_native_hal_semantic_source_preserves_counts_and_job_identity(
+    local_job_route: tuple[HardwareAbstractionLayer, LocalDeterministicSimulator, QuantumWorkload],
+) -> None:
+    """Expose the actual offline result without statevector or QPU claims."""
+    hal, backend, workload = local_job_route
+    job = hal.submit(backend.backend_id, workload)
+    result = hal.result(job)
+    source = result.to_semantic_source()
+    assert source["producer_identity"] == "scpn_quantum_control.hardware.hal.QuantumJobResult"
+    assert source["job"] == {
+        "job_id": job.job_id,
+        "backend_id": job.backend_id,
+        "workload_id": job.workload_id,
+        "status": job.status,
+        "metadata": dict(job.metadata),
+    }
+    assert source["counts"] == dict(result.counts)
+    assert source["shots"] == result.shots
+    assert "statevector_amplitudes" not in source
+    assert "hardware_execution" not in source
+    source_counts = source["counts"]
+    assert isinstance(source_counts, dict)
+    source_counts["00"] = 999
+    assert dict(result.counts) != source_counts
+
+
+def test_hal_semantic_sources_keep_request_route_and_handle_distinct(
+    local_job_route: tuple[HardwareAbstractionLayer, LocalDeterministicSimulator, QuantumWorkload],
+) -> None:
+    """Real route, submitted request and returned handle retain separate authority."""
+    hal, backend, workload = local_job_route
+    job = hal.submit(backend.backend_id, workload)
+    profile_source = backend.profile.to_semantic_source()
+    request_source = workload.to_semantic_source()
+    handle_source = job.to_semantic_source()
+
+    assert profile_source["backend_id"] == job.backend_id
+    capabilities = profile_source["capabilities"]
+    assert isinstance(capabilities, dict)
+    assert capabilities["supports_statevector"] is True
+    assert request_source["requested_shots"] == workload.shots == 16
+    assert (
+        request_source["program_sha256"]
+        == "sha256:" + hashlib.sha256(workload.program.encode("utf-8")).hexdigest()
+    )
+    assert "effective_shots" not in request_source
+    assert handle_source["job_id"] == job.job_id
+    assert handle_source["workload_id"] == workload.workload_id
+    assert "counts" not in handle_source
+
+    request_source["requested_shots"] = 999
+    capabilities["supports_statevector"] = False
+    assert workload.shots == 16
+    assert backend.profile.capabilities.supports_statevector
 
 
 @pytest.mark.parametrize("field", ["backend_id", "workload_id"])

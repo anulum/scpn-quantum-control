@@ -21,6 +21,7 @@ byte and digest stability, which is what it was always for.
 
 from __future__ import annotations
 
+import copy
 import importlib
 import importlib.util
 import json
@@ -35,7 +36,13 @@ from scpn_quantum_control import stable_core_product as scp
 from scpn_quantum_control.benchmarks.kuramoto_competitive_types import (
     KuramotoProblem as BenchmarkKuramotoProblem,
 )
+from scpn_quantum_control.hardware.hal import (
+    HardwareAbstractionLayer,
+    LocalDeterministicSimulator,
+    QuantumWorkload,
+)
 from scpn_quantum_control.kuramoto_core import KuramotoProblem as CoreKuramotoProblem
+from scpn_quantum_control.native_semantic_binding import capture_native_source
 from scpn_quantum_control.phase.gradient_backend import explain_quantum_gradient_method
 from scpn_quantum_control.phase.qnode_circuit_contracts import (
     PauliTerm,
@@ -44,6 +51,7 @@ from scpn_quantum_control.phase.qnode_circuit_contracts import (
 from scpn_quantum_control.phase.qnode_circuit_differentiation import (
     phase_qnode_computational_basis_fisher_information,
 )
+from scpn_quantum_control.semantic_record import capture_semantic_record
 from scpn_quantum_control.stable_core import problem_to_kuramoto
 
 CORPUS_DIRECTORY: Final = Path(__file__).parent / "data" / "contract_custody_corpus"
@@ -361,6 +369,141 @@ class TestRawRecordCustody:
 
         assert scp.canonical_json_bytes(json.loads(captured)) == captured
         assert scp.digest_stable_core_payload(json.loads(captured)) == digest
+
+
+class TestVersionedConsumerCustody:
+    """Exercise the public v2 consumer with old and companion-present records."""
+
+    def test_versioned_contract_custody_01(self) -> None:
+        """Old and companion-present consumers preserve identical raw v2 bytes."""
+        raw = _fixture("raw_round_trip_preserves_digest")
+        companion = _fixture("companion_positive_base")
+        original = scp.canonical_json_bytes(raw)
+
+        old_experiment = scp.deserialise_experiment(raw)
+        absent_experiment, absent = scp.read_experiment_with_semantics(raw, None)
+        new_experiment, bound = scp.read_experiment_with_semantics(raw, companion)
+
+        assert old_experiment == absent_experiment == new_experiment
+        assert absent.raw_readable and not absent.qualified
+        assert bound.qualified
+        assert scp.canonical_json_bytes(raw) == original
+
+    def test_versioned_contract_custody_02(self) -> None:
+        """Changed units or effective shots change bytes and refuse qualification."""
+        raw = _fixture("raw_round_trip_preserves_digest")
+        baseline = _fixture("companion_positive_base")
+        changed_unit = copy.deepcopy(baseline)
+        changed_unit["fields"]["omega"]["unit"] = "Hz"
+        changed_shots = copy.deepcopy(baseline)
+        changed_shots["settings"]["effective"]["shots"] = 8192
+
+        baseline_capture = capture_semantic_record(raw, baseline)
+        unit_capture = capture_semantic_record(raw, changed_unit)
+        shots_capture = capture_semantic_record(raw, changed_shots)
+        assert (
+            len(
+                {
+                    baseline_capture.companion_digest,
+                    unit_capture.companion_digest,
+                    shots_capture.companion_digest,
+                }
+            )
+            == 3
+        )
+        assert baseline_capture.raw_digest == unit_capture.raw_digest == shots_capture.raw_digest
+        assert scp.read_experiment_with_semantics(raw, baseline)[1].qualified
+        assert "unit_contradicts_declaration" in {
+            item.code for item in scp.read_experiment_with_semantics(raw, changed_unit)[1].refusals
+        }
+        assert "effective_contradicts_source" in {
+            item.code
+            for item in scp.read_experiment_with_semantics(raw, changed_shots)[1].refusals
+        }
+
+    def test_versioned_contract_custody_03(self) -> None:
+        """Malformed dimensions and an unknown companion major refuse qualification."""
+        raw = _fixture("raw_round_trip_preserves_digest")
+        baseline = _fixture("companion_positive_base")
+        wrong_shape = copy.deepcopy(baseline)
+        wrong_shape["fields"]["K_nm"]["shape"] = [2]
+        future = copy.deepcopy(baseline)
+        future["schema"] = "scientific_semantics.v99"
+
+        assert "shape_contradicts_source" in {
+            item.code for item in scp.read_experiment_with_semantics(raw, wrong_shape)[1].refusals
+        }
+        assert "unknown_companion_major" in {
+            item.code for item in scp.read_experiment_with_semantics(raw, future)[1].refusals
+        }
+        assert scp.deserialise_experiment(raw) is not None
+
+    def test_versioned_contract_custody_04(self) -> None:
+        """Source mutation after capture cannot change saved raw or companion bytes."""
+        raw = _fixture("raw_round_trip_preserves_digest")
+        companion = _fixture("companion_positive_base")
+        captured = capture_semantic_record(raw, companion)
+        raw["body"]["backend"]["backend_id"] = "substituted"
+        companion["fields"]["omega"]["unit"] = "Hz"
+
+        assert captured.raw_digest == scp.digest_stable_core_payload(captured.raw_record)
+        assert captured.companion is not None
+        assert captured.companion_digest == scp.digest_stable_core_payload(captured.companion)
+        _, binding = scp.read_experiment_with_semantics(captured.raw_record, captured.companion)
+        assert binding.qualified
+
+    def test_unrelated_hal_result_cannot_promote_an_experiment_plan(self) -> None:
+        """A real HAL job cannot turn an unrelated v2 plan into an observation."""
+        raw = _fixture("raw_round_trip_preserves_digest")
+        companion = _fixture("companion_positive_base")
+        hal = HardwareAbstractionLayer.with_builtin_profiles()
+        backend = LocalDeterministicSimulator(hal.profile("local_statevector"))
+        hal.register_backend(backend)
+        workload = QuantumWorkload("semantic-shots", "mlir", "module {}", 2, shots=16)
+        result = hal.result(hal.submit(backend.backend_id, workload))
+        companion["source_records"]["hal_workload"] = capture_native_source(workload)
+        companion["source_records"]["hal_result"] = capture_native_source(result)
+        companion["settings"] = {
+            "stage": "observation",
+            "requested": {"shots": 16},
+            "effective": {"shots": result.shots},
+            "origins": {
+                "shots": {
+                    "source_ref": "hal_workload",
+                    "requested_path": "record.requested_shots",
+                    "effective_source_ref": "hal_result",
+                    "effective_path": "record.shots",
+                }
+            },
+        }
+        sources = {"hal_workload": workload, "hal_result": result}
+
+        experiment, bound = scp.read_experiment_with_semantics(
+            raw, companion, native_sources=sources
+        )
+        assert experiment == scp.deserialise_experiment(raw)
+        assert bound.raw_readable
+        assert not bound.qualified
+        assert "settings_stage_mismatch" in bound.reasons
+
+        forged = copy.deepcopy(companion)
+        forged["settings"]["effective"]["shots"] = 32
+        _, refused = scp.read_experiment_with_semantics(raw, forged, native_sources=sources)
+        assert "effective_contradicts_source" in {item.code for item in refused.refusals}
+
+        missing_owner = {"hal_workload": workload}
+        _, absent = scp.read_experiment_with_semantics(
+            raw, companion, native_sources=missing_owner
+        )
+        assert "source_producer_unverifiable" in {item.code for item in absent.refusals}
+
+        rehashed = copy.deepcopy(companion)
+        source = rehashed["source_records"]["hal_result"]
+        source["record"]["shots"] = 32
+        source["record_sha256"] = scp.digest_stable_core_payload(source["record"])
+        rehashed["settings"]["effective"]["shots"] = 32
+        _, substituted = scp.read_experiment_with_semantics(raw, rehashed, native_sources=sources)
+        assert "source_record_not_reproduced" in {item.code for item in substituted.refusals}
 
 
 class TestRawRecordRefusal:

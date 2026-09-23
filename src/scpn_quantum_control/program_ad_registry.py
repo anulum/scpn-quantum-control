@@ -339,6 +339,34 @@ class PrimitiveContract:
             raise ValueError("contract lowering metadata values must be non-empty strings")
         object.__setattr__(self, "lowering_metadata", MappingProxyType(metadata))
 
+    def to_semantic_source(self) -> dict[str, object]:
+        """Return detached source metadata for semantic evidence binding.
+
+        Returns
+        -------
+        dict[str, object]
+            Declared registry facts only. Rule presence and lowering metadata
+            do not establish executable lowering or numerical correctness.
+
+        """
+        return {
+            "producer_identity": f"{type(self).__module__}.{type(self).__qualname__}",
+            "identity": self.identity.key,
+            "derivative_rule": self.derivative_rule.name,
+            "parameter_names": list(self.derivative_rule.parameter_names),
+            "trainable": list(self.derivative_rule.trainable),
+            "has_jvp_rule": self.derivative_rule.jvp_rule is not None,
+            "has_vjp_rule": self.derivative_rule.vjp_rule is not None,
+            "has_batching_rule": self.batching_rule is not None,
+            "has_lowering_rule": self.lowering_rule is not None,
+            "has_shape_rule": self.shape_rule is not None,
+            "has_dtype_rule": self.dtype_rule is not None,
+            "has_static_argument_rule": self.static_argument_rule is not None,
+            "lowering_metadata": dict(self.lowering_metadata),
+            "nondifferentiable_policy": self.nondifferentiable_policy,
+            "effect": self.effect,
+        }
+
     @staticmethod
     def from_transform(transform: PrimitiveTransformRule) -> PrimitiveContract:
         """Build an immutable primitive contract view from a transform binding.

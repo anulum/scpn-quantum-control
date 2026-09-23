@@ -247,6 +247,21 @@ class ExecutionPlan:
             "parameters": dict(self.parameters),
         }
 
+    def to_semantic_source(self) -> dict[str, object]:
+        """Project the actual preview plan without claiming execution.
+
+        Returns
+        -------
+        dict[str, object]
+            Native plan and declared contract under a module-qualified owner.
+            Submission and observation are separate later states.
+
+        """
+        return {
+            "producer_identity": f"{type(self).__module__}.{type(self).__qualname__}",
+            "plan": self.to_dict(),
+        }
+
 
 @dataclass(frozen=True)
 class ExecutionResult:

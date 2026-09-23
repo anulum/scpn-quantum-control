@@ -12,14 +12,11 @@ The companion is descriptive metadata that sits *beside* an unchanged
 never adds keys to that payload, and a missing companion never makes a
 previously readable raw record unreadable: it withholds *qualification* only.
 
-Qualification is fail-closed. Every rule in :func:`validate_semantic_binding`
-compares a companion declaration against evidence that is measured at
-validation time — the digest of the actual raw bytes, and the identity, dtype
-and shape of the object the declared adapter actually produces from those
-bytes. The only declarations this module carries in a table are physical
-units, which no existing contract records; each of those carries the in-repo
-reference that declares it, and a field whose unit is not declared anywhere
-refuses qualification rather than accepting an unverifiable label.
+Qualification is fail-closed. :func:`validate_semantic_binding` compares a
+companion with the actual raw digest and either a measured experiment adapter
+or an exact typed result source. Physical units for experiment fields have
+in-repo declaration references; undeclared units refuse qualification. Result
+sources retain their own shape, uncertainty and modality evidence separately.
 
 This module qualifies metadata. It executes no circuit, submits no job,
 converts no unit and aggregates no uncertainty; each of those is refused with
@@ -29,13 +26,26 @@ an explicit reason unless an accepted transform authority is supplied.
 from __future__ import annotations
 
 import copy
-import importlib
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Final, Literal
+from typing import Any, Final, Literal, cast
 
+from .semantic_operations import (
+    AggregationDecision,
+    CapturedSemanticRecord,
+    ModalityQualification,
+    TransformDecision,
+    aggregate_fidelity_components,
+    apply_semantic_transform,
+    capture_semantic_record,
+    qualify_native_modality,
+)
 from .stable_core_product import (
     backend_from_dict,
+    deserialise_backend,
+    deserialise_experiment,
+    deserialise_problem,
+    deserialise_result,
     digest_stable_core_payload,
     experiment_from_dict,
     problem_from_dict,
@@ -59,6 +69,35 @@ SEMANTIC_RECORD_CLAIM_BOUNDARY: Final = (
 )
 """What a qualified companion does and does not assert."""
 
+SYNTHETIC_DERIVATIVE_CLAIM_BOUNDARY: Final = (
+    "local caller-supplied synthetic derivative result; objective and parameter units "
+    "are caller-declared dimensionless, not native or physical measurements; the "
+    "standard error and confidence radius retain one covariance separately; no "
+    "hardware execution, calibration, unit conversion or uncertainty aggregation claim"
+)
+"""Narrow claim accepted for an independently bound local synthetic result."""
+
+ACCEPTED_PLAN_CLAIM_BOUNDARIES: Final = (
+    SEMANTIC_RECORD_CLAIM_BOUNDARY,
+    "proposed semantic binding to the raw experiment and separately captured planner "
+    "output; units and derivative conventions are design choices; no executed binding, "
+    "observed counts or hardware execution claim; empty evidence does not mean zero error "
+    "or supported transforms",
+)
+"""Closed v1 plan claims; free prose cannot add execution or observation authority."""
+
+REQUIRED_PLAN_UNAVAILABLE: Final = frozenset(
+    {
+        "executed_semantic_binding",
+        "observed_execution",
+        "fidelity_components",
+        "backend_observation",
+        "calibration_reference",
+        "supported_transform_composition",
+    }
+)
+"""Facts a qualified plan must state as unavailable until independently bound."""
+
 RECORD_READERS: Final[Mapping[str, Callable[[Mapping[str, Any]], object]]] = {
     "experiment": experiment_from_dict,
     "problem": problem_from_dict,
@@ -66,6 +105,14 @@ RECORD_READERS: Final[Mapping[str, Callable[[Mapping[str, Any]], object]]] = {
     "result": result_from_dict,
 }
 """Existing stable-core readers, selected by the referenced record kind."""
+
+ENVELOPE_READERS: Final[Mapping[str, Callable[[Mapping[str, Any]], object]]] = {
+    "experiment": deserialise_experiment,
+    "problem": deserialise_problem,
+    "backend": deserialise_backend,
+    "result": deserialise_result,
+}
+"""Full v2 readers used to establish raw readability before qualification."""
 
 RefusalCode = Literal[
     "missing_companion",
@@ -75,6 +122,8 @@ RefusalCode = Literal[
     "raw_kind_mismatch",
     "raw_digest_mismatch",
     "unreadable_record_kind",
+    "unreadable_raw_record",
+    "stale_producer_observation",
     "adapter_unresolvable",
     "producer_identity_mismatch",
     "field_not_produced",
@@ -86,12 +135,26 @@ RefusalCode = Literal[
     "parameter_order_mismatch",
     "tangent_convention_mismatch",
     "trainable_mask_length_mismatch",
+    "trainable_mask_unverifiable",
     "measurement_mapping_missing",
     "source_record_digest_mismatch",
+    "source_producer_unverifiable",
+    "source_record_not_reproduced",
     "setting_origin_missing",
     "requested_contradicts_source",
     "effective_contradicts_source",
     "default_flag_contradicts_request",
+    "unsupported_transform_authority",
+    "backend_reference_mismatch",
+    "modality_contradicts_raw_record",
+    "calibration_source_unverifiable",
+    "fidelity_source_unverifiable",
+    "claim_boundary_unverifiable",
+    "unavailable_evidence_omitted",
+    "settings_stage_mismatch",
+    "stochastic_result_mismatch",
+    "fisher_result_mismatch",
+    "hal_result_mismatch",
 ]
 """Closed vocabulary of qualification refusals; each names one checked rule."""
 
@@ -105,6 +168,26 @@ producer to be checked against.
 
 COUNT_BASED_MODALITIES: Final = ("measurement_counts", "shot_counts")
 """Modalities that must carry an explicit bit/measurement mapping."""
+
+REQUIRED_COMPANION_FIELDS: Final = (
+    "backend_reference",
+    "calibration_reference",
+    "claim_boundary",
+    "fidelity_components",
+    "fields",
+    "measurement_mapping",
+    "modality",
+    "parameter_order",
+    "producer_identity",
+    "settings",
+    "source_binding",
+    "source_records",
+    "supported_transform_composition",
+    "tangent_convention",
+    "trainable_mask",
+    "unavailable",
+)
+"""Required explicit sections beside the separately checked schema and raw reference."""
 
 
 class SemanticRecordError(ValueError):
@@ -216,12 +299,18 @@ class ProducerObservation:
         Dotted path of the adapter that was resolved and invoked.
     fields
         Measured dtype and shape per produced attribute name.
+    raw_digest
+        Digest of the exact raw record measured; absent on legacy observations.
+    raw_field
+        Exact body field passed to the adapter during measurement.
 
     """
 
     identity: str
     adapter: str
     fields: Mapping[str, MeasuredField]
+    raw_digest: str | None = None
+    raw_field: str | None = None
 
 
 def _qualified_identity(value: object) -> str:
@@ -286,8 +375,8 @@ def _resolve_mapping_path(payload: Mapping[str, Any], path: str) -> object:
     return current
 
 
-def _import_attribute(dotted: str) -> object:
-    """Import a module-qualified attribute.
+def _admitted_adapter(dotted: str) -> Callable[[object], object]:
+    """Resolve only a reviewed pure adapter, never an arbitrary import path.
 
     Parameters
     ----------
@@ -297,22 +386,26 @@ def _import_attribute(dotted: str) -> object:
     Returns
     -------
     object
-        The imported attribute.
+        The admitted adapter.
 
     Raises
     ------
     SemanticRecordError
-        If the module or attribute cannot be resolved.
+        If the path is not the exact reviewed adapter identity.
 
     """
-    module_name, _, attribute = dotted.rpartition(".")
+    module_name, _, _attribute = dotted.rpartition(".")
     if not module_name:
         raise SemanticRecordError(f"{dotted!r} is not a module-qualified name")
-    try:
-        module = importlib.import_module(module_name)
-        return getattr(module, attribute)
-    except (ImportError, AttributeError) as exc:
-        raise SemanticRecordError(f"cannot resolve {dotted!r}: {exc}") from exc
+    if dotted == "scpn_quantum_control.stable_core.problem_to_kuramoto":
+        from .stable_core import problem_to_kuramoto
+
+        return cast(Callable[[object], object], problem_to_kuramoto)
+    if dotted == "scpn_quantum_control.stable_core_product.serialise_experiment":
+        from .stable_core_product import serialise_experiment
+
+        return cast(Callable[[object], object], serialise_experiment)
+    raise SemanticRecordError(f"adapter {dotted!r} is not admitted")
 
 
 def observe_producer(
@@ -363,9 +456,7 @@ def observe_producer(
     except AttributeError as exc:
         raise SemanticRecordError(f"raw_field {raw_field!r} is absent: {exc}") from exc
 
-    adapter = _import_attribute(adapter_path)
-    if not callable(adapter):
-        raise SemanticRecordError(f"adapter {adapter_path!r} is not callable")
+    adapter = _admitted_adapter(adapter_path)
     produced = adapter(subject)
 
     measured: dict[str, MeasuredField] = {}
@@ -383,6 +474,8 @@ def observe_producer(
         identity=_qualified_identity(produced),
         adapter=adapter_path,
         fields=measured,
+        raw_digest=digest_stable_core_payload(raw_record),
+        raw_field=raw_field,
     )
 
 
@@ -560,6 +653,14 @@ def _check_record_reference(
         "kind": raw_record.get("kind"),
         "digest": raw_digest,
     }
+    if set(reference) != set(expected):
+        refusals.append(
+            SemanticRefusal(
+                code="malformed_companion",
+                field_path="record_reference",
+                detail="record reference contains missing or unreviewed claim fields",
+            )
+        )
     codes: Mapping[str, RefusalCode] = {
         "schema": "raw_schema_mismatch",
         "kind": "raw_kind_mismatch",
@@ -731,6 +832,18 @@ def _check_derivative_conventions(
                 ),
             )
         )
+    elif not isinstance(mask, list) or any(type(bit) is not bool or not bit for bit in mask):
+        refusals.append(
+            SemanticRefusal(
+                code="trainable_mask_unverifiable",
+                field_path="trainable_mask",
+                detail=(
+                    "this plan has no source-backed derivative request; its field-level "
+                    "eligibility mask must contain only true booleans, and a frozen "
+                    "parameter requires its native request owner"
+                ),
+            )
+        )
 
     tangent = payload.get("tangent_convention")
     if tangent not in ACCEPTED_TANGENT_CONVENTIONS:
@@ -748,36 +861,226 @@ def _check_derivative_conventions(
 
 
 def _check_measurement_mapping(semantics: ScientificSemantics) -> list[SemanticRefusal]:
-    """Require an explicit bit mapping exactly where the modality is count-based."""
+    """Refuse count qualification without a producer-backed bit mapping."""
     mapping = semantics.section("measurement_mapping")
     modality = semantics.payload.get("modality")
     kind = mapping.get("kind")
-    if modality in COUNT_BASED_MODALITIES and kind == "not_applicable":
+    if modality in COUNT_BASED_MODALITIES:
         return [
             SemanticRefusal(
                 code="measurement_mapping_missing",
                 field_path="measurement_mapping.kind",
                 detail=(
-                    f"modality {modality!r} is count-based and needs an explicit "
-                    "bit/measurement mapping, not a not-applicable declaration"
+                    f"modality {modality!r} needs a producer-backed bit/measurement "
+                    f"mapping; declared kind {kind!r} alone cannot establish one"
                 ),
             )
         ]
-    if kind is None:
+    if kind != "not_applicable":
         return [
             SemanticRefusal(
                 code="measurement_mapping_missing",
                 field_path="measurement_mapping.kind",
-                detail="measurement mapping must state its kind, explicitly including not_applicable",
+                detail=(
+                    "an experiment plan has no observed counts; its measurement mapping "
+                    "must be explicitly not_applicable"
+                ),
+            )
+        ]
+    if set(mapping) != {"kind"}:
+        return [
+            SemanticRefusal(
+                code="malformed_companion",
+                field_path="measurement_mapping",
+                detail="a non-count mapping cannot carry unreviewed observation claims",
             )
         ]
     return []
+
+
+def _check_transform_support(semantics: ScientificSemantics) -> list[SemanticRefusal]:
+    """Refuse transform support claimed without an independent converter owner."""
+    supported = semantics.payload.get("supported_transform_composition")
+    if not isinstance(supported, list):
+        return [
+            SemanticRefusal(
+                code="malformed_companion",
+                field_path="supported_transform_composition",
+                detail="supported transform composition must be an explicit list",
+            )
+        ]
+    if supported:
+        return [
+            SemanticRefusal(
+                code="unsupported_transform_authority",
+                field_path="supported_transform_composition",
+                detail=(
+                    f"companion lists {supported!r}, but this reader has no "
+                    "independently verified transform owner"
+                ),
+            )
+        ]
+    return []
+
+
+def _check_experiment_claims(
+    semantics: ScientificSemantics, raw_record: Mapping[str, Any], raw_digest: str
+) -> list[SemanticRefusal]:
+    """Bind plan modality and backend while withholding unsupported evidence."""
+    refusals: list[SemanticRefusal] = []
+    if raw_record.get("kind") != "experiment":
+        return [
+            SemanticRefusal(
+                code="modality_contradicts_raw_record",
+                field_path="modality",
+                detail="this companion reader qualifies experiment plans only",
+            )
+        ]
+    if set(semantics.section("source_binding")) != {
+        "adapter",
+        "field_paths",
+        "raw_field",
+        "raw_type",
+    }:
+        refusals.append(
+            SemanticRefusal(
+                code="malformed_companion",
+                field_path="source_binding",
+                detail="experiment source binding contains missing or unreviewed claim fields",
+            )
+        )
+    if semantics.payload.get("modality") != "experiment_plan":
+        refusals.append(
+            SemanticRefusal(
+                code="modality_contradicts_raw_record",
+                field_path="modality",
+                detail="a stable-core experiment is a plan, not observed result evidence",
+            )
+        )
+    if semantics.payload.get("claim_boundary") not in ACCEPTED_PLAN_CLAIM_BOUNDARIES:
+        refusals.append(
+            SemanticRefusal(
+                code="claim_boundary_unverifiable",
+                field_path="claim_boundary",
+                detail="the plan's claim boundary is not one of the accepted v1 no-execution statements",
+            )
+        )
+    unavailable = semantics.payload.get("unavailable")
+    if not isinstance(unavailable, list) or not REQUIRED_PLAN_UNAVAILABLE.issubset(
+        set(value for value in unavailable if isinstance(value, str))
+    ):
+        refusals.append(
+            SemanticRefusal(
+                code="unavailable_evidence_omitted",
+                field_path="unavailable",
+                detail="a plan must explicitly retain every unavailable execution and evidence class",
+            )
+        )
+    stage = semantics.section("settings").get("stage")
+    if stage != "planning":
+        refusals.append(
+            SemanticRefusal(
+                code="settings_stage_mismatch",
+                field_path="settings.stage",
+                detail=(
+                    "an experiment plan cannot establish observed settings; "
+                    "bind an actual result through its result reader"
+                ),
+            )
+        )
+
+    body = raw_record.get("body")
+    backend = body.get("backend") if isinstance(body, Mapping) else None
+    reference = semantics.section("backend_reference")
+    if isinstance(backend, Mapping):
+        try:
+            identity = _qualified_identity(backend_from_dict(backend))
+        except (KeyError, TypeError, ValueError):
+            identity = None
+        expected: Mapping[str, object] = {
+            "source_record": "raw_record",
+            "field_path": "body.backend",
+            "record_digest": raw_digest,
+            "backend_id": backend.get("backend_id"),
+            "producer_identity": identity,
+            "stage": "planning",
+        }
+        if set(reference) != set(expected):
+            refusals.append(
+                SemanticRefusal(
+                    code="backend_reference_mismatch",
+                    field_path="backend_reference",
+                    detail="backend reference contains missing or unreviewed claim fields",
+                )
+            )
+        for name, value in expected.items():
+            if reference.get(name) != value:
+                refusals.append(
+                    SemanticRefusal(
+                        code="backend_reference_mismatch",
+                        field_path=f"backend_reference.{name}",
+                        detail=f"companion declares {reference.get(name)!r}; raw plan carries {value!r}",
+                    )
+                )
+    else:
+        refusals.append(
+            SemanticRefusal(
+                code="backend_reference_mismatch",
+                field_path="backend_reference",
+                detail="the raw experiment has no readable backend to bind",
+            )
+        )
+
+    if semantics.payload.get("calibration_reference") is not None:
+        refusals.append(
+            SemanticRefusal(
+                code="calibration_source_unverifiable",
+                field_path="calibration_reference",
+                detail="this plan reader has no independently checked calibration owner",
+            )
+        )
+    components = semantics.payload.get("fidelity_components")
+    if components != []:
+        refusals.append(
+            SemanticRefusal(
+                code="fidelity_source_unverifiable",
+                field_path="fidelity_components",
+                detail="this plan reader has no verified fidelity-component binding",
+            )
+        )
+    return refusals
 
 
 def _check_settings(semantics: ScientificSemantics) -> list[SemanticRefusal]:
     """Check requested/effective settings against their declared source paths."""
     refusals: list[SemanticRefusal] = []
     settings = semantics.section("settings")
+    if set(settings) != {"stage", "requested", "effective", "origins", "rejected_fields"}:
+        refusals.append(
+            SemanticRefusal(
+                code="malformed_companion",
+                field_path="settings",
+                detail="settings contain missing or unreviewed claim fields",
+            )
+        )
+    if settings.get("rejected_fields") != []:
+        refusals.append(
+            SemanticRefusal(
+                code="setting_origin_missing",
+                field_path="settings.rejected_fields",
+                detail="this reader has no source-backed rejected-setting evidence",
+            )
+        )
+    if not all(
+        isinstance(settings.get(name), Mapping) for name in ("requested", "effective", "origins")
+    ):
+        refusals.append(
+            SemanticRefusal(
+                code="malformed_companion",
+                field_path="settings",
+                detail="requested, effective and origins must be mappings",
+            )
+        )
     origins = settings.get("origins")
     origins = origins if isinstance(origins, Mapping) else {}
     requested = settings.get("requested")
@@ -785,6 +1088,14 @@ def _check_settings(semantics: ScientificSemantics) -> list[SemanticRefusal]:
     effective = settings.get("effective")
     effective = effective if isinstance(effective, Mapping) else {}
     source_records = semantics.section("source_records")
+    if set(origins) != set(requested) | set(effective):
+        refusals.append(
+            SemanticRefusal(
+                code="malformed_companion",
+                field_path="settings.origins",
+                detail="setting origins must match exactly the declared setting keys",
+            )
+        )
 
     for key in sorted(set(requested) | set(effective)):
         origin = origins.get(key)
@@ -798,6 +1109,23 @@ def _check_settings(semantics: ScientificSemantics) -> list[SemanticRefusal]:
             )
             continue
 
+        allowed_origin_fields = {
+            "source_ref",
+            "requested_path",
+            "effective_path",
+            "requested_source_ref",
+            "effective_source_ref",
+            "defaulted_path",
+        }
+        if set(origin) - allowed_origin_fields:
+            refusals.append(
+                SemanticRefusal(
+                    code="malformed_companion",
+                    field_path=f"settings.origins.{key}",
+                    detail="setting origin contains an unreviewed claim field",
+                )
+            )
+
         source_ref = origin.get("source_ref")
         source = source_records.get(source_ref) if isinstance(source_ref, str) else None
         if not isinstance(source, Mapping):
@@ -810,19 +1138,125 @@ def _check_settings(semantics: ScientificSemantics) -> list[SemanticRefusal]:
             )
             continue
 
-        refusals.extend(_check_source_record_digest(source_ref, source))
-        refusals.extend(_check_setting_value(key, origin, source, requested, effective))
+        seen_refs: set[str] = set()
+        for ref_field in ("source_ref", "requested_source_ref", "effective_source_ref"):
+            if ref_field not in origin:
+                continue
+            ref = origin.get(ref_field)
+            selected = source_records.get(ref) if isinstance(ref, str) else None
+            if not isinstance(ref, str) or not isinstance(selected, Mapping):
+                refusals.append(
+                    SemanticRefusal(
+                        code="setting_origin_missing",
+                        field_path=f"settings.origins.{key}.{ref_field}",
+                        detail=f"source record {ref!r} is absent for setting {key!r}",
+                    )
+                )
+                continue
+            if ref in seen_refs:
+                continue
+            seen_refs.add(ref)
+            if "schema" not in selected and "producer_identity" not in selected:
+                refusals.extend(_check_source_record_digest(ref, selected))
+        refusals.extend(
+            _check_setting_value(key, origin, source, source_records, requested, effective)
+        )
+    return refusals
+
+
+def _check_native_sources(
+    semantics: ScientificSemantics, native_sources: Mapping[str, object]
+) -> list[SemanticRefusal]:
+    """Bind retained native source records to supplied real owner objects."""
+    from .native_semantic_binding import validate_native_source_record
+
+    refusals: list[SemanticRefusal] = []
+    retained = semantics.section("source_records")
+    settings_origins = semantics.section("settings").get("origins")
+    setting_sources: set[str] = set()
+    if isinstance(settings_origins, Mapping):
+        for origin in settings_origins.values():
+            if isinstance(origin, Mapping):
+                for field_name in ("source_ref", "requested_source_ref", "effective_source_ref"):
+                    source_ref = origin.get(field_name)
+                    if isinstance(source_ref, str):
+                        setting_sources.add(source_ref)
+    for ref, source in retained.items():
+        native_marker = isinstance(source, Mapping) and (
+            "schema" in source or "producer_identity" in source
+        )
+        if ref not in native_sources and not native_marker:
+            if ref not in setting_sources:
+                refusals.append(
+                    SemanticRefusal(
+                        code="source_producer_unverifiable",
+                        field_path=f"source_records.{ref}",
+                        detail="unreferenced source cannot add evidence to a qualified companion",
+                    )
+                )
+            continue
+        owner = native_sources.get(ref)
+        if owner is None:
+            refusals.append(
+                SemanticRefusal(
+                    code="source_producer_unverifiable",
+                    field_path=f"source_records.{ref}",
+                    detail="native source record has no actual owner object for comparison",
+                )
+            )
+            continue
+        try:
+            binding = validate_native_source_record(owner, source)
+        except ValueError as exc:
+            refusals.append(
+                SemanticRefusal(
+                    code="source_producer_unverifiable",
+                    field_path=f"source_records.{ref}",
+                    detail=f"native source owner is unsupported: {exc}",
+                )
+            )
+            continue
+        for reason in binding.reasons:
+            refusals.append(
+                SemanticRefusal(
+                    code="source_record_not_reproduced",
+                    field_path=f"source_records.{ref}",
+                    detail=f"actual native owner refuses retained source record: {reason}",
+                )
+            )
+    for ref in native_sources.keys() - retained.keys():
+        refusals.append(
+            SemanticRefusal(
+                code="source_producer_unverifiable",
+                field_path=f"source_records.{ref}",
+                detail="actual native owner has no retained source record",
+            )
+        )
     return refusals
 
 
 def _check_source_record_digest(
     source_ref: object, source: Mapping[str, Any]
 ) -> list[SemanticRefusal]:
-    """Check that a retained source record still hashes to its recorded digest."""
+    """Check source bytes and reproduce the bounded local producer when known."""
+    if set(source) - {"binding_status", "inputs", "producer", "record", "record_sha256"}:
+        return [
+            SemanticRefusal(
+                code="source_producer_unverifiable",
+                field_path=f"source_records.{source_ref}",
+                detail="planner source contains an unreviewed claim field",
+            )
+        ]
     record = source.get("record")
     recorded = source.get("record_sha256")
     if not isinstance(record, Mapping) or not isinstance(recorded, str):
-        return []
+        return [
+            SemanticRefusal(
+                code="source_producer_unverifiable",
+                field_path=f"source_records.{source_ref}",
+                detail="source record and digest must both be present to qualify a setting",
+            )
+        ]
     actual = digest_stable_core_payload(record)
     if actual != recorded:
         return [
@@ -832,6 +1266,45 @@ def _check_source_record_digest(
                 detail=f"retained record hashes to {actual}, not the recorded {recorded}",
             )
         ]
+
+    producer = source.get("producer")
+    inputs = source.get("inputs")
+    if (
+        producer != "scpn_quantum_control.phase.gradient_backend.explain_quantum_gradient_method"
+        or not isinstance(inputs, Mapping)
+    ):
+        return [
+            SemanticRefusal(
+                code="source_producer_unverifiable",
+                field_path=f"source_records.{source_ref}.producer",
+                detail=f"no bounded local source reader accepts producer {producer!r} and inputs",
+            )
+        ]
+
+    from .phase.gradient_backend import explain_quantum_gradient_method
+
+    try:
+        reproduced = cast(Any, explain_quantum_gradient_method)(**dict(inputs)).to_dict()
+    except (TypeError, ValueError) as exc:
+        return [
+            SemanticRefusal(
+                code="source_producer_unverifiable",
+                field_path=f"source_records.{source_ref}.inputs",
+                detail=f"the bounded local producer refused the retained inputs: {exc}",
+            )
+        ]
+    reproduced_digest = digest_stable_core_payload(reproduced)
+    if reproduced_digest != actual:
+        return [
+            SemanticRefusal(
+                code="source_record_not_reproduced",
+                field_path=f"source_records.{source_ref}.record",
+                detail=(
+                    f"the bounded local producer returns digest {reproduced_digest}, "
+                    f"not retained record digest {actual}"
+                ),
+            )
+        ]
     return []
 
 
@@ -839,6 +1312,7 @@ def _check_setting_value(
     key: str,
     origin: Mapping[str, Any],
     source: Mapping[str, Any],
+    source_records: Mapping[str, Any],
     requested: Mapping[str, Any],
     effective: Mapping[str, Any],
 ) -> list[SemanticRefusal]:
@@ -850,10 +1324,26 @@ def _check_setting_value(
     )
     for path_key, section, code, values in checks:
         path = origin.get(path_key)
-        if not isinstance(path, str):
+        if not isinstance(path, str) or not path:
+            if key in values:
+                refusals.append(
+                    SemanticRefusal(
+                        code="setting_origin_missing",
+                        field_path=f"settings.origins.{key}.{path_key}",
+                        detail=f"setting {key!r} in {section} has no source field path",
+                    )
+                )
             continue
+        override_ref = origin.get(f"{section}_source_ref")
+        selected = source_records.get(override_ref) if isinstance(override_ref, str) else None
+        if override_ref is not None:
+            if not isinstance(selected, Mapping):
+                continue
+            source_for_path = selected
+        else:
+            source_for_path = source
         try:
-            source_value = _resolve_mapping_path(source, path)
+            source_value = _resolve_mapping_path(source_for_path, path)
         except KeyError:
             refusals.append(
                 SemanticRefusal(
@@ -901,6 +1391,7 @@ def validate_semantic_binding(
     raw_record: Mapping[str, Any],
     *,
     observation: ProducerObservation | None = None,
+    native_sources: Mapping[str, object] | None = None,
 ) -> SemanticBinding:
     """Qualify a companion against the raw record it claims to describe.
 
@@ -917,6 +1408,9 @@ def validate_semantic_binding(
     observation
         Pre-measured producer observation. When omitted, the declared adapter
         is resolved and invoked to measure identity, dtype and shape.
+    native_sources
+        Actual typed owners keyed by source-record reference. A retained native
+        record without its owner refuses qualification.
 
     Returns
     -------
@@ -925,9 +1419,29 @@ def validate_semantic_binding(
 
     """
     raw_digest = digest_stable_core_payload(raw_record)
-    raw_readable = isinstance(raw_record.get("body"), Mapping) and (
-        raw_record.get("kind") in RECORD_READERS
-    )
+    kind = raw_record.get("kind")
+    reader = ENVELOPE_READERS.get(kind) if isinstance(kind, str) else None
+    raw_refusals: list[SemanticRefusal] = []
+    if reader is None:
+        raw_refusals.append(
+            SemanticRefusal(
+                code="unreadable_record_kind",
+                field_path="kind",
+                detail=f"no stable-core envelope reader accepts raw kind {kind!r}",
+            )
+        )
+    else:
+        try:
+            reader(raw_record)
+        except (KeyError, TypeError, ValueError) as exc:
+            raw_refusals.append(
+                SemanticRefusal(
+                    code="unreadable_raw_record",
+                    field_path="raw_record",
+                    detail=f"the full stable-core v2 reader refused the raw record: {exc}",
+                )
+            )
+    raw_readable = not raw_refusals
 
     if companion is None:
         return SemanticBinding(
@@ -963,7 +1477,27 @@ def validate_semantic_binding(
             ),
         )
 
-    refusals: list[SemanticRefusal] = []
+    refusals: list[SemanticRefusal] = list(raw_refusals)
+    allowed_fields = set(REQUIRED_COMPANION_FIELDS) | {"schema", "record_reference"}
+    if kind == "result":
+        allowed_fields.add("fidelity_unit_declaration")
+    for name in sorted(set(semantics.payload) - allowed_fields):
+        refusals.append(
+            SemanticRefusal(
+                code="malformed_companion",
+                field_path=name,
+                detail="unreviewed companion field cannot become a qualified claim",
+            )
+        )
+    for name in REQUIRED_COMPANION_FIELDS:
+        if name not in semantics.payload:
+            refusals.append(
+                SemanticRefusal(
+                    code="malformed_companion",
+                    field_path=name,
+                    detail="required semantic field is absent; its evidence cannot be inferred",
+                )
+            )
     if semantics.schema != SEMANTIC_COMPANION_SCHEMA:
         refusals.append(
             SemanticRefusal(
@@ -980,7 +1514,82 @@ def validate_semantic_binding(
         _check_record_reference(semantics.section("record_reference"), raw_record, raw_digest)
     )
 
+    if kind == "result":
+        from .fisher_semantic_binding import validate_fisher_result_companion
+        from .hal_semantic_binding import validate_hal_result_companion
+        from .hardware.hal import QuantumJobResult
+        from .native_semantic_binding import validate_stochastic_result_companion
+        from .phase.qnode_circuit_contracts import PhaseQNodeClassicalFisherResult
+
+        source_binding = semantics.section("source_binding")
+        source_ref = source_binding.get("native_source_ref")
+        source_owner = (
+            (native_sources or {}).get(source_ref) if isinstance(source_ref, str) else None
+        )
+        fisher = isinstance(source_owner, PhaseQNodeClassicalFisherResult)
+        hal = isinstance(source_owner, QuantumJobResult) or (
+            semantics.payload.get("modality") == "hal_result_metadata_only"
+        )
+        if hal:
+            issues = validate_hal_result_companion(
+                semantics.payload, raw_record, raw_digest, native_sources or {}
+            )
+            mismatch_code: RefusalCode = "hal_result_mismatch"
+        elif fisher:
+            issues = validate_fisher_result_companion(
+                semantics.payload, raw_record, raw_digest, native_sources or {}
+            )
+            mismatch_code = "fisher_result_mismatch"
+        else:
+            issues = validate_stochastic_result_companion(
+                semantics.payload,
+                raw_record,
+                raw_digest,
+                native_sources or {},
+                SYNTHETIC_DERIVATIVE_CLAIM_BOUNDARY,
+            )
+            mismatch_code = "stochastic_result_mismatch"
+        for path, detail in issues:
+            refusals.append(
+                SemanticRefusal(
+                    code=(
+                        "fidelity_source_unverifiable"
+                        if path.startswith("fidelity_components")
+                        else mismatch_code
+                    ),
+                    field_path=path,
+                    detail=detail,
+                )
+            )
+        if not fisher and not hal:
+            refusals.extend(_check_measurement_mapping(semantics))
+        refusals.extend(_check_transform_support(semantics))
+        refusals.extend(_check_native_sources(semantics, native_sources or {}))
+        return SemanticBinding(
+            raw_readable=raw_readable,
+            raw_digest=raw_digest,
+            semantics=semantics if not refusals else None,
+            refusals=tuple(refusals),
+        )
+
     measured = observation
+    if measured is not None:
+        source_binding = semantics.section("source_binding")
+        if (
+            measured.raw_digest != raw_digest
+            or measured.adapter != source_binding.get("adapter")
+            or measured.raw_field != source_binding.get("raw_field")
+        ):
+            refusals.append(
+                SemanticRefusal(
+                    code="stale_producer_observation",
+                    field_path="source_binding",
+                    detail=(
+                        "supplied producer observation does not match the exact raw digest, "
+                        "adapter and raw field declared by this companion"
+                    ),
+                )
+            )
     if measured is None:
         try:
             measured = observe_producer(raw_record, semantics.section("source_binding"))
@@ -1011,317 +1620,16 @@ def validate_semantic_binding(
         refusals.extend(_check_derivative_conventions(semantics, measured))
 
     refusals.extend(_check_measurement_mapping(semantics))
+    refusals.extend(_check_transform_support(semantics))
+    refusals.extend(_check_experiment_claims(semantics, raw_record, raw_digest))
     refusals.extend(_check_settings(semantics))
+    refusals.extend(_check_native_sources(semantics, native_sources or {}))
 
     return SemanticBinding(
         raw_readable=raw_readable,
         raw_digest=raw_digest,
         semantics=semantics if not refusals else None,
         refusals=tuple(refusals),
-    )
-
-
-@dataclass(frozen=True, slots=True)
-class CapturedSemanticRecord:
-    """Immutable joint snapshot of a raw record and its companion.
-
-    Attributes
-    ----------
-    raw_record
-        Deep copy of the raw payload as it was at capture time.
-    companion
-        Deep copy of the companion, or ``None``.
-    raw_digest
-        Digest of the captured raw payload.
-    companion_digest
-        Digest of the captured companion, or ``None``.
-
-    """
-
-    raw_record: Mapping[str, Any]
-    companion: Mapping[str, Any] | None
-    raw_digest: str
-    companion_digest: str | None
-
-    def __post_init__(self) -> None:
-        """Freeze deep copies so later source mutation cannot reach this snapshot."""
-        object.__setattr__(self, "raw_record", copy.deepcopy(dict(self.raw_record)))
-        if self.companion is not None:
-            object.__setattr__(self, "companion", copy.deepcopy(dict(self.companion)))
-
-
-def capture_semantic_record(
-    raw_record: Mapping[str, Any], companion: Mapping[str, Any] | None = None
-) -> CapturedSemanticRecord:
-    """Capture raw bytes and companion as one immutable snapshot.
-
-    Parameters
-    ----------
-    raw_record
-        Raw stable-core envelope to snapshot.
-    companion
-        Companion document to snapshot, or ``None``.
-
-    Returns
-    -------
-    CapturedSemanticRecord
-        Snapshot whose digests are fixed at capture time.
-
-    """
-    raw_snapshot = copy.deepcopy(dict(raw_record))
-    companion_snapshot = copy.deepcopy(dict(companion)) if companion is not None else None
-    return CapturedSemanticRecord(
-        raw_record=raw_snapshot,
-        companion=companion_snapshot,
-        raw_digest=digest_stable_core_payload(raw_snapshot),
-        companion_digest=(
-            digest_stable_core_payload(companion_snapshot)
-            if companion_snapshot is not None
-            else None
-        ),
-    )
-
-
-@dataclass(frozen=True, slots=True)
-class TransformDecision:
-    """Outcome of a requested semantic transform.
-
-    Attributes
-    ----------
-    decision
-        ``accept_declared_transform`` or ``refuse_unsupported_conversion``.
-    executed
-        Always ``False`` for a refusal; no value is ever converted in place.
-    converted_value
-        ``None`` unless an accepted transform authority performed a conversion.
-    persist_qualified_record
-        Whether a qualified record may be persisted after this request.
-    detail
-        Why the request was accepted or refused.
-
-    """
-
-    decision: Literal["accept_declared_transform", "refuse_unsupported_conversion"]
-    executed: bool
-    converted_value: object
-    persist_qualified_record: bool
-    detail: str
-
-
-def apply_semantic_transform(
-    companion: Mapping[str, Any], transform_request: Mapping[str, Any]
-) -> TransformDecision:
-    """Refuse a transform the companion does not list as an accepted composition.
-
-    A unit relation is never inferred from labels. Only a transform named in
-    ``supported_transform_composition`` and referenced by the request can be
-    accepted, and an empty composition list means no transform support exists,
-    not that every transform is free.
-
-    Parameters
-    ----------
-    companion
-        Companion document carrying ``supported_transform_composition``.
-    transform_request
-        Request naming ``field_path``, ``operation`` and ``accepted_transform_ref``.
-
-    Returns
-    -------
-    TransformDecision
-        Accepted or refused transform outcome.
-
-    """
-    supported = companion.get("supported_transform_composition")
-    supported_refs = list(supported) if isinstance(supported, Sequence) else []
-    accepted_ref = transform_request.get("accepted_transform_ref")
-    field_path = transform_request.get("field_path")
-    operation = transform_request.get("operation")
-
-    if accepted_ref is None or accepted_ref not in supported_refs:
-        return TransformDecision(
-            decision="refuse_unsupported_conversion",
-            executed=False,
-            converted_value=None,
-            persist_qualified_record=False,
-            detail=(
-                f"{operation!r} on {field_path!r} names accepted transform "
-                f"{accepted_ref!r}, which is not in the companion's supported "
-                f"composition {supported_refs!r}; the source value is unchanged"
-            ),
-        )
-    return TransformDecision(
-        decision="accept_declared_transform",
-        executed=False,
-        converted_value=None,
-        persist_qualified_record=True,
-        detail=(
-            f"{operation!r} on {field_path!r} is covered by accepted transform "
-            f"{accepted_ref!r}; this reader records the authority and performs no "
-            "numerical conversion of its own"
-        ),
-    )
-
-
-@dataclass(frozen=True, slots=True)
-class AggregationDecision:
-    """Outcome of a fidelity-component aggregation request.
-
-    Attributes
-    ----------
-    decision
-        ``accept_explicit_fixture_components`` or
-        ``refuse_unjustified_error_aggregation``.
-    executed
-        Always ``False``; this reader computes no aggregate.
-    aggregate_value
-        Always ``None``; components are preserved, never summed here.
-    preserve_components_separately
-        Always ``True``; separate estimands remain separate.
-    detail
-        Why aggregation was refused, or why components stand as supplied.
-
-    """
-
-    decision: Literal["accept_explicit_fixture_components", "refuse_unjustified_error_aggregation"]
-    executed: bool
-    aggregate_value: None
-    preserve_components_separately: bool
-    detail: str
-
-
-def aggregate_fidelity_components(
-    fidelity_components: Sequence[Mapping[str, Any]],
-    aggregation_request: Mapping[str, Any] | None = None,
-) -> AggregationDecision:
-    """Refuse to combine uncertainty components without a recorded justification.
-
-    A standard error and a confidence radius derived from the same covariance
-    are two descriptions of one uncertainty, not two independent errors, so
-    summing them overstates it. Without an explicit justification the request
-    is refused and the components are preserved separately.
-
-    Parameters
-    ----------
-    fidelity_components
-        Components as declared on the companion.
-    aggregation_request
-        Request naming ``components``, ``operation`` and ``justification``,
-        or ``None`` when no aggregation is requested.
-
-    Returns
-    -------
-    AggregationDecision
-        Accepted custody, or refusal with the components left separate.
-
-    """
-    if aggregation_request is None:
-        return AggregationDecision(
-            decision="accept_explicit_fixture_components",
-            executed=False,
-            aggregate_value=None,
-            preserve_components_separately=True,
-            detail=(
-                f"{len(fidelity_components)} component(s) are retained exactly as "
-                "declared, with their own estimands, methods and evidence references"
-            ),
-        )
-
-    justification = aggregation_request.get("justification")
-    operation = aggregation_request.get("operation")
-    requested = aggregation_request.get("components")
-    return AggregationDecision(
-        decision="refuse_unjustified_error_aggregation",
-        executed=False,
-        aggregate_value=None,
-        preserve_components_separately=True,
-        detail=(
-            f"{operation!r} over {list(requested) if requested else []!r} carries "
-            f"justification {justification!r}; combining components that describe the "
-            "same covariance needs an explicit recorded justification"
-        ),
-    )
-
-
-@dataclass(frozen=True, slots=True)
-class ModalityQualification:
-    """Outcome of qualifying a requested quantity against a native result.
-
-    Attributes
-    ----------
-    qualification
-        ``qualified`` or ``unavailable``.
-    executed
-        Always ``False``; no backend is invoked to fill a gap.
-    padding_or_conversion_performed
-        Always ``False``; absent data is never padded or inferred.
-    requested_quantity
-        The quantity the caller asked to qualify.
-    reason
-        Why the quantity is available or unavailable.
-
-    """
-
-    qualification: Literal["qualified", "unavailable"]
-    executed: bool
-    padding_or_conversion_performed: bool
-    requested_quantity: str
-    reason: str
-
-
-def qualify_native_modality(
-    result: Mapping[str, Any], requested_quantity: str, *, profile: Mapping[str, Any] | None = None
-) -> ModalityQualification:
-    """Qualify a requested quantity only if the native result actually carries it.
-
-    A backend profile advertising a capability is a declaration about the
-    backend, not evidence about this result. When the adapter returned counts
-    only, amplitudes cannot be inferred from them, and a declared capability
-    does not supply the missing data.
-
-    Parameters
-    ----------
-    result
-        Native adapter result payload.
-    requested_quantity
-        Quantity to qualify, such as ``statevector_amplitudes``.
-    profile
-        Backend profile, used only to explain a contradiction, never to supply data.
-
-    Returns
-    -------
-    ModalityQualification
-        Qualified state, or an explicit unavailable reason.
-
-    """
-    if requested_quantity in result and result[requested_quantity] is not None:
-        return ModalityQualification(
-            qualification="qualified",
-            executed=False,
-            padding_or_conversion_performed=False,
-            requested_quantity=requested_quantity,
-            reason=f"the native result carries {requested_quantity!r} directly",
-        )
-
-    present = sorted(key for key, value in result.items() if value is not None)
-    capability = None
-    if profile is not None:
-        capabilities = profile.get("capabilities")
-        if isinstance(capabilities, Mapping):
-            capability = capabilities.get(f"supports_{requested_quantity.split('_')[0]}")
-    declared = (
-        " the profile declares support, but a capability declaration is not this result's data;"
-        if capability
-        else ""
-    )
-    return ModalityQualification(
-        qualification="unavailable",
-        executed=False,
-        padding_or_conversion_performed=False,
-        requested_quantity=requested_quantity,
-        reason=(
-            f"the native result carries {present!r} and no {requested_quantity!r};"
-            f"{declared} amplitudes cannot be inferred from counts and are not padded"
-        ),
     )
 
 
@@ -1335,6 +1643,7 @@ __all__ = [
     "SEMANTIC_COMPANION_MAJOR",
     "SEMANTIC_COMPANION_SCHEMA",
     "SEMANTIC_RECORD_CLAIM_BOUNDARY",
+    "SYNTHETIC_DERIVATIVE_CLAIM_BOUNDARY",
     "AggregationDecision",
     "CapturedSemanticRecord",
     "DeclaredParameterOrder",

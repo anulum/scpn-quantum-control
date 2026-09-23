@@ -58,6 +58,7 @@ _DOCSTRING_SECTION_TARGETS: tuple[tuple[object, tuple[str, ...]], ...] = (
     (PrimitiveTransformRule, ("Parameters", "Raises")),
     (PrimitiveContract, ("Parameters", "Raises")),
     (PrimitiveContract.from_transform, ("Parameters", "Returns")),
+    (PrimitiveContract.to_semantic_source, ("Returns",)),
     (ProgramADRegistryDispatchCoverageRow, ("Parameters", "Raises")),
     (ProgramADRegistryDispatchCoverageRow.to_dict, ("Returns",)),
     (ProgramADRegistryDispatchCoverageReport, ("Parameters", "Raises")),
@@ -332,6 +333,28 @@ def test_primitive_contract_round_trip_from_extracted_registry() -> None:
     assert contract.dtype_rule is _dtype_rule
     assert contract.static_argument_rule is _static_argument_rule
     assert contract.nondifferentiable_policy == "fail_closed_at_boundaries"
+
+
+def test_primitive_semantic_source_keeps_metadata_separate_from_execution() -> None:
+    """Capture real registry metadata without claiming an executable lowering."""
+    contract = primitive_contract_for("scpn.program_ad.elementwise:sin@1")
+    assert contract is not None
+    assert contract.lowering_rule is None
+
+    source = contract.to_semantic_source()
+
+    assert source["identity"] == contract.identity.key
+    assert source["producer_identity"] == (
+        "scpn_quantum_control.program_ad_registry.PrimitiveContract"
+    )
+    assert source["parameter_names"] == list(contract.derivative_rule.parameter_names)
+    assert source["trainable"] == list(contract.derivative_rule.trainable)
+    assert source["has_lowering_rule"] is False
+    metadata = cast(dict[str, str], source["lowering_metadata"])
+    assert "executable lowering blocked" in metadata["mlir"]
+    assert "unit" not in source
+    metadata["mlir"] = "tampered"
+    assert dict(contract.lowering_metadata)["mlir"] != "tampered"
 
 
 def test_primitive_contract_metadata_is_an_isolated_read_only_snapshot() -> None:

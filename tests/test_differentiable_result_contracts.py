@@ -109,6 +109,57 @@ def test_canonical_gradient_results_preserve_snapshot_through_reconstruction() -
     np.testing.assert_array_equal(restored.gradient, result.gradient)
 
 
+def test_native_gradient_semantic_source_preserves_order_without_inventing_units() -> None:
+    """Expose actual AD evidence while keeping absent caller units absent."""
+    result = differentiable_facade.value_and_grad(
+        lambda values: values[0] ** 2 + values[1],
+        [2.0, 3.0],
+        method="reverse_mode",
+    )
+    assert isinstance(result, GradientResult)
+    source = result.to_semantic_source()
+    assert source["producer_identity"] == (
+        "scpn_quantum_control.differentiable_result_contracts.GradientResult"
+    )
+    assert source["gradient"] == result.gradient.tolist()
+    assert source["parameter_names"] == list(result.parameter_names)
+    assert source["trainable"] == list(result.trainable)
+    assert source["gradient_layout"] == {"dtype": "float64", "shape": [2]}
+    assert "unit" not in source
+    cast(list[float], source["gradient"])[0] = 999.0
+    np.testing.assert_array_equal(result.gradient, [4.0, 1.0])
+
+
+def test_native_stochastic_semantic_source_keeps_uncertainty_components_separate() -> None:
+    """Retain native uncertainty arrays and shot provenance without aggregation."""
+    result = StochasticGradientResult(
+        value=1.0,
+        gradient=np.array([0.5]),
+        standard_error=np.array([0.1]),
+        covariance=np.array([[0.01]]),
+        confidence_radius=np.array([0.2]),
+        shots=np.array([[32.0], [32.0]]),
+        confidence_level=0.95,
+        method="shot_noise_parameter_shift",
+        shift=math.pi / 2.0,
+        coefficient=0.5,
+        evaluations=2,
+        parameter_names=("x",),
+        trainable=(True,),
+    )
+    source = result.to_semantic_source()
+    assert source["producer_identity"] == (
+        "scpn_quantum_control.differentiable_result_contracts.StochasticGradientResult"
+    )
+    assert source["standard_error"] == [0.1]
+    assert source["covariance"] == [[0.01]]
+    assert source["confidence_radius"] == [0.2]
+    assert source["shots"] == [[32.0], [32.0]]
+    assert "unit" not in source
+    cast(list[float], source["standard_error"])[0] = 999.0
+    np.testing.assert_array_equal(result.standard_error, [0.1])
+
+
 def test_public_result_contract_validators_have_docstrings() -> None:
     """Public result-record validators should document their invariants."""
     missing: list[str] = []

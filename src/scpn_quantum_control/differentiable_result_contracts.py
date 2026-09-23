@@ -278,6 +278,34 @@ class GradientResult:
         object.__setattr__(self, "coefficient", coefficient)
         object.__setattr__(self, "claim_boundary", claim_boundary)
 
+    def to_semantic_source(self) -> dict[str, object]:
+        """Return detached native evidence for an optional semantic companion.
+
+        Returns
+        -------
+        dict[str, object]
+            Actual value, derivative layout, order, method and provenance.
+            Objective and parameter units remain absent until a caller supplies
+            them through a separately validated source.
+
+        """
+        return {
+            "producer_identity": f"{type(self).__module__}.{type(self).__qualname__}",
+            "value": self.value,
+            "gradient": self.gradient.tolist(),
+            "gradient_layout": {
+                "dtype": str(self.gradient.dtype),
+                "shape": list(self.gradient.shape),
+            },
+            "method": self.method,
+            "shift": self.shift,
+            "coefficient": self.coefficient,
+            "evaluations": self.evaluations,
+            "parameter_names": list(self.parameter_names),
+            "trainable": list(self.trainable),
+            "claim_boundary": self.claim_boundary,
+        }
+
 
 @dataclass(frozen=True)
 class FiniteShotSampleProvenance:
@@ -609,6 +637,25 @@ class StochasticGradientResult:
             else self.confidence_interval.to_dict(),
             "failure_policy_status": self.failure_policy_status,
             "failure_reasons": list(self.failure_reasons),
+        }
+
+    def to_semantic_source(self) -> dict[str, object]:
+        """Return detached stochastic evidence with native uncertainty terms.
+
+        Returns
+        -------
+        dict[str, object]
+            Original component arrays and sample provenance, with no synthetic
+            aggregate error or inferred physical units.
+
+        """
+        return {
+            "producer_identity": f"{type(self).__module__}.{type(self).__qualname__}",
+            **self.to_dict(),
+            "gradient_layout": {
+                "dtype": str(self.gradient.dtype),
+                "shape": list(self.gradient.shape),
+            },
         }
 
 
