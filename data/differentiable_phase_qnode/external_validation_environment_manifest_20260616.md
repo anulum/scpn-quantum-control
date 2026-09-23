@@ -12,13 +12,13 @@ SCPN Quantum Control — Differentiable external-validation environment lock
 
 - Artefact ID: `differentiable-external-validation-environment-manifest-20260616`
 - Classification: `functional_non_isolated`
-- Python: `3.12.13`
+- Python: `3.12.14`
 - Platform: `Linux-7.0.0-31-generic-x86_64-with-glibc2.39`
 - Claim boundary: Exact environment lockfile manifest for reviewer reproduction only; it does not promote performance, provider, QPU, GPU, hardware, or isolated_affinity benchmark claims.
 
 | Lockfile | Role | SHA-256 | Pinned packages |
 |---|---|---|---|
-| `pyproject.toml` | Package metadata and bounded dependency ranges | `12ec8ad9fac0f40629311beef68ea512b53591adbf1aa46cfcc00232e7b385db` | 0 |
+| `pyproject.toml` | Package metadata and bounded dependency ranges | `6687519e01994267f2841f70537a794326ba08b4a753d26b0877bc8b7bb5d44a` | 0 |
 | `requirements.txt` | Runtime dependency lock input | `67d30486ee7b3d478dcdab2c44ed932dada3a2fcda326b2cda425a057bc62618` | 11 |
 | `requirements-dev.txt` | Developer verification dependency lock input | `c95c5dceba3f04f1c4b1153174ab9315f42f09918d432bc21e0ce7132b5f8e87` | 29 |
 | `requirements-ci-cross-platform-smoke.txt` | Cross-platform smoke CI lockfile | `73411b493d920d4e3bcba6fdf9bd881b1fa79d4b72c7080df3e76c6a58aeca9a` | 17 |
