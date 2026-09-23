@@ -9,8 +9,9 @@
 # Required by the real JAX export serialization/deserialization coverage.
 flatbuffers==25.12.19 \
     --hash=sha256:7634f50c427838bb021c2d66a3d1168e9d199b0607e6329399f04846d42e20b4
-jax==0.10.1 \
-    --hash=sha256:47f3192c76e9e3358de1b106a8af5e943fccb10510903f25d96ea53652729134
+jax==0.10.2 \
+    --hash=sha256:724d73c4678d8b06f6a6ab4db1b8a2fea8cd4f1e2c2564f99601634ec7b8d1c6 \
+    --hash=sha256:bf77428a8c2e6904c4f46d5ab12aa5cfc6cad2179f07f7e4c0fc75ac86ef0639
 jaxlib==0.10.1 \
     --hash=sha256:f3cdf5b7f48470ab5455ab79aab746419694ccb6b52651cc2ce5fb27def03588
 ml-dtypes==0.6.0 \
