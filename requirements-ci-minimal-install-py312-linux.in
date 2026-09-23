@@ -7,7 +7,7 @@
 # SCPN Quantum Control — Python 3.12 minimal-install CI dependency input
 
 build==1.5.0
-hatchling==1.31.0
+hatchling==1.32.3
 hypothesis==6.165.10
 jinja2==3.1.6
 networkx==3.6.1
