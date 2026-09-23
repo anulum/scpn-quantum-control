@@ -71,7 +71,10 @@ def _build_mpo_hamiltonian(
 ) -> Any:
     """Build the XY Hamiltonian as a quimb SpinHam1D MPO.
 
-    H = -Σ K_ij (X_iX_j + Y_iY_j) - Σ ω_i Z_i
+    H = -Σ K_ij (Sx_i Sx_j + Sy_i Sy_j) - Σ ω_i Sz_i,
+    where quimb ``SpinHam1D(S=1/2)`` uses Sα = σα/2. In Pauli notation,
+    pair coefficients are K_ij/4 and on-site coefficients are ω_i/2.
+    This convention differs from Pauli-normalised XY routes elsewhere.
     """
     if not _QUIMB_AVAILABLE:
         raise ImportError("quimb not installed: pip install quimb")
@@ -175,6 +178,8 @@ def tebd_evolution(
     cutoff: float = 1e-10,
     order: int = 2,
     allow_long_range_truncation: bool = False,
+    *,
+    initial_state: NDArray[np.complex128] | None = None,
 ) -> dict[str, Any]:
     """Time evolution via TEBD (Time-Evolving Block Decimation).
 
@@ -198,6 +203,11 @@ def tebd_evolution(
         Explicitly allow the nearest-neighbour TEBD local Hamiltonian to
         omit non-adjacent K[i, j] couplings. Defaults to False so full
         K_nm inputs cannot be truncated silently.
+    initial_state
+        Optional normalized dense pure state in MPS site order. If omitted,
+        retain the legacy product state prepared from ``omega``. The dense
+        input is admitted by the active allocation budget and must be exactly
+        representable under ``bond_dim`` and ``cutoff``; truncation refuses.
 
     Returns
     -------
@@ -234,13 +244,37 @@ def tebd_evolution(
 
     H_local = builder.build_local_ham(n)
 
-    # Initial state: product state with Ry rotations
-    arrays = []
-    for i in range(n):
-        angle = float(omega[i]) % (2 * np.pi)
-        c, s = np.cos(angle / 2), np.sin(angle / 2)
-        arrays.append(np.array([c, s], dtype=np.complex128))
-    psi = qtn.MPS_product_state(arrays)
+    if initial_state is None:
+        # Legacy initial state: product of Ry-rotated qubits.
+        arrays = []
+        for i in range(n):
+            angle = float(omega[i]) % (2 * np.pi)
+            c, s = np.cos(angle / 2), np.sin(angle / 2)
+            arrays.append(np.array([c, s], dtype=np.complex128))
+        psi = qtn.MPS_product_state(arrays)
+    else:
+        from ..dense_budget import require_dense_allocation
+
+        require_dense_allocation(
+            n,
+            dtype=np.complex128,
+            rank=1,
+            object_count=2,
+            label="TEBD dense initial state",
+        )
+        dense = np.asarray(initial_state, dtype=np.complex128)
+        if dense.ndim != 1 or dense.shape != (2**n,):
+            raise ValueError("initial_state must have shape (2**n,) in MPS site order.")
+        if not np.all(np.isfinite(dense)):
+            raise ValueError("initial_state must contain only finite amplitudes.")
+        if abs(float(np.linalg.norm(dense)) - 1.0) > 1e-10:
+            raise ValueError("initial_state must be normalized.")
+        psi = qtn.MatrixProductState.from_dense(dense, dims=2, max_bond=bond_dim, cutoff=cutoff)
+        represented = np.asarray(psi.to_dense()).reshape(-1)
+        if float(np.linalg.norm(represented - dense)) > 1e-10:
+            raise ValueError(
+                "initial_state cannot be represented exactly with bond_dim and cutoff."
+            )
 
     tebd = qtn.TEBD(psi, H_local, dt=dt)
     tebd.split_opts["max_bond"] = bond_dim

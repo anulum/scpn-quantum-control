@@ -10,6 +10,8 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 import pytest
 from braket.circuits import Circuit
 
@@ -27,7 +29,6 @@ def _bell_circuit() -> Circuit:
 
 def test_braket_local_simulator_round_trips_through_hal() -> None:
     """A real Braket circuit should execute through a local Braket simulator."""
-
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     hal.register_backend(BraketLocalHALAdapter(hal.profile("local_braket_sv")))
     workload = braket_circuit_to_workload(
@@ -47,6 +48,31 @@ def test_braket_local_simulator_round_trips_through_hal() -> None:
     assert set(result.counts).issubset({"00", "11"})
     assert result.metadata["execution_mode"] == "braket_local"
     assert result.metadata["ir_format"] == "openqasm3"
+
+
+@pytest.mark.parametrize("backend_id", ["local_braket_sv", "local_braket_dm"])
+def test_braket_local_late_cancel_preserves_completed_evidence_and_identity(
+    backend_id: str,
+) -> None:
+    """Keep real local Braket results terminal and refuse foreign handles."""
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    hal.register_backend(BraketLocalHALAdapter(hal.profile(backend_id)))
+    workload = braket_circuit_to_workload(
+        _bell_circuit(), workload_id="braket_late_cancel", shots=32
+    )
+    job = hal.submit(backend_id, workload)
+    recovered = replace(job, status="submitted")
+    first = hal.result(recovered)
+    assert hal.result(recovered) is first
+    assert hal.cancel(recovered) is job
+    assert hal.status(recovered) == "completed"
+    assert hal.result(recovered) is first
+    assert first.shots == sum(first.counts.values()) == 32
+    foreign = replace(recovered, workload_id="another-workload")
+    for operation in (hal.status, hal.result, hal.cancel):
+        with pytest.raises(ValueError, match="workload_id"):
+            operation(foreign)
+    assert hal.status(job) == "completed"
 
 
 def test_braket_aws_adapter_uses_injected_device_and_approval_gate() -> None:
@@ -95,6 +121,72 @@ def test_braket_aws_adapter_uses_injected_device_and_approval_gate() -> None:
     assert hal.status(job) == "completed"
 
 
+@pytest.mark.parametrize(
+    "scenario,expected,cancel_calls",
+    [
+        ("already_done", "completed", 0),
+        ("race_done", "completed", 1),
+        ("cached_during_cancel", "completed", 1),
+        ("accepted", "cancelled", 1),
+        ("pending", "running", 1),
+    ],
+)
+def test_braket_aws_cancel_reports_observed_provider_outcome(
+    scenario: str, expected: str, cancel_calls: int
+) -> None:
+    """Do not label an AWS task cancelled unless its provider confirms it."""
+
+    class ProviderTask:
+        id = "arn:aws:braket:task/offline-cancel-race"
+        current = "COMPLETED" if scenario == "already_done" else "RUNNING"
+        cancellations = 0
+
+        def state(self) -> str:
+            return self.current
+
+        def cancel(self) -> None:
+            self.cancellations += 1
+            if scenario == "race_done":
+                self.current = "COMPLETED"
+            elif scenario == "cached_during_cancel":
+                self.current = "COMPLETED"
+                assert hal.result(job).counts == {"00": 4}
+                self.current = "CANCELLED"
+            elif scenario == "accepted":
+                self.current = "CANCELLED"
+
+        def result(self) -> object:
+            assert self.current == "COMPLETED"
+            return type("Result", (), {"measurement_counts": {"00": 4}})()
+
+    task = ProviderTask()
+
+    class Device:
+        name = "offline-device"
+
+        def run(self, circuit: Circuit, shots: int) -> ProviderTask:
+            assert isinstance(circuit, Circuit)
+            assert shots == 4
+            return task
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    hal.register_backend(BraketAwsHALAdapter(hal.profile("aws_braket_ionq"), device=Device()))
+    workload = braket_circuit_to_workload(_bell_circuit(), workload_id=f"race_{scenario}", shots=4)
+    job = hal.submit("aws_braket_ionq", workload, approval_id="offline-fault-injection")
+    outcome = hal.cancel(replace(job, status="running"))
+    assert outcome.status == expected
+    assert outcome.metadata == job.metadata
+    assert task.cancellations == cancel_calls
+    assert hal.status(job) == expected
+    if expected == "completed":
+        first = hal.result(job)
+        assert first.counts == {"00": 4}
+        assert first.shots == 4
+        assert hal.result(job) is first
+        assert hal.cancel(job).status == "completed"
+        assert task.cancellations == cancel_calls
+
+
 def test_braket_aws_adapter_rejects_task_without_id() -> None:
     """AWS Braket adapter should fail closed when provider task id is missing."""
 
@@ -130,7 +222,6 @@ def test_braket_aws_adapter_rejects_task_without_id() -> None:
 
 def test_braket_provider_task_id_rejects_control_characters() -> None:
     """Braket provider task identifiers must reject control-character payloads."""
-
     from scpn_quantum_control.hardware import hal_braket as braket_mod
 
     class BadTask:
@@ -142,7 +233,6 @@ def test_braket_provider_task_id_rejects_control_characters() -> None:
 
 def test_braket_provider_task_id_trims_padding() -> None:
     """Braket provider task identifiers should be canonicalised by trimming padding."""
-
     from scpn_quantum_control.hardware import hal_braket as braket_mod
 
     class PaddedTask:
@@ -153,7 +243,6 @@ def test_braket_provider_task_id_trims_padding() -> None:
 
 def test_braket_device_name_rejects_control_characters() -> None:
     """Braket device names must reject control-character payloads."""
-
     from scpn_quantum_control.hardware import hal_braket as braket_mod
 
     class BadDevice:
@@ -165,7 +254,6 @@ def test_braket_device_name_rejects_control_characters() -> None:
 
 def test_braket_device_name_trims_padding() -> None:
     """Braket device names should be canonicalised by trimming padding."""
-
     from scpn_quantum_control.hardware import hal_braket as braket_mod
 
     class PaddedDevice:
@@ -176,7 +264,6 @@ def test_braket_device_name_trims_padding() -> None:
 
 def test_braket_status_normalisation_maps_provider_tokens() -> None:
     """Braket status values should map to canonical HAL status values."""
-
     from scpn_quantum_control.hardware import hal_braket as braket_mod
 
     assert braket_mod._normalise_status("FINISHED") == "completed"
@@ -233,6 +320,7 @@ def test_braket_aws_adapter_rejects_shot_mismatch() -> None:
 
 
 def test_braket_aws_device_arn_rejects_control_characters() -> None:
+    """Reject control characters before a Braket device ARN is stored."""
     profile = HardwareAbstractionLayer.with_builtin_profiles().profile("aws_braket_ionq")
     with pytest.raises(ValueError, match="Braket device ARN"):
         BraketAwsHALAdapter(
@@ -243,6 +331,7 @@ def test_braket_aws_device_arn_rejects_control_characters() -> None:
 
 
 def test_braket_aws_device_arn_trims_padding() -> None:
+    """Store the canonical ARN after removing surrounding whitespace."""
     profile = HardwareAbstractionLayer.with_builtin_profiles().profile("aws_braket_ionq")
     adapter = BraketAwsHALAdapter(
         profile,

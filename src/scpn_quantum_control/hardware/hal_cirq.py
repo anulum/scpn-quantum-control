@@ -14,13 +14,20 @@ from collections.abc import Callable, Mapping
 from datetime import UTC, datetime
 from importlib import import_module
 from typing import Any
+from uuid import uuid4
 
 from ._count_integrity import (
     strict_integer_value,
     strict_provider_job_id,
     strict_shot_conservation,
 )
-from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
+from .hal import (
+    BackendProfile,
+    QuantumJobRef,
+    QuantumJobResult,
+    QuantumWorkload,
+    _resolve_stored_job,
+)
 
 CIRQ_EXECUTION_MODE = "local_cirq_simulator"
 
@@ -85,15 +92,31 @@ class CirqLocalHALAdapter:
         raw_result = run(circuit, repetitions=workload.shots)
         counts = _normalise_histogram_counts(raw_result, self._measurement_key, workload.n_qubits)
         observed_shots = strict_shot_conservation(counts, expected_shots=workload.shots)
-        provider_job_id = _provider_job_id(raw_result)
-        hal_job_id = _hal_job_id(self.backend_id, workload.workload_id, provider_job_id)
+        try:
+            provider_job_id = _provider_job_id(raw_result)
+        except ValueError as exc:
+            if str(exc) != "Cirq result does not expose a provider job id":
+                raise
+            try:
+                cirq = import_module("cirq")
+            except ModuleNotFoundError:
+                raise exc from None
+            if not isinstance(raw_result, cirq.Result):
+                raise exc
+            provider_job_id = None
+        if provider_job_id is None:
+            hal_job_id = f"{self.backend_id}:{workload.workload_id}:{uuid4().hex}"
+            job_origin = {"job_id_origin": "hal_local_generated"}
+        else:
+            hal_job_id = _hal_job_id(self.backend_id, workload.workload_id, provider_job_id)
+            job_origin = {"provider_job_id": provider_job_id}
         job = QuantumJobRef(
             job_id=hal_job_id,
             backend_id=self.backend_id,
             workload_id=workload.workload_id,
             status="completed",
             metadata={
-                "provider_job_id": provider_job_id,
+                **job_origin,
                 "execution_mode": CIRQ_EXECUTION_MODE,
                 "measurement_key": self._measurement_key,
                 "ir_format": workload.ir_format,
@@ -118,27 +141,16 @@ class CirqLocalHALAdapter:
 
     def status(self, job: QuantumJobRef) -> str:
         """Return the current status for a submitted backend job."""
-        return self._job(job).status
+        return _resolve_stored_job(job, self._jobs).status
 
     def result(self, job: QuantumJobRef) -> QuantumJobResult:
         """Return the completed result for a submitted backend job."""
-        result = self._results.get(job.job_id)
-        if result is None:
-            raise KeyError(f"unknown job_id: {job.job_id}")
-        return result
+        stored = _resolve_stored_job(job, self._jobs)
+        return self._results[stored.job_id]
 
     def cancel(self, job: QuantumJobRef) -> QuantumJobRef:
-        """Request cancellation for a submitted backend job."""
-        stored = self._job(job)
-        cancelled = QuantumJobRef(
-            job_id=stored.job_id,
-            backend_id=stored.backend_id,
-            workload_id=stored.workload_id,
-            status="cancelled",
-            metadata=stored.metadata,
-        )
-        self._jobs[job.job_id] = cancelled
-        return cancelled
+        """Preserve terminal local evidence when cancellation arrives late."""
+        return _resolve_stored_job(job, self._jobs)
 
     def _build_circuit(self, source: str) -> Any:
         if self._circuit_factory is not None:
@@ -151,12 +163,6 @@ class CirqLocalHALAdapter:
         factory = self._simulator_factory or _default_simulator_factory
         self._simulator = factory()
         return self._simulator
-
-    def _job(self, job: QuantumJobRef) -> QuantumJobRef:
-        stored = self._jobs.get(job.job_id)
-        if stored is None:
-            raise KeyError(f"unknown job_id: {job.job_id}")
-        return stored
 
 
 def _default_circuit_factory(source: str) -> Any:

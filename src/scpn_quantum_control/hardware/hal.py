@@ -281,7 +281,7 @@ class QuantumJobResult:
 
     Shot totals and count values must be nonnegative integers, not booleans or
     floats. A zero shot total retains the existing unknown-total convention;
-    positive totals must equal the sum when counts are present. Invalid values
+    positive totals must equal the count sum, including for empty counts. Invalid values
     raise ValueError before the result is accepted.
     """
 
@@ -303,7 +303,7 @@ class QuantumJobResult:
             if isinstance(count, bool) or not isinstance(count, int) or count < 0:
                 raise ValueError("counts values must be non-negative integers")
             frozen_counts[bitstring] = count
-        if frozen_counts and self.shots and sum(frozen_counts.values()) != self.shots:
+        if self.shots and sum(frozen_counts.values()) != self.shots:
             raise ValueError("counts must sum to shots")
         object.__setattr__(self, "counts", MappingProxyType(frozen_counts))
         object.__setattr__(self, "metadata", _freeze_metadata(self.metadata))
@@ -402,31 +402,16 @@ class LocalDeterministicSimulator:
 
     def status(self, job: QuantumJobRef) -> str:
         """Return the current status for a submitted backend job."""
-        stored = self._jobs.get(job.job_id)
-        if stored is None:
-            raise KeyError(f"unknown job_id: {job.job_id}")
-        return stored.status
+        return _resolve_stored_job(job, self._jobs).status
 
     def result(self, job: QuantumJobRef) -> QuantumJobResult:
         """Return the completed result for a submitted backend job."""
-        result = self._results.get(job.job_id)
-        if result is None:
-            raise KeyError(f"unknown job_id: {job.job_id}")
-        return result
+        stored = _resolve_stored_job(job, self._jobs)
+        return self._results[stored.job_id]
 
     def cancel(self, job: QuantumJobRef) -> QuantumJobRef:
-        """Request cancellation for a submitted backend job."""
-        if job.job_id not in self._jobs:
-            raise KeyError(f"unknown job_id: {job.job_id}")
-        cancelled = QuantumJobRef(
-            job_id=job.job_id,
-            backend_id=job.backend_id,
-            workload_id=job.workload_id,
-            status="cancelled",
-            metadata=job.metadata,
-        )
-        self._jobs[job.job_id] = cancelled
-        return cancelled
+        """Preserve an already completed result when cancellation arrives late."""
+        return _resolve_stored_job(job, self._jobs)
 
     @staticmethod
     def _deterministic_counts(workload: QuantumWorkload) -> dict[str, int]:

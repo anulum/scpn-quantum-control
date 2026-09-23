@@ -45,6 +45,10 @@ PROVIDER_CAPABILITY_CORE_SOURCE = "src/scpn_quantum_control/hardware/provider_ca
 """Provider-neutral no-submit capability metadata and readiness decisions."""
 PROVIDER_CAPABILITY_CORE_TEST = "tests/test_provider_capability_core.py"
 """Public capability validation, route, assessment, and OpenPulse tests."""
+PROVIDER_SUBMISSION_GATE_SOURCE = "src/scpn_quantum_control/hardware/provider_submission_gate.py"
+"""Submit-time binding of no-submit metadata to the exact cloud route."""
+PROVIDER_SUBMISSION_GATE_TEST = "tests/test_provider_submission_gate.py"
+"""Public IBM and AWS submission, refusal, and no-run tests."""
 PROVIDER_ROUTE_CONFIGURATION_SOURCE = (
     "src/scpn_quantum_control/hardware/provider_route_configuration.py"
 )
@@ -91,6 +95,7 @@ HARDWARE_HAL_COVERAGE_COHORT = [
     IQM_BACKEND_TEST,
     *HARDWARE_AGGREGATOR_TESTS,
     PROVIDER_CAPABILITY_CORE_TEST,
+    PROVIDER_SUBMISSION_GATE_TEST,
     *PROVIDER_ROUTE_INVENTORY_TESTS,
     PROVIDER_CAPABILITY_CLOUD_ADAPTERS_TEST,
     PROVIDER_CAPABILITY_GATE_ADAPTERS_TEST,
@@ -114,6 +119,8 @@ HARDWARE_HAL_TYPING_RATCHET = [
     *HARDWARE_AGGREGATOR_TESTS,
     PROVIDER_CAPABILITY_CORE_SOURCE,
     PROVIDER_CAPABILITY_CORE_TEST,
+    PROVIDER_SUBMISSION_GATE_SOURCE,
+    PROVIDER_SUBMISSION_GATE_TEST,
     PROVIDER_ROUTE_CONFIGURATION_SOURCE,
     *PROVIDER_ROUTE_INVENTORY_TESTS,
     PROVIDER_CAPABILITY_CLOUD_ADAPTERS_SOURCE,
@@ -137,6 +144,7 @@ HARDWARE_HAL_DOCSTRING_RATCHET = [
     IQM_BACKEND_SOURCE,
     HARDWARE_AGGREGATOR_SOURCE,
     PROVIDER_CAPABILITY_CORE_SOURCE,
+    PROVIDER_SUBMISSION_GATE_SOURCE,
     PROVIDER_ROUTE_CONFIGURATION_SOURCE,
     PROVIDER_CAPABILITY_CLOUD_ADAPTERS_SOURCE,
     PROVIDER_CAPABILITY_GATE_ADAPTERS_SOURCE,
@@ -150,6 +158,7 @@ HARDWARE_HAL_DOCSTRING_RATCHET = [
     IQM_BACKEND_TEST,
     *HARDWARE_AGGREGATOR_TESTS,
     PROVIDER_CAPABILITY_CORE_TEST,
+    PROVIDER_SUBMISSION_GATE_TEST,
     *PROVIDER_ROUTE_INVENTORY_TESTS,
     PROVIDER_CAPABILITY_CLOUD_ADAPTERS_TEST,
     PROVIDER_CAPABILITY_GATE_ADAPTERS_TEST,
@@ -166,6 +175,7 @@ HARDWARE_HAL_COVERAGE_INCLUDE = (
     "*/hardware/circuit_export.py,*/hardware/fast_classical.py,"
     "*/hardware/iqm_backend.py,*/hardware/aggregators.py,"
     "*/hardware/provider_capability_core.py,"
+    "*/hardware/provider_submission_gate.py,"
     "*/hardware/provider_route_configuration.py,"
     "*/hardware/provider_capability_cloud_adapters.py,"
     "*/hardware/provider_capability_gate_adapters.py,"

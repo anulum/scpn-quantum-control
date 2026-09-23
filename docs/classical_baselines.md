@@ -70,6 +70,9 @@ The function does not fabricate a result when QuTiP is missing. It returns a
 Hamiltonian path uses nearest-neighbour terms, matching the existing MPS module
 contract. Use it to document whether a tensor-network baseline is available and
 what bond dimensions the run reached.
+Its `SpinHam1D(S=1/2)` operators carry spin‑½ normalization. Same-input
+comparison with a Pauli-normalised XY solver is not Hamiltonian parity;
+align both Hamiltonians and the initial states before comparing results.
 
 The wrapper explicitly enables nearest-neighbour truncation for this
 diagnostic path and records `coupling_scope` plus `omitted_coupling_l1`

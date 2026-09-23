@@ -15,11 +15,15 @@ Gate = tuple[str, list[str]]
 METAMORPHIC_AD_VERIFICATION_QUALITY_RATCHET = [
     "src/scpn_quantum_control/metamorphic_ad_verification.py",
     "tests/test_metamorphic_ad_verification.py",
+    "tests/test_independent_conformance_oracles.py",
     "tools/metamorphic_ad_verification_quality_gates.py",
     "tests/test_metamorphic_ad_verification_quality_gate.py",
 ]
 """Ordered strict-typing and NumPy-docstring cohort."""
-METAMORPHIC_AD_VERIFICATION_COVERAGE_COHORT = ["tests/test_metamorphic_ad_verification.py"]
+METAMORPHIC_AD_VERIFICATION_COVERAGE_COHORT = [
+    "tests/test_metamorphic_ad_verification.py",
+    "tests/test_independent_conformance_oracles.py",
+]
 """Tests that own exact metamorphic-AD coverage."""
 METAMORPHIC_AD_VERIFICATION_COVERAGE_DATA_FILE = ".coverage.metamorphic-ad-verification-quality"
 """Isolated coverage database for the metamorphic-AD owner."""

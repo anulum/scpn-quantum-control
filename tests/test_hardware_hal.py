@@ -177,7 +177,8 @@ def test_hal_rejects_substituted_cancellation_identity(
     monkeypatch.setattr(backend, "cancel", mislabelled_cancel)
     with pytest.raises(ValueError, match=f"cancel.*{field}"):
         hal.cancel(job)
-    assert backend.status(job) == "cancelled"
+    assert backend.status(job) == "completed"
+    assert hal.result(job).status == "completed"
 
 
 def test_hal_recovered_handle_preserves_result_evidence(
@@ -192,11 +193,14 @@ def test_hal_recovered_handle_preserves_result_evidence(
     raw = backend.result(job)
     result = fresh_router.result(recovered)
     assert result is raw
+    assert fresh_router.result(recovered) is raw
     assert dict(result.counts) == dict(raw.counts)
     assert result.metadata == raw.metadata
     assert result.job.metadata != recovered.metadata
     assert result.job.status != recovered.status
-    assert fresh_router.cancel(recovered).status == "cancelled"
+    assert fresh_router.cancel(recovered) is job
+    assert fresh_router.status(recovered) == "completed"
+    assert fresh_router.result(recovered) is raw
 
 
 def test_hal_rejects_recovered_handle_with_wrong_workload(
@@ -206,9 +210,11 @@ def test_hal_rejects_recovered_handle_with_wrong_workload(
     hal, backend, workload = local_job_route
     job = hal.submit(backend.backend_id, workload)
     misassociated = replace(job, workload_id="another-workload")
-    with pytest.raises(ValueError, match="result.*workload_id"):
-        hal.result(misassociated)
+    for operation in (hal.status, hal.result, hal.cancel):
+        with pytest.raises(ValueError, match="job lookup.*workload_id"):
+            operation(misassociated)
     assert hal.result(job) is backend.result(job)
+    assert hal.status(job) == "completed"
 
 
 @pytest.mark.parametrize(
@@ -413,7 +419,9 @@ def test_provider_cancel_cannot_replace_stored_submission_metadata(
     adapter, original, provider = submitted_provider_record
     cancelled = adapter.cancel(replace(original, metadata={"shots": 1, "n_qubits": 1}))
     assert cancelled.metadata == original.metadata
-    assert provider.cancels == 1
+    assert provider.cancels == (
+        0 if original.backend_id in {"ibm_quantum", "aws_braket_ionq"} else 1
+    )
     result = adapter.result(original)
     assert result.shots == 16
     assert result.job.metadata == original.metadata

@@ -93,7 +93,8 @@ JSON-ready result.
 | `iter_metamorphic_laws(*, kind=None, expected_outcome=None)` | Returns rows satisfying both optional filters. |
 | `probe_metamorphic_law(law_id, *, unknown_policy="raise")` | Returns deterministic catalogue metadata without running external evidence suites. |
 
-Known executable laws probe as ready for local residual evaluation.
+Known executable laws probe as ready for local residual evaluation, with
+`passed=False` and no residual until values are actually checked.
 Evidence-gated laws return `passed=False`, `refused=False` until their named
 suite is run. Permanent and invent-green boundaries return refused results.
 Unknown ids raise by default or return a structured refusal with
@@ -124,6 +125,33 @@ assert evaluate_chain_rule_residual(2.0, 3.0, 6.0).passed
 assert not evaluate_linearity_residual(1.0, 2.0, 3.1).passed
 ```
 
+### Independent scalar conformance
+
+`IndependentConformanceProtocol` declares the estimand, domain, oracle class
+and reference, SHA-256 digests of the exact oracle, input, product source and
+dataset objects, comparator version, runtime and positive finite absolute
+budget. Finite positive integer budgets are normalized to float before
+identity calculation; booleans, nonnumeric and overflowing values refuse at
+construction. Its identity includes every field. Record the source objects and
+derive the oracle independently; matching digest strings alone do not establish
+independence.
+
+`evaluate_independent_scalar_conformance` compares observed primal and gradient
+values against separately supplied oracle values. It rejects non-finite values
+and accepts only analytic or numerical oracle classes. A wrong value returns a
+failed `IndependentConformanceResult`; it does not silently widen the budget.
+`require_current_conformance` checks that result against the current protocol
+identity and both residuals, so a changed source, dataset, comparator version
+or budget requires a new execution. Metamorphic, empirical and formal evidence
+need their own evaluation and cannot be promoted by this scalar comparator.
+
+The dedicated test runs the public finite-difference owner for `f(x)=x³` at
+`x=2`, comparing its actual result with the independently derived primal `8`
+and derivative `12`. It also substitutes a wrong primal or derivative and
+verifies failure. The result supports only that input, float64 domain and
+declared error budget. Registering a law or importing an optional dependency
+does not execute a numerical comparison.
+
 ### Registry and integrity
 
 `build_metamorphic_ad_registry()` assembles the schema, claim boundary, law
@@ -135,7 +163,7 @@ inconsistent counts.
 
 ## Safety and side effects
 
-- All catalogue/probe/residual APIs are pure and deterministic.
+- Catalogue, probe, residual and scalar-comparison APIs are pure and deterministic.
 - Evidence-module entries are pointers, not evidence that a suite passed.
 - No API runs AD frameworks, benchmarks, theorem provers, QPU/provider jobs,
   network calls, credential access, evidence mutation, or publication.

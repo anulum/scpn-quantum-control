@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 841,
     "public_documentation_pages": 377,
-    "python_model_classes": 1398,
-    "python_model_source_modules": 709,
+    "python_model_classes": 1400,
+    "python_model_source_modules": 710,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1394
+    "test_files": 1396
   },
   "documentation": {
     "examples": [
@@ -688,7 +688,7 @@
       {
         "package": "hardware",
         "path": "src/scpn_quantum_control/hardware",
-        "python_modules": 78
+        "python_modules": 79
       },
       {
         "package": "identity",
@@ -2928,6 +2928,14 @@
       {
         "name": "ImplicitSensitivityResult",
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
+      },
+      {
+        "name": "IndependentConformanceProtocol",
+        "path": "src/scpn_quantum_control/metamorphic_ad_verification.py"
+      },
+      {
+        "name": "IndependentConformanceResult",
+        "path": "src/scpn_quantum_control/metamorphic_ad_verification.py"
       },
       {
         "name": "InfitonField",
@@ -6769,6 +6777,7 @@
       "src/scpn_quantum_control/hardware/provider_certification.py",
       "src/scpn_quantum_control/hardware/provider_route_configuration.py",
       "src/scpn_quantum_control/hardware/provider_smoke.py",
+      "src/scpn_quantum_control/hardware/provider_submission_gate.py",
       "src/scpn_quantum_control/hardware/pulse_feasibility.py",
       "src/scpn_quantum_control/hardware/qasm_export.py",
       "src/scpn_quantum_control/hardware/qcvv.py",
@@ -8805,6 +8814,7 @@
       "tests/test_identity_observer_product.py",
       "tests/test_identity_pipeline_contracts.py",
       "tests/test_identity_robustness_quality_gate.py",
+      "tests/test_independent_conformance_oracles.py",
       "tests/test_integration.py",
       "tests/test_integration_pipeline.py",
       "tests/test_internal_corpus_markers.py",
@@ -9263,6 +9273,7 @@
       "tests/test_provider_isolated_smoke_workflow.py",
       "tests/test_provider_route_catalogue.py",
       "tests/test_provider_route_configuration.py",
+      "tests/test_provider_submission_gate.py",
       "tests/test_psi_field.py",
       "tests/test_psi_lattice_quality_gate.py",
       "tests/test_public_api.py",

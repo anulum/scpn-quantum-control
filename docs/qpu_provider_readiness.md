@@ -61,6 +61,23 @@ Every accessible backend becomes a `QPUNodeDescriptor`:
 The broker must route by descriptor fields, not by hard-coded backend
 names.
 
+For a read-only capability probe, callers can require a calibration timestamp
+no older than a chosen number of seconds by passing
+`max_calibration_age_seconds` and an explicit timezone-aware `as_of` to
+`probe_aggregator_provider_capability` or `assess_provider_capability_snapshot`.
+Missing, malformed, timezone-free, future and over-age timestamps return a
+blocked decision. The decision records the requested limit and observed age.
+A `ready` decision without this optional check asserts route capabilities
+only; it does not assert fresh calibration or authorize submission.
+For the IBM Runtime and AWS Braket HAL adapters, callers may configure a
+no-submit `capability_probe` with `max_calibration_age_seconds`. The adapters
+re-evaluate the probed snapshot at `submit` time against the configured target,
+route and requested resources before provider `run()`; a failed check makes no
+submission. The pair is opt-in, and its metadata source must be trusted by the
+caller. Approval-only submission without the pair remains unqualified for
+fresh calibration. Offline injected-provider tests do not establish a live
+provider calibration or hardware outcome.
+
 The descriptor schema is implemented in
 `scpn_quantum_control.qpu_compute.QPUNodeDescriptor`. Provider adapters
 must emit that object before any job can be considered routable.
@@ -122,8 +139,11 @@ synthesise from a pack record:
 
 Honesty boundary. The bridge refuses to mint provenance with a blank
 claim scope, title, or non-claims list - a shot histogram cannot state
-what it does or does not support, so the caller must. Without a provider
-attestation over the counts digest, the emitted unit renders
+what it does or does not support, so the caller must. A partial result cannot
+become a result pack merely because it carries non-empty counts: provenance
+requires `status="completed"`. A positive observed shot total also requires its
+counts to sum to that total, including when the count map is empty. Without a
+provider attestation over the counts digest, the emitted unit renders
 `unverifiable` downstream, loud and never silently upgraded; a supplied
 attestation that signs a different digest is rejected at emission. This
 is the `declared` boundary of PROVIDER-DEPTH: the wiring is complete and

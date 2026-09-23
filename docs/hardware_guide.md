@@ -47,6 +47,23 @@ status or metadata annotations do not replace the stored expected shots,
 qubit width or approval/provenance fields. Cancellation retains those fields.
 This supports reconstructed handles only while the adapter still retains the
 original record; it does not provide persistence or recovery after process loss.
+For IBM Runtime and AWS Braket, `cancel` checks the provider state before and
+after a cancellation request and reports the observed state. A job already
+completed is not cancelled, and a request still reported as running is not
+labelled cancelled. A locally decoded completed result remains retrievable
+even when cancellation arrives later. This is an offline-tested lifecycle
+contract, not proof of an actual provider race or successful hardware job.
+
+IBM Runtime and AWS Braket adapters also accept a paired `capability_probe`
+and `max_calibration_age_seconds` at construction. When configured, `submit`
+calls the no-submit probe immediately before the provider run and rechecks its
+timestamp against the current UTC time. It refuses an offline or uncertain
+target, stale/missing/future calibration, wrong provider/backend/target/IR,
+insufficient qubits, or an unknown/exceeded shot limit before provider `run()`.
+The returned job records the calibration timestamp, check time and age limit.
+This opt-in gate relies on the caller's probe; it does not authenticate provider
+metadata. Existing approval-only submissions without the pair remain possible
+and make no fresh-calibration claim.
 
 `HardwareAbstractionLayer` checks adapter-returned handles before exposing them:
 submission must preserve the selected `backend_id` and requested `workload_id`;
@@ -54,6 +71,22 @@ result retrieval and cancellation must also preserve `job_id`. A mismatch raises
 `ValueError`. Recovered handles are supported without a router-local submission
 cache. Status and metadata may change as the job progresses; accepted results
 retain the adapter's original counts, shots and metadata without rewriting.
+
+The local deterministic, Qiskit Aer, Braket Local and Cirq adapters complete
+synchronously. Their `status`, `result` and `cancel` methods require the
+retained job, backend and workload identity. A cancellation request after
+completion returns the existing completed handle and leaves its raw counts
+intact; it does not relabel the job as cancelled. This local lifecycle rule
+does not predict a provider's cancellation race or confer a hardware result.
+The standard Cirq simulator result has no provider job ID; its HAL handle is
+generated locally and labelled `job_id_origin=hal_local_generated`, without a
+`provider_job_id` claim. Injected non-Cirq results still require a real
+source-provided identifier.
+
+`QuantumJobResult` rejects a positive observed shot total unless the returned
+counts sum to it, including an empty count map. Partial status may remain in a
+typed local result, but the result-pack bridge refuses to mint provenance
+until the result status is `completed`.
 
 These checks bind identities, not scientific fidelity, shot-setting agreement or
 provider authenticity. They neither submit a replacement job nor promote a

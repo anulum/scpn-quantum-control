@@ -13,6 +13,7 @@ import ast
 import inspect
 from collections.abc import Callable, Mapping
 from dataclasses import replace
+from datetime import UTC, datetime
 from typing import Any, cast
 
 import pytest
@@ -67,6 +68,7 @@ def test_no_submit_probe_resolves_route_and_accepts_matching_capability_snapshot
     assert decision.required_ir_format == "quil"
     assert decision.no_submit is True
     assert decision.to_dict()["snapshot"]["target_name"] == "rigetti-through-qbraid"
+    assert decision.to_dict()["calibration_freshness"]["evaluated"] is False
 
 
 def test_capability_assessment_blocks_offline_insufficient_and_wrong_ir_targets() -> None:
@@ -96,6 +98,124 @@ def test_capability_assessment_blocks_offline_insufficient_and_wrong_ir_targets(
     assert "provider target is offline" in decision.blockers
     assert "target has 2 qubits but route requires at least 4" in decision.blockers
     assert "target does not support required IR format: openqasm3" in decision.blockers
+
+
+@pytest.mark.parametrize(
+    "timestamp,expected_status,blocker",
+    [
+        ("2026-09-23T10:00:00Z", "ready", None),
+        ("2026-09-23T09:20:00Z", "ready", None),
+        ("2026-09-23T08:00:00Z", "blocked", "stale"),
+        ("2026-09-23T10:30:00Z", "blocked", "future"),
+        ("2026-09-23T10:00:00", "blocked", "timezone"),
+        ("bad", "blocked", "invalid"),
+        (None, "blocked", "missing"),
+    ],
+)
+def test_calibration_freshness_preflight_refuses_stale_or_unknown_metadata(
+    timestamp: str | None, expected_status: str, blocker: str | None
+) -> None:
+    """Bind capability readiness to an explicit clock and calibration age."""
+    snapshot = ProviderCapabilitySnapshot(
+        route_id="direct/ibm",
+        aggregator="direct",
+        provider="ibm",
+        backend_id="ibm_quantum",
+        target_name="read-only-target",
+        n_qubits=2,
+        supported_ir_formats=("qiskit_qpy",),
+        online=True,
+        calibration_timestamp=timestamp,
+    )
+    decision = assess_provider_capability_snapshot(
+        snapshot,
+        aggregator="direct",
+        provider="ibm",
+        backend_id="ibm_quantum",
+        max_calibration_age_seconds=3600,
+        as_of=datetime(2026, 9, 23, 10, 20, tzinfo=UTC),
+    )
+    assert decision.status == expected_status
+    assert decision.no_submit is True
+    assert decision.to_dict()["calibration_freshness"]["evaluated"] is True
+    if blocker is None:
+        assert decision.blockers == ()
+    else:
+        assert any(blocker in reason for reason in decision.blockers)
+
+
+def test_provider_probe_forwards_explicit_calibration_freshness_gate() -> None:
+    """The public route probe keeps stale metadata blocked without submission."""
+    probes: list[str] = []
+
+    def read_only_probe(resolved: ResolvedAggregatorProviderRoute) -> ProviderCapabilitySnapshot:
+        probes.append(resolved.route.route_id)
+        return ProviderCapabilitySnapshot(
+            route_id=resolved.route.route_id,
+            aggregator=resolved.route.aggregator,
+            provider=resolved.route.provider,
+            backend_id=resolved.route.backend_id,
+            target_name="stale-target",
+            n_qubits=80,
+            supported_ir_formats=("quil",),
+            online=True,
+            calibration_timestamp="2026-09-23T08:00:00Z",
+        )
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="qbraid",
+        provider="rigetti",
+        metadata_probe=read_only_probe,
+        ir_format="quil",
+        max_calibration_age_seconds=3600,
+        as_of=datetime(2026, 9, 23, 10, 20, tzinfo=UTC),
+    )
+    assert probes == ["qbraid/rigetti"]
+    assert decision.status == "blocked"
+    assert "calibration timestamp is stale" in decision.blockers
+    assert decision.to_dict()["calibration_freshness"] == {
+        "evaluated": True,
+        "max_age_seconds": 3600,
+        "observed_age_seconds": 8400.0,
+        "as_of": "2026-09-23T10:20:00+00:00",
+    }
+
+
+@pytest.mark.parametrize(
+    "max_age,as_of,reason",
+    [
+        (-1, datetime(2026, 9, 23, tzinfo=UTC), "max_calibration_age_seconds"),
+        (float("inf"), datetime(2026, 9, 23, tzinfo=UTC), "max_calibration_age_seconds"),
+        (True, datetime(2026, 9, 23, tzinfo=UTC), "max_calibration_age_seconds"),
+        (3600, None, "timezone-aware"),
+        (3600, datetime(2026, 9, 23), "timezone-aware"),
+        (None, datetime(2026, 9, 23, tzinfo=UTC), "requires"),
+    ],
+)
+def test_calibration_freshness_rejects_unbound_policy_inputs(
+    max_age: float | None, as_of: datetime | None, reason: str
+) -> None:
+    """Refuse a freshness claim without a valid bound and explicit clock."""
+    snapshot = ProviderCapabilitySnapshot(
+        route_id="direct/ibm",
+        aggregator="direct",
+        provider="ibm",
+        backend_id="ibm_quantum",
+        target_name="read-only-target",
+        n_qubits=2,
+        supported_ir_formats=("qiskit_qpy",),
+        online=True,
+        calibration_timestamp="2026-09-23T10:00:00Z",
+    )
+    with pytest.raises(ValueError, match=reason):
+        assess_provider_capability_snapshot(
+            snapshot,
+            aggregator="direct",
+            provider="ibm",
+            backend_id="ibm_quantum",
+            max_calibration_age_seconds=max_age,
+            as_of=as_of,
+        )
 
 
 def test_capability_snapshot_rejects_submission_side_effects() -> None:

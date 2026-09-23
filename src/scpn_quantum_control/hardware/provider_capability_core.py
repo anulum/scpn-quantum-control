@@ -9,10 +9,11 @@
 
 from __future__ import annotations
 
+import math
 import re
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import InitVar, dataclass, field
-from datetime import date
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any, Literal, get_args
 
@@ -105,6 +106,9 @@ class ProviderCapabilityDecision:
     required_ir_format: str | None
     min_qubits: int | None
     no_submit: bool = True
+    max_calibration_age_seconds: float | None = None
+    calibration_age_seconds: float | None = None
+    freshness_as_of: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """Serialise the provider capability decision."""
@@ -115,6 +119,12 @@ class ProviderCapabilityDecision:
             "required_ir_format": self.required_ir_format,
             "min_qubits": self.min_qubits,
             "no_submit": self.no_submit,
+            "calibration_freshness": {
+                "evaluated": self.max_calibration_age_seconds is not None,
+                "max_age_seconds": self.max_calibration_age_seconds,
+                "observed_age_seconds": self.calibration_age_seconds,
+                "as_of": self.freshness_as_of,
+            },
             "snapshot": {
                 "route_id": self.snapshot.route_id,
                 "aggregator": self.snapshot.aggregator,
@@ -241,8 +251,10 @@ def probe_aggregator_provider_capability(
     ir_format: str | None = None,
     route_id: str | None = None,
     min_qubits: int | None = None,
+    max_calibration_age_seconds: float | None = None,
+    as_of: datetime | None = None,
 ) -> ProviderCapabilityDecision:
-    """Resolve a route, collect provider metadata, and assess it without submission."""
+    """Resolve and assess metadata without submission, with optional freshness gate."""
     resolved = resolve_aggregator_provider_route(
         aggregator=aggregator,
         provider=provider,
@@ -258,6 +270,8 @@ def probe_aggregator_provider_capability(
         route_id=resolved.route.route_id,
         required_ir_format=ir_format,
         min_qubits=min_qubits,
+        max_calibration_age_seconds=max_calibration_age_seconds,
+        as_of=as_of,
     )
 
 
@@ -270,10 +284,31 @@ def assess_provider_capability_snapshot(
     route_id: str | None = None,
     required_ir_format: str | None = None,
     min_qubits: int | None = None,
+    max_calibration_age_seconds: float | None = None,
+    as_of: datetime | None = None,
 ) -> ProviderCapabilityDecision:
-    """Assess route-level provider metadata without submitting work."""
+    """Assess route metadata, optionally requiring a fresh calibration timestamp.
+
+    The caller supplies an explicit timezone-aware ``as_of`` with a finite,
+    non-negative maximum age. A readiness result without this gate does not
+    assert calibration freshness. This function never submits provider work.
+    """
+    if max_calibration_age_seconds is None:
+        if as_of is not None:
+            raise ValueError("as_of requires max_calibration_age_seconds")
+    else:
+        if (
+            isinstance(max_calibration_age_seconds, bool)
+            or not isinstance(max_calibration_age_seconds, int | float)
+            or not math.isfinite(max_calibration_age_seconds)
+            or max_calibration_age_seconds < 0
+        ):
+            raise ValueError("max_calibration_age_seconds must be finite and non-negative")
+        if not isinstance(as_of, datetime) or as_of.utcoffset() is None:
+            raise ValueError("as_of must be an explicit timezone-aware datetime")
     blockers: list[str] = []
     warnings: list[str] = []
+    calibration_age_seconds: float | None = None
     if route_id is not None and snapshot.route_id != route_id:
         blockers.append(f"route mismatch: expected {route_id}, got {snapshot.route_id}")
     if snapshot.aggregator != aggregator:
@@ -292,6 +327,25 @@ def assess_provider_capability_snapshot(
         )
     if required_ir_format is not None and required_ir_format not in snapshot.supported_ir_formats:
         blockers.append(f"target does not support required IR format: {required_ir_format}")
+    if max_calibration_age_seconds is not None:
+        assert as_of is not None
+        timestamp = snapshot.calibration_timestamp
+        if timestamp is None:
+            blockers.append("calibration timestamp is missing")
+        else:
+            try:
+                calibration_at = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+            except ValueError:
+                blockers.append("calibration timestamp is invalid")
+            else:
+                if calibration_at.utcoffset() is None:
+                    blockers.append("calibration timestamp must include a timezone")
+                else:
+                    calibration_age_seconds = (as_of - calibration_at).total_seconds()
+                    if calibration_age_seconds < 0:
+                        blockers.append("calibration timestamp is in the future")
+                    elif calibration_age_seconds > max_calibration_age_seconds:
+                        blockers.append("calibration timestamp is stale")
 
     if blockers:
         status: CapabilityDecisionStatus = "blocked"
@@ -306,6 +360,9 @@ def assess_provider_capability_snapshot(
         warnings=tuple(warnings),
         required_ir_format=required_ir_format,
         min_qubits=min_qubits,
+        max_calibration_age_seconds=max_calibration_age_seconds,
+        calibration_age_seconds=calibration_age_seconds,
+        freshness_as_of=as_of.astimezone(UTC).isoformat() if as_of is not None else None,
     )
 
 

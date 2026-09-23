@@ -66,6 +66,13 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
         in quality_gates.HARDWARE_HAL_COVERAGE_COHORT
     )
     assert (
+        quality_gates.PROVIDER_SUBMISSION_GATE_SOURCE in quality_gates.HARDWARE_HAL_TYPING_RATCHET
+    )
+    assert (
+        quality_gates.PROVIDER_SUBMISSION_GATE_TEST in quality_gates.HARDWARE_HAL_COVERAGE_COHORT
+    )
+    assert "*/hardware/provider_submission_gate.py" in quality_gates.HARDWARE_HAL_COVERAGE_INCLUDE
+    assert (
         quality_gates.PROVIDER_CAPABILITY_SPECIALIZED_ADAPTERS_SOURCE
         in quality_gates.HARDWARE_HAL_TYPING_RATCHET
     )

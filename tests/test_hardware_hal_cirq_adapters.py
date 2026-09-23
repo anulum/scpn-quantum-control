@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Any
 
 import pytest
@@ -37,6 +38,7 @@ class _FakeSimulator:
 
 
 def test_cirq_hal_adapter_executes_injected_simulator_without_cloud_approval() -> None:
+    """Keep an injected local result and late cancellation in one identity."""
     simulator = _FakeSimulator()
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     hal.register_backend(
@@ -57,7 +59,9 @@ def test_cirq_hal_adapter_executes_injected_simulator_without_cloud_approval() -
 
     job = hal.submit("local_cirq", workload)
     result = hal.result(job)
-    cancelled = hal.cancel(job)
+    recovered = replace(job, status="submitted")
+    assert hal.result(recovered) is result
+    cancelled = hal.cancel(recovered)
 
     assert job.status == "completed"
     assert job.job_id.startswith("local_cirq:cirq_bell:")
@@ -66,11 +70,18 @@ def test_cirq_hal_adapter_executes_injected_simulator_without_cloud_approval() -
     assert result.counts == {"00": 3, "11": 5}
     assert result.shots == 8
     assert result.metadata["measurement_key"] == "m"
-    assert cancelled.status == "cancelled"
+    assert cancelled is job
+    assert hal.status(recovered) == "completed"
+    assert hal.result(recovered) is result
+    foreign = replace(recovered, workload_id="foreign-workload")
+    for operation in (hal.status, hal.result, hal.cancel):
+        with pytest.raises(ValueError, match="workload_id"):
+            operation(foreign)
     assert simulator.runs == [{"circuit": {"source": "CIRQ_JSON_OR_TEXT"}, "repetitions": 8}]
 
 
 def test_cirq_hal_adapter_rejects_wrong_profile_and_ir() -> None:
+    """Refuse incompatible route profiles and workload formats."""
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     with pytest.raises(ValueError, match="local_cirq"):
         CirqLocalHALAdapter(hal.profile("local_qiskit_aer"), simulator=_FakeSimulator())
@@ -89,6 +100,8 @@ def test_cirq_hal_adapter_rejects_wrong_profile_and_ir() -> None:
 
 
 def test_cirq_hal_adapter_validates_histogram_counts() -> None:
+    """Reject malformed simulator histogram counts before storing a result."""
+
     class BadResult:
         def histogram(self, *, key: str) -> dict[int, int]:
             del key
@@ -136,9 +149,41 @@ def test_cirq_hal_adapter_rejects_shot_mismatch() -> None:
         )
 
 
+@pytest.mark.parametrize("provider_id", [None, "bad\njob-id"])
+def test_cirq_injected_result_refuses_missing_or_malformed_provider_id(
+    provider_id: str | None,
+) -> None:
+    """An injected non-Cirq result cannot borrow a generated local identity."""
+
+    class Result:
+        id = provider_id
+
+        def histogram(self, *, key: str) -> dict[int, int]:
+            assert key == "m"
+            return {0: 4}
+
+    class Simulator:
+        def run(self, circuit: object, *, repetitions: int) -> Result:
+            assert repetitions == 4
+            return Result()
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    hal.register_backend(
+        CirqLocalHALAdapter(
+            hal.profile("local_cirq"),
+            circuit_factory=lambda source: source,
+            simulator=Simulator(),
+        )
+    )
+    workload = cirq_circuit_workload("CIRQ", workload_id="bad-provider-id", n_qubits=1, shots=4)
+    with pytest.raises(ValueError, match="provider job id"):
+        hal.submit("local_cirq", workload)
+
+
 def test_cirq_hal_adapter_default_builder_is_sdk_gated(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Require explicit Cirq circuit construction and an installed simulator."""
     adapter = CirqLocalHALAdapter(
         HardwareAbstractionLayer.with_builtin_profiles().profile("local_cirq")
     )
@@ -165,7 +210,6 @@ def test_cirq_hal_adapter_default_builder_is_sdk_gated(
 
 def test_cirq_provider_job_id_extraction_requires_identifier() -> None:
     """Cirq provider job id extraction should fail closed when id is unavailable."""
-
     from scpn_quantum_control.hardware import hal_cirq as cirq_mod
 
     assert (
@@ -178,7 +222,6 @@ def test_cirq_provider_job_id_extraction_requires_identifier() -> None:
 
 def test_cirq_provider_job_id_rejects_control_characters() -> None:
     """Cirq provider identifiers must reject control-character payloads."""
-
     from scpn_quantum_control.hardware import hal_cirq as cirq_mod
 
     class BadResult:
@@ -190,7 +233,6 @@ def test_cirq_provider_job_id_rejects_control_characters() -> None:
 
 def test_cirq_provider_job_id_trims_padding() -> None:
     """Cirq provider identifiers should be canonicalised by trimming padding."""
-
     from scpn_quantum_control.hardware import hal_cirq as cirq_mod
 
     class PaddedResult:

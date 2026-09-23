@@ -13,6 +13,7 @@ from __future__ import annotations
 import base64
 import io
 from collections.abc import Callable
+from dataclasses import replace
 from datetime import UTC, datetime
 from typing import Any, cast
 
@@ -33,6 +34,8 @@ from .hal import (
     QuantumWorkload,
     _resolve_stored_job,
 )
+from .provider_capability_core import ProviderCapabilitySnapshot
+from .provider_submission_gate import require_submit_time_capability
 from .runner import _extract_counts
 
 
@@ -129,35 +132,20 @@ class QiskitAerHALAdapter:
 
     def status(self, job: QuantumJobRef) -> str:
         """Return the current status for a submitted backend job."""
-        stored = self._jobs.get(job.job_id)
-        if stored is None:
-            raise KeyError(f"unknown job_id: {job.job_id}")
-        return stored.status
+        return _resolve_stored_job(job, self._jobs).status
 
     def result(self, job: QuantumJobRef) -> QuantumJobResult:
         """Return the completed result for a submitted backend job."""
-        result = self._results.get(job.job_id)
-        if result is None:
-            raise KeyError(f"unknown job_id: {job.job_id}")
-        return result
+        stored = _resolve_stored_job(job, self._jobs)
+        return self._results[stored.job_id]
 
     def cancel(self, job: QuantumJobRef) -> QuantumJobRef:
-        """Request cancellation for a submitted backend job."""
-        if job.job_id not in self._jobs:
-            raise KeyError(f"unknown job_id: {job.job_id}")
-        cancelled = QuantumJobRef(
-            job_id=job.job_id,
-            backend_id=job.backend_id,
-            workload_id=job.workload_id,
-            status="cancelled",
-            metadata=job.metadata,
-        )
-        self._jobs[job.job_id] = cancelled
-        return cancelled
+        """Preserve terminal local evidence when cancellation arrives late."""
+        return _resolve_stored_job(job, self._jobs)
 
 
 class QiskitRuntimeHALAdapter:
-    """IBM Runtime Sampler adapter implementing the HAL protocol."""
+    """IBM Runtime Sampler adapter with an optional submit-time metadata gate."""
 
     def __init__(
         self,
@@ -166,14 +154,20 @@ class QiskitRuntimeHALAdapter:
         backend: Any,
         sampler_factory: Callable[..., Any] | None = None,
         timeout_s: float = 600.0,
+        capability_probe: Callable[[], ProviderCapabilitySnapshot] | None = None,
+        max_calibration_age_seconds: float | None = None,
     ) -> None:
         if profile.backend_id != "ibm_quantum":
             raise ValueError("QiskitRuntimeHALAdapter requires the ibm_quantum profile")
+        if (capability_probe is None) != (max_calibration_age_seconds is None):
+            raise ValueError("capability_probe and max_calibration_age_seconds must be paired")
         self.profile = profile
         self.backend_id = profile.backend_id
         self._backend = backend
         self._sampler_factory = sampler_factory
         self.timeout_s = timeout_s
+        self._capability_probe = capability_probe
+        self._max_calibration_age_seconds = max_calibration_age_seconds
         self._provider_jobs: dict[str, Any] = {}
         self._jobs: dict[str, QuantumJobRef] = {}
         self._results: dict[str, QuantumJobResult] = {}
@@ -185,6 +179,22 @@ class QiskitRuntimeHALAdapter:
         if not approval_id:
             raise PermissionError("approval_id is required for IBM Runtime submission")
         circuit = _workload_to_qiskit_circuit(workload)
+        calibration_metadata: dict[str, object] = {}
+        if self._capability_probe is not None:
+            assert self._max_calibration_age_seconds is not None
+            decision = require_submit_time_capability(
+                self._capability_probe(),
+                profile=self.profile,
+                target_name=_backend_name(self._backend),
+                workload=workload,
+                max_calibration_age_seconds=self._max_calibration_age_seconds,
+                checked_at=datetime.now(UTC),
+            )
+            calibration_metadata = {
+                "calibration_timestamp": decision.snapshot.calibration_timestamp,
+                "calibration_checked_at": decision.freshness_as_of,
+                "calibration_max_age_seconds": decision.max_calibration_age_seconds,
+            }
         sampler_factory = self._sampler_factory or _runtime_sampler_factory()
         sampler = sampler_factory(mode=self._backend)
         sampler.options.default_shots = workload.shots
@@ -201,6 +211,7 @@ class QiskitRuntimeHALAdapter:
                 "backend_name": _backend_name(self._backend),
                 "ir_format": workload.ir_format,
                 "shots": workload.shots,
+                **calibration_metadata,
             },
         )
         self._provider_jobs[job.job_id] = provider_job
@@ -209,6 +220,9 @@ class QiskitRuntimeHALAdapter:
 
     def status(self, job: QuantumJobRef) -> str:
         """Return the current status for a submitted backend job."""
+        job = _resolve_stored_job(job, self._jobs)
+        if job.job_id in self._results:
+            return "completed"
         provider_job = self._provider_job(job)
         status = provider_job.status()
         return _normalise_status(getattr(status, "name", status))
@@ -286,17 +300,19 @@ class QiskitRuntimeHALAdapter:
 
         """
         job = _resolve_stored_job(job, self._jobs)
-        provider_job = self._provider_job(job)
-        provider_job.cancel()
-        cancelled = QuantumJobRef(
-            job_id=job.job_id,
-            backend_id=job.backend_id,
-            workload_id=job.workload_id,
-            status="cancelled",
-            metadata=job.metadata,
-        )
-        self._jobs[job.job_id] = cancelled
-        return cancelled
+        if job.job_id in self._results:
+            observed = "completed"
+        else:
+            provider_job = self._provider_job(job)
+            observed = _normalise_status(provider_job.status())
+            if observed not in {"completed", "cancelled", "failed"}:
+                provider_job.cancel()
+                observed = _normalise_status(provider_job.status())
+            if job.job_id in self._results:
+                observed = "completed"
+        updated = replace(job, status=observed)
+        self._jobs[job.job_id] = updated
+        return updated
 
     def _provider_job(self, job: QuantumJobRef) -> Any:
         job = _resolve_stored_job(job, self._jobs)

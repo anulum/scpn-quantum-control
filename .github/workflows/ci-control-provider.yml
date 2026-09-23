@@ -528,6 +528,7 @@ jobs:
           src/scpn_quantum_control/hardware/iqm_backend.py
           src/scpn_quantum_control/hardware/aggregators.py
           src/scpn_quantum_control/hardware/provider_capability_core.py
+          src/scpn_quantum_control/hardware/provider_submission_gate.py
           src/scpn_quantum_control/hardware/provider_route_configuration.py
           src/scpn_quantum_control/hardware/provider_capability_cloud_adapters.py
           src/scpn_quantum_control/hardware/provider_capability_gate_adapters.py
@@ -541,6 +542,7 @@ jobs:
           tests/test_aggregators_branches.py
           tests/test_hardware_hal_provider_conformance.py
           tests/test_provider_capability_core.py
+          tests/test_provider_submission_gate.py
           tests/test_provider_route_catalogue.py
           tests/test_provider_route_configuration.py
           tests/test_provider_capability_cloud_adapters.py
@@ -561,6 +563,7 @@ jobs:
           src/scpn_quantum_control/hardware/iqm_backend.py
           src/scpn_quantum_control/hardware/aggregators.py
           src/scpn_quantum_control/hardware/provider_capability_core.py
+          src/scpn_quantum_control/hardware/provider_submission_gate.py
           src/scpn_quantum_control/hardware/provider_route_configuration.py
           src/scpn_quantum_control/hardware/provider_capability_cloud_adapters.py
           src/scpn_quantum_control/hardware/provider_capability_gate_adapters.py
@@ -575,6 +578,7 @@ jobs:
           tests/test_aggregators_branches.py
           tests/test_hardware_hal_provider_conformance.py
           tests/test_provider_capability_core.py
+          tests/test_provider_submission_gate.py
           tests/test_provider_route_catalogue.py
           tests/test_provider_route_configuration.py
           tests/test_provider_capability_cloud_adapters.py
@@ -603,6 +607,7 @@ jobs:
           tests/test_aggregators_branches.py
           tests/test_hardware_hal_provider_conformance.py
           tests/test_provider_capability_core.py
+          tests/test_provider_submission_gate.py
           tests/test_provider_route_catalogue.py
           tests/test_provider_route_configuration.py
           tests/test_provider_capability_cloud_adapters.py
@@ -616,4 +621,4 @@ jobs:
           --data-file=/tmp/scpn-qc-hardware-hal-quality.coverage
           --precision=2 --show-missing
           --fail-under=100
-          --include=*/hardware/hal.py,*/hardware/async_runner.py,*/hardware/circuit_cutting.py,*/hardware/circuit_export.py,*/hardware/fast_classical.py,*/hardware/iqm_backend.py,*/hardware/aggregators.py,*/hardware/provider_capability_core.py,*/hardware/provider_route_configuration.py,*/hardware/provider_capability_cloud_adapters.py,*/hardware/provider_capability_gate_adapters.py,*/hardware/provider_capability_specialized_adapters.py,*/hardware/provider_certification.py
+          --include=*/hardware/hal.py,*/hardware/async_runner.py,*/hardware/circuit_cutting.py,*/hardware/circuit_export.py,*/hardware/fast_classical.py,*/hardware/iqm_backend.py,*/hardware/aggregators.py,*/hardware/provider_capability_core.py,*/hardware/provider_submission_gate.py,*/hardware/provider_route_configuration.py,*/hardware/provider_capability_cloud_adapters.py,*/hardware/provider_capability_gate_adapters.py,*/hardware/provider_capability_specialized_adapters.py,*/hardware/provider_certification.py

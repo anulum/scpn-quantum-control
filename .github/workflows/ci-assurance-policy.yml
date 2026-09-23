@@ -256,6 +256,7 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/metamorphic_ad_verification.py
           tests/test_metamorphic_ad_verification.py
+          tests/test_independent_conformance_oracles.py
           tools/metamorphic_ad_verification_quality_gates.py
           tests/test_metamorphic_ad_verification_quality_gate.py
       - run: >-
@@ -263,12 +264,14 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/metamorphic_ad_verification.py
           tests/test_metamorphic_ad_verification.py
+          tests/test_independent_conformance_oracles.py
           tools/metamorphic_ad_verification_quality_gates.py
           tests/test_metamorphic_ad_verification_quality_gate.py
       - run: >-
           python -m coverage run --rcfile=/dev/null
           --data-file=.coverage.metamorphic-ad-verification-quality --branch
           -m pytest -q tests/test_metamorphic_ad_verification.py
+          tests/test_independent_conformance_oracles.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=.coverage.metamorphic-ad-verification-quality

@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **709 modules** across **39 package families**
-- **3969 documented public module-level symbols**
+- **710 modules** across **39 package families**
+- **3974 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -3087,6 +3087,14 @@ Metadata-only optional dependency smoke checks for HAL provider routes.
 
 **Functions:** `provider_optional_dependency_matrix()`, `aggregator_provider_optional_dependency_matrix()`, `isolated_provider_smoke_lanes()`, `main()`
 
+### `scpn_quantum_control.hardware.provider_submission_gate`
+
+Bind no-submit provider metadata to a cloud adapter immediately before run.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/provider_submission_gate.py) · Public symbols: **1**
+
+**Functions:** `require_submit_time_capability()`
+
 ### `scpn_quantum_control.hardware.pulse_feasibility`
 
 No-submit provider feasibility probes for S3 pulse schedules.
@@ -5961,11 +5969,11 @@ Structlog-backed logging bootstrap.
 
 Versioned metamorphic AD verification catalogue and pure residual checks.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/metamorphic_ad_verification.py) · Public symbols: **10**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/metamorphic_ad_verification.py) · Public symbols: **14**
 
-**Classes:** `MetamorphicLawRecord`, `MetamorphicCheckResult`
+**Classes:** `MetamorphicLawRecord`, `MetamorphicCheckResult`, `IndependentConformanceProtocol`, `IndependentConformanceResult`
 
-**Functions:** `list_metamorphic_law_ids()`, `get_metamorphic_law()`, `iter_metamorphic_laws()`, `build_metamorphic_ad_registry()`, `probe_metamorphic_law()`, `evaluate_linearity_residual()`, `evaluate_chain_rule_residual()`, `assert_metamorphic_registry_integrity()`
+**Functions:** `evaluate_independent_scalar_conformance()`, `require_current_conformance()`, `list_metamorphic_law_ids()`, `get_metamorphic_law()`, `iter_metamorphic_laws()`, `build_metamorphic_ad_registry()`, `probe_metamorphic_law()`, `evaluate_linearity_residual()`, `evaluate_chain_rule_residual()`, `assert_metamorphic_registry_integrity()`
 
 ### `scpn_quantum_control.migration_guides_product`
 

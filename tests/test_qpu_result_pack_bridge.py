@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from dataclasses import replace
 
 import pytest
 
@@ -303,5 +304,29 @@ def test_from_job_rejects_a_result_with_no_counts() -> None:
             title="offline observation",
             executed_utc="2026-07-11",
             claim_scope="Supports nothing measurable.",
+            non_claims=_NON_CLAIMS,
+        )
+
+
+def test_partial_local_result_cannot_be_promoted_to_result_pack() -> None:
+    """A real local histogram with partial status cannot become measured evidence."""
+    completed, profile = _run_local_job()
+    partial = replace(completed, status="partial")
+    with pytest.raises(ValueError, match="completed"):
+        job_result_provenance(
+            partial,
+            profile=profile,
+            title="offline partial observation",
+            executed_utc="2026-09-23",
+            claim_scope="Synthetic offline counts only.",
+            non_claims=_NON_CLAIMS,
+        )
+    with pytest.raises(ValueError, match="completed"):
+        qpu_result_pack_from_job(
+            partial,
+            profile=profile,
+            title="offline partial observation",
+            executed_utc="2026-09-23",
+            claim_scope="Synthetic offline counts only.",
             non_claims=_NON_CLAIMS,
         )

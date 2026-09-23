@@ -284,6 +284,51 @@ never inferred or padded.
 `capture_semantic_record()` deep-copies both documents and fixes their digests
 at capture time, so later mutation of either source cannot reach the snapshot.
 
+## Independent local conformance
+
+`IndependentConformanceProtocol` in
+`scpn_quantum_control.metamorphic_ad_verification` declares a scalar estimand,
+domain, oracle class and source, exact SHA-256 identities of the oracle, input,
+product source and dataset, comparator version, runtime, and a numerical budget
+*before* accepting a comparison. Positive finite integer budgets normalize to
+float; booleans and malformed budgets refuse before identity calculation.
+`evaluate_independent_scalar_conformance`
+compares both the actual primal and gradient to separately supplied oracle
+values. `require_current_conformance` refuses a failed result or one whose
+protocol identity changed; it also rechecks both residuals against the
+predeclared budget rather than trusting a stored pass flag. An installed
+optional comparator or a registered
+metamorphic law is not itself executed numerical evidence.
+The scalar evaluator accepts analytic or numerical oracle classes only;
+metamorphic relations, empirical sampling and formal proof claims require
+their separate evaluators and cannot become green through scalar agreement.
+
+The focused local example runs the public central finite-difference owner on
+`x³` at `x=2`, then compares its result with the analytic values `8` and `12`
+derived in a separate test owner. A changed source, oracle, dataset, comparator
+version, or numerical budget invalidates that result. The protocol digest records
+provenance; it does not prove that a caller's claimed oracle is independent.
+The same focused test owner also compares actual public Kuramoto trajectories
+with two-oscillator analytic solutions, a delayed zero-force trajectory and a
+fixed-noise step with direct arithmetic, a Program AD inverse-matrix gradient
+with a hand-derived diagonal formula, and a non-diagonal near-singular 2×2
+solve gradient checked against an independent adjugate identity. Forward and
+reverse gradient agreement permits only float64-scale roundoff; a materially
+changed gradient still fails. Each result qualifies only its
+named input and budget. These checks do not qualify external comparator builds,
+physical hardware, broad algorithm families or performance.
+
+A read-only two-oscillator example sends its rational one-step objective through
+Studio `differentiate`, computes a constrained proposal outside Studio, and
+evaluates that proposal with the public Kuramoto flow under a held-out frequency
+shift. The Studio reproduction script replays the sealed differentiation result;
+the proposal and held-out evaluation are not a unified Studio action or replay
+contract. Changing the sealed plan parameters invalidates its record digest.
+
+The optional Quimb MPS owner uses spin‑½ operators, so its same-input XY
+trajectory is not a Pauli-normalised comparator; its model and initial state
+must be matched before a cross-method parity claim.
+
 ## Bounded product status
 
 Shipped: model and product schema version policy · public documentation and API

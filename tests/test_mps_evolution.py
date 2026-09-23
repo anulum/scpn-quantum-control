@@ -164,6 +164,60 @@ class TestTEBD:
         assert len(result["bond_dims_final"]) == self.n - 1
 
 
+def test_tebd_accepts_exact_bell_initial_state() -> None:
+    """Evolve the frozen Bell+ fixture through the public Quimb backend."""
+    bell = np.array([1.0, 0.0, 0.0, 1.0], dtype=np.complex128) / np.sqrt(2)
+    result = tebd_evolution(
+        np.zeros((2, 2)),
+        np.zeros(2),
+        t_max=0.1,
+        dt=0.05,
+        bond_dim=2,
+        cutoff=0.0,
+        initial_state=bell,
+    )
+    observed = np.asarray(result["mps_final"].to_dense()).reshape(-1)
+    np.testing.assert_allclose(observed, bell, rtol=0.0, atol=1e-12)
+    assert result["bond_dims_final"] == [2]
+
+
+def test_tebd_refuses_bell_bond_one_truncation() -> None:
+    """Refuse to present a rank-two Bell state as an exact rank-one state."""
+    bell = np.array([1.0, 0.0, 0.0, 1.0], dtype=np.complex128) / np.sqrt(2)
+    with pytest.raises(ValueError, match="cannot be represented exactly"):
+        tebd_evolution(
+            np.zeros((2, 2)),
+            np.zeros(2),
+            t_max=0.1,
+            dt=0.05,
+            bond_dim=1,
+            cutoff=0.0,
+            initial_state=bell,
+        )
+
+
+@pytest.mark.parametrize(
+    "initial_state,reason",
+    [
+        (np.array([1.0, 0.0]), "shape"),
+        (np.array([1.0, 0.0, 0.0, np.nan]), "finite"),
+        (np.array([1.0, 0.0, 0.0, 1.0]), "normalized"),
+    ],
+)
+def test_tebd_refuses_invalid_dense_initial_state(initial_state: np.ndarray, reason: str) -> None:
+    """Reject malformed preparation before advancing any TEBD step."""
+    with pytest.raises(ValueError, match=reason):
+        tebd_evolution(
+            np.zeros((2, 2)),
+            np.zeros(2),
+            t_max=0.1,
+            dt=0.05,
+            bond_dim=2,
+            cutoff=0.0,
+            initial_state=initial_state,
+        )
+
+
 # ---------------------------------------------------------------------------
 # MPS physics: bond dimension and entanglement
 # ---------------------------------------------------------------------------

@@ -83,8 +83,9 @@ def test_build_registry_zero_blanks() -> None:
 def test_probe_known_paths() -> None:
     """Probe executable, gated, and refused catalogue paths."""
     local = probe_metamorphic_law("law:metamorphic.linearity")
-    assert local.passed is True
+    assert local.passed is False
     assert local.refused is False
+    assert local.residual is None
 
     gated = probe_metamorphic_law("law:metamorphic.grad_vmap_composition")
     assert gated.passed is False

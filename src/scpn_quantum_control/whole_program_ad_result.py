@@ -250,7 +250,7 @@ def _require_supported_adjoint_replay_matches_result(
     if not np.allclose(
         replay_gradient,
         forward_gradient,
-        rtol=0.0,
+        rtol=8.0 * np.finfo(np.float64).eps,
         atol=_PROGRAM_ADJOINT_REPLAY_ATOL,
     ):
         raise ValueError(

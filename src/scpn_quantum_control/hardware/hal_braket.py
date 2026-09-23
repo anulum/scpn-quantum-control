@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping
+from dataclasses import replace
 from datetime import UTC, datetime
 from typing import Any
 
@@ -28,6 +29,8 @@ from .hal import (
     QuantumWorkload,
     _resolve_stored_job,
 )
+from .provider_capability_core import ProviderCapabilitySnapshot
+from .provider_submission_gate import require_submit_time_capability
 
 
 def braket_circuit_to_workload(
@@ -108,35 +111,20 @@ class BraketLocalHALAdapter:
 
     def status(self, job: QuantumJobRef) -> str:
         """Return the current status for a submitted backend job."""
-        stored = self._jobs.get(job.job_id)
-        if stored is None:
-            raise KeyError(f"unknown job_id: {job.job_id}")
-        return stored.status
+        return _resolve_stored_job(job, self._jobs).status
 
     def result(self, job: QuantumJobRef) -> QuantumJobResult:
         """Return the completed result for a submitted backend job."""
-        result = self._results.get(job.job_id)
-        if result is None:
-            raise KeyError(f"unknown job_id: {job.job_id}")
-        return result
+        stored = _resolve_stored_job(job, self._jobs)
+        return self._results[stored.job_id]
 
     def cancel(self, job: QuantumJobRef) -> QuantumJobRef:
-        """Request cancellation for a submitted backend job."""
-        if job.job_id not in self._jobs:
-            raise KeyError(f"unknown job_id: {job.job_id}")
-        cancelled = QuantumJobRef(
-            job_id=job.job_id,
-            backend_id=job.backend_id,
-            workload_id=job.workload_id,
-            status="cancelled",
-            metadata=job.metadata,
-        )
-        self._jobs[job.job_id] = cancelled
-        return cancelled
+        """Preserve terminal local evidence when cancellation arrives late."""
+        return _resolve_stored_job(job, self._jobs)
 
 
 class BraketAwsHALAdapter:
-    """AWS Braket cloud adapter implementing the HAL protocol."""
+    """AWS Braket cloud adapter with an optional submit-time metadata gate."""
 
     def __init__(
         self,
@@ -145,11 +133,15 @@ class BraketAwsHALAdapter:
         device: Any | None = None,
         device_arn: str | None = None,
         device_factory: Callable[[str], Any] | None = None,
+        capability_probe: Callable[[], ProviderCapabilitySnapshot] | None = None,
+        max_calibration_age_seconds: float | None = None,
     ) -> None:
         if not profile.backend_id.startswith("aws_braket_"):
             raise ValueError("BraketAwsHALAdapter requires an aws_braket profile")
         if device is None and not device_arn:
             raise ValueError("device or device_arn is required for AWS Braket submission")
+        if (capability_probe is None) != (max_calibration_age_seconds is None):
+            raise ValueError("capability_probe and max_calibration_age_seconds must be paired")
         self.profile = profile
         self.backend_id = profile.backend_id
         self._device = device
@@ -159,6 +151,8 @@ class BraketAwsHALAdapter:
             else None
         )
         self._device_factory = device_factory
+        self._capability_probe = capability_probe
+        self._max_calibration_age_seconds = max_calibration_age_seconds
         self._tasks: dict[str, Any] = {}
         self._jobs: dict[str, QuantumJobRef] = {}
         self._results: dict[str, QuantumJobResult] = {}
@@ -171,6 +165,22 @@ class BraketAwsHALAdapter:
             raise PermissionError("approval_id is required for AWS Braket submission")
         circuit = _workload_to_braket_circuit(workload)
         device = self._device or self._load_device()
+        calibration_metadata: dict[str, object] = {}
+        if self._capability_probe is not None:
+            assert self._max_calibration_age_seconds is not None
+            decision = require_submit_time_capability(
+                self._capability_probe(),
+                profile=self.profile,
+                target_name=_device_name(device),
+                workload=workload,
+                max_calibration_age_seconds=self._max_calibration_age_seconds,
+                checked_at=datetime.now(UTC),
+            )
+            calibration_metadata = {
+                "calibration_timestamp": decision.snapshot.calibration_timestamp,
+                "calibration_checked_at": decision.freshness_as_of,
+                "calibration_max_age_seconds": decision.max_calibration_age_seconds,
+            }
         task = device.run(circuit, shots=workload.shots)
         task_id = _task_id(task)
         job = QuantumJobRef(
@@ -186,6 +196,7 @@ class BraketAwsHALAdapter:
                 "device_name": _device_name(device),
                 "n_qubits": workload.n_qubits,
                 "shots": workload.shots,
+                **calibration_metadata,
             },
         )
         self._tasks[job.job_id] = task
@@ -194,6 +205,9 @@ class BraketAwsHALAdapter:
 
     def status(self, job: QuantumJobRef) -> str:
         """Return the current status for a submitted backend job."""
+        job = _resolve_stored_job(job, self._jobs)
+        if job.job_id in self._results:
+            return "completed"
         task = self._task(job)
         state = task.state()
         return _normalise_status(getattr(state, "name", state))
@@ -268,17 +282,19 @@ class BraketAwsHALAdapter:
 
         """
         job = _resolve_stored_job(job, self._jobs)
-        task = self._task(job)
-        task.cancel()
-        cancelled = QuantumJobRef(
-            job_id=job.job_id,
-            backend_id=job.backend_id,
-            workload_id=job.workload_id,
-            status="cancelled",
-            metadata=job.metadata,
-        )
-        self._jobs[job.job_id] = cancelled
-        return cancelled
+        if job.job_id in self._results:
+            observed = "completed"
+        else:
+            task = self._task(job)
+            observed = _normalise_status(task.state())
+            if observed not in {"completed", "cancelled", "failed"}:
+                task.cancel()
+                observed = _normalise_status(task.state())
+            if job.job_id in self._results:
+                observed = "completed"
+        updated = replace(job, status=observed)
+        self._jobs[job.job_id] = updated
+        return updated
 
     def _load_device(self) -> Any:
         if self._device_arn is None:

@@ -152,6 +152,8 @@ def job_result_provenance(
         ``non_claims`` is empty.
 
     """
+    if result.status != "completed":
+        raise ValueError("result status must be completed before result-pack provenance")
     if not title.strip():
         raise ValueError("title must be non-empty")
     if not executed_utc.strip():

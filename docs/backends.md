@@ -459,6 +459,8 @@ The Qiskit adapter layer provides:
 
 - `QiskitAerHALAdapter` for local `qiskit-aer` execution through HAL.
 - `QiskitRuntimeHALAdapter` for IBM Runtime Sampler execution through HAL.
+  An optional no-submit `capability_probe` and calibration age limit check the
+  configured target and requested resources immediately before `run()`.
 - `qiskit_circuit_to_workload()` for base64 QPY payloads. This is the preferred
   high-fidelity Qiskit transport because it preserves circuit structure without
   requiring lossy text conversion.
@@ -488,6 +490,8 @@ The Braket adapter layer provides:
   HAL.
 - `BraketAwsHALAdapter` for AWS Braket QPU or managed-simulator task
   submission through HAL with explicit approval tokens.
+  The same optional submit-time probe checks fresh target metadata before
+  `device.run()`; approval alone does not imply fresh calibration.
 - `braket_circuit_to_workload()` for OpenQASM 3 payloads generated from
   `braket.circuits.Circuit`.
 - `snapshot_from_braket_device()` for no-submit capability snapshots from

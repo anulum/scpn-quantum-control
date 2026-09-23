@@ -2435,7 +2435,10 @@ counts = hal.result(job).counts
 Braket adapters cover the local SDK simulators and AWS Braket device submission
 surface. `BraketLocalHALAdapter` runs local SV/DM simulators; `BraketAwsHALAdapter`
 requires an injected device or device ARN and still passes through HAL approval
-gating.
+gating. Both AWS Braket and IBM Runtime cloud adapters can opt into a paired
+no-submit capability probe and calibration age limit. That probe is called at
+submission time and checks the configured target and requested resources before
+provider `run()`; without it, approval does not qualify calibration freshness.
 
 ```python
 from braket.circuits import Circuit

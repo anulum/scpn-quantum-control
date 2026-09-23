@@ -55,6 +55,20 @@ to the MPS, truncating the bond dimension after each gate.
 
 ### Limitations
 
+- **Hamiltonian convention:** `SpinHam1D(S=1/2)` uses spin operators
+  $S_\alpha=\sigma_\alpha/2$. This MPS owner therefore evolves
+  $-\sum K_{ij}(S^x_iS^x_j+S^y_iS^y_j)-\sum\omega_iS^z_i$;
+  its Pauli-basis pair and on-site coefficients are $K_{ij}/4$ and
+  $\omega_i/2$. A same-input comparison to a Pauli-normalised XY route is
+  a different estimand. Match the Hamiltonian and initial-state preparation
+  explicitly before treating a cross-method result as parity evidence.
+  By default, `tebd_evolution` derives each initial product-state rotation
+  from `omega[i]`, so rescaling `omega` to match on-site coefficients changes
+  that default preparation. Pass a normalized `initial_state` vector to set
+  preparation independently for a bounded comparison. The dense input must
+  fit the active allocation budget and its chosen bond dimension and cutoff
+  must represent it without truncation; a rank-two Bell state refuses at
+  bond dimension one.
 - **Nearest-neighbour only:** quimb's `SpinHam1D` supports NN couplings.
   Direct DMRG/TEBD calls reject longer-range terms from $K_{nm}$ unless
   `allow_long_range_truncation=True` is passed. Truncated runs report
@@ -109,6 +123,8 @@ result = tebd_evolution(
     bond_dim: int = 64,     # maximum bond dimension
     cutoff: float = 1e-10,  # SVD truncation
     order: int = 2,         # Trotter order (2 or 4)
+    *,
+    initial_state: np.ndarray | None = None,  # normalized dense pure state
 ) -> dict
 ```
 

@@ -19,8 +19,12 @@ quantum mechanics or formal verification of hardware.
 
 from __future__ import annotations
 
+import json
+import math
+import re
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
+from hashlib import sha256
 from typing import Final, Literal
 
 LawKind = Literal[
@@ -183,6 +187,191 @@ class MetamorphicCheckResult:
             "refused": self.refused,
             "claim_boundary": self.claim_boundary,
         }
+
+
+@dataclass(frozen=True, slots=True)
+class IndependentConformanceProtocol:
+    """Predeclared identity and numerical budget for one independent comparison.
+
+    A digest identifies an input or oracle object; it does not establish that
+    the oracle is independent. That provenance must be reviewed separately.
+
+    Parameters
+    ----------
+    estimand, domain, oracle_reference, comparator_version, runtime
+        Non-empty descriptions of the matched claim and its source.
+    oracle_kind
+        Analytic, numerical, metamorphic, empirical, or formal classification.
+    oracle_digest, input_digest, source_digest, dataset_digest
+        SHA-256 of exact source objects used for this comparison.
+    absolute_tolerance
+        Predeclared absolute error budget for both scalar quantities. Finite
+        positive integers are normalised to float; booleans are refused.
+
+    Raises
+    ------
+    ValueError
+        If a required field or numerical budget is invalid.
+
+    """
+
+    estimand: str
+    domain: str
+    oracle_kind: Literal["analytic", "numerical", "metamorphic", "empirical", "formal"]
+    oracle_reference: str
+    oracle_digest: str
+    input_digest: str
+    source_digest: str
+    dataset_digest: str
+    comparator_version: str
+    runtime: str
+    absolute_tolerance: float
+
+    def __post_init__(self) -> None:
+        """Reject unbound source identities and invalid comparison budgets."""
+        for field in ("estimand", "domain", "oracle_reference", "comparator_version", "runtime"):
+            value = getattr(self, field)
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"{field} must be a non-empty string")
+        if self.oracle_kind not in {"analytic", "numerical", "metamorphic", "empirical", "formal"}:
+            raise ValueError("oracle_kind is unsupported")
+        for field in ("oracle_digest", "input_digest", "source_digest", "dataset_digest"):
+            value = getattr(self, field)
+            if not isinstance(value, str) or re.fullmatch(r"[0-9a-f]{64}", value) is None:
+                raise ValueError(f"{field} must be a lowercase SHA-256 digest")
+        budget = self.absolute_tolerance
+        if isinstance(budget, bool) or not isinstance(budget, int | float):
+            raise ValueError("absolute_tolerance must be finite and positive")
+        try:
+            normalized_budget = float(budget)
+        except OverflowError as exc:
+            raise ValueError("absolute_tolerance must be finite and positive") from exc
+        if not math.isfinite(normalized_budget) or normalized_budget <= 0.0:
+            raise ValueError("absolute_tolerance must be finite and positive")
+        object.__setattr__(self, "absolute_tolerance", normalized_budget)
+
+    @property
+    def identity(self) -> str:
+        """Hash all defining fields so a changed source invalidates prior results."""
+        fields = (
+            self.estimand,
+            self.domain,
+            self.oracle_kind,
+            self.oracle_reference,
+            self.oracle_digest,
+            self.input_digest,
+            self.source_digest,
+            self.dataset_digest,
+            self.comparator_version,
+            self.runtime,
+            self.absolute_tolerance.hex(),
+        )
+        return sha256(
+            json.dumps(fields, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
+
+
+@dataclass(frozen=True, slots=True)
+class IndependentConformanceResult:
+    """Local scalar comparison bound to one exact protocol identity.
+
+    Parameters
+    ----------
+    protocol_identity
+        Digest of the predeclared protocol.
+    primal_residual, gradient_residual
+        Absolute differences from the independently supplied oracle values.
+    passed
+        True only when both residuals meet the declared numerical budget.
+
+    """
+
+    protocol_identity: str
+    primal_residual: float
+    gradient_residual: float
+    passed: bool
+
+
+def evaluate_independent_scalar_conformance(
+    protocol: IndependentConformanceProtocol,
+    *,
+    observed_primal: float,
+    observed_gradient: float,
+    oracle_primal: float,
+    oracle_gradient: float,
+) -> IndependentConformanceResult:
+    """Compare real observed scalars with a separately sourced oracle.
+
+    Parameters
+    ----------
+    protocol
+        Predeclared identity and absolute budget.
+    observed_primal, observed_gradient
+        Values returned by the actual numerical owner under test.
+    oracle_primal, oracle_gradient
+        Independently derived values with provenance named by ``protocol``.
+
+    Returns
+    -------
+    IndependentConformanceResult
+        Exact-context comparison; no hardware or general scientific promotion.
+
+    Raises
+    ------
+    ValueError
+        If this scalar evaluator cannot qualify the oracle class, or a value is non-finite.
+
+    """
+    if protocol.oracle_kind not in {"analytic", "numerical"}:
+        raise ValueError("oracle_kind requires its own metamorphic, empirical or formal evaluator")
+    for field, value in (
+        ("observed_primal", observed_primal),
+        ("observed_gradient", observed_gradient),
+        ("oracle_primal", oracle_primal),
+        ("oracle_gradient", oracle_gradient),
+    ):
+        if not math.isfinite(value):
+            raise ValueError(f"{field} must be finite")
+    primal_residual = abs(observed_primal - oracle_primal)
+    gradient_residual = abs(observed_gradient - oracle_gradient)
+    return IndependentConformanceResult(
+        protocol_identity=protocol.identity,
+        primal_residual=primal_residual,
+        gradient_residual=gradient_residual,
+        passed=(
+            primal_residual <= protocol.absolute_tolerance
+            and gradient_residual <= protocol.absolute_tolerance
+        ),
+    )
+
+
+def require_current_conformance(
+    result: IndependentConformanceResult,
+    protocol: IndependentConformanceProtocol,
+) -> None:
+    """Refuse stale or failing local conformance at a consumer boundary.
+
+    Parameters
+    ----------
+    result
+        Previously evaluated local comparison.
+    protocol
+        Current exact source, oracle, data, comparator, and budget identity.
+
+    Raises
+    ------
+    ValueError
+        If the identity changed or either numerical comparison failed.
+
+    """
+    if result.protocol_identity != protocol.identity:
+        raise ValueError("conformance protocol identity changed; rerun required")
+    if not (
+        result.passed
+        and 0.0 <= result.primal_residual <= protocol.absolute_tolerance
+        and 0.0 <= result.gradient_residual <= protocol.absolute_tolerance
+    ):
+        raise ValueError("independent conformance failed")
 
 
 def _law(
@@ -495,15 +684,16 @@ def probe_metamorphic_law(
             refused=False,
         )
 
-    # executable_local: catalogue probe documents readiness; pure residual APIs
-    # evaluate concrete numbers separately.
+    # Registration documents readiness, not a numerical comparison. Pure
+    # residual or independent-conformance APIs evaluate actual values separately.
     return MetamorphicCheckResult(
         law_id=key,
-        passed=True,
+        passed=False,
         residual=None,
         tolerance=record.default_tolerance,
         message=(
-            "executable_local law is registered for pure residual checks "
+            "executable_local law is registered but not numerically executed; "
+            "use a residual or independent-conformance check "
             f"(default_tolerance={record.default_tolerance})"
         ),
         refused=False,
@@ -686,6 +876,8 @@ def assert_metamorphic_registry_integrity(
 
 
 __all__ = [
+    "IndependentConformanceProtocol",
+    "IndependentConformanceResult",
     "METAMORPHIC_AD_CLAIM_BOUNDARY",
     "METAMORPHIC_AD_VERIFICATION_SCHEMA",
     "LawKind",
@@ -695,9 +887,11 @@ __all__ = [
     "assert_metamorphic_registry_integrity",
     "build_metamorphic_ad_registry",
     "evaluate_chain_rule_residual",
+    "evaluate_independent_scalar_conformance",
     "evaluate_linearity_residual",
     "get_metamorphic_law",
     "iter_metamorphic_laws",
     "list_metamorphic_law_ids",
     "probe_metamorphic_law",
+    "require_current_conformance",
 ]

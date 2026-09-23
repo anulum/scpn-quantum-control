@@ -127,6 +127,13 @@ def test_result_preserves_zero_shot_unknown_total_convention() -> None:
     assert dict(result.counts) == {"0": 0, "1": 2}
 
 
+def test_result_rejects_positive_shots_with_no_counts() -> None:
+    """A positive observed shot total requires a complete histogram."""
+    job = QuantumJobRef("resource-job", "local_test", "resource-admission", "completed")
+    with pytest.raises(ValueError, match="counts must sum to shots"):
+        QuantumJobResult(job, "completed", counts={}, shots=16)
+
+
 def test_profile_rejects_empty_ir_formats() -> None:
     """An empty IR-format tuple is rejected."""
     with pytest.raises(ValueError, match="ir_formats must not be empty"):
@@ -250,15 +257,16 @@ def test_simulator_cancel_unknown_job() -> None:
 
 
 def test_simulator_submit_then_cancel_round_trip() -> None:
-    """A submitted job can be inspected and cancelled deterministically."""
+    """A synchronous completed job retains its evidence after late cancellation."""
     sim = LocalDeterministicSimulator(_local_profile())
     job = sim.submit(_workload())
     assert sim.status(job) == job.status
     result = sim.result(job)
     assert sum(result.counts.values()) == result.shots
     cancelled = sim.cancel(job)
-    assert cancelled.status == "cancelled"
-    assert sim.status(cancelled) == "cancelled"
+    assert cancelled is job
+    assert sim.status(cancelled) == "completed"
+    assert sim.result(cancelled) is result
 
 
 def test_hal_rejects_duplicate_profile() -> None:
