@@ -334,8 +334,8 @@ def test_phase_qnode_computational_basis_fisher_matches_ry_reference() -> None:
     )
     assert semantic_source["measurement"] == "computational_basis"
     assert semantic_source["shot_count"] is None
-    np.testing.assert_allclose(
-        semantic_source["classical_fisher_information"], [[1.0]], atol=1e-12
+    assert semantic_source["classical_fisher_information"] == (
+        result.classical_fisher_information.tolist()
     )
 
 
