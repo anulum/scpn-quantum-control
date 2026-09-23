@@ -843,6 +843,9 @@ def test_non_diagonal_near_singular_solve_matches_adjugate_gradient(epsilon: flo
 
 def test_studio_read_only_control_composition_preserves_frozen_revision(tmp_path: Path) -> None:
     """Exercise a bounded two-oscillator design through the real Studio AD spine."""
+    if sys.version_info < (3, 12):
+        pytest.importorskip("scpn_studio_platform", reason="Studio extra absent in 3.11 CI")
+
     from scpn_quantum_control.studio.executive import (
         ExecutiveRequest,
         preview_action,
