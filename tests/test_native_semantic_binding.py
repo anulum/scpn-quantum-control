@@ -180,6 +180,7 @@ def test_real_studio_plan_source_is_optional_and_bound_to_preview() -> None:
 
 def test_native_source_rejects_studio_name_impersonation() -> None:
     """A same-named Python class cannot borrow the optional Studio schema."""
+    pytest.importorskip("scpn_studio_platform", reason="studio extra not installed")
     impostor_type = type(
         "ExecutionPlan", (), {"__module__": "scpn_quantum_control.studio.executive"}
     )
