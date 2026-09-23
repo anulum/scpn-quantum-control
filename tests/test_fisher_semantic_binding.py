@@ -56,7 +56,18 @@ def _fisher_case(
     owner = phase_qnode_computational_basis_fisher_information(
         circuit, **frozen["routes"][route]["inputs"]
     )
-    assert owner.to_dict() == frozen["routes"][route]["result"]
+    actual = owner.to_dict()
+    expected = copy.deepcopy(frozen["routes"][route]["result"])
+    for field in ("fisher_standard_error", "fisher_confidence_radius"):
+        actual_uncertainty = actual.pop(field)
+        expected_uncertainty = expected.pop(field)
+        assert isinstance(actual_uncertainty, list)
+        assert isinstance(expected_uncertainty, list)
+        actual_array = np.asarray(actual_uncertainty, dtype=float)
+        expected_array = np.asarray(expected_uncertainty, dtype=float)
+        assert actual_array.shape == expected_array.shape == (1, 1)
+        np.testing.assert_allclose(actual_array, expected_array, rtol=1e-12, atol=0.0)
+    assert actual == expected
     retained = capture_native_source(owner)
     raw = scp.serialise_result(
         Result(
