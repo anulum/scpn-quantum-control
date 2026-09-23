@@ -318,9 +318,9 @@ def test_phase_vqe_solve_uses_gradient_aware_optimizer_for_parameter_shift() -> 
 
     assert result["gradient_method"] == "parameter_shift"
     assert result["optimizer"] == "L-BFGS-B"
-    assert cast(int, result["n_grad_evals"]) > 0
-    assert np.isfinite(cast(float, result["ground_energy"]))
-    assert np.isfinite(cast(float, result["gradient_norm"]))
+    assert result["n_grad_evals"] > 0
+    assert np.isfinite(result["ground_energy"])
+    assert np.isfinite(result["gradient_norm"])
 
 
 def test_phase_vqe_rejects_unknown_gradient_method() -> None:
