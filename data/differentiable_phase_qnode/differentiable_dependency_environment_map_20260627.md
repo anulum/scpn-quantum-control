@@ -28,7 +28,7 @@ SCPN Quantum Control — Differentiable Dependency and Environment Evidence Map
 | Evidence | Category | Classification | Status | Versions/constraints | Blockers |
 |---|---|---|---|---|---|
 | `python_versions` | `toolchain` | `locked_versions` | `locked` | python==3.11<br>python==3.12<br>python==3.13<br>enzyme-runner-python==3.9 | none |
-| `rust_crates` | `toolchain` | `locked_versions` | `locked` | anyhow==1.0.104<br>chrono==0.4.45<br>clap==4.6.6<br>criterion==0.5.1<br>scpn-quantum-engine==0.2.0<br>pyo3==0.29.2<br>ndarray==0.16.1<br>numpy==0.29.0<br>nalgebra==0.35.0<br>num-complex==0.4.6<br>rand==0.10.2<br>rayon==1.11.0<br>reqwest==0.13.5<br>scpn-quantum-program-ad-replay==0.1.0<br>serde==1.0.229<br>serde_json==1.0.151 | none |
+| `rust_crates` | `toolchain` | `locked_versions` | `locked` | anyhow==1.0.104<br>chrono==0.4.45<br>clap==4.6.7<br>criterion==0.5.1<br>scpn-quantum-engine==0.2.0<br>pyo3==0.29.2<br>ndarray==0.16.1<br>numpy==0.29.0<br>nalgebra==0.35.0<br>num-complex==0.4.6<br>rand==0.10.3<br>rayon==1.11.0<br>reqwest==0.13.5<br>scpn-quantum-program-ad-replay==0.1.0<br>serde==1.0.229<br>serde_json==1.0.151 | none |
 | `jax_cpu` | `toolchain` | `locked_versions` | `locked` | jax==0.10.1<br>jaxlib==0.10.1 | none |
 | `pytorch_cpu` | `toolchain` | `locked_versions` | `locked` | torch==2.12.0+cpu | none |
 | `tensorflow_cpu` | `toolchain` | `locked_versions` | `locked` | tensorflow_cpu==2.21.0 | none |

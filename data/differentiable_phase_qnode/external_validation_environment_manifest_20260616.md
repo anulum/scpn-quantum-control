@@ -12,7 +12,7 @@ SCPN Quantum Control — Differentiable external-validation environment lock
 
 - Artefact ID: `differentiable-external-validation-environment-manifest-20260616`
 - Classification: `functional_non_isolated`
-- Python: `3.12.14`
+- Python: `3.12.3`
 - Platform: `Linux-7.0.0-31-generic-x86_64-with-glibc2.39`
 - Claim boundary: Exact environment lockfile manifest for reviewer reproduction only; it does not promote performance, provider, QPU, GPU, hardware, or isolated_affinity benchmark claims.
 
