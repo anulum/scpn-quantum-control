@@ -15,6 +15,7 @@ import os
 import shutil
 import subprocess
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -122,6 +123,66 @@ def test_root_package_does_not_reexport_experimental_lane() -> None:
         )
 
 
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("schema", "unknown", "unknown experimental lane"),
+        ("lane_id", "wrong", "unknown experimental lane"),
+        ("namespace", "scpn_quantum_control", "namespace mismatch"),
+        ("kernel_statuses", [], "immutable pairs"),
+        ("kernel_statuses", (("wrong", "not_implemented"),), "kernel inventory"),
+        (
+            "kernel_statuses",
+            (("xy_static_digital_v1", "ready"), *LANE_MANIFEST.kernel_statuses[1:]),
+            "readiness requires",
+        ),
+        ("module_inventory", (), "module inventory"),
+        ("worker_inventory", (), "worker inventory"),
+        ("write_roots", (), "write roots"),
+        ("hardware_submission_enabled", 1, "must be boolean"),
+        ("claim_promotion_enabled", True, "cannot authorize"),
+        ("non_claims", (), "non-claims must be non-empty"),
+        ("non_claims", (" ",), "non-claims must be non-empty"),
+    ],
+)
+def test_manifest_refuses_unreviewed_execution_or_scope(
+    field: str, value: object, message: str
+) -> None:
+    """Malformed scope and execution authority fail before any provider path."""
+    with pytest.raises(ValueError, match=message):
+        replace(LANE_MANIFEST, **{field: value})
+
+
+def test_manifest_wire_is_detached_from_approved_scope() -> None:
+    """Editing a serialized description cannot change the frozen manifest."""
+    wire = LANE_MANIFEST.to_wire()
+    assert wire["schema"] == LANE_MANIFEST.schema
+    assert wire["status"] == "experimental"
+    assert wire["hardware_submission_enabled"] is False
+    kernels = wire["kernel_statuses"]
+    roots = wire["write_roots"]
+    assert isinstance(kernels, dict)
+    assert isinstance(roots, list)
+    kernels["xy_static_digital_v1"] = "ready"
+    roots.append("data/unreviewed")
+    assert LANE_MANIFEST.kernel_statuses[0][1] == "not_implemented"
+    assert "data/unreviewed" not in LANE_MANIFEST.write_roots
+
+
+def test_manifest_inventory_refuses_missing_declared_modules(tmp_path: Path) -> None:
+    """An incomplete deployment cannot claim the expected package or worker."""
+    copied = tmp_path / "experimental"
+    shutil.copytree(_EXPERIMENTAL_ROOT, copied, ignore=shutil.ignore_patterns("__pycache__"))
+    (copied / "llm_qpu/manifest.py").unlink()
+    with pytest.raises(ValueError, match="inventory drift"):
+        assert_lane_inventory(copied)
+    copied_worker = tmp_path / "workers"
+    shutil.copytree(_WORKER_ROOT, copied_worker, ignore=shutil.ignore_patterns("__pycache__"))
+    (copied_worker / "protocol/worker.py").unlink()
+    with pytest.raises(ValueError, match="inventory drift"):
+        assert_worker_inventory(copied_worker)
+
+
 def test_standalone_worker_runs_without_parent_import_and_refuses_compute(
     tmp_path: Path,
 ) -> None:
@@ -156,3 +217,29 @@ def test_standalone_worker_runs_without_parent_import_and_refuses_compute(
     )
     assert refused.returncode == 2
     assert json.loads(refused.stdout)["status"] == "refused"
+
+
+@pytest.mark.parametrize(
+    ("request", "reason"),
+    [
+        (b"not json", "invalid JSON"),
+        (b"[]", "unsupported operation"),
+        (b'{"op":"describe","submit":true}', "unsupported operation"),
+        (b" " * 65_537, "request too large"),
+    ],
+)
+def test_standalone_worker_refuses_malformed_or_oversized_requests(
+    tmp_path: Path, request: bytes, reason: str
+) -> None:
+    """The real isolated process rejects ambiguous and unbounded requests."""
+    result = subprocess.run(
+        [sys.executable, "-S", str(_WORKER_ROOT / "protocol/worker.py")],
+        input=request,
+        cwd=tmp_path,
+        env={"PYTHONPATH": str(tmp_path)},
+        capture_output=True,
+        timeout=15,
+        check=False,
+    )
+    assert result.returncode == 2
+    assert json.loads(result.stdout)["reason"] == reason
