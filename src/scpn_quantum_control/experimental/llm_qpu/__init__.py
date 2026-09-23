@@ -6,3 +6,5 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — experimental LLM-QPU lane
 """Experimental LLM-QPU namespace; importing it does not execute a job."""
+
+__all__: tuple[str, ...] = ()
