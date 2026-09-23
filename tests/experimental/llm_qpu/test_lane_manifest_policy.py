@@ -220,7 +220,7 @@ def test_standalone_worker_runs_without_parent_import_and_refuses_compute(
 
 
 @pytest.mark.parametrize(
-    ("request", "reason"),
+    ("payload", "reason"),
     [
         (b"not json", "invalid JSON"),
         (b"[]", "unsupported operation"),
@@ -229,12 +229,12 @@ def test_standalone_worker_runs_without_parent_import_and_refuses_compute(
     ],
 )
 def test_standalone_worker_refuses_malformed_or_oversized_requests(
-    tmp_path: Path, request: bytes, reason: str
+    tmp_path: Path, payload: bytes, reason: str
 ) -> None:
     """The real isolated process rejects ambiguous and unbounded requests."""
     result = subprocess.run(
         [sys.executable, "-S", str(_WORKER_ROOT / "protocol/worker.py")],
-        input=request,
+        input=payload,
         cwd=tmp_path,
         env={"PYTHONPATH": str(tmp_path)},
         capture_output=True,
