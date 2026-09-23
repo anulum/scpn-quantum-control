@@ -135,41 +135,14 @@ def test_provider_attestation_rejects_missing_field(provider: str, digest: str, 
 # ── end-to-end sealing through the platform verdict ────────────────────
 
 
-def test_sealed_pack_verifies_through_platform() -> None:
-    """A sealed pack is attestation-mode and verifies VERIFIED with the ML-DSA key."""
-    from scpn_studio_platform.seal import Keyring, Verdict, verify
-
+def test_unchecked_provider_signature_cannot_be_sealed() -> None:
+    """A Studio ML-DSA signature cannot authenticate an unchecked provider."""
     signer = _signer()
     unit = build_result_pack_unit(
         _real_pack(), raw_results_digest=_RAW_DIGEST, circuit_digest=_CIRCUIT_DIGEST
     )
-    envelope = seal_result_pack(unit, signer=signer, attestation=_attestation(), grader=_GRADER)
-    assert envelope.verifiability_mode == "attestation"
-    assert envelope.attestation is not None
-    assert envelope.attestation["provider"] == "ibm"
-    assert envelope.signature["alg"] == "ML-DSA-65"
-
-    ring = Keyring()
-    ring.add(signer.key_id, signer.verifier())
-    verdict = verify(envelope.to_dict(), None, keyring=ring, regrade=lambda _u: "bounded-support")
-    assert verdict is Verdict.VERIFIED
-
-
-def test_tampered_sealed_pack_is_forged() -> None:
-    """Rewriting the sealed unit after attestation is caught as a forgery."""
-    from scpn_studio_platform.seal import Keyring, Verdict, verify
-
-    signer = _signer()
-    unit = build_result_pack_unit(_real_pack(), raw_results_digest=_RAW_DIGEST)
-    envelope = seal_result_pack(
-        unit, signer=signer, attestation=_attestation(), grader=_GRADER
-    ).to_dict()
-    envelope["unit"] = {**unit, "claim_status": "reference-validated"}
-
-    ring = Keyring()
-    ring.add(signer.key_id, signer.verifier())
-    verdict = verify(envelope, None, keyring=ring, regrade=lambda _u: "reference-validated")
-    assert verdict is Verdict.FORGED
+    with pytest.raises(ValueError, match="provider signature has not been verified"):
+        seal_result_pack(unit, signer=signer, attestation=_attestation(), grader=_GRADER)
 
 
 def test_seal_refuses_empty_attestation() -> None:

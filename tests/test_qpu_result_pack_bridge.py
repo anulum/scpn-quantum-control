@@ -235,8 +235,8 @@ def test_offline_run_emits_an_unverifiable_unit_without_attestation() -> None:
     assert presentation.status == "unverifiable"
 
 
-def test_attested_run_renders_and_seals_attestation_verifiable() -> None:
-    """A provider attestation over the counts digest makes the unit verifiable."""
+def test_attested_run_retains_signature_without_promoting_verification() -> None:
+    """An offline signature is retained but cannot establish provider identity."""
     pytest.importorskip("scpn_studio_platform.seal", reason="studio extra not installed")
     from scpn_quantum_control.crypto.ml_dsa_seal import MLDSASigner
     from scpn_quantum_control.studio.qpu_result_pack import seal_qpu_result_pack
@@ -258,12 +258,12 @@ def test_attested_run_renders_and_seals_attestation_verifiable() -> None:
         attestation=attestation,
     )
     presentation = present_qpu_result_pack(unit)
-    assert presentation.status == "attestation-verifiable"
+    assert presentation.status == "present_unverified"
     signer = MLDSASigner.generate("scpn-quantum-control:qpu", seed=bytes(range(32)))
-    envelope = seal_qpu_result_pack(
-        unit, signer=signer, grader={"name": "honesty-bridge", "version": "0.8.0"}
-    )
-    assert envelope.verifiability_mode == QPU_VERIFIABILITY_MODE
+    with pytest.raises(ValueError, match="provider signature has not been verified"):
+        seal_qpu_result_pack(
+            unit, signer=signer, grader={"name": "honesty-bridge", "version": "0.8.0"}
+        )
 
 
 def test_from_job_rejects_a_mismatched_attestation() -> None:

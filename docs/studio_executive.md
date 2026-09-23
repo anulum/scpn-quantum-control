@@ -396,8 +396,9 @@ print(record.script.source)             # the operator submission script (guarde
 Without `approved=True` the record is `gated` and no script is written. The
 generated script refuses to submit without `--confirm`, digests the returned
 counts, and hands them to `build_qpu_result_pack_unit`; the operator attaches
-their provider attestation to make the `studio.qpu-result-pack.v1` result
-attestation-verifiable (see [Studio Federation](studio_federation.md)). The
+their provider attestation as retained evidence. Until that signature is
+checked against an enrolled provider key, the result is `present_unverified`
+and cannot be sealed as verified (see [Studio Federation](studio_federation.md)). The
 studio never contacts a provider or produces counts.
 
 ## Running actions from the CLI

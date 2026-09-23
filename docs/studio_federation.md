@@ -378,8 +378,12 @@ loud: with no provider attestation `present_qpu_result_pack` renders
 emitted as `verified` on the studio signature alone. The committed hardware
 packs carry no live provider attestation yet (provider-attestation integration), so their units
 are honestly `unverifiable` today; the shape and the fail-closed boundary are
-what ships. A supplied attestation must sign the exact `raw_results_digest`, or
-it is rejected.
+what ships. A supplied attestation must name the exact `raw_results_digest`, or
+it is rejected. A nonblank `provider_sig` with a matching digest renders
+`present_unverified`, not verified: no enrolled provider-key verification is
+implemented. Both `seal_qpu_result_pack` and the older `seal_result_pack`
+refuse to seal these unchecked signatures, since the Studio signature would
+otherwise let the platform report a false verified result.
 
 ## Substrate axes
 

@@ -5,33 +5,15 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — attestation-mode sealing for hardware result packs
-"""Seal a QUANTUM hardware result pack into a verifiable honesty envelope.
+"""Retain QPU result-pack custody without false provider verification.
 
-A QPU result cannot be re-run in a verifier's browser — the shot statistics are
-irreproducible — so the verifiable-result contract grants it
-**attestation-verifiable** trust rather than
-**recompute-verifiable** trust (the platform's Mode B). The chain of custody is:
-
-1. the studio publishes a ``studio.hardware-result-pack.v1`` claim unit carrying the
-   pack's provenance (backend, job IDs, the digest of the returned counts, the
-   bit-exact digest of the compiled circuit) and its honesty axes;
-2. a **provider attestation** — the hardware provider's own signed record of the job
-   result — binds those counts to that device run;
-3. QUANTUM seals the unit with its post-quantum key
-   (:class:`~scpn_quantum_control.crypto.ml_dsa_seal.MLDSASigner`) through the
-   platform :func:`~scpn_studio_platform.seal.seal`, in ``attestation`` mode.
-
-The result is a :class:`~scpn_studio_platform.seal.HonestyEnvelope` any keyring
-holder verifies: the studio signature proves the unit is QUANTUM's own and ungraded
-upward, and the provider attestation proves the counts came from that device — but it
-makes **no** reproducibility claim, which is the honest boundary of hardware
-evidence.
-
-This module never fabricates the provider attestation: it is a required input. A
-pack with no provider attestation cannot be sealed as attestation-verifiable —
-:func:`seal_result_pack` raises rather than emit an envelope that would render as
-``verified`` without the provider's own signature behind it (absent-signal is loud,
-not silently downgraded).
+A QPU shot result cannot be recomputed, so attestation is its possible
+verification basis. The current module can carry a provider name, result digest
+and signature, but it has no enrolled provider key or cryptographic verification
+path. A nonblank signature and matching digest are only ``present_unverified``.
+The legacy sealing entry point therefore refuses to produce an attestation-mode
+envelope: a Studio signature alone could otherwise make the platform report
+``verified`` for an unauthenticated provider claim.
 
 The module binds to the **existing** ``studio.hardware-result-pack.v1`` evidence
 schema (the ``execute``/``replay`` verbs already advertise it); it introduces no new
@@ -44,7 +26,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from scpn_studio_platform.seal import HonestyEnvelope, Signer, seal
+from scpn_studio_platform.seal import HonestyEnvelope, Signer
 
 from .verbs import HARDWARE_RESULT_PACK_SCHEMA
 
@@ -132,10 +114,10 @@ def build_result_pack_unit(
 def build_provider_attestation(
     *, provider: str, result_pack_digest: str, provider_sig: str
 ) -> dict[str, str]:
-    """Build the provider-attestation reference for an attestation-mode envelope.
+    """Retain unverified provider-attestation fields for later verification.
 
-    This is the hardware provider's own signed record — the load-bearing object of
-    attestation-verifiable trust. QUANTUM does not produce it; it carries it.
+    QUANTUM does not authenticate the claimed provider signature here. These
+    fields alone cannot establish provider authenticity.
 
     Parameters
     ----------
@@ -183,7 +165,7 @@ def seal_result_pack(
     grader: Mapping[str, str],
     exactness_class: str | Mapping[str, Any] = "bit-exact",
 ) -> HonestyEnvelope:
-    """Seal a hardware result-pack unit as an attestation-verifiable envelope.
+    """Refuse hardware result-pack sealing without provider-key verification.
 
     Parameters
     ----------
@@ -208,13 +190,13 @@ def seal_result_pack(
     Returns
     -------
     HonestyEnvelope
-        The sealed, attestation-verifiable envelope.
+        No envelope is currently emitted.
 
     Raises
     ------
     ValueError
-        If ``attestation`` is empty (no provider attestation to stand behind the
-        counts).
+        If ``attestation`` is empty or its signature has not been checked
+        against an enrolled provider key.
 
     """
     if not attestation:
@@ -222,14 +204,7 @@ def seal_result_pack(
             "attestation-mode sealing requires a provider attestation; a QPU result "
             "pack with none renders unverifiable, it is never sealed as verified"
         )
-    return seal(
-        dict(unit),
-        signer=signer,
-        grader=grader,
-        verifiability_mode="attestation",
-        exactness_class=exactness_class,
-        attestation=dict(attestation),
-    )
+    raise ValueError("provider signature has not been verified against an enrolled key")
 
 
 __all__ = [

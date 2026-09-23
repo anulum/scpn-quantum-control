@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — attestation-verifiable QPU result-pack unit
-"""Emit and present the attestation-verifiable ``studio.qpu-result-pack.v1`` unit.
+"""Emit a QPU result-pack unit without promoting unchecked provider signatures.
 
 The verifiable-result contract grants two verification modes. Compile-path claims
 are **recompute**-verifiable
@@ -21,13 +21,10 @@ calibration snapshot reference, the bit-exact circuit digest (the link back to
 a recompute-verifiable compile), and — when a real device run exists — the provider
 attestation.
 
-The absent-signal is loud, never silently downgraded. A unit with no provider
-attestation :func:`present_qpu_result_pack` renders ``unverifiable`` and
-:func:`seal_qpu_result_pack` refuses to seal it — it is never emitted as
-``verified`` on the studio signature alone. The committed hardware packs carry
-no live provider attestation yet (that requires provider-attestation integration), so their units are
-honestly ``unverifiable`` today; the shape and the fail-closed boundary are what
-this slice lands.
+The absent-signal is loud. A unit with no provider attestation renders
+``unverifiable``. A nonblank signature with a matching digest renders
+``present_unverified`` because this repository has no enrolled provider-key
+verification path. Neither state can be sealed as verified by the Studio signer.
 """
 
 from __future__ import annotations
@@ -36,12 +33,12 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any, Literal
 
-from scpn_studio_platform.seal import HonestyEnvelope, Signer, seal
+from scpn_studio_platform.seal import HonestyEnvelope, Signer
 
 from .verbs import QPU_RESULT_PACK_SCHEMA
 
 QPU_VERIFIABILITY_MODE = "attestation"
-"""A QPU result is attestation-verifiable: its trust rests on a provider signature."""
+"""The verification basis; it does not report successful authentication."""
 
 DEFAULT_EVIDENCE_KIND = "measured"
 """The honesty modality of a raw-count QPU observation: measured on the device."""
@@ -62,7 +59,7 @@ _PROVENANCE_FIELDS: tuple[str, ...] = (
 
 _ATTESTATION_FIELDS: tuple[str, ...] = ("provider", "result_pack_digest", "provider_sig")
 
-QpuPresentationStatus = Literal["attestation-verifiable", "unverifiable"]
+QpuPresentationStatus = Literal["present_unverified", "unverifiable"]
 
 
 @dataclass(frozen=True)
@@ -72,8 +69,9 @@ class QpuResultPackPresentation:
     Parameters
     ----------
     status
-        ``"attestation-verifiable"`` only when a well-formed provider
-        attestation binds the returned counts; ``"unverifiable"`` otherwise.
+        ``"present_unverified"`` when a provider signature and matching digest
+        are present but no enrolled provider key verified the signature;
+        ``"unverifiable"`` when the attestation is absent or malformed.
     reason
         Human-readable explanation, always present for ``"unverifiable"``.
 
@@ -84,7 +82,7 @@ class QpuResultPackPresentation:
 
     def __post_init__(self) -> None:
         """Validate the presentation invariants."""
-        if self.status not in ("attestation-verifiable", "unverifiable"):
+        if self.status not in ("present_unverified", "unverifiable"):
             raise ValueError("qpu presentation status is unknown")
         if not self.reason.strip():
             raise ValueError("qpu presentation reason must be non-empty")
@@ -108,8 +106,8 @@ def build_qpu_result_pack_unit(
         A pack record from ``data/hardware_result_packs/manifest.json`` (or an
         equivalent mapping). Its ``id`` is required.
     raw_results_digest
-        The ``"sha256:<hex>"`` digest of the returned counts — the value the
-        provider attestation signs over.
+        The ``"sha256:<hex>"`` digest of the returned counts, which a provider
+        attestation claims to cover.
     circuit_digest
         The ``"sha256:<hex>"`` digest of the compiled circuit, linking the
         result to a recompute-verifiable compile. ``None`` when unavailable.
@@ -134,7 +132,7 @@ def build_qpu_result_pack_unit(
     ------
     ValueError
         If the pack has no ``id``, ``raw_results_digest`` is empty, or a
-        supplied ``attestation`` is malformed or does not sign the raw results.
+        supplied ``attestation`` is malformed or names a different digest.
 
     """
     pack_id = str(pack.get("id", "")).strip()
@@ -163,14 +161,14 @@ def build_qpu_result_pack_unit(
 def _validated_attestation(
     attestation: Mapping[str, str], raw_results_digest: str
 ) -> dict[str, str]:
-    """Return a provider attestation that actually signs the raw results.
+    """Retain fields claiming a matching result digest, without verifying a signature.
 
     Raises
     ------
     ValueError
         If a field is empty or the attestation signs a different digest than the
-        unit's ``raw_results_digest`` — a mismatched attestation is not an
-        attestation for this result.
+        unit's ``raw_results_digest``. A match is only custody, not proof of
+        provider authenticity.
 
     """
     for field in _ATTESTATION_FIELDS:
@@ -193,9 +191,9 @@ def present_qpu_result_pack(unit: Mapping[str, Any]) -> QpuResultPackPresentatio
     Returns
     -------
     QpuResultPackPresentation
-        ``"attestation-verifiable"`` only when a well-formed provider
-        attestation binds the returned counts; ``"unverifiable"`` otherwise,
-        with the reason spelled out.
+        ``"present_unverified"`` for a nonblank, digest-matched signature,
+        never a verified claim; ``"unverifiable"`` for absent or malformed
+        attestation, with the reason spelled out.
 
     """
     if unit.get("schema") != QPU_RESULT_PACK_SCHEMA:
@@ -221,8 +219,8 @@ def present_qpu_result_pack(unit: Mapping[str, Any]) -> QpuResultPackPresentatio
             "unverifiable", "provider attestation signs a different digest than the raw results"
         )
     return QpuResultPackPresentation(
-        "attestation-verifiable",
-        f"provider {attestation['provider']!r} attests the returned counts",
+        "present_unverified",
+        f"provider {attestation['provider']!r} signature is present but has not been verified against an enrolled key",
     )
 
 
@@ -233,7 +231,7 @@ def seal_qpu_result_pack(
     grader: Mapping[str, str],
     exactness_class: str | Mapping[str, Any] = "bit-exact",
 ) -> HonestyEnvelope:
-    """Seal a QPU result-pack unit as an attestation-verifiable envelope.
+    """Refuse sealing until enrolled provider-key verification exists.
 
     Parameters
     ----------
@@ -250,29 +248,20 @@ def seal_qpu_result_pack(
     Returns
     -------
     HonestyEnvelope
-        The sealed, attestation-verifiable envelope.
+        No envelope is currently emitted.
 
     Raises
     ------
     ValueError
-        If the unit renders ``unverifiable`` (no well-formed provider
-        attestation) — an unverifiable unit is never sealed as verified.
+        Every current unit is either missing an attestation or carries an
+        unchecked provider signature. Neither can be sealed as verified.
 
     """
     presentation = present_qpu_result_pack(unit)
-    if presentation.status != "attestation-verifiable":
-        raise ValueError(
-            "qpu result pack is unverifiable and is never sealed as verified: "
-            + presentation.reason
-        )
-    attestation = dict(unit["attestation"])
-    return seal(
-        dict(unit),
-        signer=signer,
-        grader=dict(grader),
-        verifiability_mode=QPU_VERIFIABILITY_MODE,
-        exactness_class=exactness_class,
-        attestation=attestation,
+    if presentation.status == "present_unverified":
+        raise ValueError("provider signature has not been verified against an enrolled key")
+    raise ValueError(
+        "qpu result pack is unverifiable and is never sealed as verified: " + presentation.reason
     )
 
 

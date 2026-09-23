@@ -122,13 +122,13 @@ def test_present_renders_unverifiable_without_an_attestation() -> None:
     assert "no provider attestation" in presentation.reason
 
 
-def test_present_renders_attestation_verifiable_with_a_provider_signature() -> None:
-    """A unit with a well-formed provider attestation is attestation-verifiable."""
+def test_present_renders_signature_present_but_unverified() -> None:
+    """A matching digest and nonblank signature do not verify the provider."""
     unit = build_qpu_result_pack_unit(
         _real_pack(), raw_results_digest=_RAW_DIGEST, attestation=_attestation()
     )
     presentation = present_qpu_result_pack(unit)
-    assert presentation.status == "attestation-verifiable"
+    assert presentation.status == "present_unverified"
     assert "ibm" in presentation.reason
 
 
@@ -183,10 +183,8 @@ def test_seal_refuses_an_unverifiable_unit() -> None:
         seal_qpu_result_pack(unit, signer=_signer(), grader=_GRADER)
 
 
-def test_seal_produces_an_attestation_verifiable_envelope() -> None:
-    """A well-attested unit seals and verifies through the platform keyring."""
-    from scpn_studio_platform.seal import Keyring, Verdict, verify
-
+def test_seal_refuses_unverified_provider_signature() -> None:
+    """The studio signer cannot promote an unchecked provider signature."""
     signer = _signer()
     unit = build_qpu_result_pack_unit(
         _real_pack(),
@@ -194,9 +192,5 @@ def test_seal_produces_an_attestation_verifiable_envelope() -> None:
         circuit_digest=_CIRCUIT_DIGEST,
         attestation=_attestation(),
     )
-    envelope = seal_qpu_result_pack(unit, signer=signer, grader=_GRADER)
-    assert envelope.attestation["provider"] == "ibm"
-    ring = Keyring()
-    ring.add(signer.key_id, signer.verifier())
-    verdict = verify(envelope.to_dict(), None, keyring=ring, regrade=lambda _u: "bounded-support")
-    assert verdict is Verdict.VERIFIED
+    with pytest.raises(ValueError, match="provider signature has not been verified"):
+        seal_qpu_result_pack(unit, signer=signer, grader=_GRADER)
