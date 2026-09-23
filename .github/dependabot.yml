@@ -17,16 +17,13 @@ updates:
     schedule:
       interval: weekly
       day: monday
-    # These hash-locked CI overlays are refreshed by their owner-controlled
-    # lock workflow. Dependabot cannot read the PyTorch wheel index and fails
-    # to rewrite the Python 3.12 lock for a newer transitive pydantic pin.
-    exclude-paths:
-      - "requirements-ci-torch-cpu-py312-linux.txt"
-      - "requirements-ci-py312-linux.txt"
-    # Temporary: both Braket pin owners require setuptools==81.0.0. The
-    # fail-closed waiver audit requires removal when upstream admits >=83.0.0.
+    # Root pip proposals cannot refresh the governed hash locks and dependent
+    # external-validation manifests together. Keep alerts enabled and route
+    # version changes through the owner-controlled dependency census/batch.
+    open-pull-requests-limit: 0
+    rebase-strategy: disabled
     ignore:
-      - dependency-name: setuptools
+      - dependency-name: "*"
   - package-ecosystem: pip
     directory: "/oscillatools"
     schedule:
