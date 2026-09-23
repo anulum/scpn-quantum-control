@@ -523,7 +523,7 @@
       "expectation": "accept",
       "family": "Execution plan",
       "fixture": "studio_execute_preserves_approval_plan.json",
-      "fixture_sha256": "9847c07a494a3ba54ae0a7b7fadeea7e2740051f50fde054ff9beb35cf058088",
+      "fixture_sha256": "655847ce792f62367b9b31ac0a9462f292c9b2fbcd9e175095467c3b91d5842e",
       "producer": "scpn_quantum_control.studio.executive.preview_action",
       "rationale": "Actual Studio preview with request/resolved settings and approval boundary; no action or hardware execution.",
       "reader": "scpn_quantum_control.studio.executive.preview_action",

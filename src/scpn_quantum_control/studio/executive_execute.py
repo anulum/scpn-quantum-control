@@ -16,12 +16,12 @@ approved request it:
 1. validates a bounded deployment spec (provider, endpoint, backend, the
    bit-exact circuit digest, and shots);
 2. builds a **no-submit** deployment dossier that declares, honestly, that no
-   live job ran and that the eventual result is attestation-verifiable —
-   ``unverifiable`` until the operator submits and attaches a provider
-   attestation (the ``studio.qpu-result-pack.v1`` contract);
+   live job ran; a returned result with an attached provider attestation is
+   ``present_unverified`` until an enrolled provider-key verification path
+   exists (the ``studio.qpu-result-pack.v1`` contract);
 3. writes a standalone operator submission script — hard-gated behind
    ``--confirm`` — that the operator runs, with their own credentials, to deploy
-   the circuit onto the endpoint and produce a signed result pack.
+   the circuit onto the endpoint and produce a result pack.
 
 Without an explicit approval on the request the spine never reaches this handler
 (the verb is ``live-hardware``/``certified``, so it fails closed). Even with
@@ -52,8 +52,8 @@ _DIGEST_PREFIX: Final[str] = "sha256:"
 EXECUTE_CLAIM_BOUNDARY: Final[str] = (
     "plans and scripts an approval-gated QPU deployment onto a provider endpoint; "
     "the studio does not submit a live job, use credentials, or produce counts — "
-    "the eventual result is attestation-verifiable and stays unverifiable until "
-    "the operator submits and attaches a provider attestation"
+    "an attached provider attestation leaves the eventual result present_unverified "
+    "until an enrolled provider-key verification path exists"
 )
 
 _UNVERIFIABLE: Final[str] = "unverifiable"
@@ -233,8 +233,8 @@ def _render_submission_script(
         "This script SUBMITS a live QPU job through your provider account and costs\n"
         "real money. The studio never runs it. Fill in `submit_circuit(...)` with your\n"
         "provider client, then run with --confirm. The returned counts are digested and\n"
-        "handed to the studio result-pack builder; attach your provider attestation to\n"
-        "make the result attestation-verifiable.\n"
+        "handed to the studio result-pack builder. An attached provider attestation\n"
+        "stays present_unverified until an enrolled provider-key verification path exists.\n"
         '"""\n\n'
         "import argparse\n"
         "import hashlib\n"
@@ -275,7 +275,7 @@ def _render_submission_script(
         "        raw_results_digest=digest,\n"
         "        circuit_digest=CIRCUIT_DIGEST,\n"
         "        calibration_ref=CALIBRATION_REF,\n"
-        "        attestation=None,  # attach your provider attestation to verify\n"
+        "        attestation=None,  # attaching one still leaves it present_unverified\n"
         "    )\n"
         "    print(json.dumps(unit, indent=2, sort_keys=True))\n"
         "    return 0\n\n\n"

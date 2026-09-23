@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — attestation-verifiable QPU result-pack unit
+# scpn-quantum-control — provider-attestation QPU result-pack unit
 """Emit a QPU result-pack unit without promoting unchecked provider signatures.
 
 The verifiable-result contract grants two verification modes. Compile-path claims
@@ -14,7 +14,7 @@ digest in the browser. A QPU result cannot be replayed — the shot statistics a
 irreproducible — so it is **attestation**-verifiable: the trust rests on a
 hardware provider's own signed record, not on a recompute.
 
-This module emits the richer attestation-verifiable unit that carries that axis
+This module emits the provider-attestation unit that carries that axis
 explicitly. Every unit declares ``verifiability_mode = attestation`` and binds
 four things a verifier checks: the raw-results digest (the returned counts), the
 calibration snapshot reference, the bit-exact circuit digest (the link back to

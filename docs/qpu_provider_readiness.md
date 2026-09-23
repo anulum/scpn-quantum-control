@@ -104,7 +104,7 @@ declares it.
 
 Every HAL adapter normalises its provider onto one neutral
 `QuantumJobResult` (`hardware/hal.py`). Because of that single shape, the
-step from a returned result to an attestation-verifiable
+step from a returned result to a provider-attestation
 `studio.qpu-result-pack.v1` unit is wired **once**, not sixteen times:
 `hardware/qpu_result_pack_bridge.py` (`qpu_result_pack_from_job`) applies
 unchanged to IBM, IonQ, IQM, Rigetti, Quantinuum, QuEra, Pasqal, OQC,
@@ -319,7 +319,8 @@ pulse, and sessions. On those the HAL intentionally leans on the provider
 SDK, which is the correct engineering choice; reimplementing a mature
 transpiler or a vendor's resilience stack would add surface without adding
 fidelity. The last three rows are where the HAL is intentionally deeper:
-signed, attestation-verifiable result packs
+provider-attestation result packs that stay `present_unverified` until
+an enrolled provider-key verification path exists
 ([result-pack emission](#result-pack-emission)), approval and budget
 governance, and one neutral contract spanning every provider — none of
 which a single-ecosystem SDK provides.
