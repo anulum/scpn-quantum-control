@@ -13,7 +13,7 @@
     "python_model_source_modules": 711,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1397
+    "test_files": 1398
   },
   "documentation": {
     "examples": [
@@ -8294,6 +8294,7 @@
       "tests/_phase_torch_bridge_test_helpers.py",
       "tests/_program_ad_rust_bridge_test_fixtures.py",
       "tests/conftest.py",
+      "tests/experimental/llm_qpu/test_baseline_evidence_policy.py",
       "tests/experimental/llm_qpu/test_lane_manifest_policy.py",
       "tests/test_accelerator_detection_boundaries.py",
       "tests/test_active_queue_status_assertions.py",
