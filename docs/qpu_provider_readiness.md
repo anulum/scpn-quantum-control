@@ -397,8 +397,8 @@ sources:
 - Quantinuum Systems documentation:
   <https://docs.quantinuum.com/h-series/>
 - IQM Qiskit integration and fake backends:
-  <https://docs.meetiqm.com/iqm-client/user_guide_cirq.html>,
-  <https://docs.meetiqm.com/iqm-client/api/iqm.qiskit_iqm.fake_backends.html>
+  <https://docs.iqm.tech/iqm-client/user_guide_qiskit.html>,
+  <https://docs.iqm.tech/iqm-client/api/iqm.qiskit_iqm.fake_backends.html>
 - Pasqal Cloud documentation:
   <https://docs.pasqal.com/cloud/>
 - Pulser neutral-atom hardware specifications:
