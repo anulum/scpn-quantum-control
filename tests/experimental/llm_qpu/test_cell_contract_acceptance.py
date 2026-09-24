@@ -35,7 +35,7 @@ from scpn_quantum_control.experimental.llm_qpu.contracts import (
     validate_completion,
 )
 
-_REPO_ROOT = Path(__file__).resolve().parents[4]
+_REPO_ROOT = Path(__file__).resolve().parents[3]
 _WORKER = _REPO_ROOT / "experimental_workers/llm_qpu/protocol/worker.py"
 _DIGEST = "a" * 64
 _KERNEL = "xy_static_digital_v1"
