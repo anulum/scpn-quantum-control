@@ -85,6 +85,7 @@ def refuse_sensitive_operation(event, args):
 
 sys.addaudithook(refuse_sensitive_operation)
 sys.path.insert(0, sys.argv[1])
+sys.path.insert(0, sys.argv[2])
 from scpn_quantum_control.experimental.llm_qpu.manifest import LANE_MANIFEST
 assert LANE_MANIFEST.hardware_submission_enabled is False
 assert LANE_MANIFEST.claim_promotion_enabled is False
@@ -101,7 +102,14 @@ assert not any(name.startswith('qiskit_ibm_runtime') for name in sys.modules)
         }
     )
     result = subprocess.run(
-        [sys.executable, "-I", "-c", script, str(_REPO_ROOT / "src")],
+        [
+            sys.executable,
+            "-I",
+            "-c",
+            script,
+            str(_REPO_ROOT / "src"),
+            str(_REPO_ROOT / "oscillatools/src"),
+        ],
         cwd=tmp_path,
         env=env,
         capture_output=True,
