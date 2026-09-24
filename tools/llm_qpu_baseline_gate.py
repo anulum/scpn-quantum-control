@@ -144,7 +144,7 @@ def run_baseline_command(
 
 
 def offline_container_probe() -> dict[str, object]:
-    """Require a credential-free, networkless Docker namespace for W00 probes."""
+    """Require a credential-free, networkless Docker namespace for baseline probes."""
     with tempfile.TemporaryDirectory(prefix="llm-qpu-offline-") as home_name:
         home = Path(home_name)
         child = (
@@ -180,7 +180,7 @@ def offline_container_probe() -> dict[str, object]:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    """Run the Docker-only W00 offline isolation check."""
+    """Run the Docker-only offline isolation check."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("operation", choices=("offline-container-probe",))
     arguments = parser.parse_args(argv)
