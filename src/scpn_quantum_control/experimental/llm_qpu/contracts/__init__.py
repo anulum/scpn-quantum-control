@@ -175,6 +175,7 @@ class CellKey:
     parameter_binding_id: str
 
     def __post_init__(self) -> None:
+        """Normalize and bound every identity component."""
         for name in _KEY_FIELDS:
             object.__setattr__(self, name, _text(getattr(self, name), name=name))
 
@@ -202,6 +203,7 @@ class PlannedCell:
     metadata_blob: bytes = field(repr=False)
 
     def __post_init__(self) -> None:
+        """Reject invalid plans and authority fields in frozen metadata."""
         if type(self.key) is not CellKey:
             raise ValueError("planned cell requires CellKey")
         _digest(self.circuit_plan_digest, name="circuit plan")
@@ -288,6 +290,7 @@ class ArrayDescriptor:
     sha256: str
 
     def __post_init__(self) -> None:
+        """Refuse unsupported layouts and mismatched byte counts."""
         if (
             type(self.dtype) is not str
             or self.dtype not in _DTYPE_SIZE
