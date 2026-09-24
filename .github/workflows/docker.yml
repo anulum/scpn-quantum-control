@@ -60,5 +60,13 @@ jobs:
       - name: Run tests in Docker
         run: docker run --rm scpn-quantum-control:test
 
+      - name: Verify offline LLM-QPU baseline sandbox
+        run: |
+          docker run --rm --network none --read-only \
+            --tmpfs /tmp:rw,nosuid,nodev,size=16m \
+            --env IQM_TOKEN=poison --env IBM_QUANTUM_TOKEN=poison \
+            scpn-quantum-control:test \
+            python tools/llm_qpu_baseline_gate.py offline-container-probe
+
       - name: Verify import
         run: docker run --rm scpn-quantum-control:test python -c "import scpn_quantum_control; print(f'v{scpn_quantum_control.__version__}')"
