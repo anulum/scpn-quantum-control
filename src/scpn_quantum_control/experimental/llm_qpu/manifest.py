@@ -23,6 +23,7 @@ _KERNELS = (
 _INVENTORY = (
     "__init__.py",
     "llm_qpu/__init__.py",
+    "llm_qpu/contracts/__init__.py",
     "llm_qpu/manifest.py",
 )
 _WORKER_INVENTORY = ("protocol/worker.py",)
