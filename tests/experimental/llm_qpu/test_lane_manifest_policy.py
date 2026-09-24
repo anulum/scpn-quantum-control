@@ -69,6 +69,49 @@ assert all(value == 'not_implemented' for value in wire['kernel_statuses'].value
     assert result.returncode == 0, result.stderr
 
 
+def test_manifest_import_never_reads_credential_store(tmp_path: Path) -> None:
+    """A fresh isolated import cannot touch a present poisoned vault."""
+    vault = tmp_path / ".config/scpn-quantum-control/credentials.md"
+    vault.parent.mkdir(parents=True)
+    vault.write_text("poisoned test credential\n")
+    script = """
+import sys
+
+def refuse_sensitive_operation(event, args):
+    if event == 'open' and str(args[0]).endswith('credentials.md'):
+        raise AssertionError('credential store read during experimental import')
+    if event.startswith('socket.') or event == 'subprocess.Popen':
+        raise AssertionError('network or subprocess during experimental import')
+
+sys.addaudithook(refuse_sensitive_operation)
+sys.path.insert(0, sys.argv[1])
+from scpn_quantum_control.experimental.llm_qpu.manifest import LANE_MANIFEST
+assert LANE_MANIFEST.hardware_submission_enabled is False
+assert LANE_MANIFEST.claim_promotion_enabled is False
+assert not any(name == 'iqm' or name.startswith('iqm.') for name in sys.modules)
+assert not any(name.startswith('qiskit_ibm_runtime') for name in sys.modules)
+"""
+    env = dict(os.environ)
+    env.update(
+        {
+            "HOME": str(tmp_path),
+            "IQM_TOKEN": "poison",
+            "IBM_QUANTUM_TOKEN": "poison",
+            "PYTHONPATH": str(tmp_path),
+        }
+    )
+    result = subprocess.run(
+        [sys.executable, "-I", "-c", script, str(_REPO_ROOT / "src")],
+        cwd=tmp_path,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+
+
 def test_manifest_inventory_refuses_new_unlisted_module(tmp_path: Path) -> None:
     """The live package inventory passes and a copied unreviewed module fails."""
     assert assert_lane_inventory() == tuple(sorted(LANE_MANIFEST.module_inventory))
