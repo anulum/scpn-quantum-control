@@ -164,7 +164,7 @@ Neither surface establishes analog advantage.
 - IonQ native gate API:
   <https://docs.ionq.com/api-reference/v0.3/native-gates-api>
 - IQM Cirq client device and native-gate guide:
-  <https://docs.meetiqm.com/iqm-client/user_guide_cirq.html>
+  <https://github.com/iqm-finland/sdk/blob/main/docs/4.6/iqm-client/_sources/user_guide_cirq.rst>
 - IBM Qiskit 2 migration guide:
   <https://docs.quantum.ibm.com/migration-guides/qiskit-2.0>
 
