@@ -27,6 +27,7 @@ _TASK_SCHEMA = "scpn.experimental.llm_qpu.task_spec.v2"
 _SPLIT_SCHEMA = "scpn.experimental.llm_qpu.split_manifest.v2"
 _HEADER_SCHEMA = "scpn.experimental.llm_qpu.artifact_header.v1"
 _MODEL_SCHEMA = "scpn.experimental.llm_qpu.model_descriptor.v1"
+_LATENT_SCHEMA = "scpn.experimental.llm_qpu.latent_batch.v1"
 _KEY_FIELDS = {
     "experiment_id",
     "source_sample_id",
@@ -407,6 +408,160 @@ def _roundtrip_model_descriptor(request: dict[str, object]) -> dict[str, object]
     }
 
 
+def _roundtrip_latent_batch(request: dict[str, object]) -> dict[str, object]:
+    if set(request) != {"op", "task", "split", "model", "latent", "tensor_base64"}:
+        raise ValueError("latent request fields mismatch")
+    task = request["task"]
+    split = request["split"]
+    model = request["model"]
+    latent = request["latent"]
+    _roundtrip_task_split({"op": "roundtrip_task_split", "task": task, "split": split})
+    _roundtrip_model_descriptor({"op": "roundtrip_model_descriptor", "model": model})
+    fields = {
+        "schema",
+        "object_kind",
+        "task_digest",
+        "split_digest",
+        "model_digest",
+        "split_name",
+        "layout",
+        "sample_ids",
+        "source_ids",
+        "group_ids",
+        "lengths",
+        "mask",
+        "token_positions",
+        "answer_start_positions",
+        "tap_block_index",
+        "tap_boundary",
+        "tensor",
+        "header",
+    }
+    if type(latent) is not dict or set(latent) != fields:
+        raise ValueError("LatentBatch fields mismatch")
+    if latent["schema"] != _LATENT_SCHEMA or latent["object_kind"] != "latent_batch":
+        raise ValueError("unknown LatentBatch schema")
+    for name, record in (("task", task), ("split", split), ("model", model)):
+        if latent[f"{name}_digest"] != hashlib.sha256(_canonical_bytes(record)).hexdigest():
+            raise ValueError(f"latent {name} digest mismatch")
+    split_name = latent["split_name"]
+    if split_name not in ("train", "dev", "test"):
+        raise ValueError("unknown latent split")
+    layout = latent["layout"]
+    if layout not in ("contextual", "chunk_isolated"):
+        raise ValueError("unknown latent layout")
+    tensor = latent["tensor"]
+    if type(tensor) is not dict or set(tensor) != {
+        "schema",
+        "object_kind",
+        "dtype",
+        "shape",
+        "byte_length",
+        "sha256",
+    }:
+        raise ValueError("latent tensor descriptor fields mismatch")
+    if tensor["schema"] != _ARRAY_SCHEMA or tensor["object_kind"] != "array_descriptor":
+        raise ValueError("unknown latent tensor schema")
+    shape = tensor["shape"]
+    if (
+        tensor["dtype"] != "<f4"
+        or type(shape) is not list
+        or len(shape) != (2 if layout == "contextual" else 3)
+        or any(type(axis) is not int or not 0 < axis <= 1_000_000 for axis in shape)
+    ):
+        raise ValueError("invalid latent tensor dtype or shape")
+    elements = math.prod(shape)
+    if elements > 1_000_000 or tensor["byte_length"] != elements * 4:
+        raise ValueError("latent tensor byte length mismatch")
+    if type(tensor["sha256"]) is not str or _DIGEST.fullmatch(tensor["sha256"]) is None:
+        raise ValueError("invalid latent tensor digest")
+    if model["tensor_dtype"] != "float32" or shape[-1] != model["hidden_width"]:
+        raise ValueError("latent dtype or hidden width mismatch")
+    if (
+        latent["tap_block_index"] != model["tap_block_index"]
+        or latent["tap_boundary"] != model["tap_boundary"]
+    ):
+        raise ValueError("latent tap differs from model descriptor")
+    rows = shape[0]
+    steps = 1 if layout == "contextual" else shape[1]
+    for name in ("sample_ids", "source_ids", "group_ids", "lengths"):
+        values = latent[name]
+        if type(values) is not list or len(values) != rows:
+            raise ValueError("latent row inventory mismatch")
+    if any(
+        type(item) is not str or not item
+        for item in (*latent["sample_ids"], *latent["source_ids"], *latent["group_ids"])
+    ):
+        raise ValueError("invalid latent row ID")
+    if len(set(latent["sample_ids"])) != rows:
+        raise ValueError("duplicate latent sample ID")
+    if any(group not in split[f"{split_name}_groups"] for group in latent["group_ids"]):
+        raise ValueError("latent group outside frozen split")
+    for name in ("mask", "token_positions", "answer_start_positions"):
+        values = latent[name]
+        if (
+            type(values) is not list
+            or len(values) != rows
+            or any(type(row) is not list or len(row) != steps for row in values)
+        ):
+            raise ValueError("latent mask or position shape mismatch")
+    for index, length in enumerate(latent["lengths"]):
+        if type(length) is not int or not 0 < length <= steps:
+            raise ValueError("latent length exceeds tensor steps")
+        if layout == "contextual" and length != 1:
+            raise ValueError("contextual latent length must be one")
+        for step in range(steps):
+            active = latent["mask"][index][step]
+            selected = latent["token_positions"][index][step]
+            answer = latent["answer_start_positions"][index][step]
+            if type(active) is not bool or active != (step < length):
+                raise ValueError("latent mask and length disagree")
+            if not active:
+                if selected is not None or answer is not None:
+                    raise ValueError("latent padding carries token positions")
+            elif (
+                type(selected) is not int
+                or type(answer) is not int
+                or not 0 <= selected < answer <= 1_000_001
+                or selected > task["causal_cutoff"]
+            ):
+                raise ValueError("latent token position reaches answer or causal cutoff")
+    raw = request["tensor_base64"]
+    if type(raw) is not str or len(raw) > 60_000:
+        raise ValueError("invalid latent tensor base64")
+    try:
+        payload = base64.b64decode(raw, validate=True)
+    except (ValueError, binascii.Error) as exc:
+        raise ValueError("invalid latent tensor base64") from exc
+    if (
+        len(payload) != tensor["byte_length"]
+        or hashlib.sha256(payload).hexdigest() != tensor["sha256"]
+    ):
+        raise ValueError("latent tensor payload mismatch")
+    if any(not math.isfinite(value[0]) for value in struct.iter_unpack("<f", payload)):
+        raise ValueError("latent tensor contains nonfinite float")
+    if layout == "chunk_isolated":
+        row_bytes = shape[-1] * 4
+        for index, length in enumerate(latent["lengths"]):
+            for step in range(length, steps):
+                offset = (index * steps + step) * row_bytes
+                if payload[offset : offset + row_bytes] != bytes(row_bytes):
+                    raise ValueError("latent padding must be zero")
+    _validate_artifact_header(
+        latent,
+        (latent["task_digest"], latent["split_digest"], latent["model_digest"], tensor["sha256"]),
+        task["source_kind"],
+    )
+    wire = _canonical_bytes(latent)
+    return {
+        "schema": _SCHEMA,
+        "status": "validated_roundtrip_no_compute",
+        "latent": json.loads(wire),
+        "latent_sha256": hashlib.sha256(wire).hexdigest(),
+        "hardware_submission_enabled": False,
+    }
+
+
 def main() -> int:
     """Read one bounded request and refuse any operation except discovery.
 
@@ -455,6 +610,13 @@ def main() -> int:
             _emit({"schema": _SCHEMA, "status": "refused", "reason": str(exc)})
             return 2
         return 0
+    if type(request) is dict and request.get("op") == "roundtrip_latent_batch":
+        try:
+            _emit(_roundtrip_latent_batch(request))
+        except (ValueError, TypeError, KeyError) as exc:
+            _emit({"schema": _SCHEMA, "status": "refused", "reason": str(exc)})
+            return 2
+        return 0
     if type(request) is not dict or set(request) != {"op"} or request["op"] != "describe":
         _emit({"schema": _SCHEMA, "status": "refused", "reason": "unsupported operation"})
         return 2
@@ -467,6 +629,7 @@ def main() -> int:
                 "roundtrip_contract",
                 "roundtrip_task_split",
                 "roundtrip_model_descriptor",
+                "roundtrip_latent_batch",
             ],
             "hardware_submission_enabled": False,
             "provider_credentials_required": False,
