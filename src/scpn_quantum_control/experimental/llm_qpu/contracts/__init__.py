@@ -586,6 +586,7 @@ class SplitManifest:
             validated = tuple(_text(item, name="source group") for item in group_set)
             if validated != tuple(sorted(validated)) or len(validated) != len(set(validated)):
                 raise ValueError("source groups must be sorted and unique")
+            object.__setattr__(self, name, validated)
             groups.extend(validated)
         if len(groups) != len(set(groups)):
             raise ValueError("source groups overlap across splits")

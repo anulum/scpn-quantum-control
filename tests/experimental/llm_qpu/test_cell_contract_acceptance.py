@@ -269,6 +269,10 @@ def test_w02_task_split_refuses_leakage_and_bad_origin(tmp_path: Path) -> None:
         validate_task_split(task, replace(split, task_digest="c" * 64))
     with pytest.raises(ValueError, match="overlap"):
         replace(split, test_groups=("source-01",))
+    with pytest.raises(ValueError, match="overlap"):
+        replace(split, train_groups=("e\u0301",), test_groups=("é",))
+    normalized = replace(split, train_groups=("e\u0301",))
+    assert normalized.train_groups == ("é",)
     with pytest.raises(ValueError, match="train groups only"):
         replace(split, transform_fit_split="all")
     with pytest.raises(ValueError, match="locked evaluator"):
