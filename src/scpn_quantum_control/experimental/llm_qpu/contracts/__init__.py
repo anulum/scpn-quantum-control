@@ -540,7 +540,7 @@ class ArtifactHeader:
         if self.base_repo_commit == self.implementation_revision:
             raise ValueError("implementation revision must differ from base commit")
         if self.execution_origin != "offline_design":
-            raise ValueError("W02 artifact cannot claim a live execution origin")
+            raise ValueError("design artifact cannot claim a live execution origin")
         if self.data_origin not in (
             "owner_dataset",
             "external_dataset",
@@ -549,7 +549,7 @@ class ArtifactHeader:
         ):
             raise ValueError("unknown artifact data origin")
         if self.claim_scope != "design_only":
-            raise ValueError("W02 artifact cannot claim confirmation")
+            raise ValueError("design artifact cannot claim confirmation")
 
     def to_wire(self) -> dict[str, object]:
         """Return an exact detached provenance header."""
