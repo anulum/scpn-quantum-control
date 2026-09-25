@@ -815,6 +815,6 @@ def test_live_policy_records_latest_remote_debt_baseline() -> None:
         "53eb8316ed0d2bc6f39385c79ba22022f4a7a5f671860c29ad312cff3828d1bf"
     )
     assert policy.baseline_invalidated_paths == ()
-    assert register["summary"]["debt_file_count"] == 92
+    assert register["summary"]["debt_file_count"] == 100
     assert register["summary"]["known_missing_line_count"] == 2893
-    assert register["summary"]["unmeasured_debt_file_count"] == 1
+    assert register["summary"]["unmeasured_debt_file_count"] == 9

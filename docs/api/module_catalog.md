@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **711 modules** across **40 package families**
-- **3977 documented public module-level symbols**
+- **719 modules** across **40 package families**
+- **4002 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2264,6 +2264,84 @@ Quantum measurement entropy sources for the QRNG streaming harness.
 **Functions:** `von_neumann_debias()`
 
 ## `experimental`
+
+### `scpn_quantum_control.experimental.llm_qpu.contracts.cells`
+
+Scientific cell identity, plans, and raw-result completeness.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/contracts/cells.py) · Public symbols: **7**
+
+**Classes:** `CellKey`, `PlannedCell`
+
+**Functions:** `content_id()`, `request_id()`, `run_id()`, `attempt_id()`, `validate_completion()`
+
+### `scpn_quantum_control.experimental.llm_qpu.contracts.compressed`
+
+Radian latent batches and exact frozen-map validation.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/contracts/compressed.py) · Public symbols: **2**
+
+**Classes:** `CompressedLatentBatch`
+
+**Functions:** `validate_compressed_latent_batch()`
+
+### `scpn_quantum_control.experimental.llm_qpu.contracts.compressor`
+
+Train-only fitted LLM latent compressor provenance.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/contracts/compressor.py) · Public symbols: **2**
+
+**Classes:** `CompressorArtifact`
+
+**Functions:** `validate_compressor_artifact()`
+
+### `scpn_quantum_control.experimental.llm_qpu.contracts.latent`
+
+Causal hidden-state batch descriptors and lineage validation.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/contracts/latent.py) · Public symbols: **2**
+
+**Classes:** `LatentBatch`
+
+**Functions:** `validate_latent_batch()`
+
+### `scpn_quantum_control.experimental.llm_qpu.contracts.model`
+
+Frozen model and hidden-state tap identity.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/contracts/model.py) · Public symbols: **1**
+
+**Classes:** `ModelDescriptor`
+
+### `scpn_quantum_control.experimental.llm_qpu.contracts.static`
+
+Static open-chain XY recipe and elementary digital gate list.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/contracts/static.py) · Public symbols: **4**
+
+**Classes:** `ReservoirSpec`, `StaticCircuitPlan`
+
+**Functions:** `build_static_circuit_plan()`, `validate_static_circuit_plan()`
+
+### `scpn_quantum_control.experimental.llm_qpu.contracts.task`
+
+Task and group-safe dataset split contracts.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/contracts/task.py) · Public symbols: **3**
+
+**Classes:** `TaskSpec`, `SplitManifest`
+
+**Functions:** `validate_task_split()`
+
+### `scpn_quantum_control.experimental.llm_qpu.contracts.wire`
+
+Canonical wire, arrays, and artifact provenance for LLM-QPU contracts.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/contracts/wire.py) · Public symbols: **4**
+
+**Classes:** `ArrayDescriptor`, `ArtifactHeader`
+
+**Functions:** `f64()`, `canonical_bytes()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.manifest`
 
