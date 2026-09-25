@@ -34,7 +34,7 @@ class ProviderClient(Protocol):
 
 
 def canonical_request_sha256(circuits: list[object], parameters: object) -> str:
-    """Reconstruct the SDK request and hash the W10 canonical JSON envelope."""
+    """Reconstruct the SDK request and hash its canonical JSON envelope."""
     if not is_dataclass(parameters) or isinstance(parameters, type):
         raise ValueError("provider job parameters are not an IQM dataclass")
     fields = asdict(parameters)
