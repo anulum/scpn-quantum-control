@@ -5,7 +5,7 @@ module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
 - **726 modules** across **40 package families**
-- **4023 documented public module-level symbols**
+- **4025 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2309,11 +2309,11 @@ Causal hidden-state batch descriptors and lineage validation.
 
 Exact common-axis readout plan with explicit classical-bit custody.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/contracts/measurement.py) · Public symbols: **2**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/contracts/measurement.py) · Public symbols: **4**
 
-**Classes:** `MeasurementPlan`
+**Classes:** `MeasurementPlan`, `SampledBasisEstimate`
 
-**Functions:** `build_measurement_plan()`
+**Functions:** `estimate_sampled_basis()`, `build_measurement_plan()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.contracts.model`
 
