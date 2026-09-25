@@ -32,7 +32,7 @@ _BASE = "de259e4837a92ecb09b63c8f4332dbcf3d21021c"
 _REVISION = "0883d1e5204ffe4594bb2f5b6e7b6a5d0a915209"
 
 
-def _model() -> ModelDescriptor:
+def _model(*, quantization: str = "gguf_q6_k") -> ModelDescriptor:
     """Build a design-only schema fixture, never a claim about a loaded model."""
     fields = {
         "model_id": "contract-fixture",
@@ -41,7 +41,7 @@ def _model() -> ModelDescriptor:
         "chat_template_digest": "c" * 64,
         "runtime_build_digest": "d" * 64,
         "loader_id": "local-loader-contract",
-        "quantization": "gguf_q6_k",
+        "quantization": quantization,
         "tensor_dtype": "float32",
         "block_count": 4,
         "hidden_width": 16,
@@ -97,6 +97,17 @@ def test_model_descriptor_standalone_roundtrip(tmp_path: Path) -> None:
     assert payload["hardware_submission_enabled"] is False
     assert payload["model_sha256"] == hashlib.sha256(canonical_bytes(model.to_wire())).hexdigest()
     assert decode_contract(canonical_bytes(payload["model"])) == model
+
+
+def test_q8_checkpoint_descriptor_roundtrips_without_inferred_probe(tmp_path: Path) -> None:
+    model = _model(quantization="gguf_q8_0")
+    response = _worker({"op": "roundtrip_model_descriptor", "model": model.to_wire()}, tmp_path)
+    assert response.returncode == 0, response.stdout.decode()
+    payload = json.loads(response.stdout)
+    assert payload["model"]["quantization"] == "gguf_q8_0"
+    assert payload["model"]["header"]["claim_scope"] == "design_only"
+    with pytest.raises(ValueError, match="quantization"):
+        _model(quantization="gguf_q8_1")
 
 
 def test_model_descriptor_refuses_inferred_width_and_fallback(tmp_path: Path) -> None:

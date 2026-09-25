@@ -804,7 +804,7 @@ class ModelDescriptor:
             "probe_evidence_digest",
         ):
             _digest(getattr(self, name), name=name)
-        if self.quantization not in ("none", "gguf_q6_k", "gguf_q4_k_m"):
+        if self.quantization not in ("none", "gguf_q8_0", "gguf_q6_k", "gguf_q4_k_m"):
             raise ValueError("unknown model quantization")
         if self.tensor_dtype not in ("float16", "float32", "bfloat16"):
             raise ValueError("unknown hidden-state dtype")
