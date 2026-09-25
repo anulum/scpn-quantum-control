@@ -28,7 +28,11 @@ Kuramoto--XY parity leakage
 ## Scientific Purpose
 
 Measure how accurately a backend preserves a simple, symmetry-defined
-observable of a heterogeneous Kuramoto--XY circuit family.
+observable of a heterogeneous Kuramoto--XY circuit family. The ideal
+nearest-neighbour XY circuit conserves excitation-number parity, so its
+parity-survival reference is exactly `1` at every depth. The proposed
+measurement is a symmetry-leakage diagnostic, not a test of full-state
+fidelity or a nontrivial ideal parity-decay curve.
 
 The benchmark targets a concrete NISQ question:
 
@@ -46,7 +50,7 @@ not a quantum-advantage claim.
 | Field | Type | Required | Meaning |
 |---|---:|---:|---|
 | `benchmark_name` | string | yes | Must be `Kuramoto-XY parity leakage`. |
-| `n_qubits` | integer | yes | Number of oscillators/qubits. Initial schema should allow `4`, `6`, and `8`. |
+| `n_qubits` | integer | yes | Number of oscillators/qubits. The locally exercised proposal is `4`; `6` and `8` require separate resource and simulator checks before inclusion. |
 | `depths` | list[int] | yes | Trotter depths to evaluate. |
 | `shots` | integer | yes | Shots per circuit. |
 | `initial_states` | list[string] | yes | Computational-basis states in qubit-0-first convention. |
@@ -61,14 +65,14 @@ For `n` qubits and Trotter depth `d`, prepare each listed initial state
 and apply:
 
 ```text
-H_XY = sum_i omega_i Z_i + sum_<i,j> K_ij (X_i X_j + Y_i Y_j)
+H_XY = sum_i omega_i Z_i + sum_(i,i+1) K_(i,i+1) (X_i X_(i+1) + Y_i Y_(i+1))
 ```
 
 with:
 
 ```text
 omega_i = linspace(0.8, 1.2, n)
-K_ij = 0.45 * exp(-0.3 * |i-j|)
+K_(i,i+1) = 0.45 * exp(-0.3)
 t_step = 0.3
 ```
 
@@ -94,7 +98,7 @@ The proposed score is one minus the clipped mean absolute parity error:
 score = 1 - clip(mean_depth_state(|P_observed - P_exact|) / tolerance, 0, 1)
 ```
 
-Default tolerance:
+Provisional score tolerance, subject to maintainer review:
 
 ```text
 tolerance = 0.05
@@ -166,15 +170,16 @@ This proposed schema must not be used to claim:
 
 ```text
 I would like to propose a Metriq-Gym benchmark for heterogeneous
-Kuramoto--XY parity leakage. The benchmark prepares small n=4--8
-Kuramoto--XY Trotter circuits, measures computational-basis counts, and
-scores a backend by the mean absolute error between observed and exact
-parity-survival curves. The goal is a bounded NISQ fidelity benchmark for
-oscillator-network Hamiltonian simulation, not a quantum-advantage
-claim.
+Kuramoto--XY parity leakage. The first workload prepares fixed n=4
+nearest-neighbour Kuramoto--XY Trotter circuits, measures computational-basis
+counts, and reports the fraction of shots leaving the prepared parity sector.
+The ideal parity-survival reference is exactly one at every depth. The goal
+is a bounded symmetry-leakage diagnostic for this circuit family, not a
+full-state fidelity or quantum-advantage claim.
 
-The benchmark has committed reference implementation and public raw-count
-artefacts in scpn-quantum-control, but the proposed Metriq schema should
-be standalone and should report raw counts, exact references, depth,
-two-qubit gates, backend metadata, and SHA-256 payload hashes.
+The related scpn-quantum-control campaign has committed n=4 exact-reference
+code and public hardware raw-count artefacts. A standalone Metriq-Gym
+implementation and accepted schema do not yet exist. Such an implementation
+should report raw counts, exact references, depth, two-qubit gates, backend
+metadata, and SHA-256 payload hashes.
 ```
