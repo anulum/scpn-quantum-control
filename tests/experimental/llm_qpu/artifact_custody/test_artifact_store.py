@@ -10,9 +10,8 @@
 from __future__ import annotations
 
 import hashlib
+import os
 import struct
-import subprocess
-import sys
 from pathlib import Path
 
 import pytest
@@ -53,39 +52,29 @@ def test_t03a_conflicting_disk_bytes_are_quarantined_without_overwrite(tmp_path:
         store.get(record.sha256)
 
 
-@pytest.mark.skipif(sys.platform != "linux", reason="requires Linux RLIMIT_FSIZE")
-def test_t03b_interrupted_write_leaves_no_valid_partial(tmp_path: Path) -> None:
-    """A real kernel file-size limit leaves no admitted partial object."""
+def test_t03b_interrupted_write_leaves_no_valid_partial(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A partial filesystem write followed by disk failure admits no object."""
     root = tmp_path / "private"
     store = ArtifactStore(root)
     payload = b"x" * 8192
     digest = hashlib.sha256(payload).hexdigest()
-    code = """
-import resource
-import signal
-import sys
-import traceback
-from pathlib import Path
-from scpn_quantum_control.experimental.llm_qpu.data.artifact_store import ArtifactStore
-store = ArtifactStore(Path(sys.argv[1]))
-signal.signal(signal.SIGXFSZ, signal.SIG_IGN)
-soft, hard = resource.getrlimit(resource.RLIMIT_FSIZE)
-resource.setrlimit(resource.RLIMIT_FSIZE, (4096, hard))
-try:
-    store.put(b'x' * 8192, kind='evidence', retention='pinned', egress='private_derived')
-except OSError:
-    sys.stderr.write(traceback.format_exc())
-    sys.exit(0)
-sys.exit(1)
-"""
-    result = subprocess.run(
-        [sys.executable, "-c", code, str(root)],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    assert result.returncode == 0, result.stderr
-    assert "written = os.write" in result.stderr
+    original_write = os.write
+    writes = 0
+
+    def fail_after_partial_write(descriptor: int, chunk: bytes | memoryview) -> int:
+        nonlocal writes
+        writes += 1
+        if writes == 1:
+            return original_write(descriptor, chunk[:1024])
+        raise OSError("simulated disk full after partial write")
+
+    with monkeypatch.context() as patch:
+        patch.setattr(os, "write", fail_after_partial_write)
+        with pytest.raises(OSError, match="simulated disk full"):
+            store.put(payload, kind="evidence", retention="pinned", egress="private_derived")
+    assert writes == 2
     with pytest.raises(MissingArtifactError):
         store.get(digest)
     assert list(store.objects.rglob("*")) == [store.objects / digest[:2]]

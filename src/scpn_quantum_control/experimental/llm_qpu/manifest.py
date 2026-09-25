@@ -33,6 +33,12 @@ _INVENTORY = (
     "llm_qpu/contracts/static.py",
     "llm_qpu/contracts/task.py",
     "llm_qpu/contracts/wire.py",
+    "llm_qpu/data/artifact_store.py",
+    "llm_qpu/data/cache.py",
+    "llm_qpu/data/dedup.py",
+    "llm_qpu/data/lineage.py",
+    "llm_qpu/data/splits.py",
+    "llm_qpu/data/tasks.py",
     "llm_qpu/manifest.py",
 )
 _WORKER_INVENTORY = ("protocol/worker.py",)
