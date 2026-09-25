@@ -42,6 +42,7 @@ _INVENTORY = (
     "llm_qpu/manifest.py",
     "llm_qpu/runtime/__init__.py",
     "llm_qpu/runtime/attempt_journal.py",
+    "llm_qpu/runtime/provider_recovery.py",
 )
 _WORKER_INVENTORY = ("protocol/worker.py",)
 _WRITE_ROOTS = (

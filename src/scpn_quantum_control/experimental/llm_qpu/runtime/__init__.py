@@ -8,5 +8,6 @@
 """Private attempt state for the opt-in LLM-QPU lane."""
 
 from .attempt_journal import AttemptJournal, JobPlan, JournalStateError
+from .provider_recovery import recover_existing_job
 
-__all__ = ("AttemptJournal", "JobPlan", "JournalStateError")
+__all__ = ("AttemptJournal", "JobPlan", "JournalStateError", "recover_existing_job")

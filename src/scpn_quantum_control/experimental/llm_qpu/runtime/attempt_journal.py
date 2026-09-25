@@ -42,6 +42,7 @@ class JobPlan:
         Number of circuits in the request.
     shots_per_circuit
         Uniform shots value required by IQM's request envelope.
+
     """
 
     name: str
@@ -50,6 +51,7 @@ class JobPlan:
     shots_per_circuit: int
 
     def __post_init__(self) -> None:
+        """Refuse malformed phase names, digests and request dimensions."""
         if not isinstance(self.name, str) or not re.fullmatch(r"[a-z][a-z0-9_]{1,63}", self.name):
             raise ValueError("invalid provider job phase name")
         if (
@@ -279,6 +281,28 @@ class AttemptJournal:
             row = self._job(database, attempt_id, ordinal)
             if row["state"] != "submitting":
                 raise JournalStateError("provider job ID needs an active submitting boundary")
+            database.execute(
+                "UPDATE jobs SET state='submitted',provider_job_id=?,updated_at=? WHERE attempt_id=? AND ordinal=?",
+                (provider_job_id, _utc_now(), attempt_id, ordinal),
+            )
+
+    def record_recovered(
+        self,
+        attempt_id: str,
+        ordinal: int,
+        provider_job_id: str,
+        observed_payload_sha256: str,
+    ) -> None:
+        """Bind an ambiguous call only after read-only provider payload proof."""
+        _uuid(attempt_id)
+        _uuid(provider_job_id)
+        _digest(observed_payload_sha256)
+        with self._transaction() as database:
+            row = self._job(database, attempt_id, ordinal)
+            if row["state"] not in {"submitting", "recovery_required"}:
+                raise JournalStateError("recovery needs an uncertain submit boundary")
+            if row["payload_sha256"] != observed_payload_sha256:
+                raise JournalStateError("provider job payload differs from prepared request")
             database.execute(
                 "UPDATE jobs SET state='submitted',provider_job_id=?,updated_at=? WHERE attempt_id=? AND ordinal=?",
                 (provider_job_id, _utc_now(), attempt_id, ordinal),

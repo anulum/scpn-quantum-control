@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 841,
     "public_documentation_pages": 377,
-    "python_model_classes": 1428,
-    "python_model_source_modules": 727,
+    "python_model_classes": 1430,
+    "python_model_source_modules": 728,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1408
+    "test_files": 1409
   },
   "documentation": {
     "examples": [
@@ -673,7 +673,7 @@
       {
         "package": "experimental",
         "path": "src/scpn_quantum_control/experimental",
-        "python_modules": 17
+        "python_modules": 18
       },
       {
         "package": "fep",
@@ -4919,6 +4919,10 @@
         "path": "src/scpn_quantum_control/hardware/provider_certification.py"
       },
       {
+        "name": "ProviderClient",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/runtime/provider_recovery.py"
+      },
+      {
         "name": "ProviderExpectationSample",
         "path": "src/scpn_quantum_control/phase/provider_gradient.py"
       },
@@ -4953,6 +4957,10 @@
       {
         "name": "ProviderHardwareGradientPreparationScenario",
         "path": "src/scpn_quantum_control/phase/provider_hardware_gradient_audit.py"
+      },
+      {
+        "name": "ProviderJob",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/runtime/provider_recovery.py"
       },
       {
         "name": "ProviderOptionalDependencyRow",
@@ -6818,6 +6826,7 @@
       "src/scpn_quantum_control/experimental/llm_qpu/data/tasks.py",
       "src/scpn_quantum_control/experimental/llm_qpu/manifest.py",
       "src/scpn_quantum_control/experimental/llm_qpu/runtime/attempt_journal.py",
+      "src/scpn_quantum_control/experimental/llm_qpu/runtime/provider_recovery.py",
       "src/scpn_quantum_control/fault_tolerant_resource_product.py",
       "src/scpn_quantum_control/fep/predictive_coding.py",
       "src/scpn_quantum_control/fep/variational_free_energy.py",
@@ -8421,6 +8430,7 @@
       "tests/experimental/llm_qpu/artifact_custody/test_artifact_store.py",
       "tests/experimental/llm_qpu/artifact_custody/test_lineage_cache.py",
       "tests/experimental/llm_qpu/attempt_journal/test_attempt_journal.py",
+      "tests/experimental/llm_qpu/attempt_journal/test_provider_recovery.py",
       "tests/experimental/llm_qpu/memory_task/test_memory_task.py",
       "tests/experimental/llm_qpu/test_baseline_evidence_policy.py",
       "tests/experimental/llm_qpu/test_cell_contract_acceptance.py",

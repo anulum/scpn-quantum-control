@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **727 modules** across **40 package families**
-- **4028 documented public module-level symbols**
+- **728 modules** across **40 package families**
+- **4032 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2424,6 +2424,16 @@ Write-ahead job states; no provider connection or submission lives here.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/runtime/attempt_journal.py) · Public symbols: **3**
 
 **Classes:** `JournalStateError`, `JobPlan`, `AttemptJournal`
+
+### `scpn_quantum_control.experimental.llm_qpu.runtime.provider_recovery`
+
+Bind an ambiguous IQM job only after retrieving its exact provider payload.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/runtime/provider_recovery.py) · Public symbols: **4**
+
+**Classes:** `ProviderJob`, `ProviderClient`
+
+**Functions:** `canonical_request_sha256()`, `recover_existing_job()`
 
 ## `fep`
 
