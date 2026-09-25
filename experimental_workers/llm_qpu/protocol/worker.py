@@ -26,6 +26,7 @@ _ARRAY_SCHEMA = "scpn.experimental.llm_qpu.array_descriptor.v1"
 _TASK_SCHEMA = "scpn.experimental.llm_qpu.task_spec.v2"
 _SPLIT_SCHEMA = "scpn.experimental.llm_qpu.split_manifest.v2"
 _HEADER_SCHEMA = "scpn.experimental.llm_qpu.artifact_header.v1"
+_MODEL_SCHEMA = "scpn.experimental.llm_qpu.model_descriptor.v1"
 _KEY_FIELDS = {
     "experiment_id",
     "source_sample_id",
@@ -251,6 +252,7 @@ def _roundtrip_task_split(request: dict[str, object]) -> dict[str, object]:
         "group_definition",
         "header",
     }
+
     split_fields = {
         "schema",
         "object_kind",
@@ -330,6 +332,81 @@ def _roundtrip_task_split(request: dict[str, object]) -> dict[str, object]:
     }
 
 
+def _roundtrip_model_descriptor(request: dict[str, object]) -> dict[str, object]:
+    if set(request) != {"op", "model"}:
+        raise ValueError("model request fields mismatch")
+    model = request["model"]
+    fields = {
+        "schema",
+        "object_kind",
+        "model_id",
+        "checkpoint_digest",
+        "tokenizer_digest",
+        "chat_template_digest",
+        "runtime_build_digest",
+        "loader_id",
+        "quantization",
+        "tensor_dtype",
+        "block_count",
+        "hidden_width",
+        "tap_block_index",
+        "tap_stream",
+        "tap_boundary",
+        "probe_evidence_digest",
+        "header",
+    }
+    if type(model) is not dict or set(model) != fields:
+        raise ValueError("ModelDescriptor fields mismatch")
+    if model["schema"] != _MODEL_SCHEMA or model["object_kind"] != "model_descriptor":
+        raise ValueError("unknown ModelDescriptor schema")
+    for name in (
+        "checkpoint_digest",
+        "tokenizer_digest",
+        "chat_template_digest",
+        "runtime_build_digest",
+        "probe_evidence_digest",
+    ):
+        value = model[name]
+        if type(value) is not str or _DIGEST.fullmatch(value) is None:
+            raise ValueError("invalid model identity digest")
+    if model["quantization"] not in ("none", "gguf_q6_k", "gguf_q4_k_m"):
+        raise ValueError("unknown model quantization")
+    if model["tensor_dtype"] not in ("float16", "float32", "bfloat16"):
+        raise ValueError("unknown hidden-state dtype")
+    blocks = model["block_count"]
+    width = model["hidden_width"]
+    index = model["tap_block_index"]
+    if type(blocks) is not int or not 0 < blocks <= 1024:
+        raise ValueError("invalid model block count")
+    if type(width) is not int or not 0 < width <= 65_536:
+        raise ValueError("invalid observed hidden width")
+    if type(index) is not int or not 0 <= index < blocks:
+        raise ValueError("invalid tap block index")
+    if model["tap_stream"] != "residual_hidden_state":
+        raise ValueError("completion or embedding fallback forbidden")
+    if model["tap_boundary"] not in ("before_norm", "after_norm"):
+        raise ValueError("tap boundary missing")
+    parents = tuple(
+        model[name]
+        for name in (
+            "checkpoint_digest",
+            "tokenizer_digest",
+            "chat_template_digest",
+            "runtime_build_digest",
+            "probe_evidence_digest",
+        )
+    )
+    _validate_artifact_header(model, parents, "owner_checkpoint")
+    wire = _canonical_bytes(model)
+    return {
+        "schema": _SCHEMA,
+        "status": "validated_roundtrip_no_compute",
+        "model": json.loads(wire),
+        "model_sha256": hashlib.sha256(wire).hexdigest(),
+        "hardware_submission_enabled": False,
+    }
+
+
 def main() -> int:
     """Read one bounded request and refuse any operation except discovery.
 
@@ -371,6 +448,13 @@ def main() -> int:
             _emit({"schema": _SCHEMA, "status": "refused", "reason": str(exc)})
             return 2
         return 0
+    if type(request) is dict and request.get("op") == "roundtrip_model_descriptor":
+        try:
+            _emit(_roundtrip_model_descriptor(request))
+        except (ValueError, TypeError, KeyError) as exc:
+            _emit({"schema": _SCHEMA, "status": "refused", "reason": str(exc)})
+            return 2
+        return 0
     if type(request) is not dict or set(request) != {"op"} or request["op"] != "describe":
         _emit({"schema": _SCHEMA, "status": "refused", "reason": "unsupported operation"})
         return 2
@@ -378,7 +462,12 @@ def main() -> int:
         {
             "schema": _SCHEMA,
             "status": "experimental_no_compute",
-            "supported_operations": ["describe", "roundtrip_contract", "roundtrip_task_split"],
+            "supported_operations": [
+                "describe",
+                "roundtrip_contract",
+                "roundtrip_task_split",
+                "roundtrip_model_descriptor",
+            ],
             "hardware_submission_enabled": False,
             "provider_credentials_required": False,
         }
