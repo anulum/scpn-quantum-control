@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 841,
     "public_documentation_pages": 377,
-    "python_model_classes": 1425,
-    "python_model_source_modules": 726,
+    "python_model_classes": 1428,
+    "python_model_source_modules": 727,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1407
+    "test_files": 1408
   },
   "documentation": {
     "examples": [
@@ -673,7 +673,7 @@
       {
         "package": "experimental",
         "path": "src/scpn_quantum_control/experimental",
-        "python_modules": 16
+        "python_modules": 17
       },
       {
         "package": "fep",
@@ -1053,6 +1053,10 @@
       {
         "name": "AsyncJobHandle",
         "path": "src/scpn_quantum_control/hardware/async_runner.py"
+      },
+      {
+        "name": "AttemptJournal",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/runtime/attempt_journal.py"
       },
       {
         "name": "AttestationVerdict",
@@ -3059,6 +3063,10 @@
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
+        "name": "JobPlan",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/runtime/attempt_journal.py"
+      },
+      {
         "name": "JobResult",
         "path": "src/scpn_quantum_control/hardware/runner.py"
       },
@@ -3081,6 +3089,10 @@
       {
         "name": "JosephsonMagnitudeStudyDesign",
         "path": "src/scpn_quantum_control/applications/josephson_magnitude_study.py"
+      },
+      {
+        "name": "JournalStateError",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/runtime/attempt_journal.py"
       },
       {
         "name": "KernelEvaluation",
@@ -6805,6 +6817,7 @@
       "src/scpn_quantum_control/experimental/llm_qpu/data/splits.py",
       "src/scpn_quantum_control/experimental/llm_qpu/data/tasks.py",
       "src/scpn_quantum_control/experimental/llm_qpu/manifest.py",
+      "src/scpn_quantum_control/experimental/llm_qpu/runtime/attempt_journal.py",
       "src/scpn_quantum_control/fault_tolerant_resource_product.py",
       "src/scpn_quantum_control/fep/predictive_coding.py",
       "src/scpn_quantum_control/fep/variational_free_energy.py",
@@ -8407,6 +8420,7 @@
       "tests/conftest.py",
       "tests/experimental/llm_qpu/artifact_custody/test_artifact_store.py",
       "tests/experimental/llm_qpu/artifact_custody/test_lineage_cache.py",
+      "tests/experimental/llm_qpu/attempt_journal/test_attempt_journal.py",
       "tests/experimental/llm_qpu/memory_task/test_memory_task.py",
       "tests/experimental/llm_qpu/test_baseline_evidence_policy.py",
       "tests/experimental/llm_qpu/test_cell_contract_acceptance.py",

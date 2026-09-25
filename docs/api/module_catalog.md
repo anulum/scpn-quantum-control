@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **726 modules** across **40 package families**
-- **4025 documented public module-level symbols**
+- **727 modules** across **40 package families**
+- **4028 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2416,6 +2416,14 @@ Inventory and refusal boundary for the opt-in LLM-QPU research lane.
 **Classes:** `LaneManifest`
 
 **Functions:** `assert_lane_inventory()`, `assert_worker_inventory()`
+
+### `scpn_quantum_control.experimental.llm_qpu.runtime.attempt_journal`
+
+Write-ahead job states; no provider connection or submission lives here.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/runtime/attempt_journal.py) · Public symbols: **3**
+
+**Classes:** `JournalStateError`, `JobPlan`, `AttemptJournal`
 
 ## `fep`
 
