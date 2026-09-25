@@ -12,7 +12,8 @@ from __future__ import annotations
 import hashlib
 from dataclasses import dataclass
 
-from ..contracts import canonical_bytes
+from ..contracts import ArtifactHeader, TaskSpec, canonical_bytes
+from ..contracts.wire import TASK_SCHEMA
 
 _COLORS = ("amber", "blue", "copper", "jade")
 _TEMPLATES = (
@@ -102,3 +103,41 @@ def generate_memory_records(*, seed: int, source_count: int = 128) -> tuple[Memo
                 )
             )
     return tuple(records)
+
+
+def build_memory_task(*, base_repo_commit: str, implementation_revision: str) -> TaskSpec:
+    """Freeze the independent-label objective before model or QPU execution."""
+    label_schema_digest = hashlib.sha256(canonical_bytes(list(_COLORS))).hexdigest()
+    content = {
+        "schema": TASK_SCHEMA,
+        "object_kind": "task_spec",
+        "task_id": "synthetic-four-card-recall-v1",
+        "objective": "Recall the color paired with a queried card in the prefix table",
+        "source_kind": "synthetic_classical",
+        "target_origin": "classical_generator",
+        "label_schema_digest": label_schema_digest,
+        "causal_cutoff": 256,
+        "primary_metric": "balanced_accuracy",
+        "group_definition": "One generated four-card table and its paraphrases per source group",
+    }
+    header = ArtifactHeader(
+        object_kind="task_spec",
+        content_digest=hashlib.sha256(canonical_bytes(content)).hexdigest(),
+        parents=(label_schema_digest,),
+        base_repo_commit=base_repo_commit,
+        implementation_revision=implementation_revision,
+        execution_origin="offline_design",
+        data_origin="synthetic_classical",
+        claim_scope="design_only",
+    )
+    return TaskSpec(
+        task_id="synthetic-four-card-recall-v1",
+        objective="Recall the color paired with a queried card in the prefix table",
+        source_kind="synthetic_classical",
+        target_origin="classical_generator",
+        label_schema_digest=label_schema_digest,
+        causal_cutoff=256,
+        primary_metric="balanced_accuracy",
+        group_definition="One generated four-card table and its paraphrases per source group",
+        header=header,
+    )

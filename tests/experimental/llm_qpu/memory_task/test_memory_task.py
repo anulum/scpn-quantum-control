@@ -9,53 +9,22 @@
 
 from __future__ import annotations
 
-import hashlib
 from dataclasses import replace
 
 import pytest
 
-from scpn_quantum_control.experimental.llm_qpu.contracts import (
-    ArtifactHeader,
-    TaskSpec,
-    canonical_bytes,
-)
-from scpn_quantum_control.experimental.llm_qpu.contracts.wire import TASK_SCHEMA
 from scpn_quantum_control.experimental.llm_qpu.data.dedup import validate_source_families
 from scpn_quantum_control.experimental.llm_qpu.data.splits import (
     build_memory_split,
     pilot_inputs,
 )
-from scpn_quantum_control.experimental.llm_qpu.data.tasks import generate_memory_records
+from scpn_quantum_control.experimental.llm_qpu.data.tasks import (
+    build_memory_task,
+    generate_memory_records,
+)
 
 _BASE = "a" * 40
 _REVISION = "b" * 40
-
-
-def _task() -> TaskSpec:
-    fields = {
-        "task_id": "synthetic-four-card-recall-v1",
-        "objective": "Recall the color paired with a queried card in the prefix table",
-        "source_kind": "synthetic_classical",
-        "target_origin": "classical_generator",
-        "label_schema_digest": hashlib.sha256(
-            canonical_bytes(["amber", "blue", "copper", "jade"])
-        ).hexdigest(),
-        "causal_cutoff": 256,
-        "primary_metric": "balanced_accuracy",
-        "group_definition": "One generated four-card table and its paraphrases per source group",
-    }
-    content = {"schema": TASK_SCHEMA, "object_kind": "task_spec", **fields}
-    header = ArtifactHeader(
-        object_kind="task_spec",
-        content_digest=hashlib.sha256(canonical_bytes(content)).hexdigest(),
-        parents=(fields["label_schema_digest"],),
-        base_repo_commit=_BASE,
-        implementation_revision=_REVISION,
-        execution_origin="offline_design",
-        data_origin="synthetic_classical",
-        claim_scope="design_only",
-    )
-    return TaskSpec(**fields, header=header)
 
 
 def test_t04a_paraphrases_cannot_cross_source_groups() -> None:
@@ -88,7 +57,7 @@ def test_t04c_deterministic_group_split_and_answer_free_pilot() -> None:
     records = generate_memory_records(seed=73)
     assert records == generate_memory_records(seed=73)
     split = build_memory_split(
-        _task(),
+        build_memory_task(base_repo_commit=_BASE, implementation_revision=_REVISION),
         records,
         seed=31,
         generation_seed=73,
@@ -101,7 +70,7 @@ def test_t04c_deterministic_group_split_and_answer_free_pilot() -> None:
     assert len(split.train_groups) == 64
     assert len(split.dev_groups) == len(split.test_groups) == 32
     assert split == build_memory_split(
-        _task(),
+        build_memory_task(base_repo_commit=_BASE, implementation_revision=_REVISION),
         records,
         seed=31,
         generation_seed=73,
@@ -137,7 +106,7 @@ def test_t04e_wrong_classical_label_fails_generator_binding() -> None:
     changed = (replace(records[0], target_text=replacement), *records[1:])
     with pytest.raises(ValueError, match="differ from independent"):
         build_memory_split(
-            _task(),
+            build_memory_task(base_repo_commit=_BASE, implementation_revision=_REVISION),
             changed,
             seed=31,
             generation_seed=73,

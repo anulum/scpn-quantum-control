@@ -5,7 +5,7 @@ module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
 - **726 modules** across **40 package families**
-- **4022 documented public module-level symbols**
+- **4023 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2401,11 +2401,11 @@ Freeze synthetic memory group splits and answer-free pilot inputs.
 
 Generate deterministic associative text prompts without quantum labels.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/tasks.py) · Public symbols: **2**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/tasks.py) · Public symbols: **3**
 
 **Classes:** `MemoryRecord`
 
-**Functions:** `generate_memory_records()`
+**Functions:** `generate_memory_records()`, `build_memory_task()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.manifest`
 
