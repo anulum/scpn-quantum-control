@@ -370,7 +370,7 @@ def _roundtrip_model_descriptor(request: dict[str, object]) -> dict[str, object]
         value = model[name]
         if type(value) is not str or _DIGEST.fullmatch(value) is None:
             raise ValueError("invalid model identity digest")
-    if model["quantization"] not in ("none", "gguf_q6_k", "gguf_q4_k_m"):
+    if model["quantization"] not in ("none", "gguf_q8_0", "gguf_q6_k", "gguf_q4_k_m"):
         raise ValueError("unknown model quantization")
     if model["tensor_dtype"] not in ("float16", "float32", "bfloat16"):
         raise ValueError("unknown hidden-state dtype")

@@ -298,8 +298,29 @@ def test_latent_batch_refuses_leakage_and_bad_payload(tmp_path: Path) -> None:
         replace(batch, mask=((True, False, False), (True, False, False)))
     with pytest.raises(ValueError, match="reaches answer"):
         replace(batch, token_positions=((2, 1, None), (0, None, None)))
-    with pytest.raises(ValueError, match="digest mismatch"):
-        replace(batch, model_digest="9" * 64)
+    changed_model_digest = "9" * 64
+    with pytest.raises(ValueError, match="latent model digest mismatch"):
+        validate_latent_batch(
+            task,
+            split,
+            model,
+            replace(
+                batch,
+                model_digest=changed_model_digest,
+                header=_header(
+                    "latent_batch",
+                    {**batch._scientific_wire(), "model_digest": changed_model_digest},
+                    (
+                        batch.task_digest,
+                        batch.split_digest,
+                        changed_model_digest,
+                        batch.tensor.sha256,
+                    ),
+                    "synthetic_classical",
+                ),
+            ),
+            payload,
+        )
     with pytest.raises(ValueError, match="group outside"):
         validate_latent_batch(
             task,
