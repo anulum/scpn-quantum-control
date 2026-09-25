@@ -13,7 +13,7 @@
     "python_model_source_modules": 711,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1400
+    "test_files": 1401
   },
   "documentation": {
     "examples": [
@@ -8297,6 +8297,7 @@
       "tests/experimental/llm_qpu/test_baseline_evidence_policy.py",
       "tests/experimental/llm_qpu/test_cell_contract_acceptance.py",
       "tests/experimental/llm_qpu/test_lane_manifest_policy.py",
+      "tests/experimental/llm_qpu/test_latent_batch_contract.py",
       "tests/experimental/llm_qpu/test_model_descriptor_contract.py",
       "tests/test_accelerator_detection_boundaries.py",
       "tests/test_active_queue_status_assertions.py",
