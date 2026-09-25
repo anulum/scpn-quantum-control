@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 841,
     "public_documentation_pages": 377,
-    "python_model_classes": 1401,
-    "python_model_source_modules": 711,
+    "python_model_classes": 1413,
+    "python_model_source_modules": 719,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1402
+    "test_files": 1403
   },
   "documentation": {
     "examples": [
@@ -673,7 +673,7 @@
       {
         "package": "experimental",
         "path": "src/scpn_quantum_control/experimental",
-        "python_modules": 1
+        "python_modules": 9
       },
       {
         "package": "fep",
@@ -1023,6 +1023,14 @@
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
+        "name": "ArrayDescriptor",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/wire.py"
+      },
+      {
+        "name": "ArtifactHeader",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/wire.py"
+      },
+      {
         "name": "ArtifactVerification",
         "path": "src/scpn_quantum_control/neural_operator_baseline_product.py"
       },
@@ -1225,6 +1233,10 @@
       {
         "name": "CatalystCompilerWorkflowComparison",
         "path": "src/scpn_quantum_control/benchmarks/differentiable_catalyst_comparison.py"
+      },
+      {
+        "name": "CellKey",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/cells.py"
       },
       {
         "name": "CertificateVerifyDecision",
@@ -1469,6 +1481,14 @@
       {
         "name": "CompoundMitigationResult",
         "path": "src/scpn_quantum_control/mitigation/compound_mitigation.py"
+      },
+      {
+        "name": "CompressedLatentBatch",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/compressed.py"
+      },
+      {
+        "name": "CompressorArtifact",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/compressor.py"
       },
       {
         "name": "ComputePlanDecision",
@@ -3155,6 +3175,10 @@
         "path": "src/scpn_quantum_control/codesign/policies.py"
       },
       {
+        "name": "LatentBatch",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/latent.py"
+      },
+      {
         "name": "LatticeCalibration",
         "path": "src/scpn_quantum_control/hardware/iqm_lattice_calibration.py"
       },
@@ -3473,6 +3497,10 @@
       {
         "name": "ModalityQualification",
         "path": "src/scpn_quantum_control/semantic_operations.py"
+      },
+      {
+        "name": "ModelDescriptor",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/model.py"
       },
       {
         "name": "ModelFamily",
@@ -4619,6 +4647,10 @@
         "path": "src/scpn_quantum_control/phase/cross_domain_transfer.py"
       },
       {
+        "name": "PlannedCell",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/cells.py"
+      },
+      {
         "name": "PlaquetteResult",
         "path": "src/scpn_quantum_control/psi_field/lattice.py"
       },
@@ -5471,6 +5503,10 @@
         "path": "src/scpn_quantum_control/applications/quantum_reservoir.py"
       },
       {
+        "name": "ReservoirSpec",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/static.py"
+      },
+      {
         "name": "ReservoirTaskKind",
         "path": "src/scpn_quantum_control/applications/quantum_reservoir_product.py"
       },
@@ -5747,6 +5783,10 @@
         "path": "src/scpn_quantum_control/analysis/fim_hamiltonian.py"
       },
       {
+        "name": "SplitManifest",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/task.py"
+      },
+      {
         "name": "SsgfGeometryObserverRecord",
         "path": "src/scpn_quantum_control/ssgf_geometry_gradient_product.py"
       },
@@ -5777,6 +5817,10 @@
       {
         "name": "StateEstimatorPort",
         "path": "src/scpn_quantum_control/codesign/contracts.py"
+      },
+      {
+        "name": "StaticCircuitPlan",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/static.py"
       },
       {
         "name": "StatisticalSummary",
@@ -6005,6 +6049,10 @@
       {
         "name": "TapeGradientRecord",
         "path": "src/scpn_quantum_control/phase/gradient_tape.py"
+      },
+      {
+        "name": "TaskSpec",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/task.py"
       },
       {
         "name": "TheoryHookEvidenceRecord",
@@ -6693,6 +6741,14 @@
       "src/scpn_quantum_control/entropy/quantum_source.py",
       "src/scpn_quantum_control/error_mitigation_product.py",
       "src/scpn_quantum_control/execution_surface.py",
+      "src/scpn_quantum_control/experimental/llm_qpu/contracts/cells.py",
+      "src/scpn_quantum_control/experimental/llm_qpu/contracts/compressed.py",
+      "src/scpn_quantum_control/experimental/llm_qpu/contracts/compressor.py",
+      "src/scpn_quantum_control/experimental/llm_qpu/contracts/latent.py",
+      "src/scpn_quantum_control/experimental/llm_qpu/contracts/model.py",
+      "src/scpn_quantum_control/experimental/llm_qpu/contracts/static.py",
+      "src/scpn_quantum_control/experimental/llm_qpu/contracts/task.py",
+      "src/scpn_quantum_control/experimental/llm_qpu/contracts/wire.py",
       "src/scpn_quantum_control/experimental/llm_qpu/manifest.py",
       "src/scpn_quantum_control/fault_tolerant_resource_product.py",
       "src/scpn_quantum_control/fep/predictive_coding.py",
@@ -8300,6 +8356,7 @@
       "tests/experimental/llm_qpu/test_lane_manifest_policy.py",
       "tests/experimental/llm_qpu/test_latent_batch_contract.py",
       "tests/experimental/llm_qpu/test_model_descriptor_contract.py",
+      "tests/experimental/llm_qpu/test_static_circuit_plan_contract.py",
       "tests/test_accelerator_detection_boundaries.py",
       "tests/test_active_queue_status_assertions.py",
       "tests/test_active_sensing_product.py",

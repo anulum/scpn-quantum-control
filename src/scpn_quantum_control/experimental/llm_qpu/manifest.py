@@ -24,6 +24,14 @@ _INVENTORY = (
     "__init__.py",
     "llm_qpu/__init__.py",
     "llm_qpu/contracts/__init__.py",
+    "llm_qpu/contracts/cells.py",
+    "llm_qpu/contracts/compressed.py",
+    "llm_qpu/contracts/compressor.py",
+    "llm_qpu/contracts/latent.py",
+    "llm_qpu/contracts/model.py",
+    "llm_qpu/contracts/static.py",
+    "llm_qpu/contracts/task.py",
+    "llm_qpu/contracts/wire.py",
     "llm_qpu/manifest.py",
 )
 _WORKER_INVENTORY = ("protocol/worker.py",)
@@ -143,7 +151,7 @@ LANE_MANIFEST = LaneManifest(
     claim_promotion_enabled=False,
     non_claims=(
         "No LLM hidden-state extraction is implemented.",
-        "No quantum kernel or provider worker is implemented.",
+        "Static gate planning exists; no complete quantum kernel or provider worker is implemented.",
         "No QPU job or scientific advantage follows from this manifest.",
     ),
 )
