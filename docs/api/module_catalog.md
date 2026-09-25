@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **720 modules** across **40 package families**
-- **4004 documented public module-level symbols**
+- **723 modules** across **40 package families**
+- **4015 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2352,6 +2352,32 @@ Canonical wire, arrays, and artifact provenance for LLM-QPU contracts.
 **Classes:** `ArrayDescriptor`, `ArtifactHeader`
 
 **Functions:** `f64()`, `canonical_bytes()`
+
+### `scpn_quantum_control.experimental.llm_qpu.data.artifact_store`
+
+Bounded immutable CAS for private LLM-QPU shards and manifests.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/artifact_store.py) · Public symbols: **4**
+
+**Classes:** `MissingArtifactError`, `CorruptArtifactError`, `ArtifactRecord`, `ArtifactStore`
+
+### `scpn_quantum_control.experimental.llm_qpu.data.cache`
+
+Fail-closed cache references across model, compressor, and SDK revisions.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/cache.py) · Public symbols: **3**
+
+**Classes:** `StaleCacheError`, `CacheKey`, `ArtifactCache`
+
+### `scpn_quantum_control.experimental.llm_qpu.data.lineage`
+
+Immutable latent-shard manifests with explicit incomplete-evidence states.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/lineage.py) · Public symbols: **4**
+
+**Classes:** `ShardRef`, `ShardManifest`
+
+**Functions:** `publish_manifest()`, `load_manifest()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.manifest`
 
