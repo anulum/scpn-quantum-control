@@ -23,8 +23,9 @@ _MAX_REQUEST_BYTES = 65_536
 _SCHEMA = "scpn.experimental.llm_qpu.worker_boundary.v1"
 _CELL_SCHEMA = "scpn.experimental.llm_qpu.planned_cell.v1"
 _ARRAY_SCHEMA = "scpn.experimental.llm_qpu.array_descriptor.v1"
-_TASK_SCHEMA = "scpn.experimental.llm_qpu.task_spec.v1"
-_SPLIT_SCHEMA = "scpn.experimental.llm_qpu.split_manifest.v1"
+_TASK_SCHEMA = "scpn.experimental.llm_qpu.task_spec.v2"
+_SPLIT_SCHEMA = "scpn.experimental.llm_qpu.split_manifest.v2"
+_HEADER_SCHEMA = "scpn.experimental.llm_qpu.artifact_header.v1"
 _KEY_FIELDS = {
     "experiment_id",
     "source_sample_id",
@@ -48,6 +49,7 @@ _CELL_FIELDS = {
 _RESERVED = {"shots", "provider", "device", "job_id", "origin", "approval", "status"}
 _FIELD_NAME = re.compile(r"[A-Za-z][A-Za-z0-9_]*\Z")
 _DIGEST = re.compile(r"[0-9a-f]{64}\Z")
+_COMMIT = re.compile(r"[0-9a-f]{40}\Z")
 _DTYPE_SIZE = {"<f8": 8, "<f4": 4, "<i8": 8, "<i4": 4, "<u8": 8, "<u4": 4}
 
 
@@ -190,6 +192,47 @@ def _roundtrip_contract(request: dict[str, object]) -> dict[str, object]:
     }
 
 
+def _validate_artifact_header(
+    record: dict[str, object], parents: tuple[str, ...], data_origin: str
+) -> None:
+    header = record["header"]
+    fields = {
+        "schema",
+        "lane_id",
+        "object_kind",
+        "content_digest",
+        "parents",
+        "base_repo_commit",
+        "implementation_revision",
+        "execution_origin",
+        "data_origin",
+        "claim_scope",
+    }
+    if type(header) is not dict or set(header) != fields:
+        raise ValueError("ArtifactHeader fields mismatch")
+    if header["schema"] != _HEADER_SCHEMA or header["lane_id"] != "llm-qpu":
+        raise ValueError("unknown ArtifactHeader schema or lane")
+    if header["object_kind"] != record["object_kind"]:
+        raise ValueError("artifact object kind mismatch")
+    if type(header["parents"]) is not list or header["parents"] != sorted(parents):
+        raise ValueError("artifact parent lineage mismatch")
+    if len(header["parents"]) != len(set(header["parents"])):
+        raise ValueError("duplicate artifact parent")
+    for name in ("base_repo_commit", "implementation_revision"):
+        value = header[name]
+        if type(value) is not str or _COMMIT.fullmatch(value) is None:
+            raise ValueError("invalid artifact code revision")
+    if header["base_repo_commit"] == header["implementation_revision"]:
+        raise ValueError("artifact revision equals base")
+    if header["execution_origin"] != "offline_design" or header["claim_scope"] != "design_only":
+        raise ValueError("artifact origin or claim exceeds W02")
+    if header["data_origin"] != data_origin:
+        raise ValueError("artifact data origin mismatch")
+    content = {name: value for name, value in record.items() if name != "header"}
+    if header["content_digest"] != hashlib.sha256(_canonical_bytes(content)).hexdigest():
+        raise ValueError("artifact content digest mismatch")
+
+
 def _roundtrip_task_split(request: dict[str, object]) -> dict[str, object]:
     if set(request) != {"op", "task", "split"}:
         raise ValueError("task/split request fields mismatch")
@@ -206,6 +249,7 @@ def _roundtrip_task_split(request: dict[str, object]) -> dict[str, object]:
         "causal_cutoff",
         "primary_metric",
         "group_definition",
+        "header",
     }
     split_fields = {
         "schema",
@@ -219,6 +263,7 @@ def _roundtrip_task_split(request: dict[str, object]) -> dict[str, object]:
         "dedup_rule",
         "test_target_custodian",
         "transform_fit_split",
+        "header",
     }
     if type(task) is not dict or set(task) != task_fields:
         raise ValueError("TaskSpec fields mismatch")
@@ -237,6 +282,7 @@ def _roundtrip_task_split(request: dict[str, object]) -> dict[str, object]:
         or _DIGEST.fullmatch(task["label_schema_digest"]) is None
     ):
         raise ValueError("invalid label schema digest")
+    _validate_artifact_header(task, (task["label_schema_digest"],), task["source_kind"])
     task_wire = _canonical_bytes(task)
     if type(split) is not dict or set(split) != split_fields:
         raise ValueError("SplitManifest fields mismatch")
@@ -269,6 +315,9 @@ def _roundtrip_task_split(request: dict[str, object]) -> dict[str, object]:
         raise ValueError("test target custody not locked")
     if split["transform_fit_split"] != "train_only":
         raise ValueError("test-driven transform fit forbidden")
+    _validate_artifact_header(
+        split, (split["task_digest"], split["dataset_digest"]), task["source_kind"]
+    )
     split_wire = _canonical_bytes(split)
     return {
         "schema": _SCHEMA,

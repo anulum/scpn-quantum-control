@@ -22,8 +22,9 @@ from typing import Any
 
 SCHEMA = "scpn.experimental.llm_qpu.planned_cell.v1"
 ARRAY_SCHEMA = "scpn.experimental.llm_qpu.array_descriptor.v1"
-TASK_SCHEMA = "scpn.experimental.llm_qpu.task_spec.v1"
-SPLIT_SCHEMA = "scpn.experimental.llm_qpu.split_manifest.v1"
+TASK_SCHEMA = "scpn.experimental.llm_qpu.task_spec.v2"
+SPLIT_SCHEMA = "scpn.experimental.llm_qpu.split_manifest.v2"
+HEADER_SCHEMA = "scpn.experimental.llm_qpu.artifact_header.v1"
 _KEY_FIELDS = (
     "experiment_id",
     "source_sample_id",
@@ -47,6 +48,7 @@ _RESERVED_METADATA = frozenset(
 )
 _FIELD_NAME = re.compile(r"[A-Za-z][A-Za-z0-9_]*\Z")
 _DIGEST = re.compile(r"[0-9a-f]{64}\Z")
+_COMMIT = re.compile(r"[0-9a-f]{40}\Z")
 _DTYPE_SIZE = {"<f8": 8, "<f4": 4, "<i8": 8, "<i4": 4, "<u8": 8, "<u4": 4}
 _MAX_WIRE_BYTES = 1_048_576
 _MAX_ARRAY_BYTES = 16_777_216
@@ -503,6 +505,87 @@ def decode_contract(raw: bytes) -> PlannedCell | ArrayDescriptor | TaskSpec | Sp
 
 
 @dataclass(frozen=True, slots=True)
+class ArtifactHeader:
+    """Bind a design artifact to its exact content and code provenance."""
+
+    object_kind: str
+    content_digest: str
+    parents: tuple[str, ...]
+    base_repo_commit: str
+    implementation_revision: str
+    execution_origin: str
+    data_origin: str
+    claim_scope: str
+
+    def __post_init__(self) -> None:
+        """Refuse unknown origins, revisions and unordered parent lineage."""
+        if self.object_kind not in ("task_spec", "split_manifest"):
+            raise ValueError("unsupported artifact object kind")
+        _digest(self.content_digest, name="artifact content")
+        if type(self.parents) is not tuple or len(self.parents) > 32:
+            raise ValueError("artifact parents must be a bounded tuple")
+        for parent in self.parents:
+            _digest(parent, name="artifact parent")
+        if self.parents != tuple(sorted(set(self.parents))):
+            raise ValueError("artifact parents must be sorted and unique")
+        for name in ("base_repo_commit", "implementation_revision"):
+            value = getattr(self, name)
+            if type(value) is not str or _COMMIT.fullmatch(value) is None:
+                raise ValueError(f"{name} must be a full lowercase Git commit")
+        if self.base_repo_commit == self.implementation_revision:
+            raise ValueError("implementation revision must differ from base commit")
+        if self.execution_origin != "offline_design":
+            raise ValueError("W02 artifact cannot claim a live execution origin")
+        if self.data_origin not in ("owner_dataset", "external_dataset", "synthetic_classical"):
+            raise ValueError("unknown artifact data origin")
+        if self.claim_scope != "design_only":
+            raise ValueError("W02 artifact cannot claim confirmation")
+
+    def to_wire(self) -> dict[str, object]:
+        """Return an exact detached provenance header."""
+        return {
+            "schema": HEADER_SCHEMA,
+            "lane_id": "llm-qpu",
+            "object_kind": self.object_kind,
+            "content_digest": self.content_digest,
+            "parents": list(self.parents),
+            "base_repo_commit": self.base_repo_commit,
+            "implementation_revision": self.implementation_revision,
+            "execution_origin": self.execution_origin,
+            "data_origin": self.data_origin,
+            "claim_scope": self.claim_scope,
+        }
+
+    @classmethod
+    def from_wire(cls, value: object) -> ArtifactHeader:
+        """Decode only the reviewed v1 header shape."""
+        fields = set(cls.__dataclass_fields__) | {"schema", "lane_id"}
+        if type(value) is not dict or set(value) != fields:
+            raise ValueError("ArtifactHeader fields mismatch")
+        if value["schema"] != HEADER_SCHEMA or value["lane_id"] != "llm-qpu":
+            raise ValueError("unknown ArtifactHeader schema or lane")
+        if type(value["parents"]) is not list:
+            raise ValueError("artifact parents must be a list on wire")
+        return cls(
+            object_kind=value["object_kind"],
+            content_digest=value["content_digest"],
+            parents=tuple(value["parents"]),
+            base_repo_commit=value["base_repo_commit"],
+            implementation_revision=value["implementation_revision"],
+            execution_origin=value["execution_origin"],
+            data_origin=value["data_origin"],
+            claim_scope=value["claim_scope"],
+        )
+
+    def validate_content(self, content: Mapping[str, object], *, parents: tuple[str, ...]) -> None:
+        """Bind the header to exact scientific bytes and expected lineage."""
+        if type(content) is not dict or self.parents != tuple(sorted(parents)):
+            raise ValueError("artifact content or parent lineage mismatch")
+        if hashlib.sha256(canonical_bytes(content)).hexdigest() != self.content_digest:
+            raise ValueError("artifact content digest mismatch")
+
+
+@dataclass(frozen=True, slots=True)
 class TaskSpec:
     """Freeze a non-QPU task target and its causal observation boundary."""
 
@@ -514,6 +597,7 @@ class TaskSpec:
     causal_cutoff: int
     primary_metric: str
     group_definition: str
+    header: ArtifactHeader
 
     def __post_init__(self) -> None:
         """Require an independently sourced target and a bounded cutoff."""
@@ -528,9 +612,14 @@ class TaskSpec:
             raise ValueError("causal cutoff must be a bounded nonnegative token index")
         if self.primary_metric not in ("accuracy", "balanced_accuracy", "f1", "mse", "mae"):
             raise ValueError("primary metric must be fixed and known")
+        if type(self.header) is not ArtifactHeader or self.header.object_kind != "task_spec":
+            raise ValueError("TaskSpec requires its exact artifact header")
+        if self.header.data_origin != self.source_kind:
+            raise ValueError("TaskSpec data origin mismatch")
+        self.header.validate_content(self._scientific_wire(), parents=(self.label_schema_digest,))
 
-    def to_wire(self) -> dict[str, object]:
-        """Return the exact versioned task specification."""
+    def _scientific_wire(self) -> dict[str, object]:
+        """Return the content hashed by the artifact header."""
         return {
             "schema": TASK_SCHEMA,
             "object_kind": "task_spec",
@@ -549,6 +638,10 @@ class TaskSpec:
             },
         }
 
+    def to_wire(self) -> dict[str, object]:
+        """Return the exact versioned task specification."""
+        return {**self._scientific_wire(), "header": self.header.to_wire()}
+
     @classmethod
     def from_wire(cls, value: object) -> TaskSpec:
         """Reject unknown fields and validate every task field."""
@@ -557,7 +650,10 @@ class TaskSpec:
             raise ValueError("TaskSpec fields mismatch")
         if value["schema"] != TASK_SCHEMA or value["object_kind"] != "task_spec":
             raise ValueError("unknown TaskSpec schema")
-        return cls(**{name: value[name] for name in cls.__dataclass_fields__})
+        return cls(
+            **{name: value[name] for name in cls.__dataclass_fields__ if name != "header"},
+            header=ArtifactHeader.from_wire(value["header"]),
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -573,6 +669,7 @@ class SplitManifest:
     dedup_rule: str
     test_target_custodian: str
     transform_fit_split: str
+    header: ArtifactHeader
 
     def __post_init__(self) -> None:
         """Refuse group leakage and test-driven transform fitting."""
@@ -598,9 +695,14 @@ class SplitManifest:
             raise ValueError("test targets require separate locked evaluator custody")
         if self.transform_fit_split != "train_only":
             raise ValueError("transforms must fit on train groups only")
+        if type(self.header) is not ArtifactHeader or self.header.object_kind != "split_manifest":
+            raise ValueError("SplitManifest requires its exact artifact header")
+        self.header.validate_content(
+            self._scientific_wire(), parents=(self.task_digest, self.dataset_digest)
+        )
 
-    def to_wire(self) -> dict[str, object]:
-        """Return detached, versioned split data."""
+    def _scientific_wire(self) -> dict[str, object]:
+        """Return the content hashed by the artifact header."""
         return {
             "schema": SPLIT_SCHEMA,
             "object_kind": "split_manifest",
@@ -609,8 +711,13 @@ class SplitManifest:
                 if name.endswith("_groups")
                 else getattr(self, name)
                 for name in self.__dataclass_fields__
+                if name != "header"
             },
         }
+
+    def to_wire(self) -> dict[str, object]:
+        """Return detached, versioned split data."""
+        return {**self._scientific_wire(), "header": self.header.to_wire()}
 
     @classmethod
     def from_wire(cls, value: object) -> SplitManifest:
@@ -633,6 +740,7 @@ class SplitManifest:
             dedup_rule=value["dedup_rule"],
             test_target_custodian=value["test_target_custodian"],
             transform_fit_split=value["transform_fit_split"],
+            header=ArtifactHeader.from_wire(value["header"]),
         )
 
 
@@ -642,3 +750,5 @@ def validate_task_split(task: TaskSpec, split: SplitManifest) -> None:
         raise ValueError("task and split must be validated contracts")
     if hashlib.sha256(canonical_bytes(task.to_wire())).hexdigest() != split.task_digest:
         raise ValueError("split task digest does not bind TaskSpec")
+    if task.header.data_origin != split.header.data_origin:
+        raise ValueError("split data origin does not bind TaskSpec")

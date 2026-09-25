@@ -23,6 +23,7 @@ import pytest
 
 from scpn_quantum_control.experimental.llm_qpu.contracts import (
     ArrayDescriptor,
+    ArtifactHeader,
     CellKey,
     PlannedCell,
     SplitManifest,
@@ -42,6 +43,8 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 _WORKER = _REPO_ROOT / "experimental_workers/llm_qpu/protocol/worker.py"
 _DIGEST = "a" * 64
 _KERNEL = "xy_static_digital_v1"
+_BASE_COMMIT = "de259e4837a92ecb09b63c8f4332dbcf3d21021c"
+_REVISION = "0883d1e5204ffe4594bb2f5b6e7b6a5d0a915209"
 
 
 def _cell(*, shots: int = 8, metadata: dict[str, object] | None = None) -> PlannedCell:
@@ -209,30 +212,59 @@ def test_w02_06_raw_completion_refuses_coercion_missing_and_shape() -> None:
 
 
 def _task() -> TaskSpec:
-    return TaskSpec(
-        task_id="causal-classification-v1",
-        objective="Predict a predeclared label from prefix tokens",
-        source_kind="owner_dataset",
-        target_origin="independent_ground_truth",
-        label_schema_digest=_DIGEST,
-        causal_cutoff=128,
-        primary_metric="balanced_accuracy",
-        group_definition="One original document per source group",
+    fields = {
+        "task_id": "causal-classification-v1",
+        "objective": "Predict a predeclared label from prefix tokens",
+        "source_kind": "owner_dataset",
+        "target_origin": "independent_ground_truth",
+        "label_schema_digest": _DIGEST,
+        "causal_cutoff": 128,
+        "primary_metric": "balanced_accuracy",
+        "group_definition": "One original document per source group",
+    }
+    header = _header(
+        "task_spec",
+        {"schema": "scpn.experimental.llm_qpu.task_spec.v2", "object_kind": "task_spec", **fields},
+        (_DIGEST,),
+    )
+    return TaskSpec(**fields, header=header)
+
+
+def _header(kind: str, content: dict[str, object], parents: tuple[str, ...]) -> ArtifactHeader:
+    return ArtifactHeader(
+        object_kind=kind,
+        content_digest=hashlib.sha256(canonical_bytes(content)).hexdigest(),
+        parents=tuple(sorted(parents)),
+        base_repo_commit=_BASE_COMMIT,
+        implementation_revision=_REVISION,
+        execution_origin="offline_design",
+        data_origin="owner_dataset",
+        claim_scope="design_only",
     )
 
 
 def _split(task: TaskSpec) -> SplitManifest:
-    return SplitManifest(
-        task_digest=hashlib.sha256(canonical_bytes(task.to_wire())).hexdigest(),
-        dataset_digest="b" * 64,
-        train_groups=("source-01", "source-02"),
-        dev_groups=("source-03",),
-        test_groups=("source-04",),
-        seed=17,
-        dedup_rule="exact_source_digest",
-        test_target_custodian="separate_locked_evaluator",
-        transform_fit_split="train_only",
-    )
+    fields = {
+        "task_digest": hashlib.sha256(canonical_bytes(task.to_wire())).hexdigest(),
+        "dataset_digest": "b" * 64,
+        "train_groups": ("source-01", "source-02"),
+        "dev_groups": ("source-03",),
+        "test_groups": ("source-04",),
+        "seed": 17,
+        "dedup_rule": "exact_source_digest",
+        "test_target_custodian": "separate_locked_evaluator",
+        "transform_fit_split": "train_only",
+    }
+    content = {
+        "schema": "scpn.experimental.llm_qpu.split_manifest.v2",
+        "object_kind": "split_manifest",
+        **{
+            name: list(value) if name.endswith("_groups") else value
+            for name, value in fields.items()
+        },
+    }
+    header = _header("split_manifest", content, (fields["task_digest"], fields["dataset_digest"]))
+    return SplitManifest(**fields, header=header)
 
 
 def test_w02_task_split_strict_worker_roundtrip(tmp_path: Path) -> None:
@@ -265,14 +297,28 @@ def test_w02_task_split_refuses_leakage_and_bad_origin(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="causal cutoff"):
         replace(task, causal_cutoff=True)
     split = _split(task)
+    wrong_task_fields = {**split.to_wire(), "task_digest": "c" * 64}
+    wrong_task_fields.pop("header")
+    wrong_task_header = _header(
+        "split_manifest", wrong_task_fields, ("c" * 64, split.dataset_digest)
+    )
     with pytest.raises(ValueError, match="does not bind"):
-        validate_task_split(task, replace(split, task_digest="c" * 64))
+        validate_task_split(task, replace(split, task_digest="c" * 64, header=wrong_task_header))
     with pytest.raises(ValueError, match="overlap"):
         replace(split, test_groups=("source-01",))
     with pytest.raises(ValueError, match="overlap"):
         replace(split, train_groups=("e\u0301",), test_groups=("é",))
-    normalized = replace(split, train_groups=("e\u0301",))
+    normalized_fields = {**split.to_wire(), "train_groups": ["é"]}
+    normalized_fields.pop("header")
+    normalized_header = _header(
+        "split_manifest", normalized_fields, (split.task_digest, split.dataset_digest)
+    )
+    normalized = replace(split, train_groups=("e\u0301",), header=normalized_header)
     assert normalized.train_groups == ("é",)
+    with pytest.raises(ValueError, match="digest mismatch"):
+        replace(task, objective="Changed after header freeze")
+    with pytest.raises(ValueError, match="confirmation"):
+        replace(task.header, claim_scope="confirmation")
     with pytest.raises(ValueError, match="train groups only"):
         replace(split, transform_fit_split="all")
     with pytest.raises(ValueError, match="locked evaluator"):
@@ -281,6 +327,11 @@ def test_w02_task_split_refuses_leakage_and_bad_origin(tmp_path: Path) -> None:
     wire["unreviewed"] = True
     with pytest.raises(ValueError, match="fields"):
         decode_contract(canonical_bytes(wire))
+    old_wire = task.to_wire()
+    old_wire.pop("header")
+    old_wire["schema"] = "scpn.experimental.llm_qpu.task_spec.v1"
+    with pytest.raises(ValueError, match="unsupported"):
+        decode_contract(canonical_bytes(old_wire))
     request = {"op": "roundtrip_task_split", "task": task.to_wire(), "split": split.to_wire()}
     request["split"]["task_digest"] = "c" * 64
     result = subprocess.run(
@@ -294,3 +345,16 @@ def test_w02_task_split_refuses_leakage_and_bad_origin(tmp_path: Path) -> None:
     )
     assert result.returncode == 2
     assert json.loads(result.stdout)["status"] == "refused"
+    forged = {"op": "roundtrip_task_split", "task": task.to_wire(), "split": split.to_wire()}
+    forged["task"]["header"]["content_digest"] = "f" * 64
+    refused = subprocess.run(
+        [sys.executable, "-S", str(_WORKER)],
+        input=json.dumps(forged).encode(),
+        cwd=tmp_path,
+        env={"PYTHONPATH": str(tmp_path)},
+        capture_output=True,
+        timeout=15,
+        check=False,
+    )
+    assert refused.returncode == 2
+    assert "content digest mismatch" in json.loads(refused.stdout)["reason"]
