@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 841,
     "public_documentation_pages": 377,
-    "python_model_classes": 1423,
-    "python_model_source_modules": 723,
+    "python_model_classes": 1424,
+    "python_model_source_modules": 726,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1406
+    "test_files": 1407
   },
   "documentation": {
     "examples": [
@@ -673,7 +673,7 @@
       {
         "package": "experimental",
         "path": "src/scpn_quantum_control/experimental",
-        "python_modules": 13
+        "python_modules": 16
       },
       {
         "package": "fep",
@@ -3481,6 +3481,10 @@
       {
         "name": "MemoryCgroup",
         "path": "src/scpn_quantum_control/_cgroup_paths.py"
+      },
+      {
+        "name": "MemoryRecord",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/data/tasks.py"
       },
       {
         "name": "MetamorphicCheckResult",
@@ -6792,7 +6796,10 @@
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/wire.py",
       "src/scpn_quantum_control/experimental/llm_qpu/data/artifact_store.py",
       "src/scpn_quantum_control/experimental/llm_qpu/data/cache.py",
+      "src/scpn_quantum_control/experimental/llm_qpu/data/dedup.py",
       "src/scpn_quantum_control/experimental/llm_qpu/data/lineage.py",
+      "src/scpn_quantum_control/experimental/llm_qpu/data/splits.py",
+      "src/scpn_quantum_control/experimental/llm_qpu/data/tasks.py",
       "src/scpn_quantum_control/experimental/llm_qpu/manifest.py",
       "src/scpn_quantum_control/fault_tolerant_resource_product.py",
       "src/scpn_quantum_control/fep/predictive_coding.py",
@@ -8394,6 +8401,9 @@
       "tests/_phase_torch_bridge_test_helpers.py",
       "tests/_program_ad_rust_bridge_test_fixtures.py",
       "tests/conftest.py",
+      "tests/experimental/llm_qpu/artifact_custody/test_artifact_store.py",
+      "tests/experimental/llm_qpu/artifact_custody/test_lineage_cache.py",
+      "tests/experimental/llm_qpu/memory_task/test_memory_task.py",
       "tests/experimental/llm_qpu/test_baseline_evidence_policy.py",
       "tests/experimental/llm_qpu/test_cell_contract_acceptance.py",
       "tests/experimental/llm_qpu/test_compressor_artifact_contract.py",
@@ -8402,8 +8412,6 @@
       "tests/experimental/llm_qpu/test_measurement_plan_contract.py",
       "tests/experimental/llm_qpu/test_model_descriptor_contract.py",
       "tests/experimental/llm_qpu/test_static_circuit_plan_contract.py",
-      "tests/experimental/llm_qpu/w03/test_artifact_store.py",
-      "tests/experimental/llm_qpu/w03/test_lineage_cache.py",
       "tests/test_accelerator_detection_boundaries.py",
       "tests/test_active_queue_status_assertions.py",
       "tests/test_active_sensing_product.py",

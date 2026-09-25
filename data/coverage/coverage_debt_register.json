@@ -145,7 +145,40 @@
       "covered_lines": null,
       "line_percent": null,
       "missing_lines": null,
+      "path": "src/scpn_quantum_control/experimental/llm_qpu/data/dedup.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
       "path": "src/scpn_quantum_control/experimental/llm_qpu/data/lineage.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
+      "path": "src/scpn_quantum_control/experimental/llm_qpu/data/splits.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
+      "path": "src/scpn_quantum_control/experimental/llm_qpu/data/tasks.py",
       "priority": "P2_unmeasured",
       "priority_reason": "No current executable-line baseline; refresh from remote CI.",
       "status": "unmeasured_since_baseline",
@@ -1164,12 +1197,12 @@
   "source_inventory": {
     "baseline_report_file_count": 739,
     "baseline_rows_not_in_live_source": 0,
-    "file_count": 768,
+    "file_count": 771,
     "path": "src/scpn_quantum_control",
-    "sha256": "ec2d36cdc0fe638df263f0eb8ae2a30cf486a4fea4c21a4b061c957da34d7279"
+    "sha256": "ad10371d949770b20bd55f7f308771e6a8fb1bdce8de411415c7e4fa302c477e"
   },
   "summary": {
-    "debt_file_count": 104,
+    "debt_file_count": 107,
     "fully_covered_file_count": 604,
     "justified_exclusion_file_count": 44,
     "known_missing_line_count": 2893,
@@ -1177,15 +1210,15 @@
     "priority_counts": {
       "P0_claim_bearing": 0,
       "P1_runtime_hot_path": 0,
-      "P2_unmeasured": 13,
+      "P2_unmeasured": 16,
       "P3_high_line_debt": 18,
       "P4_standard": 73
     },
     "status_counts": {
       "below_target": 91,
-      "unmeasured_since_baseline": 13
+      "unmeasured_since_baseline": 16
     },
-    "unmeasured_debt_file_count": 13
+    "unmeasured_debt_file_count": 16
   },
   "target_line_percent": 100.0
 }

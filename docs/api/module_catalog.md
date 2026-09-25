@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **723 modules** across **40 package families**
-- **4016 documented public module-level symbols**
+- **726 modules** across **40 package families**
+- **4022 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2371,6 +2371,14 @@ Fail-closed cache references across model, compressor, and SDK revisions.
 
 **Classes:** `StaleCacheError`, `CacheKey`, `ArtifactCache`
 
+### `scpn_quantum_control.experimental.llm_qpu.data.dedup`
+
+Check source and prompt identity before any group-safe split is admitted.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/dedup.py) · Public symbols: **2**
+
+**Functions:** `normalized_source_digest()`, `validate_source_families()`
+
 ### `scpn_quantum_control.experimental.llm_qpu.data.lineage`
 
 Immutable latent-shard manifests with explicit incomplete-evidence states.
@@ -2380,6 +2388,24 @@ Immutable latent-shard manifests with explicit incomplete-evidence states.
 **Classes:** `ShardRef`, `ShardManifest`
 
 **Functions:** `publish_manifest()`, `load_manifest()`
+
+### `scpn_quantum_control.experimental.llm_qpu.data.splits`
+
+Freeze synthetic memory group splits and answer-free pilot inputs.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/splits.py) · Public symbols: **2**
+
+**Functions:** `build_memory_split()`, `pilot_inputs()`
+
+### `scpn_quantum_control.experimental.llm_qpu.data.tasks`
+
+Generate deterministic associative text prompts without quantum labels.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/tasks.py) · Public symbols: **2**
+
+**Classes:** `MemoryRecord`
+
+**Functions:** `generate_memory_records()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.manifest`
 
