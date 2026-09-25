@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **719 modules** across **40 package families**
-- **4002 documented public module-level symbols**
+- **720 modules** across **40 package families**
+- **4004 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2304,6 +2304,16 @@ Causal hidden-state batch descriptors and lineage validation.
 **Classes:** `LatentBatch`
 
 **Functions:** `validate_latent_batch()`
+
+### `scpn_quantum_control.experimental.llm_qpu.contracts.measurement`
+
+Exact common-axis readout plan with explicit classical-bit custody.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/contracts/measurement.py) · Public symbols: **2**
+
+**Classes:** `MeasurementPlan`
+
+**Functions:** `build_measurement_plan()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.contracts.model`
 

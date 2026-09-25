@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 841,
     "public_documentation_pages": 377,
-    "python_model_classes": 1413,
-    "python_model_source_modules": 719,
+    "python_model_classes": 1414,
+    "python_model_source_modules": 720,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1403
+    "test_files": 1404
   },
   "documentation": {
     "examples": [
@@ -673,7 +673,7 @@
       {
         "package": "experimental",
         "path": "src/scpn_quantum_control/experimental",
-        "python_modules": 9
+        "python_modules": 10
       },
       {
         "package": "fep",
@@ -3453,6 +3453,10 @@
       {
         "name": "MeasuredField",
         "path": "src/scpn_quantum_control/semantic_record.py"
+      },
+      {
+        "name": "MeasurementPlan",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/measurement.py"
       },
       {
         "name": "MemoryCgroup",
@@ -6745,6 +6749,7 @@
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/compressed.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/compressor.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/latent.py",
+      "src/scpn_quantum_control/experimental/llm_qpu/contracts/measurement.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/model.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/static.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/task.py",
@@ -8355,6 +8360,7 @@
       "tests/experimental/llm_qpu/test_compressor_artifact_contract.py",
       "tests/experimental/llm_qpu/test_lane_manifest_policy.py",
       "tests/experimental/llm_qpu/test_latent_batch_contract.py",
+      "tests/experimental/llm_qpu/test_measurement_plan_contract.py",
       "tests/experimental/llm_qpu/test_model_descriptor_contract.py",
       "tests/experimental/llm_qpu/test_static_circuit_plan_contract.py",
       "tests/test_accelerator_detection_boundaries.py",
