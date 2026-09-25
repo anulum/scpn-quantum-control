@@ -5,7 +5,7 @@ module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
 - **723 modules** across **40 package families**
-- **4015 documented public module-level symbols**
+- **4016 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2357,9 +2357,11 @@ Canonical wire, arrays, and artifact provenance for LLM-QPU contracts.
 
 Bounded immutable CAS for private LLM-QPU shards and manifests.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/artifact_store.py) · Public symbols: **4**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/artifact_store.py) · Public symbols: **5**
 
 **Classes:** `MissingArtifactError`, `CorruptArtifactError`, `ArtifactRecord`, `ArtifactStore`
+
+**Functions:** `open_repository_store()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.data.cache`
 

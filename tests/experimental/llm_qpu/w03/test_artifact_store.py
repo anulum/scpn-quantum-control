@@ -22,6 +22,7 @@ from scpn_quantum_control.experimental.llm_qpu.data.artifact_store import (
     ArtifactStore,
     CorruptArtifactError,
     MissingArtifactError,
+    open_repository_store,
 )
 
 
@@ -105,3 +106,15 @@ def test_t03d_rejects_escape_symlink_and_archive_before_decode(tmp_path: Path) -
     with pytest.raises(ValueError, match="container formats"):
         store.put_array(descriptor, payload)
     assert not list(store.objects.rglob("*.tmp"))
+
+
+def test_private_repo_root_and_index_permissions(tmp_path: Path) -> None:
+    """Derived data lands under the dedicated results root with private index."""
+    store = open_repository_store(tmp_path)
+    assert store.root == tmp_path / "results" / "experimental" / "llm_qpu" / "private"
+    assert store.root.stat().st_mode & 0o777 == 0o700
+    assert store.database.stat().st_mode & 0o777 == 0o600
+
+    store.root.chmod(0o755)
+    with pytest.raises(ValueError, match="owned and private"):
+        open_repository_store(tmp_path)

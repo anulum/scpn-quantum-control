@@ -69,6 +69,13 @@ def _sync_directory(path: Path) -> None:
         os.close(descriptor)
 
 
+def _require_private_directory(path: Path) -> None:
+    """Refuse a custody directory readable by other local accounts."""
+    info = path.stat()
+    if not stat.S_ISDIR(info.st_mode) or info.st_uid != os.getuid() or info.st_mode & 0o077:
+        raise ValueError("artifact directory must be owned and private (0700)")
+
+
 class ArtifactStore:
     """Private size-limited content store; SQLite contains references only."""
 
@@ -86,8 +93,9 @@ class ArtifactStore:
         if not isinstance(root, Path):
             raise ValueError("artifact root must be a Path")
         _reject_symlink_components(root)
-        root.mkdir(parents=True, exist_ok=True)
+        root.mkdir(mode=0o700, parents=True, exist_ok=True)
         _reject_symlink_components(root)
+        _require_private_directory(root)
         self.root = root.resolve(strict=True)
         self.max_total_bytes = max_total_bytes
         self.max_object_bytes = max_object_bytes
@@ -96,8 +104,20 @@ class ArtifactStore:
         for directory in (self.objects, self.quarantine):
             _reject_symlink_components(directory)
             directory.mkdir(mode=0o700, exist_ok=True)
+            _require_private_directory(directory)
         self.database = self.root / "index.sqlite3"
         _reject_symlink_components(self.database)
+        descriptor = os.open(self.database, os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW, 0o600)
+        try:
+            info = os.fstat(descriptor)
+            if (
+                not stat.S_ISREG(info.st_mode)
+                or info.st_uid != os.getuid()
+                or info.st_mode & 0o077
+            ):
+                raise ValueError("artifact index must be owned and private (0600)")
+        finally:
+            os.close(descriptor)
         with self._connection() as connection:
             connection.executescript(
                 """
@@ -296,3 +316,10 @@ class ArtifactStore:
         except MissingArtifactError:
             return False
         return True
+
+
+def open_repository_store(repo_root: Path) -> ArtifactStore:
+    """Open the lane's private results root for real derived payloads."""
+    if not isinstance(repo_root, Path) or not repo_root.is_dir():
+        raise ValueError("repository root must be an existing directory")
+    return ArtifactStore(repo_root / "results" / "experimental" / "llm_qpu" / "private")
