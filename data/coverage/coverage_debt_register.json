@@ -21,6 +21,94 @@
     },
     {
       "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
+      "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/cells.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
+      "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/compressed.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
+      "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/compressor.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
+      "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/latent.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
+      "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/model.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
+      "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/static.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
+      "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/task.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
+      "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/wire.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
       "covered_lines": 91,
       "line_percent": 24.73,
       "missing_lines": 277,
@@ -1032,12 +1120,12 @@
   "source_inventory": {
     "baseline_report_file_count": 739,
     "baseline_rows_not_in_live_source": 0,
-    "file_count": 756,
+    "file_count": 764,
     "path": "src/scpn_quantum_control",
-    "sha256": "cc74c1d6b5e2e652517ea20e837a8278715ee284670ea650b9f8cda05cd76048"
+    "sha256": "06931406b1029936e1d4ae4ba3e39f3fc9f62db3b8d81cb53d42904ea240724e"
   },
   "summary": {
-    "debt_file_count": 92,
+    "debt_file_count": 100,
     "fully_covered_file_count": 604,
     "justified_exclusion_file_count": 44,
     "known_missing_line_count": 2893,
@@ -1045,15 +1133,15 @@
     "priority_counts": {
       "P0_claim_bearing": 0,
       "P1_runtime_hot_path": 0,
-      "P2_unmeasured": 1,
+      "P2_unmeasured": 9,
       "P3_high_line_debt": 18,
       "P4_standard": 73
     },
     "status_counts": {
       "below_target": 91,
-      "unmeasured_since_baseline": 1
+      "unmeasured_since_baseline": 9
     },
-    "unmeasured_debt_file_count": 1
+    "unmeasured_debt_file_count": 9
   },
   "target_line_percent": 100.0
 }
