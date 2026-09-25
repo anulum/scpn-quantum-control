@@ -1347,6 +1347,11 @@ explicit QPU-time estimate before submission.
   external follow-up: submit the prepared schema proposal to
   Metriq-Gym maintainers, wait for review or acceptance, then run and
   upload results only under the accepted schema.
+  Status 2026-09-26: the local n=4 parity proposal was corrected at
+  `c09692c61` and a ten-circuit no-QPU Aer smoke was retained privately.
+  The upstream issue text is prepared, but issue publication is blocked on
+  owner approval; acceptance, standalone Metriq implementation and any
+  results upload remain open. No Metriq issue or result was submitted.
 - [ ] **pyOpenSci review.** Submit the software package for review and
   possible JOSS fast-track.
 - [x] **pyOpenSci review preparation.** Completed 2026-05-06:
