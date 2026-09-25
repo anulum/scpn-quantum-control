@@ -25,6 +25,8 @@ from scpn_quantum_control.experimental.llm_qpu.contracts import (
     ArrayDescriptor,
     CellKey,
     PlannedCell,
+    SplitManifest,
+    TaskSpec,
     attempt_id,
     canonical_bytes,
     content_id,
@@ -33,6 +35,7 @@ from scpn_quantum_control.experimental.llm_qpu.contracts import (
     request_id,
     run_id,
     validate_completion,
+    validate_task_split,
 )
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -203,3 +206,87 @@ def test_w02_06_raw_completion_refuses_coercion_missing_and_shape() -> None:
         validate_completion([cell], [result])
     with pytest.raises(ValueError, match="duplicate"):
         validate_completion([cell, replace(cell, role="sentinel")], [_result(cell), _result(cell)])
+
+
+def _task() -> TaskSpec:
+    return TaskSpec(
+        task_id="causal-classification-v1",
+        objective="Predict a predeclared label from prefix tokens",
+        source_kind="owner_dataset",
+        target_origin="independent_ground_truth",
+        label_schema_digest=_DIGEST,
+        causal_cutoff=128,
+        primary_metric="balanced_accuracy",
+        group_definition="One original document per source group",
+    )
+
+
+def _split(task: TaskSpec) -> SplitManifest:
+    return SplitManifest(
+        task_digest=hashlib.sha256(canonical_bytes(task.to_wire())).hexdigest(),
+        dataset_digest="b" * 64,
+        train_groups=("source-01", "source-02"),
+        dev_groups=("source-03",),
+        test_groups=("source-04",),
+        seed=17,
+        dedup_rule="exact_source_digest",
+        test_target_custodian="separate_locked_evaluator",
+        transform_fit_split="train_only",
+    )
+
+
+def test_w02_task_split_strict_worker_roundtrip(tmp_path: Path) -> None:
+    task = _task()
+    split = _split(task)
+    validate_task_split(task, split)
+    request = {"op": "roundtrip_task_split", "task": task.to_wire(), "split": split.to_wire()}
+    result = subprocess.run(
+        [sys.executable, "-S", str(_WORKER)],
+        input=json.dumps(request).encode(),
+        cwd=tmp_path,
+        env={"PYTHONPATH": str(tmp_path), "IQM_TOKEN": "poison"},
+        capture_output=True,
+        timeout=15,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout.decode()
+    response = json.loads(result.stdout)
+    assert response["hardware_submission_enabled"] is False
+    assert response["task_sha256"] == split.task_digest
+    assert response["split_sha256"] == hashlib.sha256(canonical_bytes(split.to_wire())).hexdigest()
+    assert decode_contract(canonical_bytes(response["task"])) == task
+    assert decode_contract(canonical_bytes(response["split"])) == split
+
+
+def test_w02_task_split_refuses_leakage_and_bad_origin(tmp_path: Path) -> None:
+    task = _task()
+    with pytest.raises(ValueError, match="QPU-generated"):
+        replace(task, target_origin="qpu_generated")
+    with pytest.raises(ValueError, match="causal cutoff"):
+        replace(task, causal_cutoff=True)
+    split = _split(task)
+    with pytest.raises(ValueError, match="does not bind"):
+        validate_task_split(task, replace(split, task_digest="c" * 64))
+    with pytest.raises(ValueError, match="overlap"):
+        replace(split, test_groups=("source-01",))
+    with pytest.raises(ValueError, match="train groups only"):
+        replace(split, transform_fit_split="all")
+    with pytest.raises(ValueError, match="locked evaluator"):
+        replace(split, test_target_custodian="training_worker")
+    wire = task.to_wire()
+    wire["unreviewed"] = True
+    with pytest.raises(ValueError, match="fields"):
+        decode_contract(canonical_bytes(wire))
+    request = {"op": "roundtrip_task_split", "task": task.to_wire(), "split": split.to_wire()}
+    request["split"]["task_digest"] = "c" * 64
+    result = subprocess.run(
+        [sys.executable, "-S", str(_WORKER)],
+        input=json.dumps(request).encode(),
+        cwd=tmp_path,
+        env={"PYTHONPATH": str(tmp_path)},
+        capture_output=True,
+        timeout=15,
+        check=False,
+    )
+    assert result.returncode == 2
+    assert json.loads(result.stdout)["status"] == "refused"

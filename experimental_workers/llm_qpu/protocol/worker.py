@@ -23,6 +23,8 @@ _MAX_REQUEST_BYTES = 65_536
 _SCHEMA = "scpn.experimental.llm_qpu.worker_boundary.v1"
 _CELL_SCHEMA = "scpn.experimental.llm_qpu.planned_cell.v1"
 _ARRAY_SCHEMA = "scpn.experimental.llm_qpu.array_descriptor.v1"
+_TASK_SCHEMA = "scpn.experimental.llm_qpu.task_spec.v1"
+_SPLIT_SCHEMA = "scpn.experimental.llm_qpu.split_manifest.v1"
 _KEY_FIELDS = {
     "experiment_id",
     "source_sample_id",
@@ -188,6 +190,97 @@ def _roundtrip_contract(request: dict[str, object]) -> dict[str, object]:
     }
 
 
+def _roundtrip_task_split(request: dict[str, object]) -> dict[str, object]:
+    if set(request) != {"op", "task", "split"}:
+        raise ValueError("task/split request fields mismatch")
+    task = request["task"]
+    split = request["split"]
+    task_fields = {
+        "schema",
+        "object_kind",
+        "task_id",
+        "objective",
+        "source_kind",
+        "target_origin",
+        "label_schema_digest",
+        "causal_cutoff",
+        "primary_metric",
+        "group_definition",
+    }
+    split_fields = {
+        "schema",
+        "object_kind",
+        "task_digest",
+        "dataset_digest",
+        "train_groups",
+        "dev_groups",
+        "test_groups",
+        "seed",
+        "dedup_rule",
+        "test_target_custodian",
+        "transform_fit_split",
+    }
+    if type(task) is not dict or set(task) != task_fields:
+        raise ValueError("TaskSpec fields mismatch")
+    if task["schema"] != _TASK_SCHEMA or task["object_kind"] != "task_spec":
+        raise ValueError("unknown TaskSpec schema")
+    if task["source_kind"] not in ("owner_dataset", "external_dataset", "synthetic_classical"):
+        raise ValueError("unknown task source")
+    if task["target_origin"] not in ("independent_ground_truth", "classical_generator"):
+        raise ValueError("QPU-generated or unknown target")
+    if task["primary_metric"] not in ("accuracy", "balanced_accuracy", "f1", "mse", "mae"):
+        raise ValueError("unknown primary metric")
+    if type(task["causal_cutoff"]) is not int or not 0 <= task["causal_cutoff"] <= 1_000_000:
+        raise ValueError("invalid causal cutoff")
+    if (
+        type(task["label_schema_digest"]) is not str
+        or _DIGEST.fullmatch(task["label_schema_digest"]) is None
+    ):
+        raise ValueError("invalid label schema digest")
+    task_wire = _canonical_bytes(task)
+    if type(split) is not dict or set(split) != split_fields:
+        raise ValueError("SplitManifest fields mismatch")
+    if split["schema"] != _SPLIT_SCHEMA or split["object_kind"] != "split_manifest":
+        raise ValueError("unknown SplitManifest schema")
+    if split["task_digest"] != hashlib.sha256(task_wire).hexdigest():
+        raise ValueError("task digest does not bind TaskSpec")
+    if (
+        type(split["dataset_digest"]) is not str
+        or _DIGEST.fullmatch(split["dataset_digest"]) is None
+    ):
+        raise ValueError("invalid dataset digest")
+    groups = []
+    for name in ("train_groups", "dev_groups", "test_groups"):
+        values = split[name]
+        if type(values) is not list or not values or len(values) > 4096:
+            raise ValueError("invalid source groups")
+        if any(type(item) is not str or not item for item in values):
+            raise ValueError("invalid source group ID")
+        if values != sorted(set(values)):
+            raise ValueError("source groups must be sorted and unique")
+        groups.extend(values)
+    if len(groups) != len(set(groups)):
+        raise ValueError("source groups overlap")
+    if type(split["seed"]) is not int or not 0 <= split["seed"] < 2**63:
+        raise ValueError("invalid split seed")
+    if split["dedup_rule"] not in ("exact_source_digest", "normalized_source_digest"):
+        raise ValueError("unknown source dedup rule")
+    if split["test_target_custodian"] != "separate_locked_evaluator":
+        raise ValueError("test target custody not locked")
+    if split["transform_fit_split"] != "train_only":
+        raise ValueError("test-driven transform fit forbidden")
+    split_wire = _canonical_bytes(split)
+    return {
+        "schema": _SCHEMA,
+        "status": "validated_roundtrip_no_compute",
+        "task": json.loads(task_wire),
+        "split": json.loads(split_wire),
+        "task_sha256": hashlib.sha256(task_wire).hexdigest(),
+        "split_sha256": hashlib.sha256(split_wire).hexdigest(),
+        "hardware_submission_enabled": False,
+    }
+
+
 def main() -> int:
     """Read one bounded request and refuse any operation except discovery.
 
@@ -222,6 +315,13 @@ def main() -> int:
             _emit({"schema": _SCHEMA, "status": "refused", "reason": str(exc)})
             return 2
         return 0
+    if type(request) is dict and request.get("op") == "roundtrip_task_split":
+        try:
+            _emit(_roundtrip_task_split(request))
+        except (ValueError, TypeError, KeyError) as exc:
+            _emit({"schema": _SCHEMA, "status": "refused", "reason": str(exc)})
+            return 2
+        return 0
     if type(request) is not dict or set(request) != {"op"} or request["op"] != "describe":
         _emit({"schema": _SCHEMA, "status": "refused", "reason": "unsupported operation"})
         return 2
@@ -229,7 +329,7 @@ def main() -> int:
         {
             "schema": _SCHEMA,
             "status": "experimental_no_compute",
-            "supported_operations": ["describe", "roundtrip_contract"],
+            "supported_operations": ["describe", "roundtrip_contract", "roundtrip_task_split"],
             "hardware_submission_enabled": False,
             "provider_credentials_required": False,
         }
