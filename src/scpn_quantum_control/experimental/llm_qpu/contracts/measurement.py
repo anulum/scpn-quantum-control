@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import hashlib
+from collections.abc import Mapping
 from dataclasses import dataclass
 
 from .static import ReservoirSpec, StaticCircuitPlan
@@ -168,6 +169,73 @@ class MeasurementPlan:
             raise ValueError("raw key does not match the declared register")
         by_clbit = dict(zip(self.display_order_clbits, raw_key, strict=True))
         return tuple(int(by_clbit[clbit]) for clbit in self.logical_to_clbit)
+
+
+@dataclass(frozen=True, slots=True)
+class SampledBasisEstimate:
+    """Sparse-count expectations and sampling covariance for one measured basis."""
+
+    measurement_request_digest: str
+    origin: str
+    shots: int
+    observable_ids: tuple[str, ...]
+    expectations: tuple[float, ...]
+    covariance_of_mean: tuple[tuple[float, ...], ...] | None
+
+
+def estimate_sampled_basis(
+    plan: MeasurementPlan,
+    counts: Mapping[str, int],
+    *,
+    origin: str,
+) -> SampledBasisEstimate:
+    """Recover common-axis features from sparse raw counts and exact bit custody."""
+    if type(plan) is not MeasurementPlan or plan.physical_qubits is None:
+        raise ValueError("sampled estimate requires a compiled measurement layout")
+    if origin not in ("hardware_raw", "digital_sampled"):
+        raise ValueError("sampled estimate origin must be explicit")
+    if not isinstance(counts, Mapping) or not 0 < len(counts) <= 1 << plan.n_qubits:
+        raise ValueError("sampled estimate requires bounded nonempty counts")
+    width = len(plan.observable_ids)
+    totals = [0] * width
+    joint = [[0] * width for _ in range(width)]
+    shots = 0
+    for raw_key, count in counts.items():
+        if type(count) is not int or count <= 0:
+            raise ValueError("raw count must be a positive integer")
+        bits = plan.logical_bits(raw_key)
+        single = tuple(1 - 2 * bit for bit in bits)
+        values = single + tuple(
+            single[index] * single[index + 1] for index in range(plan.n_qubits - 1)
+        )
+        shots += count
+        if shots > plan.shots:
+            raise ValueError("raw counts exceed requested shots")
+        for index, value in enumerate(values):
+            totals[index] += count * value
+            for other_index, other in enumerate(values):
+                joint[index][other_index] += count * value * other
+    if shots != plan.shots:
+        raise ValueError("raw counts do not match requested shots")
+    expectations = tuple(total / shots for total in totals)
+    covariance = None
+    if shots > 1:
+        denominator = shots * shots * (shots - 1)
+        covariance = tuple(
+            tuple(
+                (shots * joint[index][other] - totals[index] * totals[other]) / denominator
+                for other in range(width)
+            )
+            for index in range(width)
+        )
+    return SampledBasisEstimate(
+        measurement_request_digest=plan.request_digest,
+        origin=origin,
+        shots=shots,
+        observable_ids=plan.observable_ids,
+        expectations=expectations,
+        covariance_of_mean=covariance,
+    )
 
 
 def build_measurement_plan(

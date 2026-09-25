@@ -21,7 +21,12 @@ from .cells import (
 from .compressed import CompressedLatentBatch, validate_compressed_latent_batch
 from .compressor import CompressorArtifact, validate_compressor_artifact
 from .latent import LatentBatch, validate_latent_batch
-from .measurement import MeasurementPlan, build_measurement_plan
+from .measurement import (
+    MeasurementPlan,
+    SampledBasisEstimate,
+    build_measurement_plan,
+    estimate_sampled_basis,
+)
 from .model import ModelDescriptor
 from .static import (
     ReservoirSpec,
@@ -76,6 +81,7 @@ __all__ = (
     "ReservoirSpec",
     "StaticCircuitPlan",
     "MeasurementPlan",
+    "SampledBasisEstimate",
     "f64",
     "canonical_bytes",
     "content_id",
@@ -90,6 +96,7 @@ __all__ = (
     "build_static_circuit_plan",
     "validate_static_circuit_plan",
     "build_measurement_plan",
+    "estimate_sampled_basis",
     "decode_contract",
 )
 

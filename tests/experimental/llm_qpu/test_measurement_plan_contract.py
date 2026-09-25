@@ -21,6 +21,7 @@ from scpn_quantum_control.experimental.llm_qpu.contracts import (
     build_measurement_plan,
     canonical_bytes,
     decode_contract,
+    estimate_sampled_basis,
 )
 
 
@@ -111,3 +112,32 @@ def test_measurement_plan_refuses_axis_and_mapping_drift() -> None:
     wrong_wire["display_order_clbits"] = [0, 1, 2]
     with pytest.raises(ValueError, match="display bit order"):
         decode_contract(canonical_bytes(wrong_wire))
+
+
+def test_sparse_joint_counts_preserve_correlations_and_bit_mapping() -> None:
+    """Two sparse joint distributions with equal marginals retain distinct ZZ."""
+    plan = replace(_plan("Z"), shots=2)
+    correlated = estimate_sampled_basis(plan, {"0000": 1, "0101": 1}, origin="hardware_raw")
+    anticorrelated = estimate_sampled_basis(plan, {"0001": 1, "0100": 1}, origin="hardware_raw")
+    assert correlated.expectations[:2] == anticorrelated.expectations[:2]
+    assert correlated.expectations[4] == 1.0
+    assert anticorrelated.expectations[4] == -1.0
+    assert correlated.origin == "hardware_raw"
+    assert correlated.covariance_of_mean is not None
+    assert correlated.covariance_of_mean[0][0] == 1.0
+
+
+def test_sampled_covariance_and_missing_layout_refusal() -> None:
+    """A single shot has undefined covariance; wrong shots and layout fail."""
+    one = replace(_plan("X"), shots=1)
+    result = estimate_sampled_basis(one, {"0000": 1}, origin="digital_sampled")
+    assert result.expectations == (1.0,) * 7
+    assert result.covariance_of_mean is None
+    with pytest.raises(ValueError, match="requested shots"):
+        estimate_sampled_basis(one, {"0000": 2}, origin="hardware_raw")
+    with pytest.raises(ValueError, match="layout"):
+        estimate_sampled_basis(
+            replace(one, physical_qubits=None), {"0000": 1}, origin="hardware_raw"
+        )
+    with pytest.raises(ValueError, match="origin"):
+        estimate_sampled_basis(one, {"0000": 1}, origin="rounded_counts")
