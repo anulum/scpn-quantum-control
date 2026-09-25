@@ -28,6 +28,8 @@ _SPLIT_SCHEMA = "scpn.experimental.llm_qpu.split_manifest.v2"
 _HEADER_SCHEMA = "scpn.experimental.llm_qpu.artifact_header.v1"
 _MODEL_SCHEMA = "scpn.experimental.llm_qpu.model_descriptor.v1"
 _LATENT_SCHEMA = "scpn.experimental.llm_qpu.latent_batch.v1"
+_COMPRESSOR_SCHEMA = "scpn.experimental.llm_qpu.compressor_artifact.v1"
+_COMPRESSED_SCHEMA = "scpn.experimental.llm_qpu.compressed_latent_batch.v1"
 _KEY_FIELDS = {
     "experiment_id",
     "source_sample_id",
@@ -562,6 +564,255 @@ def _roundtrip_latent_batch(request: dict[str, object]) -> dict[str, object]:
     }
 
 
+def _positive_hex(value: object, name: str, maximum: float) -> float:
+    if type(value) is not str:
+        raise ValueError(f"invalid {name} hex")
+    try:
+        parsed = float.fromhex(value)
+    except ValueError as exc:
+        raise ValueError(f"invalid {name} hex") from exc
+    if not math.isfinite(parsed) or not 0 < parsed <= maximum or parsed.hex() != value:
+        raise ValueError(f"invalid {name} hex")
+    return parsed
+
+
+def _float_array(descriptor: object, raw: object, shape: list[int]) -> tuple[float, ...]:
+    fields = {"schema", "object_kind", "dtype", "shape", "byte_length", "sha256"}
+    if type(descriptor) is not dict or set(descriptor) != fields:
+        raise ValueError("compression array descriptor fields mismatch")
+    if (
+        descriptor["schema"] != _ARRAY_SCHEMA
+        or descriptor["object_kind"] != "array_descriptor"
+        or descriptor["dtype"] != "<f4"
+        or descriptor["shape"] != shape
+        or type(descriptor["byte_length"]) is not int
+        or descriptor["byte_length"] != math.prod(shape) * 4
+        or math.prod(shape) > 1_000_000
+    ):
+        raise ValueError("compression array shape or dtype mismatch")
+    if type(raw) is not str or len(raw) > 60_000:
+        raise ValueError("invalid compression array base64")
+    try:
+        payload = base64.b64decode(raw, validate=True)
+    except (ValueError, binascii.Error) as exc:
+        raise ValueError("invalid compression array base64") from exc
+    if (
+        len(payload) != descriptor["byte_length"]
+        or hashlib.sha256(payload).hexdigest() != descriptor["sha256"]
+    ):
+        raise ValueError("compression array payload digest mismatch")
+    values = tuple(item[0] for item in struct.iter_unpack("<f", payload))
+    if any(not math.isfinite(value) for value in values):
+        raise ValueError("compression array contains nonfinite float")
+    return values
+
+
+def _roundtrip_compression(request: dict[str, object]) -> dict[str, object]:
+    fields = {
+        "op",
+        "task",
+        "split",
+        "model",
+        "latent",
+        "latent_base64",
+        "compressor",
+        "centering_base64",
+        "projection_base64",
+        "scales_base64",
+        "compressed",
+        "angles_base64",
+    }
+    if set(request) != fields:
+        raise ValueError("compression request fields mismatch")
+    task = request["task"]
+    split = request["split"]
+    model = request["model"]
+    latent = request["latent"]
+    compressor = request["compressor"]
+    compressed = request["compressed"]
+    _roundtrip_latent_batch(
+        {
+            "op": "roundtrip_latent_batch",
+            "task": task,
+            "split": split,
+            "model": model,
+            "latent": latent,
+            "tensor_base64": request["latent_base64"],
+        }
+    )
+    compressor_fields = {
+        "schema",
+        "object_kind",
+        "model_digest",
+        "split_digest",
+        "train_group_digest",
+        "software_digest",
+        "fit_seed",
+        "fit_method",
+        "map_id",
+        "scale_policy",
+        "input_width",
+        "output_width",
+        "epsilon_hex",
+        "centering",
+        "projection",
+        "scales",
+        "header",
+    }
+    if type(compressor) is not dict or set(compressor) != compressor_fields:
+        raise ValueError("CompressorArtifact fields mismatch")
+    if (
+        compressor["schema"] != _COMPRESSOR_SCHEMA
+        or compressor["object_kind"] != "compressor_artifact"
+    ):
+        raise ValueError("unknown CompressorArtifact schema")
+    if compressor["model_digest"] != hashlib.sha256(_canonical_bytes(model)).hexdigest():
+        raise ValueError("compressor model digest mismatch")
+    if compressor["split_digest"] != hashlib.sha256(_canonical_bytes(split)).hexdigest():
+        raise ValueError("compressor split digest mismatch")
+    groups = hashlib.sha256(_canonical_bytes(split["train_groups"])).hexdigest()
+    if compressor["train_group_digest"] != groups or split["transform_fit_split"] != "train_only":
+        raise ValueError("compressor fit groups differ from train split")
+    if (
+        type(compressor["software_digest"]) is not str
+        or _DIGEST.fullmatch(compressor["software_digest"]) is None
+    ):
+        raise ValueError("invalid compressor software digest")
+    if type(compressor["fit_seed"]) is not int or not 0 <= compressor["fit_seed"] < 2**63:
+        raise ValueError("invalid compressor fit seed")
+    if (
+        compressor["fit_method"] != "pca_train_svd_v1"
+        or compressor["map_id"] != "rms_normalize_center_project_tanh_v2"
+        or compressor["scale_policy"] != "block_zero_variance"
+    ):
+        raise ValueError("unknown compressor fit or map")
+    width = compressor["input_width"]
+    output_width = compressor["output_width"]
+    if (
+        type(width) is not int
+        or width != model["hidden_width"]
+        or type(output_width) is not int
+        or output_width not in (4, 8)
+        or output_width > width
+        or model["tensor_dtype"] != "float32"
+    ):
+        raise ValueError("compressor width differs from model")
+    epsilon = _positive_hex(compressor["epsilon_hex"], "epsilon", 1.0)
+    centers = _float_array(compressor["centering"], request["centering_base64"], [width])
+    projection = _float_array(
+        compressor["projection"], request["projection_base64"], [width, output_width]
+    )
+    scales = _float_array(compressor["scales"], request["scales_base64"], [output_width])
+    if any(value <= 0 for value in scales):
+        raise ValueError("compressor scales must be positive")
+    _validate_artifact_header(
+        compressor,
+        (
+            compressor["model_digest"],
+            compressor["split_digest"],
+            compressor["train_group_digest"],
+            compressor["software_digest"],
+            compressor["centering"]["sha256"],
+            compressor["projection"]["sha256"],
+            compressor["scales"]["sha256"],
+        ),
+        task["source_kind"],
+    )
+    compressed_fields = {
+        "schema",
+        "object_kind",
+        "latent_digest",
+        "compressor_digest",
+        "split_name",
+        "layout",
+        "sample_ids",
+        "source_ids",
+        "group_ids",
+        "lengths",
+        "mask",
+        "token_positions",
+        "answer_start_positions",
+        "angle_unit",
+        "comparison_tolerance_hex",
+        "tensor",
+        "header",
+    }
+    if type(compressed) is not dict or set(compressed) != compressed_fields:
+        raise ValueError("CompressedLatentBatch fields mismatch")
+    if (
+        compressed["schema"] != _COMPRESSED_SCHEMA
+        or compressed["object_kind"] != "compressed_latent_batch"
+    ):
+        raise ValueError("unknown CompressedLatentBatch schema")
+    if compressed["latent_digest"] != hashlib.sha256(_canonical_bytes(latent)).hexdigest():
+        raise ValueError("compressed source latent digest mismatch")
+    if compressed["compressor_digest"] != hashlib.sha256(_canonical_bytes(compressor)).hexdigest():
+        raise ValueError("compressed compressor digest mismatch")
+    for name in (
+        "split_name",
+        "layout",
+        "sample_ids",
+        "source_ids",
+        "group_ids",
+        "lengths",
+        "mask",
+        "token_positions",
+        "answer_start_positions",
+    ):
+        if compressed[name] != latent[name]:
+            raise ValueError(f"compressed {name} differs from latent")
+    if compressed["angle_unit"] != "radian":
+        raise ValueError("compressed angles must be radians")
+    tolerance = _positive_hex(compressed["comparison_tolerance_hex"], "angle tolerance", 1e-5)
+    source_shape = latent["tensor"]["shape"]
+    output_shape = [*source_shape[:-1], output_width]
+    angles = _float_array(compressed["tensor"], request["angles_base64"], output_shape)
+    _validate_artifact_header(
+        compressed,
+        (
+            compressed["latent_digest"],
+            compressed["compressor_digest"],
+            compressed["tensor"]["sha256"],
+        ),
+        task["source_kind"],
+    )
+    source_raw = base64.b64decode(request["latent_base64"], validate=True)
+    source_values = tuple(item[0] for item in struct.iter_unpack("<f", source_raw))
+    steps = 1 if latent["layout"] == "contextual" else source_shape[1]
+    for row_index, length in enumerate(latent["lengths"]):
+        for step in range(steps):
+            flat_row = row_index * steps + step
+            source = source_values[flat_row * width : (flat_row + 1) * width]
+            output = angles[flat_row * output_width : (flat_row + 1) * output_width]
+            if step >= length:
+                if any(value != 0 for value in output):
+                    raise ValueError("compressed padding must be zero")
+                continue
+            rms = math.sqrt(math.fsum(value * value for value in source) / width + epsilon)
+            normalized = tuple(value / rms - centers[index] for index, value in enumerate(source))
+            for column, actual in enumerate(output):
+                if not -math.pi / 2 < actual < math.pi / 2:
+                    raise ValueError("compressed angle outside open radian interval")
+                projected = math.fsum(
+                    projection[index * output_width + column] * normalized[index]
+                    for index in range(width)
+                )
+                expected = (math.pi / 2) * math.tanh(projected / scales[column])
+                if abs(actual - expected) > tolerance:
+                    raise ValueError("compressed angle differs from frozen map")
+    compressor_wire = _canonical_bytes(compressor)
+    compressed_wire = _canonical_bytes(compressed)
+    return {
+        "schema": _SCHEMA,
+        "status": "validated_roundtrip_no_compute",
+        "compressor": json.loads(compressor_wire),
+        "compressed": json.loads(compressed_wire),
+        "compressor_sha256": hashlib.sha256(compressor_wire).hexdigest(),
+        "compressed_sha256": hashlib.sha256(compressed_wire).hexdigest(),
+        "hardware_submission_enabled": False,
+    }
+
+
 def main() -> int:
     """Read one bounded request and refuse any operation except discovery.
 
@@ -617,6 +868,13 @@ def main() -> int:
             _emit({"schema": _SCHEMA, "status": "refused", "reason": str(exc)})
             return 2
         return 0
+    if type(request) is dict and request.get("op") == "roundtrip_compression":
+        try:
+            _emit(_roundtrip_compression(request))
+        except (ValueError, TypeError, KeyError, OverflowError) as exc:
+            _emit({"schema": _SCHEMA, "status": "refused", "reason": str(exc)})
+            return 2
+        return 0
     if type(request) is not dict or set(request) != {"op"} or request["op"] != "describe":
         _emit({"schema": _SCHEMA, "status": "refused", "reason": "unsupported operation"})
         return 2
@@ -630,6 +888,7 @@ def main() -> int:
                 "roundtrip_task_split",
                 "roundtrip_model_descriptor",
                 "roundtrip_latent_batch",
+                "roundtrip_compression",
             ],
             "hardware_submission_enabled": False,
             "provider_credentials_required": False,

@@ -27,6 +27,8 @@ SPLIT_SCHEMA = "scpn.experimental.llm_qpu.split_manifest.v2"
 HEADER_SCHEMA = "scpn.experimental.llm_qpu.artifact_header.v1"
 MODEL_SCHEMA = "scpn.experimental.llm_qpu.model_descriptor.v1"
 LATENT_SCHEMA = "scpn.experimental.llm_qpu.latent_batch.v1"
+COMPRESSOR_SCHEMA = "scpn.experimental.llm_qpu.compressor_artifact.v1"
+COMPRESSED_SCHEMA = "scpn.experimental.llm_qpu.compressed_latent_batch.v1"
 _KEY_FIELDS = (
     "experiment_id",
     "source_sample_id",
@@ -492,7 +494,16 @@ def validate_completion(
 
 def decode_contract(
     raw: bytes,
-) -> PlannedCell | ArrayDescriptor | TaskSpec | SplitManifest | ModelDescriptor | LatentBatch:
+) -> (
+    PlannedCell
+    | ArrayDescriptor
+    | TaskSpec
+    | SplitManifest
+    | ModelDescriptor
+    | LatentBatch
+    | CompressorArtifact
+    | CompressedLatentBatch
+):
     """Decode only implemented records; all other chapter objects refuse."""
     value = _strict_json(raw)
     if type(value) is not dict:
@@ -509,6 +520,10 @@ def decode_contract(
         return ModelDescriptor.from_wire(value)
     if value.get("schema") == LATENT_SCHEMA:
         return LatentBatch.from_wire(value)
+    if value.get("schema") == COMPRESSOR_SCHEMA:
+        return CompressorArtifact.from_wire(value)
+    if value.get("schema") == COMPRESSED_SCHEMA:
+        return CompressedLatentBatch.from_wire(value)
     raise ValueError("unsupported contract schema")
 
 
@@ -532,6 +547,8 @@ class ArtifactHeader:
             "split_manifest",
             "model_descriptor",
             "latent_batch",
+            "compressor_artifact",
+            "compressed_latent_batch",
         ):
             raise ValueError("unsupported artifact object kind")
         _digest(self.content_digest, name="artifact content")
@@ -1056,3 +1073,398 @@ def validate_latent_batch(
                 offset = (index * steps + step) * row_bytes
                 if payload[offset : offset + row_bytes] != bytes(row_bytes):
                     raise ValueError("latent padding must be zero")
+
+
+def _positive_float_hex(value: object, *, name: str, maximum: float) -> float:
+    if type(value) is not str:
+        raise ValueError(f"{name} must be canonical finite hex")
+    try:
+        parsed = float.fromhex(value)
+    except (ValueError, OverflowError) as exc:
+        raise ValueError(f"{name} must be canonical finite hex") from exc
+    if not math.isfinite(parsed) or not 0 < parsed <= maximum or parsed.hex() != value:
+        raise ValueError(f"{name} must be canonical bounded positive hex")
+    return parsed
+
+
+@dataclass(frozen=True, slots=True)
+class CompressorArtifact:
+    """Bind train-only fitted float32 arrays without embedding private bytes."""
+
+    model_digest: str
+    split_digest: str
+    train_group_digest: str
+    software_digest: str
+    fit_seed: int
+    fit_method: str
+    map_id: str
+    scale_policy: str
+    input_width: int
+    output_width: int
+    epsilon_hex: str
+    centering: ArrayDescriptor
+    projection: ArrayDescriptor
+    scales: ArrayDescriptor
+    header: ArtifactHeader
+
+    def __post_init__(self) -> None:
+        """Validate frozen fit metadata, dimensions and array lineage."""
+        for name in ("model_digest", "split_digest", "train_group_digest", "software_digest"):
+            _digest(getattr(self, name), name=name)
+        if type(self.fit_seed) is not int or not 0 <= self.fit_seed < 2**63:
+            raise ValueError("invalid compressor fit seed")
+        if self.fit_method != "pca_train_svd_v1":
+            raise ValueError("unknown compressor fit method")
+        if self.map_id != "rms_normalize_center_project_tanh_v2":
+            raise ValueError("unknown compressor map")
+        if self.scale_policy != "block_zero_variance":
+            raise ValueError("unknown compressor scale policy")
+        _positive_int(self.input_width, name="compressor input width", maximum=65_536)
+        if self.output_width not in (4, 8) or self.output_width > self.input_width:
+            raise ValueError("compressor output width must be four or eight")
+        _positive_float_hex(self.epsilon_hex, name="compressor epsilon", maximum=1.0)
+        for name, shape in (
+            ("centering", (self.input_width,)),
+            ("projection", (self.input_width, self.output_width)),
+            ("scales", (self.output_width,)),
+        ):
+            descriptor = getattr(self, name)
+            if (
+                type(descriptor) is not ArrayDescriptor
+                or descriptor.dtype != "<f4"
+                or descriptor.shape != shape
+            ):
+                raise ValueError(f"compressor {name} must be exact float32 shape")
+        if (
+            type(self.header) is not ArtifactHeader
+            or self.header.object_kind != "compressor_artifact"
+        ):
+            raise ValueError("CompressorArtifact requires exact header")
+        self.header.validate_content(
+            self._scientific_wire(),
+            parents=(
+                self.model_digest,
+                self.split_digest,
+                self.train_group_digest,
+                self.software_digest,
+                self.centering.sha256,
+                self.projection.sha256,
+                self.scales.sha256,
+            ),
+        )
+
+    def _scientific_wire(self) -> dict[str, object]:
+        """Return exact compressor content hashed by the artifact header."""
+        return {
+            "schema": COMPRESSOR_SCHEMA,
+            "object_kind": "compressor_artifact",
+            "model_digest": self.model_digest,
+            "split_digest": self.split_digest,
+            "train_group_digest": self.train_group_digest,
+            "software_digest": self.software_digest,
+            "fit_seed": self.fit_seed,
+            "fit_method": self.fit_method,
+            "map_id": self.map_id,
+            "scale_policy": self.scale_policy,
+            "input_width": self.input_width,
+            "output_width": self.output_width,
+            "epsilon_hex": self.epsilon_hex,
+            "centering": self.centering.to_wire(),
+            "projection": self.projection.to_wire(),
+            "scales": self.scales.to_wire(),
+        }
+
+    def to_wire(self) -> dict[str, object]:
+        """Return detached compressor descriptors and provenance."""
+        return {**self._scientific_wire(), "header": self.header.to_wire()}
+
+    @classmethod
+    def from_wire(cls, value: object) -> CompressorArtifact:
+        """Reject unknown fields and revalidate fitted-array descriptors."""
+        fields = set(cls.__dataclass_fields__) | {"schema", "object_kind"}
+        if type(value) is not dict or set(value) != fields:
+            raise ValueError("CompressorArtifact fields mismatch")
+        if value["schema"] != COMPRESSOR_SCHEMA or value["object_kind"] != "compressor_artifact":
+            raise ValueError("unknown CompressorArtifact schema")
+        return cls(
+            model_digest=value["model_digest"],
+            split_digest=value["split_digest"],
+            train_group_digest=value["train_group_digest"],
+            software_digest=value["software_digest"],
+            fit_seed=value["fit_seed"],
+            fit_method=value["fit_method"],
+            map_id=value["map_id"],
+            scale_policy=value["scale_policy"],
+            input_width=value["input_width"],
+            output_width=value["output_width"],
+            epsilon_hex=value["epsilon_hex"],
+            centering=ArrayDescriptor.from_wire(value["centering"]),
+            projection=ArrayDescriptor.from_wire(value["projection"]),
+            scales=ArrayDescriptor.from_wire(value["scales"]),
+            header=ArtifactHeader.from_wire(value["header"]),
+        )
+
+
+def validate_compressor_artifact(
+    split: SplitManifest,
+    model: ModelDescriptor,
+    compressor: CompressorArtifact,
+    centering_payload: bytes,
+    projection_payload: bytes,
+    scales_payload: bytes,
+) -> None:
+    """Verify exact train lineage, float32 array bytes and positive scales."""
+    if (
+        type(split) is not SplitManifest
+        or type(model) is not ModelDescriptor
+        or type(compressor) is not CompressorArtifact
+    ):
+        raise ValueError("compressor validation requires frozen contracts")
+    if compressor.split_digest != hashlib.sha256(canonical_bytes(split.to_wire())).hexdigest():
+        raise ValueError("compressor split digest mismatch")
+    if compressor.model_digest != hashlib.sha256(canonical_bytes(model.to_wire())).hexdigest():
+        raise ValueError("compressor model digest mismatch")
+    expected_groups = hashlib.sha256(canonical_bytes(list(split.train_groups))).hexdigest()
+    if (
+        compressor.train_group_digest != expected_groups
+        or split.transform_fit_split != "train_only"
+    ):
+        raise ValueError("compressor fit groups differ from frozen train split")
+    if compressor.input_width != model.hidden_width or model.tensor_dtype != "float32":
+        raise ValueError("compressor input differs from model hidden state")
+    if compressor.header.data_origin != split.header.data_origin:
+        raise ValueError("compressor data origin mismatch")
+    for descriptor, payload in (
+        (compressor.centering, centering_payload),
+        (compressor.projection, projection_payload),
+        (compressor.scales, scales_payload),
+    ):
+        descriptor.validate_payload(payload)
+    if any(value[0] <= 0 for value in struct.iter_unpack("<f", scales_payload)):
+        raise ValueError("compressor scales must be positive")
+
+
+@dataclass(frozen=True, slots=True)
+class CompressedLatentBatch:
+    """Retain causal row identities for bounded radian input angles."""
+
+    latent_digest: str
+    compressor_digest: str
+    split_name: str
+    layout: str
+    sample_ids: tuple[str, ...]
+    source_ids: tuple[str, ...]
+    group_ids: tuple[str, ...]
+    lengths: tuple[int, ...]
+    mask: tuple[tuple[bool, ...], ...]
+    token_positions: tuple[tuple[int | None, ...], ...]
+    answer_start_positions: tuple[tuple[int | None, ...], ...]
+    angle_unit: str
+    comparison_tolerance_hex: str
+    tensor: ArrayDescriptor
+    header: ArtifactHeader
+
+    def __post_init__(self) -> None:
+        """Validate radian tensor identity, causal rows and exact header."""
+        _digest(self.latent_digest, name="source latent")
+        _digest(self.compressor_digest, name="compressor")
+        if self.split_name not in ("train", "dev", "test"):
+            raise ValueError("unknown compressed split")
+        if self.layout not in ("contextual", "chunk_isolated"):
+            raise ValueError("unknown compressed layout")
+        if self.angle_unit != "radian":
+            raise ValueError("compressed angles must be radians")
+        _positive_float_hex(self.comparison_tolerance_hex, name="angle tolerance", maximum=1e-5)
+        if type(self.tensor) is not ArrayDescriptor or self.tensor.dtype != "<f4":
+            raise ValueError("compressed tensor must be little-endian float32")
+        shape = self.tensor.shape
+        if len(shape) != (2 if self.layout == "contextual" else 3):
+            raise ValueError("compressed tensor rank differs from layout")
+        rows = shape[0]
+        steps = 1 if self.layout == "contextual" else shape[1]
+        for name in ("sample_ids", "source_ids", "group_ids", "lengths"):
+            values = getattr(self, name)
+            if type(values) is not tuple or len(values) != rows:
+                raise ValueError("compressed row identity length mismatch")
+        for name in ("sample_ids", "source_ids", "group_ids"):
+            object.__setattr__(
+                self, name, tuple(_text(item, name=name) for item in getattr(self, name))
+            )
+        if len(set(self.sample_ids)) != rows:
+            raise ValueError("duplicate compressed sample ID")
+        for name in ("mask", "token_positions", "answer_start_positions"):
+            values = getattr(self, name)
+            if (
+                type(values) is not tuple
+                or len(values) != rows
+                or any(type(row) is not tuple or len(row) != steps for row in values)
+            ):
+                raise ValueError("compressed step identity length mismatch")
+        for index, length in enumerate(self.lengths):
+            if type(length) is not int or not 0 < length <= steps:
+                raise ValueError("compressed length exceeds steps")
+            if self.layout == "contextual" and length != 1:
+                raise ValueError("contextual compressed length must be one")
+            for step in range(steps):
+                active = self.mask[index][step]
+                selected = self.token_positions[index][step]
+                answer = self.answer_start_positions[index][step]
+                if type(active) is not bool or active != (step < length):
+                    raise ValueError("compressed mask and length disagree")
+                if not active and (selected is not None or answer is not None):
+                    raise ValueError("compressed padding carries token positions")
+                if active and (
+                    type(selected) is not int
+                    or type(answer) is not int
+                    or not 0 <= selected < answer <= 1_000_001
+                ):
+                    raise ValueError("compressed token position reaches answer")
+        if (
+            type(self.header) is not ArtifactHeader
+            or self.header.object_kind != "compressed_latent_batch"
+        ):
+            raise ValueError("CompressedLatentBatch requires exact header")
+        self.header.validate_content(
+            self._scientific_wire(),
+            parents=(self.latent_digest, self.compressor_digest, self.tensor.sha256),
+        )
+
+    def _scientific_wire(self) -> dict[str, object]:
+        """Return exact compressed row content hashed by its header."""
+        return {
+            "schema": COMPRESSED_SCHEMA,
+            "object_kind": "compressed_latent_batch",
+            "latent_digest": self.latent_digest,
+            "compressor_digest": self.compressor_digest,
+            "split_name": self.split_name,
+            "layout": self.layout,
+            "sample_ids": list(self.sample_ids),
+            "source_ids": list(self.source_ids),
+            "group_ids": list(self.group_ids),
+            "lengths": list(self.lengths),
+            "mask": [list(row) for row in self.mask],
+            "token_positions": [list(row) for row in self.token_positions],
+            "answer_start_positions": [list(row) for row in self.answer_start_positions],
+            "angle_unit": self.angle_unit,
+            "comparison_tolerance_hex": self.comparison_tolerance_hex,
+            "tensor": self.tensor.to_wire(),
+        }
+
+    def to_wire(self) -> dict[str, object]:
+        """Return detached radian batch descriptors and provenance."""
+        return {**self._scientific_wire(), "header": self.header.to_wire()}
+
+    @classmethod
+    def from_wire(cls, value: object) -> CompressedLatentBatch:
+        """Decode only the exact radian batch field inventory."""
+        fields = set(cls.__dataclass_fields__) | {"schema", "object_kind"}
+        if type(value) is not dict or set(value) != fields:
+            raise ValueError("CompressedLatentBatch fields mismatch")
+        if (
+            value["schema"] != COMPRESSED_SCHEMA
+            or value["object_kind"] != "compressed_latent_batch"
+        ):
+            raise ValueError("unknown CompressedLatentBatch schema")
+        flat = ("sample_ids", "source_ids", "group_ids", "lengths")
+        nested = ("mask", "token_positions", "answer_start_positions")
+        if any(type(value[name]) is not list for name in (*flat, *nested)) or any(
+            any(type(row) is not list for row in value[name]) for name in nested
+        ):
+            raise ValueError("compressed rows and steps must be lists on wire")
+        return cls(
+            latent_digest=value["latent_digest"],
+            compressor_digest=value["compressor_digest"],
+            split_name=value["split_name"],
+            layout=value["layout"],
+            sample_ids=tuple(value["sample_ids"]),
+            source_ids=tuple(value["source_ids"]),
+            group_ids=tuple(value["group_ids"]),
+            lengths=tuple(value["lengths"]),
+            mask=tuple(tuple(row) for row in value["mask"]),
+            token_positions=tuple(tuple(row) for row in value["token_positions"]),
+            answer_start_positions=tuple(tuple(row) for row in value["answer_start_positions"]),
+            angle_unit=value["angle_unit"],
+            comparison_tolerance_hex=value["comparison_tolerance_hex"],
+            tensor=ArrayDescriptor.from_wire(value["tensor"]),
+            header=ArtifactHeader.from_wire(value["header"]),
+        )
+
+
+def validate_compressed_latent_batch(
+    task: TaskSpec,
+    split: SplitManifest,
+    model: ModelDescriptor,
+    latent: LatentBatch,
+    compressor: CompressorArtifact,
+    compressed: CompressedLatentBatch,
+    latent_payload: bytes,
+    centering_payload: bytes,
+    projection_payload: bytes,
+    scales_payload: bytes,
+    angles_payload: bytes,
+) -> None:
+    """Recompute every active angle from private bytes and refuse row drift."""
+    if type(compressed) is not CompressedLatentBatch:
+        raise ValueError("compressed validation requires frozen contract")
+    validate_latent_batch(task, split, model, latent, latent_payload)
+    validate_compressor_artifact(
+        split, model, compressor, centering_payload, projection_payload, scales_payload
+    )
+    if compressed.latent_digest != hashlib.sha256(canonical_bytes(latent.to_wire())).hexdigest():
+        raise ValueError("compressed source latent digest mismatch")
+    if (
+        compressed.compressor_digest
+        != hashlib.sha256(canonical_bytes(compressor.to_wire())).hexdigest()
+    ):
+        raise ValueError("compressed compressor digest mismatch")
+    for name in (
+        "split_name",
+        "layout",
+        "sample_ids",
+        "source_ids",
+        "group_ids",
+        "lengths",
+        "mask",
+        "token_positions",
+        "answer_start_positions",
+    ):
+        if getattr(compressed, name) != getattr(latent, name):
+            raise ValueError(f"compressed {name} differs from source latent")
+    if compressed.tensor.shape != (*latent.tensor.shape[:-1], compressor.output_width):
+        raise ValueError("compressed output shape mismatch")
+    if compressed.header.data_origin != latent.header.data_origin:
+        raise ValueError("compressed data origin mismatch")
+    compressed.tensor.validate_payload(angles_payload)
+    source_values = tuple(item[0] for item in struct.iter_unpack("<f", latent_payload))
+    centers = tuple(item[0] for item in struct.iter_unpack("<f", centering_payload))
+    projection = tuple(item[0] for item in struct.iter_unpack("<f", projection_payload))
+    scales = tuple(item[0] for item in struct.iter_unpack("<f", scales_payload))
+    angles = tuple(item[0] for item in struct.iter_unpack("<f", angles_payload))
+    width = compressor.input_width
+    output_width = compressor.output_width
+    steps = 1 if latent.layout == "contextual" else latent.tensor.shape[1]
+    epsilon = _positive_float_hex(compressor.epsilon_hex, name="epsilon", maximum=1.0)
+    tolerance = _positive_float_hex(
+        compressed.comparison_tolerance_hex, name="angle tolerance", maximum=1e-5
+    )
+    for row_index, length in enumerate(latent.lengths):
+        for step in range(steps):
+            flat_row = row_index * steps + step
+            source = source_values[flat_row * width : (flat_row + 1) * width]
+            output = angles[flat_row * output_width : (flat_row + 1) * output_width]
+            if step >= length:
+                if any(value != 0.0 for value in output):
+                    raise ValueError("compressed padding must be zero")
+                continue
+            rms = math.sqrt(math.fsum(value * value for value in source) / width + epsilon)
+            normalized = tuple(value / rms - centers[index] for index, value in enumerate(source))
+            for column, actual in enumerate(output):
+                if not -math.pi / 2 < actual < math.pi / 2:
+                    raise ValueError("compressed angle outside open radian interval")
+                projected = math.fsum(
+                    projection[index * output_width + column] * normalized[index]
+                    for index in range(width)
+                )
+                expected = (math.pi / 2) * math.tanh(projected / scales[column])
+                if abs(actual - expected) > tolerance:
+                    raise ValueError("compressed angle differs from frozen map")
