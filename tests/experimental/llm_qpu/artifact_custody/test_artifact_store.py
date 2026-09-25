@@ -64,15 +64,17 @@ def test_t03b_interrupted_write_leaves_no_valid_partial(tmp_path: Path) -> None:
 import resource
 import signal
 import sys
+import traceback
 from pathlib import Path
 from scpn_quantum_control.experimental.llm_qpu.data.artifact_store import ArtifactStore
 store = ArtifactStore(Path(sys.argv[1]))
 signal.signal(signal.SIGXFSZ, signal.SIG_IGN)
 soft, hard = resource.getrlimit(resource.RLIMIT_FSIZE)
-resource.setrlimit(resource.RLIMIT_FSIZE, (1024, hard))
+resource.setrlimit(resource.RLIMIT_FSIZE, (4096, hard))
 try:
     store.put(b'x' * 8192, kind='evidence', retention='pinned', egress='private_derived')
 except OSError:
+    sys.stderr.write(traceback.format_exc())
     sys.exit(0)
 sys.exit(1)
 """
@@ -83,6 +85,7 @@ sys.exit(1)
         text=True,
     )
     assert result.returncode == 0, result.stderr
+    assert "written = os.write" in result.stderr
     with pytest.raises(MissingArtifactError):
         store.get(digest)
     assert list(store.objects.rglob("*")) == [store.objects / digest[:2]]

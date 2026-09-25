@@ -119,6 +119,7 @@ class ArtifactStore:
         finally:
             os.close(descriptor)
         with self._connection() as connection:
+            connection.execute("PRAGMA journal_mode=WAL")
             connection.executescript(
                 """
                 CREATE TABLE IF NOT EXISTS objects (
@@ -147,7 +148,6 @@ class ArtifactStore:
         connection = sqlite3.connect(self.database, timeout=30.0)
         try:
             connection.execute("PRAGMA foreign_keys=ON")
-            connection.execute("PRAGMA journal_mode=WAL")
             with connection:
                 yield connection
         finally:
