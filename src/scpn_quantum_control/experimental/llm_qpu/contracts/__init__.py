@@ -28,6 +28,7 @@ from .measurement import (
     estimate_sampled_basis,
 )
 from .model import ModelDescriptor
+from .protocol import ExperimentProtocol, validate_experiment_protocol
 from .static import (
     ReservoirSpec,
     StaticCircuitPlan,
@@ -39,6 +40,7 @@ from .wire import (
     ARRAY_SCHEMA,
     COMPRESSED_SCHEMA,
     COMPRESSOR_SCHEMA,
+    EXPERIMENT_PROTOCOL_SCHEMA,
     HEADER_SCHEMA,
     LATENT_SCHEMA,
     MEASUREMENT_PLAN_SCHEMA,
@@ -65,6 +67,7 @@ __all__ = (
     "LATENT_SCHEMA",
     "COMPRESSOR_SCHEMA",
     "COMPRESSED_SCHEMA",
+    "EXPERIMENT_PROTOCOL_SCHEMA",
     "RESERVOIR_SCHEMA",
     "STATIC_PLAN_SCHEMA",
     "MEASUREMENT_PLAN_SCHEMA",
@@ -78,6 +81,7 @@ __all__ = (
     "LatentBatch",
     "CompressorArtifact",
     "CompressedLatentBatch",
+    "ExperimentProtocol",
     "ReservoirSpec",
     "StaticCircuitPlan",
     "MeasurementPlan",
@@ -93,6 +97,7 @@ __all__ = (
     "validate_latent_batch",
     "validate_compressor_artifact",
     "validate_compressed_latent_batch",
+    "validate_experiment_protocol",
     "build_static_circuit_plan",
     "validate_static_circuit_plan",
     "build_measurement_plan",
@@ -115,6 +120,7 @@ def decode_contract(
     | ReservoirSpec
     | StaticCircuitPlan
     | MeasurementPlan
+    | ExperimentProtocol
 ):
     """Decode only implemented records; all other chapter objects refuse."""
     value = _strict_json(raw)
@@ -142,4 +148,6 @@ def decode_contract(
         return StaticCircuitPlan.from_wire(value)
     if value.get("schema") == MEASUREMENT_PLAN_SCHEMA:
         return MeasurementPlan.from_wire(value)
+    if value.get("schema") == EXPERIMENT_PROTOCOL_SCHEMA:
+        return ExperimentProtocol.from_wire(value)
     raise ValueError("unsupported contract schema")

@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 841,
     "public_documentation_pages": 377,
-    "python_model_classes": 1430,
-    "python_model_source_modules": 728,
+    "python_model_classes": 1431,
+    "python_model_source_modules": 729,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1409
+    "test_files": 1410
   },
   "documentation": {
     "examples": [
@@ -673,7 +673,7 @@
       {
         "package": "experimental",
         "path": "src/scpn_quantum_control/experimental",
-        "python_modules": 18
+        "python_modules": 19
       },
       {
         "package": "fep",
@@ -2321,6 +2321,10 @@
       {
         "name": "Experiment",
         "path": "src/scpn_quantum_control/stable_core.py"
+      },
+      {
+        "name": "ExperimentProtocol",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/protocol.py"
       },
       {
         "name": "ExponentialOrderEstimator",
@@ -6815,6 +6819,7 @@
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/latent.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/measurement.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/model.py",
+      "src/scpn_quantum_control/experimental/llm_qpu/contracts/protocol.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/static.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/task.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/wire.py",
@@ -8435,6 +8440,7 @@
       "tests/experimental/llm_qpu/test_baseline_evidence_policy.py",
       "tests/experimental/llm_qpu/test_cell_contract_acceptance.py",
       "tests/experimental/llm_qpu/test_compressor_artifact_contract.py",
+      "tests/experimental/llm_qpu/test_experiment_protocol_contract.py",
       "tests/experimental/llm_qpu/test_lane_manifest_policy.py",
       "tests/experimental/llm_qpu/test_latent_batch_contract.py",
       "tests/experimental/llm_qpu/test_measurement_plan_contract.py",

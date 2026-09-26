@@ -30,6 +30,7 @@ _MODEL_SCHEMA = "scpn.experimental.llm_qpu.model_descriptor.v1"
 _LATENT_SCHEMA = "scpn.experimental.llm_qpu.latent_batch.v1"
 _COMPRESSOR_SCHEMA = "scpn.experimental.llm_qpu.compressor_artifact.v1"
 _COMPRESSED_SCHEMA = "scpn.experimental.llm_qpu.compressed_latent_batch.v1"
+_EXPERIMENT_PROTOCOL_SCHEMA = "scpn.experimental.llm_qpu.experiment_protocol.v1"
 _KEY_FIELDS = {
     "experiment_id",
     "source_sample_id",
@@ -278,7 +279,14 @@ def _roundtrip_task_split(request: dict[str, object]) -> dict[str, object]:
         raise ValueError("unknown task source")
     if task["target_origin"] not in ("independent_ground_truth", "classical_generator"):
         raise ValueError("QPU-generated or unknown target")
-    if task["primary_metric"] not in ("accuracy", "balanced_accuracy", "f1", "mse", "mae"):
+    if task["primary_metric"] not in (
+        "accuracy",
+        "balanced_accuracy",
+        "f1",
+        "mse",
+        "mae",
+        "mean_log_loss",
+    ):
         raise ValueError("unknown primary metric")
     if type(task["causal_cutoff"]) is not int or not 0 <= task["causal_cutoff"] <= 1_000_000:
         raise ValueError("invalid causal cutoff")
@@ -813,6 +821,107 @@ def _roundtrip_compression(request: dict[str, object]) -> dict[str, object]:
     }
 
 
+def _roundtrip_experiment_protocol(request: dict[str, object]) -> dict[str, object]:
+    if set(request) != {"op", "protocol"}:
+        raise ValueError("protocol request fields mismatch")
+    record = request["protocol"]
+    fields = {
+        "schema",
+        "object_kind",
+        "experiment_id",
+        "evaluation_id",
+        "task_digest",
+        "split_digest",
+        "model_digest",
+        "compressor_digest",
+        "kernel_plan_digest",
+        "measurement_plan_digest",
+        "analysis_plan_digest",
+        "mode",
+        "prediction_mode",
+        "arms",
+        "classical_arm",
+        "quantum_arm",
+        "primary_metric",
+        "max_dev_fits_per_arm",
+        "max_qpu_evaluations",
+        "stopping_rule",
+        "failure_policy",
+        "inference_unit",
+        "analysis_scope",
+        "header",
+    }
+    if type(record) is not dict or set(record) != fields:
+        raise ValueError("ExperimentProtocol fields mismatch")
+    if (
+        record["schema"] != _EXPERIMENT_PROTOCOL_SCHEMA
+        or record["object_kind"] != "experiment_protocol"
+    ):
+        raise ValueError("unknown ExperimentProtocol schema")
+    digest_fields = (
+        "task_digest",
+        "split_digest",
+        "model_digest",
+        "compressor_digest",
+        "kernel_plan_digest",
+        "measurement_plan_digest",
+        "analysis_plan_digest",
+    )
+    digests = tuple(record[name] for name in digest_fields)
+    if any(type(value) is not str or _DIGEST.fullmatch(value) is None for value in digests):
+        raise ValueError("invalid protocol parent digest")
+    if len(set(digests)) != len(digests):
+        raise ValueError("duplicate protocol parent digest")
+    for name in ("experiment_id", "evaluation_id"):
+        if type(record[name]) is not str or not record[name]:
+            raise ValueError("invalid protocol identity")
+    if record["mode"] not in ("contextual_latent_transform", "chunk_isolated_sequence"):
+        raise ValueError("unknown memory experiment mode")
+    if record["prediction_mode"] not in ("teacher_forced_trace", "free_generation"):
+        raise ValueError("unknown prediction mode")
+    arms = record["arms"]
+    if type(arms) is not list or not 2 <= len(arms) <= 32:
+        raise ValueError("invalid protocol arms")
+    if any(type(arm) is not str or not arm for arm in arms) or arms != sorted(set(arms)):
+        raise ValueError("protocol arms must be sorted and unique")
+    if (
+        record["classical_arm"] not in arms
+        or record["quantum_arm"] not in arms
+        or record["classical_arm"] == record["quantum_arm"]
+    ):
+        raise ValueError("invalid primary contrast")
+    if record["primary_metric"] not in (
+        "mean_log_loss",
+        "accuracy",
+        "balanced_accuracy",
+        "f1",
+        "mse",
+        "mae",
+    ):
+        raise ValueError("unknown primary metric")
+    for name in ("max_dev_fits_per_arm", "max_qpu_evaluations"):
+        value = record[name]
+        if type(value) is not int or not 0 < value <= 1_000_000:
+            raise ValueError("invalid protocol budget")
+    if record["stopping_rule"] != "fixed_split_no_optional_stopping":
+        raise ValueError("outcome-dependent stopping is forbidden")
+    if record["failure_policy"] != "retain_all_ids_report_missing_and_sensitivity":
+        raise ValueError("invalid missingness policy")
+    if record["inference_unit"] != "source_group_paired":
+        raise ValueError("invalid inference unit")
+    if record["analysis_scope"] not in ("exploratory", "confirmatory"):
+        raise ValueError("unknown analysis scope")
+    _validate_artifact_header(record, tuple(sorted(digests)), record["header"]["data_origin"])
+    wire = _canonical_bytes(record)
+    return {
+        "schema": _SCHEMA,
+        "status": "validated_roundtrip_no_compute",
+        "protocol": json.loads(wire),
+        "protocol_sha256": hashlib.sha256(wire).hexdigest(),
+        "hardware_submission_enabled": False,
+    }
+
+
 def main() -> int:
     """Read one bounded request and refuse any operation except discovery.
 
@@ -875,6 +984,13 @@ def main() -> int:
             _emit({"schema": _SCHEMA, "status": "refused", "reason": str(exc)})
             return 2
         return 0
+    if type(request) is dict and request.get("op") == "roundtrip_experiment_protocol":
+        try:
+            _emit(_roundtrip_experiment_protocol(request))
+        except (ValueError, TypeError, KeyError) as exc:
+            _emit({"schema": _SCHEMA, "status": "refused", "reason": str(exc)})
+            return 2
+        return 0
     if type(request) is not dict or set(request) != {"op"} or request["op"] != "describe":
         _emit({"schema": _SCHEMA, "status": "refused", "reason": "unsupported operation"})
         return 2
@@ -889,6 +1005,7 @@ def main() -> int:
                 "roundtrip_model_descriptor",
                 "roundtrip_latent_batch",
                 "roundtrip_compression",
+                "roundtrip_experiment_protocol",
             ],
             "hardware_submission_enabled": False,
             "provider_credentials_required": False,

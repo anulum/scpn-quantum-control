@@ -42,7 +42,14 @@ class TaskSpec:
         _digest(self.label_schema_digest, name="label schema")
         if type(self.causal_cutoff) is not int or not 0 <= self.causal_cutoff <= 1_000_000:
             raise ValueError("causal cutoff must be a bounded nonnegative token index")
-        if self.primary_metric not in ("accuracy", "balanced_accuracy", "f1", "mse", "mae"):
+        if self.primary_metric not in (
+            "accuracy",
+            "balanced_accuracy",
+            "f1",
+            "mse",
+            "mae",
+            "mean_log_loss",
+        ):
             raise ValueError("primary metric must be fixed and known")
         if type(self.header) is not ArtifactHeader or self.header.object_kind != "task_spec":
             raise ValueError("TaskSpec requires its exact artifact header")
