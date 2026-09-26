@@ -222,6 +222,17 @@
       "covered_lines": null,
       "line_percent": null,
       "missing_lines": null,
+      "path": "src/scpn_quantum_control/experimental/llm_qpu/data/temporal_transfer.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
       "path": "src/scpn_quantum_control/experimental/llm_qpu/runtime/__init__.py",
       "priority": "P2_unmeasured",
       "priority_reason": "No current executable-line baseline; refresh from remote CI.",

@@ -22,6 +22,7 @@ from ..contracts import (
 from ..contracts.wire import SPLIT_SCHEMA
 from .dedup import normalized_source_digest
 from .temporal_task import TemporalRecord, build_temporal_task, generate_temporal_records
+from .temporal_transfer import build_transfer_task, generate_transfer_records
 
 
 def _dataset_digest(records: Sequence[TemporalRecord]) -> str:
@@ -172,3 +173,106 @@ def temporal_pilot_inputs(
                 raise ValueError("paired temporal history is missing")
             selected.append(record.public_wire())
     return tuple(selected)
+
+
+def build_transfer_split(
+    task: TaskSpec,
+    records: Sequence[TemporalRecord],
+    *,
+    seed: int,
+    generation_seed: int,
+    train_count: int,
+    dev_count: int,
+    test_count: int,
+    base_repo_commit: str,
+    implementation_revision: str,
+) -> SplitManifest:
+    """Freeze disjoint source groups for the three-copy task version."""
+    if (
+        type(task) is not TaskSpec
+        or task
+        != build_transfer_task(
+            base_repo_commit=task.header.base_repo_commit,
+            implementation_revision=task.header.implementation_revision,
+        )
+        or (
+            task.header.base_repo_commit != base_repo_commit
+            or task.header.implementation_revision != implementation_revision
+        )
+    ):
+        raise ValueError("transfer split requires its exact task")
+    if type(seed) is not int or not 0 <= seed < 2**63:
+        raise ValueError("split seed must be a nonnegative signed 64-bit integer")
+    if any(type(count) is not int or count <= 0 for count in (train_count, dev_count, test_count)):
+        raise ValueError("every split needs a positive source count")
+    _validate_inventory(records)
+    groups = {record.group_id for record in records}
+    if len(groups) != train_count + dev_count + test_count:
+        raise ValueError("split counts must cover every source group exactly")
+    expected = generate_transfer_records(seed=generation_seed, source_count=len(groups))
+    if tuple(sorted(records, key=lambda row: row.sample_id)) != tuple(
+        sorted(expected, key=lambda row: row.sample_id)
+    ):
+        raise ValueError("transfer records differ from the independent classical generator")
+    ranked = sorted(
+        groups,
+        key=lambda group: hashlib.sha256(
+            canonical_bytes({"seed": seed, "group_id": group})
+        ).digest(),
+    )
+    train_groups = tuple(sorted(ranked[:train_count]))
+    dev_groups = tuple(sorted(ranked[train_count : train_count + dev_count]))
+    test_groups = tuple(sorted(ranked[train_count + dev_count :]))
+    task_digest = hashlib.sha256(canonical_bytes(task.to_wire())).hexdigest()
+    dataset_digest = _dataset_digest(records)
+    content = {
+        "schema": SPLIT_SCHEMA,
+        "object_kind": "split_manifest",
+        "task_digest": task_digest,
+        "dataset_digest": dataset_digest,
+        "train_groups": list(train_groups),
+        "dev_groups": list(dev_groups),
+        "test_groups": list(test_groups),
+        "seed": seed,
+        "dedup_rule": "normalized_source_digest",
+        "test_target_custodian": "separate_locked_evaluator",
+        "transform_fit_split": "train_only",
+    }
+    header = ArtifactHeader(
+        object_kind="split_manifest",
+        content_digest=hashlib.sha256(canonical_bytes(content)).hexdigest(),
+        parents=tuple(sorted((task_digest, dataset_digest))),
+        base_repo_commit=base_repo_commit,
+        implementation_revision=implementation_revision,
+        execution_origin="offline_design",
+        data_origin="synthetic_classical",
+        claim_scope="design_only",
+    )
+    return SplitManifest(
+        task_digest=task_digest,
+        dataset_digest=dataset_digest,
+        train_groups=train_groups,
+        dev_groups=dev_groups,
+        test_groups=test_groups,
+        seed=seed,
+        dedup_rule="normalized_source_digest",
+        test_target_custodian="separate_locked_evaluator",
+        transform_fit_split="train_only",
+        header=header,
+    )
+
+
+def transfer_pilot_inputs(
+    task: TaskSpec,
+    records: Sequence[TemporalRecord],
+    split: SplitManifest,
+    *,
+    group_count: int = 8,
+) -> tuple[dict[str, object], ...]:
+    """Select paired answer-free copy-task dev prompts only."""
+    if type(task) is not TaskSpec or task != build_transfer_task(
+        base_repo_commit=task.header.base_repo_commit,
+        implementation_revision=task.header.implementation_revision,
+    ):
+        raise ValueError("transfer pilot requires its exact task")
+    return temporal_pilot_inputs(task, records, split, group_count=group_count)

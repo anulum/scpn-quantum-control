@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **731 modules** across **40 package families**
-- **4039 documented public module-level symbols**
+- **732 modules** across **40 package families**
+- **4043 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2421,9 +2421,9 @@ Generate deterministic associative text prompts without quantum labels.
 
 Bind paired temporal histories to a disjoint source-group split.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/temporal_splits.py) · Public symbols: **2**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/temporal_splits.py) · Public symbols: **4**
 
-**Functions:** `build_temporal_split()`, `temporal_pilot_inputs()`
+**Functions:** `build_temporal_split()`, `temporal_pilot_inputs()`, `build_transfer_split()`, `transfer_pilot_inputs()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.data.temporal_task`
 
@@ -2434,6 +2434,14 @@ Generate independent-label temporal retrieval scenes with paired histories.
 **Classes:** `TemporalRecord`
 
 **Functions:** `generate_temporal_records()`, `build_temporal_task()`
+
+### `scpn_quantum_control.experimental.llm_qpu.data.temporal_transfer`
+
+Generate paired histories whose answer crosses three ordered copies.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/temporal_transfer.py) · Public symbols: **2**
+
+**Functions:** `generate_transfer_records()`, `build_transfer_task()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.manifest`
 
