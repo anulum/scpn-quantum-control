@@ -30,7 +30,7 @@ _MODEL_SCHEMA = "scpn.experimental.llm_qpu.model_descriptor.v1"
 _LATENT_SCHEMA = "scpn.experimental.llm_qpu.latent_batch.v1"
 _COMPRESSOR_SCHEMA = "scpn.experimental.llm_qpu.compressor_artifact.v1"
 _COMPRESSED_SCHEMA = "scpn.experimental.llm_qpu.compressed_latent_batch.v1"
-_EXPERIMENT_PROTOCOL_SCHEMA = "scpn.experimental.llm_qpu.experiment_protocol.v1"
+_EXPERIMENT_PROTOCOL_SCHEMA = "scpn.experimental.llm_qpu.experiment_protocol.v2"
 _KEY_FIELDS = {
     "experiment_id",
     "source_sample_id",
@@ -843,6 +843,8 @@ def _roundtrip_experiment_protocol(request: dict[str, object]) -> dict[str, obje
         "classical_arm",
         "quantum_arm",
         "primary_metric",
+        "contrast_direction",
+        "minimum_relevant_delta",
         "max_dev_fits_per_arm",
         "max_qpu_evaluations",
         "stopping_rule",
@@ -899,6 +901,23 @@ def _roundtrip_experiment_protocol(request: dict[str, object]) -> dict[str, obje
         "mae",
     ):
         raise ValueError("unknown primary metric")
+    lower_is_better = record["primary_metric"] in ("mean_log_loss", "mse", "mae")
+    expected_direction = (
+        "classical_minus_quantum" if lower_is_better else "quantum_minus_classical"
+    )
+    if record["contrast_direction"] != expected_direction:
+        raise ValueError("primary contrast direction differs from metric")
+    delta = record["minimum_relevant_delta"]
+    if type(delta) is not dict or set(delta) != {"$f64"}:
+        raise ValueError("minimum relevant delta must be tagged f64")
+    try:
+        threshold = float.fromhex(delta["$f64"])
+    except (TypeError, ValueError) as exc:
+        raise ValueError("minimum relevant delta must be tagged f64") from exc
+    if not math.isfinite(threshold) or threshold <= 0.0:
+        raise ValueError("minimum relevant delta must be positive and finite")
+    if not lower_is_better and threshold > 1.0:
+        raise ValueError("bounded classification metric delta cannot exceed one")
     for name in ("max_dev_fits_per_arm", "max_qpu_evaluations"):
         value = record[name]
         if type(value) is not int or not 0 < value <= 1_000_000:
@@ -911,7 +930,14 @@ def _roundtrip_experiment_protocol(request: dict[str, object]) -> dict[str, obje
         raise ValueError("invalid inference unit")
     if record["analysis_scope"] not in ("exploratory", "confirmatory"):
         raise ValueError("unknown analysis scope")
-    _validate_artifact_header(record, tuple(sorted(digests)), record["header"]["data_origin"])
+    header = record["header"]
+    if type(header) is not dict or header.get("data_origin") not in (
+        "owner_dataset",
+        "external_dataset",
+        "synthetic_classical",
+    ):
+        raise ValueError("protocol data origin must be a TaskSpec source kind")
+    _validate_artifact_header(record, tuple(sorted(digests)), header["data_origin"])
     wire = _canonical_bytes(record)
     return {
         "schema": _SCHEMA,

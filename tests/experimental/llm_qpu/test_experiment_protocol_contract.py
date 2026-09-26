@@ -25,6 +25,7 @@ from scpn_quantum_control.experimental.llm_qpu.contracts import (
     TaskSpec,
     canonical_bytes,
     decode_contract,
+    f64,
     validate_experiment_protocol,
 )
 
@@ -116,6 +117,8 @@ def _fixture() -> tuple[TaskSpec, SplitManifest, ExperimentProtocol]:
         "classical_arm": "classical",
         "quantum_arm": "quantum",
         "primary_metric": "mean_log_loss",
+        "contrast_direction": "classical_minus_quantum",
+        "minimum_relevant_delta": 0.02,
         "max_dev_fits_per_arm": 8,
         "max_qpu_evaluations": 128,
         "stopping_rule": "fixed_split_no_optional_stopping",
@@ -124,9 +127,16 @@ def _fixture() -> tuple[TaskSpec, SplitManifest, ExperimentProtocol]:
         "analysis_scope": "exploratory",
     }
     content = {
-        "schema": "scpn.experimental.llm_qpu.experiment_protocol.v1",
+        "schema": "scpn.experimental.llm_qpu.experiment_protocol.v2",
         "object_kind": "experiment_protocol",
-        **{key: list(value) if key == "arms" else value for key, value in fields.items()},
+        **{
+            key: list(value)
+            if key == "arms"
+            else f64(value)
+            if key == "minimum_relevant_delta"
+            else value
+            for key, value in fields.items()
+        },
     }
     parents = tuple(
         fields[key]
@@ -177,6 +187,9 @@ def test_protocol_roundtrip_and_task_binding() -> None:
         ("stopping_rule", "stop_when_significant"),
         ("failure_policy", "drop_missing"),
         ("inference_unit", "shot"),
+        ("primary_metric", "accuracy"),
+        ("contrast_direction", "quantum_minus_classical"),
+        ("minimum_relevant_delta", f64(0.0)),
     ],
 )
 def test_tampered_protocol_refused_on_both_surfaces(field: str, value: object) -> None:
@@ -213,3 +226,47 @@ def test_protocol_cannot_rebind_task_or_split() -> None:
     )
     with pytest.raises(ValueError):
         validate_experiment_protocol(protocol, task, wrong_split)
+
+
+@pytest.mark.parametrize("origin", ["owner_checkpoint", "hardware"])
+def test_protocol_refuses_non_task_data_origin(origin: str) -> None:
+    _, _, protocol = _fixture()
+    wire = protocol.to_wire()
+    wire["header"]["data_origin"] = origin
+    with pytest.raises(ValueError):
+        decode_contract(canonical_bytes(wire))
+    code, response = _worker(wire)
+    assert code == 2
+    assert response["status"] == "refused"
+
+
+def test_protocol_refuses_impossible_classification_effect() -> None:
+    _, _, protocol = _fixture()
+    wire = protocol.to_wire()
+    wire["primary_metric"] = "accuracy"
+    wire["contrast_direction"] = "quantum_minus_classical"
+    wire["minimum_relevant_delta"] = f64(1.1)
+    wire["header"]["content_digest"] = _sha(
+        {key: item for key, item in wire.items() if key != "header"}
+    )
+    with pytest.raises(ValueError, match="cannot exceed one"):
+        decode_contract(canonical_bytes(wire))
+    code, response = _worker(wire)
+    assert code == 2
+    assert "cannot exceed one" in response["reason"]
+
+
+def test_v1_wire_does_not_silently_upgrade() -> None:
+    _, _, protocol = _fixture()
+    wire = protocol.to_wire()
+    wire["schema"] = "scpn.experimental.llm_qpu.experiment_protocol.v1"
+    wire.pop("contrast_direction")
+    wire.pop("minimum_relevant_delta")
+    wire["header"]["content_digest"] = _sha(
+        {key: item for key, item in wire.items() if key != "header"}
+    )
+    with pytest.raises(ValueError):
+        decode_contract(canonical_bytes(wire))
+    code, response = _worker(wire)
+    assert code == 2
+    assert response["status"] == "refused"

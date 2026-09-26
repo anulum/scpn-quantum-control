@@ -32,7 +32,7 @@ COMPRESSED_SCHEMA = "scpn.experimental.llm_qpu.compressed_latent_batch.v1"
 RESERVOIR_SCHEMA = "scpn.experimental.llm_qpu.reservoir_spec.v1"
 STATIC_PLAN_SCHEMA = "scpn.experimental.llm_qpu.static_circuit_plan.v1"
 MEASUREMENT_PLAN_SCHEMA = "scpn.experimental.llm_qpu.measurement_plan.v1"
-EXPERIMENT_PROTOCOL_SCHEMA = "scpn.experimental.llm_qpu.experiment_protocol.v1"
+EXPERIMENT_PROTOCOL_SCHEMA = "scpn.experimental.llm_qpu.experiment_protocol.v2"
 _KEY_FIELDS = (
     "experiment_id",
     "source_sample_id",

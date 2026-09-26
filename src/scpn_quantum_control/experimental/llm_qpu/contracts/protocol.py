@@ -10,10 +10,11 @@
 from __future__ import annotations
 
 import hashlib
+import math
 from dataclasses import dataclass
 
 from .task import SplitManifest, TaskSpec, validate_task_split
-from .wire import EXPERIMENT_PROTOCOL_SCHEMA, ArtifactHeader, _digest, _text, canonical_bytes
+from .wire import EXPERIMENT_PROTOCOL_SCHEMA, ArtifactHeader, _digest, _text, canonical_bytes, f64
 
 
 @dataclass(frozen=True, slots=True)
@@ -39,6 +40,8 @@ class ExperimentProtocol:
     classical_arm: str
     quantum_arm: str
     primary_metric: str
+    contrast_direction: str
+    minimum_relevant_delta: float
     max_dev_fits_per_arm: int
     max_qpu_evaluations: int
     stopping_rule: str
@@ -89,6 +92,20 @@ class ExperimentProtocol:
             "mae",
         ):
             raise ValueError("unknown primary metric")
+        lower_is_better = self.primary_metric in ("mean_log_loss", "mse", "mae")
+        expected_direction = (
+            "classical_minus_quantum" if lower_is_better else "quantum_minus_classical"
+        )
+        if self.contrast_direction != expected_direction:
+            raise ValueError("primary contrast direction differs from metric")
+        if (
+            type(self.minimum_relevant_delta) is not float
+            or not math.isfinite(self.minimum_relevant_delta)
+            or self.minimum_relevant_delta <= 0.0
+        ):
+            raise ValueError("minimum relevant delta must be positive and finite")
+        if not lower_is_better and self.minimum_relevant_delta > 1.0:
+            raise ValueError("bounded classification metric delta cannot exceed one")
         for name in ("max_dev_fits_per_arm", "max_qpu_evaluations"):
             value = getattr(self, name)
             if type(value) is not int or not 0 < value <= 1_000_000:
@@ -106,6 +123,12 @@ class ExperimentProtocol:
             or self.header.object_kind != "experiment_protocol"
         ):
             raise ValueError("ExperimentProtocol requires its exact artifact header")
+        if self.header.data_origin not in (
+            "owner_dataset",
+            "external_dataset",
+            "synthetic_classical",
+        ):
+            raise ValueError("protocol data origin must be a TaskSpec source kind")
         self.header.validate_content(self._scientific_wire(), parents=digests)
 
     def _parents(self) -> tuple[str, ...]:
@@ -130,7 +153,11 @@ class ExperimentProtocol:
             "schema": EXPERIMENT_PROTOCOL_SCHEMA,
             "object_kind": "experiment_protocol",
             **{
-                name: list(getattr(self, name)) if name == "arms" else getattr(self, name)
+                name: list(getattr(self, name))
+                if name == "arms"
+                else f64(getattr(self, name))
+                if name == "minimum_relevant_delta"
+                else getattr(self, name)
                 for name in self.__dataclass_fields__
                 if name != "header"
             },
@@ -153,6 +180,15 @@ class ExperimentProtocol:
             raise ValueError("unknown ExperimentProtocol schema")
         if type(value["arms"]) is not list:
             raise ValueError("protocol arms must be a list on wire")
+        delta = value["minimum_relevant_delta"]
+        if type(delta) is not dict or set(delta) != {"$f64"}:
+            raise ValueError("minimum relevant delta must be tagged f64")
+        try:
+            threshold = float.fromhex(delta["$f64"])
+        except (TypeError, ValueError) as exc:
+            raise ValueError("minimum relevant delta must be tagged f64") from exc
+        if not math.isfinite(threshold) or f64(threshold) != delta:
+            raise ValueError("minimum relevant delta must be canonical f64")
         return cls(
             experiment_id=value["experiment_id"],
             evaluation_id=value["evaluation_id"],
@@ -169,6 +205,8 @@ class ExperimentProtocol:
             classical_arm=value["classical_arm"],
             quantum_arm=value["quantum_arm"],
             primary_metric=value["primary_metric"],
+            contrast_direction=value["contrast_direction"],
+            minimum_relevant_delta=threshold,
             max_dev_fits_per_arm=value["max_dev_fits_per_arm"],
             max_qpu_evaluations=value["max_qpu_evaluations"],
             stopping_rule=value["stopping_rule"],
