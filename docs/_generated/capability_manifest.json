@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 841,
     "public_documentation_pages": 377,
-    "python_model_classes": 1431,
-    "python_model_source_modules": 729,
+    "python_model_classes": 1432,
+    "python_model_source_modules": 731,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1410
+    "test_files": 1411
   },
   "documentation": {
     "examples": [
@@ -673,7 +673,7 @@
       {
         "package": "experimental",
         "path": "src/scpn_quantum_control/experimental",
-        "python_modules": 19
+        "python_modules": 21
       },
       {
         "package": "fep",
@@ -6127,6 +6127,10 @@
         "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/task.py"
       },
       {
+        "name": "TemporalRecord",
+        "path": "src/scpn_quantum_control/experimental/llm_qpu/data/temporal_task.py"
+      },
+      {
         "name": "TheoryHookEvidenceRecord",
         "path": "src/scpn_quantum_control/analysis/theory_hook_promotion.py"
       },
@@ -6829,6 +6833,8 @@
       "src/scpn_quantum_control/experimental/llm_qpu/data/lineage.py",
       "src/scpn_quantum_control/experimental/llm_qpu/data/splits.py",
       "src/scpn_quantum_control/experimental/llm_qpu/data/tasks.py",
+      "src/scpn_quantum_control/experimental/llm_qpu/data/temporal_splits.py",
+      "src/scpn_quantum_control/experimental/llm_qpu/data/temporal_task.py",
       "src/scpn_quantum_control/experimental/llm_qpu/manifest.py",
       "src/scpn_quantum_control/experimental/llm_qpu/runtime/attempt_journal.py",
       "src/scpn_quantum_control/experimental/llm_qpu/runtime/provider_recovery.py",
@@ -8437,6 +8443,7 @@
       "tests/experimental/llm_qpu/attempt_journal/test_attempt_journal.py",
       "tests/experimental/llm_qpu/attempt_journal/test_provider_recovery.py",
       "tests/experimental/llm_qpu/memory_task/test_memory_task.py",
+      "tests/experimental/llm_qpu/memory_task/test_temporal_memory_task.py",
       "tests/experimental/llm_qpu/test_baseline_evidence_policy.py",
       "tests/experimental/llm_qpu/test_cell_contract_acceptance.py",
       "tests/experimental/llm_qpu/test_compressor_artifact_contract.py",

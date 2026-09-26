@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **729 modules** across **40 package families**
-- **4034 documented public module-level symbols**
+- **731 modules** across **40 package families**
+- **4039 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2416,6 +2416,24 @@ Generate deterministic associative text prompts without quantum labels.
 **Classes:** `MemoryRecord`
 
 **Functions:** `generate_memory_records()`, `build_memory_task()`
+
+### `scpn_quantum_control.experimental.llm_qpu.data.temporal_splits`
+
+Bind paired temporal histories to a disjoint source-group split.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/temporal_splits.py) · Public symbols: **2**
+
+**Functions:** `build_temporal_split()`, `temporal_pilot_inputs()`
+
+### `scpn_quantum_control.experimental.llm_qpu.data.temporal_task`
+
+Generate independent-label temporal retrieval scenes with paired histories.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/experimental/llm_qpu/data/temporal_task.py) · Public symbols: **3**
+
+**Classes:** `TemporalRecord`
+
+**Functions:** `generate_temporal_records()`, `build_temporal_task()`
 
 ### `scpn_quantum_control.experimental.llm_qpu.manifest`
 
