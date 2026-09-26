@@ -10,6 +10,8 @@
 
 Date prepared: 2026-05-06
 
+Status checked: 2026-09-26. This document is not an authorised submission.
+
 This note prepares the `scpn-quantum-control` pyOpenSci review package. It does
 not claim that a pyOpenSci issue has been opened or accepted.
 
@@ -46,19 +48,26 @@ Unsupported claims:
 | Field | Current value |
 |-------|---------------|
 | Package name | `scpn-quantum-control` |
-| Version | `0.10.0` source metadata; package release artefacts may lag until the next tagged release |
+| Version | `1.1.0` in source metadata, tag, GitHub release and PyPI at the 2026-09-26 check |
 | Repository | `https://github.com/anulum/scpn-quantum-control` |
 | Documentation | `https://anulum.github.io/scpn-quantum-control` |
 | Issue tracker | `https://github.com/anulum/scpn-quantum-control/issues` |
 | License | `AGPL-3.0-or-later` |
 | Author ORCID | `0009-0009-3560-0851` |
 | Contact | `protoscience@anulum.li` |
-| PyPI status | Published |
-| Zenodo concept DOI | `10.5281/zenodo.18821929` |
+| PyPI status | `1.1.0` published |
+| Zenodo concept DOI | `10.5281/zenodo.18821929`; its latest version record `10.5281/zenodo.18821930` still describes `0.9.6` |
 
 Before opening the pyOpenSci issue, verify that the package version, PyPI
 release, Zenodo metadata, and documentation site all describe the same release
 line.
+
+The version gate currently fails: the live Zenodo latest-version endpoint
+returns `0.9.6` while source/tag/PyPI are `1.1.0`. Do not present that record
+as an archive of the submitted `1.1.0` bytes. The current pyOpenSci issue
+template also requires the submitting author to personally affirm its Code of
+Conduct, maintenance commitment, author guide and pre-review survey; an agent
+cannot truthfully tick those boxes for the owner.
 
 ## Reviewer-Relevant Evidence
 

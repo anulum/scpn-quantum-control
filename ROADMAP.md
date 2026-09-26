@@ -1354,6 +1354,11 @@ explicit QPU-time estimate before submission.
   results upload remain open. No Metriq issue or result was submitted.
 - [ ] **pyOpenSci review.** Submit the software package for review and
   possible JOSS fast-track.
+  Status 2026-09-26: blocked before external submission. Source/tag/PyPI
+  identify `1.1.0`, but the latest Zenodo version record still describes
+  `0.9.6`; the current pyOpenSci issue template also needs author attestations
+  and a fresh documentation/release-gate audit. The May readiness note was
+  updated with these live distinctions. No review issue was opened.
 - [x] **pyOpenSci review preparation.** Completed 2026-05-06:
   `docs/publication/pyopensci_submission_readiness_2026-05-06.md` records the
   package scope, unsupported claims, metadata gate, reviewer evidence,
