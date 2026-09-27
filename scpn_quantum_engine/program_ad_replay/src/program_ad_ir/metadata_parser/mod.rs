@@ -230,13 +230,10 @@ impl<'de, const N: usize> Visitor<'de> for FieldSlots<'_, N> {
     fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter.write_str("a metadata object")
     }
-    fn visit_seq<S: SeqAccess<'de>>(
-        self,
-        mut sequence: S,
-    ) -> Result<Self::Value, S::Error> {
-        let minimum = self.2.ok_or_else(|| {
-            <S::Error as serde::de::Error>::custom("expected metadata object")
-        })?;
+    fn visit_seq<S: SeqAccess<'de>>(self, mut sequence: S) -> Result<Self::Value, S::Error> {
+        let minimum = self
+            .2
+            .ok_or_else(|| <S::Error as serde::de::Error>::custom("expected metadata object"))?;
         let mut fields = [None; N];
         let mut count = 0;
         while let Some(raw) = sequence.next_element::<&RawValue>()? {
@@ -326,8 +323,7 @@ impl<'de, T> Visitor<'de> for Elements<'_, T> {
                     })?;
             }
             values.push(
-                (self.decode)(self.context, raw)
-                    .map_err(<S::Error as serde::de::Error>::custom)?,
+                (self.decode)(self.context, raw).map_err(<S::Error as serde::de::Error>::custom)?,
             );
         }
         Ok(values)
