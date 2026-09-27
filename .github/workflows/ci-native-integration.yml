@@ -92,6 +92,27 @@ jobs:
           path: dist
       - name: Install the current Rust engine wheel
         run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
+      - name: Type-check native replay input admission
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/native_replay_admission.py
+          tests/test_native_replay_admission.py
+      - name: Check native replay admission NumPy docstrings
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/native_replay_admission.py
+          tests/test_native_replay_admission.py
+      - name: Qualify native replay input admission coverage
+        run: |
+          python -m coverage run --rcfile=/dev/null --branch \
+            --data-file=/tmp/scpn-qc-native-replay-input.coverage \
+            -m pytest -q tests/test_native_replay_admission.py
+          python -m coverage report --rcfile=/dev/null \
+            --data-file=/tmp/scpn-qc-native-replay-input.coverage \
+            --precision=2 --show-missing --fail-under=100 \
+            --include=*/native_replay_admission.py
       - name: Type-check Studio executive differentiate quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -496,6 +517,8 @@ jobs:
           path: dist
       - name: Install the current Rust engine wheel
         run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
+      - name: Type-check installed native Hamiltonian boundary tests
+        run: python -m mypy --strict tests/test_hamiltonian_native.py
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/bridge/sparse_hamiltonian.py
@@ -593,15 +616,8 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
-      - name: Install Python 3.11 locked dependencies
-        if: matrix.python-version == '3.11'
-        run: python -m pip install --require-hashes -r requirements-ci-py311-linux.txt
-      - name: Install Python 3.12 locked dependencies
-        if: matrix.python-version == '3.12'
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
-      - name: Install Python 3.13 locked dependencies
-        if: matrix.python-version == '3.13'
-        run: python -m pip install --require-hashes -r requirements-ci-py313-linux.txt
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r ${{ matrix.requirements-file }}
       - name: Install Studio recompute dependency
         if: matrix.python-version != '3.11'
         run: |
@@ -613,29 +629,6 @@ jobs:
           path: dist
       - name: Install the current Rust engine wheel
         run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
-      - name: Type-check native Hamiltonian boundary and installed-wheel tests
-        run: >-
-          python -m mypy --strict --explicit-package-bases
-          tests/test_hamiltonian_native.py
-          src/scpn_quantum_control/native_replay_admission.py
-          tests/test_native_replay_admission.py
-      - name: Check native replay admission NumPy docstrings
-        run: >-
-          python -m ruff check --isolated --preview --select D,D413,D417,D420
-          --config 'lint.explicit-preview-rules = true'
-          --config 'lint.pydocstyle.convention = "numpy"'
-          src/scpn_quantum_control/native_replay_admission.py
-          tests/test_native_replay_admission.py
-      - name: Qualify native replay input admission coverage
-        if: matrix.python-version == '3.12'
-        run: |
-          python -m coverage run --rcfile=/dev/null --branch \
-            --data-file=/tmp/scpn-qc-native-replay-input.coverage \
-            -m pytest -q tests/test_native_replay_admission.py
-          python -m coverage report --rcfile=/dev/null \
-            --data-file=/tmp/scpn-qc-native-replay-input.coverage \
-            --precision=2 --show-missing --fail-under=100 \
-            --include=*/native_replay_admission.py
       - name: Exercise public Rust replay admission and recovery
         if: matrix.python-version == '3.12'
         run: >-
