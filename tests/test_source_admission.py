@@ -225,7 +225,8 @@ def test_objective_source_blocks_and_frontend_match_actual_inspection(tmp_path: 
         "def decorate(fn):\n"
         "    @wraps(fn)\n"
         "    def wrapper(values):\n"
-        "        return fn(values)\n"
+        "        saved = fn\n"
+        "        return saved(values)\n"
         "    return wrapper\n"
         "@decorate\n"
         "def objective(values):\n"
@@ -271,6 +272,11 @@ def test_objective_source_blocks_and_frontend_match_actual_inspection(tmp_path: 
         assert report.source_available
         assert "source_bytecode_mismatch" in report.hard_gaps
         assert report.source_start_line == inspect.getsourcelines(module.objective)[1]
+        closure = next(entry for entry in report.symbol_scope_entries if entry.symbol == "fn")
+        assert "closure" in closure.roles
+        assert closure.bytecode_offsets
+        assert closure.line_numbers == ()
+        assert closure.region_ids == ()
     finally:
         del sys.modules[name]
     assert active_reserved_bytes() == baseline

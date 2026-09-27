@@ -1250,8 +1250,12 @@ def _symbol_scope_entries(
                 if line_is_absolute
                 else line_number
             )
-            symbol_lines[symbol].add(source_line)
-            symbol_regions[symbol].update(_source_region_ids_for_line(source_regions, source_line))
+            region_ids = _source_region_ids_for_line(source_regions, source_line)
+            # Wrapper bytecode can lie outside the unwrapped source. Keep its
+            # symbol/offset evidence without fabricating a source attachment.
+            if not source_regions or region_ids:
+                symbol_lines[symbol].add(source_line)
+                symbol_regions[symbol].update(region_ids)
         if bytecode_offset is not None and bytecode_offset >= 0:
             symbol_offsets[symbol].add(bytecode_offset)
 
