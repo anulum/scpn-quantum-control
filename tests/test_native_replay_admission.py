@@ -411,24 +411,51 @@ def test_reentrant_native_workspace_uses_fixed_input_baseline(
     outer = getattr(engine, outer_surface)
     inner = getattr(engine, inner_surface)
     original_resize = ExecutionMemoryReservation.resize
+    baseline = active_reserved_bytes()
+    # Source copies, native numeric copies and boxed input remain the fixed
+    # baseline; parser metadata is additional storage throughout each replay.
+    input_bytes = len(IR) * 8 + 16 + sys.getsizeof(0.0)
+
+    def isolated_charges(surface: str) -> list[int]:
+        owner: ExecutionMemoryReservation | None = None
+        measured: list[int] = []
+
+        def observe(reservation: ExecutionMemoryReservation, plan: ExecutionMemoryPlan) -> None:
+            nonlocal owner
+            if owner is None:
+                owner = reservation
+                assert reservation.decision.bytes_required == input_bytes
+            original_resize(reservation, plan)
+            if reservation is owner:
+                measured.append(reservation.decision.bytes_required - input_bytes)
+
+        with monkeypatch.context() as instrumentation:
+            instrumentation.setattr(ExecutionMemoryReservation, "resize", observe)
+            result = json.loads(getattr(engine, surface)(IR, [2.0]))
+        assert result["supported"] is True
+        assert result["value"] == 4.0
+        if surface.endswith("value_and_gradient"):
+            assert result["gradient"] == [4.0]
+        assert measured and measured[0] > 0
+        assert measured == sorted(measured)
+        assert active_reserved_bytes() == baseline
+        return measured
+
+    outer_increments = isolated_charges(outer_surface)
+    inner_increments = isolated_charges(inner_surface)
     native_owner: ExecutionMemoryReservation | None = None
-    input_bytes = 0
     charges: list[int] = []
     stage = "outer"
-    inner_json_bytes = 0
-    baseline = active_reserved_bytes()
 
     def observe_resize(reservation: ExecutionMemoryReservation, plan: ExecutionMemoryPlan) -> None:
-        nonlocal native_owner, input_bytes, stage, inner_json_bytes
+        nonlocal native_owner, stage
         if stage == "outer":
             native_owner = reservation
-            input_bytes = reservation.decision.bytes_required
+            assert reservation.decision.bytes_required == input_bytes
             stage = "child"
             original_resize(reservation, plan)
             charges.append(reservation.decision.bytes_required)
-            inner_encoded = inner(IR, [2.0])
-            inner_json_bytes = len(inner_encoded.encode("utf-8"))
-            result = json.loads(inner_encoded)
+            result = json.loads(inner(IR, [2.0]))
             assert result["supported"] is True
             assert result["value"] == 4.0
             if inner_surface.endswith("value_and_gradient"):
@@ -441,31 +468,15 @@ def test_reentrant_native_workspace_uses_fixed_input_baseline(
 
     with monkeypatch.context() as instrumentation:
         instrumentation.setattr(ExecutionMemoryReservation, "resize", observe_resize)
-        outer_encoded = outer(IR, [2.0])
-        result = json.loads(outer_encoded)
+        result = json.loads(outer(IR, [2.0]))
     assert result["supported"] is True
     assert result["value"] == 4.0
     if outer_surface.endswith("value_and_gradient"):
         assert result["gradient"] == [4.0]
-    outer_request = 40 if outer_surface.endswith("value_and_gradient") else 16
-    inner_request = 40 if inner_surface.endswith("value_and_gradient") else 16
-    inner_total = inner_request + inner_json_bytes
-    header = max(sys.getsizeof(c) for c in ("", "a", "\u0080", "\u0100", "\U00010000"))
-    inner_python_bytes = header + 4 * inner_json_bytes
-    outer_json_bytes = len(outer_encoded.encode("utf-8"))
-    outer_python_bytes = header + 4 * outer_json_bytes
     assert charges == [
-        input_bytes + outer_request,
-        input_bytes + outer_request + inner_request,
-        input_bytes + outer_request + inner_total,
-        input_bytes + outer_request + inner_total + inner_python_bytes,
-        input_bytes + outer_request + inner_total + inner_python_bytes + outer_json_bytes,
-        input_bytes
-        + outer_request
-        + inner_total
-        + inner_python_bytes
-        + outer_json_bytes
-        + outer_python_bytes,
+        input_bytes + outer_increments[0],
+        *(input_bytes + outer_increments[0] + request for request in inner_increments),
+        *(input_bytes + request + inner_increments[-1] for request in outer_increments[1:]),
     ]
     assert active_reserved_bytes() == baseline
     retry = json.loads(outer(IR, [2.0]))

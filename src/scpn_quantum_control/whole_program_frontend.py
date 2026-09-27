@@ -1200,7 +1200,7 @@ def _source_bytecode_line_map(
                 if region.line_start <= line_number <= region.line_end
             )
         )
-        if not region_ids:
+        if source_regions and not region_ids:
             continue
         rows.append(
             WholeProgramSourceBytecodeLineMap(
