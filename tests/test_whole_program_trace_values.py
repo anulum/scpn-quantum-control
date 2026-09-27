@@ -1759,31 +1759,31 @@ def test_public_trace_layout_refuses_actual_materialized_size_change_and_recover
 
     indices = np.array([0, 2])
 
-    def getitem(values: Any) -> object:
+    def getitem_objective(values: Any) -> object:
         return np.sum(values[1:])
 
-    def take(values: Any) -> object:
+    def take_objective(values: Any) -> object:
         return np.sum(np.take(values, indices))
 
-    def take_along(values: Any) -> object:
+    def take_along_objective(values: Any) -> object:
         return np.sum(np.take_along_axis(values, indices, axis=0))
 
-    def delete(values: Any) -> object:
+    def delete_objective(values: Any) -> object:
         return np.sum(np.delete(values, 1))
 
-    def pad(values: Any) -> object:
+    def pad_objective(values: Any) -> object:
         return np.sum(np.pad(values, (1, 1), constant_values=0.0))
 
-    def insert(values: Any) -> object:
+    def insert_objective(values: Any) -> object:
         return np.sum(np.insert(values, 1, 0.0))
 
     objectives: dict[str, Callable[[Any], object]] = {
-        "getitem": getitem,
-        "take": take,
-        "take-along-axis": take_along,
-        "delete": delete,
-        "pad": pad,
-        "insert": insert,
+        "getitem": getitem_objective,
+        "take": take_objective,
+        "take-along-axis": take_along_objective,
+        "delete": delete_objective,
+        "pad": pad_objective,
+        "insert": insert_objective,
     }
     selected_objective = objectives[operation]
 
@@ -1820,11 +1820,13 @@ def test_public_trace_layout_refuses_actual_materialized_size_change_and_recover
     else:
         sys.setprofile(profile)
     try:
-        with pytest.raises(ValueError, match="layout"):
+        with pytest.raises(
+            ValueError, match="^" + operation.replace("-", "_") + " layout"
+        ) as failure:
             whole_program_value_and_grad(selected_objective, [1.0, 2.0, 3.0], trace=False)
     finally:
         sys.setprofile(previous)
-    assert changed
+    assert changed, str(failure.value)
     assert active_reserved_bytes() == baseline
     result = whole_program_value_and_grad(selected_objective, [1.0, 2.0, 3.0], trace=False)
     expected = {
