@@ -260,112 +260,15 @@ impl ProgramADRustValueAndGradientResult {
 
 /// Parse Python-emitted `program_ad_effect_ir.v1` metadata and fail closed.
 pub fn parse_program_ad_effect_ir(serialization: &str) -> Result<ProgramADEffectIR, String> {
+    crate::program_ad_lifecycle::replay_checkpoint()?;
     if serialization.trim().is_empty() {
         return Err("program AD IR serialization must be non-empty".to_owned());
     }
-    let payload: Value = serde_json::from_str(serialization)
-        .map_err(|error| format!("program AD IR serialization is invalid JSON: {error}"))?;
-    validate_program_ad_payload_shape(&payload)?;
-    let ir: ProgramADEffectIR = serde_json::from_value(payload)
-        .map_err(|error| format!("program AD IR serialization does not match schema: {error}"))?;
+    let ir = metadata_parser::parse(serialization)?;
+    crate::program_ad_lifecycle::replay_checkpoint()?;
     validate_program_ad_effect_ir(&ir)?;
+    crate::program_ad_lifecycle::replay_checkpoint()?;
     Ok(ir)
-}
-
-fn validate_program_ad_payload_shape(payload: &Value) -> Result<(), String> {
-    let Some(object) = payload.as_object() else {
-        return Err("program AD IR serialization must decode to an object".to_owned());
-    };
-    for field in [
-        "ssa_values",
-        "effects",
-        "alias_edges",
-        "control_regions",
-        "phi_nodes",
-        "bytecode_offsets",
-    ] {
-        let Some(value) = object.get(field) else {
-            return Err(format!("program AD IR {field} must be present"));
-        };
-        if !value.is_array() {
-            return Err(format!("program AD IR {field} must be a list"));
-        }
-    }
-    Ok(())
-}
-
-fn validate_program_ad_effect_ir(ir: &ProgramADEffectIR) -> Result<(), String> {
-    if ir.format != PROGRAM_AD_EFFECT_IR_FORMAT {
-        return Err("program AD IR format must be program_ad_effect_ir.v1".to_owned());
-    }
-    for value in &ir.ssa_values {
-        require_non_empty(&value.name, "ssa_values name")?;
-        require_non_empty(&value.dtype, "ssa_values dtype")?;
-    }
-    for effect in &ir.effects {
-        require_non_empty(&effect.kind, "effects kind")?;
-        require_non_empty(&effect.target, "effects target")?;
-        for input in &effect.inputs {
-            require_non_empty(input, "effects inputs")?;
-        }
-        if let Some(operation) = &effect.operation {
-            require_non_empty(operation, "effects operation")?;
-        }
-    }
-    for edge in &ir.alias_edges {
-        require_non_empty(&edge.source, "alias_edges source")?;
-        require_non_empty(&edge.target, "alias_edges target")?;
-        require_non_empty(&edge.kind, "alias_edges kind")?;
-    }
-    for region in &ir.control_regions {
-        require_non_empty(&region.kind, "control_regions kind")?;
-        if let Some(predicate) = &region.predicate {
-            require_non_empty(predicate, "control_regions predicate")?;
-        }
-        require_positive_optional(region.source_line, "control_regions source_line")?;
-    }
-    for phi in &ir.phi_nodes {
-        require_non_empty(&phi.target, "phi_nodes target")?;
-        if phi.incoming.len() < 2 {
-            return Err(
-                "program AD IR phi_nodes incoming must contain at least two entries".to_owned(),
-            );
-        }
-        for incoming in &phi.incoming {
-            require_non_empty(incoming, "phi_nodes incoming")?;
-        }
-        if let Some(selected) = &phi.selected {
-            require_non_empty(selected, "phi_nodes selected")?;
-        }
-        require_positive_optional(phi.source_line, "phi_nodes source_line")?;
-    }
-    Ok(())
-}
-
-/// Return true if the IR carries alias metadata that can change replay semantics.
-///
-/// `view_alias` edges record reshape, transpose and slice views. The forward-AD trace has
-/// already resolved those views into canonical scalar SSA targets, so the scalar replay is
-/// unaffected: an op-effect that still referenced a view name would fail closed in
-/// [`operand_value`] rather than read a wrong value. Source-level
-/// `alias_analysis:assignment_binding` and `expression_rebinding_alias` rows are deterministic
-/// frontend evidence for ordinary local expression assignments and do not introduce replay
-/// aliases. Mutation, control-path, local-name rebinding, list, and object aliases can change
-/// value identity or content and stay outside the bounded replay.
-fn has_replay_unsafe_alias(ir: &ProgramADEffectIR) -> bool {
-    ir.alias_edges
-        .iter()
-        .any(|edge| !is_replay_inert_alias(edge))
-}
-
-fn is_replay_inert_alias(edge: &ProgramADAliasEdge) -> bool {
-    edge.kind == "view_alias"
-        || (edge.kind == "alias_analysis"
-            && edge.source == "assignment_binding"
-            && edge.target.starts_with("source:"))
-        || (edge.kind == "expression_rebinding_alias"
-            && edge.source.starts_with("expr:")
-            && edge.target.starts_with("name:"))
 }
 
 /// Return true when the final effect is a raw element of a multi-output linalg op.

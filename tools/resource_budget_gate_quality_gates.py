@@ -15,8 +15,13 @@ Gate = tuple[str, list[str]]
 RESOURCE_BUDGET_GATE_QUALITY_RATCHET = [
     "src/scpn_quantum_control/compile_budget.py",
     "src/scpn_quantum_control/resource_budget_gate.py",
+    "src/scpn_quantum_control/execution_memory.py",
+    "src/scpn_quantum_control/execution_reservations.py",
     "tests/test_compile_budget.py",
     "tests/test_resource_budget_gate.py",
+    "tests/test_execution_memory.py",
+    "tests/test_execution_reservations.py",
+    "tests/test_resource_admission_boundaries.py",
     "tools/resource_budget_gate_quality_gates.py",
     "tests/test_resource_budget_gate_quality_gate.py",
 ]
@@ -24,6 +29,9 @@ RESOURCE_BUDGET_GATE_QUALITY_RATCHET = [
 RESOURCE_BUDGET_GATE_COVERAGE_COHORT = [
     "tests/test_compile_budget.py",
     "tests/test_resource_budget_gate.py",
+    "tests/test_execution_memory.py",
+    "tests/test_execution_reservations.py",
+    "tests/test_resource_admission_boundaries.py",
 ]
 """Tests that own exact resource-budget gate coverage."""
 RESOURCE_BUDGET_GATE_COVERAGE_DATA_FILE = "/tmp/scpn-qc-resource-budget-gate-quality.coverage"  # nosec B108
@@ -93,7 +101,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={RESOURCE_BUDGET_GATE_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/compile_budget.py,*/resource_budget_gate.py",
+                "--include=*/compile_budget.py,*/resource_budget_gate.py,*/execution_memory.py,*/execution_reservations.py",
             ],
         ),
     ]

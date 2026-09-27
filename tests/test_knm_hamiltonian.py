@@ -7,8 +7,15 @@
 # SCPN Quantum Control — Tests for Knm Hamiltonian
 """Tests for bridge/knm_hamiltonian.py."""
 
+from collections.abc import Callable
+from threading import Event
+from time import monotonic
+from unittest.mock import Mock
+
 import numpy as np
 import pytest
+from numpy.typing import NDArray
+from qiskit.quantum_info import SparsePauliOp
 
 from scpn_quantum_control.bridge.knm_hamiltonian import (
     OMEGA_N_16,
@@ -20,8 +27,197 @@ from scpn_quantum_control.bridge.knm_hamiltonian import (
     knm_to_sparse_matrix,
     knm_to_xxz_hamiltonian,
 )
+from scpn_quantum_control.dense_budget import DenseAllocationError
+from scpn_quantum_control.execution_reservations import (
+    ExecutionCancelledError,
+    active_reserved_bytes,
+)
 
 SIZES = [2, 3, 4, 6, 8, 16]
+
+
+@pytest.mark.parametrize("surface", [knm_to_hamiltonian, knm_to_xxz_hamiltonian])
+def test_pauli_export_large_finite_symmetry_preserves_coefficients(
+    surface: Callable[[NDArray[np.float64], NDArray[np.float64]], SparsePauliOp],
+) -> None:
+    """Symmetrisation cannot overflow a representable Pauli coefficient."""
+    coupling = np.array([[0.0, 1e308], [1e308, 0.0]])
+    original = coupling.copy()
+    with np.errstate(over="raise", invalid="raise"):
+        actual = surface(coupling, np.zeros(2))
+    assert dict(actual.to_list()) == {"XX": -1e308 + 0j, "YY": -1e308 + 0j}
+    np.testing.assert_array_equal(coupling, original)
+
+
+def test_pauli_xxz_export_refuses_overflowed_coefficient() -> None:
+    """Finite input multiplication cannot publish a nonfinite Pauli coefficient."""
+    coupling = np.array([[0.0, 1e308], [1e308, 0.0]])
+    original = coupling.copy()
+    with pytest.raises(ValueError, match="XXZ coefficient is not finite"):
+        knm_to_xxz_hamiltonian(coupling, np.zeros(2), delta=2.0)
+    np.testing.assert_array_equal(coupling, original)
+
+
+@pytest.mark.parametrize("invalid", ["shape", "complex", "frequency", "coupling", "delta"])
+def test_pauli_xxz_export_rejects_invalid_numeric_inputs(invalid: str) -> None:
+    """Public Pauli export rejects malformed inputs before constructing an operator."""
+    coupling = np.zeros((2, 2))
+    frequency = np.zeros(2)
+    delta = 0.0
+    if invalid == "shape":
+        coupling = np.zeros((2, 3))
+    elif invalid == "complex":
+        coupling = coupling.astype(complex)
+    elif invalid == "frequency":
+        frequency[0] = np.inf
+    elif invalid == "coupling":
+        coupling[0, 1] = np.nan
+    else:
+        delta = np.inf
+    with pytest.raises(ValueError, match="Pauli Hamiltonian input"):
+        knm_to_xxz_hamiltonian(coupling, frequency, delta)
+
+
+def test_native_only_dense_export_rejects_nonzero_small_anisotropy() -> None:
+    """A requested XY native kernel cannot silently discard a nonzero XXZ term."""
+    with pytest.raises(ValueError, match="delta=0 only"):
+        knm_to_dense_matrix(np.zeros((2, 2)), np.zeros(2), delta=5e-14, backend="rust")
+
+
+def test_auto_dense_export_preserves_selected_small_xxz_term() -> None:
+    """Canonical sparsity filtering is not replaced by Qiskit's default simplification tolerance."""
+    delta = 5e-14
+    coupling = np.array([[0.0, 0.5], [0.5, 0.0]])
+    expected = np.diag([-0.5 * delta, 0.5 * delta, 0.5 * delta, -0.5 * delta]).astype(complex)
+    expected[1, 2] = expected[2, 1] = -1.0
+    actual = knm_to_dense_matrix(coupling, np.zeros(2), delta=delta, backend="auto")
+    np.testing.assert_array_equal(actual, expected)
+
+
+def test_python_dense_export_refuses_overflowed_frequency_sum() -> None:
+    """Finite input frequencies cannot authorize an infinite dense output."""
+    baseline = active_reserved_bytes()
+    with (
+        np.errstate(over="ignore", invalid="ignore"),
+        pytest.raises(ValueError, match="invalid numeric data"),
+    ):
+        knm_to_dense_matrix(np.zeros((2, 2)), np.array([1e308, 1e308]), backend="python")
+    assert active_reserved_bytes() == baseline
+
+
+def test_dense_export_reservation_releases_after_real_success() -> None:
+    """A real export's temporary charge does not remain after its scope returns."""
+    before = active_reserved_bytes()
+    result = knm_to_dense_matrix(np.zeros((2, 2)), np.array([1.0, 2.0]), backend="python")
+    np.testing.assert_array_equal(result, np.diag([-3, -1, 1, 3]))
+    assert active_reserved_bytes() == before
+
+
+def test_dense_export_cancellation_and_deadline_preserve_inputs() -> None:
+    """No expired/cancelled export allocates or leaves a charged scope behind."""
+    before = active_reserved_bytes()
+    coupling = np.zeros((2, 2))
+    frequencies = np.array([1.0, 2.0])
+    cancelled = Event()
+    cancelled.set()
+    with pytest.raises(ExecutionCancelledError):
+        knm_to_dense_matrix(coupling, frequencies, backend="python", cancelled=cancelled)
+    with pytest.raises(TimeoutError):
+        knm_to_dense_matrix(
+            coupling, frequencies, backend="python", deadline_monotonic=monotonic() - 1
+        )
+    assert active_reserved_bytes() == before
+    np.testing.assert_array_equal(coupling, np.zeros((2, 2)))
+    np.testing.assert_array_equal(frequencies, [1.0, 2.0])
+
+
+def test_dense_export_refuses_total_buffers_before_dispatch() -> None:
+    """An output-sized cap cannot also admit live conversion/intermediate buffers."""
+    coupling = np.zeros((2, 2))
+    frequencies = np.array([1.0, 2.0])
+    output_bytes = 4 * 4 * 16
+    with pytest.raises(DenseAllocationError, match="execution memory"):
+        knm_to_dense_matrix(
+            coupling, frequencies, max_dense_gib=output_bytes / 1024**3, backend="python"
+        )
+    np.testing.assert_array_equal(coupling, np.zeros((2, 2)))
+    np.testing.assert_array_equal(frequencies, [1.0, 2.0])
+
+
+def test_dense_export_refusal_precedes_input_finite_masks(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Capacity and lifecycle refusal cannot materialise input validation masks."""
+    coupling = np.zeros((2, 2))
+    frequencies = np.array([1.0, 2.0])
+    original = (coupling.tobytes(), frequencies.tobytes())
+    before = active_reserved_bytes()
+    cancelled = Event()
+    cancelled.set()
+    finite = Mock(wraps=np.isfinite)
+    with monkeypatch.context() as patch:
+        patch.setattr(np, "isfinite", finite)
+        with pytest.raises(DenseAllocationError, match="execution memory"):
+            knm_to_dense_matrix(
+                coupling, frequencies, max_dense_gib=256 / 1024**3, backend="python"
+            )
+        with pytest.raises(ExecutionCancelledError):
+            knm_to_dense_matrix(coupling, frequencies, backend="python", cancelled=cancelled)
+        with pytest.raises(TimeoutError):
+            knm_to_dense_matrix(
+                coupling, frequencies, backend="python", deadline_monotonic=monotonic() - 1
+            )
+    assert not any(isinstance(call.args[0], np.ndarray) for call in finite.call_args_list)
+    assert (coupling.tobytes(), frequencies.tobytes()) == original
+    assert active_reserved_bytes() == before
+    actual = knm_to_dense_matrix(coupling, frequencies, backend="python")
+    np.testing.assert_array_equal(actual, np.diag([-3, -1, 1, 3]))
+    assert active_reserved_bytes() == before
+
+
+@pytest.mark.parametrize("invalid", ["coupling", "frequency"])
+def test_dense_export_invalid_input_releases_admitted_mask_scope(invalid: str) -> None:
+    """Invalid admitted data releases the scope and permits a real healthy retry."""
+    coupling = np.zeros((2, 2))
+    frequencies = np.array([1.0, 2.0])
+    if invalid == "coupling":
+        coupling[0, 1] = np.nan
+    else:
+        frequencies[0] = np.inf
+    original = (coupling.tobytes(), frequencies.tobytes())
+    before = active_reserved_bytes()
+    with pytest.raises(ValueError, match="dense Hamiltonian inputs must be finite"):
+        knm_to_dense_matrix(coupling, frequencies, backend="python")
+    assert (coupling.tobytes(), frequencies.tobytes()) == original
+    assert active_reserved_bytes() == before
+    actual = knm_to_dense_matrix(np.zeros((2, 2)), np.array([1.0, 2.0]), backend="python")
+    np.testing.assert_array_equal(actual, np.diag([-3, -1, 1, 3]))
+    assert active_reserved_bytes() == before
+
+
+def test_explicit_python_dense_export_retains_pauli_convention() -> None:
+    """Route a real small dense export and compare an independent Pauli oracle."""
+    coupling = np.array([[0.0, 0.25], [0.25, 0.0]])
+    frequencies = np.array([1.0, 2.0])
+    matrix = knm_to_dense_matrix(coupling, frequencies, backend="python")
+    expected = np.array(
+        [[-3, 0, 0, 0], [0, -1, -0.5, 0], [0, -0.5, 1, 0], [0, 0, 0, 3]],
+        dtype=complex,
+    )
+    np.testing.assert_allclose(matrix, expected, rtol=0, atol=1e-14)
+
+
+def test_native_only_export_does_not_substitute_python_for_xxz() -> None:
+    """Refuse the unsupported anisotropic native request before any kernel call."""
+    with pytest.raises(ValueError, match="native.*delta"):
+        knm_to_dense_matrix(np.zeros((2, 2)), np.zeros(2), delta=0.25, backend="rust")
+
+
+@pytest.mark.parametrize("shape", [(2,), (2, 1), (3, 3)])
+def test_dense_ffi_shape_refuses_at_python_boundary(shape: tuple[int, ...]) -> None:
+    """A malformed coupling array cannot reach native allocation or fallback."""
+    with pytest.raises(ValueError, match="shape"):
+        knm_to_dense_matrix(np.zeros(shape), np.zeros(2), backend="rust")
 
 
 @pytest.mark.parametrize("n", SIZES)

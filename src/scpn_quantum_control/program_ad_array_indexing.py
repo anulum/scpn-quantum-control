@@ -10,13 +10,19 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping, Sequence
+import math
+import sys
+from collections.abc import Callable, Iterator, Mapping, Sequence
+from contextlib import contextmanager
 from typing import Any, Literal, cast
 
 import numpy as np
 from numpy.typing import NDArray
 
+from .dense_budget import DenseAllocationError
 from .differentiable_parameter_contracts import _as_real_numeric_array
+from .execution_memory import ExecutionBuffer, ExecutionMemoryPlan
+from .execution_reservations import reserve_execution_memory
 from .program_ad_registry import (
     _PROGRAM_AD_ARRAY_IDENTITIES,
     _PROGRAM_AD_ARRAY_POLICY,
@@ -108,6 +114,8 @@ def _program_ad_array_normalise_static_shape(
     ------
     ValueError
         Raised when any static dimension is negative.
+    DenseAllocationError
+        Native dimension or flattened int64 index storage is unaddressable.
 
     """
     shape = tuple(int(dimension) for dimension in source_shape)
@@ -115,6 +123,7 @@ def _program_ad_array_normalise_static_shape(
         raise ValueError(
             f"program AD array {primitive_name} direct rule requires non-negative dimensions"
         )
+    _program_ad_array_static_size(shape)
     return shape
 
 
@@ -131,10 +140,17 @@ def _program_ad_array_static_size(source_shape: tuple[int, ...]) -> int:
     int
         Product of the static dimensions, with scalars represented as size one.
 
+    Raises
+    ------
+    DenseAllocationError
+        A dimension or flattened int64 index storage is unaddressable.
+
     """
-    size = 1
-    for dimension in source_shape:
-        size *= dimension
+    if any(dimension < 0 or dimension > sys.maxsize for dimension in source_shape):
+        raise DenseAllocationError("static array dimension exceeds native addressability")
+    size = math.prod(source_shape)
+    if size > sys.maxsize // np.dtype(np.int64).itemsize:
+        raise DenseAllocationError("static array index storage exceeds native addressability")
     return size
 
 
@@ -163,6 +179,11 @@ def _program_ad_array_vector(
     *,
     expected_size: int,
 ) -> NDArray[np.float64]:
+    if type(values) is np.ndarray and values.size != expected_size:
+        raise ValueError(
+            f"program AD array {primitive_name} direct rule requires {role} "
+            f"with {expected_size} values"
+        )
     vector = _as_real_numeric_array(f"program AD array {primitive_name} {role}", values).reshape(
         -1
     )
@@ -174,20 +195,151 @@ def _program_ad_array_vector(
     return vector
 
 
+@contextmanager
+def _program_ad_array_getitem_layout_plan(
+    source_shape: tuple[int, ...],
+    index: object,
+) -> Iterator[tuple[ExecutionMemoryPlan, int, object]]:
+    """Own selector snapshots through selection while deriving its buffer plan."""
+    source_size = _program_ad_array_static_size(source_shape)
+    _validate_static_basic_index(index)
+    selectors = list(index if isinstance(index, tuple) else (index,))
+    selectors = [
+        _static_index_array(item) if isinstance(item, (np.ndarray, list)) else item
+        for item in selectors
+    ]
+    snapshot_bytes = sum(
+        int(item.size) * max(int(item.dtype.itemsize), np.dtype(np.intp).itemsize)
+        for item in selectors
+        if isinstance(item, np.ndarray)
+    )
+    snapshot_plan = ExecutionMemoryPlan(
+        (
+            ExecutionBuffer(
+                "getitem_selector_snapshot", "intermediate", (max(1, snapshot_bytes),), "uint8", 2
+            ),
+        )
+    )
+    with reserve_execution_memory(snapshot_plan) as snapshot_owner:
+        snapshot_owner.checkpoint()
+        immutable: list[object] = []
+        for item in selectors:
+            snapshot_owner.checkpoint()
+            if isinstance(item, np.ndarray):
+                copied = np.array(item, copy=True, order="C", subok=False)
+                copied.setflags(write=False)
+                immutable.append(copied)
+            else:
+                immutable.append(item)
+        snapshot_owner.checkpoint()
+        selectors = immutable
+        prepared_index = tuple(selectors) if isinstance(index, tuple) else selectors[0]
+        if sum(item is Ellipsis for item in selectors) > 1:
+            raise ValueError("only one ellipsis is allowed in a static index")
+        consumed = sum(
+            int(item.ndim) if isinstance(item, np.ndarray) and item.dtype.kind == "b" else 1
+            for item in selectors
+            if item is not None and item is not Ellipsis
+        )
+        missing = len(source_shape) - consumed
+        if missing < 0:
+            raise ValueError("static index consumes more dimensions than the source")
+        if any(item is Ellipsis for item in selectors):
+            expanded: list[object] = []
+            for item in selectors:
+                expanded.extend([slice(None)] * missing if item is Ellipsis else [item])
+            selectors = expanded
+        else:
+            selectors.extend([slice(None)] * missing)
+        axis = 0
+        basic_dimensions: list[int] = []
+        advanced_shapes: list[tuple[int, ...]] = []
+        selector_bytes = 0
+        coordinate_size = 0
+        for item in selectors:
+            if item is None:
+                basic_dimensions.append(1)
+            elif isinstance(item, slice):
+                basic_dimensions.append(len(range(*item.indices(source_shape[axis]))))
+                axis += 1
+            elif isinstance(item, np.ndarray):
+                selector_bytes += int(item.size) * max(
+                    int(item.dtype.itemsize), np.dtype(np.intp).itemsize
+                )
+                if item.dtype.kind == "b":
+                    rank = int(item.ndim)
+                    if tuple(item.shape) != source_shape[axis : axis + rank]:
+                        raise ValueError("boolean index dimensions differ from source dimensions")
+                    count = int(np.count_nonzero(item))
+                    advanced_shapes.append((count,))
+                    coordinate_size += count * rank
+                    axis += rank
+                else:
+                    advanced_shapes.append(tuple(int(size) for size in item.shape))
+                    axis += 1
+            else:
+                axis += 1
+        broadcast_shape = np.broadcast_shapes(*advanced_shapes) if advanced_shapes else ()
+        output_size = math.prod(basic_dimensions) * math.prod(broadcast_shape)
+        plan = ExecutionMemoryPlan(
+            (
+                ExecutionBuffer(
+                    "getitem_source",
+                    "intermediate",
+                    (max(1, source_size),),
+                    "int64",
+                    2,
+                ),
+                ExecutionBuffer(
+                    "getitem_output", "intermediate", (max(1, output_size),), "int64", 3
+                ),
+                ExecutionBuffer(
+                    "getitem_selectors", "intermediate", (max(1, selector_bytes),), "uint8", 2
+                ),
+                ExecutionBuffer(
+                    "getitem_boolean_coordinates",
+                    "intermediate",
+                    (max(1, coordinate_size),),
+                    "int64",
+                    2,
+                ),
+            )
+        )
+        yield plan, output_size, prepared_index
+        snapshot_owner.checkpoint()
+
+
 def _program_ad_array_getitem_flat_indices(
     source_shape: tuple[int, ...], index: object
 ) -> NDArray[np.int64]:
     _validate_static_basic_index(index)
-    source_indices = np.arange(
-        _program_ad_array_static_size(source_shape), dtype=np.int64
-    ).reshape(source_shape)
     try:
-        selected = source_indices[cast(Any, index)]
+        with (
+            _program_ad_array_getitem_layout_plan(source_shape, index) as (
+                plan,
+                output_size,
+                prepared_index,
+            ),
+            reserve_execution_memory(plan) as reservation,
+        ):
+            reservation.checkpoint()
+            source_indices = np.arange(
+                _program_ad_array_static_size(source_shape), dtype=np.int64
+            ).reshape(source_shape)
+            try:
+                selected = source_indices[cast(Any, prepared_index)]
+            except (IndexError, TypeError, ValueError) as exc:
+                raise ValueError(
+                    "program AD array getitem direct rule requires in-bounds indices"
+                ) from exc
+            reservation.checkpoint()
+            if np.asarray(selected).size != output_size:
+                raise ValueError("getitem layout differs from admitted output size")
+            return cast(NDArray[np.int64], np.asarray(selected, dtype=np.int64).reshape(-1))
     except (IndexError, TypeError, ValueError) as exc:
         raise ValueError(
             "program AD array getitem direct rule requires in-bounds indices"
         ) from exc
-    return cast(NDArray[np.int64], np.asarray(selected, dtype=np.int64).reshape(-1))
 
 
 def _program_ad_array_take_indices(indices: object) -> NDArray[np.int64]:
@@ -197,29 +349,88 @@ def _program_ad_array_take_indices(indices: object) -> NDArray[np.int64]:
     return cast(NDArray[np.int64], np.asarray(raw_indices, dtype=np.int64))
 
 
+def _program_ad_array_take_target_shape(
+    source_shape: tuple[int, ...],
+    indices_shape: tuple[int, ...],
+    axis: int | None,
+    *,
+    along_axis: bool = False,
+) -> tuple[int, ...]:
+    """Derive output dimensions without creating source or output index arrays."""
+    if axis is None:
+        return indices_shape
+    normalised_axis = _normalise_axis("axis", axis, len(source_shape))
+    if not along_axis:
+        return source_shape[:normalised_axis] + indices_shape + source_shape[normalised_axis + 1 :]
+    if len(indices_shape) != len(source_shape):
+        raise ValueError("program AD array take_along_axis requires indices with source rank")
+    dimensions = tuple(1 if i == normalised_axis else size for i, size in enumerate(source_shape))
+    return tuple(int(size) for size in np.broadcast_shapes(dimensions, indices_shape))
+
+
+def _program_ad_array_take_layout_plan(
+    source_shape: tuple[int, ...],
+    indices_shape: tuple[int, ...],
+    axis: int | None,
+    *,
+    along_axis: bool = False,
+) -> ExecutionMemoryPlan:
+    """Declare source, selector, output and non-axis coordinate buffers."""
+    source_size = _program_ad_array_static_size(source_shape)
+    output_shape = _program_ad_array_take_target_shape(
+        source_shape, indices_shape, axis, along_axis=along_axis
+    )
+    coordinate_size = (
+        sum(size for i, size in enumerate(source_shape) if i != axis) if along_axis else 0
+    )
+    return ExecutionMemoryPlan(
+        (
+            ExecutionBuffer("take_source", "intermediate", (max(1, source_size),), "int64", 2),
+            ExecutionBuffer(
+                "take_output", "intermediate", (max(1, math.prod(output_shape)),), "int64", 3
+            ),
+            ExecutionBuffer(
+                "take_indices", "intermediate", (max(1, math.prod(indices_shape)),), "int64", 2
+            ),
+            ExecutionBuffer(
+                "take_coordinates", "intermediate", (max(1, coordinate_size),), "int64"
+            ),
+        )
+    )
+
+
 def _program_ad_array_take_flat_indices(
     source_shape: tuple[int, ...],
     indices: object,
     axis: int | None,
     mode: str,
 ) -> NDArray[np.int64]:
-    source_indices = np.arange(
-        _program_ad_array_static_size(source_shape), dtype=np.int64
-    ).reshape(source_shape)
     raw_indices = _program_ad_array_take_indices(indices)
     mode_name = _program_ad_array_take_mode(mode, context="direct rule")
     normalised_axis = None if axis is None else _normalise_axis("axis", axis, len(source_shape))
-    try:
-        selected = np.take(source_indices, raw_indices, axis=normalised_axis, mode=mode_name)
-    except (IndexError, ValueError) as exc:
-        if mode_name == "raise":
+    plan = _program_ad_array_take_layout_plan(
+        source_shape,
+        tuple(int(size) for size in raw_indices.shape),
+        normalised_axis,
+        along_axis=False,
+    )
+    with reserve_execution_memory(plan) as reservation:
+        reservation.checkpoint()
+        source_indices = np.arange(
+            _program_ad_array_static_size(source_shape), dtype=np.int64
+        ).reshape(source_shape)
+        try:
+            selected = np.take(source_indices, raw_indices, axis=normalised_axis, mode=mode_name)
+        except (IndexError, ValueError) as exc:
+            if mode_name == "raise":
+                raise ValueError(
+                    "program AD array take direct rule requires in-bounds indices"
+                ) from exc
             raise ValueError(
-                "program AD array take direct rule requires in-bounds indices"
+                "program AD array take direct rule requires axis-compatible indices"
             ) from exc
-        raise ValueError(
-            "program AD array take direct rule requires axis-compatible indices"
-        ) from exc
-    return cast(NDArray[np.int64], np.asarray(selected, dtype=np.int64).reshape(-1))
+        reservation.checkpoint()
+        return cast(NDArray[np.int64], np.asarray(selected, dtype=np.int64).reshape(-1))
 
 
 def _program_ad_array_take_along_axis_flat_indices(
@@ -227,19 +438,28 @@ def _program_ad_array_take_along_axis_flat_indices(
     indices: object,
     axis: int,
 ) -> NDArray[np.int64]:
-    source_indices = np.arange(
-        _program_ad_array_static_size(source_shape), dtype=np.int64
-    ).reshape(source_shape)
     raw_indices = _program_ad_array_take_indices(indices)
     normalised_axis = _normalise_axis("axis", axis, len(source_shape))
-    try:
-        selected = np.take_along_axis(source_indices, raw_indices, axis=normalised_axis)
-    except (IndexError, ValueError) as exc:
-        raise ValueError(
-            "program AD array take_along_axis direct rule requires in-bounds indices "
-            "with shape compatible with the source"
-        ) from exc
-    return cast(NDArray[np.int64], np.asarray(selected, dtype=np.int64).reshape(-1))
+    plan = _program_ad_array_take_layout_plan(
+        source_shape,
+        tuple(int(size) for size in raw_indices.shape),
+        normalised_axis,
+        along_axis=True,
+    )
+    with reserve_execution_memory(plan) as reservation:
+        reservation.checkpoint()
+        source_indices = np.arange(
+            _program_ad_array_static_size(source_shape), dtype=np.int64
+        ).reshape(source_shape)
+        try:
+            selected = np.take_along_axis(source_indices, raw_indices, axis=normalised_axis)
+        except (IndexError, ValueError) as exc:
+            raise ValueError(
+                "program AD array take_along_axis direct rule requires in-bounds indices "
+                "with shape compatible with the source"
+            ) from exc
+        reservation.checkpoint()
+        return cast(NDArray[np.int64], np.asarray(selected, dtype=np.int64).reshape(-1))
 
 
 def _program_ad_array_delete_object(obj: object, *, context: str) -> object:
@@ -281,25 +501,60 @@ def _program_ad_array_delete_object(obj: object, *, context: str) -> object:
     )
 
 
+def _program_ad_array_delete_layout_plan(
+    source_shape: tuple[int, ...],
+    selector: object,
+    axis: int | None,
+) -> ExecutionMemoryPlan:
+    """Declare source/output upper bounds and NumPy deletion mask workspace."""
+    source_size = _program_ad_array_static_size(source_shape)
+    extent = source_size if axis is None else source_shape[axis]
+    mask_size = (
+        extent
+        if (
+            isinstance(selector, np.ndarray)
+            and not (selector.size == 1 and selector.dtype.kind in {"i", "u"})
+        )
+        or (isinstance(selector, slice) and selector.step is not None and abs(selector.step) > 1)
+        else 0
+    )
+    selector_size = int(selector.size) if isinstance(selector, np.ndarray) else 1
+    return ExecutionMemoryPlan(
+        (
+            ExecutionBuffer(
+                "delete_source_output", "intermediate", (max(1, source_size),), "int64", 4
+            ),
+            ExecutionBuffer("delete_mask", "intermediate", (max(1, mask_size),), "bool", 2),
+            ExecutionBuffer(
+                "delete_selector", "intermediate", (max(1, selector_size),), "int64", 2
+            ),
+        )
+    )
+
+
 def _program_ad_array_delete_flat_indices(
     source_shape: tuple[int, ...],
     obj: object,
     axis: int | None,
 ) -> NDArray[np.int64]:
-    source_indices = np.arange(
-        _program_ad_array_static_size(source_shape), dtype=np.int64
-    ).reshape(source_shape)
     delete_obj = _program_ad_array_delete_object(obj, context="direct rule")
     normalised_axis = None if axis is None else _normalise_axis("axis", axis, len(source_shape))
-    source = source_indices.reshape(-1) if normalised_axis is None else source_indices
-    try:
-        selected = np.delete(source, cast(Any, delete_obj), axis=normalised_axis)
-    except (IndexError, TypeError, ValueError) as exc:
-        raise ValueError(
-            "program AD array delete direct rule requires static in-bounds deletion selectors "
-            "and an axis-compatible source"
-        ) from exc
-    return cast(NDArray[np.int64], np.asarray(selected, dtype=np.int64).reshape(-1))
+    plan = _program_ad_array_delete_layout_plan(source_shape, delete_obj, normalised_axis)
+    with reserve_execution_memory(plan) as reservation:
+        reservation.checkpoint()
+        source_indices = np.arange(
+            _program_ad_array_static_size(source_shape), dtype=np.int64
+        ).reshape(source_shape)
+        source = source_indices.reshape(-1) if normalised_axis is None else source_indices
+        try:
+            selected = np.delete(source, cast(Any, delete_obj), axis=normalised_axis)
+        except (IndexError, TypeError, ValueError) as exc:
+            raise ValueError(
+                "program AD array delete direct rule requires static in-bounds deletion selectors "
+                "and an axis-compatible source"
+            ) from exc
+        reservation.checkpoint()
+        return cast(NDArray[np.int64], np.asarray(selected, dtype=np.int64).reshape(-1))
 
 
 def _program_ad_array_pad_mode(mode: object, *, context: str) -> str:
@@ -359,6 +614,23 @@ def _program_ad_array_pad_constant_values(value: object, *, context: str) -> obj
     return value
 
 
+def _program_ad_array_pad_target_shape(
+    source_shape: tuple[int, ...], pad_width: object, constant_values: object, *, context: str
+) -> tuple[int, ...]:
+    """Validate small static pad metadata without constructing a numeric layout."""
+    pairs = _program_ad_array_pad_width(pad_width, len(source_shape), context=context)
+    constants = _program_ad_array_pad_constant_values(constant_values, context=context)
+    try:
+        np.broadcast_to(np.asarray(constants, dtype=np.float64), (len(source_shape), 2))
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            "program AD array pad requires constants compatible with the source rank"
+        ) from exc
+    return tuple(
+        size + before + after for size, (before, after) in zip(source_shape, pairs, strict=True)
+    )
+
+
 def _program_ad_array_pad_layout(
     source_shape: tuple[int, ...],
     pad_width: object,
@@ -368,33 +640,57 @@ def _program_ad_array_pad_layout(
 ) -> tuple[NDArray[np.int64], NDArray[np.float64], tuple[int, ...]]:
     pairs = _program_ad_array_pad_width(pad_width, len(source_shape), context=context)
     constants = _program_ad_array_pad_constant_values(constant_values, context=context)
-    source_indices = np.arange(
-        _program_ad_array_static_size(source_shape), dtype=np.int64
-    ).reshape(source_shape)
-    source_zeros = np.zeros(source_shape, dtype=np.float64)
-    try:
-        padded_indices = np.pad(
-            source_indices,
-            pairs,
-            mode="constant",
-            constant_values=-1,
-        )
-        padded_constants = np.pad(
-            source_zeros,
-            pairs,
-            mode="constant",
-            constant_values=cast(Any, constants),
-        )
-    except (TypeError, ValueError) as exc:
-        raise ValueError(
-            "program AD array pad requires static pad widths and constant_values "
-            "compatible with the source rank"
-        ) from exc
-    return (
-        cast(NDArray[np.int64], np.asarray(padded_indices, dtype=np.int64).reshape(-1)),
-        cast(NDArray[np.float64], np.asarray(padded_constants, dtype=np.float64).reshape(-1)),
-        tuple(int(dimension) for dimension in np.asarray(padded_indices).shape),
+    output_shape = _program_ad_array_pad_target_shape(
+        source_shape, pairs, constants, context=context
     )
+    plan = ExecutionMemoryPlan(
+        (
+            ExecutionBuffer(
+                "pad_layout_source",
+                "intermediate",
+                (max(1, math.prod(source_shape)),),
+                "float64",
+                2,
+            ),
+            ExecutionBuffer(
+                "pad_layout_output",
+                "intermediate",
+                (max(1, math.prod(output_shape)),),
+                "float64",
+                4,
+            ),
+        )
+    )
+    with reserve_execution_memory(plan) as reservation:
+        reservation.checkpoint()
+        source_indices = np.arange(
+            _program_ad_array_static_size(source_shape), dtype=np.int64
+        ).reshape(source_shape)
+        source_zeros = np.zeros(source_shape, dtype=np.float64)
+        try:
+            padded_indices = np.pad(
+                source_indices,
+                pairs,
+                mode="constant",
+                constant_values=-1,
+            )
+            padded_constants = np.pad(
+                source_zeros,
+                pairs,
+                mode="constant",
+                constant_values=cast(Any, constants),
+            )
+        except (TypeError, ValueError) as exc:
+            raise ValueError(
+                "program AD array pad requires static pad widths and constant_values "
+                "compatible with the source rank"
+            ) from exc
+        reservation.checkpoint()
+        return (
+            cast(NDArray[np.int64], np.asarray(padded_indices, dtype=np.int64).reshape(-1)),
+            cast(NDArray[np.float64], np.asarray(padded_constants, dtype=np.float64).reshape(-1)),
+            tuple(int(dimension) for dimension in np.asarray(padded_indices).shape),
+        )
 
 
 def _program_ad_array_insert_object(obj: object, *, context: str) -> object:
@@ -456,6 +752,53 @@ def _program_ad_array_insert_axis(axis: object, ndim: int, *, context: str) -> i
     return _normalise_axis("axis", int(axis), ndim)
 
 
+def _program_ad_array_insert_target_shape(
+    source_shape: tuple[int, ...], obj: object, values: object, axis: object, *, context: str
+) -> tuple[int, ...]:
+    """Derive insertion dimensions and broadcast compatibility without an output array."""
+    selector = _program_ad_array_insert_object(obj, context=context)
+    constants = _program_ad_array_insert_values(values, context=context)
+    selected_axis = _program_ad_array_insert_axis(axis, len(source_shape), context=context)
+    source = (math.prod(source_shape),) if selected_axis is None else source_shape
+    selected_axis = 0 if selected_axis is None else selected_axis
+    extent = source[selected_axis]
+    scalar_selector = isinstance(selector, int)
+    if isinstance(selector, slice):
+        indices: Sequence[int] = range(*selector.indices(extent))
+    elif scalar_selector:
+        indices = (cast(int, selector),)
+    else:
+        index_array = np.asarray(selector)
+        if index_array.ndim > 1:
+            raise ValueError("program AD array insert requires scalar or one-dimensional indices")
+        indices = tuple(int(value) for value in index_array.reshape(-1))
+    count = len(indices)
+    if count == 1 and (indices[0] < -extent or indices[0] > extent):
+        raise ValueError("program AD array insert requires static in-bounds insertion indices")
+    constant_shape = (1,) * max(0, len(source) - constants.ndim) + constants.shape
+    if count == 1:
+        if scalar_selector:
+            dimensions = list(constant_shape)
+            first = dimensions.pop(0)
+            dimensions.insert(selected_axis, first)
+            constant_shape = tuple(dimensions)
+        inserted = constant_shape[selected_axis]
+    else:
+        inserted = count
+    insertion_shape = list(source)
+    insertion_shape[selected_axis] = inserted
+    try:
+        if np.broadcast_shapes(constant_shape, tuple(insertion_shape)) != tuple(insertion_shape):
+            raise ValueError("incompatible insertion broadcast")
+    except ValueError as exc:
+        raise ValueError(
+            "program AD array insert values are incompatible with the source shape"
+        ) from exc
+    target = list(source)
+    target[selected_axis] += inserted
+    return tuple(target)
+
+
 def _program_ad_array_insert_layout(
     source_shape: tuple[int, ...],
     obj: object,
@@ -467,36 +810,76 @@ def _program_ad_array_insert_layout(
     insert_obj = _program_ad_array_insert_object(obj, context=context)
     insert_values = _program_ad_array_insert_values(values, context=context)
     normalised_axis = _program_ad_array_insert_axis(axis, len(source_shape), context=context)
-    source_indices = np.arange(
-        _program_ad_array_static_size(source_shape), dtype=np.int64
-    ).reshape(source_shape)
-    source_zeros = np.zeros(source_shape, dtype=np.float64)
-    marker_values: object
-    marker_values = -1 if insert_values.shape == () else np.full(insert_values.shape, -1)
-    source = source_indices.reshape(-1) if normalised_axis is None else source_indices
-    try:
-        inserted_indices = np.insert(
-            source,
-            cast(Any, insert_obj),
-            cast(Any, marker_values),
-            axis=normalised_axis,
-        )
-        inserted_constants = np.insert(
-            source_zeros.reshape(-1) if normalised_axis is None else source_zeros,
-            cast(Any, insert_obj),
-            insert_values,
-            axis=normalised_axis,
-        )
-    except (IndexError, TypeError, ValueError) as exc:
-        raise ValueError(
-            "program AD array insert requires static insertion indices and insert values "
-            "compatible with the source shape"
-        ) from exc
-    return (
-        cast(NDArray[np.int64], np.asarray(inserted_indices, dtype=np.int64).reshape(-1)),
-        cast(NDArray[np.float64], np.asarray(inserted_constants, dtype=np.float64).reshape(-1)),
-        tuple(int(dimension) for dimension in np.asarray(inserted_indices).shape),
+    output_shape = _program_ad_array_insert_target_shape(
+        source_shape, obj, values, axis, context=context
     )
+    axis_extent = (
+        math.prod(source_shape) if normalised_axis is None else source_shape[normalised_axis]
+    )
+    index_count = (
+        len(range(*insert_obj.indices(axis_extent)))
+        if isinstance(insert_obj, slice)
+        else 1
+        if isinstance(insert_obj, int)
+        else np.asarray(insert_obj).size
+    )
+    plan = ExecutionMemoryPlan(
+        (
+            ExecutionBuffer(
+                "insert_source", "intermediate", (max(1, math.prod(source_shape)),), "float64", 2
+            ),
+            ExecutionBuffer(
+                "insert_output", "intermediate", (max(1, math.prod(output_shape)),), "float64", 4
+            ),
+            ExecutionBuffer(
+                "insert_index_order", "intermediate", (max(1, index_count),), "int64", 4
+            ),
+            ExecutionBuffer(
+                "insert_mask",
+                "intermediate",
+                (max(1, output_shape[0 if normalised_axis is None else normalised_axis]),),
+                "bool",
+            ),
+            ExecutionBuffer(
+                "insert_markers", "intermediate", (max(1, insert_values.size),), "int64"
+            ),
+        )
+    )
+    with reserve_execution_memory(plan) as reservation:
+        reservation.checkpoint()
+        source_indices = np.arange(
+            _program_ad_array_static_size(source_shape), dtype=np.int64
+        ).reshape(source_shape)
+        source_zeros = np.zeros(source_shape, dtype=np.float64)
+        marker_values: object
+        marker_values = -1 if insert_values.shape == () else np.full(insert_values.shape, -1)
+        source = source_indices.reshape(-1) if normalised_axis is None else source_indices
+        try:
+            inserted_indices = np.insert(
+                source,
+                cast(Any, insert_obj),
+                cast(Any, marker_values),
+                axis=normalised_axis,
+            )
+            inserted_constants = np.insert(
+                source_zeros.reshape(-1) if normalised_axis is None else source_zeros,
+                cast(Any, insert_obj),
+                insert_values,
+                axis=normalised_axis,
+            )
+        except (IndexError, TypeError, ValueError) as exc:
+            raise ValueError(
+                "program AD array insert requires static insertion indices and insert values "
+                "compatible with the source shape"
+            ) from exc
+        reservation.checkpoint()
+        return (
+            cast(NDArray[np.int64], np.asarray(inserted_indices, dtype=np.int64).reshape(-1)),
+            cast(
+                NDArray[np.float64], np.asarray(inserted_constants, dtype=np.float64).reshape(-1)
+            ),
+            tuple(int(dimension) for dimension in np.asarray(inserted_indices).shape),
+        )
 
 
 def _program_ad_array_direct_gather(
@@ -506,13 +889,18 @@ def _program_ad_array_direct_gather(
     source_shape: tuple[int, ...],
     flat_indices: NDArray[np.int64],
 ) -> NDArray[np.float64]:
-    vector = _program_ad_array_vector(
-        primitive_name,
-        "values",
-        values,
-        expected_size=_program_ad_array_static_size(source_shape),
-    )
-    return _program_ad_float64_vector_result(vector[flat_indices])
+    plan = _program_ad_array_direct_transform_plan(source_shape, int(flat_indices.size))
+    with reserve_execution_memory(plan) as reservation:
+        reservation.checkpoint()
+        vector = _program_ad_array_vector(
+            primitive_name,
+            "values",
+            values,
+            expected_size=_program_ad_array_static_size(source_shape),
+        )
+        result = _program_ad_float64_vector_result(vector[flat_indices])
+        reservation.checkpoint()
+        return result
 
 
 def _program_ad_array_direct_gather_jvp(
@@ -523,19 +911,24 @@ def _program_ad_array_direct_gather_jvp(
     source_shape: tuple[int, ...],
     flat_indices: NDArray[np.int64],
 ) -> NDArray[np.float64]:
-    _program_ad_array_vector(
-        primitive_name,
-        "values",
-        values,
-        expected_size=_program_ad_array_static_size(source_shape),
-    )
-    tangent_vector = _program_ad_array_vector(
-        primitive_name,
-        "tangent",
-        tangent,
-        expected_size=_program_ad_array_static_size(source_shape),
-    )
-    return _program_ad_float64_vector_result(tangent_vector[flat_indices])
+    plan = _program_ad_array_direct_transform_plan(source_shape, int(flat_indices.size))
+    with reserve_execution_memory(plan) as reservation:
+        reservation.checkpoint()
+        _program_ad_array_vector(
+            primitive_name,
+            "values",
+            values,
+            expected_size=_program_ad_array_static_size(source_shape),
+        )
+        tangent_vector = _program_ad_array_vector(
+            primitive_name,
+            "tangent",
+            tangent,
+            expected_size=_program_ad_array_static_size(source_shape),
+        )
+        result = _program_ad_float64_vector_result(tangent_vector[flat_indices])
+        reservation.checkpoint()
+        return result
 
 
 def _program_ad_array_direct_scatter_vjp(
@@ -546,17 +939,44 @@ def _program_ad_array_direct_scatter_vjp(
     source_shape: tuple[int, ...],
     flat_indices: NDArray[np.int64],
 ) -> NDArray[np.float64]:
-    source_size = _program_ad_array_static_size(source_shape)
-    _program_ad_array_vector(primitive_name, "values", values, expected_size=source_size)
-    cotangent_vector = _program_ad_array_vector(
-        primitive_name,
-        "cotangent",
-        cotangent,
-        expected_size=int(flat_indices.size),
+    plan = _program_ad_array_direct_transform_plan(source_shape, int(flat_indices.size))
+    with reserve_execution_memory(plan) as reservation:
+        reservation.checkpoint()
+        source_size = _program_ad_array_static_size(source_shape)
+        _program_ad_array_vector(primitive_name, "values", values, expected_size=source_size)
+        cotangent_vector = _program_ad_array_vector(
+            primitive_name,
+            "cotangent",
+            cotangent,
+            expected_size=int(flat_indices.size),
+        )
+        result = np.zeros(source_size, dtype=np.float64)
+        np.add.at(result, flat_indices, cotangent_vector)
+        reservation.checkpoint()
+        return result
+
+
+def _program_ad_array_direct_transform_plan(
+    source_shape: tuple[int, ...], output_size: int
+) -> ExecutionMemoryPlan:
+    """Declare retained layout and float64/indexing transform workspace."""
+    return ExecutionMemoryPlan(
+        (
+            ExecutionBuffer(
+                "direct_transform_source",
+                "intermediate",
+                (max(1, _program_ad_array_static_size(source_shape)),),
+                "float64",
+                4,
+            ),
+            ExecutionBuffer(
+                "direct_transform_output", "intermediate", (max(1, output_size),), "float64", 6
+            ),
+            ExecutionBuffer(
+                "direct_transform_mask", "intermediate", (max(1, output_size),), "bool"
+            ),
+        )
     )
-    result = np.zeros(source_size, dtype=np.float64)
-    np.add.at(result, flat_indices, cotangent_vector)
-    return result
 
 
 def _program_ad_array_direct_pad_value(
@@ -567,16 +987,20 @@ def _program_ad_array_direct_pad_value(
     flat_indices: NDArray[np.int64],
     flat_constants: NDArray[np.float64],
 ) -> NDArray[np.float64]:
-    vector = _program_ad_array_vector(
-        primitive_name,
-        "values",
-        values,
-        expected_size=_program_ad_array_static_size(source_shape),
-    )
-    result = np.array(flat_constants, dtype=np.float64, copy=True)
-    source_mask = flat_indices >= 0
-    result[source_mask] = vector[flat_indices[source_mask]]
-    return result
+    plan = _program_ad_array_direct_transform_plan(source_shape, int(flat_indices.size))
+    with reserve_execution_memory(plan) as reservation:
+        reservation.checkpoint()
+        vector = _program_ad_array_vector(
+            primitive_name,
+            "values",
+            values,
+            expected_size=_program_ad_array_static_size(source_shape),
+        )
+        result = np.array(flat_constants, dtype=np.float64, copy=True)
+        source_mask = flat_indices >= 0
+        result[source_mask] = vector[flat_indices[source_mask]]
+        reservation.checkpoint()
+        return result
 
 
 def _program_ad_array_direct_pad_jvp(
@@ -587,22 +1011,26 @@ def _program_ad_array_direct_pad_jvp(
     source_shape: tuple[int, ...],
     flat_indices: NDArray[np.int64],
 ) -> NDArray[np.float64]:
-    _program_ad_array_vector(
-        primitive_name,
-        "values",
-        values,
-        expected_size=_program_ad_array_static_size(source_shape),
-    )
-    tangent_vector = _program_ad_array_vector(
-        primitive_name,
-        "tangent",
-        tangent,
-        expected_size=_program_ad_array_static_size(source_shape),
-    )
-    result = np.zeros(int(flat_indices.size), dtype=np.float64)
-    source_mask = flat_indices >= 0
-    result[source_mask] = tangent_vector[flat_indices[source_mask]]
-    return result
+    plan = _program_ad_array_direct_transform_plan(source_shape, int(flat_indices.size))
+    with reserve_execution_memory(plan) as reservation:
+        reservation.checkpoint()
+        _program_ad_array_vector(
+            primitive_name,
+            "values",
+            values,
+            expected_size=_program_ad_array_static_size(source_shape),
+        )
+        tangent_vector = _program_ad_array_vector(
+            primitive_name,
+            "tangent",
+            tangent,
+            expected_size=_program_ad_array_static_size(source_shape),
+        )
+        result = np.zeros(int(flat_indices.size), dtype=np.float64)
+        source_mask = flat_indices >= 0
+        result[source_mask] = tangent_vector[flat_indices[source_mask]]
+        reservation.checkpoint()
+        return result
 
 
 def _program_ad_array_direct_pad_vjp(
@@ -613,18 +1041,22 @@ def _program_ad_array_direct_pad_vjp(
     source_shape: tuple[int, ...],
     flat_indices: NDArray[np.int64],
 ) -> NDArray[np.float64]:
-    source_size = _program_ad_array_static_size(source_shape)
-    _program_ad_array_vector(primitive_name, "values", values, expected_size=source_size)
-    cotangent_vector = _program_ad_array_vector(
-        primitive_name,
-        "cotangent",
-        cotangent,
-        expected_size=int(flat_indices.size),
-    )
-    result = np.zeros(source_size, dtype=np.float64)
-    source_mask = flat_indices >= 0
-    np.add.at(result, flat_indices[source_mask], cotangent_vector[source_mask])
-    return result
+    plan = _program_ad_array_direct_transform_plan(source_shape, int(flat_indices.size))
+    with reserve_execution_memory(plan) as reservation:
+        reservation.checkpoint()
+        source_size = _program_ad_array_static_size(source_shape)
+        _program_ad_array_vector(primitive_name, "values", values, expected_size=source_size)
+        cotangent_vector = _program_ad_array_vector(
+            primitive_name,
+            "cotangent",
+            cotangent,
+            expected_size=int(flat_indices.size),
+        )
+        result = np.zeros(source_size, dtype=np.float64)
+        source_mask = flat_indices >= 0
+        np.add.at(result, flat_indices[source_mask], cotangent_vector[source_mask])
+        reservation.checkpoint()
+        return result
 
 
 def program_ad_array_getitem_derivative_rule(
@@ -651,6 +1083,10 @@ def program_ad_array_getitem_derivative_rule(
     ValueError
         Raised when the source shape is negative, the index is not a supported
         static selector, or the selected coordinates are out of bounds.
+
+    DenseAllocationError
+        Declared transform buffers, or guarded take-layout construction, exceed
+        live host/cgroup or configured capacity.
 
     """
     source = _program_ad_array_normalise_static_shape("getitem", source_shape)
@@ -719,6 +1155,10 @@ def program_ad_array_take_derivative_rule(
     ValueError
         Raised when the source shape, indices, axis, or mode cannot define a
         static in-bounds ``np.take`` gather.
+
+    DenseAllocationError
+        Declared transform buffers, or guarded take-layout construction, exceed
+        live host/cgroup or configured capacity.
 
     """
     mode_name = _program_ad_array_take_mode(mode, context="direct rule")
@@ -794,6 +1234,10 @@ def program_ad_array_take_along_axis_derivative_rule(
         Raised when the source shape, indices, or axis cannot define a static
         shape-compatible ``np.take_along_axis`` gather.
 
+    DenseAllocationError
+        Declared transform buffers, or guarded take-layout construction, exceed
+        live host/cgroup or configured capacity.
+
     """
     source = _program_ad_array_normalise_static_shape("take_along_axis", source_shape)
     if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
@@ -868,6 +1312,10 @@ def program_ad_array_delete_derivative_rule(
         Raised when the source shape, deletion selector, or axis cannot define
         a static in-bounds ``np.delete`` gather.
 
+    DenseAllocationError
+        Declared transform buffers, or guarded take-layout construction, exceed
+        live host/cgroup or configured capacity.
+
     """
     source = _program_ad_array_normalise_static_shape("delete", source_shape)
     flat_indices = _program_ad_array_delete_flat_indices(source, obj, axis)
@@ -937,6 +1385,8 @@ def program_ad_array_pad_derivative_rule(
     ValueError
         Raised when the source shape, pad width, or constant values cannot
         define a finite static constant-padding layout.
+    DenseAllocationError
+        Declared layout or transform buffers exceed live or configured capacity.
 
     """
     source = _program_ad_array_normalise_static_shape("pad", source_shape)
@@ -1017,6 +1467,8 @@ def program_ad_array_insert_derivative_rule(
     ValueError
         Raised when the source shape, insertion selector, insertion constants,
         or axis cannot define a finite static insertion layout.
+    DenseAllocationError
+        Declared insertion layout or transform exceeds live or configured capacity.
 
     """
     source = _program_ad_array_normalise_static_shape("insert", source_shape)
@@ -1179,12 +1631,29 @@ def _program_ad_array_getitem_shape(args: tuple[object, ...]) -> tuple[int, ...]
         raise ValueError("program AD array getitem shape rule requires array and index")
     _validate_static_basic_index(args[1])
     source_shape = _program_ad_array_shape_of(args[0])
-    source = np.arange(int(np.prod(source_shape)), dtype=np.int64).reshape(source_shape)
     try:
-        selected = source[cast(Any, args[1])]
+        with (
+            _program_ad_array_getitem_layout_plan(source_shape, args[1]) as (
+                plan,
+                output_size,
+                prepared_index,
+            ),
+            reserve_execution_memory(plan) as reservation,
+        ):
+            reservation.checkpoint()
+            source = np.arange(math.prod(source_shape), dtype=np.int64).reshape(source_shape)
+            try:
+                selected = source[cast(Any, prepared_index)]
+            except (IndexError, TypeError, ValueError) as exc:
+                raise ValueError(
+                    "program AD array getitem shape rule requires in-bounds indices"
+                ) from exc
+            reservation.checkpoint()
+            if np.asarray(selected).size != output_size:
+                raise ValueError("getitem layout differs from admitted output size")
+            return tuple(int(dimension) for dimension in np.asarray(selected).shape)
     except (IndexError, TypeError, ValueError) as exc:
         raise ValueError("program AD array getitem shape rule requires in-bounds indices") from exc
-    return tuple(int(dimension) for dimension in np.asarray(selected).shape)
 
 
 def _program_ad_array_take_shape(args: tuple[object, ...]) -> tuple[int, ...]:
@@ -1201,16 +1670,32 @@ def _program_ad_array_take_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     if raw_indices.dtype.kind not in {"i", "u"}:
         raise ValueError("program AD array take shape rule requires static integer indices")
     source_shape = _program_ad_array_shape_of(args[0])
-    source = np.arange(int(np.prod(source_shape)), dtype=np.int64).reshape(source_shape)
-    try:
-        selected = np.take(source, raw_indices, axis=axis, mode=mode_name)
-    except (IndexError, ValueError) as exc:
-        if mode_name == "raise":
-            raise ValueError("program AD array take shape rule indices must be in bounds") from exc
-        raise ValueError(
-            "program AD array take shape rule requires axis-compatible indices"
-        ) from exc
-    return tuple(int(dimension) for dimension in np.asarray(selected).shape)
+    normalised_axis = (
+        None
+        if axis is None or not source_shape
+        else _normalise_axis("axis", int(axis), len(source_shape))
+    )
+    plan = _program_ad_array_take_layout_plan(
+        source_shape,
+        tuple(int(size) for size in raw_indices.shape),
+        normalised_axis,
+        along_axis=False,
+    )
+    with reserve_execution_memory(plan) as reservation:
+        reservation.checkpoint()
+        source = np.arange(math.prod(source_shape), dtype=np.int64).reshape(source_shape)
+        try:
+            selected = np.take(source, raw_indices, axis=axis, mode=mode_name)
+        except (IndexError, ValueError) as exc:
+            if mode_name == "raise":
+                raise ValueError(
+                    "program AD array take shape rule indices must be in bounds"
+                ) from exc
+            raise ValueError(
+                "program AD array take shape rule requires axis-compatible indices"
+            ) from exc
+        reservation.checkpoint()
+        return tuple(int(dimension) for dimension in np.asarray(selected).shape)
 
 
 def _program_ad_array_take_along_axis_shape(args: tuple[object, ...]) -> tuple[int, ...]:
@@ -1230,15 +1715,27 @@ def _program_ad_array_take_along_axis_shape(args: tuple[object, ...]) -> tuple[i
             "program AD array take_along_axis shape rule requires static integer indices"
         )
     source_shape = _program_ad_array_shape_of(args[0])
-    source = np.arange(int(np.prod(source_shape)), dtype=np.int64).reshape(source_shape)
-    try:
-        selected = np.take_along_axis(source, raw_indices, axis=int(axis))
-    except (IndexError, ValueError) as exc:
-        raise ValueError(
-            "program AD array take_along_axis shape rule indices must be in bounds "
-            "and shape-compatible"
-        ) from exc
-    return tuple(int(dimension) for dimension in np.asarray(selected).shape)
+    normalised_axis = (
+        None if axis is None else _normalise_axis("axis", int(axis), len(source_shape))
+    )
+    plan = _program_ad_array_take_layout_plan(
+        source_shape,
+        tuple(int(size) for size in raw_indices.shape),
+        normalised_axis,
+        along_axis=True,
+    )
+    with reserve_execution_memory(plan) as reservation:
+        reservation.checkpoint()
+        source = np.arange(math.prod(source_shape), dtype=np.int64).reshape(source_shape)
+        try:
+            selected = np.take_along_axis(source, raw_indices, axis=int(axis))
+        except (IndexError, ValueError) as exc:
+            raise ValueError(
+                "program AD array take_along_axis shape rule indices must be in bounds "
+                "and shape-compatible"
+            ) from exc
+        reservation.checkpoint()
+        return tuple(int(dimension) for dimension in np.asarray(selected).shape)
 
 
 def _program_ad_array_delete_shape(args: tuple[object, ...]) -> tuple[int, ...]:
@@ -1250,20 +1747,24 @@ def _program_ad_array_delete_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     axis = args[2] if len(args) == 3 else None
     source: NDArray[np.int64]
     if axis is None:
-        source = np.arange(int(np.prod(source_shape)), dtype=np.int64).reshape(-1)
         normalised_axis = None
     else:
         if isinstance(axis, (bool, np.bool_)) or not isinstance(axis, (int, np.integer)):
             raise ValueError("program AD array delete shape rule requires static integer axis")
         normalised_axis = _normalise_axis("axis", int(axis), len(source_shape))
-        source = np.arange(int(np.prod(source_shape)), dtype=np.int64).reshape(source_shape)
-    try:
-        selected = np.delete(source, cast(Any, delete_obj), axis=normalised_axis)
-    except (IndexError, TypeError, ValueError) as exc:
-        raise ValueError(
-            "program AD array delete shape rule requires static in-bounds deletion selectors"
-        ) from exc
-    return tuple(int(dimension) for dimension in np.asarray(selected).shape)
+    plan = _program_ad_array_delete_layout_plan(source_shape, delete_obj, normalised_axis)
+    with reserve_execution_memory(plan) as reservation:
+        reservation.checkpoint()
+        source_indices = np.arange(math.prod(source_shape), dtype=np.int64).reshape(source_shape)
+        source = source_indices.reshape(-1) if normalised_axis is None else source_indices
+        try:
+            selected = np.delete(source, cast(Any, delete_obj), axis=normalised_axis)
+        except (IndexError, TypeError, ValueError) as exc:
+            raise ValueError(
+                "program AD array delete shape rule requires static in-bounds deletion selectors"
+            ) from exc
+        reservation.checkpoint()
+        return tuple(int(dimension) for dimension in np.asarray(selected).shape)
 
 
 def _program_ad_array_pad_shape(args: tuple[object, ...]) -> tuple[int, ...]:
@@ -1274,13 +1775,12 @@ def _program_ad_array_pad_shape(args: tuple[object, ...]) -> tuple[int, ...]:
         )
     mode = args[2] if len(args) >= 3 else "constant"
     _program_ad_array_pad_mode(mode, context="shape rule")
-    _, _, output_shape = _program_ad_array_pad_layout(
+    return _program_ad_array_pad_target_shape(
         _program_ad_array_shape_of(args[0]),
         args[1],
         args[3] if len(args) == 4 else 0.0,
         context="shape rule",
     )
-    return output_shape
 
 
 def _program_ad_array_insert_shape(args: tuple[object, ...]) -> tuple[int, ...]:
@@ -1289,14 +1789,13 @@ def _program_ad_array_insert_shape(args: tuple[object, ...]) -> tuple[int, ...]:
         raise ValueError(
             "program AD array insert shape rule requires array, object, values, and axis"
         )
-    _, _, output_shape = _program_ad_array_insert_layout(
+    return _program_ad_array_insert_target_shape(
         _program_ad_array_shape_of(args[0]),
         args[1],
         args[2],
         args[3] if len(args) == 4 else None,
         context="shape rule",
     )
-    return output_shape
 
 
 def _program_ad_array_dtype_rule(args: tuple[object, ...]) -> str:

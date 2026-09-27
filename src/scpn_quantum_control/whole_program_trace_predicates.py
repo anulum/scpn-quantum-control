@@ -23,6 +23,8 @@ an import cycle.
 
 from __future__ import annotations
 
+import math
+
 import numpy as np
 
 from .whole_program_trace_runtime import _WholeProgramTraceContext
@@ -51,7 +53,7 @@ class TraceADPredicateArray:
         shape: tuple[int, ...],
         context: _WholeProgramTraceContext,
     ) -> None:
-        if int(np.prod(shape)) != len(predicates):
+        if math.prod(shape) != len(predicates):
             raise ValueError("predicate array shape must match predicate count")
         if any(predicate.context is not context for predicate in predicates):
             raise ValueError("predicate array items must belong to the same trace")

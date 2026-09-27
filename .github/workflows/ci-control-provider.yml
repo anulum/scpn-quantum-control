@@ -226,6 +226,7 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/whole_program_frontend_contracts.py
           src/scpn_quantum_control/whole_program_frontend.py
+          src/scpn_quantum_control/source_admission.py
           tools/whole_program_frontend_contracts_quality_gates.py
           tests/test_whole_program_frontend_contracts_quality_gate.py
       - name: Ruff NumPy docstrings for whole-program frontend-contract quality cohort
@@ -234,8 +235,11 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/whole_program_frontend_contracts.py
           src/scpn_quantum_control/whole_program_frontend.py
+          src/scpn_quantum_control/source_admission.py
           tests/test_whole_program_frontend.py
           tests/test_whole_program_frontend_contracts.py
+          tests/test_whole_program_ad_runtime.py
+          tests/test_source_admission.py
           tools/whole_program_frontend_contracts_quality_gates.py
           tests/test_whole_program_frontend_contracts_quality_gate.py
       - name: Run whole-program frontend-contract focused coverage
@@ -247,6 +251,8 @@ jobs:
           -m pytest -q
           tests/test_whole_program_frontend.py
           tests/test_whole_program_frontend_contracts.py
+          tests/test_whole_program_ad_runtime.py
+          tests/test_source_admission.py
       - name: Enforce whole-program frontend-contract exact coverage
         run: >-
           python -m coverage report
@@ -254,7 +260,7 @@ jobs:
           --data-file=/tmp/scpn-qc-whole-program-frontend-contracts-quality.coverage
           --precision=2 --show-missing
           --fail-under=100
-          --include=*/whole_program_frontend_contracts.py,*/whole_program_frontend.py
+          --include=*/whole_program_frontend_contracts.py,*/whole_program_frontend.py,*/source_admission.py
   variational-metric-quality:
     runs-on: ubuntu-latest
     env:

@@ -21,6 +21,7 @@
 pub mod program_ad_cumulative_reduction;
 pub mod program_ad_interpolation_reduction;
 pub mod program_ad_ir;
+pub mod program_ad_lifecycle;
 pub mod program_ad_linalg_array;
 pub mod program_ad_linalg_diag;
 pub mod program_ad_linalg_diagflat;

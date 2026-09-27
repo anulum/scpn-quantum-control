@@ -16,6 +16,9 @@
 //! metadata, non-finite inputs, and Hermitian or dynamic cutoff policies because
 //! those need a broader linalg policy before promotion.
 
+use crate::program_ad_ir::{filled_replay_buffer, reserve_replay_buffer};
+use crate::program_ad_lifecycle::replay_checkpoint;
+
 #[derive(Debug, Clone, PartialEq)]
 struct PinvMetadata {
     rows: usize,
@@ -37,7 +40,7 @@ pub(crate) fn pinv_output_value(
     operation: &str,
     input_values: &[f64],
 ) -> Result<f64, String> {
-    let metadata = parse_pinv(effect_index, operation, input_values)?;
+    let metadata = parse_pinv(effect_index, operation, input_values, false)?;
     Ok(metadata.pinv[metadata.output_row * metadata.rows + metadata.output_col])
 }
 
@@ -53,8 +56,8 @@ pub(crate) fn pinv_output_cotangent(
             "effect {effect_index} pinv cotangent must be finite"
         ));
     }
-    let metadata = parse_pinv(effect_index, operation, input_values)?;
-    let mut cotangent = vec![0.0_f64; metadata.cols * metadata.rows];
+    let metadata = parse_pinv(effect_index, operation, input_values, true)?;
+    let mut cotangent = filled_replay_buffer(matrix_entry_count(metadata.cols, metadata.rows)?, 0.0_f64)?;
     cotangent[metadata.output_row * metadata.rows + metadata.output_col] = output_cotangent;
     let adjoint = pinv_vjp(
         effect_index,
@@ -64,11 +67,7 @@ pub(crate) fn pinv_output_cotangent(
         &metadata.pinv,
         &cotangent,
     )?;
-    if adjoint.iter().any(|value| !value.is_finite()) {
-        return Err(format!(
-            "effect {effect_index} pinv cotangent contribution must be finite"
-        ));
-    }
+    validate_finite_values(effect_index, "cotangent contribution", &adjoint)?;
     Ok(adjoint)
 }
 
@@ -76,29 +75,17 @@ fn parse_pinv(
     effect_index: usize,
     operation: &str,
     input_values: &[f64],
+    requires_adjoint: bool,
 ) -> Result<PinvMetadata, String> {
-    let (rows, cols, rcond, output_row, output_col) = parse_pinv_metadata(effect_index, operation)?;
-    if !is_bounded_pinv_shape(rows, cols) {
-        return Err(format!(
-            "effect {effect_index} pinv Rust replay supports only rank-1, Nx2, and 2xN matrices"
-        ));
-    }
-    if input_values.len() != rows * cols {
-        return Err(format!(
-            "effect {effect_index} pinv requires {} flattened matrix operands",
-            rows * cols
-        ));
-    }
-    if input_values.iter().any(|value| !value.is_finite()) {
-        return Err(format!("effect {effect_index} pinv inputs must be finite"));
-    }
-    if output_row >= cols || output_col >= rows {
-        return Err(format!(
-            "effect {effect_index} pinv output index is outside pseudoinverse shape"
-        ));
-    }
-    let values = input_values.to_vec();
+    let (rows, cols, rcond, output_row, output_col) = validate_pinv_layout(
+        effect_index, operation, input_values.len(), requires_adjoint,
+    )?;
+    validate_finite_values(effect_index, "inputs", input_values)?;
+    let mut values = reserve_replay_buffer(input_values.len())?;
+    for chunk in input_values.chunks(256) { replay_checkpoint()?; values.extend_from_slice(chunk); }
+    replay_checkpoint()?;
     let pinv = pinv_bounded(effect_index, rows, cols, &values, rcond)?;
+    validate_finite_values(effect_index, "output", &pinv)?;
     Ok(PinvMetadata {
         rows,
         cols,
@@ -109,49 +96,8 @@ fn parse_pinv(
     })
 }
 
-fn parse_pinv_metadata(
-    effect_index: usize,
-    operation: &str,
-) -> Result<(usize, usize, f64, usize, usize), String> {
-    let parts = operation.split(':').collect::<Vec<&str>>();
-    if parts.len() != 6 || parts[0] != "linalg" || parts[1] != "pinv" {
-        return Err(format!(
-            "effect {effect_index} pinv operation metadata is malformed"
-        ));
-    }
-    let shape = parts[2].split('x').collect::<Vec<&str>>();
-    if shape.len() != 2 {
-        return Err(format!(
-            "effect {effect_index} pinv shape metadata is malformed"
-        ));
-    }
-    let rows = shape[0]
-        .parse::<usize>()
-        .map_err(|_| format!("effect {effect_index} pinv row metadata is malformed"))?;
-    let cols = shape[1]
-        .parse::<usize>()
-        .map_err(|_| format!("effect {effect_index} pinv column metadata is malformed"))?;
-    if rows == 0 || cols == 0 {
-        return Err(format!(
-            "effect {effect_index} pinv shape metadata must be positive"
-        ));
-    }
-    let rcond = parts[3]
-        .parse::<f64>()
-        .map_err(|_| format!("effect {effect_index} pinv cutoff metadata is malformed"))?;
-    if !rcond.is_finite() || rcond < 0.0 {
-        return Err(format!(
-            "effect {effect_index} pinv cutoff metadata must be finite and non-negative"
-        ));
-    }
-    let output_row = parts[4]
-        .parse::<usize>()
-        .map_err(|_| format!("effect {effect_index} pinv output-row metadata is malformed"))?;
-    let output_col = parts[5]
-        .parse::<usize>()
-        .map_err(|_| format!("effect {effect_index} pinv output-column metadata is malformed"))?;
-    Ok((rows, cols, rcond, output_row, output_col))
-}
+include!("program_ad_linalg_pinv/metadata.rs");
+include!("program_ad_linalg_pinv/workspace.rs");
 
 fn is_bounded_pinv_shape(rows: usize, cols: usize) -> bool {
     rows == 1 || cols == 1 || rows == 2 || cols == 2
@@ -171,9 +117,19 @@ fn pinv_bounded(
 }
 
 fn pinv_rank1(effect_index: usize, matrix: &[f64], rcond: f64) -> Result<Vec<f64>, String> {
-    let norm_squared = matrix.iter().map(|value| value * value).sum::<f64>();
+    let mut norm_squared = -0.0_f64;
+    for (index, value) in matrix.iter().enumerate() {
+        if index % 256 == 0 { replay_checkpoint()?; }
+        norm_squared += value * value;
+    }
     ensure_constant_rank1(effect_index, norm_squared, rcond)?;
-    Ok(matrix.iter().map(|value| value / norm_squared).collect())
+    let mut pinv = reserve_replay_buffer(matrix.len())?;
+    for (index, value) in matrix.iter().enumerate() {
+        if index % 256 == 0 { replay_checkpoint()?; }
+        pinv.push(value / norm_squared);
+    }
+    validate_finite_values(effect_index, "output", &pinv)?;
+    Ok(pinv)
 }
 
 fn ensure_constant_rank1(effect_index: usize, norm_squared: f64, rcond: f64) -> Result<(), String> {
@@ -205,17 +161,17 @@ fn pinv_rank2(
     rcond: f64,
 ) -> Result<Vec<f64>, String> {
     if rows >= cols {
-        let gram = gram_columns(rows, matrix);
+        let gram = gram_columns(rows, matrix)?;
         ensure_constant_rank2(effect_index, "column", gram, rcond)?;
         let inverse = invert_2x2(effect_index, gram, "column Gram matrix")?;
-        let matrix_t = transpose(matrix, rows, cols);
-        Ok(matmul(&inverse, 2, 2, &matrix_t, rows))
+        let matrix_t = transpose(matrix, rows, cols)?;
+        matmul(&inverse, 2, 2, &matrix_t, rows)
     } else {
-        let gram = gram_rows(rows, cols, matrix);
+        let gram = gram_rows(rows, cols, matrix)?;
         ensure_constant_rank2(effect_index, "row", gram, rcond)?;
         let inverse = invert_2x2(effect_index, gram, "row Gram matrix")?;
-        let matrix_t = transpose(matrix, rows, cols);
-        Ok(matmul(&matrix_t, cols, 2, &inverse, 2))
+        let matrix_t = transpose(matrix, rows, cols)?;
+        matmul(&matrix_t, cols, 2, &inverse, 2)
     }
 }
 
@@ -264,38 +220,41 @@ fn pinv_vjp(
     pinv: &[f64],
     cotangent: &[f64],
 ) -> Result<Vec<f64>, String> {
-    let left_projector = subtract(&identity(cols), &matmul(pinv, cols, rows, matrix, cols));
-    let right_projector = subtract(&identity(rows), &matmul(matrix, rows, cols, pinv, rows));
-    let pinv_t = transpose(pinv, cols, rows);
-    let cotangent_t = transpose(cotangent, cols, rows);
-    let left_projector_t = transpose(&left_projector, cols, cols);
-    let right_projector_t = transpose(&right_projector, rows, rows);
+    replay_checkpoint()?;
+    matrix_entry_count(rows, cols)?;
+    matrix_entry_count(rows, rows)?;
+    matrix_entry_count(cols, cols)?;
+    let left_projector = subtract(&identity(cols)?, &matmul(pinv, cols, rows, matrix, cols)?)?;
+    let right_projector = subtract(&identity(rows)?, &matmul(matrix, rows, cols, pinv, rows)?)?;
+    let pinv_t = transpose(pinv, cols, rows)?;
+    let cotangent_t = transpose(cotangent, cols, rows)?;
+    let left_projector_t = transpose(&left_projector, cols, cols)?;
+    let right_projector_t = transpose(&right_projector, rows, rows)?;
 
-    let term1_left = matmul(&pinv_t, rows, cols, cotangent, rows);
-    let term1 = matmul(&term1_left, rows, rows, &pinv_t, cols);
+    let term1_left = matmul(&pinv_t, rows, cols, cotangent, rows)?;
+    let term1 = matmul(&term1_left, rows, rows, &pinv_t, cols)?;
 
-    let term2_a = matmul(&right_projector_t, rows, rows, &cotangent_t, cols);
-    let term2_b = matmul(&term2_a, rows, cols, pinv, rows);
-    let term2 = matmul(&term2_b, rows, rows, &pinv_t, cols);
+    let term2_a = matmul(&right_projector_t, rows, rows, &cotangent_t, cols)?;
+    let term2_b = matmul(&term2_a, rows, cols, pinv, rows)?;
+    let term2 = matmul(&term2_b, rows, rows, &pinv_t, cols)?;
 
-    let term3_a = matmul(&pinv_t, rows, cols, pinv, rows);
-    let term3_b = matmul(&term3_a, rows, rows, &cotangent_t, cols);
-    let term3 = matmul(&term3_b, rows, cols, &left_projector_t, cols);
+    let term3_a = matmul(&pinv_t, rows, cols, pinv, rows)?;
+    let term3_b = matmul(&term3_a, rows, rows, &cotangent_t, cols)?;
+    let term3 = matmul(&term3_b, rows, cols, &left_projector_t, cols)?;
 
-    let adjoint = (0..rows * cols)
-        .map(|index| -term1[index] + term2[index] + term3[index])
-        .collect::<Vec<f64>>();
-    if adjoint.iter().any(|value| !value.is_finite()) {
-        return Err(format!(
-            "effect {effect_index} pinv adjoint matrix must be finite"
-        ));
+    let mut adjoint = reserve_replay_buffer(matrix_entry_count(rows, cols)?)?;
+    for index in 0..matrix.len() {
+        if index % 256 == 0 { replay_checkpoint()?; }
+        adjoint.push(-term1[index] + term2[index] + term3[index]);
     }
+    validate_finite_values(effect_index, "adjoint matrix", &adjoint)?;
     Ok(adjoint)
 }
 
-fn gram_columns(rows: usize, matrix: &[f64]) -> [f64; 4] {
+fn gram_columns(rows: usize, matrix: &[f64]) -> Result<[f64; 4], String> {
     let mut gram = [0.0_f64; 4];
     for row in 0..rows {
+        if row % 256 == 0 { replay_checkpoint()?; }
         let x = matrix[row * 2];
         let y = matrix[row * 2 + 1];
         gram[0] += x * x;
@@ -303,13 +262,15 @@ fn gram_columns(rows: usize, matrix: &[f64]) -> [f64; 4] {
         gram[2] += y * x;
         gram[3] += y * y;
     }
-    gram
+    replay_checkpoint()?;
+    Ok(gram)
 }
 
-fn gram_rows(rows: usize, cols: usize, matrix: &[f64]) -> [f64; 4] {
-    debug_assert_eq!(rows, 2);
+fn gram_rows(rows: usize, cols: usize, matrix: &[f64]) -> Result<[f64; 4], String> {
+    if rows != 2 { return Err("pinv row Gram matrix requires two rows".to_owned()); }
     let mut gram = [0.0_f64; 4];
     for col in 0..cols {
+        if col % 256 == 0 { replay_checkpoint()?; }
         let x = matrix[col];
         let y = matrix[cols + col];
         gram[0] += x * x;
@@ -317,7 +278,8 @@ fn gram_rows(rows: usize, cols: usize, matrix: &[f64]) -> [f64; 4] {
         gram[2] += y * x;
         gram[3] += y * y;
     }
-    gram
+    replay_checkpoint()?;
+    Ok(gram)
 }
 
 fn invert_2x2(effect_index: usize, matrix: [f64; 4], label: &str) -> Result<[f64; 4], String> {
@@ -334,45 +296,4 @@ fn invert_2x2(effect_index: usize, matrix: [f64; 4], label: &str) -> Result<[f64
     ])
 }
 
-fn matmul(
-    left: &[f64],
-    left_rows: usize,
-    left_cols: usize,
-    right: &[f64],
-    right_cols: usize,
-) -> Vec<f64> {
-    let mut result = vec![0.0_f64; left_rows * right_cols];
-    for row in 0..left_rows {
-        for col in 0..right_cols {
-            result[row * right_cols + col] = (0..left_cols)
-                .map(|inner| left[row * left_cols + inner] * right[inner * right_cols + col])
-                .sum();
-        }
-    }
-    result
-}
-
-fn transpose(matrix: &[f64], rows: usize, cols: usize) -> Vec<f64> {
-    let mut result = vec![0.0_f64; rows * cols];
-    for row in 0..rows {
-        for col in 0..cols {
-            result[col * rows + row] = matrix[row * cols + col];
-        }
-    }
-    result
-}
-
-fn identity(size: usize) -> Vec<f64> {
-    let mut result = vec![0.0_f64; size * size];
-    for index in 0..size {
-        result[index * size + index] = 1.0;
-    }
-    result
-}
-
-fn subtract(left: &[f64], right: &[f64]) -> Vec<f64> {
-    left.iter()
-        .zip(right.iter())
-        .map(|(left_value, right_value)| left_value - right_value)
-        .collect()
-}
+include!("program_ad_linalg_pinv/matrix_ops.rs");

@@ -11,7 +11,10 @@
 from __future__ import annotations
 
 import re
+import sys
 from collections.abc import Callable
+from threading import Event
+from types import FrameType
 from typing import Any, cast
 
 import numpy as np
@@ -22,6 +25,11 @@ from scpn_quantum_control import (
     TraceADArray,
     TraceADScalar,
     whole_program_value_and_grad,
+)
+from scpn_quantum_control.dense_budget import DenseAllocationError
+from scpn_quantum_control.execution_reservations import (
+    ExecutionCancelledError,
+    active_reserved_bytes,
 )
 
 FloatArray = NDArray[np.float64]
@@ -986,3 +994,659 @@ def test_clip_protocol_rejects_output_buffers() -> None:
     )
     assert "np.clip supports array, lower, and upper" in positional_error
     assert "np.clip supports array, lower, and upper" in keyword_error
+
+
+@pytest.mark.parametrize("diagonal", [np.diag, np.diagflat])
+@pytest.mark.parametrize("offset", [10_000, -10_000, sys.maxsize, -sys.maxsize])
+def test_public_diagonal_refuses_oversized_pointer_storage_and_recovers(
+    diagonal: ArrayFunction, offset: int
+) -> None:
+    """A large offset cannot allocate a huge trace container with few AD nodes."""
+    baseline = active_reserved_bytes()
+
+    def objective(values: Any) -> object:
+        return np.sum(diagonal(values, k=offset))
+
+    with pytest.raises(DenseAllocationError, match="(trace array storage|native addressable)"):
+        whole_program_value_and_grad(
+            objective, np.array([2.0, 3.0]), trace=False, max_execution_gib=0.01
+        )
+    assert active_reserved_bytes() == baseline
+    offset = 2
+    result = whole_program_value_and_grad(
+        objective, np.array([2.0, 3.0]), trace=False, max_execution_gib=0.01
+    )
+    assert result.value == 5.0
+    np.testing.assert_array_equal(result.gradient, np.ones(2))
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("diagonal", [np.diag, np.diagflat])
+@pytest.mark.parametrize("offset", [-2, 0, 2])
+def test_public_diagonal_fixed_storage_preserves_diagonal_and_gradient(
+    diagonal: ArrayFunction, offset: int
+) -> None:
+    """Admitted placement preserves independent diagonal-index weighted sums."""
+    values = np.array([2.0, 3.0])
+    size = values.size + abs(offset)
+    weights = np.arange(1, size * size + 1, dtype=float).reshape(size, size)
+
+    def objective(parameters: Any) -> object:
+        return np.sum(diagonal(parameters, k=offset) * weights)
+
+    baseline = active_reserved_bytes()
+    result = whole_program_value_and_grad(objective, values, trace=False, max_execution_gib=0.01)
+    rows = np.arange(values.size) + max(0, -offset)
+    columns = np.arange(values.size) + max(0, offset)
+    expected_gradient = weights[rows, columns]
+    assert result.value == float(np.dot(values, expected_gradient))
+    np.testing.assert_array_equal(result.gradient, expected_gradient)
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("scalar", [False, True])
+@pytest.mark.parametrize("extent", [10_000_000, 1 << 40])
+def test_public_broadcast_refuses_storage_before_materialisation_and_recovers(
+    scalar: bool, extent: int
+) -> None:
+    """A broadcast with few trace nodes still admits output pointers and index buffers."""
+
+    def objective(values: Any) -> object:
+        source = values.reshape(()) if scalar else values
+        return np.sum(np.broadcast_to(source, (extent,)))
+
+    baseline = active_reserved_bytes()
+    with pytest.raises(DenseAllocationError):
+        whole_program_value_and_grad(
+            objective, np.array([2.0]), trace=False, max_execution_gib=0.01
+        )
+    assert active_reserved_bytes() == baseline
+    extent = 3
+    result = whole_program_value_and_grad(
+        objective, np.array([2.0]), trace=False, max_execution_gib=0.01
+    )
+    assert result.value == 6.0
+    np.testing.assert_array_equal(result.gradient, np.array([3.0]))
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("operation", [np.repeat, np.tile])
+@pytest.mark.parametrize("count", [10_000_000, sys.maxsize])
+def test_public_repetition_refuses_large_storage_and_recovers(
+    operation: ArrayFunction, count: int
+) -> None:
+    """Output index and lineage storage is admitted before a repeated array exists."""
+
+    def objective(values: Any) -> object:
+        return np.sum(operation(values, count))
+
+    baseline = active_reserved_bytes()
+    with pytest.raises(DenseAllocationError):
+        whole_program_value_and_grad(
+            objective, np.array([2.0, 3.0]), trace=False, max_execution_gib=0.01
+        )
+    assert active_reserved_bytes() == baseline
+    count = 3
+    result = whole_program_value_and_grad(
+        objective, np.array([2.0, 3.0]), trace=False, max_execution_gib=0.01
+    )
+    assert result.value == 15.0
+    np.testing.assert_array_equal(result.gradient, np.array([3.0, 3.0]))
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("operation", [np.repeat, np.tile])
+def test_public_repetition_zero_output_preserves_empty_sum(operation: ArrayFunction) -> None:
+    """Zero replication returns an empty array without constructing intermediate repeats."""
+
+    def objective(values: Any) -> object:
+        return np.sum(operation(values, 0))
+
+    baseline = active_reserved_bytes()
+    result = whole_program_value_and_grad(objective, np.array([2.0, 3.0]), trace=False)
+    assert result.value == 0.0
+    np.testing.assert_array_equal(result.gradient, np.zeros(2))
+    assert active_reserved_bytes() == baseline
+
+
+def test_public_repeat_axis_counts_preserve_order_and_gradient() -> None:
+    """Per-column counts preserve rectangular output and pullback multiplicities."""
+
+    def objective(values: Any) -> object:
+        return np.sum(np.repeat(values.reshape((2, 2)), (1, 2), axis=-1))
+
+    baseline = active_reserved_bytes()
+    result = whole_program_value_and_grad(objective, np.array([1.0, 2.0, 3.0, 4.0]), trace=False)
+    assert result.value == 16.0
+    np.testing.assert_array_equal(result.gradient, np.array([1.0, 2.0, 1.0, 2.0]))
+    assert active_reserved_bytes() == baseline
+
+
+def test_public_tile_rank_extension_preserves_replication_gradient() -> None:
+    """Leading rank extension and per-axis tiling retain all six source copies."""
+
+    def objective(values: Any) -> object:
+        return np.sum(np.tile(values.reshape((2, 2)), (2, 1, 3)))
+
+    baseline = active_reserved_bytes()
+    result = whole_program_value_and_grad(objective, np.array([1.0, 2.0, 3.0, 4.0]), trace=False)
+    assert result.value == 60.0
+    np.testing.assert_array_equal(result.gradient, np.full(4, 6.0))
+    assert active_reserved_bytes() == baseline
+
+
+def test_public_pad_refuses_large_layout_before_shape_materialisation_and_recovers() -> None:
+    """Pad shape dispatch does not allocate an output before the real memory guard."""
+    width = 10_000_000
+
+    def objective(values: Any) -> object:
+        return np.sum(np.pad(values, width, constant_values=7.0))
+
+    baseline = active_reserved_bytes()
+    with pytest.raises(DenseAllocationError):
+        whole_program_value_and_grad(
+            objective, np.array([2.0, 3.0]), trace=False, max_execution_gib=0.01
+        )
+    assert active_reserved_bytes() == baseline
+    width = 2
+    result = whole_program_value_and_grad(
+        objective, np.array([2.0, 3.0]), trace=False, max_execution_gib=0.01
+    )
+    assert result.value == 33.0
+    np.testing.assert_array_equal(result.gradient, np.ones(2))
+    assert active_reserved_bytes() == baseline
+
+
+def test_public_padding_storage_remains_owned_until_objective_returns() -> None:
+    """Padding object/tangent charges survive the temporary numeric layout scope."""
+    observations: list[int] = []
+
+    def objective(values: Any) -> object:
+        observations.append(active_reserved_bytes())
+        padded = np.pad(values, 3, constant_values=7.0)
+        observations.append(active_reserved_bytes())
+        return np.sum(padded)
+
+    baseline = active_reserved_bytes()
+    result = whole_program_value_and_grad(objective, np.array([2.0, 3.0]), trace=False)
+    assert result.value == 47.0
+    np.testing.assert_array_equal(result.gradient, np.ones(2))
+    assert len(observations) == 2
+    assert observations[1] - observations[0] >= 6 * 2 * np.dtype(np.float64).itemsize
+    assert active_reserved_bytes() == baseline
+
+
+def test_public_padding_failure_releases_retained_objects_and_tangents() -> None:
+    """An objective exception after padding drops its retained charge and allows retry."""
+    failing = True
+
+    def objective(values: Any) -> object:
+        padded = np.pad(values, 3, constant_values=7.0)
+        if failing:
+            raise RuntimeError("after owned padding")
+        return np.sum(padded)
+
+    baseline = active_reserved_bytes()
+    with pytest.raises(RuntimeError, match="after owned padding"):
+        whole_program_value_and_grad(objective, np.array([2.0, 3.0]), trace=False)
+    assert active_reserved_bytes() == baseline
+    failing = False
+    result = whole_program_value_and_grad(objective, np.array([2.0, 3.0]), trace=False)
+    assert result.value == 47.0
+    np.testing.assert_array_equal(result.gradient, np.ones(2))
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("selector", [1, (1,)])
+def test_public_insertion_storage_remains_owned_until_objective_returns(
+    selector: object,
+) -> None:
+    """Inserted constants retain their scalar and tangent charge after layout exits."""
+    observations: list[int] = []
+
+    def objective(values: Any) -> object:
+        observations.append(active_reserved_bytes())
+        inserted = np.insert(values, selector, (7.0, 8.0, 9.0))
+        observations.append(active_reserved_bytes())
+        return np.sum(inserted)
+
+    baseline = active_reserved_bytes()
+    result = whole_program_value_and_grad(objective, np.array([2.0, 3.0]), trace=False)
+    assert result.value == 29.0
+    np.testing.assert_array_equal(result.gradient, np.ones(2))
+    assert len(observations) == 2
+    assert observations[1] - observations[0] >= 3 * 2 * np.dtype(np.float64).itemsize
+    assert active_reserved_bytes() == baseline
+
+
+def test_public_insertion_failure_releases_retained_objects_and_recovers() -> None:
+    """An exception after insertion disposes charges before a successful retry."""
+    failing = True
+
+    def objective(values: Any) -> object:
+        inserted = np.insert(values, 1, (7.0, 8.0, 9.0))
+        if failing:
+            raise RuntimeError("after owned insertion")
+        return np.sum(inserted)
+
+    baseline = active_reserved_bytes()
+    with pytest.raises(RuntimeError, match="after owned insertion"):
+        whole_program_value_and_grad(objective, np.array([2.0, 3.0]), trace=False)
+    assert active_reserved_bytes() == baseline
+    failing = False
+    result = whole_program_value_and_grad(objective, np.array([2.0, 3.0]), trace=False)
+    assert result.value == 29.0
+    np.testing.assert_array_equal(result.gradient, np.ones(2))
+    assert active_reserved_bytes() == baseline
+
+
+def test_public_insertion_refuses_constant_storage_and_recovers() -> None:
+    """Constant cells are admitted before their trace objects and tangents exist."""
+    constants = (7.0,) * 4096
+
+    def objective(values: Any) -> object:
+        return np.sum(np.insert(values, 1, constants))
+
+    baseline = active_reserved_bytes()
+    with pytest.raises(DenseAllocationError):
+        whole_program_value_and_grad(
+            objective, np.array([2.0, 3.0]), trace=False, max_execution_gib=0.001
+        )
+    assert active_reserved_bytes() == baseline
+    constants = (7.0, 8.0, 9.0)
+    result = whole_program_value_and_grad(
+        objective, np.array([2.0, 3.0]), trace=False, max_execution_gib=0.001
+    )
+    assert result.value == 29.0
+    np.testing.assert_array_equal(result.gradient, np.ones(2))
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("along_axis", [False, True])
+def test_public_take_shape_admission_refuses_large_selection_and_recovers(
+    along_axis: bool,
+) -> None:
+    """The executed registry shape path admits output indices before NumPy selection."""
+    indices = np.broadcast_to(np.array(0, dtype=np.int64), (10_000_000,))
+
+    def objective(values: Any) -> object:
+        if along_axis:
+            return np.sum(
+                np.take_along_axis(values.reshape((1, 2)), indices.reshape((-1, 1)), axis=1)
+            )
+        return np.sum(np.take(values, indices))
+
+    baseline = active_reserved_bytes()
+    with pytest.raises(DenseAllocationError):
+        whole_program_value_and_grad(
+            objective, np.array([2.0, 3.0]), trace=False, max_execution_gib=0.01
+        )
+    assert active_reserved_bytes() == baseline
+    indices = np.array([1, 0, 1], dtype=np.int64)
+    result = whole_program_value_and_grad(
+        objective, np.array([2.0, 3.0]), trace=False, max_execution_gib=0.01
+    )
+    assert result.value == 8.0
+    np.testing.assert_array_equal(result.gradient, np.array([1.0, 2.0]))
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("along_axis", [False, True])
+def test_public_take_storage_stays_owned_after_numeric_selection(along_axis: bool) -> None:
+    """Selection container charges survive until the objective result is formed."""
+    observations: list[int] = []
+    indices = np.array([1, 0, 1, 1], dtype=np.int64)
+
+    def objective(values: Any) -> object:
+        observations.append(active_reserved_bytes())
+        selected = (
+            np.take_along_axis(values.reshape((1, 2)), indices.reshape((1, 4)), axis=1)
+            if along_axis
+            else np.take(values, indices)
+        )
+        observations.append(active_reserved_bytes())
+        return np.sum(selected)
+
+    baseline = active_reserved_bytes()
+    result = whole_program_value_and_grad(objective, np.array([2.0, 3.0]), trace=False)
+    assert result.value == 11.0
+    np.testing.assert_array_equal(result.gradient, np.array([1.0, 3.0]))
+    assert len(observations) == 2
+    assert observations[1] - observations[0] >= 4 * np.dtype(np.uintp).itemsize
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("along_axis", [False, True])
+def test_public_take_failure_disposes_retained_selection_and_recovers(along_axis: bool) -> None:
+    """An objective exception after selection releases both numeric and container charges."""
+    failing = True
+    indices = np.array([1, 0, 1, 1], dtype=np.int64)
+
+    def objective(values: Any) -> object:
+        selected = (
+            np.take_along_axis(values.reshape((1, 2)), indices.reshape((1, 4)), axis=1)
+            if along_axis
+            else np.take(values, indices)
+        )
+        if failing:
+            raise RuntimeError("after owned selection")
+        return np.sum(selected)
+
+    baseline = active_reserved_bytes()
+    with pytest.raises(RuntimeError, match="after owned selection"):
+        whole_program_value_and_grad(objective, np.array([2.0, 3.0]), trace=False)
+    assert active_reserved_bytes() == baseline
+    failing = False
+    result = whole_program_value_and_grad(objective, np.array([2.0, 3.0]), trace=False)
+    assert result.value == 11.0
+    np.testing.assert_array_equal(result.gradient, np.array([1.0, 3.0]))
+    assert active_reserved_bytes() == baseline
+
+
+def test_public_take_scalar_return_preserves_gradient_and_releases_charge() -> None:
+    """Scalar selection takes the early-return path without losing scope disposal."""
+
+    def objective(values: Any) -> object:
+        return np.take(values, 1)
+
+    baseline = active_reserved_bytes()
+    result = whole_program_value_and_grad(objective, np.array([2.0, 3.0]), trace=False)
+    assert result.value == 3.0
+    np.testing.assert_array_equal(result.gradient, np.array([0.0, 1.0]))
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("along_axis", [False, True])
+def test_public_take_empty_result_preserves_zero_gradient(along_axis: bool) -> None:
+    """Empty integer selectors preserve the empty reduction and owner disposal."""
+    indices = np.empty(0, dtype=np.int64)
+
+    def objective(values: Any) -> object:
+        selected = (
+            np.take_along_axis(values.reshape((1, 2)), indices.reshape((1, 0)), axis=1)
+            if along_axis
+            else np.take(values, indices)
+        )
+        return np.sum(selected)
+
+    baseline = active_reserved_bytes()
+    result = whole_program_value_and_grad(objective, np.array([2.0, 3.0]), trace=False)
+    assert result.value == 0.0
+    np.testing.assert_array_equal(result.gradient, np.zeros(2))
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("selector_kind", ["scalar", "slice", "boolean"])
+def test_public_delete_retains_storage_and_preserves_gradient(selector_kind: str) -> None:
+    """Deletion output containers remain charged after numeric layout finishes."""
+    observations: list[int] = []
+    selector = (
+        1
+        if selector_kind == "scalar"
+        else slice(1, None, 2)
+        if selector_kind == "slice"
+        else np.array([False, True, False, True])
+    )
+
+    def objective(values: Any) -> object:
+        observations.append(active_reserved_bytes())
+        selected = np.delete(values, selector)
+        observations.append(active_reserved_bytes())
+        return np.sum(selected)
+
+    baseline = active_reserved_bytes()
+    result = whole_program_value_and_grad(objective, np.array([2.0, 3.0, 4.0, 5.0]), trace=False)
+    assert result.value == (11.0 if selector_kind == "scalar" else 6.0)
+    np.testing.assert_array_equal(
+        result.gradient,
+        [1.0, 0.0, 1.0, 1.0] if selector_kind == "scalar" else [1.0, 0.0, 1.0, 0.0],
+    )
+    assert len(observations) == 2
+    assert observations[1] - observations[0] >= 2 * np.dtype(np.uintp).itemsize
+    assert active_reserved_bytes() == baseline
+
+
+def test_public_delete_exception_releases_retained_storage_and_recovers() -> None:
+    """Failure after deletion releases retained numeric/output declarations."""
+    failing = True
+
+    def objective(values: Any) -> object:
+        selected = np.delete(values, slice(1, None, 2))
+        if failing:
+            raise RuntimeError("after owned deletion")
+        return np.sum(selected)
+
+    baseline = active_reserved_bytes()
+    with pytest.raises(RuntimeError, match="after owned deletion"):
+        whole_program_value_and_grad(objective, np.array([2.0, 3.0, 4.0, 5.0]), trace=False)
+    assert active_reserved_bytes() == baseline
+    failing = False
+    result = whole_program_value_and_grad(objective, np.array([2.0, 3.0, 4.0, 5.0]), trace=False)
+    assert result.value == 6.0
+    np.testing.assert_array_equal(result.gradient, [1.0, 0.0, 1.0, 0.0])
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("advanced", [False, True])
+def test_public_getitem_trace_value_gradient_and_disposal(advanced: bool) -> None:
+    """Basic and broadcast advanced selectors execute through actual trace ownership."""
+    selector = (
+        (np.array([[0], [1]]), slice(None), np.array([1, 3]))
+        if advanced
+        else (slice(None), Ellipsis, slice(1, None, 2))
+    )
+    failing = True
+
+    def objective(values: Any) -> object:
+        selected = values.reshape((2, 3, 4))[selector]
+        if failing:
+            raise RuntimeError("after owned getitem")
+        return np.sum(selected)
+
+    baseline = active_reserved_bytes()
+    with pytest.raises(RuntimeError, match="after owned getitem"):
+        whole_program_value_and_grad(objective, np.arange(24.0), trace=False)
+    assert active_reserved_bytes() == baseline
+    failing = False
+    result = whole_program_value_and_grad(objective, np.arange(24.0), trace=False)
+    assert result.value == 144.0
+    expected_gradient = np.zeros(24)
+    expected_gradient[1::2] = 1.0
+    np.testing.assert_array_equal(result.gradient, expected_gradient)
+    assert active_reserved_bytes() == baseline
+
+
+def test_public_ranked_cumulative_product_and_predicate_shape_paths_preserve_gradient() -> None:
+    """Row-major dimensions preserve an independently calculated combined gradient."""
+
+    def objective(values: Any) -> object:
+        matrix = np.reshape(values, (2, 2))
+        return (
+            np.sum(np.cumsum(matrix, axis=1))
+            + np.sum(np.prod(matrix, axis=1))
+            + np.sum(np.where(matrix > 2.0, matrix, 0.0))
+        )
+
+    baseline = active_reserved_bytes()
+    result = whole_program_value_and_grad(objective, [1.0, 2.0, 3.0, 4.0], trace=False)
+    assert result.value == 35.0
+    np.testing.assert_array_equal(result.gradient, [4.0, 2.0, 7.0, 5.0])
+    assert active_reserved_bytes() == baseline
+
+
+def test_public_compact_cumsum_refuses_live_cap_before_actual_callback_and_recovers(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The real compact entry observes a tightened cap before its value callback.
+
+    Parameters
+    ----------
+    monkeypatch
+        Restores the process budget environment after boundary fault injection.
+
+    """
+    entered = False
+    callback_entered = False
+    baseline = active_reserved_bytes()
+    previous = sys.getprofile()
+
+    def objective(values: Any) -> object:
+        return np.sum(np.cumsum(values))
+
+    def profile(frame: FrameType, event: str, arg: object) -> None:
+        nonlocal entered, callback_entered
+        if event != "call":
+            return
+        if frame.f_code.co_name == "_evaluate_trace_compact_rule":
+            entered = True
+            environment.setenv("SCPN_MAX_DENSE_GIB", str(1 / 1024**3))
+        elif (
+            frame.f_back is not None
+            and frame.f_back.f_code.co_name == "_evaluate_trace_compact_rule"
+        ):
+            if frame.f_code.co_name == "value_fn":
+                callback_entered = True
+
+    with monkeypatch.context() as environment:
+        environment.setenv("SCPN_MAX_DENSE_GIB", ".01")
+        sys.setprofile(profile)
+        try:
+            with pytest.raises(DenseAllocationError):
+                whole_program_value_and_grad(objective, [1.0, 2.0, 3.0], trace=False)
+        finally:
+            sys.setprofile(previous)
+    assert entered
+    assert not callback_entered
+    assert active_reserved_bytes() == baseline
+    result = whole_program_value_and_grad(objective, [1.0, 2.0, 3.0], trace=False)
+    assert result.value == 10.0
+    np.testing.assert_array_equal(result.gradient, [3.0, 2.0, 1.0])
+    assert active_reserved_bytes() == baseline
+
+
+def test_public_compact_cumsum_observes_actual_jvp_return_cancellation() -> None:
+    """Actual callback completion checkpoints before the next tangent coordinate."""
+    cancelled = Event()
+    previous = sys.getprofile()
+    baseline = active_reserved_bytes()
+    callbacks = 0
+
+    def objective(values: Any) -> object:
+        return np.sum(np.cumsum(values))
+
+    def profile(frame: FrameType, event: str, arg: object) -> None:
+        nonlocal callbacks
+        caller = frame.f_back
+        if (
+            event == "return"
+            and frame.f_code.co_name == "jvp_rule"
+            and caller is not None
+            and caller.f_code.co_name == "_evaluate_trace_compact_rule"
+        ):
+            callbacks += 1
+            cancelled.set()
+
+    sys.setprofile(profile)
+    try:
+        with pytest.raises(ExecutionCancelledError):
+            whole_program_value_and_grad(
+                objective, [1.0, 2.0, 3.0], trace=False, cancelled=cancelled
+            )
+    finally:
+        sys.setprofile(previous)
+    assert callbacks == 1
+    assert active_reserved_bytes() == baseline
+    result = whole_program_value_and_grad(objective, [1.0, 2.0, 3.0], trace=False)
+    assert result.value == 10.0
+    np.testing.assert_array_equal(result.gradient, [3.0, 2.0, 1.0])
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("fault", ["value-shape", "tangent-shape", "nonfinite"])
+def test_public_compact_cumsum_rejects_corrupted_actual_return_and_recovers(fault: str) -> None:
+    """Malformed real callback returns unwind ownership before a valid retry.
+
+    Parameters
+    ----------
+    fault
+        Corruption applied once to an actual numerical callback result.
+
+    """
+    previous = sys.getprofile()
+    baseline = active_reserved_bytes()
+    changed = False
+
+    def objective(values: Any) -> object:
+        return np.sum(np.cumsum(values))
+
+    def profile(frame: FrameType, event: str, arg: object) -> None:
+        nonlocal changed
+        caller = frame.f_back
+        if changed or event != "return" or caller is None:
+            return
+        if caller.f_code.co_name != "_evaluate_trace_compact_rule" or not isinstance(
+            arg, np.ndarray
+        ):
+            return
+        target = "jvp_rule" if fault == "tangent-shape" else "value_fn"
+        if frame.f_code.co_name != target:
+            return
+        changed = True
+        if fault == "nonfinite":
+            arg.flat[0] = np.nan
+        else:
+            arg.dtype = np.float32
+
+    sys.setprofile(profile)
+    try:
+        with pytest.raises(ValueError, match="shape mismatch|outputs must be finite"):
+            whole_program_value_and_grad(objective, [1.0, 2.0, 3.0], trace=False)
+    finally:
+        sys.setprofile(previous)
+    assert changed
+    assert active_reserved_bytes() == baseline
+    result = whole_program_value_and_grad(objective, [1.0, 2.0, 3.0], trace=False)
+    assert result.value == 10.0
+    np.testing.assert_array_equal(result.gradient, [3.0, 2.0, 1.0])
+    assert active_reserved_bytes() == baseline
+
+
+def test_public_compact_cumsum_failure_after_output_releases_retained_charge_and_recovers() -> (
+    None
+):
+    """Objective failure after a real compact output disposes its retained storage."""
+    failing = True
+    observations: list[int] = []
+
+    def objective(values: Any) -> object:
+        observations.append(active_reserved_bytes())
+        output = np.cumsum(values)
+        observations.append(active_reserved_bytes())
+        if failing:
+            raise RuntimeError("after compact output")
+        return np.sum(output)
+
+    baseline = active_reserved_bytes()
+    with pytest.raises(RuntimeError, match="after compact output"):
+        whole_program_value_and_grad(objective, [1.0, 2.0, 3.0], trace=False)
+    assert len(observations) == 2
+    assert observations[1] > observations[0]
+    assert active_reserved_bytes() == baseline
+    failing = False
+    result = whole_program_value_and_grad(objective, [1.0, 2.0, 3.0], trace=False)
+    assert result.value == 10.0
+    np.testing.assert_array_equal(result.gradient, [3.0, 2.0, 1.0])
+    assert active_reserved_bytes() == baseline
+
+
+def test_public_compact_cumsum_zero_parameter_constant_output_disposes_owners() -> None:
+    """Zero-coordinate compact output preserves constant reduction and cleanup."""
+
+    def objective(values: Any) -> object:
+        return np.sum(np.cumsum(np.concatenate((values, np.array([1.0, 2.0])))))
+
+    baseline = active_reserved_bytes()
+    result = whole_program_value_and_grad(objective, [], trace=False)
+    assert result.value == 4.0
+    np.testing.assert_array_equal(result.gradient, np.empty(0, dtype=np.float64))
+    assert active_reserved_bytes() == baseline

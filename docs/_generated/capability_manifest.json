@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 841,
     "public_documentation_pages": 377,
-    "python_model_classes": 1432,
-    "python_model_source_modules": 732,
+    "python_model_classes": 1438,
+    "python_model_source_modules": 737,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1412
+    "test_files": 1421
   },
   "documentation": {
     "examples": [
@@ -2271,6 +2271,26 @@
         "path": "src/scpn_quantum_control/studio/executive_execute.py"
       },
       {
+        "name": "ExecutionBuffer",
+        "path": "src/scpn_quantum_control/execution_memory.py"
+      },
+      {
+        "name": "ExecutionCancelledError",
+        "path": "src/scpn_quantum_control/execution_reservations.py"
+      },
+      {
+        "name": "ExecutionMemoryDecision",
+        "path": "src/scpn_quantum_control/execution_memory.py"
+      },
+      {
+        "name": "ExecutionMemoryPlan",
+        "path": "src/scpn_quantum_control/execution_memory.py"
+      },
+      {
+        "name": "ExecutionMemoryReservation",
+        "path": "src/scpn_quantum_control/execution_reservations.py"
+      },
+      {
         "name": "ExecutionMode",
         "path": "src/scpn_quantum_control/control/closed_loop_analysis.py"
       },
@@ -3493,6 +3513,10 @@
       {
         "name": "MeasurementPlan",
         "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/measurement.py"
+      },
+      {
+        "name": "MemoryCapacity",
+        "path": "src/scpn_quantum_control/execution_memory.py"
       },
       {
         "name": "MemoryCgroup",
@@ -6816,6 +6840,8 @@
       "src/scpn_quantum_control/entropy/qrng_stream.py",
       "src/scpn_quantum_control/entropy/quantum_source.py",
       "src/scpn_quantum_control/error_mitigation_product.py",
+      "src/scpn_quantum_control/execution_memory.py",
+      "src/scpn_quantum_control/execution_reservations.py",
       "src/scpn_quantum_control/execution_surface.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/cells.py",
       "src/scpn_quantum_control/experimental/llm_qpu/contracts/compressed.py",
@@ -6986,6 +7012,7 @@
       "src/scpn_quantum_control/ml_examples/qsnn_convergence.py",
       "src/scpn_quantum_control/ml_examples/suite.py",
       "src/scpn_quantum_control/multi_hal_federation_product.py",
+      "src/scpn_quantum_control/native_replay_admission.py",
       "src/scpn_quantum_control/native_semantic_binding.py",
       "src/scpn_quantum_control/neural_operator_baseline_product.py",
       "src/scpn_quantum_control/open_system_mcwf_product.py",
@@ -7124,6 +7151,7 @@
       "src/scpn_quantum_control/program_ad_elementwise_primitives.py",
       "src/scpn_quantum_control/program_ad_fuzz_assurance.py",
       "src/scpn_quantum_control/program_ad_interpolation_primitives.py",
+      "src/scpn_quantum_control/program_ad_linalg_memory.py",
       "src/scpn_quantum_control/program_ad_linalg_primitives.py",
       "src/scpn_quantum_control/program_ad_product_primitives.py",
       "src/scpn_quantum_control/program_ad_reduction_primitives.py",
@@ -7170,6 +7198,7 @@
       "src/scpn_quantum_control/semantic_operations.py",
       "src/scpn_quantum_control/semantic_record.py",
       "src/scpn_quantum_control/sensing/nv_magnetometry_20T.py",
+      "src/scpn_quantum_control/source_admission.py",
       "src/scpn_quantum_control/ssgf/quantum_costs.py",
       "src/scpn_quantum_control/ssgf/quantum_gradient.py",
       "src/scpn_quantum_control/ssgf/quantum_outer_cycle.py",
@@ -8845,6 +8874,8 @@
       "tests/test_error_mitigation_product_quality_gate.py",
       "tests/test_example_workflows.py",
       "tests/test_exclusions_ledger_drift.py",
+      "tests/test_execution_memory.py",
+      "tests/test_execution_reservations.py",
       "tests/test_execution_surface_branches.py",
       "tests/test_execution_surface_policy.py",
       "tests/test_experiment_dynamics.py",
@@ -8923,6 +8954,7 @@
       "tests/test_hal_semantic_binding.py",
       "tests/test_hamiltonian_learning.py",
       "tests/test_hamiltonian_learning_quality_gate.py",
+      "tests/test_hamiltonian_native.py",
       "tests/test_hamiltonian_self_consistency.py",
       "tests/test_hardware_adapter_contracts.py",
       "tests/test_hardware_backends_branches.py",
@@ -9145,6 +9177,7 @@
       "tests/test_multiplatform_export_workflow.py",
       "tests/test_multiscale_qec.py",
       "tests/test_native_decomposition_readiness.py",
+      "tests/test_native_replay_admission.py",
       "tests/test_native_semantic_binding.py",
       "tests/test_native_whole_program_ad_execution_evidence.py",
       "tests/test_native_whole_program_linalg_factorisation.py",
@@ -9367,12 +9400,14 @@
       "tests/test_prepare_s1_ibm_live_readiness.py",
       "tests/test_probe_s1_generic_gate_metadata.py",
       "tests/test_probe_s1_ibm_metadata.py",
+      "tests/test_program_ad_adjoint.py",
       "tests/test_program_ad_adjoint_generation.py",
       "tests/test_program_ad_adjoint_generation_docstrings.py",
       "tests/test_program_ad_adjoint_quality_gate.py",
       "tests/test_program_ad_alias_analysis_quality_gate.py",
       "tests/test_program_ad_alias_contracts.py",
       "tests/test_program_ad_alias_effects.py",
+      "tests/test_program_ad_array_indexing.py",
       "tests/test_program_ad_array_indexing_quality.py",
       "tests/test_program_ad_array_indexing_registry.py",
       "tests/test_program_ad_binary_elementwise_registry.py",
@@ -9393,6 +9428,7 @@
       "tests/test_program_ad_linalg_direct_rules.py",
       "tests/test_program_ad_linalg_exact_contracts.py",
       "tests/test_program_ad_linalg_matrix_ops.py",
+      "tests/test_program_ad_linalg_memory.py",
       "tests/test_program_ad_linalg_registry.py",
       "tests/test_program_ad_linalg_spectral.py",
       "tests/test_program_ad_product_contractions.py",
@@ -9564,6 +9600,7 @@
       "tests/test_reproducible_comparison.py",
       "tests/test_research_lane_registry.py",
       "tests/test_research_lane_registry_quality_gate.py",
+      "tests/test_resource_admission_boundaries.py",
       "tests/test_resource_budget_gate.py",
       "tests/test_resource_budget_gate_quality_gate.py",
       "tests/test_result_pack_seal.py",
@@ -9621,6 +9658,7 @@
       "tests/test_snn_adapter_branches.py",
       "tests/test_snn_backward.py",
       "tests/test_snn_neurocore_e2e.py",
+      "tests/test_source_admission.py",
       "tests/test_sparse_hamiltonian.py",
       "tests/test_sparse_hamiltonian_branches.py",
       "tests/test_sparse_hamiltonian_quality_gate.py",

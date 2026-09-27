@@ -13,6 +13,9 @@
 //! propagates cotangents only into the integrated samples; grid metadata is
 //! treated as nondifferentiable static metadata and is validated fail-closed.
 
+use crate::program_ad_ir::{filled_replay_buffer, reserve_replay_buffer};
+use crate::program_ad_lifecycle::replay_checkpoint;
+
 #[derive(Clone, Debug, PartialEq)]
 enum TrapezoidGrid {
     ConstantDx(f64),
@@ -69,10 +72,11 @@ pub(crate) fn trapezoid_values(
 
     let target_size = shape_size(target_shape)?;
     let axis_size = source_shape[spec.axis];
-    let mut output = vec![0.0_f64; target_size];
+    let mut output = filled_replay_buffer(target_size, 0.0_f64)?;
     for (target_flat, output_value) in output.iter_mut().enumerate() {
-        let target_index = unravel_index(target_flat, target_shape);
+        let target_index = unravel_index(target_flat, target_shape)?;
         for segment in 0..(axis_size - 1) {
+            replay_checkpoint()?;
             let left_flat =
                 source_flat_from_reduced_index(&target_index, source_shape, spec.axis, segment)?;
             let right_flat = source_flat_from_reduced_index(
@@ -85,13 +89,8 @@ pub(crate) fn trapezoid_values(
             *output_value += 0.5 * width * (source_values[left_flat] + source_values[right_flat]);
         }
     }
-    if output.iter().all(|value| value.is_finite()) {
-        Ok(output)
-    } else {
-        Err(format!(
-            "effect {effect_index} trapezoid value must be finite"
-        ))
-    }
+    validate_finite_values(effect_index, "value", &output)?;
+    Ok(output)
 }
 
 /// Build the source-shaped cotangent for static-grid trapezoidal integration.
@@ -103,15 +102,11 @@ pub(crate) fn trapezoid_cotangent(
     source_values: &[f64],
 ) -> Result<Vec<f64>, String> {
     validate_source(effect_index, source_shape, source_values)?;
-    if cotangent_values.iter().any(|value| !value.is_finite()) {
-        return Err(format!(
-            "effect {effect_index} trapezoid cotangent values must be finite"
-        ));
-    }
+    validate_finite_values(effect_index, "cotangent values", cotangent_values)?;
     let spec = parse_trapezoid_operation(effect_index, operation, source_shape)?;
     validate_grid(effect_index, &spec, source_shape, source_values.len())?;
 
-    let target_shape = axis_reduction_shape(source_shape, spec.axis);
+    let target_shape = axis_reduction_shape(source_shape, spec.axis)?;
     let target_size = shape_size(&target_shape)?;
     if target_size != cotangent_values.len() {
         return Err(format!(
@@ -121,10 +116,11 @@ pub(crate) fn trapezoid_cotangent(
     }
 
     let axis_size = source_shape[spec.axis];
-    let mut contribution = vec![0.0_f64; source_values.len()];
+    let mut contribution = filled_replay_buffer(source_values.len(), 0.0_f64)?;
     for (target_flat, cotangent) in cotangent_values.iter().enumerate() {
-        let target_index = unravel_index(target_flat, &target_shape);
+        let target_index = unravel_index(target_flat, &target_shape)?;
         for segment in 0..(axis_size - 1) {
+            replay_checkpoint()?;
             let left_flat =
                 source_flat_from_reduced_index(&target_index, source_shape, spec.axis, segment)?;
             let right_flat = source_flat_from_reduced_index(
@@ -139,146 +135,12 @@ pub(crate) fn trapezoid_cotangent(
             contribution[right_flat] += contribution_value;
         }
     }
-    if contribution.iter().all(|value| value.is_finite()) {
-        Ok(contribution)
-    } else {
-        Err(format!(
-            "effect {effect_index} trapezoid adjoint contribution must be finite"
-        ))
-    }
+    validate_finite_values(effect_index, "adjoint contribution", &contribution)?;
+    Ok(contribution)
 }
 
-fn parse_trapezoid_operation(
-    effect_index: usize,
-    operation: &str,
-    source_shape: &[usize],
-) -> Result<TrapezoidSpec, String> {
-    let fields = operation.split(':').collect::<Vec<&str>>();
-    if fields.first().copied() != Some("trapezoid") {
-        return Err(format!(
-            "effect {effect_index} operation {operation} is not a trapezoid reduction"
-        ));
-    }
-    let mut axis = None;
-    let mut grid = None;
-    let mut index = 1usize;
-    while index < fields.len() {
-        let field = fields[index];
-        let Some(raw_value) = fields.get(index + 1).copied() else {
-            return Err(format!(
-                "effect {effect_index} trapezoid metadata field {field:?} must include a value"
-            ));
-        };
-        match field {
-            "axis" => {
-                if axis.is_some() {
-                    return Err(format!(
-                        "effect {effect_index} trapezoid axis metadata must appear only once"
-                    ));
-                }
-                let parsed_axis = raw_value.parse::<isize>().map_err(|_| {
-                    format!("effect {effect_index} trapezoid axis metadata must be an integer")
-                })?;
-                axis = Some(
-                    normalise_static_axis(parsed_axis, source_shape.len()).map_err(|reason| {
-                        format!(
-                            "effect {effect_index} trapezoid axis metadata is invalid: {reason}"
-                        )
-                    })?,
-                );
-            }
-            "dx" => {
-                ensure_single_grid_metadata(effect_index, &grid)?;
-                let dx = parse_finite_scalar(effect_index, "dx", raw_value)?;
-                grid = Some(TrapezoidGrid::ConstantDx(dx));
-            }
-            "x" => {
-                ensure_single_grid_metadata(effect_index, &grid)?;
-                grid = Some(TrapezoidGrid::AxisGrid(parse_grid_values(
-                    effect_index,
-                    "x",
-                    raw_value,
-                )?));
-            }
-            "xfull" => {
-                ensure_single_grid_metadata(effect_index, &grid)?;
-                grid = Some(TrapezoidGrid::FullGrid(parse_grid_values(
-                    effect_index,
-                    "xfull",
-                    raw_value,
-                )?));
-            }
-            "" => {
-                return Err(format!(
-                    "effect {effect_index} trapezoid metadata field must be non-empty"
-                ));
-            }
-            other => {
-                return Err(format!(
-                    "effect {effect_index} trapezoid metadata field {other:?} is unsupported; expected axis, dx, x, or xfull"
-                ));
-            }
-        }
-        index += 2;
-    }
-    let axis = match axis {
-        Some(value) => value,
-        None => source_shape.len().checked_sub(1).ok_or_else(|| {
-            format!("effect {effect_index} trapezoid requires ranked source values")
-        })?,
-    };
-    Ok(TrapezoidSpec {
-        axis,
-        grid: grid.unwrap_or(TrapezoidGrid::ConstantDx(1.0)),
-    })
-}
-
-fn ensure_single_grid_metadata(
-    effect_index: usize,
-    grid: &Option<TrapezoidGrid>,
-) -> Result<(), String> {
-    if grid.is_some() {
-        return Err(format!(
-            "effect {effect_index} trapezoid metadata accepts only one of dx, x, or xfull"
-        ));
-    }
-    Ok(())
-}
-
-fn parse_finite_scalar(effect_index: usize, field: &str, raw_value: &str) -> Result<f64, String> {
-    let value = raw_value.parse::<f64>().map_err(|_| {
-        format!("effect {effect_index} trapezoid {field} metadata must be a finite float")
-    })?;
-    if value.is_finite() {
-        Ok(value)
-    } else {
-        Err(format!(
-            "effect {effect_index} trapezoid {field} metadata must be finite"
-        ))
-    }
-}
-
-fn parse_grid_values(
-    effect_index: usize,
-    field: &str,
-    raw_value: &str,
-) -> Result<Vec<f64>, String> {
-    if raw_value.is_empty() {
-        return Err(format!(
-            "effect {effect_index} trapezoid {field} metadata must contain comma-separated floats"
-        ));
-    }
-    let values = raw_value
-        .split(',')
-        .map(|item| parse_finite_scalar(effect_index, field, item))
-        .collect::<Result<Vec<f64>, String>>()?;
-    if values.is_empty() {
-        return Err(format!(
-            "effect {effect_index} trapezoid {field} metadata must contain at least one value"
-        ));
-    }
-    Ok(values)
-}
+include!("program_ad_trapezoid_reduction/metadata.rs");
+include!("program_ad_trapezoid_reduction/workspace.rs");
 
 fn validate_source(
     effect_index: usize,
@@ -298,11 +160,7 @@ fn validate_source(
             source_values.len()
         ));
     }
-    if source_values.iter().any(|value| !value.is_finite()) {
-        return Err(format!(
-            "effect {effect_index} trapezoid source values must be finite"
-        ));
-    }
+    validate_finite_values(effect_index, "source values", source_values)?;
     Ok(())
 }
 
@@ -352,7 +210,7 @@ fn validate_target_shape(
     axis: usize,
     target_shape: &[usize],
 ) -> Result<(), String> {
-    let expected = axis_reduction_shape(source_shape, axis);
+    let expected = axis_reduction_shape(source_shape, axis)?;
     if expected == target_shape {
         Ok(())
     } else {
@@ -376,12 +234,13 @@ fn normalise_static_axis(axis: isize, rank: usize) -> Result<usize, String> {
     usize::try_from(normalised).map_err(|_| "axis normalisation overflowed".to_owned())
 }
 
-fn axis_reduction_shape(source_shape: &[usize], axis: usize) -> Vec<usize> {
-    source_shape
-        .iter()
-        .enumerate()
-        .filter_map(|(index, dimension)| (index != axis).then_some(*dimension))
-        .collect()
+fn axis_reduction_shape(source_shape: &[usize], axis: usize) -> Result<Vec<usize>, String> {
+    let mut shape = reserve_replay_buffer(source_shape.len().saturating_sub(1))?;
+    for (index, dimension) in source_shape.iter().enumerate() {
+        replay_checkpoint()?;
+        if index != axis { shape.push(*dimension); }
+    }
+    Ok(shape)
 }
 
 fn source_flat_from_reduced_index(
@@ -390,58 +249,66 @@ fn source_flat_from_reduced_index(
     axis: usize,
     axis_coordinate: usize,
 ) -> Result<usize, String> {
-    let mut source_index = Vec::with_capacity(source_shape.len());
-    let mut reduced_axis = 0usize;
-    for source_axis in 0..source_shape.len() {
-        if source_axis == axis {
-            source_index.push(axis_coordinate);
-        } else {
-            source_index.push(reduced_index[reduced_axis]);
-            reduced_axis += 1;
-        }
+    if axis >= source_shape.len() || reduced_index.len() != source_shape.len() - 1 {
+        return Err("trapezoid index rank does not match shape rank".to_owned());
     }
-    ravel_index(&source_index, source_shape)
+    let mut reduced_axis = 0usize;
+    let mut flat = 0usize;
+    for (source_axis, dimension) in source_shape.iter().enumerate() {
+        replay_checkpoint()?;
+        let coordinate = if source_axis == axis {
+            axis_coordinate
+        } else {
+            let coordinate = reduced_index[reduced_axis];
+            reduced_axis += 1;
+            coordinate
+        };
+        if coordinate >= *dimension {
+            return Err("trapezoid index is outside shape bounds".to_owned());
+        }
+        flat = flat.checked_mul(*dimension)
+            .and_then(|value| value.checked_add(coordinate))
+            .ok_or_else(|| "trapezoid flat index overflowed".to_owned())?;
+    }
+    Ok(flat)
 }
 
 fn shape_size(shape: &[usize]) -> Result<usize, String> {
     let mut size = 1usize;
     for dimension in shape {
+        replay_checkpoint()?;
         if *dimension == 0 {
             return Err("trapezoid shaped values must have non-zero dimensions".to_owned());
         }
         size = size
             .checked_mul(*dimension)
+            .filter(|size| *size <= isize::MAX as usize / std::mem::size_of::<f64>())
             .ok_or_else(|| "trapezoid shaped value size overflowed".to_owned())?;
     }
     Ok(size)
 }
 
-fn unravel_index(mut flat_index: usize, shape: &[usize]) -> Vec<usize> {
+fn unravel_index(mut flat_index: usize, shape: &[usize]) -> Result<Vec<usize>, String> {
     if shape.is_empty() {
-        return Vec::new();
+        return Ok(Vec::new());
     }
-    let mut index = vec![0usize; shape.len()];
+    let mut index = filled_replay_buffer(shape.len(), 0usize)?;
     for axis in (0..shape.len()).rev() {
+        replay_checkpoint()?;
         let dimension = shape[axis];
         index[axis] = flat_index % dimension;
         flat_index /= dimension;
     }
-    index
+    Ok(index)
 }
 
-fn ravel_index(index: &[usize], shape: &[usize]) -> Result<usize, String> {
-    if index.len() != shape.len() {
-        return Err("trapezoid index rank does not match shape rank".to_owned());
-    }
-    let mut flat = 0usize;
-    for (coordinate, dimension) in index.iter().zip(shape.iter()) {
-        if coordinate >= dimension {
-            return Err("trapezoid index is outside shape bounds".to_owned());
+fn validate_finite_values(effect_index: usize, role: &str, values: &[f64]) -> Result<(), String> {
+    for (index, value) in values.iter().enumerate() {
+        if index % 256 == 0 { replay_checkpoint()?; }
+        if !value.is_finite() {
+            return Err(format!("effect {effect_index} trapezoid {role} must be finite"));
         }
-        flat = flat
-            .checked_mul(*dimension)
-            .and_then(|value| value.checked_add(*coordinate))
-            .ok_or_else(|| "trapezoid flat index overflowed".to_owned())?;
     }
-    Ok(flat)
+    replay_checkpoint()?;
+    Ok(())
 }

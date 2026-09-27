@@ -613,6 +613,7 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/program_ad_array_indexing.py
           tests/test_program_ad_array_indexing_quality.py
+          tests/test_program_ad_array_indexing.py
           tools/program_ad_array_indexing_quality_gates.py
       - name: Ruff NumPy docstrings for Program-AD array-indexing quality cohort
         run: >-
@@ -620,6 +621,7 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/program_ad_array_indexing.py
           tests/test_program_ad_array_indexing_quality.py
+          tests/test_program_ad_array_indexing.py
           tools/program_ad_array_indexing_quality_gates.py
       - name: Type-check whole-program trace-value quality cohort
         run: >-
@@ -627,6 +629,8 @@ jobs:
           src/scpn_quantum_control/whole_program_trace_values.py
           src/scpn_quantum_control/whole_program_trace_predicates.py
           src/scpn_quantum_control/program_ad_linalg_primitives.py
+          src/scpn_quantum_control/program_ad_linalg_memory.py
+          tests/test_program_ad_linalg_memory.py
           src/scpn_quantum_control/program_ad_product_primitives.py
           src/scpn_quantum_control/program_ad_reduction_primitives.py
           src/scpn_quantum_control/program_ad_cumulative_primitives.py
@@ -662,6 +666,8 @@ jobs:
           src/scpn_quantum_control/whole_program_trace_values.py
           src/scpn_quantum_control/whole_program_trace_predicates.py
           src/scpn_quantum_control/program_ad_linalg_primitives.py
+          src/scpn_quantum_control/program_ad_linalg_memory.py
+          tests/test_program_ad_linalg_memory.py
           src/scpn_quantum_control/program_ad_product_primitives.py
           src/scpn_quantum_control/program_ad_reduction_primitives.py
           src/scpn_quantum_control/program_ad_cumulative_primitives.py

@@ -7,6 +7,7 @@
 // scpn-quantum-engine — Program AD cumulative replay tests
 
 use scpn_quantum_engine::program_ad_ir::interpret_program_ad_effect_ir_value_and_gradient;
+use serde_json::json;
 
 const CUMULATIVE_WEIGHTED_OBJECTIVE_IR: &str = r#"{
   "format": "program_ad_effect_ir.v1",
@@ -115,4 +116,185 @@ fn assert_close(actual: f64, expected: f64) {
         (actual - expected).abs() <= 1.0e-12,
         "expected {expected}, got {actual}",
     );
+}
+
+
+fn one_cumulative_objective_ir(operation: &str, count: usize) -> String {
+    let mut ssa_values = Vec::new();
+    let mut effects = Vec::new();
+    for index in 0..count {
+        let target = format!("%{index}");
+        ssa_values.push(json!({
+            "name": target, "producer": index, "version": 0,
+            "shape": [], "dtype": "float64", "effect": index
+        }));
+        effects.push(json!({
+            "index": index, "kind": "parameter", "target": target,
+            "inputs": [format!("x{index}")], "version": 0,
+            "ordering": index, "operation": "parameter"
+        }));
+    }
+    let target = format!("%{count}");
+    ssa_values.push(json!({
+        "name": target, "producer": count, "version": 0,
+        "shape": [], "dtype": "float64", "effect": count
+    }));
+    effects.push(json!({
+        "index": count, "kind": "primitive", "target": target,
+        "inputs": (0..count).map(|index| format!("%{index}")).collect::<Vec<_>>(),
+        "version": 0, "ordering": count, "operation": operation
+    }));
+    json!({
+        "format": "program_ad_effect_ir.v1", "ssa_values": ssa_values,
+        "effects": effects, "alias_edges": [], "control_regions": [],
+        "phi_nodes": [], "bytecode_offsets": []
+    }).to_string()
+}
+
+#[test]
+fn public_cumulative_replay_preserves_zero_safe_independent_differentials() {
+    for (operation, value, gradient) in [
+        ("cumsum:shape:3:axis:flat:out:2", 5.0, [1.0, 1.0, 1.0]),
+        ("cumprod:shape:3:axis:flat:out:2", 0.0, [0.0, 6.0, 0.0]),
+        ("diff:shape:3:n:1:axis:0:out:1", 3.0, [0.0, -1.0, 1.0]),
+    ] {
+        let result = interpret_program_ad_effect_ir_value_and_gradient(
+            &one_cumulative_objective_ir(operation, 3), &[2.0, 0.0, 3.0],
+        ).unwrap();
+        assert!(result.supported, "{:?}", result.blocked_reasons);
+        assert_eq!(result.value, Some(value));
+        assert_eq!(result.gradient, gradient);
+    }
+}
+
+#[test]
+fn public_cumulative_replay_checked_binomial_preserves_representable_coefficient() {
+    let mut inputs = vec![0.0; 33];
+    inputs[16] = 1.0;
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        &one_cumulative_objective_ir("diff:shape:33:n:32:axis:0:out:0", 33),
+        &inputs,
+    ).unwrap();
+    assert!(result.supported, "{:?}", result.blocked_reasons);
+    assert_eq!(result.value, Some(601080390.0));
+    assert_eq!(result.gradient.len(), 33);
+    assert_eq!(result.gradient[16], 601080390.0);
+    assert_eq!(result.gradient[0], 1.0);
+    assert_eq!(result.gradient[32], 1.0);
+}
+
+#[test]
+fn public_cumulative_replay_refuses_unrepresentable_metadata_and_recovers() {
+    for (operation, count, expected_reason) in [
+        (format!("cumsum:shape:{}x2:axis:flat:out:0", usize::MAX), 1, "size overflowed"),
+        ("diff:shape:101:n:100:axis:0:out:0".to_owned(), 101, "binomial coefficient overflowed"),
+    ] {
+        let result = interpret_program_ad_effect_ir_value_and_gradient(
+            &one_cumulative_objective_ir(&operation, count), &vec![1.0; count],
+        ).unwrap();
+        assert!(!result.supported);
+        assert!(result.blocked_reasons.iter().any(|reason| reason.contains(expected_reason)), "{:?}", result.blocked_reasons);
+    }
+    let valid = interpret_program_ad_effect_ir_value_and_gradient(
+        &one_cumulative_objective_ir("cumsum:shape:3:axis:flat:out:2", 3), &[2.0, 0.0, 3.0],
+    ).unwrap();
+    assert!(valid.supported, "{:?}", valid.blocked_reasons);
+    assert_eq!(valid.value, Some(5.0));
+    assert_eq!(valid.gradient, [1.0, 1.0, 1.0]);
+}
+
+
+#[test]
+fn public_cumulative_workspace_budgets_cover_coordinates_and_terms() {
+    use std::cell::Cell;
+    use std::rc::Rc;
+    use scpn_quantum_program_ad_replay::program_ad_ir::interpret_program_ad_effect_ir_forward;
+    use scpn_quantum_program_ad_replay::program_ad_lifecycle::{ReplayMemoryRequest, with_replay_memory_admission};
+    let word = std::mem::size_of::<usize>();
+    let term = std::mem::size_of::<(usize, f64)>();
+    for (operation, inputs, value, gradient, index_bytes) in [
+        ("cumsum:shape:2x3:axis:1:out:4", [1.0,2.0,3.0,4.0,5.0,6.0], 9.0, [0.0,0.0,0.0,1.0,1.0,0.0], (6+2)*word),
+        ("cumprod:shape:2x3:axis:1:out:5", [1.0,2.0,3.0,4.0,5.0,6.0], 120.0, [0.0,0.0,0.0,30.0,24.0,20.0], (6+3)*word),
+        ("cumsum:shape:2x3:axis:flat:out:3", [1.0,2.0,3.0,4.0,5.0,6.0], 10.0, [1.0,1.0,1.0,1.0,0.0,0.0], (2+4)*word),
+        ("diff:shape:2x3:n:2:axis:1:out:1", [1.0,2.0,3.0,4.0,5.0,6.0], 0.0, [0.0,0.0,0.0,1.0,-2.0,1.0], 8*word+3*term),
+        ("diff:out:4:axis:1:n:0:shape:2x3", [1.0,2.0,3.0,4.0,5.0,6.0], 5.0, [0.0,0.0,0.0,0.0,1.0,0.0], 8*word+term),
+        ("cumprod:shape:2x3:axis:1:out:5", [1.0,2.0,3.0,0.0,5.0,6.0], 0.0, [0.0,0.0,0.0,30.0,0.0,0.0], (6+3)*word),
+        ("cumsum:shape:2x3:axis:0:out:4", [1.0,2.0,3.0,4.0,5.0,6.0], 7.0, [0.0,1.0,0.0,0.0,1.0,0.0], (6+2)*word),
+    ] {
+        let ir = one_cumulative_objective_ir(operation, 6);
+        for gradient_surface in [false, true] {
+            let expected = ReplayMemoryRequest {
+                forward_bytes: 56, adjoint_bytes: if gradient_surface { 104 } else { 0 },
+                intermediate_bytes: if gradient_surface { 96 } else { 48 } + index_bytes,
+            };
+            let total = expected.total_bytes().unwrap();
+            let replay = || {
+                if gradient_surface { interpret_program_ad_effect_ir_value_and_gradient(&ir, &inputs).map(|r|(r.supported,r.value,r.gradient,r.blocked_reasons)) }
+                else { interpret_program_ad_effect_ir_forward(&ir, &inputs).map(|r|(r.supported,r.value,Vec::new(),r.blocked_reasons)) }
+            };
+            for budget in [total-1, total, total+1] {
+                let calls = Rc::new(Cell::new(0usize)); let recorded = Rc::clone(&calls);
+                let result = with_replay_memory_admission(
+                    move |request| {
+                        recorded.set(recorded.get()+1); assert_eq!(request, expected);
+                        if request.total_bytes()? > budget { Err("cumulative workspace budget refused".to_owned()) } else { Ok(()) }
+                    }, replay,
+                );
+                assert_eq!(calls.get(), 1);
+                match result {
+                    Err(reason) => { assert!(budget < total); assert!(reason.contains("cumulative workspace budget refused")); }
+                    Ok(result) => {
+                        assert_eq!(result.0, budget >= total);
+                        if result.0 {
+                            assert_close(result.1.unwrap(), value);
+                            if gradient_surface { assert_eq!(result.2, gradient); }
+                        } else { assert!(result.3.iter().any(|r|r.contains("cumulative workspace budget refused"))); }
+                    }
+                }
+                let retry = replay().unwrap(); assert!(retry.0, "{:?}", retry.3);
+                assert_close(retry.1.unwrap(), value);
+                if gradient_surface { assert_eq!(retry.2, gradient); }
+            }
+        }
+    }
+}
+
+#[test]
+fn public_cumulative_bad_metadata_refuses_before_numeric_admission_and_recovers() {
+    use std::cell::Cell;
+    use std::rc::Rc;
+    use scpn_quantum_program_ad_replay::program_ad_ir::interpret_program_ad_effect_ir_forward;
+    use scpn_quantum_program_ad_replay::program_ad_lifecycle::with_replay_memory_admission;
+    for operation in [
+        "cumsum:shape:2x3:axis:1:out:6".to_owned(),
+        "cumsum:shape:2x3:axis:2:out:0".to_owned(),
+        "cumsum:shape:2x3:axis:1:out:0:shape:2x3".to_owned(),
+        "cumsum:shape:2x0:axis:1:out:0".to_owned(),
+        "cumprod:shape:2x4:axis:1:out:0".to_owned(),
+        "cumprod:shape:2x3:n:1:axis:1:out:0".to_owned(),
+        "diff:shape:2x3:n:4:axis:1:out:0".to_owned(),
+        "diff:shape:2x3:n:3:axis:1:out:0".to_owned(),
+        "diff:shape:2x3:n:1:axis:flat:out:0".to_owned(),
+        "diff:shape:2x3:axis:1:out:0".to_owned(),
+        "diff:shape:2x3:n:1:axis:1:out".to_owned(),
+        format!("cumsum:shape:{}x2:axis:flat:out:0", usize::MAX),
+        format!("cumsum:shape:{}:axis:flat:out:0", isize::MAX),
+    ] {
+        let ir = one_cumulative_objective_ir(&operation, 6);
+        for gradient_surface in [false, true] {
+            let calls = Rc::new(Cell::new(0usize)); let recorded = Rc::clone(&calls);
+            let supported = with_replay_memory_admission(
+                move |_| { recorded.set(recorded.get()+1); Ok(()) },
+                || {
+                    if gradient_surface { interpret_program_ad_effect_ir_value_and_gradient(&ir, &[1.0;6]).map(|r|r.supported) }
+                    else { interpret_program_ad_effect_ir_forward(&ir, &[1.0;6]).map(|r|r.supported) }
+                },
+            ).unwrap();
+            assert!(!supported, "{operation}"); assert_eq!(calls.get(), 0);
+            let retry = interpret_program_ad_effect_ir_value_and_gradient(
+                &one_cumulative_objective_ir("cumsum:shape:3:axis:flat:out:2", 3), &[2.0,0.0,3.0],
+            ).unwrap();
+            assert!(retry.supported); assert_eq!(retry.value, Some(5.0)); assert_eq!(retry.gradient, [1.0,1.0,1.0]);
+        }
+    }
 }

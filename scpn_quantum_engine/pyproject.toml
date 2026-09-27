@@ -16,6 +16,10 @@ description = "Rust acceleration engine for scpn-quantum-control (PyO3 + rayon)"
 readme = "README.md"
 license = "AGPL-3.0-or-later"
 requires-python = ">=3.11"
+# Hamiltonian calls share the control package's host/cgroup and lifecycle policy.
+# The optional control[rust] extra points here; this ordinary dependency does
+# not require that extra and therefore does not introduce a mandatory cycle.
+dependencies = ["scpn-quantum-control>=1.1.0"]
 authors = [
     { name = "Miroslav Šotek", email = "protoscience@anulum.li" },
 ]

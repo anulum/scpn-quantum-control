@@ -35,7 +35,10 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/compile_budget.py,*/resource_budget_gate.py" in report
+    assert (
+        "--include=*/compile_budget.py,*/resource_budget_gate.py,*/execution_memory.py,*/execution_reservations.py"
+        in report
+    )
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -51,9 +54,12 @@ def test_ci_runs_and_aggregates_gate() -> None:
     """Keep the focused CI job and aggregate dependency required."""
     workflow = read_ci_workflow_source()
     start = workflow.index("  resource-budget-gate-quality:")
-    end = workflow.index("\n\n  decisive-advantage-quality:", start)
+    end = workflow.index("\n  advantage-language-protocol-quality:", start)
     block = workflow[start:end]
     assert all(path in block for path in quality_gates.RESOURCE_BUDGET_GATE_QUALITY_RATCHET)
     assert all(path in block for path in quality_gates.RESOURCE_BUDGET_GATE_COVERAGE_COHORT)
-    assert "--include=*/compile_budget.py,*/resource_budget_gate.py" in block
+    assert (
+        "--include=*/compile_budget.py,*/resource_budget_gate.py,*/execution_memory.py,*/execution_reservations.py"
+        in block
+    )
     assert "resource-budget-gate-quality" in workflow[workflow.index("  ci-gate:") :]

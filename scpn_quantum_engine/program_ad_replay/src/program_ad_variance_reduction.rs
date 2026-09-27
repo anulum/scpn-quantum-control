@@ -14,6 +14,9 @@
 //! standard-deviation groups with zero variance, where the derivative is
 //! singular.
 
+use crate::program_ad_ir::{filled_replay_buffer, reserve_replay_buffer};
+use crate::program_ad_lifecycle::replay_checkpoint;
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum MomentReduction {
     Variance,
@@ -68,103 +71,33 @@ impl MomentReduction {
     ) -> Result<Vec<f64>, String> {
         let (mean, variance, denominator) =
             corrected_moments(effect_index, self.label(), values, correction)?;
-        let contributions = match self {
-            Self::Variance => values
-                .iter()
-                .map(|value| cotangent * 2.0 * (value - mean) / denominator)
-                .collect::<Vec<f64>>(),
-            Self::StandardDeviation => {
-                if variance <= 0.0 {
-                    return Err(format!(
-                        "effect {effect_index} std gradient requires positive variance per reduction group"
-                    ));
-                }
-                let standard_deviation = variance.sqrt();
-                values
-                    .iter()
-                    .map(|value| cotangent * (value - mean) / (denominator * standard_deviation))
-                    .collect::<Vec<f64>>()
-            }
-        };
-        if contributions.iter().all(|value| value.is_finite()) {
-            Ok(contributions)
-        } else {
-            Err(format!(
-                "effect {effect_index} {} adjoint contribution must be finite",
-                self.label()
-            ))
+        if self == Self::StandardDeviation && variance <= 0.0 {
+            return Err(format!(
+                "effect {effect_index} std gradient requires positive variance per reduction group"
+            ));
         }
+        let mut contributions = reserve_replay_buffer(values.len())?;
+        let standard_deviation = variance.sqrt();
+        for (index, value) in values.iter().enumerate() {
+            if index % 256 == 0 { replay_checkpoint()?; }
+            let contribution = match self {
+                Self::Variance => cotangent * 2.0 * (value - mean) / denominator,
+                Self::StandardDeviation => cotangent * (value - mean) / (denominator * standard_deviation),
+            };
+            if !contribution.is_finite() {
+                return Err(format!(
+                    "effect {effect_index} {} adjoint contribution must be finite",
+                    self.label()
+                ));
+            }
+            contributions.push(contribution);
+        }
+        replay_checkpoint()?;
+        Ok(contributions)
     }
 }
 
-/// Parse static axis and correction metadata for `var` or `std` opcodes.
-pub(crate) fn parse_moment_reduction_metadata(
-    operation: &str,
-    prefix: &str,
-    rank: usize,
-) -> Result<MomentReductionMetadata, String> {
-    if operation == prefix {
-        return Ok(MomentReductionMetadata {
-            axis: None,
-            correction: 0.0,
-        });
-    }
-    let expected_prefix = format!("{prefix}:");
-    let Some(raw_metadata) = operation.strip_prefix(&expected_prefix) else {
-        return Err(format!(
-            "{prefix} operation requires static metadata {prefix}[:axis:<int>][:ddof:<nonnegative>] or {prefix}[:axis:<int>][:correction:<nonnegative>]"
-        ));
-    };
-    let fields = raw_metadata.split(':').collect::<Vec<&str>>();
-    let mut axis: Option<usize> = None;
-    let mut correction: Option<f64> = None;
-    let mut index = 0usize;
-    while index < fields.len() {
-        let field = fields[index];
-        let Some(raw_value) = fields.get(index + 1).copied() else {
-            return Err(format!(
-                "{prefix} metadata field {field:?} must include a value"
-            ));
-        };
-        match field {
-            "axis" => {
-                if axis.is_some() {
-                    return Err(format!("{prefix} axis metadata must appear only once"));
-                }
-                let parsed_axis = raw_value
-                    .parse::<isize>()
-                    .map_err(|_| format!("{prefix} axis metadata must be an integer"))?;
-                axis =
-                    Some(normalise_static_axis(parsed_axis, rank).map_err(|reason| {
-                        format!("{prefix} axis metadata is invalid: {reason}")
-                    })?);
-            }
-            "ddof" | "correction" => {
-                if correction.is_some() {
-                    return Err(format!(
-                        "{prefix} correction metadata must appear only once"
-                    ));
-                }
-                let parsed_correction = raw_value.parse::<f64>().map_err(|_| {
-                    format!("{prefix} correction metadata must be a finite non-negative scalar")
-                })?;
-                validate_correction_scalar(prefix, parsed_correction)?;
-                correction = Some(parsed_correction);
-            }
-            "" => return Err(format!("{prefix} metadata field must be non-empty")),
-            _ => {
-                return Err(format!(
-                    "{prefix} metadata field {field:?} is unsupported; expected axis, ddof, or correction"
-                ));
-            }
-        }
-        index += 2;
-    }
-    Ok(MomentReductionMetadata {
-        axis,
-        correction: correction.unwrap_or(0.0),
-    })
-}
+include!("program_ad_variance_reduction/metadata.rs");
 
 /// Evaluate the corrected variance over every flattened source value.
 pub(crate) fn variance_all_value(
@@ -305,17 +238,15 @@ fn moment_axis_values(
 ) -> Result<Vec<f64>, String> {
     validate_source_size(reduction, source_shape, source_values)?;
     validate_axis_target_shape(effect_index, reduction, source_shape, axis, target_shape)?;
-    axis_groups(
-        effect_index,
-        reduction,
-        source_shape,
-        axis,
-        target_shape,
-        source_values,
-    )?
-    .iter()
-    .map(|group| reduction.group_value(effect_index, group, correction))
-    .collect()
+    let groups = axis_groups(
+        effect_index, reduction, source_shape, axis, target_shape, source_values,
+    )?;
+    let mut output = reserve_replay_buffer(groups.len())?;
+    for (index, group) in groups.iter().enumerate() {
+        if index % 256 == 0 { replay_checkpoint()?; }
+        output.push(reduction.group_value(effect_index, group, correction)?);
+    }
+    Ok(output)
 }
 
 fn moment_axis_cotangent(
@@ -336,19 +267,29 @@ fn moment_axis_cotangent(
             target_shape
         ));
     }
-    let mut groups = vec![Vec::<(usize, f64)>::new(); cotangent_values.len()];
+    let mut groups = reserve_replay_buffer(cotangent_values.len())?;
+    for _ in 0..cotangent_values.len() {
+        groups.push(reserve_replay_buffer::<(usize, f64)>(source_shape[axis])?);
+    }
     for (flat_index, value) in source_values.iter().copied().enumerate() {
-        let source_index = unravel_index(flat_index, source_shape);
-        let target_index = index_without_axis(&source_index, axis);
+        if flat_index % 256 == 0 { replay_checkpoint()?; }
+        let source_index = unravel_index(flat_index, source_shape)?;
+        let target_index = index_without_axis(&source_index, axis)?;
         let target_flat = ravel_index(reduction, &target_index, &target_shape)?;
         groups[target_flat].push((flat_index, value));
     }
-    let mut contribution = vec![0.0_f64; source_values.len()];
-    for (group, cotangent) in groups.iter().zip(cotangent_values.iter()) {
-        let group_values = group.iter().map(|(_, value)| *value).collect::<Vec<f64>>();
+    let mut contribution = filled_replay_buffer(source_values.len(), 0.0_f64)?;
+    for (group_index, (group, cotangent)) in groups.iter().zip(cotangent_values.iter()).enumerate() {
+        if group_index % 256 == 0 { replay_checkpoint()?; }
+        let mut group_values = reserve_replay_buffer(group.len())?;
+        for (index, (_, value)) in group.iter().enumerate() {
+            if index % 256 == 0 { replay_checkpoint()?; }
+            group_values.push(*value);
+        }
         let group_contribution =
             reduction.group_cotangent(effect_index, &group_values, *cotangent, correction)?;
-        for ((source_index, _), value) in group.iter().zip(group_contribution.iter()) {
+        for (index, ((source_index, _), value)) in group.iter().zip(group_contribution.iter()).enumerate() {
+            if index % 256 == 0 { replay_checkpoint()?; }
             contribution[*source_index] = *value;
         }
     }
@@ -363,18 +304,26 @@ fn axis_groups(
     target_shape: &[usize],
     source_values: &[f64],
 ) -> Result<Vec<Vec<f64>>, String> {
-    let mut groups = vec![Vec::<f64>::new(); shape_size(reduction, target_shape)?];
+    let group_count = shape_size(reduction, target_shape)?;
+    let mut groups = reserve_replay_buffer(group_count)?;
+    for _ in 0..group_count {
+        groups.push(reserve_replay_buffer::<f64>(source_shape[axis])?);
+    }
     for (flat_index, value) in source_values.iter().copied().enumerate() {
-        let source_index = unravel_index(flat_index, source_shape);
-        let target_index = index_without_axis(&source_index, axis);
+        if flat_index % 256 == 0 { replay_checkpoint()?; }
+        let source_index = unravel_index(flat_index, source_shape)?;
+        let target_index = index_without_axis(&source_index, axis)?;
         let target_flat = ravel_index(reduction, &target_index, target_shape)?;
         groups[target_flat].push(value);
     }
-    if groups.iter().any(Vec::is_empty) {
-        return Err(format!(
-            "effect {effect_index} {} axis reduction produced an empty group",
-            reduction.label()
-        ));
+    for (index, group) in groups.iter().enumerate() {
+        if index % 256 == 0 { replay_checkpoint()?; }
+        if group.is_empty() {
+            return Err(format!(
+                "effect {effect_index} {} axis reduction produced an empty group",
+                reduction.label()
+            ));
+        }
     }
     Ok(groups)
 }
@@ -390,28 +339,28 @@ fn corrected_moments(
             "effect {effect_index} {label} requires non-empty values"
         ));
     }
-    if values.iter().any(|value| !value.is_finite()) {
-        return Err(format!(
-            "effect {effect_index} {label} source values must be finite"
-        ));
+    for (index, value) in values.iter().enumerate() {
+        if index % 256 == 0 { replay_checkpoint()?; }
+        if !value.is_finite() {
+            return Err(format!("effect {effect_index} {label} source values must be finite"));
+        }
     }
-    validate_correction_scalar(label, correction)?;
+    let denominator = validate_moment_group_size(effect_index, label, values.len(), correction)?;
     let count = values.len() as f64;
-    if correction >= count {
-        return Err(format!(
-            "effect {effect_index} {label} correction must be less than reduction group size {count}, got {correction}"
-        ));
+    let mut total = -0.0_f64;
+    for (index, value) in values.iter().enumerate() {
+        if index % 256 == 0 { replay_checkpoint()?; }
+        total += value;
     }
-    let denominator = count - correction;
-    let mean = values.iter().sum::<f64>() / count;
-    let variance = values
-        .iter()
-        .map(|value| {
-            let delta = value - mean;
-            delta * delta
-        })
-        .sum::<f64>()
-        / denominator;
+    let mean = total / count;
+    let mut centered_sum = -0.0_f64;
+    for (index, value) in values.iter().enumerate() {
+        if index % 256 == 0 { replay_checkpoint()?; }
+        let delta = value - mean;
+        centered_sum += delta * delta;
+    }
+    let variance = centered_sum / denominator;
+    replay_checkpoint()?;
     if variance.is_finite() && variance >= 0.0 {
         Ok((mean, variance, denominator))
     } else {
@@ -475,99 +424,4 @@ fn validate_finite_moment(effect_index: usize, label: &str, value: f64) -> Resul
             "effect {effect_index} {label} result must be finite"
         ))
     }
-}
-
-fn axis_reduction_shape(
-    reduction: MomentReduction,
-    source_shape: &[usize],
-    axis: usize,
-) -> Result<Vec<usize>, String> {
-    if axis >= source_shape.len() {
-        return Err(format!(
-            "{} axis {axis} is outside rank {}",
-            reduction.label(),
-            source_shape.len()
-        ));
-    }
-    Ok(source_shape
-        .iter()
-        .enumerate()
-        .filter_map(|(index, dimension)| (index != axis).then_some(*dimension))
-        .collect())
-}
-
-fn normalise_static_axis(axis: isize, rank: usize) -> Result<usize, String> {
-    if rank == 0 {
-        return Err("rank must be positive".to_owned());
-    }
-    let rank_isize =
-        isize::try_from(rank).map_err(|_| "rank exceeds axis metadata range".to_owned())?;
-    let normalised = if axis < 0 { rank_isize + axis } else { axis };
-    if normalised < 0 || normalised >= rank_isize {
-        return Err(format!("axis {axis} is outside rank {rank}"));
-    }
-    usize::try_from(normalised).map_err(|_| "axis normalisation overflowed".to_owned())
-}
-
-fn shape_size(reduction: MomentReduction, shape: &[usize]) -> Result<usize, String> {
-    let mut size = 1usize;
-    for dimension in shape {
-        if *dimension == 0 {
-            return Err(format!(
-                "{} shaped values must have non-zero dimensions",
-                reduction.label()
-            ));
-        }
-        size = size
-            .checked_mul(*dimension)
-            .ok_or_else(|| format!("{} shaped value size overflowed", reduction.label()))?;
-    }
-    Ok(size)
-}
-
-fn unravel_index(mut flat_index: usize, shape: &[usize]) -> Vec<usize> {
-    let mut index = vec![0usize; shape.len()];
-    for (axis, dimension) in shape.iter().enumerate().rev() {
-        index[axis] = flat_index % dimension;
-        flat_index /= dimension;
-    }
-    index
-}
-
-fn index_without_axis(index: &[usize], axis: usize) -> Vec<usize> {
-    index
-        .iter()
-        .enumerate()
-        .filter_map(|(entry_axis, entry)| (entry_axis != axis).then_some(*entry))
-        .collect()
-}
-
-fn ravel_index(
-    reduction: MomentReduction,
-    index: &[usize],
-    shape: &[usize],
-) -> Result<usize, String> {
-    if index.len() != shape.len() {
-        return Err(format!(
-            "{} index rank {} does not match shape rank {}",
-            reduction.label(),
-            index.len(),
-            shape.len()
-        ));
-    }
-    let mut flat = 0usize;
-    let mut stride = 1usize;
-    for (coordinate, dimension) in index.iter().zip(shape.iter()).rev() {
-        if coordinate >= dimension {
-            return Err(format!(
-                "{} coordinate {coordinate} is outside dimension {dimension}",
-                reduction.label()
-            ));
-        }
-        flat += coordinate * stride;
-        stride = stride
-            .checked_mul(*dimension)
-            .ok_or_else(|| format!("{} ravel stride overflowed", reduction.label()))?;
-    }
-    Ok(flat)
 }

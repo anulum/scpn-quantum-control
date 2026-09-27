@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **732 modules** across **40 package families**
-- **4043 documented public module-level symbols**
+- **737 modules** across **40 package families**
+- **4068 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -6015,6 +6015,26 @@ Fail-closed **differentiable error-mitigation taxonomy** product.
 
 **Functions:** `list_mitigator_ids()`, `list_mitigation_boundary_ids()`, `get_mitigator()`, `get_mitigation_boundary()`, `iter_mitigators()`, `iter_mitigation_boundaries()`, `decide_mitigation_path()`, `materialise_zne_probe()`, `materialise_demo_zne_probe()`, `materialise_readout_probe()`, `studio_mitigate_claim_boundary()`, `map_error_mitigation_public_surfaces()`, `build_error_mitigation_product_registry()`, `assert_error_mitigation_product_integrity()`
 
+### `scpn_quantum_control.execution_memory`
+
+Bound simultaneously live buffers before allocation or native dispatch.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/execution_memory.py) · Public symbols: **8**
+
+**Classes:** `ExecutionBuffer`, `ExecutionMemoryPlan`, `MemoryCapacity`, `ExecutionMemoryDecision`
+
+**Functions:** `check_execution_memory()`, `require_execution_memory()`, `dataclass_storage_bytes()`, `json_encoded_bytes()`
+
+### `scpn_quantum_control.execution_reservations`
+
+Serialize declared-memory charges across cooperating callers in one process.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/execution_reservations.py) · Public symbols: **4**
+
+**Classes:** `ExecutionCancelledError`, `ExecutionMemoryReservation`
+
+**Functions:** `active_reserved_bytes()`, `reserve_execution_memory()`
+
 ### `scpn_quantum_control.execution_surface`
 
 Static execution-surface scanner for notebooks and publication scripts.
@@ -6203,6 +6223,14 @@ Fail-closed **Multi-HAL provider federation** product surface.
 
 **Functions:** `list_hal_backend_ids()`, `list_hal_providers()`, `get_hal_capability()`, `iter_hal_capabilities()`, `build_federation_matrix()`, `decide_federation_route()`, `materialise_federation_dry_run_probe()`, `materialise_demo_federation_dry_run_probe()`, `map_multi_hal_federation_public_surfaces()`, `build_multi_hal_federation_product_registry()`, `assert_multi_hal_federation_product_integrity()`
 
+### `scpn_quantum_control.native_replay_admission`
+
+Admit native replay input copies before PyO3 extraction.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/native_replay_admission.py) · Public symbols: **1**
+
+**Functions:** `native_replay_input_scope()`
+
 ### `scpn_quantum_control.native_semantic_binding`
 
 Bind native producer metadata to exact, detached semantic source records.
@@ -6374,6 +6402,14 @@ Static interpolation derivative rules for Program AD.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/program_ad_interpolation_primitives.py) · Public symbols: **1**
 
 **Functions:** `program_ad_interpolation_interp_derivative_rule()`
+
+### `scpn_quantum_control.program_ad_linalg_memory`
+
+Admission scopes for actual Program AD linear-algebra callbacks.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/program_ad_linalg_memory.py) · Public symbols: **10**
+
+**Functions:** `matrix_power_execution_scope()`, `linalg_pullback_execution_scope()`, `determinant_cofactor_execution_scope()`, `determinant_execution_scope()`, `inverse_execution_scope()`, `solve_execution_scope()`, `matrix_power_trace_execution_scope()`, `multi_dot_execution_scope()`, `multi_dot_trace_execution_scope()`, `diagonal_execution_scope()`
 
 ### `scpn_quantum_control.program_ad_linalg_primitives`
 
@@ -6564,6 +6600,14 @@ Versioned ``scientific_semantics.v1`` companion for stable-core records.
 **Classes:** `SemanticRecordError`, `DeclaredUnit`, `SemanticRefusal`, `MeasuredField`, `ProducerObservation`, `DeclaredParameterOrder`, `ScientificSemantics`, `SemanticBinding`
 
 **Functions:** `observe_producer()`, `validate_semantic_binding()`
+
+### `scpn_quantum_control.source_admission`
+
+Read and locate objective source within an existing memory reservation.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/source_admission.py) · Public symbols: **2**
+
+**Functions:** `read_source_lines()`, `objective_source_block()`
 
 ### `scpn_quantum_control.ssgf_geometry_gradient_product`
 

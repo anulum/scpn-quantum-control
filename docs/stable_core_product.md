@@ -343,3 +343,621 @@ corpus · a declared canonical parameter order owned by each producer rather
 than fixed as a contract choice in the semantics owner.
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)
+
+## Declared execution-memory admission
+
+The resource-budget facade exposes `ExecutionBuffer`, `ExecutionMemoryPlan`,
+`MemoryCapacity`, `check_execution_memory` and `require_execution_memory`.
+A plan sums named forward, intermediate, adjoint and dense-output buffers using
+fixed-width dtype sizes, then multiplies by declared concurrency. Impossible
+native sizes refuse before exponential dimensions or allocations are created.
+The existing catalogue estimator retains its wire format and now checks dense
+addressability before building the estimated shape.
+
+`check_execution_memory` projects a plan against an explicitly supplied capacity
+observation. `require_execution_memory` reads the actual host and visible cgroup
+headroom; a requested cap cannot override their ceiling. The default memory
+fraction remains 30%, calculated with integer bytes. Unknown host availability
+refuses. A device request requires the device-owning caller's observed available
+bytes; this API does not discover or validate a GPU device.
+
+```python
+from scpn_quantum_control.resource_budget_gate import (
+    ExecutionBuffer,
+    ExecutionMemoryPlan,
+    require_execution_memory,
+)
+
+plan = ExecutionMemoryPlan((
+    ExecutionBuffer.hilbert("state", "forward", 4),
+    ExecutionBuffer.hilbert("temporary", "intermediate", 4, count=2),
+    ExecutionBuffer("tape", "adjoint", (8, 16), "float64"),
+    ExecutionBuffer.hilbert("output", "dense_output", 4, rank=2),
+), concurrency=2)
+decision = require_execution_memory(plan, max_gib=0.01)
+```
+
+`bridge.knm_hamiltonian.knm_to_dense_matrix` checks its requested output,
+matrix intermediates and input-conversion buffers before materialisation.
+Input finite-validation masks are constructed only inside the admitted owned
+scope, after its lifecycle checkpoint. Their sequential boolean storage fits
+within the declared float64 conversion workspace. Capacity refusal, an expired
+deadline or an already cancelled request therefore precedes these array masks.
+It accepts explicit `backend="python"` or `backend="rust"`; the latter refuses
+missing native support and unsupported anisotropy. The default `auto` selection
+retains the optional native route and Python fallback when native support is
+absent. Malformed native output is refused, rather than replaced with Python.
+
+This is snapshot admission for declared buffers. It does not reserve memory,
+account for undeclared third-party workspaces, enforce all forward/AD paths,
+or establish concurrent worker isolation or production OOM immunity. Numerical
+and hardware claim classes are unchanged.
+
+`QuantumKuramotoSolver.run` now applies its existing
+`max_statevector_gib` option to declared forward state, live state/measurement
+intermediates, output arrays and the Python time list. An impossible step count
+refuses before history construction. Accepted trajectories retain their previous
+numerical fields and report `memory_declared_bytes` and `memory_budget_bytes` in
+metadata.
+
+`whole_program_value_and_grad`, `whole_program_grad`, `program_adjoint_grad` and
+`program_adjoint_value_and_grad` accept `max_execution_gib`. Initial tangent-basis
+storage is admitted before its allocation. Each retained numeric tangent is
+checked against that context's admitted snapshot before copying into the IR
+tape. Retained trace-record and alias storage is also declared before graph
+mutation. Arbitrary user allocations, frontend/serialization and additional
+primitive workspaces, allocator overhead and cross-worker reservations remain
+outside the fully qualified scope. The derivative convention and existing result wire
+are unchanged.
+
+## Owned local memory reservations
+
+Charge changes reread host availability and each owner's controller snapshot.
+A successful resize updates its observable decision and keeps the tighter prior
+cap; refusal preserves the previous decision and charge. Handoff refreshes both
+owners before transferring their live declaration. Closing the transferred source
+does not release the destination's charge. Caller-supplied device capacity remains
+a snapshot; these scopes do not reserve OS pages or coordinate other processes.
+
+
+`reserve_execution_memory` wraps real live-capacity admission in a
+process/thread-owned scope. A locked ledger compares the sum of active declared
+charges with their tightest active cap. `resize` admits a complete replacement
+plan atomically; refusal preserves the previous charge. Exiting the scope
+releases the charge on success or an escaping exception, including interruption.
+
+Dense Hamiltonian export, forward trajectories and whole-program AD now use
+this scope. AD numeric tape growth updates its charge before copying a retained
+tangent. These APIs also accept `deadline_monotonic` and a caller-owned
+`threading.Event` as `cancelled`; the public adjoint wrappers forward them.
+Checkpoints refuse elapsed deadlines, observed cancellation, closed scopes
+and access from another process or thread.
+
+Whole-program AD creates its initial owned reservation before source/bytecode
+frontend inspection. An inadmissible initial tape, observed cancellation or an
+already elapsed deadline refuses before that inspection can populate the source
+cache. Lifecycle is rechecked after frontend compilation and the subsequent
+source read. Frontend AST, source-cache, bytecode and compiler-container allocations
+are not yet fully included in the declared memory plan. Inspection is cooperative: these checks
+do not interrupt an inspection already in progress.
+
+Reservations coordinate cooperating calls within one process. They do not
+reserve OS pages, retain charges for returned arrays after the operation exits,
+or coordinate independent processes. Checkpoints do not forcibly terminate
+a blocked native call or an arbitrary Python loop without checkpoints. The
+current browser binding is synchronous; this API does not claim browser-worker
+disposal or install a new worker transport.
+
+The gradient-only AD facade forwards the same memory cap, deadline and cancellation
+policy. `program_adjoint_gradient` admits retained and copied numeric gradients in
+a new owned scope and checks cancellation/deadline after copying. The objective
+adjoint facades forward the policy through this final copy as well. This does not
+yet account for all retained trace metadata or executable adjoint replay workspaces.
+
+`program_adjoint_replay_gradient` accepts the same cap, deadline and cancellation
+keywords. Replay reserves declared cotangent, gradient and Python container
+workspaces before materialising them, checks lifecycle at each reverse step and
+after gradient validation, then releases its charge. Container sizing uses the
+current interpreter's object sizes and bounded entry counts; this declaration
+does not constitute a measurement of allocator overhead or retained trace data.
+
+Nested reservations retain the lifecycle policy of every active parent. A child
+cannot disable an ancestor's cancellation or extend its deadline. This also
+covers replay invoked by result-constructor validation inside an active AD scope.
+Child disposal restores its prior context; forked children start with no inherited
+active scope and still reject reservation objects owned by the parent process.
+
+Trace admission also declares retained IR, SSA, effect, alias, control and phi
+record storage using the actual dataclass schemas and current interpreter sizes.
+A node or array-view alias batch must enlarge its reservation before mutating the
+graph. This covers alias growth even when no tangent node is added. Shared fields
+are conservatively charged separately; frontend/serialization workspaces and
+general allocator overhead still require separate qualification.
+
+Program IR admits its record projection and exact compact ASCII JSON size before
+allocating encoding storage. Encoding fills a fixed-size byte buffer in chunks
+and checks lifecycle between chunks and after decoding. The declaration includes
+the byte buffer, a temporary encoded chunk and output string; canonical sorted
+keys and compact separators remain unchanged. General allocator and encoder
+iterator overhead still require separate qualification.
+
+Runtime line tracing admits its copied input and each distinct event before
+retention, checks lifecycle on every Python line, and restores the previous
+tracer in a finally block. Trace data transfers atomically into the enclosing
+AD reservation and stays charged during IR and adjoint construction. A handoff
+cannot drop declared live bytes or bypass any active scope's tighter allowance.
+Source-cache and general interpreter overhead still need separate qualification.
+
+Adjoint generation admits declared gradient, contribution and step/index storage
+before building its dictionaries or result arrays. It checks lifecycle during
+reverse traversal and step generation, then transfers the declaration into the
+enclosing AD scope. Previously admitted IR encoding and trace buffers remain in
+the destination plan. Primitive-specific numerical workspaces and allocator
+overhead still require separate qualification.
+
+
+Whole-program AD admits parameter-input and conversion buffers before creating
+NumPy data arrays. It accepts plain one-dimensional real numeric ndarrays,
+lists, tuples and ranges; custom array protocols and subclasses refuse because
+their conversion allocations cannot be inferred safely. A private bounded-size
+snapshot prevents sequence growth from expanding the subsequent conversion.
+Numeric array inputs are copied into an admitted float64 snapshot. The declaration
+includes conversion arrays, finite mask, snapshot pointer storage and container
+headers, and remains charged during the AD operation. Oversized range metadata
+refuses before enumeration. Callers must not concurrently resize or alter the
+storage of an ndarray during a native copy; this scope does not lock caller-owned
+NumPy storage. Native conversion internals and general allocator overhead still
+require separate qualification.
+
+
+Frontend bytecode and report digests admit the declared canonical JSON chunk
+storage before encoding, then feed ASCII chunks directly into SHA-256. They
+check the encoded size and lifecycle along the stream, retaining the existing
+sorted-key, compact JSON digest convention. The compiler still builds its
+record projection before this scope; source loading, AST/parser storage,
+projection containers and encoder internals remain separate qualification work.
+This streaming digest scope does not claim complete frontend memory coverage.
+
+
+Source inspection observes a regular file and admits raw-byte, decoding and
+line-storage declarations before their respective allocations. The reader opens
+the file without blocking on a substituted pipe, checks descriptor identity,
+reads only the observed byte count in bounded chunks, then probes one extra byte
+and rechecks identity. Growth, truncation, replacement or unavailable input refuses.
+Lifecycle checks surround reading, decoding and line materialisation. Decoding
+uses Python source encoding detection and universal newlines.
+
+The frontend locates callable blocks in those admitted lines, including standard
+decorator unwrapping, lambdas, methods and lexical class names. It does not load or
+replace global linecache entries. After extraction, path identity, type, size and
+nanosecond modification/change timestamps must still match the observation.
+Admission observes extracted line-object sizes and declares Unicode
+join/dedent/strip and split storage before constructing those copies.
+
+These are declared buffers rather than a measured allocator peak. Codec internals,
+class AST/parser storage, report projections and runtime-specific metadata still
+require qualification. Identity checks do not prove an immutable snapshot against
+all concurrent writers. Complete frontend memory coverage is not claimed.
+
+
+Sequence admission reads only the built-in container length before checking
+memory and lifecycle policy. It declares the current NumPy float64/long-double
+width allowance without walking the elements. Scalar validation then occurs
+inside the bounded snapshot loop with cooperative checkpoints. Interrupted
+entry therefore does not first traverse the whole sequence; wider or unsupported
+scalar storage still refuses before conversion.
+
+
+The source declaration returned to whole-program AD transfers atomically into
+its enclosing reservation. Source/read/copy buffers remain in later tape,
+IR and adjoint plans until that operation exits, without a release/reacquire
+gap. The declaration conservatively retains temporary source buffers too.
+Standalone compiler AST/report construction still needs complete retained
+frontend-storage qualification. Installed Program AD replay additionally charges
+its declared retained float64 primals, adjoints and parameter gradients before
+numerical value-map construction. Gradient replay checks unary and binary
+output-shape metadata against the source or inferred broadcast shape. This
+retained declaration is supplemented by source-derived workspace declarations
+for native multi-dot, matrix-power, bounded pseudoinverse, Gaussian/LU/solve and
+compact convolution/correlation, interpolation, diag/diagflat, cumulative
+scans/differences, static-grid trapezoid, product/moment reductions and bounded
+2x2 spectral, order-statistic and compact stencil replay. These
+include matrix-chain products, reverse prefix powers, projector squares and
+projector-construction temporaries before numeric replay. Cumulative declarations
+also cover source/reverse buffers and simultaneously live shape, coordinate,
+prefix-index or difference-term storage; their shared borrowed metadata parser
+refuses invalid source counts and output selections before materialization.
+Trapezoid admission uses borrowed SSA source/target shapes and validates grid
+labels without allocating the grid. It includes shaped source/cotangent copies,
+coordinates, integration buffers and conservative reverse-accumulation storage.
+Actual finite segment-width checks remain at the numerical kernel. Product and
+moment admission additionally includes group storage and Vec headers, current
+group values/contributions and conservative reverse accumulation. Static moment
+correction denominators use the actual kernel rule before group allocation;
+numerical singularity checks remain at their original owners. Selector and
+order-statistic admission includes indexed groups, outer Vec headers, separate
+validation/index-order scratch and two-slot selected reverse output. Axis/q
+metadata uses its original parser before group construction; strict-order
+refusal and interpolation formulas remain numerical responsibilities. Stencil
+layout validation scans shape and spacing labels without allocating their
+vectors, then declares source/reverse buffers, optional coordinate grid and
+shape/target coordinates before materialization. Coefficient storage remains
+fixed on the stack; numerical overflow still refuses at its original owner. Sequential effects
+share the maximum declared kernel workspace under the same owner. Other
+primitive temporaries, metadata-map capacity and returned JSON retention remain
+unqualified; these declarations are not measured allocator-peak evidence.
+
+Native Program AD metadata parsing now validates the full JSON without a
+retained generic DOM and selects borrowed fields before typed decoding. It
+preserves last-key-wins duplicate handling, escaped strings and positional
+records. Borrowed raw-token grammar, fixed-buffer finite-number checks and
+primitive integer/boolean decoding avoid serde's optional bigint conversion.
+A quote-aware depth scan rejects excessive nesting before raw parsing. Explicit
+type guards also keep malformed fields out of that conversion path.
+A separate owned metadata policy admits serde scratch and fallible
+string/vector growth; PyO3 charges metadata and numerical declarations to the
+same reservation. Numeric-only policies retain their existing callback contract.
+Standalone callers still need an explicit host policy, and these declarations
+do not measure allocator overhead or guarantee that vendor allocations cannot
+abort. Public parser and installed-wheel regressions cover refusal, recovery,
+schema preservation and nested owner restoration; current runtime qualification
+remains separate.
+
+Native replay separately admits effect-ordering buffers, owned symbol bytes,
+indexed parameter labels and returned label-vector headers. Flattened
+parameter-target records are admitted before numeric replay and reserved once;
+appends refuse any capacity outside that declaration. These metadata requests
+inherit parent policy without changing numeric-only callback declarations.
+Public forward and gradient regressions include long symbols, observed budget
+boundaries, array metadata refusal before numeric admission and real recovery.
+Full payload preflight, map allocator overhead and runtime qualification remain
+required; these declarations are not a measured allocator peak.
+
+The installed Rust dense and sparse XY Hamiltonian entries also use shared
+memory reservations before output vectors are allocated. Native dimension,
+element and byte arithmetic refuses overflow; sparse storage counts diagonal
+and nonzero-pair triplets before reserving vector capacity. Allocation failures
+become Python memory errors. Owner deadlines/cancellation are checked before
+allocation, during basis iteration and before return; failure disposes the
+native scope. Inputs must remain unchanged throughout construction.
+
+These entries require the control-package policy to be importable. Native
+output charges add to an enclosing plan, and can conservatively tighten its
+effective allowance. Both native construction and the Python dense exporter
+reject nonfinite constructed values even when individual inputs were finite.
+Installed-engine parity and measured performance belong to the exact candidate
+source; historical speedup figures do not qualify this admission overhead.
+
+The native XY selector accepts exactly zero anisotropy. A nonzero XXZ request
+uses the Python path in automatic mode; explicit Rust selection refuses it.
+After the existing sparsity filter selects Pauli terms, simplification removes
+only exact zero coefficients, preserving small selected interactions. Native
+frequency construction uses the same canonical cutoff as the Python mapper.
+
+Finite coupling symmetrisation halves each operand before addition, so a
+representable Pauli coefficient does not overflow during averaging. Pauli
+exports reject nonfinite inputs and overflowed XXZ coefficients before
+constructing the operator. A representable Pauli coefficient can still yield
+an unrepresentable dense matrix; dense output retains its separate finite-value
+check.
+
+Traced `diag` vector construction and `diagflat` admit their complete output
+pointer storage before materialisation, including fixed source list, constructor
+tuple and retained list. An enormous offset cannot bypass admission by producing
+few derivative nodes. These paths check cancellation/deadlines during diagonal
+placement and retain the conservative container peak declaration through result
+creation. This declaration does not measure Python allocator internals or
+unrelated numerical workspace.
+
+Traced broadcasting also admits output pointer containers before repetition,
+plus source and materialised broadcast index buffers on ranked-array routes.
+Empty broadcast outputs retain their existing empty-array semantics.
+
+Traced repeat and tile calculate target shapes before allocating output indices,
+then admit numeric index buffers, boxed indices and pointer containers through
+the existing owner. Zero-sized targets preserve empty-view semantics without
+creating intermediate repeated arrays.
+
+Constant-padding shape validation computes dimensions from static widths and
+validates constant broadcasting without constructing output arrays. Numeric
+layout construction separately reserves source and padded index/constant
+buffers before calling NumPy. This is declared buffer admission; returned
+derivative-rule state and interpreter/trace-object overhead require their
+separate lifetime accounting.
+
+Traced padding owns its output pointer containers, numeric layout, constant
+scalar records and per-cell tangent vectors before building the padded field.
+Record declarations use interpreter object/field/array-header sizes and the
+actual static constant labels; they are not measured allocator peaks. The fixed
+source list avoids growth beyond its admitted slots, lifecycle checks run while
+cells are built, and charges remain with the main owner through result creation.
+Nested numeric-layout admission can conservatively charge overlapping buffers.
+
+Insertion shape validation derives dimensions and constant broadcasting from
+static metadata before constructing source/output indices. Numeric insertion
+layout separately reserves its source, output and marker buffers. Scalar and
+length-one vector selectors retain their distinct NumPy broadcasting rules.
+
+Traced insertion also admits constant scalar records, per-cell tangent vectors
+and output pointer containers before creating inserted cells. Those declarations
+remain charged through result construction, with lifecycle checks during cell
+creation and disposal on objective failure. Interpreter metadata sizes are
+schema declarations; allocator peaks and full primitive workspace qualification
+require separate measurements. Numeric layout admission can conservatively
+charge overlapping buffers.
+
+Direct padding and insertion value/JVP/VJP callbacks readmit their declared
+float64 layout, output, index-selection and boolean-mask buffers against live
+capacity at each invocation. A limit changed after rule construction therefore
+also governs transform execution. Plain ndarray operand-size errors are checked
+before dtype conversion. Transform scopes release charges on success or error;
+returned arrays and idle cached rule layouts are caller-held, rather than
+permanently charged to this process ledger. Opaque operand protocols and general
+allocator overhead still require separate qualification.
+
+Direct getitem, take, take-along-axis and delete value/JVP/VJP callbacks use the
+same live transform admission and cooperative lifecycle checks. Take layout
+construction declares source indices, output indices, selector storage and
+non-axis coordinate vectors before materialising the NumPy selection. Output
+size is derived from index insertion or axis broadcasting metadata; registry
+shape validation also admits its numeric layout before NumPy checks bounds.
+This does not yet qualify all general getitem/delete layout or opaque selector
+conversion workspaces.
+
+Traced take and take-along-axis selections retain declared numeric selection,
+output pointer, boxed local-index and source-lineage container storage through
+result construction. Fixed output slots and cooperative per-cell checks precede
+trace-array construction. Take resolves source lineage once for its view rather
+than rebuilding a source-size tuple for every selected element. Declarations
+use actual interpreter index/header sizes; they are not measured allocator peaks.
+
+Deletion layout construction and registry shape validation admit source-sized
+index/output upper bounds and required NumPy boolean-mask/selector workspaces
+before materialising the layout. Traced deletion also retains its admitted
+output pointer containers through result construction, using fixed slots and
+per-cell lifecycle checks. Scalar, one-element integer-array and unit-step slice deletion do not declare a
+source-axis-sized mask that NumPy does not construct. These conservative buffer
+declarations do not measure allocator peaks or qualify opaque selector conversion.
+
+Getitem layout admission counts output slots from basic slice lengths and the
+broadcasted advanced-index shape. Boolean masks contribute their selected count
+and nonzero-coordinate workspace. Array selectors are copied under their own
+admission before counting, and numerical selection uses that immutable snapshot;
+original ellipsis/newaxis placement and NumPy result ordering remain intact.
+Direct layout and registry shape consumers admit source/output storage before
+selection. Traced getitem retains numeric, pointer, boxed-index and lineage
+container declarations through result construction. General Python selector
+conversion and interpreter overhead remain separate qualification work.
+
+Getitem selector snapshot ownership now spans metadata counting and actual
+selection, including error paths and trace-buffer handoff. The caller's mutable
+boolean mask can change after the snapshot without changing the admitted or
+selected slots. Snapshot and numeric-layout scopes can conservatively overlap
+in their declared selector charges; neither scope measures allocator peaks.
+
+Static indexing-rule source dimensions are checked against native integer
+addressability, and flattened int64 index storage is checked before selector
+copying or layout construction. An unaddressable dimension still refuses when
+another dimension is zero; scalar and ordinary zero-extent shapes keep their
+existing semantics. Native-address failures use the same allocation-refusal
+category as execution capacity failures, before Python range-length or NumPy
+shape conversion can overflow.
+
+
+Direct matrix-power value/JVP/VJP callbacks declare source conversions, output
+and multiplication workspaces before NumPy materialisation. Derivatives also
+admit the retained `abs(power)` matrix list, so a large positive or negative
+exponent can refuse before creating that list. They inherit the active owner's
+cancellation/deadline and checkpoint between power and accumulation operations;
+charges dispose on return or failure. The existing product and inverse formulas
+are preserved. `tests/test_program_ad_linalg_memory.py` supplies public numeric,
+capacity, native-size, singular-input recovery and real parent-cancellation
+cases. These declarations do not measure vendor LAPACK scratch, Python container
+peaks or returned-array retention; native/WASM parity and runtime qualification
+remain separate evidence requirements.
+
+
+Inverse and vector/matrix RHS solve adjoint generation admit their visible
+pullback matrices before constructing numeric inputs. Inverse declares the
+matrix, inverse, cotangent, two products and negated output. Solve declares its
+matrix and signed/unsigned matrix-adjoint outputs plus RHS, solution, cotangent
+and RHS adjoint. Input list/name references and boxed numeric conversion are
+included. These scopes inherit the active capacity/deadline/cancellation policy
+and check lifecycle after native operations; charges dispose on success or
+failure. The public adjoint tests in `tests/test_program_ad_linalg_memory.py`
+include independent value/gradient oracles and cap refusal at actual pullback
+entry followed by retry. Internal LAPACK workspace and full process peaks still
+require separate qualification.
+
+
+Determinant value/JVP/VJP callbacks declare source conversion, finite-validation
+masks, products and outputs before inspecting numeric data. The shared cofactor
+callback declares source/output matrices, row-deleted and column-deleted minors,
+including old/new minor overlap, and delete masks. It checks inherited lifecycle
+policy between minor operations. Trace determinant construction separately
+admits the stacked tangent tensor, output tangent, list references and expanded
+NumPy view metadata before materialisation. Public registered callbacks and the
+adjoint facade retain empty/scalar/matrix determinant semantics and use the
+original cofactor implementation. Their tests include huge virtual-buffer
+refusal, independent differentials, malformed-input recovery and cancellation
+after an actual minor determinant return. Vendor LAPACK workspace and full
+allocator/process peaks remain separate qualification requirements.
+
+
+Inverse registered value/JVP/VJP callbacks declare numeric input conversions,
+validation masks, inverse/products and output storage. Determinant and inverse
+callbacks reject boolean, complex, object and opaque inputs before conversion,
+and reject non-finite inputs inside their admitted validation scope. This agrees
+with the finite-input requirement of bounded native replay. Finite supported
+formulas and singular inverse errors retain their original meaning.
+
+Inverse trace construction separately admits primal/inverse/product buffers,
+the tangent tensor, NumPy stack-view metadata, temporary scalar lists and output
+trace-array containers. It checkpoints after the native inverse and between
+individual derivative products. Public tests include empty/scalar/nonsymmetric
+value/JVP/VJP oracles, refusal of huge virtual inputs, malformed-input recovery,
+and real trace-entry capacity refusal before native inverse followed by retry.
+These declarations do not qualify vendor LAPACK workspace, full allocator peaks
+or performance.
+
+
+Solve registered and fixed-shape value/JVP/VJP callbacks admit real input
+conversion, validation masks, RHS solutions/products and matrix-gradient
+buffers before numeric materialisation. Vector and matrix RHS retain their
+original solve differentials. Trace solve construction admits numeric and
+tangent tensors, per-parameter result arrays and their stacked copy, array
+metadata, temporary list/name references and output containers. It checkpoints
+after native solves and between parameter/output iterations. Public tests
+provide explicit vector/matrix RHS oracles, singular/non-finite recovery and
+trace-entry capacity refusal before a native solve followed by retry. These
+source declarations do not establish vendor LAPACK workspace bounds, full
+allocator peaks, native interruption, parity or performance qualification.
+
+
+Matrix-power trace construction reserves primal/output matrices, input tangent
+tensors, per-parameter JVP results and their stacked copy before materialising
+them. Reference lists and NumPy array metadata are included. Actual value/JVP
+callbacks reserve their algorithm workspaces under that trace owner; output
+containers hand off to the active context. Lifecycle checkpoints follow the
+value callback, surround each JVP, and precede output trace construction.
+Public composed positive/negative-power tests provide analytical values and
+gradients, trace-entry refusal before the value callback followed by recovery,
+and cancellation after an actual JVP return. Vendor scratch, full allocator
+peaks and cross-backend runtime qualification remain separate evidence.
+
+
+Direct matrix-power value/JVP/VJP callbacks also admit finite-validation masks
+and reject non-finite primal, tangent and cotangent inputs, including exponent
+zero. This tightens the raw callback input boundary to agree with native replay;
+finite supported formulas and singular negative-power errors are unchanged.
+
+
+Whole-program AD metadata accepts a plain list or tuple of exact `Parameter`
+records with plain string names and boolean trainability. It checks alignment
+before copying, admits fixed record/reference/uniqueness storage, then grows the
+name declaration before each private record copy. Default generated names are
+sized before generation. The fixed-length snapshot detects source-list growth
+or shrinkage and preserves independent names/trainable masks. Its charge remains
+with the active context through result construction. Opaque metadata sequences
+and record/name subclasses refuse before invoking their protocols. This tightens
+the resource-boundary input contract; ordinary finite supported calculations
+retain their formulas. Public tests cover list/tuple metadata, a nontrainable
+coordinate, Unicode names, opaque refusal, over-budget names, malformed alignment
+and duplicate-name recovery.
+
+
+Trace and reverse-adjoint generation declarations include finite-validation
+masks used by their result records. The public attached-gradient accessor
+rechecks the captured plain one-dimensional float64 layout and parameter count,
+admits fixed-size private output and validation-mask storage, and validates
+finite copied values before returning them. Mutated captured arrays therefore
+cannot silently return nonfinite gradients or reshape/retype the admitted copy.
+It detects layout drift at reservation entry and preserves an independent result
+copy. Public tests cover post-capture NaN/infinities, shape/dtype/length mutation,
+real reservation-entry layout drift, cleanup and finite retry. These declarations
+do not measure allocator peaks or establish concurrency safety for external
+unsafe mutation of native buffers.
+
+
+Result validation also declares the frozen-coordinate index and selected-value
+buffers. Attached-gradient copies recheck that non-trainable entries remain
+zero, with cooperative checks while walking the captured mask. Post-capture
+mutation cannot re-enable a frozen coordinate; a public finite retry restores
+the original masked gradient. Arithmetic-overflow tests exercise actual value
+and tangent rejection through whole-program and adjoint entry points.
+
+
+Fixed-shape multi-dot rule construction validates dimensions without creating
+zero-filled operands. Its value/JVP/VJP callbacks admit numeric conversion,
+finite masks, matrix-chain planning tables, possible subchain intermediates,
+outputs, operand views/references and VJP basis/retained gradient buffers before
+splitting numeric inputs. Size products use Python integers before native
+addressability checks. Lifecycle checkpoints surround repeated chain and basis
+operations; ordinary product and derivative formulas retain their order.
+Public tests provide two-matrix and scalar vector-endpoint analytic differentials,
+absurd-shape refusal before numeric operands, malformed/nonfinite recovery and
+cancellation after a real native chain return. These conservative declarations
+do not measure vendor BLAS or allocator peaks. Backend qualification remains a separate requirement.
+
+
+Multi-dot trace construction also admits primal arrays and flattened input,
+operand tangent stacks and their concatenation, retained per-parameter JVPs and
+their stacked copy. It uses the same matrix-chain workspace declarations as the
+actual callbacks, with nested derivative owners and cooperative checkpoints.
+Array output containers hand off to the context; scalar output directly uses
+its node owner. Public facade tests include the expanded vector-matrix-vector
+objective and actual trace-entry refusal before a native chain followed by retry.
+
+
+Diagonal rule construction computes output dimensions without allocating a
+coordinate tuple. Actual `diag` and `diagflat` callbacks admit numeric
+conversion, finite-validation masks, source/output workspaces, array headers
+and diagonal coordinate metadata before numerical construction or pullback.
+Rectangular extraction builds only the selected coordinate interval under that
+owner. Linear `diag` JVPs retain their primal-independent input convention.
+Diagflat shape products use Python integers instead of native-width NumPy
+products. Public tests cover offset insertion/extraction differentials,
+rectangular sparse pullbacks, nonfinite/malformed recovery and huge factory
+metadata followed by callback refusal before numerical or coordinate storage.
+Full allocator peaks and backend qualification remain separate evidence.
+
+
+Both trace reshape normalisation and fixed-shape derivative rules use Python
+integer products for known dimensions and final size preservation. Native-width
+wrap cannot make a huge layout appear to preserve a small input or make a
+nonzero inferred-axis product appear zero. Public facade and direct rule tests
+include products congruent to one/zero modulo 2^64, with finite inferred-layout
+retry and independent gradients. Their existing remote owner cohort includes
+strict typing, documentation and unchanged 100% coverage thresholds.
+
+
+Trace reduction, cumulative, product, broadcasting and predicate shape counts
+use Python integer arithmetic. Predicate containers reject shape products that
+would alias their item count after native integer overflow. Numeric `numpy.prod`
+continues to compute the original differentiable value product.
+
+
+Compact trace rules admit primal inputs, tangent inputs, per-coordinate result
+arrays, their stacked copy, finite-validation masks and Python container/array
+metadata before materialising those buffers. Returned value and tangent storage
+remains charged to the trace context through result creation; temporary input
+storage is released after evaluation. Each value/JVP callback completion checks
+cancellation and deadlines before conversion or the next coordinate. Algorithm
+workspace inside each callback remains the responsibility of its numerical owner;
+these declarations do not measure vendor allocator scratch.
+
+
+Cumulative value/JVP/VJP rules admit plain numeric input storage, conversion
+copies, finite masks, array metadata and linear source-sized workspaces before
+conversion or numerical dispatch. Cumulative inputs and outputs must be finite;
+opaque array protocols refuse without conversion. Pullback and product loops
+check the active execution lifecycle. Static cumulative factories retain their
+existing non-empty-source contract, while a constant non-empty trace can have
+zero differentiated parameters. Native kernel compilation and measured parity
+remain separate qualification evidence.
+
+
+Native singular-value replay declares its source, owned matrix, returned U/VT
+and spectrum storage, plus reverse contributions, before numeric evaluation.
+Shared layout validation rejects malformed metadata and operands before this
+admission callback. Decomposition-library scratch and in-kernel interruption
+remain unqualified; this declaration alone does not establish a complete solver
+memory limit. Public forward/reverse budget, refusal and independent-retry
+fixtures are authored in `program_ad_svd_memory.rs` and await native execution.
+
+Replay validation declares its branch, region and phi hash tables before fallible
+reservation. Shape, scalar value, numeric value and adjoint maps use the same
+checked table bound. The adjoint map reserves its complete target capacity once;
+new keys cannot grow beyond that admitted capacity. These are conservative table
+layout declarations for the maintained Rust/WASM targets, based on the standard
+library hash-table bucket and control-byte layout, rather than allocator peak
+measurements. Public branch and gradient regressions exercise refusal before
+numeric admission and recovery with unchanged mathematical results.
+
+The browser replay kernel applies a 64 MiB product ceiling to cumulative declared
+storage for each call. Owned input/output copies, parser metadata, replay tables
+and numerical requests share that charge; an explicit Rust caller may tighten
+it with `replay_value_and_gradient_with_memory_budget`. This is a policy ceiling,
+not observed browser capacity or a memory reservation. Parent admission remains
+binding, allocation failures refuse, and a refused FFI call leaves output bytes
+unchanged. Independent subsequent calls start with a fresh charge.

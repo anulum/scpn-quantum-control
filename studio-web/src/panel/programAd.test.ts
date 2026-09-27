@@ -364,3 +364,43 @@ describe("parsing and hex helpers", () => {
     expect(hexToBytes("00ff")).toEqual(new Uint8Array([0, 255]));
   });
 });
+
+
+describe("real WASM replay allocation ownership", () => {
+  it("releases each real buffer after allocation, execution or cleanup traps", async () => {
+    const input = hexToBytes(committed().inputHex);
+    if (input === null) throw new Error("committed payload is malformed");
+    for (fault of ["output allocation", "execution", "nonfinite output", "input free", "output free"] as const) {
+      const { instance } = await WebAssembly.instantiate(wasmBytes, {});
+      const exports = instance.exports as unknown as KernelExports;
+      const allocated: Array<[number, number]> = [];
+      const freed: Array<[number, number]> = [];
+      const result = bindProgramAd({
+        ...exports,
+        scpn_alloc: (length) => {
+          if (fault === "output allocation" && allocated.length === 1) throw new Error("transport allocation trap");
+          const pointer = exports.scpn_alloc(length);
+          expect(pointer).not.toBe(0);
+          allocated.push([pointer, length]);
+          return pointer;
+        },
+        scpn_program_ad_replay: (...args) => {
+          if (fault === "execution") throw new Error("transport replay trap");
+          const status = exports.scpn_program_ad_replay(...args);
+          if (fault === "nonfinite output") new DataView(exports.memory.buffer).setFloat64(args[2], Number.NaN, true);
+          return status;
+        },
+        scpn_free: (pointer, length) => {
+          exports.scpn_free(pointer, length);
+          freed.push([pointer, length]);
+          if ((fault === "input free" && freed.length === 1) || (fault === "output free" && freed.length === 2)) throw new Error("transport cleanup trap");
+        },
+      })(input, 2);
+      expect(result).toEqual({ ok: false, code: -4 });
+      expect(allocated).toHaveLength(fault === "output allocation" ? 1 : 2);
+      expect(freed).toEqual(allocated);
+      const retry = bindProgramAd(exports)(input, 2);
+      expect(retry).toEqual({ ok: true, value: 19, gradient: [6, 2] });
+    }
+  });
+});

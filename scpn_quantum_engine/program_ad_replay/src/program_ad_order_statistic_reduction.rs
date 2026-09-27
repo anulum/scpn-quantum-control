@@ -13,6 +13,9 @@
 //! routes linear-interpolation cotangents to the selected source entries and
 //! fails closed when equal source values make the selector nondifferentiable.
 
+use crate::program_ad_ir::{filled_replay_buffer, reserve_replay_buffer};
+use crate::program_ad_lifecycle::replay_checkpoint;
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum OrderStatisticReduction {
     Maximum,
@@ -88,15 +91,10 @@ pub(crate) fn order_statistic_values(
                     spec.reduction.label()
                 ));
             }
-            Ok(vec![group_value(
-                effect_index,
-                spec,
-                &source_values
-                    .iter()
-                    .copied()
-                    .enumerate()
-                    .collect::<Vec<(usize, f64)>>(),
-            )?])
+            let value = group_value(effect_index, spec, &indexed_source_values(source_values)?)?;
+            let mut output = reserve_replay_buffer(1)?;
+            output.push(value);
+            Ok(output)
         }
         Some(axis) => {
             let expected_shape = axis_reduction_shape(spec.reduction, source_shape, axis)?;
@@ -108,17 +106,13 @@ pub(crate) fn order_statistic_values(
                     target_shape
                 ));
             }
-            axis_groups(
-                effect_index,
-                spec.reduction,
-                source_shape,
-                axis,
-                target_shape,
-                source_values,
-            )?
-            .iter()
-            .map(|group| group_value(effect_index, spec, group))
-            .collect()
+            let groups = axis_groups(effect_index, spec.reduction, source_shape, axis, target_shape, source_values)?;
+            let mut output = reserve_replay_buffer(groups.len())?;
+            for group in &groups {
+                replay_checkpoint()?;
+                output.push(group_value(effect_index, spec, group)?);
+            }
+            Ok(output)
         }
     }
 }
@@ -141,15 +135,11 @@ pub(crate) fn order_statistic_cotangent(
                     spec.reduction.label()
                 ));
             }
-            let mut contribution = vec![0.0_f64; source_values.len()];
+            let mut contribution = filled_replay_buffer(source_values.len(), 0.0_f64)?;
             for (source_index, value) in group_cotangent(
                 effect_index,
                 spec,
-                &source_values
-                    .iter()
-                    .copied()
-                    .enumerate()
-                    .collect::<Vec<(usize, f64)>>(),
+                &indexed_source_values(source_values)?,
                 cotangent_values[0],
             )? {
                 contribution[source_index] += value;
@@ -173,7 +163,7 @@ pub(crate) fn order_statistic_cotangent(
                 &target_shape,
                 source_values,
             )?;
-            let mut contribution = vec![0.0_f64; source_values.len()];
+            let mut contribution = filled_replay_buffer(source_values.len(), 0.0_f64)?;
             for (group, cotangent) in groups.iter().zip(cotangent_values.iter()) {
                 for (source_index, value) in group_cotangent(effect_index, spec, group, *cotangent)?
                 {
@@ -185,128 +175,8 @@ pub(crate) fn order_statistic_cotangent(
     }
 }
 
-fn parse_order_statistic_operation(
-    effect_index: usize,
-    operation: &str,
-    rank: usize,
-) -> Result<OrderStatisticSpec, String> {
-    let tokens = operation.split(':').collect::<Vec<&str>>();
-    let reduction = OrderStatisticReduction::from_label(tokens[0]).ok_or_else(|| {
-        format!("effect {effect_index} operation {operation} is not an order-statistic reduction")
-    })?;
-    let mut axis = None;
-    let mut q = reduction.fixed_q();
-    let mut index = 1usize;
-    while index < tokens.len() {
-        match tokens[index] {
-            "axis" => {
-                if axis.is_some() {
-                    return Err(format!(
-                        "effect {effect_index} {} operation has duplicate axis metadata",
-                        reduction.label()
-                    ));
-                }
-                let raw_axis = tokens.get(index + 1).ok_or_else(|| {
-                    format!(
-                        "effect {effect_index} {} operation requires static axis metadata {}:axis:<int>",
-                        reduction.label(),
-                        reduction.label()
-                    )
-                })?;
-                let parsed_axis = raw_axis.parse::<isize>().map_err(|_| {
-                    format!(
-                        "effect {effect_index} {} axis metadata must be an integer",
-                        reduction.label()
-                    )
-                })?;
-                axis = Some(normalise_static_axis(parsed_axis, rank).map_err(|reason| {
-                    format!(
-                        "effect {effect_index} {} axis metadata is invalid: {reason}",
-                        reduction.label()
-                    )
-                })?);
-                index += 2;
-            }
-            "q" => {
-                if reduction.fixed_q().is_some() {
-                    return Err(format!(
-                        "effect {effect_index} {} operation does not accept q metadata",
-                        reduction.label()
-                    ));
-                }
-                if q.is_some() {
-                    return Err(format!(
-                        "effect {effect_index} {} operation has duplicate q metadata",
-                        reduction.label()
-                    ));
-                }
-                let raw_q = tokens.get(index + 1).ok_or_else(|| {
-                    format!(
-                        "effect {effect_index} {} operation requires static scalar q metadata {}:q:<float>",
-                        reduction.label(),
-                        reduction.label()
-                    )
-                })?;
-                let parsed_q = raw_q.parse::<f64>().map_err(|_| {
-                    format!(
-                        "effect {effect_index} {} q metadata must be a finite float",
-                        reduction.label()
-                    )
-                })?;
-                q = Some(normalise_q(effect_index, reduction, parsed_q)?);
-                index += 2;
-            }
-            other => {
-                return Err(format!(
-                    "effect {effect_index} {} operation metadata field {other} is unsupported",
-                    reduction.label()
-                ));
-            }
-        }
-    }
-    let Some(q) = q else {
-        return Err(format!(
-            "effect {effect_index} {} operation requires static scalar q metadata {}:q:<float>",
-            reduction.label(),
-            reduction.label()
-        ));
-    };
-    Ok(OrderStatisticSpec { reduction, axis, q })
-}
-
-fn normalise_q(
-    effect_index: usize,
-    reduction: OrderStatisticReduction,
-    q: f64,
-) -> Result<f64, String> {
-    if !q.is_finite() {
-        return Err(format!(
-            "effect {effect_index} {} q metadata must be finite",
-            reduction.label()
-        ));
-    }
-    match reduction {
-        OrderStatisticReduction::Quantile => {
-            if !(0.0..=1.0).contains(&q) {
-                return Err(format!(
-                    "effect {effect_index} quantile q metadata must be in [0, 1]"
-                ));
-            }
-            Ok(q)
-        }
-        OrderStatisticReduction::Percentile => {
-            if !(0.0..=100.0).contains(&q) {
-                return Err(format!(
-                    "effect {effect_index} percentile q metadata must be in [0, 100]"
-                ));
-            }
-            Ok(q / 100.0)
-        }
-        OrderStatisticReduction::Maximum
-        | OrderStatisticReduction::Minimum
-        | OrderStatisticReduction::Median => Ok(q),
-    }
-}
+include!("program_ad_order_statistic_reduction/metadata.rs");
+include!("program_ad_order_statistic_reduction/ordering.rs");
 
 fn group_value(
     effect_index: usize,
@@ -342,7 +212,8 @@ fn group_cotangent(
         ));
     }
     let ((lower_index, lower_weight), upper) = interpolation_weights(effect_index, spec, group)?;
-    let mut contribution = vec![(group[lower_index].0, cotangent * lower_weight)];
+    let mut contribution = reserve_replay_buffer(2)?;
+    contribution.push((group[lower_index].0, cotangent * lower_weight));
     if let Some((upper_index, upper_weight)) = upper {
         contribution.push((group[upper_index].0, cotangent * upper_weight));
     }
@@ -355,15 +226,20 @@ fn interpolation_weights(
     group: &[(usize, f64)],
 ) -> Result<InterpolationSelection, String> {
     validate_group(effect_index, spec.reduction, group)?;
-    let mut order = (0..group.len()).collect::<Vec<usize>>();
-    order.sort_by(|left, right| group[*left].1.partial_cmp(&group[*right].1).unwrap());
+    let mut order = reserve_replay_buffer(group.len())?;
+    for index in 0..group.len() { replay_checkpoint()?; order.push(index); }
+    checked_order(&mut order, |left, right| group[*left].1 < group[*right].1)?;
     let position = spec.q * ((group.len() - 1) as f64);
     let lower = position.floor() as usize;
     let upper = position.ceil() as usize;
     let upper_weight = position - lower as f64;
     let lower_weight = 1.0 - upper_weight;
-    let lower_index = order[lower];
-    let upper_index = order[upper];
+    let lower_index = order.get(lower).copied().ok_or_else(|| {
+        format!("effect {effect_index} order-statistic lower selection is outside group bounds")
+    })?;
+    let upper_index = order.get(upper).copied().ok_or_else(|| {
+        format!("effect {effect_index} order-statistic upper selection is outside group bounds")
+    })?;
     let upper_entry = (lower_index != upper_index).then_some((upper_index, upper_weight));
     Ok(((lower_index, lower_weight), upper_entry))
 }
@@ -379,22 +255,20 @@ fn validate_group(
             reduction.label()
         ));
     }
-    if group.iter().any(|(_, value)| !value.is_finite()) {
-        return Err(format!(
-            "effect {effect_index} {} source values must be finite",
-            reduction.label()
-        ));
+    let mut sorted_values = reserve_replay_buffer(group.len())?;
+    for (_, value) in group {
+        replay_checkpoint()?;
+        if !value.is_finite() {
+            return Err(format!("effect {effect_index} {} source values must be finite", reduction.label()));
+        }
+        sorted_values.push(*value);
     }
-    let mut sorted_values = group.iter().map(|(_, value)| *value).collect::<Vec<f64>>();
-    sorted_values.sort_by(|left, right| left.partial_cmp(right).unwrap());
-    if sorted_values
-        .windows(2)
-        .any(|window| window[0] == window[1])
-    {
-        return Err(format!(
-            "effect {effect_index} {} gradient requires strictly ordered values per reduction group",
-            reduction.label()
-        ));
+    checked_order(&mut sorted_values, |left, right| left < right)?;
+    for window in sorted_values.windows(2) {
+        replay_checkpoint()?;
+        if window[0] == window[1] {
+            return Err(format!("effect {effect_index} {} gradient requires strictly ordered values per reduction group", reduction.label()));
+        }
     }
     Ok(())
 }
@@ -428,113 +302,33 @@ fn axis_groups(
     target_shape: &[usize],
     source_values: &[f64],
 ) -> Result<Vec<Vec<(usize, f64)>>, String> {
-    let mut groups = vec![Vec::<(usize, f64)>::new(); shape_size(reduction, target_shape)?];
+    let count = shape_size(reduction, target_shape)?;
+    let mut groups = reserve_replay_buffer(count)?;
+    for _ in 0..count { groups.push(reserve_replay_buffer::<(usize, f64)>(source_shape[axis])?); }
     for (flat_index, value) in source_values.iter().copied().enumerate() {
-        let source_index = unravel_index(flat_index, source_shape);
-        let target_index = index_without_axis(&source_index, axis);
+        replay_checkpoint()?;
+        let source_index = unravel_index(flat_index, source_shape)?;
+        let target_index = index_without_axis(&source_index, axis)?;
         let target_flat = ravel_index(reduction, &target_index, target_shape)?;
         groups[target_flat].push((flat_index, value));
     }
-    if groups.iter().any(Vec::is_empty) {
-        return Err(format!(
-            "effect {effect_index} {} axis reduction produced an empty group",
-            reduction.label()
-        ));
+    for group in &groups {
+        replay_checkpoint()?;
+        if group.is_empty() {
+            return Err(format!(
+                "effect {effect_index} {} axis reduction produced an empty group",
+                reduction.label()
+            ));
+        }
     }
     Ok(groups)
 }
 
-fn normalise_static_axis(axis: isize, rank: usize) -> Result<usize, String> {
-    if rank == 0 {
-        return Err("rank must be positive".to_owned());
+fn indexed_source_values(source: &[f64]) -> Result<Vec<(usize, f64)>, String> {
+    let mut values = reserve_replay_buffer(source.len())?;
+    for (index, value) in source.iter().enumerate() {
+        if index % 256 == 0 { replay_checkpoint()?; }
+        values.push((index, *value));
     }
-    let rank_isize =
-        isize::try_from(rank).map_err(|_| "rank exceeds axis metadata range".to_owned())?;
-    let normalised = if axis < 0 { rank_isize + axis } else { axis };
-    if normalised < 0 || normalised >= rank_isize {
-        return Err(format!("axis {axis} is outside rank {rank}"));
-    }
-    usize::try_from(normalised).map_err(|_| "axis normalisation overflowed".to_owned())
-}
-
-fn axis_reduction_shape(
-    reduction: OrderStatisticReduction,
-    source_shape: &[usize],
-    axis: usize,
-) -> Result<Vec<usize>, String> {
-    if axis >= source_shape.len() {
-        return Err(format!(
-            "{} axis {axis} is outside rank {}",
-            reduction.label(),
-            source_shape.len()
-        ));
-    }
-    Ok(source_shape
-        .iter()
-        .enumerate()
-        .filter_map(|(index, dimension)| (index != axis).then_some(*dimension))
-        .collect())
-}
-
-fn shape_size(reduction: OrderStatisticReduction, shape: &[usize]) -> Result<usize, String> {
-    let mut size = 1usize;
-    for dimension in shape {
-        if *dimension == 0 {
-            return Err(format!(
-                "{} shaped values must have non-zero dimensions",
-                reduction.label()
-            ));
-        }
-        size = size
-            .checked_mul(*dimension)
-            .ok_or_else(|| format!("{} shaped value size overflowed", reduction.label()))?;
-    }
-    Ok(size)
-}
-
-fn unravel_index(mut flat_index: usize, shape: &[usize]) -> Vec<usize> {
-    let mut index = vec![0usize; shape.len()];
-    for (axis, dimension) in shape.iter().enumerate().rev() {
-        index[axis] = flat_index % dimension;
-        flat_index /= dimension;
-    }
-    index
-}
-
-fn index_without_axis(index: &[usize], axis: usize) -> Vec<usize> {
-    index
-        .iter()
-        .enumerate()
-        .filter_map(|(entry_axis, entry)| (entry_axis != axis).then_some(*entry))
-        .collect()
-}
-
-fn ravel_index(
-    reduction: OrderStatisticReduction,
-    index: &[usize],
-    shape: &[usize],
-) -> Result<usize, String> {
-    if index.len() != shape.len() {
-        return Err(format!(
-            "{} index rank {} does not match shape rank {}",
-            reduction.label(),
-            index.len(),
-            shape.len()
-        ));
-    }
-    let mut flat = 0usize;
-    let mut stride = 1usize;
-    for (coordinate, dimension) in index.iter().zip(shape.iter()).rev() {
-        if coordinate >= dimension {
-            return Err(format!(
-                "{} coordinate {coordinate} is outside dimension {dimension}",
-                reduction.label()
-            ));
-        }
-        flat += coordinate * stride;
-        stride = stride
-            .checked_mul(*dimension)
-            .ok_or_else(|| format!("{} ravel stride overflowed", reduction.label()))?;
-    }
-    Ok(flat)
+    Ok(values)
 }

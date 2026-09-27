@@ -12,9 +12,18 @@
 //! replay implements the exact smooth product derivative, including the
 //! single-zero case, and fails closed for groups with two or more zeros.
 
+use crate::program_ad_lifecycle::replay_checkpoint;
+
 /// Evaluate the product over every flattened source value.
 pub(crate) fn product_all_value(effect_index: usize, source_values: &[f64]) -> Result<f64, String> {
-    let product = source_values.iter().copied().product::<f64>();
+    let mut product = 1.0_f64;
+    for (index, value) in source_values.iter().enumerate() {
+        if index % 256 == 0 {
+            replay_checkpoint()?;
+        }
+        product *= value;
+    }
+    replay_checkpoint()?;
     validate_finite_product(effect_index, product)?;
     Ok(product)
 }
@@ -29,10 +38,13 @@ pub(crate) fn product_axis_values(
 ) -> Result<Vec<f64>, String> {
     validate_source_size(source_shape, source_values)?;
     validate_axis_target_shape(effect_index, source_shape, axis, target_shape)?;
-    let mut output = vec![1.0_f64; shape_size(target_shape)?];
+    let mut output = filled_product_buffer(shape_size(target_shape)?, 1.0_f64)?;
     for (flat_index, value) in source_values.iter().enumerate() {
-        let source_index = unravel_index(flat_index, source_shape);
-        let target_index = index_without_axis(&source_index, axis);
+        if flat_index % 256 == 0 {
+            replay_checkpoint()?;
+        }
+        let source_index = unravel_index(flat_index, source_shape)?;
+        let target_index = index_without_axis(&source_index, axis)?;
         let target_flat = ravel_index(&target_index, target_shape)?;
         output[target_flat] *= value;
         validate_finite_product(effect_index, output[target_flat])?;
@@ -65,18 +77,39 @@ pub(crate) fn product_axis_cotangent(
             target_shape
         ));
     }
-    let mut groups = vec![Vec::<(usize, f64)>::new(); cotangent_values.len()];
+    let mut groups = reserve_product_buffer(cotangent_values.len())?;
+    for index in 0..cotangent_values.len() {
+        if index % 256 == 0 {
+            replay_checkpoint()?;
+        }
+        groups.push(reserve_product_buffer::<(usize, f64)>(source_shape[axis])?);
+    }
     for (flat_index, value) in source_values.iter().copied().enumerate() {
-        let source_index = unravel_index(flat_index, source_shape);
-        let target_index = index_without_axis(&source_index, axis);
+        if flat_index % 256 == 0 {
+            replay_checkpoint()?;
+        }
+        let source_index = unravel_index(flat_index, source_shape)?;
+        let target_index = index_without_axis(&source_index, axis)?;
         let target_flat = ravel_index(&target_index, &target_shape)?;
         groups[target_flat].push((flat_index, value));
     }
-    let mut contribution = vec![0.0_f64; source_values.len()];
-    for (group, cotangent) in groups.iter().zip(cotangent_values.iter()) {
-        let group_values = group.iter().map(|(_, value)| *value).collect::<Vec<f64>>();
+    let mut contribution = filled_product_buffer(source_values.len(), 0.0_f64)?;
+    for (group_index, (group, cotangent)) in groups.iter().zip(cotangent_values.iter()).enumerate() {
+        if group_index % 256 == 0 {
+            replay_checkpoint()?;
+        }
+        let mut group_values = reserve_product_buffer(group.len())?;
+        for (index, (_, value)) in group.iter().enumerate() {
+            if index % 256 == 0 {
+                replay_checkpoint()?;
+            }
+            group_values.push(*value);
+        }
         let group_contribution = product_group_cotangent(effect_index, &group_values, *cotangent)?;
-        for ((source_index, _), value) in group.iter().zip(group_contribution.iter()) {
+        for (index, ((source_index, _), value)) in group.iter().zip(group_contribution.iter()).enumerate() {
+            if index % 256 == 0 {
+                replay_checkpoint()?;
+            }
             contribution[*source_index] = *value;
         }
     }
@@ -88,35 +121,49 @@ fn product_group_cotangent(
     source_values: &[f64],
     cotangent: f64,
 ) -> Result<Vec<f64>, String> {
-    let zero_count = source_values.iter().filter(|value| **value == 0.0).count();
-    if zero_count > 1 {
-        return Err(format!(
-            "effect {effect_index} prod gradient supports at most one zero input per reduction group"
-        ));
+    let mut zero_count = 0usize;
+    for (index, value) in source_values.iter().enumerate() {
+        if index % 256 == 0 {
+            replay_checkpoint()?;
+        }
+        if *value == 0.0 {
+            zero_count += 1;
+            if zero_count > 1 {
+                return Err(format!(
+                    "effect {effect_index} prod gradient supports at most one zero input per reduction group"
+                ));
+            }
+        }
     }
+    let mut contribution = reserve_product_buffer(source_values.len())?;
     if zero_count == 1 {
-        let non_zero_product = source_values
-            .iter()
-            .filter(|value| **value != 0.0)
-            .copied()
-            .product::<f64>();
+        let mut non_zero_product = 1.0_f64;
+        for (index, value) in source_values.iter().enumerate() {
+            if index % 256 == 0 {
+                replay_checkpoint()?;
+            }
+            if *value != 0.0 {
+                non_zero_product *= value;
+            }
+        }
         validate_finite_product(effect_index, non_zero_product)?;
-        return Ok(source_values
-            .iter()
-            .map(|value| {
-                if *value == 0.0 {
-                    cotangent * non_zero_product
-                } else {
-                    0.0
-                }
-            })
-            .collect());
+        for (index, value) in source_values.iter().enumerate() {
+            if index % 256 == 0 {
+                replay_checkpoint()?;
+            }
+            contribution.push(if *value == 0.0 { cotangent * non_zero_product } else { 0.0 });
+        }
+    } else {
+        let product = product_all_value(effect_index, source_values)?;
+        for (index, value) in source_values.iter().enumerate() {
+            if index % 256 == 0 {
+                replay_checkpoint()?;
+            }
+            contribution.push(cotangent * product / value);
+        }
     }
-    let product = product_all_value(effect_index, source_values)?;
-    Ok(source_values
-        .iter()
-        .map(|value| cotangent * product / value)
-        .collect())
+    replay_checkpoint()?;
+    Ok(contribution)
 }
 
 fn validate_source_size(source_shape: &[usize], source_values: &[f64]) -> Result<(), String> {
@@ -162,16 +209,15 @@ fn axis_reduction_shape(source_shape: &[usize], axis: usize) -> Result<Vec<usize
             source_shape.len()
         ));
     }
-    Ok(source_shape
-        .iter()
-        .enumerate()
-        .filter_map(|(index, dimension)| (index != axis).then_some(*dimension))
-        .collect())
+    index_without_axis(source_shape, axis)
 }
 
 fn shape_size(shape: &[usize]) -> Result<usize, String> {
     let mut size = 1usize;
-    for dimension in shape {
+    for (index, dimension) in shape.iter().enumerate() {
+        if index % 256 == 0 {
+            replay_checkpoint()?;
+        }
         if *dimension == 0 {
             return Err("prod shaped values must have non-zero dimensions".to_owned());
         }
@@ -182,21 +228,32 @@ fn shape_size(shape: &[usize]) -> Result<usize, String> {
     Ok(size)
 }
 
-fn unravel_index(mut flat_index: usize, shape: &[usize]) -> Vec<usize> {
-    let mut index = vec![0usize; shape.len()];
+fn unravel_index(mut flat_index: usize, shape: &[usize]) -> Result<Vec<usize>, String> {
+    let mut index = filled_product_buffer(shape.len(), 0usize)?;
     for (axis, dimension) in shape.iter().enumerate().rev() {
+        if axis % 256 == 0 {
+            replay_checkpoint()?;
+        }
+        if *dimension == 0 {
+            return Err("prod index shape dimensions must be positive".to_owned());
+        }
         index[axis] = flat_index % dimension;
         flat_index /= dimension;
     }
-    index
+    Ok(index)
 }
 
-fn index_without_axis(index: &[usize], axis: usize) -> Vec<usize> {
-    index
-        .iter()
-        .enumerate()
-        .filter_map(|(entry_axis, entry)| (entry_axis != axis).then_some(*entry))
-        .collect()
+fn index_without_axis(index: &[usize], axis: usize) -> Result<Vec<usize>, String> {
+    let mut result = reserve_product_buffer(index.len() - usize::from(axis < index.len()))?;
+    for (entry_axis, entry) in index.iter().enumerate() {
+        if entry_axis % 256 == 0 {
+            replay_checkpoint()?;
+        }
+        if entry_axis != axis {
+            result.push(*entry);
+        }
+    }
+    Ok(result)
 }
 
 fn ravel_index(index: &[usize], shape: &[usize]) -> Result<usize, String> {
@@ -209,16 +266,44 @@ fn ravel_index(index: &[usize], shape: &[usize]) -> Result<usize, String> {
     }
     let mut flat = 0usize;
     let mut stride = 1usize;
-    for (coordinate, dimension) in index.iter().zip(shape.iter()).rev() {
+    for (axis, (coordinate, dimension)) in index.iter().zip(shape.iter()).rev().enumerate() {
+        if axis % 256 == 0 {
+            replay_checkpoint()?;
+        }
         if coordinate >= dimension {
             return Err(format!(
                 "prod coordinate {coordinate} is outside dimension {dimension}"
             ));
         }
-        flat += coordinate * stride;
+        flat = coordinate.checked_mul(stride)
+            .and_then(|offset| flat.checked_add(offset))
+            .ok_or_else(|| "prod ravel offset overflowed".to_owned())?;
         stride = stride
             .checked_mul(*dimension)
             .ok_or_else(|| "prod ravel stride overflowed".to_owned())?;
     }
     Ok(flat)
+}
+
+fn reserve_product_buffer<T>(count: usize) -> Result<Vec<T>, String> {
+    replay_checkpoint()?;
+    count.checked_mul(std::mem::size_of::<T>())
+        .filter(|bytes| *bytes <= isize::MAX as usize)
+        .ok_or_else(|| "prod buffer bytes exceed native addressability".to_owned())?;
+    let mut buffer = Vec::new();
+    buffer.try_reserve_exact(count)
+        .map_err(|error| format!("prod buffer allocation refused: {error}"))?;
+    Ok(buffer)
+}
+
+fn filled_product_buffer<T: Copy>(count: usize, value: T) -> Result<Vec<T>, String> {
+    let mut buffer = reserve_product_buffer(count)?;
+    for index in 0..count {
+        if index % 256 == 0 {
+            replay_checkpoint()?;
+        }
+        buffer.push(value);
+    }
+    replay_checkpoint()?;
+    Ok(buffer)
 }

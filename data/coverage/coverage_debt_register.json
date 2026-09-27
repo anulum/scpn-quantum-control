@@ -1274,12 +1274,12 @@
   "source_inventory": {
     "baseline_report_file_count": 739,
     "baseline_rows_not_in_live_source": 0,
-    "file_count": 774,
+    "file_count": 783,
     "path": "src/scpn_quantum_control",
-    "sha256": "93a964a18c7a39f47a033c63b1e7dc13779916cb9f78bdabd9a7c2aceeb96438"
+    "sha256": "ef489d7bc69576252c6bc5bfbd433caff0ebad265b911fd8943bb7f32a3d3b7d"
   },
   "summary": {
-    "debt_file_count": 110,
+    "debt_file_count": 114,
     "fully_covered_file_count": 604,
     "justified_exclusion_file_count": 44,
     "known_missing_line_count": 2893,
@@ -1287,15 +1287,15 @@
     "priority_counts": {
       "P0_claim_bearing": 0,
       "P1_runtime_hot_path": 0,
-      "P2_unmeasured": 19,
+      "P2_unmeasured": 23,
       "P3_high_line_debt": 18,
       "P4_standard": 73
     },
     "status_counts": {
       "below_target": 91,
-      "unmeasured_since_baseline": 19
+      "unmeasured_since_baseline": 23
     },
-    "unmeasured_debt_file_count": 19
+    "unmeasured_debt_file_count": 23
   },
   "target_line_percent": 100.0
 }

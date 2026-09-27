@@ -12,8 +12,10 @@ and dense Hilbert-space allocations. Composes the low-level guards in
 :mod:`compile_budget` and :mod:`dense_budget` so estimates and enforce decisions
 use the same formulas (no silent diverging budget math).
 
-Does **not** invent host-RAM enterprise capacity claims or rewrite all
-compiler/linalg call sites (full call-site enforcement remains open).
+The public facade also exposes declared execution plans, observed capacity
+admission and owned reservations used by dense export and whole-program AD.
+These declarations do not measure allocator peaks or guarantee process-wide
+OOM immunity.
 """
 
 from __future__ import annotations
@@ -30,6 +32,20 @@ from .dense_budget import (
     DEFAULT_DENSE_BUDGET_CAP_GIB,
     GIB,
     estimate_dense_allocation,
+)
+from .execution_memory import (
+    ExecutionBuffer,
+    ExecutionMemoryDecision,
+    ExecutionMemoryPlan,
+    MemoryCapacity,
+    check_execution_memory,
+    require_execution_memory,
+)
+from .execution_reservations import (
+    ExecutionCancelledError,
+    ExecutionMemoryReservation,
+    active_reserved_bytes,
+    reserve_execution_memory,
 )
 
 BudgetFamily = Literal["compile_pauli", "dense_hilbert"]
@@ -463,6 +479,13 @@ def estimate_resource_budget(
             detail=detail,
         )
 
+    ExecutionBuffer.hilbert(
+        dimension.budget_id,
+        "dense_output",
+        n_qubits,
+        rank=dense_rank,
+        count=dense_object_count,
+    )
     dense = estimate_dense_allocation(
         n_qubits,
         rank=dense_rank,
@@ -767,6 +790,16 @@ def assert_resource_budget_integrity(
 
 
 __all__ = [
+    "ExecutionCancelledError",
+    "ExecutionMemoryReservation",
+    "active_reserved_bytes",
+    "reserve_execution_memory",
+    "ExecutionBuffer",
+    "ExecutionMemoryDecision",
+    "ExecutionMemoryPlan",
+    "MemoryCapacity",
+    "check_execution_memory",
+    "require_execution_memory",
     "RESOURCE_BUDGET_GATE_CLAIM_BOUNDARY",
     "RESOURCE_BUDGET_GATE_SCHEMA",
     "BudgetDimension",

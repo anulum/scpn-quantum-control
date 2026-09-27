@@ -14,6 +14,9 @@
 //! main Program AD IR evaluator stays a dispatcher instead of absorbing another
 //! linalg kernel family.
 
+use crate::program_ad_ir::{filled_replay_buffer, reserve_replay_buffer};
+use crate::program_ad_lifecycle::replay_checkpoint;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct MultiDotMetadata {
     operand_shapes: Vec<Vec<usize>>,
@@ -67,256 +70,66 @@ pub(crate) fn multi_dot_output_cotangent(
             "effect {effect_index} multi_dot output metadata does not match evaluated output"
         ));
     }
-    let mut output_cotangent_vector = vec![0.0; metadata.output_size];
+    let mut output_cotangent_vector = filled_replay_buffer(metadata.output_size, 0.0_f64)?;
     output_cotangent_vector[metadata.output_index] = output_cotangent;
-    let mut adjoints = Vec::with_capacity(input_values.len());
+    let mut adjoints = reserve_replay_buffer(input_values.len())?;
     let mut cursor = 0usize;
     for shape in &metadata.operand_shapes {
         let operand_size = shape_size(shape)?;
+        let end = cursor.checked_add(operand_size)
+            .ok_or_else(|| "multi_dot operand offset overflows".to_owned())?;
+        let mut varied_values = copy_chain_buffer(input_values)?;
+        let operand = varied_values.get_mut(cursor..end)
+            .ok_or_else(|| "multi_dot operand slice is outside inputs".to_owned())?;
+        for chunk in operand.chunks_mut(256) {
+            replay_checkpoint()?;
+            chunk.fill(0.0);
+        }
         for element_index in 0..operand_size {
-            let mut varied_values = input_values.to_vec();
-            varied_values[cursor..cursor + operand_size].fill(0.0);
+            replay_checkpoint()?;
             varied_values[cursor + element_index] = 1.0;
             let contribution =
                 multi_dot_flat_values(effect_index, &metadata.operand_shapes, &varied_values)?;
             let local = dot(&output_cotangent_vector, &contribution)?;
             adjoints.push(local);
+            varied_values[cursor + element_index] = 0.0;
         }
-        cursor += operand_size;
+        cursor = end;
     }
     Ok(adjoints)
 }
 
-fn parse_multi_dot_metadata(
-    effect_index: usize,
-    operation: &str,
-    input_count: usize,
-) -> Result<MultiDotMetadata, String> {
-    let parts = operation.split(':').collect::<Vec<&str>>();
-    if parts.len() != 5 && parts.len() != 6 {
-        return Err(format!(
-            "effect {effect_index} multi_dot operation metadata is malformed"
-        ));
-    }
-    if parts[0] != "linalg" || parts[1] != "multi_dot" || parts[3] != "out" {
-        return Err(format!(
-            "effect {effect_index} multi_dot operation metadata is malformed"
-        ));
-    }
-    let operand_shapes = parse_operand_shapes(effect_index, parts[2])?;
-    validate_operand_shapes(effect_index, &operand_shapes)?;
-    let expected_inputs = operand_shapes
-        .iter()
-        .map(|shape| shape_size(shape))
-        .try_fold(0usize, |total, size| {
-            total
-                .checked_add(size?)
-                .ok_or_else(|| "multi_dot input size overflowed".to_owned())
-        })?;
-    if input_count != expected_inputs {
-        return Err(format!(
-            "effect {effect_index} multi_dot input count must match flattened operand shapes \
-             (expected {expected_inputs}, got {input_count})"
-        ));
-    }
-    let (output_shape, output_index) = parse_output_metadata(effect_index, &parts[4..])?;
-    let inferred_output_shape = infer_multi_dot_output_shape(effect_index, &operand_shapes)?;
-    if output_shape != inferred_output_shape {
-        return Err(format!(
-            "effect {effect_index} multi_dot output shape metadata {:?} does not match inferred shape {:?}",
-            output_shape, inferred_output_shape
-        ));
-    }
-    let output_size = shape_size(&output_shape)?;
-    if output_index >= output_size {
-        return Err(format!(
-            "effect {effect_index} multi_dot output index is outside result shape"
-        ));
-    }
-    Ok(MultiDotMetadata {
-        operand_shapes,
-        output_index,
-        output_size,
-    })
-}
-
-fn parse_operand_shapes(
-    effect_index: usize,
-    shape_signature: &str,
-) -> Result<Vec<Vec<usize>>, String> {
-    let labels = shape_signature.split("__").collect::<Vec<&str>>();
-    if labels.len() < 2 {
-        return Err(format!(
-            "effect {effect_index} multi_dot requires at least two operand shapes"
-        ));
-    }
-    labels
-        .iter()
-        .map(|label| parse_shape_label(effect_index, label))
-        .collect()
-}
-
-fn parse_shape_label(effect_index: usize, label: &str) -> Result<Vec<usize>, String> {
-    if label.is_empty() {
-        return Err(format!(
-            "effect {effect_index} multi_dot shape metadata is malformed"
-        ));
-    }
-    let shape = label
-        .split('x')
-        .map(|part| {
-            if part.is_empty() {
-                return Err(format!(
-                    "effect {effect_index} multi_dot shape metadata is malformed"
-                ));
-            }
-            part.parse::<usize>()
-                .map_err(|_| format!("effect {effect_index} multi_dot shape metadata is malformed"))
-        })
-        .collect::<Result<Vec<usize>, String>>()?;
-    if shape.is_empty() || shape.contains(&0) {
-        return Err(format!(
-            "effect {effect_index} multi_dot dimensions must be positive"
-        ));
-    }
-    Ok(shape)
-}
-
-fn validate_operand_shapes(effect_index: usize, shapes: &[Vec<usize>]) -> Result<(), String> {
-    if shapes.len() < 2 {
-        return Err(format!(
-            "effect {effect_index} multi_dot requires at least two operands"
-        ));
-    }
-    for (index, shape) in shapes.iter().enumerate() {
-        if shape.len() != 1 && shape.len() != 2 {
-            return Err(format!(
-                "effect {effect_index} multi_dot supports rank-1 and rank-2 operands"
-            ));
-        }
-        if 0 < index && index + 1 < shapes.len() && shape.len() != 2 {
-            return Err(format!(
-                "effect {effect_index} multi_dot middle operands must be rank-2"
-            ));
-        }
-    }
-    Ok(())
-}
-
-fn parse_output_metadata(
-    effect_index: usize,
-    output_parts: &[&str],
-) -> Result<(Vec<usize>, usize), String> {
-    if output_parts.len() == 1 && output_parts[0] == "scalar" {
-        return Ok((Vec::new(), 0));
-    }
-    if output_parts.len() != 2 {
-        return Err(format!(
-            "effect {effect_index} multi_dot output metadata must be scalar or shape plus index"
-        ));
-    }
-    let shape = parse_shape_label(effect_index, output_parts[0])?;
-    let output_index = output_parts[1].parse::<usize>().map_err(|_| {
-        format!("effect {effect_index} multi_dot output index metadata is malformed")
-    })?;
-    Ok((shape, output_index))
-}
-
-fn infer_multi_dot_output_shape(
-    effect_index: usize,
-    operand_shapes: &[Vec<usize>],
-) -> Result<Vec<usize>, String> {
-    let mut result_shape = operand_shapes[0].clone();
-    for next_shape in &operand_shapes[1..] {
-        result_shape = match (result_shape.len(), next_shape.len()) {
-            (1, 1) => {
-                if result_shape[0] != next_shape[0] {
-                    return Err(format!(
-                        "effect {effect_index} multi_dot dimensions must align"
-                    ));
-                }
-                Vec::new()
-            }
-            (1, 2) => {
-                if result_shape[0] != next_shape[0] {
-                    return Err(format!(
-                        "effect {effect_index} multi_dot dimensions must align"
-                    ));
-                }
-                vec![next_shape[1]]
-            }
-            (2, 1) => {
-                if result_shape[1] != next_shape[0] {
-                    return Err(format!(
-                        "effect {effect_index} multi_dot dimensions must align"
-                    ));
-                }
-                vec![result_shape[0]]
-            }
-            (2, 2) => {
-                if result_shape[1] != next_shape[0] {
-                    return Err(format!(
-                        "effect {effect_index} multi_dot dimensions must align"
-                    ));
-                }
-                vec![result_shape[0], next_shape[1]]
-            }
-            _ => {
-                return Err(format!(
-                    "effect {effect_index} multi_dot encountered a scalar intermediate"
-                ));
-            }
-        };
-    }
-    Ok(result_shape)
-}
+include!("program_ad_linalg_array/metadata.rs");
+include!("program_ad_linalg_array/workspace.rs");
 
 fn multi_dot_flat_values(
     effect_index: usize,
     operand_shapes: &[Vec<usize>],
     input_values: &[f64],
 ) -> Result<Vec<f64>, String> {
-    let mut operands = split_operands(effect_index, operand_shapes, input_values)?;
-    let Some(first) = operands.first().cloned() else {
-        return Err(format!(
-            "effect {effect_index} multi_dot requires at least two operands"
-        ));
-    };
-    let mut total = first;
-    for operand in operands.drain(1..) {
-        total = multiply_tensors(effect_index, &total, &operand)?;
-    }
-    if total.values.iter().any(|value| !value.is_finite()) {
-        return Err(format!(
-            "effect {effect_index} multi_dot output entries must be finite"
-        ));
-    }
-    Ok(total.values)
-}
-
-fn split_operands(
-    effect_index: usize,
-    operand_shapes: &[Vec<usize>],
-    input_values: &[f64],
-) -> Result<Vec<TensorValue>, String> {
-    let mut operands = Vec::with_capacity(operand_shapes.len());
+    validate_chain_values(input_values)?;
+    let mut total = None;
     let mut cursor = 0usize;
     for shape in operand_shapes {
+        replay_checkpoint()?;
         let size = shape_size(shape)?;
-        let Some(values) = input_values.get(cursor..cursor + size) else {
-            return Err(format!(
-                "effect {effect_index} multi_dot input count must match flattened operand shapes"
-            ));
-        };
-        operands.push(TensorValue::new(shape.clone(), values.to_vec())?);
-        cursor += size;
+        let end = cursor.checked_add(size).ok_or_else(|| "multi_dot operand offset overflows".to_owned())?;
+        let values = input_values.get(cursor..end).ok_or_else(|| {
+            format!("effect {effect_index} multi_dot input count must match flattened operand shapes")
+        })?;
+        let operand = TensorValue::new(copy_chain_buffer(shape)?, copy_chain_buffer(values)?)?;
+        total = Some(match total {
+            None => operand,
+            Some(previous) => multiply_tensors(effect_index, &previous, &operand)?,
+        });
+        cursor = end;
     }
     if cursor != input_values.len() {
-        return Err(format!(
-            "effect {effect_index} multi_dot input count must match flattened operand shapes"
-        ));
+        return Err(format!("effect {effect_index} multi_dot input count must match flattened operand shapes"));
     }
-    Ok(operands)
+    let total = total.ok_or_else(|| format!("effect {effect_index} multi_dot requires at least two operands"))?;
+    validate_chain_values(&total.values)?;
+    Ok(total.values)
 }
 
 impl TensorValue {
@@ -324,9 +137,7 @@ impl TensorValue {
         if values.len() != shape_size(&shape)? {
             return Err("multi_dot tensor value size must match shape".to_owned());
         }
-        if values.iter().any(|value| !value.is_finite()) {
-            return Err("multi_dot tensor values must be finite".to_owned());
-        }
+        validate_chain_values(&values)?;
         Ok(Self { shape, values })
     }
 }
@@ -343,7 +154,7 @@ fn multiply_tensors(
                     "effect {effect_index} multi_dot dimensions must align"
                 ));
             }
-            TensorValue::new(Vec::new(), vec![dot(&left.values, &right.values)?])
+            TensorValue::new(Vec::new(), copy_chain_buffer(&[dot(&left.values, &right.values)?])?)
         }
         ([left_len], [right_rows, right_cols]) => {
             if left_len != right_rows {
@@ -351,15 +162,17 @@ fn multiply_tensors(
                     "effect {effect_index} multi_dot dimensions must align"
                 ));
             }
-            let mut output = Vec::with_capacity(*right_cols);
+            let mut output = reserve_replay_buffer(*right_cols)?;
             for col in 0..*right_cols {
+                replay_checkpoint()?;
                 let mut value = 0.0;
                 for row in 0..*right_rows {
+                    if row % 256 == 0 { replay_checkpoint()?; }
                     value += left.values[row] * right.values[row * right_cols + col];
                 }
                 output.push(value);
             }
-            TensorValue::new(vec![*right_cols], output)
+            TensorValue::new(copy_chain_buffer(&[*right_cols])?, output)
         }
         ([left_rows, left_cols], [right_len]) => {
             if left_cols != right_len {
@@ -367,15 +180,17 @@ fn multiply_tensors(
                     "effect {effect_index} multi_dot dimensions must align"
                 ));
             }
-            let mut output = Vec::with_capacity(*left_rows);
+            let mut output = reserve_replay_buffer(*left_rows)?;
             for row in 0..*left_rows {
+                replay_checkpoint()?;
                 let mut value = 0.0;
                 for col in 0..*left_cols {
+                    if col % 256 == 0 { replay_checkpoint()?; }
                     value += left.values[row * left_cols + col] * right.values[col];
                 }
                 output.push(value);
             }
-            TensorValue::new(vec![*left_rows], output)
+            TensorValue::new(copy_chain_buffer(&[*left_rows])?, output)
         }
         ([left_rows, left_cols], [right_rows, right_cols]) => {
             if left_cols != right_rows {
@@ -383,18 +198,21 @@ fn multiply_tensors(
                     "effect {effect_index} multi_dot dimensions must align"
                 ));
             }
-            let mut output = Vec::with_capacity(left_rows * right_cols);
+            let mut output = reserve_replay_buffer(shape_size(&[*left_rows, *right_cols])?)?;
             for row in 0..*left_rows {
+                replay_checkpoint()?;
                 for col in 0..*right_cols {
+                    replay_checkpoint()?;
                     let mut value = 0.0;
                     for inner in 0..*left_cols {
+                        if inner % 256 == 0 { replay_checkpoint()?; }
                         value += left.values[row * left_cols + inner]
                             * right.values[inner * right_cols + col];
                     }
                     output.push(value);
                 }
             }
-            TensorValue::new(vec![*left_rows, *right_cols], output)
+            TensorValue::new(copy_chain_buffer(&[*left_rows, *right_cols])?, output)
         }
         _ => Err(format!(
             "effect {effect_index} multi_dot encountered a scalar intermediate"
@@ -406,11 +224,12 @@ fn dot(left: &[f64], right: &[f64]) -> Result<f64, String> {
     if left.len() != right.len() {
         return Err("dot operands must have equal length".to_owned());
     }
-    let value = left
-        .iter()
-        .zip(right.iter())
-        .map(|(lhs, rhs)| lhs * rhs)
-        .sum::<f64>();
+    let mut value = -0.0_f64;
+    for (index, (lhs, rhs)) in left.iter().zip(right).enumerate() {
+        if index % 256 == 0 { replay_checkpoint()?; }
+        value += lhs * rhs;
+    }
+    replay_checkpoint()?;
     if value.is_finite() {
         Ok(value)
     } else {
@@ -421,9 +240,30 @@ fn dot(left: &[f64], right: &[f64]) -> Result<f64, String> {
 fn shape_size(shape: &[usize]) -> Result<usize, String> {
     let mut size = 1usize;
     for dimension in shape {
+        replay_checkpoint()?;
         size = size
             .checked_mul(*dimension)
+            .filter(|size| *size <= isize::MAX as usize / std::mem::size_of::<f64>())
             .ok_or_else(|| "multi_dot shape size overflowed".to_owned())?;
     }
     Ok(size)
+}
+
+fn copy_chain_buffer<T: Copy>(source: &[T]) -> Result<Vec<T>, String> {
+    let mut values = reserve_replay_buffer(source.len())?;
+    for chunk in source.chunks(256) {
+        replay_checkpoint()?;
+        values.extend_from_slice(chunk);
+    }
+    replay_checkpoint()?;
+    Ok(values)
+}
+
+fn validate_chain_values(values: &[f64]) -> Result<(), String> {
+    for (index, value) in values.iter().enumerate() {
+        if index % 256 == 0 { replay_checkpoint()?; }
+        if !value.is_finite() { return Err("multi_dot tensor values must be finite".to_owned()); }
+    }
+    replay_checkpoint()?;
+    Ok(())
 }

@@ -291,3 +291,78 @@ describe("scenario parsing and deviation", () => {
     expect(maxOrderParameterDeviation(run, [1, 2])).toBe(Number.POSITIVE_INFINITY);
   });
 });
+
+
+describe("real WASM allocation ownership", () => {
+  it("refuses unknown or exceeded kernel limits before guest allocation and recovers", async () => {
+    const { instance } = await WebAssembly.instantiate(wasmBytes, {});
+    const exports = instance.exports as unknown as KuramotoExports;
+    let allocations = 0;
+    const guarded = {
+      ...exports,
+      scpn_alloc: (length: number) => { allocations += 1; return exports.scpn_alloc(length); },
+    };
+    for (const [limit, request] of [
+      [bounds.maxSteps, { ...scenarioRequest(), steps: bounds.maxSteps + 1 }],
+      [bounds.maxSteps, { ...scenarioRequest(), omega: new Array<number>(bounds.maxOscillators + 1).fill(0), theta0: new Array<number>(bounds.maxOscillators + 1).fill(0) }],
+      ...[0, Number.NaN, Number.POSITIVE_INFINITY, 1.5, 0x1_0000_0000].map((limit) => [limit, scenarioRequest()] as const),
+    ] as const) {
+      const result = bindKuramoto({ ...guarded, scpn_kuramoto_max_steps: () => limit })(request);
+      expect(result.ok).toBe(false);
+      expect(allocations).toBe(0);
+    }
+    const healthy = bindKuramoto(guarded)(scenarioRequest());
+    expect(healthy.ok).toBe(true);
+    expect(allocations).toBe(2);
+    if (healthy.ok && committedScenario.ok) {
+      expect(maxOrderParameterDeviation(healthy.run, committedScenario.value.expectedOrderParameter)).toBeLessThan(KERNEL_VS_REFERENCE_TOL);
+    }
+  });
+
+  it("releases each real buffer after allocation, execution or cleanup traps", async () => {
+    for (fault of ["output allocation", "execution", "nonfinite output", "input free", "output free"] as const) {
+      const { instance } = await WebAssembly.instantiate(wasmBytes, {});
+      const exports = instance.exports as unknown as KuramotoExports;
+      const allocated: Array<[number, number]> = [];
+      const freed: Array<[number, number]> = [];
+      const result = bindKuramoto({
+        ...exports,
+        scpn_alloc: (length) => {
+          if (fault === "output allocation" && allocated.length === 1) throw new Error("transport allocation trap");
+          const pointer = exports.scpn_alloc(length);
+          expect(pointer).not.toBe(0);
+          allocated.push([pointer, length]);
+          return pointer;
+        },
+        scpn_kuramoto_simulate: (...args) => {
+          if (fault === "execution") throw new Error("transport execution trap");
+          const status = exports.scpn_kuramoto_simulate(...args);
+          if (fault === "nonfinite output") new DataView(exports.memory.buffer).setFloat64(args[2], Number.NaN, true);
+          return status;
+        },
+        scpn_free: (pointer, length) => {
+          exports.scpn_free(pointer, length);
+          freed.push([pointer, length]);
+          if ((fault === "input free" && freed.length === 1) || (fault === "output free" && freed.length === 2)) throw new Error("transport cleanup trap");
+        },
+      })(scenarioRequest());
+      expect(result.ok).toBe(false);
+      expect(allocated).toHaveLength(fault === "output allocation" ? 1 : 2);
+      expect(freed).toEqual(allocated);
+      const retry = bindKuramoto(exports)(scenarioRequest());
+      expect(retry.ok).toBe(true);
+      if (retry.ok && committedScenario.ok) {
+        expect(maxOrderParameterDeviation(retry.run, committedScenario.value.expectedOrderParameter)).toBeLessThan(KERNEL_VS_REFERENCE_TOL);
+      }
+    }
+  });
+
+  it("rejects unrepresentable codec fields before allocating a payload", () => {
+    expect(encodeKuramotoInput({ ...scenarioRequest(), steps: 0x1_0000_0000 })).toBeNull();
+    expect(encodeKuramotoInput({ ...scenarioRequest(), steps: Number.MAX_SAFE_INTEGER })).toBeNull();
+    expect(encodeKuramotoInput({ ...scenarioRequest(), mode: "unknown" as KuramotoRequest["mode"] })).toBeNull();
+    const encoded = encodeKuramotoInput(scenarioRequest());
+    expect(encoded).not.toBeNull();
+    if (encoded !== null) expect(new DataView(encoded.buffer).getUint32(12, true)).toBe(scenarioRequest().steps);
+  });
+});

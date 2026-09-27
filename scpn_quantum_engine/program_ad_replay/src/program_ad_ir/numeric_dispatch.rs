@@ -12,7 +12,7 @@ fn evaluate_numeric_effect(
     inputs: &[f64],
     input_index: &mut usize,
     values: &HashMap<String, ProgramADNumericValue>,
-    shapes_by_target: &HashMap<String, Vec<usize>>,
+    shapes_by_target: &ProgramADShapeMap<'_>,
 ) -> Result<ProgramADNumericValue, String> {
     if operation == "parameter" {
         if effect.kind != "parameter" {
@@ -32,11 +32,13 @@ fn evaluate_numeric_effect(
                 effect.index
             ));
         };
+        let copied = copy_replay_buffer(slice)?;
         *input_index = end;
-        return ProgramADNumericValue::new(shape, slice.to_vec());
+        return ProgramADNumericValue::new(shape, copied);
     }
     if operation.starts_with("branch:") {
-        return evaluate_branch_effect(effect, operation).map(ProgramADNumericValue::scalar);
+        return evaluate_branch_effect(effect, operation)
+            .and_then(ProgramADNumericValue::scalar);
     }
     match operation {
         name if name == "sum" || name.starts_with("sum:") => {
@@ -181,66 +183,127 @@ fn evaluate_scalar_linalg_effect(
     operation: &str,
     values: &HashMap<String, ProgramADNumericValue>,
 ) -> Result<ProgramADNumericValue, String> {
-    let scalar_values = values
-        .iter()
-        .map(|(key, value)| value.scalar_value().map(|scalar| (key.clone(), scalar)))
-        .collect::<Result<HashMap<String, f64>, String>>()?;
+    admit_replay_table::<(String, f64)>(values.len())?;
+    let mut scalar_values = HashMap::new();
+    scalar_values
+        .try_reserve(values.len())
+        .map_err(|error| format!("Program AD scalar value-map allocation refused: {error}"))?;
+    for (index, (key, value)) in values.iter().enumerate() {
+        if index % 256 == 0 {
+            crate::program_ad_lifecycle::replay_checkpoint()?;
+        }
+        let scalar = value.scalar_value()?;
+        scalar_values.insert(copy_replay_symbol(key)?, scalar);
+    }
     let mut input_index = 0usize;
     evaluate_effect(effect, operation, &[], &mut input_index, &scalar_values)
-        .map(ProgramADNumericValue::scalar)
+        .and_then(ProgramADNumericValue::scalar)
 }
 
-fn ssa_shapes_by_target(ir: &ProgramADEffectIR) -> HashMap<String, Vec<usize>> {
-    ir.ssa_values
-        .iter()
-        .map(|value| (value.name.clone(), value.shape.clone()))
-        .collect()
+fn ssa_shapes_by_target(ir: &ProgramADEffectIR) -> Result<ProgramADShapeMap<'_>, String> {
+    admit_replay_table::<(&str, &[usize])>(ir.ssa_values.len())?;
+    let mut shapes = HashMap::new();
+    shapes
+        .try_reserve(ir.ssa_values.len())
+        .map_err(|error| format!("Program AD shape-map allocation refused: {error}"))?;
+    for (index, value) in ir.ssa_values.iter().enumerate() {
+        if index % 256 == 0 {
+            crate::program_ad_lifecycle::replay_checkpoint()?;
+        }
+        shapes.insert(value.name.as_str(), value.shape.as_slice());
+    }
+    Ok(shapes)
 }
 
 fn target_shape(
     effect: &ProgramADEffect,
-    shapes_by_target: &HashMap<String, Vec<usize>>,
+    shapes_by_target: &ProgramADShapeMap<'_>,
 ) -> Result<Vec<usize>, String> {
-    shapes_by_target
-        .get(&effect.target)
-        .cloned()
-        .ok_or_else(|| {
-            format!(
-                "effect {} target {} is missing SSA shape metadata",
-                effect.index, effect.target
-            )
-        })
+    let source = shapes_by_target.get(effect.target.as_str()).ok_or_else(|| {
+        format!(
+            "effect {} target {} is missing SSA shape metadata",
+            effect.index, effect.target
+        )
+    })?;
+    copy_replay_buffer(source)
 }
 
-fn parameter_targets_for_effect(
+fn append_parameter_targets_for_effect(
     effect: &ProgramADEffect,
     value: &ProgramADNumericValue,
-) -> Vec<ScalarParameterTarget> {
-    if value.shape.is_empty() {
-        return vec![ScalarParameterTarget {
-            label: effect.target.clone(),
-            source: effect.target.clone(),
-            flat_index: 0,
-        }];
+    targets: &mut Vec<ScalarParameterTarget>,
+) -> Result<(), String> {
+    let count = if value.shape.is_empty() {
+        1
+    } else {
+        value.values.len()
+    };
+    if targets.capacity() - targets.len() < count {
+        return Err("Program AD parameter metadata exceeds admitted target capacity".to_owned());
     }
-    (0..value.values.len())
-        .map(|flat_index| ScalarParameterTarget {
-            label: format!("{}[{flat_index}]", effect.target),
-            source: effect.target.clone(),
+    for flat_index in 0..count {
+        if flat_index % 256 == 0 {
+            crate::program_ad_lifecycle::replay_checkpoint()?;
+        }
+        let label = if value.shape.is_empty() {
+            copy_replay_symbol(&effect.target)?
+        } else {
+            let capacity = effect
+                .target
+                .len()
+                .checked_add(2 + usize::BITS as usize)
+                .ok_or_else(|| "Program AD parameter label size overflowed".to_owned())?;
+            crate::program_ad_lifecycle::admit_replay_metadata(capacity)?;
+            let mut label = String::new();
+            label
+                .try_reserve_exact(capacity)
+                .map_err(|error| format!("Program AD parameter-label allocation refused: {error}"))?;
+            // A usize decimal representation has fewer digits than its bit width.
+            std::fmt::write(&mut label, format_args!("{}[{flat_index}]", effect.target))
+                .map_err(|error| format!("Program AD parameter-label encoding failed: {error}"))?;
+            label
+        };
+        targets.push(ScalarParameterTarget {
+            label,
+            source: copy_replay_symbol(&effect.target)?,
             flat_index,
-        })
-        .collect()
+        });
+    }
+    Ok(())
+}
+
+fn copy_replay_symbol(source: &str) -> Result<String, String> {
+    crate::program_ad_lifecycle::replay_checkpoint()?;
+    crate::program_ad_lifecycle::admit_replay_metadata(source.len())?;
+    let mut symbol = String::new();
+    symbol
+        .try_reserve_exact(source.len())
+        .map_err(|error| format!("Program AD replay-symbol allocation refused: {error}"))?;
+    for (index, character) in source.chars().enumerate() {
+        if index % 256 == 0 {
+            crate::program_ad_lifecycle::replay_checkpoint()?;
+        }
+        symbol.push(character);
+    }
+    crate::program_ad_lifecycle::replay_checkpoint()?;
+    Ok(symbol)
 }
 
 fn shape_size(shape: &[usize]) -> Result<usize, String> {
     let mut size = 1usize;
-    for dimension in shape {
+    for (index, dimension) in shape.iter().enumerate() {
+        if index % 256 == 0 {
+            crate::program_ad_lifecycle::replay_checkpoint()?;
+        }
         if *dimension == 0 {
             return Err("Program AD shaped values must have non-zero dimensions".to_owned());
         }
         size = size
             .checked_mul(*dimension)
             .ok_or_else(|| "Program AD shaped value size overflowed".to_owned())?;
+    }
+    if size > isize::MAX as usize / std::mem::size_of::<f64>() {
+        return Err("Program AD shaped value bytes exceed native addressability".to_owned());
     }
     Ok(size)
 }
@@ -250,11 +313,11 @@ fn numeric_operand(
     values: &HashMap<String, ProgramADNumericValue>,
 ) -> Result<ProgramADNumericValue, String> {
     if let Some(value) = values.get(name) {
-        return Ok(value.clone());
+        return value.try_clone();
     }
     name.parse::<f64>()
-        .map(ProgramADNumericValue::scalar)
         .map_err(|_| format!("operand {name} is neither an SSA value nor a scalar literal"))
+        .and_then(ProgramADNumericValue::scalar)
 }
 
 fn numeric_operands(
@@ -267,9 +330,15 @@ fn numeric_operands(
             effect.index
         ));
     }
-    effect
-        .inputs
-        .iter()
-        .map(|input| numeric_operand(input, values))
-        .collect()
+    let mut operands = Vec::new();
+    operands
+        .try_reserve_exact(effect.inputs.len())
+        .map_err(|error| format!("Program AD operand-list allocation refused: {error}"))?;
+    for (index, input) in effect.inputs.iter().enumerate() {
+        if index % 256 == 0 {
+            crate::program_ad_lifecycle::replay_checkpoint()?;
+        }
+        operands.push(numeric_operand(input, values)?);
+    }
+    Ok(operands)
 }

@@ -145,6 +145,7 @@ jobs:
           tests/test_program_ad_structural_finite_difference_gradient_check.py
           tests/test_program_ad_fail_closed_boundaries.py
           tests/test_program_ad_array_indexing_quality.py
+          tests/test_program_ad_array_indexing.py
       - name: Enforce Program-AD array-indexing exact coverage
         run: >-
           python -m coverage report
@@ -166,6 +167,7 @@ jobs:
           tests/test_program_ad_alias_effects.py
           tests/test_program_ad_array_indexing_registry.py
           tests/test_program_ad_array_indexing_quality.py
+          tests/test_program_ad_array_indexing.py
           tests/test_program_ad_binary_elementwise_registry.py
           tests/test_program_ad_broadcast_assembly.py
           tests/test_program_ad_cumulative_primitives.py
@@ -181,6 +183,7 @@ jobs:
           tests/test_program_ad_linalg_core.py
           tests/test_program_ad_linalg_direct_rules.py
           tests/test_program_ad_linalg_matrix_ops.py
+          tests/test_program_ad_linalg_memory.py
           tests/test_program_ad_linalg_registry.py
           tests/test_program_ad_linalg_spectral.py
           tests/test_program_ad_linalg_exact_contracts.py
@@ -228,7 +231,7 @@ jobs:
           --data-file=.coverage.whole-program-trace-values
           --precision=2 --show-missing
           --fail-under=100
-          --include=*/whole_program_trace_values.py,*/whole_program_trace_predicates.py,*/program_ad_linalg_primitives.py,*/program_ad_product_primitives.py,*/program_ad_reduction_primitives.py,*/program_ad_cumulative_primitives.py,*/program_ad_effect_ir.py,*/program_ad_selection_primitives.py,*/program_ad_signal_primitives.py
+          --include=*/whole_program_trace_values.py,*/whole_program_trace_predicates.py,*/whole_program_trace_runtime.py,*/whole_program_trace_metadata.py,*/program_ad_shape_transforms.py,*/program_ad_linalg_primitives.py,*/program_ad_linalg_memory.py,*/program_ad_product_primitives.py,*/program_ad_reduction_primitives.py,*/program_ad_cumulative_primitives.py,*/program_ad_effect_ir.py,*/program_ad_selection_primitives.py,*/program_ad_signal_primitives.py
       - name: Enforce Program-AD alias-contract exact coverage
         run: >-
           python -m coverage report

@@ -10,6 +10,7 @@
 
 from __future__ import annotations
 
+import math
 from collections.abc import Callable, Mapping, Sequence
 from typing import Any, Literal, cast
 
@@ -1394,7 +1395,7 @@ def _normalise_trace_reshape_shape(shape: object, size: int) -> tuple[int, ...]:
         raise ValueError("program AD reshape supports at most one inferred dimension")
     if any(dimension < -1 for dimension in dimensions):
         raise ValueError("program AD reshape dimensions must be non-negative or -1")
-    known_product = int(np.prod(tuple(dimension for dimension in dimensions if dimension != -1)))
+    known_product = math.prod(dimension for dimension in dimensions if dimension != -1)
     if inferred_axes:
         if known_product == 0:
             raise ValueError("program AD reshape cannot infer dimension from zero product")
@@ -1402,7 +1403,7 @@ def _normalise_trace_reshape_shape(shape: object, size: int) -> tuple[int, ...]:
             raise ValueError("program AD reshape inferred dimension must preserve size")
         inferred = size // known_product
         dimensions = tuple(inferred if dimension == -1 else dimension for dimension in dimensions)
-    if int(np.prod(dimensions)) != size:
+    if math.prod(dimensions) != size:
         raise ValueError("program AD reshape must preserve size")
     return dimensions
 
@@ -1412,7 +1413,7 @@ def _program_ad_shape_reshape_shape(args: tuple[object, ...]) -> tuple[int, ...]
     if len(args) != 2:
         raise ValueError("program AD shape reshape rule requires array and target shape")
     source_shape = _program_ad_array_shape_of(args[0])
-    return _normalise_trace_reshape_shape(args[1], int(np.prod(source_shape)))
+    return _normalise_trace_reshape_shape(args[1], math.prod(source_shape))
 
 
 def _program_ad_shape_expand_dims_shape(args: tuple[object, ...]) -> tuple[int, ...]:
@@ -1428,7 +1429,7 @@ def _program_ad_shape_ravel_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the static output shape for a Program AD ravel primitive."""
     if len(args) != 1:
         raise ValueError("program AD shape ravel rule requires one array")
-    return (int(np.prod(_program_ad_array_shape_of(args[0]))),)
+    return (math.prod(_program_ad_array_shape_of(args[0])),)
 
 
 def _program_ad_shape_normalised_transpose_axes(
@@ -1612,7 +1613,7 @@ def _program_ad_shape_reshape_static_arguments(args: tuple[object, ...]) -> tupl
     if len(args) != 2:
         raise ValueError("program AD shape reshape static rule requires array and target shape")
     source_shape = _program_ad_array_shape_of(args[0])
-    return (_normalise_trace_reshape_shape(args[1], int(np.prod(source_shape))),)
+    return (_normalise_trace_reshape_shape(args[1], math.prod(source_shape)),)
 
 
 def _program_ad_shape_expand_dims_static_arguments(

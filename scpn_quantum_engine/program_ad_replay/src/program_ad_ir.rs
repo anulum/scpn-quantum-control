@@ -28,7 +28,6 @@ use pyo3::exceptions::PyValueError;
 #[cfg(feature = "pyo3")]
 use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 
 use crate::program_ad_cumulative_reduction::{
     cumulative_output_cotangent, cumulative_output_value, is_cumulative_operation,
@@ -83,7 +82,14 @@ use crate::program_ad_variance_reduction::{
     variance_axis_values,
 };
 
+mod metadata_parser;
+
 include!("program_ad_ir/schema_parser.rs");
+include!("program_ad_ir/metadata_validation.rs");
+include!("program_ad_ir/memory_admission.rs");
+include!("program_ad_ir/linalg_workspace.rs");
+include!("program_ad_ir/reduction_workspace.rs");
+include!("program_ad_ir/structural_workspace.rs");
 include!("program_ad_ir/scalar_forward.rs");
 include!("program_ad_ir/value_state.rs");
 include!("program_ad_ir/reverse_dispatch.rs");

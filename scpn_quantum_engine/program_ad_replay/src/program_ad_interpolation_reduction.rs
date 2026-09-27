@@ -13,6 +13,9 @@
 //! samples followed by interpolation `fp` values; grid and boundary policy stay
 //! nondifferentiable static metadata.
 
+use crate::program_ad_ir::{filled_replay_buffer, reserve_replay_buffer};
+use crate::program_ad_lifecycle::replay_checkpoint;
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum InterpolationBoundary {
     Endpoint,
@@ -46,7 +49,7 @@ pub(crate) fn interpolation_output_value(
     operation: &str,
     source_values: &[f64],
 ) -> Result<f64, String> {
-    let spec = parse_interpolation_operation(effect_index, operation)?;
+    let spec = parse_interpolation_operation(effect_index, operation, source_values.len())?;
     validate_source(effect_index, &spec, source_values)?;
     let value = interpolation_value_for_output(effect_index, &spec, source_values)?;
     if value.is_finite() {
@@ -70,7 +73,7 @@ pub(crate) fn interpolation_output_cotangent(
             "effect {effect_index} interpolation cotangent must be finite"
         ));
     }
-    let spec = parse_interpolation_operation(effect_index, operation)?;
+    let spec = parse_interpolation_operation(effect_index, operation, source_values.len())?;
     validate_source(effect_index, &spec, source_values)?;
     interpolation_cotangent_for_output(effect_index, &spec, source_values, cotangent)
 }
@@ -78,106 +81,35 @@ pub(crate) fn interpolation_output_cotangent(
 fn parse_interpolation_operation(
     effect_index: usize,
     operation: &str,
+    source_length: usize,
 ) -> Result<InterpolationSpec, String> {
-    let parts = operation.split(':').collect::<Vec<&str>>();
-    if parts.len() != 12
-        || parts[0] != "interpolation"
-        || parts[1] != "interp"
-        || parts[2] != "samples"
-        || parts[4] != "grid"
-        || parts[6] != "left"
-        || parts[8] != "right"
-        || parts[10] != "out"
-    {
-        return Err(format!(
-            "effect {effect_index} interpolation operation metadata is malformed"
-        ));
+    let layout = parse_interpolation_layout(effect_index, operation, source_length)?;
+    let mut grid = reserve_replay_buffer(layout.grid_count)?;
+    for item in layout.grid_label.split(',') {
+        replay_checkpoint()?;
+        grid.push(item.parse::<f64>().map_err(|_| {
+            format!("effect {effect_index} interpolation grid values must be finite floats")
+        })?);
     }
-    let sample_count = parse_positive_usize(effect_index, "sample count", parts[3])?;
-    let grid = parse_grid(effect_index, parts[5])?;
-    let left = parse_boundary(effect_index, "left", parts[7])?;
-    let right = parse_boundary(effect_index, "right", parts[9])?;
-    let output_index = parts[11].parse::<usize>().map_err(|_| {
-        format!("effect {effect_index} interpolation output index must be non-negative")
-    })?;
     Ok(InterpolationSpec {
-        sample_count,
+        sample_count: layout.sample_count,
         grid,
-        left,
-        right,
-        output_index,
+        left: layout.left,
+        right: layout.right,
+        output_index: layout.output_index,
     })
 }
 
-fn parse_positive_usize(effect_index: usize, field: &str, label: &str) -> Result<usize, String> {
-    let value = label.parse::<usize>().map_err(|_| {
-        format!("effect {effect_index} interpolation {field} must be a positive integer")
-    })?;
-    if value == 0 {
-        return Err(format!(
-            "effect {effect_index} interpolation {field} must be positive"
-        ));
-    }
-    Ok(value)
-}
-
-fn parse_grid(effect_index: usize, label: &str) -> Result<Vec<f64>, String> {
-    if label.is_empty() {
-        return Err(format!(
-            "effect {effect_index} interpolation grid metadata must not be empty"
-        ));
-    }
-    let grid = label
-        .split(',')
-        .map(|item| {
-            item.parse::<f64>().map_err(|_| {
-                format!("effect {effect_index} interpolation grid values must be finite floats")
-            })
-        })
-        .collect::<Result<Vec<f64>, String>>()?;
-    if grid.len() < 2 {
-        return Err(format!(
-            "effect {effect_index} interpolation grid requires at least two points"
-        ));
-    }
-    if grid.iter().any(|value| !value.is_finite()) {
-        return Err(format!(
-            "effect {effect_index} interpolation grid values must be finite"
-        ));
-    }
-    if grid.windows(2).any(|pair| pair[1] <= pair[0]) {
-        return Err(format!(
-            "effect {effect_index} interpolation grid must be strictly increasing"
-        ));
-    }
-    Ok(grid)
-}
-
-fn parse_boundary(
-    effect_index: usize,
-    role: &str,
-    label: &str,
-) -> Result<InterpolationBoundary, String> {
-    if label == "none" {
-        return Ok(InterpolationBoundary::Endpoint);
-    }
-    let value = label.parse::<f64>().map_err(|_| {
-        format!("effect {effect_index} interpolation {role} boundary must be a finite float")
-    })?;
-    if !value.is_finite() {
-        return Err(format!(
-            "effect {effect_index} interpolation {role} boundary must be finite"
-        ));
-    }
-    Ok(InterpolationBoundary::Static(value))
-}
+include!("program_ad_interpolation_reduction/metadata.rs");
+include!("program_ad_interpolation_reduction/workspace.rs");
 
 fn validate_source(
     effect_index: usize,
     spec: &InterpolationSpec,
     source_values: &[f64],
 ) -> Result<(), String> {
-    let expected_size = spec.sample_count + spec.grid.len();
+    replay_checkpoint()?;
+    let expected_size = interpolation_input_size(effect_index, spec.sample_count, spec.grid.len())?;
     if source_values.len() != expected_size {
         return Err(format!(
             "effect {effect_index} interpolation expects {expected_size} inputs, got {}",
@@ -190,11 +122,15 @@ fn validate_source(
             spec.output_index, spec.sample_count
         ));
     }
-    if source_values.iter().any(|value| !value.is_finite()) {
-        return Err(format!(
-            "effect {effect_index} interpolation inputs must be finite"
-        ));
+    for (index, value) in source_values.iter().enumerate() {
+        if index % 256 == 0 { replay_checkpoint()?; }
+        if !value.is_finite() {
+            return Err(format!(
+                "effect {effect_index} interpolation inputs must be finite"
+            ));
+        }
     }
+    replay_checkpoint()?;
     Ok(())
 }
 
@@ -208,18 +144,30 @@ fn interpolation_segment(
             "effect {effect_index} interpolation sample must be finite"
         ));
     }
-    if grid.contains(&sample) {
-        return Err(format!(
-            "effect {effect_index} interpolation samples must avoid grid knots"
-        ));
+    let mut lower = 0usize;
+    let mut upper = grid.len();
+    while lower < upper {
+        replay_checkpoint()?;
+        let middle = lower + (upper - lower) / 2;
+        if grid[middle] == sample {
+            return Err(format!(
+                "effect {effect_index} interpolation samples must avoid grid knots"
+            ));
+        }
+        if grid[middle] < sample {
+            lower = middle + 1;
+        } else {
+            upper = middle;
+        }
     }
-    if sample < grid[0] {
+    replay_checkpoint()?;
+    if lower == 0 {
         return Ok((InterpolationRegion::Left, 0, 0.0));
     }
-    if sample > grid[grid.len() - 1] {
+    if lower == grid.len() {
         return Ok((InterpolationRegion::Right, grid.len() - 1, 0.0));
     }
-    let upper = grid.partition_point(|value| *value < sample);
+    let upper = lower;
     let segment = upper.saturating_sub(1);
     let lower_value = grid[segment];
     let upper_value = grid[segment + 1];
@@ -259,7 +207,7 @@ fn interpolation_cotangent_for_output(
     let sample = source_values[spec.output_index];
     let fp_values = &source_values[spec.sample_count..];
     let (region, segment, weight) = interpolation_segment(effect_index, sample, &spec.grid)?;
-    let mut contribution = vec![0.0_f64; source_values.len()];
+    let mut contribution = filled_replay_buffer(source_values.len(), 0.0_f64)?;
     match region {
         InterpolationRegion::Left => {
             if spec.left == InterpolationBoundary::Endpoint {
@@ -279,5 +227,15 @@ fn interpolation_cotangent_for_output(
             contribution[spec.sample_count + segment + 1] += cotangent * weight;
         }
     }
+    replay_checkpoint()?;
+    for (index, value) in contribution.iter().enumerate() {
+        if index % 256 == 0 { replay_checkpoint()?; }
+        if !value.is_finite() {
+            return Err(format!(
+                "effect {effect_index} interpolation cotangent entries must be finite"
+            ));
+        }
+    }
+    replay_checkpoint()?;
     Ok(contribution)
 }

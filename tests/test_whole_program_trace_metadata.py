@@ -19,8 +19,11 @@ from __future__ import annotations
 
 from typing import Any, cast
 
+import numpy as np
 import pytest
 
+from scpn_quantum_control import whole_program_value_and_grad
+from scpn_quantum_control.execution_reservations import active_reserved_bytes
 from scpn_quantum_control.whole_program_trace_metadata import (
     _broadcast_shape,
     _normalise_axis,
@@ -396,3 +399,39 @@ def test_trapezoid_axis_rejects_scalar_rank() -> None:
     """Trapezoid axis rejects scalar rank."""
     with pytest.raises(ValueError, match="cannot map over a scalar"):
         _normalise_trapezoid_axis(0, 0)
+
+
+@pytest.mark.parametrize("inferred", [False, True])
+def test_public_trace_reshape_refuses_wrapped_dimension_products_and_recovers(
+    inferred: bool,
+) -> None:
+    """True dimension products govern public reshape refusal before materialisation.
+
+    Parameters
+    ----------
+    inferred
+        Exercise the inferred-axis product rather than the final product.
+
+    """
+    if inferred:
+
+        def objective(values: Any) -> object:
+            return np.sum(np.reshape(values, (4294967296, 4294967296, -1)))
+    else:
+
+        def objective(values: Any) -> object:
+            return np.sum(np.reshape(values, (274177, 67280421310721)))
+
+    baseline = active_reserved_bytes()
+    with pytest.raises(ValueError, match="preserve size"):
+        whole_program_value_and_grad(objective, [2.0], trace=False)
+    assert active_reserved_bytes() == baseline
+
+    def valid(values: Any) -> object:
+        matrix = np.reshape(values, (2, -1))
+        return np.sum(matrix[:, 0])
+
+    result = whole_program_value_and_grad(valid, [1.0, 2.0, 3.0, 4.0], trace=False)
+    assert result.value == 4.0
+    np.testing.assert_array_equal(result.gradient, [1.0, 0.0, 1.0, 0.0])
+    assert active_reserved_bytes() == baseline

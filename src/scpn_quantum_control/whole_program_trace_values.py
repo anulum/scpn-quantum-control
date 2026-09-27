@@ -31,7 +31,9 @@ Module size note: this module is intentionally kept whole. Its top-level definit
 from __future__ import annotations
 
 import math
+import sys
 from collections.abc import Callable, Iterator, Mapping, Sequence
+from contextlib import nullcontext
 from typing import Any, Literal, NoReturn, TypeGuard, cast
 
 import numpy as np
@@ -41,13 +43,22 @@ from .differentiable_parameter_contracts import (
     _as_real_numeric_array,
     _as_real_scalar,
 )
+from .execution_memory import ExecutionBuffer, ExecutionMemoryPlan
+from .execution_reservations import reserve_execution_memory
 from .program_ad_array_indexing import (
+    _program_ad_array_delete_layout_plan,
     _program_ad_array_delete_object,
+    _program_ad_array_getitem_layout_plan,
     _program_ad_array_insert_layout,
+    _program_ad_array_insert_target_shape,
+    _program_ad_array_insert_values,
     _program_ad_array_pad_layout,
     _program_ad_array_pad_mode,
+    _program_ad_array_pad_target_shape,
     _program_ad_array_take_indices,
+    _program_ad_array_take_layout_plan,
     _program_ad_array_take_mode,
+    _program_ad_array_take_target_shape,
     _require_program_ad_array_contract,
 )
 from .program_ad_assembly_primitives import (
@@ -68,6 +79,10 @@ from .program_ad_interpolation_primitives import (
     _normalise_interp_grid,
     _require_program_ad_interpolation_contract,
     program_ad_interpolation_interp_derivative_rule,
+)
+from .program_ad_linalg_memory import (
+    matrix_power_trace_execution_scope,
+    multi_dot_trace_execution_scope,
 )
 from .program_ad_linalg_primitives import (
     _program_ad_linalg_det_cofactor_matrix,
@@ -418,7 +433,7 @@ class TraceADArray:
         if not shape:
             if len(items) != 1:
                 raise ValueError("scalar TraceADArray requires exactly one item")
-        elif int(np.prod(shape)) != len(items):
+        elif math.prod(shape) != len(items):
             raise ValueError("TraceADArray shape must match item count")
         if any(item.context is not context for item in items):
             raise ValueError("TraceADArray items must belong to the same trace")
@@ -1690,9 +1705,8 @@ def _trace_array_view_from_local_indices(
     shape: tuple[int, ...],
 ) -> TraceADArray:
     """Return a derivative-preserving view and record source-index alias metadata."""
-    source_indices = tuple(
-        _trace_array_source_indices(array)[int(local_index)] for local_index in local_indices
-    )
+    original_indices = _trace_array_source_indices(array)
+    source_indices = tuple(original_indices[int(local_index)] for local_index in local_indices)
     items = tuple(array._items[int(local_index)] for local_index in local_indices)
     array.context.record_array_view_aliases(op, source_indices, items)
     return TraceADArray(items, shape, array.context, source_indices)
@@ -1700,18 +1714,50 @@ def _trace_array_view_from_local_indices(
 
 def _trace_array_getitem(array: TraceADArray, index: object) -> TraceADScalar | TraceADArray:
     _require_program_ad_array_contract("getitem", (array, index))
-    source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
-    selected = source[cast(Any, index)]
-    selected_array = np.asarray(selected)
-    if selected_array.shape == ():
-        return array._items[int(selected_array)]
-    local_indices = tuple(int(item) for item in selected_array.reshape(-1))
-    return _trace_array_view_from_local_indices(
-        array,
-        "getitem",
-        local_indices,
-        tuple(int(dimension) for dimension in selected_array.shape),
-    )
+    with _program_ad_array_getitem_layout_plan(array.shape, index) as (
+        plan,
+        output_size,
+        prepared_index,
+    ):
+        workspaces = (
+            *plan.buffers,
+            ExecutionBuffer(
+                "getitem_index_slots", "intermediate", (max(1, output_size),), "uintp", 3
+            ),
+            ExecutionBuffer(
+                "getitem_source_aliases", "intermediate", (max(1, array.size),), "uintp"
+            ),
+            ExecutionBuffer(
+                "getitem_index_objects",
+                "intermediate",
+                (max(1, output_size),),
+                "uint8",
+                sys.getsizeof(max(0, array.size - 1)),
+            ),
+        )
+        with array.context.array_storage(
+            (max(1, output_size),), workspaces=workspaces
+        ) as reservation:
+            source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
+            selected = source[cast(Any, prepared_index)]
+            selected_array = np.asarray(selected)
+            if selected_array.size != output_size:
+                raise ValueError("getitem layout differs from admitted output size")
+            reservation.checkpoint()
+            if selected_array.shape == ():
+                return array._items[int(selected_array)]
+            local_indices = [0] * output_size
+            for position, item in enumerate(selected_array.reshape(-1)):
+                reservation.checkpoint()
+                local_indices[position] = int(item)
+            result = _trace_array_view_from_local_indices(
+                array,
+                "getitem",
+                local_indices,
+                tuple(int(dimension) for dimension in selected_array.shape),
+            )
+            reservation.checkpoint()
+        return result
 
 
 def _trace_squeeze(
@@ -1820,19 +1866,63 @@ def _trace_repeat(
         _require_program_ad_shape_contract("repeat", (array, repeats))
     else:
         _require_program_ad_shape_contract("repeat", (array, repeats, axis))
-    source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
+    target: tuple[int, ...]
     if axis is None:
         repeat_counts = _normalise_repeat_counts(repeats, array.size)
-        repeated = np.repeat(source.reshape(-1), repeat_counts)
+        target = (
+            sum(repeat_counts) if isinstance(repeat_counts, tuple) else array.size * repeat_counts,
+        )
+        axis_index = None
     else:
         axis_index = _normalise_axis_permutation_axis("repeat", axis, rank=array.ndim)
         repeat_counts = _normalise_repeat_counts(repeats, array.shape[axis_index])
-        repeated = np.repeat(source, repeat_counts, axis=axis_index)
-    return _trace_array_view_from_local_indices(
-        array,
-        "repeat",
-        tuple(int(index) for index in repeated.reshape(-1)),
-        tuple(map(int, repeated.shape)),
+        dimensions = list(array.shape)
+        dimensions[axis_index] = (
+            sum(repeat_counts)
+            if isinstance(repeat_counts, tuple)
+            else dimensions[axis_index] * repeat_counts
+        )
+        target = tuple(dimensions)
+    if any(dimension == 0 for dimension in target):
+        return _trace_array_view_from_local_indices(array, "repeat", (), target)
+    with array.context.array_storage(
+        target, workspaces=_trace_repetition_workspaces(array, target)
+    ) as reservation:
+        source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
+        repeated = (
+            np.repeat(source.reshape(-1), repeat_counts)
+            if axis_index is None
+            else np.repeat(source, repeat_counts, axis=axis_index)
+        )
+        reservation.checkpoint()
+        result = _trace_array_view_from_local_indices(
+            array, "repeat", tuple(int(index) for index in repeated.reshape(-1)), target
+        )
+        reservation.checkpoint()
+    return result
+
+
+def _trace_repetition_workspaces(
+    array: TraceADArray, shape: tuple[int, ...]
+) -> tuple[ExecutionBuffer, ...]:
+    """Declare source/output indices and boxed local-index/lineage containers."""
+    return (
+        ExecutionBuffer("repetition_source", "intermediate", (max(1, array.size),), "int64", 2),
+        ExecutionBuffer("repetition_output", "intermediate", shape, "int64", 2),
+        ExecutionBuffer("repetition_index_slots", "intermediate", shape, "uintp", 2),
+        ExecutionBuffer(
+            "repetition_index_objects",
+            "intermediate",
+            shape,
+            "uint8",
+            sys.getsizeof(max(0, array.size - 1)),
+        ),
+        ExecutionBuffer(
+            "repetition_headers",
+            "intermediate",
+            (2 * sys.getsizeof(()) + sys.getsizeof([]),),
+            "uint8",
+        ),
     )
 
 
@@ -1842,14 +1932,20 @@ def _trace_tile(array: TraceADArray, *, reps: object) -> TraceADArray:
     rank = max(array.ndim, len(reps_tuple))
     source_shape = (1,) * (rank - array.ndim) + array.shape
     reps_aligned = (1,) * (rank - len(reps_tuple)) + reps_tuple
-    source = np.arange(array.size, dtype=np.int64).reshape(source_shape)
-    tiled = np.tile(source, reps_aligned)
-    return _trace_array_view_from_local_indices(
-        array,
-        "tile",
-        tuple(int(index) for index in tiled.reshape(-1)),
-        tuple(map(int, tiled.shape)),
-    )
+    target = tuple(size * count for size, count in zip(source_shape, reps_aligned, strict=True))
+    if any(dimension == 0 for dimension in target):
+        return _trace_array_view_from_local_indices(array, "tile", (), target)
+    with array.context.array_storage(
+        target, workspaces=_trace_repetition_workspaces(array, target)
+    ) as reservation:
+        source = np.arange(array.size, dtype=np.int64).reshape(source_shape)
+        tiled = np.tile(source, reps_aligned)
+        reservation.checkpoint()
+        result = _trace_array_view_from_local_indices(
+            array, "tile", tuple(int(index) for index in tiled.reshape(-1)), target
+        )
+        reservation.checkpoint()
+    return result
 
 
 def _trace_roll(array: TraceADArray, *, shift: object, axis: object = None) -> TraceADArray:
@@ -1993,7 +2089,7 @@ def _trace_order_statistic(
     if reduced_shape == ():
         return _trace_order_statistic_items(tuple(array._items), q=q, op_name=op_name)
     items: list[TraceADScalar] = []
-    for reduced_flat in range(int(np.prod(reduced_shape))):
+    for reduced_flat in range(math.prod(reduced_shape)):
         reduced_index = np.unravel_index(reduced_flat, reduced_shape)
         source_items = tuple(
             array._items[
@@ -2040,15 +2136,27 @@ def _broadcast_trace_array(
     array = _coerce_trace_array(value, context)
     if array.shape == shape:
         return array
-    if array.shape == ():
-        return TraceADArray(
-            tuple(array.item() for _ in range(int(np.prod(shape)))), shape, context
+    if any(dimension == 0 for dimension in shape):
+        return TraceADArray((), shape, context)
+    workspaces = (
+        (
+            ExecutionBuffer("broadcast_source", "intermediate", (max(1, array.size),), "int64"),
+            ExecutionBuffer("broadcast_indices", "intermediate", shape, "int64", 2),
         )
-    source_indices = np.arange(array.size, dtype=np.int64).reshape(array.shape)
-    broadcast_indices = np.broadcast_to(source_indices, shape).reshape(-1)
-    return TraceADArray(
-        tuple(array._items[int(index)] for index in broadcast_indices), shape, context
+        if array.shape != ()
+        else ()
     )
+    with context.array_storage(shape or (1,), workspaces=workspaces) as reservation:
+        if array.shape == ():
+            items = (array.item(),) * math.prod(shape)
+        else:
+            source_indices = np.arange(array.size, dtype=np.int64).reshape(array.shape)
+            broadcast_indices = np.broadcast_to(source_indices, shape).reshape(-1)
+            reservation.checkpoint()
+            items = tuple(array._items[int(index)] for index in broadcast_indices)
+        result = TraceADArray(items, shape, context)
+        reservation.checkpoint()
+    return result
 
 
 def _trace_broadcast_arrays(
@@ -2255,7 +2363,7 @@ def _trace_array_sum(array: TraceADArray, axis: int | None = None) -> TraceADSca
             total = total + item
         return total
     items: list[TraceADScalar] = []
-    for reduced_flat in range(int(np.prod(reduced_shape))):
+    for reduced_flat in range(math.prod(reduced_shape)):
         reduced_index = np.unravel_index(reduced_flat, reduced_shape)
         source_index = reduced_index[:axis] + (0,) + reduced_index[axis:]
         total = array._items[int(np.ravel_multi_index(source_index, array.shape))]
@@ -2338,39 +2446,99 @@ def _evaluate_trace_compact_rule(
     jvp_rule: CustomJVPRule,
     context: _WholeProgramTraceContext,
 ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
-    """Evaluate one registered compact value/JVP rule with shared safeguards."""
-    flat_values = np.array([item.primal for item in input_items], dtype=np.float64)
-    output_flat = _as_real_numeric_array(
-        f"program AD {operation_name} compact values", value_fn(flat_values)
-    ).reshape(-1)
-    if output_flat.size != expected_size:  # pragma: no cover - factory signature invariant
-        raise ValueError(f"program AD {operation_name} compact value shape mismatch")
-    flat_tangent = np.asarray([item.tangent for item in input_items], dtype=np.float64).reshape(
-        len(input_items), context.parameter_count
+    """Evaluate one registered compact value/JVP rule with shared safeguards.
+
+    Notes
+    -----
+    Temporary input arrays and construction lists have an inner reservation.
+    Returned primal/tangent buffers and their validation/array metadata have an
+    outer trace-array owner, retained by the context after temporary disposal.
+    Per-coordinate callback storage includes its retained base and flattened
+    view, the stacked copy, and conversion peaks. Callback algorithm workspace
+    remains owned by its numerical rule rather than inferred here.
+
+    """
+    input_size = max(1, len(input_items))
+    output_size = max(1, expected_size)
+    parameters = max(1, context.parameter_count)
+    output_buffers = (
+        ExecutionBuffer("compact_values", "forward", (output_size,), "float64", 3),
+        ExecutionBuffer("compact_tangents", "forward", (output_size, parameters), "float64", 3),
+        ExecutionBuffer("compact_value_validation", "intermediate", (output_size,), "bool", 2),
+        ExecutionBuffer(
+            "compact_tangent_validation", "intermediate", (output_size, parameters), "bool", 2
+        ),
+        ExecutionBuffer(
+            "compact_output_array_headers",
+            "intermediate",
+            (2 * parameters + 12, np.ndarray.__basicsize__ + 4 * np.dtype(np.uintp).itemsize),
+            "uint8",
+        ),
     )
-    if context.parameter_count:
-        tangent_outputs = np.array(
-            [
-                _as_real_numeric_array(
-                    f"program AD {operation_name} compact tangent",
-                    jvp_rule(flat_values, flat_tangent[:, parameter_index]),
-                ).reshape(-1)
-                for parameter_index in range(context.parameter_count)
-            ],
-            dtype=np.float64,
-        ).T
-    else:
-        tangent_outputs = np.zeros((expected_size, 0), dtype=np.float64)
-    if tangent_outputs.shape != (  # pragma: no cover - factory signature invariant
-        expected_size,
-        context.parameter_count,
-    ):
-        raise ValueError(f"program AD {operation_name} compact tangent shape mismatch")
-    if not bool(np.all(np.isfinite(output_flat))) or not bool(
-        np.all(np.isfinite(tangent_outputs))
-    ):
-        raise ValueError(f"program AD {operation_name} compact outputs must be finite")
-    return output_flat, tangent_outputs
+    temporary_plan = ExecutionMemoryPlan(
+        (
+            ExecutionBuffer("compact_input_values", "intermediate", (input_size,), "float64", 2),
+            ExecutionBuffer(
+                "compact_input_tangents", "intermediate", (input_size, parameters), "float64", 2
+            ),
+            ExecutionBuffer("compact_input_references", "intermediate", (input_size,), "uintp", 4),
+            ExecutionBuffer("compact_jvp_references", "intermediate", (parameters,), "uintp", 2),
+            ExecutionBuffer(
+                "compact_list_headers", "intermediate", (sys.getsizeof([]),), "uint8", 3
+            ),
+            ExecutionBuffer(
+                "compact_input_array_headers",
+                "intermediate",
+                (3, np.ndarray.__basicsize__ + 4 * np.dtype(np.uintp).itemsize),
+                "uint8",
+            ),
+        )
+    )
+    with context.array_storage((output_size,), workspaces=output_buffers) as output_owner:
+        with reserve_execution_memory(temporary_plan) as temporary_owner:
+            temporary_owner.checkpoint()
+            flat_values = np.array([item.primal for item in input_items], dtype=np.float64)
+            temporary_owner.checkpoint()
+            raw_output = value_fn(flat_values)
+            temporary_owner.checkpoint()
+            output_flat = _as_real_numeric_array(
+                f"program AD {operation_name} compact values", raw_output
+            ).reshape(-1)
+            del raw_output
+            if output_flat.size != expected_size:
+                raise ValueError(f"program AD {operation_name} compact value shape mismatch")
+            flat_tangent = np.asarray(
+                [item.tangent for item in input_items], dtype=np.float64
+            ).reshape(len(input_items), context.parameter_count)
+            temporary_owner.checkpoint()
+            if context.parameter_count:
+                tangent_rows: list[NDArray[np.float64]] = []
+                for parameter_index in range(context.parameter_count):
+                    temporary_owner.checkpoint()
+                    raw_tangent = jvp_rule(flat_values, flat_tangent[:, parameter_index])
+                    temporary_owner.checkpoint()
+                    tangent_row = _as_real_numeric_array(
+                        f"program AD {operation_name} compact tangent", raw_tangent
+                    ).reshape(-1)
+                    del raw_tangent
+                    if tangent_row.size != expected_size:
+                        raise ValueError(
+                            f"program AD {operation_name} compact tangent shape mismatch"
+                        )
+                    tangent_rows.append(tangent_row)
+                tangent_outputs = np.array(tangent_rows, dtype=np.float64).T
+                del tangent_rows, tangent_row
+            else:
+                tangent_outputs = np.zeros((expected_size, 0), dtype=np.float64)
+            temporary_owner.checkpoint()
+            if not bool(np.all(np.isfinite(output_flat))) or not bool(
+                np.all(np.isfinite(tangent_outputs))
+            ):
+                raise ValueError(f"program AD {operation_name} compact outputs must be finite")
+            del flat_values, flat_tangent
+            temporary_owner.checkpoint()
+        output_owner.checkpoint()
+        return output_flat, tangent_outputs
 
 
 def _trace_gradient_compact_array(
@@ -2691,7 +2859,7 @@ def _trace_cumulative_compact_array(
     jvp_rule: CustomJVPRule,
 ) -> TraceADArray:
     """Emit compact cumulative Program AD nodes from an exact direct rule."""
-    expected_size = int(np.prod(output_shape))
+    expected_size = math.prod(output_shape)
     if len(output_operations) != expected_size:  # pragma: no cover - caller invariant
         raise ValueError(f"program AD {operation_name} output operation count mismatch")
     output_flat, tangent_outputs = _evaluate_trace_compact_rule(
@@ -2728,7 +2896,7 @@ def _trace_cumsum(array: TraceADArray, axis: int | None = None) -> TraceADArray:
         operation_name="cumsum",
         output_shape=output_shape,
         output_operations=tuple(
-            f"{operation_prefix}:{flat_index}" for flat_index in range(int(np.prod(output_shape)))
+            f"{operation_prefix}:{flat_index}" for flat_index in range(math.prod(output_shape))
         ),
         value_fn=rule.value_fn,
         jvp_rule=jvp_rule,
@@ -2752,7 +2920,7 @@ def _trace_array_prod(
             total = total * item
         return total
     items: list[TraceADScalar] = []
-    for reduced_flat in range(int(np.prod(reduced_shape))):
+    for reduced_flat in range(math.prod(reduced_shape)):
         reduced_index = np.unravel_index(reduced_flat, reduced_shape)
         source_index = reduced_index[:axis] + (0,) + reduced_index[axis:]
         total = array._items[int(np.ravel_multi_index(source_index, array.shape))]
@@ -2776,7 +2944,7 @@ def _trace_cumprod(array: TraceADArray, axis: int | None = None) -> TraceADArray
         operation_name="cumprod",
         output_shape=output_shape,
         output_operations=tuple(
-            f"{operation_prefix}:{flat_index}" for flat_index in range(int(np.prod(output_shape)))
+            f"{operation_prefix}:{flat_index}" for flat_index in range(math.prod(output_shape))
         ),
         value_fn=rule.value_fn,
         jvp_rule=jvp_rule,
@@ -2794,7 +2962,7 @@ def _trace_diff(array: TraceADArray, *, n: object, axis: int) -> TraceADArray:
         + (max(array.shape[axis_index] - order, 0),)
         + array.shape[axis_index + 1 :]
     )
-    if int(np.prod(output_shape)) == 0:
+    if math.prod(output_shape) == 0:
         return TraceADArray((), output_shape, array.context)
     rule = program_ad_cumulative_diff_derivative_rule(array.shape, order=order, axis=axis_index)
     jvp_rule = _required_trace_jvp(rule, "program AD cumulative diff")
@@ -2806,7 +2974,7 @@ def _trace_diff(array: TraceADArray, *, n: object, axis: int) -> TraceADArray:
         operation_name="diff",
         output_shape=output_shape,
         output_operations=tuple(
-            f"{operation_prefix}:{flat_index}" for flat_index in range(int(np.prod(output_shape)))
+            f"{operation_prefix}:{flat_index}" for flat_index in range(math.prod(output_shape))
         ),
         value_fn=rule.value_fn,
         jvp_rule=jvp_rule,
@@ -2835,7 +3003,7 @@ def _trace_variance(
     if reduced_shape == ():
         return _trace_variance(array, axis=None, ddof=ddof_int)
     items: list[TraceADScalar] = []
-    for reduced_flat in range(int(np.prod(reduced_shape))):
+    for reduced_flat in range(math.prod(reduced_shape)):
         reduced_index = np.unravel_index(reduced_flat, reduced_shape)
         centre = array_mean._items[reduced_flat]
         source_index = reduced_index[:axis] + (0,) + reduced_index[axis:]
@@ -2879,7 +3047,7 @@ def _trace_extreme(
         )
         return _trace_strict_extreme(candidates, op_name=op_name, choose_max=choose_max)
     items: list[TraceADScalar] = []
-    for reduced_flat in range(int(np.prod(reduced_shape))):
+    for reduced_flat in range(math.prod(reduced_shape)):
         reduced_index = np.unravel_index(reduced_flat, reduced_shape)
         candidates = tuple(
             array._items[
@@ -2911,6 +3079,40 @@ def _trace_strict_extreme(
     return selected
 
 
+def _trace_take_workspaces(
+    array: TraceADArray,
+    indices_shape: tuple[int, ...],
+    axis: int | None,
+    *,
+    along_axis: bool = False,
+) -> tuple[ExecutionBuffer, ...]:
+    """Declare numeric selection and Python index/lineage container storage."""
+    target = _program_ad_array_take_target_shape(
+        array.shape, indices_shape, axis, along_axis=along_axis
+    )
+    size = max(1, math.prod(target))
+    return (
+        *_program_ad_array_take_layout_plan(
+            array.shape, indices_shape, axis, along_axis=along_axis
+        ).buffers,
+        ExecutionBuffer("take_index_slots", "intermediate", (size,), "uintp", 3),
+        ExecutionBuffer("take_source_aliases", "intermediate", (max(1, array.size),), "uintp"),
+        ExecutionBuffer(
+            "take_index_objects",
+            "intermediate",
+            (size,),
+            "uint8",
+            sys.getsizeof(max(0, array.size - 1)),
+        ),
+        ExecutionBuffer(
+            "take_python_headers",
+            "intermediate",
+            (3 * sys.getsizeof(()) + 2 * sys.getsizeof([]),),
+            "uint8",
+        ),
+    )
+
+
 def _trace_take(
     array: TraceADArray,
     indices: object,
@@ -2923,18 +3125,29 @@ def _trace_take(
     _require_program_ad_array_contract("take", (array, indices, axis, mode))
     mode_name = _program_ad_array_take_mode(mode, context="trace")
     raw_indices = np.asarray(indices)
-    source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
-    selected = np.take(source, raw_indices, axis=axis, mode=mode_name)
-    selected_array = np.asarray(selected)
-    if selected_array.shape == ():
-        return array._items[int(selected_array)]
-    local_indices = tuple(int(index) for index in selected_array.reshape(-1))
-    source_indices = tuple(_trace_array_source_indices(array)[index] for index in local_indices)
-    items = tuple(array._items[index] for index in local_indices)
-    array.context.record_array_view_aliases("take", source_indices, items)
-    return TraceADArray(
-        items, tuple(int(dim) for dim in selected_array.shape), array.context, source_indices
+    indices_shape = tuple(int(size) for size in raw_indices.shape)
+    normalised_axis = (
+        None if axis is None or array.ndim == 0 else _normalise_axis("axis", axis, array.ndim)
     )
+    output_shape = _program_ad_array_take_target_shape(array.shape, indices_shape, normalised_axis)
+    size = math.prod(output_shape)
+    workspaces = _trace_take_workspaces(array, indices_shape, normalised_axis)
+    with array.context.array_storage((max(1, size),), workspaces=workspaces) as reservation:
+        source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
+        selected = np.take(source, raw_indices, axis=axis, mode=mode_name)
+        selected_array = np.asarray(selected)
+        if selected_array.shape != output_shape:
+            raise ValueError("take layout differs from admitted output shape")
+        reservation.checkpoint()
+        if output_shape == ():
+            return array._items[int(selected_array)]
+        local_indices = [0] * size
+        for position, index in enumerate(selected_array.reshape(-1)):
+            reservation.checkpoint()
+            local_indices[position] = int(index)
+        result = _trace_array_view_from_local_indices(array, "take", local_indices, output_shape)
+        reservation.checkpoint()
+    return result
 
 
 def _trace_take_along_axis(
@@ -2948,11 +3161,28 @@ def _trace_take_along_axis(
     _require_program_ad_array_contract("take_along_axis", (array, indices, axis))
     raw_indices = _program_ad_array_take_indices(indices)
     normalised_axis = _normalise_axis("axis", int(cast(int | np.integer[Any], axis)), array.ndim)
-    source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
-    selected = np.take_along_axis(source, raw_indices, axis=normalised_axis)
-    selected_array = np.asarray(selected)
-    items = tuple(array._items[int(index)] for index in selected_array.reshape(-1))
-    return TraceADArray(items, tuple(int(dim) for dim in selected_array.shape), array.context)
+    indices_shape = tuple(int(size) for size in raw_indices.shape)
+    output_shape = _program_ad_array_take_target_shape(
+        array.shape, indices_shape, normalised_axis, along_axis=True
+    )
+    size = math.prod(output_shape)
+    workspaces = _trace_take_workspaces(array, indices_shape, normalised_axis, along_axis=True)
+    with array.context.array_storage((max(1, size),), workspaces=workspaces) as reservation:
+        source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
+        selected = np.take_along_axis(source, raw_indices, axis=normalised_axis)
+        selected_array = np.asarray(selected)
+        if selected_array.shape != output_shape:
+            raise ValueError("take_along_axis layout differs from admitted output shape")
+        reservation.checkpoint()
+        items: list[TraceADScalar | None] = [None] * size
+        for position, index in enumerate(selected_array.reshape(-1)):
+            reservation.checkpoint()
+            items[position] = array._items[int(index)]
+        result = TraceADArray(
+            cast(tuple[TraceADScalar, ...], tuple(items)), output_shape, array.context
+        )
+        reservation.checkpoint()
+    return result
 
 
 def _trace_delete(
@@ -2965,17 +3195,33 @@ def _trace_delete(
     delete_obj = _program_ad_array_delete_object(obj, context="trace")
     source: NDArray[np.int64]
     if axis is None:
-        source = np.arange(array.size, dtype=np.int64).reshape(-1)
         normalised_axis = None
     else:
         normalised_axis = _normalise_axis(
             "axis", int(cast(int | np.integer[Any], axis)), array.ndim
         )
-        source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
-    selected = np.delete(source, cast(Any, delete_obj), axis=normalised_axis)
-    selected_array = np.asarray(selected, dtype=np.int64)
-    items = tuple(array._items[int(index)] for index in selected_array.reshape(-1))
-    return TraceADArray(items, tuple(int(dim) for dim in selected_array.shape), array.context)
+    workspaces = _program_ad_array_delete_layout_plan(
+        array.shape, delete_obj, normalised_axis
+    ).buffers
+    with array.context.array_storage((max(1, array.size),), workspaces=workspaces) as reservation:
+        source_indices = np.arange(array.size, dtype=np.int64).reshape(array.shape)
+        source = source_indices.reshape(-1) if normalised_axis is None else source_indices
+        selected = np.delete(source, cast(Any, delete_obj), axis=normalised_axis)
+        selected_array = np.asarray(selected, dtype=np.int64)
+        if selected_array.size > array.size:
+            raise ValueError("delete layout exceeds admitted source-size output bound")
+        reservation.checkpoint()
+        items: list[TraceADScalar | None] = [None] * int(selected_array.size)
+        for position, index in enumerate(selected_array.reshape(-1)):
+            reservation.checkpoint()
+            items[position] = array._items[int(index)]
+        result = TraceADArray(
+            cast(tuple[TraceADScalar, ...], tuple(items)),
+            tuple(int(dim) for dim in selected_array.shape),
+            array.context,
+        )
+        reservation.checkpoint()
+    return result
 
 
 def _trace_pad(
@@ -2987,19 +3233,64 @@ def _trace_pad(
 ) -> TraceADArray:
     _require_program_ad_array_contract("pad", (array, pad_width, mode, constant_values))
     _program_ad_array_pad_mode(mode, context="trace")
-    flat_indices, flat_constants, output_shape = _program_ad_array_pad_layout(
-        array.shape,
-        pad_width,
-        constant_values,
-        context="trace",
+    output_shape = _program_ad_array_pad_target_shape(
+        array.shape, pad_width, constant_values, context="trace"
     )
-    items = tuple(
-        array._items[int(index)]
-        if int(index) >= 0
-        else _trace_constant(float(flat_constants[position]), array.context)
-        for position, index in enumerate(flat_indices)
+    output_size = math.prod(output_shape)
+    constant_count = max(0, output_size - array.size)
+    # Only fixed schema/header metadata is inspected here, before layout or tangents.
+    scalar_schema = object.__new__(TraceADScalar)
+    constants = np.asarray(constant_values, dtype=np.float64)
+    name_bytes = max(
+        (sys.getsizeof(repr(float(value))) for value in constants.reshape(-1)),
+        default=sys.getsizeof("0.0"),
     )
-    return TraceADArray(items, output_shape, array.context)
+    scalar_bytes = (
+        sys.getsizeof(scalar_schema)
+        + sys.getsizeof(scalar_schema.__dict__)
+        + 4 * sys.getsizeof({"": None})
+        + sys.getsizeof(0.0)
+        + name_bytes
+        + sys.getsizeof(np.empty(0, dtype=np.float64))
+    )
+    workspaces = (
+        ExecutionBuffer("pad_source", "intermediate", (max(1, array.size),), "float64", 2),
+        ExecutionBuffer("pad_layout", "intermediate", (max(1, output_size),), "float64", 4),
+        ExecutionBuffer(
+            "pad_tangents",
+            "forward",
+            (max(1, array.context.parameter_count),),
+            "float64",
+            max(1, constant_count),
+        ),
+        ExecutionBuffer(
+            "pad_scalar_metadata", "forward", (scalar_bytes,), "uint8", max(1, constant_count)
+        ),
+    )
+    with array.context.array_storage((max(1, output_size),), workspaces=workspaces) as reservation:
+        flat_indices, flat_constants, actual_shape = _program_ad_array_pad_layout(
+            array.shape, pad_width, constant_values, context="trace"
+        )
+        if (
+            actual_shape != output_shape
+            or flat_indices.size != output_size
+            or flat_constants.size != output_size
+        ):
+            raise ValueError("pad layout differs from admitted output shape")
+        reservation.checkpoint()
+        items: list[TraceADScalar | None] = [None] * output_size
+        for position, index in enumerate(flat_indices):
+            reservation.checkpoint()
+            items[position] = (
+                array._items[int(index)]
+                if int(index) >= 0
+                else _trace_constant(float(flat_constants[position]), array.context)
+            )
+        result = TraceADArray(
+            cast(tuple[TraceADScalar, ...], tuple(items)), output_shape, array.context
+        )
+        reservation.checkpoint()
+    return result
 
 
 def _trace_insert(
@@ -3010,20 +3301,63 @@ def _trace_insert(
     axis: object,
 ) -> TraceADArray:
     _require_program_ad_array_contract("insert", (array, obj, values, axis))
-    flat_indices, flat_constants, output_shape = _program_ad_array_insert_layout(
-        array.shape,
-        obj,
-        values,
-        axis,
-        context="trace",
+    output_shape = _program_ad_array_insert_target_shape(
+        array.shape, obj, values, axis, context="trace"
     )
-    items = tuple(
-        array._items[int(index)]
-        if int(index) >= 0
-        else _trace_constant(float(flat_constants[position]), array.context)
-        for position, index in enumerate(flat_indices)
+    output_size = math.prod(output_shape)
+    constant_count = max(0, output_size - array.size)
+    constants = _program_ad_array_insert_values(values, context="trace")
+    scalar_schema = object.__new__(TraceADScalar)
+    name_bytes = max(
+        (sys.getsizeof(repr(float(value))) for value in constants.reshape(-1)),
+        default=sys.getsizeof("0.0"),
     )
-    return TraceADArray(items, output_shape, array.context)
+    scalar_bytes = (
+        sys.getsizeof(scalar_schema)
+        + sys.getsizeof(scalar_schema.__dict__)
+        + 4 * sys.getsizeof({"": None})
+        + sys.getsizeof(0.0)
+        + name_bytes
+        + sys.getsizeof(np.empty(0, dtype=np.float64))
+    )
+    workspaces = (
+        ExecutionBuffer("insert_source", "intermediate", (max(1, array.size),), "float64", 2),
+        ExecutionBuffer("insert_layout", "intermediate", (max(1, output_size),), "float64", 4),
+        ExecutionBuffer(
+            "insert_tangents",
+            "forward",
+            (max(1, array.context.parameter_count),),
+            "float64",
+            max(1, constant_count),
+        ),
+        ExecutionBuffer(
+            "insert_scalar_metadata", "forward", (scalar_bytes,), "uint8", max(1, constant_count)
+        ),
+    )
+    with array.context.array_storage((max(1, output_size),), workspaces=workspaces) as reservation:
+        flat_indices, flat_constants, actual_shape = _program_ad_array_insert_layout(
+            array.shape, obj, values, axis, context="trace"
+        )
+        if (
+            actual_shape != output_shape
+            or flat_indices.size != output_size
+            or flat_constants.size != output_size
+        ):
+            raise ValueError("insert layout differs from admitted output shape")
+        reservation.checkpoint()
+        items: list[TraceADScalar | None] = [None] * output_size
+        for position, index in enumerate(flat_indices):
+            reservation.checkpoint()
+            items[position] = (
+                array._items[int(index)]
+                if int(index) >= 0
+                else _trace_constant(float(flat_constants[position]), array.context)
+            )
+        result = TraceADArray(
+            cast(tuple[TraceADScalar, ...], tuple(items)), output_shape, array.context
+        )
+        reservation.checkpoint()
+    return result
 
 
 def _raise_index_selection_boundary(
@@ -3053,7 +3387,7 @@ def _trace_transpose(
     target_shape = tuple(array.shape[axis] for axis in normalised_axes)
     inverse_axes = tuple(normalised_axes.index(axis) for axis in range(array.ndim))
     items: list[TraceADScalar] = []
-    for target_flat in range(int(np.prod(target_shape))):
+    for target_flat in range(math.prod(target_shape)):
         target_index = np.unravel_index(target_flat, target_shape)
         source_index = tuple(target_index[inverse_axes[axis]] for axis in range(array.ndim))
         items.append(array._items[int(np.ravel_multi_index(source_index, array.shape))])
@@ -3117,8 +3451,8 @@ def _trace_inner(
     rhs_outer = rhs.shape[:-1]
     shared = lhs.shape[-1]
     result_items: list[TraceADScalar] = []
-    lhs_rows = int(np.prod(lhs_outer)) if lhs_outer else 1
-    rhs_rows = int(np.prod(rhs_outer)) if rhs_outer else 1
+    lhs_rows = math.prod(lhs_outer) if lhs_outer else 1
+    rhs_rows = math.prod(rhs_outer) if rhs_outer else 1
     for lhs_row in range(lhs_rows):
         for rhs_row in range(rhs_rows):
             total = lhs._items[lhs_row * shared] * rhs._items[rhs_row * shared]
@@ -3333,21 +3667,53 @@ def _trace_det(matrix: object, context: _WholeProgramTraceContext) -> TraceADSca
     rows, cols = array.shape
     if rows == 0:
         return _coerce_trace_scalar(1.0, context)
-    primal = np.array([item.primal for item in array._items], dtype=np.float64).reshape(rows, cols)
-    determinant = float(np.linalg.det(primal))
-    if not np.isfinite(determinant):
-        raise ValueError("program AD np.linalg.det requires a finite determinant")
-    tangent_tensor = np.stack([item.tangent for item in array._items], axis=0).reshape(
-        rows, cols, context.parameter_count
+    plan = ExecutionMemoryPlan(
+        (
+            ExecutionBuffer("trace_det_primal", "forward", (rows, cols), "float64"),
+            ExecutionBuffer(
+                "trace_det_tangent_tensor",
+                "intermediate",
+                (rows, cols, max(1, context.parameter_count)),
+                "float64",
+            ),
+            ExecutionBuffer(
+                "trace_det_output",
+                "intermediate",
+                (max(1, context.parameter_count),),
+                "float64",
+                2,
+            ),
+            ExecutionBuffer(
+                "trace_det_input_references", "intermediate", (rows, cols), "uintp", 3
+            ),
+            ExecutionBuffer(
+                "trace_det_stack_views",
+                "intermediate",
+                (rows, cols, np.ndarray.__basicsize__ + 4 * np.dtype(np.uintp).itemsize),
+                "uint8",
+            ),
+        )
     )
-    cofactors = _program_ad_linalg_det_cofactor_matrix(primal)
-    tangent = np.einsum("ij,ijp->p", cofactors, tangent_tensor)
-    return context.make(
-        f"linalg:det:{rows}x{cols}",
-        tuple(item.name for item in array._items),
-        determinant,
-        np.asarray(tangent, dtype=np.float64),
-    )
+    with reserve_execution_memory(plan) as reservation:
+        primal = np.array([item.primal for item in array._items], dtype=np.float64).reshape(
+            rows, cols
+        )
+        determinant = float(np.linalg.det(primal))
+        if not np.isfinite(determinant):
+            raise ValueError("program AD np.linalg.det requires a finite determinant")
+        reservation.checkpoint()
+        tangent_tensor = np.stack([item.tangent for item in array._items], axis=0).reshape(
+            rows, cols, context.parameter_count
+        )
+        cofactors = _program_ad_linalg_det_cofactor_matrix(primal)
+        tangent = np.einsum("ij,ijp->p", cofactors, tangent_tensor)
+        reservation.checkpoint()
+        return context.make(
+            f"linalg:det:{rows}x{cols}",
+            tuple(item.name for item in array._items),
+            determinant,
+            np.asarray(tangent, dtype=np.float64),
+        )
 
 
 def _trace_inv(matrix: object, context: _WholeProgramTraceContext) -> TraceADArray:
@@ -3355,36 +3721,83 @@ def _trace_inv(matrix: object, context: _WholeProgramTraceContext) -> TraceADArr
     rows, cols = array.shape
     if rows == 0:
         return TraceADArray((), (0, 0), context)
-    primal = np.array([item.primal for item in array._items], dtype=np.float64).reshape(rows, cols)
-    try:
-        inverse = np.linalg.inv(primal)
-    except np.linalg.LinAlgError as exc:
-        raise ValueError("program AD np.linalg.inv requires a nonsingular matrix") from exc
-    if not np.all(np.isfinite(inverse)):
-        raise ValueError("program AD np.linalg.inv requires a nonsingular matrix")
-    tangent_tensor = np.stack([item.tangent for item in array._items], axis=0).reshape(
-        rows, cols, context.parameter_count
+    plan = ExecutionMemoryPlan(
+        (
+            ExecutionBuffer("trace_inv_numeric", "forward", (rows, cols), "float64", 4),
+            ExecutionBuffer("trace_inv_validation", "intermediate", (rows, cols), "bool"),
+            ExecutionBuffer(
+                "trace_inv_tangent_tensor",
+                "intermediate",
+                (rows, cols, max(1, context.parameter_count)),
+                "float64",
+            ),
+            ExecutionBuffer(
+                "trace_inv_tangent_values",
+                "intermediate",
+                (max(1, context.parameter_count),),
+                "float64",
+                2,
+            ),
+            ExecutionBuffer(
+                "trace_inv_input_references", "intermediate", (rows, cols), "uintp", 4
+            ),
+            ExecutionBuffer(
+                "trace_inv_stack_views",
+                "intermediate",
+                (rows, cols, np.ndarray.__basicsize__ + 4 * np.dtype(np.uintp).itemsize),
+                "uint8",
+            ),
+            ExecutionBuffer(
+                "trace_inv_tangent_metadata",
+                "intermediate",
+                (
+                    max(1, context.parameter_count),
+                    sys.getsizeof(0.0) + np.dtype(np.uintp).itemsize,
+                ),
+                "uint8",
+                2,
+            ),
+        )
     )
-    input_names = tuple(item.name for item in array._items)
-    inverse_items: list[TraceADScalar] = []
-    for row in range(rows):
-        for col in range(cols):
-            tangent = np.array(
-                [
-                    -(inverse @ tangent_tensor[:, :, parameter_index] @ inverse)[row, col]
-                    for parameter_index in range(context.parameter_count)
-                ],
-                dtype=np.float64,
-            )
-            inverse_items.append(
-                context.make(
-                    f"linalg:inv:{rows}x{cols}:{row}:{col}",
-                    input_names,
-                    float(inverse[row, col]),
-                    tangent,
+    with reserve_execution_memory(plan) as reservation, context.array_storage((rows, cols)):
+        primal = np.array([item.primal for item in array._items], dtype=np.float64).reshape(
+            rows, cols
+        )
+        try:
+            inverse = np.linalg.inv(primal)
+        except np.linalg.LinAlgError as exc:
+            raise ValueError("program AD np.linalg.inv requires a nonsingular matrix") from exc
+        reservation.checkpoint()
+        if not np.all(np.isfinite(inverse)):
+            raise ValueError("program AD np.linalg.inv requires a nonsingular matrix")
+        reservation.checkpoint()
+        tangent_tensor = np.stack([item.tangent for item in array._items], axis=0).reshape(
+            rows, cols, context.parameter_count
+        )
+        input_names = tuple(item.name for item in array._items)
+        inverse_items: list[TraceADScalar] = []
+        for row in range(rows):
+            reservation.checkpoint()
+            for col in range(cols):
+                tangent_values: list[float] = []
+                for parameter_index in range(context.parameter_count):
+                    reservation.checkpoint()
+                    tangent_values.append(
+                        float(
+                            -(inverse @ tangent_tensor[:, :, parameter_index] @ inverse)[row, col]
+                        )
+                    )
+                tangent = np.array(tangent_values, dtype=np.float64)
+                reservation.checkpoint()
+                inverse_items.append(
+                    context.make(
+                        f"linalg:inv:{rows}x{cols}:{row}:{col}",
+                        input_names,
+                        float(inverse[row, col]),
+                        tangent,
+                    )
                 )
-            )
-    return TraceADArray(tuple(inverse_items), (rows, cols), context)
+        return TraceADArray(tuple(inverse_items), (rows, cols), context)
 
 
 def _trace_solve(
@@ -3395,80 +3808,147 @@ def _trace_solve(
     lhs = _coerce_trace_array(matrix, context)
     right = _coerce_trace_array(rhs, context)
     rows, cols = lhs.shape
-    matrix_primal = np.array([item.primal for item in lhs._items], dtype=np.float64).reshape(
-        rows, cols
+    matrix_size = lhs.size
+    rhs_size = right.size
+    parameter_count = max(1, context.parameter_count)
+    plan = ExecutionMemoryPlan(
+        (
+            ExecutionBuffer(
+                "trace_solve_matrix", "intermediate", (max(1, matrix_size),), "float64"
+            ),
+            ExecutionBuffer(
+                "trace_solve_rhs_workspace", "intermediate", (max(1, rhs_size),), "float64", 4
+            ),
+            ExecutionBuffer("trace_solve_validation", "intermediate", (max(1, rhs_size),), "bool"),
+            ExecutionBuffer(
+                "trace_solve_matrix_tangent",
+                "intermediate",
+                (max(1, matrix_size), parameter_count),
+                "float64",
+            ),
+            ExecutionBuffer(
+                "trace_solve_rhs_tangent",
+                "intermediate",
+                (max(1, rhs_size), parameter_count),
+                "float64",
+            ),
+            ExecutionBuffer(
+                "trace_solve_tangent_solutions",
+                "intermediate",
+                (max(1, rhs_size), parameter_count),
+                "float64",
+                2,
+            ),
+            ExecutionBuffer(
+                "trace_solve_input_references",
+                "intermediate",
+                (max(1, matrix_size + rhs_size),),
+                "uintp",
+                4,
+            ),
+            ExecutionBuffer(
+                "trace_solve_tangent_metadata",
+                "intermediate",
+                (
+                    parameter_count,
+                    np.ndarray.__basicsize__
+                    + 2 * len(right.shape) * np.dtype(np.uintp).itemsize
+                    + np.dtype(np.uintp).itemsize,
+                ),
+                "uint8",
+            ),
+        )
     )
-    rhs_primal = np.array([item.primal for item in right._items], dtype=np.float64).reshape(
-        right.shape
-    )
-    try:
-        solution = np.linalg.solve(matrix_primal, rhs_primal)
-    except np.linalg.LinAlgError as exc:
-        raise ValueError("program AD np.linalg.solve requires a nonsingular matrix") from exc
-    if not np.all(np.isfinite(solution)):
-        raise ValueError("program AD np.linalg.solve requires a finite solution")
-    matrix_tangent = np.asarray([item.tangent for item in lhs._items], dtype=np.float64).reshape(
-        rows, cols, context.parameter_count
-    )
-    rhs_tangent = np.asarray([item.tangent for item in right._items], dtype=np.float64).reshape(
-        *right.shape, context.parameter_count
-    )
-    input_names = tuple(item.name for item in lhs._items) + tuple(
-        item.name for item in right._items
-    )
-    solution_array = np.asarray(solution, dtype=np.float64)
-    items: list[TraceADScalar] = []
-    if right.ndim == 1:
-        if context.parameter_count:
-            tangent_solution = np.array(
-                [
-                    np.linalg.solve(
-                        matrix_primal,
+    output_storage_shape = tuple(max(1, dimension) for dimension in right.shape)
+    with (
+        reserve_execution_memory(plan) as reservation,
+        context.array_storage(output_storage_shape),
+    ):
+        matrix_primal = np.array([item.primal for item in lhs._items], dtype=np.float64).reshape(
+            rows, cols
+        )
+        rhs_primal = np.array([item.primal for item in right._items], dtype=np.float64).reshape(
+            right.shape
+        )
+        try:
+            solution = np.linalg.solve(matrix_primal, rhs_primal)
+        except np.linalg.LinAlgError as exc:
+            raise ValueError("program AD np.linalg.solve requires a nonsingular matrix") from exc
+        reservation.checkpoint()
+        if not np.all(np.isfinite(solution)):
+            raise ValueError("program AD np.linalg.solve requires a finite solution")
+        matrix_tangent = np.asarray(
+            [item.tangent for item in lhs._items], dtype=np.float64
+        ).reshape(rows, cols, context.parameter_count)
+        rhs_tangent = np.asarray(
+            [item.tangent for item in right._items], dtype=np.float64
+        ).reshape(*right.shape, context.parameter_count)
+        input_names = tuple(item.name for item in lhs._items) + tuple(
+            item.name for item in right._items
+        )
+        solution_array = np.asarray(solution, dtype=np.float64)
+        items: list[TraceADScalar] = []
+        if right.ndim == 1:
+            if context.parameter_count:
+                tangent_solutions: list[NDArray[np.float64]] = []
+                for parameter_index in range(context.parameter_count):
+                    reservation.checkpoint()
+                    differential = (
                         rhs_tangent[:, parameter_index]
-                        - matrix_tangent[:, :, parameter_index] @ solution_array,
+                        - matrix_tangent[:, :, parameter_index] @ solution_array
                     )
-                    for parameter_index in range(context.parameter_count)
-                ],
-                dtype=np.float64,
-            ).T
-        else:
-            tangent_solution = np.zeros((rows, 0), dtype=np.float64)
-        for row in range(rows):
-            items.append(
-                context.make(
-                    f"linalg:solve:{rows}x{cols}:rhs:{right.shape[0]}:{row}",
-                    input_names,
-                    float(solution_array[row]),
-                    tangent_solution[row, :],
+                    reservation.checkpoint()
+                    tangent_solutions.append(
+                        np.asarray(np.linalg.solve(matrix_primal, differential), dtype=np.float64)
+                    )
+                    del differential
+                    reservation.checkpoint()
+                tangent_solution = np.array(tangent_solutions, dtype=np.float64).T
+            else:
+                tangent_solution = np.zeros((rows, 0), dtype=np.float64)
+            for row in range(rows):
+                reservation.checkpoint()
+                items.append(
+                    context.make(
+                        f"linalg:solve:{rows}x{cols}:rhs:{right.shape[0]}:{row}",
+                        input_names,
+                        float(solution_array[row]),
+                        tangent_solution[row, :],
+                    )
                 )
-            )
-        return TraceADArray(tuple(items), right.shape, context)
-    rhs_cols = right.shape[1]
-    if context.parameter_count:
-        tangent_solution_matrix = np.array(
-            [
-                np.linalg.solve(
-                    matrix_primal,
+            return TraceADArray(tuple(items), right.shape, context)
+        rhs_cols = right.shape[1]
+        if context.parameter_count:
+            tangent_matrix_solutions: list[NDArray[np.float64]] = []
+            for parameter_index in range(context.parameter_count):
+                reservation.checkpoint()
+                differential = (
                     rhs_tangent[:, :, parameter_index]
-                    - matrix_tangent[:, :, parameter_index] @ solution_array,
+                    - matrix_tangent[:, :, parameter_index] @ solution_array
                 )
-                for parameter_index in range(context.parameter_count)
-            ],
-            dtype=np.float64,
-        ).transpose(1, 2, 0)
-    else:
-        tangent_solution_matrix = np.zeros((rows, rhs_cols, 0), dtype=np.float64)
-    for row in range(rows):
-        for col in range(rhs_cols):
-            items.append(
-                context.make(
-                    f"linalg:solve:{rows}x{cols}:rhs:{right.shape[0]}x{rhs_cols}:{row}:{col}",
-                    input_names,
-                    float(solution_array[row, col]),
-                    tangent_solution_matrix[row, col, :],
+                reservation.checkpoint()
+                tangent_matrix_solutions.append(
+                    np.asarray(np.linalg.solve(matrix_primal, differential), dtype=np.float64)
                 )
-            )
-    return TraceADArray(tuple(items), solution_array.shape, context)
+                del differential
+                reservation.checkpoint()
+            tangent_solution_matrix = np.array(
+                tangent_matrix_solutions, dtype=np.float64
+            ).transpose(1, 2, 0)
+        else:
+            tangent_solution_matrix = np.zeros((rows, rhs_cols, 0), dtype=np.float64)
+        for row in range(rows):
+            for col in range(rhs_cols):
+                reservation.checkpoint()
+                items.append(
+                    context.make(
+                        f"linalg:solve:{rows}x{cols}:rhs:{right.shape[0]}x{rhs_cols}:{row}:{col}",
+                        input_names,
+                        float(solution_array[row, col]),
+                        tangent_solution_matrix[row, col, :],
+                    )
+                )
+        return TraceADArray(tuple(items), solution_array.shape, context)
 
 
 def _trace_matrix_power(
@@ -3479,45 +3959,58 @@ def _trace_matrix_power(
     array = _coerce_trace_array(matrix, context)
     rows, cols = array.shape
     exponent = int(cast(int | np.integer[Any], power))
-    rule = program_ad_linalg_matrix_power_derivative_rule(exponent)
-    jvp_rule = _required_trace_jvp(rule, "program AD np.linalg.matrix_power")
-    flat_values = np.array([item.primal for item in array._items], dtype=np.float64)
-    try:
-        output_flat = np.asarray(rule.value_fn(flat_values), dtype=np.float64).reshape(-1)
-        flat_tangent = np.asarray(
-            [item.tangent for item in array._items], dtype=np.float64
-        ).reshape(array.size, context.parameter_count)
-        if context.parameter_count:
-            tangent_outputs = np.array(
-                [
-                    jvp_rule(flat_values, flat_tangent[:, parameter_index])
-                    for parameter_index in range(context.parameter_count)
-                ],
-                dtype=np.float64,
-            ).T
-        else:
-            tangent_outputs = np.zeros((rows * cols, 0), dtype=np.float64)
-    except np.linalg.LinAlgError as exc:
-        raise ValueError(
-            "program AD np.linalg.matrix_power requires a nonsingular matrix"
-        ) from exc
-    if not np.all(np.isfinite(output_flat)):
-        raise ValueError("program AD np.linalg.matrix_power requires finite outputs")
-    input_names = tuple(item.name for item in array._items)
-    items: list[TraceADScalar] = []
-    for row in range(rows):
-        for col in range(cols):
-            flat_index = row * cols + col
-            items.append(
-                context.make(
-                    f"linalg:matrix_power:{_trace_shape_label(array.shape)}:"
-                    f"power:{exponent}:{row}:{col}",
-                    input_names,
-                    float(output_flat[flat_index]),
-                    tangent_outputs[flat_index, :],
+    output_storage_shape = tuple(max(1, dimension) for dimension in array.shape)
+    with (
+        matrix_power_trace_execution_scope((rows, cols), context.parameter_count) as reservation,
+        context.array_storage(output_storage_shape),
+    ):
+        rule = program_ad_linalg_matrix_power_derivative_rule(exponent)
+        jvp_rule = _required_trace_jvp(rule, "program AD np.linalg.matrix_power")
+        flat_values = np.array([item.primal for item in array._items], dtype=np.float64)
+        try:
+            output_flat = np.asarray(rule.value_fn(flat_values), dtype=np.float64).reshape(-1)
+            reservation.checkpoint()
+            flat_tangent = np.asarray(
+                [item.tangent for item in array._items], dtype=np.float64
+            ).reshape(array.size, context.parameter_count)
+            if context.parameter_count:
+                derivative_outputs: list[NDArray[np.float64]] = []
+                for parameter_index in range(context.parameter_count):
+                    reservation.checkpoint()
+                    derivative_outputs.append(
+                        np.asarray(
+                            jvp_rule(flat_values, flat_tangent[:, parameter_index]),
+                            dtype=np.float64,
+                        )
+                    )
+                    reservation.checkpoint()
+                tangent_outputs = np.array(derivative_outputs, dtype=np.float64).T
+                del derivative_outputs
+            else:
+                tangent_outputs = np.zeros((rows * cols, 0), dtype=np.float64)
+        except np.linalg.LinAlgError as exc:
+            raise ValueError(
+                "program AD np.linalg.matrix_power requires a nonsingular matrix"
+            ) from exc
+        reservation.checkpoint()
+        if not np.all(np.isfinite(output_flat)):
+            raise ValueError("program AD np.linalg.matrix_power requires finite outputs")
+        input_names = tuple(item.name for item in array._items)
+        items: list[TraceADScalar] = []
+        for row in range(rows):
+            for col in range(cols):
+                reservation.checkpoint()
+                flat_index = row * cols + col
+                items.append(
+                    context.make(
+                        f"linalg:matrix_power:{_trace_shape_label(array.shape)}:"
+                        f"power:{exponent}:{row}:{col}",
+                        input_names,
+                        float(output_flat[flat_index]),
+                        tangent_outputs[flat_index, :],
+                    )
                 )
-            )
-    return TraceADArray(tuple(items), array.shape, context)
+        return TraceADArray(tuple(items), array.shape, context)
 
 
 def _trace_multi_dot(
@@ -3530,53 +4023,79 @@ def _trace_multi_dot(
     operand_shapes = tuple(array.shape for array in arrays)
     rule = program_ad_linalg_multi_dot_derivative_rule(operand_shapes)
     jvp_rule = _required_trace_jvp(rule, "program AD np.linalg.multi_dot")
-    primal_operands = tuple(
-        np.array([item.primal for item in array._items], dtype=np.float64).reshape(array.shape)
-        for array in arrays
+    result_shape = (
+        ()
+        if len(operand_shapes[0]) == len(operand_shapes[-1]) == 1
+        else (
+            (operand_shapes[-1][-1],)
+            if len(operand_shapes[0]) == 1
+            else (
+                (operand_shapes[0][0],)
+                if len(operand_shapes[-1]) == 1
+                else (operand_shapes[0][0], operand_shapes[-1][-1])
+            )
+        )
     )
-    output = np.asarray(np.linalg.multi_dot(primal_operands), dtype=np.float64)
-    output_shape = tuple(int(dimension) for dimension in output.shape)
-    output_flat = output.reshape(-1)
-    flat_values = np.concatenate(
-        [operand.reshape(-1) for operand in primal_operands], dtype=np.float64
-    )
-    flat_tangent = np.concatenate(
-        [np.stack([item.tangent for item in array._items], axis=0) for array in arrays],
-        axis=0,
-        dtype=np.float64,
-    )
-    if context.parameter_count:
-        tangent_outputs = np.array(
-            [
-                jvp_rule(flat_values, flat_tangent[:, parameter_index])
-                for parameter_index in range(context.parameter_count)
-            ],
+    output_storage = context.array_storage(result_shape) if result_shape else nullcontext()
+    with (
+        multi_dot_trace_execution_scope(operand_shapes, context.parameter_count) as reservation,
+        output_storage,
+    ):
+        primal_operands = tuple(
+            np.array([item.primal for item in array._items], dtype=np.float64).reshape(array.shape)
+            for array in arrays
+        )
+        output = np.asarray(np.linalg.multi_dot(primal_operands), dtype=np.float64)
+        reservation.checkpoint()
+        output_shape = tuple(int(dimension) for dimension in output.shape)
+        output_flat = output.reshape(-1)
+        flat_values = np.concatenate(
+            [operand.reshape(-1) for operand in primal_operands], dtype=np.float64
+        )
+        flat_tangent = np.concatenate(
+            [np.stack([item.tangent for item in array._items], axis=0) for array in arrays],
+            axis=0,
             dtype=np.float64,
-        ).T
-    else:
-        tangent_outputs = np.zeros((output_flat.size, 0), dtype=np.float64)
-    if not np.all(np.isfinite(output_flat)):
-        raise ValueError("program AD np.linalg.multi_dot requires finite outputs")
-    input_names = tuple(item.name for array in arrays for item in array._items)
-    shape_signature = "__".join(_trace_shape_label(shape) for shape in operand_shapes)
-    if output_shape == ():
-        return context.make(
-            f"linalg:multi_dot:{shape_signature}:out:scalar",
-            input_names,
-            float(output_flat[0]),
-            tangent_outputs[0, :],
         )
-    output_label = _trace_shape_label(output_shape)
-    items = tuple(
-        context.make(
-            f"linalg:multi_dot:{shape_signature}:out:{output_label}:{flat_index}",
-            input_names,
-            float(output_flat[flat_index]),
-            tangent_outputs[flat_index, :],
-        )
-        for flat_index in range(output_flat.size)
-    )
-    return TraceADArray(items, output_shape, context)
+        if context.parameter_count:
+            derivative_outputs: list[NDArray[np.float64]] = []
+            for parameter_index in range(context.parameter_count):
+                reservation.checkpoint()
+                derivative_outputs.append(
+                    np.asarray(
+                        jvp_rule(flat_values, flat_tangent[:, parameter_index]), dtype=np.float64
+                    )
+                )
+                reservation.checkpoint()
+            tangent_outputs = np.array(derivative_outputs, dtype=np.float64).T
+            del derivative_outputs
+        else:
+            tangent_outputs = np.zeros((output_flat.size, 0), dtype=np.float64)
+        reservation.checkpoint()
+        if not np.all(np.isfinite(output_flat)):
+            raise ValueError("program AD np.linalg.multi_dot requires finite outputs")
+        input_names = tuple(item.name for array in arrays for item in array._items)
+        shape_signature = "__".join(_trace_shape_label(shape) for shape in operand_shapes)
+        if output_shape == ():
+            return context.make(
+                f"linalg:multi_dot:{shape_signature}:out:scalar",
+                input_names,
+                float(output_flat[0]),
+                tangent_outputs[0, :],
+            )
+        output_label = _trace_shape_label(output_shape)
+        items_list: list[TraceADScalar] = []
+        for flat_index in range(output_flat.size):
+            reservation.checkpoint()
+            items_list.append(
+                context.make(
+                    f"linalg:multi_dot:{shape_signature}:out:{output_label}:{flat_index}",
+                    input_names,
+                    float(output_flat[flat_index]),
+                    tangent_outputs[flat_index, :],
+                )
+            )
+        return TraceADArray(tuple(items_list), output_shape, context)
 
 
 def _trace_eigvalsh(
@@ -3857,25 +4376,23 @@ def _trace_diag(
     source_shape = _trace_shape_label(array.shape)
     if array.ndim == 1:
         size = array.shape[0] + abs(offset)
-        zero = _trace_constant(0.0, context)
-        items: list[TraceADScalar] = []
-        for row in range(size):
-            for col in range(size):
-                source_index = row if offset >= 0 else col
-                on_diag = (col - row) == offset
-                if on_diag:
-                    source = array._items[source_index]
-                    items.append(
-                        context.make(
-                            f"linalg:diag:{source_shape}:offset:{offset}:construct:{source_index}",
-                            (source.name,),
-                            source.primal,
-                            source.tangent,
-                        )
-                    )
-                else:
-                    items.append(zero)
-        return TraceADArray(tuple(items), (size, size), context)
+        with context.array_storage((size, size)) as reservation:
+            zero = _trace_constant(0.0, context)
+            items = [zero] * (size * size)
+            for source_index in range(array.shape[0]):
+                reservation.checkpoint()
+                row = source_index if offset >= 0 else source_index - offset
+                col = source_index + offset if offset >= 0 else source_index
+                source = array._items[source_index]
+                items[row * size + col] = context.make(
+                    f"linalg:diag:{source_shape}:offset:{offset}:construct:{source_index}",
+                    (source.name,),
+                    source.primal,
+                    source.tangent,
+                )
+            result = TraceADArray(tuple(items), (size, size), context)
+            reservation.checkpoint()
+        return result
     if array.ndim == 2:
         rows, cols = array.shape
         items = []
@@ -3906,26 +4423,24 @@ def _trace_diagflat(
     offset = int(k)
     flattened = array.ravel()
     size = flattened.shape[0] + abs(offset)
-    zero = _trace_constant(0.0, context)
-    source_shape = _trace_shape_label(array.shape)
-    items: list[TraceADScalar] = []
-    for row in range(size):
-        for col in range(size):
-            source_index = row if offset >= 0 else col
-            on_diag = (col - row) == offset
-            if on_diag:
-                source = flattened._items[source_index]
-                items.append(
-                    context.make(
-                        f"linalg:diagflat:{source_shape}:offset:{offset}:construct:{source_index}",
-                        (source.name,),
-                        source.primal,
-                        source.tangent,
-                    )
-                )
-            else:
-                items.append(zero)
-    return TraceADArray(tuple(items), (size, size), context)
+    with context.array_storage((size, size)) as reservation:
+        zero = _trace_constant(0.0, context)
+        source_shape = _trace_shape_label(array.shape)
+        items = [zero] * (size * size)
+        for source_index in range(flattened.shape[0]):
+            reservation.checkpoint()
+            row = source_index if offset >= 0 else source_index - offset
+            col = source_index + offset if offset >= 0 else source_index
+            source = flattened._items[source_index]
+            items[row * size + col] = context.make(
+                f"linalg:diagflat:{source_shape}:offset:{offset}:construct:{source_index}",
+                (source.name,),
+                source.primal,
+                source.tangent,
+            )
+        result = TraceADArray(tuple(items), (size, size), context)
+        reservation.checkpoint()
+    return result
 
 
 def _trace_shape_label(shape: tuple[int, ...]) -> str:
@@ -3959,7 +4474,7 @@ def _coerce_trace_predicate_array(
         if condition.context is not context:
             raise ValueError("whole-program AD predicate belongs to a different trace")
         return TraceADPredicateArray(
-            tuple(condition for _ in range(int(np.prod(shape)))), shape, context
+            tuple(condition for _ in range(math.prod(shape))), shape, context
         )
     if isinstance(condition, TraceADPredicateArray):
         if condition.context is not context:
@@ -3968,7 +4483,7 @@ def _coerce_trace_predicate_array(
     if isinstance(condition, (bool, np.bool_)):
         predicate = _TracePredicate(bool(condition), context, f"constant:{bool(condition)}")
         return TraceADPredicateArray(
-            tuple(predicate for _ in range(int(np.prod(shape)))), shape, context
+            tuple(predicate for _ in range(math.prod(shape))), shape, context
         )
     raw = np.asarray(condition)
     flat = np.broadcast_to(raw, shape).reshape(-1)
@@ -4517,7 +5032,7 @@ def _trace_norm(
                 ),
             )
         frobenius_items: list[TraceADScalar] = []
-        for reduced_flat in range(int(np.prod(reduced_shape))):
+        for reduced_flat in range(math.prod(reduced_shape)):
             reduced_index = np.unravel_index(reduced_flat, reduced_shape)
             source_items: list[TraceADScalar] = []
             for first in range(array.shape[axes[0]]):
@@ -4555,7 +5070,7 @@ def _trace_norm(
             ),
         )
     euclidean_items: list[TraceADScalar] = []
-    for reduced_flat in range(int(np.prod(reduced_shape))):
+    for reduced_flat in range(math.prod(reduced_shape)):
         reduced_index = np.unravel_index(reduced_flat, reduced_shape)
         axis_items: list[TraceADScalar] = []
         for axis_position in range(array.shape[axis_index]):

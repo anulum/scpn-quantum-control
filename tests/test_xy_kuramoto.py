@@ -10,6 +10,8 @@
 from __future__ import annotations
 
 import sys
+from threading import Event
+from time import monotonic
 from typing import Any, cast
 
 import numpy as np
@@ -18,6 +20,10 @@ import pytest
 import scpn_quantum_control.phase.xy_kuramoto as xy_mod
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.dense_budget import DenseAllocationError
+from scpn_quantum_control.execution_reservations import (
+    ExecutionCancelledError,
+    active_reserved_bytes,
+)
 from scpn_quantum_control.phase import TrajectoryResult
 from scpn_quantum_control.phase.xy_kuramoto import QuantumKuramotoSolver, TrotterEvolutionConfig
 
@@ -477,6 +483,56 @@ def test_zero_horizon_returns_one_exact_initial_sample() -> None:
 
     np.testing.assert_array_equal(result.times, [0.0])
     assert result.R.shape == (1,)
+
+
+def test_run_accounts_for_live_states_before_building_hamiltonian() -> None:
+    """An output-only allowance cannot admit evolution and measurement temporaries."""
+    solver = QuantumKuramotoSolver(2, np.zeros((2, 2)), np.zeros(2))
+    one_state_bytes = 4 * 16
+    with pytest.raises(DenseAllocationError, match="execution memory"):
+        solver.run(0.1, 0.1, max_statevector_gib=one_state_bytes / 1024**3)
+    assert solver._hamiltonian is None
+
+
+def test_run_refuses_excessive_history_before_materialisation() -> None:
+    """A tiny state cannot justify an unbounded time/output history."""
+    solver = QuantumKuramotoSolver(1, np.zeros((1, 1)), np.zeros(1))
+    with pytest.raises(DenseAllocationError, match="execution memory"):
+        solver.run(1000.0, 1e-6, max_statevector_gib=0.001)
+    assert solver._hamiltonian is None
+
+
+def test_run_refuses_unrepresentable_step_count() -> None:
+    """Finite horizon and step arguments may still imply impossible native history."""
+    solver = QuantumKuramotoSolver(1, np.zeros((1, 1)), np.zeros(1))
+    with pytest.raises(DenseAllocationError, match="trajectory history"):
+        solver.run(1e308, 1e-308)
+    assert solver._hamiltonian is None
+
+
+def test_real_run_reports_its_declared_memory_admission() -> None:
+    """A bounded real evolution reports its accepted snapshot alongside the trajectory."""
+    solver = QuantumKuramotoSolver(1, np.zeros((1, 1)), np.zeros(1))
+    result = solver.run(0.2, 0.1)
+    np.testing.assert_allclose(result.times, [0.0, 0.1, 0.2], atol=1e-15)
+    assert result.metadata["memory_declared_bytes"] > 3 * result.times.nbytes
+    assert result.metadata["memory_declared_bytes"] <= result.metadata["memory_budget_bytes"]
+
+
+def test_forward_cancel_deadline_and_success_release_reserved_memory() -> None:
+    """Real public runs dispose their charge on refusal and bounded successful evolution."""
+    solver = QuantumKuramotoSolver(1, np.zeros((1, 1)), np.zeros(1))
+    baseline = active_reserved_bytes()
+    cancelled = Event()
+    cancelled.set()
+    with pytest.raises(ExecutionCancelledError):
+        solver.run(0.1, 0.1, cancelled=cancelled)
+    with pytest.raises(TimeoutError):
+        solver.run(0.1, 0.1, deadline_monotonic=monotonic() - 1)
+    assert solver._hamiltonian is None
+    result = solver.run(0.1, 0.1)
+    np.testing.assert_allclose(result.times, [0.0, 0.1], atol=1e-15)
+    assert active_reserved_bytes() == baseline
 
 
 def test_run_evolves_final_partial_interval_without_time_label_drift() -> None:

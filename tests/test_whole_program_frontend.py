@@ -12,8 +12,16 @@ from __future__ import annotations
 
 import ast
 import dis
+import hashlib
+import importlib.util
 import inspect
+import json
+import os
+import subprocess
+import sys
 from collections.abc import AsyncIterator, Callable
+from pathlib import Path
+from threading import Event
 from types import FunctionType, SimpleNamespace
 from typing import cast
 
@@ -27,6 +35,12 @@ from scpn_quantum_control.differentiable import (
 )
 from scpn_quantum_control.differentiable import (
     whole_program_value_and_grad,
+)
+from scpn_quantum_control.execution_memory import ExecutionBuffer, ExecutionMemoryPlan
+from scpn_quantum_control.execution_reservations import (
+    ExecutionCancelledError,
+    active_reserved_bytes,
+    reserve_execution_memory,
 )
 from scpn_quantum_control.whole_program_frontend import (
     WholeProgramBytecodeBasicBlock,
@@ -331,7 +345,7 @@ def test_whole_program_frontend_normalises_python313_boolean_line_markers() -> N
 
 
 def test_frontend_metadata_and_introspection_fail_closed(
-    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
 ) -> None:
     """Validate source metadata and unavailable source/bytecode fallbacks."""
     metadata_type = frontend_module._ObjectiveSourceMetadata
@@ -344,20 +358,19 @@ def test_frontend_metadata_and_introspection_fail_closed(
         with pytest.raises(ValueError, match=message):
             factory()
 
-    def objective(value: object) -> object:
-        return value
-
-    monkeypatch.setattr(inspect, "getsourcelines", lambda _value: (["  \n"], 1))
-    assert frontend_module._objective_source_metadata(objective) is None
-    assert frontend_module._objective_source(objective) is None
-
-    def unavailable(_value: object) -> object:
-        raise TypeError("unavailable")
-
-    monkeypatch.setattr(inspect, "getsourcelines", unavailable)
-    assert frontend_module._objective_source_metadata(objective) is None
-    monkeypatch.setattr(dis, "get_instructions", unavailable)
-    assert frontend_module._objective_bytecode(objective) == ()
+    path = tmp_path / "unavailable_source.py"
+    path.write_text("def objective(value):\n    return value\n", encoding="utf-8")
+    spec = importlib.util.spec_from_file_location("unavailable_source", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    path.write_text("  \n", encoding="utf-8")
+    assert facade_compile_whole_program_frontend(module.objective).source_available is False
+    path.unlink()
+    assert facade_compile_whole_program_frontend(module.objective).source_available is False
+    unavailable = facade_compile_whole_program_frontend(len)
+    assert unavailable.source_available is False
+    assert unavailable.bytecode_instructions == ()
     assert frontend_module._normalise_positive_line_number(None) is None
     assert frontend_module._normalise_positive_line_number(0) is None
 
@@ -703,3 +716,173 @@ def test_frontend_line_map_scope_and_capture_fallbacks(
     assert "token" in frontend_module._captured_or_global_names(
         NonMappingGlobals()  # type: ignore[arg-type]
     )
+
+
+def test_public_frontend_digest_matches_canonical_json_oracle() -> None:
+    """Actual public compiler metadata hashes retain their existing canonical wire."""
+
+    def objective(values: NDArray[np.float64]) -> object:
+        label = 'Δ\\"𐀀'
+        if len(label) > 0:
+            return values[0] * values[0]
+        return values[0]
+
+    baseline = active_reserved_bytes()
+    report = facade_compile_whole_program_frontend(objective)
+    instruction_payload = [
+        {
+            "offset": item.offset,
+            "opname": item.opname,
+            "argrepr": item.argrepr,
+            "line_number": item.line_number,
+            "jump_target_offset": item.jump_target_offset,
+        }
+        for item in report.bytecode_instructions
+    ]
+    encoded = json.dumps(instruction_payload, sort_keys=True, separators=(",", ":")).encode(
+        "utf-8"
+    )
+    assert report.bytecode_digest == hashlib.sha256(encoded).hexdigest()
+    payload = {
+        "source_sha256": report.source_sha256,
+        "source_start_line": report.source_start_line,
+        "source_end_line": report.source_end_line,
+        "bytecode_instructions": [
+            {
+                "offset": item.offset,
+                "opname": item.opname,
+                "argrepr": item.argrepr,
+                "line_number": item.line_number,
+            }
+            for item in report.bytecode_instructions
+        ],
+        "bytecode_basic_blocks": [item.to_dict() for item in report.bytecode_basic_blocks],
+        "source_ir_features": [
+            {"kind": item.kind, "detail": item.detail, "line_number": item.line_number}
+            for item in report.source_ir_features
+        ],
+        "source_regions": [item.to_dict() for item in report.source_regions],
+        "source_bytecode_line_map": [item.to_dict() for item in report.source_bytecode_line_map],
+        "symbol_scope_entries": [item.to_dict() for item in report.symbol_scope_entries],
+        "unsupported_semantic_diagnostics": [
+            item.to_dict() for item in report.unsupported_semantic_diagnostics
+        ],
+        "semantics": {
+            "accepted": list(report.semantics_report.accepted_python_semantics),
+            "unsupported": list(report.semantics_report.unsupported_python_semantics),
+            "bytecode_frontend": report.semantics_report.bytecode_frontend,
+            "source_frontend": report.semantics_report.source_frontend,
+        },
+        "hard_gaps": list(report.hard_gaps),
+    }
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    assert report.frontend_digest == hashlib.sha256(canonical).hexdigest()
+    assert active_reserved_bytes() == baseline
+
+
+def test_public_frontend_digest_inherits_owner_cancellation_and_recovers() -> None:
+    """Compiler invoked within a real owner refuses cancellation and disposes child charge."""
+
+    def objective(values: NDArray[np.float64]) -> object:
+        return values[0] * values[0]
+
+    signal = Event()
+    baseline = active_reserved_bytes()
+    plan = ExecutionMemoryPlan((ExecutionBuffer("frontend_owner", "forward", (1,), "uint8"),))
+    with reserve_execution_memory(plan, cancelled=signal):
+        signal.set()
+        with pytest.raises(ExecutionCancelledError):
+            facade_compile_whole_program_frontend(objective)
+    assert active_reserved_bytes() == baseline
+    report = facade_compile_whole_program_frontend(objective)
+    assert report.frontend_ready
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("change", ["append", "overwrite", "replace", "remove"])
+def test_public_frontend_rejects_source_change_during_read_and_recovers(
+    tmp_path: Path, change: str
+) -> None:
+    """Real source-open changes reject stale admission without executing the objective."""
+    source_path = tmp_path / "changing_objective.py"
+    source_path.write_text(
+        "calls = 0\n"
+        "def objective(values):\n"
+        "    global calls\n"
+        "    calls += 1\n"
+        "    return values[0] * values[0]\n",
+        encoding="utf-8",
+    )
+    program = r"""
+import importlib.util
+import json
+import linecache
+import sys
+from pathlib import Path
+from scpn_quantum_control.dense_budget import DenseAllocationError
+from scpn_quantum_control.differentiable import compile_whole_program_frontend
+from scpn_quantum_control.execution_reservations import active_reserved_bytes
+
+path = Path(sys.argv[1])
+change = sys.argv[2]
+original = path.read_text(encoding="utf-8")
+replacement = path.with_suffix(".replacement")
+replacement.write_text(original, encoding="utf-8")
+spec = importlib.util.spec_from_file_location("changing_objective", path)
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+linecache.clearcache()
+baseline = active_reserved_bytes()
+armed = True
+with path.open("r+", encoding="utf-8") as writer:
+    def observe_open(event, args):
+        global armed
+        if armed and event == "open" and args[0] == str(path):
+            armed = False
+            if change == "append":
+                writer.seek(0, 2)
+                writer.write("# file grew at source open\n")
+                writer.flush()
+            elif change == "overwrite":
+                writer.seek(0)
+                writer.write("calls = 1\n")
+                writer.flush()
+            elif change == "replace":
+                replacement.replace(path)
+            elif change == "remove":
+                path.unlink()
+            else:
+                raise AssertionError("unknown filesystem change")
+    sys.addaudithook(observe_open)
+    try:
+        compile_whole_program_frontend(module.objective)
+    except DenseAllocationError as exc:
+        refusal = str(exc)
+    else:
+        raise AssertionError("changed source was admitted")
+assert not armed
+assert active_reserved_bytes() == baseline
+if not path.exists():
+    path.write_text(original, encoding="utf-8")
+report = compile_whole_program_frontend(module.objective)
+assert report.source_available
+assert module.calls == 0
+assert active_reserved_bytes() == baseline
+print(json.dumps({"refusal": refusal, "recovered": report.source_available}))
+"""
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = os.pathsep.join(sys.path)
+    result = subprocess.run(
+        [sys.executable, "-c", program, str(source_path), change],
+        env=environment,
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    payload = json.loads(result.stdout)
+    if change == "remove":
+        assert "source became unavailable during read" in payload["refusal"]
+    else:
+        assert "source changed before bounded read" in payload["refusal"]
+    assert payload["recovered"] is True

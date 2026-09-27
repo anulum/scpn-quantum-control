@@ -14,7 +14,7 @@
 //! the Hamiltonian directly from bit patterns without Qiskit SparsePauliOp.
 
 use numpy::{PyArray1, PyReadonlyArray1};
-use pyo3::exceptions::PyValueError;
+use pyo3::exceptions::{PyMemoryError, PyValueError};
 use pyo3::prelude::*;
 
 use crate::validation::{
@@ -31,10 +31,42 @@ fn validate_frequency_vector(omega: &[f64], n: usize) -> PyResult<()> {
     validate_finite(omega, "omega")
 }
 
+fn hamiltonian_dimension(n: usize) -> PyResult<usize> {
+    let exponent = u32::try_from(n)
+        .map_err(|_| PyValueError::new_err("Hamiltonian exponent exceeds native addressability"))?;
+    1usize
+        .checked_shl(exponent)
+        .ok_or_else(|| PyValueError::new_err("Hamiltonian dimension exceeds native addressability"))
+}
+
+fn reserve_native_memory<'py>(
+    py: Python<'py>,
+    shape: (usize, usize),
+    dtype: &str,
+    count: usize,
+) -> PyResult<(Bound<'py, PyAny>, Bound<'py, PyAny>)> {
+    let memory = py.import("scpn_quantum_control.execution_memory")?;
+    let buffer = memory.getattr("ExecutionBuffer")?.call1((
+        "native_hamiltonian_output",
+        "dense_output",
+        shape,
+        dtype,
+        count,
+    ))?;
+    let plan = memory.getattr("ExecutionMemoryPlan")?.call1(((buffer,),))?;
+    let manager = py
+        .import("scpn_quantum_control.execution_reservations")?
+        .getattr("reserve_execution_memory")?
+        .call1((plan,))?;
+    let reservation = manager.call_method0("__enter__")?;
+    Ok((manager, reservation))
+}
+
 /// Build dense XY Hamiltonian directly from K coupling and ω frequencies.
 ///
 /// Returns flat real array (XY Hamiltonian is real in computational basis).
 /// Eliminates Qiskit SparsePauliOp construction + to_matrix() overhead.
+/// Direct callers use the installed control package's shared memory/lifecycle policy.
 #[pyfunction]
 pub fn build_xy_hamiltonian_dense<'py>(
     py: Python<'py>,
@@ -43,41 +75,61 @@ pub fn build_xy_hamiltonian_dense<'py>(
     n: usize,
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     validate_n(n, "n")?;
+    let dim = hamiltonian_dimension(n)?;
+    let elements = dim
+        .checked_mul(dim)
+        .filter(|count| *count <= isize::MAX as usize / std::mem::size_of::<f64>())
+        .ok_or_else(|| PyValueError::new_err("Hamiltonian bytes exceed native addressability"))?;
     let k = validate_contiguous_slice(&k_flat, "k_flat")?;
     let w = validate_contiguous_slice(&omega, "omega")?;
     validate_flat_square(k, n, "k_flat")?;
     validate_finite(k, "k_flat")?;
     validate_frequency_vector(w, n)?;
-    let dim = 1usize << n;
-    let mut h = vec![0.0f64; dim * dim];
+    let (manager, reservation) = reserve_native_memory(py, (dim, dim), "float64", 1)?;
+    let result = (|| {
+        reservation.call_method0("checkpoint")?;
+        let mut h = Vec::new();
+        h.try_reserve_exact(elements)
+            .map_err(|error| PyMemoryError::new_err(error.to_string()))?;
+        h.resize(elements, 0.0f64);
 
-    for idx in 0..dim {
-        // Diagonal: −ω_i Z_i, where Z eigenvalue = 1−2×bit
-        let mut diag = 0.0;
-        for (i, &wi) in w.iter().enumerate().take(n) {
-            let bit = ((idx >> i) & 1) as f64;
-            diag -= wi * (1.0 - 2.0 * bit);
-        }
-        h[idx * dim + idx] = diag;
-
-        // Off-diagonal: −K[i,j]×(XX+YY) flip-flop
-        for i in 0..n {
-            for j in (i + 1)..n {
-                let kij = k[i * n + j];
-                if kij.abs() < 1e-15 {
-                    continue;
+        for idx in 0..dim {
+            if idx & 255 == 0 {
+                reservation.call_method0("checkpoint")?;
+            }
+            // Diagonal: −ω_i Z_i, where Z eigenvalue = 1−2×bit
+            let mut diag = 0.0;
+            for (i, &wi) in w.iter().enumerate().take(n) {
+                if wi.abs() > 1e-15 {
+                    let bit = ((idx >> i) & 1) as f64;
+                    diag -= wi * (1.0 - 2.0 * bit);
                 }
-                let bi = (idx >> i) & 1;
-                let bj = (idx >> j) & 1;
-                if bi != bj {
-                    let flipped = idx ^ ((1 << i) | (1 << j));
-                    h[idx * dim + flipped] -= 2.0 * kij;
+            }
+            h[idx * dim + idx] = diag;
+
+            // Off-diagonal: −K[i,j]×(XX+YY) flip-flop
+            for i in 0..n {
+                for j in (i + 1)..n {
+                    let kij = k[i * n + j];
+                    if kij.abs() < 1e-15 {
+                        continue;
+                    }
+                    let bi = (idx >> i) & 1;
+                    let bj = (idx >> j) & 1;
+                    if bi != bj {
+                        let flipped = idx ^ ((1 << i) | (1 << j));
+                        h[idx * dim + flipped] -= 2.0 * kij;
+                    }
                 }
             }
         }
-    }
 
-    Ok(PyArray1::from_vec(py, h))
+        validate_finite(&h, "Hamiltonian output")?;
+        reservation.call_method0("checkpoint")?;
+        Ok(PyArray1::from_vec(py, h))
+    })();
+    manager.call_method1("__exit__", (py.None(), py.None(), py.None()))?;
+    result
 }
 
 /// Build sparse XY Hamiltonian as COO triplets (rows, cols, vals).
@@ -97,56 +149,103 @@ pub fn build_sparse_xy_hamiltonian<'py>(
     Bound<'py, PyArray1<f64>>,
 )> {
     validate_n(n, "n")?;
+    let dim = hamiltonian_dimension(n)?;
     let k = validate_contiguous_slice(&k_flat, "k_flat")?;
     let om = validate_contiguous_slice(&omega, "omega")?;
     validate_flat_square(k, n, "k_flat")?;
     validate_finite(k, "k_flat")?;
     validate_frequency_vector(om, n)?;
-    let dim = 1usize << n;
-
-    let mut rows: Vec<i64> = Vec::new();
-    let mut cols: Vec<i64> = Vec::new();
-    let mut vals: Vec<f64> = Vec::new();
-
-    // Diagonal: −Σ ω_i (1 − 2×b_i(s))
-    for s in 0..dim {
-        let mut diag = 0.0f64;
-        for (i, &omi) in om.iter().enumerate().take(n) {
-            let bi = ((s >> i) & 1) as f64;
-            diag -= omi * (1.0 - 2.0 * bi);
-        }
-        rows.push(s as i64);
-        cols.push(s as i64);
-        vals.push(diag);
-    }
-
-    // Off-diagonal: XY flip-flop
+    let mut pairs = 0usize;
     for i in 0..n {
         for j in (i + 1)..n {
-            let kij = k[i * n + j];
-            if kij.abs() < 1e-15 {
-                continue;
+            if k[i * n + j].abs() >= 1e-15 {
+                pairs += 1;
             }
-            let mask = (1usize << i) | (1usize << j);
-            let val = -2.0 * kij;
-            for s in 0..dim {
-                let bi = (s >> i) & 1;
-                let bj = (s >> j) & 1;
-                if bi != bj {
-                    let s_flip = s ^ mask;
-                    rows.push(s as i64);
-                    cols.push(s_flip as i64);
-                    vals.push(val);
+        }
+    }
+    let entries = pairs
+        .checked_mul(dim / 2)
+        .and_then(|off_diagonal| off_diagonal.checked_add(dim))
+        .ok_or_else(|| PyValueError::new_err("Hamiltonian entries exceed native addressability"))?;
+    let bytes = entries
+        .checked_mul(std::mem::size_of::<i64>().max(std::mem::size_of::<f64>()))
+        .filter(|bytes| *bytes <= isize::MAX as usize)
+        .ok_or_else(|| PyValueError::new_err("Hamiltonian bytes exceed native addressability"))?;
+    let (manager, reservation) = reserve_native_memory(py, (bytes, 1), "uint8", 3)?;
+    let result = (|| {
+        reservation.call_method0("checkpoint")?;
+        let mut rows: Vec<i64> = Vec::new();
+        let mut cols: Vec<i64> = Vec::new();
+        let mut vals: Vec<f64> = Vec::new();
+        rows.try_reserve_exact(entries)
+            .map_err(|error| PyMemoryError::new_err(error.to_string()))?;
+        cols.try_reserve_exact(entries)
+            .map_err(|error| PyMemoryError::new_err(error.to_string()))?;
+        vals.try_reserve_exact(entries)
+            .map_err(|error| PyMemoryError::new_err(error.to_string()))?;
+
+        // Diagonal: −Σ ω_i (1 − 2×b_i(s))
+        for s in 0..dim {
+            if s & 255 == 0 {
+                reservation.call_method0("checkpoint")?;
+            }
+            let mut diag = 0.0f64;
+            for (i, &omi) in om.iter().enumerate().take(n) {
+                if omi.abs() > 1e-15 {
+                    let bi = ((s >> i) & 1) as f64;
+                    diag -= omi * (1.0 - 2.0 * bi);
+                }
+            }
+            rows.push(s as i64);
+            cols.push(s as i64);
+            vals.push(diag);
+        }
+
+        // Off-diagonal: XY flip-flop
+        for i in 0..n {
+            for j in (i + 1)..n {
+                let kij = k[i * n + j];
+                if kij.abs() < 1e-15 {
+                    continue;
+                }
+                let mask = (1usize << i) | (1usize << j);
+                let val = -2.0 * kij;
+                for s in 0..dim {
+                    if s & 255 == 0 {
+                        reservation.call_method0("checkpoint")?;
+                    }
+                    let bi = (s >> i) & 1;
+                    let bj = (s >> j) & 1;
+                    if bi != bj {
+                        if rows.len() >= entries {
+                            return Err(PyValueError::new_err(
+                                "couplings changed during Hamiltonian construction",
+                            ));
+                        }
+                        let s_flip = s ^ mask;
+                        rows.push(s as i64);
+                        cols.push(s_flip as i64);
+                        vals.push(val);
+                    }
                 }
             }
         }
-    }
 
-    Ok((
-        PyArray1::from_vec(py, rows),
-        PyArray1::from_vec(py, cols),
-        PyArray1::from_vec(py, vals),
-    ))
+        if rows.len() != entries {
+            return Err(PyValueError::new_err(
+                "couplings changed during Hamiltonian construction",
+            ));
+        }
+        validate_finite(&vals, "Hamiltonian output")?;
+        reservation.call_method0("checkpoint")?;
+        Ok((
+            PyArray1::from_vec(py, rows),
+            PyArray1::from_vec(py, cols),
+            PyArray1::from_vec(py, vals),
+        ))
+    })();
+    manager.call_method1("__exit__", (py.None(), py.None(), py.None()))?;
+    result
 }
 
 #[expect(

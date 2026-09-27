@@ -17,6 +17,9 @@ Kuramoto <-> XY mapping:
 
 from __future__ import annotations
 
+from threading import Event
+from typing import Literal
+
 import numpy as np
 from numpy.typing import NDArray
 from qiskit.circuit import ParameterVector, QuantumCircuit
@@ -27,6 +30,8 @@ from .._constants import COUPLING_SPARSITY_EPS
 from .._rust_accel import optional_rust_engine
 from ..compile_budget import require_pauli_operator_budget
 from ..dense_budget import require_dense_allocation
+from ..execution_memory import ExecutionBuffer, ExecutionMemoryPlan
+from ..execution_reservations import reserve_execution_memory
 
 KNM_SPARSITY_EPS = COUPLING_SPARSITY_EPS
 
@@ -158,10 +163,38 @@ def knm_to_xxz_hamiltonian(
 
     At Δ=1, perturbations around equilibria connect to the semiclassical
     Gaudin model and the Richardson pairing mechanism.
+
+    Parameters
+    ----------
+    K
+        Real finite square coupling matrix, symmetrised on a copy.
+    omega
+        Real finite one-dimensional oscillator frequencies.
+    delta
+        Finite XXZ anisotropy; selected ZZ coefficients must remain finite.
+
+    Returns
+    -------
+    SparsePauliOp
+        Canonically selected XY/XXZ terms without further tolerance pruning.
+
+    Raises
+    ------
+    ValueError
+        Invalid shape, dtype, nonfinite input or overflowed ZZ coefficient.
+    DenseAllocationError
+        The declared Pauli representation exceeds the active memory budget.
+
     """
     n = len(omega)
-    if K.shape[0] != n:
+    if K.ndim >= 1 and K.shape[0] != n:
         raise ValueError(f"K has {K.shape[0]} rows but omega has {n} elements")
+    if omega.ndim != 1 or K.shape != (n, n):
+        raise ValueError("Pauli Hamiltonian input shape must be K=(n,n), omega=(n,)")
+    if K.dtype.kind not in "fi" or omega.dtype.kind not in "fi":
+        raise ValueError("Pauli Hamiltonian input dtype must be real numeric")
+    if not np.all(np.isfinite(K)) or not np.all(np.isfinite(omega)) or not np.isfinite(delta):
+        raise ValueError("Pauli Hamiltonian inputs must be finite")
 
     require_pauli_operator_budget(
         n,
@@ -170,7 +203,7 @@ def knm_to_xxz_hamiltonian(
     )
 
     # Enforce symmetry (Finding #7: K Symmetry Broken by Gradient Training)
-    K = (K + K.T) / 2.0
+    K = 0.5 * K + 0.5 * K.T
 
     pauli_list = []
 
@@ -199,12 +232,16 @@ def knm_to_xxz_hamiltonian(
                 zz = ["I"] * n
                 zz[i] = "Z"
                 zz[j] = "Z"
-                pauli_list.append(("".join(reversed(zz)), -K[i, j] * delta))
+                with np.errstate(over="ignore", invalid="ignore"):
+                    coefficient = -K[i, j] * delta
+                if not np.isfinite(coefficient):
+                    raise ValueError("XXZ coefficient is not finite")
+                pauli_list.append(("".join(reversed(zz)), coefficient))
 
     if not pauli_list:
         return SparsePauliOp.from_list([("I" * n, 0.0)])
     labels, coeffs = zip(*pauli_list, strict=True)
-    return SparsePauliOp(list(labels), list(coeffs)).simplify()
+    return SparsePauliOp(list(labels), list(coeffs)).simplify(atol=0.0, rtol=0.0)
 
 
 def knm_to_hamiltonian(K: NDArray[np.float64], omega: NDArray[np.float64]) -> SparsePauliOp:
@@ -253,43 +290,122 @@ def knm_to_dense_matrix(
     delta: float = 0.0,
     *,
     max_dense_gib: float | None = None,
+    backend: Literal["auto", "python", "rust"] = "auto",
+    deadline_monotonic: float | None = None,
+    cancelled: Event | None = None,
 ) -> NDArray[np.complex128]:
     """Build dense XY Hamiltonian matrix, Rust fast path with Qiskit fallback.
 
-    Returns complex ndarray of shape (2^n, 2^n).
+    Returns complex ndarray of shape (2^n, 2^n). Admission includes the
+    requested output, two matrix intermediates and input-conversion buffers.
+    ``backend='rust'`` refuses missing native support or nonzero anisotropy;
+    ``auto`` retains the optional Rust route with an explicit Python fallback.
+    Snapshot admission does not reserve memory or bound undocumented backend
+    workspaces.
+
+    Parameters
+    ----------
+    K
+        Real finite coupling array of shape ``(n, n)``; symmetrised on a copy.
+    omega
+        Real finite frequency vector of shape ``(n,)``.
+    delta
+        XXZ anisotropy; the native XY entry supports only zero anisotropy.
+    max_dense_gib
+        Optional whole declared-buffer cap constrained by live process headroom.
+    backend
+        Explicit Python or Rust selection, or optional native selection in auto mode.
+    deadline_monotonic
+        Optional absolute monotonic deadline, checked before and after dispatch.
+    cancelled
+        Optional caller cancellation event, checked before and after dispatch.
+
+    Returns
+    -------
+    numpy.ndarray
+        Complex128 dense operator in Qiskit little-endian convention.
+
+    Raises
+    ------
+    ValueError
+        Unsupported route, malformed input/output shape, or nonfinite numeric data.
+    DenseAllocationError
+        Declared execution memory or a requested native entry is unavailable.
+    RuntimeError
+        A previously admitted native entry disappears before dispatch.
+
     """
+    if omega.ndim != 1:
+        raise ValueError("dense Hamiltonian input shape must be K=(n,n), omega=(n,)")
     n = len(omega)
-    require_dense_allocation(
-        n,
-        dtype=np.complex128,
-        rank=2,
-        max_gib=max_dense_gib,
-        label="dense XY Hamiltonian",
+    if K.shape != (n, n):
+        raise ValueError("dense Hamiltonian input shape must be K=(n,n), omega=(n,)")
+    if K.dtype.kind not in "fi" or omega.dtype.kind not in "fi":
+        raise ValueError("dense Hamiltonian input dtype must be real numeric")
+    if not np.isfinite(delta):
+        raise ValueError("dense Hamiltonian inputs must be finite")
+    if backend not in ("auto", "python", "rust"):
+        raise ValueError("unknown dense Hamiltonian backend")
+    if backend == "rust" and delta != 0.0:
+        raise ValueError("native dense Hamiltonian supports delta=0 only")
+    plan = ExecutionMemoryPlan(
+        (
+            ExecutionBuffer.hilbert("output", "dense_output", n, rank=2),
+            ExecutionBuffer.hilbert("matrix_temporaries", "intermediate", n, rank=2, count=2),
+            ExecutionBuffer("coupling_conversion", "intermediate", (n, n), "float64", 3),
+            ExecutionBuffer("frequency_conversion", "intermediate", (n,), "float64"),
+        )
     )
+    with reserve_execution_memory(
+        plan,
+        max_gib=max_dense_gib,
+        native_symbol="build_xy_hamiltonian_dense" if backend == "rust" else None,
+        deadline_monotonic=deadline_monotonic,
+        cancelled=cancelled,
+    ) as reservation:
+        reservation.checkpoint()
+        # These sequential boolean masks fit within the declared conversion
+        # workspace and must not be materialised before admission.
+        if not np.all(np.isfinite(K)) or not np.all(np.isfinite(omega)):
+            raise ValueError("dense Hamiltonian inputs must be finite")
+        reservation.checkpoint()
+        # Enforce symmetry (Finding #7: K Symmetry Broken by Gradient Training)
+        K = 0.5 * K + 0.5 * K.T
 
-    # Enforce symmetry (Finding #7: K Symmetry Broken by Gradient Training)
-    K = (K + K.T) / 2.0
-
-    # Rust engine only supports delta=0.0 for now
-    if abs(delta) < 1e-12:
-        try:
+        # Rust engine only supports delta=0.0 for now
+        if backend != "python" and delta == 0.0:
             _engine = optional_rust_engine()
-            if _engine is None:
-                raise AttributeError("scpn_quantum_engine absent")
-            h_flat = np.asarray(
-                _engine.build_xy_hamiltonian_dense(
-                    K.ravel().astype(np.float64),
-                    omega.astype(np.float64),
-                    n,
+            if _engine is not None and callable(
+                getattr(_engine, "build_xy_hamiltonian_dense", None)
+            ):
+                reservation.checkpoint()
+                h_flat = np.asarray(
+                    _engine.build_xy_hamiltonian_dense(
+                        K.ravel().astype(np.float64),
+                        omega.astype(np.float64),
+                        n,
+                    )
                 )
-            )
-            return h_flat.reshape(2**n, 2**n).astype(complex)
-        except AttributeError:
-            pass
+                reservation.checkpoint()
+                if h_flat.ndim != 1 or h_flat.size != 1 << (2 * n):
+                    raise ValueError("native dense Hamiltonian returned malformed output shape")
+                if h_flat.dtype.kind not in "fi" or not np.all(np.isfinite(h_flat)):
+                    raise ValueError("native dense Hamiltonian returned invalid numeric data")
+                output = h_flat.reshape(2**n, 2**n).astype(complex)
+                reservation.checkpoint()
+                return output
+            if backend == "rust":
+                raise RuntimeError("requested native kernel became unavailable; fallback refused")
 
-    H_op = knm_to_xxz_hamiltonian(K, omega, delta)
-    H_raw = H_op.to_matrix()
-    return H_raw.toarray() if hasattr(H_raw, "toarray") else np.array(H_raw)
+        H_op = knm_to_xxz_hamiltonian(K, omega, delta)
+        reservation.checkpoint()
+        H_raw = H_op.to_matrix()
+        reservation.checkpoint()
+        output = H_raw.toarray() if hasattr(H_raw, "toarray") else np.array(H_raw)
+        if not np.all(np.isfinite(output)):
+            raise ValueError("dense Hamiltonian returned invalid numeric data")
+        reservation.checkpoint()
+        return output
 
 
 def knm_to_ansatz(

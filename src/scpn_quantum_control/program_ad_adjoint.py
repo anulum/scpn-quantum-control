@@ -10,13 +10,18 @@
 
 from __future__ import annotations
 
+import sys
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from numbers import Real
+from threading import Event
 from typing import TYPE_CHECKING, Any, cast
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
+
+from .execution_memory import ExecutionBuffer, ExecutionMemoryPlan
+from .execution_reservations import reserve_execution_memory
 
 if TYPE_CHECKING:
     from .differentiable_parameter_contracts import Parameter
@@ -407,7 +412,13 @@ def program_adjoint_result(result: object) -> ProgramADAdjointResult:
     return result.adjoint_result
 
 
-def program_adjoint_gradient(result: object) -> NDArray[np.float64]:
+def program_adjoint_gradient(
+    result: object,
+    *,
+    max_execution_gib: float | None = None,
+    deadline_monotonic: float | None = None,
+    cancelled: Event | None = None,
+) -> NDArray[np.float64]:
     """Return a supported reverse-mode adjoint gradient or fail closed.
 
     Parameters
@@ -415,6 +426,12 @@ def program_adjoint_gradient(result: object) -> NDArray[np.float64]:
     result:
         Whole-program AD result whose attached reverse-adjoint metadata should
         be supported.
+    max_execution_gib:
+        Optional cap for retained and copied numeric gradient buffers.
+    deadline_monotonic:
+        Absolute monotonic deadline checked before and after copying.
+    cancelled:
+        Optional cancellation event checked before and after copying.
 
     Returns
     -------
@@ -425,18 +442,71 @@ def program_adjoint_gradient(result: object) -> NDArray[np.float64]:
     ------
     ValueError
         If no adjoint metadata is attached or the captured IR has unsupported
-        operations.
+        operations, or its mutable gradient storage no longer has the captured
+        float64 shape or finite values, or a frozen coordinate is nonzero.
 
     """
     adjoint = program_adjoint_result(result)
     if not adjoint.supported:
         unsupported = ", ".join(adjoint.unsupported_ops)
         raise ValueError(f"program AD adjoint generation unsupported for ops: {unsupported}")
-    gradient: NDArray[np.float64] = adjoint.gradient.copy()
-    return gradient
+    source = adjoint.gradient
+    if type(source) is not np.ndarray or source.dtype != np.dtype(np.float64) or source.ndim != 1:
+        raise ValueError(
+            "attached adjoint gradient must remain a plain one-dimensional float64 array"
+        )
+    from .whole_program_ad_result import WholeProgramADResult
+
+    if not isinstance(result, WholeProgramADResult) or source.shape != (
+        len(result.parameter_names),
+    ):
+        raise ValueError("attached adjoint gradient shape must match parameter names")
+    count = int(source.size)
+    plan = ExecutionMemoryPlan(
+        (
+            ExecutionBuffer("gradient_copy", "dense_output", (max(1, count),), "float64", 3),
+            ExecutionBuffer(
+                "gradient_copy_validation", "intermediate", (max(1, count),), "bool", 2
+            ),
+            ExecutionBuffer(
+                "gradient_copy_headers",
+                "intermediate",
+                (np.ndarray.__basicsize__ + 2 * np.dtype(np.uintp).itemsize,),
+                "uint8",
+                3,
+            ),
+        )
+    )
+    with reserve_execution_memory(
+        plan,
+        max_gib=max_execution_gib,
+        deadline_monotonic=deadline_monotonic,
+        cancelled=cancelled,
+    ) as reservation:
+        gradient = np.empty(count, dtype=np.float64)
+        if source.shape != (count,) or source.dtype != np.dtype(np.float64):
+            raise ValueError("attached adjoint gradient changed after admission")
+        np.copyto(gradient, source, casting="no")
+        reservation.checkpoint()
+        if np.any(~np.isfinite(gradient)):
+            raise ValueError("attached adjoint gradient must contain finite values")
+        for index, trainable in enumerate(result.trainable):
+            reservation.checkpoint()
+            if not trainable and gradient[index] != 0.0:
+                raise ValueError(
+                    "attached adjoint gradient must be zero for non-trainable parameters"
+                )
+        reservation.checkpoint()
+        return gradient
 
 
-def program_adjoint_replay_gradient(result: object) -> NDArray[np.float64]:
+def program_adjoint_replay_gradient(
+    result: object,
+    *,
+    max_execution_gib: float | None = None,
+    deadline_monotonic: float | None = None,
+    cancelled: Event | None = None,
+) -> NDArray[np.float64]:
     """Execute generated Program AD adjoint steps and return the replayed gradient.
 
     Parameters
@@ -445,6 +515,12 @@ def program_adjoint_replay_gradient(result: object) -> NDArray[np.float64]:
         Whole-program AD result carrying supported ``ProgramADAdjointStep``
         rows bound to ``program_ad_effect_ir.v1`` and the captured stabilized
         IR node sequence.
+    max_execution_gib:
+        Optional cap for replay numeric buffers and declared Python workspace.
+    deadline_monotonic:
+        Absolute monotonic deadline checked at replay steps.
+    cancelled:
+        Optional cancellation event checked at replay steps.
 
     Returns
     -------
@@ -470,20 +546,16 @@ def program_adjoint_replay_gradient(result: object) -> NDArray[np.float64]:
         unsupported = ", ".join(adjoint.unsupported_ops)
         raise ValueError(f"program AD adjoint generation unsupported for ops: {unsupported}")
 
-    replay_gradient = _program_adjoint_execute_steps(
+    return _program_adjoint_execute_steps(
         adjoint=adjoint,
         ir_nodes=result.ir_nodes,
         parameter_names=result.parameter_names,
         trainable=result.trainable,
+        max_execution_gib=max_execution_gib,
+        deadline_monotonic=deadline_monotonic,
+        cancelled=cancelled,
+        expected_gradient=adjoint.gradient,
     )
-    if not np.allclose(
-        replay_gradient,
-        adjoint.gradient,
-        rtol=0.0,
-        atol=_PROGRAM_ADJOINT_REPLAY_ATOL,
-    ):
-        raise ValueError("program AD executable adjoint replay diverged from attached gradient")
-    return replay_gradient
 
 
 def program_adjoint_grad(
@@ -492,6 +564,9 @@ def program_adjoint_grad(
     parameters: Sequence[Parameter] | None = None,
     *,
     trace: bool = True,
+    max_execution_gib: float | None = None,
+    deadline_monotonic: float | None = None,
+    cancelled: Event | None = None,
 ) -> NDArray[np.float64]:
     """Return the reverse-mode program AD gradient for supported captured IR.
 
@@ -507,6 +582,12 @@ def program_adjoint_grad(
     trace:
         Whether to keep runtime trace-event evidence in the captured
         whole-program result.
+    max_execution_gib:
+        Optional whole-program numeric-buffer cap, including retained tangent tape.
+    deadline_monotonic:
+        Absolute monotonic deadline forwarded to the owned trace operation.
+    cancelled:
+        Optional cancellation event forwarded to the owned trace operation.
 
     Returns
     -------
@@ -527,8 +608,16 @@ def program_adjoint_grad(
         values,
         parameters=parameters,
         trace=trace,
+        max_execution_gib=max_execution_gib,
+        deadline_monotonic=deadline_monotonic,
+        cancelled=cancelled,
     )
-    return program_adjoint_gradient(result)
+    return program_adjoint_gradient(
+        result,
+        max_execution_gib=max_execution_gib,
+        deadline_monotonic=deadline_monotonic,
+        cancelled=cancelled,
+    )
 
 
 def program_adjoint_value_and_grad(
@@ -537,6 +626,9 @@ def program_adjoint_value_and_grad(
     parameters: Sequence[Parameter] | None = None,
     *,
     trace: bool = True,
+    max_execution_gib: float | None = None,
+    deadline_monotonic: float | None = None,
+    cancelled: Event | None = None,
 ) -> tuple[float, NDArray[np.float64]]:
     """Return the objective value and reverse-mode Program AD gradient.
 
@@ -552,6 +644,12 @@ def program_adjoint_value_and_grad(
     trace:
         Whether to keep runtime trace-event evidence in the captured
         whole-program result.
+    max_execution_gib:
+        Optional whole-program numeric-buffer cap, including retained tangent tape.
+    deadline_monotonic:
+        Absolute monotonic deadline forwarded to the owned trace operation.
+    cancelled:
+        Optional cancellation event forwarded to the owned trace operation.
 
     Returns
     -------
@@ -572,8 +670,16 @@ def program_adjoint_value_and_grad(
         values,
         parameters=parameters,
         trace=trace,
+        max_execution_gib=max_execution_gib,
+        deadline_monotonic=deadline_monotonic,
+        cancelled=cancelled,
     )
-    return result.value, program_adjoint_gradient(result)
+    return result.value, program_adjoint_gradient(
+        result,
+        max_execution_gib=max_execution_gib,
+        deadline_monotonic=deadline_monotonic,
+        cancelled=cancelled,
+    )
 
 
 def _program_adjoint_input_value(
@@ -604,85 +710,130 @@ def _program_adjoint_execute_steps(
     ir_nodes: tuple[WholeProgramIRNode, ...],
     parameter_names: tuple[str, ...],
     trainable: tuple[bool, ...],
+    max_execution_gib: float | None = None,
+    deadline_monotonic: float | None = None,
+    cancelled: Event | None = None,
+    expected_gradient: NDArray[np.float64] | None = None,
 ) -> NDArray[np.float64]:
     """Execute a generated reverse-adjoint step stream over captured IR metadata."""
-    if adjoint.replay_ir_format != "program_ad_effect_ir.v1":
-        raise ValueError("program AD executable adjoint replay requires program_ad_effect_ir.v1")
-    if not adjoint.adjoint_steps:
-        raise ValueError("program AD executable adjoint replay requires generated adjoint steps")
-    if not ir_nodes:
-        raise ValueError("program AD executable adjoint replay requires captured IR nodes")
-    if adjoint.replay_node_count != len(ir_nodes):
-        raise ValueError(
-            "program AD executable adjoint replay node count does not match captured IR"
+    node_count = max(1, len(ir_nodes))
+    parameter_count = max(1, len(parameter_names))
+    cotangent_count = max(
+        node_count, 1 + sum(len(step.contribution_inputs) for step in adjoint.adjoint_steps)
+    )
+    pointer_bytes = np.dtype(np.uintp).itemsize
+    mapping_entry_bytes = sys.getsizeof({"": 0.0}) + sys.getsizeof(0.0)
+    workspace_bytes = (
+        cotangent_count * mapping_entry_bytes
+        + node_count * 4 * pointer_bytes
+        + sum(sys.getsizeof(step.primal_value) for step in adjoint.adjoint_steps)
+        + parameter_count * (mapping_entry_bytes + sys.getsizeof({""}))
+        + 4 * sys.getsizeof(())
+        + 2 * sys.getsizeof({})
+        + sys.getsizeof(set())
+    )
+    plan = ExecutionMemoryPlan(
+        (
+            ExecutionBuffer("replay_gradients", "dense_output", (parameter_count,), "float64", 8),
+            ExecutionBuffer("replay_cotangents", "adjoint", (cotangent_count,), "float64"),
+            ExecutionBuffer("replay_metadata", "intermediate", (workspace_bytes,), "uint8"),
         )
-    if len(set(parameter_names)) != len(parameter_names):
-        raise ValueError("program AD executable adjoint replay requires unique parameters")
-    expected_primal_values = tuple(f"%{node.index}" for node in reversed(ir_nodes))
-    actual_primal_values = tuple(step.primal_value for step in adjoint.adjoint_steps)
-    if actual_primal_values != expected_primal_values:
-        raise ValueError(
-            "program AD executable adjoint replay step stream is not bound to captured IR"
-        )
-    expected_operations = tuple(node.op for node in reversed(ir_nodes))
-    actual_operations = tuple(step.operation for step in adjoint.adjoint_steps)
-    if actual_operations != expected_operations:
-        raise ValueError(
-            "program AD executable adjoint replay operations do not match captured IR"
-        )
-
-    root_step = adjoint.adjoint_steps[0]
-    cotangents: dict[str, float] = {root_step.primal_value: 1.0}
-    parameter_cotangents: dict[str, float] = {}
-    parameter_name_set = set(parameter_names)
-    for step in adjoint.adjoint_steps:
-        if not step.supported:
+    )
+    with reserve_execution_memory(
+        plan,
+        max_gib=max_execution_gib,
+        deadline_monotonic=deadline_monotonic,
+        cancelled=cancelled,
+    ) as reservation:
+        if adjoint.replay_ir_format != "program_ad_effect_ir.v1":
             raise ValueError(
-                "program AD executable adjoint replay cannot execute unsupported step "
-                f"{step.operation}"
+                "program AD executable adjoint replay requires program_ad_effect_ir.v1"
             )
-        incoming = float(cotangents.get(step.primal_value, 0.0))
-        _program_adjoint_replay_require_close(
-            "incoming cotangent",
-            incoming,
-            step.incoming_cotangent,
-        )
-        if step.operation == "parameter":
-            if len(step.input_values) != 1:
-                raise ValueError(
-                    "program AD executable adjoint replay parameter step must name one parameter"
-                )
-            parameter_name = step.input_values[0]
-            if parameter_name not in parameter_name_set:
-                raise ValueError(
-                    "program AD executable adjoint replay parameter step is not in "
-                    "result parameter names"
-                )
-            parameter_cotangents[parameter_name] = (
-                parameter_cotangents.get(parameter_name, 0.0) + incoming
+        if not adjoint.adjoint_steps:
+            raise ValueError(
+                "program AD executable adjoint replay requires generated adjoint steps"
             )
-        for input_name, scale, recorded_cotangent in zip(
-            step.contribution_inputs,
-            step.contribution_scales,
-            step.contribution_cotangents,
-            strict=True,
-        ):
-            contribution = incoming * scale
-            _program_adjoint_replay_require_close(
-                "contribution cotangent",
-                contribution,
-                recorded_cotangent,
+        if not ir_nodes:
+            raise ValueError("program AD executable adjoint replay requires captured IR nodes")
+        if adjoint.replay_node_count != len(ir_nodes):
+            raise ValueError(
+                "program AD executable adjoint replay node count does not match captured IR"
             )
-            if _program_adjoint_is_ir_value(input_name):
-                cotangents[input_name] = cotangents.get(input_name, 0.0) + contribution
+        if len(set(parameter_names)) != len(parameter_names):
+            raise ValueError("program AD executable adjoint replay requires unique parameters")
+        expected_primal_values = tuple(f"%{node.index}" for node in reversed(ir_nodes))
+        actual_primal_values = tuple(step.primal_value for step in adjoint.adjoint_steps)
+        if actual_primal_values != expected_primal_values:
+            raise ValueError(
+                "program AD executable adjoint replay step stream is not bound to captured IR"
+            )
+        expected_operations = tuple(node.op for node in reversed(ir_nodes))
+        actual_operations = tuple(step.operation for step in adjoint.adjoint_steps)
+        if actual_operations != expected_operations:
+            raise ValueError(
+                "program AD executable adjoint replay operations do not match captured IR"
+            )
 
-    gradient = np.zeros(len(parameter_names), dtype=np.float64)
-    for index, (parameter_name, trainable_flag) in enumerate(
-        zip(parameter_names, trainable, strict=True)
-    ):
-        if trainable_flag:
-            gradient[index] = parameter_cotangents.get(parameter_name, 0.0)
-    return gradient
+        root_step = adjoint.adjoint_steps[0]
+        cotangents: dict[str, float] = {root_step.primal_value: 1.0}
+        parameter_cotangents: dict[str, float] = {}
+        parameter_name_set = set(parameter_names)
+        for step in adjoint.adjoint_steps:
+            reservation.checkpoint()
+            if not step.supported:
+                raise ValueError(
+                    "program AD executable adjoint replay cannot execute unsupported step "
+                    f"{step.operation}"
+                )
+            incoming = float(cotangents.get(step.primal_value, 0.0))
+            _program_adjoint_replay_require_close(
+                "incoming cotangent",
+                incoming,
+                step.incoming_cotangent,
+            )
+            if step.operation == "parameter":
+                if len(step.input_values) != 1:
+                    raise ValueError(
+                        "program AD executable adjoint replay parameter step must name one parameter"
+                    )
+                parameter_name = step.input_values[0]
+                if parameter_name not in parameter_name_set:
+                    raise ValueError(
+                        "program AD executable adjoint replay parameter step is not in "
+                        "result parameter names"
+                    )
+                parameter_cotangents[parameter_name] = (
+                    parameter_cotangents.get(parameter_name, 0.0) + incoming
+                )
+            for input_name, scale, recorded_cotangent in zip(
+                step.contribution_inputs,
+                step.contribution_scales,
+                step.contribution_cotangents,
+                strict=True,
+            ):
+                contribution = incoming * scale
+                _program_adjoint_replay_require_close(
+                    "contribution cotangent",
+                    contribution,
+                    recorded_cotangent,
+                )
+                if _program_adjoint_is_ir_value(input_name):
+                    cotangents[input_name] = cotangents.get(input_name, 0.0) + contribution
+
+        gradient = np.zeros(len(parameter_names), dtype=np.float64)
+        for index, (parameter_name, trainable_flag) in enumerate(
+            zip(parameter_names, trainable, strict=True)
+        ):
+            if trainable_flag:
+                gradient[index] = parameter_cotangents.get(parameter_name, 0.0)
+        if expected_gradient is not None and not np.allclose(
+            gradient, expected_gradient, rtol=0.0, atol=_PROGRAM_ADJOINT_REPLAY_ATOL
+        ):
+            raise ValueError(
+                "program AD executable adjoint replay diverged from attached gradient"
+            )
+        reservation.checkpoint()
+        return gradient
 
 
 def _program_adjoint_replay_require_close(

@@ -24,6 +24,15 @@ from numpy.typing import ArrayLike, NDArray
 from .differentiable_parameter_contracts import _as_real_numeric_array
 from .differentiable_result_contracts import _normalise_claim_boundary
 from .program_ad_array_indexing import _normalise_axis
+from .program_ad_linalg_memory import (
+    determinant_cofactor_execution_scope,
+    determinant_execution_scope,
+    diagonal_execution_scope,
+    inverse_execution_scope,
+    matrix_power_execution_scope,
+    multi_dot_execution_scope,
+    solve_execution_scope,
+)
 from .program_ad_registry import (
     _PROGRAM_AD_LINALG_IDENTITIES,
     _PROGRAM_AD_LINALG_POLICY,
@@ -400,33 +409,39 @@ def _program_ad_linalg_det_cofactor_matrix(matrix: NDArray[np.float64]) -> NDArr
     rows, cols = matrix.shape
     if rows != cols:
         raise ValueError("program AD linalg det direct rule requires a square matrix")
-    if rows == 0:
-        return np.zeros((0, 0), dtype=np.float64)
-    if rows == 1:
-        return np.ones((1, 1), dtype=np.float64)
-    cofactors = np.zeros_like(matrix, dtype=np.float64)
-    for row in range(rows):
-        for col in range(cols):
-            minor = np.delete(np.delete(matrix, row, axis=0), col, axis=1)
-            cofactors[row, col] = ((-1.0) ** (row + col)) * float(np.linalg.det(minor))
-    return cofactors
+    with determinant_cofactor_execution_scope((rows, cols)) as reservation:
+        if rows == 0:
+            return np.zeros((0, 0), dtype=np.float64)
+        if rows == 1:
+            return np.ones((1, 1), dtype=np.float64)
+        cofactors = np.zeros_like(matrix, dtype=np.float64)
+        for row in range(rows):
+            reservation.checkpoint()
+            for col in range(cols):
+                reservation.checkpoint()
+                minor = np.delete(np.delete(matrix, row, axis=0), col, axis=1)
+                reservation.checkpoint()
+                cofactors[row, col] = ((-1.0) ** (row + col)) * float(np.linalg.det(minor))
+        return cofactors
 
 
 def _program_ad_linalg_det_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
-    matrix = _program_ad_linalg_square_matrix("det", values)
-    return np.array([float(np.linalg.det(matrix))], dtype=np.float64)
+    with determinant_execution_scope(values):
+        matrix = _program_ad_linalg_square_matrix("det", values)
+        return np.array([float(np.linalg.det(matrix))], dtype=np.float64)
 
 
 def _program_ad_linalg_det_jvp(
     values: NDArray[np.float64],
     tangent: NDArray[np.float64],
 ) -> NDArray[np.float64]:
-    matrix = _program_ad_linalg_square_matrix("det", values)
-    tangent_matrix = _program_ad_linalg_square_matrix("det", tangent)
-    if tangent_matrix.shape != matrix.shape:
-        raise ValueError("program AD linalg det tangent shape must match matrix shape")
-    cofactors = _program_ad_linalg_det_cofactor_matrix(matrix)
-    return np.array([float(np.sum(cofactors * tangent_matrix))], dtype=np.float64)
+    with determinant_execution_scope(values, operand=tangent):
+        matrix = _program_ad_linalg_square_matrix("det", values)
+        tangent_matrix = _program_ad_linalg_square_matrix("det", tangent)
+        if tangent_matrix.shape != matrix.shape:
+            raise ValueError("program AD linalg det tangent shape must match matrix shape")
+        cofactors = _program_ad_linalg_det_cofactor_matrix(matrix)
+        return np.array([float(np.sum(cofactors * tangent_matrix))], dtype=np.float64)
 
 
 def _program_ad_linalg_scalar_cotangent(
@@ -445,39 +460,57 @@ def _program_ad_linalg_det_vjp(
     values: NDArray[np.float64],
     cotangent: NDArray[np.float64],
 ) -> NDArray[np.float64]:
-    matrix = _program_ad_linalg_square_matrix("det", values)
-    scalar_cotangent = _program_ad_linalg_scalar_cotangent("det", cotangent)
-    cofactors = _program_ad_linalg_det_cofactor_matrix(matrix)
-    return _program_ad_float64_vector_result(scalar_cotangent * cofactors)
+    with determinant_execution_scope(values, operand=cotangent, pullback=True):
+        matrix = _program_ad_linalg_square_matrix("det", values)
+        scalar_cotangent = _program_ad_linalg_scalar_cotangent("det", cotangent)
+        cofactors = _program_ad_linalg_det_cofactor_matrix(matrix)
+        return _program_ad_float64_vector_result(scalar_cotangent * cofactors)
 
 
 def _program_ad_linalg_inv_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
-    matrix = _program_ad_linalg_square_matrix("inv", values)
-    return np.linalg.inv(matrix).reshape(-1).astype(np.float64)
+    with inverse_execution_scope(values) as reservation:
+        matrix = _program_ad_linalg_square_matrix("inv", values)
+        inverse = np.linalg.inv(matrix)
+        reservation.checkpoint()
+        return inverse.reshape(-1).astype(np.float64)
 
 
 def _program_ad_linalg_inv_jvp(
     values: NDArray[np.float64],
     tangent: NDArray[np.float64],
 ) -> NDArray[np.float64]:
-    matrix = _program_ad_linalg_square_matrix("inv", values)
-    tangent_matrix = _program_ad_linalg_square_matrix("inv", tangent)
-    if tangent_matrix.shape != matrix.shape:
-        raise ValueError("program AD linalg inv tangent shape must match matrix shape")
-    inverse = np.linalg.inv(matrix)
-    return (-(inverse @ tangent_matrix @ inverse)).reshape(-1).astype(np.float64)
+    with inverse_execution_scope(values, operand=tangent) as reservation:
+        matrix = _program_ad_linalg_square_matrix("inv", values)
+        tangent_matrix = _program_ad_linalg_square_matrix("inv", tangent)
+        if tangent_matrix.shape != matrix.shape:
+            raise ValueError("program AD linalg inv tangent shape must match matrix shape")
+        inverse = np.linalg.inv(matrix)
+        reservation.checkpoint()
+        product = inverse @ tangent_matrix
+        reservation.checkpoint()
+        result = product @ inverse
+        del product
+        reservation.checkpoint()
+        return (-result).reshape(-1).astype(np.float64)
 
 
 def _program_ad_linalg_inv_vjp(
     values: NDArray[np.float64],
     cotangent: NDArray[np.float64],
 ) -> NDArray[np.float64]:
-    matrix = _program_ad_linalg_square_matrix("inv", values)
-    cotangent_matrix = _program_ad_linalg_square_matrix("inv cotangent", cotangent)
-    if cotangent_matrix.shape != matrix.shape:
-        raise ValueError("program AD linalg inv VJP cotangent shape must match output shape")
-    inverse = np.linalg.inv(matrix)
-    return _program_ad_float64_vector_result(-(inverse.T @ cotangent_matrix @ inverse.T))
+    with inverse_execution_scope(values, operand=cotangent) as reservation:
+        matrix = _program_ad_linalg_square_matrix("inv", values)
+        cotangent_matrix = _program_ad_linalg_square_matrix("inv cotangent", cotangent)
+        if cotangent_matrix.shape != matrix.shape:
+            raise ValueError("program AD linalg inv VJP cotangent shape must match output shape")
+        inverse = np.linalg.inv(matrix)
+        reservation.checkpoint()
+        product = inverse.T @ cotangent_matrix
+        reservation.checkpoint()
+        result = product @ inverse.T
+        del product
+        reservation.checkpoint()
+        return _program_ad_float64_vector_result(-result)
 
 
 def _program_ad_linalg_solve_split(
@@ -500,38 +533,54 @@ def _program_ad_linalg_solve_split(
 
 
 def _program_ad_linalg_solve_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
-    matrix, rhs = _program_ad_linalg_solve_split("solve", values)
-    return np.linalg.solve(matrix, rhs).astype(np.float64)
+    with solve_execution_scope(values) as reservation:
+        matrix, rhs = _program_ad_linalg_solve_split("solve", values)
+        solution = np.linalg.solve(matrix, rhs)
+        reservation.checkpoint()
+        return solution.astype(np.float64)
 
 
 def _program_ad_linalg_solve_jvp(
     values: NDArray[np.float64],
     tangent: NDArray[np.float64],
 ) -> NDArray[np.float64]:
-    matrix, rhs = _program_ad_linalg_solve_split("solve", values)
-    tangent_matrix, tangent_rhs = _program_ad_linalg_solve_split("solve", tangent)
-    if tangent_matrix.shape != matrix.shape or tangent_rhs.shape != rhs.shape:
-        raise ValueError("program AD linalg solve tangent shape must match primal shape")
-    solution = np.linalg.solve(matrix, rhs)
-    return np.linalg.solve(matrix, tangent_rhs - tangent_matrix @ solution).astype(np.float64)
+    with solve_execution_scope(values, operand=tangent) as reservation:
+        matrix, rhs = _program_ad_linalg_solve_split("solve", values)
+        tangent_matrix, tangent_rhs = _program_ad_linalg_solve_split("solve", tangent)
+        if tangent_matrix.shape != matrix.shape or tangent_rhs.shape != rhs.shape:
+            raise ValueError("program AD linalg solve tangent shape must match primal shape")
+        solution = np.linalg.solve(matrix, rhs)
+        reservation.checkpoint()
+        product = tangent_matrix @ solution
+        reservation.checkpoint()
+        differential = tangent_rhs - product
+        tangent_solution = np.linalg.solve(matrix, differential)
+        reservation.checkpoint()
+        return tangent_solution.astype(np.float64)
 
 
 def _program_ad_linalg_solve_vjp(
     values: NDArray[np.float64],
     cotangent: NDArray[np.float64],
 ) -> NDArray[np.float64]:
-    matrix, rhs = _program_ad_linalg_solve_split("solve", values)
-    cotangent_vector = _as_real_numeric_array(
-        "program AD linalg solve cotangent", cotangent
-    ).reshape(-1)
-    if cotangent_vector.shape != rhs.shape:
-        raise ValueError("program AD linalg solve VJP cotangent shape must match solution shape")
-    solution = np.linalg.solve(matrix, rhs)
-    rhs_adjoint = np.linalg.solve(matrix.T, cotangent_vector)
-    matrix_adjoint = -np.outer(rhs_adjoint, solution)
-    return _program_ad_float64_vector_result(
-        np.concatenate((matrix_adjoint.reshape(-1), rhs_adjoint))
-    )
+    with solve_execution_scope(values, operand=cotangent, pullback=True) as reservation:
+        matrix, rhs = _program_ad_linalg_solve_split("solve", values)
+        cotangent_vector = _as_real_numeric_array(
+            "program AD linalg solve cotangent", cotangent
+        ).reshape(-1)
+        if cotangent_vector.shape != rhs.shape:
+            raise ValueError(
+                "program AD linalg solve VJP cotangent shape must match solution shape"
+            )
+        solution = np.linalg.solve(matrix, rhs)
+        reservation.checkpoint()
+        rhs_adjoint = np.linalg.solve(matrix.T, cotangent_vector)
+        reservation.checkpoint()
+        matrix_adjoint = -np.outer(rhs_adjoint, solution)
+        reservation.checkpoint()
+        return _program_ad_float64_vector_result(
+            np.concatenate((matrix_adjoint.reshape(-1), rhs_adjoint))
+        )
 
 
 def _program_ad_linalg_normalise_solve_shapes(
@@ -583,47 +632,68 @@ def program_ad_linalg_solve_derivative_rule(
     )
 
     def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
-        matrix, rhs = _program_ad_linalg_solve_static_split(
-            "values", values, matrix_shape=matrix_static_shape, rhs_shape=rhs_static_shape
-        )
-        return _program_ad_float64_vector_result(np.linalg.solve(matrix, rhs))
+        with solve_execution_scope(
+            values, shapes=(matrix_static_shape, rhs_static_shape)
+        ) as reservation:
+            matrix, rhs = _program_ad_linalg_solve_static_split(
+                "values", values, matrix_shape=matrix_static_shape, rhs_shape=rhs_static_shape
+            )
+            solution = np.linalg.solve(matrix, rhs)
+            reservation.checkpoint()
+            return _program_ad_float64_vector_result(solution)
 
     def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
-        matrix, rhs = _program_ad_linalg_solve_static_split(
-            "values", values, matrix_shape=matrix_static_shape, rhs_shape=rhs_static_shape
-        )
-        tangent_matrix, tangent_rhs = _program_ad_linalg_solve_static_split(
-            "tangent", tangent, matrix_shape=matrix_static_shape, rhs_shape=rhs_static_shape
-        )
-        solution = np.linalg.solve(matrix, rhs)
-        return _program_ad_float64_vector_result(
-            np.linalg.solve(matrix, tangent_rhs - tangent_matrix @ solution)
-        )
+        with solve_execution_scope(
+            values, operand=tangent, shapes=(matrix_static_shape, rhs_static_shape)
+        ) as reservation:
+            matrix, rhs = _program_ad_linalg_solve_static_split(
+                "values", values, matrix_shape=matrix_static_shape, rhs_shape=rhs_static_shape
+            )
+            tangent_matrix, tangent_rhs = _program_ad_linalg_solve_static_split(
+                "tangent", tangent, matrix_shape=matrix_static_shape, rhs_shape=rhs_static_shape
+            )
+            solution = np.linalg.solve(matrix, rhs)
+            reservation.checkpoint()
+            product = tangent_matrix @ solution
+            reservation.checkpoint()
+            differential = tangent_rhs - product
+            tangent_solution = np.linalg.solve(matrix, differential)
+            reservation.checkpoint()
+            return _program_ad_float64_vector_result(tangent_solution)
 
     def vjp_rule(
         values: NDArray[np.float64], cotangent: NDArray[np.float64]
     ) -> NDArray[np.float64]:
-        matrix, rhs = _program_ad_linalg_solve_static_split(
-            "values", values, matrix_shape=matrix_static_shape, rhs_shape=rhs_static_shape
-        )
-        cotangent_vector = _as_real_numeric_array(
-            "program AD linalg solve cotangent", cotangent
-        ).reshape(-1)
-        rhs_size = _program_ad_shape_static_size(rhs_static_shape)
-        if cotangent_vector.size != rhs_size:
-            raise ValueError(
-                "program AD linalg solve VJP cotangent shape must match solution shape"
+        with solve_execution_scope(
+            values,
+            operand=cotangent,
+            shapes=(matrix_static_shape, rhs_static_shape),
+            pullback=True,
+        ) as reservation:
+            matrix, rhs = _program_ad_linalg_solve_static_split(
+                "values", values, matrix_shape=matrix_static_shape, rhs_shape=rhs_static_shape
             )
-        cotangent_rhs = cotangent_vector.reshape(rhs_static_shape)
-        solution = np.linalg.solve(matrix, rhs)
-        rhs_adjoint = np.linalg.solve(matrix.T, cotangent_rhs)
-        if rhs_adjoint.ndim == 1:
-            matrix_adjoint = -np.outer(rhs_adjoint, solution)
-        else:
-            matrix_adjoint = -(rhs_adjoint @ solution.T)
-        return _program_ad_float64_vector_result(
-            np.concatenate((matrix_adjoint.reshape(-1), rhs_adjoint.reshape(-1)))
-        )
+            cotangent_vector = _as_real_numeric_array(
+                "program AD linalg solve cotangent", cotangent
+            ).reshape(-1)
+            rhs_size = _program_ad_shape_static_size(rhs_static_shape)
+            if cotangent_vector.size != rhs_size:
+                raise ValueError(
+                    "program AD linalg solve VJP cotangent shape must match solution shape"
+                )
+            cotangent_rhs = cotangent_vector.reshape(rhs_static_shape)
+            solution = np.linalg.solve(matrix, rhs)
+            reservation.checkpoint()
+            rhs_adjoint = np.linalg.solve(matrix.T, cotangent_rhs)
+            reservation.checkpoint()
+            if rhs_adjoint.ndim == 1:
+                matrix_adjoint = -np.outer(rhs_adjoint, solution)
+            else:
+                matrix_adjoint = -(rhs_adjoint @ solution.T)
+            reservation.checkpoint()
+            return _program_ad_float64_vector_result(
+                np.concatenate((matrix_adjoint.reshape(-1), rhs_adjoint.reshape(-1)))
+            )
 
     return CustomDerivativeRule(
         name=(
@@ -640,70 +710,116 @@ def program_ad_linalg_solve_derivative_rule(
 def program_ad_linalg_matrix_power_derivative_rule(
     power: int | np.integer,
 ) -> CustomDerivativeRule:
-    """Build a direct value/JVP rule for a fixed matrix-power primitive."""
+    """Build admitted value/JVP/VJP callbacks for a fixed matrix power.
+
+    Parameters
+    ----------
+    power
+        Static integer exponent; negative powers require a nonsingular matrix.
+
+    Returns
+    -------
+    CustomDerivativeRule
+        Exact callbacks that admit conversions, numeric workspaces and retained
+        derivative powers on each invocation under the current execution owner.
+
+    Raises
+    ------
+    ValueError
+        The exponent is not an integer. Callback input contracts also reject
+        nonreal or non-finite arrays and malformed flattened square matrices.
+    DenseAllocationError
+        Callback storage exceeds native addressability or current capacity.
+
+    """
     if isinstance(power, bool) or not isinstance(power, (int, np.integer)):
         raise ValueError("program AD linalg matrix_power derivative rule requires integer power")
     exponent = int(power)
 
     def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
-        matrix = _program_ad_linalg_square_matrix("matrix_power", values)
-        return np.linalg.matrix_power(matrix, exponent).reshape(-1).astype(np.float64)
+        with matrix_power_execution_scope(values, exponent):
+            matrix = _program_ad_linalg_square_matrix("matrix_power", values)
+            return np.linalg.matrix_power(matrix, exponent).reshape(-1).astype(np.float64)
 
     def jvp_rule(
         values: NDArray[np.float64],
         tangent: NDArray[np.float64],
     ) -> NDArray[np.float64]:
-        matrix = _program_ad_linalg_square_matrix("matrix_power", values)
-        tangent_matrix = _program_ad_linalg_square_matrix("matrix_power", tangent)
-        if tangent_matrix.shape != matrix.shape:
-            raise ValueError(
-                "program AD linalg matrix_power tangent shape must match matrix shape"
-            )
-        if exponent == 0:
-            return np.zeros_like(matrix, dtype=np.float64).reshape(-1)
-        if exponent > 0:
+        with matrix_power_execution_scope(values, exponent, operand=tangent) as reservation:
+            matrix = _program_ad_linalg_square_matrix("matrix_power", values)
+            tangent_matrix = _program_ad_linalg_square_matrix("matrix_power", tangent)
+            if tangent_matrix.shape != matrix.shape:
+                raise ValueError(
+                    "program AD linalg matrix_power tangent shape must match matrix shape"
+                )
+            if exponent == 0:
+                return np.zeros_like(matrix, dtype=np.float64).reshape(-1)
+            if exponent > 0:
+                total = np.zeros_like(matrix, dtype=np.float64)
+                powers: list[NDArray[np.float64]] = []
+                for index in range(exponent):
+                    reservation.checkpoint()
+                    powers.append(np.linalg.matrix_power(matrix, index))
+                for index in range(exponent):
+                    reservation.checkpoint()
+                    total = total + powers[index] @ tangent_matrix @ powers[exponent - 1 - index]
+                return total.reshape(-1).astype(np.float64)
+            inverse = np.linalg.inv(matrix)
+            inverse_tangent = -(inverse @ tangent_matrix @ inverse)
+            positive_exponent = -exponent
             total = np.zeros_like(matrix, dtype=np.float64)
-            powers = [np.linalg.matrix_power(matrix, index) for index in range(exponent)]
-            for index in range(exponent):
-                total = total + powers[index] @ tangent_matrix @ powers[exponent - 1 - index]
+            powers = []
+            for index in range(positive_exponent):
+                reservation.checkpoint()
+                powers.append(np.linalg.matrix_power(inverse, index))
+            for index in range(positive_exponent):
+                reservation.checkpoint()
+                total = (
+                    total + powers[index] @ inverse_tangent @ powers[positive_exponent - 1 - index]
+                )
             return total.reshape(-1).astype(np.float64)
-        inverse = np.linalg.inv(matrix)
-        inverse_tangent = -(inverse @ tangent_matrix @ inverse)
-        positive_exponent = -exponent
-        total = np.zeros_like(matrix, dtype=np.float64)
-        powers = [np.linalg.matrix_power(inverse, index) for index in range(positive_exponent)]
-        for index in range(positive_exponent):
-            total = total + powers[index] @ inverse_tangent @ powers[positive_exponent - 1 - index]
-        return total.reshape(-1).astype(np.float64)
 
     def vjp_rule(
         values: NDArray[np.float64],
         cotangent: NDArray[np.float64],
     ) -> NDArray[np.float64]:
-        matrix = _program_ad_linalg_square_matrix("matrix_power", values)
-        cotangent_matrix = _program_ad_linalg_square_matrix("matrix_power cotangent", cotangent)
-        if cotangent_matrix.shape != matrix.shape:
-            raise ValueError(
-                "program AD linalg matrix_power VJP cotangent shape must match output shape"
+        with matrix_power_execution_scope(values, exponent, operand=cotangent) as reservation:
+            matrix = _program_ad_linalg_square_matrix("matrix_power", values)
+            cotangent_matrix = _program_ad_linalg_square_matrix(
+                "matrix_power cotangent", cotangent
             )
-        if exponent == 0:
-            return np.zeros_like(matrix, dtype=np.float64).reshape(-1)
-        if exponent > 0:
-            total = np.zeros_like(matrix, dtype=np.float64)
-            powers = [np.linalg.matrix_power(matrix, index) for index in range(exponent)]
-            for index in range(exponent):
-                total = total + powers[index].T @ cotangent_matrix @ powers[exponent - 1 - index].T
-            return total.reshape(-1).astype(np.float64)
-        inverse = np.linalg.inv(matrix)
-        positive_exponent = -exponent
-        inverse_adjoint = np.zeros_like(matrix, dtype=np.float64)
-        powers = [np.linalg.matrix_power(inverse, index) for index in range(positive_exponent)]
-        for index in range(positive_exponent):
-            inverse_adjoint = (
-                inverse_adjoint
-                + powers[index].T @ cotangent_matrix @ powers[positive_exponent - 1 - index].T
-            )
-        return _program_ad_float64_vector_result(-(inverse.T @ inverse_adjoint @ inverse.T))
+            if cotangent_matrix.shape != matrix.shape:
+                raise ValueError(
+                    "program AD linalg matrix_power VJP cotangent shape must match output shape"
+                )
+            if exponent == 0:
+                return np.zeros_like(matrix, dtype=np.float64).reshape(-1)
+            if exponent > 0:
+                total = np.zeros_like(matrix, dtype=np.float64)
+                powers: list[NDArray[np.float64]] = []
+                for index in range(exponent):
+                    reservation.checkpoint()
+                    powers.append(np.linalg.matrix_power(matrix, index))
+                for index in range(exponent):
+                    reservation.checkpoint()
+                    total = (
+                        total + powers[index].T @ cotangent_matrix @ powers[exponent - 1 - index].T
+                    )
+                return total.reshape(-1).astype(np.float64)
+            inverse = np.linalg.inv(matrix)
+            positive_exponent = -exponent
+            inverse_adjoint = np.zeros_like(matrix, dtype=np.float64)
+            powers = []
+            for index in range(positive_exponent):
+                reservation.checkpoint()
+                powers.append(np.linalg.matrix_power(inverse, index))
+            for index in range(positive_exponent):
+                reservation.checkpoint()
+                inverse_adjoint = (
+                    inverse_adjoint
+                    + powers[index].T @ cotangent_matrix @ powers[positive_exponent - 1 - index].T
+                )
+            return _program_ad_float64_vector_result(-(inverse.T @ inverse_adjoint @ inverse.T))
 
     return CustomDerivativeRule(
         name=f"program_ad_linalg_matrix_power_{exponent}_direct_rule",
@@ -732,7 +848,9 @@ def _normalise_program_ad_linalg_multi_dot_shapes(
             raise ValueError(
                 "program AD linalg multi_dot derivative rule middle operands must be rank-2"
             )
-    _program_ad_linalg_multi_dot_shape((tuple(np.zeros(shape) for shape in shapes),))
+    for index in range(1, len(shapes)):
+        if shapes[index - 1][-1] != shapes[index][0]:
+            raise ValueError("program AD linalg multi_dot shape rule dimensions must align")
     return shapes
 
 
@@ -742,13 +860,13 @@ def _split_program_ad_linalg_multi_dot_operands(
     operand_shapes: tuple[tuple[int, ...], ...],
 ) -> tuple[NDArray[np.float64], ...]:
     vector = _as_real_numeric_array(f"program AD linalg multi_dot {name}", values).reshape(-1)
-    expected_size = sum(int(np.prod(shape)) for shape in operand_shapes)
+    expected_size = sum(math.prod(shape) for shape in operand_shapes)
     if vector.size != expected_size:
         raise ValueError("program AD linalg multi_dot direct rule values size must match shapes")
     operands: list[NDArray[np.float64]] = []
     cursor = 0
     for shape in operand_shapes:
-        size = int(np.prod(shape))
+        size = math.prod(shape)
         operands.append(vector[cursor : cursor + size].reshape(shape))
         cursor += size
     return tuple(operands)
@@ -761,50 +879,86 @@ def _as_flat_multi_dot_result(value: object) -> NDArray[np.float64]:
 def program_ad_linalg_multi_dot_derivative_rule(
     operand_shapes: Sequence[Sequence[int]],
 ) -> CustomDerivativeRule:
-    """Build a direct value/JVP rule for a fixed multi-dot operand signature."""
+    """Build admitted value/JVP/VJP callbacks for fixed multi-dot shapes.
+
+    Parameters
+    ----------
+    operand_shapes
+        Positive aligned vector or matrix dimensions. Shape validation does
+        not allocate numeric operands; vectors are allowed only at endpoints.
+
+    Returns
+    -------
+    CustomDerivativeRule
+        Callbacks admitting conversion, chain intermediates and derivatives.
+
+    Raises
+    ------
+    ValueError
+        Static shapes do not meet rank, positive dimension or alignment rules.
+        Callback numeric inputs must be plain real finite arrays.
+    DenseAllocationError
+        Callback storage exceeds native addressability or current capacity.
+
+    """
     shapes = _normalise_program_ad_linalg_multi_dot_shapes(operand_shapes)
 
     def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
-        operands = _split_program_ad_linalg_multi_dot_operands("values", values, shapes)
-        return _as_flat_multi_dot_result(np.linalg.multi_dot(operands))
+        with multi_dot_execution_scope(values, shapes) as reservation:
+            operands = _split_program_ad_linalg_multi_dot_operands("values", values, shapes)
+            output = np.linalg.multi_dot(operands)
+            reservation.checkpoint()
+            return _as_flat_multi_dot_result(output)
 
     def jvp_rule(
         values: NDArray[np.float64],
         tangent: NDArray[np.float64],
     ) -> NDArray[np.float64]:
-        operands = _split_program_ad_linalg_multi_dot_operands("values", values, shapes)
-        tangent_operands = _split_program_ad_linalg_multi_dot_operands("tangent", tangent, shapes)
-        total: NDArray[np.float64] | None = None
-        for index, tangent_operand in enumerate(tangent_operands):
-            varied = operands[:index] + (tangent_operand,) + operands[index + 1 :]
-            contribution = _as_flat_multi_dot_result(np.linalg.multi_dot(varied))
-            total = contribution if total is None else total + contribution
-        return cast(NDArray[np.float64], total).astype(np.float64)
+        with multi_dot_execution_scope(values, shapes, operand=tangent) as reservation:
+            operands = _split_program_ad_linalg_multi_dot_operands("values", values, shapes)
+            tangent_operands = _split_program_ad_linalg_multi_dot_operands(
+                "tangent", tangent, shapes
+            )
+            total: NDArray[np.float64] | None = None
+            for index, tangent_operand in enumerate(tangent_operands):
+                reservation.checkpoint()
+                varied = operands[:index] + (tangent_operand,) + operands[index + 1 :]
+                contribution = _as_flat_multi_dot_result(np.linalg.multi_dot(varied))
+                reservation.checkpoint()
+                total = contribution if total is None else total + contribution
+            return cast(NDArray[np.float64], total).astype(np.float64)
 
     def vjp_rule(
         values: NDArray[np.float64],
         cotangent: NDArray[np.float64],
     ) -> NDArray[np.float64]:
-        operands = _split_program_ad_linalg_multi_dot_operands("values", values, shapes)
-        output = _as_flat_multi_dot_result(np.linalg.multi_dot(operands))
-        cotangent_vector = _as_real_numeric_array(
-            "program AD linalg multi_dot cotangent", cotangent
-        ).reshape(-1)
-        if cotangent_vector.shape != output.shape:
-            raise ValueError(
-                "program AD linalg multi_dot VJP cotangent shape must match output shape"
-            )
-        adjoints: list[NDArray[np.float64]] = []
-        for operand_index, operand in enumerate(operands):
-            operand_adjoint = np.zeros_like(operand, dtype=np.float64)
-            for element_index in np.ndindex(operand.shape):
-                basis = np.zeros_like(operand, dtype=np.float64)
-                basis[element_index] = 1.0
-                varied = operands[:operand_index] + (basis,) + operands[operand_index + 1 :]
-                contribution = _as_flat_multi_dot_result(np.linalg.multi_dot(varied))
-                operand_adjoint[element_index] = float(np.dot(cotangent_vector, contribution))
-            adjoints.append(operand_adjoint.reshape(-1))
-        return _program_ad_float64_vector_result(np.concatenate(adjoints))
+        with multi_dot_execution_scope(
+            values, shapes, operand=cotangent, pullback=True
+        ) as reservation:
+            operands = _split_program_ad_linalg_multi_dot_operands("values", values, shapes)
+            output = _as_flat_multi_dot_result(np.linalg.multi_dot(operands))
+            reservation.checkpoint()
+            cotangent_vector = _as_real_numeric_array(
+                "program AD linalg multi_dot cotangent", cotangent
+            ).reshape(-1)
+            if cotangent_vector.shape != output.shape:
+                raise ValueError(
+                    "program AD linalg multi_dot VJP cotangent shape must match output shape"
+                )
+            adjoints: list[NDArray[np.float64]] = []
+            for operand_index, operand in enumerate(operands):
+                reservation.checkpoint()
+                operand_adjoint = np.zeros_like(operand, dtype=np.float64)
+                for element_index in np.ndindex(operand.shape):
+                    reservation.checkpoint()
+                    basis = np.zeros_like(operand, dtype=np.float64)
+                    basis[element_index] = 1.0
+                    varied = operands[:operand_index] + (basis,) + operands[operand_index + 1 :]
+                    contribution = _as_flat_multi_dot_result(np.linalg.multi_dot(varied))
+                    reservation.checkpoint()
+                    operand_adjoint[element_index] = float(np.dot(cotangent_vector, contribution))
+                adjoints.append(operand_adjoint.reshape(-1))
+            return _program_ad_float64_vector_result(np.concatenate(adjoints))
 
     signature = "x".join("_".join(str(dim) for dim in shape) for shape in shapes)
     return CustomDerivativeRule(
@@ -946,7 +1100,9 @@ def _program_ad_linalg_diag_positions(
         return positions
     if len(source_shape) == 2:
         rows, cols = source_shape
-        positions = tuple((row, row + offset) for row in range(rows) if 0 <= row + offset < cols)
+        positions = tuple(
+            (row, row + offset) for row in range(max(0, -offset), min(rows, cols - offset))
+        )
         if not positions:
             raise ValueError("program AD linalg diag offset selects an empty diagonal")
         return positions
@@ -957,11 +1113,14 @@ def _program_ad_linalg_diag_shape_from_source(
     source_shape: tuple[int, ...],
     offset: int,
 ) -> tuple[int, ...]:
-    positions = _program_ad_linalg_diag_positions(source_shape, offset)
     if len(source_shape) == 1:
         size = source_shape[0] + abs(offset)
         return (size, size)
-    return (len(positions),)
+    rows, cols = source_shape
+    count = max(0, min(rows, cols - offset) - max(0, -offset))
+    if count == 0:
+        raise ValueError("program AD linalg diag offset selects an empty diagonal")
+    return (count,)
 
 
 def program_ad_linalg_diag_derivative_rule(
@@ -976,7 +1135,6 @@ def program_ad_linalg_diag_derivative_rule(
     if any(dimension <= 0 for dimension in static_shape):
         raise ValueError("program AD linalg diag derivative rule dimensions must be positive")
     offset = _program_ad_linalg_offset("diag", k)
-    positions = _program_ad_linalg_diag_positions(static_shape, offset)
     source_size = _program_ad_shape_static_size(static_shape)
     output_shape = _program_ad_linalg_diag_shape_from_source(static_shape, offset)
     output_size = _program_ad_shape_static_size(output_shape)
@@ -994,26 +1152,40 @@ def program_ad_linalg_diag_derivative_rule(
         return vector.reshape(output_shape)
 
     def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
-        source = split_source("values", values)
-        return _program_ad_float64_vector_result(np.diag(source, k=offset))
+        with diagonal_execution_scope(values, static_shape, output_shape) as reservation:
+            source = split_source("values", values)
+            output = np.diag(source, k=offset)
+            reservation.checkpoint()
+            return _program_ad_float64_vector_result(output)
 
     def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
         del values
-        source_tangent = split_source("tangent", tangent)
-        return _program_ad_float64_vector_result(np.diag(source_tangent, k=offset))
+        with diagonal_execution_scope(tangent, static_shape, output_shape) as reservation:
+            source_tangent = split_source("tangent", tangent)
+            output = np.diag(source_tangent, k=offset)
+            reservation.checkpoint()
+            return _program_ad_float64_vector_result(output)
 
     def vjp_rule(
         values: NDArray[np.float64], cotangent: NDArray[np.float64]
     ) -> NDArray[np.float64]:
-        split_source("values", values)
-        cotangent_array = split_output("cotangent", cotangent)
-        if len(static_shape) == 1:
-            return _program_ad_float64_vector_result(np.diag(cotangent_array, k=offset))
-        adjoint = np.zeros(static_shape, dtype=np.float64)
-        cotangent_vector = cotangent_array.reshape(-1)
-        for index, (row, col) in enumerate(positions):
-            adjoint[row, col] += cotangent_vector[index]
-        return _program_ad_float64_vector_result(adjoint)
+        with diagonal_execution_scope(
+            values, static_shape, output_shape, operand=cotangent
+        ) as reservation:
+            split_source("values", values)
+            cotangent_array = split_output("cotangent", cotangent)
+            if len(static_shape) == 1:
+                output = np.diag(cotangent_array, k=offset)
+                reservation.checkpoint()
+                return _program_ad_float64_vector_result(output)
+            adjoint = np.zeros(static_shape, dtype=np.float64)
+            cotangent_vector = cotangent_array.reshape(-1)
+            for index, (row, col) in enumerate(
+                _program_ad_linalg_diag_positions(static_shape, offset)
+            ):
+                reservation.checkpoint()
+                adjoint[row, col] += cotangent_vector[index]
+            return _program_ad_float64_vector_result(adjoint)
 
     return CustomDerivativeRule(
         name=(
@@ -1053,21 +1225,33 @@ def program_ad_linalg_diagflat_derivative_rule(
         return vector.reshape(output_shape)
 
     def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
-        source = split_source("values", values)
-        return _program_ad_float64_vector_result(np.diagflat(source, k=offset))
+        with diagonal_execution_scope(values, static_shape, output_shape) as reservation:
+            source = split_source("values", values)
+            output = np.diagflat(source, k=offset)
+            reservation.checkpoint()
+            return _program_ad_float64_vector_result(output)
 
     def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
-        split_source("values", values)
-        tangent_source = split_source("tangent", tangent)
-        return _program_ad_float64_vector_result(np.diagflat(tangent_source, k=offset))
+        with diagonal_execution_scope(
+            values, static_shape, output_shape, operand=tangent
+        ) as reservation:
+            split_source("values", values)
+            tangent_source = split_source("tangent", tangent)
+            output = np.diagflat(tangent_source, k=offset)
+            reservation.checkpoint()
+            return _program_ad_float64_vector_result(output)
 
     def vjp_rule(
         values: NDArray[np.float64], cotangent: NDArray[np.float64]
     ) -> NDArray[np.float64]:
-        split_source("values", values)
-        cotangent_matrix = split_output("cotangent", cotangent)
-        adjoint_flat = np.diag(cotangent_matrix, k=offset)
-        return _program_ad_float64_vector_result(adjoint_flat.reshape(static_shape))
+        with diagonal_execution_scope(
+            values, static_shape, output_shape, operand=cotangent
+        ) as reservation:
+            split_source("values", values)
+            cotangent_matrix = split_output("cotangent", cotangent)
+            adjoint_flat = np.diag(cotangent_matrix, k=offset)
+            reservation.checkpoint()
+            return _program_ad_float64_vector_result(adjoint_flat.reshape(static_shape))
 
     return CustomDerivativeRule(
         name=(
@@ -2128,7 +2312,7 @@ def _program_ad_linalg_diagflat_shape(args: tuple[object, ...]) -> tuple[int, ..
     offset = 0
     if len(args) == 2:
         offset = _program_ad_linalg_offset("diagflat", cast(int | np.integer, args[1]))
-    source_size = int(np.prod(shape))
+    source_size = math.prod(shape)
     if source_size <= 0:
         raise ValueError("program AD linalg diagflat shape rule requires non-empty input")
     output_size = source_size + abs(offset)
@@ -2321,7 +2505,7 @@ def _program_ad_linalg_diagflat_static_arguments(args: tuple[object, ...]) -> tu
     offset = 0
     if len(args) == 2:
         offset = _program_ad_linalg_offset("diagflat", cast(int | np.integer, args[1]))
-    if int(np.prod(shape)) <= 0:
+    if math.prod(shape) <= 0:
         raise ValueError("program AD linalg diagflat static rule requires non-empty input")
     return (shape, offset)
 

@@ -15,6 +15,7 @@ Gate = tuple[str, list[str]]
 PROGRAM_AD_ADJOINT_SOURCE = "src/scpn_quantum_control/program_ad_adjoint.py"
 PROGRAM_AD_ADJOINT_GENERATION_SOURCE = "src/scpn_quantum_control/program_ad_adjoint_generation.py"
 PROGRAM_AD_ADJOINT_COVERAGE_COHORT = [
+    "tests/test_program_ad_adjoint.py",
     "tests/test_adjoint_replay_product.py",
     "tests/test_differentiable_programming_benchmark_program_ir_edges.py",
     "tests/test_program_ad_adjoint_generation.py",
@@ -23,6 +24,7 @@ PROGRAM_AD_ADJOINT_COVERAGE_COHORT = [
     "tests/test_program_ad_runtime_registry_dispatch.py",
 ]
 PROGRAM_AD_ADJOINT_TYPING_RATCHET = [
+    "tests/test_program_ad_adjoint.py",
     PROGRAM_AD_ADJOINT_SOURCE,
     PROGRAM_AD_ADJOINT_GENERATION_SOURCE,
     "tests/test_program_ad_adjoint_generation.py",
@@ -31,6 +33,7 @@ PROGRAM_AD_ADJOINT_TYPING_RATCHET = [
     "tests/test_program_ad_adjoint_quality_gate.py",
 ]
 PROGRAM_AD_ADJOINT_DOCSTRING_RATCHET = [
+    "tests/test_program_ad_adjoint.py",
     PROGRAM_AD_ADJOINT_SOURCE,
     PROGRAM_AD_ADJOINT_GENERATION_SOURCE,
     "tests/test_adjoint_replay_product.py",

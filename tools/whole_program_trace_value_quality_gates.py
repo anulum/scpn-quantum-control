@@ -35,7 +35,13 @@ PROGRAM_AD_SIGNAL_EDGE_TEST = "tests/test_program_ad_signal_primitives_edges.py"
 WHOLE_PROGRAM_TRACE_VALUE_QUALITY_RATCHET = [
     "src/scpn_quantum_control/whole_program_trace_values.py",
     "src/scpn_quantum_control/whole_program_trace_predicates.py",
+    "src/scpn_quantum_control/whole_program_trace_runtime.py",
+    "src/scpn_quantum_control/whole_program_trace_metadata.py",
+    "src/scpn_quantum_control/program_ad_shape_transforms.py",
+    "tests/test_whole_program_trace_metadata.py",
+    "tests/test_program_ad_shape_transforms.py",
     PROGRAM_AD_LINALG_SOURCE,
+    "src/scpn_quantum_control/program_ad_linalg_memory.py",
     PROGRAM_AD_PRODUCT_SOURCE,
     PROGRAM_AD_REDUCTION_SOURCE,
     PROGRAM_AD_CUMULATIVE_SOURCE,
@@ -50,6 +56,7 @@ WHOLE_PROGRAM_TRACE_VALUE_QUALITY_RATCHET = [
     "tests/test_whole_program_trace_value_linalg.py",
     "tests/test_whole_program_trace_value_shapes.py",
     PROGRAM_AD_LINALG_SPECTRAL_TEST,
+    "tests/test_program_ad_linalg_memory.py",
     PROGRAM_AD_LINALG_EXACT_CONTRACTS_TEST,
     PROGRAM_AD_PRODUCT_TEST,
     PROGRAM_AD_REDUCTION_TEST,
@@ -71,6 +78,7 @@ WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_COHORT = [
     "tests/test_program_ad_alias_effects.py",
     "tests/test_program_ad_array_indexing_registry.py",
     "tests/test_program_ad_array_indexing_quality.py",
+    "tests/test_program_ad_array_indexing.py",
     "tests/test_program_ad_binary_elementwise_registry.py",
     "tests/test_program_ad_broadcast_assembly.py",
     PROGRAM_AD_CUMULATIVE_TEST,
@@ -88,6 +96,7 @@ WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_COHORT = [
     "tests/test_program_ad_linalg_matrix_ops.py",
     "tests/test_program_ad_linalg_registry.py",
     PROGRAM_AD_LINALG_SPECTRAL_TEST,
+    "tests/test_program_ad_linalg_memory.py",
     PROGRAM_AD_LINALG_EXACT_CONTRACTS_TEST,
     PROGRAM_AD_PRODUCT_TEST,
     PROGRAM_AD_REDUCTION_TEST,
@@ -129,8 +138,9 @@ WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_COHORT = [
 ]
 WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_DATA_FILE = ".coverage.whole-program-trace-values"
 WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_INCLUDE = (
-    "*/whole_program_trace_values.py,*/whole_program_trace_predicates.py,"
-    "*/program_ad_linalg_primitives.py,*/program_ad_product_primitives.py,"
+    "*/whole_program_trace_values.py,*/whole_program_trace_predicates.py,*/whole_program_trace_runtime.py,"
+    "*/whole_program_trace_metadata.py,*/program_ad_shape_transforms.py,"
+    "*/program_ad_linalg_primitives.py,*/program_ad_linalg_memory.py,*/program_ad_product_primitives.py,"
     "*/program_ad_reduction_primitives.py,*/program_ad_cumulative_primitives.py,"
     "*/program_ad_effect_ir.py,*/program_ad_selection_primitives.py,"
     "*/program_ad_signal_primitives.py"

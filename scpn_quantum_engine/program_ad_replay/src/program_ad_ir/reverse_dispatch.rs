@@ -218,7 +218,10 @@ fn accumulate_reverse_effect(
         name if name.starts_with("linalg:trace:") => {
             let cotangent_scalar = cotangent.scalar_value()?;
             // d(trace)/d(diagonal element) = 1 for each on-diagonal operand.
-            for input in &effect.inputs {
+            for (index, input) in effect.inputs.iter().enumerate() {
+                if index % 256 == 0 {
+                    crate::program_ad_lifecycle::replay_checkpoint()?;
+                }
                 add_scalar_adjoint(input, cotangent_scalar, values, adjoints)?;
             }
             Ok(())
@@ -277,22 +280,25 @@ fn accumulate_reverse_effect(
                     effect.index
                 )
             })?;
-            if effect.inputs.len() != n * n {
+            let matrix_size = shape_size(&[n, n])?;
+            if effect.inputs.len() != matrix_size {
                 return Err(format!(
                     "effect {} {name} requires {} operands",
                     effect.index,
-                    n * n
+                    matrix_size
                 ));
             }
-            let matrix = effect
-                .inputs
-                .iter()
-                .map(|input| operand_scalar_value(input, values))
-                .collect::<Result<Vec<f64>, String>>()?;
+            let matrix = numeric_scalar_operands(effect, values)?;
             let determinant = determinant_general(&matrix, n)?;
             let inverse = invert_square(&matrix, n)?;
             for i in 0..n {
+                if i % 256 == 0 {
+                    crate::program_ad_lifecycle::replay_checkpoint()?;
+                }
                 for j in 0..n {
+                    if j % 256 == 0 {
+                        crate::program_ad_lifecycle::replay_checkpoint()?;
+                    }
                     let cofactor = determinant * inverse[j * n + i];
                     add_scalar_adjoint(
                         &effect.inputs[i * n + j],
@@ -309,21 +315,24 @@ fn accumulate_reverse_effect(
             // d(A^{-1})_{ij}/dA_{kl} = -(A^{-1})_{ik} (A^{-1})_{lj}.
             let (n, row, column) = parse_inv_index(name)
                 .ok_or_else(|| format!("effect {} {name} has no inverse index", effect.index))?;
-            if effect.inputs.len() != n * n {
+            let matrix_size = shape_size(&[n, n])?;
+            if effect.inputs.len() != matrix_size {
                 return Err(format!(
                     "effect {} {name} requires {} operands",
                     effect.index,
-                    n * n
+                    matrix_size
                 ));
             }
-            let matrix = effect
-                .inputs
-                .iter()
-                .map(|input| operand_scalar_value(input, values))
-                .collect::<Result<Vec<f64>, String>>()?;
+            let matrix = numeric_scalar_operands(effect, values)?;
             let m = invert_square(&matrix, n)?;
             for k in 0..n {
+                if k % 256 == 0 {
+                    crate::program_ad_lifecycle::replay_checkpoint()?;
+                }
                 for l in 0..n {
+                    if l % 256 == 0 {
+                        crate::program_ad_lifecycle::replay_checkpoint()?;
+                    }
                     let contribution = cotangent_scalar * (-m[row * n + k] * m[l * n + column]);
                     add_scalar_adjoint(&effect.inputs[k * n + l], contribution, values, adjoints)?;
                 }
@@ -335,33 +344,39 @@ fn accumulate_reverse_effect(
             // X = A^{-1} B: dB = A^{-T}G and dA = -(A^{-T}G)X^T.
             let output = parse_solve_output(name)
                 .ok_or_else(|| format!("effect {} {name} has no solution index", effect.index))?;
-            let expected_inputs = output.n * output.n + output.rhs_size();
+            let matrix_size = output.matrix_size()?;
+            let expected_inputs = output.input_size()?;
             if effect.inputs.len() != expected_inputs {
                 return Err(format!(
                     "effect {} {name} requires {} operands",
                     effect.index, expected_inputs
                 ));
             }
-            let operands = effect
-                .inputs
-                .iter()
-                .map(|input| operand_scalar_value(input, values))
-                .collect::<Result<Vec<f64>, String>>()?;
-            let inverse = invert_square(&operands[..output.n * output.n], output.n)?;
-            let rhs = &operands[output.n * output.n..];
-            let mut solution = vec![0.0; output.rhs_size()];
+            let operands = numeric_scalar_operands(effect, values)?;
+            let inverse = invert_square(&operands[..matrix_size], output.n)?;
+            let rhs = &operands[matrix_size..];
+            let rhs_size = output.rhs_size()?;
+            let mut solution = filled_replay_buffer(rhs_size, 0.0_f64)?;
             for solution_row in 0..output.n {
+                if solution_row % 256 == 0 {
+                    crate::program_ad_lifecycle::replay_checkpoint()?;
+                }
                 for solution_column in 0..output.rhs_columns {
-                    solution[solution_row * output.rhs_columns + solution_column] = (0..output.n)
-                        .map(|j| {
-                            inverse[solution_row * output.n + j]
-                                * rhs[j * output.rhs_columns + solution_column]
-                        })
-                        .sum();
+                    if solution_column % 256 == 0 {
+                        crate::program_ad_lifecycle::replay_checkpoint()?;
+                    }
+                    solution[solution_row * output.rhs_columns + solution_column] = solve_output_value(
+                        &inverse,
+                        rhs,
+                        SolveOutput { row: solution_row, column: solution_column, ..output },
+                    )?;
                 }
             }
             for j in 0..output.n {
-                let rhs_input = output.n * output.n + j * output.rhs_columns + output.column;
+                if j % 256 == 0 {
+                    crate::program_ad_lifecycle::replay_checkpoint()?;
+                }
+                let rhs_input = matrix_size + j * output.rhs_columns + output.column;
                 add_scalar_adjoint(
                     &effect.inputs[rhs_input],
                     cotangent_scalar * inverse[output.row * output.n + j],
@@ -370,7 +385,13 @@ fn accumulate_reverse_effect(
                 )?;
             }
             for k in 0..output.n {
+                if k % 256 == 0 {
+                    crate::program_ad_lifecycle::replay_checkpoint()?;
+                }
                 for l in 0..output.n {
+                    if l % 256 == 0 {
+                        crate::program_ad_lifecycle::replay_checkpoint()?;
+                    }
                     let contribution = cotangent_scalar
                         * (-inverse[output.row * output.n + k]
                             * solution[l * output.rhs_columns + output.column]);

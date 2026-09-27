@@ -19,6 +19,7 @@ runtime can keep these contracts separate from the value-carrying classes.
 
 from __future__ import annotations
 
+import math
 from collections.abc import Sequence
 from typing import Any, cast
 
@@ -44,7 +45,7 @@ def _normalise_trace_reshape_shape(shape: object, size: int) -> tuple[int, ...]:
         raise ValueError("program AD reshape supports at most one inferred dimension")
     if any(dimension < -1 for dimension in dimensions):
         raise ValueError("program AD reshape dimensions must be non-negative or -1")
-    known_product = int(np.prod(tuple(dimension for dimension in dimensions if dimension != -1)))
+    known_product = math.prod(dimension for dimension in dimensions if dimension != -1)
     if inferred_axes:
         if known_product == 0:
             raise ValueError("program AD reshape cannot infer dimension from zero product")
@@ -52,7 +53,7 @@ def _normalise_trace_reshape_shape(shape: object, size: int) -> tuple[int, ...]:
             raise ValueError("program AD reshape inferred dimension must preserve size")
         inferred = size // known_product
         dimensions = tuple(inferred if dimension == -1 else dimension for dimension in dimensions)
-    if int(np.prod(dimensions)) != size:
+    if math.prod(dimensions) != size:
         raise ValueError("program AD reshape must preserve size")
     return dimensions
 

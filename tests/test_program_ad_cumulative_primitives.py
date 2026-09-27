@@ -19,6 +19,7 @@ import pytest
 from numpy.typing import NDArray
 
 from scpn_quantum_control import program_ad_cumulative_primitives as cumulative
+from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.differentiable import (
     DEFAULT_CUSTOM_DERIVATIVE_REGISTRY,
     PrimitiveContract,
@@ -32,6 +33,7 @@ from scpn_quantum_control.differentiable import (
     program_ad_cumulative_diff_derivative_rule,
     whole_program_value_and_grad,
 )
+from scpn_quantum_control.execution_reservations import active_reserved_bytes
 
 
 def _assert_allclose(
@@ -705,3 +707,137 @@ def test_program_ad_cumulative_contract_guards_reject_corruption() -> None:
 
     cumulative._register_program_ad_cumulative_primitive_contracts()
     assert primitive_contract_for("scpn.program_ad.cumulative:cumsum") == original
+
+
+@pytest.mark.parametrize("name", ["cumsum", "cumprod", "diff"])
+@pytest.mark.parametrize("registered", [False, True])
+def test_public_cumulative_owned_rules_preserve_independent_zero_safe_oracles(
+    name: str,
+    registered: bool,
+) -> None:
+    """Registered and ranked factories preserve zero-safe primal and pullbacks.
+
+    Parameters
+    ----------
+    name
+        Actual cumulative operation selected through its public rule.
+    registered
+        Use the registered flat rule rather than the static factory.
+
+    """
+    factories: dict[str, Callable[[tuple[int, ...]], cumulative.CustomDerivativeRule]] = {
+        "cumsum": program_ad_cumulative_cumsum_derivative_rule,
+        "cumprod": program_ad_cumulative_cumprod_derivative_rule,
+        "diff": program_ad_cumulative_diff_derivative_rule,
+    }
+    rule = (
+        custom_derivative_rule_for(PrimitiveIdentity("scpn.program_ad.cumulative", name, "1"))
+        if registered
+        else factories[name]((3,))
+    )
+    assert rule.jvp_rule is not None
+    assert rule.vjp_rule is not None
+    values = np.array([2.0, 0.0, 3.0])
+    tangent = np.array([1.0, 4.0, 5.0])
+    cotangent = np.array([7.0, 11.0]) if name == "diff" else np.array([7.0, 11.0, 13.0])
+    expected = {
+        "cumsum": ([2.0, 2.0, 5.0], [1.0, 5.0, 10.0], [31.0, 24.0, 13.0]),
+        "cumprod": ([2.0, 0.0, 0.0], [1.0, 8.0, 24.0], [7.0, 100.0, 0.0]),
+        "diff": ([-2.0, 3.0], [3.0, 1.0], [-7.0, -4.0, 11.0]),
+    }[name]
+    baseline = active_reserved_bytes()
+    np.testing.assert_array_equal(rule.value_fn(values), expected[0])
+    np.testing.assert_array_equal(rule.jvp_rule(values, tangent), expected[1])
+    np.testing.assert_array_equal(rule.vjp_rule(values, cotangent), expected[2])
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("name", ["cumsum", "cumprod", "diff"])
+def test_public_cumulative_virtual_input_refuses_before_conversion_and_recovers(
+    name: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Virtual input storage is checked before its first conversion/callback.
+
+    Parameters
+    ----------
+    name
+        Registered production rule under test.
+    monkeypatch
+        Restores the explicit process memory cap.
+
+    """
+    rule = custom_derivative_rule_for(PrimitiveIdentity("scpn.program_ad.cumulative", name, "1"))
+    values = np.broadcast_to(np.array(2.0), (10_000_000,))
+    baseline = active_reserved_bytes()
+    with monkeypatch.context() as environment:
+        environment.setenv("SCPN_MAX_DENSE_GIB", ".001")
+        with pytest.raises(DenseAllocationError):
+            rule.value_fn(values)
+    assert active_reserved_bytes() == baseline
+    valid = np.array([2.0, 3.0])
+    expected = {"cumsum": [2.0, 5.0], "cumprod": [2.0, 6.0], "diff": [1.0]}[name]
+    np.testing.assert_array_equal(rule.value_fn(valid), expected)
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("name", ["cumsum", "cumprod", "diff"])
+def test_public_cumulative_nonfinite_input_refuses_and_recovers(name: str) -> None:
+    """Nonfinite inputs cannot pass a cumulative rule through implicit conversion.
+
+    Parameters
+    ----------
+    name
+        Registered production rule under test.
+
+    """
+    rule = custom_derivative_rule_for(PrimitiveIdentity("scpn.program_ad.cumulative", name, "1"))
+    baseline = active_reserved_bytes()
+    for invalid in (np.nan, np.inf, -np.inf):
+        with pytest.raises(ValueError, match="inputs must contain only finite"):
+            rule.value_fn(np.array([2.0, invalid]))
+        assert active_reserved_bytes() == baseline
+    np.testing.assert_array_equal(rule.value_fn(np.array([2.0])), [2.0] if name != "diff" else [])
+    assert active_reserved_bytes() == baseline
+
+
+def test_public_cumulative_ranked_second_difference_owned_pullback() -> None:
+    """Repeated row-wise difference retains its exact reverse-stage coefficients."""
+    rule = program_ad_cumulative_diff_derivative_rule((2, 3), order=2, axis=1)
+    assert rule.jvp_rule is not None
+    assert rule.vjp_rule is not None
+    values = np.array([1.0, 2.0, 4.0, 3.0, 5.0, 9.0])
+    baseline = active_reserved_bytes()
+    np.testing.assert_array_equal(rule.value_fn(values), [1.0, 2.0])
+    np.testing.assert_array_equal(
+        rule.jvp_rule(values, np.array([1.0, 0.0, 0.0, 0.0, 1.0, 0.0])), [1.0, -2.0]
+    )
+    np.testing.assert_array_equal(
+        rule.vjp_rule(values, np.array([7.0, 11.0])), [7.0, -14.0, 7.0, 11.0, -22.0, 11.0]
+    )
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("name", ["cumsum", "cumprod", "diff"])
+def test_public_cumulative_finite_input_overflow_refuses_and_recovers(name: str) -> None:
+    """Finite operands that overflow the actual kernel cannot return a nonfinite result.
+
+    Parameters
+    ----------
+    name
+        Registered production rule exercising its actual NumPy kernel.
+
+    """
+    rule = custom_derivative_rule_for(PrimitiveIdentity("scpn.program_ad.cumulative", name, "1"))
+    largest = np.finfo(np.float64).max
+    values = np.array([-largest, largest]) if name == "diff" else np.array([largest, largest])
+    baseline = active_reserved_bytes()
+    with (
+        np.errstate(over="ignore", invalid="ignore"),
+        pytest.raises(ValueError, match="outputs must contain only finite"),
+    ):
+        rule.value_fn(values)
+    assert active_reserved_bytes() == baseline
+    expected = {"cumsum": [2.0, 5.0], "cumprod": [2.0, 6.0], "diff": [1.0]}[name]
+    np.testing.assert_array_equal(rule.value_fn(np.array([2.0, 3.0])), expected)
+    assert active_reserved_bytes() == baseline

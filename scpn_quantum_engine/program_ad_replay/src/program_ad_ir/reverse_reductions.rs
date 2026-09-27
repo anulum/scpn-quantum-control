@@ -73,7 +73,8 @@ fn accumulate_prod(
             &input.values,
         )?
     };
-    let contribution = ProgramADNumericValue::new(input.shape.clone(), contribution_values)?;
+    let contribution =
+        ProgramADNumericValue::new(copy_replay_buffer(&input.shape)?, contribution_values)?;
     add_numeric_adjoint(&effect.inputs[0], contribution, values, adjoints)
 }
 
@@ -118,7 +119,8 @@ fn accumulate_variance(
             }
         }
     };
-    let contribution = ProgramADNumericValue::new(input.shape.clone(), contribution_values)?;
+    let contribution =
+        ProgramADNumericValue::new(copy_replay_buffer(&input.shape)?, contribution_values)?;
     add_numeric_adjoint(&effect.inputs[0], contribution, values, adjoints)
 }
 
@@ -163,7 +165,8 @@ fn accumulate_standard_deviation(
             }
         }
     };
-    let contribution = ProgramADNumericValue::new(input.shape.clone(), contribution_values)?;
+    let contribution =
+        ProgramADNumericValue::new(copy_replay_buffer(&input.shape)?, contribution_values)?;
     add_numeric_adjoint(&effect.inputs[0], contribution, values, adjoints)
 }
 
@@ -188,7 +191,8 @@ fn accumulate_order_statistic(
         &cotangent.values,
         &input.values,
     )?;
-    let contribution = ProgramADNumericValue::new(input.shape.clone(), contribution_values)?;
+    let contribution =
+        ProgramADNumericValue::new(copy_replay_buffer(&input.shape)?, contribution_values)?;
     add_numeric_adjoint(&effect.inputs[0], contribution, values, adjoints)
 }
 
@@ -213,7 +217,8 @@ fn accumulate_trapezoid(
         &cotangent.values,
         &input.values,
     )?;
-    let contribution = ProgramADNumericValue::new(input.shape.clone(), contribution_values)?;
+    let contribution =
+        ProgramADNumericValue::new(copy_replay_buffer(&input.shape)?, contribution_values)?;
     add_numeric_adjoint(&effect.inputs[0], contribution, values, adjoints)
 }
 
@@ -225,14 +230,13 @@ fn accumulate_cumulative(
     cotangent: &ProgramADNumericValue,
 ) -> Result<(), String> {
     let cotangent_scalar = cotangent.scalar_value()?;
-    let input_values = effect
-        .inputs
-        .iter()
-        .map(|input| operand_scalar_value(input, values))
-        .collect::<Result<Vec<f64>, String>>()?;
+    let input_values = numeric_scalar_operands(effect, values)?;
     let contributions =
         cumulative_output_cotangent(effect.index, operation, &input_values, cotangent_scalar)?;
-    for (input, contribution) in effect.inputs.iter().zip(contributions.iter()) {
+    for (index, (input, contribution)) in effect.inputs.iter().zip(contributions.iter()).enumerate() {
+        if index % 256 == 0 {
+            crate::program_ad_lifecycle::replay_checkpoint()?;
+        }
         add_scalar_adjoint(input, *contribution, values, adjoints)?;
     }
     Ok(())
@@ -246,14 +250,13 @@ fn accumulate_interpolation(
     cotangent: &ProgramADNumericValue,
 ) -> Result<(), String> {
     let cotangent_scalar = cotangent.scalar_value()?;
-    let input_values = effect
-        .inputs
-        .iter()
-        .map(|input| operand_scalar_value(input, values))
-        .collect::<Result<Vec<f64>, String>>()?;
+    let input_values = numeric_scalar_operands(effect, values)?;
     let contributions =
         interpolation_output_cotangent(effect.index, operation, &input_values, cotangent_scalar)?;
-    for (input, contribution) in effect.inputs.iter().zip(contributions.iter()) {
+    for (index, (input, contribution)) in effect.inputs.iter().zip(contributions.iter()).enumerate() {
+        if index % 256 == 0 {
+            crate::program_ad_lifecycle::replay_checkpoint()?;
+        }
         add_scalar_adjoint(input, *contribution, values, adjoints)?;
     }
     Ok(())
@@ -267,14 +270,13 @@ fn accumulate_signal(
     cotangent: &ProgramADNumericValue,
 ) -> Result<(), String> {
     let cotangent_scalar = cotangent.scalar_value()?;
-    let input_values = effect
-        .inputs
-        .iter()
-        .map(|input| operand_scalar_value(input, values))
-        .collect::<Result<Vec<f64>, String>>()?;
+    let input_values = numeric_scalar_operands(effect, values)?;
     let contributions =
         signal_output_cotangent(effect.index, operation, &input_values, cotangent_scalar)?;
-    for (input, contribution) in effect.inputs.iter().zip(contributions.iter()) {
+    for (index, (input, contribution)) in effect.inputs.iter().zip(contributions.iter()).enumerate() {
+        if index % 256 == 0 {
+            crate::program_ad_lifecycle::replay_checkpoint()?;
+        }
         add_scalar_adjoint(input, *contribution, values, adjoints)?;
     }
     Ok(())

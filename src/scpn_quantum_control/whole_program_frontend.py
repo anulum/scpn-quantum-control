@@ -25,10 +25,20 @@ import dis
 import hashlib
 import inspect
 import json
+import stat
+import sys
 import textwrap
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
+from pathlib import Path
+from typing import TYPE_CHECKING
 
+import numpy as np
+
+from .dense_budget import DenseAllocationError
+from .execution_memory import ExecutionBuffer, ExecutionMemoryPlan, json_encoded_bytes
+from .execution_reservations import reserve_execution_memory
+from .source_admission import objective_source_block, read_source_lines
 from .whole_program_frontend_contracts import (
     WholeProgramBytecodeBasicBlock,
     WholeProgramBytecodeInstruction,
@@ -40,6 +50,9 @@ from .whole_program_frontend_contracts import (
     WholeProgramSymbolScopeEntry,
     WholeProgramUnsupportedSemanticDiagnostic,
 )
+
+if TYPE_CHECKING:
+    from .whole_program_trace_runtime import _WholeProgramTraceContext
 
 
 @dataclass(frozen=True)
@@ -61,26 +74,102 @@ class _ObjectiveSourceMetadata:
 
 def _objective_source_metadata(
     objective: Callable[..., object],
+    *,
+    context: _WholeProgramTraceContext | None = None,
 ) -> _ObjectiveSourceMetadata | None:
     """Return dedented source and file-line bounds when introspection permits."""
     try:
-        source_lines, start_line = inspect.getsourcelines(objective)
+        objective = inspect.unwrap(objective)
+        filename = inspect.getsourcefile(objective)
+        if filename is None:
+            return None
+        observation = Path(filename).stat()
     except (OSError, TypeError):
         return None
-    source = textwrap.dedent("".join(source_lines)).strip()
-    if not source:
+    if not stat.S_ISREG(observation.st_mode):
         return None
-    source_line_count = max(1, len(source.splitlines()))
-    return _ObjectiveSourceMetadata(
-        source=source,
-        start_line=int(start_line),
-        end_line=int(start_line) + source_line_count - 1,
+    plan = ExecutionMemoryPlan(
+        (
+            ExecutionBuffer(
+                "frontend_source_file_bytes",
+                "intermediate",
+                (max(1, observation.st_size),),
+                "uint8",
+            ),
+        )
     )
+    with reserve_execution_memory(plan) as reservation:
+        file_lines, plan = read_source_lines(filename, observation, reservation)
+        try:
+            source_lines, start_line = objective_source_block(objective, file_lines)
+        except (OSError, TypeError):
+            return None
+        reservation.checkpoint()
+        try:
+            current = Path(filename).stat()
+        except OSError as exc:
+            raise DenseAllocationError(
+                "objective source disappeared during introspection"
+            ) from exc
+        if (
+            current.st_dev != observation.st_dev
+            or current.st_ino != observation.st_ino
+            or current.st_mode != observation.st_mode
+            or current.st_size != observation.st_size
+            or current.st_mtime_ns != observation.st_mtime_ns
+            or current.st_ctime_ns != observation.st_ctime_ns
+        ):
+            raise DenseAllocationError("objective source changed during introspection")
+        file_bytes = sys.getsizeof(file_lines) + sum(sys.getsizeof(line) for line in file_lines)
+        block_bytes = sys.getsizeof(source_lines) + sum(
+            sys.getsizeof(line) for line in source_lines
+        )
+        characters = sum(len(line) for line in source_lines)
+        string_header = sys.getsizeof("\U00010000")
+        text_bytes = string_header + 4 * characters
+        split_bytes = (
+            sys.getsizeof([])
+            + (characters + 1) * (np.dtype("intp").itemsize + string_header)
+            + 4 * characters
+        )
+        source_plan = ExecutionMemoryPlan(
+            (
+                *plan.buffers,
+                ExecutionBuffer(
+                    "frontend_source_lines", "intermediate", (max(1, file_bytes),), "uint8"
+                ),
+                ExecutionBuffer(
+                    "frontend_source_block", "intermediate", (max(1, block_bytes),), "uint8"
+                ),
+                ExecutionBuffer(
+                    "frontend_source_text", "intermediate", (max(1, text_bytes),), "uint8", 3
+                ),
+                ExecutionBuffer(
+                    "frontend_source_split", "intermediate", (max(1, split_bytes),), "uint8"
+                ),
+            )
+        )
+        reservation.resize(source_plan)
+        source = textwrap.dedent("".join(source_lines)).strip()
+        if not source:
+            return None
+        source_line_count = max(1, len(source.splitlines()))
+        reservation.checkpoint()
+        metadata = _ObjectiveSourceMetadata(
+            source=source,
+            start_line=int(start_line),
+            end_line=int(start_line) + source_line_count - 1,
+        )
+        if context is not None:
+            context.retain_buffers(reservation, source_plan)
+        return metadata
 
 
-def _objective_source(objective: Callable[..., object]) -> str | None:
+def _objective_source(
+    objective: Callable[..., object], *, context: _WholeProgramTraceContext | None = None
+) -> str | None:
     """Return dedented source for a Python callable when introspection permits."""
-    metadata = _objective_source_metadata(objective)
+    metadata = _objective_source_metadata(objective, context=context)
     return None if metadata is None else metadata.source
 
 
@@ -960,8 +1049,7 @@ def _bytecode_instruction_digest(
         }
         for instruction in instructions
     ]
-    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    return hashlib.sha256(encoded).hexdigest()
+    return _frontend_json_digest(payload)
 
 
 def _source_regions(
@@ -1353,8 +1441,40 @@ def _frontend_digest(
         },
         "hard_gaps": list(hard_gaps),
     }
-    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    return hashlib.sha256(encoded).hexdigest()
+    return _frontend_json_digest(payload)
+
+
+def _frontend_json_digest(payload: object) -> str:
+    """Hash canonical ASCII JSON after admitting its largest string/byte chunk pair."""
+    encoded_size = json_encoded_bytes(payload)
+    plan = ExecutionMemoryPlan(
+        (
+            ExecutionBuffer(
+                "frontend_digest_chunks", "intermediate", (max(1, encoded_size),), "uint8", 2
+            ),
+            ExecutionBuffer(
+                "frontend_digest_headers",
+                "intermediate",
+                (2 * sys.getsizeof("") + sys.getsizeof(b""),),
+                "uint8",
+            ),
+        )
+    )
+    with reserve_execution_memory(plan) as reservation:
+        digest = hashlib.sha256()
+        total = 0
+        for chunk in json.JSONEncoder(sort_keys=True, separators=(",", ":")).iterencode(payload):
+            reservation.checkpoint()
+            total += len(chunk)
+            if total > encoded_size:
+                raise ValueError("frontend digest encoding exceeded admitted size")
+            encoded = chunk.encode("ascii")
+            digest.update(encoded)
+            del encoded
+        if total != encoded_size:
+            raise ValueError("frontend digest encoding differs from declared size")
+        reservation.checkpoint()
+        return digest.hexdigest()
 
 
 def _source_ast_node_count(source: str | None) -> int:

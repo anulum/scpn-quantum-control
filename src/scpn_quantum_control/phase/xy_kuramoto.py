@@ -16,7 +16,10 @@ Quantum hardware simulates this natively via Trotterized time evolution.
 
 from __future__ import annotations
 
+import math
+import sys
 from dataclasses import dataclass, replace
+from threading import Event
 from typing import TypeAlias
 
 import numpy as np
@@ -28,7 +31,9 @@ from qiskit.synthesis import LieTrotter, SuzukiTrotter
 
 from .._rust_accel import optional_rust_engine
 from ..bridge.knm_hamiltonian import knm_to_hamiltonian
-from ..dense_budget import require_dense_allocation
+from ..dense_budget import DenseAllocationError, require_dense_allocation
+from ..execution_memory import ExecutionBuffer, ExecutionMemoryPlan
+from ..execution_reservations import reserve_execution_memory
 from .results import TrajectoryResult
 
 FloatArray: TypeAlias = NDArray[np.float64]
@@ -192,13 +197,19 @@ class QuantumKuramotoSolver:
         trotter_per_step: int | None = None,
         *,
         max_statevector_gib: float | None = None,
+        deadline_monotonic: float | None = None,
+        cancelled: Event | None = None,
     ) -> TrajectoryResult:
         """Time-stepped evolution returning R(t) and per-qubit expectations.
 
         This local simulator path stores an exact dense statevector. Use
-        ``max_statevector_gib`` to fail closed before Qiskit allocates that
-        vector; hardware or tensor-network paths should be used for larger
-        systems.
+        ``max_statevector_gib`` to cap all declared live state, evolution,
+        measurement and trajectory buffers before Qiskit allocation. History
+        admission also includes the Python time list. Snapshot admission is
+        not a bound on undeclared third-party workspaces. The local reservation
+        serializes cooperating calls in this process. ``deadline_monotonic``
+        and ``cancelled`` are checked at evolution/history checkpoints; native
+        calls already in progress are not forcibly terminated.
         """
         if not np.isfinite(t_max) or t_max < 0.0:
             raise ValueError(f"t_max must be finite and non-negative, got {t_max}")
@@ -216,47 +227,82 @@ class QuantumKuramotoSolver:
             max_gib=max_statevector_gib,
             label="Kuramoto statevector trajectory",
         )
-        if self._hamiltonian is None:
-            self.build_hamiltonian()
+        intervals = t_max / dt
+        if not math.isfinite(intervals) or intervals > sys.maxsize - 2:
+            raise DenseAllocationError("trajectory history exceeds native addressable size")
+        point_limit = math.ceil(intervals) + 2
+        list_point_bytes = sys.getsizeof(0.0) + 2 * np.dtype(np.intp).itemsize
+        with reserve_execution_memory(
+            ExecutionMemoryPlan(
+                (
+                    ExecutionBuffer.hilbert("state", "forward", self.n),
+                    ExecutionBuffer.hilbert("state_temporaries", "intermediate", self.n, count=3),
+                    ExecutionBuffer("expectations", "intermediate", (self.n,), "float64", 2),
+                    ExecutionBuffer("trajectory", "dense_output", (point_limit,), "float64", 3),
+                    ExecutionBuffer(
+                        "time_list", "intermediate", (point_limit,), "uint8", list_point_bytes
+                    ),
+                    ExecutionBuffer(
+                        "time_list_header", "intermediate", (sys.getsizeof([]),), "uint8"
+                    ),
+                )
+            ),
+            max_gib=max_statevector_gib,
+            deadline_monotonic=deadline_monotonic,
+            cancelled=cancelled,
+        ) as reservation:
+            memory = reservation.decision
 
-        times_list = [0.0]
-        current_time = 0.0
-        tolerance = max(np.finfo(float).eps * max(1.0, abs(t_max), abs(dt)) * 16.0, 1e-15)
-        while current_time + dt < t_max - tolerance:
-            current_time += dt
-            times_list.append(current_time)
-        if t_max > times_list[-1] + tolerance:
-            times_list.append(float(t_max))
-        else:
-            times_list[-1] = float(t_max)
+            times_list = [0.0]
+            current_time = 0.0
+            tolerance = max(np.finfo(float).eps * max(1.0, abs(t_max), abs(dt)) * 16.0, 1e-15)
+            while current_time + dt < t_max - tolerance:
+                reservation.checkpoint()
+                if len(times_list) >= point_limit - 1 or current_time + dt <= current_time:
+                    raise DenseAllocationError("trajectory history exceeded admitted point count")
+                current_time += dt
+                times_list.append(current_time)
+            if t_max > times_list[-1] + tolerance:
+                times_list.append(float(t_max))
+            else:
+                times_list[-1] = float(t_max)
 
-        times = np.asarray(times_list, dtype=float)
-        step_sizes = np.diff(times)
-        R_history = np.zeros(times.shape[0])
+            times = np.asarray(times_list, dtype=float)
+            step_sizes = np.diff(times)
+            R_history = np.zeros(times.shape[0])
+            if self._hamiltonian is None:
+                self.build_hamiltonian()
 
-        # Initial state: each qubit at angle ~ omega_i (Ry rotation)
-        init_qc = QuantumCircuit(self.n)
-        for i in range(self.n):
-            angle = float(self.omega[i]) % (2 * np.pi)
-            init_qc.ry(angle, i)
+            # Initial state: each qubit at angle ~ omega_i (Ry rotation)
+            init_qc = QuantumCircuit(self.n)
+            for i in range(self.n):
+                angle = float(self.omega[i]) % (2 * np.pi)
+                init_qc.ry(angle, i)
 
-        sv = Statevector.from_instruction(init_qc)
-        R_history[0], _ = self.measure_order_parameter(sv)
+            reservation.checkpoint()
+            sv = Statevector.from_instruction(init_qc)
+            reservation.checkpoint()
+            R_history[0], _ = self.measure_order_parameter(sv)
 
-        for step, step_dt in enumerate(step_sizes, start=1):
-            evo_qc = self.evolve(float(step_dt), trotter_per_step)
-            sv = sv.evolve(evo_qc)
-            R_history[step], _ = self.measure_order_parameter(sv)
+            for step, step_dt in enumerate(step_sizes, start=1):
+                reservation.checkpoint()
+                evo_qc = self.evolve(float(step_dt), trotter_per_step)
+                sv = sv.evolve(evo_qc)
+                reservation.checkpoint()
+                R_history[step], _ = self.measure_order_parameter(sv)
 
-        return TrajectoryResult(
-            times=times,
-            R=R_history,
-            metadata={
-                "backend": "statevector",
-                "trotter_per_step": trotter_per_step,
-                "trotter_order": self.trotter_order,
-            },
-        )
+            reservation.checkpoint()
+            return TrajectoryResult(
+                times=times,
+                R=R_history,
+                metadata={
+                    "backend": "statevector",
+                    "trotter_per_step": trotter_per_step,
+                    "trotter_order": self.trotter_order,
+                    "memory_declared_bytes": memory.bytes_required,
+                    "memory_budget_bytes": memory.budget_bytes,
+                },
+            )
 
     def energy_expectation(self, sv: Statevector) -> float:
         """Compute <H> for a given statevector."""

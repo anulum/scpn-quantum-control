@@ -200,3 +200,99 @@ fn program_ad_effect_ir_rust_value_and_gradient_fails_closed_on_mutation_alias()
     assert!(result.gradient.is_empty());
     assert!(result.blocked_reasons[0].contains("non-view alias-bearing"));
 }
+
+#[test]
+fn public_gradient_admits_symbol_and_parameter_metadata_with_capacity_recovery() {
+    use scpn_quantum_program_ad_replay::program_ad_lifecycle::with_replay_metadata_admission;
+    use std::{cell::Cell, rc::Rc};
+    let symbol = format!("%{}", "b".repeat(65_536));
+    let source = EXECUTABLE_SCALAR_PROGRAM_AD_IR.replace("%0", &symbol);
+    let charged = Rc::new(Cell::new(0usize));
+    let captured = Rc::clone(&charged);
+    let actual = with_replay_metadata_admission(
+        move |bytes| { captured.set(captured.get().checked_add(bytes).unwrap()); Ok(()) },
+        || interpret_program_ad_effect_ir_value_and_gradient(&source, &[0.4, -0.2]),
+    ).unwrap();
+    assert!(actual.supported);
+    assert!((actual.value.unwrap() - (0.4_f64.powi(2) - 0.4 + 0.4_f64.sin())).abs() < 1e-12);
+    assert!((actual.gradient[0] - (0.8 + 0.4_f64.cos())).abs() < 1e-12);
+    assert_eq!(actual.gradient[1], 2.0);
+    assert_eq!(actual.parameter_targets, vec![symbol, "%1".to_owned()]);
+    let required = charged.get();
+    for limit in [required, required - 1] {
+        let admitted = Cell::new(0usize);
+        let result = with_replay_metadata_admission(
+            move |bytes| {
+                let total = admitted.get().checked_add(bytes).unwrap();
+                if total > limit { return Err("gradient metadata limit".to_owned()); }
+                admitted.set(total); Ok(())
+            },
+            || interpret_program_ad_effect_ir_value_and_gradient(&source, &[0.4, -0.2]),
+        );
+        if limit == required { assert_eq!(result.unwrap(), actual); }
+        else {
+            match result {
+                Err(reason) => assert_eq!(reason, "gradient metadata limit"),
+                Ok(refused) => {
+                    assert!(!refused.supported);
+                    assert!(refused.gradient.is_empty());
+                    assert!(refused.blocked_reasons.iter().any(|reason| reason == "gradient metadata limit"));
+                }
+            }
+        }
+    }
+    assert_eq!(interpret_program_ad_effect_ir_value_and_gradient(&source, &[0.4, -0.2]).unwrap(), actual);
+}
+
+#[test]
+fn public_gradient_parameter_metadata_refuses_before_numeric_admission() {
+    use scpn_quantum_program_ad_replay::program_ad_lifecycle::{
+        with_replay_memory_admission, with_replay_metadata_admission,
+    };
+    use std::{cell::Cell, rc::Rc};
+    let pre_numeric_bytes = Rc::new(Cell::new(0usize));
+    let captured = Rc::clone(&pre_numeric_bytes);
+    let started = Rc::new(Cell::new(false));
+    let observed = Rc::clone(&started);
+    let numeric = Rc::clone(&started);
+    let input = [2.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0];
+    with_replay_metadata_admission(
+        move |bytes| {
+            if !observed.get() { captured.set(captured.get().checked_add(bytes).unwrap()); }
+            Ok(())
+        },
+        || with_replay_memory_admission(
+            move |_| { numeric.set(true); Ok(()) },
+            || interpret_program_ad_effect_ir_value_and_gradient(STRUCTURAL_ARRAY_PROGRAM_AD_IR, &input),
+        ),
+    ).unwrap();
+    assert!(started.get());
+    let limit = pre_numeric_bytes.get() - 1;
+    let numeric_calls = Rc::new(Cell::new(0usize));
+    let counted = Rc::clone(&numeric_calls);
+    let charged = Cell::new(0usize);
+    let input = [2.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0];
+    let refused = with_replay_metadata_admission(
+        move |bytes| {
+            let total = charged.get().checked_add(bytes).unwrap();
+            if total > limit { return Err("parameter metadata limit".to_owned()); }
+            charged.set(total); Ok(())
+        },
+        || with_replay_memory_admission(
+            move |_| { counted.set(counted.get() + 1); Ok(()) },
+            || interpret_program_ad_effect_ir_value_and_gradient(STRUCTURAL_ARRAY_PROGRAM_AD_IR, &input),
+        ),
+    ).unwrap();
+    assert!(!refused.supported);
+    assert_eq!(refused.value, None);
+    assert!(refused.gradient.is_empty());
+    assert!(refused.blocked_reasons.iter().any(|reason| reason == "parameter metadata limit"));
+    assert_eq!(numeric_calls.get(), 0);
+    let actual = interpret_program_ad_effect_ir_value_and_gradient(STRUCTURAL_ARRAY_PROGRAM_AD_IR, &input).unwrap();
+    assert!(actual.supported);
+    assert_eq!(actual.value, Some(130.0));
+    let expected = [15.0, 20.0, 2.0 / 6.0, 5.0 / 6.0, 2.0 / 6.0, 5.0 / 6.0, 2.0 / 6.0, 5.0 / 6.0];
+    for (got, wanted) in actual.gradient.iter().zip(expected) { assert!((got - wanted).abs() < 1e-12); }
+    assert_eq!(actual.gradient.len(), expected.len());
+    assert_eq!(actual.parameter_targets, vec!["%0[0]", "%0[1]", "%1[0]", "%1[1]", "%1[2]", "%1[3]", "%1[4]", "%1[5]"]);
+}

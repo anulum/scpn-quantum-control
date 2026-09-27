@@ -10,7 +10,7 @@ fn numeric_sum(
     effect: &ProgramADEffect,
     operation: &str,
     values: &HashMap<String, ProgramADNumericValue>,
-    shapes_by_target: &HashMap<String, Vec<usize>>,
+    shapes_by_target: &ProgramADShapeMap<'_>,
 ) -> Result<ProgramADNumericValue, String> {
     if effect.inputs.len() != 1 {
         return Err(format!("effect {} sum requires one input", effect.index));
@@ -24,7 +24,7 @@ fn numeric_sum(
                 effect.index
             ));
         }
-        return Ok(ProgramADNumericValue::scalar(source.values.iter().sum()));
+        return ProgramADNumericValue::scalar(replay_sum_values(&source.values)?);
     }
     reduce_axis_values(effect.index, operation, "sum", &source, &target, 1.0)
 }
@@ -33,7 +33,7 @@ fn numeric_mean(
     effect: &ProgramADEffect,
     operation: &str,
     values: &HashMap<String, ProgramADNumericValue>,
-    shapes_by_target: &HashMap<String, Vec<usize>>,
+    shapes_by_target: &ProgramADShapeMap<'_>,
 ) -> Result<ProgramADNumericValue, String> {
     if effect.inputs.len() != 1 {
         return Err(format!("effect {} mean requires one input", effect.index));
@@ -47,10 +47,8 @@ fn numeric_mean(
                 effect.index
             ));
         }
-        let total: f64 = source.values.iter().sum();
-        return Ok(ProgramADNumericValue::scalar(
-            total / source.values.len() as f64,
-        ));
+        let total = replay_sum_values(&source.values)?;
+        return ProgramADNumericValue::scalar(total / source.values.len() as f64);
     }
     let axis = parse_static_axis(operation, "mean", source.shape.len())?;
     let scale = 1.0 / source.shape[axis] as f64;
@@ -61,7 +59,7 @@ fn numeric_prod(
     effect: &ProgramADEffect,
     operation: &str,
     values: &HashMap<String, ProgramADNumericValue>,
-    shapes_by_target: &HashMap<String, Vec<usize>>,
+    shapes_by_target: &ProgramADShapeMap<'_>,
 ) -> Result<ProgramADNumericValue, String> {
     if effect.inputs.len() != 1 {
         return Err(format!("effect {} prod requires one input", effect.index));
@@ -75,10 +73,10 @@ fn numeric_prod(
                 effect.index
             ));
         }
-        return Ok(ProgramADNumericValue::scalar(product_all_value(
+        return ProgramADNumericValue::scalar(product_all_value(
             effect.index,
             &source.values,
-        )?));
+        )?);
     }
     let axis = parse_static_axis(operation, "prod", source.shape.len())?;
     let output = product_axis_values(effect.index, &source.shape, axis, &target, &source.values)?;
@@ -89,7 +87,7 @@ fn numeric_variance(
     effect: &ProgramADEffect,
     operation: &str,
     values: &HashMap<String, ProgramADNumericValue>,
-    shapes_by_target: &HashMap<String, Vec<usize>>,
+    shapes_by_target: &ProgramADShapeMap<'_>,
 ) -> Result<ProgramADNumericValue, String> {
     if effect.inputs.len() != 1 {
         return Err(format!("effect {} var requires one input", effect.index));
@@ -116,11 +114,11 @@ fn numeric_variance(
                     effect.index
                 ));
             }
-            Ok(ProgramADNumericValue::scalar(variance_all_value(
+            ProgramADNumericValue::scalar(variance_all_value(
                 effect.index,
                 &source.values,
                 metadata.correction,
-            )?))
+            )?)
         }
     }
 }
@@ -129,7 +127,7 @@ fn numeric_standard_deviation(
     effect: &ProgramADEffect,
     operation: &str,
     values: &HashMap<String, ProgramADNumericValue>,
-    shapes_by_target: &HashMap<String, Vec<usize>>,
+    shapes_by_target: &ProgramADShapeMap<'_>,
 ) -> Result<ProgramADNumericValue, String> {
     if effect.inputs.len() != 1 {
         return Err(format!("effect {} std requires one input", effect.index));
@@ -156,11 +154,11 @@ fn numeric_standard_deviation(
                     effect.index
                 ));
             }
-            Ok(ProgramADNumericValue::scalar(std_all_value(
+            ProgramADNumericValue::scalar(std_all_value(
                 effect.index,
                 &source.values,
                 metadata.correction,
-            )?))
+            )?)
         }
     }
 }
@@ -169,7 +167,7 @@ fn numeric_order_statistic(
     effect: &ProgramADEffect,
     operation: &str,
     values: &HashMap<String, ProgramADNumericValue>,
-    shapes_by_target: &HashMap<String, Vec<usize>>,
+    shapes_by_target: &ProgramADShapeMap<'_>,
 ) -> Result<ProgramADNumericValue, String> {
     if effect.inputs.len() != 1 {
         return Err(format!(
@@ -193,7 +191,7 @@ fn numeric_trapezoid(
     effect: &ProgramADEffect,
     operation: &str,
     values: &HashMap<String, ProgramADNumericValue>,
-    shapes_by_target: &HashMap<String, Vec<usize>>,
+    shapes_by_target: &ProgramADShapeMap<'_>,
 ) -> Result<ProgramADNumericValue, String> {
     if effect.inputs.len() != 1 {
         return Err(format!(
@@ -218,16 +216,12 @@ fn numeric_cumulative(
     operation: &str,
     values: &HashMap<String, ProgramADNumericValue>,
 ) -> Result<ProgramADNumericValue, String> {
-    let input_values = effect
-        .inputs
-        .iter()
-        .map(|input| operand_scalar_value(input, values))
-        .collect::<Result<Vec<f64>, String>>()?;
-    Ok(ProgramADNumericValue::scalar(cumulative_output_value(
+    let input_values = numeric_scalar_operands(effect, values)?;
+    ProgramADNumericValue::scalar(cumulative_output_value(
         effect.index,
         operation,
         &input_values,
-    )?))
+    )?)
 }
 
 fn numeric_interpolation(
@@ -235,16 +229,12 @@ fn numeric_interpolation(
     operation: &str,
     values: &HashMap<String, ProgramADNumericValue>,
 ) -> Result<ProgramADNumericValue, String> {
-    let input_values = effect
-        .inputs
-        .iter()
-        .map(|input| operand_scalar_value(input, values))
-        .collect::<Result<Vec<f64>, String>>()?;
-    Ok(ProgramADNumericValue::scalar(interpolation_output_value(
+    let input_values = numeric_scalar_operands(effect, values)?;
+    ProgramADNumericValue::scalar(interpolation_output_value(
         effect.index,
         operation,
         &input_values,
-    )?))
+    )?)
 }
 
 fn numeric_signal(
@@ -252,14 +242,22 @@ fn numeric_signal(
     operation: &str,
     values: &HashMap<String, ProgramADNumericValue>,
 ) -> Result<ProgramADNumericValue, String> {
-    let input_values = effect
-        .inputs
-        .iter()
-        .map(|input| operand_scalar_value(input, values))
-        .collect::<Result<Vec<f64>, String>>()?;
-    Ok(ProgramADNumericValue::scalar(signal_output_value(
+    let input_values = numeric_scalar_operands(effect, values)?;
+    ProgramADNumericValue::scalar(signal_output_value(
         effect.index,
         operation,
         &input_values,
-    )?))
+    )?)
+}
+
+fn replay_sum_values(values: &[f64]) -> Result<f64, String> {
+    let mut total = -0.0_f64;
+    for (index, value) in values.iter().enumerate() {
+        if index % 256 == 0 {
+            crate::program_ad_lifecycle::replay_checkpoint()?;
+        }
+        total += *value;
+    }
+    crate::program_ad_lifecycle::replay_checkpoint()?;
+    Ok(total)
 }

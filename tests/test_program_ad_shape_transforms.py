@@ -1681,3 +1681,26 @@ def test_program_ad_shape_contract_validation_rejects_corrupted_registry_rows() 
 
     assert _require_program_ad_shape_contract("reshape") == original
     _register_program_ad_shape_primitive_contracts()
+
+
+@pytest.mark.parametrize("target", [(274177, 67280421310721), (4294967296, 4294967296)])
+def test_public_reshape_rule_refuses_dimension_product_wrap_and_recovers(
+    target: tuple[int, ...],
+) -> None:
+    """Direct rule construction uses mathematical size before any backend reshape.
+
+    Parameters
+    ----------
+    target
+        A product congruent to one or zero modulo the native integer range.
+
+    """
+    with pytest.raises(ValueError, match="same element count"):
+        shape_transforms.program_ad_shape_reshape_derivative_rule((1,), target)
+    rule = shape_transforms.program_ad_shape_reshape_derivative_rule((4,), (2, 2))
+    assert rule.jvp_rule is not None
+    assert rule.vjp_rule is not None
+    values = np.array([1.0, 2.0, 3.0, 4.0])
+    np.testing.assert_array_equal(rule.value_fn(values), values)
+    np.testing.assert_array_equal(rule.jvp_rule(values, values[::-1]), values[::-1])
+    np.testing.assert_array_equal(rule.vjp_rule(values, values[::-1]), values[::-1])

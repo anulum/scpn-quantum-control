@@ -12,7 +12,12 @@ pip install maturin
 maturin develop --release
 ```
 
-Requires Rust toolchain (rustup) and a C compiler for PyO3.
+Requires Rust toolchain (rustup) and a C compiler for PyO3. The engine wheel
+declares `scpn-quantum-control>=1.1.0` as a runtime dependency. Hamiltonian
+calls require its shared execution-memory policy; install both builds from
+the same source checkout during development. Installed-wheel tests exercise
+this boundary outside the checkout and do not substitute source imports for
+a matching installed control build.
 
 ## Architecture
 
@@ -125,6 +130,17 @@ remainder are metadata/validation surfaces). They are organised below by topic.
 | `build_xy_hamiltonian_dense(K_flat, omega, n)` | Dense XY Hamiltonian via bitwise flip-flop | O(2^n × n²) |
 | `build_sparse_xy_hamiltonian(K_flat, omega, n)` | Sparse COO triplets for XY Hamiltonian | O(2^n × n²) |
 
+Both entries reject overflowing dimensions and byte counts before native output
+allocation. They require the installed control package's memory policy, charge
+output storage through its shared reservation and inherit an active owner's
+deadline/cancellation. Sparse storage declares the actual diagonal plus admitted
+nonzero-pair triplet count. Allocation failures become Python memory errors;
+nonfinite constructed values refuse. Caller inputs must remain unchanged during
+the operation. Native charges are additional to enclosing declarations, so the
+budget can be more conservative than output bytes alone. The installed-engine
+boundary and independent matrix cases are in `tests/test_hamiltonian_native.py`;
+exact-source build, parity and benchmark gates still determine qualification.
+
 ### Symmetry
 
 | Function | Description | Complexity |
@@ -186,6 +202,16 @@ project benchmark policy is local regression evidence only.
 | `program_ad_effect_ir_interpret_value_and_gradient(serialization, inputs)` | Execute bounded scalar/static-linalg including static vector- and matrix-RHS solve nodes, elementwise-array, static-structural, static source-map, static-reduction, compact interpolation, compact signal, compact stencil, compact cumulative, and inert assignment/expression alias metadata value plus reverse-gradient replay for supported IR rows | O(n) |
 | `program_ad_registry_metadata_mirror(snapshot)` | Validate the Python registry-dispatch coverage snapshot and return family/facet counts plus conservative Rust replay overlap | O(n) |
 
+The three Program AD metadata/forward/value-and-gradient PyO3 entries admit
+UTF-8 source and numeric input copies through the installed control package
+before Rust extraction. Inputs must be plain list/tuple/range or a plain
+one-dimensional real numeric ndarray; opaque iterators refuse. The input owner
+inherits cancellation/deadline and disposes on conversion or replay failure.
+`tests/test_native_replay_admission.py` exercises the installed entries and
+refusal/retry cases. This input boundary does not yet qualify internal primitive
+workspaces, parser container peaks, in-kernel cancellation or returned JSON
+retention; pure Rust/WASM callers retain their independent replay contract.
+
 The registry mirror is metadata-only. It validates the 118-primitive Python
 registry snapshot shape and reports overlap with the already bounded Rust
 scalar/static-linalg plus compact interpolation, compact signal, compact stencil, compact cumulative, and
@@ -200,6 +226,216 @@ value+gradient APIs fail closed. `scpn_quantum_engine/fuzz/fuzz_targets/program_
 adds a `cargo-fuzz` target over the same public parser, forward replay, and
 value+gradient replay APIs, with seed corpus entries under
 `scpn_quantum_engine/fuzz/corpus/program_ad_ir/`.
+
+Static `index_map:` replay reserves metadata, forward values and reverse
+contributions through fallible Rust vector reservations before filling them.
+Capacity and allocator refusals return an effect-specific replay error; repeated
+source slots still accumulate cotangents and constant slots contribute none.
+The shared replay crate also serves Studio WASM, so these reservations do not
+depend on Python. They do not establish a host memory ceiling or prevent an
+operating system from terminating a process under memory pressure. Public
+weighted-gradient and malformed-map recovery cases are in
+`scpn_quantum_engine/tests/program_ad_static_source_map.rs`; constrained-memory
+qualification and exact-source native/WASM validation remain required.
+
+Bounded pseudoinverse replay checks source/output and both square projector
+sizes against native byte addressability before their allocation. Metadata uses
+fixed field storage; copies, rank-one output, projectors, transposes, matrix
+products and cotangents use fallible reservations. Owned checkpoints cover Gram
+accumulation, matrix products and forward/reverse buffer traversal. The existing
+rank-one, N×2 and 2×N support and cutoff policy remain unchanged; finite output
+and adjoint validation refuse overflowing contributions. Public independent
+rank-one and rectangular/square differential and cancellation recovery cases
+are in `scpn_quantum_engine/tests/program_ad_pinv_memory.rs`; native build,
+numerical parity and full aggregate host-memory qualification remain required.
+
+Compact `multi_dot` replay checks operand sums and every inferred intermediate
+shape against native byte addressability. Metadata and numeric buffers use
+fallible reservations; operands stream into the existing left-associated chain
+without cloning the first operand or retaining every operand copy. Reverse
+replay reuses a zeroed variation buffer per operand instead of cloning all
+inputs per differentiated element. Owned checkpoints cover parsing, copies,
+multiply/dot loops and reverse variations; the existing basis VJP, accumulation
+order and scalar dot signed-zero identity remain unchanged. Independent
+matrix/vector-chain and cancellation recovery cases are in
+`scpn_quantum_engine/tests/program_ad_multi_dot_memory.rs`; native build,
+numerical parity and full aggregate host-memory qualification remain required.
+
+Static-grid trapezoidal replay uses fallible output, cotangent, grid and rank
+buffers. Metadata streams field pairs, resolves the axis before comparing grid
+length, and reserves only a matching axis/full-shape grid. Flat source indices
+are computed with checked arithmetic directly from the reduced index, avoiding
+per-segment source-index allocations. Owned checkpoints cover conversion,
+validation and every forward/reverse segment. The existing signed and
+nonmonotonic grid-width semantics remain unchanged. Public independent `dx`,
+axis-grid and full-grid value/gradient and cancellation recovery cases are in
+`scpn_quantum_engine/tests/program_ad_trapezoid_memory.rs`; native build,
+numerical parity and full host-memory qualification remain required.
+
+Compact `diag` and `diagflat` replay validates source bytes and the declared
+square output size including the signed offset before replaying its selected
+scalar identity. Opcode fields and `diag` rank metadata use fixed storage;
+reverse contributions use a fallible single-entry reservation. Diagonal
+extraction computes selection length directly, without traversing all rows.
+Owned checkpoints cover metadata work and contribution formation. Public
+offset, empty-selection, overflow and cancellation recovery cases are in
+`scpn_quantum_engine/tests/program_ad_diagonal_memory.rs`; these compact nodes
+receive one selected scalar and do not materialise a dense matrix. Native build,
+numerical parity and full host-memory qualification remain required.
+
+Singular-value replay checks dense and retained matrix byte addressability
+before comparing flattened operands. It builds column-major input in a fallibly
+reserved buffer, transfers that buffer to `nalgebra`, and takes ownership of the
+returned singular-value storage without cloning it. Opcode fields use fixed
+storage; conversion, vector validation, spectral-gap checks and reverse
+contributions observe owned checkpoints. Checkpoints bracket the `nalgebra`
+decomposition, whose internal allocations remain infallible and whose inner
+iteration does not invoke this callback. The solver has a finite inherited
+iteration ceiling and returns a refusal on exhaustion. Replay admission declares
+the flattened source, owned matrix, U/VT storage, spectrum, optional reverse
+contribution and nalgebra 0.35 bidiagonal/copy/work vectors before numeric replay.
+Layout validation shares the kernel parser and rejects malformed dimensions,
+selected spectrum index and operand count before the memory callback. The sum
+conservatively includes work from all phases; allocator bookkeeping and hard
+interruption during an opaque call remain separately unqualified. Finite spectrum
+and vector validation precedes descending in-place ordering, whose comparisons
+and paired vector swaps observe owned checkpoints. Public rectangular/square independent oracles
+and observed outer-phase cancellation recovery cases are in
+`scpn_quantum_engine/tests/program_ad_svd_memory.rs`; native build, numerical
+parity and constrained-memory qualification remain required.
+
+The bounded 2×2 spectral replay keeps opcode fields in fixed storage and uses
+fallible reservations for reverse contributions. Owned checkpoints cover
+metadata parsing, matrix admission, eigenbasis construction and contribution
+formation; non-finite cotangents refuse before reverse scatter. Eigenvalue
+ordering, eigenvector gauge and the existing unsupported-spectrum boundaries
+remain unchanged. Public independent eigenpair, cancellation and malformed
+metadata recovery cases are in
+`scpn_quantum_engine/tests/program_ad_spectral_memory.rs`; native build,
+numerical parity and constrained-memory qualification remain required.
+
+Compact static-gradient replay reserves shape, coordinate, index and cotangent
+buffers fallibly, checks dense byte addressability and flat-index arithmetic,
+and observes the owned checkpoint while parsing and traversing those buffers.
+Coordinate count is compared with the admitted axis before coordinate allocation.
+The two or three stencil coefficients use fixed storage, and source indices are
+reused instead of cloned per coefficient. First-order right edges support two
+coordinate samples without accessing a third point. Independent scalar,
+nonuniform/decreasing-coordinate, multi-axis and cancellation recovery cases are
+in `scpn_quantum_engine/tests/program_ad_stencil_memory.rs`; native build,
+numerical parity and constrained-memory qualification remain required.
+
+Compact convolution and correlation replay stream term indices directly into
+forward accumulation and reverse scatter, observing the owned checkpoint at
+each term. Checked operand sizes and output-window arithmetic precede indexing;
+cotangent buffers use fallible replay reservations and finite-output validation.
+Fixed metadata field storage avoids allocating a token vector. Public full,
+same and valid mode cases, asymmetric operands, signed zero and cancellation
+recovery are in `scpn_quantum_engine/tests/program_ad_signal_memory.rs`. Native
+build, numerical parity and constrained-memory qualification remain required.
+
+Compact interpolation replay checks combined sample/grid input sizes before
+comparing them and reserves grid and cotangent buffers through fallible replay
+helpers. Fixed metadata field storage avoids a token-vector allocation; grid
+parsing, validation, binary search and cotangent filling observe the owned replay
+checkpoint. Grid knots remain unsupported, and endpoint/static boundary
+semantics stay unchanged. Public lifecycle and malformed-size recovery cases are
+in `scpn_quantum_engine/tests/program_ad_interpolation_memory.rs`; native build,
+numerical parity and constrained-memory qualification remain required.
+
+Native matrix-power replay also uses fallible numeric and retained-power
+reservations. Matrix and augmented inverse dimensions use checked products,
+metadata parsing uses fixed field storage, and reverse replay moves retained
+matrices rather than allocating clones. Its product/inverse arithmetic remains
+unchanged. Public replay cases in
+`scpn_quantum_engine/tests/program_ad_matrix_power_memory.rs` cover independent
+power/inverse differentials and malformed/native-overflow metadata with retry.
+Host ceilings, cooperative native lifecycle enforcement and constrained-memory
+qualification still require separate evidence; fallible allocation does not
+prevent operating-system termination under memory pressure.
+
+Shaped native value-and-gradient replay also checks float64 byte addressability
+for each shape and the aggregate flattened parameter count before input
+materialisation. Parameter aggregation uses checked arithmetic without a
+separate counts vector. Filled reverse-reduction values reserve both shape and
+numeric storage fallibly. Public cases in
+`scpn_quantum_engine/tests/program_ad_parameter_admission.rs` cover oversized
+individual and aggregate metadata, native product overflow, scalar compatibility
+and independent reduction/product gradients. These are addressability and
+allocator-refusal boundaries; full workspace/host policy qualification remains
+required.
+
+The shaped replay metadata map borrows names and shape slices from its owning
+IR after a fallible map reservation. Parameter copies, owned target shapes,
+parameter labels and source symbols use fallible reservations; the value map
+reserves for its effect count before evaluation. Labels retain UTF-8 names and
+flattened parameter order. Public parameter-admission cases also cover missing
+shape metadata, duplicate-name last-shape behavior and Unicode labels. Borrowed
+metadata remains within the IR lifetime. Other primitive clones, parser peaks
+and process-level storage/lifecycle qualification remain separate requirements.
+
+The shared IR parser validates JSON without retaining a generic DOM, then reads
+borrowed raw fields into fallibly reserved typed records. Unknown fields are
+still validated, and the last duplicate key wins before schema decoding.
+Escaped strings and positional records retain their existing schema semantics.
+JSON grammar is checked through borrowed raw tokens. Numbers are checked for
+finite range through Rust core's fixed-buffer conversion, while typed integer
+and boolean fields use their own primitive parsers. Type guards prevent malformed
+metadata from entering serde's optional allocating float conversion. A quote-aware
+depth check preserves the default JSON nesting limit before raw parsing.
+Its separate `with_replay_metadata_admission` policy admits conservative serde
+byte scratch, owned strings and vector growth before allocation. PyO3 installs
+this policy alongside numeric admission and charges both cumulatively to the
+same input reservation. Nested metadata policies inherit parent refusal and
+restore on return or unwind. Standalone replay checks addressability without
+establishing host capacity. Serde scratch and allocator internals remain
+third-party operations; admitted declarations do not guarantee OOM immunity.
+
+Effect ordering admits both its indexed and returned reference buffers before
+allocation. Replay symbol copies, indexed parameter-label strings and returned
+label-vector headers also use the separate metadata policy. Parameter-target
+records admit their complete flattened capacity before numeric replay admission;
+the reserved vector then refuses growth beyond that capacity. Source symbol
+lengths and runtime type sizes determine these declarations. They remain a
+conservative cumulative bound rather than measured peak memory; later label
+payloads, map internals and complete lifetime qualification remain separate.
+
+Reverse adjoint-map growth and key copies also use fallible reservations.
+Creating a zero adjoint propagates filled-storage errors through `Result`;
+it does not assume that validated shape metadata guarantees allocator success.
+
+Owned numeric replay operands and reverse cotangents now copy their shape and
+value buffers through fallible reservations. The numeric value type no longer
+provides an infallible `Clone`, and operand lists reserve before collecting
+owned copies. The public parameter-admission tests include repeated broadcast
+and reverse reduction with an independent scalar value and gradient oracle.
+Scalar construction, scalar operand gathers, seed-adjoint storage and returned
+gradient/label buffers also reserve fallibly. Full primitive workspace and
+host/lifecycle qualification remain open; this does not establish an allocator peak.
+
+Structural and reverse-reduction shape copies, including reshape cotangent
+values, also reserve before copying. Scaling and binary/ternary elementwise
+outputs, common broadcast/transpose outputs and concatenate/stack output
+capacity use fallible reservations. Stack reserves its inserted dimension and
+checks rank arithmetic. The public parameter-admission corpus includes composed
+stack/concatenate/transpose and signed/quotient reverse-gradient oracles.
+Coordinate scratch, axis-removal, reduction zero buffers and reverse
+contribution/result containers also reserve fallibly. Transpose reverses its
+owned coordinates in place. Effect ordering uses original row position as a
+secondary key, preserving stable ordering with an in-place sort and explicit
+fallible buffers. Branch and region metadata maps/sets reserve before insertion.
+These source changes do not establish full process memory peaks.
+
+Determinant, inverse and solve replay check square/RHS element counts and
+float64 byte addressability before operand-count comparison or workspace
+construction. Solve checks the combined matrix/RHS input size as well. Opcode
+field parsing uses fixed storage. Inverse and determinant validate matrix length;
+closed-form inverse copies, general inverse work buffers and reverse solve
+storage reserve fallibly. The public `program_ad_linalg_admission` corpus
+covers overflow/malformed metadata with recovery and independent composed
+objective values/gradients for determinant, inverse and vector/matrix RHS solve.
+Serde parsing, all kernel workspaces and aggregate host/process memory still
+require separate qualification.
 
 Three further targets extend the fuzz surface to the remaining
 highest-exposure input boundaries (THREAT_MODEL B8):
@@ -654,3 +890,257 @@ Verified parity (Rust vs Python): max absolute difference
 $4.97 \times 10^{-14}$ for $n_\text{points} = 500$. The difference is at
 machine precision, confirming the Rust implementation reproduces the
 reference numerical algorithm bit-for-bit.
+
+
+Compact cumulative replay declares native element bytes before reserving shape,
+metadata-field, prefix-index, difference-term and cotangent buffers. Reservations
+are fallible, and shape copies use the same guarded allocation path. Difference
+coordinates and flattened indices use checked arithmetic. Binomial coefficients
+cancel exact integer factors before multiplication; coefficients outside the
+native integer range refuse instead of wrapping or panicking. Source and result
+finite checks remain required. Mid-kernel cooperative lifecycle propagation and
+measured native allocation peaks require separate runtime qualification.
+
+
+Owned replay checkpoints are thread-local and inherit parent policies. The PyO3
+boundary installs the active Python reservation as the native callback and returns
+its original cancellation/deadline/ownership exception after disposing the input
+scope. Shared replay buffer reservations, effect dispatch/reverse iteration and
+cumulative metadata/numeric loops observe that callback. Input and final-gradient finite checks operate in bounded chunks; SSA, operand, alias, branch-region and phi-path validation also checkpoint during traversal. Branch maps reserve capacity fallibly before inserting rows, including the per-region phi count. Standalone Rust/WASM
+callers can install an owned callback; no callback means no requested interruption
+policy. Opaque vendor operations still require checks at their own boundaries and
+are not forcibly stopped mid-call.
+
+Retained numeric replay declares every effect's float64 primal storage before
+creating its value map. Gradient replay also declares a matching adjoint set and
+the flattened parameter-gradient buffer. Checked sums and dtype multiplication
+precede admission; numeric gradient replay checks unary and binary metadata
+against source and broadcast shapes. The PyO3 boundary presents these declarations to its existing process
+reservation in addition to input conversion storage, preserving the original
+memory-refusal exception and disposing the scope afterward. Nested requests
+retain cumulative declarations until the outer owner exits; this conservative
+charge is not a measured live-memory peak. Standalone Rust/WASM callers can
+install a memory-admission policy. Without it, addressability checks do not
+constitute host-budget admission. Multi-dot and matrix-power replay now declare
+numeric kernel workspaces from the same metadata parser used by their kernels.
+Multi-dot follows the existing left-associated chain and declares source copies,
+intermediate products and reverse basis buffers. Matrix-power declares forward
+accumulators, inverse storage and reverse prefix powers, including power-list
+headers. Gradient preflight refuses unaddressable prefix storage before forward
+numeric work. Sequential effects share the maximum declared kernel workspace;
+retained primal and adjoint storage remain separate charges. Bounded pseudoinverse
+replay also uses its canonical layout checks to declare source copies, numeric
+transposes, reverse terms and both projector squares. The declaration accounts
+for identity, product and subtraction output coexisting during projector
+construction; on very wide matrices this can exceed the later retained reverse
+buffers. Indexed pseudoinverse outputs still require a scalar objective consumer.
+Determinant, inverse and solve declarations reuse the existing opcode parsers,
+including small closed-form versus general Gaussian/LU allocation paths. Solve
+reverse replay also declares all RHS solution entries; its peak is the larger
+of inverse construction and retained inverse/solution storage. Malformed
+workspace metadata returns an unsupported forward result before numeric-map
+construction; an installed memory-policy refusal retains its error boundary.
+Compact convolution and correlation also declare flattened source copies and
+reverse left/right contribution storage using the same source-count and output
+window checks as their kernels. Pair indices remain streamed, so this boundary
+does not materialize a pair table or an entire output array for a scalar opcode.
+Interpolation preflight validates static grid labels without allocating the grid,
+using the same layout parser as numeric replay. It declares flattened source,
+materialized grid and optional reverse contribution buffers before numeric-map
+construction. Increasing-grid, finite-boundary and output-index checks run in
+this metadata pass; actual grid materialization follows admission. Knot refusal
+and interpolation formulas retain their existing contract.
+Compact diag/diagflat opcodes declare their selected scalar source and optional
+scalar reverse contribution. Their canonical metadata checks still reject
+unaddressable source/constructed shapes and invalid offsets or selections before
+numeric replay. These opcodes do not allocate the full logical matrix; dense
+construction remains the responsibility of its original array/trace owner.
+Bounded 2x2 eigvalsh/eigvals/eig/eigh replay declares the flattened source and
+optional four-entry reverse contribution. Eigenpair algebra retains fixed stack
+arrays; output metadata and exact 2x2 arity are checked by existing parsers before
+numeric replay. Numeric symmetry, distinct-real-spectrum and eigenbasis checks
+remain at the original numerical owners. This declaration does not qualify
+opaque SVD solver allocation or broaden the supported spectral boundary.
+Compact cumulative preflight streams the opcode fields and source shape without
+allocating a token table or shape vector. The shared layout parser checks source
+addressability/count, axis, difference order and selected output before numeric
+replay. It declares the flattened source, optional reverse contribution, shape
+and coordinate vectors, and the selected prefix-index or difference-term buffer.
+Metadata field ordering remains flexible. Numeric prefix products and checked
+binomial differences retain their existing algorithms; some malformed metadata
+now refuses in preflight rather than after source materialization.
+Static-grid trapezoid preflight also receives the existing borrowed SSA shapes.
+Its canonical metadata parser validates `dx`, `x` and `xfull` labels and lengths
+without materializing grid values, and checks the selected axis and reduced
+target shape. The declaration includes source/output copies, grid, coordinates,
+reverse cotangent and contribution, and conservative adjoint-accumulation
+buffers. Actual segment arithmetic and finite-width rejection stay at the
+numeric kernel. Descending, nonmonotone and zero-width grids remain supported.
+Scalar-only forward replay remains unsupported for ranked trapezoid nodes;
+this declaration qualifies its existing shaped value/gradient adapter only.
+Product and corrected variance/standard-deviation admission use the existing
+axis and correction parsers with borrowed SSA source/target shapes. The actual
+moment kernel and admission share the group-count/correction denominator rule;
+invalid denominators refuse before constructing reduction groups. All-axis
+reductions declare the source/cotangent/contribution and conservative adjoint
+accumulation buffers. Axis reductions additionally declare numeric group entries,
+outer Vec headers, current group value/VJP buffers and live coordinates. Moment
+forward grouping has its own source-sized buffer and header declaration.
+Single-zero product gradients and numerical standard-deviation singularity
+refusals retain their original rules. Scalar-only forward replay remains
+unsupported; these declarations cover the existing numeric value/gradient path.
+Selector and order-statistic reductions reuse their actual axis/q parser before
+numeric replay. They declare indexed source groups, optional outer Vec headers,
+source/contribution/cotangent copies, live shape/coordinate buffers and sorting
+scratch. Value validation and index ordering use separate scratch vectors; the
+selected VJP reserves two index/value slots after ordering finishes. Admission
+uses the larger scratch requirement and the conservative reverse accumulation
+bound, without performing a sort or materializing groups. Strict-order refusal
+and quantile/percentile interpolation keep their original numerical contract.
+Compact stencil admission streams the source shape and spacing coordinates
+without materializing either vector. Its shared layout parser checks source
+bytes/count, axis, edge-order sample requirements, finite nonzero scalar or
+strictly monotone coordinate spacing, and selected output before replay.
+Forward and reverse declarations cover the flattened source, shape and target
+coordinate vectors, optional spacing grid and optional reverse contribution.
+The two/three coefficient entries stay in fixed stack storage. Their finite
+numerical checks and gradient formulas remain at the original kernel; subnormal
+spacing can therefore refuse numerically after admission. Both public forward
+and value/gradient entry points retain their supported stencil boundary.
+These declarations are conservative source-derived bounds, not measured
+allocation peaks. Other kernel families, metadata-map capacity, vendor workspaces and returned JSON
+retention still need additional allocation qualification. Boundary and recovery
+tests are authored in `program_ad_multi_dot_memory.rs`,
+`program_ad_matrix_power_memory.rs`, `program_ad_pinv_memory.rs`,
+`program_ad_linalg_admission.rs`, `program_ad_signal_memory.rs`,
+`program_ad_interpolation_memory.rs`, `program_ad_diagonal_memory.rs` and
+`program_ad_spectral_memory.rs`, `program_ad_cumulative.rs` and
+`program_ad_trapezoid_memory.rs`, `program_ad_reduction_memory.rs` and
+`program_ad_order_statistic_memory.rs` and `program_ad_stencil_memory.rs`; remote
+native validation remains pending.
+
+
+Reentrant PyO3 replay inherits the active Python exception owner as well as its
+checkpoint policy. A child's inherited callback failure retains the original
+exception instance for both child and parent until the outermost scope ends;
+child cleanup cannot consume or replace that failure. Independent subsequent
+calls start with a fresh exception owner.
+
+Native matrix-power replay checks the active lifecycle owner while building identity and retained powers, multiplying and transposing matrices, accumulating reverse contributions, and eliminating inverse workspaces. Zero-buffer initialization also checks periodically after fallible allocation. Cancellation releases these local buffers through normal Rust unwinding; independent replay can start with a fresh owner.
+
+Native shaped replay checks the active lifecycle owner while copying numerical buffers in bounded chunks, validating finite entries and unary domains, filling adjoints, scanning zero cotangents, and evaluating elementwise unary operations and whole-array sum/mean reductions. Sum/mean retain the original sequential accumulation order and signed-zero identity. Independent calls restore their own lifecycle policy after refusal.
+
+Native reverse replay reserves derivative buffers fallibly and checks lifecycle ownership during derivative/domain evaluation, adjoint validation and accumulation. Structural buffer initialization uses the same fallible, periodically checked fill path as adjoints. Broadcast, transpose, concatenation, stacking, axis reduction, and their reverse scatter/index loops also observe the active owner; cancellation returns through normal buffer disposal before an independent retry.
+
+Native static source maps count metadata entries with checked arithmetic and lifecycle checks before reserving parsed entries. A declared target or cotangent size mismatch refuses before this allocation. Parsing, forward gathering, reverse buffer initialization and repeated-index scatter observe the active lifecycle owner. Constant entries retain their floating-point value and contribute no source cotangent.
+
+Native scalar determinant, inverse and solve replay checks lifecycle ownership while preparing Gaussian/LU workspaces, selecting and swapping pivots, normalizing and eliminating rows, validating the inverse and accumulating the solution. Workspace initialization uses fallible, periodically checked buffers. Reverse linalg adapters share the checked operand reservation path instead of allocating through iterator collection. These changes retain the numerical formulas and pivot order.
+
+Native inverse/determinant reverse contributions and solve adjoints check lifecycle ownership while traversing matrix and RHS entries. Forward solve and reverse solve workspace construction use one checked sequential dot-product kernel, retaining the original signed-zero identity. Multiple RHS columns and pivot-swapped matrices use the same cancellation and recovery path.
+
+Native product reductions reserve result, group, index and adjoint buffers fallibly after checked byte sizing. Group buffers reserve the declared axis length. Parsing/index traversal, multiplication, zero counting, group collection and reverse scatter observe lifecycle ownership. Flat-index offsets use checked multiplication and addition. The existing gradient boundary remains one zero per reduction group; two or more zeros refuse and independent replay can recover.
+
+Native variance/std replay reserves group, result, index and adjoint buffers fallibly and checks lifecycle ownership during centered moments, group construction and reverse scatter. Static metadata parses field pairs without allocating a field list; index offsets use checked arithmetic. Sequential mean/centered sums retain their original floating-point identities. Invalid correction denominators and zero-variance standard-deviation gradients retain their refusal boundaries.
+
+Native order statistics reserve group, selection and cotangent buffers fallibly. Static metadata parses without a token list and flat offsets use checked arithmetic. In-place heapsort checks lifecycle ownership while building and draining the heap, with no sort scratch allocation. Forward and gradient replay use this checked ordering path for effects as well, sorting by the declared ordering key and original row position so equal keys retain their original replay order. Interpolation and source scatter preserve the existing strict-order selector contract; tied groups refuse and independent replay can recover.
+
+
+PyO3 replay captures the input-copy charge once, then adds cumulative native
+workspace declarations to that fixed baseline. Reentrant inherited callbacks
+retain each declaration without recharging earlier totals. The binding routes
+ordinary conversion errors and Rust unwinds through the Python input scope's
+exit; a caught unwind becomes a runtime error and does not invoke a fallback.
+Allocator aborts and interruptions inside external solvers remain unqualified.
+Public reentrant accounting fixtures await native execution; this source change
+alone is not panic-path or constrained-memory acceptance evidence.
+
+
+Native metadata, forward and gradient JSON results use two streaming passes over
+the same immutable result. The first counts UTF-8 bytes without a result-sized
+buffer; admission charges those bytes before fallible exact-capacity reservation.
+The second writes within that admitted bound and checks the final byte count.
+Both passes observe lifecycle checkpoints. UTF-8 storage transfers into the Rust
+string without copying. The binding also charges a conservative Python Unicode
+header/payload declaration before fallible conversion while its input scope is
+still active. Caller-retained output lifetimes remain unqualified.
+
+
+Python Unicode conversion uses `PyString::from_bytes`, which reports allocation
+errors rather than the infallible constructor's panic. Runtime-observed empty,
+ASCII, Latin-1, BMP and non-BMP string sizes bound the header, and four bytes per
+UTF-8 input byte conservatively bound payload width. Admission precedes conversion
+and checks cancellation again before returning. Native binding wrappers return
+owned Python strings; Python callers still receive the same JSON `str`. The
+reservation ends at return and does not charge objects later retained by callers.
+
+
+Binary retained-shape admission compares borrowed operand and target dimensions
+axis by axis using the numeric kernel's same broadcast rule. It does not allocate
+an inferred shape vector before numeric memory admission. Incompatible operand
+shapes still refuse before target mismatch; ranked/singleton/scalar broadcasting
+and the numeric materialization order retain their existing contract. Public
+ranked value/gradient, malformed-target and recovery fixtures await execution.
+
+
+WASM Program AD input decoding validates the complete borrowed envelope, UTF-8,
+input arity, exact byte count and finite inputs before owned source/numeric
+copies. Those copies and the combined value/gradient output reserve fallibly.
+The public replay FFI bounds its input envelope before raw-slice construction
+and validates the exact output byte count before copying IR or running the
+numerical interpreter. Rejected output lengths leave the sink unchanged. Existing
+status codes and numerical replay are retained; full linear-memory budget and
+external-solver allocation/iteration qualification remain required.
+
+Elementwise replay validates unary and binary operand counts before retained
+workspace admission on both the forward and value-plus-gradient public paths.
+Malformed arity preserves the existing refusal diagnostic and does not invoke
+the owned numeric memory callback or materialize retained numerical values.
+
+Singular-value replay uses the same nalgebra implicit-shift decomposition with
+its original tolerance and a finite per-call ceiling of 10,000 iterations.
+`with_replay_solver_iterations` permits a positive tighter ceiling; nested
+owners inherit the minimum and return or unwind restores their parent. Exhaustion
+refuses the replay. This is a safety policy, not a measured wall-clock deadline.
+The spectrum and vectors are checked before allocation-free descending reordering,
+so a non-finite spectrum never enters nalgebra's NaN-panicking sort path. Vector
+columns/rows follow the same permutation. The workspace declaration includes
+nalgebra 0.35's bidiagonal coefficients, copied off-diagonal and phase work vectors.
+Allocator bookkeeping, vendor allocation failure and hard interruption during an
+opaque solver call still require their separate host/process qualification.
+
+The browser bindings retain the existing kernel ABI. Kuramoto checks the
+kernel-reported oscillator and step ceilings before encoding; unknown limits
+refuse. Its codec validates representable byte/header counts and finite fields
+before allocating the payload and streams the fields without a combined copy.
+Both bindings own guest buffers immediately after each successful allocation,
+attempt both releases even if one release throws, and refuse allocation,
+execution or cleanup traps. Complete output windows and finite results are
+required; retained results copy values out before freeing guest buffers.
+These declared shape limits do not establish a total browser heap quota or
+worker-disposal proof. The real-WASM frontend regressions run in the Studio CI
+category; they remain unexecuted locally under the hooks-only validation policy.
+
+Replay validation declares its branch, region and phi hash tables before fallible
+reservation. Shape, scalar value, numeric value and adjoint maps use the same
+checked table bound. The adjoint map reserves its complete target capacity once;
+new keys cannot grow beyond that admitted capacity. These are conservative table
+layout declarations for the maintained Rust/WASM targets, based on the standard
+library hash-table bucket and control-byte layout, rather than allocator peak
+measurements. Public branch and gradient regressions exercise refusal before
+numeric admission and recovery with unchanged mathematical results.
+
+The browser replay kernel applies a 64 MiB product ceiling to cumulative declared
+storage for each call. Owned input/output copies, parser metadata, replay tables
+and numerical requests share that charge; an explicit Rust caller may tighten
+it with `replay_value_and_gradient_with_memory_budget`. This is a policy ceiling,
+not observed browser capacity or a memory reservation. Parent admission remains
+binding, allocation failures refuse, and a refused FFI call leaves output bytes
+unchanged. Independent subsequent calls start with a fresh charge.
+
+Shaped elementwise, broadcast, reshape, transpose, concatenation, stacking,
+source-map and sum/mean adapters declare copied operands, broadcast values,
+cotangents, contributions, shape/coordinate vectors and operand containers
+before numerical replay. The conservative bound covers the live div/pow reverse
+chain and structural split/scatter storage. Static source maps include their
+actual tagged-entry type width. Scalar-only stack arithmetic has no such shaped
+workspace. These declarations preserve kernel equations and execution order.

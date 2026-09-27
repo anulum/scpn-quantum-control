@@ -81,3 +81,32 @@ def test_predicate_array_vector_cannot_collapse_to_bool() -> None:
     )
     with pytest.raises(ValueError, match="cannot be used as scalar bools"):
         bool(array)
+
+
+@pytest.mark.parametrize(
+    "shape,count", [((274177, 67280421310721), 1), ((4294967296, 4294967296), 0)]
+)
+def test_public_predicate_array_refuses_native_product_wrap_and_recovers(
+    shape: tuple[int, ...],
+    count: int,
+) -> None:
+    """Predicate shape validation rejects native-width aliases of its item count.
+
+    Parameters
+    ----------
+    shape
+        Dimensions whose true product exceeds the native integer range.
+    count
+        The wrapped product, deliberately different from the true product.
+
+    """
+    context = _context()
+    predicate = _TracePredicate(True, context, "retry")
+    predicates = (predicate,) if count else ()
+    before = len(context.nodes)
+    with pytest.raises(ValueError, match="shape must match predicate count"):
+        TraceADPredicateArray(predicates, shape, context)
+    assert len(context.nodes) == before
+    valid = TraceADPredicateArray((predicate,), (), context)
+    assert bool(valid) is True
+    assert context.nodes[-1].op == "branch:retry:True"

@@ -19,7 +19,10 @@ fn accumulate_reshape_like(
         ));
     }
     let input = numeric_operand(&effect.inputs[0], values)?;
-    let reshaped = ProgramADNumericValue::new(input.shape.clone(), cotangent.values.clone())?;
+    let reshaped = ProgramADNumericValue::new(
+        copy_replay_buffer(&input.shape)?,
+        copy_replay_buffer(&cotangent.values)?,
+    )?;
     add_numeric_adjoint(&effect.inputs[0], reshaped, values, adjoints)
 }
 
@@ -35,7 +38,7 @@ fn accumulate_broadcast_to(
             effect.index
         ));
     }
-    add_numeric_adjoint(&effect.inputs[0], cotangent.clone(), values, adjoints)
+    add_numeric_adjoint(&effect.inputs[0], cotangent.try_clone()?, values, adjoints)
 }
 
 fn accumulate_transpose(
@@ -64,7 +67,10 @@ fn accumulate_concatenate(
 ) -> Result<(), String> {
     let operands = numeric_operands(effect, values)?;
     let contributions = split_concatenate_cotangent(effect.index, operation, &operands, cotangent)?;
-    for (input, contribution) in effect.inputs.iter().zip(contributions) {
+    for (index, (input, contribution)) in effect.inputs.iter().zip(contributions).enumerate() {
+        if index % 256 == 0 {
+            crate::program_ad_lifecycle::replay_checkpoint()?;
+        }
         add_numeric_adjoint(input, contribution, values, adjoints)?;
     }
     Ok(())
@@ -79,7 +85,10 @@ fn accumulate_stack(
 ) -> Result<(), String> {
     let operands = numeric_operands(effect, values)?;
     let contributions = split_stack_cotangent(effect.index, operation, &operands, cotangent)?;
-    for (input, contribution) in effect.inputs.iter().zip(contributions) {
+    for (index, (input, contribution)) in effect.inputs.iter().zip(contributions).enumerate() {
+        if index % 256 == 0 {
+            crate::program_ad_lifecycle::replay_checkpoint()?;
+        }
         add_numeric_adjoint(input, contribution, values, adjoints)?;
     }
     Ok(())
@@ -105,7 +114,8 @@ fn accumulate_index_map(
         input.values.len(),
         &cotangent.values,
     )?;
-    let contribution = ProgramADNumericValue::new(input.shape.clone(), contribution_values)?;
+    let contribution =
+        ProgramADNumericValue::new(copy_replay_buffer(&input.shape)?, contribution_values)?;
     add_numeric_adjoint(&effect.inputs[0], contribution, values, adjoints)
 }
 
@@ -145,13 +155,16 @@ fn accumulate_unary(
         return Err(format!("effect {} requires one input", effect.index));
     }
     let input = numeric_operand(&effect.inputs[0], values)?;
+    let mut derivative_buffer = reserve_replay_buffer(input.values.len())?;
+    for (index, value) in input.values.iter().enumerate() {
+        if index % 256 == 0 {
+            crate::program_ad_lifecycle::replay_checkpoint()?;
+        }
+        derivative_buffer.push(derivative(*value));
+    }
     let derivative_values = ProgramADNumericValue::new(
-        input.shape.clone(),
-        input
-            .values
-            .iter()
-            .map(|value| derivative(*value))
-            .collect(),
+        copy_replay_buffer(&input.shape)?,
+        derivative_buffer,
     )?;
     add_numeric_adjoint(
         &effect.inputs[0],
@@ -174,16 +187,24 @@ fn accumulate_unary_domain(
         return Err(format!("effect {} requires one input", effect.index));
     }
     let input = numeric_operand(&effect.inputs[0], values)?;
-    if input.values.iter().any(|value| !predicate(*value)) {
-        return Err(domain_error.to_owned());
+    for (index, value) in input.values.iter().enumerate() {
+        if index % 256 == 0 {
+            crate::program_ad_lifecycle::replay_checkpoint()?;
+        }
+        if !predicate(*value) {
+            return Err(domain_error.to_owned());
+        }
+    }
+    let mut derivative_buffer = reserve_replay_buffer(input.values.len())?;
+    for (index, value) in input.values.iter().enumerate() {
+        if index % 256 == 0 {
+            crate::program_ad_lifecycle::replay_checkpoint()?;
+        }
+        derivative_buffer.push(derivative(*value));
     }
     let derivative_values = ProgramADNumericValue::new(
-        input.shape.clone(),
-        input
-            .values
-            .iter()
-            .map(|value| derivative(*value))
-            .collect(),
+        copy_replay_buffer(&input.shape)?,
+        derivative_buffer,
     )?;
     add_numeric_adjoint(
         &effect.inputs[0],
@@ -201,7 +222,7 @@ fn add_scalar_adjoint(
 ) -> Result<(), String> {
     add_numeric_adjoint(
         input,
-        ProgramADNumericValue::scalar(contribution),
+        ProgramADNumericValue::scalar(contribution)?,
         values,
         adjoints,
     )
@@ -213,24 +234,37 @@ fn add_numeric_adjoint(
     values: &HashMap<String, ProgramADNumericValue>,
     adjoints: &mut HashMap<String, ProgramADNumericValue>,
 ) -> Result<(), String> {
-    if contribution.values.iter().any(|value| !value.is_finite()) {
-        return Err(format!("adjoint contribution for {input} must be finite"));
+    for (index, value) in contribution.values.iter().enumerate() {
+        if index % 256 == 0 {
+            crate::program_ad_lifecycle::replay_checkpoint()?;
+        }
+        if !value.is_finite() {
+            return Err(format!("adjoint contribution for {input} must be finite"));
+        }
     }
     let Some(target) = values.get(input) else {
         return Ok(());
     };
     let reduced = reduce_to_shape(&contribution, &target.shape)?;
-    let entry = adjoints.entry(input.to_owned()).or_insert_with(|| {
-        ProgramADNumericValue::filled(&target.shape, 0.0)
-            .expect("zero adjoint shape is already validated")
-    });
+    if !adjoints.contains_key(input) && adjoints.len() == adjoints.capacity() {
+        return Err("Program AD adjoint map exceeds admitted target capacity".to_owned());
+    }
+    let entry = match adjoints.entry(copy_replay_symbol(input)?) {
+        std::collections::hash_map::Entry::Occupied(entry) => entry.into_mut(),
+        std::collections::hash_map::Entry::Vacant(entry) => {
+            entry.insert(ProgramADNumericValue::filled(&target.shape, 0.0)?)
+        }
+    };
     if entry.shape != reduced.shape {
         return Err(format!(
             "adjoint shape {:?} does not match contribution shape {:?}",
             entry.shape, reduced.shape
         ));
     }
-    for (slot, value) in entry.values.iter_mut().zip(reduced.values.iter()) {
+    for (index, (slot, value)) in entry.values.iter_mut().zip(reduced.values.iter()).enumerate() {
+        if index % 256 == 0 {
+            crate::program_ad_lifecycle::replay_checkpoint()?;
+        }
         *slot += value;
     }
     Ok(())

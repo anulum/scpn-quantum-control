@@ -38,12 +38,17 @@ records come from :mod:`scpn_quantum_control.program_ad_effect_ir` and
 from __future__ import annotations
 
 import math
+import sys
 from collections.abc import Mapping
-from typing import cast
+from threading import Event
+from typing import TYPE_CHECKING, cast
 
 import numpy as np
 from numpy.typing import NDArray
 
+from .dense_budget import DenseAllocationError
+from .execution_memory import ExecutionBuffer, ExecutionMemoryPlan, dataclass_storage_bytes
+from .execution_reservations import ExecutionMemoryReservation, reserve_execution_memory
 from .program_ad_adjoint import (
     ProgramADAdjointResult,
     ProgramADAdjointStep,
@@ -62,6 +67,10 @@ from .program_ad_effect_ir import (
 )
 from .program_ad_interpolation_primitives import (
     program_ad_interpolation_interp_derivative_rule,
+)
+from .program_ad_linalg_memory import (
+    determinant_cofactor_execution_scope,
+    linalg_pullback_execution_scope,
 )
 from .program_ad_linalg_primitives import (
     _program_ad_linalg_det_cofactor_matrix,
@@ -86,6 +95,9 @@ from .program_ad_stencil_primitives import (
 )
 from .whole_program_ad_result import WholeProgramIRNode
 
+if TYPE_CHECKING:
+    from .whole_program_trace_runtime import _WholeProgramTraceContext
+
 
 def _program_adjoint_det_contributions(
     node: WholeProgramIRNode,
@@ -103,19 +115,20 @@ def _program_adjoint_det_contributions(
         raise ValueError("det adjoint requires flattened square matrix inputs")
     if rows == 0:
         return ()
-    matrix = np.array(
-        [_program_adjoint_input_value(name, node_by_name) for name in node.inputs],
-        dtype=np.float64,
-    ).reshape(rows, cols)
-    cofactors = _program_ad_linalg_det_cofactor_matrix(matrix)
-    return tuple(
-        (
-            node.inputs[row * cols + col],
-            float(cofactors[row, col]),
+    with determinant_cofactor_execution_scope((rows, cols)):
+        matrix = np.array(
+            [_program_adjoint_input_value(name, node_by_name) for name in node.inputs],
+            dtype=np.float64,
+        ).reshape(rows, cols)
+        cofactors = _program_ad_linalg_det_cofactor_matrix(matrix)
+        return tuple(
+            (
+                node.inputs[row * cols + col],
+                float(cofactors[row, col]),
+            )
+            for row in range(rows)
+            for col in range(cols)
         )
-        for row in range(rows)
-        for col in range(cols)
-    )
 
 
 def _program_adjoint_inv_contributions(
@@ -136,25 +149,28 @@ def _program_adjoint_inv_contributions(
         raise ValueError("inverse adjoint requires flattened square matrix inputs")
     if output_row < 0 or output_row >= rows or output_col < 0 or output_col >= cols:
         raise ValueError("inverse adjoint output index is outside inverse shape")
-    matrix = np.array(
-        [_program_adjoint_input_value(name, node_by_name) for name in node.inputs],
-        dtype=np.float64,
-    ).reshape(rows, cols)
-    try:
-        inverse = np.linalg.inv(matrix)
-    except np.linalg.LinAlgError as exc:
-        raise ValueError("inverse adjoint requires a nonsingular matrix") from exc
-    cotangent = np.zeros((rows, cols), dtype=np.float64)
-    cotangent[output_row, output_col] = 1.0
-    local_adjoint = -(inverse.T @ cotangent @ inverse.T)
-    return tuple(
-        (
-            node.inputs[row * cols + col],
-            float(local_adjoint[row, col]),
+    with linalg_pullback_execution_scope((rows, cols)) as reservation:
+        matrix = np.array(
+            [_program_adjoint_input_value(name, node_by_name) for name in node.inputs],
+            dtype=np.float64,
+        ).reshape(rows, cols)
+        try:
+            inverse = np.linalg.inv(matrix)
+        except np.linalg.LinAlgError as exc:
+            raise ValueError("inverse adjoint requires a nonsingular matrix") from exc
+        reservation.checkpoint()
+        cotangent = np.zeros((rows, cols), dtype=np.float64)
+        cotangent[output_row, output_col] = 1.0
+        local_adjoint = -(inverse.T @ cotangent @ inverse.T)
+        reservation.checkpoint()
+        return tuple(
+            (
+                node.inputs[row * cols + col],
+                float(local_adjoint[row, col]),
+            )
+            for row in range(rows)
+            for col in range(cols)
         )
-        for row in range(rows)
-        for col in range(cols)
-    )
 
 
 def _program_adjoint_solve_contributions(
@@ -186,48 +202,53 @@ def _program_adjoint_solve_contributions(
             raise ValueError("solve adjoint output index is outside solution shape")
     else:
         raise ValueError("solve adjoint rhs shape must be rank-1 or rank-2")
-    rhs_size = int(np.prod(rhs_shape, dtype=np.int64))
+    rhs_size = math.prod(rhs_shape)
     matrix_size = rows * cols
     if len(node.inputs) != matrix_size + rhs_size:
         raise ValueError("solve adjoint inputs must contain matrix followed by rhs")
-    matrix_input_names = node.inputs[:matrix_size]
-    rhs_input_names = node.inputs[matrix_size:]
-    matrix = np.array(
-        [_program_adjoint_input_value(name, node_by_name) for name in matrix_input_names],
-        dtype=np.float64,
-    ).reshape(rows, cols)
-    rhs = np.array(
-        [_program_adjoint_input_value(name, node_by_name) for name in rhs_input_names],
-        dtype=np.float64,
-    ).reshape(rhs_shape)
-    try:
-        solution = np.linalg.solve(matrix, rhs)
-    except np.linalg.LinAlgError as exc:
-        raise ValueError("solve adjoint requires a nonsingular matrix") from exc
-    cotangent = np.zeros_like(solution, dtype=np.float64)
-    if len(rhs_shape) == 1:
-        cotangent[output_row] = 1.0
-        rhs_adjoint = np.linalg.solve(matrix.T, cotangent)
-        matrix_adjoint = -np.outer(rhs_adjoint, solution)
-    else:
-        cotangent[output_row, output_col] = 1.0
-        rhs_adjoint = np.linalg.solve(matrix.T, cotangent)
-        matrix_adjoint = -(rhs_adjoint @ solution.T)
-    flat_rhs_adjoint = np.asarray(rhs_adjoint, dtype=np.float64).reshape(-1)
-    return tuple(
-        (
-            matrix_input_names[row * cols + col],
-            float(matrix_adjoint[row, col]),
+    with linalg_pullback_execution_scope((rows, cols), rhs_shape=rhs_shape) as reservation:
+        matrix_input_names = node.inputs[:matrix_size]
+        rhs_input_names = node.inputs[matrix_size:]
+        matrix = np.array(
+            [_program_adjoint_input_value(name, node_by_name) for name in matrix_input_names],
+            dtype=np.float64,
+        ).reshape(rows, cols)
+        rhs = np.array(
+            [_program_adjoint_input_value(name, node_by_name) for name in rhs_input_names],
+            dtype=np.float64,
+        ).reshape(rhs_shape)
+        try:
+            solution = np.linalg.solve(matrix, rhs)
+        except np.linalg.LinAlgError as exc:
+            raise ValueError("solve adjoint requires a nonsingular matrix") from exc
+        reservation.checkpoint()
+        cotangent = np.zeros_like(solution, dtype=np.float64)
+        if len(rhs_shape) == 1:
+            cotangent[output_row] = 1.0
+            rhs_adjoint = np.linalg.solve(matrix.T, cotangent)
+            reservation.checkpoint()
+            matrix_adjoint = -np.outer(rhs_adjoint, solution)
+        else:
+            cotangent[output_row, output_col] = 1.0
+            rhs_adjoint = np.linalg.solve(matrix.T, cotangent)
+            reservation.checkpoint()
+            matrix_adjoint = -(rhs_adjoint @ solution.T)
+        reservation.checkpoint()
+        flat_rhs_adjoint = np.asarray(rhs_adjoint, dtype=np.float64).reshape(-1)
+        return tuple(
+            (
+                matrix_input_names[row * cols + col],
+                float(matrix_adjoint[row, col]),
+            )
+            for row in range(rows)
+            for col in range(cols)
+        ) + tuple(
+            (
+                rhs_input_names[index],
+                float(flat_rhs_adjoint[index]),
+            )
+            for index in range(rhs_size)
         )
-        for row in range(rows)
-        for col in range(cols)
-    ) + tuple(
-        (
-            rhs_input_names[index],
-            float(flat_rhs_adjoint[index]),
-        )
-        for index in range(rhs_size)
-    )
 
 
 def _program_adjoint_trace_contributions(
@@ -295,7 +316,7 @@ def _program_adjoint_diagflat_contributions(
         source_index = int(parts[6])
     except ValueError as exc:
         raise ValueError("diagflat adjoint metadata is malformed") from exc
-    source_size = int(np.prod(shape, dtype=np.int64))
+    source_size = math.prod(shape)
     if source_index < 0 or source_index >= source_size:
         raise ValueError("diagflat adjoint source index is outside flattened source shape")
     return ((node.inputs[0], 1.0),)
@@ -308,6 +329,8 @@ def _program_adjoint_parse_shape_label(label: str) -> tuple[int, ...]:
     shape = tuple(int(part) for part in label.split("x"))
     if any(dimension < 0 for dimension in shape):
         raise ValueError("shape dimensions must be non-negative")
+    if any(dimension > sys.maxsize for dimension in shape) or math.prod(shape) > sys.maxsize:
+        raise DenseAllocationError("primitive shape exceeds native addressability")
     return shape
 
 
@@ -324,9 +347,7 @@ def _program_adjoint_cumulative_contributions(
             source_shape = _program_adjoint_parse_shape_label(parts[2])
             axis = None if parts[4] == "flat" else int(parts[4])
             output_index = int(parts[6])
-            output_shape = (
-                (int(np.prod(source_shape, dtype=np.int64)),) if axis is None else source_shape
-            )
+            output_shape = (math.prod(source_shape),) if axis is None else source_shape
             rule = (
                 program_ad_cumulative_cumsum_derivative_rule(source_shape, axis=axis)
                 if parts[0] == "cumsum"
@@ -358,10 +379,10 @@ def _program_adjoint_cumulative_contributions(
     except ValueError as exc:
         raise ValueError("cumulative adjoint metadata is malformed") from exc
 
-    expected_inputs = int(np.prod(source_shape, dtype=np.int64))
+    expected_inputs = math.prod(source_shape)
     if expected_inputs <= 0 or len(node.inputs) != expected_inputs:
         raise ValueError("cumulative adjoint inputs must match flattened source shape")
-    output_size = int(np.prod(output_shape, dtype=np.int64))
+    output_size = math.prod(output_shape)
     if output_size <= 0 or output_index < 0 or output_index >= output_size:
         raise ValueError("cumulative adjoint output index is outside output shape")
     if rule.vjp_rule is None:
@@ -489,7 +510,7 @@ def _program_adjoint_stencil_contributions(
     except ValueError as exc:
         raise ValueError("stencil adjoint metadata is malformed") from exc
 
-    expected_inputs = int(np.prod(source_shape, dtype=np.int64))
+    expected_inputs = math.prod(source_shape)
     if expected_inputs <= 0 or len(node.inputs) != expected_inputs:
         raise ValueError("stencil adjoint inputs must match flattened source shape")
     if output_index < 0 or output_index >= expected_inputs:
@@ -642,10 +663,10 @@ def _program_adjoint_multi_dot_contributions(
         output_shape, output_index = _program_adjoint_multi_dot_output_metadata(parts[4:])
     except ValueError as exc:
         raise ValueError("multi_dot adjoint metadata is malformed") from exc
-    expected_inputs = sum(int(np.prod(shape, dtype=np.int64)) for shape in operand_shapes)
+    expected_inputs = sum(math.prod(shape) for shape in operand_shapes)
     if len(node.inputs) != expected_inputs:
         raise ValueError("multi_dot adjoint inputs must match flattened operand shapes")
-    output_size = int(np.prod(output_shape, dtype=np.int64)) if output_shape else 1
+    output_size = math.prod(output_shape) if output_shape else 1
     if output_index < 0 or output_index >= output_size:
         raise ValueError("multi_dot adjoint output index is outside result shape")
     flat_values = np.array(
@@ -1316,89 +1337,160 @@ def _program_adjoint_result_from_nodes(
     parameter_names: tuple[str, ...],
     trainable: tuple[bool, ...],
     program_ir: ProgramADEffectIR | None = None,
+    max_execution_gib: float | None = None,
+    deadline_monotonic: float | None = None,
+    cancelled: Event | None = None,
+    context: _WholeProgramTraceContext | None = None,
 ) -> ProgramADAdjointResult:
     """Generate reverse-mode adjoints over supported scalar Program AD IR nodes."""
-    parameter_count = len(parameter_names)
-    unsupported_ops: set[str] = {
-        node.op
-        for node in nodes
-        if node.op.startswith("mutation:") and node.op != "mutation:setitem"
-    }
-    node_by_name = {f"%{node.index}": node for node in nodes}
-    adjoints = {name: 0.0 for name in node_by_name}
-    if output_name not in adjoints:
-        unsupported_ops.add("output:not_in_ir")
-    else:
-        adjoints[output_name] = 1.0
-        terminal_output_name = f"%{nodes[-1].index}" if nodes else ""
-        if output_name != terminal_output_name:
-            unsupported_ops.add("output:not_terminal_ir_node")
-    for node in reversed(nodes):
-        name = f"%{node.index}"
-        cotangent = adjoints.get(name, 0.0)
-        if cotangent == 0.0:
-            continue
-        try:
-            contributions = _program_adjoint_node_contributions(node, node_by_name)
-        except ValueError:
-            unsupported_ops.add(node.op)
-            continue
-        for input_name, contribution in contributions:
-            if input_name in adjoints:
-                adjoints[input_name] += cotangent * contribution
-    gradient = np.zeros(parameter_count, dtype=np.float64)
-    for index, (name, trainable_flag) in enumerate(zip(parameter_names, trainable, strict=True)):
-        if not trainable_flag:
-            continue
-        for node in nodes:
-            if node.op == "parameter" and node.inputs == (name,):
-                gradient[index] = adjoints.get(f"%{node.index}", 0.0)
-                break
-    supported = not unsupported_ops
-    if not supported:
-        gradient = np.zeros(parameter_count, dtype=np.float64)
-    replay_effect_count = len(program_ir.effects) if program_ir is not None else 0
-    replay_control_region_count = len(program_ir.control_regions) if program_ir is not None else 0
-    replay_phi_node_count = len(program_ir.phi_nodes) if program_ir is not None else 0
-    adjoint_steps = (
-        _program_adjoint_steps_from_ir(
-            nodes=nodes,
-            node_by_name=node_by_name,
-            program_ir=program_ir,
-            cotangents=adjoints,
+    node_count = len(nodes)
+    input_count = max((len(node.inputs) for node in nodes), default=1)
+    record_bytes = dataclass_storage_bytes(ProgramADAdjointResult) + sum(
+        dataclass_storage_bytes(
+            ProgramADAdjointStep,
+            payload_bytes=(
+                sys.getsizeof(node.op)
+                + sys.getsizeof(node.inputs)
+                + len(node.inputs) * (3 * sys.getsizeof(0.0) + sys.getsizeof((None, None)))
+            ),
         )
-        if program_ir is not None
-        else ()
+        for node in nodes
     )
-    return ProgramADAdjointResult(
-        gradient=gradient,
-        supported=supported,
-        unsupported_ops=tuple(sorted(unsupported_ops)),
-        method="program_adjoint_ir_generation",
-        claim_boundary=(
-            "reverse-mode adjoint generation over stabilized program_ad_effect_ir.v1 "
-            "for supported executed scalar Program AD operations; unsupported operations "
-            "fail closed without substituting finite differences or forward tangents; "
-            "no non-executed branch adjoints or executable Rust/LLVM/JIT lowering claim"
-        ),
-        replay_node_count=len(nodes),
-        replay_effect_count=replay_effect_count,
-        replay_control_region_count=replay_control_region_count,
-        replay_phi_node_count=replay_phi_node_count,
-        executed_branch_replay_count=sum(
-            1
-            for step in adjoint_steps
-            if step.operation.startswith("branch:")
-            and step.control_region_kind == "runtime_branch"
-            and step.phi_node is not None
-            and step.phi_selected is not None
-        ),
-        blocked_non_executed_phi_input_count=sum(
-            len(step.non_executed_phi_inputs) for step in adjoint_steps
-        ),
-        replay_ir_format="program_ad_effect_ir.v1",
-        adjoint_steps=adjoint_steps,
+    mapping_count = 2 * node_count + input_count
+    if program_ir is not None:
+        mapping_count += (
+            len(program_ir.ssa_values)
+            + len(program_ir.effects)
+            + 2 * len(program_ir.control_regions)
+            + 2 * len(program_ir.phi_nodes)
+        )
+    metadata_bytes = (
+        record_bytes
+        + mapping_count * (sys.getsizeof({None: None}) + sys.getsizeof(0.0))
+        + sys.getsizeof([])
+        + sys.getsizeof(())
+        + node_count * 2 * np.dtype(np.uintp).itemsize
     )
+    plan = ExecutionMemoryPlan(
+        (
+            ExecutionBuffer(
+                "generation_gradient",
+                "dense_output",
+                (max(1, len(parameter_names)),),
+                "float64",
+                2,
+            ),
+            ExecutionBuffer(
+                "generation_gradient_validation",
+                "intermediate",
+                (max(1, len(parameter_names)),),
+                "bool",
+                2,
+            ),
+            ExecutionBuffer(
+                "generation_contributions", "intermediate", (max(1, input_count),), "float64", 3
+            ),
+            ExecutionBuffer("generation_metadata", "adjoint", (max(1, metadata_bytes),), "uint8"),
+        )
+    )
+    with reserve_execution_memory(
+        plan,
+        max_gib=max_execution_gib,
+        deadline_monotonic=deadline_monotonic,
+        cancelled=cancelled,
+    ) as reservation:
+        parameter_count = len(parameter_names)
+        unsupported_ops: set[str] = {
+            node.op
+            for node in nodes
+            if node.op.startswith("mutation:") and node.op != "mutation:setitem"
+        }
+        node_by_name = {f"%{node.index}": node for node in nodes}
+        adjoints = {name: 0.0 for name in node_by_name}
+        if output_name not in adjoints:
+            unsupported_ops.add("output:not_in_ir")
+        else:
+            adjoints[output_name] = 1.0
+            terminal_output_name = f"%{nodes[-1].index}" if nodes else ""
+            if output_name != terminal_output_name:
+                unsupported_ops.add("output:not_terminal_ir_node")
+        for node in reversed(nodes):
+            reservation.checkpoint()
+            name = f"%{node.index}"
+            cotangent = adjoints.get(name, 0.0)
+            if cotangent == 0.0:
+                continue
+            try:
+                contributions = _program_adjoint_node_contributions(node, node_by_name)
+            except ValueError:
+                unsupported_ops.add(node.op)
+                continue
+            for input_name, contribution in contributions:
+                if input_name in adjoints:
+                    adjoints[input_name] += cotangent * contribution
+        gradient = np.zeros(parameter_count, dtype=np.float64)
+        for index, (name, trainable_flag) in enumerate(
+            zip(parameter_names, trainable, strict=True)
+        ):
+            reservation.checkpoint()
+            if not trainable_flag:
+                continue
+            for node in nodes:
+                if node.op == "parameter" and node.inputs == (name,):
+                    gradient[index] = adjoints.get(f"%{node.index}", 0.0)
+                    break
+        supported = not unsupported_ops
+        if not supported:
+            gradient = np.zeros(parameter_count, dtype=np.float64)
+        replay_effect_count = len(program_ir.effects) if program_ir is not None else 0
+        replay_control_region_count = (
+            len(program_ir.control_regions) if program_ir is not None else 0
+        )
+        replay_phi_node_count = len(program_ir.phi_nodes) if program_ir is not None else 0
+        adjoint_steps = (
+            _program_adjoint_steps_from_ir(
+                nodes=nodes,
+                node_by_name=node_by_name,
+                program_ir=program_ir,
+                cotangents=adjoints,
+                reservation=reservation,
+            )
+            if program_ir is not None
+            else ()
+        )
+        result = ProgramADAdjointResult(
+            gradient=gradient,
+            supported=supported,
+            unsupported_ops=tuple(sorted(unsupported_ops)),
+            method="program_adjoint_ir_generation",
+            claim_boundary=(
+                "reverse-mode adjoint generation over stabilized program_ad_effect_ir.v1 "
+                "for supported executed scalar Program AD operations; unsupported operations "
+                "fail closed without substituting finite differences or forward tangents; "
+                "no non-executed branch adjoints or executable Rust/LLVM/JIT lowering claim"
+            ),
+            replay_node_count=len(nodes),
+            replay_effect_count=replay_effect_count,
+            replay_control_region_count=replay_control_region_count,
+            replay_phi_node_count=replay_phi_node_count,
+            executed_branch_replay_count=sum(
+                1
+                for step in adjoint_steps
+                if step.operation.startswith("branch:")
+                and step.control_region_kind == "runtime_branch"
+                and step.phi_node is not None
+                and step.phi_selected is not None
+            ),
+            blocked_non_executed_phi_input_count=sum(
+                len(step.non_executed_phi_inputs) for step in adjoint_steps
+            ),
+            replay_ir_format="program_ad_effect_ir.v1",
+            adjoint_steps=adjoint_steps,
+        )
+        reservation.checkpoint()
+        if context is not None:
+            context.retain_buffers(reservation, plan)
+        return result
 
 
 def _program_adjoint_steps_from_ir(
@@ -1407,6 +1499,7 @@ def _program_adjoint_steps_from_ir(
     node_by_name: Mapping[str, WholeProgramIRNode],
     program_ir: ProgramADEffectIR,
     cotangents: Mapping[str, float],
+    reservation: ExecutionMemoryReservation | None = None,
 ) -> tuple[ProgramADAdjointStep, ...]:
     """Generate reverse-adjoint steps from stabilized Program AD IR metadata."""
     ssa_by_name = {value.name: value for value in program_ir.ssa_values}
@@ -1427,6 +1520,8 @@ def _program_adjoint_steps_from_ir(
             runtime_phi_by_region[phi_node.control_region] = phi_node
     steps: list[ProgramADAdjointStep] = []
     for node in reversed(nodes):
+        if reservation is not None:
+            reservation.checkpoint()
         primal_value = f"%{node.index}"
         ssa_value = ssa_by_name.get(primal_value)
         primal_effect = None if ssa_value is None else ssa_value.effect

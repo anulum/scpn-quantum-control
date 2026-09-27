@@ -417,6 +417,7 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/program_ad_adjoint.py
           src/scpn_quantum_control/program_ad_adjoint_generation.py
+          tests/test_program_ad_adjoint.py
           tests/test_program_ad_adjoint_generation.py
           tests/test_program_ad_adjoint_generation_docstrings.py
           tools/program_ad_adjoint_quality_gates.py
@@ -430,6 +431,7 @@ jobs:
           src/scpn_quantum_control/program_ad_adjoint_generation.py
           tests/test_adjoint_replay_product.py
           tests/test_differentiable_programming_benchmark_program_ir_edges.py
+          tests/test_program_ad_adjoint.py
           tests/test_program_ad_adjoint_generation.py
           tests/test_program_ad_adjoint_generation_docstrings.py
           tests/test_program_adjoint_replay.py
@@ -444,6 +446,7 @@ jobs:
           -m pytest -q
           tests/test_adjoint_replay_product.py
           tests/test_differentiable_programming_benchmark_program_ir_edges.py
+          tests/test_program_ad_adjoint.py
           tests/test_program_ad_adjoint_generation.py
           tests/test_program_ad_adjoint_generation_docstrings.py
           tests/test_program_adjoint_replay.py

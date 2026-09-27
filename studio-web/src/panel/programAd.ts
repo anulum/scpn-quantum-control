@@ -50,6 +50,7 @@ export const KERNEL_WASM_URL = new URL(
 const KERNEL_OK = 0;
 const ALLOC_FAILED = -1;
 const INVALID_LENGTH = -2;
+const REPLAY_ERROR = -4;
 const CANONICAL_PARAMETER_TARGETS = ["%0", "%1"] as const;
 
 /**
@@ -287,15 +288,18 @@ export async function digestProgramAdInput(input: Uint8Array): Promise<string> {
  * Bind a replay closure over a kernel's exports.
  *
  * Allocates guest memory through the kernel's own allocator, copies the input,
- * runs the replay, reads the `[value ; gradient]` block, and always frees every
- * buffer. An allocation failure or negative status surfaces as a fail-closed
+ * runs the replay, reads the `[value ; gradient]` block, and attempts to release every
+ * acquired buffer. An allocation failure or negative status surfaces as a fail-closed
  * result instead of a fabricated gradient.
  */
 /**
  * Bind the kernel exports into a replay closure that owns its allocations.
  *
- * Every buffer taken from `scpn_alloc` is released on both the success and the
- * failure path, so a refused replay does not leak kernel memory.
+ * Each successful `scpn_alloc` acquires a release attempt on the success and the
+ * failure path. Allocation, replay and cleanup traps fail closed; both
+ * releases are attempted even if the first release throws. A result requires
+ * the complete output window and finite values. Decoding copies scalars into
+ * the retained result rather than keeping guest-memory views.
  */
 export function bindProgramAd(exports: KernelExports): KernelReplay {
   return (input: Uint8Array, gradientLength: number): ReplayResult => {
@@ -309,31 +313,37 @@ export function bindProgramAd(exports: KernelExports): KernelReplay {
       return { ok: false, code: INVALID_LENGTH };
     }
     const outputLen = (1 + gradientLength) * 8;
-    const inputPtr = exports.scpn_alloc(input.length);
-    if (inputPtr === 0) {
-      return { ok: false, code: ALLOC_FAILED };
-    }
-    const outputPtr = exports.scpn_alloc(outputLen);
-    if (outputPtr === 0) {
-      exports.scpn_free(inputPtr, input.length);
-      return { ok: false, code: ALLOC_FAILED };
-    }
     try {
-      new Uint8Array(exports.memory.buffer, inputPtr, input.length).set(input);
-      const status = exports.scpn_program_ad_replay(inputPtr, input.length, outputPtr, outputLen);
-      if (status !== KERNEL_OK) {
-        return { ok: false, code: status };
+      const inputPtr = exports.scpn_alloc(input.length);
+      if (inputPtr === 0) return { ok: false, code: ALLOC_FAILED };
+      let outputPtr = 0;
+      try {
+        outputPtr = exports.scpn_alloc(outputLen);
+        if (outputPtr === 0) return { ok: false, code: ALLOC_FAILED };
+        new Uint8Array(exports.memory.buffer, inputPtr, input.length).set(input);
+        const status = exports.scpn_program_ad_replay(inputPtr, input.length, outputPtr, outputLen);
+        if (status !== KERNEL_OK) {
+          return { ok: false, code: status };
+        }
+        const view = new DataView(exports.memory.buffer, outputPtr, outputLen);
+        const value = view.getFloat64(0, true);
+        const gradient: number[] = [];
+        for (let index = 0; index < gradientLength; index += 1) {
+          gradient.push(view.getFloat64((index + 1) * 8, true));
+        }
+        if (!Number.isFinite(value) || gradient.some((entry) => !Number.isFinite(entry))) {
+          return { ok: false, code: REPLAY_ERROR };
+        }
+        return { ok: true, value, gradient };
+      } finally {
+        try {
+          exports.scpn_free(inputPtr, input.length);
+        } finally {
+          if (outputPtr !== 0) exports.scpn_free(outputPtr, outputLen);
+        }
       }
-      const view = new DataView(exports.memory.buffer.slice(outputPtr, outputPtr + outputLen));
-      const value = view.getFloat64(0, true);
-      const gradient: number[] = [];
-      for (let index = 0; index < gradientLength; index += 1) {
-        gradient.push(view.getFloat64((index + 1) * 8, true));
-      }
-      return { ok: true, value, gradient };
-    } finally {
-      exports.scpn_free(inputPtr, input.length);
-      exports.scpn_free(outputPtr, outputLen);
+    } catch {
+      return { ok: false, code: REPLAY_ERROR };
     }
   };
 }

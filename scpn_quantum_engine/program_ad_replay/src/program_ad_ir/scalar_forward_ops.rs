@@ -107,121 +107,68 @@ fn evaluate_effect(
         ),
         "abs" => unary(effect, values, f64::abs),
         name if is_cumulative_operation(name) => {
-            let input_values = effect
-                .inputs
-                .iter()
-                .map(|input| operand_value(input, values))
-                .collect::<Result<Vec<f64>, String>>()?;
+            let input_values = scalar_replay_operands(effect, values)?;
             cumulative_output_value(effect.index, name, &input_values)
         }
         name if is_interpolation_operation(name) => {
-            let input_values = effect
-                .inputs
-                .iter()
-                .map(|input| operand_value(input, values))
-                .collect::<Result<Vec<f64>, String>>()?;
+            let input_values = scalar_replay_operands(effect, values)?;
             interpolation_output_value(effect.index, name, &input_values)
         }
         name if is_signal_operation(name) => {
-            let input_values = effect
-                .inputs
-                .iter()
-                .map(|input| operand_value(input, values))
-                .collect::<Result<Vec<f64>, String>>()?;
+            let input_values = scalar_replay_operands(effect, values)?;
             signal_output_value(effect.index, name, &input_values)
         }
         name if is_stencil_operation(name) => {
-            let input_values = effect
-                .inputs
-                .iter()
-                .map(|input| operand_value(input, values))
-                .collect::<Result<Vec<f64>, String>>()?;
+            let input_values = scalar_replay_operands(effect, values)?;
             stencil_output_value(effect.index, name, &input_values)
         }
         name if is_multi_dot_operation(name) => {
-            let input_values = effect
-                .inputs
-                .iter()
-                .map(|input| operand_value(input, values))
-                .collect::<Result<Vec<f64>, String>>()?;
+            let input_values = scalar_replay_operands(effect, values)?;
             multi_dot_output_value(effect.index, name, &input_values)
         }
         name if is_matrix_power_operation(name) => {
-            let input_values = effect
-                .inputs
-                .iter()
-                .map(|input| operand_value(input, values))
-                .collect::<Result<Vec<f64>, String>>()?;
+            let input_values = scalar_replay_operands(effect, values)?;
             matrix_power_output_value(effect.index, name, &input_values)
         }
         name if is_eigvalsh_operation(name) => {
-            let input_values = effect
-                .inputs
-                .iter()
-                .map(|input| operand_value(input, values))
-                .collect::<Result<Vec<f64>, String>>()?;
+            let input_values = scalar_replay_operands(effect, values)?;
             eigvalsh_output_value(effect.index, name, &input_values)
         }
         name if is_eigvals_operation(name) => {
-            let input_values = effect
-                .inputs
-                .iter()
-                .map(|input| operand_value(input, values))
-                .collect::<Result<Vec<f64>, String>>()?;
+            let input_values = scalar_replay_operands(effect, values)?;
             eigvals_output_value(effect.index, name, &input_values)
         }
         name if is_eig_operation(name) => {
-            let input_values = effect
-                .inputs
-                .iter()
-                .map(|input| operand_value(input, values))
-                .collect::<Result<Vec<f64>, String>>()?;
+            let input_values = scalar_replay_operands(effect, values)?;
             eig_output_value(effect.index, name, &input_values)
         }
         name if is_eigh_operation(name) => {
-            let input_values = effect
-                .inputs
-                .iter()
-                .map(|input| operand_value(input, values))
-                .collect::<Result<Vec<f64>, String>>()?;
+            let input_values = scalar_replay_operands(effect, values)?;
             eigh_output_value(effect.index, name, &input_values)
         }
         name if is_svdvals_operation(name) => {
-            let input_values = effect
-                .inputs
-                .iter()
-                .map(|input| operand_value(input, values))
-                .collect::<Result<Vec<f64>, String>>()?;
+            let input_values = scalar_replay_operands(effect, values)?;
             svdvals_output_value(effect.index, name, &input_values)
         }
         name if is_pinv_operation(name) => {
-            let input_values = effect
-                .inputs
-                .iter()
-                .map(|input| operand_value(input, values))
-                .collect::<Result<Vec<f64>, String>>()?;
+            let input_values = scalar_replay_operands(effect, values)?;
             pinv_output_value(effect.index, name, &input_values)
         }
         name if is_diagflat_operation(name) => {
-            let input_values = effect
-                .inputs
-                .iter()
-                .map(|input| operand_value(input, values))
-                .collect::<Result<Vec<f64>, String>>()?;
+            let input_values = scalar_replay_operands(effect, values)?;
             diagflat_output_value(effect.index, name, &input_values)
         }
         name if is_diag_operation(name) => {
-            let input_values = effect
-                .inputs
-                .iter()
-                .map(|input| operand_value(input, values))
-                .collect::<Result<Vec<f64>, String>>()?;
+            let input_values = scalar_replay_operands(effect, values)?;
             diag_output_value(effect.index, name, &input_values)
         }
         name if name.starts_with("linalg:trace:") => {
             // The trace opcode carries the on-diagonal element operands; its value is their sum.
             let mut total = 0.0;
-            for input in &effect.inputs {
+            for (index, input) in effect.inputs.iter().enumerate() {
+                if index % 256 == 0 {
+                    crate::program_ad_lifecycle::replay_checkpoint()?;
+                }
                 total += operand_value(input, values)?;
             }
             Ok(total)
@@ -260,173 +207,54 @@ fn evaluate_effect(
                     effect.index
                 )
             })?;
-            if effect.inputs.len() != n * n {
+            let matrix_size = shape_size(&[n, n])?;
+            if effect.inputs.len() != matrix_size {
                 return Err(format!(
                     "effect {} {name} requires {} operands",
                     effect.index,
-                    n * n
+                    matrix_size
                 ));
             }
-            let matrix = effect
-                .inputs
-                .iter()
-                .map(|input| operand_value(input, values))
-                .collect::<Result<Vec<f64>, String>>()?;
+            let matrix = scalar_replay_operands(effect, values)?;
             determinant_general(&matrix, n)
         }
         name if name.starts_with("linalg:inv:") => {
             // Each opcode emits one element (row, column) of the matrix inverse.
             let (n, row, column) = parse_inv_index(name)
                 .ok_or_else(|| format!("effect {} {name} has no inverse index", effect.index))?;
-            if effect.inputs.len() != n * n {
+            let matrix_size = shape_size(&[n, n])?;
+            if effect.inputs.len() != matrix_size {
                 return Err(format!(
                     "effect {} {name} requires {} operands",
                     effect.index,
-                    n * n
+                    matrix_size
                 ));
             }
-            let matrix = effect
-                .inputs
-                .iter()
-                .map(|input| operand_value(input, values))
-                .collect::<Result<Vec<f64>, String>>()?;
+            let matrix = scalar_replay_operands(effect, values)?;
             Ok(invert_square(&matrix, n)?[row * n + column])
         }
         name if name.starts_with("linalg:solve:") => {
             // Each opcode emits one component of X = A^{-1} B.
             let output = parse_solve_output(name)
                 .ok_or_else(|| format!("effect {} {name} has no solution index", effect.index))?;
-            let expected_inputs = output.n * output.n + output.rhs_size();
+            let matrix_size = output.matrix_size()?;
+            let expected_inputs = output.input_size()?;
             if effect.inputs.len() != expected_inputs {
                 return Err(format!(
                     "effect {} {name} requires {} operands",
                     effect.index, expected_inputs
                 ));
             }
-            let operands = effect
-                .inputs
-                .iter()
-                .map(|input| operand_value(input, values))
-                .collect::<Result<Vec<f64>, String>>()?;
-            let inverse = invert_square(&operands[..output.n * output.n], output.n)?;
-            let rhs = &operands[output.n * output.n..];
-            Ok((0..output.n)
-                .map(|j| {
-                    inverse[output.row * output.n + j] * rhs[j * output.rhs_columns + output.column]
-                })
-                .sum())
+            let operands = scalar_replay_operands(effect, values)?;
+            let inverse = invert_square(&operands[..matrix_size], output.n)?;
+            let rhs = &operands[matrix_size..];
+            solve_output_value(&inverse, rhs, output)
         }
         _ => Err(format!(
             "effect {} operation {operation} is outside the bounded Rust scalar interpreter",
             effect.index
         )),
     }
-}
-
-fn validate_executed_branch_metadata(ir: &ProgramADEffectIR) -> Result<(), String> {
-    let mut branch_effects_by_operation: HashMap<&str, usize> = HashMap::new();
-    for effect in &ir.effects {
-        let Some(operation) = effect.operation.as_deref() else {
-            continue;
-        };
-        if !operation.starts_with("branch:") {
-            continue;
-        }
-        if effect.kind != "control_branch" {
-            return Err(format!(
-                "branch effect {} must have kind control_branch",
-                effect.index
-            ));
-        }
-        if !effect.inputs.is_empty() {
-            return Err(format!(
-                "branch effect {} must not carry differentiable inputs",
-                effect.index
-            ));
-        }
-        branch_effects_by_operation.insert(operation, effect.index);
-    }
-
-    if ir.control_regions.is_empty() && ir.phi_nodes.is_empty() {
-        return Ok(());
-    }
-    if ir.control_regions.is_empty() || ir.phi_nodes.is_empty() {
-        return Err(
-            "runtime branch metadata must include both control regions and phi nodes".to_owned(),
-        );
-    }
-
-    let mut runtime_region_entered_by_index: HashMap<usize, bool> = HashMap::new();
-    let mut source_region_indices: HashSet<usize> = HashSet::new();
-    for region in &ir.control_regions {
-        if region.kind == "source_control_flow" {
-            source_region_indices.insert(region.index);
-            continue;
-        }
-        if region.kind != "runtime_branch" {
-            return Err(
-                "only executed runtime_branch metadata is supported by bounded Rust branch replay"
-                    .to_owned(),
-            );
-        }
-        let Some(predicate) = region.predicate.as_deref() else {
-            return Err("runtime branch metadata must include a predicate".to_owned());
-        };
-        if !predicate.starts_with("branch:") {
-            return Err("runtime branch predicate must reference a branch operation".to_owned());
-        }
-        if !branch_effects_by_operation.contains_key(predicate) {
-            return Err("runtime branch predicate must match a control_branch effect".to_owned());
-        }
-        let predicate_entered = branch_operation_value(predicate)?;
-        if predicate_entered != region.entered {
-            return Err("runtime branch predicate and entered flag disagree".to_owned());
-        }
-        runtime_region_entered_by_index.insert(region.index, region.entered);
-    }
-
-    let mut phi_count_by_region: HashMap<usize, usize> = HashMap::new();
-    for phi in &ir.phi_nodes {
-        let Some(region_index) = phi.control_region else {
-            return Err("runtime branch phi metadata must reference a control region".to_owned());
-        };
-        if source_region_indices.contains(&region_index) {
-            continue;
-        }
-        let Some(entered) = runtime_region_entered_by_index.get(&region_index) else {
-            return Err(
-                "runtime branch phi metadata must reference a runtime_branch region".to_owned(),
-            );
-        };
-        let Some(selected) = phi.selected.as_deref() else {
-            return Err("runtime branch phi metadata must record selected path".to_owned());
-        };
-        let expected_selected = if *entered {
-            "executed_true"
-        } else {
-            "executed_false"
-        };
-        if selected != expected_selected {
-            return Err(
-                "runtime branch phi selected path disagrees with executed branch".to_owned(),
-            );
-        }
-        let has_true = phi.incoming.iter().any(|value| value == "executed_true");
-        let has_false = phi.incoming.iter().any(|value| value == "executed_false");
-        if !has_true || !has_false {
-            return Err(
-                "runtime branch phi incoming paths must include executed_true and executed_false"
-                    .to_owned(),
-            );
-        }
-        *phi_count_by_region.entry(region_index).or_insert(0) += 1;
-    }
-    for region_index in runtime_region_entered_by_index.keys() {
-        if phi_count_by_region.get(region_index) != Some(&1) {
-            return Err("each runtime branch region must have exactly one phi node".to_owned());
-        }
-    }
-    Ok(())
 }
 
 fn evaluate_branch_effect(effect: &ProgramADEffect, operation: &str) -> Result<f64, String> {
@@ -525,6 +353,20 @@ fn binary(
     }
 }
 
+fn scalar_replay_operands(
+    effect: &ProgramADEffect,
+    values: &HashMap<String, f64>,
+) -> Result<Vec<f64>, String> {
+    let mut operands = reserve_replay_buffer(effect.inputs.len())?;
+    for (index, input) in effect.inputs.iter().enumerate() {
+        if index % 256 == 0 {
+            crate::program_ad_lifecycle::replay_checkpoint()?;
+        }
+        operands.push(operand_value(input, values)?);
+    }
+    Ok(operands)
+}
+
 fn operand_value(name: &str, values: &HashMap<String, f64>) -> Result<f64, String> {
     if let Some(value) = values.get(name) {
         return Ok(*value);
@@ -579,120 +421,39 @@ fn invert_3x3(m: [f64; 9]) -> Result<[f64; 9], String> {
 
 /// Invert an `n x n` row-major matrix for the bounded dimensions; fail closed otherwise.
 fn invert_square(matrix: &[f64], n: usize) -> Result<Vec<f64>, String> {
+    let entries = shape_size(&[n, n])?;
+    if matrix.len() != entries {
+        return Err("Program AD inverse input length does not match square shape".to_owned());
+    }
     match n {
-        2 => invert_2x2(matrix[0], matrix[1], matrix[2], matrix[3]).map(|m| m.to_vec()),
+        2 => invert_2x2(matrix[0], matrix[1], matrix[2], matrix[3])
+            .and_then(|inverse| copy_replay_buffer(&inverse)),
         3 => {
             let mut m = [0.0_f64; 9];
             m.copy_from_slice(&matrix[..9]);
-            invert_3x3(m).map(|inv| inv.to_vec())
+            invert_3x3(m).and_then(|inverse| copy_replay_buffer(&inverse))
         }
         _ => invert_general(matrix, n),
     }
 }
 
-/// Invert an `n x n` row-major matrix by Gauss-Jordan elimination with partial pivoting.
-///
-/// Fails closed on a singular or non-finite system. Used for dimensions above the closed-form
-/// 2x2/3x3 paths.
-fn invert_general(matrix: &[f64], n: usize) -> Result<Vec<f64>, String> {
-    let width = 2 * n;
-    let mut augmented = vec![0.0_f64; n * width];
-    for row in 0..n {
-        for column in 0..n {
-            augmented[row * width + column] = matrix[row * n + column];
+fn parse_linalg_opcode_fields(operation: &str) -> Option<([&str; 7], usize)> {
+    let mut fields = [""; 7];
+    let mut count = 0usize;
+    for field in operation.split(':') {
+        if count == fields.len() {
+            return None;
         }
-        augmented[row * width + n + row] = 1.0;
+        fields[count] = field;
+        count += 1;
     }
-    for column in 0..n {
-        let mut pivot = column;
-        let mut best = augmented[column * width + column].abs();
-        for row in (column + 1)..n {
-            let candidate = augmented[row * width + column].abs();
-            if candidate > best {
-                best = candidate;
-                pivot = row;
-            }
-        }
-        if best == 0.0 || !best.is_finite() {
-            return Err(format!("linalg {n}x{n} matrix is singular"));
-        }
-        if pivot != column {
-            for c in 0..width {
-                augmented.swap(pivot * width + c, column * width + c);
-            }
-        }
-        let pivot_value = augmented[column * width + column];
-        for c in 0..width {
-            augmented[column * width + c] /= pivot_value;
-        }
-        for row in 0..n {
-            if row != column {
-                let factor = augmented[row * width + column];
-                if factor != 0.0 {
-                    for c in 0..width {
-                        augmented[row * width + c] -= factor * augmented[column * width + c];
-                    }
-                }
-            }
-        }
-    }
-    let mut inverse = vec![0.0_f64; n * n];
-    for row in 0..n {
-        for column in 0..n {
-            inverse[row * n + column] = augmented[row * width + n + column];
-        }
-    }
-    if inverse.iter().any(|value| !value.is_finite()) {
-        return Err(format!("linalg {n}x{n} inverse is non-finite"));
-    }
-    Ok(inverse)
-}
-
-/// Determinant of an `n x n` row-major matrix by LU factorisation with partial pivoting.
-fn determinant_general(matrix: &[f64], n: usize) -> Result<f64, String> {
-    let mut work = matrix.to_vec();
-    let mut sign = 1.0_f64;
-    for column in 0..n {
-        let mut pivot = column;
-        let mut best = work[column * n + column].abs();
-        for row in (column + 1)..n {
-            let candidate = work[row * n + column].abs();
-            if candidate > best {
-                best = candidate;
-                pivot = row;
-            }
-        }
-        if best == 0.0 {
-            return Ok(0.0);
-        }
-        if pivot != column {
-            for c in 0..n {
-                work.swap(pivot * n + c, column * n + c);
-            }
-            sign = -sign;
-        }
-        let pivot_value = work[column * n + column];
-        for row in (column + 1)..n {
-            let factor = work[row * n + column] / pivot_value;
-            for c in column..n {
-                work[row * n + c] -= factor * work[column * n + c];
-            }
-        }
-    }
-    let mut determinant = sign;
-    for k in 0..n {
-        determinant *= work[k * n + k];
-    }
-    if !determinant.is_finite() {
-        return Err(format!("linalg {n}x{n} determinant is non-finite"));
-    }
-    Ok(determinant)
+    Some((fields, count))
 }
 
 /// Parse the square dimension `n` from a `linalg:det:NxN` opcode.
 fn parse_det_dim(operation: &str) -> Option<usize> {
-    let parts: Vec<&str> = operation.split(':').collect();
-    if parts.len() != 3 {
+    let (parts, count) = parse_linalg_opcode_fields(operation)?;
+    if count != 3 {
         return None;
     }
     parse_square_dim(parts[2])
@@ -707,8 +468,8 @@ fn parse_square_dim(token: &str) -> Option<usize> {
 
 /// Parse `(n, row, column)` from a `linalg:inv:NxN:I:J` opcode.
 fn parse_inv_index(operation: &str) -> Option<(usize, usize, usize)> {
-    let parts: Vec<&str> = operation.split(':').collect();
-    if parts.len() != 5 {
+    let (parts, count) = parse_linalg_opcode_fields(operation)?;
+    if count != 5 {
         return None;
     }
     let n = parse_square_dim(parts[2])?;
@@ -719,8 +480,8 @@ fn parse_inv_index(operation: &str) -> Option<(usize, usize, usize)> {
 
 /// Parse selected output metadata from a `linalg:solve:NxN:rhs:<shape>:...` opcode.
 fn parse_solve_output(operation: &str) -> Option<SolveOutput> {
-    let parts: Vec<&str> = operation.split(':').collect();
-    if parts.len() != 6 && parts.len() != 7 {
+    let (parts, count) = parse_linalg_opcode_fields(operation)?;
+    if count != 6 && count != 7 {
         return None;
     }
     if parts[0] != "linalg" || parts[1] != "solve" || parts[3] != "rhs" {
@@ -731,7 +492,7 @@ fn parse_solve_output(operation: &str) -> Option<SolveOutput> {
     if row >= n {
         return None;
     }
-    if parts.len() == 6 {
+    if count == 6 {
         let rhs_rows: usize = parts[4].parse().ok()?;
         return (rhs_rows == n).then_some(SolveOutput {
             n,
@@ -750,20 +511,4 @@ fn parse_solve_output(operation: &str) -> Option<SolveOutput> {
         row,
         column,
     })
-}
-
-fn require_non_empty(value: &str, name: &str) -> Result<(), String> {
-    if value.is_empty() {
-        return Err(format!("program AD IR {name} must be non-empty"));
-    }
-    Ok(())
-}
-
-fn require_positive_optional(value: Option<usize>, name: &str) -> Result<(), String> {
-    if value == Some(0) {
-        return Err(format!(
-            "program AD IR {name} must be positive when present"
-        ));
-    }
-    Ok(())
 }

@@ -21,6 +21,9 @@
 //! ill-conditioned `eig` eigenbases, and malformed output metadata because
 //! those cases need broader spectral policy before they can be promoted.
 
+use crate::program_ad_ir::reserve_replay_buffer;
+use crate::program_ad_lifecycle::replay_checkpoint;
+
 const DISTINCT_EIGENVALUE_TOLERANCE: f64 = 1.0e-10;
 const REAL_SPECTRUM_TOLERANCE: f64 = 1.0e-12;
 const SYMMETRY_TOLERANCE: f64 = 1.0e-12;
@@ -149,10 +152,7 @@ pub(crate) fn eigvalsh_output_cotangent(
     }
     let metadata = parse_eigvalsh_2x2(effect_index, operation, input_values)?;
     let outer = eigenvector_outer(&metadata)?;
-    Ok(outer
-        .iter()
-        .map(|component| output_cotangent * component)
-        .collect())
+    spectral_contributions(effect_index, outer.map(|component| output_cotangent * component))
 }
 
 /// Return local reverse contributions for one scalar 2x2 `eigvals` output node.
@@ -171,7 +171,7 @@ pub(crate) fn eigvals_output_cotangent(
     let [a, b, c, d] = metadata.values;
     let diagonal_delta = a - d;
     let sign = metadata.sign;
-    Ok(vec![
+    spectral_contributions(effect_index, [
         output_cotangent * (0.5 + sign * diagonal_delta / (2.0 * metadata.gap)),
         output_cotangent * sign * c / metadata.gap,
         output_cotangent * sign * b / metadata.gap,
@@ -199,7 +199,7 @@ pub(crate) fn eig_output_cotangent(
                 metadata.right_eigenvectors[0][index],
                 metadata.right_eigenvectors[1][index],
             ];
-            Ok(vec![
+            spectral_contributions(effect_index, [
                 output_cotangent * left[0] * right[0],
                 output_cotangent * left[0] * right[1],
                 output_cotangent * left[1] * right[0],
@@ -207,9 +207,10 @@ pub(crate) fn eig_output_cotangent(
             ])
         }
         EigOutput::Eigenvector { column, row } => {
-            let mut contributions = Vec::with_capacity(4);
+            let mut contributions = reserve_replay_buffer(4)?;
             for basis_row in 0..2 {
                 for basis_column in 0..2 {
+                    replay_checkpoint()?;
                     contributions.push(
                         output_cotangent
                             * eig_eigenvector_jvp_entry(
@@ -222,6 +223,7 @@ pub(crate) fn eig_output_cotangent(
                     );
                 }
             }
+            validate_spectral_contributions(effect_index, &contributions)?;
             Ok(contributions)
         }
     }
@@ -246,10 +248,7 @@ pub(crate) fn eigh_output_cotangent(
                 metadata.eigenvectors[0][index],
                 metadata.eigenvectors[1][index],
             ];
-            Ok(vector_outer(vector)
-                .iter()
-                .map(|component| output_cotangent * component)
-                .collect())
+            spectral_contributions(effect_index, vector_outer(vector).map(|component| output_cotangent * component))
         }
         EighOutput::Eigenvector { column, row } => {
             let other = 1 - column;
@@ -269,7 +268,7 @@ pub(crate) fn eigh_output_cotangent(
                 scale * other_vector[1] * column_vector[0],
                 scale * other_vector[1] * column_vector[1],
             ];
-            Ok(vec![
+            spectral_contributions(effect_index, [
                 raw[0],
                 0.5 * (raw[1] + raw[2]),
                 0.5 * (raw[2] + raw[1]),
@@ -279,561 +278,27 @@ pub(crate) fn eigh_output_cotangent(
     }
 }
 
-fn parse_eigvalsh_2x2(
-    effect_index: usize,
-    operation: &str,
-    input_values: &[f64],
-) -> Result<Eigvalsh2x2, String> {
-    if input_values.len() != 4 {
-        return Err(format!(
-            "effect {effect_index} eigvalsh Rust replay supports only 2x2 matrices"
-        ));
+fn spectral_contributions(effect_index: usize, values: [f64; 4]) -> Result<Vec<f64>, String> {
+    validate_spectral_contributions(effect_index, &values)?;
+    let mut contributions = reserve_replay_buffer(4)?;
+    for value in values {
+        replay_checkpoint()?;
+        contributions.push(value);
     }
-    if input_values.iter().any(|value| !value.is_finite()) {
-        return Err(format!(
-            "effect {effect_index} eigvalsh inputs must be finite"
-        ));
-    }
-    let output_index = parse_eigvalsh_index(effect_index, operation)?;
-    if output_index >= 2 {
-        return Err(format!(
-            "effect {effect_index} eigvalsh 2x2 output index must be 0 or 1"
-        ));
-    }
-    let [a, b, c, d] = input_values else {
-        return Err(format!(
-            "effect {effect_index} eigvalsh Rust replay supports only 2x2 matrices"
-        ));
-    };
-    let scale = input_values
-        .iter()
-        .fold(1.0_f64, |current, value| current.max(value.abs()));
-    if (b - c).abs() > SYMMETRY_TOLERANCE * scale {
-        return Err(format!(
-            "effect {effect_index} eigvalsh requires a symmetric 2x2 matrix"
-        ));
-    }
-    let off_diagonal = 0.5 * (b + c);
-    let diagonal_delta = a - d;
-    let gap = (diagonal_delta * diagonal_delta + 4.0 * off_diagonal * off_diagonal).sqrt();
-    let center = 0.5 * (a + d);
-    let radius = 0.5 * gap;
-    let eigenvalues = [center - radius, center + radius];
-    if eigenvalues.iter().any(|value| !value.is_finite()) {
-        return Err(format!(
-            "effect {effect_index} eigvalsh output must be finite"
-        ));
-    }
-    let eigen_scale = eigenvalues
-        .iter()
-        .fold(1.0_f64, |current, value| current.max(value.abs()));
-    if gap <= DISTINCT_EIGENVALUE_TOLERANCE * eigen_scale {
-        return Err(format!(
-            "effect {effect_index} eigvalsh gradient requires distinct eigenvalues"
-        ));
-    }
-    Ok(Eigvalsh2x2 {
-        output_index,
-        diagonal: [*a, *d],
-        off_diagonal,
-        eigenvalues,
-    })
+    replay_checkpoint()?;
+    Ok(contributions)
 }
 
-fn parse_eigvals_2x2(
-    effect_index: usize,
-    operation: &str,
-    input_values: &[f64],
-) -> Result<Eigvals2x2, String> {
-    if input_values.len() != 4 {
-        return Err(format!(
-            "effect {effect_index} eigvals Rust replay supports only 2x2 matrices"
-        ));
+fn validate_spectral_contributions(effect_index: usize, values: &[f64]) -> Result<(), String> {
+    replay_checkpoint()?;
+    if values.iter().any(|value| !value.is_finite()) {
+        return Err(format!("effect {effect_index} spectral cotangent entries must be finite"));
     }
-    if input_values.iter().any(|value| !value.is_finite()) {
-        return Err(format!(
-            "effect {effect_index} eigvals inputs must be finite"
-        ));
-    }
-    let output_index = parse_eigvals_index(effect_index, operation)?;
-    if output_index >= 2 {
-        return Err(format!(
-            "effect {effect_index} eigvals 2x2 output index must be 0 or 1"
-        ));
-    }
-    let [a, b, c, d] = input_values else {
-        return Err(format!(
-            "effect {effect_index} eigvals Rust replay supports only 2x2 matrices"
-        ));
-    };
-    let values = [*a, *b, *c, *d];
-    let scale = values
-        .iter()
-        .fold(1.0_f64, |current, value| current.max(value.abs()));
-    let diagonal_delta = a - d;
-    let discriminant = diagonal_delta * diagonal_delta + 4.0 * b * c;
-    let discriminant_tolerance = REAL_SPECTRUM_TOLERANCE * scale * scale;
-    if discriminant < -discriminant_tolerance {
-        return Err(format!(
-            "effect {effect_index} eigvals requires real distinct eigenvalues"
-        ));
-    }
-    let gap = discriminant.max(0.0).sqrt();
-    let center = 0.5 * (a + d);
-    let lower = center - 0.5 * gap;
-    let upper = center + 0.5 * gap;
-    let eigen_scale = 1.0_f64.max(lower.abs()).max(upper.abs());
-    if gap <= DISTINCT_EIGENVALUE_TOLERANCE * eigen_scale {
-        return Err(format!(
-            "effect {effect_index} eigvals requires real distinct eigenvalues"
-        ));
-    }
-    let ordered_signs = eigvals_2x2_order_signs(*a, *b, *c, *d, scale);
-    let sign = ordered_signs[output_index];
-    let eigenvalues = ordered_signs.map(
-        |ordered_sign| {
-            if ordered_sign < 0.0 {
-                lower
-            } else {
-                upper
-            }
-        },
-    );
-    if eigenvalues.iter().any(|value| !value.is_finite()) {
-        return Err(format!(
-            "effect {effect_index} eigvals output must be finite"
-        ));
-    }
-    Ok(Eigvals2x2 {
-        output_index,
-        sign,
-        values,
-        eigenvalues,
-        gap,
-    })
+    Ok(())
 }
 
-fn parse_eig_2x2(
-    effect_index: usize,
-    operation: &str,
-    input_values: &[f64],
-) -> Result<Eig2x2, String> {
-    if input_values.len() != 4 {
-        return Err(format!(
-            "effect {effect_index} eig Rust replay supports only 2x2 matrices"
-        ));
-    }
-    if input_values.iter().any(|value| !value.is_finite()) {
-        return Err(format!("effect {effect_index} eig inputs must be finite"));
-    }
-    let output = parse_eig_output(effect_index, operation)?;
-    let [a, b, c, d] = input_values else {
-        return Err(format!(
-            "effect {effect_index} eig Rust replay supports only 2x2 matrices"
-        ));
-    };
-    let values = [*a, *b, *c, *d];
-    let scale = values
-        .iter()
-        .fold(1.0_f64, |current, value| current.max(value.abs()));
-    let diagonal_delta = a - d;
-    let discriminant = diagonal_delta * diagonal_delta + 4.0 * b * c;
-    let discriminant_tolerance = REAL_SPECTRUM_TOLERANCE * scale * scale;
-    if discriminant < -discriminant_tolerance {
-        return Err(format!(
-            "effect {effect_index} eig requires real eigenvalues"
-        ));
-    }
-    let gap = discriminant.max(0.0).sqrt();
-    let center = 0.5 * (a + d);
-    let lower = center - 0.5 * gap;
-    let upper = center + 0.5 * gap;
-    let eigen_scale = 1.0_f64.max(lower.abs()).max(upper.abs());
-    if gap <= DISTINCT_EIGENVALUE_TOLERANCE * eigen_scale {
-        return Err(format!(
-            "effect {effect_index} eig requires distinct eigenvalues"
-        ));
-    }
-    let ordered_signs = eigvals_2x2_order_signs(*a, *b, *c, *d, scale);
-    let eigenvalues = ordered_signs.map(
-        |ordered_sign| {
-            if ordered_sign < 0.0 {
-                lower
-            } else {
-                upper
-            }
-        },
-    );
-    if eigenvalues.iter().any(|value| !value.is_finite()) {
-        return Err(format!("effect {effect_index} eig output must be finite"));
-    }
-    let right_eigenvectors = eig_2x2_right_eigenvectors(effect_index, values, eigenvalues, scale)?;
-    let left_eigenvector_rows = invert_eig_2x2_basis(effect_index, right_eigenvectors)?;
-    Ok(Eig2x2 {
-        output,
-        eigenvalues,
-        right_eigenvectors,
-        left_eigenvector_rows,
-    })
-}
+include!("program_ad_linalg_spectral/matrices.rs");
+include!("program_ad_linalg_spectral/metadata.rs");
+include!("program_ad_linalg_spectral/algebra.rs");
 
-fn parse_eigh_2x2(
-    effect_index: usize,
-    operation: &str,
-    input_values: &[f64],
-) -> Result<Eigh2x2, String> {
-    if input_values.len() != 4 {
-        return Err(format!(
-            "effect {effect_index} eigh Rust replay supports only 2x2 matrices"
-        ));
-    }
-    if input_values.iter().any(|value| !value.is_finite()) {
-        return Err(format!("effect {effect_index} eigh inputs must be finite"));
-    }
-    let output = parse_eigh_output(effect_index, operation)?;
-    let [a, b, c, d] = input_values else {
-        return Err(format!(
-            "effect {effect_index} eigh Rust replay supports only 2x2 matrices"
-        ));
-    };
-    let values = [*a, *b, *c, *d];
-    let scale = values
-        .iter()
-        .fold(1.0_f64, |current, value| current.max(value.abs()));
-    if (b - c).abs() > SYMMETRY_TOLERANCE * scale {
-        return Err(format!(
-            "effect {effect_index} eigh requires a symmetric 2x2 matrix"
-        ));
-    }
-    let off_diagonal = 0.5 * (b + c);
-    if matches!(output, EighOutput::Eigenvector { .. })
-        && off_diagonal.abs() <= SYMMETRY_TOLERANCE * scale
-    {
-        return Err(format!(
-            "effect {effect_index} eigh eigenvector gradient requires nonzero off-diagonal entries"
-        ));
-    }
-    let diagonal_delta = a - d;
-    let gap = (diagonal_delta * diagonal_delta + 4.0 * off_diagonal * off_diagonal).sqrt();
-    let center = 0.5 * (a + d);
-    let radius = 0.5 * gap;
-    let eigenvalues = [center - radius, center + radius];
-    if eigenvalues.iter().any(|value| !value.is_finite()) {
-        return Err(format!("effect {effect_index} eigh output must be finite"));
-    }
-    let eigen_scale = eigenvalues
-        .iter()
-        .fold(1.0_f64, |current, value| current.max(value.abs()));
-    if gap <= DISTINCT_EIGENVALUE_TOLERANCE * eigen_scale {
-        return Err(format!(
-            "effect {effect_index} eigh gradient requires distinct eigenvalues"
-        ));
-    }
-    let eigenvectors = eigh_eigenvectors_2x2(*a, off_diagonal, *d, eigenvalues)?;
-    Ok(Eigh2x2 {
-        output,
-        eigenvalues,
-        eigenvectors,
-    })
-}
-
-fn parse_eigvalsh_index(effect_index: usize, operation: &str) -> Result<usize, String> {
-    let parts = operation.split(':').collect::<Vec<&str>>();
-    if parts.len() != 3 || parts[0] != "linalg" || parts[1] != "eigvalsh" {
-        return Err(format!(
-            "effect {effect_index} eigvalsh operation metadata is malformed"
-        ));
-    }
-    parts[2]
-        .parse::<usize>()
-        .map_err(|_| format!("effect {effect_index} eigvalsh output index metadata is malformed"))
-}
-
-fn parse_eigvals_index(effect_index: usize, operation: &str) -> Result<usize, String> {
-    let parts = operation.split(':').collect::<Vec<&str>>();
-    if parts.len() != 4 || parts[0] != "linalg" || parts[1] != "eigvals" || parts[2] != "2x2" {
-        return Err(format!(
-            "effect {effect_index} eigvals operation metadata is malformed"
-        ));
-    }
-    parts[3]
-        .parse::<usize>()
-        .map_err(|_| format!("effect {effect_index} eigvals output index metadata is malformed"))
-}
-
-fn parse_eig_output(effect_index: usize, operation: &str) -> Result<EigOutput, String> {
-    let parts = operation.split(':').collect::<Vec<&str>>();
-    if parts.len() < 5 || parts[0] != "linalg" || parts[1] != "eig" {
-        return Err(format!(
-            "effect {effect_index} eig operation metadata is malformed"
-        ));
-    }
-    if parts[3] != "2x2" {
-        return Err(format!(
-            "effect {effect_index} eig Rust replay supports only 2x2 matrices"
-        ));
-    }
-    match parts[2] {
-        "eigenvalue" if parts.len() == 5 => {
-            let index = parts[4].parse::<usize>().map_err(|_| {
-                format!("effect {effect_index} eig eigenvalue index metadata is malformed")
-            })?;
-            if index >= 2 {
-                return Err(format!(
-                    "effect {effect_index} eig eigenvalue index must be 0 or 1"
-                ));
-            }
-            Ok(EigOutput::Eigenvalue { index })
-        }
-        "eigenvector" if parts.len() == 6 => {
-            let column = parts[4].parse::<usize>().map_err(|_| {
-                format!("effect {effect_index} eig eigenvector column metadata is malformed")
-            })?;
-            let row = parts[5].parse::<usize>().map_err(|_| {
-                format!("effect {effect_index} eig eigenvector row metadata is malformed")
-            })?;
-            if column >= 2 || row >= 2 {
-                return Err(format!(
-                    "effect {effect_index} eig eigenvector column and row must be 0 or 1"
-                ));
-            }
-            Ok(EigOutput::Eigenvector { column, row })
-        }
-        _ => Err(format!(
-            "effect {effect_index} eig operation metadata is malformed"
-        )),
-    }
-}
-
-fn parse_eigh_output(effect_index: usize, operation: &str) -> Result<EighOutput, String> {
-    let parts = operation.split(':').collect::<Vec<&str>>();
-    if parts.len() < 6 || parts[0] != "linalg" || parts[1] != "eigh" {
-        return Err(format!(
-            "effect {effect_index} eigh operation metadata is malformed"
-        ));
-    }
-    if parts[3] != "2x2" {
-        return Err(format!(
-            "effect {effect_index} eigh Rust replay supports only 2x2 matrices"
-        ));
-    }
-    if parts[4] != "L" && parts[4] != "U" {
-        return Err(format!(
-            "effect {effect_index} eigh UPLO metadata must be L or U"
-        ));
-    }
-    match parts[2] {
-        "eigenvalue" if parts.len() == 6 => {
-            let index = parts[5].parse::<usize>().map_err(|_| {
-                format!("effect {effect_index} eigh eigenvalue index metadata is malformed")
-            })?;
-            if index >= 2 {
-                return Err(format!(
-                    "effect {effect_index} eigh eigenvalue index must be 0 or 1"
-                ));
-            }
-            Ok(EighOutput::Eigenvalue { index })
-        }
-        "eigenvector" if parts.len() == 7 => {
-            let column = parts[5].parse::<usize>().map_err(|_| {
-                format!("effect {effect_index} eigh eigenvector column metadata is malformed")
-            })?;
-            let row = parts[6].parse::<usize>().map_err(|_| {
-                format!("effect {effect_index} eigh eigenvector row metadata is malformed")
-            })?;
-            if column >= 2 || row >= 2 {
-                return Err(format!(
-                    "effect {effect_index} eigh eigenvector column and row must be 0 or 1"
-                ));
-            }
-            Ok(EighOutput::Eigenvector { column, row })
-        }
-        _ => Err(format!(
-            "effect {effect_index} eigh operation metadata is malformed"
-        )),
-    }
-}
-
-fn eigvals_2x2_order_signs(a: f64, b: f64, c: f64, d: f64, scale: f64) -> [f64; 2] {
-    let off_diagonal_tolerance = SYMMETRY_TOLERANCE * scale;
-    let b_is_zero = b.abs() <= off_diagonal_tolerance;
-    let c_is_zero = c.abs() <= off_diagonal_tolerance;
-    if b_is_zero && !c_is_zero {
-        if d <= a {
-            [-1.0, 1.0]
-        } else {
-            [1.0, -1.0]
-        }
-    } else if a < d {
-        [-1.0, 1.0]
-    } else {
-        [1.0, -1.0]
-    }
-}
-
-fn eig_2x2_right_eigenvectors(
-    effect_index: usize,
-    values: [f64; 4],
-    eigenvalues: [f64; 2],
-    scale: f64,
-) -> Result<[[f64; 2]; 2], String> {
-    let [a, b, c, d] = values;
-    let mut vectors = [[0.0; 2]; 2];
-    for (column, eigenvalue) in eigenvalues.iter().enumerate() {
-        let mut raw = if b.abs() > SYMMETRY_TOLERANCE * scale {
-            [-b, a - eigenvalue]
-        } else {
-            [d - eigenvalue, -c]
-        };
-        if squared_norm(raw) <= SYMMETRY_TOLERANCE * scale {
-            raw = [d - eigenvalue, -c];
-        }
-        let norm = squared_norm(raw).sqrt();
-        if !norm.is_finite() || norm <= SYMMETRY_TOLERANCE * scale {
-            return Err(format!(
-                "effect {effect_index} eig requires a well-conditioned eigenbasis"
-            ));
-        }
-        vectors[0][column] = raw[0] / norm;
-        vectors[1][column] = raw[1] / norm;
-    }
-    Ok(vectors)
-}
-
-fn invert_eig_2x2_basis(
-    effect_index: usize,
-    right_eigenvectors: [[f64; 2]; 2],
-) -> Result<[[f64; 2]; 2], String> {
-    let determinant = right_eigenvectors[0][0] * right_eigenvectors[1][1]
-        - right_eigenvectors[0][1] * right_eigenvectors[1][0];
-    if !determinant.is_finite() || determinant.abs() <= DISTINCT_EIGENVALUE_TOLERANCE {
-        return Err(format!(
-            "effect {effect_index} eig requires a well-conditioned eigenbasis"
-        ));
-    }
-    Ok([
-        [
-            right_eigenvectors[1][1] / determinant,
-            -right_eigenvectors[0][1] / determinant,
-        ],
-        [
-            -right_eigenvectors[1][0] / determinant,
-            right_eigenvectors[0][0] / determinant,
-        ],
-    ])
-}
-
-fn eig_eigenvector_jvp_entry(
-    metadata: &Eig2x2,
-    column: usize,
-    row: usize,
-    basis_row: usize,
-    basis_column: usize,
-) -> f64 {
-    let source = [
-        metadata.right_eigenvectors[0][column],
-        metadata.right_eigenvectors[1][column],
-    ];
-    let mut raw = [0.0, 0.0];
-    for other in 0..2 {
-        if other == column {
-            continue;
-        }
-        let other_vector = [
-            metadata.right_eigenvectors[0][other],
-            metadata.right_eigenvectors[1][other],
-        ];
-        let left = metadata.left_eigenvector_rows[other];
-        let numerator = left[basis_row] * source[basis_column];
-        let scale = numerator / (metadata.eigenvalues[column] - metadata.eigenvalues[other]);
-        raw[0] += scale * other_vector[0];
-        raw[1] += scale * other_vector[1];
-    }
-    let gauge_projection = source[0] * raw[0] + source[1] * raw[1];
-    raw[row] - source[row] * gauge_projection
-}
-
-fn eigenvector_outer(metadata: &Eigvalsh2x2) -> Result<[f64; 4], String> {
-    let [a, d] = metadata.diagonal;
-    if metadata.off_diagonal.abs() <= SYMMETRY_TOLERANCE {
-        return Ok(diagonal_eigenvector_outer(a, d, metadata.output_index));
-    }
-    let lambda = metadata.eigenvalues[metadata.output_index];
-    let primary = [metadata.off_diagonal, lambda - a];
-    let secondary = [lambda - d, metadata.off_diagonal];
-    let raw = if squared_norm(primary) >= squared_norm(secondary) {
-        primary
-    } else {
-        secondary
-    };
-    let norm = squared_norm(raw).sqrt();
-    if norm <= 0.0 || !norm.is_finite() {
-        return Err("eigvalsh eigenvector normalization must be finite".to_owned());
-    }
-    let x = raw[0] / norm;
-    let y = raw[1] / norm;
-    Ok([x * x, x * y, y * x, y * y])
-}
-
-fn diagonal_eigenvector_outer(a: f64, d: f64, output_index: usize) -> [f64; 4] {
-    let lower_is_first_axis = a <= d;
-    if (output_index == 0 && lower_is_first_axis) || (output_index == 1 && !lower_is_first_axis) {
-        [1.0, 0.0, 0.0, 0.0]
-    } else {
-        [0.0, 0.0, 0.0, 1.0]
-    }
-}
-
-fn eigh_eigenvectors_2x2(
-    a: f64,
-    b: f64,
-    d: f64,
-    eigenvalues: [f64; 2],
-) -> Result<[[f64; 2]; 2], String> {
-    let scale = 1.0_f64.max(a.abs()).max(b.abs()).max(d.abs());
-    if b.abs() <= SYMMETRY_TOLERANCE * scale {
-        return Ok(diagonal_eigenvectors(a, d));
-    }
-    let raw0 = if b > 0.0 && a <= d {
-        [-b, a - eigenvalues[0]]
-    } else {
-        [b, eigenvalues[0] - a]
-    };
-    let raw1 = if b > 0.0 && a > d {
-        [-b, a - eigenvalues[1]]
-    } else {
-        [b, eigenvalues[1] - a]
-    };
-    let column0 = normalise_eigh_vector(raw0)?;
-    let column1 = normalise_eigh_vector(raw1)?;
-    Ok([[column0[0], column1[0]], [column0[1], column1[1]]])
-}
-
-fn diagonal_eigenvectors(a: f64, d: f64) -> [[f64; 2]; 2] {
-    if a <= d {
-        [[1.0, 0.0], [0.0, 1.0]]
-    } else {
-        [[0.0, 1.0], [1.0, 0.0]]
-    }
-}
-
-fn normalise_eigh_vector(raw: [f64; 2]) -> Result<[f64; 2], String> {
-    let norm = squared_norm(raw).sqrt();
-    if norm <= 0.0 || !norm.is_finite() {
-        return Err("eigh eigenvector normalization must be finite".to_owned());
-    }
-    Ok([raw[0] / norm, raw[1] / norm])
-}
-
-fn vector_outer(vector: [f64; 2]) -> [f64; 4] {
-    [
-        vector[0] * vector[0],
-        vector[0] * vector[1],
-        vector[1] * vector[0],
-        vector[1] * vector[1],
-    ]
-}
-
-fn squared_norm(vector: [f64; 2]) -> f64 {
-    vector[0] * vector[0] + vector[1] * vector[1]
-}
+include!("program_ad_linalg_spectral/workspace.rs");

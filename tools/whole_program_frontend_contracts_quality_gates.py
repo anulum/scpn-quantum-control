@@ -19,16 +19,21 @@ WHOLE_PROGRAM_FRONTEND_CONTRACTS_SOURCE = (
 """Production source owned by the whole-program frontend contracts."""
 WHOLE_PROGRAM_FRONTEND_SOURCE = "src/scpn_quantum_control/whole_program_frontend.py"
 """Production runtime owned by the whole-program frontend contracts."""
+SOURCE_ADMISSION_SOURCE = "src/scpn_quantum_control/source_admission.py"
+"""Bounded source-file loading consumed by the frontend."""
 
 WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_COHORT = [
     "tests/test_whole_program_frontend.py",
     "tests/test_whole_program_frontend_contracts.py",
+    "tests/test_whole_program_ad_runtime.py",
+    "tests/test_source_admission.py",
 ]
 """Tests that own exact whole-program frontend-contract coverage."""
 
 WHOLE_PROGRAM_FRONTEND_CONTRACTS_TYPING_RATCHET = [
     WHOLE_PROGRAM_FRONTEND_CONTRACTS_SOURCE,
     WHOLE_PROGRAM_FRONTEND_SOURCE,
+    SOURCE_ADMISSION_SOURCE,
     "tools/whole_program_frontend_contracts_quality_gates.py",
     "tests/test_whole_program_frontend_contracts_quality_gate.py",
 ]
@@ -37,6 +42,7 @@ WHOLE_PROGRAM_FRONTEND_CONTRACTS_TYPING_RATCHET = [
 WHOLE_PROGRAM_FRONTEND_CONTRACTS_DOCSTRING_RATCHET = [
     WHOLE_PROGRAM_FRONTEND_CONTRACTS_SOURCE,
     WHOLE_PROGRAM_FRONTEND_SOURCE,
+    SOURCE_ADMISSION_SOURCE,
     *WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_COHORT,
     "tools/whole_program_frontend_contracts_quality_gates.py",
     "tests/test_whole_program_frontend_contracts_quality_gate.py",
@@ -48,7 +54,7 @@ WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_DATA_FILE = (
 )
 """Isolated coverage database for the frontend-contract owner."""
 WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_INCLUDE = (
-    "*/whole_program_frontend_contracts.py,*/whole_program_frontend.py"
+    "*/whole_program_frontend_contracts.py,*/whole_program_frontend.py,*/source_admission.py"
 )
 """Production frontend sources enforced at exact branch coverage."""
 
@@ -129,6 +135,7 @@ __all__ = [
     "WHOLE_PROGRAM_FRONTEND_CONTRACTS_SOURCE",
     "WHOLE_PROGRAM_FRONTEND_CONTRACTS_TYPING_RATCHET",
     "WHOLE_PROGRAM_FRONTEND_SOURCE",
+    "SOURCE_ADMISSION_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]

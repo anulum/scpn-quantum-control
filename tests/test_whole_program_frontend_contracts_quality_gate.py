@@ -57,10 +57,20 @@ def test_ci_runs_and_aggregates_frontend_contract_gate() -> None:
     """Keep the focused CI job and aggregate dependency required."""
     workflow = read_ci_workflow_source()
     start = workflow.index("  whole-program-frontend-contracts-quality:")
-    end = workflow.index("\n\n  tn-mps-baseline-design-quality:", start)
+    end = workflow.index("\n\n  variational-metric-quality:", start)
     block = workflow[start:end]
     for path in quality_gates.WHOLE_PROGRAM_FRONTEND_CONTRACTS_DOCSTRING_RATCHET:
         assert path in block
+    coverage_start = block.index(
+        "      - name: Run whole-program frontend-contract focused coverage"
+    )
+    coverage_end = block.index(
+        "      - name: Enforce whole-program frontend-contract exact coverage"
+    )
+    coverage_step = block[coverage_start:coverage_end]
+    for path in quality_gates.WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_COHORT:
+        assert path in coverage_step
+    assert "--branch" in coverage_step
     assert "--fail-under=100" in block
     assert quality_gates.WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_INCLUDE in block
     assert "whole-program-frontend-contracts-quality" in workflow[workflow.index("  ci-gate:") :]

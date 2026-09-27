@@ -18,7 +18,8 @@ import pytest
 from numpy.typing import NDArray
 
 import scpn_quantum_control.differentiable as differentiable
-from scpn_quantum_control.differentiable import TraceADScalar
+from scpn_quantum_control.differentiable import TraceADScalar, whole_program_value_and_grad
+from scpn_quantum_control.execution_reservations import active_reserved_bytes
 from scpn_quantum_control.whole_program_frontend import (
     WholeProgramBytecodeInstruction,
     WholeProgramSourceIRFeature,
@@ -237,3 +238,25 @@ def test_trace_whole_program_objective_rejects_invalid_scalar_results(
 
     with pytest.raises(ValueError, match=match):
         _trace_whole_program_objective(objective, np.array([1.0], dtype=np.float64))
+
+
+def test_public_runtime_releases_retained_array_storage_after_objective_failure() -> None:
+    """A failure after diagonal handoff releases the whole owner and permits reuse."""
+    failing = True
+
+    def objective(values: NDArray[np.float64]) -> object:
+        diagonal = np.diagflat(values, k=3)
+        if failing:
+            raise RuntimeError("objective failed after diagonal construction")
+        return np.sum(diagonal)
+
+    baseline = active_reserved_bytes()
+    values = np.array([2.0, 3.0])
+    with pytest.raises(RuntimeError, match="after diagonal construction"):
+        whole_program_value_and_grad(objective, values, trace=False, max_execution_gib=0.01)
+    assert active_reserved_bytes() == baseline
+    failing = False
+    result = whole_program_value_and_grad(objective, values, trace=False, max_execution_gib=0.01)
+    assert result.value == 5.0
+    np.testing.assert_array_equal(result.gradient, np.ones(2))
+    assert active_reserved_bytes() == baseline

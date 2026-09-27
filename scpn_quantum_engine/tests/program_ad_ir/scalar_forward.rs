@@ -56,3 +56,50 @@ fn program_ad_effect_ir_rust_interpreter_fails_closed_without_operation_metadata
     assert_eq!(result.supported_effect_count, 0);
     assert!(result.blocked_reasons[0].contains("operation metadata"));
 }
+
+#[test]
+fn public_forward_admits_ordering_and_owned_symbols_with_capacity_recovery() {
+    use scpn_quantum_program_ad_replay::program_ad_lifecycle::with_replay_metadata_admission;
+    use std::{cell::RefCell, rc::Rc};
+    let symbol = format!("%{}", "a".repeat(65_536));
+    let source = EXECUTABLE_SCALAR_PROGRAM_AD_IR.replace("%0", &symbol);
+    let parsed_requests = Rc::new(RefCell::new(Vec::new()));
+    let captured = Rc::clone(&parsed_requests);
+    let ir = with_replay_metadata_admission(
+        move |bytes| { captured.borrow_mut().push(bytes); Ok(()) },
+        || parse_program_ad_effect_ir(&source),
+    ).unwrap();
+    let requests = Rc::new(RefCell::new(Vec::new()));
+    let captured = Rc::clone(&requests);
+    let actual = with_replay_metadata_admission(
+        move |bytes| { captured.borrow_mut().push(bytes); Ok(()) },
+        || interpret_program_ad_effect_ir_forward(&source, &[0.4, -0.2]),
+    ).unwrap();
+    let expected = 0.4_f64.powi(2) - 0.4 + 0.4_f64.sin();
+    assert!(actual.supported);
+    assert!((actual.value.unwrap() - expected).abs() < 1e-12);
+    let requests = requests.borrow();
+    let parser_count = parsed_requests.borrow().len();
+    assert_eq!(&requests[..parser_count], parsed_requests.borrow().as_slice());
+    let ordering_bytes = ir.effects.len() * (
+        std::mem::size_of::<(usize, &scpn_quantum_program_ad_replay::program_ad_ir::ProgramADEffect)>()
+        + std::mem::size_of::<&scpn_quantum_program_ad_replay::program_ad_ir::ProgramADEffect>()
+    );
+    assert_eq!(requests[parser_count], ordering_bytes);
+    assert!(requests[parser_count + 1..].contains(&symbol.len()));
+    let required: usize = requests.iter().sum();
+    for limit in [required, required - 1] {
+        let charged = std::cell::Cell::new(0usize);
+        let result = with_replay_metadata_admission(
+            move |bytes| {
+                let total = charged.get().checked_add(bytes).unwrap();
+                if total > limit { return Err("forward metadata limit".to_owned()); }
+                charged.set(total); Ok(())
+            },
+            || interpret_program_ad_effect_ir_forward(&source, &[0.4, -0.2]),
+        );
+        if limit == required { assert_eq!(result.unwrap(), actual); }
+        else { assert_eq!(result.unwrap_err(), "forward metadata limit"); }
+    }
+    assert_eq!(interpret_program_ad_effect_ir_forward(&source, &[0.4, -0.2]).unwrap(), actual);
+}

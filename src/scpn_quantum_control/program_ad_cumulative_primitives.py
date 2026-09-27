@@ -10,12 +10,17 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping, Sequence
+import math
+import sys
+from collections.abc import Callable, Iterator, Mapping, Sequence
+from contextlib import contextmanager
 
 import numpy as np
 from numpy.typing import NDArray
 
 from .differentiable_parameter_contracts import _as_real_numeric_array
+from .execution_memory import ExecutionBuffer, ExecutionMemoryPlan
+from .execution_reservations import ExecutionMemoryReservation, reserve_execution_memory
 from .program_ad_array_indexing import (
     _normalise_axis,
     _program_ad_array_dtype_of,
@@ -39,6 +44,96 @@ from .program_ad_shape_transforms import (
 )
 
 
+@contextmanager
+def _cumulative_execution_scope(
+    values: NDArray[np.float64],
+    operand: NDArray[np.float64] | None = None,
+    *,
+    source_shape: tuple[int, ...] | None = None,
+) -> Iterator[ExecutionMemoryReservation]:
+    """Admit cumulative conversion, finite masks and bounded linear workspaces.
+
+    Notes
+    -----
+    Array metadata is inspected only on plain numeric ndarrays; opaque protocols
+    refuse before conversion. Source-sized workspaces cover old/new difference
+    stages, cumulative outputs, pullback buffers and their conversion copies.
+    This declaration does not measure vendor allocator scratch.
+
+    """
+    arrays = (values,) if operand is None else (values, operand)
+    buffers: list[ExecutionBuffer] = []
+    workspace_size = max(1, math.prod(source_shape)) if source_shape is not None else 1
+    rank = max(1, len(source_shape)) if source_shape is not None else 1
+    for index, array in enumerate(arrays):
+        if type(array) is not np.ndarray or array.dtype.kind not in "iuf":
+            raise ValueError(
+                "program AD cumulative inputs must contain real numeric scalars from plain arrays"
+            )
+        size = max(1, array.size)
+        rank = max(rank, array.ndim)
+        workspace_size = max(workspace_size, size)
+        buffers.extend(
+            (
+                ExecutionBuffer(
+                    f"cumulative_source_{index}", "forward", (max(1, array.nbytes),), "uint8"
+                ),
+                ExecutionBuffer(
+                    f"cumulative_conversion_{index}", "intermediate", (size,), "float64", 3
+                ),
+                ExecutionBuffer(
+                    f"cumulative_validation_{index}", "intermediate", (size,), "bool", 2
+                ),
+            )
+        )
+    buffers.extend(
+        (
+            ExecutionBuffer(
+                "cumulative_output_validation", "intermediate", (workspace_size,), "bool", 2
+            ),
+            ExecutionBuffer(
+                "cumulative_workspace", "intermediate", (workspace_size,), "float64", 6
+            ),
+            ExecutionBuffer(
+                "cumulative_array_metadata",
+                "intermediate",
+                (16, np.ndarray.__basicsize__ + 2 * rank * np.dtype(np.uintp).itemsize),
+                "uint8",
+            ),
+            ExecutionBuffer(
+                "cumulative_fixed_metadata",
+                "intermediate",
+                (
+                    sys.getsizeof([])
+                    + sys.getsizeof((None, None))
+                    + 16 * np.dtype(np.uintp).itemsize,
+                ),
+                "uint8",
+            ),
+        )
+    )
+    with reserve_execution_memory(ExecutionMemoryPlan(tuple(buffers))) as reservation:
+        reservation.checkpoint()
+        for array in arrays:
+            if not bool(np.all(np.isfinite(array))):
+                raise ValueError("program AD cumulative inputs must contain only finite values")
+        reservation.checkpoint()
+        yield reservation
+        reservation.checkpoint()
+
+
+def _cumulative_checked_output(
+    values: NDArray[np.float64],
+    reservation: ExecutionMemoryReservation,
+) -> NDArray[np.float64]:
+    """Reject nonfinite cumulative callback results before releasing ownership."""
+    reservation.checkpoint()
+    if not bool(np.all(np.isfinite(values))):
+        raise ValueError("program AD cumulative outputs must contain only finite values")
+    reservation.checkpoint()
+    return values
+
+
 def _normalise_cumulative_axis(name: str, axis: int, ndim: int) -> int:
     """Return a non-negative cumulative axis for a ranked static source shape."""
     if ndim == 0:
@@ -50,128 +145,152 @@ def _normalise_cumulative_axis(name: str, axis: int, ndim: int) -> int:
 
 
 def _program_ad_cumulative_cumsum_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
-    vector = _as_real_numeric_array("program AD cumulative cumsum values", values).reshape(-1)
-    return np.cumsum(vector).astype(np.float64)
+    with _cumulative_execution_scope(values, source_shape=None) as reservation:
+        vector = _as_real_numeric_array("program AD cumulative cumsum values", values).reshape(-1)
+        return _cumulative_checked_output(np.cumsum(vector).astype(np.float64), reservation)
 
 
 def _program_ad_cumulative_cumsum_jvp(
     values: NDArray[np.float64],
     tangent: NDArray[np.float64],
 ) -> NDArray[np.float64]:
-    vector = _as_real_numeric_array("program AD cumulative cumsum values", values).reshape(-1)
-    tangent_vector = _as_real_numeric_array(
-        "program AD cumulative cumsum tangent", tangent
-    ).reshape(-1)
-    if tangent_vector.shape != vector.shape:
-        raise ValueError("program AD cumulative cumsum tangent shape must match values shape")
-    return np.cumsum(tangent_vector).astype(np.float64)
+    with _cumulative_execution_scope(values, tangent, source_shape=None) as reservation:
+        vector = _as_real_numeric_array("program AD cumulative cumsum values", values).reshape(-1)
+        tangent_vector = _as_real_numeric_array(
+            "program AD cumulative cumsum tangent", tangent
+        ).reshape(-1)
+        if tangent_vector.shape != vector.shape:
+            raise ValueError("program AD cumulative cumsum tangent shape must match values shape")
+        return _cumulative_checked_output(
+            np.cumsum(tangent_vector).astype(np.float64), reservation
+        )
 
 
 def _program_ad_cumulative_cumsum_vjp(
     values: NDArray[np.float64],
     cotangent: NDArray[np.float64],
 ) -> NDArray[np.float64]:
-    vector = _as_real_numeric_array("program AD cumulative cumsum values", values).reshape(-1)
-    cotangent_vector = _as_real_numeric_array(
-        "program AD cumulative cumsum cotangent", cotangent
-    ).reshape(-1)
-    if cotangent_vector.shape != vector.shape:
-        raise ValueError("program AD cumulative cumsum cotangent shape must match output shape")
-    return _program_ad_float64_vector_result(np.flip(np.cumsum(np.flip(cotangent_vector))))
+    with _cumulative_execution_scope(values, cotangent, source_shape=None) as reservation:
+        vector = _as_real_numeric_array("program AD cumulative cumsum values", values).reshape(-1)
+        cotangent_vector = _as_real_numeric_array(
+            "program AD cumulative cumsum cotangent", cotangent
+        ).reshape(-1)
+        if cotangent_vector.shape != vector.shape:
+            raise ValueError(
+                "program AD cumulative cumsum cotangent shape must match output shape"
+            )
+        return _cumulative_checked_output(
+            _program_ad_float64_vector_result(np.flip(np.cumsum(np.flip(cotangent_vector)))),
+            reservation,
+        )
 
 
 def _program_ad_cumulative_cumprod_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
-    vector = _as_real_numeric_array("program AD cumulative cumprod values", values).reshape(-1)
-    return np.cumprod(vector).astype(np.float64)
+    with _cumulative_execution_scope(values, source_shape=None) as reservation:
+        vector = _as_real_numeric_array("program AD cumulative cumprod values", values).reshape(-1)
+        return _cumulative_checked_output(np.cumprod(vector).astype(np.float64), reservation)
 
 
 def _program_ad_cumulative_cumprod_jvp(
     values: NDArray[np.float64],
     tangent: NDArray[np.float64],
 ) -> NDArray[np.float64]:
-    vector = _as_real_numeric_array("program AD cumulative cumprod values", values).reshape(-1)
-    tangent_vector = _as_real_numeric_array(
-        "program AD cumulative cumprod tangent", tangent
-    ).reshape(-1)
-    if tangent_vector.shape != vector.shape:
-        raise ValueError("program AD cumulative cumprod tangent shape must match values shape")
-    result = np.zeros_like(vector, dtype=np.float64)
-    for output_index in range(vector.size):
-        total = 0.0
-        for tangent_index in range(output_index + 1):
-            product = 1.0
-            for factor_index in range(output_index + 1):
-                product *= (
-                    tangent_vector[factor_index]
-                    if factor_index == tangent_index
-                    else vector[factor_index]
-                )
-            total += product
-        result[output_index] = total
-    return result
+    with _cumulative_execution_scope(values, tangent, source_shape=None) as reservation:
+        vector = _as_real_numeric_array("program AD cumulative cumprod values", values).reshape(-1)
+        tangent_vector = _as_real_numeric_array(
+            "program AD cumulative cumprod tangent", tangent
+        ).reshape(-1)
+        if tangent_vector.shape != vector.shape:
+            raise ValueError("program AD cumulative cumprod tangent shape must match values shape")
+        result = np.zeros_like(vector, dtype=np.float64)
+        for output_index in range(vector.size):
+            reservation.checkpoint()
+            total = 0.0
+            for tangent_index in range(output_index + 1):
+                reservation.checkpoint()
+                product = 1.0
+                for factor_index in range(output_index + 1):
+                    reservation.checkpoint()
+                    product *= (
+                        tangent_vector[factor_index]
+                        if factor_index == tangent_index
+                        else vector[factor_index]
+                    )
+                total += product
+            result[output_index] = total
+        return _cumulative_checked_output(result, reservation)
 
 
 def _program_ad_cumulative_cumprod_vjp(
     values: NDArray[np.float64],
     cotangent: NDArray[np.float64],
 ) -> NDArray[np.float64]:
-    vector = _as_real_numeric_array("program AD cumulative cumprod values", values).reshape(-1)
-    cotangent_vector = _as_real_numeric_array(
-        "program AD cumulative cumprod cotangent", cotangent
-    ).reshape(-1)
-    if cotangent_vector.shape != vector.shape:
-        raise ValueError("program AD cumulative cumprod cotangent shape must match output shape")
-    result = np.zeros_like(vector, dtype=np.float64)
-    for input_index in range(vector.size):
-        total = 0.0
-        for output_index in range(input_index, vector.size):
-            product = 1.0
-            for factor_index in range(output_index + 1):
-                if factor_index != input_index:
-                    product *= vector[factor_index]
-            total += cotangent_vector[output_index] * product
-        result[input_index] = total
-    return result
+    with _cumulative_execution_scope(values, cotangent, source_shape=None) as reservation:
+        vector = _as_real_numeric_array("program AD cumulative cumprod values", values).reshape(-1)
+        cotangent_vector = _as_real_numeric_array(
+            "program AD cumulative cumprod cotangent", cotangent
+        ).reshape(-1)
+        if cotangent_vector.shape != vector.shape:
+            raise ValueError(
+                "program AD cumulative cumprod cotangent shape must match output shape"
+            )
+        result = np.zeros_like(vector, dtype=np.float64)
+        for input_index in range(vector.size):
+            reservation.checkpoint()
+            total = 0.0
+            for output_index in range(input_index, vector.size):
+                reservation.checkpoint()
+                product = 1.0
+                for factor_index in range(output_index + 1):
+                    reservation.checkpoint()
+                    if factor_index != input_index:
+                        product *= vector[factor_index]
+                total += cotangent_vector[output_index] * product
+            result[input_index] = total
+        return _cumulative_checked_output(result, reservation)
 
 
 def _program_ad_cumulative_diff_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
-    vector = _as_real_numeric_array("program AD cumulative diff values", values).reshape(-1)
-    return np.diff(vector).astype(np.float64)
+    with _cumulative_execution_scope(values, source_shape=None) as reservation:
+        vector = _as_real_numeric_array("program AD cumulative diff values", values).reshape(-1)
+        return _cumulative_checked_output(np.diff(vector).astype(np.float64), reservation)
 
 
 def _program_ad_cumulative_diff_jvp(
     values: NDArray[np.float64],
     tangent: NDArray[np.float64],
 ) -> NDArray[np.float64]:
-    vector = _as_real_numeric_array("program AD cumulative diff values", values).reshape(-1)
-    tangent_vector = _as_real_numeric_array("program AD cumulative diff tangent", tangent).reshape(
-        -1
-    )
-    if tangent_vector.shape != vector.shape:
-        raise ValueError("program AD cumulative diff tangent shape must match values shape")
-    return np.diff(tangent_vector).astype(np.float64)
+    with _cumulative_execution_scope(values, tangent, source_shape=None) as reservation:
+        vector = _as_real_numeric_array("program AD cumulative diff values", values).reshape(-1)
+        tangent_vector = _as_real_numeric_array(
+            "program AD cumulative diff tangent", tangent
+        ).reshape(-1)
+        if tangent_vector.shape != vector.shape:
+            raise ValueError("program AD cumulative diff tangent shape must match values shape")
+        return _cumulative_checked_output(np.diff(tangent_vector).astype(np.float64), reservation)
 
 
 def _program_ad_cumulative_diff_vjp(
     values: NDArray[np.float64],
     cotangent: NDArray[np.float64],
 ) -> NDArray[np.float64]:
-    vector = _as_real_numeric_array("program AD cumulative diff values", values).reshape(-1)
-    cotangent_vector = _as_real_numeric_array(
-        "program AD cumulative diff cotangent", cotangent
-    ).reshape(-1)
-    if vector.size == 0:
-        raise ValueError("program AD cumulative diff direct rule requires at least one value")
-    if cotangent_vector.shape != (max(vector.size - 1, 0),):
-        raise ValueError("program AD cumulative diff cotangent shape must match output shape")
-    result = np.zeros_like(vector, dtype=np.float64)
-    if cotangent_vector.size == 0:
-        return result
-    result[0] = -cotangent_vector[0]
-    result[-1] = cotangent_vector[-1]
-    if vector.size > 2:
-        result[1:-1] = cotangent_vector[:-1] - cotangent_vector[1:]
-    return result
+    with _cumulative_execution_scope(values, cotangent, source_shape=None) as reservation:
+        vector = _as_real_numeric_array("program AD cumulative diff values", values).reshape(-1)
+        cotangent_vector = _as_real_numeric_array(
+            "program AD cumulative diff cotangent", cotangent
+        ).reshape(-1)
+        if vector.size == 0:
+            raise ValueError("program AD cumulative diff direct rule requires at least one value")
+        if cotangent_vector.shape != (max(vector.size - 1, 0),):
+            raise ValueError("program AD cumulative diff cotangent shape must match output shape")
+        result = np.zeros_like(vector, dtype=np.float64)
+        if cotangent_vector.size == 0:
+            return _cumulative_checked_output(result, reservation)
+        result[0] = -cotangent_vector[0]
+        result[-1] = cotangent_vector[-1]
+        if vector.size > 2:
+            result[1:-1] = cotangent_vector[:-1] - cotangent_vector[1:]
+        return _cumulative_checked_output(result, reservation)
 
 
 def _program_ad_cumulative_derivative_rule(name: str) -> CustomDerivativeRule:
@@ -243,12 +362,18 @@ def _program_ad_cumulative_cumsum_static_vjp(
     cotangent_array: NDArray[np.float64],
     axis: int | None,
 ) -> NDArray[np.float64]:
-    if axis is None:
-        vector = cotangent_array.reshape(-1)
-        return _program_ad_float64_vector_result(np.flip(np.cumsum(np.flip(vector))))
-    return _program_ad_float64_vector_result(
-        np.flip(np.cumsum(np.flip(cotangent_array, axis=axis), axis=axis), axis=axis)
-    )
+    with _cumulative_execution_scope(cotangent_array, source_shape=None) as reservation:
+        if axis is None:
+            vector = cotangent_array.reshape(-1)
+            return _cumulative_checked_output(
+                _program_ad_float64_vector_result(np.flip(np.cumsum(np.flip(vector)))), reservation
+            )
+        return _cumulative_checked_output(
+            _program_ad_float64_vector_result(
+                np.flip(np.cumsum(np.flip(cotangent_array, axis=axis), axis=axis), axis=axis)
+            ),
+            reservation,
+        )
 
 
 def _program_ad_cumulative_cumprod_static_jvp_array(
@@ -256,28 +381,38 @@ def _program_ad_cumulative_cumprod_static_jvp_array(
     tangent_array: NDArray[np.float64],
     axis: int | None,
 ) -> NDArray[np.float64]:
-    if axis is None:
-        return _program_ad_cumulative_cumprod_jvp(
-            values_array.reshape(-1), tangent_array.reshape(-1)
-        ).reshape(values_array.shape)
-    result = np.zeros_like(values_array, dtype=np.float64)
-    axis_size = values_array.shape[axis]
-    output_shape = values_array.shape[:axis] + values_array.shape[axis + 1 :]
-    for output_index in np.ndindex(output_shape):
-        for end_index in range(axis_size):
-            total = 0.0
-            for tangent_index in range(end_index + 1):
-                product = 1.0
-                for factor_index in range(end_index + 1):
-                    full_index = output_index[:axis] + (factor_index,) + output_index[axis:]
-                    product *= float(
-                        tangent_array[full_index]
-                        if factor_index == tangent_index
-                        else values_array[full_index]
-                    )
-                total += product
-            result[output_index[:axis] + (end_index,) + output_index[axis:]] = total
-    return result
+    with _cumulative_execution_scope(
+        values_array, tangent_array, source_shape=None
+    ) as reservation:
+        if axis is None:
+            return _cumulative_checked_output(
+                _program_ad_cumulative_cumprod_jvp(
+                    values_array.reshape(-1), tangent_array.reshape(-1)
+                ).reshape(values_array.shape),
+                reservation,
+            )
+        result = np.zeros_like(values_array, dtype=np.float64)
+        axis_size = values_array.shape[axis]
+        output_shape = values_array.shape[:axis] + values_array.shape[axis + 1 :]
+        for output_index in np.ndindex(output_shape):
+            reservation.checkpoint()
+            for end_index in range(axis_size):
+                reservation.checkpoint()
+                total = 0.0
+                for tangent_index in range(end_index + 1):
+                    reservation.checkpoint()
+                    product = 1.0
+                    for factor_index in range(end_index + 1):
+                        reservation.checkpoint()
+                        full_index = output_index[:axis] + (factor_index,) + output_index[axis:]
+                        product *= float(
+                            tangent_array[full_index]
+                            if factor_index == tangent_index
+                            else values_array[full_index]
+                        )
+                    total += product
+                result[output_index[:axis] + (end_index,) + output_index[axis:]] = total
+        return _cumulative_checked_output(result, reservation)
 
 
 def _program_ad_cumulative_cumprod_static_vjp_array(
@@ -285,26 +420,38 @@ def _program_ad_cumulative_cumprod_static_vjp_array(
     cotangent_array: NDArray[np.float64],
     axis: int | None,
 ) -> NDArray[np.float64]:
-    if axis is None:
-        return _program_ad_cumulative_cumprod_vjp(
-            values_array.reshape(-1), cotangent_array.reshape(-1)
-        ).reshape(values_array.shape)
-    result = np.zeros_like(values_array, dtype=np.float64)
-    axis_size = values_array.shape[axis]
-    output_shape = values_array.shape[:axis] + values_array.shape[axis + 1 :]
-    for output_index in np.ndindex(output_shape):
-        for input_index in range(axis_size):
-            total = 0.0
-            for end_index in range(input_index, axis_size):
-                product = 1.0
-                for factor_index in range(end_index + 1):
-                    if factor_index != input_index:
-                        full_index = output_index[:axis] + (factor_index,) + output_index[axis:]
-                        product *= float(values_array[full_index])
-                full_output_index = output_index[:axis] + (end_index,) + output_index[axis:]
-                total += float(cotangent_array[full_output_index]) * product
-            result[output_index[:axis] + (input_index,) + output_index[axis:]] = total
-    return result
+    with _cumulative_execution_scope(
+        values_array, cotangent_array, source_shape=None
+    ) as reservation:
+        if axis is None:
+            return _cumulative_checked_output(
+                _program_ad_cumulative_cumprod_vjp(
+                    values_array.reshape(-1), cotangent_array.reshape(-1)
+                ).reshape(values_array.shape),
+                reservation,
+            )
+        result = np.zeros_like(values_array, dtype=np.float64)
+        axis_size = values_array.shape[axis]
+        output_shape = values_array.shape[:axis] + values_array.shape[axis + 1 :]
+        for output_index in np.ndindex(output_shape):
+            reservation.checkpoint()
+            for input_index in range(axis_size):
+                reservation.checkpoint()
+                total = 0.0
+                for end_index in range(input_index, axis_size):
+                    reservation.checkpoint()
+                    product = 1.0
+                    for factor_index in range(end_index + 1):
+                        reservation.checkpoint()
+                        if factor_index != input_index:
+                            full_index = (
+                                output_index[:axis] + (factor_index,) + output_index[axis:]
+                            )
+                            product *= float(values_array[full_index])
+                    full_output_index = output_index[:axis] + (end_index,) + output_index[axis:]
+                    total += float(cotangent_array[full_output_index]) * product
+                result[output_index[:axis] + (input_index,) + output_index[axis:]] = total
+        return _cumulative_checked_output(result, reservation)
 
 
 def _program_ad_cumulative_diff_once_vjp_axis(
@@ -313,15 +460,19 @@ def _program_ad_cumulative_diff_once_vjp_axis(
     source_shape: tuple[int, ...],
     axis: int,
 ) -> NDArray[np.float64]:
-    result = np.zeros(source_shape, dtype=np.float64)
-    source_axis_size = source_shape[axis]
-    output_shape = source_shape[:axis] + (source_axis_size - 1,) + source_shape[axis + 1 :]
-    for output_index in np.ndindex(output_shape):
-        lower_index = output_index
-        upper_index = output_index[:axis] + (output_index[axis] + 1,) + output_index[axis + 1 :]
-        result[lower_index] -= cotangent_array[output_index]
-        result[upper_index] += cotangent_array[output_index]
-    return result
+    with _cumulative_execution_scope(cotangent_array, source_shape=source_shape) as reservation:
+        result = np.zeros(source_shape, dtype=np.float64)
+        source_axis_size = source_shape[axis]
+        output_shape = source_shape[:axis] + (source_axis_size - 1,) + source_shape[axis + 1 :]
+        for output_index in np.ndindex(output_shape):
+            reservation.checkpoint()
+            lower_index = output_index
+            upper_index = (
+                output_index[:axis] + (output_index[axis] + 1,) + output_index[axis + 1 :]
+            )
+            result[lower_index] -= cotangent_array[output_index]
+            result[upper_index] += cotangent_array[output_index]
+        return _cumulative_checked_output(result, reservation)
 
 
 def _program_ad_cumulative_diff_static_vjp_array(
@@ -331,17 +482,19 @@ def _program_ad_cumulative_diff_static_vjp_array(
     order: int,
     axis: int,
 ) -> NDArray[np.float64]:
-    current = cotangent_array
-    for step in range(order, 0, -1):
-        next_source_shape = (
-            source_shape[:axis] + (source_shape[axis] - step + 1,) + source_shape[axis + 1 :]
-        )
-        current = _program_ad_cumulative_diff_once_vjp_axis(
-            current, source_shape=next_source_shape, axis=axis
-        )
-    if current.shape != source_shape:
-        raise ValueError("program AD cumulative diff VJP internal shape mismatch")
-    return current
+    with _cumulative_execution_scope(cotangent_array, source_shape=source_shape) as reservation:
+        current = cotangent_array
+        for step in range(order, 0, -1):
+            reservation.checkpoint()
+            next_source_shape = (
+                source_shape[:axis] + (source_shape[axis] - step + 1,) + source_shape[axis + 1 :]
+            )
+            current = _program_ad_cumulative_diff_once_vjp_axis(
+                current, source_shape=next_source_shape, axis=axis
+            )
+        if current.shape != source_shape:
+            raise ValueError("program AD cumulative diff VJP internal shape mismatch")
+        return _cumulative_checked_output(current, reservation)
 
 
 def program_ad_cumulative_cumsum_derivative_rule(
@@ -353,26 +506,38 @@ def program_ad_cumulative_cumsum_derivative_rule(
     normalised_axis = _program_ad_cumulative_static_axis(source, axis)
 
     def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
-        values_array = _program_ad_cumulative_source_array(
-            "cumsum", "values", values, source_shape=source
-        )
-        return _program_ad_float64_vector_result(np.cumsum(values_array, axis=normalised_axis))
+        with _cumulative_execution_scope(values, source_shape=source) as reservation:
+            values_array = _program_ad_cumulative_source_array(
+                "cumsum", "values", values, source_shape=source
+            )
+            return _cumulative_checked_output(
+                _program_ad_float64_vector_result(np.cumsum(values_array, axis=normalised_axis)),
+                reservation,
+            )
 
     def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
-        _program_ad_cumulative_source_array("cumsum", "values", values, source_shape=source)
-        tangent_array = _program_ad_cumulative_source_array(
-            "cumsum", "tangent", tangent, source_shape=source
-        )
-        return _program_ad_float64_vector_result(np.cumsum(tangent_array, axis=normalised_axis))
+        with _cumulative_execution_scope(values, tangent, source_shape=source) as reservation:
+            _program_ad_cumulative_source_array("cumsum", "values", values, source_shape=source)
+            tangent_array = _program_ad_cumulative_source_array(
+                "cumsum", "tangent", tangent, source_shape=source
+            )
+            return _cumulative_checked_output(
+                _program_ad_float64_vector_result(np.cumsum(tangent_array, axis=normalised_axis)),
+                reservation,
+            )
 
     def vjp_rule(
         values: NDArray[np.float64], cotangent: NDArray[np.float64]
     ) -> NDArray[np.float64]:
-        _program_ad_cumulative_source_array("cumsum", "values", values, source_shape=source)
-        cotangent_array = _program_ad_cumulative_source_array(
-            "cumsum", "cotangent", cotangent, source_shape=source
-        )
-        return _program_ad_cumulative_cumsum_static_vjp(cotangent_array, normalised_axis)
+        with _cumulative_execution_scope(values, cotangent, source_shape=source) as reservation:
+            _program_ad_cumulative_source_array("cumsum", "values", values, source_shape=source)
+            cotangent_array = _program_ad_cumulative_source_array(
+                "cumsum", "cotangent", cotangent, source_shape=source
+            )
+            return _cumulative_checked_output(
+                _program_ad_cumulative_cumsum_static_vjp(cotangent_array, normalised_axis),
+                reservation,
+            )
 
     return CustomDerivativeRule(
         name=(
@@ -394,38 +559,50 @@ def program_ad_cumulative_cumprod_derivative_rule(
     normalised_axis = _program_ad_cumulative_static_axis(source, axis)
 
     def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
-        values_array = _program_ad_cumulative_source_array(
-            "cumprod", "values", values, source_shape=source
-        )
-        return _program_ad_float64_vector_result(np.cumprod(values_array, axis=normalised_axis))
+        with _cumulative_execution_scope(values, source_shape=source) as reservation:
+            values_array = _program_ad_cumulative_source_array(
+                "cumprod", "values", values, source_shape=source
+            )
+            return _cumulative_checked_output(
+                _program_ad_float64_vector_result(np.cumprod(values_array, axis=normalised_axis)),
+                reservation,
+            )
 
     def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
-        values_array = _program_ad_cumulative_source_array(
-            "cumprod", "values", values, source_shape=source
-        )
-        tangent_array = _program_ad_cumulative_source_array(
-            "cumprod", "tangent", tangent, source_shape=source
-        )
-        return _program_ad_float64_vector_result(
-            _program_ad_cumulative_cumprod_static_jvp_array(
-                values_array, tangent_array, normalised_axis
+        with _cumulative_execution_scope(values, tangent, source_shape=source) as reservation:
+            values_array = _program_ad_cumulative_source_array(
+                "cumprod", "values", values, source_shape=source
             )
-        )
+            tangent_array = _program_ad_cumulative_source_array(
+                "cumprod", "tangent", tangent, source_shape=source
+            )
+            return _cumulative_checked_output(
+                _program_ad_float64_vector_result(
+                    _program_ad_cumulative_cumprod_static_jvp_array(
+                        values_array, tangent_array, normalised_axis
+                    )
+                ),
+                reservation,
+            )
 
     def vjp_rule(
         values: NDArray[np.float64], cotangent: NDArray[np.float64]
     ) -> NDArray[np.float64]:
-        values_array = _program_ad_cumulative_source_array(
-            "cumprod", "values", values, source_shape=source
-        )
-        cotangent_array = _program_ad_cumulative_source_array(
-            "cumprod", "cotangent", cotangent, source_shape=source
-        )
-        return _program_ad_float64_vector_result(
-            _program_ad_cumulative_cumprod_static_vjp_array(
-                values_array, cotangent_array, normalised_axis
+        with _cumulative_execution_scope(values, cotangent, source_shape=source) as reservation:
+            values_array = _program_ad_cumulative_source_array(
+                "cumprod", "values", values, source_shape=source
             )
-        )
+            cotangent_array = _program_ad_cumulative_source_array(
+                "cumprod", "cotangent", cotangent, source_shape=source
+            )
+            return _cumulative_checked_output(
+                _program_ad_float64_vector_result(
+                    _program_ad_cumulative_cumprod_static_vjp_array(
+                        values_array, cotangent_array, normalised_axis
+                    )
+                ),
+                reservation,
+            )
 
     return CustomDerivativeRule(
         name=(
@@ -461,37 +638,49 @@ def program_ad_cumulative_diff_derivative_rule(
     )
 
     def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
-        values_array = _program_ad_cumulative_source_array(
-            "diff", "values", values, source_shape=source
-        )
-        return _program_ad_float64_vector_result(
-            np.diff(values_array, n=normalised_order, axis=normalised_axis)
-        )
+        with _cumulative_execution_scope(values, source_shape=source) as reservation:
+            values_array = _program_ad_cumulative_source_array(
+                "diff", "values", values, source_shape=source
+            )
+            return _cumulative_checked_output(
+                _program_ad_float64_vector_result(
+                    np.diff(values_array, n=normalised_order, axis=normalised_axis)
+                ),
+                reservation,
+            )
 
     def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
-        _program_ad_cumulative_source_array("diff", "values", values, source_shape=source)
-        tangent_array = _program_ad_cumulative_source_array(
-            "diff", "tangent", tangent, source_shape=source
-        )
-        return _program_ad_float64_vector_result(
-            np.diff(tangent_array, n=normalised_order, axis=normalised_axis)
-        )
+        with _cumulative_execution_scope(values, tangent, source_shape=source) as reservation:
+            _program_ad_cumulative_source_array("diff", "values", values, source_shape=source)
+            tangent_array = _program_ad_cumulative_source_array(
+                "diff", "tangent", tangent, source_shape=source
+            )
+            return _cumulative_checked_output(
+                _program_ad_float64_vector_result(
+                    np.diff(tangent_array, n=normalised_order, axis=normalised_axis)
+                ),
+                reservation,
+            )
 
     def vjp_rule(
         values: NDArray[np.float64], cotangent: NDArray[np.float64]
     ) -> NDArray[np.float64]:
-        _program_ad_cumulative_source_array("diff", "values", values, source_shape=source)
-        cotangent_array = _program_ad_cumulative_source_array(
-            "diff", "cotangent", cotangent, source_shape=output_shape
-        )
-        return _program_ad_float64_vector_result(
-            _program_ad_cumulative_diff_static_vjp_array(
-                cotangent_array,
-                source_shape=source,
-                order=normalised_order,
-                axis=normalised_axis,
+        with _cumulative_execution_scope(values, cotangent, source_shape=source) as reservation:
+            _program_ad_cumulative_source_array("diff", "values", values, source_shape=source)
+            cotangent_array = _program_ad_cumulative_source_array(
+                "diff", "cotangent", cotangent, source_shape=output_shape
             )
-        )
+            return _cumulative_checked_output(
+                _program_ad_float64_vector_result(
+                    _program_ad_cumulative_diff_static_vjp_array(
+                        cotangent_array,
+                        source_shape=source,
+                        order=normalised_order,
+                        axis=normalised_axis,
+                    )
+                ),
+                reservation,
+            )
 
     return CustomDerivativeRule(
         name=(

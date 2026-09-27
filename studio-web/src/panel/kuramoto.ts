@@ -142,43 +142,42 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 /** Pack a request into the kernel's canonical little-endian input, or fail closed. */
 export function encodeKuramotoInput(request: KuramotoRequest): Uint8Array | null {
   const n = request.omega.length;
-  if (n < 1 || request.theta0.length !== n) {
-    return null;
-  }
-  if (!Number.isInteger(request.steps) || request.steps < 1) {
-    return null;
-  }
-  if (!Number.isFinite(request.dt) || request.dt <= 0) {
-    return null;
-  }
-  if (!Number.isFinite(request.coupling)) {
-    return null;
-  }
+  if (n < 1 || request.theta0.length !== n) return null;
+  if (!Number.isSafeInteger(request.steps) || request.steps < 1 || request.steps > 0xffff_ffff) return null;
+  if (!Number.isFinite(request.dt) || request.dt <= 0 || !Number.isFinite(request.coupling)) return null;
+  if (request.mode !== "mean-field" && request.mode !== "networked") return null;
   const modeCode = MODE_CODES[request.mode];
   const kLen = request.mode === "networked" ? n * n : 0;
-  if (request.mode === "networked" && (request.kNm?.length ?? -1) !== kLen) {
-    return null;
+  if (!Number.isSafeInteger(kLen)) return null;
+  if (request.mode === "networked" && (request.kNm?.length ?? -1) !== kLen) return null;
+  if (kLen === 0 && request.kNm !== undefined && request.kNm.length !== 0) return null;
+  const byteLength = HEADER_LEN + (2 * n + kLen) * 8;
+  if (!Number.isSafeInteger(byteLength) || byteLength > 0xffff_ffff) return null;
+  const fields = [request.omega, request.theta0, request.kNm ?? []];
+  for (const field of fields) {
+    for (const value of field) if (!Number.isFinite(value)) return null;
   }
-  const values = [...request.omega, ...request.theta0, ...(request.kNm ?? [])];
-  if (kLen === 0 && request.kNm !== undefined && request.kNm.length !== 0) {
-    return null;
-  }
-  const buffer = new ArrayBuffer(HEADER_LEN + values.length * 8);
-  const view = new DataView(buffer);
-  view.setUint32(0, KURAMOTO_INPUT_VERSION, true);
-  view.setUint32(4, modeCode, true);
-  view.setUint32(8, n, true);
-  view.setUint32(12, request.steps, true);
-  view.setFloat64(16, request.dt, true);
-  view.setFloat64(24, request.coupling, true);
-  for (let index = 0; index < values.length; index += 1) {
-    const value = values[index];
-    if (!Number.isFinite(value)) {
-      return null;
+  try {
+    const buffer = new ArrayBuffer(byteLength);
+    const view = new DataView(buffer);
+    view.setUint32(0, KURAMOTO_INPUT_VERSION, true);
+    view.setUint32(4, modeCode, true);
+    view.setUint32(8, n, true);
+    view.setUint32(12, request.steps, true);
+    view.setFloat64(16, request.dt, true);
+    view.setFloat64(24, request.coupling, true);
+    let offset = HEADER_LEN;
+    for (const field of fields) {
+      for (const value of field) {
+        if (!Number.isFinite(value)) return null;
+        view.setFloat64(offset, value, true);
+        offset += 8;
+      }
     }
-    view.setFloat64(HEADER_LEN + index * 8, value as number, true);
+    return new Uint8Array(buffer);
+  } catch {
+    return null;
   }
-  return new Uint8Array(buffer);
 }
 
 /** Read the kernel's declared bounds from its exports. */
@@ -195,50 +194,65 @@ export function readBounds(exports: KuramotoExports): KuramotoBounds {
  *
  * The closure packs the request, allocates guest memory through the kernel's
  * own allocator, runs the integrator, decodes the `[R(t) ; θ_final]` output,
- * and always frees every buffer. A malformed request, allocation failure, or a
+ * and attempts to release every acquired buffer. A malformed request, allocation failure, or a
  * negative status code surfaces as a fail-closed result, never a fabricated run.
  */
 /**
  * Bind the kernel exports into a simulate closure that owns its allocations.
  *
- * Every buffer taken from `scpn_alloc` is released on both the success and the
- * failure path, so a refused request does not leak kernel memory.
+ * Each successful `scpn_alloc` acquires a release attempt on the success and the
+ * failure path. Reported oscillator/step limits are checked before packing.
+ * Allocation, execution and cleanup traps refuse; both releases are attempted
+ * even if the first release throws. Output views require the complete byte
+ * window and finite values, and retained arrays do not alias guest memory.
  */
 export function bindKuramoto(exports: KuramotoExports): KernelSimulate {
   return (request: KuramotoRequest): SimulateResult => {
-    const n = request.omega.length;
-    const input = encodeKuramotoInput(request);
-    if (input === null) {
-      return { ok: false, reason: "request is malformed" };
-    }
-    const outputLen = (request.steps + 1 + n) * 8;
-    const inputPtr = exports.scpn_alloc(input.length);
-    if (inputPtr === 0) {
-      return { ok: false, reason: "input allocation failed" };
-    }
-    const outputPtr = exports.scpn_alloc(outputLen);
-    if (outputPtr === 0) {
-      exports.scpn_free(inputPtr, input.length);
-      return { ok: false, reason: "output allocation failed" };
-    }
     try {
-      new Uint8Array(exports.memory.buffer, inputPtr, input.length).set(input);
-      const status = exports.scpn_kuramoto_simulate(inputPtr, input.length, outputPtr, outputLen);
-      if (status !== KERNEL_OK) {
-        return { ok: false, reason: `kernel rejected the request (code ${status})` };
+      const n = request.omega.length;
+      const bounds = readBounds(exports);
+      if (![bounds.maxOscillators, bounds.maxSteps].every((value) => Number.isSafeInteger(value) && value > 0 && value <= 0xffff_ffff)) {
+        return { ok: false, reason: "kernel resource limits are unknown" };
       }
-      const raw = exports.memory.buffer.slice(outputPtr, outputPtr + outputLen);
-      const values = new Float64Array(raw);
-      return {
-        ok: true,
-        run: {
-          orderParameter: values.slice(0, request.steps + 1),
-          thetaFinal: values.slice(request.steps + 1),
-        },
-      };
-    } finally {
-      exports.scpn_free(inputPtr, input.length);
-      exports.scpn_free(outputPtr, outputLen);
+      if (n > bounds.maxOscillators || request.steps > bounds.maxSteps) {
+        return { ok: false, reason: "request exceeds declared kernel bounds" };
+      }
+      const input = encodeKuramotoInput(request);
+      if (input === null) return { ok: false, reason: "request is malformed" };
+      const outputLen = (request.steps + 1 + n) * 8;
+      if (!Number.isSafeInteger(outputLen) || outputLen > 0xffff_ffff) {
+        return { ok: false, reason: "output bytes exceed kernel addressability" };
+      }
+      const inputPtr = exports.scpn_alloc(input.length);
+      if (inputPtr === 0) return { ok: false, reason: "input allocation failed" };
+      let outputPtr = 0;
+      try {
+        outputPtr = exports.scpn_alloc(outputLen);
+        if (outputPtr === 0) return { ok: false, reason: "output allocation failed" };
+        new Uint8Array(exports.memory.buffer, inputPtr, input.length).set(input);
+        const status = exports.scpn_kuramoto_simulate(inputPtr, input.length, outputPtr, outputLen);
+        if (status !== KERNEL_OK) {
+          return { ok: false, reason: `kernel rejected the request (code ${status})` };
+        }
+        const view = new DataView(exports.memory.buffer, outputPtr, outputLen);
+        const orderParameter = new Float64Array(request.steps + 1);
+        const thetaFinal = new Float64Array(n);
+        for (let index = 0; index < request.steps + 1 + n; index += 1) {
+          const value = view.getFloat64(index * 8, true);
+          if (!Number.isFinite(value)) return { ok: false, reason: "kernel output is not finite" };
+          if (index <= request.steps) orderParameter[index] = value;
+          else thetaFinal[index - request.steps - 1] = value;
+        }
+        return { ok: true, run: { orderParameter, thetaFinal } };
+      } finally {
+        try {
+          exports.scpn_free(inputPtr, input.length);
+        } finally {
+          if (outputPtr !== 0) exports.scpn_free(outputPtr, outputLen);
+        }
+      }
+    } catch {
+      return { ok: false, reason: "kernel execution or cleanup failed" };
     }
   };
 }
