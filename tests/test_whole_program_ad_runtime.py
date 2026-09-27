@@ -97,7 +97,6 @@ def test_ad_bounded_tape_preserves_real_value_and_derivative(
     bounded_ad_objectives: tuple[Callable[[Any], object], Callable[[Any], object]],
 ) -> None:
     """A bounded real trace retains its analytic derivative under explicit admission."""
-
     objective, _ = bounded_ad_objectives
     baseline = active_reserved_bytes()
     result = whole_program_value_and_grad(
@@ -382,7 +381,6 @@ def test_gradient_only_entry_preserves_resource_and_lifecycle_policy(
     bounded_ad_objectives: tuple[Callable[[Any], object], Callable[[Any], object]],
 ) -> None:
     """The gradient facade cannot bypass the actual owned AD admission scope."""
-
     _, objective = bounded_ad_objectives
     baseline = active_reserved_bytes()
     with pytest.raises(DenseAllocationError, match="execution memory"):
