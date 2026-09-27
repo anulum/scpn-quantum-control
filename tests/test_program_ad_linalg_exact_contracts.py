@@ -241,9 +241,9 @@ def test_trace_diag_and_diagflat_factory_guards() -> None:
         _call_rule(trace, "vjp_rule", np.ones(6), np.ones(2))
 
     with pytest.raises(ValueError, match="rank-1 or rank-2"):
-        linalg._program_ad_linalg_diag_positions((1, 1, 1), 0)
+        linalg.program_ad_linalg_diag_derivative_rule((1, 1, 1), k=0)
     with pytest.raises(ValueError, match="empty diagonal"):
-        linalg._program_ad_linalg_diag_positions((2, 2), 3)
+        linalg.program_ad_linalg_diag_derivative_rule((2, 2), k=3)
     with pytest.raises(ValueError, match="rank-1 or rank-2"):
         linalg.program_ad_linalg_diag_derivative_rule((2, 2, 2))
     with pytest.raises(ValueError, match="positive"):
