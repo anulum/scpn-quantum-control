@@ -13,7 +13,7 @@ from types import FrameType
 
 import numpy as np
 import pytest
-from numpy.typing import NDArray
+from numpy.typing import ArrayLike
 
 from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.execution_memory import ExecutionBuffer, ExecutionMemoryPlan
@@ -109,7 +109,7 @@ def test_public_direct_rule_readmits_execution_after_budget_change(
     assert rule.jvp_rule is not None
     assert rule.vjp_rule is not None
 
-    def callback() -> NDArray[np.float64]:
+    def callback() -> ArrayLike:
         if transform == "value":
             return rule.value_fn(values)
         if transform == "jvp":
@@ -238,7 +238,7 @@ def test_public_gather_scatter_rule_readmits_transform_storage(
     tangent = np.array([6.0, 7.0, 8.0, 9.0] if operation == "delete" else [4.0, 5.0])
     cotangent = np.array([1.0, 2.0, 3.0])
 
-    def callback() -> NDArray[np.float64]:
+    def callback() -> ArrayLike:
         if transform == "value":
             return rule.value_fn(values)
         if transform == "jvp":
