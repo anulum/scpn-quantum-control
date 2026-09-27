@@ -204,7 +204,7 @@ jobs:
           tools/resource_budget_gate_quality_gates.py
           tests/test_resource_budget_gate_quality_gate.py
       - run: >-
-          python -m coverage run --rcfile=/dev/null
+          python -m coverage run --rcfile=tools/resource_budget_gate.coveragerc
           --data-file=/tmp/scpn-qc-resource-budget-gate-quality.coverage --branch
           -m pytest -q
           tests/test_compile_budget.py
@@ -212,6 +212,7 @@ jobs:
           tests/test_execution_memory.py
           tests/test_execution_reservations.py
           tests/test_resource_admission_boundaries.py
+      - run: python -m coverage combine --rcfile=tools/resource_budget_gate.coveragerc
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-resource-budget-gate-quality.coverage

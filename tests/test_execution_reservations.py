@@ -16,9 +16,15 @@ from time import monotonic
 import pytest
 
 from scpn_quantum_control.dense_budget import DenseAllocationError
-from scpn_quantum_control.execution_memory import ExecutionBuffer, ExecutionMemoryPlan
+from scpn_quantum_control.execution_memory import (
+    ExecutionBuffer,
+    ExecutionMemoryPlan,
+    MemoryCapacity,
+    check_execution_memory,
+)
 from scpn_quantum_control.execution_reservations import (
     ExecutionCancelledError,
+    ExecutionMemoryReservation,
     active_reserved_bytes,
     reserve_execution_memory,
 )
@@ -357,4 +363,17 @@ def test_handoff_refreshes_both_owners_controller_headroom(tmp_path: Path) -> No
             assert active_reserved_bytes() == baseline + 48
         with pytest.raises(DenseAllocationError, match="concurrent"):
             parent.resize(_plan(91))
+    assert active_reserved_bytes() == baseline
+
+
+def test_denied_snapshot_cannot_create_or_charge_a_public_reservation() -> None:
+    """A genuine unknown-capacity decision remains refused at the ownership boundary."""
+    baseline = active_reserved_bytes()
+    decision = check_execution_memory(_plan(32), MemoryCapacity(None))
+    assert not decision.allowed
+    with pytest.raises(DenseAllocationError, match="refused admission"):
+        ExecutionMemoryReservation(decision, None, None)
+    assert active_reserved_bytes() == baseline
+    with reserve_execution_memory(_plan(32)):
+        assert active_reserved_bytes() == baseline + 32
     assert active_reserved_bytes() == baseline

@@ -202,10 +202,10 @@ def test_attached_gradient_accessor_refuses_mutated_shape_dtype_and_alignment() 
     with pytest.raises(ValueError, match="one-dimensional float64"):
         program_adjoint_gradient(result)
     source.shape = (2,)
-    source.dtype = np.dtype(np.uint8)
+    source.__setattr__("dtype", np.dtype(np.uint8))
     with pytest.raises(ValueError, match="one-dimensional float64"):
         program_adjoint_gradient(result)
-    source.dtype = np.dtype(np.float64)
+    source.__setattr__("dtype", np.dtype(np.float64))
     source.resize(1, refcheck=False)
     with pytest.raises(ValueError, match="shape must match parameter names"):
         program_adjoint_gradient(result)

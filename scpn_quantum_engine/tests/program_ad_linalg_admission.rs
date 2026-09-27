@@ -74,13 +74,14 @@ fn public_linalg_replay_preserves_inverse_and_solve_values_and_gradients() {
         "linalg:solve:2x2:rhs:2:0",
         &[2.0, 0.0, 0.0, 4.0, 6.0, 8.0],
         3.0,
-        &[-1.5, -2.0, 0.0, 0.0, 0.5, 0.0],
+        // For x = A^-1 b and objective x[0], dA = -(A^-T e0) x^T.
+        &[-1.5, -1.0, 0.0, 0.0, 0.5, 0.0],
     );
     assert_linalg_objective(
         "linalg:solve:2x2:rhs:2x2:0:1",
         &[2.0, 0.0, 0.0, 4.0, 6.0, 10.0, 8.0, 12.0],
         5.0,
-        &[-2.5, -3.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0],
+        &[-2.5, -1.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0],
     );
     let diagonal = [
         2.0, 0.0, 0.0, 0.0, 0.0, 3.0, 0.0, 0.0, 0.0, 0.0, 4.0, 0.0, 0.0, 0.0, 0.0, 5.0,
@@ -363,7 +364,7 @@ fn public_gaussian_lu_solve_workspace_budgets_are_inclusive_and_recover() {
             80,
             96,
             3.0,
-            vec![-1.5, -2.0, 0.0, 0.0, 0.5, 0.0],
+            vec![-1.5, -1.0, 0.0, 0.0, 0.5, 0.0],
         ),
         (
             "linalg:solve:1x1:rhs:1x8:0:7",

@@ -1707,7 +1707,10 @@ def test_public_empty_sum_axis_preserves_zero_gradient(shape: tuple[int, ...], a
 
     def objective(values: Any) -> object:
         empty = np.repeat(values, 0).reshape(shape)
-        return np.sum(np.sum(empty, axis=axis))
+        reduced = np.sum(empty, axis=axis)
+        if len(shape) == 1:
+            return reduced
+        return np.sum(reduced)
 
     result = whole_program_value_and_grad(objective, [2.0, 3.0], trace=False)
     assert result.value == 0.0

@@ -42,6 +42,7 @@ class ExecutionCancelledError(RuntimeError):
 
 class _Ledger:
     def __init__(self) -> None:
+        self.pid = os.getpid()
         self.lock = RLock()
         self.entries: dict[object, tuple[int, int]] = {}
 
@@ -52,18 +53,17 @@ _current_reservation: ContextVar[ExecutionMemoryReservation | None] = ContextVar
 )
 
 
-def _after_fork() -> None:
+def _reset_inherited_process_state() -> None:
+    # Check before touching a possibly locked mutex inherited from another process.
     global _ledger
-    _ledger = _Ledger()
-    _current_reservation.set(None)
-
-
-if hasattr(os, "register_at_fork"):
-    os.register_at_fork(after_in_child=_after_fork)
+    if _ledger.pid != os.getpid():
+        _ledger = _Ledger()
+        _current_reservation.set(None)
 
 
 def active_reserved_bytes() -> int:
     """Return currently charged bytes in this process, under the ledger lock."""
+    _reset_inherited_process_state()
     with _ledger.lock:
         return sum(size for size, _ in _ledger.entries.values())
 
@@ -98,6 +98,7 @@ class ExecutionMemoryReservation:
             raise ValueError("deadline must be finite monotonic seconds")
         if not decision.allowed:
             raise DenseAllocationError("refused admission cannot create a reservation")
+        _reset_inherited_process_state()
         self.decision = decision
         self._cgroup_root = cgroup_root
         self._deadline = deadline_monotonic

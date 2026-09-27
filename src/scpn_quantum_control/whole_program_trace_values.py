@@ -2357,7 +2357,7 @@ def _trace_array_sum(array: TraceADArray, axis: int | None = None) -> TraceADSca
         reduced_shape = array.shape[:axis] + array.shape[axis + 1 :]
         if reduced_shape == ():
             return _trace_constant(0.0, array.context)
-        with array.context.array_storage(reduced_shape) as reservation:
+        with array.context.array_storage((max(1, math.prod(reduced_shape)),)) as reservation:
             zero = _trace_constant(0.0, array.context)
             result = TraceADArray((zero,) * math.prod(reduced_shape), reduced_shape, array.context)
             reservation.checkpoint()

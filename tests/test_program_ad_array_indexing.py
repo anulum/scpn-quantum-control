@@ -10,12 +10,14 @@
 import sys
 from threading import Event
 from types import FrameType
+from typing import Any, cast
 
 import numpy as np
 import pytest
 from numpy.typing import ArrayLike
 
 from scpn_quantum_control.dense_budget import DenseAllocationError
+from scpn_quantum_control.differentiable import primitive_contract_for
 from scpn_quantum_control.execution_memory import ExecutionBuffer, ExecutionMemoryPlan
 from scpn_quantum_control.execution_reservations import (
     ExecutionCancelledError,
@@ -500,4 +502,125 @@ def test_public_getitem_native_size_preserves_scalar_and_zero_extent(
     baseline = active_reserved_bytes()
     rule = program_ad_array_getitem_derivative_rule(source_shape, selector)
     np.testing.assert_array_equal(rule.value_fn(np.array(values)), np.array(values))
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("surface", ["direct", "contract"])
+def test_public_take_along_axis_rejects_actual_out_of_bounds_selection(surface: str) -> None:
+    """Both public owners refuse NumPy selection faults and release all declarations."""
+    baseline = active_reserved_bytes()
+    if surface == "direct":
+        with pytest.raises(ValueError, match="in-bounds"):
+            program_ad_array_take_along_axis_derivative_rule((1, 2), ((5,),), axis=1)
+    else:
+        contract = primitive_contract_for("scpn.program_ad.array:take_along_axis")
+        assert contract.shape_rule is not None
+        with pytest.raises(ValueError, match="in bounds"):
+            contract.shape_rule((np.zeros((1, 2)), np.array([[5]]), 1))
+    assert active_reserved_bytes() == baseline
+    rule = program_ad_array_take_along_axis_derivative_rule((1, 2), ((1,),), axis=1)
+    np.testing.assert_array_equal(rule.value_fn(np.array([3.0, 7.0])), [7.0])
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize(
+    "shape,selector,values,axis,diagnostic",
+    [
+        ((2,), [[1]], 7.0, None, "one-dimensional"),
+        ((2,), 99, 7.0, None, "in-bounds"),
+        ((1, 2), (0, 1), np.zeros((3, 2)), 1, "incompatible"),
+        ((2,), (99, 100), 7.0, None, "compatible with the source"),
+    ],
+)
+def test_public_insert_rejects_malformed_selection_and_broadcast(
+    shape: tuple[int, ...], selector: object, values: object, axis: int | None, diagnostic: str
+) -> None:
+    """Real invalid selectors and broadcast metadata never retain layout charges."""
+    baseline = active_reserved_bytes()
+    with pytest.raises(ValueError, match=diagnostic):
+        program_ad_array_insert_derivative_rule(shape, selector, values, axis=axis)
+    assert active_reserved_bytes() == baseline
+    rule = program_ad_array_insert_derivative_rule((2,), 1, 7.0)
+    np.testing.assert_array_equal(rule.value_fn(np.array([3.0, 5.0])), [3.0, 7.0, 5.0])
+    assert active_reserved_bytes() == baseline
+
+
+def test_public_rule_rejects_wrong_sized_array_protocol() -> None:
+    """Post-conversion size validation also covers genuine ndarray subclasses."""
+    baseline = active_reserved_bytes()
+
+    class ArraySubclass(np.ndarray[Any, Any]):
+        """Exercise public array conversion without the exact ndarray fast path."""
+
+        pass
+
+    rule = program_ad_array_getitem_derivative_rule((2,), slice(None))
+    with pytest.raises(ValueError, match="2 values"):
+        rule.value_fn(np.arange(3.0).view(ArraySubclass))
+    np.testing.assert_array_equal(rule.value_fn(np.array([3.0, 5.0])), [3.0, 5.0])
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("surface", ["direct", "contract"])
+def test_public_getitem_refuses_tampered_admitted_selector(surface: str) -> None:
+    """A corrupted selector cannot publish output larger than the admitted snapshot."""
+    baseline = active_reserved_bytes()
+    mask = np.array([False, True, False])
+    tampered: list[int] = []
+
+    def profile(frame: FrameType, event: str, argument: object) -> None:
+        if (
+            event == "return"
+            and frame.f_code.co_name == "_program_ad_array_getitem_layout_plan"
+            and argument is not None
+        ):
+            _, size, prepared = cast(
+                tuple[ExecutionMemoryPlan, int, np.ndarray[Any, Any]], argument
+            )
+            prepared.setflags(write=True)
+            prepared[:] = True
+            tampered.append(size)
+
+    previous = sys.getprofile()
+    sys.setprofile(profile)
+    try:
+        with pytest.raises(ValueError, match="in-bounds"):
+            if surface == "direct":
+                program_ad_array_getitem_derivative_rule((3,), mask)
+            else:
+                contract = primitive_contract_for("scpn.program_ad.array:getitem")
+                assert contract.shape_rule is not None
+                contract.shape_rule((np.zeros(3), mask))
+    finally:
+        sys.setprofile(previous)
+    assert tampered == [1]
+    assert active_reserved_bytes() == baseline
+    rule = program_ad_array_getitem_derivative_rule((3,), mask)
+    np.testing.assert_array_equal(rule.value_fn(np.array([3.0, 5.0, 7.0])), [5.0])
+    assert active_reserved_bytes() == baseline
+
+
+def test_public_pad_refuses_constants_changed_during_real_layout() -> None:
+    """Malformed constant metadata at the NumPy boundary fails without retaining charges."""
+    constants = np.array([7.0, 8.0])
+    baseline = active_reserved_bytes()
+    observed: list[int] = []
+
+    def profile(frame: FrameType, event: str, argument: object) -> None:
+        del argument
+        if event == "call" and frame.f_code.co_name == "pad" and not observed:
+            observed.append(active_reserved_bytes())
+            constants.resize((3,), refcheck=False)
+
+    previous = sys.getprofile()
+    sys.setprofile(profile)
+    try:
+        with pytest.raises(ValueError, match="compatible with the source rank"):
+            program_ad_array_pad_derivative_rule((2,), (1, 1), constant_values=constants)
+    finally:
+        sys.setprofile(previous)
+    assert observed and observed[0] > baseline
+    assert active_reserved_bytes() == baseline
+    rule = program_ad_array_pad_derivative_rule((2,), (1, 1), constant_values=(7.0, 8.0))
+    np.testing.assert_array_equal(rule.value_fn(np.array([3.0, 5.0])), [7.0, 3.0, 5.0, 8.0])
     assert active_reserved_bytes() == baseline

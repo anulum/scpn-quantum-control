@@ -617,3 +617,23 @@ def test_pipeline_full_kuramoto_evolution() -> None:
 
     print(f"\n  PIPELINE Knm→KuramotoSolver→R(t) (4q, 3 steps): {dt:.1f} ms")
     print(f"  R trajectory: {[f'{r:.4f}' for r in result['R']]}")
+
+
+def test_nonadvancing_step_refuses_and_releases_trajectory_owner() -> None:
+    """A malformed numeric step cannot grow history beyond its admitted declaration."""
+
+    class NonAdvancingStep(float):
+        """Represent a malformed time step whose addition never advances."""
+
+        def __radd__(self, value: float) -> float:
+            """Preserve the left operand to model stalled arithmetic."""
+            return value
+
+    baseline = active_reserved_bytes()
+    solver = QuantumKuramotoSolver(1, np.zeros((1, 1)), np.zeros(1))
+    with pytest.raises(DenseAllocationError, match="trajectory history exceeded"):
+        solver.run(0.2, NonAdvancingStep(0.1))
+    assert active_reserved_bytes() == baseline
+    result = solver.run(0.2, 0.1)
+    np.testing.assert_array_equal(result.times, np.array([0.0, 0.1, 0.2]))
+    assert active_reserved_bytes() == baseline

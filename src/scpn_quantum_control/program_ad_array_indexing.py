@@ -364,7 +364,7 @@ def _program_ad_array_take_target_shape(
         return source_shape[:normalised_axis] + indices_shape + source_shape[normalised_axis + 1 :]
     if len(indices_shape) != len(source_shape):
         raise ValueError(
-            "program AD array take_along_axis requires shape-compatible indices with source rank"
+            "program AD array take_along_axis requires indices in bounds and shape-compatible with source rank"
         )
     dimensions = tuple(1 if i == normalised_axis else size for i, size in enumerate(source_shape))
     try:

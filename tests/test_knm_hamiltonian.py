@@ -387,3 +387,26 @@ def test_xxz_delta_zero_matches_xy_and_sparse_dense_paths() -> None:
     np.testing.assert_allclose(H_xxz, H_xy, atol=1e-12)
     np.testing.assert_allclose(H_sparse, H_xy, atol=1e-12)
     np.testing.assert_allclose(H_dense, H_xy, atol=1e-12)
+
+
+@pytest.mark.parametrize("invalid", ["omega_rank", "dtype", "delta", "backend"])
+def test_dense_export_rejects_malformed_public_dispatch_inputs(invalid: str) -> None:
+    """Malformed dense input metadata refuses before either numerical backend runs."""
+    coupling = np.zeros((1, 1))
+    frequency = np.zeros((1, 1)) if invalid == "omega_rank" else np.zeros(1)
+    if invalid == "dtype":
+        coupling = np.array([[True]])
+    baseline = active_reserved_bytes()
+    with pytest.raises(ValueError, match="shape|dtype|finite|backend"):
+        knm_to_dense_matrix(
+            coupling,
+            frequency,
+            delta=float("nan") if invalid == "delta" else 0.0,
+            backend="missing" if invalid == "backend" else "python",
+        )
+    assert active_reserved_bytes() == baseline
+    np.testing.assert_array_equal(
+        knm_to_dense_matrix(np.zeros((1, 1)), np.array([1.0]), backend="python"),
+        np.diag([-1.0, 1.0]),
+    )
+    assert active_reserved_bytes() == baseline

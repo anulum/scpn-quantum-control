@@ -21,10 +21,12 @@ from time import monotonic
 import numpy as np
 import pytest
 
+from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
 from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.execution_memory import ExecutionBuffer, ExecutionMemoryPlan
 from scpn_quantum_control.execution_reservations import (
     ExecutionCancelledError,
+    ExecutionMemoryReservation,
     active_reserved_bytes,
     reserve_execution_memory,
 )
@@ -232,6 +234,7 @@ os.environ["SCPN_MAX_DENSE_GIB"] = "0.1"
 cold_result = engine.build_xy_hamiltonian_dense(cold_k, cold_w, 2)
 assert "scpn_quantum_control.execution_reservations" in sys.modules
 import scpn_quantum_control
+from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
 from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.execution_reservations import active_reserved_bytes
 
@@ -286,3 +289,65 @@ print(json.dumps({"installed_paths_verified": True, "ledger_recovered": True}))
         "installed_paths_verified": True,
         "ledger_recovered": True,
     }
+
+
+@pytest.mark.parametrize("fault", ["shape", "nonfinite", "dtype"])
+def test_dense_consumer_refuses_corrupted_real_native_output_and_recovers(
+    fault: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Transport corruption after a real compiled result cannot escape FFI validation."""
+    engine = import_module("scpn_quantum_engine")
+    original = engine.build_xy_hamiltonian_dense
+    completed: list[int] = []
+    baseline = active_reserved_bytes()
+
+    def corrupt(*arguments: object) -> object:
+        result = np.asarray(original(*arguments))
+        completed.append(result.size)
+        if fault == "shape":
+            return result.reshape(2, 2)
+        if fault == "nonfinite":
+            result[0] = np.inf
+            return result
+        return result.astype(np.complex128)
+
+    with monkeypatch.context() as transport:
+        transport.setattr(engine, "build_xy_hamiltonian_dense", corrupt)
+        with pytest.raises(ValueError, match="malformed output shape|invalid numeric data"):
+            knm_to_dense_matrix(np.zeros((1, 1)), np.array([1.0]), backend="rust")
+    assert completed == [4]
+    assert active_reserved_bytes() == baseline
+    np.testing.assert_array_equal(
+        knm_to_dense_matrix(np.zeros((1, 1)), np.array([1.0]), backend="rust"),
+        np.diag([-1.0, 1.0]),
+    )
+    assert active_reserved_bytes() == baseline
+
+
+def test_dense_native_entry_disappearing_after_admission_never_falls_back(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Loss of an actual compiled capability after admission refuses explicit native dispatch."""
+    engine = import_module("scpn_quantum_engine")
+    baseline = active_reserved_bytes()
+    original_checkpoint = ExecutionMemoryReservation.checkpoint
+    removed: list[bool] = []
+
+    def checkpoint(owner: ExecutionMemoryReservation) -> None:
+        original_checkpoint(owner)
+        if not removed and active_reserved_bytes() > baseline:
+            boundary.delattr(engine, "build_xy_hamiltonian_dense")
+            removed.append(True)
+
+    with monkeypatch.context() as boundary:
+        boundary.setattr(ExecutionMemoryReservation, "checkpoint", checkpoint)
+        with pytest.raises(RuntimeError, match="became unavailable"):
+            knm_to_dense_matrix(np.zeros((1, 1)), np.array([1.0]), backend="rust")
+    assert removed == [True]
+    assert active_reserved_bytes() == baseline
+    np.testing.assert_array_equal(
+        knm_to_dense_matrix(np.zeros((1, 1)), np.array([1.0]), backend="rust"),
+        np.diag([-1.0, 1.0]),
+    )
+    assert active_reserved_bytes() == baseline

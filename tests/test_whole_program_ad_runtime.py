@@ -53,7 +53,6 @@ def test_ad_initial_tangent_storage_refuses_before_objective() -> None:
 
 def test_ad_retained_tape_growth_refuses_under_explicit_cap(tmp_path: Path) -> None:
     """A valid initial basis cannot authorize unlimited retained operation tangents."""
-
     path = tmp_path / "tape_growth.py"
     path.write_text(
         "def objective(values):\n"
@@ -379,7 +378,6 @@ def test_gradient_only_entry_preserves_resource_and_lifecycle_policy() -> None:
 
 def test_alias_metadata_growth_cannot_bypass_tape_admission(tmp_path: Path) -> None:
     """Real repeated array views refuse metadata growth without new tangent nodes."""
-
     path = tmp_path / "alias_growth.py"
     path.write_text(
         "def objective(values):\n"

@@ -900,6 +900,7 @@ def test_program_ad_reduction_contract_facets_reject_malformed_arguments() -> No
         name: cast(Any, primitive_contract_for(f"scpn.program_ad.reduction:{name}"))
         for name in (
             "sum",
+            "mean",
             "var",
             "std",
             "max",
@@ -915,8 +916,12 @@ def test_program_ad_reduction_contract_facets_reject_malformed_arguments() -> No
         contracts["sum"].shape_rule((matrix, True))
     with pytest.raises(ValueError, match="out of bounds"):
         contracts["sum"].shape_rule((matrix, 2))
+    # Sum has a zero identity in the trace owner. Nonempty-only reductions
+    # retain their refusal, and invalid sum axes remain checked above.
+    assert contracts["sum"].shape_rule((np.empty((0, 2)), None)) == ()
+    assert contracts["sum"].shape_rule((np.empty((0, 2)), 0)) == (2,)
     with pytest.raises(ValueError, match="at least one element"):
-        contracts["sum"].shape_rule((np.empty((0, 2)), None))
+        contracts["mean"].shape_rule((np.empty((0, 2)), None))
 
     for args, message in (
         ((matrix, None), "array, axis, and ddof"),

@@ -11,6 +11,9 @@ from __future__ import annotations
 
 from os import devnull
 
+RESOURCE_BUDGET_GATE_COVERAGE_CONFIG = "tools/resource_budget_gate.coveragerc"
+"""Shared parent/child configuration for real multiprocessing coverage."""
+
 Gate = tuple[str, list[str]]
 RESOURCE_BUDGET_GATE_QUALITY_RATCHET = [
     "src/scpn_quantum_control/compile_budget.py",
@@ -81,13 +84,23 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 "-m",
                 "coverage",
                 "run",
-                f"--rcfile={devnull}",
+                f"--rcfile={RESOURCE_BUDGET_GATE_COVERAGE_CONFIG}",
                 f"--data-file={RESOURCE_BUDGET_GATE_COVERAGE_DATA_FILE}",
                 "--branch",
                 "-m",
                 "pytest",
                 "-q",
                 *RESOURCE_BUDGET_GATE_COVERAGE_COHORT,
+            ],
+        ),
+        (
+            "resource-budget-gate combine process coverage",
+            [
+                python,
+                "-m",
+                "coverage",
+                "combine",
+                f"--rcfile={RESOURCE_BUDGET_GATE_COVERAGE_CONFIG}",
             ],
         ),
         (

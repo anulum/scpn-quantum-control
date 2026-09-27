@@ -90,10 +90,13 @@ def generate_transfer_records(*, seed: int, source_count: int = 128) -> tuple[Te
                         for key, colour in zip(keys, initial, strict=True)
                     ]
                     changes = [
-                        (
-                            f"Update {step + 1:02d}: set card {keys[slot]} to {value}."
-                            if operation == "write"
-                            else f"Update {step + 1:02d}: copy card {keys[int(value)]} into card {keys[slot]}."
+                        " ".join(
+                            (
+                                f"Update {step + 1:02d}:",
+                                f"set card {keys[slot]} to {value}."
+                                if operation == "write"
+                                else f"copy card {keys[int(value)]} into card {keys[slot]}.",
+                            )
                         )
                         for step, (operation, slot, value) in enumerate(updates)
                     ]

@@ -338,7 +338,7 @@ def require_execution_memory(
         if not native_symbol or not isinstance(native_symbol, str):
             raise ValueError("native_symbol must be a non-empty string")
         engine = optional_rust_engine()
-        if engine is None or not callable(getattr(engine, native_symbol, None)):
+        if not callable(getattr(engine, native_symbol, None)):
             raise DenseAllocationError("requested native entry is unavailable; fallback refused")
     capacity = MemoryCapacity(
         host_available_memory_bytes(),
@@ -406,14 +406,16 @@ def dataclass_storage_bytes(
     ).bytes_required
 
 
-def json_encoded_bytes(value: object) -> int:
+def json_encoded_bytes(value: object, *, max_bytes: int = sys.maxsize) -> int:
     """Count compact ASCII JSON bytes without materialising the encoded document.
 
     Parameters
     ----------
     value
         Primitive scalar, string-keyed dictionary, list or tuple. Integer values
-        must be native-addressable; cyclic or unsupported objects refuse.
+        must be native-addressable; cyclic or protocol-bearing objects refuse.
+    max_bytes
+        Positive requested encoded-byte cap, bounded by native addressability.
 
     Returns
     -------
@@ -427,48 +429,58 @@ def json_encoded_bytes(value: object) -> int:
     ValueError
         Cyclic container graph or nesting beyond the interpreter limit.
     DenseAllocationError
-        Integer or encoded size exceeds native addressability.
+        Integer or encoded size exceeds native addressability or the requested cap.
 
     """
+    limit = min(_positive(max_bytes, "max_bytes"), sys.maxsize)
     active: set[int] = set()
 
+    def add(size: int, increment: int) -> int:
+        if increment > limit - size:
+            raise DenseAllocationError(
+                "JSON storage exceeds requested/native addressability budget"
+            )
+        return size + increment
+
     def count(item: object) -> int:
-        if isinstance(item, str):
-            size = 2
+        if type(item) is str:
+            size = add(0, 2)
             for character in item:
                 codepoint = ord(character)
                 if codepoint in (34, 92, 8, 9, 10, 12, 13):
-                    size += 2
+                    size = add(size, 2)
                 elif codepoint < 32 or 126 < codepoint <= 65535:
-                    size += 6
+                    size = add(size, 6)
                 elif codepoint > 65535:
-                    size += 12
+                    size = add(size, 12)
                 else:
-                    size += 1
+                    size = add(size, 1)
             return size
-        if item is None or isinstance(item, (bool, float)):
-            return len(json.dumps(item))
-        if isinstance(item, int):
+        if item is None or type(item) in (bool, float):
+            return add(0, len(json.dumps(item)))
+        if type(item) is int:
             if not -sys.maxsize - 1 <= item <= sys.maxsize:
                 raise DenseAllocationError("JSON integer exceeds native addressability")
-            return len(str(item))
-        if not isinstance(item, (dict, list, tuple)):
+            return add(0, len(str(item)))
+        if type(item) not in (dict, list, tuple):
             raise TypeError("unsupported JSON storage object")
+        assert isinstance(item, (dict, list, tuple))
         identity = id(item)
         if identity in active:
             raise ValueError("cyclic JSON storage object")
         active.add(identity)
         try:
-            size = 2 + max(0, len(item) - 1)
+            size = add(2, max(0, len(item) - 1))
             if isinstance(item, dict):
                 for key, entry in item.items():
-                    if not isinstance(key, str):
+                    if type(key) is not str:
                         raise TypeError("JSON storage keys must be strings")
-                    size += count(key) + 1 + count(entry)
+                    size = add(size, count(key))
+                    size = add(size, 1)
+                    size = add(size, count(entry))
             else:
-                size += sum(count(entry) for entry in item)
-            if size > sys.maxsize:
-                raise DenseAllocationError("JSON storage exceeds native addressability")
+                for entry in item:
+                    size = add(size, count(entry))
             return size
         finally:
             active.remove(identity)
@@ -477,6 +489,4 @@ def json_encoded_bytes(value: object) -> int:
         size = count(value)
     except RecursionError as exc:
         raise ValueError("JSON storage nesting exceeds the interpreter limit") from exc
-    if size > sys.maxsize:
-        raise DenseAllocationError("JSON storage exceeds native addressability")
     return size

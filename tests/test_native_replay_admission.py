@@ -494,7 +494,9 @@ def test_native_json_output_budget_refuses_before_encoding_and_recovers(
     metadata_only = surface.endswith("metadata_summary")
 
     def replay() -> str:
-        return native(IR) if metadata_only else native(IR, [2.0])
+        encoded = native(IR) if metadata_only else native(IR, [2.0])
+        assert isinstance(encoded, str)
+        return encoded
 
     owner: ExecutionMemoryReservation | None = None
     measured: list[int] = []

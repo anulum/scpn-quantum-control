@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import sys
+from pathlib import Path
 from typing import Any, cast
 
 import pytest
@@ -258,3 +259,49 @@ def test_json_storage_refuses_unaddressable_container_nesting() -> None:
         current = child
     with pytest.raises(ValueError, match="nesting"):
         json_encoded_bytes(root)
+
+
+@pytest.mark.parametrize(
+    "payload", ["ω\n𝄞", {"k": [1, True, None]}, [1, 2], (3, 4), 50, False, None, 0.5]
+)
+def test_json_encoded_budget_uses_exact_wire_boundary(payload: object) -> None:
+    """Real compact JSON bytes admit B and B+1 while refusing a B-1 cap."""
+    size = len(json.dumps(payload, ensure_ascii=True, separators=(",", ":")).encode("ascii"))
+    for cap in (size, size + 1):
+        assert json_encoded_bytes(payload, max_bytes=cap) == size
+    with pytest.raises(DenseAllocationError, match="budget"):
+        json_encoded_bytes(payload, max_bytes=size - 1)
+
+
+@pytest.mark.parametrize("cap", [True, 0, -1])
+def test_json_encoded_budget_rejects_invalid_cap(cap: int) -> None:
+    """Malformed byte caps cannot silently widen JSON output admission."""
+    with pytest.raises((TypeError, ValueError), match="max_bytes"):
+        json_encoded_bytes({}, max_bytes=cap)
+
+
+def test_json_encoded_bytes_refuses_protocol_bearing_container() -> None:
+    """A custom container cannot underdeclare the standard encoder's actual output."""
+
+    class MisreportedList(list[int]):
+        """Expose a length protocol inconsistent with the actual JSON payload."""
+
+        def __len__(self) -> int:
+            """Report an empty declaration while retaining actual entries."""
+            return 0
+
+    payload = MisreportedList([1, 2, 3])
+    assert json.dumps(payload, separators=(",", ":")) == "[1,2,3]"
+    with pytest.raises(TypeError, match="unsupported"):
+        json_encoded_bytes(payload)
+
+
+def test_live_admission_refuses_subbyte_budget_and_exhausted_controller(tmp_path: Path) -> None:
+    """Real budget rounding and controller files cannot authorize an empty allowance."""
+    plan = ExecutionMemoryPlan((ExecutionBuffer("state", "forward", (2,), "float64"),))
+    with pytest.raises(DenseAllocationError, match="below one byte"):
+        require_execution_memory(plan, max_gib=1e-30)
+    (tmp_path / "memory.max").write_text("4096")
+    (tmp_path / "memory.current").write_text("4096")
+    with pytest.raises(DenseAllocationError, match="refused"):
+        require_execution_memory(plan, cgroup_root=tmp_path)

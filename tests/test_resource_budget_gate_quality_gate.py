@@ -7,6 +7,8 @@
 # SCPN Quantum Control — resource-budget quality-gate tests
 """Lock the resource-budget gate into preflight and CI."""
 
+from pathlib import Path
+
 from tools import preflight
 from tools import resource_budget_gate_quality_gates as quality_gates
 from tools.ci_workflow_inventory import read_ci_workflow_source
@@ -63,3 +65,20 @@ def test_ci_runs_and_aggregates_gate() -> None:
         in block
     )
     assert "resource-budget-gate-quality" in workflow[workflow.index("  ci-gate:") :]
+
+
+def test_coverage_collects_real_child_process_measurements() -> None:
+    """Parent and fork child share configuration and combine before the exact gate."""
+    gates = quality_gates.build_coverage_gates("/python")
+    assert [name for name, _ in gates] == [
+        "resource-budget-gate focused coverage",
+        "resource-budget-gate combine process coverage",
+        "resource-budget-gate exact coverage threshold",
+    ]
+    config = quality_gates.RESOURCE_BUDGET_GATE_COVERAGE_CONFIG
+    assert f"--rcfile={config}" in gates[0][1]
+    assert f"--rcfile={config}" in gates[1][1]
+    contents = Path(config).read_text()
+    assert "branch = true" in contents
+    assert "parallel = true" in contents
+    assert "concurrency = multiprocessing,thread" in contents
