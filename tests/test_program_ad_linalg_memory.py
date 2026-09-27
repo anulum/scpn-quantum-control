@@ -354,13 +354,13 @@ def test_registered_determinant_callbacks_preserve_values_and_differentials(size
         tangent = np.empty(0, dtype=np.float64)
         value, derivative, pullback = 1.0, 0.0, np.empty(0, dtype=np.float64)
     elif size == 1:
-        values = np.array([3.0])
+        values = np.array([1.0])
         tangent = np.array([5.0])
-        value, derivative, pullback = 3.0, 5.0, np.array([2.0])
+        value, derivative, pullback = 1.0, 5.0, np.array([2.0])
     else:
-        values = np.array([2.0, 0.0, 0.0, 4.0])
+        values = np.array([1.0, 0.0, 0.0, 1.0])
         tangent = np.array([1.0, 2.0, 3.0, 4.0])
-        value, derivative, pullback = 8.0, 12.0, np.array([8.0, 0.0, 0.0, 4.0])
+        value, derivative, pullback = 1.0, 5.0, np.array([2.0, 0.0, 0.0, 2.0])
     np.testing.assert_array_equal(rule.value_fn(values), [value])
     np.testing.assert_array_equal(rule.jvp_rule(values, tangent), [derivative])
     np.testing.assert_array_equal(rule.vjp_rule(values, np.array([2.0])), pullback)
@@ -385,7 +385,7 @@ def test_registered_determinant_callbacks_refuse_virtual_storage_and_recover() -
         with pytest.raises(DenseAllocationError):
             callback(*args)
         assert active_reserved_bytes() == baseline
-    np.testing.assert_array_equal(rule.value_fn(np.array([3.0])), [3.0])
+    np.testing.assert_array_equal(rule.value_fn(np.array([1.0])), [1.0])
     assert active_reserved_bytes() == baseline
 
 
@@ -477,7 +477,7 @@ def test_registered_determinant_callbacks_refuse_opaque_dtype_and_shape_then_rec
         rule.vjp_rule(np.array([2.0, 0.0, 0.0, 4.0]), np.ones(2))
     with pytest.raises(ValueError, match="finite"):
         rule.value_fn(np.array([np.nan]))
-    np.testing.assert_array_equal(rule.value_fn(np.array([3.0])), [3.0])
+    np.testing.assert_array_equal(rule.value_fn(np.array([1.0])), [1.0])
     assert active_reserved_bytes() == baseline
 
 

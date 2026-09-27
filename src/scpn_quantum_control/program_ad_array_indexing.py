@@ -363,9 +363,16 @@ def _program_ad_array_take_target_shape(
     if not along_axis:
         return source_shape[:normalised_axis] + indices_shape + source_shape[normalised_axis + 1 :]
     if len(indices_shape) != len(source_shape):
-        raise ValueError("program AD array take_along_axis requires indices with source rank")
+        raise ValueError(
+            "program AD array take_along_axis requires shape-compatible indices with source rank"
+        )
     dimensions = tuple(1 if i == normalised_axis else size for i, size in enumerate(source_shape))
-    return tuple(int(size) for size in np.broadcast_shapes(dimensions, indices_shape))
+    try:
+        return tuple(int(size) for size in np.broadcast_shapes(dimensions, indices_shape))
+    except ValueError as exc:
+        raise ValueError(
+            "program AD array take_along_axis requires indices with shape compatible with the source"
+        ) from exc
 
 
 def _program_ad_array_take_layout_plan(

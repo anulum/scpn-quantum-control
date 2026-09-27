@@ -105,6 +105,8 @@ def read_source_lines(
             current = os.fstat(source_file.fileno())
             if tuple(getattr(current, field) for field in _IDENTITY_FIELDS) != identity:
                 raise DenseAllocationError("objective source changed during bounded read")
+    except TimeoutError:
+        raise
     except OSError as exc:
         raise DenseAllocationError(
             "observed objective source became unavailable during read"

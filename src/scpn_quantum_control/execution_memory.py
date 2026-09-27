@@ -345,8 +345,11 @@ def require_execution_memory(
         cgroup_headroom_bytes(cgroup_root),
         device_available_bytes,
     )
+    requested_bytes = dense_budget_bytes(max_gib)
+    if requested_bytes == 0:
+        raise DenseAllocationError("execution memory budget is below one byte")
     decision = check_execution_memory(
-        plan, capacity, max_bytes=dense_budget_bytes(max_gib), require_device=require_device
+        plan, capacity, max_bytes=requested_bytes, require_device=require_device
     )
     if not decision.allowed:
         raise DenseAllocationError("execution memory refused: " + ", ".join(decision.blockers))

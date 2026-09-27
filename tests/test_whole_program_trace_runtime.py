@@ -244,10 +244,13 @@ def test_public_runtime_releases_retained_array_storage_after_objective_failure(
     """A failure after diagonal handoff releases the whole owner and permits reuse."""
     failing = True
 
-    def objective(values: NDArray[np.float64]) -> object:
-        diagonal = np.diagflat(values, k=3)
+    def fail_if_armed() -> None:
         if failing:
             raise RuntimeError("objective failed after diagonal construction")
+
+    def objective(values: NDArray[np.float64]) -> object:
+        diagonal = np.diagflat(values, k=3)
+        fail_if_armed()
         return np.sum(diagonal)
 
     baseline = active_reserved_bytes()

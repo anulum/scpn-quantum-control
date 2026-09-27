@@ -41,10 +41,14 @@ def test_all_live_roles_and_concurrent_jobs_are_charged() -> None:
     )
     expected = 3 * (8 * 4 + 2 * 8 * 16 + 3 * 8 * 8 + 8 * 8 * 8)
     assert plan.bytes_required == expected
-    decision = check_execution_memory(plan, MemoryCapacity(10_000, 9_000), max_bytes=expected)
+    decision = check_execution_memory(plan, MemoryCapacity(20_000, 10_000), max_bytes=expected)
     assert decision.allowed
     assert decision.bytes_required == expected
     assert decision.budget_bytes == expected
+    tighter = check_execution_memory(plan, MemoryCapacity(10_000, 9_000), max_bytes=expected)
+    assert not tighter.allowed
+    assert tighter.budget_bytes == 2700
+    assert tighter.bytes_required == expected
 
 
 @pytest.mark.parametrize("delta, allowed", [(-1, True), (0, True), (1, False)])

@@ -33,7 +33,7 @@ from scpn_quantum_control.execution_reservations import (
 )
 
 FloatArray = NDArray[np.float64]
-ArrayFunction = Callable[..., object]
+ArrayFunction = Callable[..., FloatArray]
 ArrayFunctionArgs = Callable[[TraceADArray], tuple[object, ...]]
 ArrayFunctionKwargs = Callable[[TraceADArray], dict[str, object]]
 ArrayFunctionFailure = tuple[
@@ -1161,10 +1161,13 @@ def test_public_padding_storage_remains_owned_until_objective_returns() -> None:
     """Padding object/tangent charges survive the temporary numeric layout scope."""
     observations: list[int] = []
 
+    def observe_storage() -> None:
+        observations.append(active_reserved_bytes())
+
     def objective(values: Any) -> object:
-        observations.append(active_reserved_bytes())
+        observe_storage()
         padded = np.pad(values, 3, constant_values=7.0)
-        observations.append(active_reserved_bytes())
+        observe_storage()
         return np.sum(padded)
 
     baseline = active_reserved_bytes()
@@ -1180,10 +1183,13 @@ def test_public_padding_failure_releases_retained_objects_and_tangents() -> None
     """An objective exception after padding drops its retained charge and allows retry."""
     failing = True
 
-    def objective(values: Any) -> object:
-        padded = np.pad(values, 3, constant_values=7.0)
+    def fail_if_armed() -> None:
         if failing:
             raise RuntimeError("after owned padding")
+
+    def objective(values: Any) -> object:
+        padded = np.pad(values, 3, constant_values=7.0)
+        fail_if_armed()
         return np.sum(padded)
 
     baseline = active_reserved_bytes()
@@ -1199,15 +1205,18 @@ def test_public_padding_failure_releases_retained_objects_and_tangents() -> None
 
 @pytest.mark.parametrize("selector", [1, (1,)])
 def test_public_insertion_storage_remains_owned_until_objective_returns(
-    selector: object,
+    selector: int | tuple[int, ...],
 ) -> None:
     """Inserted constants retain their scalar and tangent charge after layout exits."""
     observations: list[int] = []
 
+    def observe_storage() -> None:
+        observations.append(active_reserved_bytes())
+
     def objective(values: Any) -> object:
-        observations.append(active_reserved_bytes())
+        observe_storage()
         inserted = np.insert(values, selector, (7.0, 8.0, 9.0))
-        observations.append(active_reserved_bytes())
+        observe_storage()
         return np.sum(inserted)
 
     baseline = active_reserved_bytes()
@@ -1223,10 +1232,13 @@ def test_public_insertion_failure_releases_retained_objects_and_recovers() -> No
     """An exception after insertion disposes charges before a successful retry."""
     failing = True
 
-    def objective(values: Any) -> object:
-        inserted = np.insert(values, 1, (7.0, 8.0, 9.0))
+    def fail_if_armed() -> None:
         if failing:
             raise RuntimeError("after owned insertion")
+
+    def objective(values: Any) -> object:
+        inserted = np.insert(values, 1, (7.0, 8.0, 9.0))
+        fail_if_armed()
         return np.sum(inserted)
 
     baseline = active_reserved_bytes()
@@ -1242,7 +1254,7 @@ def test_public_insertion_failure_releases_retained_objects_and_recovers() -> No
 
 def test_public_insertion_refuses_constant_storage_and_recovers() -> None:
     """Constant cells are admitted before their trace objects and tangents exist."""
-    constants = (7.0,) * 4096
+    constants: tuple[float, ...] = (7.0,) * 4096
 
     def objective(values: Any) -> object:
         return np.sum(np.insert(values, 1, constants))
@@ -1268,12 +1280,11 @@ def test_public_take_shape_admission_refuses_large_selection_and_recovers(
 ) -> None:
     """The executed registry shape path admits output indices before NumPy selection."""
     indices = np.broadcast_to(np.array(0, dtype=np.int64), (10_000_000,))
+    column_indices = indices.reshape((-1, 1))
 
     def objective(values: Any) -> object:
         if along_axis:
-            return np.sum(
-                np.take_along_axis(values.reshape((1, 2)), indices.reshape((-1, 1)), axis=1)
-            )
+            return np.sum(np.take_along_axis(values.reshape((1, 2)), column_indices, axis=1))
         return np.sum(np.take(values, indices))
 
     baseline = active_reserved_bytes()
@@ -1283,6 +1294,7 @@ def test_public_take_shape_admission_refuses_large_selection_and_recovers(
         )
     assert active_reserved_bytes() == baseline
     indices = np.array([1, 0, 1], dtype=np.int64)
+    column_indices = indices.reshape((-1, 1))
     result = whole_program_value_and_grad(
         objective, np.array([2.0, 3.0]), trace=False, max_execution_gib=0.01
     )
@@ -1296,15 +1308,19 @@ def test_public_take_storage_stays_owned_after_numeric_selection(along_axis: boo
     """Selection container charges survive until the objective result is formed."""
     observations: list[int] = []
     indices = np.array([1, 0, 1, 1], dtype=np.int64)
+    row_indices = indices.reshape((1, 4))
+
+    def observe_storage() -> None:
+        observations.append(active_reserved_bytes())
 
     def objective(values: Any) -> object:
-        observations.append(active_reserved_bytes())
+        observe_storage()
         selected = (
-            np.take_along_axis(values.reshape((1, 2)), indices.reshape((1, 4)), axis=1)
+            np.take_along_axis(values.reshape((1, 2)), row_indices, axis=1)
             if along_axis
             else np.take(values, indices)
         )
-        observations.append(active_reserved_bytes())
+        observe_storage()
         return np.sum(selected)
 
     baseline = active_reserved_bytes()
@@ -1321,15 +1337,19 @@ def test_public_take_failure_disposes_retained_selection_and_recovers(along_axis
     """An objective exception after selection releases both numeric and container charges."""
     failing = True
     indices = np.array([1, 0, 1, 1], dtype=np.int64)
+    row_indices = indices.reshape((1, 4))
+
+    def fail_if_armed() -> None:
+        if failing:
+            raise RuntimeError("after owned selection")
 
     def objective(values: Any) -> object:
         selected = (
-            np.take_along_axis(values.reshape((1, 2)), indices.reshape((1, 4)), axis=1)
+            np.take_along_axis(values.reshape((1, 2)), row_indices, axis=1)
             if along_axis
             else np.take(values, indices)
         )
-        if failing:
-            raise RuntimeError("after owned selection")
+        fail_if_armed()
         return np.sum(selected)
 
     baseline = active_reserved_bytes()
@@ -1360,10 +1380,11 @@ def test_public_take_scalar_return_preserves_gradient_and_releases_charge() -> N
 def test_public_take_empty_result_preserves_zero_gradient(along_axis: bool) -> None:
     """Empty integer selectors preserve the empty reduction and owner disposal."""
     indices = np.empty(0, dtype=np.int64)
+    row_indices = indices.reshape((1, 0))
 
     def objective(values: Any) -> object:
         selected = (
-            np.take_along_axis(values.reshape((1, 2)), indices.reshape((1, 0)), axis=1)
+            np.take_along_axis(values.reshape((1, 2)), row_indices, axis=1)
             if along_axis
             else np.take(values, indices)
         )
@@ -1388,10 +1409,13 @@ def test_public_delete_retains_storage_and_preserves_gradient(selector_kind: str
         else np.array([False, True, False, True])
     )
 
+    def observe_storage() -> None:
+        observations.append(active_reserved_bytes())
+
     def objective(values: Any) -> object:
-        observations.append(active_reserved_bytes())
+        observe_storage()
         selected = np.delete(values, selector)
-        observations.append(active_reserved_bytes())
+        observe_storage()
         return np.sum(selected)
 
     baseline = active_reserved_bytes()
@@ -1410,10 +1434,13 @@ def test_public_delete_exception_releases_retained_storage_and_recovers() -> Non
     """Failure after deletion releases retained numeric/output declarations."""
     failing = True
 
-    def objective(values: Any) -> object:
-        selected = np.delete(values, slice(1, None, 2))
+    def fail_if_armed() -> None:
         if failing:
             raise RuntimeError("after owned deletion")
+
+    def objective(values: Any) -> object:
+        selected = np.delete(values, slice(1, None, 2))
+        fail_if_armed()
         return np.sum(selected)
 
     baseline = active_reserved_bytes()
@@ -1437,10 +1464,13 @@ def test_public_getitem_trace_value_gradient_and_disposal(advanced: bool) -> Non
     )
     failing = True
 
-    def objective(values: Any) -> object:
-        selected = values.reshape((2, 3, 4))[selector]
+    def fail_if_armed() -> None:
         if failing:
             raise RuntimeError("after owned getitem")
+
+    def objective(values: Any) -> object:
+        selected = values.reshape((2, 3, 4))[selector]
+        fail_if_armed()
         return np.sum(selected)
 
     baseline = active_reserved_bytes()
@@ -1618,12 +1648,18 @@ def test_public_compact_cumsum_failure_after_output_releases_retained_charge_and
     failing = True
     observations: list[int] = []
 
-    def objective(values: Any) -> object:
+    def observe_storage() -> None:
         observations.append(active_reserved_bytes())
-        output = np.cumsum(values)
-        observations.append(active_reserved_bytes())
+
+    def fail_if_armed() -> None:
         if failing:
             raise RuntimeError("after compact output")
+
+    def objective(values: Any) -> object:
+        observe_storage()
+        output = np.cumsum(values)
+        observe_storage()
+        fail_if_armed()
         return np.sum(output)
 
     baseline = active_reserved_bytes()
@@ -1649,4 +1685,28 @@ def test_public_compact_cumsum_zero_parameter_constant_output_disposes_owners() 
     result = whole_program_value_and_grad(objective, [], trace=False)
     assert result.value == 4.0
     np.testing.assert_array_equal(result.gradient, np.empty(0, dtype=np.float64))
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("shape,axis", [((0,), 0), ((0, 2), 0), ((2, 0), 0), ((2, 0), 1)])
+def test_public_empty_sum_axis_preserves_zero_gradient(shape: tuple[int, ...], axis: int) -> None:
+    """Empty axis reductions retain NumPy identities and release declared pointer storage.
+
+    Parameters
+    ----------
+    shape
+        Empty ranked input layout.
+    axis
+        Explicit reduction axis, including a nonempty axis of an empty layout.
+
+    """
+    baseline = active_reserved_bytes()
+
+    def objective(values: Any) -> object:
+        empty = np.repeat(values, 0).reshape(shape)
+        return np.sum(np.sum(empty, axis=axis))
+
+    result = whole_program_value_and_grad(objective, [2.0, 3.0], trace=False)
+    assert result.value == 0.0
+    np.testing.assert_array_equal(result.gradient, np.zeros(2))
     assert active_reserved_bytes() == baseline

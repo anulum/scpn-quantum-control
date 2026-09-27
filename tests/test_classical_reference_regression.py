@@ -25,7 +25,9 @@ from scpn_quantum_control.hardware.classical import (
     classical_exact_evolution,
 )
 
-REFERENCE_EVOLUTION_MAX_DENSE_GIB = 0.5
+# The 12-qubit export retains three complex128 matrices (0.75 GiB),
+# plus input conversion buffers; this request still obeys observed host/container caps.
+REFERENCE_EVOLUTION_MAX_DENSE_GIB = 1.0
 
 
 @functools.cache

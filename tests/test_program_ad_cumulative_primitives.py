@@ -22,6 +22,7 @@ from scpn_quantum_control import program_ad_cumulative_primitives as cumulative
 from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.differentiable import (
     DEFAULT_CUSTOM_DERIVATIVE_REGISTRY,
+    CustomDerivativeRule,
     PrimitiveContract,
     PrimitiveIdentity,
     PrimitiveTransformRule,
@@ -725,7 +726,7 @@ def test_public_cumulative_owned_rules_preserve_independent_zero_safe_oracles(
         Use the registered flat rule rather than the static factory.
 
     """
-    factories: dict[str, Callable[[tuple[int, ...]], cumulative.CustomDerivativeRule]] = {
+    factories: dict[str, Callable[[tuple[int, ...]], CustomDerivativeRule]] = {
         "cumsum": program_ad_cumulative_cumsum_derivative_rule,
         "cumprod": program_ad_cumulative_cumprod_derivative_rule,
         "diff": program_ad_cumulative_diff_derivative_rule,

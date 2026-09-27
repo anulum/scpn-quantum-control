@@ -131,6 +131,8 @@ class _WholeProgramTraceContext:
             raise DenseAllocationError("adjoint tape exceeds admitted execution memory")
         if self._memory_reservation is not None:
             self._memory_reservation.resize(plan)
+        else:
+            require_execution_memory(plan, max_gib=self._memory_budget_bytes / 1024**3)
 
     @contextmanager
     def array_storage(

@@ -348,6 +348,7 @@ def knm_to_dense_matrix(
         raise ValueError("unknown dense Hamiltonian backend")
     if backend == "rust" and delta != 0.0:
         raise ValueError("native dense Hamiltonian supports delta=0 only")
+    require_dense_allocation(n, max_gib=max_dense_gib, label="dense XY Hamiltonian matrix")
     plan = ExecutionMemoryPlan(
         (
             ExecutionBuffer.hilbert("output", "dense_output", n, rank=2),

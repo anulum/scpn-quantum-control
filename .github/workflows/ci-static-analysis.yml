@@ -628,9 +628,13 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/whole_program_trace_values.py
           src/scpn_quantum_control/whole_program_trace_predicates.py
+          src/scpn_quantum_control/whole_program_trace_runtime.py
+          src/scpn_quantum_control/whole_program_trace_metadata.py
+          src/scpn_quantum_control/program_ad_shape_transforms.py
+          tests/test_whole_program_trace_metadata.py
+          tests/test_program_ad_shape_transforms.py
           src/scpn_quantum_control/program_ad_linalg_primitives.py
           src/scpn_quantum_control/program_ad_linalg_memory.py
-          tests/test_program_ad_linalg_memory.py
           src/scpn_quantum_control/program_ad_product_primitives.py
           src/scpn_quantum_control/program_ad_reduction_primitives.py
           src/scpn_quantum_control/program_ad_cumulative_primitives.py
@@ -645,6 +649,7 @@ jobs:
           tests/test_whole_program_trace_value_linalg.py
           tests/test_whole_program_trace_value_shapes.py
           tests/test_program_ad_linalg_spectral.py
+          tests/test_program_ad_linalg_memory.py
           tests/test_program_ad_linalg_exact_contracts.py
           tests/test_program_ad_product_contractions.py
           tests/test_program_ad_reduction_norms.py
@@ -665,9 +670,13 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/whole_program_trace_values.py
           src/scpn_quantum_control/whole_program_trace_predicates.py
+          src/scpn_quantum_control/whole_program_trace_runtime.py
+          src/scpn_quantum_control/whole_program_trace_metadata.py
+          src/scpn_quantum_control/program_ad_shape_transforms.py
+          tests/test_whole_program_trace_metadata.py
+          tests/test_program_ad_shape_transforms.py
           src/scpn_quantum_control/program_ad_linalg_primitives.py
           src/scpn_quantum_control/program_ad_linalg_memory.py
-          tests/test_program_ad_linalg_memory.py
           src/scpn_quantum_control/program_ad_product_primitives.py
           src/scpn_quantum_control/program_ad_reduction_primitives.py
           src/scpn_quantum_control/program_ad_cumulative_primitives.py
@@ -682,6 +691,7 @@ jobs:
           tests/test_whole_program_trace_value_linalg.py
           tests/test_whole_program_trace_value_shapes.py
           tests/test_program_ad_linalg_spectral.py
+          tests/test_program_ad_linalg_memory.py
           tests/test_program_ad_linalg_exact_contracts.py
           tests/test_program_ad_product_contractions.py
           tests/test_program_ad_reduction_norms.py

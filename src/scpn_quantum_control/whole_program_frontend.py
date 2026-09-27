@@ -897,6 +897,12 @@ def compile_whole_program_frontend(
         hard_gaps.append("source_regions_missing")
     elif not source_bytecode_line_map:
         hard_gaps.append("source_bytecode_line_map_missing")
+    if source is not None and {
+        instruction.offset
+        for instruction in bytecode_instructions
+        if instruction.line_number is not None
+    } != {offset for row in source_bytecode_line_map for offset in row.instruction_offsets}:
+        hard_gaps.append("source_bytecode_mismatch")
     if not symbol_scope_entries:
         hard_gaps.append("symbol_scope_entries_missing")
     if source_parse_failed:
@@ -1194,6 +1200,8 @@ def _source_bytecode_line_map(
                 if region.line_start <= line_number <= region.line_end
             )
         )
+        if not region_ids:
+            continue
         rows.append(
             WholeProgramSourceBytecodeLineMap(
                 line_number=line_number,

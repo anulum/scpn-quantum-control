@@ -25,7 +25,7 @@ from typing import Any, cast
 
 import numpy as np
 import pytest
-from numpy.typing import NDArray
+from numpy.typing import ArrayLike, NDArray
 
 from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.differentiable import (
@@ -596,7 +596,7 @@ def test_public_ad_checks_entry_policy_before_sequence_scalar_validation(refusal
     def objective(values: Any) -> object:
         return values[0] * values[0]
 
-    values = [None] * 32
+    values = cast(ArrayLike, [None] * 32)
     baseline = active_reserved_bytes()
     if refusal == "memory":
         with pytest.raises(DenseAllocationError):

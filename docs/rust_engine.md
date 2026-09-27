@@ -106,7 +106,7 @@ governor/frequency, runner labels, and heavy-job metadata.
 
 ## Functions
 
-The Rust crate exports 177 PyO3 bindings across 85 Rust source files (the
+The Rust crate exports 177 PyO3 bindings across 120 Rust source files (the
 execution-mode audit above tracks 172 of them as compute-kernel records; the
 remainder are metadata/validation surfaces). They are organised below by topic.
 

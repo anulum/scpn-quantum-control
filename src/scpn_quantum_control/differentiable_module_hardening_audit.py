@@ -246,6 +246,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("static linalg direct rules", "linalg registry dispatch boundaries"),
         ),
         _record(
+            "src/scpn_quantum_control/program_ad_linalg_memory.py",
+            ("tests/test_program_ad_linalg_memory.py",),
+            ("linalg workspace admission", "native addressability and inherited cancellation"),
+        ),
+        _record(
             "src/scpn_quantum_control/program_ad_selection_primitives.py",
             (
                 "tests/test_program_ad_selection_direct_rules.py",

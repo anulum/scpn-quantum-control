@@ -39,5 +39,8 @@ def test_split_audit_classifies_core_and_scpn_specific_modules() -> None:
     assert isinstance(rows_payload, list)
     rows = {row["module"]: row for row in rows_payload}
 
-    assert rows["scpn_quantum_control.phase.xy_kuramoto"]["status"] == "reusable"
+    xy = rows["scpn_quantum_control.phase.xy_kuramoto"]
+    assert xy["status"] == "needs_review"
+    assert "imports_non_foundation_scpn_module" in xy["reasons"]
+    assert "core_kuramoto_candidate" in xy["reasons"]
     assert rows["scpn_quantum_control.bridge.ssgf_adapter"]["status"] == "scpn_specific"

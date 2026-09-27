@@ -268,6 +268,7 @@ def test_objective_source_blocks_and_frontend_match_actual_inspection(tmp_path: 
                 objective_source_block(len, lines)
         report = compile_whole_program_frontend(module.objective)
         assert report.source_available
+        assert "source_bytecode_mismatch" in report.hard_gaps
         assert report.source_start_line == inspect.getsourcelines(module.objective)[1]
     finally:
         del sys.modules[name]

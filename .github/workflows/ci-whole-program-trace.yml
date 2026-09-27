@@ -183,9 +183,9 @@ jobs:
           tests/test_program_ad_linalg_core.py
           tests/test_program_ad_linalg_direct_rules.py
           tests/test_program_ad_linalg_matrix_ops.py
-          tests/test_program_ad_linalg_memory.py
           tests/test_program_ad_linalg_registry.py
           tests/test_program_ad_linalg_spectral.py
+          tests/test_program_ad_linalg_memory.py
           tests/test_program_ad_linalg_exact_contracts.py
           tests/test_program_ad_product_contractions.py
           tests/test_program_ad_reduction_norms.py

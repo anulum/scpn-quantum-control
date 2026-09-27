@@ -1374,6 +1374,16 @@ def _program_ad_order_statistic_reduction_axis(args: tuple[object, ...]) -> int 
     return _normalise_order_statistic_axis(axis, len(_program_ad_array_shape_of(args[0])))
 
 
+def _program_ad_sum_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    """Return the sum shape, including supported empty reductions."""
+    source_shape = _program_ad_array_shape_of(args[0])
+    axis = _program_ad_reduction_axis(args)
+    if axis is None:
+        return ()
+    normalised_axis = _normalise_axis("axis", axis, len(source_shape))
+    return source_shape[:normalised_axis] + source_shape[normalised_axis + 1 :]
+
+
 def _program_ad_reduction_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     source_shape = _program_ad_array_shape_of(args[0])
     if int(np.prod(source_shape)) == 0:
@@ -1624,7 +1634,7 @@ def _program_ad_reduction_lowering_metadata(name: str) -> Mapping[str, str]:
 
 
 _PROGRAM_AD_REDUCTION_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
-    "sum": _program_ad_reduction_shape,
+    "sum": _program_ad_sum_shape,
     "prod": _program_ad_reduction_shape,
     "mean": _program_ad_reduction_shape,
     "var": _program_ad_reduction_var_std_shape,

@@ -83,10 +83,9 @@ ENV NUMBA_DISABLE_JIT=1
 RUN pip install --no-cache-dir --require-hashes -r requirements-ci-py312-linux.txt \
     && pip install --no-cache-dir --no-deps --require-hashes -r requirements-ci-studio-platform.txt
 
-COPY --from=native-builder /wheels/ /tmp/scpn-quantum-engine-wheels/
-RUN pip install --no-cache-dir --no-deps /tmp/scpn-quantum-engine-wheels/*.whl \
-    && python -c "import scpn_quantum_engine as engine; assert hasattr(engine, 'MlDsaSigningKey')" \
-    && rm -rf /tmp/scpn-quantum-engine-wheels
+COPY --from=native-builder /wheels/ dist/
+RUN pip install --no-cache-dir --no-deps dist/*.whl \
+    && python -c "import scpn_quantum_engine as engine; assert hasattr(engine, 'MlDsaSigningKey')"
 
 COPY tests/ tests/
 COPY tools/ tools/

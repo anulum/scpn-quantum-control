@@ -2350,6 +2350,18 @@ def _apply_binary_trace_ufunc(
 
 def _trace_array_sum(array: TraceADArray, axis: int | None = None) -> TraceADScalar | TraceADArray:
     _require_program_ad_reduction_contract("sum", (array, axis))
+    if not array._items:
+        if axis is None:
+            return _trace_constant(0.0, array.context)
+        axis = _normalise_axis("axis", axis, array.ndim)
+        reduced_shape = array.shape[:axis] + array.shape[axis + 1 :]
+        if reduced_shape == ():
+            return _trace_constant(0.0, array.context)
+        with array.context.array_storage(reduced_shape) as reservation:
+            zero = _trace_constant(0.0, array.context)
+            result = TraceADArray((zero,) * math.prod(reduced_shape), reduced_shape, array.context)
+            reservation.checkpoint()
+        return result
     if axis is None:
         total = array._items[0]
         for item in array._items[1:]:
