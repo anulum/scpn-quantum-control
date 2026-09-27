@@ -1718,12 +1718,11 @@ def test_public_empty_sum_axis_preserves_zero_gradient(shape: tuple[int, ...], a
     assert active_reserved_bytes() == baseline
 
 
-def test_public_empty_selection_broadcast_preserves_zero_value_and_gradient() -> None:
-    """Broadcast scalar branches into a real empty selection without numeric workspaces."""
-    condition = np.empty(0, dtype=np.bool_)
+def test_public_empty_broadcast_preserves_zero_value_and_gradient() -> None:
+    """Broadcast a singleton into a real empty layout without numeric workspaces."""
 
     def objective(values: Any) -> object:
-        return np.sum(np.where(condition, values[0], -values[0]))
+        return np.sum(np.broadcast_to(values, (0,)))
 
     baseline = active_reserved_bytes()
     result = whole_program_value_and_grad(objective, [2.0], trace=False)
