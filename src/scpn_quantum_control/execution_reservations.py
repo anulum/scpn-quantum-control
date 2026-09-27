@@ -256,7 +256,11 @@ class ExecutionMemoryReservation:
             )
             total = size + sum(amount for amount, _ in others)
             if total > budget:
-                raise DenseAllocationError("concurrent execution memory exceeds shared allowance")
+                raise DenseAllocationError(
+                    "concurrent execution memory exceeds shared allowance: "
+                    + f"requested_bytes={size}, total_bytes={total}, budget_bytes={budget}, "
+                    + f"peer_bytes={total - size}, peer_count={len(others)}"
+                )
             _ledger.entries[self._token] = (size, decision.budget_bytes)
             self.decision = decision
 

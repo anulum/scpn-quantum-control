@@ -41,6 +41,28 @@ from scpn_quantum_control.execution_reservations import (
 FloatArray = NDArray[np.float64]
 
 
+@pytest.fixture
+def bounded_ad_objectives(
+    tmp_path: Path,
+) -> tuple[Callable[[Any], object], Callable[[Any], object]]:
+    """Load small real sources so a fixed tape budget excludes unrelated test code."""
+    path = tmp_path / "bounded_ad_objectives.py"
+    path.write_text(
+        "def quadratic_with_bias(values):\n"
+        "    return values[0] * values[0] + values[1]\n"
+        "def quadratic(values):\n"
+        "    return values[0] * values[0]\n"
+    )
+    spec = importlib.util.spec_from_file_location("bounded_ad_objectives", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return (
+        cast(Callable[[Any], object], module.quadratic_with_bias),
+        cast(Callable[[Any], object], module.quadratic),
+    )
+
+
 def test_ad_initial_tangent_storage_refuses_before_objective() -> None:
     """Reject the initial parameter basis under a cap too small for its live storage."""
 
@@ -71,17 +93,19 @@ def test_ad_retained_tape_growth_refuses_under_explicit_cap(tmp_path: Path) -> N
         )
 
 
-def test_ad_bounded_tape_preserves_real_value_and_derivative() -> None:
+def test_ad_bounded_tape_preserves_real_value_and_derivative(
+    bounded_ad_objectives: tuple[Callable[[Any], object], Callable[[Any], object]],
+) -> None:
     """A bounded real trace retains its analytic derivative under explicit admission."""
 
-    def objective(values: Any) -> object:
-        return values[0] * values[0] + values[1]
-
+    objective, _ = bounded_ad_objectives
+    baseline = active_reserved_bytes()
     result = whole_program_value_and_grad(
         objective, [2.0, 3.0], trace=False, max_execution_gib=0.001
     )
     assert result.value == 7.0
     np.testing.assert_array_equal(result.gradient, [4.0, 1.0])
+    assert active_reserved_bytes() == baseline
 
 
 def test_whole_program_scope_releases_on_deadline_cancel_and_success() -> None:
@@ -354,12 +378,12 @@ def test_whole_program_ad_handles_piecewise_vector_numpy_semantics() -> None:
     np.testing.assert_allclose(result.gradient, expected, atol=1.0e-12)
 
 
-def test_gradient_only_entry_preserves_resource_and_lifecycle_policy() -> None:
+def test_gradient_only_entry_preserves_resource_and_lifecycle_policy(
+    bounded_ad_objectives: tuple[Callable[[Any], object], Callable[[Any], object]],
+) -> None:
     """The gradient facade cannot bypass the actual owned AD admission scope."""
 
-    def objective(values: Any) -> object:
-        return values[0] * values[0]
-
+    _, objective = bounded_ad_objectives
     baseline = active_reserved_bytes()
     with pytest.raises(DenseAllocationError, match="execution memory"):
         whole_program_grad(objective, [2.0], trace=False, max_execution_gib=1 / 1024**3)
