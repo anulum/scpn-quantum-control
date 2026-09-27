@@ -61,7 +61,7 @@ jobs:
     needs: static-analysis
     uses: ./.github/workflows/ci-product-deployment.yml
   assurance-policy:
-    needs: static-analysis
+    needs: [static-analysis, native-build]
     uses: ./.github/workflows/ci-assurance-policy.yml
   benchmark-evidence:
     needs: static-analysis

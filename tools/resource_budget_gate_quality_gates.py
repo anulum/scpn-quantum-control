@@ -25,6 +25,7 @@ RESOURCE_BUDGET_GATE_QUALITY_RATCHET = [
     "tests/test_execution_memory.py",
     "tests/test_execution_reservations.py",
     "tests/test_resource_admission_boundaries.py",
+    "tests/test_hamiltonian_native.py",
     "tools/resource_budget_gate_quality_gates.py",
     "tests/test_resource_budget_gate_quality_gate.py",
 ]
@@ -35,6 +36,7 @@ RESOURCE_BUDGET_GATE_COVERAGE_COHORT = [
     "tests/test_execution_memory.py",
     "tests/test_execution_reservations.py",
     "tests/test_resource_admission_boundaries.py",
+    "tests/test_hamiltonian_native.py::test_native_required_memory_admission_executes_available_entry_and_releases",
 ]
 """Tests that own exact resource-budget gate coverage."""
 RESOURCE_BUDGET_GATE_COVERAGE_DATA_FILE = "/tmp/scpn-qc-resource-budget-gate-quality.coverage"  # nosec B108

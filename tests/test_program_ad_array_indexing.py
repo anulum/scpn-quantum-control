@@ -284,7 +284,7 @@ def test_public_take_along_empty_output_admits_coordinate_vectors(
 def test_public_take_along_rank_error_preserves_ledger_and_retry() -> None:
     """Incompatible static rank fails before layout without poisoning another rule."""
     baseline = active_reserved_bytes()
-    with pytest.raises(ValueError, match="indices with source rank"):
+    with pytest.raises(ValueError, match="shape-compatible with source rank"):
         program_ad_array_take_along_axis_derivative_rule((1, 2), (0, 1), axis=1)
     assert active_reserved_bytes() == baseline
     rule = program_ad_array_take_along_axis_derivative_rule((1, 2), ((1, 0),), axis=1)

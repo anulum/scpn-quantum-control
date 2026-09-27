@@ -799,3 +799,110 @@ def test_public_ad_parameter_metadata_refuses_record_and_name_subclasses() -> No
     assert result.value == 4.0
     np.testing.assert_array_equal(result.gradient, [4.0])
     assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize(
+    "invalid", ["array_subclass", "rank", "dtype", "sequence_subclass", "opaque"]
+)
+def test_public_ad_refuses_unbounded_parameter_protocol_and_recovers(invalid: str) -> None:
+    """Unsupported storage protocols never enter conversion or retain a charge."""
+
+    class ArraySubclass(np.ndarray[Any, Any]):
+        """Expose a non-builtin array protocol at the public admission boundary."""
+
+    class SequenceSubclass(list[float]):
+        """Expose a non-builtin sequence at the public admission boundary."""
+
+    def objective(values: Any) -> object:
+        return values[0] * values[0]
+
+    values: Any
+    if invalid == "array_subclass":
+        values = np.array([2.0]).view(ArraySubclass)
+    elif invalid == "rank":
+        values = np.array([[2.0]])
+    elif invalid == "dtype":
+        values = np.array([True])
+    elif invalid == "sequence_subclass":
+        values = SequenceSubclass([2.0])
+    else:
+        values = iter([2.0])
+    baseline = active_reserved_bytes()
+    with pytest.raises(ValueError, match="parameter"):
+        whole_program_value_and_grad(objective, values, trace=False)
+    assert active_reserved_bytes() == baseline
+    result = whole_program_value_and_grad(objective, [2.0], trace=False)
+    assert result.value == 4.0
+    np.testing.assert_array_equal(result.gradient, [4.0])
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("fault", ["array_shape", "initial_growth", "late_growth", "late_shrink"])
+def test_public_ad_refuses_parameter_storage_changed_after_admission(fault: str) -> None:
+    """Actual storage mutation at copy checkpoints cannot exceed the admitted input."""
+
+    def objective(values: Any) -> object:
+        return values[0] * values[0] + values[1]
+
+    values: Any = np.array([2.0, 3.0]) if fault == "array_shape" else [2.0, 3.0]
+    observed: list[str] = []
+    baseline = active_reserved_bytes()
+
+    def profile(frame: FrameType, event: str, argument: object) -> None:
+        del argument
+        if observed or event != "call":
+            return
+        if frame.f_code.co_name == "_bounded_parameter_input":
+            if fault == "array_shape":
+                values.shape = (1, 2)
+                observed.append(fault)
+            elif fault == "initial_growth":
+                values.append(5.0)
+                observed.append(fault)
+        elif frame.f_code.co_name == "checkpoint":
+            caller = frame.f_back
+            if caller is not None and caller.f_code.co_name == "_bounded_parameter_input":
+                if caller.f_locals.get("index") == 1 and fault == "late_shrink":
+                    values.pop()
+                    observed.append(fault)
+                elif caller.f_locals.get("index") == 0 and fault == "late_growth":
+                    values.append(5.0)
+                    observed.append(fault)
+
+    previous = sys.getprofile()
+    sys.setprofile(profile)
+    try:
+        with pytest.raises(ValueError, match="input changed after admission"):
+            whole_program_value_and_grad(objective, values, trace=False)
+    finally:
+        sys.setprofile(previous)
+    assert observed == [fault]
+    assert active_reserved_bytes() == baseline
+    result = whole_program_value_and_grad(objective, [2.0, 3.0], trace=False)
+    assert result.value == 7.0
+    np.testing.assert_array_equal(result.gradient, [4.0, 1.0])
+    assert active_reserved_bytes() == baseline
+
+
+def test_public_ad_refuses_scalar_storage_wider_than_admitted_conversion() -> None:
+    """A numeric scalar protocol cannot underdeclare its claimed storage width."""
+
+    class OversizedScalar(np.float64):
+        """Claim extra storage through a real numeric scalar subtype."""
+
+        @property
+        def dtype(self) -> np.dtype[Any]:
+            """Report the unadmitted storage width at the conversion boundary."""
+            return np.dtype("V64")
+
+    def objective(values: Any) -> object:
+        return values[0] * values[0]
+
+    baseline = active_reserved_bytes()
+    with pytest.raises(ValueError, match="input changed after admission"):
+        whole_program_value_and_grad(objective, [OversizedScalar(2.0)], trace=False)
+    assert active_reserved_bytes() == baseline
+    result = whole_program_value_and_grad(objective, [2.0], trace=False)
+    assert result.value == 4.0
+    np.testing.assert_array_equal(result.gradient, [4.0])
+    assert active_reserved_bytes() == baseline

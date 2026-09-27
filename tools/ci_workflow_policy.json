@@ -224,7 +224,8 @@
       "id": "assurance-policy",
       "workflow": ".github/workflows/ci-assurance-policy.yml",
       "caller_needs": [
-        "static-analysis"
+        "static-analysis",
+        "native-build"
       ],
       "jobs": [
         "advanced-witnesses-quality",

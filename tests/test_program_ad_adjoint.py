@@ -11,7 +11,7 @@ import sys
 from threading import Event
 from time import monotonic
 from types import FrameType
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pytest
@@ -31,6 +31,7 @@ from scpn_quantum_control.program_ad_adjoint import (
     program_adjoint_value_and_grad,
 )
 from scpn_quantum_control.whole_program_ad_api import whole_program_value_and_grad
+from scpn_quantum_control.whole_program_ad_result import WholeProgramIRNode
 
 
 def test_adjoint_entries_preserve_memory_refusal() -> None:
@@ -312,4 +313,39 @@ def test_attached_gradient_accessor_refuses_nonzero_frozen_entries_and_recovers(
     assert active_reserved_bytes() == baseline
     source[1] = 0.0
     np.testing.assert_array_equal(program_adjoint_gradient(result), [4.0, 0.0])
+    assert active_reserved_bytes() == baseline
+
+
+def test_public_adjoint_refuses_unaddressable_shape_after_real_ir_capture() -> None:
+    """Corrupted captured primitive metadata refuses before adjoint allocation and recovers."""
+
+    def objective(values: Any) -> object:
+        return np.sum(np.diagflat(values))
+
+    baseline = active_reserved_bytes()
+    corrupted: list[str] = []
+
+    def profile(frame: FrameType, event: str, argument: object) -> None:
+        del argument
+        if event == "call" and frame.f_code.co_name == "_program_adjoint_result_from_nodes":
+            nodes = cast(tuple[WholeProgramIRNode, ...], frame.f_locals["nodes"])
+            for node in nodes:
+                if node.op.startswith("linalg:diagflat:"):
+                    corrupted.append(node.op)
+                    parts = node.op.split(":")
+                    parts[2] = str(sys.maxsize + 1)
+                    object.__setattr__(node, "op", ":".join(parts))
+
+    previous = sys.getprofile()
+    sys.setprofile(profile)
+    try:
+        with pytest.raises(DenseAllocationError, match="primitive shape exceeds"):
+            whole_program_value_and_grad(objective, [2.0, 3.0], trace=False)
+    finally:
+        sys.setprofile(previous)
+    assert corrupted
+    assert active_reserved_bytes() == baseline
+    value, gradient = program_adjoint_value_and_grad(objective, [2.0, 3.0], trace=False)
+    assert value == 5.0
+    np.testing.assert_array_equal(gradient, [1.0, 1.0])
     assert active_reserved_bytes() == baseline

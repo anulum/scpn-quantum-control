@@ -351,3 +351,15 @@ def test_dense_native_entry_disappearing_after_admission_never_falls_back(
         np.diag([-1.0, 1.0]),
     )
     assert active_reserved_bytes() == baseline
+
+
+def test_native_required_memory_admission_executes_available_entry_and_releases() -> None:
+    """An actual installed capability satisfies native-only admission without a fallback."""
+    engine = import_module("scpn_quantum_engine")
+    baseline = active_reserved_bytes()
+    plan = ExecutionMemoryPlan((ExecutionBuffer("native_owner", "forward", (1,), "uint8"),))
+    with reserve_execution_memory(plan, native_symbol="build_xy_hamiltonian_dense"):
+        result = np.asarray(engine.build_xy_hamiltonian_dense(np.zeros(1), np.array([1.0]), 1))
+        np.testing.assert_array_equal(result.reshape(2, 2), np.diag([-1.0, 1.0]))
+        assert active_reserved_bytes() > baseline
+    assert active_reserved_bytes() == baseline

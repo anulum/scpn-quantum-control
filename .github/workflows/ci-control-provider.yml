@@ -245,7 +245,7 @@ jobs:
       - name: Run whole-program frontend-contract focused coverage
         run: >-
           python -m coverage run
-          --rcfile=/dev/null
+          --rcfile=tools/whole_program_frontend.coveragerc
           --data-file=/tmp/scpn-qc-whole-program-frontend-contracts-quality.coverage
           --branch
           -m pytest -q
@@ -253,6 +253,8 @@ jobs:
           tests/test_whole_program_frontend_contracts.py
           tests/test_whole_program_ad_runtime.py
           tests/test_source_admission.py
+      - name: Combine real source-admission subprocess coverage
+        run: python -m coverage combine --rcfile=tools/whole_program_frontend.coveragerc
       - name: Enforce whole-program frontend-contract exact coverage
         run: >-
           python -m coverage report

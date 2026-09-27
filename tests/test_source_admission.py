@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import codecs
 import importlib.util
 import inspect
 import json
@@ -273,3 +274,74 @@ def test_objective_source_blocks_and_frontend_match_actual_inspection(tmp_path: 
     finally:
         del sys.modules[name]
     assert active_reserved_bytes() == baseline
+
+
+def test_source_reader_refuses_nonregular_observation(tmp_path: Path) -> None:
+    """A real directory observation cannot authorize source-buffer materialisation."""
+    baseline = active_reserved_bytes()
+    plan = ExecutionMemoryPlan((ExecutionBuffer("owner", "forward", (1,), "uint8"),))
+    with (
+        reserve_execution_memory(plan) as owner,
+        pytest.raises(DenseAllocationError, match="regular file"),
+    ):
+        read_source_lines(str(tmp_path), tmp_path.stat(), owner)
+    assert active_reserved_bytes() == baseline
+
+
+def test_source_reader_refuses_expanding_registered_codec_and_recovers(tmp_path: Path) -> None:
+    """An actual codec cannot produce text larger than its admitted character bound."""
+
+    def decode(data: bytes | bytearray | memoryview, errors: str = "strict") -> tuple[str, int]:
+        return bytes(data).decode("ascii", errors) * 2, len(data)
+
+    def lookup(name: str) -> codecs.CodecInfo | None:
+        if name == "scpn_expanding":
+            return codecs.CodecInfo(
+                name=name,
+                encode=codecs.getencoder("ascii"),
+                decode=decode,
+            )
+        return None
+
+    path = tmp_path / "expanding_source.py"
+    path.write_bytes(b"# coding: scpn-expanding\nvalue = 1\n")
+    baseline = active_reserved_bytes()
+    plan = ExecutionMemoryPlan((ExecutionBuffer("owner", "forward", (1,), "uint8"),))
+    codecs.register(lookup)
+    try:
+        with (
+            reserve_execution_memory(plan) as owner,
+            pytest.raises(DenseAllocationError, match="codec exceeded"),
+        ):
+            read_source_lines(str(path), path.stat(), owner)
+    finally:
+        codecs.unregister(lookup)
+    assert active_reserved_bytes() == baseline
+    path.write_text("value = 1\n")
+    with reserve_execution_memory(plan) as owner:
+        lines, _ = read_source_lines(str(path), path.stat(), owner)
+        assert lines == ["value = 1\n"]
+    assert active_reserved_bytes() == baseline
+
+
+def test_source_block_refuses_missing_class_and_displaced_function_line(tmp_path: Path) -> None:
+    """Actual callable metadata must locate a valid block in the observed source."""
+    path = tmp_path / "displaced_source.py"
+    path.write_text("# header\n\ndef objective(values):\n    return values[0]\n")
+    spec = importlib.util.spec_from_file_location("displaced_source", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    lines = path.read_text().splitlines(keepends=True)
+    with pytest.raises(OSError, match="class definition"):
+        objective_source_block(type("Absent", (), {}), lines)
+    original = module.objective.__code__
+    module.objective.__code__ = original.replace(co_firstlineno=len(lines) + 10)
+    with pytest.raises(OSError, match="outside source"):
+        objective_source_block(module.objective, lines)
+    report = compile_whole_program_frontend(module.objective)
+    assert not report.source_available
+    module.objective.__code__ = original.replace(co_firstlineno=4)
+    assert objective_source_block(module.objective, lines) == (lines[2:], 3)
+    module.objective.__code__ = original
+    assert compile_whole_program_frontend(module.objective).source_available

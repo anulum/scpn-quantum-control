@@ -110,7 +110,12 @@ def whole_program_value_and_grad(
         cancelled=cancelled,
     ) as reservation:
         parameter_values = _as_parameter_array(
-            _bounded_parameter_input(values, input_count, input_plan, reservation)
+            _bounded_parameter_input(
+                cast(NDArray[Any] | list[Any] | tuple[Any, ...] | range, values),
+                input_count,
+                input_plan,
+                reservation,
+            )
         )
         reservation.checkpoint()
         context = _WholeProgramTraceContext(
@@ -375,12 +380,12 @@ def _parameter_input_memory_plan(values: ArrayLike) -> tuple[ExecutionMemoryPlan
 
 
 def _bounded_parameter_input(
-    values: ArrayLike,
+    values: NDArray[Any] | list[Any] | tuple[Any, ...] | range,
     count: int,
     plan: ExecutionMemoryPlan,
     reservation: ExecutionMemoryReservation,
 ) -> ArrayLike:
-    """Copy into declared-size private storage before conversion can observe growth."""
+    """Snapshot the exact builtin input types already validated by input admission."""
     if isinstance(values, np.ndarray):
         snapshot = np.empty(count, dtype=np.float64)
         if (
@@ -392,8 +397,6 @@ def _bounded_parameter_input(
         np.copyto(snapshot, values, casting="unsafe")
         reservation.checkpoint()
         return snapshot
-    if not isinstance(values, (list, tuple, range)):
-        raise ValueError("parameter input lost its inspectable conversion contract")
     copied: list[Any] = [None] * count
     if len(values) != count:
         raise ValueError("parameter input changed after admission")

@@ -526,6 +526,7 @@ jobs:
           tests/test_sparse_hamiltonian_branches.py
           src/scpn_quantum_control/bridge/knm_hamiltonian.py
           tests/test_knm_hamiltonian.py
+          tests/test_hamiltonian_native.py
           tools/sparse_hamiltonian_quality_gates.py
           tests/test_sparse_hamiltonian_quality_gate.py
       - run: >-
@@ -537,6 +538,7 @@ jobs:
           tests/test_sparse_hamiltonian_branches.py
           src/scpn_quantum_control/bridge/knm_hamiltonian.py
           tests/test_knm_hamiltonian.py
+          tests/test_hamiltonian_native.py
           tools/sparse_hamiltonian_quality_gates.py
           tests/test_sparse_hamiltonian_quality_gate.py
       - run: >-
@@ -545,11 +547,13 @@ jobs:
           -m pytest -q tests/test_sparse_hamiltonian.py
           tests/test_sparse_hamiltonian_branches.py
           tests/test_knm_hamiltonian.py
+          tests/test_hamiltonian_native.py
           tests/test_knm_hamiltonian_branches.py
           tests/test_knm_hamiltonian_mutation_kills.py
           tests/test_knm_physical_validation_audit.py
           tests/test_knm_properties.py
           tests/test_xxz_hamiltonian.py
+          tests/test_hamiltonian_native.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-sparse-hamiltonian-quality.coverage

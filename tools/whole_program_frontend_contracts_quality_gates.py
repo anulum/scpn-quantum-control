@@ -11,6 +11,9 @@ from __future__ import annotations
 
 from os import devnull
 
+WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_CONFIG = "tools/whole_program_frontend.coveragerc"
+"""Shared real-subprocess coverage configuration for source admission."""
+
 Gate = tuple[str, list[str]]
 
 WHOLE_PROGRAM_FRONTEND_CONTRACTS_SOURCE = (
@@ -101,13 +104,23 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 "-m",
                 "coverage",
                 "run",
-                f"--rcfile={devnull}",
+                f"--rcfile={WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_CONFIG}",
                 f"--data-file={WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_DATA_FILE}",
                 "--branch",
                 "-m",
                 "pytest",
                 "-q",
                 *WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_COHORT,
+            ],
+        ),
+        (
+            "whole-program-frontend-contracts combine subprocess coverage",
+            [
+                python,
+                "-m",
+                "coverage",
+                "combine",
+                f"--rcfile={WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_CONFIG}",
             ],
         ),
         (

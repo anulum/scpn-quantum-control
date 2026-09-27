@@ -17,6 +17,7 @@ from types import FrameType
 import numpy as np
 import pytest
 
+from scpn_quantum_control import native_replay_admission as admission
 from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.execution_memory import ExecutionBuffer, ExecutionMemoryPlan
 from scpn_quantum_control.execution_reservations import (
@@ -540,3 +541,52 @@ def test_native_json_output_budget_refuses_before_encoding_and_recovers(
         assert result["value"] == 4.0
         if surface.endswith("value_and_gradient"):
             assert result["gradient"] == [4.0]
+
+
+@pytest.mark.parametrize("fault", ["input", "forward", "string"])
+def test_actual_native_call_refuses_corrupted_admission_transport_and_recovers(
+    fault: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Actual compiled callback requests remain fail-closed under malformed transport bytes."""
+    native = getattr(import_module("scpn_quantum_engine"), SURFACES[0])
+    original_workspace = admission._admit_native_replay_workspace
+    original_string = admission._native_replay_python_string_bytes
+    observed: list[int] = []
+    baseline = active_reserved_bytes()
+
+    def workspace(
+        owner: ExecutionMemoryReservation,
+        input_bytes: int,
+        forward_bytes: int,
+        adjoint_bytes: int,
+        intermediate_bytes: int,
+    ) -> None:
+        assert input_bytes > 0
+        observed.append(input_bytes)
+        original_workspace(
+            owner,
+            0 if fault == "input" else input_bytes,
+            -1 if fault == "forward" else forward_bytes,
+            adjoint_bytes,
+            intermediate_bytes,
+        )
+
+    def string_size(encoded_bytes: int) -> int:
+        assert encoded_bytes > 0
+        observed.append(encoded_bytes)
+        return original_string(0)
+
+    with monkeypatch.context() as transport:
+        if fault == "string":
+            transport.setattr(admission, "_native_replay_python_string_bytes", string_size)
+        else:
+            transport.setattr(admission, "_admit_native_replay_workspace", workspace)
+        with pytest.raises(ValueError, match="positive integer bytes|non-negative integer bytes"):
+            native(IR, [2.0])
+    assert observed
+    assert active_reserved_bytes() == baseline
+    retry = json.loads(native(IR, [2.0]))
+    assert retry["supported"] is True
+    assert retry["value"] == 4.0
+    assert active_reserved_bytes() == baseline

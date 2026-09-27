@@ -74,3 +74,14 @@ def test_ci_runs_and_aggregates_frontend_contract_gate() -> None:
     assert "--fail-under=100" in block
     assert quality_gates.WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_INCLUDE in block
     assert "whole-program-frontend-contracts-quality" in workflow[workflow.index("  ci-gate:") :]
+
+
+def test_frontend_coverage_combines_actual_source_read_subprocesses() -> None:
+    """Subprocess faults remain measured alongside the parent at the unchanged exact gate."""
+    gates = quality_gates.build_coverage_gates("/python")
+    assert "combine" in gates[1][1]
+    config = quality_gates.WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_CONFIG
+    assert f"--rcfile={config}" in gates[0][1]
+    assert f"--rcfile={config}" in gates[1][1]
+    assert "patch = subprocess" in Path(config).read_text()
+    assert "--fail-under=100" in gates[2][1]

@@ -22,7 +22,7 @@ import sys
 from collections.abc import AsyncIterator, Callable
 from pathlib import Path
 from threading import Event
-from types import FunctionType, SimpleNamespace
+from types import FrameType, FunctionType, SimpleNamespace
 from typing import cast
 
 import numpy as np
@@ -30,6 +30,7 @@ import pytest
 from numpy.typing import NDArray
 
 import scpn_quantum_control.whole_program_frontend as frontend_module
+from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.differentiable import (
     compile_whole_program_frontend as facade_compile_whole_program_frontend,
 )
@@ -886,3 +887,101 @@ print(json.dumps({"refusal": refusal, "recovered": report.source_available}))
     else:
         assert "source changed before bounded read" in payload["refusal"]
     assert payload["recovered"] is True
+
+
+@pytest.mark.parametrize("source_kind", ["unavailable", "directory"])
+def test_public_frontend_preserves_unavailable_source_observation(
+    tmp_path: Path,
+    source_kind: str,
+) -> None:
+    """Real dynamic code and directory filenames never manufacture a source snapshot."""
+    filename = "<scpn-dynamic-objective>" if source_kind == "unavailable" else str(tmp_path)
+    namespace: dict[str, object] = {}
+    exec(compile("def objective(values):\n    return values[0]\n", filename, "exec"), namespace)
+    objective = cast(Callable[..., object], namespace["objective"])
+    baseline = active_reserved_bytes()
+    report = facade_compile_whole_program_frontend(objective)
+    assert not report.source_available
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("change", ["remove", "append"])
+def test_public_frontend_refuses_source_change_after_actual_block_extraction(
+    tmp_path: Path,
+    change: str,
+) -> None:
+    """A captured block cannot outlive the identity check on its actual source file."""
+    path = tmp_path / "post_block_source.py"
+    original = "def objective(values):\n    return values[0] * values[0]\n"
+    path.write_text(original)
+    spec = importlib.util.spec_from_file_location("post_block_source", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    observed: list[str] = []
+    baseline = active_reserved_bytes()
+
+    def profile(frame: FrameType, event: str, argument: object) -> None:
+        del argument
+        if event == "return" and frame.f_code.co_name == "objective_source_block" and not observed:
+            observed.append(change)
+            if change == "remove":
+                path.unlink()
+            else:
+                with path.open("a") as source:
+                    source.write("# modified after extraction\n")
+
+    previous = sys.getprofile()
+    sys.setprofile(profile)
+    try:
+        with pytest.raises(DenseAllocationError, match="source disappeared|source changed"):
+            facade_compile_whole_program_frontend(module.objective)
+    finally:
+        sys.setprofile(previous)
+    assert observed == [change]
+    assert active_reserved_bytes() == baseline
+    path.write_text(original)
+    assert facade_compile_whole_program_frontend(module.objective).source_available
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("fault", ["grow", "truncate"])
+def test_public_frontend_digest_refuses_actual_payload_change_and_recovers(fault: str) -> None:
+    """Canonical encoding cannot publish a digest inconsistent with admitted payload bytes."""
+
+    def objective(values: NDArray[np.float64]) -> object:
+        return values[0] * values[0]
+
+    observed: list[int] = []
+    baseline = active_reserved_bytes()
+
+    def profile(frame: FrameType, event: str, argument: object) -> None:
+        del argument
+        caller = frame.f_back
+        if (
+            event == "call"
+            and frame.f_code.co_name == "iterencode"
+            and caller is not None
+            and caller.f_code.co_name == "_frontend_json_digest"
+            and not observed
+        ):
+            payload = frame.f_locals["o"]
+            assert isinstance(payload, dict)
+            observed.append(caller.f_locals["encoded_size"])
+            if fault == "grow":
+                payload["transport_fault"] = "x" * (observed[0] + 1)
+            else:
+                payload.clear()
+
+    previous = sys.getprofile()
+    sys.setprofile(profile)
+    try:
+        with pytest.raises(ValueError, match="digest encoding exceeded|digest encoding differs"):
+            facade_compile_whole_program_frontend(objective)
+    finally:
+        sys.setprofile(previous)
+    assert len(observed) == 1
+    assert active_reserved_bytes() == baseline
+    report = facade_compile_whole_program_frontend(objective)
+    assert report.frontend_ready
+    assert active_reserved_bytes() == baseline

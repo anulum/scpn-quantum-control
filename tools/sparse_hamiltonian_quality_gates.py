@@ -29,6 +29,7 @@ SPARSE_HAMILTONIAN_COVERAGE_COHORT = [
     KNM_HAMILTONIAN_PHYSICAL_TEST,
     KNM_HAMILTONIAN_PROPERTY_TEST,
     KNM_HAMILTONIAN_XXZ_TEST,
+    "tests/test_hamiltonian_native.py",
 ]
 SPARSE_HAMILTONIAN_COVERAGE_INCLUDE = "*/bridge/sparse_hamiltonian.py,*/bridge/knm_hamiltonian.py"
 SPARSE_HAMILTONIAN_TYPING_RATCHET = [
@@ -37,6 +38,7 @@ SPARSE_HAMILTONIAN_TYPING_RATCHET = [
     "tests/test_sparse_hamiltonian_branches.py",
     KNM_HAMILTONIAN_SOURCE,
     KNM_HAMILTONIAN_DIRECT_TEST,
+    "tests/test_hamiltonian_native.py",
     "tools/sparse_hamiltonian_quality_gates.py",
     "tests/test_sparse_hamiltonian_quality_gate.py",
 ]

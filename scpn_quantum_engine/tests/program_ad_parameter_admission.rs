@@ -293,7 +293,7 @@ fn public_replay_preserves_unary_scalar_output_and_reverse_seed() {
 #[test]
 fn public_replay_preserves_stable_ordering_for_ties_and_shuffled_rows() {
     for equal_ordering in [false, true] {
-        let mut ir: serde_json::Value = serde_json::from_str(&two_parameter_ir(&[], &[])).unwrap();
+        let mut ir: serde_json::Value = serde_json::from_str(&two_parameter_ir(&[1], &[1])).unwrap();
         let effects = ir["effects"].as_array_mut().unwrap();
         if equal_ordering {
             for effect in effects.iter_mut() {
@@ -312,7 +312,7 @@ fn public_replay_preserves_stable_ordering_for_ties_and_shuffled_rows() {
         assert!(reverse.supported, "{:?}", reverse.blocked_reasons);
         assert_eq!(reverse.value, Some(6.0));
         assert_eq!(reverse.gradient, [3.0, 2.0]);
-        assert_eq!(reverse.parameter_targets, ["%0", "%1"]);
+        assert_eq!(reverse.parameter_targets, ["%0[0]", "%1[0]"]);
         assert_small_replay_recovers();
     }
 }
