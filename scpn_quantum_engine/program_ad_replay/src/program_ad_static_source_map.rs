@@ -23,7 +23,8 @@ enum StaticSourceMapEntry {
 
 /// Checked declared storage for the owned tagged source-map entries.
 pub(crate) fn static_source_map_storage_bytes(entries: usize) -> Result<usize, String> {
-    entries.checked_mul(std::mem::size_of::<StaticSourceMapEntry>())
+    entries
+        .checked_mul(std::mem::size_of::<StaticSourceMapEntry>())
         .filter(|bytes| *bytes <= isize::MAX as usize)
         .ok_or_else(|| "static source-map storage exceeds native addressability".to_owned())
 }
@@ -70,12 +71,15 @@ pub(crate) fn scatter_static_source_map_cotangent(
     source_size: usize,
     cotangent_values: &[f64],
 ) -> Result<Vec<f64>, String> {
-    let entries = parse_static_source_map(effect_index, operation, cotangent_values.len(), "cotangent")?;
+    let entries =
+        parse_static_source_map(effect_index, operation, cotangent_values.len(), "cotangent")?;
     replay_checkpoint()?;
     let mut contribution = Vec::new();
-    contribution.try_reserve_exact(source_size).map_err(|error| {
-        format!("effect {effect_index} index_map cotangent allocation refused: {error}")
-    })?;
+    contribution
+        .try_reserve_exact(source_size)
+        .map_err(|error| {
+            format!("effect {effect_index} index_map cotangent allocation refused: {error}")
+        })?;
     for position in 0..source_size {
         if position % 256 == 0 {
             replay_checkpoint()?;
@@ -130,11 +134,9 @@ fn parse_static_source_map(
     }
     replay_checkpoint()?;
     let mut entries = Vec::new();
-    entries
-        .try_reserve_exact(entry_count)
-        .map_err(|error| {
-            format!("effect {effect_index} index_map metadata allocation refused: {error}")
-        })?;
+    entries.try_reserve_exact(entry_count).map_err(|error| {
+        format!("effect {effect_index} index_map metadata allocation refused: {error}")
+    })?;
     for (position, token) in raw_map.split(',').enumerate() {
         if position % 256 == 0 {
             replay_checkpoint()?;

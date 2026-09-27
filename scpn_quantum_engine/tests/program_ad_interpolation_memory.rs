@@ -7,7 +7,9 @@
 // SCPN Quantum Control — public interpolation admission and lifecycle tests
 
 use scpn_quantum_program_ad_replay::program_ad_ir::interpret_program_ad_effect_ir_value_and_gradient;
-use scpn_quantum_program_ad_replay::program_ad_lifecycle::{replay_checkpoint, with_replay_checkpoint};
+use scpn_quantum_program_ad_replay::program_ad_lifecycle::{
+    replay_checkpoint, with_replay_checkpoint,
+};
 use std::cell::Cell;
 use std::rc::Rc;
 
@@ -27,47 +29,67 @@ fn interpolation_ir(operation: &str) -> String {
 #[test]
 fn public_interpolation_checks_each_observed_boundary_and_recovers() {
     for (sample, left, right, expected, gradient) in [
-        (1.0,"none","none",4.0,vec![2.0,0.5,0.5,0.0]),
-        (3.0,"none","none",8.0,vec![2.0,0.0,0.5,0.5]),
-        (-1.0,"none","none",2.0,vec![0.0,1.0,0.0,0.0]),
-        (5.0,"none","none",10.0,vec![0.0,0.0,0.0,1.0]),
-        (-1.0,"-3","12",-3.0,vec![0.0;4]),
-        (5.0,"-3","12",12.0,vec![0.0;4]),
+        (1.0, "none", "none", 4.0, vec![2.0, 0.5, 0.5, 0.0]),
+        (3.0, "none", "none", 8.0, vec![2.0, 0.0, 0.5, 0.5]),
+        (-1.0, "none", "none", 2.0, vec![0.0, 1.0, 0.0, 0.0]),
+        (5.0, "none", "none", 10.0, vec![0.0, 0.0, 0.0, 1.0]),
+        (-1.0, "-3", "12", -3.0, vec![0.0; 4]),
+        (5.0, "-3", "12", 12.0, vec![0.0; 4]),
     ] {
-        let source = interpolation_ir(&format!("interpolation:interp:samples:1:grid:0,2,4:left:{left}:right:{right}:out:0"));
-        let inputs = [sample,2.0,6.0,10.0];
+        let source = interpolation_ir(&format!(
+            "interpolation:interp:samples:1:grid:0,2,4:left:{left}:right:{right}:out:0"
+        ));
+        let inputs = [sample, 2.0, 6.0, 10.0];
         let calls = Rc::new(Cell::new(0usize));
         let recorded = Rc::clone(&calls);
         let baseline = with_replay_checkpoint(
-            move || { recorded.set(recorded.get()+1); Ok(()) },
-            || interpret_program_ad_effect_ir_value_and_gradient(&source,&inputs),
-        ).unwrap();
-        assert!(baseline.supported,"{:?}",baseline.blocked_reasons);
-        assert_eq!(baseline.value,Some(expected));
-        assert_eq!(baseline.gradient,gradient);
-        assert!(calls.get()>1);
+            move || {
+                recorded.set(recorded.get() + 1);
+                Ok(())
+            },
+            || interpret_program_ad_effect_ir_value_and_gradient(&source, &inputs),
+        )
+        .unwrap();
+        assert!(baseline.supported, "{:?}", baseline.blocked_reasons);
+        assert_eq!(baseline.value, Some(expected));
+        assert_eq!(baseline.gradient, gradient);
+        assert!(calls.get() > 1);
         for boundary in 1..=calls.get() {
             let observed = Rc::new(Cell::new(0usize));
             let recorded = Rc::clone(&observed);
             let refused = with_replay_checkpoint(
                 move || {
-                    recorded.set(recorded.get()+1);
-                    if recorded.get()>=boundary { Err("interpolation owner cancelled".to_owned()) } else { Ok(()) }
+                    recorded.set(recorded.get() + 1);
+                    if recorded.get() >= boundary {
+                        Err("interpolation owner cancelled".to_owned())
+                    } else {
+                        Ok(())
+                    }
                 },
-                || interpret_program_ad_effect_ir_value_and_gradient(&source,&inputs),
+                || interpret_program_ad_effect_ir_value_and_gradient(&source, &inputs),
             );
             match refused {
-                Err(reason)=>assert!(reason.contains("interpolation owner cancelled"),"{reason}"),
-                Ok(result)=>{
+                Err(reason) => {
+                    assert!(reason.contains("interpolation owner cancelled"), "{reason}")
+                }
+                Ok(result) => {
                     assert!(!result.supported);
-                    assert!(result.blocked_reasons.iter().any(|r|r.contains("interpolation owner cancelled")),"{:?}",result.blocked_reasons);
+                    assert!(
+                        result
+                            .blocked_reasons
+                            .iter()
+                            .any(|r| r.contains("interpolation owner cancelled")),
+                        "{:?}",
+                        result.blocked_reasons
+                    );
                 }
             }
             replay_checkpoint().unwrap();
-            let retry = interpret_program_ad_effect_ir_value_and_gradient(&source,&inputs).unwrap();
+            let retry =
+                interpret_program_ad_effect_ir_value_and_gradient(&source, &inputs).unwrap();
             assert!(retry.supported);
-            assert_eq!(retry.value,baseline.value);
-            assert_eq!(retry.gradient,baseline.gradient);
+            assert_eq!(retry.value, baseline.value);
+            assert_eq!(retry.gradient, baseline.gradient);
         }
     }
 }
@@ -75,90 +97,151 @@ fn public_interpolation_checks_each_observed_boundary_and_recovers() {
 #[test]
 fn public_interpolation_refuses_invalid_sizes_knots_and_metadata_before_retry() {
     let valid = "interpolation:interp:samples:1:grid:0,2,4:left:none:right:none:out:0";
-    let inputs = [1.0,2.0,6.0,10.0];
+    let inputs = [1.0, 2.0, 6.0, 10.0];
     for operation in [
-        valid.replace("samples:1",&format!("samples:{}",usize::MAX)),
-        valid.replace("samples:1","samples:0"),
-        valid.replace("grid:0,2,4","grid:0,0,4"),
-        valid.replace("grid:0,2,4","grid:0,NaN,4"),
-        valid.replace("grid:0,2,4","grid:0"),
-        valid.replace("out:0","out:1"),
+        valid.replace("samples:1", &format!("samples:{}", usize::MAX)),
+        valid.replace("samples:1", "samples:0"),
+        valid.replace("grid:0,2,4", "grid:0,0,4"),
+        valid.replace("grid:0,2,4", "grid:0,NaN,4"),
+        valid.replace("grid:0,2,4", "grid:0"),
+        valid.replace("out:0", "out:1"),
         format!("{valid}:extra"),
-        valid.replace(":out:0",""),
+        valid.replace(":out:0", ""),
     ] {
-        let refused = interpret_program_ad_effect_ir_value_and_gradient(&interpolation_ir(&operation),&inputs).unwrap();
-        assert!(!refused.supported,"{operation}");
-        let retry = interpret_program_ad_effect_ir_value_and_gradient(&interpolation_ir(valid),&inputs).unwrap();
+        let refused = interpret_program_ad_effect_ir_value_and_gradient(
+            &interpolation_ir(&operation),
+            &inputs,
+        )
+        .unwrap();
+        assert!(!refused.supported, "{operation}");
+        let retry =
+            interpret_program_ad_effect_ir_value_and_gradient(&interpolation_ir(valid), &inputs)
+                .unwrap();
         assert!(retry.supported);
-        assert_eq!(retry.value,Some(4.0));
-        assert_eq!(retry.gradient,vec![2.0,0.5,0.5,0.0]);
+        assert_eq!(retry.value, Some(4.0));
+        assert_eq!(retry.gradient, vec![2.0, 0.5, 0.5, 0.0]);
     }
-    for knot in [0.0,2.0,4.0] {
-        let refused = interpret_program_ad_effect_ir_value_and_gradient(&interpolation_ir(valid),&[knot,2.0,6.0,10.0]).unwrap();
+    for knot in [0.0, 2.0, 4.0] {
+        let refused = interpret_program_ad_effect_ir_value_and_gradient(
+            &interpolation_ir(valid),
+            &[knot, 2.0, 6.0, 10.0],
+        )
+        .unwrap();
         assert!(!refused.supported);
-        assert!(refused.blocked_reasons.iter().any(|r|r.contains("avoid grid knots")));
-        let retry = interpret_program_ad_effect_ir_value_and_gradient(&interpolation_ir(valid),&inputs).unwrap();
+        assert!(refused
+            .blocked_reasons
+            .iter()
+            .any(|r| r.contains("avoid grid knots")));
+        let retry =
+            interpret_program_ad_effect_ir_value_and_gradient(&interpolation_ir(valid), &inputs)
+                .unwrap();
         assert!(retry.supported);
-        assert_eq!(retry.value,Some(4.0));
+        assert_eq!(retry.value, Some(4.0));
     }
 }
 
 #[test]
 fn public_interpolation_refuses_nonfinite_derivative_then_releases_owner() {
-    let source = interpolation_ir("interpolation:interp:samples:1:grid:0,2,4:left:none:right:none:out:0");
+    let source =
+        interpolation_ir("interpolation:interp:samples:1:grid:0,2,4:left:none:right:none:out:0");
     // The interpolated value is finite, but the fp difference overflows.
-    let refused = interpret_program_ad_effect_ir_value_and_gradient(&source,&[1.0,-1.0e308,1.0e308,0.0]).unwrap();
+    let refused =
+        interpret_program_ad_effect_ir_value_and_gradient(&source, &[1.0, -1.0e308, 1.0e308, 0.0])
+            .unwrap();
     assert!(!refused.supported);
-    assert!(refused.blocked_reasons.iter().any(|r|r.contains("cotangent entries must be finite")),"{:?}",refused.blocked_reasons);
+    assert!(
+        refused
+            .blocked_reasons
+            .iter()
+            .any(|r| r.contains("cotangent entries must be finite")),
+        "{:?}",
+        refused.blocked_reasons
+    );
     replay_checkpoint().unwrap();
-    let retry = interpret_program_ad_effect_ir_value_and_gradient(&source,&[1.0,2.0,6.0,10.0]).unwrap();
+    let retry =
+        interpret_program_ad_effect_ir_value_and_gradient(&source, &[1.0, 2.0, 6.0, 10.0]).unwrap();
     assert!(retry.supported);
-    assert_eq!(retry.value,Some(4.0));
-    assert_eq!(retry.gradient,vec![2.0,0.5,0.5,0.0]);
+    assert_eq!(retry.value, Some(4.0));
+    assert_eq!(retry.gradient, vec![2.0, 0.5, 0.5, 0.0]);
 }
 
 #[test]
 fn public_interpolation_workspace_budgets_cover_grid_and_boundary_storage() {
     use scpn_quantum_program_ad_replay::program_ad_ir::interpret_program_ad_effect_ir_forward;
-    use scpn_quantum_program_ad_replay::program_ad_lifecycle::{ReplayMemoryRequest, with_replay_memory_admission};
-    for (sample,left,right,value,gradient) in [
-        (1.0,"none","none",4.0,[2.0,0.5,0.5,0.0]),
-        (3.0,"none","none",8.0,[2.0,0.0,0.5,0.5]),
-        (-1.0,"none","none",2.0,[0.0,1.0,0.0,0.0]),
-        (5.0,"none","none",10.0,[0.0,0.0,0.0,1.0]),
-        (-1.0,"-3","12",-3.0,[0.0;4]),
-        (5.0,"-3","12",12.0,[0.0;4]),
+    use scpn_quantum_program_ad_replay::program_ad_lifecycle::{
+        with_replay_memory_admission, ReplayMemoryRequest,
+    };
+    for (sample, left, right, value, gradient) in [
+        (1.0, "none", "none", 4.0, [2.0, 0.5, 0.5, 0.0]),
+        (3.0, "none", "none", 8.0, [2.0, 0.0, 0.5, 0.5]),
+        (-1.0, "none", "none", 2.0, [0.0, 1.0, 0.0, 0.0]),
+        (5.0, "none", "none", 10.0, [0.0, 0.0, 0.0, 1.0]),
+        (-1.0, "-3", "12", -3.0, [0.0; 4]),
+        (5.0, "-3", "12", 12.0, [0.0; 4]),
     ] {
-        let ir=interpolation_ir(&format!("interpolation:interp:samples:1:grid:0,2,4:left:{left}:right:{right}:out:0"));
-        let inputs=[sample,2.0,6.0,10.0];
-        for gradient_surface in [false,true] {
-            let expected=ReplayMemoryRequest { forward_bytes:40, adjoint_bytes:if gradient_surface { 72 } else { 0 }, intermediate_bytes:if gradient_surface { 88 } else { 56 } };
-            let total=expected.total_bytes().unwrap();
-            let replay=|| {
-                if gradient_surface {
-                    interpret_program_ad_effect_ir_value_and_gradient(&ir,&inputs).map(|r|(r.supported,r.value,r.gradient,r.blocked_reasons))
-                } else { interpret_program_ad_effect_ir_forward(&ir,&inputs).map(|r|(r.supported,r.value,Vec::new(),r.blocked_reasons)) }
+        let ir = interpolation_ir(&format!(
+            "interpolation:interp:samples:1:grid:0,2,4:left:{left}:right:{right}:out:0"
+        ));
+        let inputs = [sample, 2.0, 6.0, 10.0];
+        for gradient_surface in [false, true] {
+            let expected = ReplayMemoryRequest {
+                forward_bytes: 40,
+                adjoint_bytes: if gradient_surface { 72 } else { 0 },
+                intermediate_bytes: if gradient_surface { 88 } else { 56 },
             };
-            for budget in [total-1,total,total+1] {
-                let calls=Rc::new(Cell::new(0usize));let recorded=Rc::clone(&calls);
-                let result=with_replay_memory_admission(
+            let total = expected.total_bytes().unwrap();
+            let replay = || {
+                if gradient_surface {
+                    interpret_program_ad_effect_ir_value_and_gradient(&ir, &inputs)
+                        .map(|r| (r.supported, r.value, r.gradient, r.blocked_reasons))
+                } else {
+                    interpret_program_ad_effect_ir_forward(&ir, &inputs)
+                        .map(|r| (r.supported, r.value, Vec::new(), r.blocked_reasons))
+                }
+            };
+            for budget in [total - 1, total, total + 1] {
+                let calls = Rc::new(Cell::new(0usize));
+                let recorded = Rc::clone(&calls);
+                let result = with_replay_memory_admission(
                     move |request| {
-                        recorded.set(recorded.get()+1);assert_eq!(request,expected);
-                        if request.total_bytes()? > budget { Err("interpolation workspace budget refused".to_owned()) } else { Ok(()) }
+                        recorded.set(recorded.get() + 1);
+                        assert_eq!(request, expected);
+                        if request.total_bytes()? > budget {
+                            Err("interpolation workspace budget refused".to_owned())
+                        } else {
+                            Ok(())
+                        }
                     },
                     replay,
                 );
-                assert_eq!(calls.get(),1);
+                assert_eq!(calls.get(), 1);
                 match result {
-                    Err(reason)=>{ assert!(budget<total);assert!(reason.contains("interpolation workspace budget refused")); }
-                    Ok(result)=>{
-                        assert_eq!(result.0,budget>=total);
-                        if result.0 { assert_eq!(result.1,Some(value));if gradient_surface { assert_eq!(result.2,gradient); } }
-                        else { assert!(result.3.iter().any(|reason|reason.contains("interpolation workspace budget refused"))); }
+                    Err(reason) => {
+                        assert!(budget < total);
+                        assert!(reason.contains("interpolation workspace budget refused"));
+                    }
+                    Ok(result) => {
+                        assert_eq!(result.0, budget >= total);
+                        if result.0 {
+                            assert_eq!(result.1, Some(value));
+                            if gradient_surface {
+                                assert_eq!(result.2, gradient);
+                            }
+                        } else {
+                            assert!(result
+                                .3
+                                .iter()
+                                .any(|reason| reason
+                                    .contains("interpolation workspace budget refused")));
+                        }
                     }
                 }
-                let retry=replay().unwrap();assert!(retry.0,"{:?}",retry.3);assert_eq!(retry.1,Some(value));
-                if gradient_surface { assert_eq!(retry.2,gradient); }
+                let retry = replay().unwrap();
+                assert!(retry.0, "{:?}", retry.3);
+                assert_eq!(retry.1, Some(value));
+                if gradient_surface {
+                    assert_eq!(retry.2, gradient);
+                }
             }
         }
     }
@@ -169,7 +252,10 @@ fn public_interpolation_bad_metadata_refuses_before_numeric_admission() {
     use scpn_quantum_program_ad_replay::program_ad_ir::interpret_program_ad_effect_ir_forward;
     use scpn_quantum_program_ad_replay::program_ad_lifecycle::with_replay_memory_admission;
     for operation in [
-        format!("interpolation:interp:samples:{}:grid:0,2,4:left:none:right:none:out:0",usize::MAX),
+        format!(
+            "interpolation:interp:samples:{}:grid:0,2,4:left:none:right:none:out:0",
+            usize::MAX
+        ),
         "interpolation:interp:samples:1:grid:0,4,2:left:none:right:none:out:0".to_owned(),
         "interpolation:interp:samples:1:grid:0,0,4:left:none:right:none:out:0".to_owned(),
         "interpolation:interp:samples:1:grid:0,NaN,4:left:none:right:none:out:0".to_owned(),
@@ -179,20 +265,41 @@ fn public_interpolation_bad_metadata_refuses_before_numeric_admission() {
         "interpolation:interp:samples:1:grid:0,2,4:left:none:right:none:out:1".to_owned(),
         "interpolation:interp:samples:1:grid:0,2:left:none:right:none:out:0".to_owned(),
     ] {
-        for gradient_surface in [false,true] {
-            let calls=Rc::new(Cell::new(0usize));let recorded=Rc::clone(&calls);let ir=interpolation_ir(&operation);
-            let result=with_replay_memory_admission(
-                move |_| { recorded.set(recorded.get()+1);Ok(()) },
-                || {
-                    if gradient_surface { interpret_program_ad_effect_ir_value_and_gradient(&ir,&[1.0,2.0,6.0,10.0]).map(|r|r.supported) }
-                    else { interpret_program_ad_effect_ir_forward(&ir,&[1.0,2.0,6.0,10.0]).map(|r|r.supported) }
+        for gradient_surface in [false, true] {
+            let calls = Rc::new(Cell::new(0usize));
+            let recorded = Rc::clone(&calls);
+            let ir = interpolation_ir(&operation);
+            let result = with_replay_memory_admission(
+                move |_| {
+                    recorded.set(recorded.get() + 1);
+                    Ok(())
                 },
-            ).unwrap();
-            assert!(!result,"{operation}");assert_eq!(calls.get(),0);
-            let retry=interpret_program_ad_effect_ir_value_and_gradient(
-                &interpolation_ir("interpolation:interp:samples:1:grid:0,2,4:left:none:right:none:out:0"),&[1.0,2.0,6.0,10.0],
-            ).unwrap();
-            assert!(retry.supported);assert_eq!(retry.value,Some(4.0));assert_eq!(retry.gradient,[2.0,0.5,0.5,0.0]);
+                || {
+                    if gradient_surface {
+                        interpret_program_ad_effect_ir_value_and_gradient(
+                            &ir,
+                            &[1.0, 2.0, 6.0, 10.0],
+                        )
+                        .map(|r| r.supported)
+                    } else {
+                        interpret_program_ad_effect_ir_forward(&ir, &[1.0, 2.0, 6.0, 10.0])
+                            .map(|r| r.supported)
+                    }
+                },
+            )
+            .unwrap();
+            assert!(!result, "{operation}");
+            assert_eq!(calls.get(), 0);
+            let retry = interpret_program_ad_effect_ir_value_and_gradient(
+                &interpolation_ir(
+                    "interpolation:interp:samples:1:grid:0,2,4:left:none:right:none:out:0",
+                ),
+                &[1.0, 2.0, 6.0, 10.0],
+            )
+            .unwrap();
+            assert!(retry.supported);
+            assert_eq!(retry.value, Some(4.0));
+            assert_eq!(retry.gradient, [2.0, 0.5, 0.5, 0.0]);
         }
     }
 }

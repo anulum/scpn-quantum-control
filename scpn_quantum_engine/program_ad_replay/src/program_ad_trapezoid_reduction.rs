@@ -238,7 +238,9 @@ fn axis_reduction_shape(source_shape: &[usize], axis: usize) -> Result<Vec<usize
     let mut shape = reserve_replay_buffer(source_shape.len().saturating_sub(1))?;
     for (index, dimension) in source_shape.iter().enumerate() {
         replay_checkpoint()?;
-        if index != axis { shape.push(*dimension); }
+        if index != axis {
+            shape.push(*dimension);
+        }
     }
     Ok(shape)
 }
@@ -266,7 +268,8 @@ fn source_flat_from_reduced_index(
         if coordinate >= *dimension {
             return Err("trapezoid index is outside shape bounds".to_owned());
         }
-        flat = flat.checked_mul(*dimension)
+        flat = flat
+            .checked_mul(*dimension)
             .and_then(|value| value.checked_add(coordinate))
             .ok_or_else(|| "trapezoid flat index overflowed".to_owned())?;
     }
@@ -304,9 +307,13 @@ fn unravel_index(mut flat_index: usize, shape: &[usize]) -> Result<Vec<usize>, S
 
 fn validate_finite_values(effect_index: usize, role: &str, values: &[f64]) -> Result<(), String> {
     for (index, value) in values.iter().enumerate() {
-        if index % 256 == 0 { replay_checkpoint()?; }
+        if index % 256 == 0 {
+            replay_checkpoint()?;
+        }
         if !value.is_finite() {
-            return Err(format!("effect {effect_index} trapezoid {role} must be finite"));
+            return Err(format!(
+                "effect {effect_index} trapezoid {role} must be finite"
+            ));
         }
     }
     replay_checkpoint()?;

@@ -57,7 +57,8 @@ pub(crate) fn pinv_output_cotangent(
         ));
     }
     let metadata = parse_pinv(effect_index, operation, input_values, true)?;
-    let mut cotangent = filled_replay_buffer(matrix_entry_count(metadata.cols, metadata.rows)?, 0.0_f64)?;
+    let mut cotangent =
+        filled_replay_buffer(matrix_entry_count(metadata.cols, metadata.rows)?, 0.0_f64)?;
     cotangent[metadata.output_row * metadata.rows + metadata.output_col] = output_cotangent;
     let adjoint = pinv_vjp(
         effect_index,
@@ -78,11 +79,17 @@ fn parse_pinv(
     requires_adjoint: bool,
 ) -> Result<PinvMetadata, String> {
     let (rows, cols, rcond, output_row, output_col) = validate_pinv_layout(
-        effect_index, operation, input_values.len(), requires_adjoint,
+        effect_index,
+        operation,
+        input_values.len(),
+        requires_adjoint,
     )?;
     validate_finite_values(effect_index, "inputs", input_values)?;
     let mut values = reserve_replay_buffer(input_values.len())?;
-    for chunk in input_values.chunks(256) { replay_checkpoint()?; values.extend_from_slice(chunk); }
+    for chunk in input_values.chunks(256) {
+        replay_checkpoint()?;
+        values.extend_from_slice(chunk);
+    }
     replay_checkpoint()?;
     let pinv = pinv_bounded(effect_index, rows, cols, &values, rcond)?;
     validate_finite_values(effect_index, "output", &pinv)?;
@@ -119,13 +126,17 @@ fn pinv_bounded(
 fn pinv_rank1(effect_index: usize, matrix: &[f64], rcond: f64) -> Result<Vec<f64>, String> {
     let mut norm_squared = -0.0_f64;
     for (index, value) in matrix.iter().enumerate() {
-        if index % 256 == 0 { replay_checkpoint()?; }
+        if index % 256 == 0 {
+            replay_checkpoint()?;
+        }
         norm_squared += value * value;
     }
     ensure_constant_rank1(effect_index, norm_squared, rcond)?;
     let mut pinv = reserve_replay_buffer(matrix.len())?;
     for (index, value) in matrix.iter().enumerate() {
-        if index % 256 == 0 { replay_checkpoint()?; }
+        if index % 256 == 0 {
+            replay_checkpoint()?;
+        }
         pinv.push(value / norm_squared);
     }
     validate_finite_values(effect_index, "output", &pinv)?;
@@ -244,7 +255,9 @@ fn pinv_vjp(
 
     let mut adjoint = reserve_replay_buffer(matrix_entry_count(rows, cols)?)?;
     for index in 0..matrix.len() {
-        if index % 256 == 0 { replay_checkpoint()?; }
+        if index % 256 == 0 {
+            replay_checkpoint()?;
+        }
         adjoint.push(-term1[index] + term2[index] + term3[index]);
     }
     validate_finite_values(effect_index, "adjoint matrix", &adjoint)?;
@@ -254,7 +267,9 @@ fn pinv_vjp(
 fn gram_columns(rows: usize, matrix: &[f64]) -> Result<[f64; 4], String> {
     let mut gram = [0.0_f64; 4];
     for row in 0..rows {
-        if row % 256 == 0 { replay_checkpoint()?; }
+        if row % 256 == 0 {
+            replay_checkpoint()?;
+        }
         let x = matrix[row * 2];
         let y = matrix[row * 2 + 1];
         gram[0] += x * x;
@@ -267,10 +282,14 @@ fn gram_columns(rows: usize, matrix: &[f64]) -> Result<[f64; 4], String> {
 }
 
 fn gram_rows(rows: usize, cols: usize, matrix: &[f64]) -> Result<[f64; 4], String> {
-    if rows != 2 { return Err("pinv row Gram matrix requires two rows".to_owned()); }
+    if rows != 2 {
+        return Err("pinv row Gram matrix requires two rows".to_owned());
+    }
     let mut gram = [0.0_f64; 4];
     for col in 0..cols {
-        if col % 256 == 0 { replay_checkpoint()?; }
+        if col % 256 == 0 {
+            replay_checkpoint()?;
+        }
         let x = matrix[col];
         let y = matrix[cols + col];
         gram[0] += x * x;

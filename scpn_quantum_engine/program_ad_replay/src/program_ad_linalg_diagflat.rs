@@ -78,11 +78,15 @@ fn validate_diagflat_layout(
     input_count: usize,
 ) -> Result<(), String> {
     replay_checkpoint()?;
-    for _ in operation.as_bytes().chunks(256) { replay_checkpoint()?; }
+    for _ in operation.as_bytes().chunks(256) {
+        replay_checkpoint()?;
+    }
     let mut fields = operation.split(':');
     let mut parts = [""; 7];
     for part in &mut parts {
-        *part = fields.next().ok_or_else(|| format!("effect {effect_index} diagflat operation metadata is malformed"))?;
+        *part = fields.next().ok_or_else(|| {
+            format!("effect {effect_index} diagflat operation metadata is malformed")
+        })?;
     }
     if fields.next().is_some()
         || parts[0] != "linalg"
@@ -98,13 +102,17 @@ fn validate_diagflat_layout(
     let offset = parts[4]
         .parse::<i64>()
         .map_err(|_| format!("effect {effect_index} diagflat offset metadata is malformed"))?;
-    let output_size = offset.checked_abs()
+    let output_size = offset
+        .checked_abs()
         .and_then(|offset| usize::try_from(offset).ok())
         .and_then(|shift| source_size.checked_add(shift))
         .ok_or_else(|| format!("effect {effect_index} diagflat construct shape overflows"))?;
-    output_size.checked_mul(output_size)
+    output_size
+        .checked_mul(output_size)
         .filter(|entries| *entries <= isize::MAX as usize / std::mem::size_of::<f64>())
-        .ok_or_else(|| format!("effect {effect_index} diagflat output bytes exceed native addressability"))?;
+        .ok_or_else(|| {
+            format!("effect {effect_index} diagflat output bytes exceed native addressability")
+        })?;
     let source_index = parts[6].parse::<usize>().map_err(|_| {
         format!("effect {effect_index} diagflat source index metadata is malformed")
     })?;
@@ -114,7 +122,9 @@ fn validate_diagflat_layout(
         ));
     }
     if input_count != 1 {
-        return Err(format!("effect {effect_index} diagflat replay requires exactly one source operand"));
+        return Err(format!(
+            "effect {effect_index} diagflat replay requires exactly one source operand"
+        ));
     }
     Ok(())
 }
@@ -128,7 +138,8 @@ pub(crate) fn diagflat_workspace_bytes(
 ) -> Result<usize, String> {
     validate_diagflat_layout(effect_index, operation, input_count)?;
     let copies = if requires_adjoint { 2 } else { 1 };
-    input_count.checked_mul(copies)
+    input_count
+        .checked_mul(copies)
         .and_then(|count| count.checked_mul(std::mem::size_of::<f64>()))
         .filter(|bytes| *bytes <= isize::MAX as usize)
         .ok_or_else(|| "diagflat workspace exceeds native addressable memory".to_owned())

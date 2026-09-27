@@ -94,7 +94,8 @@ pub(crate) fn product_axis_cotangent(
         groups[target_flat].push((flat_index, value));
     }
     let mut contribution = filled_product_buffer(source_values.len(), 0.0_f64)?;
-    for (group_index, (group, cotangent)) in groups.iter().zip(cotangent_values.iter()).enumerate() {
+    for (group_index, (group, cotangent)) in groups.iter().zip(cotangent_values.iter()).enumerate()
+    {
         if group_index % 256 == 0 {
             replay_checkpoint()?;
         }
@@ -106,7 +107,9 @@ pub(crate) fn product_axis_cotangent(
             group_values.push(*value);
         }
         let group_contribution = product_group_cotangent(effect_index, &group_values, *cotangent)?;
-        for (index, ((source_index, _), value)) in group.iter().zip(group_contribution.iter()).enumerate() {
+        for (index, ((source_index, _), value)) in
+            group.iter().zip(group_contribution.iter()).enumerate()
+        {
             if index % 256 == 0 {
                 replay_checkpoint()?;
             }
@@ -151,7 +154,11 @@ fn product_group_cotangent(
             if index % 256 == 0 {
                 replay_checkpoint()?;
             }
-            contribution.push(if *value == 0.0 { cotangent * non_zero_product } else { 0.0 });
+            contribution.push(if *value == 0.0 {
+                cotangent * non_zero_product
+            } else {
+                0.0
+            });
         }
     } else {
         let product = product_all_value(effect_index, source_values)?;
@@ -275,7 +282,8 @@ fn ravel_index(index: &[usize], shape: &[usize]) -> Result<usize, String> {
                 "prod coordinate {coordinate} is outside dimension {dimension}"
             ));
         }
-        flat = coordinate.checked_mul(stride)
+        flat = coordinate
+            .checked_mul(stride)
             .and_then(|offset| flat.checked_add(offset))
             .ok_or_else(|| "prod ravel offset overflowed".to_owned())?;
         stride = stride
@@ -287,11 +295,13 @@ fn ravel_index(index: &[usize], shape: &[usize]) -> Result<usize, String> {
 
 fn reserve_product_buffer<T>(count: usize) -> Result<Vec<T>, String> {
     replay_checkpoint()?;
-    count.checked_mul(std::mem::size_of::<T>())
+    count
+        .checked_mul(std::mem::size_of::<T>())
         .filter(|bytes| *bytes <= isize::MAX as usize)
         .ok_or_else(|| "prod buffer bytes exceed native addressability".to_owned())?;
     let mut buffer = Vec::new();
-    buffer.try_reserve_exact(count)
+    buffer
+        .try_reserve_exact(count)
         .map_err(|error| format!("prod buffer allocation refused: {error}"))?;
     Ok(buffer)
 }

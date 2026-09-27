@@ -123,7 +123,9 @@ fn validate_source(
         ));
     }
     for (index, value) in source_values.iter().enumerate() {
-        if index % 256 == 0 { replay_checkpoint()?; }
+        if index % 256 == 0 {
+            replay_checkpoint()?;
+        }
         if !value.is_finite() {
             return Err(format!(
                 "effect {effect_index} interpolation inputs must be finite"
@@ -229,7 +231,9 @@ fn interpolation_cotangent_for_output(
     }
     replay_checkpoint()?;
     for (index, value) in contribution.iter().enumerate() {
-        if index % 256 == 0 { replay_checkpoint()?; }
+        if index % 256 == 0 {
+            replay_checkpoint()?;
+        }
         if !value.is_finite() {
             return Err(format!(
                 "effect {effect_index} interpolation cotangent entries must be finite"

@@ -106,7 +106,14 @@ pub(crate) fn order_statistic_values(
                     target_shape
                 ));
             }
-            let groups = axis_groups(effect_index, spec.reduction, source_shape, axis, target_shape, source_values)?;
+            let groups = axis_groups(
+                effect_index,
+                spec.reduction,
+                source_shape,
+                axis,
+                target_shape,
+                source_values,
+            )?;
             let mut output = reserve_replay_buffer(groups.len())?;
             for group in &groups {
                 replay_checkpoint()?;
@@ -227,7 +234,10 @@ fn interpolation_weights(
 ) -> Result<InterpolationSelection, String> {
     validate_group(effect_index, spec.reduction, group)?;
     let mut order = reserve_replay_buffer(group.len())?;
-    for index in 0..group.len() { replay_checkpoint()?; order.push(index); }
+    for index in 0..group.len() {
+        replay_checkpoint()?;
+        order.push(index);
+    }
     checked_order(&mut order, |left, right| group[*left].1 < group[*right].1)?;
     let position = spec.q * ((group.len() - 1) as f64);
     let lower = position.floor() as usize;
@@ -259,7 +269,10 @@ fn validate_group(
     for (_, value) in group {
         replay_checkpoint()?;
         if !value.is_finite() {
-            return Err(format!("effect {effect_index} {} source values must be finite", reduction.label()));
+            return Err(format!(
+                "effect {effect_index} {} source values must be finite",
+                reduction.label()
+            ));
         }
         sorted_values.push(*value);
     }
@@ -304,7 +317,9 @@ fn axis_groups(
 ) -> Result<Vec<Vec<(usize, f64)>>, String> {
     let count = shape_size(reduction, target_shape)?;
     let mut groups = reserve_replay_buffer(count)?;
-    for _ in 0..count { groups.push(reserve_replay_buffer::<(usize, f64)>(source_shape[axis])?); }
+    for _ in 0..count {
+        groups.push(reserve_replay_buffer::<(usize, f64)>(source_shape[axis])?);
+    }
     for (flat_index, value) in source_values.iter().copied().enumerate() {
         replay_checkpoint()?;
         let source_index = unravel_index(flat_index, source_shape)?;
@@ -327,7 +342,9 @@ fn axis_groups(
 fn indexed_source_values(source: &[f64]) -> Result<Vec<(usize, f64)>, String> {
     let mut values = reserve_replay_buffer(source.len())?;
     for (index, value) in source.iter().enumerate() {
-        if index % 256 == 0 { replay_checkpoint()?; }
+        if index % 256 == 0 {
+            replay_checkpoint()?;
+        }
         values.push((index, *value));
     }
     Ok(values)

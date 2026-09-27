@@ -107,7 +107,9 @@ impl ReplayMemoryRequest {
             .checked_add(self.adjoint_bytes)
             .and_then(|bytes| bytes.checked_add(self.intermediate_bytes))
             .filter(|bytes| *bytes <= isize::MAX as usize)
-            .ok_or_else(|| "Program AD retained replay bytes exceed native addressability".to_owned())
+            .ok_or_else(|| {
+                "Program AD retained replay bytes exceed native addressability".to_owned()
+            })
     }
 
     /// Accumulate declarations without overflow before presenting a new total.
@@ -116,8 +118,9 @@ impl ReplayMemoryRequest {
     /// including nested requests. This cumulative bound is not a live peak.
     pub fn checked_add(self, other: Self) -> Result<Self, String> {
         let add = |left: usize, right: usize| {
-            left.checked_add(right).ok_or_else(||
-                "Program AD retained replay bytes exceed native addressability".to_owned())
+            left.checked_add(right).ok_or_else(|| {
+                "Program AD retained replay bytes exceed native addressability".to_owned()
+            })
         };
         let request = Self {
             forward_bytes: add(self.forward_bytes, other.forward_bytes)?,
@@ -200,7 +203,9 @@ pub fn with_replay_metadata_admission<R>(
     let previous = ACTIVE_METADATA_ADMISSION.with(|active| active.borrow().clone());
     let inherited = previous.clone();
     let owned: MetadataAdmission = Rc::new(move |bytes| {
-        if let Some(parent) = &inherited { parent(bytes)?; }
+        if let Some(parent) = &inherited {
+            parent(bytes)?;
+        }
         admission(bytes)
     });
     ACTIVE_METADATA_ADMISSION.with(|active| active.replace(Some(owned)));
@@ -214,7 +219,10 @@ pub(crate) fn admit_replay_metadata(bytes: usize) -> Result<(), String> {
         return Err("Program AD parser metadata exceeds native addressability".to_owned());
     }
     let admission = ACTIVE_METADATA_ADMISSION.with(|active| active.borrow().clone());
-    match admission { Some(admission) => admission(bytes), None => Ok(()) }
+    match admission {
+        Some(admission) => admission(bytes),
+        None => Ok(()),
+    }
 }
 
 struct SolverIterationGuard {

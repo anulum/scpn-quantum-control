@@ -152,7 +152,10 @@ pub(crate) fn eigvalsh_output_cotangent(
     }
     let metadata = parse_eigvalsh_2x2(effect_index, operation, input_values)?;
     let outer = eigenvector_outer(&metadata)?;
-    spectral_contributions(effect_index, outer.map(|component| output_cotangent * component))
+    spectral_contributions(
+        effect_index,
+        outer.map(|component| output_cotangent * component),
+    )
 }
 
 /// Return local reverse contributions for one scalar 2x2 `eigvals` output node.
@@ -171,12 +174,15 @@ pub(crate) fn eigvals_output_cotangent(
     let [a, b, c, d] = metadata.values;
     let diagonal_delta = a - d;
     let sign = metadata.sign;
-    spectral_contributions(effect_index, [
-        output_cotangent * (0.5 + sign * diagonal_delta / (2.0 * metadata.gap)),
-        output_cotangent * sign * c / metadata.gap,
-        output_cotangent * sign * b / metadata.gap,
-        output_cotangent * (0.5 - sign * diagonal_delta / (2.0 * metadata.gap)),
-    ])
+    spectral_contributions(
+        effect_index,
+        [
+            output_cotangent * (0.5 + sign * diagonal_delta / (2.0 * metadata.gap)),
+            output_cotangent * sign * c / metadata.gap,
+            output_cotangent * sign * b / metadata.gap,
+            output_cotangent * (0.5 - sign * diagonal_delta / (2.0 * metadata.gap)),
+        ],
+    )
 }
 
 /// Return local reverse contributions for one scalar 2x2 `eig` output node.
@@ -199,12 +205,15 @@ pub(crate) fn eig_output_cotangent(
                 metadata.right_eigenvectors[0][index],
                 metadata.right_eigenvectors[1][index],
             ];
-            spectral_contributions(effect_index, [
-                output_cotangent * left[0] * right[0],
-                output_cotangent * left[0] * right[1],
-                output_cotangent * left[1] * right[0],
-                output_cotangent * left[1] * right[1],
-            ])
+            spectral_contributions(
+                effect_index,
+                [
+                    output_cotangent * left[0] * right[0],
+                    output_cotangent * left[0] * right[1],
+                    output_cotangent * left[1] * right[0],
+                    output_cotangent * left[1] * right[1],
+                ],
+            )
         }
         EigOutput::Eigenvector { column, row } => {
             let mut contributions = reserve_replay_buffer(4)?;
@@ -248,7 +257,10 @@ pub(crate) fn eigh_output_cotangent(
                 metadata.eigenvectors[0][index],
                 metadata.eigenvectors[1][index],
             ];
-            spectral_contributions(effect_index, vector_outer(vector).map(|component| output_cotangent * component))
+            spectral_contributions(
+                effect_index,
+                vector_outer(vector).map(|component| output_cotangent * component),
+            )
         }
         EighOutput::Eigenvector { column, row } => {
             let other = 1 - column;
@@ -268,12 +280,15 @@ pub(crate) fn eigh_output_cotangent(
                 scale * other_vector[1] * column_vector[0],
                 scale * other_vector[1] * column_vector[1],
             ];
-            spectral_contributions(effect_index, [
-                raw[0],
-                0.5 * (raw[1] + raw[2]),
-                0.5 * (raw[2] + raw[1]),
-                raw[3],
-            ])
+            spectral_contributions(
+                effect_index,
+                [
+                    raw[0],
+                    0.5 * (raw[1] + raw[2]),
+                    0.5 * (raw[2] + raw[1]),
+                    raw[3],
+                ],
+            )
         }
     }
 }
@@ -292,7 +307,9 @@ fn spectral_contributions(effect_index: usize, values: [f64; 4]) -> Result<Vec<f
 fn validate_spectral_contributions(effect_index: usize, values: &[f64]) -> Result<(), String> {
     replay_checkpoint()?;
     if values.iter().any(|value| !value.is_finite()) {
-        return Err(format!("effect {effect_index} spectral cotangent entries must be finite"));
+        return Err(format!(
+            "effect {effect_index} spectral cotangent entries must be finite"
+        ));
     }
     Ok(())
 }

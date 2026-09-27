@@ -7,11 +7,12 @@
 // scpn-quantum-engine — Public matrix-power storage and recovery contracts
 
 use scpn_quantum_engine::program_ad_ir::interpret_program_ad_effect_ir_value_and_gradient;
-use scpn_quantum_program_ad_replay::program_ad_lifecycle::{replay_checkpoint, with_replay_checkpoint};
+use scpn_quantum_program_ad_replay::program_ad_lifecycle::{
+    replay_checkpoint, with_replay_checkpoint,
+};
 use serde_json::json;
 use std::cell::Cell;
 use std::rc::Rc;
-
 
 #[test]
 fn public_matrix_power_replay_interrupts_owned_workspaces_and_recovers() {
@@ -25,7 +26,8 @@ fn public_matrix_power_replay_interrupts_owned_workspaces_and_recovers() {
                 Ok(())
             },
             || interpret_program_ad_effect_ir_value_and_gradient(&ir, &[2.0, 0.0, 0.0, 4.0]),
-        ).unwrap();
+        )
+        .unwrap();
         assert!(baseline.supported, "{:?}", baseline.blocked_reasons);
         assert!(calls.get() > 1);
         for boundary in 1..=calls.get() {
@@ -43,14 +45,26 @@ fn public_matrix_power_replay_interrupts_owned_workspaces_and_recovers() {
                 || interpret_program_ad_effect_ir_value_and_gradient(&ir, &[2.0, 0.0, 0.0, 4.0]),
             );
             match refused {
-                Err(reason) => assert!(reason.contains("matrix-power owned cancellation"), "{reason}"),
+                Err(reason) => assert!(
+                    reason.contains("matrix-power owned cancellation"),
+                    "{reason}"
+                ),
                 Ok(result) => {
                     assert!(!result.supported);
-                    assert!(result.blocked_reasons.iter().any(|reason| reason.contains("matrix-power owned cancellation")), "{:?}", result.blocked_reasons);
+                    assert!(
+                        result
+                            .blocked_reasons
+                            .iter()
+                            .any(|reason| reason.contains("matrix-power owned cancellation")),
+                        "{:?}",
+                        result.blocked_reasons
+                    );
                 }
             }
             replay_checkpoint().unwrap();
-            let retry = interpret_program_ad_effect_ir_value_and_gradient(&ir, &[2.0, 0.0, 0.0, 4.0]).unwrap();
+            let retry =
+                interpret_program_ad_effect_ir_value_and_gradient(&ir, &[2.0, 0.0, 0.0, 4.0])
+                    .unwrap();
             assert!(retry.supported, "{:?}", retry.blocked_reasons);
             assert_eq!(retry.value, baseline.value);
             assert_eq!(retry.gradient, baseline.gradient);
@@ -82,19 +96,37 @@ fn public_replay_preserves_diagonal_power_and_inverse_differentials() {
 fn public_replay_rejects_invalid_matrix_metadata_and_recovers() {
     let invalid = [
         ("linalg:matrix_power:2x2:power", "operation metadata"),
-        ("linalg:matrix_power:2x2:power:2:0:0:extra", "operation metadata"),
+        (
+            "linalg:matrix_power:2x2:power:2:0:0:extra",
+            "operation metadata",
+        ),
         ("linalg:matrix_power:2x2x2:power:2:0:0", "shape metadata"),
         ("linalg:matrix_power:2:power:2:0:0", "shape metadata"),
         ("linalg:matrix_power:badx2:power:2:0:0", "row metadata"),
         ("linalg:matrix_power:2xbad:power:2:0:0", "column metadata"),
         ("linalg:matrix_power:0x0:power:2:0:0", "non-empty square"),
         ("linalg:matrix_power:1x2:power:2:0:0", "non-empty square"),
-        ("linalg:matrix_power:3x3:power:2:0:0", "flattened matrix operands"),
+        (
+            "linalg:matrix_power:3x3:power:2:0:0",
+            "flattened matrix operands",
+        ),
         ("linalg:matrix_power:2x2:power:bad:0:0", "exponent metadata"),
-        ("linalg:matrix_power:2x2:power:2:bad:0", "output-row metadata"),
-        ("linalg:matrix_power:2x2:power:2:0:bad", "output-column metadata"),
-        ("linalg:matrix_power:2x2:power:2:2:0", "outside matrix shape"),
-        ("linalg:matrix_power:2x2:power:-9223372036854775808:0:0", "outside replay range"),
+        (
+            "linalg:matrix_power:2x2:power:2:bad:0",
+            "output-row metadata",
+        ),
+        (
+            "linalg:matrix_power:2x2:power:2:0:bad",
+            "output-column metadata",
+        ),
+        (
+            "linalg:matrix_power:2x2:power:2:2:0",
+            "outside matrix shape",
+        ),
+        (
+            "linalg:matrix_power:2x2:power:-9223372036854775808:0:0",
+            "outside replay range",
+        ),
     ];
     for (operation, expected_reason) in invalid {
         assert_refusal_and_retry(operation, expected_reason);
@@ -107,16 +139,15 @@ fn assert_refusal_and_retry(operation: &str, expected_reason: &str) {
     let mut ir: serde_json::Value =
         serde_json::from_str(&matrix_power_weighted_objective_ir(2, [1.0; 4])).unwrap();
     ir["effects"][4]["operation"] = json!(operation);
-    let refused = interpret_program_ad_effect_ir_value_and_gradient(
-        &ir.to_string(),
-        &[2.0, 0.0, 0.0, 4.0],
-    )
-    .unwrap();
+    let refused =
+        interpret_program_ad_effect_ir_value_and_gradient(&ir.to_string(), &[2.0, 0.0, 0.0, 4.0])
+            .unwrap();
     assert!(!refused.supported, "{operation}");
     assert!(
-        refused.blocked_reasons.iter().any(|reason| {
-            reason.contains("matrix_power") && reason.contains(expected_reason)
-        }),
+        refused
+            .blocked_reasons
+            .iter()
+            .any(|reason| { reason.contains("matrix_power") && reason.contains(expected_reason) }),
         "{operation}: {:?}",
         refused.blocked_reasons
     );
@@ -217,7 +248,6 @@ fn matrix_power_weighted_objective_ir(exponent: i64, weights: [f64; 4]) -> Strin
     .to_string()
 }
 
-
 fn scalar_matrix_power_ir(exponent: i64) -> String {
     json!({
         "format":"program_ad_effect_ir.v1",
@@ -236,7 +266,9 @@ fn scalar_matrix_power_ir(exponent: i64) -> String {
 #[test]
 fn public_matrix_power_workspace_and_prefix_budget_boundaries_recover() {
     use scpn_quantum_program_ad_replay::program_ad_ir::interpret_program_ad_effect_ir_forward;
-    use scpn_quantum_program_ad_replay::program_ad_lifecycle::{ReplayMemoryRequest, with_replay_memory_admission};
+    use scpn_quantum_program_ad_replay::program_ad_lifecycle::{
+        with_replay_memory_admission, ReplayMemoryRequest,
+    };
     let headers = 2 * std::mem::size_of::<Vec<f64>>();
     for (exponent, workspace, forward_workspace, value, gradient) in [
         (0, 24usize, 16usize, 1.0, 0.0),
@@ -244,19 +276,35 @@ fn public_matrix_power_workspace_and_prefix_budget_boundaries_recover() {
         (-2, 88 + headers, 32, 0.25, -0.25),
     ] {
         let source = scalar_matrix_power_ir(exponent);
-        let expected = ReplayMemoryRequest { forward_bytes:16, adjoint_bytes:24, intermediate_bytes:workspace };
+        let expected = ReplayMemoryRequest {
+            forward_bytes: 16,
+            adjoint_bytes: 24,
+            intermediate_bytes: workspace,
+        };
         let total = 40 + workspace;
         for budget in [total - 1, total, total + 1] {
             let result = with_replay_memory_admission(
                 move |request| {
                     assert_eq!(request, expected);
-                    if request.total_bytes()? > budget { Err("matrix-power workspace budget refused".to_owned()) } else { Ok(()) }
+                    if request.total_bytes()? > budget {
+                        Err("matrix-power workspace budget refused".to_owned())
+                    } else {
+                        Ok(())
+                    }
                 },
                 || interpret_program_ad_effect_ir_value_and_gradient(&source, &[2.0]),
-            ).unwrap();
+            )
+            .unwrap();
             assert_eq!(result.supported, budget >= total);
-            if result.supported { assert_eq!(result.value, Some(value)); assert_eq!(result.gradient, [gradient]); }
-            else { assert!(result.blocked_reasons.iter().any(|reason| reason.contains("matrix-power workspace budget refused"))); }
+            if result.supported {
+                assert_eq!(result.value, Some(value));
+                assert_eq!(result.gradient, [gradient]);
+            } else {
+                assert!(result
+                    .blocked_reasons
+                    .iter()
+                    .any(|reason| reason.contains("matrix-power workspace budget refused")));
+            }
             let retry = interpret_program_ad_effect_ir_value_and_gradient(&source, &[2.0]).unwrap();
             assert!(retry.supported);
             assert_eq!(retry.value, Some(value));
@@ -266,13 +314,31 @@ fn public_matrix_power_workspace_and_prefix_budget_boundaries_recover() {
         for budget in [forward_total - 1, forward_total, forward_total + 1] {
             let result = with_replay_memory_admission(
                 move |request| {
-                    assert_eq!(request, ReplayMemoryRequest { forward_bytes:16, adjoint_bytes:0, intermediate_bytes:forward_workspace });
-                    if request.total_bytes()? > budget { Err("forward matrix-power budget refused".to_owned()) } else { Ok(()) }
+                    assert_eq!(
+                        request,
+                        ReplayMemoryRequest {
+                            forward_bytes: 16,
+                            adjoint_bytes: 0,
+                            intermediate_bytes: forward_workspace
+                        }
+                    );
+                    if request.total_bytes()? > budget {
+                        Err("forward matrix-power budget refused".to_owned())
+                    } else {
+                        Ok(())
+                    }
                 },
                 || interpret_program_ad_effect_ir_forward(&source, &[2.0]),
             );
-            if budget < forward_total { assert!(result.unwrap_err().contains("forward matrix-power budget refused")); }
-            else { let result = result.unwrap(); assert!(result.supported); assert_eq!(result.value, Some(value)); }
+            if budget < forward_total {
+                assert!(result
+                    .unwrap_err()
+                    .contains("forward matrix-power budget refused"));
+            } else {
+                let result = result.unwrap();
+                assert!(result.supported);
+                assert_eq!(result.value, Some(value));
+            }
         }
     }
 }
@@ -284,14 +350,33 @@ fn public_extreme_power_gradient_refuses_before_numeric_work_and_recovers() {
         let callbacks = Rc::new(Cell::new(0usize));
         let recorded = Rc::clone(&callbacks);
         let result = with_replay_memory_admission(
-            move |_| { recorded.set(recorded.get() + 1); Ok(()) },
-            || interpret_program_ad_effect_ir_value_and_gradient(&scalar_matrix_power_ir(exponent), &[2.0]),
-        ).unwrap();
+            move |_| {
+                recorded.set(recorded.get() + 1);
+                Ok(())
+            },
+            || {
+                interpret_program_ad_effect_ir_value_and_gradient(
+                    &scalar_matrix_power_ir(exponent),
+                    &[2.0],
+                )
+            },
+        )
+        .unwrap();
         assert!(!result.supported);
         assert_eq!(callbacks.get(), 0);
-        assert!(result.blocked_reasons.iter().any(|reason| reason.contains("matrix_power")
-            && (reason.contains("addressable memory") || reason.contains("outside replay range"))), "{:?}", result.blocked_reasons);
-        let retry = interpret_program_ad_effect_ir_value_and_gradient(&scalar_matrix_power_ir(2), &[2.0]).unwrap();
+        assert!(
+            result
+                .blocked_reasons
+                .iter()
+                .any(|reason| reason.contains("matrix_power")
+                    && (reason.contains("addressable memory")
+                        || reason.contains("outside replay range"))),
+            "{:?}",
+            result.blocked_reasons
+        );
+        let retry =
+            interpret_program_ad_effect_ir_value_and_gradient(&scalar_matrix_power_ir(2), &[2.0])
+                .unwrap();
         assert!(retry.supported);
         assert_eq!(retry.value, Some(4.0));
         assert_eq!(retry.gradient, [4.0]);

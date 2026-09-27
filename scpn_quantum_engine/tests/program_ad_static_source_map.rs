@@ -7,7 +7,9 @@
 // scpn-quantum-engine — Public static source-map replay contracts
 
 use scpn_quantum_engine::program_ad_ir::interpret_program_ad_effect_ir_value_and_gradient;
-use scpn_quantum_program_ad_replay::program_ad_lifecycle::{replay_checkpoint, with_replay_checkpoint};
+use scpn_quantum_program_ad_replay::program_ad_lifecycle::{
+    replay_checkpoint, with_replay_checkpoint,
+};
 use std::cell::Cell;
 use std::rc::Rc;
 
@@ -86,9 +88,10 @@ fn malformed_source_maps_refuse_without_poisoning_later_public_replay() {
         let refused = interpret_program_ad_effect_ir_value_and_gradient(&ir, &PARAMETERS).unwrap();
         assert!(!refused.supported, "{operation}");
         assert!(
-            refused.blocked_reasons.iter().any(|reason| {
-                reason.contains("index_map") && reason.contains(expected_reason)
-            }),
+            refused
+                .blocked_reasons
+                .iter()
+                .any(|reason| { reason.contains("index_map") && reason.contains(expected_reason) }),
             "{operation}: {:?}",
             refused.blocked_reasons
         );
@@ -106,18 +109,32 @@ fn malformed_source_maps_refuse_without_poisoning_later_public_replay() {
 
 #[test]
 fn public_source_map_owned_boundaries_refuse_and_restore_independent_replay() {
-    for operation in [ORIGINAL_MAP, "index_map:c2,c-3,c0,c4,c1,c-2", "index_map:s1,s1,s0,s3,s1,s2"] {
+    for operation in [
+        ORIGINAL_MAP,
+        "index_map:c2,c-3,c0,c4,c1,c-2",
+        "index_map:s1,s1,s0,s3,s1,s2",
+    ] {
         let ir = SOURCE_MAP_IR.replace(ORIGINAL_MAP, operation);
         let calls = Rc::new(Cell::new(0usize));
         let recorded = Rc::clone(&calls);
         let baseline = with_replay_checkpoint(
-            move || { recorded.set(recorded.get() + 1); Ok(()) },
+            move || {
+                recorded.set(recorded.get() + 1);
+                Ok(())
+            },
             || interpret_program_ad_effect_ir_value_and_gradient(&ir, &PARAMETERS),
-        ).unwrap();
+        )
+        .unwrap();
         assert!(baseline.supported, "{:?}", baseline.blocked_reasons);
         assert!(calls.get() > 1);
         for boundary in 1..=calls.get() {
-            assert_cancelled_source_map_and_retry(&ir, &PARAMETERS, boundary, baseline.value, &baseline.gradient);
+            assert_cancelled_source_map_and_retry(
+                &ir,
+                &PARAMETERS,
+                boundary,
+                baseline.value,
+                &baseline.gradient,
+            );
         }
     }
 }
@@ -146,7 +163,14 @@ fn assert_cancelled_source_map_and_retry(
         Err(reason) => assert!(reason.contains("source-map owner cancelled"), "{reason}"),
         Ok(result) => {
             assert!(!result.supported);
-            assert!(result.blocked_reasons.iter().any(|reason| reason.contains("source-map owner cancelled")), "{:?}", result.blocked_reasons);
+            assert!(
+                result
+                    .blocked_reasons
+                    .iter()
+                    .any(|reason| reason.contains("source-map owner cancelled")),
+                "{:?}",
+                result.blocked_reasons
+            );
         }
     }
     replay_checkpoint().unwrap();
@@ -178,9 +202,13 @@ fn public_large_source_map_crosses_metadata_blocks_and_preserves_repeated_scatte
     let calls = Rc::new(Cell::new(0usize));
     let recorded = Rc::clone(&calls);
     let baseline = with_replay_checkpoint(
-        move || { recorded.set(recorded.get() + 1); Ok(()) },
+        move || {
+            recorded.set(recorded.get() + 1);
+            Ok(())
+        },
         || interpret_program_ad_effect_ir_value_and_gradient(&source, &[2.0]),
-    ).unwrap();
+    )
+    .unwrap();
     assert!(baseline.supported, "{:?}", baseline.blocked_reasons);
     assert_eq!(baseline.value, Some(512.0));
     assert_eq!(baseline.gradient, [256.0]);
@@ -194,15 +222,31 @@ fn public_large_source_map_crosses_metadata_blocks_and_preserves_repeated_scatte
     let constant_result = with_replay_checkpoint(
         || Ok(()),
         || interpret_program_ad_effect_ir_value_and_gradient(&constant_only.to_string(), &[2.0]),
-    ).unwrap();
-    assert!(constant_result.supported, "{:?}", constant_result.blocked_reasons);
-    assert_eq!(constant_result.value.unwrap().to_bits(), (-0.0_f64).to_bits());
+    )
+    .unwrap();
+    assert!(
+        constant_result.supported,
+        "{:?}",
+        constant_result.blocked_reasons
+    );
+    assert_eq!(
+        constant_result.value.unwrap().to_bits(),
+        (-0.0_f64).to_bits()
+    );
     assert_eq!(constant_result.gradient, [0.0]);
     let mut malformed = ir;
     malformed["ssa_values"][1]["shape"] = serde_json::json!([256]);
-    let refused = interpret_program_ad_effect_ir_value_and_gradient(&malformed.to_string(), &[2.0]).unwrap();
+    let refused =
+        interpret_program_ad_effect_ir_value_and_gradient(&malformed.to_string(), &[2.0]).unwrap();
     assert!(!refused.supported);
-    assert!(refused.blocked_reasons.iter().any(|reason| reason.contains("index_map target size")), "{:?}", refused.blocked_reasons);
+    assert!(
+        refused
+            .blocked_reasons
+            .iter()
+            .any(|reason| reason.contains("index_map target size")),
+        "{:?}",
+        refused.blocked_reasons
+    );
     let retry = interpret_program_ad_effect_ir_value_and_gradient(&source, &[2.0]).unwrap();
     assert!(retry.supported);
     assert_eq!(retry.value, Some(512.0));

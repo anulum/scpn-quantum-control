@@ -320,7 +320,7 @@ describe("real WASM allocation ownership", () => {
   });
 
   it("releases each real buffer after allocation, execution or cleanup traps", async () => {
-    for (fault of ["output allocation", "execution", "nonfinite output", "input free", "output free"] as const) {
+    for (const fault of ["output allocation", "execution", "nonfinite output", "input free", "output free"] as const) {
       const { instance } = await WebAssembly.instantiate(wasmBytes, {});
       const exports = instance.exports as unknown as KuramotoExports;
       const allocated: Array<[number, number]> = [];

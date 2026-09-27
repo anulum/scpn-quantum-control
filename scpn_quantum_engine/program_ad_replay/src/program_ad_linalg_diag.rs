@@ -85,11 +85,14 @@ pub(crate) fn diag_workspace_bytes(
     requires_adjoint: bool,
 ) -> Result<usize, String> {
     if input_count != 1 {
-        return Err(format!("effect {effect_index} diag replay requires exactly one source operand"));
+        return Err(format!(
+            "effect {effect_index} diag replay requires exactly one source operand"
+        ));
     }
     parse_diag(effect_index, operation)?;
     let copies = if requires_adjoint { 2 } else { 1 };
-    input_count.checked_mul(copies)
+    input_count
+        .checked_mul(copies)
         .and_then(|count| count.checked_mul(std::mem::size_of::<f64>()))
         .filter(|bytes| *bytes <= isize::MAX as usize)
         .ok_or_else(|| "diag workspace exceeds native addressable memory".to_owned())
@@ -97,13 +100,18 @@ pub(crate) fn diag_workspace_bytes(
 
 fn parse_diag(effect_index: usize, operation: &str) -> Result<DiagMetadata, String> {
     replay_checkpoint()?;
-    for _ in operation.as_bytes().chunks(256) { replay_checkpoint()?; }
+    for _ in operation.as_bytes().chunks(256) {
+        replay_checkpoint()?;
+    }
     let mut fields = operation.split(':');
     let mut parts = [""; 7];
     for part in &mut parts {
-        *part = fields.next().ok_or_else(|| format!("effect {effect_index} diag operation metadata is malformed"))?;
+        *part = fields
+            .next()
+            .ok_or_else(|| format!("effect {effect_index} diag operation metadata is malformed"))?;
     }
-    if fields.next().is_some() || parts[0] != "linalg" || parts[1] != "diag" || parts[3] != "offset" {
+    if fields.next().is_some() || parts[0] != "linalg" || parts[1] != "diag" || parts[3] != "offset"
+    {
         return Err(format!(
             "effect {effect_index} diag operation metadata is malformed"
         ));
@@ -143,18 +151,24 @@ fn parse_shape_label(effect_index: usize, label: &str) -> Result<([usize; 2], us
         let slot = shape.get_mut(rank).ok_or_else(|| {
             format!("effect {effect_index} diag source shape must have rank 1 or 2")
         })?;
-        *slot = part.parse::<usize>()
+        *slot = part
+            .parse::<usize>()
             .map_err(|_| format!("effect {effect_index} diag shape metadata is malformed"))?;
         if *slot == 0 {
-            return Err(format!("effect {effect_index} diag dimensions must be positive"));
+            return Err(format!(
+                "effect {effect_index} diag dimensions must be positive"
+            ));
         }
         rank += 1;
     }
     let mut size = 1usize;
     for dimension in &shape[..rank] {
-        size = size.checked_mul(*dimension)
+        size = size
+            .checked_mul(*dimension)
             .filter(|entries| *entries <= isize::MAX as usize / std::mem::size_of::<f64>())
-            .ok_or_else(|| format!("effect {effect_index} diag source bytes exceed native addressability"))?;
+            .ok_or_else(|| {
+                format!("effect {effect_index} diag source bytes exceed native addressability")
+            })?;
     }
     Ok((shape, rank))
 }
@@ -178,9 +192,14 @@ fn validate_construct_metadata(effect_index: usize, metadata: &DiagMetadata) -> 
         .and_then(|offset| usize::try_from(offset).ok())
         .and_then(|offset| metadata.shape[0].checked_add(offset))
         .ok_or_else(|| format!("effect {effect_index} diag construct shape overflows"))?;
-    output_size.checked_mul(output_size)
+    output_size
+        .checked_mul(output_size)
         .filter(|entries| *entries <= isize::MAX as usize / std::mem::size_of::<f64>())
-        .ok_or_else(|| format!("effect {effect_index} diag construct output bytes exceed native addressability"))?;
+        .ok_or_else(|| {
+            format!(
+                "effect {effect_index} diag construct output bytes exceed native addressability"
+            )
+        })?;
     replay_checkpoint()?;
     Ok(())
 }
@@ -202,7 +221,9 @@ fn validate_extract_metadata(effect_index: usize, metadata: &DiagMetadata) -> Re
 }
 
 fn selected_diagonal_length(rows: usize, cols: usize, offset: i64) -> usize {
-    let Ok(shift) = usize::try_from(offset.unsigned_abs()) else { return 0; };
+    let Ok(shift) = usize::try_from(offset.unsigned_abs()) else {
+        return 0;
+    };
     if offset >= 0 {
         rows.min(cols.saturating_sub(shift))
     } else {

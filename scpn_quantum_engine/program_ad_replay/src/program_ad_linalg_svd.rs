@@ -16,9 +16,9 @@
 //! repeated singular values, singular-vector outputs, pseudoinverses, and
 //! dynamic linalg metadata because those surfaces need separate promotion.
 
-use nalgebra::{DMatrix, Dyn, VecStorage};
 use crate::program_ad_ir::reserve_replay_buffer;
 use crate::program_ad_lifecycle::replay_checkpoint;
+use nalgebra::{DMatrix, Dyn, VecStorage};
 
 include!("program_ad_linalg_svd/workspace.rs");
 
@@ -63,10 +63,16 @@ pub(crate) fn svdvals_output_cotangent(
         ));
     }
     let metadata = parse_svdvals(effect_index, operation, input_values)?;
-    let mut contributions = reserve_replay_buffer(matrix_entry_count(effect_index, metadata.rows, metadata.cols)?)?;
+    let mut contributions = reserve_replay_buffer(matrix_entry_count(
+        effect_index,
+        metadata.rows,
+        metadata.cols,
+    )?)?;
     for row in 0..metadata.rows {
         for col in 0..metadata.cols {
-            if col % 256 == 0 { replay_checkpoint()?; }
+            if col % 256 == 0 {
+                replay_checkpoint()?;
+            }
             contributions.push(
                 output_cotangent
                     * metadata.left_vectors[(row, metadata.output_index)]
@@ -84,23 +90,30 @@ fn parse_svdvals(
     operation: &str,
     input_values: &[f64],
 ) -> Result<SvdvalsMetadata, String> {
-    let (rows, cols, output_index) = validate_svdvals_layout(effect_index, operation, input_values.len())?;
+    let (rows, cols, output_index) =
+        validate_svdvals_layout(effect_index, operation, input_values.len())?;
     let output_size = rows.min(cols);
     let expected_inputs = matrix_entry_count(effect_index, rows, cols)?;
     validate_finite_buffer(effect_index, "inputs", input_values)?;
     let mut column_major = reserve_replay_buffer(expected_inputs)?;
     for col in 0..cols {
         for row in 0..rows {
-            if row % 256 == 0 { replay_checkpoint()?; }
+            if row % 256 == 0 {
+                replay_checkpoint()?;
+            }
             column_major.push(input_values[row * cols + col]);
         }
     }
     replay_checkpoint()?;
     let matrix = DMatrix::from_data(VecStorage::new(Dyn(rows), Dyn(cols), column_major));
-    let decomposition = matrix.try_svd_unordered(
-        true, true, f64::EPSILON * 5.0,
-        crate::program_ad_lifecycle::replay_solver_iterations(),
-    ).ok_or_else(|| format!("effect {effect_index} SVD solver iteration limit exceeded"))?;
+    let decomposition = matrix
+        .try_svd_unordered(
+            true,
+            true,
+            f64::EPSILON * 5.0,
+            crate::program_ad_lifecycle::replay_solver_iterations(),
+        )
+        .ok_or_else(|| format!("effect {effect_index} SVD solver iteration limit exceeded"))?;
     replay_checkpoint()?;
     let mut singular_values: Vec<f64> = decomposition.singular_values.data.into();
     if singular_values.len() != output_size {
@@ -131,17 +144,25 @@ fn parse_svdvals(
         replay_checkpoint()?;
         let mut largest = index;
         for candidate in (index + 1)..output_size {
-            if candidate % 256 == 0 { replay_checkpoint()?; }
-            if singular_values[candidate] > singular_values[largest] { largest = candidate; }
+            if candidate % 256 == 0 {
+                replay_checkpoint()?;
+            }
+            if singular_values[candidate] > singular_values[largest] {
+                largest = candidate;
+            }
         }
         if largest != index {
             singular_values.swap(index, largest);
             for row in 0..rows {
-                if row % 256 == 0 { replay_checkpoint()?; }
+                if row % 256 == 0 {
+                    replay_checkpoint()?;
+                }
                 left_vectors.swap((row, index), (row, largest));
             }
             for col in 0..cols {
-                if col % 256 == 0 { replay_checkpoint()?; }
+                if col % 256 == 0 {
+                    replay_checkpoint()?;
+                }
                 right_vectors_t.swap((index, col), (largest, col));
             }
         }
@@ -162,11 +183,15 @@ fn parse_svdvals_metadata(
     operation: &str,
 ) -> Result<(usize, usize, usize), String> {
     replay_checkpoint()?;
-    for _ in operation.as_bytes().chunks(256) { replay_checkpoint()?; }
+    for _ in operation.as_bytes().chunks(256) {
+        replay_checkpoint()?;
+    }
     let mut fields = operation.split(':');
     let mut parts = [""; 4];
     for part in &mut parts {
-        *part = fields.next().ok_or_else(|| format!("effect {effect_index} svdvals operation metadata is malformed"))?;
+        *part = fields.next().ok_or_else(|| {
+            format!("effect {effect_index} svdvals operation metadata is malformed")
+        })?;
     }
     if fields.next().is_some() || parts[0] != "linalg" || parts[1] != "svdvals" {
         return Err(format!(
@@ -174,7 +199,10 @@ fn parse_svdvals_metadata(
         ));
     }
     let mut dimensions = parts[2].split('x');
-    let shape = [dimensions.next().unwrap_or(""), dimensions.next().unwrap_or("")];
+    let shape = [
+        dimensions.next().unwrap_or(""),
+        dimensions.next().unwrap_or(""),
+    ];
     if dimensions.next().is_some() || shape.iter().any(|label| label.is_empty()) {
         return Err(format!(
             "effect {effect_index} svdvals shape metadata is malformed"
@@ -200,19 +228,27 @@ fn parse_svdvals_metadata(
 fn validate_singular_values(effect_index: usize, singular_values: &[f64]) -> Result<(), String> {
     let mut scale = 1.0_f64;
     for (index, value) in singular_values.iter().enumerate() {
-        if index % 256 == 0 { replay_checkpoint()?; }
+        if index % 256 == 0 {
+            replay_checkpoint()?;
+        }
         scale = scale.max(value.abs());
     }
     for (index, value) in singular_values.iter().enumerate() {
-        if index % 256 == 0 { replay_checkpoint()?; }
+        if index % 256 == 0 {
+            replay_checkpoint()?;
+        }
         if *value <= POSITIVE_SINGULAR_VALUE_TOLERANCE * scale {
-            return Err(format!("effect {effect_index} svdvals gradient requires positive singular values"));
+            return Err(format!(
+                "effect {effect_index} svdvals gradient requires positive singular values"
+            ));
         }
     }
     for left in 0..singular_values.len() {
         replay_checkpoint()?;
         for right in (left + 1)..singular_values.len() {
-            if right % 256 == 0 { replay_checkpoint()?; }
+            if right % 256 == 0 {
+                replay_checkpoint()?;
+            }
             if (singular_values[left] - singular_values[right]).abs()
                 <= DISTINCT_SINGULAR_VALUE_TOLERANCE * scale
             {
@@ -228,14 +264,20 @@ fn validate_singular_values(effect_index: usize, singular_values: &[f64]) -> Res
 fn matrix_entry_count(effect_index: usize, rows: usize, cols: usize) -> Result<usize, String> {
     rows.checked_mul(cols)
         .filter(|entries| *entries <= isize::MAX as usize / std::mem::size_of::<f64>())
-        .ok_or_else(|| format!("effect {effect_index} svdvals matrix bytes exceed native addressability"))
+        .ok_or_else(|| {
+            format!("effect {effect_index} svdvals matrix bytes exceed native addressability")
+        })
 }
 
 fn validate_finite_buffer(effect_index: usize, role: &str, values: &[f64]) -> Result<(), String> {
     for (index, value) in values.iter().enumerate() {
-        if index % 256 == 0 { replay_checkpoint()?; }
+        if index % 256 == 0 {
+            replay_checkpoint()?;
+        }
         if !value.is_finite() {
-            return Err(format!("effect {effect_index} svdvals {role} must be finite"));
+            return Err(format!(
+                "effect {effect_index} svdvals {role} must be finite"
+            ));
         }
     }
     replay_checkpoint()?;

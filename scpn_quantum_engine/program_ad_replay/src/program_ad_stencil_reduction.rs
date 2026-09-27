@@ -88,7 +88,9 @@ pub(crate) fn stencil_output_cotangent(
         contribution[ravel_index(&spec.source_shape, &target_index)?] += cotangent * coefficient;
     }
     for (index, value) in contribution.iter().enumerate() {
-        if index % 256 == 0 { replay_checkpoint()?; }
+        if index % 256 == 0 {
+            replay_checkpoint()?;
+        }
         if !value.is_finite() {
             return Err(format!(
                 "effect {effect_index} stencil gradient compact adjoint contribution must be finite"
@@ -115,9 +117,13 @@ fn validate_source(
         ));
     }
     for (index, value) in source_values.iter().enumerate() {
-        if index % 256 == 0 { replay_checkpoint()?; }
+        if index % 256 == 0 {
+            replay_checkpoint()?;
+        }
         if !value.is_finite() {
-            return Err(format!("effect {effect_index} stencil gradient inputs must be finite"));
+            return Err(format!(
+                "effect {effect_index} stencil gradient inputs must be finite"
+            ));
         }
     }
     replay_checkpoint()?;
@@ -156,11 +162,12 @@ fn shape_size(effect_index: usize, shape: &[usize]) -> Result<usize, String> {
     let mut size = 1usize;
     for dimension in shape {
         replay_checkpoint()?;
-        size = size.checked_mul(*dimension)
+        size = size
+            .checked_mul(*dimension)
             .filter(|size| *size <= isize::MAX as usize / std::mem::size_of::<f64>())
             .ok_or_else(|| {
-            format!("effect {effect_index} stencil gradient shape size overflowed")
-        })?;
+                format!("effect {effect_index} stencil gradient shape size overflowed")
+            })?;
     }
     Ok(size)
 }
@@ -197,7 +204,8 @@ fn ravel_index(shape: &[usize], index: &[usize]) -> Result<usize, String> {
         if index[axis] >= *dimension {
             return Err("stencil source index is outside shape".to_owned());
         }
-        flat_index = flat_index.checked_mul(*dimension)
+        flat_index = flat_index
+            .checked_mul(*dimension)
             .and_then(|offset| offset.checked_add(index[axis]))
             .ok_or_else(|| "stencil source index overflows".to_owned())?;
     }
@@ -233,7 +241,11 @@ fn gradient_coefficients(
             coordinate_gradient_coefficients(position, axis_size, coordinates, spec.edge_order)
         }
     };
-    if coefficients.as_slice().iter().all(|(_, value)| value.is_finite()) {
+    if coefficients
+        .as_slice()
+        .iter()
+        .all(|(_, value)| value.is_finite())
+    {
         Ok(coefficients)
     } else {
         Err(format!(
@@ -256,7 +268,10 @@ fn scalar_gradient_coefficients(
     }
     if position == axis_size - 1 {
         if edge_order == 1 {
-            return StencilCoefficients::Pair([(axis_size - 2, -1.0 / dx), (axis_size - 1, 1.0 / dx)]);
+            return StencilCoefficients::Pair([
+                (axis_size - 2, -1.0 / dx),
+                (axis_size - 1, 1.0 / dx),
+            ]);
         }
         return StencilCoefficients::Triple([
             (axis_size - 3, 0.5 / dx),
@@ -288,7 +303,10 @@ fn coordinate_gradient_coefficients(
     if position == axis_size - 1 {
         let dx2 = coordinates[axis_size - 1] - coordinates[axis_size - 2];
         if edge_order == 1 {
-            return StencilCoefficients::Pair([(axis_size - 2, -1.0 / dx2), (axis_size - 1, 1.0 / dx2)]);
+            return StencilCoefficients::Pair([
+                (axis_size - 2, -1.0 / dx2),
+                (axis_size - 1, 1.0 / dx2),
+            ]);
         }
         let dx1 = coordinates[axis_size - 2] - coordinates[axis_size - 3];
         return StencilCoefficients::Triple([

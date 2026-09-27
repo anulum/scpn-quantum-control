@@ -70,7 +70,11 @@ pub(crate) fn cumulative_output_value(
     replay_checkpoint()?;
     let spec = parse_cumulative_operation(effect_index, operation, source_values.len())?;
     validate_source(effect_index, &spec, source_values)?;
-    let mut value = if spec.kind == CumulativeKind::Cumprod { 1.0 } else { -0.0 };
+    let mut value = if spec.kind == CumulativeKind::Cumprod {
+        1.0
+    } else {
+        -0.0
+    };
     match spec.kind {
         CumulativeKind::Cumsum | CumulativeKind::Cumprod => {
             for source_index in prefix_indices(effect_index, &spec)? {
@@ -116,7 +120,9 @@ pub(crate) fn cumulative_output_cotangent(
     validate_source(effect_index, &spec, source_values)?;
     let mut contribution = cumulative_buffer(source_values.len())?;
     for index in 0..source_values.len() {
-        if index.is_multiple_of(256) { replay_checkpoint()?; }
+        if index.is_multiple_of(256) {
+            replay_checkpoint()?;
+        }
         contribution.push(0.0_f64);
     }
     match spec.kind {
@@ -148,10 +154,13 @@ pub(crate) fn cumulative_output_cotangent(
         }
     }
     for (index, value) in contribution.iter().enumerate() {
-        if index.is_multiple_of(256) { replay_checkpoint()?; }
+        if index.is_multiple_of(256) {
+            replay_checkpoint()?;
+        }
         if !value.is_finite() {
             return Err(format!(
-                "effect {effect_index} {} compact adjoint contribution must be finite", spec.kind.label()
+                "effect {effect_index} {} compact adjoint contribution must be finite",
+                spec.kind.label()
             ));
         }
     }
@@ -171,10 +180,19 @@ fn parse_cumulative_operation(
     let mut source_shape = cumulative_buffer(layout.rank)?;
     for entry in layout.shape_label.split('x') {
         replay_checkpoint()?;
-        source_shape.push(entry.parse::<usize>().map_err(|_| "cumulative validated shape dimension is invalid".to_owned())?);
+        source_shape.push(
+            entry
+                .parse::<usize>()
+                .map_err(|_| "cumulative validated shape dimension is invalid".to_owned())?,
+        );
     }
-    Ok(CumulativeSpec { kind: layout.kind, source_shape, axis: layout.axis,
-        order: layout.order, output_index: layout.output_index })
+    Ok(CumulativeSpec {
+        kind: layout.kind,
+        source_shape,
+        axis: layout.axis,
+        order: layout.order,
+        output_index: layout.output_index,
+    })
 }
 
 fn validate_source(
@@ -192,10 +210,13 @@ fn validate_source(
         ));
     }
     for (index, value) in source_values.iter().enumerate() {
-        if index.is_multiple_of(256) { replay_checkpoint()?; }
+        if index.is_multiple_of(256) {
+            replay_checkpoint()?;
+        }
         if !value.is_finite() {
             return Err(format!(
-                "effect {effect_index} {} source values must be finite", spec.kind.label()
+                "effect {effect_index} {} source values must be finite",
+                spec.kind.label()
             ));
         }
     }
@@ -211,12 +232,14 @@ fn validate_source(
 }
 
 fn cumulative_buffer<T>(count: usize) -> Result<Vec<T>, String> {
-    count.checked_mul(std::mem::size_of::<T>())
+    count
+        .checked_mul(std::mem::size_of::<T>())
         .filter(|bytes| *bytes <= isize::MAX as usize)
         .ok_or_else(|| "cumulative buffer exceeds native addressable memory".to_owned())?;
     replay_checkpoint()?;
     let mut buffer = Vec::new();
-    buffer.try_reserve_exact(count)
+    buffer
+        .try_reserve_exact(count)
         .map_err(|error| format!("cumulative buffer allocation refused: {error}"))?;
     Ok(buffer)
 }

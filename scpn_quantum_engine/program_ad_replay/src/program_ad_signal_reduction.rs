@@ -127,9 +127,13 @@ pub(crate) fn signal_output_cotangent(
         Ok(())
     })?;
     for (index, value) in contribution.iter().enumerate() {
-        if index % 256 == 0 { replay_checkpoint()?; }
+        if index % 256 == 0 {
+            replay_checkpoint()?;
+        }
         if !value.is_finite() {
-            return Err(format!("effect {effect_index} signal cotangent entries must be finite"));
+            return Err(format!(
+                "effect {effect_index} signal cotangent entries must be finite"
+            ));
         }
     }
     replay_checkpoint()?;
@@ -138,7 +142,9 @@ pub(crate) fn signal_output_cotangent(
 
 fn parse_signal_operation(effect_index: usize, operation: &str) -> Result<SignalSpec, String> {
     replay_checkpoint()?;
-    for _ in operation.as_bytes().chunks(256) { replay_checkpoint()?; }
+    for _ in operation.as_bytes().chunks(256) {
+        replay_checkpoint()?;
+    }
     let mut fields = operation.split(':');
     let mut parts = [""; 10];
     for part in &mut parts {
@@ -216,7 +222,9 @@ fn validate_source(
     replay_checkpoint()?;
     validate_signal_source_count(effect_index, spec, source_values.len())?;
     for (index, value) in source_values.iter().enumerate() {
-        if index % 256 == 0 { replay_checkpoint()?; }
+        if index % 256 == 0 {
+            replay_checkpoint()?;
+        }
         if !value.is_finite() {
             return Err(format!(
                 "effect {effect_index} signal {} inputs must be finite",
@@ -228,20 +236,34 @@ fn validate_source(
     Ok(())
 }
 
-fn output_window(left_size: usize, right_size: usize, mode: SignalMode) -> Result<(usize, usize), String> {
+fn output_window(
+    left_size: usize,
+    right_size: usize,
+    mode: SignalMode,
+) -> Result<(usize, usize), String> {
     let minimum = left_size.min(right_size);
     let maximum = left_size.max(right_size);
-    let minimum_last = minimum.checked_sub(1)
+    let minimum_last = minimum
+        .checked_sub(1)
         .ok_or_else(|| "signal operand sizes must be positive".to_owned())?;
     let (start, output_size) = match mode {
-        SignalMode::Full => (0, left_size.checked_add(right_size)
-            .and_then(|size| size.checked_sub(1))
-            .ok_or_else(|| "signal full output size overflows".to_owned())?),
+        SignalMode::Full => (
+            0,
+            left_size
+                .checked_add(right_size)
+                .and_then(|size| size.checked_sub(1))
+                .ok_or_else(|| "signal full output size overflows".to_owned())?,
+        ),
         SignalMode::Same => (minimum_last / 2, maximum),
-        SignalMode::Valid => (minimum_last, maximum.checked_sub(minimum_last)
-            .ok_or_else(|| "signal valid output size underflows".to_owned())?),
+        SignalMode::Valid => (
+            minimum_last,
+            maximum
+                .checked_sub(minimum_last)
+                .ok_or_else(|| "signal valid output size underflows".to_owned())?,
+        ),
     };
-    let stop = start.checked_add(output_size)
+    let stop = start
+        .checked_add(output_size)
         .ok_or_else(|| "signal output window overflows".to_owned())?;
     Ok((start, stop))
 }
@@ -257,7 +279,9 @@ fn full_output_index(effect_index: usize, spec: &SignalSpec) -> Result<usize, St
             spec.output_index
         ));
     }
-    start.checked_add(spec.output_index).ok_or_else(|| "signal output index overflows".to_owned())
+    start
+        .checked_add(spec.output_index)
+        .ok_or_else(|| "signal output index overflows".to_owned())
 }
 
 fn visit_signal_terms(
@@ -266,17 +290,20 @@ fn visit_signal_terms(
     mut visit: impl FnMut(usize, usize) -> Result<(), String>,
 ) -> Result<(), String> {
     replay_checkpoint()?;
-    let next = full_index.checked_add(1)
+    let next = full_index
+        .checked_add(1)
         .ok_or_else(|| "signal term index overflows".to_owned())?;
     let left_start = next.saturating_sub(spec.right_size);
     let left_stop = spec.left_size.min(next);
     for left_index in left_start..left_stop {
         replay_checkpoint()?;
-        let convolve_right_index = full_index.checked_sub(left_index)
+        let convolve_right_index = full_index
+            .checked_sub(left_index)
             .ok_or_else(|| "signal convolve right index underflowed".to_owned())?;
         let right_index = match spec.kind {
             SignalKind::Convolve => convolve_right_index,
-            SignalKind::Correlate => convolve_right_index.checked_add(1)
+            SignalKind::Correlate => convolve_right_index
+                .checked_add(1)
                 .and_then(|offset| spec.right_size.checked_sub(offset))
                 .ok_or_else(|| "signal correlate right index underflowed".to_owned())?,
         };
@@ -295,9 +322,13 @@ fn validate_signal_source_count(
     input_count: usize,
 ) -> Result<usize, String> {
     replay_checkpoint()?;
-    let expected_size = spec.left_size.checked_add(spec.right_size)
+    let expected_size = spec
+        .left_size
+        .checked_add(spec.right_size)
         .filter(|size| *size <= isize::MAX as usize / std::mem::size_of::<f64>())
-        .ok_or_else(|| format!("effect {effect_index} signal input bytes exceed native addressability"))?;
+        .ok_or_else(|| {
+            format!("effect {effect_index} signal input bytes exceed native addressability")
+        })?;
     if input_count != expected_size {
         return Err(format!(
             "effect {effect_index} signal {} expects {expected_size} inputs, got {}",

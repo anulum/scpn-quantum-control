@@ -7,7 +7,9 @@
 // SCPN Quantum Control — public program-AD lifecycle ownership tests
 
 use scpn_quantum_program_ad_replay::program_ad_ir::interpret_program_ad_effect_ir_value_and_gradient;
-use scpn_quantum_program_ad_replay::program_ad_lifecycle::{replay_checkpoint, with_replay_checkpoint};
+use scpn_quantum_program_ad_replay::program_ad_lifecycle::{
+    replay_checkpoint, with_replay_checkpoint,
+};
 use std::cell::Cell;
 use std::rc::Rc;
 
@@ -29,9 +31,13 @@ fn public_replay_observes_each_owned_boundary_and_recovers() {
     let observed = Rc::new(Cell::new(0usize));
     let recorded = Rc::clone(&observed);
     let result = with_replay_checkpoint(
-        move || { recorded.set(recorded.get() + 1); Ok(()) },
+        move || {
+            recorded.set(recorded.get() + 1);
+            Ok(())
+        },
         || interpret_program_ad_effect_ir_value_and_gradient(IR, &[2.0]),
-    ).unwrap();
+    )
+    .unwrap();
     assert!(result.supported, "{:?}", result.blocked_reasons);
     assert_eq!(result.value, Some(2.0));
     assert_eq!(result.gradient, [1.0]);
@@ -42,7 +48,11 @@ fn public_replay_observes_each_owned_boundary_and_recovers() {
         let result = with_replay_checkpoint(
             move || {
                 recorded.set(recorded.get() + 1);
-                if recorded.get() >= boundary { Err("owned replay interrupted".to_owned()) } else { Ok(()) }
+                if recorded.get() >= boundary {
+                    Err("owned replay interrupted".to_owned())
+                } else {
+                    Ok(())
+                }
             },
             || interpret_program_ad_effect_ir_value_and_gradient(IR, &[2.0]),
         );
@@ -50,7 +60,14 @@ fn public_replay_observes_each_owned_boundary_and_recovers() {
             Err(reason) => assert!(reason.contains("owned replay interrupted"), "{reason}"),
             Ok(result) => {
                 assert!(!result.supported);
-                assert!(result.blocked_reasons.iter().any(|reason| reason.contains("owned replay interrupted")), "{:?}", result.blocked_reasons);
+                assert!(
+                    result
+                        .blocked_reasons
+                        .iter()
+                        .any(|reason| reason.contains("owned replay interrupted")),
+                    "{:?}",
+                    result.blocked_reasons
+                );
             }
         }
         replay_checkpoint().unwrap();
@@ -73,15 +90,18 @@ fn public_nested_policy_cannot_clear_parent_refusal() {
 
 #[test]
 fn public_policy_restores_parent_after_return_and_panic() {
-    with_replay_checkpoint(|| Err("retained parent".to_owned()), || {
-        with_replay_checkpoint(|| Ok(()), || {});
-        assert_eq!(replay_checkpoint().unwrap_err(), "retained parent");
-        let panic = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            with_replay_checkpoint(|| Ok(()), || panic!("owned child unwind"));
-        }));
-        assert!(panic.is_err());
-        assert_eq!(replay_checkpoint().unwrap_err(), "retained parent");
-    });
+    with_replay_checkpoint(
+        || Err("retained parent".to_owned()),
+        || {
+            with_replay_checkpoint(|| Ok(()), || {});
+            assert_eq!(replay_checkpoint().unwrap_err(), "retained parent");
+            let panic = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                with_replay_checkpoint(|| Ok(()), || panic!("owned child unwind"));
+            }));
+            assert!(panic.is_err());
+            assert_eq!(replay_checkpoint().unwrap_err(), "retained parent");
+        },
+    );
     replay_checkpoint().unwrap();
 }
 
@@ -97,18 +117,19 @@ fn public_policy_callback_allows_owned_reentrant_replay() {
             Ok(())
         },
         replay_checkpoint,
-    ).unwrap();
+    )
+    .unwrap();
     assert!(entered.get());
     replay_checkpoint().unwrap();
 }
-
 
 #[test]
 fn public_checkpointed_cumulative_sum_preserves_signed_zero() {
     let result = with_replay_checkpoint(
         || Ok(()),
         || interpret_program_ad_effect_ir_value_and_gradient(IR, &[-0.0]),
-    ).unwrap();
+    )
+    .unwrap();
     assert!(result.supported, "{:?}", result.blocked_reasons);
     assert_eq!(result.value.unwrap().to_bits(), (-0.0_f64).to_bits());
     assert_eq!(result.gradient, [1.0]);
@@ -141,11 +162,19 @@ fn public_shaped_unary_reductions_observe_owned_boundaries_and_recover() {
             let calls = Rc::new(Cell::new(0usize));
             let recorded = Rc::clone(&calls);
             let baseline = with_replay_checkpoint(
-                move || { recorded.set(recorded.get() + 1); Ok(()) },
+                move || {
+                    recorded.set(recorded.get() + 1);
+                    Ok(())
+                },
                 || interpret_program_ad_effect_ir_value_and_gradient(&ir, &inputs),
-            ).unwrap();
+            )
+            .unwrap();
             assert!(baseline.supported, "{:?}", baseline.blocked_reasons);
-            let scale = if reduction == "mean" { 1.0 / inputs.len() as f64 } else { 1.0 };
+            let scale = if reduction == "mean" {
+                1.0 / inputs.len() as f64
+            } else {
+                1.0
+            };
             let expected = expected_item * inputs.len() as f64 * scale;
             assert!((baseline.value.unwrap() - expected).abs() < 1.0e-10);
             assert_eq!(baseline.gradient.len(), inputs.len());
@@ -171,11 +200,19 @@ fn public_shaped_unary_reductions_observe_owned_boundaries_and_recover() {
                     Err(reason) => assert!(reason.contains("shaped replay cancelled"), "{reason}"),
                     Ok(result) => {
                         assert!(!result.supported);
-                        assert!(result.blocked_reasons.iter().any(|reason| reason.contains("shaped replay cancelled")), "{:?}", result.blocked_reasons);
+                        assert!(
+                            result
+                                .blocked_reasons
+                                .iter()
+                                .any(|reason| reason.contains("shaped replay cancelled")),
+                            "{:?}",
+                            result.blocked_reasons
+                        );
                     }
                 }
                 replay_checkpoint().unwrap();
-                let retry = interpret_program_ad_effect_ir_value_and_gradient(&ir, &inputs).unwrap();
+                let retry =
+                    interpret_program_ad_effect_ir_value_and_gradient(&ir, &inputs).unwrap();
                 assert!(retry.supported, "{:?}", retry.blocked_reasons);
                 assert_eq!(retry.value, baseline.value);
                 assert_eq!(retry.gradient, baseline.gradient);
@@ -191,7 +228,8 @@ fn public_sum_and_mean_lifecycle_preserve_signed_zero() {
         let result = with_replay_checkpoint(
             || Ok(()),
             || interpret_program_ad_effect_ir_value_and_gradient(&ir, &[-0.0]),
-        ).unwrap();
+        )
+        .unwrap();
         assert!(result.supported, "{:?}", result.blocked_reasons);
         assert_eq!(result.value.unwrap().to_bits(), (-0.0_f64).to_bits());
         assert_eq!(result.gradient, [1.0]);
@@ -211,7 +249,11 @@ fn public_structural_replay_observes_owned_buffers_and_recovers() {
         ("mean:axis:1", vec![3, 2], vec![3], false, 0.75, 0.5),
     ] {
         let count = source_shape.iter().product::<usize>();
-        let effect_inputs = if duplicated { vec!["%0", "%0"] } else { vec!["%0"] };
+        let effect_inputs = if duplicated {
+            vec!["%0", "%0"]
+        } else {
+            vec!["%0"]
+        };
         let ir = serde_json::json!({
             "format": "program_ad_effect_ir.v1",
             "ssa_values": [
@@ -230,10 +272,18 @@ fn public_structural_replay_observes_owned_buffers_and_recovers() {
         let calls = Rc::new(Cell::new(0usize));
         let recorded = Rc::clone(&calls);
         let baseline = with_replay_checkpoint(
-            move || { recorded.set(recorded.get() + 1); Ok(()) },
+            move || {
+                recorded.set(recorded.get() + 1);
+                Ok(())
+            },
             || interpret_program_ad_effect_ir_value_and_gradient(&ir, &inputs),
-        ).unwrap();
-        assert!(baseline.supported, "{operation}: {:?}", baseline.blocked_reasons);
+        )
+        .unwrap();
+        assert!(
+            baseline.supported,
+            "{operation}: {:?}",
+            baseline.blocked_reasons
+        );
         assert_eq!(baseline.value, Some(expected_value));
         assert_eq!(baseline.gradient, vec![derivative; count]);
         assert!(calls.get() > 1);
@@ -252,10 +302,20 @@ fn public_structural_replay_observes_owned_buffers_and_recovers() {
                 || interpret_program_ad_effect_ir_value_and_gradient(&ir, &inputs),
             );
             match refused {
-                Err(reason) => assert!(reason.contains("structural replay cancelled"), "{operation}: {reason}"),
+                Err(reason) => assert!(
+                    reason.contains("structural replay cancelled"),
+                    "{operation}: {reason}"
+                ),
                 Ok(result) => {
                     assert!(!result.supported, "{operation}");
-                    assert!(result.blocked_reasons.iter().any(|reason| reason.contains("structural replay cancelled")), "{operation}: {:?}", result.blocked_reasons);
+                    assert!(
+                        result
+                            .blocked_reasons
+                            .iter()
+                            .any(|reason| reason.contains("structural replay cancelled")),
+                        "{operation}: {:?}",
+                        result.blocked_reasons
+                    );
                 }
             }
             replay_checkpoint().unwrap();
@@ -270,16 +330,41 @@ fn public_structural_replay_observes_owned_buffers_and_recovers() {
 #[test]
 fn public_product_groups_observe_owned_workspaces_and_recover() {
     for (operation, output_shape, parameters, expected_value, expected_gradient) in [
-        ("prod", vec![], vec![2.0, 3.0, 4.0, 5.0, 6.0, 7.0], 5040.0,
-            vec![2520.0, 1680.0, 1260.0, 1008.0, 840.0, 720.0]),
-        ("prod:axis:0", vec![3], vec![2.0, 3.0, 4.0, 5.0, 6.0, 7.0], 56.0,
-            vec![5.0, 6.0, 7.0, 2.0, 3.0, 4.0]),
-        ("prod:axis:1", vec![2], vec![2.0, 3.0, 4.0, 5.0, 6.0, 7.0], 234.0,
-            vec![12.0, 8.0, 6.0, 42.0, 35.0, 30.0]),
-        ("prod", vec![], vec![0.0, 3.0, 4.0, 5.0, 6.0, 7.0], 0.0,
-            vec![2520.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        ("prod:axis:0", vec![3], vec![0.0, 3.0, 4.0, 5.0, 0.0, 7.0], 28.0,
-            vec![5.0, 0.0, 7.0, 0.0, 3.0, 4.0]),
+        (
+            "prod",
+            vec![],
+            vec![2.0, 3.0, 4.0, 5.0, 6.0, 7.0],
+            5040.0,
+            vec![2520.0, 1680.0, 1260.0, 1008.0, 840.0, 720.0],
+        ),
+        (
+            "prod:axis:0",
+            vec![3],
+            vec![2.0, 3.0, 4.0, 5.0, 6.0, 7.0],
+            56.0,
+            vec![5.0, 6.0, 7.0, 2.0, 3.0, 4.0],
+        ),
+        (
+            "prod:axis:1",
+            vec![2],
+            vec![2.0, 3.0, 4.0, 5.0, 6.0, 7.0],
+            234.0,
+            vec![12.0, 8.0, 6.0, 42.0, 35.0, 30.0],
+        ),
+        (
+            "prod",
+            vec![],
+            vec![0.0, 3.0, 4.0, 5.0, 6.0, 7.0],
+            0.0,
+            vec![2520.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        ),
+        (
+            "prod:axis:0",
+            vec![3],
+            vec![0.0, 3.0, 4.0, 5.0, 0.0, 7.0],
+            28.0,
+            vec![5.0, 0.0, 7.0, 0.0, 3.0, 4.0],
+        ),
     ] {
         let ir = serde_json::json!({
             "format":"program_ad_effect_ir.v1",
@@ -298,10 +383,18 @@ fn public_product_groups_observe_owned_workspaces_and_recover() {
         let calls = Rc::new(Cell::new(0usize));
         let recorded = Rc::clone(&calls);
         let baseline = with_replay_checkpoint(
-            move || { recorded.set(recorded.get() + 1); Ok(()) },
+            move || {
+                recorded.set(recorded.get() + 1);
+                Ok(())
+            },
             || interpret_program_ad_effect_ir_value_and_gradient(&ir, &parameters),
-        ).unwrap();
-        assert!(baseline.supported, "{operation}: {:?}", baseline.blocked_reasons);
+        )
+        .unwrap();
+        assert!(
+            baseline.supported,
+            "{operation}: {:?}",
+            baseline.blocked_reasons
+        );
         assert_eq!(baseline.value, Some(expected_value));
         assert_eq!(baseline.gradient, expected_gradient);
         assert!(calls.get() > 1);
@@ -320,22 +413,41 @@ fn public_product_groups_observe_owned_workspaces_and_recover() {
                 || interpret_program_ad_effect_ir_value_and_gradient(&ir, &parameters),
             );
             match refused {
-                Err(reason) => assert!(reason.contains("product workspace owner cancelled"), "{reason}"),
+                Err(reason) => assert!(
+                    reason.contains("product workspace owner cancelled"),
+                    "{reason}"
+                ),
                 Ok(result) => {
                     assert!(!result.supported);
-                    assert!(result.blocked_reasons.iter().any(|reason| reason.contains("product workspace owner cancelled")), "{:?}", result.blocked_reasons);
+                    assert!(
+                        result
+                            .blocked_reasons
+                            .iter()
+                            .any(|reason| reason.contains("product workspace owner cancelled")),
+                        "{:?}",
+                        result.blocked_reasons
+                    );
                 }
             }
             replay_checkpoint().unwrap();
-            let retry = interpret_program_ad_effect_ir_value_and_gradient(&ir, &parameters).unwrap();
+            let retry =
+                interpret_program_ad_effect_ir_value_and_gradient(&ir, &parameters).unwrap();
             assert!(retry.supported, "{:?}", retry.blocked_reasons);
             assert_eq!(retry.value, baseline.value);
             assert_eq!(retry.gradient, baseline.gradient);
         }
         let multiple_zeros = [0.0, 0.0, 4.0, 0.0, 6.0, 7.0];
-        let refused = interpret_program_ad_effect_ir_value_and_gradient(&ir, &multiple_zeros).unwrap();
+        let refused =
+            interpret_program_ad_effect_ir_value_and_gradient(&ir, &multiple_zeros).unwrap();
         assert!(!refused.supported);
-        assert!(refused.blocked_reasons.iter().any(|reason| reason.contains("at most one zero")), "{:?}", refused.blocked_reasons);
+        assert!(
+            refused
+                .blocked_reasons
+                .iter()
+                .any(|reason| reason.contains("at most one zero")),
+            "{:?}",
+            refused.blocked_reasons
+        );
         let retry = interpret_program_ad_effect_ir_value_and_gradient(&ir, &parameters).unwrap();
         assert!(retry.supported);
         assert_eq!(retry.value, baseline.value);
@@ -370,9 +482,13 @@ fn public_moment_replay_observes_owned_workspaces_and_recovers() {
         let calls = Rc::new(Cell::new(0usize));
         let recorded = Rc::clone(&calls);
         let baseline = with_replay_checkpoint(
-            move || { recorded.set(recorded.get() + 1); Ok(()) },
+            move || {
+                recorded.set(recorded.get() + 1);
+                Ok(())
+            },
             || interpret_program_ad_effect_ir_value_and_gradient(&source, &inputs),
-        ).unwrap();
+        )
+        .unwrap();
         assert!(baseline.supported, "{:?}", baseline.blocked_reasons);
         assert_eq!(baseline.value, Some(expected));
         assert_eq!(baseline.gradient, gradient);
@@ -383,7 +499,11 @@ fn public_moment_replay_observes_owned_workspaces_and_recovers() {
             let refused = with_replay_checkpoint(
                 move || {
                     recorded.set(recorded.get() + 1);
-                    if recorded.get() >= boundary { Err("moment owner cancelled".to_owned()) } else { Ok(()) }
+                    if recorded.get() >= boundary {
+                        Err("moment owner cancelled".to_owned())
+                    } else {
+                        Ok(())
+                    }
                 },
                 || interpret_program_ad_effect_ir_value_and_gradient(&source, &inputs),
             );
@@ -391,11 +511,19 @@ fn public_moment_replay_observes_owned_workspaces_and_recovers() {
                 Err(reason) => assert!(reason.contains("moment owner cancelled"), "{reason}"),
                 Ok(result) => {
                     assert!(!result.supported);
-                    assert!(result.blocked_reasons.iter().any(|reason| reason.contains("moment owner cancelled")), "{:?}", result.blocked_reasons);
+                    assert!(
+                        result
+                            .blocked_reasons
+                            .iter()
+                            .any(|reason| reason.contains("moment owner cancelled")),
+                        "{:?}",
+                        result.blocked_reasons
+                    );
                 }
             }
             replay_checkpoint().unwrap();
-            let retry = interpret_program_ad_effect_ir_value_and_gradient(&source, &inputs).unwrap();
+            let retry =
+                interpret_program_ad_effect_ir_value_and_gradient(&source, &inputs).unwrap();
             assert!(retry.supported);
             assert_eq!(retry.value, baseline.value);
             assert_eq!(retry.gradient, baseline.gradient);
@@ -403,9 +531,14 @@ fn public_moment_replay_observes_owned_workspaces_and_recovers() {
         let mut invalid = ir;
         invalid["effects"][1]["operation"] = serde_json::json!("std:axis:1:ddof:2");
         invalid["ssa_values"][1]["shape"] = serde_json::json!([2]);
-        let refused = interpret_program_ad_effect_ir_value_and_gradient(&invalid.to_string(), &inputs).unwrap();
+        let refused =
+            interpret_program_ad_effect_ir_value_and_gradient(&invalid.to_string(), &inputs)
+                .unwrap();
         assert!(!refused.supported);
-        assert!(refused.blocked_reasons.iter().any(|reason| reason.contains("correction must be less")));
+        assert!(refused
+            .blocked_reasons
+            .iter()
+            .any(|reason| reason.contains("correction must be less")));
         let retry = interpret_program_ad_effect_ir_value_and_gradient(&source, &inputs).unwrap();
         assert!(retry.supported);
         assert_eq!(retry.value, baseline.value);

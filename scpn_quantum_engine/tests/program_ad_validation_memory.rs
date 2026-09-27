@@ -10,7 +10,9 @@ use scpn_quantum_program_ad_replay::program_ad_ir::{
     interpret_program_ad_effect_ir_forward, interpret_program_ad_effect_ir_value_and_gradient,
     parse_program_ad_effect_ir,
 };
-use scpn_quantum_program_ad_replay::program_ad_lifecycle::{replay_checkpoint, with_replay_checkpoint};
+use scpn_quantum_program_ad_replay::program_ad_lifecycle::{
+    replay_checkpoint, with_replay_checkpoint,
+};
 use std::cell::Cell;
 use std::rc::Rc;
 
@@ -58,12 +60,16 @@ fn validate_surface(source: &str, surface: usize, inputs: &[f64]) -> Result<(), 
         }
         1 => {
             let result = interpret_program_ad_effect_ir_forward(source, inputs)?;
-            if !result.supported { return Err(result.blocked_reasons.join("; ")); }
+            if !result.supported {
+                return Err(result.blocked_reasons.join("; "));
+            }
             assert_eq!(result.value, Some(4.0));
         }
         _ => {
             let result = interpret_program_ad_effect_ir_value_and_gradient(source, inputs)?;
-            if !result.supported { return Err(result.blocked_reasons.join("; ")); }
+            if !result.supported {
+                return Err(result.blocked_reasons.join("; "));
+            }
             assert_eq!(result.value, Some(4.0));
             assert_eq!(result.gradient, [4.0]);
         }
@@ -78,21 +84,31 @@ fn public_metadata_input_alias_and_branch_validation_cancels_and_recovers() {
         let calls = Rc::new(Cell::new(0usize));
         let recorded = Rc::clone(&calls);
         with_replay_checkpoint(
-            move || { recorded.set(recorded.get()+1); Ok(()) },
+            move || {
+                recorded.set(recorded.get() + 1);
+                Ok(())
+            },
             || validate_surface(&source, surface, &[2.0]),
-        ).unwrap();
-        assert!(calls.get()>1);
+        )
+        .unwrap();
+        assert!(calls.get() > 1);
         for boundary in 1..=calls.get() {
             let observed = Rc::new(Cell::new(0usize));
             let recorded = Rc::clone(&observed);
             let refused = with_replay_checkpoint(
                 move || {
-                    recorded.set(recorded.get()+1);
-                    if recorded.get() >= boundary { Err("metadata validation owner cancelled".to_owned()) } else { Ok(()) }
+                    recorded.set(recorded.get() + 1);
+                    if recorded.get() >= boundary {
+                        Err("metadata validation owner cancelled".to_owned())
+                    } else {
+                        Ok(())
+                    }
                 },
                 || validate_surface(&source, surface, &[2.0]),
             );
-            assert!(refused.unwrap_err().contains("metadata validation owner cancelled"));
+            assert!(refused
+                .unwrap_err()
+                .contains("metadata validation owner cancelled"));
             replay_checkpoint().unwrap();
             validate_surface(&source, surface, &[2.0]).unwrap();
         }
@@ -117,21 +133,29 @@ fn public_input_finite_validation_crosses_multiple_chunks_and_preserves_gradient
     let result = interpret_program_ad_effect_ir_value_and_gradient(&source, &inputs).unwrap();
     assert!(result.supported, "{:?}", result.blocked_reasons);
     assert_eq!(result.value, Some(1026.0));
-    assert_eq!(result.gradient, vec![1.0;513]);
+    assert_eq!(result.gradient, vec![1.0; 513]);
     for bad in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
         for index in [0usize, 256, 512] {
             let mut invalid = inputs.clone();
             invalid[index] = bad;
-            let result = interpret_program_ad_effect_ir_value_and_gradient(&source, &invalid).unwrap();
+            let result =
+                interpret_program_ad_effect_ir_value_and_gradient(&source, &invalid).unwrap();
             assert!(!result.supported);
-            assert_eq!(result.blocked_reasons, ["Rust Program AD value+gradient inputs must be finite"]);
+            assert_eq!(
+                result.blocked_reasons,
+                ["Rust Program AD value+gradient inputs must be finite"]
+            );
             let result = interpret_program_ad_effect_ir_forward(&source, &invalid).unwrap();
             assert!(!result.supported);
-            assert_eq!(result.blocked_reasons, ["Rust Program AD interpreter inputs must be finite"]);
-            let retry = interpret_program_ad_effect_ir_value_and_gradient(&source, &inputs).unwrap();
+            assert_eq!(
+                result.blocked_reasons,
+                ["Rust Program AD interpreter inputs must be finite"]
+            );
+            let retry =
+                interpret_program_ad_effect_ir_value_and_gradient(&source, &inputs).unwrap();
             assert!(retry.supported);
             assert_eq!(retry.value, Some(1026.0));
-            assert_eq!(retry.gradient, vec![1.0;513]);
+            assert_eq!(retry.gradient, vec![1.0; 513]);
         }
     }
 }
@@ -148,7 +172,7 @@ fn public_malformed_alias_branch_and_phi_contracts_refuse_without_poisoning_repl
             3 => invalid["control_regions"][0]["entered"] = serde_json::json!(false),
             4 => invalid["phi_nodes"][0]["selected"] = serde_json::json!(null),
             5 => invalid["phi_nodes"][0]["control_region"] = serde_json::json!(99),
-            6 => invalid["phi_nodes"][0]["incoming"] = serde_json::json!(["left","right"]),
+            6 => invalid["phi_nodes"][0]["incoming"] = serde_json::json!(["left", "right"]),
             _ => {
                 invalid["phi_nodes"][1]["control_region"] = serde_json::json!(0);
                 invalid["phi_nodes"][1]["selected"] = serde_json::json!("executed_true");
@@ -161,7 +185,9 @@ fn public_malformed_alias_branch_and_phi_contracts_refuse_without_poisoning_repl
     }
     let mut invalid = healthy.clone();
     invalid["phi_nodes"][0]["incoming"] = serde_json::json!(["executed_true"]);
-    assert!(parse_program_ad_effect_ir(&invalid.to_string()).unwrap_err().contains("incoming must contain at least two"));
+    assert!(parse_program_ad_effect_ir(&invalid.to_string())
+        .unwrap_err()
+        .contains("incoming must contain at least two"));
     validate_surface(&healthy.to_string(), 0, &[2.0]).unwrap();
 }
 
@@ -175,9 +201,13 @@ fn public_branch_validation_metadata_refuses_before_numeric_replay_and_recovers(
     let parser_calls = Rc::new(Cell::new(0usize));
     let recorded = Rc::clone(&parser_calls);
     with_replay_metadata_admission(
-        move |_| { recorded.set(recorded.get() + 1); Ok(()) },
+        move |_| {
+            recorded.set(recorded.get() + 1);
+            Ok(())
+        },
         || parse_program_ad_effect_ir(&source),
-    ).unwrap();
+    )
+    .unwrap();
     for surface in [1usize, 2] {
         let numeric_started = Rc::new(Cell::new(false));
         let metadata_calls = Rc::new(RefCell::new(Vec::new()));
@@ -186,14 +216,22 @@ fn public_branch_validation_metadata_refuses_before_numeric_replay_and_recovers(
         let numeric = Rc::clone(&numeric_started);
         with_replay_metadata_admission(
             move |bytes| {
-                if !started.get() { observed.borrow_mut().push(bytes); }
+                if !started.get() {
+                    observed.borrow_mut().push(bytes);
+                }
                 Ok(())
             },
-            || with_replay_memory_admission(
-                move |_| { numeric.set(true); Ok(()) },
-                || validate_surface(&source, surface, &[2.0]),
-            ),
-        ).unwrap();
+            || {
+                with_replay_memory_admission(
+                    move |_| {
+                        numeric.set(true);
+                        Ok(())
+                    },
+                    || validate_surface(&source, surface, &[2.0]),
+                )
+            },
+        )
+        .unwrap();
         assert!(numeric_started.get());
         // Four separately owned branch/region/phi tables precede replay planning.
         assert!(metadata_calls.borrow().len() >= parser_calls.get() + 4);
@@ -204,13 +242,21 @@ fn public_branch_validation_metadata_refuses_before_numeric_replay_and_recovers(
             let refused = with_replay_metadata_admission(
                 move |_| {
                     calls.set(calls.get() + 1);
-                    if calls.get() == boundary { Err("validation metadata refused".to_owned()) }
-                    else { Ok(()) }
+                    if calls.get() == boundary {
+                        Err("validation metadata refused".to_owned())
+                    } else {
+                        Ok(())
+                    }
                 },
-                || with_replay_memory_admission(
-                    move |_| { recorded.set(recorded.get() + 1); Ok(()) },
-                    || validate_surface(&source, surface, &[2.0]),
-                ),
+                || {
+                    with_replay_memory_admission(
+                        move |_| {
+                            recorded.set(recorded.get() + 1);
+                            Ok(())
+                        },
+                        || validate_surface(&source, surface, &[2.0]),
+                    )
+                },
             );
             assert!(refused.unwrap_err().contains("validation metadata refused"));
             assert_eq!(numeric_calls.get(), 0);

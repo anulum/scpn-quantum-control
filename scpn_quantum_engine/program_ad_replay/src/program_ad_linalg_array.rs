@@ -76,10 +76,12 @@ pub(crate) fn multi_dot_output_cotangent(
     let mut cursor = 0usize;
     for shape in &metadata.operand_shapes {
         let operand_size = shape_size(shape)?;
-        let end = cursor.checked_add(operand_size)
+        let end = cursor
+            .checked_add(operand_size)
             .ok_or_else(|| "multi_dot operand offset overflows".to_owned())?;
         let mut varied_values = copy_chain_buffer(input_values)?;
-        let operand = varied_values.get_mut(cursor..end)
+        let operand = varied_values
+            .get_mut(cursor..end)
             .ok_or_else(|| "multi_dot operand slice is outside inputs".to_owned())?;
         for chunk in operand.chunks_mut(256) {
             replay_checkpoint()?;
@@ -113,9 +115,13 @@ fn multi_dot_flat_values(
     for shape in operand_shapes {
         replay_checkpoint()?;
         let size = shape_size(shape)?;
-        let end = cursor.checked_add(size).ok_or_else(|| "multi_dot operand offset overflows".to_owned())?;
+        let end = cursor
+            .checked_add(size)
+            .ok_or_else(|| "multi_dot operand offset overflows".to_owned())?;
         let values = input_values.get(cursor..end).ok_or_else(|| {
-            format!("effect {effect_index} multi_dot input count must match flattened operand shapes")
+            format!(
+                "effect {effect_index} multi_dot input count must match flattened operand shapes"
+            )
         })?;
         let operand = TensorValue::new(copy_chain_buffer(shape)?, copy_chain_buffer(values)?)?;
         total = Some(match total {
@@ -125,9 +131,12 @@ fn multi_dot_flat_values(
         cursor = end;
     }
     if cursor != input_values.len() {
-        return Err(format!("effect {effect_index} multi_dot input count must match flattened operand shapes"));
+        return Err(format!(
+            "effect {effect_index} multi_dot input count must match flattened operand shapes"
+        ));
     }
-    let total = total.ok_or_else(|| format!("effect {effect_index} multi_dot requires at least two operands"))?;
+    let total = total
+        .ok_or_else(|| format!("effect {effect_index} multi_dot requires at least two operands"))?;
     validate_chain_values(&total.values)?;
     Ok(total.values)
 }
@@ -154,7 +163,10 @@ fn multiply_tensors(
                     "effect {effect_index} multi_dot dimensions must align"
                 ));
             }
-            TensorValue::new(Vec::new(), copy_chain_buffer(&[dot(&left.values, &right.values)?])?)
+            TensorValue::new(
+                Vec::new(),
+                copy_chain_buffer(&[dot(&left.values, &right.values)?])?,
+            )
         }
         ([left_len], [right_rows, right_cols]) => {
             if left_len != right_rows {
@@ -167,7 +179,9 @@ fn multiply_tensors(
                 replay_checkpoint()?;
                 let mut value = 0.0;
                 for row in 0..*right_rows {
-                    if row % 256 == 0 { replay_checkpoint()?; }
+                    if row % 256 == 0 {
+                        replay_checkpoint()?;
+                    }
                     value += left.values[row] * right.values[row * right_cols + col];
                 }
                 output.push(value);
@@ -185,7 +199,9 @@ fn multiply_tensors(
                 replay_checkpoint()?;
                 let mut value = 0.0;
                 for col in 0..*left_cols {
-                    if col % 256 == 0 { replay_checkpoint()?; }
+                    if col % 256 == 0 {
+                        replay_checkpoint()?;
+                    }
                     value += left.values[row * left_cols + col] * right.values[col];
                 }
                 output.push(value);
@@ -205,7 +221,9 @@ fn multiply_tensors(
                     replay_checkpoint()?;
                     let mut value = 0.0;
                     for inner in 0..*left_cols {
-                        if inner % 256 == 0 { replay_checkpoint()?; }
+                        if inner % 256 == 0 {
+                            replay_checkpoint()?;
+                        }
                         value += left.values[row * left_cols + inner]
                             * right.values[inner * right_cols + col];
                     }
@@ -226,7 +244,9 @@ fn dot(left: &[f64], right: &[f64]) -> Result<f64, String> {
     }
     let mut value = -0.0_f64;
     for (index, (lhs, rhs)) in left.iter().zip(right).enumerate() {
-        if index % 256 == 0 { replay_checkpoint()?; }
+        if index % 256 == 0 {
+            replay_checkpoint()?;
+        }
         value += lhs * rhs;
     }
     replay_checkpoint()?;
@@ -261,8 +281,12 @@ fn copy_chain_buffer<T: Copy>(source: &[T]) -> Result<Vec<T>, String> {
 
 fn validate_chain_values(values: &[f64]) -> Result<(), String> {
     for (index, value) in values.iter().enumerate() {
-        if index % 256 == 0 { replay_checkpoint()?; }
-        if !value.is_finite() { return Err("multi_dot tensor values must be finite".to_owned()); }
+        if index % 256 == 0 {
+            replay_checkpoint()?;
+        }
+        if !value.is_finite() {
+            return Err("multi_dot tensor values must be finite".to_owned());
+        }
     }
     replay_checkpoint()?;
     Ok(())

@@ -14,17 +14,21 @@ use serde_json::json;
 #[test]
 fn public_replay_rejects_unaddressable_shapes_before_parameter_materialisation() {
     for (shape, reason) in [
-        (vec![usize::MAX], "shaped value bytes exceed native addressability"),
+        (
+            vec![usize::MAX],
+            "shaped value bytes exceed native addressability",
+        ),
         (vec![usize::MAX, 2], "shaped value size overflowed"),
         (vec![0], "non-zero dimensions"),
     ] {
-        let result = interpret_program_ad_effect_ir_value_and_gradient(
-            &two_parameter_ir(&shape, &[1]),
-            &[],
-        )
-        .unwrap();
+        let result =
+            interpret_program_ad_effect_ir_value_and_gradient(&two_parameter_ir(&shape, &[1]), &[])
+                .unwrap();
         assert!(!result.supported);
-        assert!(result.blocked_reasons.iter().any(|entry| entry.contains(reason)));
+        assert!(result
+            .blocked_reasons
+            .iter()
+            .any(|entry| entry.contains(reason)));
         assert_small_replay_recovers();
     }
 }
@@ -38,19 +42,18 @@ fn public_replay_checks_aggregate_parameter_bytes_before_copying_inputs() {
     )
     .unwrap();
     assert!(!result.supported);
-    assert!(result.blocked_reasons.iter().any(|entry| {
-        entry.contains("parameter bytes exceed native addressability")
-    }));
+    assert!(result
+        .blocked_reasons
+        .iter()
+        .any(|entry| { entry.contains("parameter bytes exceed native addressability") }));
     assert_small_replay_recovers();
 }
 
 #[test]
 fn public_replay_preserves_scalar_shapes_and_parameter_mismatch_refusal() {
-    let scalar = interpret_program_ad_effect_ir_value_and_gradient(
-        &two_parameter_ir(&[], &[]),
-        &[2.0, 3.0],
-    )
-    .unwrap();
+    let scalar =
+        interpret_program_ad_effect_ir_value_and_gradient(&two_parameter_ir(&[], &[]), &[2.0, 3.0])
+            .unwrap();
     assert!(scalar.supported, "{:?}", scalar.blocked_reasons);
     assert_eq!(scalar.value, Some(6.0));
     assert_eq!(scalar.gradient, [3.0, 2.0]);
@@ -60,9 +63,10 @@ fn public_replay_preserves_scalar_shapes_and_parameter_mismatch_refusal() {
     )
     .unwrap();
     assert!(!mismatch.supported);
-    assert!(mismatch.blocked_reasons.iter().any(|entry| {
-        entry.contains("parameter count 4 does not match input count 3")
-    }));
+    assert!(mismatch
+        .blocked_reasons
+        .iter()
+        .any(|entry| { entry.contains("parameter count 4 does not match input count 3") }));
     assert_small_replay_recovers();
 }
 
@@ -74,11 +78,9 @@ fn public_replay_borrows_last_duplicate_shape_without_changing_parameter_order()
         "shape": [], "dtype": "float64", "effect": 0,
     });
     ir["ssa_values"].as_array_mut().unwrap().push(duplicate);
-    let result = interpret_program_ad_effect_ir_value_and_gradient(
-        &ir.to_string(),
-        &[2.0, 3.0, 4.0],
-    )
-    .unwrap();
+    let result =
+        interpret_program_ad_effect_ir_value_and_gradient(&ir.to_string(), &[2.0, 3.0, 4.0])
+            .unwrap();
     assert!(result.supported, "{:?}", result.blocked_reasons);
     assert_eq!(result.value, Some(14.0));
     assert_eq!(result.gradient, [7.0, 2.0, 2.0]);
@@ -89,26 +91,22 @@ fn public_replay_borrows_last_duplicate_shape_without_changing_parameter_order()
 fn public_replay_missing_shape_refuses_and_keeps_next_parameter_copy_usable() {
     let mut ir: serde_json::Value = serde_json::from_str(&two_parameter_ir(&[2], &[2])).unwrap();
     ir["ssa_values"].as_array_mut().unwrap().remove(0);
-    let result = interpret_program_ad_effect_ir_value_and_gradient(
-        &ir.to_string(),
-        &[1.0, 2.0, 3.0, 4.0],
-    )
-    .unwrap();
+    let result =
+        interpret_program_ad_effect_ir_value_and_gradient(&ir.to_string(), &[1.0, 2.0, 3.0, 4.0])
+            .unwrap();
     assert!(!result.supported);
-    assert!(result.blocked_reasons.iter().any(|reason| {
-        reason.contains("target %0 is missing SSA shape metadata")
-    }));
+    assert!(result
+        .blocked_reasons
+        .iter()
+        .any(|reason| { reason.contains("target %0 is missing SSA shape metadata") }));
     assert_small_replay_recovers();
 }
 
 #[test]
 fn public_replay_preserves_unicode_parameter_labels_and_sources() {
     let ir = two_parameter_ir(&[2], &[2]).replace("%0", "%theta_θ");
-    let result = interpret_program_ad_effect_ir_value_and_gradient(
-        &ir,
-        &[1.0, 2.0, 3.0, 4.0],
-    )
-    .unwrap();
+    let result =
+        interpret_program_ad_effect_ir_value_and_gradient(&ir, &[1.0, 2.0, 3.0, 4.0]).unwrap();
     assert!(result.supported, "{:?}", result.blocked_reasons);
     assert_eq!(result.value, Some(21.0));
     assert_eq!(result.gradient, [7.0, 7.0, 3.0, 3.0]);
@@ -135,8 +133,8 @@ fn public_replay_preserves_owned_operand_and_broadcast_cotangent_copies() {
     }));
     let inputs = [2.0, 3.0, 4.0];
     for _ in 0..2 {
-        let result = interpret_program_ad_effect_ir_value_and_gradient(&ir.to_string(), &inputs)
-            .unwrap();
+        let result =
+            interpret_program_ad_effect_ir_value_and_gradient(&ir.to_string(), &inputs).unwrap();
         assert!(result.supported, "{:?}", result.blocked_reasons);
         assert_eq!(result.value, Some(28.0));
         assert_eq!(result.gradient, [14.0, 4.0, 4.0]);
@@ -152,7 +150,8 @@ fn public_replay_preserves_stack_concatenate_transpose_and_reverse_buffers() {
         ("stack:axis:0", vec![2, 2]),
         ("concatenate:axis:0", vec![4]),
     ] {
-        let mut ir: serde_json::Value = serde_json::from_str(&two_parameter_ir(&[2], &[2])).unwrap();
+        let mut ir: serde_json::Value =
+            serde_json::from_str(&two_parameter_ir(&[2], &[2])).unwrap();
         for (index, name, shape) in [(5, "%5", &shape), (6, "%6", &shape)] {
             ir["ssa_values"].as_array_mut().unwrap().push(json!({
                 "name": name, "producer": index, "version": 0,
@@ -176,7 +175,11 @@ fn public_replay_preserves_stack_concatenate_transpose_and_reverse_buffers() {
             &[1.0, 2.0, 3.0, 4.0],
         )
         .unwrap();
-        assert!(result.supported, "{operation}: {:?}", result.blocked_reasons);
+        assert!(
+            result.supported,
+            "{operation}: {:?}",
+            result.blocked_reasons
+        );
         assert_eq!(result.value, Some(70.0));
         assert_eq!(result.gradient, [7.0, 7.0, 17.0, 17.0]);
         assert_small_replay_recovers();
@@ -187,16 +190,25 @@ fn public_replay_preserves_stack_concatenate_transpose_and_reverse_buffers() {
 fn public_replay_preserves_signed_and_quotient_elementwise_reverse_outputs() {
     for (operation, value, gradient) in [
         ("sub", -4.0, [1.0, 1.0, -1.0, -1.0]),
-        ("div", 3.0 / 7.0, [1.0 / 7.0, 1.0 / 7.0, -3.0 / 49.0, -3.0 / 49.0]),
+        (
+            "div",
+            3.0 / 7.0,
+            [1.0 / 7.0, 1.0 / 7.0, -3.0 / 49.0, -3.0 / 49.0],
+        ),
     ] {
-        let mut ir: serde_json::Value = serde_json::from_str(&two_parameter_ir(&[2], &[2])).unwrap();
+        let mut ir: serde_json::Value =
+            serde_json::from_str(&two_parameter_ir(&[2], &[2])).unwrap();
         ir["effects"][4]["operation"] = json!(operation);
         let result = interpret_program_ad_effect_ir_value_and_gradient(
             &ir.to_string(),
             &[1.0, 2.0, 3.0, 4.0],
         )
         .unwrap();
-        assert!(result.supported, "{operation}: {:?}", result.blocked_reasons);
+        assert!(
+            result.supported,
+            "{operation}: {:?}",
+            result.blocked_reasons
+        );
         assert_eq!(result.value, Some(value));
         for (actual, expected) in result.gradient.iter().zip(gradient) {
             assert!((actual - expected).abs() <= 1.0e-12);
@@ -232,7 +244,11 @@ fn public_replay_preserves_rectangular_axis_reduction_coordinates_and_gradients(
             &[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 2.0],
         )
         .unwrap();
-        assert!(result.supported, "{operation}: {:?}", result.blocked_reasons);
+        assert!(
+            result.supported,
+            "{operation}: {:?}",
+            result.blocked_reasons
+        );
         assert!((result.value.unwrap() - value).abs() <= 1.0e-12);
         assert_eq!(result.gradient.len(), 7);
         for actual in &result.gradient[..6] {
@@ -247,15 +263,16 @@ fn public_replay_preserves_rectangular_axis_reduction_coordinates_and_gradients(
 fn public_replay_preserves_literal_and_unused_parameter_scalar_storage() {
     let mut ir: serde_json::Value = serde_json::from_str(&two_parameter_ir(&[2], &[2])).unwrap();
     ir["effects"][4]["inputs"] = json!(["%2", "2.0"]);
-    let result = interpret_program_ad_effect_ir_value_and_gradient(
-        &ir.to_string(),
-        &[1.0, 2.0, 3.0, 4.0],
-    )
-    .unwrap();
+    let result =
+        interpret_program_ad_effect_ir_value_and_gradient(&ir.to_string(), &[1.0, 2.0, 3.0, 4.0])
+            .unwrap();
     assert!(result.supported, "{:?}", result.blocked_reasons);
     assert_eq!(result.value, Some(6.0));
     assert_eq!(result.gradient, [2.0, 2.0, 0.0, 0.0]);
-    assert_eq!(result.parameter_targets, ["%0[0]", "%0[1]", "%1[0]", "%1[1]"]);
+    assert_eq!(
+        result.parameter_targets,
+        ["%0[0]", "%0[1]", "%1[0]", "%1[1]"]
+    );
     assert_small_replay_recovers();
 }
 
@@ -264,8 +281,8 @@ fn public_replay_preserves_unary_scalar_output_and_reverse_seed() {
     let mut ir: serde_json::Value = serde_json::from_str(&two_parameter_ir(&[], &[])).unwrap();
     ir["effects"][4]["operation"] = json!("sqrt");
     ir["effects"][4]["inputs"] = json!(["%2"]);
-    let result = interpret_program_ad_effect_ir_value_and_gradient(&ir.to_string(), &[9.0, 4.0])
-        .unwrap();
+    let result =
+        interpret_program_ad_effect_ir_value_and_gradient(&ir.to_string(), &[9.0, 4.0]).unwrap();
     assert!(result.supported, "{:?}", result.blocked_reasons);
     assert_eq!(result.value, Some(3.0));
     assert!((result.gradient[0] - 1.0 / 6.0).abs() <= 1.0e-12);
@@ -290,11 +307,8 @@ fn public_replay_preserves_stable_ordering_for_ties_and_shuffled_rows() {
         let forward = interpret_program_ad_effect_ir_forward(&serialization, &[2.0, 3.0]).unwrap();
         assert!(forward.supported, "{:?}", forward.blocked_reasons);
         assert_eq!(forward.value, Some(6.0));
-        let reverse = interpret_program_ad_effect_ir_value_and_gradient(
-            &serialization,
-            &[2.0, 3.0],
-        )
-        .unwrap();
+        let reverse =
+            interpret_program_ad_effect_ir_value_and_gradient(&serialization, &[2.0, 3.0]).unwrap();
         assert!(reverse.supported, "{:?}", reverse.blocked_reasons);
         assert_eq!(reverse.value, Some(6.0));
         assert_eq!(reverse.gradient, [3.0, 2.0]);
@@ -316,12 +330,16 @@ fn assert_small_replay_recovers() {
 
 fn two_parameter_ir(left_shape: &[usize], right_shape: &[usize]) -> String {
     let shapes = [left_shape, right_shape, &[], &[], &[]];
-    let ssa_values: Vec<_> = shapes.iter().enumerate().map(|(index, shape)| {
-        json!({
-            "name": format!("%{index}"), "producer": index, "version": 0,
-            "shape": shape, "dtype": "float64", "effect": index,
+    let ssa_values: Vec<_> = shapes
+        .iter()
+        .enumerate()
+        .map(|(index, shape)| {
+            json!({
+                "name": format!("%{index}"), "producer": index, "version": 0,
+                "shape": shape, "dtype": "float64", "effect": index,
+            })
         })
-    }).collect();
+        .collect();
     let rows = [
         ("parameter", "parameter", vec!["left"]),
         ("parameter", "parameter", vec!["right"]),
@@ -329,15 +347,20 @@ fn two_parameter_ir(left_shape: &[usize], right_shape: &[usize]) -> String {
         ("primitive", "sum", vec!["%1"]),
         ("pure", "mul", vec!["%2", "%3"]),
     ];
-    let effects: Vec<_> = rows.iter().enumerate().map(|(index, (kind, operation, inputs))| {
-        json!({
-            "index": index, "kind": kind, "target": format!("%{index}"),
-            "inputs": inputs, "version": 0, "ordering": index, "operation": operation,
+    let effects: Vec<_> = rows
+        .iter()
+        .enumerate()
+        .map(|(index, (kind, operation, inputs))| {
+            json!({
+                "index": index, "kind": kind, "target": format!("%{index}"),
+                "inputs": inputs, "version": 0, "ordering": index, "operation": operation,
+            })
         })
-    }).collect();
+        .collect();
     json!({
         "format": "program_ad_effect_ir.v1", "ssa_values": ssa_values,
         "effects": effects, "alias_edges": [], "control_regions": [],
         "phi_nodes": [], "bytecode_offsets": [0],
-    }).to_string()
+    })
+    .to_string()
 }

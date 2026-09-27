@@ -79,10 +79,14 @@ impl MomentReduction {
         let mut contributions = reserve_replay_buffer(values.len())?;
         let standard_deviation = variance.sqrt();
         for (index, value) in values.iter().enumerate() {
-            if index % 256 == 0 { replay_checkpoint()?; }
+            if index % 256 == 0 {
+                replay_checkpoint()?;
+            }
             let contribution = match self {
                 Self::Variance => cotangent * 2.0 * (value - mean) / denominator,
-                Self::StandardDeviation => cotangent * (value - mean) / (denominator * standard_deviation),
+                Self::StandardDeviation => {
+                    cotangent * (value - mean) / (denominator * standard_deviation)
+                }
             };
             if !contribution.is_finite() {
                 return Err(format!(
@@ -239,11 +243,18 @@ fn moment_axis_values(
     validate_source_size(reduction, source_shape, source_values)?;
     validate_axis_target_shape(effect_index, reduction, source_shape, axis, target_shape)?;
     let groups = axis_groups(
-        effect_index, reduction, source_shape, axis, target_shape, source_values,
+        effect_index,
+        reduction,
+        source_shape,
+        axis,
+        target_shape,
+        source_values,
     )?;
     let mut output = reserve_replay_buffer(groups.len())?;
     for (index, group) in groups.iter().enumerate() {
-        if index % 256 == 0 { replay_checkpoint()?; }
+        if index % 256 == 0 {
+            replay_checkpoint()?;
+        }
         output.push(reduction.group_value(effect_index, group, correction)?);
     }
     Ok(output)
@@ -272,24 +283,35 @@ fn moment_axis_cotangent(
         groups.push(reserve_replay_buffer::<(usize, f64)>(source_shape[axis])?);
     }
     for (flat_index, value) in source_values.iter().copied().enumerate() {
-        if flat_index % 256 == 0 { replay_checkpoint()?; }
+        if flat_index % 256 == 0 {
+            replay_checkpoint()?;
+        }
         let source_index = unravel_index(flat_index, source_shape)?;
         let target_index = index_without_axis(&source_index, axis)?;
         let target_flat = ravel_index(reduction, &target_index, &target_shape)?;
         groups[target_flat].push((flat_index, value));
     }
     let mut contribution = filled_replay_buffer(source_values.len(), 0.0_f64)?;
-    for (group_index, (group, cotangent)) in groups.iter().zip(cotangent_values.iter()).enumerate() {
-        if group_index % 256 == 0 { replay_checkpoint()?; }
+    for (group_index, (group, cotangent)) in groups.iter().zip(cotangent_values.iter()).enumerate()
+    {
+        if group_index % 256 == 0 {
+            replay_checkpoint()?;
+        }
         let mut group_values = reserve_replay_buffer(group.len())?;
         for (index, (_, value)) in group.iter().enumerate() {
-            if index % 256 == 0 { replay_checkpoint()?; }
+            if index % 256 == 0 {
+                replay_checkpoint()?;
+            }
             group_values.push(*value);
         }
         let group_contribution =
             reduction.group_cotangent(effect_index, &group_values, *cotangent, correction)?;
-        for (index, ((source_index, _), value)) in group.iter().zip(group_contribution.iter()).enumerate() {
-            if index % 256 == 0 { replay_checkpoint()?; }
+        for (index, ((source_index, _), value)) in
+            group.iter().zip(group_contribution.iter()).enumerate()
+        {
+            if index % 256 == 0 {
+                replay_checkpoint()?;
+            }
             contribution[*source_index] = *value;
         }
     }
@@ -310,14 +332,18 @@ fn axis_groups(
         groups.push(reserve_replay_buffer::<f64>(source_shape[axis])?);
     }
     for (flat_index, value) in source_values.iter().copied().enumerate() {
-        if flat_index % 256 == 0 { replay_checkpoint()?; }
+        if flat_index % 256 == 0 {
+            replay_checkpoint()?;
+        }
         let source_index = unravel_index(flat_index, source_shape)?;
         let target_index = index_without_axis(&source_index, axis)?;
         let target_flat = ravel_index(reduction, &target_index, target_shape)?;
         groups[target_flat].push(value);
     }
     for (index, group) in groups.iter().enumerate() {
-        if index % 256 == 0 { replay_checkpoint()?; }
+        if index % 256 == 0 {
+            replay_checkpoint()?;
+        }
         if group.is_empty() {
             return Err(format!(
                 "effect {effect_index} {} axis reduction produced an empty group",
@@ -340,22 +366,30 @@ fn corrected_moments(
         ));
     }
     for (index, value) in values.iter().enumerate() {
-        if index % 256 == 0 { replay_checkpoint()?; }
+        if index % 256 == 0 {
+            replay_checkpoint()?;
+        }
         if !value.is_finite() {
-            return Err(format!("effect {effect_index} {label} source values must be finite"));
+            return Err(format!(
+                "effect {effect_index} {label} source values must be finite"
+            ));
         }
     }
     let denominator = validate_moment_group_size(effect_index, label, values.len(), correction)?;
     let count = values.len() as f64;
     let mut total = -0.0_f64;
     for (index, value) in values.iter().enumerate() {
-        if index % 256 == 0 { replay_checkpoint()?; }
+        if index % 256 == 0 {
+            replay_checkpoint()?;
+        }
         total += value;
     }
     let mean = total / count;
     let mut centered_sum = -0.0_f64;
     for (index, value) in values.iter().enumerate() {
-        if index % 256 == 0 { replay_checkpoint()?; }
+        if index % 256 == 0 {
+            replay_checkpoint()?;
+        }
         let delta = value - mean;
         centered_sum += delta * delta;
     }

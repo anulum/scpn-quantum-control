@@ -7,7 +7,9 @@
 // SCPN Quantum Control — Public shaped replay workspace admission tests
 
 use scpn_quantum_program_ad_replay::program_ad_ir::interpret_program_ad_effect_ir_value_and_gradient;
-use scpn_quantum_program_ad_replay::program_ad_lifecycle::{with_replay_memory_admission, ReplayMemoryRequest};
+use scpn_quantum_program_ad_replay::program_ad_lifecycle::{
+    with_replay_memory_admission, ReplayMemoryRequest,
+};
 use std::{cell::Cell, rc::Rc};
 
 #[test]
@@ -29,9 +31,13 @@ fn public_shaped_multiply_declares_workspace_and_preserves_inclusive_budget() {
     let observed = Rc::new(Cell::new(ReplayMemoryRequest::default()));
     let recorded = Rc::clone(&observed);
     let actual = with_replay_memory_admission(
-        move |request| { recorded.set(request); Ok(()) },
+        move |request| {
+            recorded.set(request);
+            Ok(())
+        },
         || interpret_program_ad_effect_ir_value_and_gradient(&source, &[2.0, 3.0]),
-    ).unwrap();
+    )
+    .unwrap();
     assert!(actual.supported);
     assert_eq!(actual.value, Some(13.0));
     assert_eq!(actual.gradient, [4.0, 6.0]);
@@ -43,18 +49,29 @@ fn public_shaped_multiply_declares_workspace_and_preserves_inclusive_budget() {
     for limit in [required - 1, required, required + 1, 12 * 8] {
         let result = with_replay_memory_admission(
             move |request| {
-                if request.total_bytes()? > limit { Err("shaped workspace refused".to_owned()) }
-                else { Ok(()) }
+                if request.total_bytes()? > limit {
+                    Err("shaped workspace refused".to_owned())
+                } else {
+                    Ok(())
+                }
             },
             || interpret_program_ad_effect_ir_value_and_gradient(&source, &[2.0, 3.0]),
-        ).unwrap();
-        if limit >= required { assert_eq!(result, actual); }
-        else {
+        )
+        .unwrap();
+        if limit >= required {
+            assert_eq!(result, actual);
+        } else {
             assert!(!result.supported);
             assert_eq!(result.value, None);
             assert!(result.gradient.is_empty());
-            assert!(result.blocked_reasons.iter().any(|reason| reason == "shaped workspace refused"));
+            assert!(result
+                .blocked_reasons
+                .iter()
+                .any(|reason| reason == "shaped workspace refused"));
         }
-        assert_eq!(interpret_program_ad_effect_ir_value_and_gradient(&source, &[2.0, 3.0]).unwrap(), actual);
+        assert_eq!(
+            interpret_program_ad_effect_ir_value_and_gradient(&source, &[2.0, 3.0]).unwrap(),
+            actual
+        );
     }
 }

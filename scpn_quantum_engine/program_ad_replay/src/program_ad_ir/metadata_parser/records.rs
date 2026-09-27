@@ -6,9 +6,12 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // SCPN Quantum Control — admitted Program AD metadata parsing
 
+use super::super::{
+    ProgramADAliasEdge, ProgramADControlRegion, ProgramADEffect, ProgramADEffectIR,
+    ProgramADPhiNode, ProgramADSSAValue,
+};
+use super::{fields, optional, required, scalar, string, vector, Context, FieldSlots};
 use serde_json::value::RawValue;
-use super::{Context, FieldSlots, fields, optional, required, scalar, string, vector};
-use super::super::{ProgramADEffectIR, ProgramADSSAValue, ProgramADEffect, ProgramADAliasEdge, ProgramADControlRegion, ProgramADPhiNode};
 
 fn usize_vector(context: &Context, raw: &RawValue) -> Result<Vec<usize>, String> {
     vector(context, raw, scalar::<usize>)
@@ -19,7 +22,11 @@ fn string_vector(context: &Context, raw: &RawValue) -> Result<Vec<String>, Strin
 }
 
 fn ssa(context: &Context, raw: &RawValue) -> Result<ProgramADSSAValue, String> {
-    let fields = fields(context, raw, &["name", "producer", "version", "shape", "dtype", "effect"])?;
+    let fields = fields(
+        context,
+        raw,
+        &["name", "producer", "version", "shape", "dtype", "effect"],
+    )?;
     Ok(ProgramADSSAValue {
         name: string(context, required(fields[0], "name")?)?,
         producer: scalar(context, required(fields[1], "producer")?)?,
@@ -31,7 +38,19 @@ fn ssa(context: &Context, raw: &RawValue) -> Result<ProgramADSSAValue, String> {
 }
 
 fn effect(context: &Context, raw: &RawValue) -> Result<ProgramADEffect, String> {
-    let fields = fields(context, raw, &["index", "kind", "target", "inputs", "version", "ordering", "operation"])?;
+    let fields = fields(
+        context,
+        raw,
+        &[
+            "index",
+            "kind",
+            "target",
+            "inputs",
+            "version",
+            "ordering",
+            "operation",
+        ],
+    )?;
     Ok(ProgramADEffect {
         index: scalar(context, required(fields[0], "index")?)?,
         kind: string(context, required(fields[1], "kind")?)?,
@@ -54,7 +73,11 @@ fn alias(context: &Context, raw: &RawValue) -> Result<ProgramADAliasEdge, String
 }
 
 fn region(context: &Context, raw: &RawValue) -> Result<ProgramADControlRegion, String> {
-    let fields = fields(context, raw, &["index", "kind", "predicate", "entered", "source_line"])?;
+    let fields = fields(
+        context,
+        raw,
+        &["index", "kind", "predicate", "entered", "source_line"],
+    )?;
     Ok(ProgramADControlRegion {
         index: scalar(context, required(fields[0], "index")?)?,
         kind: string(context, required(fields[1], "kind")?)?,
@@ -65,7 +88,18 @@ fn region(context: &Context, raw: &RawValue) -> Result<ProgramADControlRegion, S
 }
 
 fn phi(context: &Context, raw: &RawValue) -> Result<ProgramADPhiNode, String> {
-    let fields = fields(context, raw, &["index", "target", "incoming", "control_region", "selected", "source_line"])?;
+    let fields = fields(
+        context,
+        raw,
+        &[
+            "index",
+            "target",
+            "incoming",
+            "control_region",
+            "selected",
+            "source_line",
+        ],
+    )?;
     Ok(ProgramADPhiNode {
         index: scalar(context, required(fields[0], "index")?)?,
         target: string(context, required(fields[1], "target")?)?,
@@ -80,10 +114,19 @@ pub(super) fn parse(context: &Context, serialization: &str) -> Result<ProgramADE
     if !serialization.trim_start().starts_with('{') {
         return Err("program AD IR serialization must decode to an object".to_owned());
     }
-    let names = ["format", "ssa_values", "effects", "alias_edges", "control_regions", "phi_nodes", "bytecode_offsets"];
+    let names = [
+        "format",
+        "ssa_values",
+        "effects",
+        "alias_edges",
+        "control_regions",
+        "phi_nodes",
+        "bytecode_offsets",
+    ];
     let fields = context.decode(serialization, FieldSlots(context, &names, None))?;
     for index in 1..names.len() {
-        let raw = fields[index].ok_or_else(|| format!("program AD IR {} must be present", names[index]))?;
+        let raw = fields[index]
+            .ok_or_else(|| format!("program AD IR {} must be present", names[index]))?;
         if !raw.get().starts_with('[') {
             return Err(format!("program AD IR {} must be a list", names[index]));
         }

@@ -81,7 +81,9 @@ fn parse_matrix_power(
     for chunk in input_values.chunks(256) {
         replay_checkpoint()?;
         if chunk.iter().any(|value| !value.is_finite()) {
-            return Err(format!("effect {effect_index} matrix_power inputs must be finite"));
+            return Err(format!(
+                "effect {effect_index} matrix_power inputs must be finite"
+            ));
         }
     }
     Ok(metadata)
@@ -239,7 +241,12 @@ fn add_matrices(left: &[f64], right: &[f64]) -> Result<Vec<f64>, String> {
         return Err("matrix_power matrix sums require equal shapes".to_owned());
     }
     let mut result = zero_buffer(left.len())?;
-    for (index, ((output, lhs), rhs)) in result.iter_mut().zip(left.iter()).zip(right.iter()).enumerate() {
+    for (index, ((output, lhs), rhs)) in result
+        .iter_mut()
+        .zip(left.iter())
+        .zip(right.iter())
+        .enumerate()
+    {
         if index % 256 == 0 {
             replay_checkpoint()?;
         }

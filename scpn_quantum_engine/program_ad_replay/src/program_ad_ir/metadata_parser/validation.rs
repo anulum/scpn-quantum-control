@@ -6,16 +6,19 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // SCPN Quantum Control — admitted Program AD metadata parsing
 
-use std::fmt;
+use super::Context;
 use serde::de::{DeserializeSeed, MapAccess, SeqAccess, Visitor};
 use serde_json::value::RawValue;
-use super::Context;
+use std::fmt;
 
 struct BorrowRaw;
 
 impl<'de> DeserializeSeed<'de> for BorrowRaw {
     type Value = &'de RawValue;
-    fn deserialize<D: serde::Deserializer<'de>>(self, deserializer: D) -> Result<Self::Value, D::Error> {
+    fn deserialize<D: serde::Deserializer<'de>>(
+        self,
+        deserializer: D,
+    ) -> Result<Self::Value, D::Error> {
         <&RawValue as serde::Deserialize>::deserialize(deserializer)
     }
 }
@@ -30,7 +33,9 @@ impl<'de> DeserializeSeed<'de> for DiscardString {
             fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
                 formatter.write_str("a JSON string")
             }
-            fn visit_str<E: serde::de::Error>(self, _: &str) -> Result<(), E> { Ok(()) }
+            fn visit_str<E: serde::de::Error>(self, _: &str) -> Result<(), E> {
+                Ok(())
+            }
         }
         deserializer.deserialize_str(self)
     }
@@ -60,8 +65,11 @@ impl<'de> DeserializeSeed<'de> for Children<'_> {
                 Ok(())
             }
         }
-        if self.1 { deserializer.deserialize_map(self) }
-        else { deserializer.deserialize_seq(self) }
+        if self.1 {
+            deserializer.deserialize_map(self)
+        } else {
+            deserializer.deserialize_seq(self)
+        }
     }
 }
 
@@ -75,9 +83,14 @@ fn validate_raw(context: &Context, raw: &RawValue) -> Result<(), String> {
         Some(b'-' | b'0'..=b'9') => {
             // core's decimal-to-f64 conversion has no heap allocator. RawValue
             // has already checked JSON syntax; only finite range remains here.
-            let number = token.parse::<f64>().map_err(|_| "JSON number is invalid".to_owned())?;
-            if number.is_finite() { Ok(()) }
-            else { Err("JSON number is out of range".to_owned()) }
+            let number = token
+                .parse::<f64>()
+                .map_err(|_| "JSON number is invalid".to_owned())?;
+            if number.is_finite() {
+                Ok(())
+            } else {
+                Err("JSON number is out of range".to_owned())
+            }
         }
         _ => Ok(()),
     }
@@ -88,11 +101,17 @@ fn validate_depth(context: &Context, source: &str) -> Result<(), String> {
     let mut escaped = false;
     let mut depth = 0usize;
     for (index, byte) in source.bytes().enumerate() {
-        if index % 256 == 0 { context.checkpoint()?; }
+        if index % 256 == 0 {
+            context.checkpoint()?;
+        }
         if quoted {
-            if escaped { escaped = false; }
-            else if byte == b'\\' { escaped = true; }
-            else if byte == b'"' { quoted = false; }
+            if escaped {
+                escaped = false;
+            } else if byte == b'\\' {
+                escaped = true;
+            } else if byte == b'"' {
+                quoted = false;
+            }
         } else {
             match byte {
                 b'"' => quoted = true,
@@ -100,7 +119,9 @@ fn validate_depth(context: &Context, source: &str) -> Result<(), String> {
                     depth += 1;
                     // serde_json's default 128 counter refuses at zero after
                     // decrementing for each container, permitting depth 127.
-                    if depth >= 128 { return Err("JSON recursion limit exceeded".to_owned()); }
+                    if depth >= 128 {
+                        return Err("JSON recursion limit exceeded".to_owned());
+                    }
                 }
                 b'}' | b']' => depth = depth.saturating_sub(1),
                 _ => {}
