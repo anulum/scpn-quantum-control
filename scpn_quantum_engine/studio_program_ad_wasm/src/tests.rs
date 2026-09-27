@@ -171,7 +171,7 @@ fn ffi_refuses_wrong_output_before_ir_replay_and_preserves_sink() {
         scpn_program_ad_replay(payload.as_ptr(), payload.len(), sink.as_mut_ptr(), sink.len())
     };
     assert_eq!(status, i32::from(ProgramAdStatus::Ok));
-    let values:Vec<_> = sink.chunks_exact(8).map(|b|f64::from_le_bytes(b.try_into().unwrap())).collect();
+    let values:Vec<_> = sink.as_chunks::<8>().0.iter().map(|bytes|f64::from_le_bytes(*bytes)).collect();
     assert_eq!(values,[19.0,6.0,2.0]);
 }
 
