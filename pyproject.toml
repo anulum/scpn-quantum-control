@@ -420,6 +420,11 @@ source = ["src/scpn_quantum_control"]
 # first whole-suite branch rate in observation mode until remote evidence can
 # support a separate branch threshold.
 branch = true
+# Match the focused admission cohorts: collect real subprocess and fork work
+# so the global debt audit measures the same exercised production branches.
+parallel = true
+concurrency = ["multiprocessing", "thread"]
+patch = ["subprocess"]
 omit = [
     # Julia tier requires juliacall + Julia runtime; not installed in
     # CI (would add ~4 min JIT boot per run). Dispatcher covers the
