@@ -352,7 +352,14 @@ def require_execution_memory(
         plan, capacity, max_bytes=requested_bytes, require_device=require_device
     )
     if not decision.allowed:
-        raise DenseAllocationError("execution memory refused: " + ", ".join(decision.blockers))
+        raise DenseAllocationError(
+            "execution memory refused: "
+            + ", ".join(decision.blockers)
+            + f"; required_bytes={decision.bytes_required}, budget_bytes={decision.budget_bytes}, "
+            + f"host_available_bytes={capacity.host_available_bytes}, "
+            + f"cgroup_available_bytes={capacity.cgroup_available_bytes}, "
+            + f"device_available_bytes={capacity.device_available_bytes}"
+        )
     return decision
 
 

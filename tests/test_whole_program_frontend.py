@@ -966,10 +966,14 @@ def test_public_frontend_digest_refuses_actual_payload_change_and_recovers(fault
             and not observed
         ):
             payload = frame.f_locals["o"]
-            assert isinstance(payload, dict)
+            assert isinstance(payload, (dict, list))
             observed.append(caller.f_locals["encoded_size"])
             if fault == "grow":
-                payload["transport_fault"] = "x" * (observed[0] + 1)
+                extra = "x" * (observed[0] + 1)
+                if isinstance(payload, dict):
+                    payload["transport_fault"] = extra
+                else:
+                    payload.append(extra)
             else:
                 payload.clear()
 
