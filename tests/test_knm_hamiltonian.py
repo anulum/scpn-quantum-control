@@ -10,6 +10,7 @@
 from collections.abc import Callable
 from threading import Event
 from time import monotonic
+from typing import Literal, cast
 from unittest.mock import Mock
 
 import numpy as np
@@ -402,7 +403,9 @@ def test_dense_export_rejects_malformed_public_dispatch_inputs(invalid: str) -> 
             coupling,
             frequency,
             delta=float("nan") if invalid == "delta" else 0.0,
-            backend="missing" if invalid == "backend" else "python",
+            backend=cast(
+                Literal["auto", "python", "rust"], "missing" if invalid == "backend" else "python"
+            ),
         )
     assert active_reserved_bytes() == baseline
     np.testing.assert_array_equal(

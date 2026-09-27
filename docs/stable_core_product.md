@@ -961,3 +961,18 @@ it with `replay_value_and_gradient_with_memory_budget`. This is a policy ceiling
 not observed browser capacity or a memory reservation. Parent admission remains
 binding, allocation failures refuse, and a refused FFI call leaves output bytes
 unchanged. Independent subsequent calls start with a fresh charge.
+
+
+Compact JSON byte counting accepts built-in JSON primitives and containers. It
+checks each increment against native addressability and an optional positive
+`max_bytes` cap before constructing the encoded document. Protocol-bearing
+subclasses refuse because their reported lengths or iterators can disagree with
+the standard encoder. Actual compact ASCII encoding defines the inclusive byte
+boundary; a refusal does not publish partial output.
+
+Process-local reservations check the process identity before accessing ledger
+locks or inheriting an active scope. A forked child therefore cannot acquire a
+mutex held by a vanished parent thread or reuse the parent's declared charge.
+Child lifecycle qualification uses an actual process and combines its coverage
+with the parent's measurements. These declarations coordinate cooperating
+callers; they do not reserve operating-system pages across processes.
