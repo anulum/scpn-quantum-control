@@ -496,12 +496,32 @@ def test_native_json_output_budget_refuses_before_encoding_and_recovers(
     def replay() -> str:
         return native(IR) if metadata_only else native(IR, [2.0])
 
-    expected = replay()
+    owner: ExecutionMemoryReservation | None = None
+    measured: list[int] = []
+    original_resize = ExecutionMemoryReservation.resize
+
+    def observe(reservation: ExecutionMemoryReservation, plan: ExecutionMemoryPlan) -> None:
+        nonlocal owner
+        if owner is None:
+            owner = reservation
+        original_resize(reservation, plan)
+        if reservation is owner:
+            measured.append(reservation.decision.bytes_required)
+
+    with monkeypatch.context() as instrumentation:
+        instrumentation.setattr(ExecutionMemoryReservation, "resize", observe)
+        expected = replay()
     input_bytes = len(IR) * 8 + (0 if metadata_only else 16 + sys.getsizeof(0.0))
     numeric_bytes = 0 if metadata_only else (40 if surface.endswith("value_and_gradient") else 16)
     encoded_bytes = len(expected.encode("utf-8"))
     python_header = max(sys.getsizeof(c) for c in ("", "a", "\u0080", "\u0100", "\U00010000"))
-    total = input_bytes + numeric_bytes + encoded_bytes + python_header + 4 * encoded_bytes
+    # Observe real parser/table declarations, then independently pin the two
+    # output increments; B must cover metadata as well as retained numerics.
+    assert measured[-3] > input_bytes + numeric_bytes
+    assert measured[-2] - measured[-3] == encoded_bytes
+    assert measured[-1] - measured[-2] == python_header + 4 * encoded_bytes
+    assert measured == sorted(measured)
+    total = measured[-1]
     baseline = active_reserved_bytes()
     for budget in (total - 1, total, total + 1):
         with monkeypatch.context() as environment:

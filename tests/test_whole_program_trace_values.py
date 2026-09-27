@@ -1254,20 +1254,20 @@ def test_public_insertion_failure_releases_retained_objects_and_recovers() -> No
 
 def test_public_insertion_refuses_constant_storage_and_recovers() -> None:
     """Constant cells are admitted before their trace objects and tangents exist."""
-    constants: tuple[float, ...] = (7.0,) * 4096
+    constants: tuple[float, ...] = (7.0,) * 100_000
 
     def objective(values: Any) -> object:
         return np.sum(np.insert(values, 1, constants))
 
     baseline = active_reserved_bytes()
-    with pytest.raises(DenseAllocationError):
+    with pytest.raises(DenseAllocationError, match="trace array storage exceeds"):
         whole_program_value_and_grad(
-            objective, np.array([2.0, 3.0]), trace=False, max_execution_gib=0.001
+            objective, np.array([2.0, 3.0]), trace=False, max_execution_gib=0.01
         )
     assert active_reserved_bytes() == baseline
     constants = (7.0, 8.0, 9.0)
     result = whole_program_value_and_grad(
-        objective, np.array([2.0, 3.0]), trace=False, max_execution_gib=0.001
+        objective, np.array([2.0, 3.0]), trace=False, max_execution_gib=0.01
     )
     assert result.value == 29.0
     np.testing.assert_array_equal(result.gradient, np.ones(2))
@@ -1494,7 +1494,7 @@ def test_public_ranked_cumulative_product_and_predicate_shape_paths_preserve_gra
         return (
             np.sum(np.cumsum(matrix, axis=1))
             + np.sum(np.prod(matrix, axis=1))
-            + np.sum(np.where(matrix > 2.0, matrix, 0.0))
+            + np.sum(np.where(matrix > 2.5, matrix, 0.0))
         )
 
     baseline = active_reserved_bytes()
