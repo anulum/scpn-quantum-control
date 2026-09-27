@@ -263,3 +263,60 @@ def test_public_runtime_releases_retained_array_storage_after_objective_failure(
     assert result.value == 5.0
     np.testing.assert_array_equal(result.gradient, np.ones(2))
     assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("fault", ["tangent", "json-grow", "json-truncate"])
+def test_public_trace_rejects_actual_metadata_transport_fault_and_recovers(fault: str) -> None:
+    """Fault actual captured buffers after admission, preserving public refusal and retry.
+
+    Parameters
+    ----------
+    fault
+        Parameter tangent corruption or actual effect-IR payload size change.
+
+    """
+    from types import FrameType
+    from typing import Any
+
+    previous = sys.getprofile()
+    baseline = active_reserved_bytes()
+    changed = False
+
+    def objective(values: Any) -> object:
+        return values[0] * values[0]
+
+    def profile(frame: FrameType, event: str, arg: object) -> None:
+        nonlocal changed
+        if event != "call" or changed:
+            return
+        if fault == "tangent" and frame.f_code.co_name == "make":
+            tangent = frame.f_locals["tangent"]
+            assert isinstance(tangent, np.ndarray)
+            tangent.__setattr__("dtype", np.float32)
+            changed = True
+        elif (
+            fault != "tangent"
+            and frame.f_code.co_name == "iterencode"
+            and frame.f_back is not None
+            and frame.f_back.f_code.co_name == "program_ir"
+        ):
+            payload = frame.f_locals["o"]
+            assert isinstance(payload, dict)
+            if fault == "json-grow":
+                payload["transport_fault"] = "x" * (frame.f_back.f_locals["encoded_size"] + 1)
+            else:
+                payload.clear()
+            changed = True
+
+    sys.setprofile(profile)
+    try:
+        with pytest.raises(ValueError, match="tangent shape|admitted encoding size"):
+            whole_program_value_and_grad(objective, [2.0], trace=False)
+    finally:
+        sys.setprofile(previous)
+    assert changed
+    assert active_reserved_bytes() == baseline
+    result = whole_program_value_and_grad(objective, [2.0], trace=False)
+    assert result.value == 4.0
+    np.testing.assert_array_equal(result.gradient, [4.0])
+    assert active_reserved_bytes() == baseline

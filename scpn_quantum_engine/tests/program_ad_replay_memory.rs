@@ -119,9 +119,9 @@ fn public_child_replay_cannot_clear_parent_retained_memory_refusal() {
 
 #[test]
 fn public_retained_sum_overflow_refuses_before_admission_callback_or_values() {
-    for divisor in [8usize, 32] {
+    for divisor in [8usize, 128] {
         let side = isize::MAX as usize / divisor;
-        let source = serde_json::json!({
+        let mut ir = serde_json::json!({
             "format":"program_ad_effect_ir.v1",
             "ssa_values":[
                 {"name":"%0","producer":0,"version":0,"shape":[],"dtype":"float64","effect":0},
@@ -136,7 +136,35 @@ fn public_retained_sum_overflow_refuses_before_admission_callback_or_values() {
                 {"index":3,"kind":"primitive","target":"%3","inputs":["%2"],"version":0,"ordering":3,"operation":"sum"}
             ],
             "alias_edges":[],"control_regions":[],"phi_nodes":[],"bytecode_offsets":[]
-        }).to_string();
+        });
+        if divisor == 128 {
+            // Each reduction workspace is addressable; the aggregate retained
+            // arrays exceed isize::MAX before any numeric admission callback.
+            assert!(side * 18 * 8 > isize::MAX as usize);
+            let value = ir["ssa_values"][2].clone();
+            let effect = ir["effects"][2].clone();
+            ir["ssa_values"][3]["name"] = serde_json::json!("%19");
+            ir["ssa_values"][3]["producer"] = serde_json::json!(19);
+            ir["ssa_values"][3]["effect"] = serde_json::json!(19);
+            ir["effects"][3]["index"] = serde_json::json!(19);
+            ir["effects"][3]["ordering"] = serde_json::json!(19);
+            ir["effects"][3]["target"] = serde_json::json!("%19");
+            ir["effects"][3]["inputs"] = serde_json::json!(["%18"]);
+            for index in 3..19 {
+                let mut next_value = value.clone();
+                next_value["name"] = serde_json::json!(format!("%{index}"));
+                next_value["producer"] = serde_json::json!(index);
+                next_value["effect"] = serde_json::json!(index);
+                ir["ssa_values"].as_array_mut().unwrap().push(next_value);
+                let mut next_effect = effect.clone();
+                next_effect["index"] = serde_json::json!(index);
+                next_effect["ordering"] = serde_json::json!(index);
+                next_effect["target"] = serde_json::json!(format!("%{index}"));
+                next_effect["inputs"] = serde_json::json!([format!("%{}", index - 1)]);
+                ir["effects"].as_array_mut().unwrap().push(next_effect);
+            }
+        }
+        let source = ir.to_string();
         let called = Rc::new(Cell::new(false));
         let recorded = Rc::clone(&called);
         let result = with_replay_memory_admission(

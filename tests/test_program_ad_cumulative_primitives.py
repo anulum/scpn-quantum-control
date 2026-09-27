@@ -842,3 +842,28 @@ def test_public_cumulative_finite_input_overflow_refuses_and_recovers(name: str)
     expected = {"cumsum": [2.0, 5.0], "cumprod": [2.0, 6.0], "diff": [1.0]}[name]
     np.testing.assert_array_equal(rule.value_fn(np.array([2.0, 3.0])), expected)
     assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("dtype", [object, np.complex128])
+def test_public_cumulative_callback_refuses_opaque_numeric_storage_and_recovers(
+    dtype: object,
+) -> None:
+    """Registered production callbacks reject unsupported storage before conversion.
+
+    Parameters
+    ----------
+    dtype
+        Opaque or complex storage outside the real cumulative callback contract.
+
+    """
+    rule = custom_derivative_rule_for(
+        PrimitiveIdentity("scpn.program_ad.cumulative", "cumsum", "1")
+    )
+    assert rule is not None
+    baseline = active_reserved_bytes()
+    malformed = np.array([1.0, 2.0], dtype=cast(Any, dtype))
+    with pytest.raises(ValueError, match="real numeric scalars from plain arrays"):
+        rule.value_fn(malformed)
+    assert active_reserved_bytes() == baseline
+    _assert_allclose(rule.value_fn(np.array([1.0, 2.0])), [1.0, 3.0], rtol=0, atol=0)
+    assert active_reserved_bytes() == baseline

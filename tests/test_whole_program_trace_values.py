@@ -1716,3 +1716,127 @@ def test_public_empty_sum_axis_preserves_zero_gradient(shape: tuple[int, ...], a
     assert result.value == 0.0
     np.testing.assert_array_equal(result.gradient, np.zeros(2))
     assert active_reserved_bytes() == baseline
+
+
+def test_public_empty_selection_broadcast_preserves_zero_value_and_gradient() -> None:
+    """Broadcast scalar branches into a real empty selection without numeric workspaces."""
+    condition = np.empty(0, dtype=np.bool_)
+
+    def objective(values: Any) -> object:
+        return np.sum(np.where(condition, values[0], -values[0]))
+
+    baseline = active_reserved_bytes()
+    result = whole_program_value_and_grad(objective, [2.0], trace=False)
+    assert result.value == 0.0
+    np.testing.assert_array_equal(result.gradient, [0.0])
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize(
+    "operation", ["getitem", "take", "take-along-axis", "delete", "pad", "insert"]
+)
+def test_public_trace_layout_refuses_actual_materialized_size_change_and_recovers(
+    operation: str,
+) -> None:
+    """Corrupt an actual NumPy layout return after planning; public AD refuses and disposes.
+
+    Parameters
+    ----------
+    operation
+        Real selection or assembly operation whose produced layout is corrupted.
+
+    """
+    previous = sys.getprofile()
+    changed = False
+    baseline = active_reserved_bytes()
+    targets = {
+        "getitem": "_trace_array_getitem",
+        "take": "_trace_take",
+        "take-along-axis": "_trace_take_along_axis",
+        "delete": "_trace_delete",
+        "pad": "_trace_pad",
+        "insert": "_trace_insert",
+    }
+
+    indices = np.array([0, 2])
+
+    def getitem(values: Any) -> object:
+        return np.sum(values[1:])
+
+    def take(values: Any) -> object:
+        return np.sum(np.take(values, indices))
+
+    def take_along(values: Any) -> object:
+        return np.sum(np.take_along_axis(values, indices, axis=0))
+
+    def delete(values: Any) -> object:
+        return np.sum(np.delete(values, 1))
+
+    def pad(values: Any) -> object:
+        return np.sum(np.pad(values, (1, 1), constant_values=0.0))
+
+    def insert(values: Any) -> object:
+        return np.sum(np.insert(values, 1, 0.0))
+
+    objectives: dict[str, Callable[[Any], object]] = {
+        "getitem": getitem,
+        "take": take,
+        "take-along-axis": take_along,
+        "delete": delete,
+        "pad": pad,
+        "insert": insert,
+    }
+    selected_objective = objectives[operation]
+
+    def profile(frame: FrameType, event: str, arg: object) -> None:
+        nonlocal changed
+        if (
+            not changed
+            and event == "c_call"
+            and arg is np.asarray
+            and frame.f_code.co_name == targets[operation]
+        ):
+            actual = frame.f_locals.get("selected")
+            if isinstance(actual, np.ndarray):
+                actual.__setattr__("dtype", np.uint8)
+                changed = True
+
+    def layout_profile(frame: FrameType, event: str, arg: object) -> None:
+        nonlocal changed
+        if changed or event != "return":
+            return
+        producer = (
+            "_program_ad_array_pad_layout"
+            if operation == "pad"
+            else "_program_ad_array_insert_layout"
+        )
+        if frame.f_code.co_name == producer and isinstance(arg, tuple):
+            actual = arg[0]
+            assert isinstance(actual, np.ndarray)
+            actual.__setattr__("dtype", np.uint8)
+            changed = True
+
+    if operation in {"pad", "insert"}:
+        sys.setprofile(layout_profile)
+    else:
+        sys.setprofile(profile)
+    try:
+        with pytest.raises(ValueError, match="layout"):
+            whole_program_value_and_grad(selected_objective, [1.0, 2.0, 3.0], trace=False)
+    finally:
+        sys.setprofile(previous)
+    assert changed
+    assert active_reserved_bytes() == baseline
+    result = whole_program_value_and_grad(selected_objective, [1.0, 2.0, 3.0], trace=False)
+    expected = {
+        "getitem": (5.0, [0, 1, 1]),
+        "take": (4.0, [1, 0, 1]),
+        "take-along-axis": (4.0, [1, 0, 1]),
+        "delete": (4.0, [1, 0, 1]),
+        "pad": (6.0, [1, 1, 1]),
+        "insert": (6.0, [1, 1, 1]),
+    }
+    value, gradient = expected[operation]
+    assert result.value == value
+    np.testing.assert_array_equal(result.gradient, gradient)
+    assert active_reserved_bytes() == baseline

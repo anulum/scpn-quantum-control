@@ -1088,27 +1088,6 @@ def program_ad_linalg_trace_derivative_rule(
     )
 
 
-def _program_ad_linalg_diag_positions(
-    source_shape: tuple[int, ...],
-    offset: int,
-) -> tuple[tuple[int, int], ...]:
-    if len(source_shape) == 1:
-        positions = tuple(
-            (index, index + offset) if offset >= 0 else (index - offset, index)
-            for index in range(source_shape[0])
-        )
-        return positions
-    if len(source_shape) == 2:
-        rows, cols = source_shape
-        positions = tuple(
-            (row, row + offset) for row in range(max(0, -offset), min(rows, cols - offset))
-        )
-        if not positions:
-            raise ValueError("program AD linalg diag offset selects an empty diagonal")
-        return positions
-    raise ValueError("program AD linalg diag derivative rule requires rank-1 or rank-2 input")
-
-
 def _program_ad_linalg_diag_shape_from_source(
     source_shape: tuple[int, ...],
     offset: int,
@@ -1180,11 +1159,10 @@ def program_ad_linalg_diag_derivative_rule(
                 return _program_ad_float64_vector_result(output)
             adjoint = np.zeros(static_shape, dtype=np.float64)
             cotangent_vector = cotangent_array.reshape(-1)
-            for index, (row, col) in enumerate(
-                _program_ad_linalg_diag_positions(static_shape, offset)
-            ):
+            rows, cols = static_shape
+            for index, row in enumerate(range(max(0, -offset), min(rows, cols - offset))):
                 reservation.checkpoint()
-                adjoint[row, col] += cotangent_vector[index]
+                adjoint[row, row + offset] += cotangent_vector[index]
             return _program_ad_float64_vector_result(adjoint)
 
     return CustomDerivativeRule(

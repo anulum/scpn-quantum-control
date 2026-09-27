@@ -1231,3 +1231,17 @@ def test_diagonal_factory_absurd_shapes_refuse_before_coordinates_or_numeric_arr
     valid = program_ad_linalg_diag_derivative_rule((1,))
     np.testing.assert_array_equal(valid.value_fn(np.array([2.0])), [2.0])
     assert active_reserved_bytes() == baseline
+
+
+def test_public_diagonal_factory_refuses_empty_offset_before_callbacks_and_recovers() -> None:
+    """Out-of-matrix offsets reject before coordinate allocation; a valid retry preserves pullback."""
+    baseline = active_reserved_bytes()
+    with pytest.raises(ValueError, match="offset selects an empty diagonal"):
+        program_ad_linalg_diag_derivative_rule((2, 3), k=3)
+    assert active_reserved_bytes() == baseline
+    rule = program_ad_linalg_diag_derivative_rule((2, 3), k=1)
+    assert rule.vjp_rule is not None
+    matrix = np.arange(6.0)
+    np.testing.assert_array_equal(rule.value_fn(matrix), [1.0, 5.0])
+    np.testing.assert_array_equal(rule.vjp_rule(matrix, np.array([2.0, 3.0])), [0, 2, 0, 0, 0, 3])
+    assert active_reserved_bytes() == baseline
