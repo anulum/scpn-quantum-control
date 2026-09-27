@@ -49,10 +49,8 @@ fn general_linalg_workspace_bytes(
             0
         } else {
             require_linalg_operand_count(effect, operation, matrix)?;
-            let copies = if determinant && !requires_adjoint {
-                2 // Flattened source and LU work copy.
-            } else if matches!(n, 2 | 3) {
-                2 // Flattened source and copied closed-form inverse.
+            let copies = if (determinant && !requires_adjoint) || matches!(n, 2 | 3) {
+                2 // Flattened source and LU or closed-form inverse work copy.
             } else {
                 4 // Source, double-width augmented matrix and inverse output.
             };

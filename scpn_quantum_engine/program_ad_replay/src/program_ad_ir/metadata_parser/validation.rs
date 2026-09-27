@@ -28,15 +28,6 @@ struct DiscardString;
 impl<'de> DeserializeSeed<'de> for DiscardString {
     type Value = ();
     fn deserialize<D: serde::Deserializer<'de>>(self, deserializer: D) -> Result<(), D::Error> {
-        impl Visitor<'_> for DiscardString {
-            type Value = ();
-            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-                formatter.write_str("a JSON string")
-            }
-            fn visit_str<E: serde::de::Error>(self, _: &str) -> Result<(), E> {
-                Ok(())
-            }
-        }
         deserializer.deserialize_str(self)
     }
 }
@@ -46,25 +37,6 @@ struct Children<'a>(&'a Context, bool);
 impl<'de> DeserializeSeed<'de> for Children<'_> {
     type Value = ();
     fn deserialize<D: serde::Deserializer<'de>>(self, deserializer: D) -> Result<(), D::Error> {
-        impl<'de> Visitor<'de> for Children<'_> {
-            type Value = ();
-            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-                formatter.write_str("a JSON container")
-            }
-            fn visit_seq<S: SeqAccess<'de>>(self, mut sequence: S) -> Result<(), S::Error> {
-                while let Some(raw) = sequence.next_element::<&RawValue>()? {
-                    validate_raw(self.0, raw).map_err(<S::Error as serde::de::Error>::custom)?;
-                }
-                Ok(())
-            }
-            fn visit_map<M: MapAccess<'de>>(self, mut map: M) -> Result<(), M::Error> {
-                while map.next_key_seed(DiscardString)?.is_some() {
-                    let raw = map.next_value::<&RawValue>()?;
-                    validate_raw(self.0, raw).map_err(<M::Error as serde::de::Error>::custom)?;
-                }
-                Ok(())
-            }
-        }
         if self.1 {
             deserializer.deserialize_map(self)
         } else {
@@ -141,4 +113,34 @@ pub(super) fn validate(context: &Context, serialization: &str) -> Result<(), Str
         return Err(error.clone());
     }
     result.map_err(|error: String| format!("program AD IR serialization is invalid JSON: {error}"))
+}
+
+impl Visitor<'_> for DiscardString {
+    type Value = ();
+    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str("a JSON string")
+    }
+    fn visit_str<E: serde::de::Error>(self, _: &str) -> Result<(), E> {
+        Ok(())
+    }
+}
+
+impl<'de> Visitor<'de> for Children<'_> {
+    type Value = ();
+    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str("a JSON container")
+    }
+    fn visit_seq<S: SeqAccess<'de>>(self, mut sequence: S) -> Result<(), S::Error> {
+        while let Some(raw) = sequence.next_element::<&RawValue>()? {
+            validate_raw(self.0, raw).map_err(<S::Error as serde::de::Error>::custom)?;
+        }
+        Ok(())
+    }
+    fn visit_map<M: MapAccess<'de>>(self, mut map: M) -> Result<(), M::Error> {
+        while map.next_key_seed(DiscardString)?.is_some() {
+            let raw = map.next_value::<&RawValue>()?;
+            validate_raw(self.0, raw).map_err(<M::Error as serde::de::Error>::custom)?;
+        }
+        Ok(())
+    }
 }

@@ -79,19 +79,6 @@ struct FieldKey<'a>(&'a [&'a str]);
 impl<'de> DeserializeSeed<'de> for FieldKey<'_> {
     type Value = usize;
     fn deserialize<D: serde::Deserializer<'de>>(self, deserializer: D) -> Result<usize, D::Error> {
-        impl Visitor<'_> for FieldKey<'_> {
-            type Value = usize;
-            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-                formatter.write_str("a metadata field name")
-            }
-            fn visit_str<E: serde::de::Error>(self, value: &str) -> Result<usize, E> {
-                Ok(self
-                    .0
-                    .iter()
-                    .position(|field| *field == value)
-                    .unwrap_or(usize::MAX))
-            }
-        }
         deserializer.deserialize_str(self)
     }
 }
@@ -104,53 +91,6 @@ impl<'de, const N: usize> DeserializeSeed<'de> for FieldSlots<'_, N> {
         self,
         deserializer: D,
     ) -> Result<Self::Value, D::Error> {
-        impl<'de, const N: usize> Visitor<'de> for FieldSlots<'_, N> {
-            type Value = [Option<&'de RawValue>; N];
-            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-                formatter.write_str("a metadata object")
-            }
-            fn visit_seq<S: SeqAccess<'de>>(
-                self,
-                mut sequence: S,
-            ) -> Result<Self::Value, S::Error> {
-                let minimum = self.2.ok_or_else(|| {
-                    <S::Error as serde::de::Error>::custom("expected metadata object")
-                })?;
-                let mut fields = [None; N];
-                let mut count = 0;
-                while let Some(raw) = sequence.next_element::<&RawValue>()? {
-                    self.0
-                        .checkpoint()
-                        .map_err(<S::Error as serde::de::Error>::custom)?;
-                    if count == N {
-                        return Err(<S::Error as serde::de::Error>::custom(
-                            "metadata record has excess fields",
-                        ));
-                    }
-                    fields[count] = Some(raw);
-                    count += 1;
-                }
-                if count < minimum {
-                    return Err(<S::Error as serde::de::Error>::custom(
-                        "metadata record has missing fields",
-                    ));
-                }
-                Ok(fields)
-            }
-            fn visit_map<M: MapAccess<'de>>(self, mut map: M) -> Result<Self::Value, M::Error> {
-                let mut fields = [None; N];
-                while let Some(index) = map.next_key_seed(FieldKey(self.1))? {
-                    self.0
-                        .checkpoint()
-                        .map_err(<M::Error as serde::de::Error>::custom)?;
-                    let value = map.next_value::<&RawValue>()?;
-                    if index < N {
-                        fields[index] = Some(value);
-                    }
-                }
-                Ok(fields)
-            }
-        }
         deserializer.deserialize_any(self)
     }
 }
@@ -160,21 +100,6 @@ struct OwnedString<'a>(&'a Context);
 impl<'de> DeserializeSeed<'de> for OwnedString<'_> {
     type Value = String;
     fn deserialize<D: serde::Deserializer<'de>>(self, deserializer: D) -> Result<String, D::Error> {
-        impl Visitor<'_> for OwnedString<'_> {
-            type Value = String;
-            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-                formatter.write_str("a string")
-            }
-            fn visit_str<E: serde::de::Error>(self, value: &str) -> Result<String, E> {
-                self.0.charge(value.len()).map_err(E::custom)?;
-                let mut owned = String::new();
-                owned
-                    .try_reserve_exact(value.len())
-                    .map_err(|_| E::custom("Program AD parser string allocation failed"))?;
-                owned.push_str(value);
-                Ok(owned)
-            }
-        }
         deserializer.deserialize_str(self)
     }
 }
@@ -187,50 +112,6 @@ struct Elements<'a, T> {
 impl<'de, T> DeserializeSeed<'de> for Elements<'_, T> {
     type Value = Vec<T>;
     fn deserialize<D: serde::Deserializer<'de>>(self, deserializer: D) -> Result<Vec<T>, D::Error> {
-        impl<'de, T> Visitor<'de> for Elements<'_, T> {
-            type Value = Vec<T>;
-            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-                formatter.write_str("a metadata list")
-            }
-            fn visit_seq<S: SeqAccess<'de>>(self, mut sequence: S) -> Result<Vec<T>, S::Error> {
-                let mut values = Vec::new();
-                while let Some(raw) = sequence.next_element::<&RawValue>()? {
-                    self.context
-                        .checkpoint()
-                        .map_err(<S::Error as serde::de::Error>::custom)?;
-                    if values.len() == values.capacity() {
-                        let capacity = values
-                            .capacity()
-                            .checked_mul(2)
-                            .map(|n| n.max(4))
-                            .ok_or_else(|| {
-                                <S::Error as serde::de::Error>::custom(
-                                    "Program AD parser vector capacity overflow",
-                                )
-                            })?;
-                        let bytes = self
-                            .context
-                            .bytes(capacity, size_of::<T>())
-                            .map_err(<S::Error as serde::de::Error>::custom)?;
-                        self.context
-                            .charge(bytes)
-                            .map_err(<S::Error as serde::de::Error>::custom)?;
-                        values
-                            .try_reserve_exact(capacity - values.len())
-                            .map_err(|_| {
-                                <S::Error as serde::de::Error>::custom(
-                                    "Program AD parser vector allocation failed",
-                                )
-                            })?;
-                    }
-                    values.push(
-                        (self.decode)(self.context, raw)
-                            .map_err(<S::Error as serde::de::Error>::custom)?,
-                    );
-                }
-                Ok(values)
-            }
-        }
         deserializer.deserialize_seq(self)
     }
 }
@@ -328,4 +209,127 @@ pub(super) fn parse(serialization: &str) -> Result<ProgramADEffectIR, String> {
     validation::validate(&context, serialization)?;
     replay_checkpoint()?;
     records::parse(&context, serialization)
+}
+
+impl Visitor<'_> for FieldKey<'_> {
+    type Value = usize;
+    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str("a metadata field name")
+    }
+    fn visit_str<E: serde::de::Error>(self, value: &str) -> Result<usize, E> {
+        Ok(self
+            .0
+            .iter()
+            .position(|field| *field == value)
+            .unwrap_or(usize::MAX))
+    }
+}
+
+impl<'de, const N: usize> Visitor<'de> for FieldSlots<'_, N> {
+    type Value = [Option<&'de RawValue>; N];
+    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str("a metadata object")
+    }
+    fn visit_seq<S: SeqAccess<'de>>(
+        self,
+        mut sequence: S,
+    ) -> Result<Self::Value, S::Error> {
+        let minimum = self.2.ok_or_else(|| {
+            <S::Error as serde::de::Error>::custom("expected metadata object")
+        })?;
+        let mut fields = [None; N];
+        let mut count = 0;
+        while let Some(raw) = sequence.next_element::<&RawValue>()? {
+            self.0
+                .checkpoint()
+                .map_err(<S::Error as serde::de::Error>::custom)?;
+            if count == N {
+                return Err(<S::Error as serde::de::Error>::custom(
+                    "metadata record has excess fields",
+                ));
+            }
+            fields[count] = Some(raw);
+            count += 1;
+        }
+        if count < minimum {
+            return Err(<S::Error as serde::de::Error>::custom(
+                "metadata record has missing fields",
+            ));
+        }
+        Ok(fields)
+    }
+    fn visit_map<M: MapAccess<'de>>(self, mut map: M) -> Result<Self::Value, M::Error> {
+        let mut fields = [None; N];
+        while let Some(index) = map.next_key_seed(FieldKey(self.1))? {
+            self.0
+                .checkpoint()
+                .map_err(<M::Error as serde::de::Error>::custom)?;
+            let value = map.next_value::<&RawValue>()?;
+            if index < N {
+                fields[index] = Some(value);
+            }
+        }
+        Ok(fields)
+    }
+}
+
+impl Visitor<'_> for OwnedString<'_> {
+    type Value = String;
+    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str("a string")
+    }
+    fn visit_str<E: serde::de::Error>(self, value: &str) -> Result<String, E> {
+        self.0.charge(value.len()).map_err(E::custom)?;
+        let mut owned = String::new();
+        owned
+            .try_reserve_exact(value.len())
+            .map_err(|_| E::custom("Program AD parser string allocation failed"))?;
+        owned.push_str(value);
+        Ok(owned)
+    }
+}
+
+impl<'de, T> Visitor<'de> for Elements<'_, T> {
+    type Value = Vec<T>;
+    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str("a metadata list")
+    }
+    fn visit_seq<S: SeqAccess<'de>>(self, mut sequence: S) -> Result<Vec<T>, S::Error> {
+        let mut values = Vec::new();
+        while let Some(raw) = sequence.next_element::<&RawValue>()? {
+            self.context
+                .checkpoint()
+                .map_err(<S::Error as serde::de::Error>::custom)?;
+            if values.len() == values.capacity() {
+                let capacity = values
+                    .capacity()
+                    .checked_mul(2)
+                    .map(|n| n.max(4))
+                    .ok_or_else(|| {
+                        <S::Error as serde::de::Error>::custom(
+                            "Program AD parser vector capacity overflow",
+                        )
+                    })?;
+                let bytes = self
+                    .context
+                    .bytes(capacity, size_of::<T>())
+                    .map_err(<S::Error as serde::de::Error>::custom)?;
+                self.context
+                    .charge(bytes)
+                    .map_err(<S::Error as serde::de::Error>::custom)?;
+                values
+                    .try_reserve_exact(capacity - values.len())
+                    .map_err(|_| {
+                        <S::Error as serde::de::Error>::custom(
+                            "Program AD parser vector allocation failed",
+                        )
+                    })?;
+            }
+            values.push(
+                (self.decode)(self.context, raw)
+                    .map_err(<S::Error as serde::de::Error>::custom)?,
+            );
+        }
+        Ok(values)
+    }
 }
