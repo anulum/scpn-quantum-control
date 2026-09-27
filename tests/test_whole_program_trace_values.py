@@ -33,7 +33,8 @@ from scpn_quantum_control.execution_reservations import (
 )
 
 FloatArray = NDArray[np.float64]
-ArrayFunction = Callable[..., FloatArray]
+ArrayFunction = Callable[..., object]
+NumericArrayFunction = Callable[..., FloatArray]
 ArrayFunctionArgs = Callable[[TraceADArray], tuple[object, ...]]
 ArrayFunctionKwargs = Callable[[TraceADArray], dict[str, object]]
 ArrayFunctionFailure = tuple[
@@ -999,7 +1000,7 @@ def test_clip_protocol_rejects_output_buffers() -> None:
 @pytest.mark.parametrize("diagonal", [np.diag, np.diagflat])
 @pytest.mark.parametrize("offset", [10_000, -10_000, sys.maxsize, -sys.maxsize])
 def test_public_diagonal_refuses_oversized_pointer_storage_and_recovers(
-    diagonal: ArrayFunction, offset: int
+    diagonal: NumericArrayFunction, offset: int
 ) -> None:
     """A large offset cannot allocate a huge trace container with few AD nodes."""
     baseline = active_reserved_bytes()
@@ -1024,7 +1025,7 @@ def test_public_diagonal_refuses_oversized_pointer_storage_and_recovers(
 @pytest.mark.parametrize("diagonal", [np.diag, np.diagflat])
 @pytest.mark.parametrize("offset", [-2, 0, 2])
 def test_public_diagonal_fixed_storage_preserves_diagonal_and_gradient(
-    diagonal: ArrayFunction, offset: int
+    diagonal: NumericArrayFunction, offset: int
 ) -> None:
     """Admitted placement preserves independent diagonal-index weighted sums."""
     values = np.array([2.0, 3.0])
@@ -1073,7 +1074,7 @@ def test_public_broadcast_refuses_storage_before_materialisation_and_recovers(
 @pytest.mark.parametrize("operation", [np.repeat, np.tile])
 @pytest.mark.parametrize("count", [10_000_000, sys.maxsize])
 def test_public_repetition_refuses_large_storage_and_recovers(
-    operation: ArrayFunction, count: int
+    operation: NumericArrayFunction, count: int
 ) -> None:
     """Output index and lineage storage is admitted before a repeated array exists."""
 
@@ -1096,7 +1097,9 @@ def test_public_repetition_refuses_large_storage_and_recovers(
 
 
 @pytest.mark.parametrize("operation", [np.repeat, np.tile])
-def test_public_repetition_zero_output_preserves_empty_sum(operation: ArrayFunction) -> None:
+def test_public_repetition_zero_output_preserves_empty_sum(
+    operation: NumericArrayFunction,
+) -> None:
     """Zero replication returns an empty array without constructing intermediate repeats."""
 
     def objective(values: Any) -> object:
@@ -1625,7 +1628,7 @@ def test_public_compact_cumsum_rejects_corrupted_actual_return_and_recovers(faul
         if fault == "nonfinite":
             arg.flat[0] = np.nan
         else:
-            arg.dtype = np.float32
+            arg.__setattr__("dtype", np.float32)
 
     sys.setprofile(profile)
     try:
