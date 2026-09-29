@@ -339,3 +339,47 @@ def test_ui_module_matches_the_vite_federation_config() -> None:
     mf_config = mf_config_path.read_text(encoding="utf-8")
     assert f'FEDERATION_NAME = "{ui.federation}"' in mf_config
     assert f'PANEL_EXPOSE_KEY = "{ui.exposes[0]}"' in mf_config
+
+
+def test_catalogue_projects_every_manifest_verb_in_stable_order() -> None:
+    """Projection is deterministic and retains declared backends and evidence."""
+    source_manifest = manifest.build_manifest()
+    catalogue = manifest.build_catalogue()
+    assert catalogue == manifest.build_catalogue()
+    assert catalogue["source_digest"] == source_manifest.content_digest
+    rows = catalogue["rows"]
+    assert isinstance(rows, list)
+    assert [row["verb"] for row in rows] == sorted(verb.name for verb in source_manifest.verbs)
+    for row, verb in zip(
+        rows, sorted(source_manifest.verbs, key=lambda item: item.name), strict=True
+    ):
+        assert row["backends"] == list(verb.backends)
+        assert row["evidence"] == list(verb.produces)
+        assert row["api"] == f"scpn-studio-run {verb.name}"
+
+
+def test_catalogue_routes_are_only_bounded_existing_instruments() -> None:
+    """Hardware and general library workflows never acquire a run route."""
+    rows = manifest.build_catalogue()["rows"]
+    assert isinstance(rows, list)
+    routes = {row["verb"]: row["route"] for row in rows if row["route"] is not None}
+    assert routes == {
+        "compile": "#/build/compile-recompute",
+        "differentiate": "#/results/program-ad-replay",
+    }
+    for row in rows:
+        assert bool(row["reason"])
+        assert row["runtime"] == ("browser-wasm" if row["route"] else "local-python")
+    assert next(row for row in rows if row["verb"] == "execute")["route"] is None
+
+
+def test_catalogue_identity_tracks_installed_version_and_does_not_change_schema_a() -> None:
+    """A caller's installed version cannot be mistaken for the committed source."""
+    committed = manifest.build_catalogue()
+    installed = manifest.build_catalogue(studio_version="0+installed-other")
+    assert installed["identity"] != committed["identity"]
+    assert installed["source_version"] == "0+installed-other"
+    assert installed["source_digest"] == committed["source_digest"]
+    document = federation.build_federation_document()
+    assert document["schema_a"] == manifest.build_manifest().to_dict()
+    assert document["architecture_map"]["catalogue"] == committed

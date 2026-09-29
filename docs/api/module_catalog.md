@@ -5,7 +5,7 @@ module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
 - **743 modules** across **40 package families**
-- **4120 documented public module-level symbols**
+- **4121 documented public module-level symbols**
 - **842 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -5251,9 +5251,9 @@ Committed-artefact emission for the WASM Kuramoto Play panel's ground truth.
 
 The QUANTUM studio's capability manifest (schema A) on the platform contract.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/manifest.py) · Public symbols: **2**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/manifest.py) · Public symbols: **3**
 
-**Functions:** `declared_surface()`, `build_manifest()`
+**Functions:** `declared_surface()`, `build_manifest()`, `build_catalogue()`
 
 ### `scpn_quantum_control.studio.program_ad_replay_artifact`
 

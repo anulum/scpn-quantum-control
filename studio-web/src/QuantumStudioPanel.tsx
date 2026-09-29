@@ -7,6 +7,10 @@
 // scpn-quantum-control — QuantumStudioPanel (Module Federation expose)
 
 import "./tokens.css";
+import catalogueJson from "../../docs/_generated/studio_manifest.json";
+import { CapabilityCatalogue } from "./features/catalogue/CapabilityCatalogue";
+import { parseCatalogue } from "./features/catalogue/catalogue";
+import { useCatalogueRuntimes } from "./features/catalogue/useCatalogueRuntimes";
 
 import { GradientPlanExplanation } from "./panel/GradientPlanExplanation";
 import { KuramotoPlayPanel } from "./panel/KuramotoPlayPanel";
@@ -37,6 +41,8 @@ import { recomputeUnit } from "./panel/recompute";
  * fails its guard renders as a loud `unverifiable` block.
  */
 export function QuantumStudioPanel() {
+  const runtimes = useCatalogueRuntimes();
+  const catalogue = parseCatalogue(catalogueJson);
   return (
     <article className="qsp-panel">
       <header className="qsp-header">
@@ -51,14 +57,25 @@ export function QuantumStudioPanel() {
       ) : (
         <Unverifiable surface="studio_manifest.json" reason={studioManifest.reason} />
       )}
-      {recomputeUnit.ok ? (
-        <RecomputeCard unit={recomputeUnit.value} />
-      ) : (
-        <Unverifiable
-          surface="xy_compile_recompute_unit_20260708.json"
-          reason={recomputeUnit.reason}
+      {catalogue.ok && studioManifest.ok ? (
+        <CapabilityCatalogue
+          catalogue={catalogue.value}
+          manifest={studioManifest.value}
+          runtimes={runtimes}
         />
+      ) : (
+        <Unverifiable surface="capability catalogue" reason="Catalogue or source manifest unavailable" />
       )}
+      <div id="/build/compile-recompute" tabIndex={-1}>
+        {recomputeUnit.ok ? (
+          <RecomputeCard unit={recomputeUnit.value} />
+        ) : (
+          <Unverifiable
+            surface="xy_compile_recompute_unit_20260708.json"
+            reason={recomputeUnit.reason}
+          />
+        )}
+      </div>
       {committedScenario.ok ? (
         <KuramotoPlayPanel scenario={committedScenario.value} />
       ) : (
@@ -75,14 +92,16 @@ export function QuantumStudioPanel() {
           reason={committedScenario.reason}
         />
       )}
-      {programAdUnit.ok ? (
-        <ProgramADReplayCard unit={programAdUnit.value} />
-      ) : (
-        <Unverifiable
-          surface="program_ad_replay_rational_20260714.json"
-          reason={programAdUnit.reason}
-        />
-      )}
+      <div id="/results/program-ad-replay" tabIndex={-1}>
+        {programAdUnit.ok ? (
+          <ProgramADReplayCard unit={programAdUnit.value} />
+        ) : (
+          <Unverifiable
+            surface="program_ad_replay_rational_20260714.json"
+            reason={programAdUnit.reason}
+          />
+        )}
+      </div>
       {supportMatrix.ok ? (
         <SupportMatrixGrid matrix={supportMatrix.value} />
       ) : (

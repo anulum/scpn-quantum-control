@@ -1378,6 +1378,7 @@
         "tests/test_structured_ansatz.py",
         "tests/test_structured_ansatz_branches.py",
         "tests/test_structured_log_fallback.py",
+        "tests/test_studio_browser_journey.py",
         "tests/test_submit_bell_rerun_mitigated.py",
         "tests/test_submit_max_width_kuramoto_xy.py",
         "tests/test_submit_phase3_large_system_ibm.py",

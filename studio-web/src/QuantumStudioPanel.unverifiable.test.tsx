@@ -29,7 +29,7 @@ describe("QuantumStudioPanel with failing guards", () => {
   it("renders one loud unverifiable block per failed surface", () => {
     render(<QuantumStudioPanel />);
     const alerts = screen.getAllByRole("alert");
-    expect(alerts).toHaveLength(5);
+    expect(alerts).toHaveLength(6);
     expect(screen.getByText(/forced manifest guard failure/)).toBeTruthy();
     expect(screen.getByText(/forced recompute guard failure/)).toBeTruthy();
     expect(screen.getByText(/forced matrix guard failure/)).toBeTruthy();

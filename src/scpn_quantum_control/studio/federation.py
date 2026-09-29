@@ -31,7 +31,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
-from .manifest import build_manifest
+from .manifest import build_catalogue, build_manifest
 from .verbs import verb_substrates
 
 #: Where the federation document is written, relative to the repository root.
@@ -323,6 +323,7 @@ def build_architecture_map_extension() -> dict[str, Any]:
     """
     return {
         "version": ARCHITECTURE_MAP_VERSION,
+        "catalogue": build_catalogue(),
         "pipeline_stages": _pipeline_stages(),
         "capabilities": _capabilities(),
         "backends": _backends(),

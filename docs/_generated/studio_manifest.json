@@ -138,6 +138,164 @@
         "tier": "research"
       }
     ],
+    "catalogue": {
+      "identity": "sha256:41041a1ba1b37a2735d4757ab3e8784f08b972e7a9c77fdc868ba47191300407",
+      "rows": [
+        {
+          "api": "scpn-studio-run analyse",
+          "backends": [
+            "numpy",
+            "rust"
+          ],
+          "evidence": [
+            "studio.sync-analysis.v1",
+            "studio.dla-parity.v1",
+            "studio.coupling-invariant.v1"
+          ],
+          "label": "analyse",
+          "reason": "Library-only: no browser dispatch route; optional backends require local checks.",
+          "route": null,
+          "runtime": "local-python",
+          "settings": "Use the local CLI handler's parameters and policy; this catalogue submits nothing.",
+          "verb": "analyse"
+        },
+        {
+          "api": "scpn-studio-run benchmark",
+          "backends": [
+            "rust",
+            "python"
+          ],
+          "evidence": [
+            "studio.native-speedup.v1",
+            "studio.benchmark-databank.v1"
+          ],
+          "label": "benchmark",
+          "reason": "Library-only: no browser dispatch route; optional backends require local checks.",
+          "route": null,
+          "runtime": "local-python",
+          "settings": "Use the local CLI handler's parameters and policy; this catalogue submits nothing.",
+          "verb": "benchmark"
+        },
+        {
+          "api": "scpn-studio-run compile",
+          "backends": [
+            "rust",
+            "qiskit",
+            "python"
+          ],
+          "evidence": [
+            "studio.kuramoto-compilation.v1",
+            "studio.xy-compile-recompute.v1"
+          ],
+          "label": "XY compile recomputation",
+          "reason": "Replays the committed XY input only; no general circuit editor.",
+          "route": "#/build/compile-recompute",
+          "runtime": "browser-wasm",
+          "settings": "Committed K_nm, omega and compile settings; immutable replay input.",
+          "verb": "compile"
+        },
+        {
+          "api": "scpn-studio-run differentiate",
+          "backends": [
+            "python",
+            "rust"
+          ],
+          "evidence": [
+            "studio.differentiation-evidence.v1"
+          ],
+          "label": "program-AD gradient replay",
+          "reason": "Replays the committed rational program only; no arbitrary Python execution.",
+          "route": "#/results/program-ad-replay",
+          "runtime": "browser-wasm",
+          "settings": "Committed rational program, parameter targets and float64 inputs.",
+          "verb": "differentiate"
+        },
+        {
+          "api": "scpn-studio-run execute",
+          "backends": [
+            "qiskit-runtime",
+            "provider-hal"
+          ],
+          "evidence": [
+            "studio.hardware-result-pack.v1",
+            "studio.qpu-result-pack.v1"
+          ],
+          "label": "execute",
+          "reason": "Library-only: no browser dispatch route; optional backends require local checks.",
+          "route": null,
+          "runtime": "local-python",
+          "settings": "Use the local CLI handler's parameters and policy; this catalogue submits nothing.",
+          "verb": "execute"
+        },
+        {
+          "api": "scpn-studio-run mitigate",
+          "backends": [
+            "numpy"
+          ],
+          "evidence": [
+            "studio.mitigation.v1"
+          ],
+          "label": "mitigate",
+          "reason": "Library-only: no browser dispatch route; optional backends require local checks.",
+          "route": null,
+          "runtime": "local-python",
+          "settings": "Use the local CLI handler's parameters and policy; this catalogue submits nothing.",
+          "verb": "mitigate"
+        },
+        {
+          "api": "scpn-studio-run replay",
+          "backends": [
+            "python"
+          ],
+          "evidence": [
+            "studio.evidence-replay.v1"
+          ],
+          "label": "replay",
+          "reason": "Library-only: no browser dispatch route; optional backends require local checks.",
+          "route": null,
+          "runtime": "local-python",
+          "settings": "Use the local CLI handler's parameters and policy; this catalogue submits nothing.",
+          "verb": "replay"
+        },
+        {
+          "api": "scpn-studio-run simulate",
+          "backends": [
+            "qiskit",
+            "rust",
+            "python"
+          ],
+          "evidence": [
+            "studio.quantum-evolution.v1"
+          ],
+          "label": "simulate",
+          "reason": "Library-only: no browser dispatch route; optional backends require local checks.",
+          "route": null,
+          "runtime": "local-python",
+          "settings": "Use the local CLI handler's parameters and policy; this catalogue submits nothing.",
+          "verb": "simulate"
+        },
+        {
+          "api": "scpn-studio-run validate",
+          "backends": [
+            "python"
+          ],
+          "evidence": [
+            "studio.physics-validation.v1",
+            "studio.qec-readiness.v1"
+          ],
+          "label": "validate",
+          "reason": "Library-only: no browser dispatch route; optional backends require local checks.",
+          "route": null,
+          "runtime": "local-python",
+          "settings": "Use the local CLI handler's parameters and policy; this catalogue submits nothing.",
+          "verb": "validate"
+        }
+      ],
+      "schema": "studio-capability-catalogue.v1",
+      "source_digest": "sha256:369e5a6c5df881ee502ffa7d6872d522e1047e21f099ad4f5cd55035e9f8fe59",
+      "source_studio": "scpn-quantum-control",
+      "source_version": "1.2.0"
+    },
     "cross_repo": [
       {
         "adapter": "bridge.snn_adapter",

@@ -143,3 +143,67 @@ def build_manifest(*, studio_version: str = STUDIO_VERSION) -> CapabilityManifes
             federation=STUDIO_FEDERATION_NAME,
         ),
     )
+
+
+def build_catalogue(*, studio_version: str = STUDIO_VERSION) -> dict[str, object]:
+    """Project declared verbs onto the existing bounded browser instruments.
+
+    Parameters
+    ----------
+    studio_version
+        Source or installed distribution version, bound into catalogue identity.
+
+    Returns
+    -------
+    dict[str, object]
+        Deterministically ordered metadata, source identity and local fragment
+        routes. Advertised backends are declarations, never runtime probes.
+        Browser availability must be measured by the consuming panel.
+
+    """
+    instruments = {
+        "compile": (
+            "#/build/compile-recompute",
+            "XY compile recomputation",
+            "Replays the committed XY input only; no general circuit editor.",
+            "Committed K_nm, omega and compile settings; immutable replay input.",
+        ),
+        "differentiate": (
+            "#/results/program-ad-replay",
+            "program-AD gradient replay",
+            "Replays the committed rational program only; no arbitrary Python execution.",
+            "Committed rational program, parameter targets and float64 inputs.",
+        ),
+    }
+    rows: list[dict[str, object]] = []
+    for verb in sorted(QUANTUM_VERBS, key=lambda item: item.name):
+        instrument = instruments.get(verb.name)
+        rows.append(
+            {
+                "verb": verb.name,
+                "api": f"scpn-studio-run {verb.name}",
+                "runtime": "browser-wasm" if instrument else "local-python",
+                "backends": list(verb.backends),
+                "evidence": list(verb.produces),
+                "route": instrument[0] if instrument else None,
+                "label": instrument[1] if instrument else verb.name,
+                "reason": instrument[2]
+                if instrument
+                else "Library-only: no browser dispatch route; optional backends require local checks.",
+                "settings": instrument[3]
+                if instrument
+                else "Use the local CLI handler's parameters and policy; this catalogue submits nothing.",
+            }
+        )
+    manifest = build_manifest(studio_version=studio_version)
+    body: dict[str, object] = {
+        "schema": "studio-capability-catalogue.v1",
+        "source_studio": STUDIO_ID,
+        "source_version": studio_version,
+        "source_digest": manifest.content_digest,
+        "rows": rows,
+    }
+    body["identity"] = content_digest(
+        {"catalogue": json.dumps(body, sort_keys=True, separators=(",", ":")).encode("utf-8")}
+    )
+    return body

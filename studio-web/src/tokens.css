@@ -250,3 +250,10 @@ scpn-quantum-control — vendored floor design tokens (until keeper K2)
 .qsp-lab-order {
   color: var(--qsp-boundary);
 }
+
+.qsp-catalogue-filters { display: flex; flex-wrap: wrap; gap: 1rem; align-items: end; }
+.qsp-catalogue-filters label { display: grid; gap: .35rem; }
+.qsp-catalogue-rows { list-style: none; padding: 0; display: grid; gap: 1rem; }
+.qsp-catalogue-rows li { border: 1px solid currentColor; border-radius: .5rem; padding: 1rem; }
+.qsp-catalogue a:focus-visible, .qsp-catalogue input:focus-visible,
+.qsp-catalogue select:focus-visible, .qsp-panel [tabindex="-1"]:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }

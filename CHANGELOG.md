@@ -6,6 +6,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ### Added
 
+- Searchable Studio capability catalogue with source identity checks, intersecting
+  task/runtime/backend filters, explicit unavailable states and keyboard links
+  to the existing bounded XY and program-AD browser instruments. A shared
+  loopback-only browser journey exercises the built WASM and missing-kernel recovery.
+
 - KYMA v3 symbolic composition probe, pre-registered before any model is
   trained (`docs/campaigns/kyma_v3_symbolic_composition_prereg_2026-09-29.md`).
   The labels come from a symbolic program over three `Z4` registers instead of

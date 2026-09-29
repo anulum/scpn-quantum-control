@@ -273,6 +273,17 @@ jobs:
         with:
           version: 11.9.0
           run_install: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12"}
+      - name: Install locked browser acceptance dependencies
+        working-directory: .
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-studio-browser.txt
+          python -m playwright install --with-deps chromium
+          python -m mypy --strict tools/studio_browser_journey.py tests/test_studio_browser_journey.py
+          python -m pytest --noconftest -q tests/test_studio_browser_journey.py
+          python -m ruff check tools/studio_browser_journey.py
+          python -m ruff check --isolated --preview --select D,D413,D417,D420 --config 'lint.pydocstyle.convention = "numpy"' tools/studio_browser_journey.py
       - name: Install locked dependencies
         run: pnpm install --frozen-lockfile
       - name: Typecheck (TS strict)
@@ -308,6 +319,15 @@ jobs:
           --coverage.thresholds.branches=100
           --coverage.thresholds.functions=100
           --coverage.thresholds.lines=100
+      - name: Enforce catalogue owner coverage
+        run: >-
+          pnpm exec vitest run src/features/catalogue
+          --coverage --coverage.reporter=text
+          --coverage.include='src/features/catalogue/*.{ts,tsx}'
+          --coverage.thresholds.statements=100
+          --coverage.thresholds.branches=100
+          --coverage.thresholds.functions=100
+          --coverage.thresholds.lines=100
       - name: Build the portal and the federation remote
         run: pnpm build
       - name: Assert the ESM remote entry carries the locked federation name
@@ -333,3 +353,24 @@ jobs:
               assert digest == row["sha256"], f"digest drift: {row['path']}"
           print(f"deploy manifest verified: {len(manifest['artifacts'])} artefacts")
           EOF
+      - name: Run the real catalogue browser journey
+        working-directory: .
+        run: |
+          python -m http.server 4173 --bind 127.0.0.1 --directory studio-web/dist > "$RUNNER_TEMP/studio-preview.log" 2>&1 &
+          preview_pid=$!
+          trap 'kill "$preview_pid"; wait "$preview_pid" || true' EXIT
+          for attempt in 1 2 3 4 5; do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
+            sleep 1
+          done
+          python tools/studio_browser_journey.py --scenario capability_catalogue \
+            --base-url http://127.0.0.1:4173/ --output "$RUNNER_TEMP/studio-catalogue-journey.json"
+      - name: Preserve browser acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: studio-catalogue-browser-evidence
+          path: |
+            ${{ runner.temp }}/studio-catalogue-journey.json
+            ${{ runner.temp }}/studio-preview.log
+          if-no-files-found: error
