@@ -4,6 +4,19 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+### Added
+
+- KYMA v3 symbolic composition probe, pre-registered before any model is
+  trained (`docs/campaigns/kyma_v3_symbolic_composition_prereg_2026-09-29.md`).
+  The labels come from a symbolic program over three `Z4` registers instead of
+  an oscillator teacher. A staged gated-coupling oscillator substrate (108
+  parameters) is compared with a parameter-matched MLP, a staged GNN and a
+  transformer on the held-out ordered pair `(R0, R1)`, query `a` only. The
+  teacher-free design checks and the hand-set realisability check are
+  executable (`scpn_quantum_control.benchmarks.kyma_v3`,
+  `scripts/run_kyma_v3_probe.py`) and gated by the `kyma-v3-quality` CI job. No
+  result exists yet.
+
 ### Fixed
 
 - The Zenodo archive metadata in `.zenodo.json` and `oscillatools/.zenodo.json`

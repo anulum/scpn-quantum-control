@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **739 modules** across **40 package families**
-- **4078 documented public module-level symbols**
+- **743 modules** across **40 package families**
+- **4120 documented public module-level symbols**
 - **842 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -1320,6 +1320,44 @@ The fixed gated-oscillator **teacher** that defines every trial's label.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/benchmarks/kyma_v2/teacher.py) · Public symbols: **4**
 
 **Functions:** `teacher_gates()`, `teacher_final_phases()`, `teacher_labels()`, `label_batch()`
+
+### `scpn_quantum_control.benchmarks.kyma_v3.baselines`
+
+Non-oscillator baselines for the symbolic KYMA v3 task.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/benchmarks/kyma_v3/baselines.py) · Public symbols: **16**
+
+**Classes:** `BaselineSpec`
+
+**Functions:** `features()`, `mlp_param_count()`, `mlp_init()`, `mlp_logits()`, `gnn_param_count()`, `gnn_init()`, `gnn_logits()`, `transformer_param_count()`, `transformer_init()`, `transformer_logits()`, `sequential_param_count()`, `sequential_init()`, `sequential_angles()`, `closest_width()`, `train_and_predict()`
+
+### `scpn_quantum_control.benchmarks.kyma_v3.probe`
+
+Run the KYMA v3 probe over seeds and apply the frozen pass/fail contract.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/benchmarks/kyma_v3/probe.py) · Public symbols: **6**
+
+**Classes:** `SeedResult`
+
+**Functions:** `baseline_specs()`, `realisability_accuracy()`, `run_seed()`, `verdict()`, `run_probe()`
+
+### `scpn_quantum_control.benchmarks.kyma_v3.substrate`
+
+Staged gated-coupling oscillator substrate for the symbolic KYMA v3 task.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/benchmarks/kyma_v3/substrate.py) · Public symbols: **7**
+
+**Functions:** `substrate_param_count()`, `hand_gates()`, `init_gates()`, `final_phases()`, `phase_to_label()`, `predict()`, `train()`
+
+### `scpn_quantum_control.benchmarks.kyma_v3.task`
+
+Symbolic ground truth, compositional split, and teacher-free design checks.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/benchmarks/kyma_v3/task.py) · Public symbols: **13**
+
+**Classes:** `SymbolicDataset`, `DesignReport`
+
+**Functions:** `apply_operation()`, `run_configuration()`, `all_states()`, `configurations()`, `build_dataset()`, `ambiguous_state_fraction()`, `min_distance_to_trained_answers()`, `answers_are_uniform()`, `label_counts_are_uniform()`, `design_report()`, `training_marginal_accuracy()`
 
 ### `scpn_quantum_control.benchmarks.layout_method_comparison`
 

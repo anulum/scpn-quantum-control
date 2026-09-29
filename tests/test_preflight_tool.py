@@ -1025,6 +1025,8 @@ def test_main_uses_coverage_pytest_by_default(
         "kyma-v2-dynamics exact coverage threshold",
         "KYMA v2 coupling focused coverage",
         "KYMA v2 coupling exact coverage threshold",
+        "kyma-v3 focused coverage",
+        "kyma-v3 exact coverage threshold",
         "differentiable-audit-contracts focused coverage",
         "differentiable-audit-contracts exact coverage threshold",
         "campaign-harness-product focused coverage",

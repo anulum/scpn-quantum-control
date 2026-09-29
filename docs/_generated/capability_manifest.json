@@ -8,12 +8,12 @@
     "notebook_files": 109,
     "optional_extras": 43,
     "public_api_exports": 842,
-    "public_documentation_pages": 377,
-    "python_model_classes": 1443,
-    "python_model_source_modules": 739,
+    "public_documentation_pages": 378,
+    "python_model_classes": 1447,
+    "python_model_source_modules": 743,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1427
+    "test_files": 1433
   },
   "documentation": {
     "examples": [
@@ -247,6 +247,7 @@
       "docs/campaigns/kyma_composition_probe_2026-07-18.md",
       "docs/campaigns/kyma_v2_1_rigor_2026-07-21.md",
       "docs/campaigns/kyma_v2_composition_probe_2026-07-21.md",
+      "docs/campaigns/kyma_v3_symbolic_composition_prereg_2026-09-29.md",
       "docs/campaigns/large_system_submission_extension_readiness_20260520T193857Z.md",
       "docs/campaigns/large_system_submission_extension_readiness_20260520T193903Z.md",
       "docs/campaigns/large_system_submission_extension_readiness_20260520T193909Z.md",
@@ -608,7 +609,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 50
+        "python_modules": 54
       },
       {
         "package": "bridge",
@@ -1141,6 +1142,10 @@
       {
         "name": "BaselineCatalogueRow",
         "path": "src/scpn_quantum_control/quantum_sync_challenge_oracle_product.py"
+      },
+      {
+        "name": "BaselineSpec",
+        "path": "src/scpn_quantum_control/benchmarks/kyma_v3/baselines.py"
       },
       {
         "name": "BaselineSurfaceRow",
@@ -1837,6 +1842,10 @@
       {
         "name": "DepthProvider",
         "path": "src/scpn_quantum_control/hardware/kuramoto_layout_cost.py"
+      },
+      {
+        "name": "DesignReport",
+        "path": "src/scpn_quantum_control/benchmarks/kyma_v3/task.py"
       },
       {
         "name": "DifferentiabilityDiagnosticReport",
@@ -5807,6 +5816,10 @@
         "path": "src/scpn_quantum_control/benchmarks/kyma/probe.py"
       },
       {
+        "name": "SeedResult",
+        "path": "src/scpn_quantum_control/benchmarks/kyma_v3/probe.py"
+      },
+      {
         "name": "SeedResultV2",
         "path": "src/scpn_quantum_control/benchmarks/kyma_v2/probe.py"
       },
@@ -6013,6 +6026,10 @@
       {
         "name": "SurrogateSupportRow",
         "path": "src/scpn_quantum_control/surrogates/report.py"
+      },
+      {
+        "name": "SymbolicDataset",
+        "path": "src/scpn_quantum_control/benchmarks/kyma_v3/task.py"
       },
       {
         "name": "SymmetryDecayModel",
@@ -6703,6 +6720,10 @@
       "src/scpn_quantum_control/benchmarks/kyma_v2/rigor.py",
       "src/scpn_quantum_control/benchmarks/kyma_v2/task.py",
       "src/scpn_quantum_control/benchmarks/kyma_v2/teacher.py",
+      "src/scpn_quantum_control/benchmarks/kyma_v3/baselines.py",
+      "src/scpn_quantum_control/benchmarks/kyma_v3/probe.py",
+      "src/scpn_quantum_control/benchmarks/kyma_v3/substrate.py",
+      "src/scpn_quantum_control/benchmarks/kyma_v3/task.py",
       "src/scpn_quantum_control/benchmarks/layout_method_comparison.py",
       "src/scpn_quantum_control/benchmarks/layout_relaxation_experiment.py",
       "src/scpn_quantum_control/benchmarks/mps_baseline.py",
@@ -9118,6 +9139,12 @@
       "tests/test_kyma_v2_rigor.py",
       "tests/test_kyma_v2_task.py",
       "tests/test_kyma_v2_teacher.py",
+      "tests/test_kyma_v3_baselines.py",
+      "tests/test_kyma_v3_probe.py",
+      "tests/test_kyma_v3_quality_gate.py",
+      "tests/test_kyma_v3_runner.py",
+      "tests/test_kyma_v3_substrate.py",
+      "tests/test_kyma_v3_task.py",
       "tests/test_l16_director.py",
       "tests/test_l16_director_product.py",
       "tests/test_larger_than_16_defaults.py",
