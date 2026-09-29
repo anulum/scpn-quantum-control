@@ -8,7 +8,7 @@
       "path": "pyproject.toml",
       "pinned_package_count": 0,
       "role": "Package metadata and bounded dependency ranges",
-      "sha256": "b6602407f2fab29da583201ad50ecaa529b25dc20b167cba4674195725216ddd",
+      "sha256": "d48857ba69cbf2e3c218c5b3f049c24d5d2466bd563caa8aff61838e900cef0c",
       "size_bytes": 21904
     },
     {
@@ -76,7 +76,7 @@
       "size_bytes": 160
     }
   ],
-  "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.39",
-  "python_version": "3.12.3",
+  "platform": "Linux-7.0.0-34-generic-x86_64-with-glibc2.39",
+  "python_version": "3.12.14",
   "schema": "scpn_qc_differentiable_external_validation_environment_lock_v2"
 }
