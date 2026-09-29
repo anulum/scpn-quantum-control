@@ -1,0 +1,1106 @@
+{
+  "cases": [
+    {
+      "id": "unit_next_line",
+      "fixture": "parameter",
+      "path": [
+        "body",
+        "unit"
+      ],
+      "value": "",
+      "accept": false
+    },
+    {
+      "id": "unit_bom",
+      "fixture": "parameter",
+      "path": [
+        "body",
+        "unit"
+      ],
+      "value": "﻿",
+      "accept": true
+    },
+    {
+      "id": "unit_separator",
+      "fixture": "parameter",
+      "path": [
+        "body",
+        "unit"
+      ],
+      "value": "\u001c",
+      "accept": true
+    },
+    {
+      "id": "unit_figure_space",
+      "fixture": "parameter",
+      "path": [
+        "body",
+        "unit"
+      ],
+      "value": " ",
+      "accept": false
+    },
+    {
+      "id": "unit_combining",
+      "fixture": "parameter",
+      "path": [
+        "body",
+        "unit"
+      ],
+      "value": "é",
+      "accept": true
+    },
+    {
+      "id": "unicode_fraction",
+      "fixture": "workspace",
+      "path": [
+        "body",
+        "updated_at"
+      ],
+      "value": "2026-09-29T00:00:00.١Z",
+      "accept": false
+    },
+    {
+      "id": "nanoseconds",
+      "fixture": "workspace",
+      "path": [
+        "body",
+        "updated_at"
+      ],
+      "value": "2026-09-29T00:00:00.000000001Z",
+      "accept": true
+    },
+    {
+      "id": "invalid_leap_day",
+      "fixture": "workspace",
+      "path": [
+        "body",
+        "updated_at"
+      ],
+      "value": "2026-02-29T00:00:00Z",
+      "accept": false
+    },
+    {
+      "id": "month_overflow",
+      "fixture": "workspace",
+      "path": [
+        "body",
+        "updated_at"
+      ],
+      "value": "2026-13-01T00:00:00Z",
+      "accept": false
+    },
+    {
+      "id": "hour_overflow",
+      "fixture": "workspace",
+      "path": [
+        "body",
+        "updated_at"
+      ],
+      "value": "2026-09-29T24:00:00Z",
+      "accept": false
+    },
+    {
+      "id": "year_zero",
+      "fixture": "workspace",
+      "path": [
+        "body",
+        "updated_at"
+      ],
+      "value": "0000-01-01T00:00:00Z",
+      "accept": false
+    },
+    {
+      "id": "utc_offset",
+      "fixture": "workspace",
+      "path": [
+        "body",
+        "updated_at"
+      ],
+      "value": "2026-09-29T00:00:00+00:00",
+      "accept": false
+    },
+    {
+      "id": "fraction_overflow",
+      "fixture": "workspace",
+      "path": [
+        "body",
+        "updated_at"
+      ],
+      "value": "2026-09-29T00:00:00.0000000001Z",
+      "accept": false
+    },
+    {
+      "id": "shape_boolean",
+      "fixture": "parameter",
+      "path": [
+        "body",
+        "shape"
+      ],
+      "value": [
+        true
+      ],
+      "accept": false
+    },
+    {
+      "id": "shape_negative",
+      "fixture": "parameter",
+      "path": [
+        "body",
+        "shape"
+      ],
+      "value": [
+        -1
+      ],
+      "accept": false
+    },
+    {
+      "id": "shape_negative_zero",
+      "fixture": "parameter",
+      "path": [
+        "body",
+        "shape"
+      ],
+      "value": [
+        -0.0
+      ],
+      "accept": false
+    },
+    {
+      "id": "shape_fractional",
+      "fixture": "parameter",
+      "path": [
+        "body",
+        "shape"
+      ],
+      "value": [
+        1.5
+      ],
+      "accept": false
+    },
+    {
+      "id": "shape_unsafe",
+      "fixture": "parameter",
+      "path": [
+        "body",
+        "shape"
+      ],
+      "value": [
+        9007199254740992
+      ],
+      "accept": false
+    },
+    {
+      "id": "shape_string",
+      "fixture": "parameter",
+      "path": [
+        "body",
+        "shape"
+      ],
+      "value": [
+        "2"
+      ],
+      "accept": false
+    },
+    {
+      "id": "product_overflow",
+      "fixture": "parameter",
+      "path": [
+        "body",
+        "shape"
+      ],
+      "value": [
+        9007199254740991,
+        2
+      ],
+      "accept": false
+    },
+    {
+      "id": "zero_product",
+      "fixture": "parameter",
+      "path": [
+        "body",
+        "shape"
+      ],
+      "value": [
+        9007199254740991,
+        2,
+        0
+      ],
+      "accept": true
+    },
+    {
+      "id": "scalar",
+      "fixture": "parameter",
+      "path": [
+        "body",
+        "shape"
+      ],
+      "value": [],
+      "accept": true
+    },
+    {
+      "id": "integral_float",
+      "fixture": "parameter",
+      "path": [
+        "body",
+        "shape"
+      ],
+      "value": [
+        2.0
+      ],
+      "accept": true
+    },
+    {
+      "id": "invalid_dtype",
+      "fixture": "parameter",
+      "path": [
+        "body",
+        "dtype"
+      ],
+      "value": "float32",
+      "accept": false
+    },
+    {
+      "id": "invalid_key",
+      "fixture": "parameter",
+      "path": [
+        "body",
+        "key"
+      ],
+      "value": "",
+      "accept": false
+    },
+    {
+      "id": "invalid_trainable",
+      "fixture": "parameter",
+      "path": [
+        "body",
+        "trainable"
+      ],
+      "value": 1,
+      "accept": false
+    },
+    {
+      "id": "invalid_dependency_keys",
+      "fixture": "parameter",
+      "path": [
+        "body",
+        "dependency_keys"
+      ],
+      "value": [
+        "a",
+        "a"
+      ],
+      "accept": false
+    },
+    {
+      "id": "domain_unknown",
+      "fixture": "parameter",
+      "path": [
+        "body",
+        "domain"
+      ],
+      "value": {
+        "kind": "unknown"
+      },
+      "accept": false
+    },
+    {
+      "id": "domain_extra",
+      "fixture": "parameter",
+      "path": [
+        "body",
+        "domain"
+      ],
+      "value": {
+        "kind": "finite",
+        "extra": 1
+      },
+      "accept": false
+    },
+    {
+      "id": "domain_empty",
+      "fixture": "parameter",
+      "path": [
+        "body",
+        "domain"
+      ],
+      "value": {
+        "kind": "enumerated",
+        "values": []
+      },
+      "accept": false
+    },
+    {
+      "id": "domain_duplicate",
+      "fixture": "parameter",
+      "path": [
+        "body",
+        "domain"
+      ],
+      "value": {
+        "kind": "enumerated",
+        "values": [
+          "3ff0000000000000",
+          "3ff0000000000000"
+        ]
+      },
+      "accept": false
+    },
+    {
+      "id": "domain_reversed",
+      "fixture": "parameter",
+      "path": [
+        "body",
+        "domain"
+      ],
+      "value": {
+        "kind": "closed_interval",
+        "lower": "4000000000000000",
+        "upper": "3ff0000000000000"
+      },
+      "accept": false
+    },
+    {
+      "id": "domain_nonfinite",
+      "fixture": "parameter",
+      "path": [
+        "body",
+        "domain"
+      ],
+      "value": {
+        "kind": "enumerated",
+        "values": [
+          "7ff0000000000000"
+        ]
+      },
+      "accept": false
+    },
+    {
+      "id": "domain_hex",
+      "fixture": "parameter",
+      "path": [
+        "body",
+        "domain"
+      ],
+      "value": {
+        "kind": "enumerated",
+        "values": [
+          "nothex"
+        ]
+      },
+      "accept": false
+    },
+    {
+      "id": "provenance_empty",
+      "fixture": "settings",
+      "path": [
+        "body",
+        "origins"
+      ],
+      "value": {
+        "shots": {}
+      },
+      "accept": false
+    },
+    {
+      "id": "provenance_array",
+      "fixture": "settings",
+      "path": [
+        "body",
+        "origins"
+      ],
+      "value": {
+        "shots": []
+      },
+      "accept": false
+    },
+    {
+      "id": "provenance_blank",
+      "fixture": "settings",
+      "path": [
+        "body",
+        "origins"
+      ],
+      "value": {
+        "shots": " "
+      },
+      "accept": false
+    },
+    {
+      "id": "provenance_structured",
+      "fixture": "settings",
+      "path": [
+        "body",
+        "origins"
+      ],
+      "value": {
+        "shots": {
+          "source": "policy",
+          "revision": 1
+        }
+      },
+      "accept": true
+    },
+    {
+      "id": "provenance_missing",
+      "fixture": "settings",
+      "path": [
+        "body",
+        "origins"
+      ],
+      "value": {},
+      "accept": false
+    },
+    {
+      "id": "provenance_extra",
+      "fixture": "settings",
+      "path": [
+        "body",
+        "origins"
+      ],
+      "value": {
+        "shots": "policy",
+        "extra": "caller"
+      },
+      "accept": false
+    },
+    {
+      "id": "settings_object_requested",
+      "fixture": "settings",
+      "path": [
+        "body",
+        "requested"
+      ],
+      "value": [],
+      "accept": false
+    },
+    {
+      "id": "settings_object_effective",
+      "fixture": "settings",
+      "path": [
+        "body",
+        "effective"
+      ],
+      "value": [],
+      "accept": false
+    },
+    {
+      "id": "settings_object_origins",
+      "fixture": "settings",
+      "path": [
+        "body",
+        "origins"
+      ],
+      "value": [],
+      "accept": false
+    },
+    {
+      "id": "reference_version",
+      "fixture": "revision_root",
+      "path": [
+        "body",
+        "problem_ref",
+        "schema"
+      ],
+      "value": "raw",
+      "accept": false
+    },
+    {
+      "id": "reference_hash",
+      "fixture": "revision_root",
+      "path": [
+        "body",
+        "problem_ref",
+        "sha256"
+      ],
+      "value": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "accept": false
+    },
+    {
+      "id": "reference_media",
+      "fixture": "revision_root",
+      "path": [
+        "body",
+        "problem_ref",
+        "media_type"
+      ],
+      "value": "application/json; charset=utf-8",
+      "accept": false
+    },
+    {
+      "id": "reference_absolute",
+      "fixture": "revision_root",
+      "path": [
+        "body",
+        "problem_ref",
+        "name"
+      ],
+      "value": "/absolute",
+      "accept": false
+    },
+    {
+      "id": "reference_parent",
+      "fixture": "revision_root",
+      "path": [
+        "body",
+        "problem_ref",
+        "name"
+      ],
+      "value": "a/../b",
+      "accept": false
+    },
+    {
+      "id": "reference_escaped",
+      "fixture": "revision_root",
+      "path": [
+        "body",
+        "problem_ref",
+        "name"
+      ],
+      "value": "a%2fb",
+      "accept": false
+    },
+    {
+      "id": "reference_backslash",
+      "fixture": "revision_root",
+      "path": [
+        "body",
+        "problem_ref",
+        "name"
+      ],
+      "value": "a\\b",
+      "accept": false
+    },
+    {
+      "id": "reference_control",
+      "fixture": "revision_root",
+      "path": [
+        "body",
+        "problem_ref",
+        "name"
+      ],
+      "value": "a\u0000b",
+      "accept": false
+    },
+    {
+      "id": "reference_relative",
+      "fixture": "revision_root",
+      "path": [
+        "body",
+        "problem_ref",
+        "name"
+      ],
+      "value": "dir/file.json",
+      "accept": true
+    },
+    {
+      "id": "reference_object",
+      "fixture": "revision_root",
+      "path": [
+        "body",
+        "problem_ref"
+      ],
+      "value": [],
+      "accept": false
+    },
+    {
+      "id": "reference_missing",
+      "fixture": "revision_root",
+      "path": [
+        "body",
+        "problem_ref"
+      ],
+      "value": {
+        "kind": "x"
+      },
+      "accept": false
+    },
+    {
+      "id": "parents_duplicate",
+      "fixture": "revision_root",
+      "path": [
+        "body",
+        "parent_revision_hashes"
+      ],
+      "value": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "accept": false
+    },
+    {
+      "id": "parents_bad_hash",
+      "fixture": "revision_root",
+      "path": [
+        "body",
+        "parent_revision_hashes"
+      ],
+      "value": [
+        "bad"
+      ],
+      "accept": false
+    },
+    {
+      "id": "parents_not_array",
+      "fixture": "revision_root",
+      "path": [
+        "body",
+        "parent_revision_hashes"
+      ],
+      "value": "not-an-array",
+      "accept": false
+    },
+    {
+      "id": "uint64_bounds",
+      "fixture": "revision_root",
+      "path": [
+        "body",
+        "parameters",
+        "theta"
+      ],
+      "value": {
+        "dtype": "uint64",
+        "shape": [
+          2
+        ],
+        "values": [
+          "0",
+          "18446744073709551615"
+        ]
+      },
+      "accept": true
+    },
+    {
+      "id": "uint_negative",
+      "fixture": "revision_root",
+      "path": [
+        "body",
+        "parameters",
+        "theta"
+      ],
+      "value": {
+        "dtype": "uint64",
+        "shape": [
+          2
+        ],
+        "values": [
+          "-1",
+          "1"
+        ]
+      },
+      "accept": false
+    },
+    {
+      "id": "int64_bounds",
+      "fixture": "revision_root",
+      "path": [
+        "body",
+        "parameters",
+        "theta"
+      ],
+      "value": {
+        "dtype": "int64",
+        "shape": [
+          2
+        ],
+        "values": [
+          "-9223372036854775808",
+          "9223372036854775807"
+        ]
+      },
+      "accept": true
+    },
+    {
+      "id": "int_overflow",
+      "fixture": "revision_root",
+      "path": [
+        "body",
+        "parameters",
+        "theta"
+      ],
+      "value": {
+        "dtype": "int64",
+        "shape": [
+          2
+        ],
+        "values": [
+          "9223372036854775808",
+          "1"
+        ]
+      },
+      "accept": false
+    },
+    {
+      "id": "uint_overflow",
+      "fixture": "revision_root",
+      "path": [
+        "body",
+        "parameters",
+        "theta"
+      ],
+      "value": {
+        "dtype": "uint64",
+        "shape": [
+          2
+        ],
+        "values": [
+          "18446744073709551616",
+          "1"
+        ]
+      },
+      "accept": false
+    },
+    {
+      "id": "leading_zero",
+      "fixture": "revision_root",
+      "path": [
+        "body",
+        "parameters",
+        "theta"
+      ],
+      "value": {
+        "dtype": "int64",
+        "shape": [
+          2
+        ],
+        "values": [
+          "01",
+          "1"
+        ]
+      },
+      "accept": false
+    },
+    {
+      "id": "negative_integer_zero",
+      "fixture": "revision_root",
+      "path": [
+        "body",
+        "parameters",
+        "theta"
+      ],
+      "value": {
+        "dtype": "int64",
+        "shape": [
+          2
+        ],
+        "values": [
+          "-0",
+          "1"
+        ]
+      },
+      "accept": false
+    },
+    {
+      "id": "decimal_integer",
+      "fixture": "revision_root",
+      "path": [
+        "body",
+        "parameters",
+        "theta"
+      ],
+      "value": {
+        "dtype": "int64",
+        "shape": [
+          2
+        ],
+        "values": [
+          "1.0",
+          "1"
+        ]
+      },
+      "accept": false
+    },
+    {
+      "id": "nan",
+      "fixture": "revision_root",
+      "path": [
+        "body",
+        "parameters",
+        "theta"
+      ],
+      "value": {
+        "dtype": "float64",
+        "shape": [
+          2
+        ],
+        "values": [
+          "7ff8000000000000",
+          "0000000000000000"
+        ]
+      },
+      "accept": false
+    },
+    {
+      "id": "cardinality",
+      "fixture": "revision_root",
+      "path": [
+        "body",
+        "parameters",
+        "theta"
+      ],
+      "value": {
+        "dtype": "float64",
+        "shape": [
+          2
+        ],
+        "values": [
+          "3ff0000000000000"
+        ]
+      },
+      "accept": false
+    },
+    {
+      "id": "event_sequence",
+      "fixture": "run",
+      "path": [
+        "body",
+        "events"
+      ],
+      "value": [
+        {
+          "version": 1,
+          "run_id": "20000000-0000-4000-8000-000000000001",
+          "sequence": 0,
+          "kind": "accepted",
+          "payload": {}
+        },
+        {
+          "version": 1,
+          "run_id": "20000000-0000-4000-8000-000000000001",
+          "sequence": 1,
+          "kind": "result",
+          "payload": {
+            "evidence_ref": "unchanged"
+          }
+        }
+      ],
+      "accept": true
+    },
+    {
+      "id": "event_version",
+      "fixture": "run",
+      "path": [
+        "body",
+        "events"
+      ],
+      "value": [
+        {
+          "version": 2,
+          "run_id": "20000000-0000-4000-8000-000000000001",
+          "sequence": 0,
+          "kind": "accepted",
+          "payload": {}
+        }
+      ],
+      "accept": false
+    },
+    {
+      "id": "event_run",
+      "fixture": "run",
+      "path": [
+        "body",
+        "events"
+      ],
+      "value": [
+        {
+          "version": 1,
+          "run_id": "40000000-0000-4000-8000-000000000001",
+          "sequence": 0,
+          "kind": "accepted",
+          "payload": {}
+        }
+      ],
+      "accept": false
+    },
+    {
+      "id": "event_kind",
+      "fixture": "run",
+      "path": [
+        "body",
+        "events"
+      ],
+      "value": [
+        {
+          "version": 1,
+          "run_id": "20000000-0000-4000-8000-000000000001",
+          "sequence": 0,
+          "kind": "completed",
+          "payload": {}
+        }
+      ],
+      "accept": false
+    },
+    {
+      "id": "event_kind_object",
+      "fixture": "run",
+      "path": [
+        "body",
+        "events"
+      ],
+      "value": [
+        {
+          "version": 1,
+          "run_id": "20000000-0000-4000-8000-000000000001",
+          "sequence": 0,
+          "kind": {},
+          "payload": {}
+        }
+      ],
+      "accept": false
+    },
+    {
+      "id": "event_payload",
+      "fixture": "run",
+      "path": [
+        "body",
+        "events"
+      ],
+      "value": [
+        {
+          "version": 1,
+          "run_id": "20000000-0000-4000-8000-000000000001",
+          "sequence": 0,
+          "kind": "accepted",
+          "payload": []
+        }
+      ],
+      "accept": false
+    },
+    {
+      "id": "event_sequence",
+      "fixture": "run",
+      "path": [
+        "body",
+        "events"
+      ],
+      "value": [
+        {
+          "version": 1,
+          "run_id": "20000000-0000-4000-8000-000000000001",
+          "sequence": -1,
+          "kind": "accepted",
+          "payload": {}
+        }
+      ],
+      "accept": false
+    },
+    {
+      "id": "event_boolean_version",
+      "fixture": "run",
+      "path": [
+        "body",
+        "events"
+      ],
+      "value": [
+        {
+          "version": true,
+          "run_id": "20000000-0000-4000-8000-000000000001",
+          "sequence": 0,
+          "kind": "accepted",
+          "payload": {}
+        }
+      ],
+      "accept": false
+    },
+    {
+      "id": "event_reordered",
+      "fixture": "run",
+      "path": [
+        "body",
+        "events"
+      ],
+      "value": [
+        {
+          "version": 1,
+          "run_id": "20000000-0000-4000-8000-000000000001",
+          "sequence": 1,
+          "kind": "accepted",
+          "payload": {}
+        },
+        {
+          "version": 1,
+          "run_id": "20000000-0000-4000-8000-000000000001",
+          "sequence": 0,
+          "kind": "accepted",
+          "payload": {}
+        }
+      ],
+      "accept": false
+    },
+    {
+      "id": "event_duplicate",
+      "fixture": "run",
+      "path": [
+        "body",
+        "events"
+      ],
+      "value": [
+        {
+          "version": 1,
+          "run_id": "20000000-0000-4000-8000-000000000001",
+          "sequence": 0,
+          "kind": "accepted",
+          "payload": {}
+        },
+        {
+          "version": 1,
+          "run_id": "20000000-0000-4000-8000-000000000001",
+          "sequence": 0,
+          "kind": "accepted",
+          "payload": {}
+        }
+      ],
+      "accept": false
+    },
+    {
+      "id": "run_remote_mode",
+      "fixture": "run",
+      "path": [
+        "body",
+        "mode"
+      ],
+      "value": "remote",
+      "accept": false
+    },
+    {
+      "id": "invalid_uuid",
+      "fixture": "workspace",
+      "path": [
+        "body",
+        "project_id"
+      ],
+      "value": "not-a-uuid",
+      "accept": false
+    },
+    {
+      "id": "extra_envelope",
+      "fixture": "workspace",
+      "path": [
+        "unknown"
+      ],
+      "value": 1,
+      "accept": false
+    },
+    {
+      "id": "extension_nested",
+      "fixture": "workspace",
+      "path": [
+        "extensions"
+      ],
+      "value": {
+        "measurement_keys": [
+          "m1",
+          "m0"
+        ],
+        "opaque": {
+          "int": 9007199254740993,
+          "float": 1.0,
+          "negative_zero": -0.0
+        }
+      },
+      "accept": true
+    }
+  ]
+}

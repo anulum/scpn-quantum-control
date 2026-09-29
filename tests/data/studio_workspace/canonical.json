@@ -1,0 +1,396 @@
+{
+  "schema": "studio_workspace_codec_conformance.v1",
+  "cases": [
+    {
+      "id": "null",
+      "schema": "experiment_revision.v1",
+      "input_descriptor": {
+        "kind": "null"
+      },
+      "expected_tree": null,
+      "expected_canonical_utf8_hex": "6578706572696d656e745f7265766973696f6e2e76310a6e756c6c",
+      "expected_sha256": "ad3893a9986f598f8a00e5620a1714cca70148553ddc2b365e85e2a79a725ba0"
+    },
+    {
+      "id": "boolean_not_integer",
+      "schema": "experiment_revision.v1",
+      "input_descriptor": {
+        "kind": "boolean",
+        "value": true
+      },
+      "expected_tree": true,
+      "expected_canonical_utf8_hex": "6578706572696d656e745f7265766973696f6e2e76310a74727565",
+      "expected_sha256": "e12cc98ee60af7f7d1a3a0e1864058f01f84672be688b1c7fc936b585a6e1442"
+    },
+    {
+      "id": "integer_one",
+      "schema": "experiment_revision.v1",
+      "input_descriptor": {
+        "kind": "integer",
+        "decimal": "1"
+      },
+      "expected_tree": [
+        "integer",
+        "1"
+      ],
+      "expected_canonical_utf8_hex": "6578706572696d656e745f7265766973696f6e2e76310a5b22696e7465676572222c2231225d",
+      "expected_sha256": "1707fe8063064c68243b294e67d6b3b662b99a4abffd047d4db7ed18b1b5b48b"
+    },
+    {
+      "id": "float_one",
+      "schema": "experiment_revision.v1",
+      "input_descriptor": {
+        "kind": "float64",
+        "bits": "3ff0000000000000"
+      },
+      "expected_tree": [
+        "float64",
+        "3ff0000000000000"
+      ],
+      "expected_canonical_utf8_hex": "6578706572696d656e745f7265766973696f6e2e76310a5b22666c6f61743634222c2233666630303030303030303030303030225d",
+      "expected_sha256": "0ea014f921c217b45ef9884232554ae728628672f24b03ca6f875da45a15d90a"
+    },
+    {
+      "id": "negative_zero",
+      "schema": "experiment_revision.v1",
+      "input_descriptor": {
+        "kind": "float64",
+        "bits": "8000000000000000"
+      },
+      "expected_tree": [
+        "float64",
+        "8000000000000000"
+      ],
+      "expected_canonical_utf8_hex": "6578706572696d656e745f7265766973696f6e2e76310a5b22666c6f61743634222c2238303030303030303030303030303030225d",
+      "expected_sha256": "ee54c2cd5f586f4167113070e3eb40fb44381e6fcf32e57143f8ebb294ae0e5e"
+    },
+    {
+      "id": "positive_zero",
+      "schema": "experiment_revision.v1",
+      "input_descriptor": {
+        "kind": "float64",
+        "bits": "0000000000000000"
+      },
+      "expected_tree": [
+        "float64",
+        "0000000000000000"
+      ],
+      "expected_canonical_utf8_hex": "6578706572696d656e745f7265766973696f6e2e76310a5b22666c6f61743634222c2230303030303030303030303030303030225d",
+      "expected_sha256": "3aa03a73e6a14c810f72b58ed3a48a68e6c674309eef34bac14361d96dbf3367"
+    },
+    {
+      "id": "large_integer",
+      "schema": "experiment_revision.v1",
+      "input_descriptor": {
+        "kind": "integer",
+        "decimal": "9007199254740993"
+      },
+      "expected_tree": [
+        "integer",
+        "9007199254740993"
+      ],
+      "expected_canonical_utf8_hex": "6578706572696d656e745f7265766973696f6e2e76310a5b22696e7465676572222c2239303037313939323534373430393933225d",
+      "expected_sha256": "4753d295dcb059b09577bff59dbf70ed8d68000f2049e182a3b0e0cba7e48179"
+    },
+    {
+      "id": "large_negative_integer",
+      "schema": "experiment_revision.v1",
+      "input_descriptor": {
+        "kind": "integer",
+        "decimal": "-9007199254740993"
+      },
+      "expected_tree": [
+        "integer",
+        "-9007199254740993"
+      ],
+      "expected_canonical_utf8_hex": "6578706572696d656e745f7265766973696f6e2e76310a5b22696e7465676572222c222d39303037313939323534373430393933225d",
+      "expected_sha256": "896bb37556764597aaf4a0058071921c109457572960ecb19bad301cb518516a"
+    },
+    {
+      "id": "smallest_positive_subnormal",
+      "schema": "experiment_revision.v1",
+      "input_descriptor": {
+        "kind": "float64",
+        "bits": "0000000000000001"
+      },
+      "expected_tree": [
+        "float64",
+        "0000000000000001"
+      ],
+      "expected_canonical_utf8_hex": "6578706572696d656e745f7265766973696f6e2e76310a5b22666c6f61743634222c2230303030303030303030303030303031225d",
+      "expected_sha256": "f0e8effc0810423ffcbe5dcb9e175cee0e11a27c603b92c7cee7883d94454404"
+    },
+    {
+      "id": "combining_scalar_sequence",
+      "schema": "experiment_revision.v1",
+      "input_descriptor": {
+        "kind": "string",
+        "value": "é"
+      },
+      "expected_tree": "é",
+      "expected_canonical_utf8_hex": "6578706572696d656e745f7265766973696f6e2e76310a2265cc8122",
+      "expected_sha256": "4d043fc0538c5f528615a03f0f78a2f4d7b911a961927a655b379307895d0deb"
+    },
+    {
+      "id": "precomposed_scalar",
+      "schema": "experiment_revision.v1",
+      "input_descriptor": {
+        "kind": "string",
+        "value": "é"
+      },
+      "expected_tree": "é",
+      "expected_canonical_utf8_hex": "6578706572696d656e745f7265766973696f6e2e76310a22c3a922",
+      "expected_sha256": "dce11290b51e0bc097599f74c9129c606ea8f19a59b47eecf11651f5793ff321"
+    },
+    {
+      "id": "emoji",
+      "schema": "experiment_revision.v1",
+      "input_descriptor": {
+        "kind": "string",
+        "value": "😀"
+      },
+      "expected_tree": "😀",
+      "expected_canonical_utf8_hex": "6578706572696d656e745f7265766973696f6e2e76310a22f09f988022",
+      "expected_sha256": "584635095f9047ae038b098ce05816f1a34d809370d00574d374b7e330841a17"
+    },
+    {
+      "id": "escapes",
+      "schema": "experiment_revision.v1",
+      "input_descriptor": {
+        "kind": "string",
+        "value": "\"\\/\b\f\n\r\t\u0000"
+      },
+      "expected_tree": "\"\\/\b\f\n\r\t\u0000",
+      "expected_canonical_utf8_hex": "6578706572696d656e745f7265766973696f6e2e76310a225c225c5c2f5c625c665c6e5c725c745c753030303022",
+      "expected_sha256": "bc3b24cb1756cd0275691c262276fa40bb285425f6f6330e8117024c6dbf4677"
+    },
+    {
+      "id": "empty_array",
+      "schema": "experiment_revision.v1",
+      "input_descriptor": {
+        "kind": "array",
+        "items": []
+      },
+      "expected_tree": [
+        "array",
+        []
+      ],
+      "expected_canonical_utf8_hex": "6578706572696d656e745f7265766973696f6e2e76310a5b226172726179222c5b5d5d",
+      "expected_sha256": "ec48a29374c9559cf7c779eff8af075bb6eae0a464e5e8c7fadc20da91e8898c"
+    },
+    {
+      "id": "empty_object",
+      "schema": "experiment_revision.v1",
+      "input_descriptor": {
+        "kind": "object",
+        "entries": []
+      },
+      "expected_tree": [
+        "object",
+        []
+      ],
+      "expected_canonical_utf8_hex": "6578706572696d656e745f7265766973696f6e2e76310a5b226f626a656374222c5b5d5d",
+      "expected_sha256": "9f5c7399ffde20bdfd85a1a2de901d623d43cdcf07395769bae68910fd4847be"
+    },
+    {
+      "id": "literal_integer_tag",
+      "schema": "experiment_revision.v1",
+      "input_descriptor": {
+        "kind": "array",
+        "items": [
+          {
+            "kind": "string",
+            "value": "integer"
+          },
+          {
+            "kind": "string",
+            "value": "1"
+          }
+        ]
+      },
+      "expected_tree": [
+        "array",
+        [
+          "integer",
+          "1"
+        ]
+      ],
+      "expected_canonical_utf8_hex": "6578706572696d656e745f7265766973696f6e2e76310a5b226172726179222c5b22696e7465676572222c2231225d5d",
+      "expected_sha256": "984699c13df4eacfb7ba1d444cb0457f50802ea445be9aa1e2bcb8cc390355d5"
+    },
+    {
+      "id": "utf8_key_order",
+      "schema": "experiment_revision.v1",
+      "input_descriptor": {
+        "kind": "object",
+        "entries": [
+          [
+            "😀",
+            {
+              "kind": "string",
+              "value": "astral"
+            }
+          ],
+          [
+            "",
+            {
+              "kind": "string",
+              "value": "private-use"
+            }
+          ],
+          [
+            "a",
+            {
+              "kind": "string",
+              "value": "ascii"
+            }
+          ]
+        ]
+      },
+      "expected_tree": [
+        "object",
+        [
+          [
+            "a",
+            "ascii"
+          ],
+          [
+            "",
+            "private-use"
+          ],
+          [
+            "😀",
+            "astral"
+          ]
+        ]
+      ],
+      "expected_canonical_utf8_hex": "6578706572696d656e745f7265766973696f6e2e76310a5b226f626a656374222c5b5b2261222c226173636969225d2c5b22ee8080222c22707269766174652d757365225d2c5b22f09f9880222c2261737472616c225d5d5d",
+      "expected_sha256": "e190c26b1ca951c74dc19694be1f9cda0c639679fd346784597157821a624ac1"
+    },
+    {
+      "id": "reordered_keys",
+      "schema": "experiment_revision.v1",
+      "input_descriptor": {
+        "kind": "object",
+        "entries": [
+          [
+            "a",
+            {
+              "kind": "string",
+              "value": "ascii"
+            }
+          ],
+          [
+            "😀",
+            {
+              "kind": "string",
+              "value": "astral"
+            }
+          ],
+          [
+            "",
+            {
+              "kind": "string",
+              "value": "private-use"
+            }
+          ]
+        ]
+      },
+      "expected_tree": [
+        "object",
+        [
+          [
+            "a",
+            "ascii"
+          ],
+          [
+            "",
+            "private-use"
+          ],
+          [
+            "😀",
+            "astral"
+          ]
+        ]
+      ],
+      "expected_canonical_utf8_hex": "6578706572696d656e745f7265766973696f6e2e76310a5b226f626a656374222c5b5b2261222c226173636969225d2c5b22ee8080222c22707269766174652d757365225d2c5b22f09f9880222c2261737472616c225d5d5d",
+      "expected_sha256": "e190c26b1ca951c74dc19694be1f9cda0c639679fd346784597157821a624ac1"
+    },
+    {
+      "id": "positive_infinity",
+      "schema": "experiment_revision.v1",
+      "input_descriptor": {
+        "kind": "float64",
+        "bits": "7ff0000000000000"
+      },
+      "expected": "reject_non_finite"
+    },
+    {
+      "id": "negative_infinity",
+      "schema": "experiment_revision.v1",
+      "input_descriptor": {
+        "kind": "float64",
+        "bits": "fff0000000000000"
+      },
+      "expected": "reject_non_finite"
+    },
+    {
+      "id": "nan",
+      "schema": "experiment_revision.v1",
+      "input_descriptor": {
+        "kind": "float64",
+        "bits": "7ff8000000000000"
+      },
+      "expected": "reject_non_finite"
+    },
+    {
+      "id": "unpaired_high_surrogate",
+      "schema": "experiment_revision.v1",
+      "input_descriptor": {
+        "kind": "string_codepoints",
+        "hex": [
+          "d800"
+        ]
+      },
+      "expected": "reject_invalid_unicode_scalar"
+    },
+    {
+      "id": "unpaired_low_surrogate",
+      "schema": "experiment_revision.v1",
+      "input_descriptor": {
+        "kind": "string_codepoints",
+        "hex": [
+          "dc00"
+        ]
+      },
+      "expected": "reject_invalid_unicode_scalar"
+    }
+  ],
+  "relations": [
+    {
+      "left": "integer_one",
+      "right": "float_one",
+      "digest": "different"
+    },
+    {
+      "left": "negative_zero",
+      "right": "positive_zero",
+      "digest": "different"
+    },
+    {
+      "left": "combining_scalar_sequence",
+      "right": "precomposed_scalar",
+      "digest": "different"
+    },
+    {
+      "left": "utf8_key_order",
+      "right": "reordered_keys",
+      "digest": "equal"
+    },
+    {
+      "left": "integer_one",
+      "right": "literal_integer_tag",
+      "digest": "different"
+    }
+  ]
+}

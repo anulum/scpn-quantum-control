@@ -6,6 +6,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ### Added
 
+- Immutable Studio workspace contracts in Python and TypeScript for projects,
+  revisions, parameter specifications, resolved settings and local run records.
+  Lossless JSON and typed canonical digests preserve numeric identity; complete
+  reference admission checks original producer evidence and parameter bindings.
+
 - Searchable Studio capability catalogue with source identity checks, intersecting
   task/runtime/backend filters, explicit unavailable states and keyboard links
   to the existing bounded XY and program-AD browser instruments. A shared

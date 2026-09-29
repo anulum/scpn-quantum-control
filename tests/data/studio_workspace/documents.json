@@ -1,0 +1,1614 @@
+{
+  "schema": "studio_workspace_document_conformance.v1",
+  "fixture_boundary": "Synthetic metadata only. review_fixture.v1 is a test record, never a claimed production model.",
+  "fixtures": {
+    "problem": {
+      "schema": "review_fixture.v1",
+      "body": {
+        "role": "problem",
+        "synthetic": true,
+        "purpose": "opaque reference validation only",
+        "claim_boundary": "No solver, executed plan, scientific or hardware evidence"
+      },
+      "extensions": {}
+    },
+    "program": {
+      "schema": "review_fixture.v1",
+      "body": {
+        "role": "program",
+        "synthetic": true,
+        "purpose": "opaque reference validation only",
+        "claim_boundary": "No solver, executed plan, scientific or hardware evidence"
+      },
+      "extensions": {}
+    },
+    "policy": {
+      "schema": "review_fixture.v1",
+      "body": {
+        "role": "policy",
+        "synthetic": true,
+        "purpose": "opaque reference validation only",
+        "claim_boundary": "No solver, executed plan, scientific or hardware evidence"
+      },
+      "extensions": {}
+    },
+    "environment": {
+      "schema": "review_fixture.v1",
+      "body": {
+        "role": "environment",
+        "synthetic": true,
+        "purpose": "opaque reference validation only",
+        "claim_boundary": "No solver, executed plan, scientific or hardware evidence"
+      },
+      "extensions": {}
+    },
+    "plan": {
+      "schema": "review_fixture.v1",
+      "body": {
+        "role": "plan",
+        "synthetic": true,
+        "purpose": "opaque reference validation only",
+        "claim_boundary": "No solver, executed plan, scientific or hardware evidence"
+      },
+      "extensions": {}
+    },
+    "settings": {
+      "schema": "resolved_settings.v1",
+      "body": {
+        "requested": {
+          "shots": null
+        },
+        "effective": {
+          "shots": "4096"
+        },
+        "origins": {
+          "shots": "policy"
+        },
+        "policy_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "b0e94bfd0ad934a748eabb20196b69d46a0e1012abcec6eebad6e0c3ad12dde7",
+          "media_type": "application/json"
+        },
+        "environment_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "f31d2fcf288cbfef29917b17df1155f86119da1966d178e85ef51191ff9d794f",
+          "media_type": "application/json"
+        },
+        "rejected_fields": []
+      },
+      "extensions": {}
+    },
+    "parameter": {
+      "schema": "parameter_spec.v1",
+      "body": {
+        "key": "theta",
+        "dtype": "float64",
+        "shape": [
+          2
+        ],
+        "unit": "rad",
+        "domain": {
+          "kind": "finite"
+        },
+        "default_source": "caller",
+        "trainable": true,
+        "dependency_keys": []
+      },
+      "extensions": {
+        "review_label": "synthetic angular parameter"
+      }
+    },
+    "revision_root": {
+      "schema": "experiment_revision.v1",
+      "body": {
+        "project_id": "10000000-0000-4000-8000-000000000001",
+        "parent_revision_hashes": [],
+        "problem_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "f593a1098c36286b2c3407e76057d3efc5bcfa6fe6ddabb0314c0163f15964c8",
+          "media_type": "application/json"
+        },
+        "program_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "08bb7fa0f40425327eb46daa3303241cb3808f1cdd183d9d15b3f31231a92606",
+          "media_type": "application/json"
+        },
+        "parameters": {
+          "theta": {
+            "dtype": "float64",
+            "shape": [
+              2
+            ],
+            "values": [
+              "8000000000000000",
+              "3ff0000000000000"
+            ]
+          }
+        },
+        "semantic_settings_ref": {
+          "schema": "resolved_settings.v1",
+          "sha256": "5da093ee0b75c865cfbfcb09724aa7cee6a38899f041bb25f8f9f5012e8f9900",
+          "media_type": "application/json"
+        },
+        "input_refs": [
+          {
+            "schema": "parameter_spec.v1",
+            "sha256": "bb5ceba9e288051b945d5501c50ee7ee85e16f07b7b9410a70597bd0d125fed2",
+            "media_type": "application/json"
+          }
+        ]
+      },
+      "extensions": {
+        "opaque_vendor_metadata": {
+          "label": "é",
+          "nested": [
+            true,
+            null
+          ]
+        }
+      }
+    },
+    "revision_child": {
+      "schema": "experiment_revision.v1",
+      "body": {
+        "project_id": "10000000-0000-4000-8000-000000000001",
+        "parent_revision_hashes": [
+          "b1afb4f8b606075f75bba620b04bd5bf0e3c338ab22262a028da0746e0b674e0"
+        ],
+        "problem_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "f593a1098c36286b2c3407e76057d3efc5bcfa6fe6ddabb0314c0163f15964c8",
+          "media_type": "application/json"
+        },
+        "program_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "08bb7fa0f40425327eb46daa3303241cb3808f1cdd183d9d15b3f31231a92606",
+          "media_type": "application/json"
+        },
+        "parameters": {
+          "theta": {
+            "dtype": "float64",
+            "shape": [
+              2
+            ],
+            "values": [
+              "8000000000000000",
+              "4000000000000000"
+            ]
+          }
+        },
+        "semantic_settings_ref": {
+          "schema": "resolved_settings.v1",
+          "sha256": "5da093ee0b75c865cfbfcb09724aa7cee6a38899f041bb25f8f9f5012e8f9900",
+          "media_type": "application/json"
+        },
+        "input_refs": [
+          {
+            "schema": "parameter_spec.v1",
+            "sha256": "bb5ceba9e288051b945d5501c50ee7ee85e16f07b7b9410a70597bd0d125fed2",
+            "media_type": "application/json"
+          }
+        ]
+      },
+      "extensions": {
+        "opaque_vendor_metadata": {
+          "label": "é",
+          "nested": [
+            true,
+            null
+          ]
+        }
+      }
+    },
+    "workspace": {
+      "schema": "quantum_workspace.v1",
+      "body": {
+        "project_id": "10000000-0000-4000-8000-000000000001",
+        "revision_refs": [
+          {
+            "schema": "experiment_revision.v1",
+            "sha256": "b1afb4f8b606075f75bba620b04bd5bf0e3c338ab22262a028da0746e0b674e0",
+            "media_type": "application/json"
+          },
+          {
+            "schema": "experiment_revision.v1",
+            "sha256": "990ca34ba58194cb9e3f39d59ac387cb01b023359ba6cb0bd19f61fe3b1dc735",
+            "media_type": "application/json"
+          }
+        ],
+        "draft_ref": null,
+        "created_at": "2026-09-29T00:00:00Z",
+        "updated_at": "2026-09-29T00:00:00Z",
+        "artefact_refs": [
+          {
+            "schema": "parameter_spec.v1",
+            "sha256": "bb5ceba9e288051b945d5501c50ee7ee85e16f07b7b9410a70597bd0d125fed2",
+            "media_type": "application/json"
+          }
+        ]
+      },
+      "extensions": {}
+    },
+    "run": {
+      "schema": "local_run_record.v1",
+      "body": {
+        "run_id": "20000000-0000-4000-8000-000000000001",
+        "attempt_id": "30000000-0000-4000-8000-000000000001",
+        "revision_hash": "990ca34ba58194cb9e3f39d59ac387cb01b023359ba6cb0bd19f61fe3b1dc735",
+        "plan_hash": "46b07fe2bfac19b9b2565656fb5b512bbeee124954eaef48b452f72e6f9c621c",
+        "mode": "local",
+        "events": [],
+        "output_refs": []
+      },
+      "extensions": {}
+    },
+    "unknown_major": {
+      "schema": "quantum_workspace.v2",
+      "body": {
+        "project_id": "10000000-0000-4000-8000-000000000001",
+        "revision_refs": [
+          {
+            "schema": "experiment_revision.v1",
+            "sha256": "b1afb4f8b606075f75bba620b04bd5bf0e3c338ab22262a028da0746e0b674e0",
+            "media_type": "application/json"
+          },
+          {
+            "schema": "experiment_revision.v1",
+            "sha256": "990ca34ba58194cb9e3f39d59ac387cb01b023359ba6cb0bd19f61fe3b1dc735",
+            "media_type": "application/json"
+          }
+        ],
+        "draft_ref": null,
+        "created_at": "2026-09-29T00:00:00Z",
+        "updated_at": "2026-09-29T00:00:00Z",
+        "artefact_refs": [
+          {
+            "schema": "parameter_spec.v1",
+            "sha256": "bb5ceba9e288051b945d5501c50ee7ee85e16f07b7b9410a70597bd0d125fed2",
+            "media_type": "application/json"
+          }
+        ]
+      },
+      "extensions": {}
+    },
+    "unknown_required_body_field": {
+      "schema": "quantum_workspace.v1",
+      "body": {
+        "project_id": "10000000-0000-4000-8000-000000000001",
+        "revision_refs": [
+          {
+            "schema": "experiment_revision.v1",
+            "sha256": "b1afb4f8b606075f75bba620b04bd5bf0e3c338ab22262a028da0746e0b674e0",
+            "media_type": "application/json"
+          },
+          {
+            "schema": "experiment_revision.v1",
+            "sha256": "990ca34ba58194cb9e3f39d59ac387cb01b023359ba6cb0bd19f61fe3b1dc735",
+            "media_type": "application/json"
+          }
+        ],
+        "draft_ref": null,
+        "created_at": "2026-09-29T00:00:00Z",
+        "updated_at": "2026-09-29T00:00:00Z",
+        "artefact_refs": [
+          {
+            "schema": "parameter_spec.v1",
+            "sha256": "bb5ceba9e288051b945d5501c50ee7ee85e16f07b7b9410a70597bd0d125fed2",
+            "media_type": "application/json"
+          }
+        ],
+        "unrecognised_required": true
+      },
+      "extensions": {}
+    },
+    "metadata_outside_extensions": {
+      "schema": "experiment_revision.v1",
+      "body": {
+        "project_id": "10000000-0000-4000-8000-000000000001",
+        "parent_revision_hashes": [],
+        "problem_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "f593a1098c36286b2c3407e76057d3efc5bcfa6fe6ddabb0314c0163f15964c8",
+          "media_type": "application/json"
+        },
+        "program_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "08bb7fa0f40425327eb46daa3303241cb3808f1cdd183d9d15b3f31231a92606",
+          "media_type": "application/json"
+        },
+        "parameters": {
+          "theta": {
+            "dtype": "float64",
+            "shape": [
+              2
+            ],
+            "values": [
+              "8000000000000000",
+              "3ff0000000000000"
+            ]
+          }
+        },
+        "semantic_settings_ref": {
+          "schema": "resolved_settings.v1",
+          "sha256": "5da093ee0b75c865cfbfcb09724aa7cee6a38899f041bb25f8f9f5012e8f9900",
+          "media_type": "application/json"
+        },
+        "input_refs": [
+          {
+            "schema": "parameter_spec.v1",
+            "sha256": "bb5ceba9e288051b945d5501c50ee7ee85e16f07b7b9410a70597bd0d125fed2",
+            "media_type": "application/json"
+          }
+        ]
+      },
+      "extensions": {
+        "opaque_vendor_metadata": {
+          "label": "é",
+          "nested": [
+            true,
+            null
+          ]
+        }
+      },
+      "opaque_vendor_metadata": {
+        "label": "x"
+      }
+    },
+    "missing_unit": {
+      "schema": "parameter_spec.v1",
+      "body": {
+        "key": "theta",
+        "dtype": "float64",
+        "shape": [
+          2
+        ],
+        "domain": {
+          "kind": "finite"
+        },
+        "default_source": "caller",
+        "trainable": true,
+        "dependency_keys": []
+      },
+      "extensions": {
+        "review_label": "synthetic angular parameter"
+      }
+    },
+    "empty_unit": {
+      "schema": "parameter_spec.v1",
+      "body": {
+        "key": "theta",
+        "dtype": "float64",
+        "shape": [
+          2
+        ],
+        "unit": "",
+        "domain": {
+          "kind": "finite"
+        },
+        "default_source": "caller",
+        "trainable": true,
+        "dependency_keys": []
+      },
+      "extensions": {
+        "review_label": "synthetic angular parameter"
+      }
+    },
+    "negative_shape": {
+      "schema": "parameter_spec.v1",
+      "body": {
+        "key": "theta",
+        "dtype": "float64",
+        "shape": [
+          -1
+        ],
+        "unit": "rad",
+        "domain": {
+          "kind": "finite"
+        },
+        "default_source": "caller",
+        "trainable": true,
+        "dependency_keys": []
+      },
+      "extensions": {
+        "review_label": "synthetic angular parameter"
+      }
+    },
+    "unsafe_shape_number": {
+      "schema": "parameter_spec.v1",
+      "body": {
+        "key": "theta",
+        "dtype": "float64",
+        "shape": [
+          9007199254740993
+        ],
+        "unit": "rad",
+        "domain": {
+          "kind": "finite"
+        },
+        "default_source": "caller",
+        "trainable": true,
+        "dependency_keys": []
+      },
+      "extensions": {
+        "review_label": "synthetic angular parameter"
+      }
+    },
+    "shape_cardinality": {
+      "schema": "experiment_revision.v1",
+      "body": {
+        "project_id": "10000000-0000-4000-8000-000000000001",
+        "parent_revision_hashes": [],
+        "problem_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "f593a1098c36286b2c3407e76057d3efc5bcfa6fe6ddabb0314c0163f15964c8",
+          "media_type": "application/json"
+        },
+        "program_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "08bb7fa0f40425327eb46daa3303241cb3808f1cdd183d9d15b3f31231a92606",
+          "media_type": "application/json"
+        },
+        "parameters": {
+          "theta": {
+            "dtype": "float64",
+            "shape": [
+              3
+            ],
+            "values": [
+              "8000000000000000",
+              "3ff0000000000000"
+            ]
+          }
+        },
+        "semantic_settings_ref": {
+          "schema": "resolved_settings.v1",
+          "sha256": "5da093ee0b75c865cfbfcb09724aa7cee6a38899f041bb25f8f9f5012e8f9900",
+          "media_type": "application/json"
+        },
+        "input_refs": [
+          {
+            "schema": "parameter_spec.v1",
+            "sha256": "bb5ceba9e288051b945d5501c50ee7ee85e16f07b7b9410a70597bd0d125fed2",
+            "media_type": "application/json"
+          }
+        ]
+      },
+      "extensions": {
+        "opaque_vendor_metadata": {
+          "label": "é",
+          "nested": [
+            true,
+            null
+          ]
+        }
+      }
+    },
+    "nonfinite_element": {
+      "schema": "experiment_revision.v1",
+      "body": {
+        "project_id": "10000000-0000-4000-8000-000000000001",
+        "parent_revision_hashes": [],
+        "problem_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "f593a1098c36286b2c3407e76057d3efc5bcfa6fe6ddabb0314c0163f15964c8",
+          "media_type": "application/json"
+        },
+        "program_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "08bb7fa0f40425327eb46daa3303241cb3808f1cdd183d9d15b3f31231a92606",
+          "media_type": "application/json"
+        },
+        "parameters": {
+          "theta": {
+            "dtype": "float64",
+            "shape": [
+              2
+            ],
+            "values": [
+              "7ff0000000000000",
+              "3ff0000000000000"
+            ]
+          }
+        },
+        "semantic_settings_ref": {
+          "schema": "resolved_settings.v1",
+          "sha256": "5da093ee0b75c865cfbfcb09724aa7cee6a38899f041bb25f8f9f5012e8f9900",
+          "media_type": "application/json"
+        },
+        "input_refs": [
+          {
+            "schema": "parameter_spec.v1",
+            "sha256": "bb5ceba9e288051b945d5501c50ee7ee85e16f07b7b9410a70597bd0d125fed2",
+            "media_type": "application/json"
+          }
+        ]
+      },
+      "extensions": {
+        "opaque_vendor_metadata": {
+          "label": "é",
+          "nested": [
+            true,
+            null
+          ]
+        }
+      }
+    },
+    "malformed_float_hex": {
+      "schema": "experiment_revision.v1",
+      "body": {
+        "project_id": "10000000-0000-4000-8000-000000000001",
+        "parent_revision_hashes": [],
+        "problem_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "f593a1098c36286b2c3407e76057d3efc5bcfa6fe6ddabb0314c0163f15964c8",
+          "media_type": "application/json"
+        },
+        "program_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "08bb7fa0f40425327eb46daa3303241cb3808f1cdd183d9d15b3f31231a92606",
+          "media_type": "application/json"
+        },
+        "parameters": {
+          "theta": {
+            "dtype": "float64",
+            "shape": [
+              2
+            ],
+            "values": [
+              "bad",
+              "3ff0000000000000"
+            ]
+          }
+        },
+        "semantic_settings_ref": {
+          "schema": "resolved_settings.v1",
+          "sha256": "5da093ee0b75c865cfbfcb09724aa7cee6a38899f041bb25f8f9f5012e8f9900",
+          "media_type": "application/json"
+        },
+        "input_refs": [
+          {
+            "schema": "parameter_spec.v1",
+            "sha256": "bb5ceba9e288051b945d5501c50ee7ee85e16f07b7b9410a70597bd0d125fed2",
+            "media_type": "application/json"
+          }
+        ]
+      },
+      "extensions": {
+        "opaque_vendor_metadata": {
+          "label": "é",
+          "nested": [
+            true,
+            null
+          ]
+        }
+      }
+    },
+    "unknown_dtype": {
+      "schema": "parameter_spec.v1",
+      "body": {
+        "key": "theta",
+        "dtype": "unknown128",
+        "shape": [
+          2
+        ],
+        "unit": "rad",
+        "domain": {
+          "kind": "finite"
+        },
+        "default_source": "caller",
+        "trainable": true,
+        "dependency_keys": []
+      },
+      "extensions": {
+        "review_label": "synthetic angular parameter"
+      }
+    },
+    "absolute_reference_path": {
+      "schema": "experiment_revision.v1",
+      "body": {
+        "project_id": "10000000-0000-4000-8000-000000000001",
+        "parent_revision_hashes": [],
+        "problem_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "f593a1098c36286b2c3407e76057d3efc5bcfa6fe6ddabb0314c0163f15964c8",
+          "media_type": "application/json",
+          "name": "/outside/problem.json"
+        },
+        "program_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "08bb7fa0f40425327eb46daa3303241cb3808f1cdd183d9d15b3f31231a92606",
+          "media_type": "application/json"
+        },
+        "parameters": {
+          "theta": {
+            "dtype": "float64",
+            "shape": [
+              2
+            ],
+            "values": [
+              "8000000000000000",
+              "3ff0000000000000"
+            ]
+          }
+        },
+        "semantic_settings_ref": {
+          "schema": "resolved_settings.v1",
+          "sha256": "5da093ee0b75c865cfbfcb09724aa7cee6a38899f041bb25f8f9f5012e8f9900",
+          "media_type": "application/json"
+        },
+        "input_refs": [
+          {
+            "schema": "parameter_spec.v1",
+            "sha256": "bb5ceba9e288051b945d5501c50ee7ee85e16f07b7b9410a70597bd0d125fed2",
+            "media_type": "application/json"
+          }
+        ]
+      },
+      "extensions": {
+        "opaque_vendor_metadata": {
+          "label": "é",
+          "nested": [
+            true,
+            null
+          ]
+        }
+      }
+    },
+    "traversal_reference_path": {
+      "schema": "experiment_revision.v1",
+      "body": {
+        "project_id": "10000000-0000-4000-8000-000000000001",
+        "parent_revision_hashes": [],
+        "problem_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "f593a1098c36286b2c3407e76057d3efc5bcfa6fe6ddabb0314c0163f15964c8",
+          "media_type": "application/json",
+          "name": "../problem.json"
+        },
+        "program_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "08bb7fa0f40425327eb46daa3303241cb3808f1cdd183d9d15b3f31231a92606",
+          "media_type": "application/json"
+        },
+        "parameters": {
+          "theta": {
+            "dtype": "float64",
+            "shape": [
+              2
+            ],
+            "values": [
+              "8000000000000000",
+              "3ff0000000000000"
+            ]
+          }
+        },
+        "semantic_settings_ref": {
+          "schema": "resolved_settings.v1",
+          "sha256": "5da093ee0b75c865cfbfcb09724aa7cee6a38899f041bb25f8f9f5012e8f9900",
+          "media_type": "application/json"
+        },
+        "input_refs": [
+          {
+            "schema": "parameter_spec.v1",
+            "sha256": "bb5ceba9e288051b945d5501c50ee7ee85e16f07b7b9410a70597bd0d125fed2",
+            "media_type": "application/json"
+          }
+        ]
+      },
+      "extensions": {
+        "opaque_vendor_metadata": {
+          "label": "é",
+          "nested": [
+            true,
+            null
+          ]
+        }
+      }
+    },
+    "remote_reference_path": {
+      "schema": "experiment_revision.v1",
+      "body": {
+        "project_id": "10000000-0000-4000-8000-000000000001",
+        "parent_revision_hashes": [],
+        "problem_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "f593a1098c36286b2c3407e76057d3efc5bcfa6fe6ddabb0314c0163f15964c8",
+          "media_type": "application/json",
+          "name": "https://example.invalid/problem.json"
+        },
+        "program_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "08bb7fa0f40425327eb46daa3303241cb3808f1cdd183d9d15b3f31231a92606",
+          "media_type": "application/json"
+        },
+        "parameters": {
+          "theta": {
+            "dtype": "float64",
+            "shape": [
+              2
+            ],
+            "values": [
+              "8000000000000000",
+              "3ff0000000000000"
+            ]
+          }
+        },
+        "semantic_settings_ref": {
+          "schema": "resolved_settings.v1",
+          "sha256": "5da093ee0b75c865cfbfcb09724aa7cee6a38899f041bb25f8f9f5012e8f9900",
+          "media_type": "application/json"
+        },
+        "input_refs": [
+          {
+            "schema": "parameter_spec.v1",
+            "sha256": "bb5ceba9e288051b945d5501c50ee7ee85e16f07b7b9410a70597bd0d125fed2",
+            "media_type": "application/json"
+          }
+        ]
+      },
+      "extensions": {
+        "opaque_vendor_metadata": {
+          "label": "é",
+          "nested": [
+            true,
+            null
+          ]
+        }
+      }
+    },
+    "wrong_reference_schema": {
+      "schema": "experiment_revision.v1",
+      "body": {
+        "project_id": "10000000-0000-4000-8000-000000000001",
+        "parent_revision_hashes": [],
+        "problem_ref": {
+          "schema": "other_schema.v1",
+          "sha256": "f593a1098c36286b2c3407e76057d3efc5bcfa6fe6ddabb0314c0163f15964c8",
+          "media_type": "application/json"
+        },
+        "program_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "08bb7fa0f40425327eb46daa3303241cb3808f1cdd183d9d15b3f31231a92606",
+          "media_type": "application/json"
+        },
+        "parameters": {
+          "theta": {
+            "dtype": "float64",
+            "shape": [
+              2
+            ],
+            "values": [
+              "8000000000000000",
+              "3ff0000000000000"
+            ]
+          }
+        },
+        "semantic_settings_ref": {
+          "schema": "resolved_settings.v1",
+          "sha256": "5da093ee0b75c865cfbfcb09724aa7cee6a38899f041bb25f8f9f5012e8f9900",
+          "media_type": "application/json"
+        },
+        "input_refs": [
+          {
+            "schema": "parameter_spec.v1",
+            "sha256": "bb5ceba9e288051b945d5501c50ee7ee85e16f07b7b9410a70597bd0d125fed2",
+            "media_type": "application/json"
+          }
+        ]
+      },
+      "extensions": {
+        "opaque_vendor_metadata": {
+          "label": "é",
+          "nested": [
+            true,
+            null
+          ]
+        }
+      }
+    },
+    "cross_project_parent": {
+      "schema": "experiment_revision.v1",
+      "body": {
+        "project_id": "10000000-0000-4000-8000-000000000002",
+        "parent_revision_hashes": [
+          "b1afb4f8b606075f75bba620b04bd5bf0e3c338ab22262a028da0746e0b674e0"
+        ],
+        "problem_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "f593a1098c36286b2c3407e76057d3efc5bcfa6fe6ddabb0314c0163f15964c8",
+          "media_type": "application/json"
+        },
+        "program_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "08bb7fa0f40425327eb46daa3303241cb3808f1cdd183d9d15b3f31231a92606",
+          "media_type": "application/json"
+        },
+        "parameters": {
+          "theta": {
+            "dtype": "float64",
+            "shape": [
+              2
+            ],
+            "values": [
+              "8000000000000000",
+              "4000000000000000"
+            ]
+          }
+        },
+        "semantic_settings_ref": {
+          "schema": "resolved_settings.v1",
+          "sha256": "5da093ee0b75c865cfbfcb09724aa7cee6a38899f041bb25f8f9f5012e8f9900",
+          "media_type": "application/json"
+        },
+        "input_refs": [
+          {
+            "schema": "parameter_spec.v1",
+            "sha256": "bb5ceba9e288051b945d5501c50ee7ee85e16f07b7b9410a70597bd0d125fed2",
+            "media_type": "application/json"
+          }
+        ]
+      },
+      "extensions": {
+        "opaque_vendor_metadata": {
+          "label": "é",
+          "nested": [
+            true,
+            null
+          ]
+        }
+      }
+    },
+    "unknown_run_revision": {
+      "schema": "local_run_record.v1",
+      "body": {
+        "run_id": "20000000-0000-4000-8000-000000000001",
+        "attempt_id": "30000000-0000-4000-8000-000000000001",
+        "revision_hash": "bb5ceba9e288051b945d5501c50ee7ee85e16f07b7b9410a70597bd0d125fed2",
+        "plan_hash": "46b07fe2bfac19b9b2565656fb5b512bbeee124954eaef48b452f72e6f9c621c",
+        "mode": "local",
+        "events": [],
+        "output_refs": []
+      },
+      "extensions": {}
+    },
+    "self_parent": {
+      "schema": "experiment_revision.v1",
+      "body": {
+        "project_id": "10000000-0000-4000-8000-000000000001",
+        "parent_revision_hashes": [
+          "b1afb4f8b606075f75bba620b04bd5bf0e3c338ab22262a028da0746e0b674e0"
+        ],
+        "problem_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "f593a1098c36286b2c3407e76057d3efc5bcfa6fe6ddabb0314c0163f15964c8",
+          "media_type": "application/json"
+        },
+        "program_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "08bb7fa0f40425327eb46daa3303241cb3808f1cdd183d9d15b3f31231a92606",
+          "media_type": "application/json"
+        },
+        "parameters": {
+          "theta": {
+            "dtype": "float64",
+            "shape": [
+              2
+            ],
+            "values": [
+              "8000000000000000",
+              "3ff0000000000000"
+            ]
+          }
+        },
+        "semantic_settings_ref": {
+          "schema": "resolved_settings.v1",
+          "sha256": "5da093ee0b75c865cfbfcb09724aa7cee6a38899f041bb25f8f9f5012e8f9900",
+          "media_type": "application/json"
+        },
+        "input_refs": [
+          {
+            "schema": "parameter_spec.v1",
+            "sha256": "bb5ceba9e288051b945d5501c50ee7ee85e16f07b7b9410a70597bd0d125fed2",
+            "media_type": "application/json"
+          }
+        ]
+      },
+      "extensions": {
+        "opaque_vendor_metadata": {
+          "label": "é",
+          "nested": [
+            true,
+            null
+          ]
+        }
+      }
+    },
+    "shape_boolean": {
+      "schema": "parameter_spec.v1",
+      "body": {
+        "key": "theta",
+        "dtype": "float64",
+        "shape": [
+          true
+        ],
+        "unit": "rad",
+        "domain": {
+          "kind": "finite"
+        },
+        "default_source": "caller",
+        "trainable": true,
+        "dependency_keys": []
+      },
+      "extensions": {
+        "review_label": "synthetic angular parameter"
+      }
+    },
+    "integer_range_overflow": {
+      "schema": "experiment_revision.v1",
+      "body": {
+        "project_id": "10000000-0000-4000-8000-000000000001",
+        "parent_revision_hashes": [],
+        "problem_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "f593a1098c36286b2c3407e76057d3efc5bcfa6fe6ddabb0314c0163f15964c8",
+          "media_type": "application/json"
+        },
+        "program_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "08bb7fa0f40425327eb46daa3303241cb3808f1cdd183d9d15b3f31231a92606",
+          "media_type": "application/json"
+        },
+        "parameters": {
+          "theta": {
+            "dtype": "int64",
+            "shape": [
+              1
+            ],
+            "values": [
+              "9223372036854775808"
+            ]
+          }
+        },
+        "semantic_settings_ref": {
+          "schema": "resolved_settings.v1",
+          "sha256": "5da093ee0b75c865cfbfcb09724aa7cee6a38899f041bb25f8f9f5012e8f9900",
+          "media_type": "application/json"
+        },
+        "input_refs": [
+          {
+            "schema": "parameter_spec.v1",
+            "sha256": "bb5ceba9e288051b945d5501c50ee7ee85e16f07b7b9410a70597bd0d125fed2",
+            "media_type": "application/json"
+          }
+        ]
+      },
+      "extensions": {
+        "opaque_vendor_metadata": {
+          "label": "é",
+          "nested": [
+            true,
+            null
+          ]
+        }
+      }
+    },
+    "integer_noncanonical_leading_zero": {
+      "schema": "experiment_revision.v1",
+      "body": {
+        "project_id": "10000000-0000-4000-8000-000000000001",
+        "parent_revision_hashes": [],
+        "problem_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "f593a1098c36286b2c3407e76057d3efc5bcfa6fe6ddabb0314c0163f15964c8",
+          "media_type": "application/json"
+        },
+        "program_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "08bb7fa0f40425327eb46daa3303241cb3808f1cdd183d9d15b3f31231a92606",
+          "media_type": "application/json"
+        },
+        "parameters": {
+          "theta": {
+            "dtype": "int64",
+            "shape": [
+              1
+            ],
+            "values": [
+              "01"
+            ]
+          }
+        },
+        "semantic_settings_ref": {
+          "schema": "resolved_settings.v1",
+          "sha256": "5da093ee0b75c865cfbfcb09724aa7cee6a38899f041bb25f8f9f5012e8f9900",
+          "media_type": "application/json"
+        },
+        "input_refs": [
+          {
+            "schema": "parameter_spec.v1",
+            "sha256": "bb5ceba9e288051b945d5501c50ee7ee85e16f07b7b9410a70597bd0d125fed2",
+            "media_type": "application/json"
+          }
+        ]
+      },
+      "extensions": {
+        "opaque_vendor_metadata": {
+          "label": "é",
+          "nested": [
+            true,
+            null
+          ]
+        }
+      }
+    },
+    "integer_noncanonical_negative_zero": {
+      "schema": "experiment_revision.v1",
+      "body": {
+        "project_id": "10000000-0000-4000-8000-000000000001",
+        "parent_revision_hashes": [],
+        "problem_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "f593a1098c36286b2c3407e76057d3efc5bcfa6fe6ddabb0314c0163f15964c8",
+          "media_type": "application/json"
+        },
+        "program_ref": {
+          "schema": "review_fixture.v1",
+          "sha256": "08bb7fa0f40425327eb46daa3303241cb3808f1cdd183d9d15b3f31231a92606",
+          "media_type": "application/json"
+        },
+        "parameters": {
+          "theta": {
+            "dtype": "int64",
+            "shape": [
+              1
+            ],
+            "values": [
+              "-0"
+            ]
+          }
+        },
+        "semantic_settings_ref": {
+          "schema": "resolved_settings.v1",
+          "sha256": "5da093ee0b75c865cfbfcb09724aa7cee6a38899f041bb25f8f9f5012e8f9900",
+          "media_type": "application/json"
+        },
+        "input_refs": [
+          {
+            "schema": "parameter_spec.v1",
+            "sha256": "bb5ceba9e288051b945d5501c50ee7ee85e16f07b7b9410a70597bd0d125fed2",
+            "media_type": "application/json"
+          }
+        ]
+      },
+      "extensions": {
+        "opaque_vendor_metadata": {
+          "label": "é",
+          "nested": [
+            true,
+            null
+          ]
+        }
+      }
+    },
+    "parameter_dependency_self": {
+      "schema": "parameter_spec.v1",
+      "body": {
+        "key": "theta",
+        "dtype": "float64",
+        "shape": [
+          2
+        ],
+        "unit": "rad",
+        "domain": {
+          "kind": "finite"
+        },
+        "default_source": "caller",
+        "trainable": true,
+        "dependency_keys": [
+          "theta"
+        ]
+      },
+      "extensions": {
+        "review_label": "synthetic angular parameter"
+      }
+    },
+    "invalid_project_uuid": {
+      "schema": "quantum_workspace.v1",
+      "body": {
+        "project_id": "not-a-uuid",
+        "revision_refs": [
+          {
+            "schema": "experiment_revision.v1",
+            "sha256": "b1afb4f8b606075f75bba620b04bd5bf0e3c338ab22262a028da0746e0b674e0",
+            "media_type": "application/json"
+          },
+          {
+            "schema": "experiment_revision.v1",
+            "sha256": "990ca34ba58194cb9e3f39d59ac387cb01b023359ba6cb0bd19f61fe3b1dc735",
+            "media_type": "application/json"
+          }
+        ],
+        "draft_ref": null,
+        "created_at": "2026-09-29T00:00:00Z",
+        "updated_at": "2026-09-29T00:00:00Z",
+        "artefact_refs": [
+          {
+            "schema": "parameter_spec.v1",
+            "sha256": "bb5ceba9e288051b945d5501c50ee7ee85e16f07b7b9410a70597bd0d125fed2",
+            "media_type": "application/json"
+          }
+        ]
+      },
+      "extensions": {}
+    },
+    "timestamp_not_utc": {
+      "schema": "quantum_workspace.v1",
+      "body": {
+        "project_id": "10000000-0000-4000-8000-000000000001",
+        "revision_refs": [
+          {
+            "schema": "experiment_revision.v1",
+            "sha256": "b1afb4f8b606075f75bba620b04bd5bf0e3c338ab22262a028da0746e0b674e0",
+            "media_type": "application/json"
+          },
+          {
+            "schema": "experiment_revision.v1",
+            "sha256": "990ca34ba58194cb9e3f39d59ac387cb01b023359ba6cb0bd19f61fe3b1dc735",
+            "media_type": "application/json"
+          }
+        ],
+        "draft_ref": null,
+        "created_at": "2026-09-29T12:00:00+02:00",
+        "updated_at": "2026-09-29T00:00:00Z",
+        "artefact_refs": [
+          {
+            "schema": "parameter_spec.v1",
+            "sha256": "bb5ceba9e288051b945d5501c50ee7ee85e16f07b7b9410a70597bd0d125fed2",
+            "media_type": "application/json"
+          }
+        ]
+      },
+      "extensions": {}
+    },
+    "update_precedes_creation": {
+      "schema": "quantum_workspace.v1",
+      "body": {
+        "project_id": "10000000-0000-4000-8000-000000000001",
+        "revision_refs": [
+          {
+            "schema": "experiment_revision.v1",
+            "sha256": "b1afb4f8b606075f75bba620b04bd5bf0e3c338ab22262a028da0746e0b674e0",
+            "media_type": "application/json"
+          },
+          {
+            "schema": "experiment_revision.v1",
+            "sha256": "990ca34ba58194cb9e3f39d59ac387cb01b023359ba6cb0bd19f61fe3b1dc735",
+            "media_type": "application/json"
+          }
+        ],
+        "draft_ref": null,
+        "created_at": "2026-09-29T00:00:00Z",
+        "updated_at": "2026-09-28T00:00:00Z",
+        "artefact_refs": [
+          {
+            "schema": "parameter_spec.v1",
+            "sha256": "bb5ceba9e288051b945d5501c50ee7ee85e16f07b7b9410a70597bd0d125fed2",
+            "media_type": "application/json"
+          }
+        ]
+      },
+      "extensions": {}
+    }
+  },
+  "cases": [
+    {
+      "id": "parse_settings",
+      "fixture": "settings",
+      "expectation": "structural_accept"
+    },
+    {
+      "id": "parse_parameter",
+      "fixture": "parameter",
+      "expectation": "structural_accept"
+    },
+    {
+      "id": "parse_revision_root",
+      "fixture": "revision_root",
+      "expectation": "structural_accept"
+    },
+    {
+      "id": "parse_revision_child",
+      "fixture": "revision_child",
+      "expectation": "structural_accept"
+    },
+    {
+      "id": "parse_workspace",
+      "fixture": "workspace",
+      "expectation": "structural_accept"
+    },
+    {
+      "id": "parse_run",
+      "fixture": "run",
+      "expectation": "structural_accept"
+    },
+    {
+      "id": "unknown_major",
+      "fixture": "unknown_major",
+      "expectation": "reject",
+      "field_path": [
+        "schema"
+      ],
+      "unchanged_inputs": [
+        "workspace"
+      ]
+    },
+    {
+      "id": "unknown_required_body_field",
+      "fixture": "unknown_required_body_field",
+      "expectation": "reject",
+      "field_path": [
+        "body",
+        "unrecognised_required"
+      ],
+      "unchanged_inputs": [
+        "workspace"
+      ]
+    },
+    {
+      "id": "metadata_outside_extensions",
+      "fixture": "metadata_outside_extensions",
+      "expectation": "reject",
+      "field_path": [
+        "opaque_vendor_metadata"
+      ],
+      "unchanged_inputs": [
+        "revision_root"
+      ]
+    },
+    {
+      "id": "missing_unit",
+      "fixture": "missing_unit",
+      "expectation": "reject",
+      "field_path": [
+        "body",
+        "unit"
+      ],
+      "unchanged_inputs": [
+        "parameter"
+      ]
+    },
+    {
+      "id": "empty_unit",
+      "fixture": "empty_unit",
+      "expectation": "reject",
+      "field_path": [
+        "body",
+        "unit"
+      ],
+      "unchanged_inputs": [
+        "parameter"
+      ]
+    },
+    {
+      "id": "negative_shape",
+      "fixture": "negative_shape",
+      "expectation": "reject",
+      "field_path": [
+        "body",
+        "shape"
+      ],
+      "unchanged_inputs": [
+        "parameter"
+      ]
+    },
+    {
+      "id": "unsafe_shape_number",
+      "fixture": "unsafe_shape_number",
+      "expectation": "reject",
+      "field_path": [
+        "body",
+        "shape"
+      ],
+      "unchanged_inputs": [
+        "parameter"
+      ]
+    },
+    {
+      "id": "shape_cardinality",
+      "fixture": "shape_cardinality",
+      "expectation": "reject",
+      "field_path": [
+        "body",
+        "parameters",
+        "theta",
+        "shape"
+      ],
+      "unchanged_inputs": [
+        "revision_root"
+      ]
+    },
+    {
+      "id": "nonfinite_element",
+      "fixture": "nonfinite_element",
+      "expectation": "reject",
+      "field_path": [
+        "body",
+        "parameters",
+        "theta",
+        "values"
+      ],
+      "unchanged_inputs": [
+        "revision_root"
+      ]
+    },
+    {
+      "id": "malformed_float_hex",
+      "fixture": "malformed_float_hex",
+      "expectation": "reject",
+      "field_path": [
+        "body",
+        "parameters",
+        "theta",
+        "values"
+      ],
+      "unchanged_inputs": [
+        "revision_root"
+      ]
+    },
+    {
+      "id": "unknown_dtype",
+      "fixture": "unknown_dtype",
+      "expectation": "reject",
+      "field_path": [
+        "body",
+        "dtype"
+      ],
+      "unchanged_inputs": [
+        "parameter"
+      ]
+    },
+    {
+      "id": "absolute_reference_path",
+      "fixture": "absolute_reference_path",
+      "expectation": "reject",
+      "field_path": [
+        "body",
+        "problem_ref",
+        "name"
+      ],
+      "unchanged_inputs": [
+        "revision_root"
+      ]
+    },
+    {
+      "id": "traversal_reference_path",
+      "fixture": "traversal_reference_path",
+      "expectation": "reject",
+      "field_path": [
+        "body",
+        "problem_ref",
+        "name"
+      ],
+      "unchanged_inputs": [
+        "revision_root"
+      ]
+    },
+    {
+      "id": "remote_reference_path",
+      "fixture": "remote_reference_path",
+      "expectation": "reject",
+      "field_path": [
+        "body",
+        "problem_ref",
+        "name"
+      ],
+      "unchanged_inputs": [
+        "revision_root"
+      ]
+    },
+    {
+      "id": "wrong_reference_schema",
+      "fixture": "wrong_reference_schema",
+      "expectation": "graph_reject",
+      "field_path": [
+        "body",
+        "problem_ref",
+        "schema"
+      ],
+      "unchanged_inputs": [
+        "revision_root"
+      ]
+    },
+    {
+      "id": "cross_project_parent",
+      "fixture": "cross_project_parent",
+      "expectation": "graph_reject",
+      "field_path": [
+        "body",
+        "project_id"
+      ],
+      "unchanged_inputs": [
+        "revision_child"
+      ]
+    },
+    {
+      "id": "unknown_run_revision",
+      "fixture": "unknown_run_revision",
+      "expectation": "graph_reject_wrong_kind",
+      "field_path": [
+        "body",
+        "revision_hash"
+      ],
+      "unchanged_inputs": [
+        "run"
+      ]
+    },
+    {
+      "id": "self_parent",
+      "fixture": "self_parent",
+      "expectation": "graph_reject_digest_mismatch_or_cycle",
+      "field_path": [
+        "body",
+        "parent_revision_hashes"
+      ],
+      "unchanged_inputs": [
+        "revision_root"
+      ]
+    },
+    {
+      "id": "shape_boolean",
+      "fixture": "shape_boolean",
+      "expectation": "reject",
+      "field_path": [
+        "body",
+        "shape"
+      ],
+      "unchanged_inputs": [
+        "parameter"
+      ]
+    },
+    {
+      "id": "integer_range_overflow",
+      "fixture": "integer_range_overflow",
+      "expectation": "reject",
+      "field_path": [
+        "body",
+        "parameters",
+        "theta"
+      ],
+      "unchanged_inputs": [
+        "revision_root"
+      ]
+    },
+    {
+      "id": "integer_noncanonical_leading_zero",
+      "fixture": "integer_noncanonical_leading_zero",
+      "expectation": "reject",
+      "field_path": [
+        "body",
+        "parameters",
+        "theta"
+      ],
+      "unchanged_inputs": [
+        "revision_root"
+      ]
+    },
+    {
+      "id": "integer_noncanonical_negative_zero",
+      "fixture": "integer_noncanonical_negative_zero",
+      "expectation": "reject",
+      "field_path": [
+        "body",
+        "parameters",
+        "theta"
+      ],
+      "unchanged_inputs": [
+        "revision_root"
+      ]
+    },
+    {
+      "id": "parameter_dependency_self",
+      "fixture": "parameter_dependency_self",
+      "expectation": "binding_reject_dependency_cycle",
+      "field_path": [
+        "body",
+        "dependency_keys"
+      ],
+      "unchanged_inputs": [
+        "parameter"
+      ]
+    },
+    {
+      "id": "invalid_project_uuid",
+      "fixture": "invalid_project_uuid",
+      "expectation": "reject",
+      "field_path": [
+        "body",
+        "project_id"
+      ],
+      "unchanged_inputs": [
+        "workspace"
+      ]
+    },
+    {
+      "id": "timestamp_not_utc",
+      "fixture": "timestamp_not_utc",
+      "expectation": "reject",
+      "field_path": [
+        "body",
+        "created_at"
+      ],
+      "unchanged_inputs": [
+        "workspace"
+      ]
+    },
+    {
+      "id": "update_precedes_creation",
+      "fixture": "update_precedes_creation",
+      "expectation": "reject",
+      "field_path": [
+        "body",
+        "updated_at"
+      ],
+      "unchanged_inputs": [
+        "workspace"
+      ]
+    },
+    {
+      "id": "complete_project_graph",
+      "fixtures": [
+        "problem",
+        "program",
+        "policy",
+        "environment",
+        "plan",
+        "settings",
+        "parameter",
+        "revision_root",
+        "revision_child",
+        "workspace",
+        "run"
+      ],
+      "expectation": "graph_accept"
+    },
+    {
+      "id": "dangling_parent",
+      "fixture": "revision_child",
+      "exclude_from_index": [
+        "revision_root"
+      ],
+      "expectation": "graph_reject"
+    },
+    {
+      "id": "duplicate_reference_identity",
+      "fixture": "workspace",
+      "index_mutation": {
+        "key_from": "revision_root",
+        "value_from": "revision_child"
+      },
+      "expectation": "graph_reject_digest_mismatch"
+    },
+    {
+      "id": "parameter_unit_mismatch",
+      "fixture": "revision_root",
+      "spec": "parameter",
+      "supplied_units": {
+        "theta": "Hz"
+      },
+      "expectation": "binding_reject_no_implicit_conversion"
+    },
+    {
+      "id": "extension_roundtrip",
+      "fixture": "revision_root",
+      "expectation": "preserve_exact_extensions_and_negative_zero"
+    },
+    {
+      "id": "immutable_parent",
+      "fixtures": [
+        "revision_root",
+        "revision_child"
+      ],
+      "expectation": "child_change_leaves_parent_bytes_and_raw_inputs_unchanged"
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 {
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
-    "domain_package_families": 39,
+    "domain_package_families": 40,
     "example_files": 37,
     "github_workflows": 44,
     "model_documentation_pages": 14,
@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 842,
     "public_documentation_pages": 378,
-    "python_model_classes": 1447,
-    "python_model_source_modules": 743,
+    "python_model_classes": 1456,
+    "python_model_source_modules": 748,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1434
+    "test_files": 1439
   },
   "documentation": {
     "examples": [
@@ -754,7 +754,12 @@
       {
         "package": "studio",
         "path": "src/scpn_quantum_control/studio",
-        "python_modules": 30
+        "python_modules": 31
+      },
+      {
+        "package": "studio_workspace",
+        "path": "src/scpn_quantum_control/studio_workspace",
+        "python_modules": 4
       },
       {
         "package": "surrogates",
@@ -2364,6 +2369,10 @@
         "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/protocol.py"
       },
       {
+        "name": "ExperimentRevision",
+        "path": "src/scpn_quantum_control/studio_workspace/contracts.py"
+      },
+      {
         "name": "ExponentialOrderEstimator",
         "path": "src/scpn_quantum_control/codesign/components.py"
       },
@@ -3324,6 +3333,10 @@
         "path": "src/scpn_quantum_control/hardware/hal.py"
       },
       {
+        "name": "LocalRunRecord",
+        "path": "src/scpn_quantum_control/studio_workspace/contracts.py"
+      },
+      {
         "name": "LockSignatureArtifact",
         "path": "src/scpn_quantum_control/bridge/phase_artifact.py"
       },
@@ -4026,6 +4039,10 @@
       {
         "name": "ParameterShiftTrainingStep",
         "path": "src/scpn_quantum_control/phase/gradient_descent.py"
+      },
+      {
+        "name": "ParameterSpec",
+        "path": "src/scpn_quantum_control/studio_workspace/contracts.py"
       },
       {
         "name": "ParityFamily",
@@ -5452,6 +5469,14 @@
         "path": "src/scpn_quantum_control/hardware/openpulse_control.py"
       },
       {
+        "name": "RawArtifact",
+        "path": "src/scpn_quantum_control/studio_workspace/graph.py"
+      },
+      {
+        "name": "RawIdentity",
+        "path": "src/scpn_quantum_control/studio_workspace/graph.py"
+      },
+      {
         "name": "ReadinessCapabilityRow",
         "path": "src/scpn_quantum_control/thermo_readiness_product.py"
       },
@@ -5630,6 +5655,10 @@
       {
         "name": "ResolvedAggregatorProviderRoute",
         "path": "src/scpn_quantum_control/hardware/aggregators.py"
+      },
+      {
+        "name": "ResolvedSettings",
+        "path": "src/scpn_quantum_control/studio_workspace/contracts.py"
       },
       {
         "name": "ResourceBudgetDecision",
@@ -6560,6 +6589,18 @@
         "path": "src/scpn_quantum_control/analysis/witness_discovery.py"
       },
       {
+        "name": "WorkspaceAdmission",
+        "path": "src/scpn_quantum_control/studio_workspace/graph.py"
+      },
+      {
+        "name": "WorkspaceDocument",
+        "path": "src/scpn_quantum_control/studio_workspace/contracts.py"
+      },
+      {
+        "name": "WorkspaceManifest",
+        "path": "src/scpn_quantum_control/studio_workspace/contracts.py"
+      },
+      {
         "name": "XYCompileRecomputeUnit",
         "path": "src/scpn_quantum_control/studio/recompute_kernel.py"
       },
@@ -7281,8 +7322,13 @@
       "src/scpn_quantum_control/studio/scorecard_bundle.py",
       "src/scpn_quantum_control/studio/support_matrix_bundle.py",
       "src/scpn_quantum_control/studio/verbs.py",
+      "src/scpn_quantum_control/studio/workspace.py",
       "src/scpn_quantum_control/studio/xy_compile_recompute_artifact.py",
       "src/scpn_quantum_control/studio_executive_product.py",
+      "src/scpn_quantum_control/studio_workspace/canonical.py",
+      "src/scpn_quantum_control/studio_workspace/contracts.py",
+      "src/scpn_quantum_control/studio_workspace/graph.py",
+      "src/scpn_quantum_control/studio_workspace/json_transport.py",
       "src/scpn_quantum_control/surrogates/fidelity.py",
       "src/scpn_quantum_control/surrogates/hybrid.py",
       "src/scpn_quantum_control/surrogates/models.py",
@@ -9786,6 +9832,11 @@
       "tests/test_studio_scorecard_bundle_quality_gate.py",
       "tests/test_studio_simulation_quality_gate.py",
       "tests/test_studio_support_matrix_bundle.py",
+      "tests/test_studio_workspace.py",
+      "tests/test_studio_workspace_canonical.py",
+      "tests/test_studio_workspace_contracts.py",
+      "tests/test_studio_workspace_graph.py",
+      "tests/test_studio_workspace_json_transport.py",
       "tests/test_studio_xy_compile_recompute_artifact.py",
       "tests/test_sub_us_tracker.py",
       "tests/test_submit_bell_rerun_mitigated.py",

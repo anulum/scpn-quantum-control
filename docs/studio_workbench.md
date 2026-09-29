@@ -66,3 +66,115 @@ results, blocks requests outside the preview, and closes its browser contexts.
 It connects to an existing preview; the process owner remains responsible for
 stopping that preview. This verifies local instruments, not deployed availability
 or scientific qualification.
+
+
+## Immutable workspace contracts
+
+The Python `scpn_quantum_control.studio.workspace` API and the browser's
+`src/shared/contracts/index.ts` export the same five metadata contracts:
+
+| Schema | Record |
+| --- | --- |
+| `quantum_workspace.v1` | Project UUID, revision and artefact references, draft and UTC timestamps |
+| `experiment_revision.v1` | Parent identities, problem/program inputs, typed parameters and resolved settings |
+| `parameter_spec.v1` | Parameter dtype, shape, unit, domain, provenance and dependencies |
+| `resolved_settings.v1` | Requested/effective values, origins and original policy/environment references |
+| `local_run_record.v1` | Local run/attempt UUIDs, revision/plan identities, ordered events and outputs |
+
+Parsers reject unknown schemas and fields, malformed references and unsupported
+numeric values. The `extensions` object preserves optional metadata without
+normalisation. Python records take recursively immutable snapshots; browser
+records are deeply frozen. Exports return fresh containers. Parsing proves a
+single document's structure. Call `admit_workspace` / `admitWorkspace` separately
+with complete document, source, parameter-specification and unit indexes before
+persisting an imported project.
+
+```python
+from scpn_quantum_control.studio.workspace import (
+    admit_workspace, parse_workspace_manifest, read_json, write_json,
+)
+
+workspace = parse_workspace_manifest({
+    "schema": "quantum_workspace.v1",
+    "body": {
+        "project_id": "10000000-0000-4000-8000-000000000001",
+        "revision_refs": [], "draft_ref": None, "artefact_refs": [],
+        "created_at": "2026-09-29T00:00:00Z",
+        "updated_at": "2026-09-29T00:00:00Z",
+    },
+    "extensions": {"title": "Local experiment"},
+})
+wire_text = write_json(workspace.to_dict())
+restored = parse_workspace_manifest(read_json(wire_text))
+receipt = admit_workspace(restored, {}, {}, {}, {}, {})
+```
+
+Within the browser source, import through the shared public entry:
+
+```typescript
+import {
+  admitWorkspace, documentToWire, parseWorkspaceManifest, readJson, writeJson,
+} from "./shared/contracts";
+
+const parsed = parseWorkspaceManifest(readJson(wireText));
+if (!parsed.ok) throw new Error(`${parsed.path}: ${parsed.message}`);
+const receipt = await admitWorkspace(
+  parsed.value, new Map(), new Map(), new Map(), new Map(), new Map(),
+);
+if (!receipt.ok) throw new Error(receipt.message);
+const exportedText = writeJson(documentToWire(parsed.value));
+```
+
+The empty indexes above apply to an empty workspace only. Imported nonempty
+projects require their actual referenced documents and original producer bytes.
+A revision must reference each parameter specification's digest in `input_refs`;
+the external key index alone cannot change the revision's unit, domain or dtype.
+Admission checks indexed identities, project ownership, parent and parameter
+dependency graphs, typed values and exact unit labels. It does not convert units.
+Policy, environment, problem, program and plan references retain their roles.
+
+Workspace references always resolve through the validated document index; a raw
+verifier cannot substitute for workspace document validation. Raw evidence uses
+an explicit schema-to-verifier registry supplied by trusted
+application code. Each offline verifier checks its original bytes and returns
+its original schema, kind and digest. Unknown producers have no fallback. Imported
+data cannot install a verifier, fetch a URL, execute source or launch a worker.
+The receipt binds the exact root digest, including its extensions and reference
+lists, as well as the verified document/source identities. It does not certify
+scientific validation or execution success.
+
+### Portable numeric identity
+
+Use `read_json` / `readJson` and `write_json` / `writeJson` for workspace text.
+Plain browser `JSON.parse` loses large integer precision and the distinction
+between integer and floating-point tokens. Python integers correspond to browser
+`bigint`; Python binary64 floats correspond to browser `number`. Lexical `-0`
+is a negative-zero float in both readers. Writers retain float markers and
+negative zero. Schema-defined safe integer fields such as shapes and event
+sequences normalise to integers; opaque extension values retain their types.
+
+The canonical digest is SHA-256 over the schema, LF and compact UTF-8 tagged
+JSON of the **whole document envelope**, including extensions. Integers use
+`["integer", "decimal"]`, floats use `["float64", "big-endian IEEE hex"]`, arrays
+use `["array", [...]]`, and objects use `["object", [[key, value], ...]]` with
+UTF-8 byte-sorted keys. Null, booleans and scalar strings retain their JSON form.
+User arrays resembling a tag cannot impersonate a scalar. Strings preserve their
+original Unicode spelling; invalid surrogate sequences, nonfinite floats,
+ancestor cycles and unsupported objects refuse. Browser object accessors and
+custom array prototypes refuse before their methods can influence serialization.
+
+Both implementations allow at most 64 nested containers, 4,096 decimal digits
+per integer scalar and 128 MiB of expanded JSON text. Archive admission remains
+a separate boundary. Required text fields use the explicit Unicode White_Space
+set, so language-specific trimming does not change acceptance. Timestamps require
+ASCII UTC components and at most nine fractional second digits. Shape products
+must fit a nonnegative safe integer; a zero dimension represents an empty tensor.
+Typed elements support `float64`, `int64` and `uint64`, with exact finite or
+bounded/enumerated domain checks.
+
+The Studio CI category owns strict Python/TypeScript checks, native API docs,
+the shared byte/transport/structural corpus and exact new-owner coverage gates.
+These metadata APIs add no numerical kernel, backend or hardware support claim.
+Existing Rust/PyO3, Julia and WASM numerical owners keep their original evidence
+and codecs. Workspace persistence UI and worker lifecycle integration are
+separate from these library contracts.

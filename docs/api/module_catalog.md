@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **743 modules** across **40 package families**
-- **4121 documented public module-level symbols**
+- **748 modules** across **41 package families**
+- **4142 documented public module-level symbols**
 - **842 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -5343,6 +5343,14 @@ The SCPN-QUANTUM-CONTROL studio's verbs, on the locked platform contract.
 
 **Functions:** `evidence_schemas()`, `verb_substrates()`
 
+### `scpn_quantum_control.studio.workspace`
+
+Expose immutable workspace contracts through the existing Studio namespace.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/workspace.py) · Public symbols: **0**
+
+No public module-level class or function is declared.
+
 ### `scpn_quantum_control.studio.xy_compile_recompute_artifact`
 
 Committed-artefact emission for a browser-verifiable XY-compile recompute unit.
@@ -5350,6 +5358,44 @@ Committed-artefact emission for a browser-verifiable XY-compile recompute unit.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/xy_compile_recompute_artifact.py) · Public symbols: **3**
 
 **Functions:** `build_xy_compile_recompute_artifact()`, `validate_xy_compile_recompute_artifact()`, `main()`
+
+## `studio_workspace`
+
+### `scpn_quantum_control.studio_workspace.canonical`
+
+Encode typed values without conflating integer, float or user-array tags.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio_workspace/canonical.py) · Public symbols: **2**
+
+**Functions:** `canonical_bytes()`, `canonical_digest()`
+
+### `scpn_quantum_control.studio_workspace.contracts`
+
+Validate structural documents without implying execution or graph admission.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio_workspace/contracts.py) · Public symbols: **13**
+
+**Classes:** `WorkspaceDocument`, `WorkspaceManifest`, `ExperimentRevision`, `ParameterSpec`, `ResolvedSettings`, `LocalRunRecord`
+
+**Functions:** `parse_document()`, `parse_workspace_manifest()`, `parse_experiment_revision()`, `parse_parameter_spec()`, `parse_resolved_settings()`, `parse_local_run_record()`, `validate_parameter_binding()`
+
+### `scpn_quantum_control.studio_workspace.graph`
+
+Admit complete local reference graphs without fetching or rewriting evidence.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio_workspace/graph.py) · Public symbols: **4**
+
+**Classes:** `RawIdentity`, `RawArtifact`, `WorkspaceAdmission`
+
+**Functions:** `admit_workspace()`
+
+### `scpn_quantum_control.studio_workspace.json_transport`
+
+Read and write bounded JSON without losing numeric token identity.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio_workspace/json_transport.py) · Public symbols: **2**
+
+**Functions:** `read_json()`, `write_json()`
 
 ## `surrogates`
 

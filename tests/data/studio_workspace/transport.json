@@ -1,0 +1,88 @@
+{
+  "schema": "studio_workspace_transport_conformance.v1",
+  "cases": [
+    {
+      "id": "typed_numeric_tokens",
+      "input_json": "{\"i\":1,\"f\":1.0,\"z\":-0.0,\"big\":9007199254740993}",
+      "schema": "experiment_revision.v1",
+      "expected_tree": [
+        "object",
+        [
+          [
+            "big",
+            [
+              "integer",
+              "9007199254740993"
+            ]
+          ],
+          [
+            "f",
+            [
+              "float64",
+              "3ff0000000000000"
+            ]
+          ],
+          [
+            "i",
+            [
+              "integer",
+              "1"
+            ]
+          ],
+          [
+            "z",
+            [
+              "float64",
+              "8000000000000000"
+            ]
+          ]
+        ]
+      ],
+      "expected_canonical_hex": "6578706572696d656e745f7265766973696f6e2e76310a5b226f626a656374222c5b5b22626967222c5b22696e7465676572222c2239303037313939323534373430393933225d5d2c5b2266222c5b22666c6f61743634222c2233666630303030303030303030303030225d5d2c5b2269222c5b22696e7465676572222c2231225d5d2c5b227a222c5b22666c6f61743634222c2238303030303030303030303030303030225d5d5d5d",
+      "expected_digest": "d64bd0ce146c03c99068bb6f686c3689e5217db70fe49b4ef497fe456d121782",
+      "expectation": "accept"
+    },
+    {
+      "id": "duplicate_key",
+      "input_json": "{\"i\":1,\"i\":2}",
+      "expectation": "reject"
+    },
+    {
+      "id": "float_overflow",
+      "input_json": "1e9999",
+      "expectation": "reject"
+    },
+    {
+      "id": "unpaired_surrogate",
+      "input_json": "\"\\ud800\"",
+      "expectation": "reject"
+    },
+    {
+      "id": "negative_zero_token",
+      "input_json": "-0",
+      "expected_scalar": "float64",
+      "expected_bits": "8000000000000000",
+      "expectation": "accept"
+    },
+    {
+      "id": "integer_leading_zero",
+      "input_json": "01",
+      "expectation": "reject"
+    },
+    {
+      "id": "array_trailing_comma",
+      "input_json": "[1,]",
+      "expectation": "reject"
+    },
+    {
+      "id": "prototype_named_key",
+      "input_json": "{\"__proto__\":{\"label\":\"preserved as data\"}}",
+      "expectation": "accept_without_prototype_mutation"
+    },
+    {
+      "id": "measurement_metadata",
+      "input_json": "{\"measurement_mapping\":{\"bit_order\":\"little_endian\",\"labels\":[\"q1\",\"q0\"]}}",
+      "expectation": "preserve_exact_order_labels_and_extensions"
+    }
+  ]
+}
