@@ -224,3 +224,61 @@ and checks missing schema/source/seal and attested negative metadata. The timing
 probe delegates to the browser's real SHA-256 implementation and counts its
 completion; it supplies no substitute digest or replay result. Component and
 projection tests have a separate exact-coverage gate in the Studio CI category.
+
+
+## Declared resource admission
+
+Kuramoto Play shows the float64 payload declared by the original RK4 path:
+caller numeric values, encoded host and guest input, parsed native input,
+six state/stage arrays, and native/guest/retained output. The memory ceiling is
+a browser product setting, initially 4096 KiB, and may be reduced explicitly.
+It does not report free workstation RAM. Unknown limits and unsupported metadata
+refuse before input-vector construction, encoding or native allocation.
+
+When a request is refused, the previous trajectory is cleared. The smaller
+configuration button appears only after the complete plan for that proposed
+oscillator/step pair passes the same policy. Applying it keeps the chosen
+topology and float64 precision. No smaller configuration is chosen silently.
+
+The shared `studio-web/src/shared/resources/index.ts` API also projects declared
+statevector, density, adjoint, transfer and graph buffers with checked integer
+arithmetic. Hilbert shapes are checked before shifting. Changing precision,
+count or concurrency produces a new byte estimate; it does not grant numerical
+backend support. An unknown backend's overhead must remain unknown and refuses
+admission. A policy verdict supplements the original runtime checks.
+
+The browser plan covers declared numeric payload only. JavaScript objects,
+allocator bookkeeping, module baseline storage and stack usage are outside
+that byte declaration. A zero extra-byte declaration means no extra payload
+was declared; it is not measured zero overhead. Declared derivative workload
+units are bounded by the module's oscillator and step limits. They are not
+elapsed seconds, measured throughput or a wall-clock deadline. Host/container
+execution continues to use the existing `check_execution_memory` observation
+and admission owner; browser product ceilings cannot replace those observations.
+
+The hosted `resource_plan_projection` journey uses the built WASM and the real
+public controls. A counter forwards native allocations unchanged, observes no
+new allocation after a zero-byte refusal, then observes allocations resume after
+an explicitly applied smaller same-method plan. Invocation from the repository:
+
+```bash
+PYTHONPATH=. python tools/studio_browser_journey.py --scenario resource_plan_projection \
+  --base-url http://127.0.0.1:4173/ --output /tmp/studio-resource-journey.json
+```
+
+Use an owned preview of the built bundle; the command refuses external navigation.
+The suite is wired to hosted CI. Wiring is not a statement that it has passed.
+
+The 3D Lab also declares retained phase history, order/phase series, the current
+phase copy and scene coordinates before capture and geometry construction.
+Scene-object storage, SVG strings and DOM overhead remain explicitly outside
+the numeric payload estimate. Lab limits and numerical capture/parity checks
+remain the original owners; this declaration does not replace them.
+
+A requested wall-clock ceiling currently refuses before allocation with
+`wall_clock_admission_unavailable`. The synchronous kernel has no qualified
+elapsed-time predictor or cancellable deadline mechanism, so Studio cannot
+admit a guaranteed deadline by converting workload units into invented seconds.
+Leaving this optional field unset requests the bounded workload without a
+wall-clock guarantee; it does not infer a deadline. No smaller-shape action
+claims to repair an unsupported time guarantee.

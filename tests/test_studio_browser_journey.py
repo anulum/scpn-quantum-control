@@ -32,7 +32,9 @@ import pytest
         "file:///tmp/index.html",
     ],
 )
-@pytest.mark.parametrize("scenario", ["capability_catalogue", "evidence_inspector"])
+@pytest.mark.parametrize(
+    "scenario", ["capability_catalogue", "evidence_inspector", "resource_plan_projection"]
+)
 def test_runner_rejects_external_or_ambiguous_preview(
     url: str, tmp_path: Path, scenario: str
 ) -> None:

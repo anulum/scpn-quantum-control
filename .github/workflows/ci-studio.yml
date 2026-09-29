@@ -280,10 +280,10 @@ jobs:
         run: |
           python -m pip install --require-hashes -r requirements-ci-studio-browser.txt
           python -m playwright install --with-deps chromium
-          python -m mypy --strict tools/studio_browser_journey.py tests/test_studio_browser_journey.py
-          python -m pytest --noconftest -q tests/test_studio_browser_journey.py
-          python -m ruff check tools/studio_browser_journey.py
-          python -m ruff check --isolated --preview --select D,D413,D417,D420 --config 'lint.pydocstyle.convention = "numpy"' tools/studio_browser_journey.py
+          python -m mypy --strict --explicit-package-bases tools/studio_browser_journey.py tools/studio_resource_browser_journey.py tests/test_studio_browser_journey.py tests/test_studio_resource_browser_journey.py
+          python -m pytest --noconftest -q tests/test_studio_browser_journey.py tests/test_studio_resource_browser_journey.py
+          python -m ruff check tools/studio_browser_journey.py tools/studio_resource_browser_journey.py
+          python -m ruff check --isolated --preview --select D,D413,D417,D420 --config 'lint.pydocstyle.convention = "numpy"' tools/studio_browser_journey.py tools/studio_resource_browser_journey.py
       - name: Install the locked workspace and native producer dependencies
         working-directory: .
         run: |
@@ -381,6 +381,25 @@ jobs:
           --coverage.thresholds.branches=100
           --coverage.thresholds.functions=100
           --coverage.thresholds.lines=100
+      - name: Compare resource declarations with the original host admission
+        working-directory: .
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src
+        run: |
+          python -m mypy --strict tests/test_resource_budget_gate.py
+          python -m pytest -q tests/test_resource_budget_gate.py
+      - name: Enforce resource admission owner coverage
+        run: >-
+          pnpm exec vitest run src/shared/resources src/panel/KuramotoPlayPanel.test.tsx src/panel/Lab3DPanel.test.tsx src/panel/kuramoto.test.ts
+          --coverage --coverage.reporter=text
+          --coverage.include='src/shared/resources/*.{ts,tsx}'
+          --coverage.include=src/panel/KuramotoPlayPanel.tsx
+          --coverage.include=src/panel/Lab3DPanel.tsx
+          --coverage.include=src/panel/kuramoto.ts
+          --coverage.thresholds.statements=100
+          --coverage.thresholds.branches=100
+          --coverage.thresholds.functions=100
+          --coverage.thresholds.lines=100
       - name: Build the portal and the federation remote
         run: pnpm build
       - name: Assert the ESM remote entry carries the locked federation name
@@ -420,6 +439,8 @@ jobs:
             --base-url http://127.0.0.1:4173/ --output "$RUNNER_TEMP/studio-catalogue-journey.json"
           python tools/studio_browser_journey.py --scenario evidence_inspector \
             --base-url http://127.0.0.1:4173/ --output "$RUNNER_TEMP/studio-evidence-journey.json"
+          PYTHONPATH=. python tools/studio_browser_journey.py --scenario resource_plan_projection \
+            --base-url http://127.0.0.1:4173/ --output "$RUNNER_TEMP/studio-resource-journey.json"
       - name: Preserve browser acceptance evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
@@ -428,5 +449,6 @@ jobs:
           path: |
             ${{ runner.temp }}/studio-catalogue-journey.json
             ${{ runner.temp }}/studio-evidence-journey.json
+            ${{ runner.temp }}/studio-resource-journey.json
             ${{ runner.temp }}/studio-preview.log
           if-no-files-found: error

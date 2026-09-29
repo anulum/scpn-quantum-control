@@ -362,7 +362,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--scenario", choices=("capability_catalogue", "evidence_inspector"), required=True
+        "--scenario",
+        choices=("capability_catalogue", "evidence_inspector", "resource_plan_projection"),
+        required=True,
     )
     parser.add_argument("--base-url", required=True)
     parser.add_argument("--output", type=Path, required=True)
@@ -375,11 +377,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         url = loopback_url(args.base_url)
         evidence["base_url"] = url
-        journey = (
-            run_catalogue_journey
-            if args.scenario == "capability_catalogue"
-            else run_evidence_journey
-        )
+        if args.scenario == "resource_plan_projection":
+            from tools.studio_resource_browser_journey import run_resource_journey
+
+            journey = run_resource_journey
+        elif args.scenario == "capability_catalogue":
+            journey = run_catalogue_journey
+        else:
+            journey = run_evidence_journey
         evidence.update(journey(url))
         evidence["passed"] = True
         code = 0

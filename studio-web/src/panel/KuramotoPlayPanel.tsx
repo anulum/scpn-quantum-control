@@ -7,6 +7,10 @@
 // scpn-quantum-control — studio-web Kuramoto Play panel
 
 import { useEffect, useMemo, useState } from "react";
+import { dataEntries } from "../shared/contracts/canonical";
+import { admitKuramotoResources, browserResourcePolicy, smallerKuramotoRequest } from "../shared/resources/kuramotoResources";
+import { ResourcePlanInspector } from "../shared/resources/ResourcePlanInspector";
+import type { ResourcePolicy } from "../shared/resources/admission";
 
 import type {
   KernelSimulate,
@@ -83,11 +87,16 @@ type KernelState =
 export function KuramotoPlayPanel({
   scenario,
   loadKernel = fetchKuramoto,
+  resourcePolicy,
 }: {
   scenario: KuramotoScenario;
   loadKernel?: KuramotoLoader;
+  /** Optional tighter declared policy; original kernel bounds still apply. */
+  resourcePolicy?: ResourcePolicy;
 }) {
   const [kernel, setKernel] = useState<KernelState>({ phase: "loading" });
+  const [memoryKiB, setMemoryKiB] = useState(4096);
+  const [wallMs, setWallMs] = useState("");
   const [controls, setControls] = useState<Controls>({
     mode: scenario.mode,
     n: scenario.n,
@@ -111,13 +120,47 @@ export function KuramotoPlayPanel({
     };
   }, [loadKernel]);
 
-  const result = useMemo(() => {
+  const requestedPolicy = useMemo(() => {
     if (kernel.phase !== "ready") return null;
+    if (!Number.isSafeInteger(memoryKiB) || memoryKiB < 0 || memoryKiB > 4096) return null;
+    try {
+      const ceiling = resourcePolicy ?? browserResourcePolicy(kernel.bounds);
+      dataEntries(ceiling);
+      if (ceiling.memoryBytes !== null && (typeof ceiling.memoryBytes !== "bigint" || ceiling.memoryBytes < 0n)) return null;
+      const requestedBytes = BigInt(memoryKiB) * 1024n;
+      return { ...ceiling, memoryBytes: ceiling.memoryBytes === null ? null : (requestedBytes < ceiling.memoryBytes ? requestedBytes : ceiling.memoryBytes) };
+    } catch {
+      return null;
+    }
+  }, [kernel, memoryKiB, resourcePolicy]);
+
+  const resource = useMemo(() => {
+    if (kernel.phase !== "ready") return null;
+    if (!requestedPolicy) return { ok: false as const, reason: "memory ceiling must be an integer between 0 and 4096 KiB and the source policy must be available" };
+    if (wallMs !== "" && !/^[1-9][0-9]{0,8}$/.test(wallMs)) return { ok: false as const, reason: "wall-clock ceiling must be a positive integer or left unset" };
+    try {
+      return { ok: true as const, admission: admitKuramotoResources(controls, kernel.bounds, requestedPolicy, wallMs === "" ? null : BigInt(wallMs)) };
+    } catch (error: unknown) {
+      return { ok: false as const, reason: error instanceof Error ? error.message : "resource metadata refused" };
+    }
+  }, [kernel, controls, requestedPolicy, wallMs]);
+
+  const result = useMemo(() => {
+    if (kernel.phase !== "ready" || !resource) return null;
+    if (!resource.ok) return { ok: false as const, reason: resource.reason };
+    if (!resource.admission.allowed) return { ok: false as const, reason: resource.admission.blockers.join(", ") };
     return kernel.simulate(controlsToRequest(controls));
-  }, [kernel, controls]);
+  }, [kernel, controls, resource]);
 
   const groundTruth = useMemo(() => {
     if (kernel.phase !== "ready") return null;
+    if (!requestedPolicy || wallMs !== "") return { evaluated: false as const, reason: "resource policy refused" };
+    try {
+      const admission = admitKuramotoResources({ n: scenario.n, steps: scenario.steps, mode: scenario.mode }, kernel.bounds, requestedPolicy);
+      if (!admission.allowed) return { evaluated: false as const, reason: admission.blockers.join(", ") };
+    } catch {
+      return { evaluated: false as const, reason: "resource metadata refused" };
+    }
     const run = kernel.simulate({
       mode: scenario.mode,
       omega: scenario.omega,
@@ -126,10 +169,15 @@ export function KuramotoPlayPanel({
       dt: scenario.dt,
       coupling: scenario.coupling,
     });
-    if (!run.ok) return { verified: false };
+    if (!run.ok) return { evaluated: true as const, verified: false };
     const deviation = maxOrderParameterDeviation(run.run, scenario.expectedOrderParameter);
-    return { verified: deviation < GROUND_TRUTH_TOL, deviation };
-  }, [kernel, scenario]);
+    return { evaluated: true as const, verified: deviation < GROUND_TRUTH_TOL, deviation };
+  }, [kernel, scenario, requestedPolicy, wallMs]);
+
+  const smaller = useMemo(() => {
+    if (kernel.phase !== "ready" || !requestedPolicy || wallMs !== "" || !resource?.ok || resource.admission.allowed) return null;
+    return smallerKuramotoRequest(controls, kernel.bounds, requestedPolicy);
+  }, [kernel, controls, requestedPolicy, resource, wallMs]);
 
   if (kernel.phase === "loading") {
     return (
@@ -169,7 +217,20 @@ export function KuramotoPlayPanel({
         .
       </p>
 
+      {resource?.ok ? <ResourcePlanInspector admission={resource.admission} /> : <p role="alert">Resource plan refused: {resource?.reason}</p>}
+
       <div className="qsp-play-controls">
+        <label>
+          Memory ceiling (KiB)
+          <input type="number" min={0} max={4096} step={1} value={memoryKiB}
+            onChange={(event) => setMemoryKiB(Number(event.target.value))} />
+        </label>
+        <label>Wall-clock ceiling (ms; optional)
+          <input type="number" min={1} step={1} value={wallMs} onChange={event => setWallMs(event.target.value)} />
+        </label>
+        {smaller && <button type="button" onClick={() => setControls(current => ({ ...current, n: smaller.n, steps: smaller.steps }))}>
+          Apply smaller supported configuration (N={smaller.n}, steps={smaller.steps})
+        </button>}
         <label>
           Topology
           <select
@@ -186,7 +247,7 @@ export function KuramotoPlayPanel({
           Oscillators N: {controls.n}
           <input
             type="range"
-            min={2}
+            min={1}
             max={bounds.maxOscillators}
             value={controls.n}
             onChange={(event) => setControls((c) => ({ ...c, n: Number(event.target.value) }))}
@@ -220,7 +281,7 @@ export function KuramotoPlayPanel({
           Steps: {controls.steps}
           <input
             type="range"
-            min={10}
+            min={1}
             max={Math.min(bounds.maxSteps, 800)}
             value={controls.steps}
             onChange={(event) => setControls((c) => ({ ...c, steps: Number(event.target.value) }))}
@@ -255,7 +316,11 @@ export function KuramotoPlayPanel({
         </p>
       )}
 
-      {groundTruth?.verified ? (
+      {groundTruth?.evaluated === false ? (
+        <p className="qsp-badge qsp-badge-boundary" role="status">
+          committed ground truth not evaluated — {groundTruth.reason}
+        </p>
+      ) : groundTruth?.verified ? (
         <p className="qsp-badge qsp-badge-boundary" role="status">
           verified against the committed ground truth ({scenario.artifactId})
         </p>

@@ -309,3 +309,8 @@ scpn-quantum-control — vendored floor design tokens (until keeper K2)
   font-family: var(--qsp-mono);
   font-size: 0.9em;
 }
+
+.qsp-resource-plan { margin-block: 1rem; padding: 1rem; border: 1px solid currentColor; border-radius: 0.5rem; }
+.qsp-resource-plan dl > div { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 1rem; padding-block: 0.3rem; }
+.qsp-resource-plan dt, .qsp-resource-plan dd { margin: 0; overflow-wrap: anywhere; }
+@media (max-width: 540px) { .qsp-resource-plan dl > div { grid-template-columns: 1fr; gap: 0.2rem; } }

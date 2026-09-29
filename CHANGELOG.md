@@ -6,6 +6,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ### Added
 
+- Declared Studio resource plans with integer-safe buffer estimates, explicit
+  lower browser ceilings, pre-allocation Kuramoto refusal and a rechecked
+  smaller-configuration action preserving topology and precision.
+
 - Shared Studio evidence inspector and local JSON viewer that preserve source
   claim status, custody and freshness separately from bounded verification.
   The original program-AD replay uses the inspector and discards results from

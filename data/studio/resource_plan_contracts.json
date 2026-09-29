@@ -1,0 +1,52 @@
+{
+  "schema": "studio.resource-plan.conformance.v1",
+  "claim_boundary": "Synthetic declared-formula conformance; no runtime, benchmark or hardware measurement.",
+  "addressable_bytes": "9223372036854775807",
+  "cases": [
+    {
+      "name": "state",
+      "qubits": "3",
+      "rank": "1",
+      "dtype": "complex128",
+      "count": "1",
+      "concurrency": "2",
+      "bytes": "256"
+    },
+    {
+      "name": "density",
+      "qubits": "3",
+      "rank": "2",
+      "dtype": "complex128",
+      "count": "1",
+      "concurrency": "1",
+      "bytes": "1024"
+    },
+    {
+      "name": "adjoint",
+      "qubits": "3",
+      "rank": "1",
+      "dtype": "float64",
+      "count": "4",
+      "concurrency": "1",
+      "bytes": "256"
+    },
+    {
+      "name": "precision",
+      "qubits": "3",
+      "rank": "1",
+      "dtype": "float32",
+      "count": "1",
+      "concurrency": "1",
+      "bytes": "32"
+    },
+    {
+      "name": "wide",
+      "qubits": "10",
+      "rank": "1",
+      "dtype": "complex64",
+      "count": "1",
+      "concurrency": "1",
+      "bytes": "8192"
+    }
+  ]
+}

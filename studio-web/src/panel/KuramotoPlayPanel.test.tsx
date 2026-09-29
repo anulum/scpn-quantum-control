@@ -126,3 +126,78 @@ describe("pure helpers", () => {
     expect(points).toContain("300.00,80.00");
   });
 });
+
+
+describe("Kuramoto Play resource admission with the real kernel", () => {
+  it("shows the resource projection and clears a trajectory when an explicit policy refuses", async () => {
+    let runs = 0;
+    const observed = { ...realLoaded, simulate: (request: Parameters<KernelSimulate>[0]) => { runs++; return realLoaded.simulate(request); } };
+    const base = { source: "component declared test policy", addressableBytes: 0xffff_ffffn, memoryBytes: 4n * 1024n * 1024n, overheadBytes: 0n, workUnits: 1000000000n };
+    const component = render(<KuramotoPlayPanel scenario={scenario()} loadKernel={async () => observed} resourcePolicy={base} />);
+    await waitFor(() => expect(screen.getByLabelText("Resource plan")).toBeTruthy());
+    expect(screen.getByLabelText("order parameter over time")).toBeTruthy();
+    const previousRuns = runs;
+    component.rerender(<KuramotoPlayPanel scenario={scenario()} loadKernel={async () => observed} resourcePolicy={{ ...base, memoryBytes: 0n }} />);
+    await waitFor(() => expect(screen.queryByLabelText("order parameter over time")).toBeNull());
+    expect(runs).toBe(previousRuns);
+    expect(screen.getByText(/Resource plan refused: declared_storage_exceeds_budget/)).toBeTruthy();
+    expect(screen.getByText(/allocator\/object overhead excluded|component declared test policy/)).toBeTruthy();
+  });
+
+  it("recalculates the declared memory when topology changes without reducing float64 precision", async () => {
+    render(<KuramotoPlayPanel scenario={scenario()} loadKernel={async () => realLoaded} />);
+    await waitFor(() => expect(screen.getByLabelText("Resource plan")).toBeTruthy());
+    const previous = screen.getByLabelText("Resource plan").textContent;
+    fireEvent.change(screen.getByLabelText(/Topology/), { target: { value: "networked" } });
+    expect(screen.getByLabelText("Resource plan").textContent).not.toBe(previous);
+    expect(screen.getByLabelText("Resource plan").textContent).toContain("float64");
+    expect(screen.getByLabelText("order parameter over time")).toBeTruthy();
+  });
+});
+
+
+it("allows an explicit smaller configuration after user resource refusal", async () => {
+  render(<KuramotoPlayPanel scenario={scenario()} loadKernel={async () => realLoaded} />);
+  await waitFor(() => expect(screen.getByLabelText("Resource plan")).toBeTruthy());
+  fireEvent.change(screen.getByLabelText(/Oscillators N/), { target: { value: "16" } });
+  fireEvent.change(screen.getByLabelText(/Steps:/), { target: { value: "100" } });
+  fireEvent.change(screen.getByLabelText(/Topology/), { target: { value: "networked" } });
+  fireEvent.change(screen.getByLabelText("Memory ceiling (KiB)"), { target: { value: "0" } });
+  expect(screen.queryByLabelText("order parameter over time")).toBeNull();
+  expect(screen.getByText(/committed ground truth not evaluated/)).toBeTruthy();
+  expect(screen.queryByText("committed ground truth not reproduced")).toBeNull();
+  fireEvent.change(screen.getByLabelText("Memory ceiling (KiB)"), { target: { value: "1" } });
+  const smaller = screen.getByRole("button", { name: /Apply smaller supported configuration/ });
+  fireEvent.click(smaller);
+  expect(screen.getByLabelText("order parameter over time")).toBeTruthy();
+  fireEvent.change(screen.getByLabelText("Memory ceiling (KiB)"), { target: { value: "5000" } });
+  expect(screen.getAllByText(/memory ceiling must be an integer/).length).toBeGreaterThan(0);
+});
+
+
+it("clears the actual trajectory on unsupported or invalid wall-clock admission", async () => {
+  render(<KuramotoPlayPanel scenario={scenario()} loadKernel={async () => realLoaded} />);
+  await waitFor(() => expect(screen.getByLabelText("order parameter over time")).toBeTruthy());
+  fireEvent.change(screen.getByLabelText("Wall-clock ceiling (ms; optional)"), { target: { value: "1" } });
+  expect(screen.queryByLabelText("order parameter over time")).toBeNull();
+  expect(screen.getByLabelText("Resource plan").textContent).toContain("wall_clock_admission_unavailable");
+  expect(screen.queryByRole("button", { name: /Apply smaller supported configuration/ })).toBeNull();
+  fireEvent.change(screen.getByLabelText("Wall-clock ceiling (ms; optional)"), { target: { value: "-1" } });
+  expect(screen.getAllByText(/wall-clock ceiling must be a positive integer/).length).toBeGreaterThan(0);
+  fireEvent.change(screen.getByLabelText("Wall-clock ceiling (ms; optional)"), { target: { value: "" } });
+  expect(screen.getByLabelText("order parameter over time")).toBeTruthy();
+});
+
+
+it("refuses malformed policy data without reading an accessor or running the native kernel", async () => {
+  let reads = 0;
+  let runs = 0;
+  const policy = { source: "source policy", addressableBytes: 0xffff_ffffn, memoryBytes: 4096n, workUnits: 1000n, overheadBytes: 0n };
+  Object.defineProperty(policy, "memoryBytes", { enumerable: true, get() { reads++; return 4096n; } });
+  const loaded = { ...realLoaded, simulate: (request: Parameters<KernelSimulate>[0]) => { runs++; return realLoaded.simulate(request); } };
+  render(<KuramotoPlayPanel scenario={scenario()} loadKernel={async () => loaded} resourcePolicy={policy} />);
+  await waitFor(() => expect(screen.getAllByText(/source policy must be available/).length).toBeGreaterThan(0));
+  expect(reads).toBe(0);
+  expect(runs).toBe(0);
+  expect(screen.queryByLabelText("order parameter over time")).toBeNull();
+});

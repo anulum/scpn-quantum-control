@@ -196,3 +196,15 @@ describe("Lab3DPanel degraded paths", () => {
     );
   });
 });
+
+
+it("refuses the complete scene declaration before calling the actual capture kernel", async () => {
+  let runs = 0;
+  const observed = { ...realLoaded, simulate: (request: Parameters<KernelSimulate>[0]) => { runs++; return realLoaded.simulate(request); } };
+  const loadKernel = async () => observed;
+  render(<Lab3DPanel scenario={scenario()} loadKernel={loadKernel} resourcePolicy={{ source: "injected scene ceiling", addressableBytes: 0xffff_ffffn, memoryBytes: 0n, overheadBytes: 0n, workUnits: 1000000000n }} />);
+  await waitFor(() => expect(screen.getByLabelText("Resource plan")).toBeTruthy());
+  expect(runs).toBe(0);
+  expect(screen.queryByLabelText(/phase-space cylinder: oscillator phases over time/)).toBeNull();
+  expect(screen.getAllByText(/declared_storage_exceeds_budget/).length).toBeGreaterThan(0);
+});

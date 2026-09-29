@@ -20,6 +20,9 @@
  * than a fabricated trajectory.
  */
 
+import { admitKuramotoResources } from "../shared/resources/kuramotoResources";
+import type { ResourcePolicy } from "../shared/resources/admission";
+
 import committedScenarioJson from "../../../data/studio/kuramoto_scenario_meanfield_20260708.json";
 
 /** Schema version stamped into the kernel's binary input. */
@@ -206,7 +209,13 @@ export function readBounds(exports: KuramotoExports): KuramotoBounds {
  * even if the first release throws. Output views require the complete byte
  * window and finite values, and retained arrays do not alias guest memory.
  */
-export function bindKuramoto(exports: KuramotoExports): KernelSimulate {
+/**
+ * Bind the original kernel with a declared pre-allocation policy.
+ * @param exports Actual kernel exports owning the computation and native limits.
+ * @param resourcePolicy Explicit declared byte/work ceiling, or the browser product ceiling.
+ * @param requestedWallMs Requested elapsed-time guarantee; unsupported requests refuse.
+ */
+export function bindKuramoto(exports: KuramotoExports, resourcePolicy?: ResourcePolicy, requestedWallMs: bigint | null = null): KernelSimulate {
   return (request: KuramotoRequest): SimulateResult => {
     try {
       const n = request.omega.length;
@@ -216,6 +225,12 @@ export function bindKuramoto(exports: KuramotoExports): KernelSimulate {
       }
       if (n > bounds.maxOscillators || request.steps > bounds.maxSteps) {
         return { ok: false, reason: "request exceeds declared kernel bounds" };
+      }
+      try {
+        const admission = admitKuramotoResources({ n, steps: request.steps, mode: request.mode }, bounds, resourcePolicy, requestedWallMs);
+        if (!admission.allowed) return { ok: false, reason: `resource policy refused: ${admission.blockers.join(", ")}` };
+      } catch {
+        return { ok: false, reason: "request is malformed" };
       }
       const input = encodeKuramotoInput(request);
       if (input === null) return { ok: false, reason: "request is malformed" };

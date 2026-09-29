@@ -7,6 +7,9 @@
 // scpn-quantum-control — studio-web 3D Lab panel
 
 import { useEffect, useMemo, useState } from "react";
+import { admitLabResources } from "../shared/resources/labResources";
+import { ResourcePlanInspector } from "../shared/resources/ResourcePlanInspector";
+import type { ResourcePolicy } from "../shared/resources/admission";
 
 import type { KernelSimulate, KuramotoBounds, KuramotoMode, KuramotoScenario } from "./kuramoto";
 import { fetchKuramoto } from "./kuramoto";
@@ -167,9 +170,12 @@ function BlochEquatorFigure({ scene, orbit }: { scene: BlochEquatorScene; orbit:
 export function Lab3DPanel({
   scenario,
   loadKernel = fetchKuramoto,
+  resourcePolicy,
 }: {
   scenario: KuramotoScenario;
   loadKernel?: KuramotoLoader;
+  /** Optional tighter declared policy; original kernel bounds still apply. */
+  resourcePolicy?: ResourcePolicy;
 }) {
   const [kernel, setKernel] = useState<KernelState>({ phase: "loading" });
   const [controls, setControls] = useState<LabControls>({
@@ -196,10 +202,21 @@ export function Lab3DPanel({
     };
   }, [loadKernel]);
 
-  const captured = useMemo(() => {
+  const resource = useMemo(() => {
     if (kernel.phase !== "ready") return null;
+    try {
+      return { ok: true as const, admission: admitLabResources(controls, kernel.bounds, resourcePolicy) };
+    } catch (error: unknown) {
+      return { ok: false as const, reason: error instanceof Error ? error.message : "Lab resource metadata refused" };
+    }
+  }, [kernel, controls, resourcePolicy]);
+
+  const captured = useMemo(() => {
+    if (kernel.phase !== "ready" || !resource) return null;
+    if (!resource.ok) return { ok: false as const, reason: resource.reason };
+    if (!resource.admission.allowed) return { ok: false as const, reason: resource.admission.blockers.join(", ") };
     return captureTrajectory(kernel.simulate, controlsToRequest(controls));
-  }, [kernel, controls]);
+  }, [kernel, controls, resource]);
 
   const derived = useMemo(() => {
     if (captured === null || !captured.ok) return null;
@@ -246,6 +263,7 @@ export function Lab3DPanel({
         {kernel.bounds.maxSteps}).
       </p>
 
+      {resource?.ok && <ResourcePlanInspector admission={resource.admission} />}
       <div className="qsp-play-controls">
         <label>
           Topology

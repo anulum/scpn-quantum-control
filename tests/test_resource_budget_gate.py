@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any, cast
 
 import pytest
@@ -479,3 +481,35 @@ def test_integrity_rejects_budget_set_drift() -> None:
     drifted["dimension_count"] = len(dimensions) + 1
     with pytest.raises(ValueError, match="drift"):
         assert_resource_budget_integrity(drifted)
+
+
+def test_shared_studio_resource_formulas_use_original_execution_owner() -> None:
+    """Compare shared browser declarations with the original public buffer gate."""
+    source = Path(__file__).resolve().parents[1] / "data/studio/resource_plan_contracts.json"
+    fixture = json.loads(source.read_text())
+    assert fixture["schema"] == "studio.resource-plan.conformance.v1"
+    for row in fixture["cases"]:
+        buffer = resource_budget_gate.ExecutionBuffer.hilbert(
+            row["name"],
+            "forward",
+            int(row["qubits"]),
+            rank=int(row["rank"]),
+            dtype=row["dtype"],
+            count=int(row["count"]),
+        )
+        plan = resource_budget_gate.ExecutionMemoryPlan((buffer,), int(row["concurrency"]))
+        expected = int(row["bytes"])
+        assert plan.bytes_required == expected
+        capacity = resource_budget_gate.MemoryCapacity(expected * 10)
+        exact = resource_budget_gate.check_execution_memory(plan, capacity, max_bytes=expected)
+        assert exact.allowed
+        refused = resource_budget_gate.check_execution_memory(
+            plan, capacity, max_bytes=expected - 1
+        )
+        assert not refused.allowed
+        assert "declared_buffers_exceed_budget" in refused.blockers
+        unknown = resource_budget_gate.check_execution_memory(
+            plan, resource_budget_gate.MemoryCapacity(None), max_bytes=expected
+        )
+        assert not unknown.allowed
+        assert "host_capacity_unknown" in unknown.blockers
