@@ -14,10 +14,12 @@ this policy but was documented retroactively in
 now have named in a pre-registration.
 
 Every scpn-quantum-control hardware campaign from Phase 2 onward
-must be pre-registered on OSF (Open Science Framework) before the
-first circuit is submitted to any backend. The pre-registration
-URL goes into the campaign's entry in `docs/results.md` at the
-moment the campaign starts, not after it finishes.
+must commit its protocol to this repository and push that commit to the
+public remote before the first circuit is submitted to any backend. The public statement is "protocol
+committed before the run". Git author and commit timestamps are set by
+the author; the externally checkable time is the push to the public
+remote. No campaign has been registered with a third-party registry
+such as OSF.
 
 ## What gets pre-registered
 
@@ -51,35 +53,31 @@ A single markdown-size document covering:
 9. **Authors.** Who is responsible for each section; who has
    backend access.
 
-Template lives at `docs/preregistration_template.md`; fill in a
-copy under `<private-local-record>`
-(gitignored local working copy) and upload to OSF for the frozen
-copy.
+Template lives at `docs/preregistration_template.md`. The frozen
+protocol is committed as `docs/campaigns/<campaign>_prereg_<date>.md`
+together with the campaign manifest (observable, circuit family, shots,
+abort criteria, statistics) and the analysis script it names.
 
 ## When the freeze happens
 
-The pre-registration is considered frozen at the moment the OSF
-record is created with the **registered** flag (OSF supports
-both "draft" and "registered" states). Subsequent edits leave a
-timestamp and diff; the decision statistic cannot be swapped
-silently.
+The protocol is frozen when its manifest and analysis script are
+committed and that commit is pushed to the public remote. Later edits
+are new commits with their own history; the decision statistic cannot be
+swapped silently.
 
 In the repository workflow:
 
-- **Before freeze:** all iteration lives in
-  `<private-local-record>` (local). No
-  artefacts are uploaded to the backend.
-- **At freeze:** OSF record is created, the DOI for the
-  registration is added to the campaign's row in
-  `docs/results.md`, and the `registered_at` timestamp lands in
-  the per-campaign header of the submission script.
-- **After freeze:** the submission script is run. Results are
-  written under `data/<campaign>/` with the provenance block
-  (`hardware/provenance.py`) including the OSF DOI so readers
-  can cross-verify.
-- **After analysis:** the analysis script runs, the decision
-  statistic is computed, the `CHANGELOG.md` entry cites both the
-  OSF DOI and the result git hash.
+- **Before freeze:** iteration happens in a local working copy. No
+  circuits are submitted to a backend.
+- **At freeze:** the protocol file is committed and pushed; the
+  campaign's entry in `docs/results.md` cites that file.
+- **After freeze:** the submission script runs. Results are written
+  under `data/<campaign>/` with the provenance block
+  (`hardware/provenance.py`), which records the exact repository commit
+  that ran the submission and therefore contains the frozen protocol.
+- **After analysis:** the committed reproducer recomputes every promoted
+  statistic from raw counts and exits non-zero on failure; the
+  `docs/results.md` entry cites the protocol file and the analysis.
 
 ## Amendments
 
@@ -87,12 +85,11 @@ Pre-specified changes to the protocol are expected (e.g. IBM
 changes the backend queue depth while we are running). Every
 amendment:
 
-1. Lives in a new file
-   `<private-local-record>`.
-2. Cites the original OSF DOI and explains the trigger.
-3. Creates a new OSF registration (amendment, not overwrite).
-4. The amendment DOI is added to the campaign's row in
-   `docs/results.md` alongside the original DOI.
+1. Is a new commit that leaves the original protocol intact.
+2. Cites the original protocol file and explains the trigger.
+3. Is pushed before any circuit it governs is submitted.
+4. Is cited in the campaign's entry in `docs/results.md` alongside the
+   original protocol file.
 
 Any amendment that changes the primary statistic or the
 confirm / falsify rule is effectively a new study. Report it as
@@ -112,26 +109,19 @@ we do instead:
   re-run on those numbers.
 - No amendment is possible; the campaign is sealed.
 
-## Upcoming campaigns to pre-register
+## Campaign status
 
-- **Phase 2 DLA parity ($n = 4$ scaling, popcount control).** Draft
-  exists in `private local workspace/` per memory
-  `reference_ibm_credits_application`. Freeze target: before the
-  180-minute/year IBM Quantum Open Plan allocation activates.
-- **Phase 3 Heron r2 cross-backend replication** (kingston +
-  marrakesh). Freeze target: when both backends have matching
-  calibration passes.
+The status of every campaign, including its protocol file, lives in
+`docs/results.md`; this page describes the procedure only.
 
 ## References
 
-- OSF pre-registration — <https://osf.io/prereg/>
 - Simmons, Nelson, Simonsohn (2011), "False-Positive Psychology:
   Undisclosed Flexibility in Data Collection and Analysis Allows
   Presenting Anything as Significant" — <https://doi.org/10.1177/0956797611417632>
 - Chambers, D. (2017), "The Seven Deadly Sins of Psychology" —
   Princeton University Press.
 
-Audit item **C9** in
-the internal gap audit closes
-when the first campaign (Phase 2) completes this workflow end to
-end, including the OSF DOI in `docs/results.md`.
+Third-party registration (for example on OSF) remains an option for a
+future campaign; until one is made, no document should state that a
+campaign was registered externally.

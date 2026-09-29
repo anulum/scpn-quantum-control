@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+
+## [Unreleased]
 
 ### Security
 
@@ -59,6 +61,22 @@
   exact 100% branch coverage for the qualification owners.
 
 ### Changed
+
+- `docs/preregistration.md` describes the procedure actually followed: the
+  protocol is committed as `docs/campaigns/<campaign>_prereg_<date>.md` and
+  pushed to the public remote before the first submission. No campaign has
+  been registered with a third-party registry such as OSF, and the page no
+  longer implies otherwise. `VALIDATION.md` labels its hand-counted test
+  categories as the 2026-03 snapshot, and the count-integrity incident note
+  dates its preregistration gate to the retained git history (from
+  2026-05-12). The changelog preamble is back at the top and the two
+  unreleased sections are merged.
+- Replaced internal work-item-coded module headings, public symbols, data-model
+  fields, serialized keys, evidence identifiers and filenames, CI labels, and
+  documentation headings with descriptive domain names. Regenerated affected
+  deterministic evidence and added a preflight/CI audit that rejects future
+  task-code leakage into production naming. Direct consumers of the former
+  task-coded Python or serialized names must migrate to the descriptive names.
 
 - The reproducibility record for `dla_truncated_tn()` now states that the
   capability is not achievable as named. `analysis/dla_parity_theorem.py`
@@ -888,9 +906,9 @@
   licence scanners identify the repository as AGPL-3.0; the former custom
   notice reported as "Other". The dual-licensing terms remain in `NOTICE.md`.
 - The repository is REUSE 3.3 compliant (5,222 of 5,222 files carry licence
-  and copyright information). Header lines now use valid SPDX expressions
-  (`SPDX-License-Identifier: AGPL-3.0-or-later`, with `Commercial license
-  available` on its own line); `REUSE.toml` covers data, results, figures,
+  and copyright information). Header lines now use valid SPDX expressions:
+  the licence identifier line names only `AGPL-3.0-or-later`, and the
+  commercial-licence notice sits on its own line; `REUSE.toml` covers data, results, figures,
   notebooks, publication sources, generated documentation, fuzz corpora, lock
   files and repository configuration; SPDX text inside code strings is marked
   with `REUSE-IgnoreStart`/`REUSE-IgnoreEnd`. Two documentation README files no
@@ -898,19 +916,6 @@
   declared under `LicenseRef-ANULUM-Trademarks` rather than the software licence.
 - `oscillatools/LICENSE` carries the standard AGPL-3.0 text with its own
   project notice; `oscillatools/NOTICE.md` states the default licence.
-
-Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
-
-## [Unreleased]
-
-### Changed
-
-- Replaced internal work-item-coded module headings, public symbols, data-model
-  fields, serialized keys, evidence identifiers and filenames, CI labels, and
-  documentation headings with descriptive domain names. Regenerated affected
-  deterministic evidence and added a preflight/CI audit that rejects future
-  task-code leakage into production naming. Direct consumers of the former
-  task-coded Python or serialized names must migrate to the descriptive names.
 
 ## [1.1.0] - 2026-07-29
 

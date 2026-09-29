@@ -60,9 +60,9 @@ counts:
 - **Evidence rules** — the ledger's "no fallbacks" rule: all-zero counts,
   queued placeholders, aggregate-only JSON, and submit-now-retrieve-later
   files are quarantined, never evidence.
-- **Preregistration gates** — campaigns since May 2026 commit the
-  manifest (observable, circuit family, shots, abort criteria, statistics)
-  before submission, and every promoted statistic must be recomputed from
+- **Preregistration gates** — campaigns recorded in the retained git
+  history (which begins on 2026-05-12) commit the manifest (observable,
+  circuit family, shots, abort criteria, statistics) before submission, and every promoted statistic must be recomputed from
   raw counts by a committed reproducer that exits non-zero on failure.
 - **Hash-bound result packs** — hardware results ship as packs binding raw
   counts to manifests and verifiers.

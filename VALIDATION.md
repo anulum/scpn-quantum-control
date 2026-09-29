@@ -78,11 +78,11 @@ pytest tests/ -v
 > roughly an order of magnitude; the generated capability inventory is the
 > source of truth for current counts.
 
-### Unit Tests (~540 tests, ~70 files)
+### Unit Tests (2026-03 snapshot: ~540 tests, ~70 files)
 
 Cover individual modules: Hamiltonian construction, Trotter evolution, VQE, QAOA, QSNN neurons/synapses, crypto protocols, QEC decoder, error mitigation (ZNE + PEC), trapped-ion backend, ITER disruption classifier, quantum advantage benchmark, SNN adapter, SSGF adapter, identity binding spec, QSNN training, fault-tolerant UPDE. Each test runs in <1s on statevector simulator.
 
-### Integration Tests (21 tests, 4 files)
+### Integration Tests (2026-03 snapshot: 21 tests, 4 files)
 
 End-to-end pipeline validation from K_nm coupling matrix to quantum observables:
 
@@ -93,7 +93,7 @@ End-to-end pipeline validation from K_nm coupling matrix to quantum observables:
 | `test_cross_module.py` | 5 | Solver ↔ bridge Hamiltonian identity, classical_exact_diag vs numpy.eigvalsh, classical R ∈ [0,1], Z-parity conservation |
 | `test_regression_baselines.py` | 7 | K_nm calibration anchors (Paper 27 Table 2 ±0.001), ω values, 4q ground energy E₀ = -6.303 ± 0.01, R range guards |
 
-### Property-Based Tests (12 tests, 3 files)
+### Property-Based Tests (2026-03 snapshot: 12 tests, 3 files)
 
 Hypothesis-driven fuzzing of invariants:
 
@@ -103,7 +103,7 @@ Hypothesis-driven fuzzing of invariants:
 | `test_crypto_properties.py` | 4 | CHSH S-parameter bound, key generation roundtrip, QKD sifting preserves key length |
 | `test_qec_properties.py` | 3 | Syndrome length, decoder output shape, correction preserves code space |
 
-### Identity Continuity Tests (43 tests, 4 files)
+### Identity Continuity Tests (2026-03 snapshot: 43 tests, 4 files)
 
 | File | Tests | What It Validates |
 |------|-------|-------------------|
@@ -112,7 +112,7 @@ Hypothesis-driven fuzzing of invariants:
 | `test_identity_entanglement.py` | 13 | Bell state CHSH violation (S≈2√2), product state respects bound |
 | `test_identity_key.py` | 9 | Spectral fingerprint, challenge-response verification |
 
-### v1.0 Module Tests (74 tests, 9 files)
+### v1.0 Module Tests (2026-03 snapshot: 74 tests, 9 files)
 
 | File | Tests | What It Validates |
 |------|-------|-------------------|
@@ -126,13 +126,13 @@ Hypothesis-driven fuzzing of invariants:
 | `test_qsnn_training.py` | 8 | Parameter-shift gradient, epoch training, loss decrease |
 | `test_fault_tolerant.py` | 8 | Repetition code encoding, transversal RZZ, syndrome extraction, qubit count |
 
-### Cross-Repo Wiring Tests (17 tests, 1 file)
+### Cross-Repo Wiring Tests (2026-03 snapshot: 17 tests, 1 file)
 
 | File | Tests | What It Validates |
 |------|-------|-------------------|
 | `test_cross_repo_wiring.py` | 17 | ArcaneNeuronBridge (6, skip without sc-neurocore), SSGFQuantumLoop (4), orchestrator mapping roundtrip (4), fusion-core shot adapter (3) |
 
-### Hardware Smoke Tests (34 tests, 3 files)
+### Hardware Smoke Tests (2026-03 snapshot: 34 tests, 3 files)
 
 All 20 experiment circuits validated on AerSimulator (no IBM credentials needed).
 
