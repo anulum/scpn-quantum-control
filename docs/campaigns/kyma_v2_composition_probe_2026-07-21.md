@@ -88,7 +88,8 @@ The result is **stable including vs excluding the selection seed**: excluding se
 80.1 % ± 3.4 % (vs 80.1 % ± 3.0 % including it), MLP 37.3 %, margin +42.8 pp (vs +43.1 pp) — the
 PASS does not depend on the seed the mechanism was tuned on.
 
-**J/task (measured, CPU simulation):** substrate 4.6 J (high sd — JIT-recompile wall-time noise on
+**J/task (energy proxy, CPU simulation: nominal 15 W package power × measured wall time; no power
+meter was read):** substrate 4.6 J (high sd — JIT-recompile wall-time noise on
 the memory-constrained host), MLP 1.3 × 10⁻³ J. The substrate is *costlier* on CPU simulation; this
 is reported honestly and is **not** evidence of frugality — KYMA's frugality claim concerns
 neuromorphic oscillator hardware, not a CPU Kuramoto simulation, and this number must not be cited

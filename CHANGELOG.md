@@ -61,6 +61,9 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ### Changed
 
+- The KYMA v2 composition-probe campaign note labels its J/task figures as an
+  energy proxy (nominal 15 W package power times measured wall time), as the
+  probe code defines them, instead of as measured energy.
 - Three exploratory notebooks state what they show. Notebook 14 no longer
   frames a surviving asymmetry as a publication-level result and records the
   circuit-depth difference that notebook 39 found; notebook 45 presents noise
