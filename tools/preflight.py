@@ -289,6 +289,9 @@ if TYPE_CHECKING:
     from tools import qpu_result_pack_quality_gates as _qpu_result_pack_quality_gates
     from tools import qrc_baseline_quality_gates as _qrc_baseline_quality_gates
     from tools import (
+        qualification_projection_quality_gates as _qualification_projection_quality_gates,
+    )
+    from tools import (
         quantum_neuromorphic_bridge_quality_gates as _quantum_neuromorphic_bridge_quality_gates,
     )
     from tools import quantum_phi_quality_gates as _quantum_phi_quality_gates
@@ -688,6 +691,9 @@ else:
         "tools.program_ad_fuzz_assurance_quality_gates"
     )
     _program_ad_quality_gates = import_module("tools.program_ad_quality_gates")
+    _qualification_projection_quality_gates = import_module(
+        "tools.qualification_projection_quality_gates"
+    )
     _quantum_sync_oracle_product_quality_gates = import_module(
         "tools.quantum_sync_oracle_product_quality_gates"
     )
@@ -1245,6 +1251,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_research_lane_registry_quality_gates.build_static_quality_gates(_PY),
     *_theory_hook_promotion_quality_gates.build_static_quality_gates(_PY),
     *_resource_budget_gate_quality_gates.build_static_quality_gates(_PY),
+    *_qualification_projection_quality_gates.build_static_quality_gates(_PY),
     *_advantage_language_protocol_quality_gates.build_static_quality_gates(_PY),
     *_metamorphic_ad_verification_quality_gates.build_static_quality_gates(_PY),
     (
@@ -1926,6 +1933,9 @@ THEORY_HOOK_PROMOTION_COVERAGE_GATES = _theory_hook_promotion_quality_gates.buil
     _PY
 )
 RESOURCE_BUDGET_GATE_COVERAGE_GATES = _resource_budget_gate_quality_gates.build_coverage_gates(_PY)
+QUALIFICATION_PROJECTION_COVERAGE_GATES = (
+    _qualification_projection_quality_gates.build_coverage_gates(_PY)
+)
 ADVANTAGE_LANGUAGE_PROTOCOL_COVERAGE_GATES = (
     _advantage_language_protocol_quality_gates.build_coverage_gates(_PY)
 )
@@ -2299,6 +2309,7 @@ def main() -> int:
             gates.extend(RESEARCH_LANE_REGISTRY_COVERAGE_GATES)
             gates.extend(THEORY_HOOK_PROMOTION_COVERAGE_GATES)
             gates.extend(RESOURCE_BUDGET_GATE_COVERAGE_GATES)
+            gates.extend(QUALIFICATION_PROJECTION_COVERAGE_GATES)
             gates.extend(ADVANTAGE_LANGUAGE_PROTOCOL_COVERAGE_GATES)
             gates.extend(METAMORPHIC_AD_VERIFICATION_COVERAGE_GATES)
             gates.extend(MLIR_LEAF_COVERAGE_GATES)

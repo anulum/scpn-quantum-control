@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import dataclasses
+import hashlib
 import json
 import runpy
 import sys
@@ -19,6 +20,8 @@ import pytest
 
 pytest.importorskip("scpn_studio_platform", reason="studio extra not installed")
 
+from _qualification_receipt_vectors import ROOT as VECTOR_ROOT  # noqa: E402
+from _qualification_receipt_vectors import build_receipt, seal  # noqa: E402
 from scpn_studio_platform.evidence import EvidenceBundle  # noqa: E402
 
 from scpn_quantum_control.differentiable_baseline_scorecard import (  # noqa: E402
@@ -163,3 +166,59 @@ def test_module_entrypoint_emits_an_admitted_bundle(
     assert raised.value.code == 0
     wire = json.loads(capsys.readouterr().out)
     assert wire["schema"] == "studio.differentiation-evidence.v1"
+
+
+def test_release_profile_and_studio_preserve_the_same_falsification(tmp_path: Path) -> None:
+    """A real public facade-to-Studio chain preserves separate verdict axes."""
+    from scpn_quantum_control import build_differentiable_release_profile
+    from scpn_quantum_control.studio.scorecard_bundle import build_scorecard_bundle
+
+    _, receipt, payload = build_receipt(tmp_path)
+    payload["scientific_status"] = "falsified"
+    digest = seal(receipt, payload)
+    refs = ((receipt, digest),)
+    profile = build_differentiable_release_profile(refs, repo_root=VECTOR_ROOT)
+    category = next(
+        row for row in profile["support_rows"] if row["category"] == payload["category"]
+    )
+    assert category["domains"][0]["scientific_status"] == "falsified"
+    assert category["qualification_status"] == "qualified"
+    assert not profile["baseline_release_ready"]
+    assert any(
+        "scientific claim falsified" in reason
+        for row in profile["excluded_capabilities"]
+        for reason in row["reasons"]
+    )
+    bundle = build_scorecard_bundle(qualification_receipts=refs)
+    cases = {case.operation_family: case.status for case in bundle.cases}
+    assert cases["domain:resource_admission_contract_vector:science:simulation"] == "falsified"
+    assert cases["domain:resource_admission_contract_vector:forward"] == "passed"
+    assert any(edge.entity_digest == f"sha256:{digest}" for edge in bundle.derived_from)
+    assert all(
+        status == "behind_baseline"
+        for name, status in cases.items()
+        if name.startswith("baseline-category:")
+    )
+    assert hashlib.sha256(receipt.read_bytes()).hexdigest() == digest
+
+
+def test_real_studio_cli_preserves_scientific_status(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Actual argparse, emitter and federation admission retain falsification."""
+    from scpn_quantum_control.studio.scorecard_bundle import main
+
+    _, receipt, payload = build_receipt(tmp_path)
+    payload["scientific_status"] = "falsified"
+    digest = seal(receipt, payload)
+    assert main(["--qualification-receipt", str(receipt), digest]) == 0
+    emitted = json.loads(capsys.readouterr().out)
+    science = next(
+        case
+        for case in emitted["cases"]
+        if case["operation_family"]
+        == "domain:resource_admission_contract_vector:science:simulation"
+    )
+    assert science["status"] == "falsified"
+    assert emitted["claim_boundary"]["status"] == "bounded-model"

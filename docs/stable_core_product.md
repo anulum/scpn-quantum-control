@@ -7,6 +7,66 @@ SemVer-intent surface in the public API stability programme.
 
 Module: `scpn_quantum_control.stable_core_product`
 
+## Source-bound qualification and release profiles
+
+`build_differentiable_release_profile()` exposes baseline maturity alongside
+independent engineering-domain observations for Studio and Atlas consumers:
+
+```python
+from scpn_quantum_control import build_differentiable_release_profile
+
+profile = build_differentiable_release_profile()
+assert profile["schema"] == "differentiable_release_profile.v1"
+assert all(row["qualification_status"] == "unavailable"
+           for row in profile["support_rows"])
+```
+
+Without explicit domain receipts, every category has an exclusion reason for
+missing qualification. Existing implementation files and category scorecard
+rows remain visible separately.
+
+The reader `qualification_status_projection.project_qualification_status`
+accepts an explicit local receipt path, its SHA-256 from the owning evidence
+index, and the source checkout. A `domain_qualification_receipt.v1` records:
+
+| Field | Meaning |
+|---|---|
+| `domain_id`, `category` | Exact domain identity and baseline category. |
+| `source_hashes` | Repository-relative production source, cohort, CI policy and owning workflow paths with lowercase SHA-256 digests. |
+| `runtime` | Top-level import name, distribution name and exact recorded version. Python uses `sys` and distribution `python`. |
+| `axes` | Separate `forward`, `derivative`, `composition` and `backend` observations: `passed`, `failed`, `blocked` or `unavailable`. |
+| `scientific_status` | Owning adjudication: `unassessed`, `supported`, `falsified` or `inconclusive`. |
+| `claim_class` | Recorded `theory`, `simulation`, `hardware` or `noise_limited` class. |
+| `ci_job`, `test_cohort` | One exclusive executable CI owner and its explicitly executed, existing, source-bound test files. |
+
+Receipt identity, source freshness, local runtime metadata and CI ownership are
+checked independently. Source or version drift withholds current engineering
+qualification; a missing runtime produces `unavailable`. Only a recorded
+`passed` axis is withdrawn to `stale` or `unavailable`; a recorded `failed` or
+`blocked` axis keeps its value, so drift never softens a known failure. Duplicate JSON keys,
+unsafe references and ambiguous CI owners reject. A test named only in lint or
+type checking, echoed paths, collection-only runs and selected test subsets
+cannot satisfy full runtime-cohort ownership. Receipts are bounded to
+1 MiB and projection is read-only.
+
+The result reports applicability of the owning process's recorded observations.
+Its digest establishes byte identity; the evidence producer remains responsible
+for the observations themselves. Runtime metadata availability is distinct from
+successful execution on a device. Scientific verdicts and claim classes retain
+their recorded values, including falsification, alongside the engineering axes.
+Baseline exclusions, release approval and deployment retain separate decisions.
+When a checkout is selected explicitly, its own baseline claim ledger is used;
+a missing ledger refuses the profile rather than borrowing another tree's claims.
+The package and repository tools share `ci_workflow_ownership` for duplicate-key
+refusal, exclusive job ownership and executable workflow identity.
+
+`studio.scorecard_bundle.build_scorecard_bundle(qualification_receipts=...)`
+adds these independent domain cases and content-addressed receipt edges to the
+existing schema-B scorecard bundle. The existing bundle remains unchanged when
+no receipts are supplied. The actual emitter CLI accepts repeated
+`--qualification-receipt PATH SHA256` pairs; its federation admission preserves
+the original baseline statuses and each recorded scientific verdict.
+
 ## Rules
 
 | Rule | Behaviour |

@@ -415,3 +415,53 @@ jobs:
           --data-file=/tmp/.coverage.semantic-record-contract-quality
           --precision=2 --show-missing --fail-under=100
           --include=*/semantic_record.py,*/semantic_operations.py,*/native_semantic_binding.py,*/fisher_semantic_binding.py,*/hal_semantic_binding.py
+  qualification-projection-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/qualification_status_projection.py
+          src/scpn_quantum_control/ci_workflow_ownership.py
+          src/scpn_quantum_control/differentiable_baseline_scorecard.py
+          tools/ci_workflow_inventory.py
+          tests/_qualification_receipt_vectors.py
+          tests/test_qualification_status_projection.py
+          tests/test_ci_workflow_ownership.py
+          tests/test_ci_workflow_inventory.py
+          tests/test_differentiable_baseline_scorecard.py
+          tools/qualification_projection_quality_gates.py
+          tests/test_qualification_projection_quality_gate.py
+      - run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/qualification_status_projection.py
+          src/scpn_quantum_control/ci_workflow_ownership.py
+          src/scpn_quantum_control/differentiable_baseline_scorecard.py
+          tools/ci_workflow_inventory.py
+          tests/_qualification_receipt_vectors.py
+          tests/test_qualification_status_projection.py
+          tests/test_ci_workflow_ownership.py
+          tests/test_ci_workflow_inventory.py
+          tests/test_differentiable_baseline_scorecard.py
+          tools/qualification_projection_quality_gates.py
+          tests/test_qualification_projection_quality_gate.py
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-qualification-projection-quality.coverage --branch
+          -m pytest -q
+          tests/test_qualification_status_projection.py
+          tests/test_ci_workflow_ownership.py
+          tests/test_ci_workflow_inventory.py
+          tests/test_differentiable_baseline_scorecard.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-qualification-projection-quality.coverage
+          --precision=2 --show-missing --fail-under=100
+          --include=*/qualification_status_projection.py,*/ci_workflow_ownership.py,*/tools/ci_workflow_inventory.py,*/differentiable_baseline_scorecard.py

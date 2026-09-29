@@ -7,13 +7,13 @@
     "model_documentation_pages": 14,
     "notebook_files": 109,
     "optional_extras": 43,
-    "public_api_exports": 841,
+    "public_api_exports": 842,
     "public_documentation_pages": 377,
-    "python_model_classes": 1438,
-    "python_model_source_modules": 737,
+    "python_model_classes": 1443,
+    "python_model_source_modules": 739,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1421
+    "test_files": 1426
   },
   "documentation": {
     "examples": [
@@ -2043,6 +2043,10 @@
         "path": "src/scpn_quantum_control/phase/differentiable_readiness.py"
       },
       {
+        "name": "DifferentiableReleaseProfile",
+        "path": "src/scpn_quantum_control/differentiable_baseline_scorecard.py"
+      },
+      {
         "name": "DifferentiableRustPythonInventory",
         "path": "src/scpn_quantum_control/differentiable_rust_python_inventory.py"
       },
@@ -2253,6 +2257,10 @@
       {
         "name": "ExactValidatedSurrogateProposal",
         "path": "src/scpn_quantum_control/surrogates/hybrid.py"
+      },
+      {
+        "name": "ExcludedCapability",
+        "path": "src/scpn_quantum_control/differentiable_baseline_scorecard.py"
       },
       {
         "name": "ExecutableCompilerADKernel",
@@ -5223,6 +5231,18 @@
         "path": "src/scpn_quantum_control/hardware/hal_quera_bloqade.py"
       },
       {
+        "name": "QualificationProjection",
+        "path": "src/scpn_quantum_control/qualification_status_projection.py"
+      },
+      {
+        "name": "QualificationProjectionWire",
+        "path": "src/scpn_quantum_control/qualification_status_projection.py"
+      },
+      {
+        "name": "QualificationSupportRow",
+        "path": "src/scpn_quantum_control/differentiable_baseline_scorecard.py"
+      },
+      {
         "name": "QuandelaPercevalHALAdapter",
         "path": "src/scpn_quantum_control/hardware/hal_quandela.py"
       },
@@ -6715,6 +6735,7 @@
       "src/scpn_quantum_control/chimera_control/schema.py",
       "src/scpn_quantum_control/chimera_control/synthetic.py",
       "src/scpn_quantum_control/chimera_control/topology.py",
+      "src/scpn_quantum_control/ci_workflow_ownership.py",
       "src/scpn_quantum_control/circuit_cutting_product.py",
       "src/scpn_quantum_control/cloud_native_deployment_product.py",
       "src/scpn_quantum_control/codegen/ultrascale_hls.py",
@@ -7192,6 +7213,7 @@
       "src/scpn_quantum_control/qsnn/qsynapse.py",
       "src/scpn_quantum_control/qsnn/quantum_neuromorphic_bridge.py",
       "src/scpn_quantum_control/qsnn/training.py",
+      "src/scpn_quantum_control/qualification_status_projection.py",
       "src/scpn_quantum_control/quantum_sync_challenge_oracle_product.py",
       "src/scpn_quantum_control/resource_budget_gate.py",
       "src/scpn_quantum_control/scorecard_acceptance_engine.py",
@@ -7900,6 +7922,7 @@
     "build_coupling_distance_matrix",
     "build_differentiable_benchmark_report",
     "build_differentiable_dependency_environment_evidence",
+    "build_differentiable_release_profile",
     "build_enzyme_mlir_benchmark_attachment",
     "build_enzyme_mlir_compiler_ad_breadth_artifact",
     "build_enzyme_mlir_compiler_ad_breadth_evidence",
@@ -8467,6 +8490,7 @@
       "tests/_phase_pennylane_bridge_test_helpers.py",
       "tests/_phase_torch_bridge_test_helpers.py",
       "tests/_program_ad_rust_bridge_test_fixtures.py",
+      "tests/_qualification_receipt_vectors.py",
       "tests/conftest.py",
       "tests/experimental/llm_qpu/artifact_custody/test_artifact_store.py",
       "tests/experimental/llm_qpu/artifact_custody/test_lineage_cache.py",
@@ -8622,7 +8646,9 @@
       "tests/test_chimera_control_synthetic.py",
       "tests/test_chimera_control_topology.py",
       "tests/test_ci_documentation_surface_gate.py",
+      "tests/test_ci_workflow_inventory.py",
       "tests/test_ci_workflow_modularity.py",
+      "tests/test_ci_workflow_ownership.py",
       "tests/test_circuit_cutting.py",
       "tests/test_circuit_cutting_product.py",
       "tests/test_circuit_depth.py",
@@ -9542,6 +9568,8 @@
       "tests/test_qsvt_evolution.py",
       "tests/test_qsvt_evolution_branches.py",
       "tests/test_qsynapse.py",
+      "tests/test_qualification_projection_quality_gate.py",
+      "tests/test_qualification_status_projection.py",
       "tests/test_quantum_advantage.py",
       "tests/test_quantum_advantage_branches.py",
       "tests/test_quantum_advantage_crossover_figure.py",

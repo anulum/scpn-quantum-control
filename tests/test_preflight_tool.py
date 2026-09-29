@@ -1328,6 +1328,8 @@ def test_main_uses_coverage_pytest_by_default(
         "resource-budget-gate focused coverage",
         "resource-budget-gate combine process coverage",
         "resource-budget-gate exact coverage threshold",
+        "qualification-projection focused coverage",
+        "qualification-projection exact coverage threshold",
         "advantage-language-protocol focused coverage",
         "advantage-language-protocol exact coverage threshold",
         "metamorphic-ad-verification focused coverage",

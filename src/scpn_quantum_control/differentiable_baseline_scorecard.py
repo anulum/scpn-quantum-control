@@ -13,7 +13,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from itertools import chain
 from pathlib import Path
-from typing import Literal
+from typing import Literal, TypedDict
 
 from .differentiable_claim_ledger import (
     DEFAULT_LEDGER_PATH,
@@ -21,6 +21,10 @@ from .differentiable_claim_ledger import (
     ClaimLedger,
     ClaimLedgerRow,
     load_differentiable_claim_ledger,
+)
+from .qualification_status_projection import (
+    QualificationProjectionWire,
+    project_qualification_status,
 )
 
 DifferentiableBaselineCategory = Literal[
@@ -368,6 +372,131 @@ def run_differentiable_baseline_scorecard(
         total_category_count=len(rows),
         claim_boundary=DIFFERENTIABLE_BASELINE_SCORECARD_CLAIM_BOUNDARY,
     )
+
+
+class QualificationSupportRow(TypedDict):
+    """One baseline category and its independently qualified engineering domains."""
+
+    category: str
+    baseline_status: str
+    implementation_surface: list[str]
+    domains: list[QualificationProjectionWire]
+    qualification_status: str
+
+
+class ExcludedCapability(TypedDict):
+    """A baseline capability withheld from release and its explicit reasons."""
+
+    category: str
+    reasons: list[str]
+
+
+class DifferentiableReleaseProfile(TypedDict):
+    """JSON catalogue for Studio/Atlas without release or science authority."""
+
+    schema: str
+    support_rows: list[QualificationSupportRow]
+    included_engineering_domains: list[str]
+    excluded_capabilities: list[ExcludedCapability]
+    baseline_release_ready: bool
+    claim_boundary: str
+
+
+def build_differentiable_release_profile(
+    qualification_receipts: Iterable[tuple[Path, str]] = (),
+    *,
+    repo_root: Path = REPO_ROOT,
+) -> DifferentiableReleaseProfile:
+    """Compose baseline maturity and source-bound domain qualification.
+
+    Parameters
+    ----------
+    qualification_receipts
+        Explicit local receipt paths and their independently indexed SHA-256
+        digests. An empty collection exposes every category as unqualified,
+        rather than inferring runtime support from the existing scorecard.
+    repo_root
+        Source checkout used to verify source, cohort and CI ownership and to
+        read its own baseline claim ledger. Claims are never borrowed from a
+        different checkout.
+
+    Returns
+    -------
+    DifferentiableReleaseProfile
+        Versioned Studio/Atlas support rows, currently qualified engineering
+        domains, and explicit excluded baseline capabilities. Scientific
+        verdicts remain independent; this report does not authorise a release.
+
+    Raises
+    ------
+    ValueError
+        If receipts fail applicability validation, repeat a domain identity,
+        or refer to an unknown baseline category. No evidence is rewritten.
+    OSError
+        If the selected checkout's baseline claim ledger is unavailable.
+
+    """
+    scorecard = run_differentiable_baseline_scorecard(
+        ledger_path=repo_root / DEFAULT_LEDGER_PATH.relative_to(REPO_ROOT),
+    )
+    domains = tuple(
+        project_qualification_status(path, digest, repo_root=repo_root)
+        for path, digest in qualification_receipts
+    )
+    if len({domain.domain_id for domain in domains}) != len(domains):
+        raise ValueError("qualification domains must have unique identities")
+    if any(domain.category not in REQUIRED_BASELINE_CATEGORIES for domain in domains):
+        raise ValueError("qualification references an unknown baseline category")
+    support_rows: list[QualificationSupportRow] = []
+    excluded: list[ExcludedCapability] = []
+    for row in scorecard.rows:
+        bound = tuple(domain for domain in domains if domain.category == row.category)
+        reasons = list(row.blockers)
+        if not bound:
+            reasons.append("no source-bound domain qualification receipt")
+        for domain in bound:
+            reasons.extend(f"{domain.domain_id}: {reason}" for reason in domain.blockers)
+            if domain.scientific_status == "falsified":
+                reasons.append(f"{domain.domain_id}: scientific claim falsified")
+        if not row.ready_for_promotion and not row.blockers:  # pragma: no cover
+            # Structural invariant: the scorecard builds every row as
+            # behind_baseline (_attach_surfaces) and the row validator requires
+            # blockers for that status. Retained so a future not_comparable row
+            # without blockers still withholds release readiness.
+            reasons.append(f"external baseline status: {row.status}")
+        support_rows.append(
+            {
+                "category": row.category,
+                "baseline_status": row.status,
+                "implementation_surface": list(row.implementation_surface),
+                "domains": [domain.to_dict() for domain in bound],
+                "qualification_status": (
+                    "unavailable"
+                    if not bound
+                    else "qualified"
+                    if all(domain.engineering_qualified for domain in bound)
+                    else "withheld"
+                ),
+            }
+        )
+        # Same invariant: every current row carries blockers, so reasons is never
+        # empty today; the branch remains the exact release-readiness rule.
+        if reasons:  # pragma: no branch
+            excluded.append({"category": row.category, "reasons": reasons})
+    return {
+        "schema": "differentiable_release_profile.v1",
+        "support_rows": support_rows,
+        "included_engineering_domains": [
+            domain.domain_id for domain in domains if domain.engineering_qualified
+        ],
+        "excluded_capabilities": excluded,
+        "baseline_release_ready": not excluded,
+        "claim_boundary": (
+            "source-bound engineering applicability and baseline maturity only; "
+            "scientific verdicts and claim classes are preserved, not promoted; "
+            "release approval, device execution and deployment remain separate"
+        ),
+    }
 
 
 def validate_differentiable_baseline_scorecard(

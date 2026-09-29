@@ -35,6 +35,7 @@ from scpn_studio_platform.evidence import (
     ClaimBoundary,
     ClaimStatus,
     DerivedEdge,
+    DerivedKind,
     EvidenceBundle,
     EvidenceKind,
     EvidenceLevel,
@@ -47,6 +48,7 @@ from scpn_studio_platform.evidence import (
 
 from ..differentiable_baseline_scorecard import (
     DifferentiableBaselineScorecard,
+    build_differentiable_release_profile,
     run_differentiable_baseline_scorecard,
     validate_differentiable_baseline_scorecard,
 )
@@ -98,6 +100,7 @@ def build_scorecard_bundle(
     artifact_path: Path | None = None,
     activity_timestamp: str = DEFAULT_ACTIVITY_TIMESTAMP,
     repo_root: Path = REPO_ROOT,
+    qualification_receipts: Sequence[tuple[Path, str]] = (),
 ) -> EvidenceBundle:
     """Build the schema-B bundle for the differentiable baseline scorecard.
 
@@ -113,6 +116,10 @@ def build_scorecard_bundle(
         Deterministic PROV timestamp for the source-tree emission.
     repo_root
         Repository root used by the scorecard's own path validation.
+    qualification_receipts
+        Optional source-bound domain receipts and indexed digests. Their
+        engineering axes and scientific verdicts are emitted independently;
+        a baseline category is never promoted by adding a receipt.
 
     Returns
     -------
@@ -134,6 +141,39 @@ def build_scorecard_bundle(
             "scorecard failed validation and is not federated: " + "; ".join(validation.errors)
         )
     payload = resolved.to_dict()
+    profile = (
+        build_differentiable_release_profile(qualification_receipts, repo_root=repo_root)
+        if qualification_receipts
+        else None
+    )
+    qualification_cases: list[CaseResult] = []
+    qualification_edges: list[DerivedEdge] = []
+    if profile is not None:
+        payload = {"scorecard": payload, "qualification_profile": profile}
+        for row in profile["support_rows"]:
+            for domain in row["domains"]:
+                qualification_edges.append(
+                    DerivedEdge(
+                        kind=DerivedKind.EVIDENCE,
+                        studio=STUDIO_ID,
+                        entity_digest=f"sha256:{domain['evidence_sha256']}",
+                    )
+                )
+                for axis, status in domain["axes"].items():
+                    qualification_cases.append(
+                        CaseResult(
+                            operation_family=f"domain:{domain['domain_id']}:{axis}",
+                            dimension=len(qualification_cases) + 1,
+                            status=status,
+                        )
+                    )
+                qualification_cases.append(
+                    CaseResult(
+                        operation_family=f"domain:{domain['domain_id']}:science:{domain['claim_class']}",
+                        dimension=len(qualification_cases) + 1,
+                        status=domain["scientific_status"],
+                    )
+                )
     edges = () if artifact_path is None else (_artifact_edge(artifact_path),)
     return EvidenceBundle(
         schema=DIFFERENTIATION_EVIDENCE_SCHEMA,
@@ -167,8 +207,9 @@ def build_scorecard_bundle(
                 status=row.status,
             )
             for index, row in enumerate(resolved.rows, start=1)
-        ),
-        derived_from=edges,
+        )
+        + tuple(qualification_cases),
+        derived_from=edges + tuple(qualification_edges),
     )
 
 
@@ -194,8 +235,23 @@ def main(argv: Sequence[str] | None = None) -> int:
         default=DEFAULT_SCORECARD_ARTIFACT_PATH,
         help="committed scorecard artefact for the derivation edge",
     )
+    parser.add_argument(
+        "--qualification-receipt",
+        nargs=2,
+        action="append",
+        default=[],
+        metavar=("PATH", "SHA256"),
+        help="source-bound domain receipt and its independently indexed digest",
+    )
     args = parser.parse_args(argv)
-    validated = validate_bundle(build_scorecard_bundle(artifact_path=args.artifact_path))
+    validated = validate_bundle(
+        build_scorecard_bundle(
+            artifact_path=args.artifact_path,
+            qualification_receipts=tuple(
+                (Path(path), digest) for path, digest in args.qualification_receipt
+            ),
+        )
+    )
     print(json.dumps(validated.bundle.to_dict(), indent=2, sort_keys=True))
     if not validated.verdict.admitted:
         print(

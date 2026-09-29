@@ -236,7 +236,8 @@
         "advantage-language-protocol-quality",
         "metamorphic-ad-verification-quality",
         "competitive-baseline-watch-quality",
-        "semantic-record-contract-quality"
+        "semantic-record-contract-quality",
+        "qualification-projection-quality"
       ]
     },
     {
@@ -517,6 +518,7 @@
     "metamorphic-ad-verification-quality",
     "competitive-baseline-watch-quality",
     "semantic-record-contract-quality",
+    "qualification-projection-quality",
     "whole-program-ad-product-quality",
     "neural-operator-cost-model-quality",
     "neural-operator-baseline-product-quality",

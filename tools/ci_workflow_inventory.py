@@ -9,10 +9,17 @@
 
 from __future__ import annotations
 
-import json
 import re
 from pathlib import Path
 from typing import TypedDict, cast
+
+from scpn_quantum_control.ci_workflow_ownership import (
+    read_ci_job_blocks as _job_blocks,
+)
+from scpn_quantum_control.ci_workflow_ownership import (
+    read_ci_workflow_policy,
+    resolve_ci_workflow_owner,
+)
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 CI_WORKFLOW_POLICY = REPOSITORY_ROOT / "tools/ci_workflow_policy.json"
@@ -50,57 +57,91 @@ class WorkflowPolicy(TypedDict):
     optional_jobs: list[str]
 
 
-def load_ci_workflow_policy() -> WorkflowPolicy:
-    """Load the versioned CI workflow ownership policy."""
-    payload = json.loads(CI_WORKFLOW_POLICY.read_text(encoding="utf-8"))
-    if not isinstance(payload, dict):
-        raise ValueError("CI workflow policy must be a JSON object")
-    return cast(WorkflowPolicy, payload)
+def load_ci_workflow_policy(*, repo_root: Path | None = None) -> WorkflowPolicy:
+    """Load the selected checkout's versioned CI ownership policy.
+
+    Parameters
+    ----------
+    repo_root
+        Explicit checkout root, or the current tool's repository configuration.
+
+    Returns
+    -------
+    WorkflowPolicy
+        Decoded policy; individual executable owners are checked on resolution.
+
+    Raises
+    ------
+    ValueError
+        If the policy is not a JSON object.
+    OSError
+        If the selected policy cannot be read.
+
+    """
+    path = CI_WORKFLOW_POLICY if repo_root is None else repo_root / "tools/ci_workflow_policy.json"
+    return cast(WorkflowPolicy, read_ci_workflow_policy(path))
 
 
-def ci_workflow_paths(policy: WorkflowPolicy | None = None) -> tuple[Path, ...]:
-    """Return the coordinator followed by reusable workflows in policy order."""
-    resolved = load_ci_workflow_policy() if policy is None else policy
-    paths = [REPOSITORY_ROOT / resolved["coordinator"]]
-    paths.extend(REPOSITORY_ROOT / category["workflow"] for category in resolved["categories"])
+def ci_workflow_paths(
+    policy: WorkflowPolicy | None = None,
+    *,
+    repo_root: Path | None = None,
+) -> tuple[Path, ...]:
+    """Return the selected checkout's declared workflows in policy order.
+
+    Parameters
+    ----------
+    policy
+        Explicit policy, or the selected checkout's policy.
+    repo_root
+        Checkout root; defaults to this tool's configured repository.
+
+    Returns
+    -------
+    tuple[Path, ...]
+        Coordinator followed by reusable workflows, without rewriting source.
+
+    """
+    root = REPOSITORY_ROOT if repo_root is None else repo_root
+    resolved = load_ci_workflow_policy(repo_root=repo_root) if policy is None else policy
+    paths = [root / resolved["coordinator"]]
+    paths.extend(root / category["workflow"] for category in resolved["categories"])
     return tuple(paths)
 
 
-def _job_blocks(workflow: str) -> dict[str, str]:
-    """Extract top-level job blocks without normalising their YAML text."""
-    lines = workflow.splitlines(keepends=True)
-    starts: list[tuple[int, str]] = []
-    jobs_seen = False
-    for index, line in enumerate(lines):
-        if line.rstrip("\n") == "jobs:":
-            jobs_seen = True
-            continue
-        match = re.match(r"^  ([A-Za-z0-9_-]+):\s*$", line)
-        if jobs_seen and match:
-            starts.append((index, match.group(1)))
-    blocks: dict[str, str] = {}
-    for position, (start, job_id) in enumerate(starts):
-        end = starts[position + 1][0] if position + 1 < len(starts) else len(lines)
-        if job_id in blocks:
-            raise ValueError(f"CI job appears multiple times in one workflow: {job_id}")
-        blocks[job_id] = "".join(lines[start:end]).strip("\n")
-    return blocks
-
-
-def read_ci_workflow_source() -> str:
+def read_ci_workflow_source(*, repo_root: Path | None = None) -> str:
     """Return all real CI jobs in their historical logical order.
 
     The compatibility view lets job-contract tests inspect the distributed
     workflow without binding themselves to a physical category file. It is
     assembled only from executable workflow files; no duplicate snapshot is
     stored.
+
+    Parameters
+    ----------
+    repo_root
+        Checkout to inspect, or the current tool's repository configuration.
+
+    Returns
+    -------
+    str
+        Compatibility view assembled from real executable job blocks.
+
+    Raises
+    ------
+    ValueError
+        If jobs are duplicated, missing or the required gate is absent.
+    OSError
+        If a declared workflow cannot be read.
+
     """
-    policy = load_ci_workflow_policy()
-    coordinator_path = REPOSITORY_ROOT / policy["coordinator"]
+    root = REPOSITORY_ROOT if repo_root is None else repo_root
+    policy = load_ci_workflow_policy(repo_root=repo_root)
+    coordinator_path = root / policy["coordinator"]
     coordinator = coordinator_path.read_text(encoding="utf-8")
     prefix, _separator, _jobs = coordinator.partition("jobs:\n")
     blocks: dict[str, str] = {}
-    for path in ci_workflow_paths(policy)[1:]:
+    for path in ci_workflow_paths(policy, repo_root=root)[1:]:
         for job_id, block in _job_blocks(path.read_text(encoding="utf-8")).items():
             if job_id in blocks:
                 raise ValueError(f"CI job appears in multiple reusable workflows: {job_id}")
@@ -136,15 +177,33 @@ def read_ci_workflow_source() -> str:
     return prefix + "jobs:\n" + "\n\n".join(ordered) + "\n"
 
 
-def workflow_path_for_job(job_id: str) -> Path:
-    """Resolve the reusable workflow that exclusively owns ``job_id``."""
-    policy = load_ci_workflow_policy()
-    for category in policy["categories"]:
-        if job_id in category["jobs"]:
-            return REPOSITORY_ROOT / category["workflow"]
-    if job_id == policy["required_gate"]:
-        return REPOSITORY_ROOT / policy["coordinator"]
-    raise KeyError(job_id)
+def workflow_path_for_job(job_id: str, *, policy: WorkflowPolicy | None = None) -> Path:
+    """Resolve one registered job to its exclusive executable owner.
+
+    Parameters
+    ----------
+    job_id
+        Exact job identifier in the versioned repository workflow policy.
+    policy
+        Explicit policy being reviewed, or the current repository policy.
+        The selected workflow must contain the requested executable job.
+
+    Returns
+    -------
+    Path
+        Existing workflow below the canonical repository root.
+
+    Raises
+    ------
+    KeyError
+        If no owner is registered for the job.
+    ValueError
+        If ownership is duplicated, escapes the repository, or the declared
+        workflow does not execute the job. No first-match fallback is allowed.
+
+    """
+    resolved = load_ci_workflow_policy() if policy is None else policy
+    return resolve_ci_workflow_owner(job_id, repo_root=REPOSITORY_ROOT, policy=resolved)
 
 
 __all__ = [

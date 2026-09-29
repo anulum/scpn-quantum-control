@@ -4,9 +4,9 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **737 modules** across **40 package families**
-- **4068 documented public module-level symbols**
-- **841 root-package exports** governed by the stable API surface
+- **739 modules** across **40 package families**
+- **4078 documented public module-level symbols**
+- **842 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
 the [API selection guide](../api.md) and [stable facades](../stable_facades_api.md).
@@ -5501,6 +5501,14 @@ Fail-closed **campaign harness productisation** surface.
 
 **Functions:** `list_campaign_harness_ids()`, `get_campaign_harness()`, `iter_campaign_harnesses()`, `list_ambient_benchmark_family_ids()`, `decide_campaign_path()`, `materialise_appqsim_probe()`, `materialise_iqm_layout_probe()`, `materialise_closed_loop_probe()`, `materialise_demo_campaign_probe()`, `map_campaign_harness_public_surfaces()`, `build_campaign_harness_product_registry()`, `assert_campaign_harness_product_integrity()`
 
+### `scpn_quantum_control.ci_workflow_ownership`
+
+Resolve source-bound CI ownership for package and repository consumers.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/ci_workflow_ownership.py) · Public symbols: **3**
+
+**Functions:** `read_ci_workflow_policy()`, `read_ci_job_blocks()`, `resolve_ci_workflow_owner()`
+
 ### `scpn_quantum_control.circuit_cutting_product`
 
 Fail-closed circuit-cutting product for large synchronisation workloads.
@@ -5659,11 +5667,11 @@ Architecture and Rustification map for differentiable-programming governance.
 
 Baseline scorecard governance for differentiable computing claims.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_baseline_scorecard.py) · Public symbols: **8**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_baseline_scorecard.py) · Public symbols: **12**
 
-**Classes:** `DifferentiableBaselineScorecardRow`, `DifferentiableBaselineScorecard`, `DifferentiableBaselineScorecardValidation`, `DifferentiablePromotionLanguageAudit`
+**Classes:** `DifferentiableBaselineScorecardRow`, `DifferentiableBaselineScorecard`, `DifferentiableBaselineScorecardValidation`, `DifferentiablePromotionLanguageAudit`, `QualificationSupportRow`, `ExcludedCapability`, `DifferentiableReleaseProfile`
 
-**Functions:** `run_differentiable_baseline_scorecard()`, `validate_differentiable_baseline_scorecard()`, `audit_differentiable_promotion_language()`, `render_differentiable_baseline_scorecard_markdown()`
+**Functions:** `run_differentiable_baseline_scorecard()`, `build_differentiable_release_profile()`, `validate_differentiable_baseline_scorecard()`, `audit_differentiable_promotion_language()`, `render_differentiable_baseline_scorecard_markdown()`
 
 ### `scpn_quantum_control.differentiable_batch_helpers`
 
@@ -6550,6 +6558,16 @@ Provider-neutral QPU compute request/result contracts.
 **Classes:** `QPUComputeRequest`, `QPUComputeResult`, `QPUNodeDescriptor`, `QPUStreamDelta`, `QPUFusionResult`
 
 **Functions:** `require_non_empty()`, `json_sha256()`, `counts_sha256()`, `fuse_compute_results()`
+
+### `scpn_quantum_control.qualification_status_projection`
+
+Project recorded domain qualification without adjudicating scientific claims.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/qualification_status_projection.py) · Public symbols: **3**
+
+**Classes:** `QualificationProjectionWire`, `QualificationProjection`
+
+**Functions:** `project_qualification_status()`
 
 ### `scpn_quantum_control.quantum_sync_challenge_oracle_product`
 

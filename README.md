@@ -121,9 +121,9 @@ claims only when the evidence exists.
 | Surface | Current inventory |
 |---|---:|
 | Package version | 1.1.0 |
-| Public API exports | 841 |
-| Python source modules | 737 |
-| Public Python classes | 1438 |
+| Public API exports | 842 |
+| Python source modules | 739 |
+| Public Python classes | 1443 |
 | Domain package families | 39 |
 | API documentation pages | 14 |
 | Rust PyO3 function bindings | 177 |
@@ -131,7 +131,7 @@ claims only when the evidence exists.
 | Notebook files | 109 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 1421 |
+| Python test files | 1426 |
 | Public documentation pages | 377 |
 | GitHub Actions workflows | 44 |
 

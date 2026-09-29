@@ -44,6 +44,20 @@
   distribution nor as a reasoned non-Python hook. `--list` prints the collected
   evidence. It runs in the hook set, the local preflight and static analysis.
 
+- `build_differentiable_release_profile()` composes the baseline scorecard with
+  source-bound domain qualification receipts
+  (`qualification_status_projection.project_qualification_status`). Forward,
+  derivative, composition and backend axes, source freshness, runtime
+  availability, exclusive CI ownership and the recorded scientific verdict are
+  reported separately; a signature, coverage figure or numerical pass never
+  promotes a scientific or hardware claim. The Studio scorecard bundle and its
+  CLI (`--qualification-receipt PATH SHA256`) emit these cases.
+- `ci_workflow_ownership` resolves each CI job to exactly one executable
+  workflow with duplicate-key refusal and checkout containment; the repository
+  CI inventory tool uses the same resolver.
+- `qualification-projection-quality` CI job: strict typing, NumPy docstrings and
+  exact 100% branch coverage for the qualification owners.
+
 ### Changed
 
 - The reproducibility record for `dla_truncated_tn()` now states that the
