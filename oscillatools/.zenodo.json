@@ -31,7 +31,7 @@
     },
     {
       "identifier": "https://pypi.org/project/oscillatools/",
-      "relation": "isAlternateIdentifier",
+      "relation": "isVariantFormOf",
       "scheme": "url"
     }
   ],

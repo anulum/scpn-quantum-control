@@ -4,6 +4,18 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+### Fixed
+
+- The Zenodo archive metadata in `.zenodo.json` and `oscillatools/.zenodo.json`
+  now uses relation types that Zenodo accepts: `isVariantFormOf` for the PyPI
+  distribution and `references` for scpn-fusion-core, in place of
+  `isAlternateIdentifier` and `isRelatedTo`. Zenodo rejected the previous
+  values, so the GitHub release integration created no archive version for
+  v1.0.0, v1.1.0 or v1.2.0. v1.2.0 was archived through the deposit API as
+  [10.5281/zenodo.23041094](https://doi.org/10.5281/zenodo.23041094).
+  `tests/test_zenodo_metadata.py` checks both files against the Zenodo
+  relation-type vocabulary.
+
 ## [1.2.0] - 2026-09-29
 
 ### Security

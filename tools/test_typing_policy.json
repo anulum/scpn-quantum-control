@@ -60,7 +60,8 @@
         "tests/test_serialization_surface_audit.py",
         "tests/test_stable_core_release_gate.py",
         "tests/test_synchronisation_benchmark_compare.py",
-        "tests/test_wheel_contents.py"
+        "tests/test_wheel_contents.py",
+        "tests/test_zenodo_metadata.py"
       ],
       "id": "repository_policy",
       "order": 0,

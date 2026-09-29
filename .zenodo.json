@@ -39,7 +39,7 @@
     },
     {
       "identifier": "https://pypi.org/project/scpn-quantum-control/",
-      "relation": "isAlternateIdentifier",
+      "relation": "isVariantFormOf",
       "scheme": "url"
     },
     {
@@ -49,7 +49,7 @@
     },
     {
       "identifier": "https://github.com/anulum/scpn-fusion-core",
-      "relation": "isRelatedTo",
+      "relation": "references",
       "scheme": "url"
     }
   ],
