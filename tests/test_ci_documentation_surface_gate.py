@@ -600,6 +600,7 @@ def test_ci_optional_runtime_locks_and_preview_rules_are_explicit() -> None:
             "kyma-v2-dynamics-quality",
             "kyma-dynamics-quality",
             "kyma-v2-coupling-quality",
+            "kyma-v3-quality",
             "nqs-ansatz-quality",
             "whole-program-ad-product-quality",
         },

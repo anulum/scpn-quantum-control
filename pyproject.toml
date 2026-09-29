@@ -461,10 +461,11 @@ omit = [
     "*/scpn_quantum_control/accel/jax_kuramoto.py",
     "*/scpn_quantum_control/accel/jax_kuramoto_delayed.py",
     "*/scpn_quantum_control/accel/jax_kuramoto_mpc.py",
-    # The KYMA toy-composition probe (v1 + v2) needs the optional [jax] extra, absent from the
+    # The KYMA composition probes (v1, v2, v3) need the optional [jax] extra, absent from the
     # pinned CI lane; its importorskip(jax)-guarded tests run locally. Covered by tests/test_kyma_*.py.
     "*/scpn_quantum_control/benchmarks/kyma/*.py",
     "*/scpn_quantum_control/benchmarks/kyma_v2/*.py",
+    "*/scpn_quantum_control/benchmarks/kyma_v3/*.py",
     "*/scpn_quantum_control/mitigation/mitiq_integration.py",
     # Quantum-persistent-homology hardware loops are validated by the
     # topological optimizer and hardware-topology tests. Live QPU branches
@@ -487,10 +488,11 @@ omit = [
     "*/scpn_quantum_control/accel/jax_kuramoto.py",
     "*/scpn_quantum_control/accel/jax_kuramoto_delayed.py",
     "*/scpn_quantum_control/accel/jax_kuramoto_mpc.py",
-    # The KYMA toy-composition probe (v1 + v2) needs the optional [jax] extra, absent from the
+    # The KYMA composition probes (v1, v2, v3) need the optional [jax] extra, absent from the
     # pinned CI lane; its importorskip(jax)-guarded tests run locally. Covered by tests/test_kyma_*.py.
     "*/scpn_quantum_control/benchmarks/kyma/*.py",
     "*/scpn_quantum_control/benchmarks/kyma_v2/*.py",
+    "*/scpn_quantum_control/benchmarks/kyma_v3/*.py",
     "*/scpn_quantum_control/mitigation/mitiq_integration.py",
     "*/scpn_quantum_control/analysis/quantum_persistent_homology.py",
     "*/scpn_quantum_control/forecasting/kuramoto_neural_operator.py",

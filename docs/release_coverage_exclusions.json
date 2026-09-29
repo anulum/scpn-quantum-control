@@ -96,6 +96,11 @@
       "path_glob": "src/scpn_quantum_control/benchmarks/kyma_v2/*.py",
       "reason": "The broad CPU-only release coverage lane omits the KYMA v2 package because it requires the optional JAX stack. A separate hash-pinned JAX owner now reports dynamics.py, task.py, and probe.py at exact branch coverage; the package-wide omit remains for the JAX model, teacher, coupling, design, and rigor surfaces outside that exact report.",
       "exercised_by": "ci-topology-evidence.yml kyma-v2-dynamics-quality installs the pinned JAX requirements, executes its direct v2 cohort, and enforces exact branch coverage for dynamics.py, task.py, and probe.py."
+    },
+    {
+      "path_glob": "src/scpn_quantum_control/benchmarks/kyma_v3/*.py",
+      "reason": "The broad CPU-only release coverage lane omits the KYMA v3 package because its substrate, baselines and probe require the optional JAX stack. A separate hash-pinned JAX owner reports every KYMA v3 source, including the NumPy-only task module, at exact branch coverage.",
+      "exercised_by": "ci-topology-evidence.yml kyma-v3-quality installs the pinned JAX requirements, executes tests/test_kyma_v3_*.py, and enforces exact branch coverage for every file in the package and scripts/run_kyma_v3_probe.py."
     }
   ]
 }

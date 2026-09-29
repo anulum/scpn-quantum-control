@@ -1267,7 +1267,7 @@
     "claim_ledger_path": "data/differentiable_phase_qnode/claim_ledger.json",
     "claim_ledger_sha256": "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
     "justified_exclusions_path": "docs/release_coverage_exclusions.json",
-    "justified_exclusions_sha256": "28afc4dde9e15eaa8e2868c603695f53daa91fbf72c55a50bc3e925e3aab7b91"
+    "justified_exclusions_sha256": "f1eca29179ecd7a0f07eeae602afa2691089824212beace2ec76253a0111d859"
   },
   "policy_sha256": "9af3ac7f4b30c8aedec2356e2fff7bd039532c4f2c1b1e599253793415633a8f",
   "schema_version": 1,
