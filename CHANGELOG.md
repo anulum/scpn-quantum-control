@@ -61,6 +61,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ### Changed
 
+- Three exploratory notebooks state what they show. Notebook 14 no longer
+  frames a surviving asymmetry as a publication-level result and records the
+  circuit-depth difference that notebook 39 found; notebook 45 presents noise
+  as purification as a simulator hypothesis; the Kaggle DLA-parity notebook
+  marks its SCPN interpretation as untested and reports a simulator fidelity
+  difference instead of a confirmed prediction.
 - `docs/preregistration.md` describes the procedure actually followed: the
   protocol is committed as `docs/campaigns/<campaign>_prereg_<date>.md` and
   pushed to the public remote before the first submission. No campaign has
