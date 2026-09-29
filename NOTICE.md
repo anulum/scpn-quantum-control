@@ -12,6 +12,11 @@ scpn-quantum-control is dual-licensed:
 | SaaS / cloud deployment | Commercial license | Contact us |
 | Embedded / on-device | Commercial license | Contact us |
 
+Unless you have obtained a commercial license, this software is provided
+under the terms of the AGPL-3.0-or-later license. The root `LICENSE` file
+carries the standard AGPL-3.0 text, with the project notice in its
+"How to Apply" section, so that licence scanners identify it.
+
 ## AGPL-3.0-or-later
 
 The full AGPL license text is in [LICENSES/AGPL-3.0-or-later.txt](LICENSES/AGPL-3.0-or-later.txt).

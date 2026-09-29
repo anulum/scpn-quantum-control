@@ -867,6 +867,13 @@
   submission and PCS claims remain refused. The co-design architecture uses
   ports over the existing policy-gated control-stack adapters.
 
+### Repository hygiene
+
+- Root `LICENSE` now carries the standard AGPL-3.0 text, with the project
+  copyright and commercial-licence notice in its "How to Apply" section, so
+  licence scanners identify the repository as AGPL-3.0; the former custom
+  notice reported as "Other". The dual-licensing terms remain in `NOTICE.md`.
+
 Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
