@@ -504,7 +504,9 @@ def render_competitive_baseline_refresh_markdown(
     """Render a reviewer-facing Markdown summary of baseline sources."""
     lines = [
         "<!--",
+        # REUSE-IgnoreStart
         "SPDX-License-Identifier: AGPL-3.0-or-later",
+        # REUSE-IgnoreEnd
         "Commercial license available",
         "© Concepts 1996–2026 Miroslav Šotek. All rights reserved.",
         "© Code 2020–2026 Miroslav Šotek. All rights reserved.",

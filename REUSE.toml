@@ -69,3 +69,61 @@ SPDX-License-Identifier = "AGPL-3.0-or-later"
 path = ["docs/_generated/capability_manifest.json", "docs/_generated/documentation_inventory.json"]
 SPDX-FileCopyrightText = "1996–2026 Miroslav Šotek"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+# Project-owned artefacts without an in-file header: measured and derived data,
+# results, figures, publication sources, benchmark baselines, generated docs,
+# fuzz corpora, lock files and repository configuration. A file that carries
+# its own SPDX header keeps it (default "closest" precedence).
+[[annotations]]
+path = [
+    "data/**",
+    "results/**",
+    "figures/**",
+    "tests/data/**",
+    "notebooks/**",
+    "paper/**",
+    "benchmarks/**",
+    "docs/**",
+    "examples/**",
+    "tools/**/*.json",
+    "src/**/*.json",
+    "oscillatools/docs/**",
+    "scpn_quantum_engine/**/Cargo.lock",
+    "scpn_quantum_engine/README.md",
+    "scpn_quantum_engine/fuzz/corpus/**",
+    "scpn_quantum_engine/**/.gitignore",
+    "studio-web/.gitignore",
+    "studio-web/package.json",
+    "studio-web/pnpm-lock.yaml",
+    "studio-web/tsconfig.json",
+    "studio-web/typedoc.json",
+    "scripts/**/*.sh",
+    ".anulum/**",
+    ".github/**",
+    ".githooks/**",
+    ".gitignore",
+    ".dockerignore",
+    ".editorconfig",
+    "Makefile",
+]
+SPDX-FileCopyrightText = "1996–2026 Miroslav Šotek"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+# Notebooks carry their header inside JSON cell strings and pinned requirement
+# files are digest-bound by environment evidence; both are declared here so the
+# REUSE parser does not read JSON or lock-file text as SPDX expressions.
+[[annotations]]
+path = ["notebooks/**/*.ipynb", "requirements*.txt", "requirements*.in"]
+precedence = "override"
+SPDX-FileCopyrightText = "1996–2026 Miroslav Šotek"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = [
+    "docs/assets/anulum_logo.png",
+    "docs/assets/anulum_logo_company.jpg",
+    "docs/assets/fortis_studio_logo.jpg",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "1996–2026 Miroslav Šotek"
+SPDX-License-Identifier = "LicenseRef-ANULUM-Trademarks"

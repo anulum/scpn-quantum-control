@@ -426,7 +426,9 @@ def _write_csv(path: Path, rows: Sequence[Mapping[str, Any]]) -> None:
 def _manifest(summary: Mapping[str, Any], *, json_path: Path, csv_path: Path) -> str:
     return "\n".join(
         [
+            # REUSE-IgnoreStart
             "<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->",
+            # REUSE-IgnoreEnd
             "<!-- Commercial license available -->",
             "<!-- © Concepts 1996-2026 Miroslav Sotek. All rights reserved. -->",
             "<!-- © Code 2020-2026 Miroslav Sotek. All rights reserved. -->",

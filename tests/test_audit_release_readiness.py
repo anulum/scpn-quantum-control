@@ -44,7 +44,9 @@ main = _audit_release_readiness.main
 
 def _canonical_header(description: str) -> list[str]:
     return [
+        # REUSE-IgnoreStart
         "# SPDX-License-Identifier: AGPL-3.0-or-later",
+        # REUSE-IgnoreEnd
         "# Commercial license available",
         "# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.",
         "# © Code 2020–2026 Miroslav Šotek. All rights reserved.",
@@ -86,7 +88,10 @@ def _write_version_carriers(root: Path, version: str = "0.9.7") -> None:
     (root / "LICENSE").write_text(
         "\n".join(
             [
-                "SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available",
+                # REUSE-IgnoreStart
+                "SPDX-License-Identifier: AGPL-3.0-or-later",
+                # REUSE-IgnoreEnd
+                "Commercial license available",
                 "AGPL-3.0-or-later",
                 "Commercial license available",
             ]

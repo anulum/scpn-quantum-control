@@ -451,7 +451,9 @@ def normalised_stable_core_json(data: dict[str, Any]) -> str:
 def stable_core_capability_markdown(data: dict[str, Any]) -> str:
     """Render a public backend capability matrix summary."""
     lines = [
+        # REUSE-IgnoreStart
         "<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->",
+        # REUSE-IgnoreEnd
         "<!-- Commercial license available -->",
         "<!-- (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved. -->",
         "<!-- (c) Code 2020-2026 Miroslav Sotek. All rights reserved. -->",

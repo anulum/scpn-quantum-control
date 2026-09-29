@@ -262,7 +262,9 @@ def _page_summary(text: str, fallback: str) -> str:
         if any(
             marker in compact
             for marker in (
+                # REUSE-IgnoreStart
                 "SPDX-License-Identifier:",
+                # REUSE-IgnoreEnd
                 "SPDX-FileCopyrightText:",
                 "Commercial license available",
             )
@@ -484,7 +486,9 @@ def build_inventory(repo: Path) -> tuple[dict[str, Any], dict[Path, str]]:
     module_docstring_gaps = sum(not record.documented for record in modules)
     symbol_docstring_gaps = sum(len(record.undocumented_symbols) for record in modules)
     inventory: dict[str, Any] = {
+        # REUSE-IgnoreStart
         "SPDX-License-Identifier": "AGPL-3.0-or-later",
+        # REUSE-IgnoreEnd
         "schema": SCHEMA,
         "generator": "tools/build_documentation_catalog.py",
         "counts": {

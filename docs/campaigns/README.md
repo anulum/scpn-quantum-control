@@ -1,8 +1,3 @@
-<!--
-SPDX-FileCopyrightText: 2026 Anulum
-SPDX-License-Identifier: MIT
--->
-
 # Campaign Artefacts
 
 This directory contains dated experiment planning, preregistration, readiness,

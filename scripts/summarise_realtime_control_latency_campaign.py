@@ -135,7 +135,9 @@ def _collect_rust_ibm_rows(path: Path) -> dict[str, Any]:
 
 def _render_markdown(summary: dict[str, Any]) -> str:
     lines = [
+        # REUSE-IgnoreStart
         "<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->",
+        # REUSE-IgnoreEnd
         "<!-- Commercial license available -->",
         "<!-- © Concepts 1996–2026 Miroslav Šotek. All rights reserved. -->",
         "<!-- © Code 2020–2026 Miroslav Šotek. All rights reserved. -->",

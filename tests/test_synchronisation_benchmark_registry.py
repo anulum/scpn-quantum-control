@@ -148,7 +148,9 @@ def test_markdown_generators_preserve_headers_and_instance_identity() -> None:
     )
 
     for rendered in (registry_markdown, ring_markdown, chain_markdown):
+        # REUSE-IgnoreStart
         assert rendered.startswith("<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->\n")
+        # REUSE-IgnoreEnd
         assert "<!-- Contact: www.anulum.li | protoscience@anulum.li -->" in rendered
     assert "# Kuramoto Ring n=4 Synchronisation Benchmark" in ring_markdown
     assert "# Kuramoto Chain n=8 Synchronisation Benchmark" in chain_markdown

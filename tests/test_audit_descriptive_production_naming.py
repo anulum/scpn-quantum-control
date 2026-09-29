@@ -53,7 +53,9 @@ def test_python_identifiers_descriptions_and_machine_names_fail(tmp_path: Path) 
         source,
         "\n".join(
             [
+                # REUSE-IgnoreStart
                 "# SPDX-License-Identifier: AGPL-3.0-or-later",
+                # REUSE-IgnoreEnd
                 "# Commercial license available",
                 "# copyright",
                 "# copyright",
@@ -102,7 +104,9 @@ def test_internal_traceability_comment_fails_on_public_source(tmp_path: Path) ->
         source,
         "\n".join(
             [
+                # REUSE-IgnoreStart
                 "# SPDX-License-Identifier: AGPL-3.0-or-later",
+                # REUSE-IgnoreEnd
                 "# Commercial license available",
                 "# copyright",
                 "# copyright",

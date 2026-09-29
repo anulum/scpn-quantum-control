@@ -77,7 +77,9 @@ HEADER_COMMENT_PREFIXES = {
     ".yml": "#",
 }
 CANONICAL_HEADER_LINES = (
+    # REUSE-IgnoreStart
     "SPDX-License-Identifier: AGPL-3.0-or-later",
+    # REUSE-IgnoreEnd
     "Commercial license available",
     "© Concepts 1996–2026 Miroslav Šotek. All rights reserved.",
     "© Code 2020–2026 Miroslav Šotek. All rights reserved.",

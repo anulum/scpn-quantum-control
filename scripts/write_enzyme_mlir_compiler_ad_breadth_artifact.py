@@ -317,7 +317,9 @@ def _render_audit_markdown(payload: Mapping[str, object]) -> str:
     toolchain = _mapping_field(payload, "toolchain")
     lines = [
         "<!--",
+        # REUSE-IgnoreStart
         "SPDX-License-Identifier: AGPL-3.0-or-later",
+        # REUSE-IgnoreEnd
         "Commercial license available",
         "© Concepts 1996–2026 Miroslav Šotek. All rights reserved.",
         "© Code 2020–2026 Miroslav Šotek. All rights reserved.",

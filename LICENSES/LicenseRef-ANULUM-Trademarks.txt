@@ -1,0 +1,11 @@
+ANULUM and Fortis Studio names and logos
+
+Copyright © 1996–2026 Miroslav Šotek. All rights reserved.
+
+The ANULUM and Fortis Studio names and logo image files in this repository
+identify their owner and are not licensed under the AGPL-3.0-or-later terms
+that cover the software, documentation and data. No licence to copy, modify
+or redistribute these marks is granted, except as part of an unmodified copy
+of this repository or its documentation, where they identify the project.
+
+Contact: protoscience@anulum.li | www.anulum.li

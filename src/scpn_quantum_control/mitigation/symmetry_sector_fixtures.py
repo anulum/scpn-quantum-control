@@ -145,7 +145,9 @@ def write_json(path: Path, data: dict[str, Any]) -> str:
 def fixture_markdown(data: dict[str, Any]) -> str:
     """Render a public fixture summary."""
     lines = [
+        # REUSE-IgnoreStart
         "<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->",
+        # REUSE-IgnoreEnd
         "<!-- Commercial license available -->",
         "<!-- (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved. -->",
         "<!-- (c) Code 2020-2026 Miroslav Sotek. All rights reserved. -->",

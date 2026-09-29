@@ -189,7 +189,9 @@ def test_docker_workflow_runs_bounded_checker_before_suite() -> None:
     )
     dockerfile = (ROOT / "Dockerfile").read_text()
     assert dockerfile.splitlines()[:2] == [
+        # REUSE-IgnoreStart
         "# SPDX-License-Identifier: AGPL-3.0-or-later",
+        # REUSE-IgnoreEnd
         "# Commercial license available",
     ]
     assert dockerfile.splitlines()[6] == "# SCPN Quantum Control — Container reproduction image"

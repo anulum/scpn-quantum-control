@@ -230,7 +230,9 @@ def stable_core_preflight_fixtures_markdown(payload: Mapping[str, Any]) -> str:
     """Return canonical Markdown text for stable-core preflight fixtures."""
     rows = _normalised_payload(payload)
     lines = [
+        # REUSE-IgnoreStart
         "<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->",
+        # REUSE-IgnoreEnd
         "<!-- Commercial license available -->",
         "<!-- (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved. -->",
         "<!-- (c) Code 2020-2026 Miroslav Sotek. All rights reserved. -->",

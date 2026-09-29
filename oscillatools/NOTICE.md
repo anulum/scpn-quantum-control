@@ -1,4 +1,5 @@
-SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+SPDX-License-Identifier: AGPL-3.0-or-later
+Commercial license available
 © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 © Code 2020–2026 Miroslav Šotek. All rights reserved.
 ORCID: 0009-0009-3560-0851
@@ -17,6 +18,11 @@ oscillatools is dual-licensed:
 | Internal/proprietary use | Commercial license | Contact us |
 | SaaS / cloud deployment | Commercial license | Contact us |
 | Embedded / on-device | Commercial license | Contact us |
+
+Unless you have obtained a commercial license, this software is provided
+under the terms of the AGPL-3.0-or-later license. The `LICENSE` file carries
+the standard AGPL-3.0 text, with the project notice in its "How to Apply"
+section, so that licence scanners identify it.
 
 ## AGPL-3.0-or-later
 

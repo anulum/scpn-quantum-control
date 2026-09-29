@@ -241,7 +241,9 @@ def _render_xdc(target_sku: TargetSku, sample_rate_hz: float) -> str:
     period_ns = max(ideal_period_ns, _BASELINE_PERIOD_NS)
     capped = ideal_period_ns < _BASELINE_PERIOD_NS
     lines = [
+        # REUSE-IgnoreStart
         "# SPDX-License-Identifier: AGPL-3.0-or-later",
+        # REUSE-IgnoreEnd
         "# Commercial license available",
         "# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.",
         "# © Code 2020–2026 Miroslav Šotek. All rights reserved.",

@@ -29,7 +29,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = REPO_ROOT / "data" / "synchronisation_benchmarks"
 DOC_PATH = REPO_ROOT / "docs" / "synchronisation_benchmark_kuramoto_ring_n4.md"
 _MARKDOWN_SPDX_HEADER = (
+    # REUSE-IgnoreStart
     "<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->",
+    # REUSE-IgnoreEnd
     "<!-- Commercial license available -->",
     "<!-- (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved. -->",
     "<!-- (c) Code 2020-2026 Miroslav Sotek. All rights reserved. -->",

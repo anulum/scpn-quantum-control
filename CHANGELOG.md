@@ -887,6 +887,17 @@
   copyright and commercial-licence notice in its "How to Apply" section, so
   licence scanners identify the repository as AGPL-3.0; the former custom
   notice reported as "Other". The dual-licensing terms remain in `NOTICE.md`.
+- The repository is REUSE 3.3 compliant (5,222 of 5,222 files carry licence
+  and copyright information). Header lines now use valid SPDX expressions
+  (`SPDX-License-Identifier: AGPL-3.0-or-later`, with `Commercial license
+  available` on its own line); `REUSE.toml` covers data, results, figures,
+  notebooks, publication sources, generated documentation, fuzz corpora, lock
+  files and repository configuration; SPDX text inside code strings is marked
+  with `REUSE-IgnoreStart`/`REUSE-IgnoreEnd`. Two documentation README files no
+  longer carry a stray MIT header. The ANULUM and Fortis Studio logo files are
+  declared under `LicenseRef-ANULUM-Trademarks` rather than the software licence.
+- `oscillatools/LICENSE` carries the standard AGPL-3.0 text with its own
+  project notice; `oscillatools/NOTICE.md` states the default licence.
 
 Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 

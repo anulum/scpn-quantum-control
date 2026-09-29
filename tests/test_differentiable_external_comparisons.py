@@ -327,7 +327,9 @@ def test_external_comparison_runs_configured_enzyme_runner(
         "\n".join(
             (
                 "#!/usr/bin/env python3",
+                # REUSE-IgnoreStart
                 "# SPDX-License-Identifier: AGPL-3.0-or-later",
+                # REUSE-IgnoreEnd
                 "# Commercial license available",
                 "# © Concepts 1996-2026 Miroslav Sotek. All rights reserved.",
                 "# © Code 2020-2026 Miroslav Sotek. All rights reserved.",
@@ -374,7 +376,9 @@ def test_external_comparison_runs_configured_catalyst_runner(
         "\n".join(
             (
                 "#!/usr/bin/env python3",
+                # REUSE-IgnoreStart
                 "# SPDX-License-Identifier: AGPL-3.0-or-later",
+                # REUSE-IgnoreEnd
                 "# Commercial license available",
                 "# © Concepts 1996-2026 Miroslav Sotek. All rights reserved.",
                 "# © Code 2020-2026 Miroslav Sotek. All rights reserved.",

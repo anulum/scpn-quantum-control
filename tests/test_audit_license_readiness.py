@@ -48,7 +48,9 @@ main = _audit_license_readiness.main
 
 def _canonical_header(prefix: str, description: str) -> list[str]:
     return [
+        # REUSE-IgnoreStart
         f"{prefix} SPDX-License-Identifier: AGPL-3.0-or-later",
+        # REUSE-IgnoreEnd
         f"{prefix} Commercial license available",
         f"{prefix} © Concepts 1996–2026 Miroslav Šotek. All rights reserved.",
         f"{prefix} © Code 2020–2026 Miroslav Šotek. All rights reserved.",
@@ -79,7 +81,10 @@ def _write_ready_project(root: Path) -> None:
     (root / "LICENSE").write_text(
         "\n".join(
             [
-                "SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available",
+                # REUSE-IgnoreStart
+                "SPDX-License-Identifier: AGPL-3.0-or-later",
+                # REUSE-IgnoreEnd
+                "Commercial license available",
                 "This project is dual-licensed:",
                 "GNU Affero General Public License v3.0 or later",
                 "Commercial license available for proprietary/SaaS use.",

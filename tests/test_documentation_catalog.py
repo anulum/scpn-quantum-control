@@ -135,7 +135,9 @@ def test_page_summary_ignores_embedded_licensing_headers() -> None:
     tool = _load_tool()
     text = (
         "# Guide\n\n"
+        # REUSE-IgnoreStart
         "SPDX-License-Identifier: AGPL-3.0-or-later\n\n"
+        # REUSE-IgnoreEnd
         "Commercial license available\n\n"
         "This is the useful guide summary.\n"
     )

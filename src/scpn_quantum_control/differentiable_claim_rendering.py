@@ -112,7 +112,9 @@ def render_claim_ledger_markdown(rows: Iterable[_ClaimRow]) -> str:
     """
     lines = [
         "<!--",
+        # REUSE-IgnoreStart
         "SPDX-License-Identifier: AGPL-3.0-or-later",
+        # REUSE-IgnoreEnd
         "Commercial license available",
         "© Concepts 1996–2026 Miroslav Šotek. All rights reserved.",
         "© Code 2020–2026 Miroslav Šotek. All rights reserved.",
@@ -170,7 +172,9 @@ def render_differentiable_support_surface_alignment_markdown(
     """
     lines = [
         "<!--",
+        # REUSE-IgnoreStart
         "SPDX-License-Identifier: AGPL-3.0-or-later",
+        # REUSE-IgnoreEnd
         "Commercial license available",
         "© Concepts 1996–2026 Miroslav Šotek. All rights reserved.",
         "© Code 2020–2026 Miroslav Šotek. All rights reserved.",
@@ -219,7 +223,9 @@ def render_public_claim_table(rows: Iterable[_ClaimRow]) -> str:
     """
     lines = [
         "<!--",
+        # REUSE-IgnoreStart
         "SPDX-License-Identifier: AGPL-3.0-or-later",
+        # REUSE-IgnoreEnd
         "Commercial license available",
         "© Concepts 1996–2026 Miroslav Šotek. All rights reserved.",
         "© Code 2020–2026 Miroslav Šotek. All rights reserved.",

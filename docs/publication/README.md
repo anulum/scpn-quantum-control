@@ -1,8 +1,3 @@
-<!--
-SPDX-FileCopyrightText: 2026 Anulum
-SPDX-License-Identifier: MIT
--->
-
 # Publication Operations
 
 This directory contains submission checklists, source-packaging notes, registry

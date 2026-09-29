@@ -653,7 +653,9 @@ def render_external_validation_environment_lock_markdown(
     """Render a reviewer-facing Markdown summary for the lockfile manifest."""
     lines = [
         "<!--",
+        # REUSE-IgnoreStart
         "SPDX-License-Identifier: AGPL-3.0-or-later",
+        # REUSE-IgnoreEnd
         "Commercial license available",
         "© Concepts 1996–2026 Miroslav Šotek. All rights reserved.",
         "© Code 2020–2026 Miroslav Šotek. All rights reserved.",
@@ -687,7 +689,9 @@ def render_external_validation_artifact_bundle_markdown(
     """Render a reviewer-facing Markdown summary for the artefact bundle."""
     lines = [
         "<!--",
+        # REUSE-IgnoreStart
         "SPDX-License-Identifier: AGPL-3.0-or-later",
+        # REUSE-IgnoreEnd
         "Commercial license available",
         "© Concepts 1996–2026 Miroslav Šotek. All rights reserved.",
         "© Code 2020–2026 Miroslav Šotek. All rights reserved.",

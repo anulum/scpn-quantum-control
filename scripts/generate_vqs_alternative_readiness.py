@@ -486,7 +486,9 @@ def _manifest(
 ) -> str:
     return "\n".join(
         [
+            # REUSE-IgnoreStart
             "<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->",
+            # REUSE-IgnoreEnd
             "<!-- Commercial license available -->",
             "<!-- (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved. -->",
             "<!-- (c) Code 2020-2026 Miroslav Sotek. All rights reserved. -->",
