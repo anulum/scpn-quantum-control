@@ -14,7 +14,8 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   v1.0.0, v1.1.0 or v1.2.0. v1.2.0 was archived through the deposit API as
   [10.5281/zenodo.23041094](https://doi.org/10.5281/zenodo.23041094).
   `tests/test_zenodo_metadata.py` checks both files against the Zenodo
-  relation-type vocabulary.
+  relation-type vocabulary; the Docker reproduction image ships both files so the
+  test runs there as well.
 
 ## [1.2.0] - 2026-09-29
 

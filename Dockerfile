@@ -68,6 +68,10 @@ COPY oscillatools/src/ oscillatools/src/
 # Hatchling metadata pair, including the README declared by its pyproject.
 COPY oscillatools/pyproject.toml oscillatools/pyproject.toml
 COPY oscillatools/README.md oscillatools/README.md
+# The archive-metadata test checks both Zenodo records against the Zenodo
+# relation-type vocabulary.
+COPY .zenodo.json ./
+COPY oscillatools/.zenodo.json oscillatools/.zenodo.json
 # Cross-language documentation contract tests inspect the pinned TypeDoc
 # command and version without installing the Studio frontend in this image.
 COPY studio-web/package.json studio-web/package.json
