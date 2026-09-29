@@ -10,13 +10,64 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-control/blob/main/CHANGELOG.md).
 
-## Unreleased
+## [Unreleased]
+
+## [1.2.0] - 2026-09-29
+
+### Security
+
+- The Studio web workspace resolves `brace-expansion` 5.0.9
+  (GHSA-rgw5-rvv9-x895).
+
+### Added
+
+- Certified quantum signal processing phase synthesis
+  (`phase.qsp_phases`) with residual, supremum-error and completion
+  certificates, plus Jacobi-Anger targets for QSVT Hamiltonian simulation.
+- `scpn-provider-certification`: an offline, credential-free certification of
+  the publicly claimed HAL provider matrix against eight criteria.
+- Source-bound qualification: `build_differentiable_release_profile()` reports
+  forward, derivative, composition and backend axes, source freshness, runtime
+  availability, exclusive CI ownership and the recorded scientific verdict
+  separately; the Studio scorecard bundle emits the same cases. Engineering
+  passes never promote a scientific or hardware claim.
+- Repository-wide tool-version alignment check across hooks, pins, ranges,
+  workflow inputs and setup commands.
 
 ### Changed
 
+- Internal work-item codes are replaced by descriptive names across modules,
+  public symbols, serialised keys, evidence identifiers and CI labels; direct
+  consumers of the former names must migrate.
 - Topology-kernel deterministic evidence now uses the version-2 descriptive
   support ledger. Version-1 payloads, non-canonical support rows, claim-boundary
   drift, and content-digest drift are rejected without compatibility aliases.
+- NumPy-convention documentation and exact quality gates completed for more
+  than fifty public modules (hardware experiments, DLA topology, KYMA dynamics,
+  QPU result packs, Studio surfaces and others).
+- The preregistration page states the procedure actually followed: protocols
+  are committed and pushed before the first submission; no campaign has been
+  registered with a third-party registry.
+
+### Fixed
+
+- Provider and HAL boundaries: device-bound IQM compilation, reported device and
+  shot count for asynchronous IBM submissions, single provider crossing per job,
+  job-handle resolution for Qiskit Runtime, AWS Braket, Azure, qBraid and
+  Strangeworks, and responses bound to the requested job.
+- Counts and results: measurement mapping preserved under zero-noise folding,
+  readout counts placed by label position, large integer counts and exact shot
+  totals preserved, and logical-wire bitstring replay.
+- The binary MPC tracking cost is evaluated on the vector residual rather than
+  collapsed norms.
+- Stricter validation of stable-core v2 model fields, analog execution-plan
+  unit triples and variational free-energy Gaussian parameters.
+
+### Repository hygiene
+
+- The root `LICENSE` carries the standard AGPL-3.0 text, so licence scanners
+  identify the repository; dual-licensing terms stay in `NOTICE.md`.
+- The repository is REUSE 3.3 compliant (5,222 of 5,222 files).
 
 ## [1.1.0] - 2026-07-29
 

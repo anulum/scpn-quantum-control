@@ -1359,6 +1359,12 @@ explicit QPU-time estimate before submission.
   `0.9.6`; the current pyOpenSci issue template also needs author attestations
   and a fresh documentation/release-gate audit. The May readiness note was
   updated with these live distinctions. No review issue was opened.
+  Status 2026-09-29: the Zenodo sync blocker is resolved. A metadata edit
+  left open since 2026-05-06 had prevented every new version; it was
+  discarded, and the only archived record is now labelled with the version
+  and licence of its actual file (0.6.2, MIT). The next GitHub release
+  archives the current version under the same concept DOI. Author
+  attestations and the issue itself remain open.
 - [x] **pyOpenSci review preparation.** Completed 2026-05-06:
   `docs/publication/pyopensci_submission_readiness_2026-05-06.md` records the
   package scope, unsupported claims, metadata gate, reviewer evidence,

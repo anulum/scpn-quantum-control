@@ -334,6 +334,35 @@ Before tagging:
 12. Push the commit and wait for CI before creating a release tag. The tag
     workflow re-runs the Wheel content gate against the publication artifacts.
 
+## 1.2.0 qualification, provider certification and licence-hygiene scope
+
+The `1.2.0` minor release packages the work since `1.1.0`: source-bound
+qualification projection and the differentiable release profile, certified
+QSP phase synthesis, offline provider-matrix certification, repository-wide
+tool-version alignment, descriptive naming in place of internal work-item
+codes, NumPy-convention documentation across more than fifty public modules,
+provider/HAL and count-handling fixes, and licence hygiene (standard AGPL-3.0
+text in `LICENSE`, REUSE 3.3 compliance).
+
+This release does not claim broad quantum advantage, device execution beyond
+recorded hardware rows, or scientific promotion from engineering passes.
+Hardware result rows keep their existing custody and claim status.
+
+Release-specific gates are:
+
+- all version carriers, generated capability surfaces, the Studio manifest and
+  both changelogs agree on `1.2.0`;
+- the complete test suite and release-readiness checks pass on the remote CI
+  runners for the exact release commit; the local workstation runs scoped
+  checks only;
+- built wheel and sdist identity and contents pass the Wheel content gate
+  before tagging, and the tag workflow repeats it on the publication artefacts;
+- `main` is pushed and every workflow for the exact head is green before the
+  `v1.2.0` tag and GitHub release are created;
+- the GitHub release creates a new version under the existing Zenodo concept
+  DOI `10.5281/zenodo.18821929`, and the archived version, licence and files
+  are checked against the release after publication.
+
 ## 1.1.0 evidence-governed product and documentation scope
 
 The `1.1.0` minor release packages the post-1.0 product, differentiable,

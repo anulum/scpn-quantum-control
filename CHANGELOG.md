@@ -4,6 +4,8 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-09-29
+
 ### Security
 
 - Override the transitive `brace-expansion` resolution in the Studio web
@@ -23,7 +25,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   that cannot be certified raises `QSPSynthesisError`. Jacobi-Anger helpers
   build the `cos(tau x)` and `sin(tau x)` targets used for QSVT Hamiltonian
   simulation.
-
 - `scpn-provider-certification` and
   `scpn_quantum_control.hardware.provider_certification` certify the publicly
   claimed HAL provider matrix. Eight criteria are evaluated per declared
@@ -35,7 +36,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   documentation row and focused suite exist, and a backend claimed publicly
   without an implementation blocks the gate. The command reads no credentials,
   contacts no provider and submits no job.
-
 - `tools/check_toolchain_pin_alignment.py` refuses a tool version that
   disagrees between any two declarations in the repository. It collects
   pre-commit hook revisions, `requirements*.txt` pins, `pyproject.toml`
@@ -45,7 +45,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   and a remote hook repository classified neither as a mirrored Python
   distribution nor as a reasoned non-Python hook. `--list` prints the collected
   evidence. It runs in the hook set, the local preflight and static analysis.
-
 - `build_differentiable_release_profile()` composes the baseline scorecard with
   source-bound domain qualification receipts
   (`qualification_status_projection.project_qualification_status`). Forward,
@@ -77,205 +76,67 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   deterministic evidence and added a preflight/CI audit that rejects future
   task-code leakage into production naming. Direct consumers of the former
   task-coded Python or serialized names must migrate to the descriptive names.
-
 - The reproducibility record for `dla_truncated_tn()` now states that the
   capability is not achievable as named. `analysis/dla_parity_theorem.py`
   gives `dim(DLA) = 2^(2N-1) - 2` for the heterogeneous XY Hamiltonian, so the
   dynamical Lie algebra is exponential and there is no small algebra to
   truncate to. The route keeps refusing to run, and a bond-dimension-truncated
   tensor-network alternative is recorded in the roadmap as a scope decision.
-
 - `qsp_phase_angles()` returns certified phase angles for the degree-`d` cosine
   polynomial instead of raising. The angles realise the Chebyshev polynomial
   `T_d`; `allow_initial_guess=True` still returns the published Newton starting
   point, which carries no certificate.
-
 - The pre-commit `ruff` hook moves from `v0.15.18` to `v0.16.4`, the version the
   CI requirement files pin, so the hook and CI run one ruff generation.
-
 - The HAL adapter-suite requirement is derived from the declared descriptors
   instead of a frozen list of sixteen filenames.
-
-### Fixed
-
-- Reject inputs that are not Gaussian parameters in the variational free-energy
-  KL divergence, and compute it through Cholesky factors. A negative-definite
-  covariance previously returned a negative divergence, which is impossible by
-  definition, because the sign from `slogdet` was discarded; an asymmetric
-  matrix was accepted as a covariance; a singular covariance leaked a solver
-  error out of the public function; and a non-finite mean produced `NaN`. Means
-  and covariances are now validated as finite, matching, symmetric and positive
-  definite, the solves go through the Cholesky factor instead of an explicit
-  inverse, and the log-determinants carry no separate sign. The ridge added to a
-  precision matrix before inversion is a named, documented constant rather than
-  a silent correction.
-
-- Keep IQM compilation bound to the device that will run the circuit. A failed
-  targeted transpilation fell back to compiling with no backend at all, so a
-  circuit with no coupling map, basis gates or qubit layout could still be
-  submitted; and a single run resolved the backend twice, once for compilation
-  and once for submission, so the two could differ. Compilation now targets one
-  resolved backend, that same backend is submitted to, an uncompilable circuit
-  raises `IQMTargetCompilationError` before submission, and the result records
-  which device it was compiled for.
-
-- Report the device and shot count an asynchronous IBM submission actually used.
-  A named backend that failed to resolve was quietly replaced by the least-busy
-  device, and a shot request above the runtime's per-job limit was silently
-  reduced, with neither recorded anywhere on the result — so a caller could not
-  tell which machine ran the work or how many shots backed the statistics. An
-  unresolvable named backend now raises `BackendSubstitutionError`; substitution
-  is available as an explicit opt-in and is recorded; the shot cap is reported;
-  and every submission returns its requested and effective device and shots.
-
-- Cross the provider boundary once per asynchronously submitted job. Awaiting a
-  submitted batch previously re-ran the whole submission on every call, so two
-  sequential awaits or a concurrent gather issued that many provider
-  submissions. The wrapper now holds a single in-flight submission task shared
-  by all awaiters, a cancelled awaiter no longer orphans or duplicates it, and a
-  failed submission is recorded as ambiguous and re-raised rather than retried,
-  since the provider may already hold the work. The state is readable through
-  the new `submission_state` and `submission_error` properties.
-
-- Preserve the measurement mapping when folding circuits for zero-noise
-  extrapolation. Folding previously rebuilt the circuit and called
-  `measure_all()`, which widened a partial readout to every qubit, replaced
-  named classical registers with a single generated one, reset a permuted
-  qubit-to-clbit map to the identity, dropped trailing barriers and discarded
-  the global phase — so the mitigated circuit could measure a different
-  observable than the one submitted. The trailing readout block is now
-  re-attached at its original positions and the input's registers, bits, name,
-  metadata and global phase are reused. The recorded `gate_fold_circuit`
-  performance figure is marked stale pending an isolated-core re-measurement.
-
-- Evaluate the binary MPC tracking cost on the vector residual
-  `u_t * (B @ ones) - target` instead of collapsing it to `||B||` and
-  `||target||`. The norm-only surrogate discarded the target's sign and its
-  direction relative to the actuation matrix, so a sign-flipped target produced
-  an identical cost landscape and the optimiser could select the opposite
-  action. Corrected identically in the Python fallback, the Rust kernel and the
-  QAOA Ising mapping, whose diagonal now equals the enumerated cost. The
-  recorded `brute_mpc` performance figure is marked stale pending an
-  isolated-core re-measurement.
-
-- Place readout counts at the position their label occupies in the supplied
-  label order. A permuted or partial order previously resolved each outcome by
-  its numeric bitstring value, silently mis-placing probabilities and raising an
-  index error for a label subset. Repeated and empty label orders are now
-  refused as ambiguous, and `bitstring_index` resolves against the supplied
-  labels. The canonical big-endian order, which every internal caller uses, is
-  unchanged.
-
-- Inventory declared provider routes without contacting a provider, keyed by
-  provider, broker, device, modality and observation date. Direct and
-  broker-hosted access to the same provider stay separate rows. Each operation
-  records source-declared and dated observed support in separate fields;
-  unknown support is preserved rather than narrowed, a positive claim requires
-  its source or its dated conformance owner, and an observation contradicting an
-  explicit non-declaration is refused.
-
-- Declare the analog execution-unit classifier as a public module symbol instead
-  of importing a private name across a module boundary. Admission outcomes,
-  refusal messages and the recorded unit contract and status are unchanged.
-
-- Validate analog execution-plan unit triples and record their versioned status;
-  prevent approval from promoting uncalibrated design units to SDK construction
-  or execution. Unsupported unit conversions now refuse without changing payloads.
-
-- Replay computational-basis bitstring counts through an explicit logical-wire
-  permutation in the existing Fisher API, retaining versioned raw-count mapping
-  evidence and refusing partial or ambiguous measurements. Existing vector
-  serialization is unchanged.
-
-- Preserve large integer count records and exact shot totals in computational-
-  basis Fisher replay without signed-64-bit overflow; document the count-vector
-  wire order and floating-point uncertainty boundary.
-
-- Resolve Qiskit Runtime, AWS Braket, Azure, qBraid and Strangeworks job handles
-  against stored submission settings before provider or cached-result access;
-  prevent recovered-handle annotations from altering shot checks or retained
-  cancellation metadata.
-
-- Reject workload metadata that shadows adapter-owned submission settings or
-  provenance before provider execution; retain application annotations and
-  adapter-produced job/result metadata.
-
-- Bind HAL submission, result and cancellation responses to the requested
-  job identities; reject substituted handles without rewriting result evidence
-  or treating lifecycle status changes as identity drift.
-
-- Reject missing or unexpected stable-core v2 model fields, including nested
-  experiment models, and reject contradictory serialized qubit counts at both
-  envelope boundaries. Preserve direct mapping-constructor compatibility.
-
-- Preserve gradient-result snapshots with owned read-only arrays and copied
-  parameter metadata; expose primitive-contract lowering metadata as a copied
-  read-only mapping so later caller or registry edits cannot change a snapshot.
-
 - Complete shared Kuramoto competitive-type NumPy documentation and direct-test
   documentation, and extend the competitive-baseline owner with deterministic
   problem/row execution, strict typing, and exact joint line/branch coverage.
-
 - Complete schema-A Studio manifest NumPy documentation and installed-package
   fallback coverage, and extend the Studio executive owner with real manifest,
   digest, platform-conformance, strict typing, and exact joint line/branch
   enforcement.
-
 - Complete reproducible comparison NumPy documentation and extend the
   competitive-baseline owner with a real small-statevector public run,
   deterministic boundary execution, strict typing, and exact joint line/branch
   coverage while preserving the explicit no-advantage claim.
-
 - Complete native LLVM/JIT execution-evidence lifecycle documentation, add
   fail-closed public validation coverage, and extend the MLIR whole-program
   native owner with real evidence capture plus exact joint line/branch
   coverage for compilation and evidence custody.
-
 - Complete native gradient-descent optimizer NumPy documentation and extend
   the natural-gradient quality owner across the differentiable optimizer
   baseline with strict typing, real bounded/finite-difference/parameter-shift
   execution, and exact joint line/branch coverage.
-
 - Complete differentiable stochastic-estimator NumPy documentation and extend
   the stochastic-estimators product owner with strict typing, real SPSA,
   score-function, and shot-allocation execution, plus exact joint line/branch
   coverage for the product and its explicitly composed ambient estimator.
-
 - Complete empirical-Fisher NumPy documentation and extend the existing
   differentiable sparse-derivatives quality owner with strict typing, real
   Fisher-vector/CG/covariance execution, and exact joint line/branch coverage
   for both directly connected derivative modules.
-
 - Complete closed-loop analysis lifecycle and direct-test NumPy documentation,
   close the direct-test strict-typing debt, and extend the existing publication
   quality owner with real response/latency execution plus exact joint
   line/branch coverage for both connected closed-loop modules.
-
 - Complete the UltraScale HLS producer NumPy documentation contract and extend
   the existing host-cosimulation quality owner with the producer source,
   Python-fallback execution, and exact joint line/branch coverage while
   preserving the explicit no-synthesis and no-board boundary.
-
 - Complete provider-gradient lifecycle and direct-test NumPy documentation,
   add fail-closed validation/provenance/planner branch coverage, and extend the
   existing gradient-backend quality owner with real joint execution plus exact
   line/branch coverage for both connected phase modules.
-
 - Complete the NumPy documentation contract for cloud-native manifest
   validation and its direct tests, and extend the existing deployment-product
   quality owner with real joint execution plus exact line/branch coverage for
   both the product boundary and ambient manifest generator.
-
 - Complete the preview NumPy docstring contract for the base quantum-reservoir
   feature, matrix, and ridge surfaces and their direct tests, and extend the
   existing QRC-baseline owner with real joint execution plus exact line/branch
   coverage for both connected application modules.
-
-- Fix forward the current CI and Docker failures by refreshing deterministic
-  coverage and dependency-environment evidence, registering the notebook
-  curriculum hardening owner, and building the locked native quantum engine in
-  a digest-pinned Docker builder stage before running extension-dependent tests.
-
 - 2026-08-30 — Application dataset-catalog documentation and exact quality:
   completed the preview-inclusive NumPy docstring contract across packaged
   benchmark privacy custody and extended the existing application-honesty
@@ -283,7 +144,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   source coverage in preflight and CI. Descriptor identity, provenance and
   privacy matching, publication-safe refusal, defensive hashes, public APIs,
   and curated-public claim boundaries are unchanged.
-
 - 2026-08-30 — Hamiltonian-learning documentation and exact quality:
   completed the preview-inclusive NumPy docstring and strict typing contracts
   across the bounded inverse-fit owner and its direct tests, and wired
@@ -291,7 +151,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   into preflight and CI. Correlator construction, coupling reconstruction,
   optimization budgets, public APIs, and explicit in-sample/non-hardware
   claim boundaries are unchanged.
-
 - 2026-08-30 — DLA parity-witness documentation and exact quality: completed
   the preview-inclusive NumPy docstring contract across the parity witness and
   its complete shared observable integration surface, and wired permanent
@@ -299,7 +158,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   into preflight and CI. Parity classification, balanced negative controls,
   physical asymmetry bounds, public APIs, and bounded witness claims are
   unchanged.
-
 - 2026-08-30 — Control StructuredAnsatz documentation and exact quality:
   completed the preview-inclusive NumPy docstring and strict typing contracts
   across the physical Kuramoto-XY circuit owner and its direct tests, and
@@ -307,14 +165,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   preflight and CI. Validation, coupling scaling, Trotter construction,
   concrete FIM feedback, copy semantics, public APIs, and bounded circuit
   claims are unchanged.
-
 - 2026-08-30 — XY-compile recompute-artifact documentation and exact quality:
   completed the preview-inclusive NumPy docstring and strict typing contracts,
   added real module-entrypoint execution, and wired permanent committed-unit
   verification plus exact source coverage into preflight and CI. Paper-27
   inputs, tolerances, packing, digests, artifact bytes, public APIs, browser
   recompute semantics, and bounded non-physical claims are unchanged.
-
 - 2026-08-29 — TN/MPS crossover-admission documentation quality: completed
   the preview-inclusive NumPy docstring contract across the immutable
   admission-schema owner and wired permanent strict typing, real report/row/
@@ -322,7 +178,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   into preflight and CI. Schema validation, target sizes, provenance fields,
   public APIs, deterministic export, owner-gated compute, and bounded
   non-advantage claims are unchanged.
-
 - 2026-08-28 — Layout-relaxation experiment documentation quality: completed
   the preview-inclusive NumPy docstring contract across the preregistered
   experiment, deterministic owner tests, and stubbed CLI tests, and wired
@@ -330,7 +185,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   documentation, and exact source coverage into preflight and CI. Instance
   construction, matched budgets, aggregation, host grading, verdicts, public
   APIs, and research-only non-promotion claims are unchanged.
-
 - 2026-08-28 — Result-pack seal documentation and exact quality: completed the
   preview-inclusive NumPy docstring and strict typing contracts across the
   attestation-envelope owner and direct test surface, and wired permanent real
@@ -338,7 +192,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   preflight and CI. Provenance, provider attestation, honesty axes, digests,
   ML-DSA test verification, refusal behavior, public APIs, and bounded
   non-reproducible hardware-evidence claims are unchanged.
-
 - 2026-08-28 — Sparse-Hamiltonian documentation and exact quality: completed
   the preview-inclusive NumPy docstring and strict typing contracts across the
   sparse XY/sector/eigensolver owner and both direct test surfaces, documented
@@ -346,7 +199,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   sparse execution plus exact source coverage into preflight and CI. Hermitian
   canonicalisation, CSC numerics, Rust fallback, resource refusal, ARPACK,
   sector ordering, public APIs, and bounded sparse-memory claims are unchanged.
-
 - 2026-08-28 — NQS-ansatz documentation and exact quality: completed the
   preview-inclusive NumPy docstring and strict typing contracts across the
   exact-enumeration RBM owner and its direct tests, and wired permanent real
@@ -354,14 +206,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   amplitudes, seeded parameters, finite-difference optimisation, dense-budget
   refusal, bridge propagation, public APIs, and bounded `n<=12` claims are
   unchanged.
-
 - 2026-08-28 — Phase-artifact documentation and strict-quality closure:
   completed the preview-inclusive NumPy docstring and strict typing contracts
   across the portable artifact owner and all three direct test surfaces, and
   wired permanent real round-trip/fuzz execution plus exact source coverage
   into preflight and CI. Validation, coercion, serialization, immutable
   custody, public APIs, and bounded interoperability claims are unchanged.
-
 - 2026-08-28 — KYMA v2 coupling documentation and exact quality: completed the
   preview-inclusive NumPy docstring contract across base/readout/gated coupling
   assembly and its direct tests, added explicit-partner public-path coverage,
@@ -369,14 +219,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   documentation, and exact source coverage into preflight and CI. Coupling
   arithmetic, masks, shapes, held-out selection, public APIs, and bounded
   mechanism claims are unchanged.
-
 - 2026-08-28 — Josephson magnitude-study documentation quality: completed the
   preview-inclusive NumPy docstring contract across the fail-closed design
   owner, and wired permanent strict typing, real offline study/export
   execution, complete owner documentation, and exact source coverage into
   preflight and CI. Candidate metrics, validation, evidence gates, artifact
   rendering, public APIs, and bounded non-promotion claims are unchanged.
-
 - 2026-08-28 — Studio coupling-invariant documentation and exact quality:
   completed the preview-inclusive NumPy docstring contract across the schema-B
   evidence-bundle owner, added real public module execution, and wired
@@ -384,7 +232,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   coverage into preflight and CI. Source membership, digests, ordering,
   admission, DLA separation, public APIs, and bounded-model claims are
   unchanged.
-
 - 2026-08-28 — Topology-kernel classifier documentation and typing quality:
   completed the preview-inclusive NumPy docstring contract across immutable
   model custody, fitting/evaluation, and direct tests; repaired precise test
@@ -392,7 +239,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   classifier execution, complete owner documentation, and exact source
   coverage into preflight and CI. Digests, alignment, binary labels, ridge
   arithmetic, tie handling, public APIs, and bounded claims are unchanged.
-
 - 2026-08-28 — QRC-baseline documentation quality: completed the
   preview-inclusive NumPy docstring contract across the deterministic
   classical-ESN and matched QRC comparison owner, and wired permanent strict
@@ -400,7 +246,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   exact source coverage into preflight and CI. Validation, state evolution,
   ridge arithmetic, feature matching, held-out evaluation, immutable results,
   public APIs, and bounded comparison claims are unchanged.
-
 - 2026-08-28 — Kuramoto layout-optimiser documentation quality: completed the
   preview-inclusive NumPy docstring contract across the discrete search owner
   and its direct tests, and wired permanent strict typing, offline optimiser
@@ -409,7 +254,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   neighbourhood construction, memoisation, convergence, seed non-regression,
   routed-depth integration, public APIs, and hardware/provider boundaries are
   unchanged.
-
 - 2026-08-28 — Closed-loop publication-run documentation quality: completed
   the preview-inclusive NumPy docstring contract across the software-in-the-loop
   artifact owner and both direct test surfaces, and wired permanent strict
@@ -418,7 +262,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   measurement, deterministic template export, host grading, provenance,
   fail-closed claim labels, public APIs, and no-hardware/provider boundaries
   are unchanged.
-
 - 2026-08-28 — MLIR whole-program native documentation and exact quality:
   documented all validation magic methods, removed direct-test layout drift,
   eliminated a duplicate unreachable replay-signature check, and added real
@@ -427,7 +270,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   and exact source coverage are wired into preflight and CI. Lowering,
   numerical parity, cache behavior, public APIs, failure ordering, and bounded
   local-native claims are unchanged.
-
 - 2026-08-28 — Differentiable exact-mode documentation quality: completed the
   preview-inclusive NumPy docstring contract across the forward-mode dual and
   reverse-mode tape wrappers and their owning tests, and wired permanent
@@ -435,7 +277,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   exact source coverage into preflight and CI. Scalar AD numerics, parameter
   metadata, trainable masks, evaluation accounting, public APIs, and bounded
   exact-local differentiation claims are unchanged.
-
 - 2026-08-28 — Gradient-backend planner documentation quality: completed the
   preview-inclusive NumPy docstring contract across capability declarations,
   method explanations, shot policy, and owning planner/finite-shot tests; and
@@ -443,7 +284,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   documentation, and exact source coverage into preflight and CI. Backend
   normalisation, method selection, accounting, safe fallbacks, uncertainty,
   public APIs, and hardware fail-closed boundaries are unchanged.
-
 - 2026-08-28 — Typed phase-result documentation quality: documented immutable
   post-initialisation and legacy mapping magic methods, removed direct-test
   docstring-layout drift, and wired permanent strict typing, connected
@@ -451,7 +291,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   source coverage into preflight and CI. Copy-on-construction, read-only array
   custody, immutable metadata, mapping order, public APIs, and validation
   semantics are unchanged.
-
 - 2026-08-28 — Hardware experiment-dynamics documentation quality: completed
   the preview-inclusive NumPy docstring contract across the four- and
   eight-oscillator, second-order, and coupling-sweep protocols; replaced an
@@ -460,7 +299,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   typing, offline sampler execution, complete owner documentation, and exact
   source coverage into preflight and CI. Circuit arithmetic, batching, result
   schemas, public APIs, and hardware-approval boundaries are unchanged.
-
 - 2026-08-28 — Synchronisation-uncertainty documentation quality: completed
   the preview-inclusive NumPy docstring contract across finite-shot analytic
   and seeded-bootstrap intervals, and wired permanent strict typing, connected
@@ -468,7 +306,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   coverage into preflight and CI. Statistical arithmetic, deterministic seed
   custody, public APIs, and the explicit Z-magnetisation-proxy rather than
   XY-Kuramoto claim boundary are unchanged.
-
 - 2026-08-28 — MPS-evolution documentation quality: completed the
   preview-inclusive NumPy docstring contract across real quimb DMRG/TEBD and
   its owning tests; added genuine zero-onsite-field and exhausted-sweep DMRG
@@ -477,7 +314,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   Tensor-network arithmetic, nearest-neighbour truncation custody, public APIs,
   optional-dependency behavior, and bounded local-simulation claims are
   unchanged.
-
 - 2026-08-28 — Kuramoto-variant documentation quality: documented immutable
   higher-order, monitored, and PT-symmetric specifications plus their direct
   and mixed-owner contract tests; added explicit missing-native-export fallback
@@ -485,7 +321,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   complete owning documentation, and exact source coverage into preflight and
   CI. Integration arithmetic, diagnostics, facade dispatch, public APIs, and
   bounded classical-simulation claims are unchanged.
-
 - 2026-08-28 — QPU result-pack documentation quality: completed the
   preview-inclusive NumPy docstring contract across the attestation-bound unit,
   provider-neutral bridge, and owning tests; and wired permanent strict typing,
@@ -493,7 +328,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   documentation, and exact source coverage into preflight and CI. Schema,
   provenance, digest binding, fail-closed presentation/sealing, public APIs,
   and the no-provider-authenticity-verification boundary are unchanged.
-
 - 2026-08-28 — Quantum-QMI compatibility documentation quality: completed the
   preview-inclusive NumPy docstring contract across entropy, partial trace,
   bipartite QMI, compatibility result/scan surfaces, and owning tests; replaced
@@ -502,7 +336,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   and exact source coverage into preflight and CI. Numerical semantics, legacy
   field names, public APIs, and explicit non-IIT/non-consciousness claims are
   unchanged.
-
 - 2026-08-28 — Koopman-analysis documentation quality: completed the
   preview-inclusive NumPy docstring contract across finite local closure,
   Python/native generation, dense spectra, Hermitian projection, and owning
@@ -510,7 +343,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   complete documentation, and exact source coverage into preflight and CI.
   Closure arithmetic, allocation caps, public APIs, and explicit
   non-equivalence/non-advantage claims are unchanged.
-
 - 2026-08-28 — Quantum-neuromorphic bridge documentation quality: completed
   the preview-inclusive NumPy docstring contract across LIF, exponential STDP,
   recurrent coupling, topology projection, quantum-circuit construction, and
@@ -518,7 +350,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   complete documentation, and exact source coverage into preflight and CI.
   Spike-domain temporal state, numerical behaviour, public APIs, simulator
   claims, and the no-neuromorphic-hardware boundary are unchanged.
-
 - 2026-08-28 — Magnetisation-sector documentation quality: completed the
   preview-inclusive NumPy docstring contract across sector construction,
   eigensolvers, level-spacing analysis, and owning tests, and wired permanent
@@ -526,14 +357,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   and exact source coverage into preflight and CI. U(1) sector arithmetic,
   dense-budget refusal, accelerator fallback, public APIs, and bounded local
   simulation claims are unchanged.
-
 - 2026-08-28 — DLA topology-projection documentation quality: completed the
   NumPy docstring contract across fixed-active-set projection JVP/VJP custody,
   support classification, and validation, and wired permanent strict typing,
   connected execution, complete documentation, and exact source coverage into
   preflight and CI. Projection arithmetic, branch refusal, immutable custody,
   public APIs, and bounded topology-control claims are unchanged.
-
 - 2026-08-28 — DLA topology-objective documentation quality: completed the
   NumPy docstring contract across parity-protected evaluation and quadratic
   objective validation, and wired permanent strict typing, connected
@@ -541,7 +370,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   coverage into preflight and CI. Objective decomposition, exact complex
   gradients, leakage penalty, immutable array custody, public APIs, and bounded
   synthetic-control claims are unchanged.
-
 - 2026-08-28 — HLS cosimulation-evidence documentation quality: completed
   the NumPy docstring contract across host compiler identity, deterministic
   bit-true cosimulation, handoff evidence, CLI custody, UltraScale bundle and
@@ -550,7 +378,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   coverage into preflight and CI. Generated HLS sources, fixed-point
   arithmetic, hashes, handoff schemas, public APIs, and the no-synthesis/
   no-board boundary are unchanged.
-
 - 2026-08-28 — QPU compute-type documentation quality: documented every
   request, result, node, stream, and fusion validator and the connected
   provider-neutral tests; removed a denominator guard dominated by positive
@@ -559,7 +386,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   and CI. Serialization, hashing, routing vocabularies, local fusion
   arithmetic, public APIs, and no-provider/no-hardware boundaries are
   unchanged.
-
 - 2026-08-28 — Program AD adjoint documentation quality: completed the NumPy
   docstring contract across adjoint result access, generated replay, public
   gradients, and their connected tests; added exhaustive public replay
@@ -567,14 +393,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   strict typing, connected execution, documentation, and exact source
   coverage into preflight and CI. Reverse-mode arithmetic, stabilized-IR
   binding, public APIs, and fail-closed replay semantics are unchanged.
-
 - 2026-08-28 — Differentiable sparse-derivative documentation quality:
   completed the NumPy docstring contract across sparse Jacobian, Hessian, and
   empirical-Fisher conversion and direct tests, and wired permanent strict
   typing, connected execution, documentation, and exact source coverage into
   preflight and CI. Sparse arithmetic, metadata, public APIs, and derivative
   provenance are unchanged.
-
 - 2026-08-28 — Differentiable parameter-shift documentation quality:
   completed the NumPy docstring contract across scalar, batched,
   multi-frequency, and finite-shot parameter-shift transforms and their direct
@@ -582,7 +406,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   documentation, and exact source coverage into preflight and CI. Gradient
   arithmetic, provenance, failure policy, public APIs, and bounded stochastic
   claims are unchanged.
-
 - 2026-08-28 — Hardware OpenPulse-control documentation quality: completed
   the NumPy docstring contract across provider-neutral schedules, calibration
   dossiers, Rabi estimation, and direct tests; added exhaustive public
@@ -590,7 +413,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   typing, connected execution, documentation, and exact source coverage into
   preflight and CI. Pulse arithmetic, no-submit boundaries, public APIs, and
   provider/hardware behavior are unchanged.
-
 - 2026-08-28 — Phase pulse-shaping documentation quality: completed the NumPy
   docstring contract across ICI and hypergeometric pulse shaping and its
   connected fallback tests, covered invalid public grids, explicit pulse
@@ -598,14 +420,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   typing, connected execution, documentation, and exact source coverage into
   preflight and CI. Pulse arithmetic, accelerator selection, public APIs, and
   no-provider/no-hardware boundaries are unchanged.
-
 - 2026-08-28 — Hardware experiment-control documentation quality: completed
   the NumPy docstring contract across the offline QAOA/UPDE/Bell/correlator/
   QBER owner and wired permanent strict typing, connected execution,
   documentation, and exact source coverage into preflight and CI. Experiment
   arithmetic, runner/simulator injection, serialization, public APIs, and
   provider/spend boundaries are unchanged.
-
 - 2026-08-28 — Studio executive differentiate documentation quality:
   completed the NumPy docstring contract across the read-only rational-program
   handler and its direct tests, and wired permanent strict typing, connected
@@ -613,7 +433,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   Request normalization, effect-IR, backend admission, gradient arithmetic,
   verification/refusal behavior, reproduction scripts, public APIs, and
   bounded claims are unchanged.
-
 - 2026-08-28 — Finite-size scaling documentation quality: completed the
   NumPy docstring contract across the local dense gap/extrapolation owner and
   its direct tests, covered non-integer system-size refusal, and wired
@@ -621,7 +440,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   source coverage into preflight and CI. Dense-budget ordering, Hamiltonian
   and gap arithmetic, validation, fit diagnostics, public APIs, and bounded
   local-extrapolation claims are unchanged.
-
 - 2026-08-28 — Gradient-plan explanation artefact documentation quality:
   completed the NumPy docstring contract, covered the package module entry
   point, and wired permanent strict typing, committed JSON/Markdown drift,
@@ -629,7 +447,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   and CI. Schema, identifiers, paths, audit admission, supported/blocked
   contrast, explanation ordering, method classification, rendering, public
   APIs, and bounded fail-closed claims are unchanged.
-
 - 2026-08-28 — Transform support-matrix artefact documentation quality:
   completed the NumPy docstring contract, closed the remaining executable CLI
   branches, and wired permanent strict typing, committed JSON/Markdown drift,
@@ -637,7 +454,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   preflight and CI. Schema, identifiers, paths, fail-closed audit admission,
   row order/content, tolerance semantics, rendering, federation status, public
   APIs, and bounded claims are unchanged.
-
 - 2026-08-28 — Hardware experiment VQE documentation quality: completed the
   NumPy docstring contract across the statevector/injected-runner experiment
   owner and its connected offline tests, and wired permanent strict typing,
@@ -645,28 +461,24 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   and CI. Hamiltonian and ansatz construction, seeded COBYLA arithmetic,
   reference comparisons, estimator injection, landscape statistics, exports,
   public APIs, and simulator/provider boundaries are unchanged.
-
 - 2026-08-28 — Fusion-core FRC bridge documentation quality: completed the
   NumPy docstring contract across surrogate calibration and its offline tests,
   and wired permanent strict typing, connected execution, documentation, and
   exact source coverage into preflight and CI. Calibration arithmetic,
   retained defaults, immutable provenance, serialization, lazy imports, path
   cleanup, public APIs, and no-provider/no-actuation boundaries are unchanged.
-
 - 2026-08-28 — DLA topology schema documentation quality: completed the NumPy
   docstring contract for immutable derivative-support records and wired
   permanent strict typing, connected execution, documentation, and exact
   source coverage into preflight and CI. Enums, fields, normalisation, blocker
   ordering, digest serialization, refusal semantics, public APIs, and finite
   synthetic/no-actuation boundaries are unchanged.
-
 - 2026-08-28 — DLA topology optimiser documentation quality: completed the
   NumPy docstring contract for the parity-projected optimiser and wired
   permanent strict typing, connected execution, documentation, and exact
   source coverage into preflight and CI. Projected-gradient arithmetic,
   backtracking, strict decrease, immutable custody, trace digests, public APIs,
   and finite synthetic/no-actuation boundaries are unchanged.
-
 - 2026-08-28 — Differentiable audit-contract documentation quality: completed
   the NumPy docstring contract across immutable audit evidence and its facade
   tests, added exhaustive invariant and serialization coverage, and wired
@@ -674,91 +486,78 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   source coverage into preflight and CI. Record identities, fields, defensive
   array custody, validation order, facade aliases, numerics, and bounded claim
   semantics are unchanged.
-
 - 2026-08-28 — Legacy KYMA dynamics documentation quality: completed the
   NumPy docstring contract across Kuramoto dynamics and dynamics/model/probe
   tests, and wired permanent strict typing, connected JAX execution,
   documentation, and exact source coverage into preflight and CI. Dynamics,
   gradients, consumers, public APIs, and mechanism-only boundaries are
   unchanged.
-
 - 2026-08-28 — KYMA v2 dynamics documentation quality: completed the NumPy
   docstring contract across per-trial Kuramoto dynamics and its direct/teacher
   tests, and wired permanent strict typing, connected JAX execution,
   documentation, and exact source coverage into preflight and CI. Coupling,
   RK4, phase wrapping, readouts, public APIs, and mechanism-only boundaries are
   unchanged.
-
 - 2026-08-28 — ML-DSA honesty-seal documentation quality: completed the NumPy
   docstring contract for the signer/verifier and wired permanent strict typing,
   connected seal/result-pack execution, documentation, and exact source
   coverage into preflight and CI. Public APIs, deterministic vectors, domain
   separation, native secret custody and destruction, fail-closed behaviour,
   and research-assurance boundaries are unchanged.
-
 - 2026-08-28 — Topology-kernel evidence documentation quality: completed the
   NumPy docstring contract across deterministic evidence custody and its
   fail-closed tests, and wired permanent strict typing, documentation, and
   exact source-coverage gates into preflight and CI. Frozen evidence bytes,
   metrics, controls, support ledger, public symbols, and scientific claim
   boundaries are unchanged.
-
 - 2026-08-28 — DLA topology parity documentation quality: completed the NumPy
   docstring contract for the parity projector and wired permanent strict
   typing, documentation, connected execution, and exact source-coverage gates
   into preflight and CI. Sector projection, immutable custody, size and input
   refusals, JVP/VJP identities, leakage gradients, public symbols, and
   scientific claim boundaries are unchanged.
-
 - 2026-08-28 — Provider-neutral HAL documentation quality: completed the
   NumPy docstring contract for the HAL and its direct offline tests, and wired
   permanent strict typing, documentation, and exact source-coverage gates into
   preflight and CI. Profiles, immutable custody, approval gating, validation,
   deterministic simulation, injected-adapter behavior, public symbols, and
   provider non-execution boundaries are unchanged.
-
 - 2026-08-28 — Cross-shot feedback-loop documentation quality: completed the
   NumPy docstring contract across the offline runtime and its simulator/double
   tests, and wired permanent strict typing, documentation, and exact
   source-coverage gates into preflight and CI. Budgets, approval refusal,
   latency SLA, observer/controller updates, seed provenance, public symbols,
   and the provider-side dynamic-circuit boundary are unchanged.
-
 - 2026-08-28 — Topology-kernel schema documentation quality: completed the
   NumPy docstring contract for all immutable records and their fail-closed
   tests, and wired permanent strict typing, documentation, and exact
   source-coverage gates into preflight and CI. Fields, defensive copies,
   digest and identifier validation, resource limits, accuracy invariants,
   failure ordering, and scientific claim boundaries are unchanged.
-
 - 2026-08-28 — QNode circuit-contract documentation quality: documented every
   public validation constructor in the NumPy/stdlib contract leaf, added
   exhaustive public invariant and serialization tests, and wired permanent
   strict typing, documentation, and exact source-coverage gates into preflight
   and CI. Record identities and fields, registries, validation order,
   normalization, facade aliases, numerics, and claim boundaries are unchanged.
-
 - 2026-08-28 — Variational-metric documentation quality: completed the NumPy
   docstring contract for the analytic metric/force owner and its real
   Qiskit-backed tests, and wired permanent strict typing, documentation, and
   exact source-coverage gates into preflight and CI. The exact π-shift state
   derivative, McLachlan metric, force numerics, ansatz validation, public
   symbols, and scientific claim boundaries are unchanged.
-
 - 2026-08-28 — Whole-program frontend contract quality: completed the NumPy
   docstring contract for all nine immutable bytecode/source frontend records,
   added exhaustive public invariant tests, and wired permanent strict typing,
   documentation, and exact source-coverage gates into preflight and CI. Public
   record identities, serialized fields, validation order, compiler semantics,
   and claim boundaries are unchanged.
-
 - 2026-08-28 — Chimera-control documentation quality: completed the NumPy
   docstring contract across the finite synthetic Chimera package and all seven
   owning test surfaces, and added permanent strict typing, documentation, and
   exact package-coverage gates to preflight and CI. Public symbols, schemas,
   numerical behaviour, evidence custody, and scientific claim boundaries are
   unchanged.
-
 - 2026-08-28 — Zeroizing ML-DSA signing custody: added a bit-true native
   ML-DSA-65 keygen/signing backend whose expanded secret key, decoded secret,
   and designated work buffers are owned by Rust `zeroize` guards, never
@@ -770,14 +569,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   stale-engine, and seal integration are tested.
   This is memory-lifetime hardening, not a constant-time, side-channel-resistant,
   or FIPS-140 validation claim.
-
 - 2026-08-26 — Stable-core descriptive contract hardening:
   advanced the product registry and model envelope schemas to v2 without
   aliases, removed internal planning codes from the public product narrative,
   and made registry and envelope drift fail closed. Public Python symbols,
   contract identifiers, model fields, and deterministic demo values are
   unchanged.
-
 - 2026-08-26 — Preregistered layout-relaxation naming: replaced internal
   experiment-stage labels in the runtime result, executable runner, committed
   benchmark artifact, and public benchmark/API descriptions with domain terms.
@@ -800,104 +597,110 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   tests, evidence, campaign documentation, and manuscript with stable
   responsibility-descriptive terminology. Campaign identifiers and scientific
   results remain unchanged.
-- 2026-07-29 — DLA and topology-constrained differentiable control:
-  added exact finite parity-sector JVP/VJP and leakage gradients, a projected
-  synthetic optimisation trace, fixed-active-set topology-ledger JVP/VJP rules,
-  explicit non-smooth/discrete support reports, existing projected-optimiser
-  composition evidence, notebook 51, and deterministic evidence custody. Full-
-  DLA classification, controllability, persistent-homology derivatives, active
-  budget rescaling, positive connectivity thresholds, error correction,
-  hardware, provider, QPU, deployment, and application claims are refused;
-  Optional QGNN wiring is explicitly descoped because no typed parity/topology
-  consumer exists.
-- 2026-07-29 — Chimera and multiscale synchronisation control:
-  added immutable nested hierarchy/target contracts, exact finite two-
-  population Kuramoto–Sakaguchi regimes, multiscale Shanahan observables,
-  composed analytic cluster targets, an unapplied backtracking phase proposal,
-  topology-ledger projection custody, notebook 50, and deterministic evidence.
-  Thermodynamic-limit, biological/EEG, stability, controllability, provider,
-  QPU, hardware, deployment, and market-efficacy claims are refused; optional
-  Optional challenge-family F5–F6 catalogue rows are explicitly descoped.
-- 2026-07-29 — Multimodal forecasting under partial observation:
-  added immutable simulation-only series/graph/event/mask custody, disjoint
-  synthetic train/calibration/test trajectories, a training-only missingness-
-  aware ridge baseline, exact known-simulator Kuramoto-residual scoring,
-  empirical split residual intervals, no-submit active-sensing composition, an
-  unapplied controller proposal, and deterministic digest-bound evidence. Real
-  EEG/clinical/grid/SCADA/plasma/plant, hidden-state inference, provider,
-  hardware, safety, control-performance, and deployment claims are refused.
-- 2026-07-29 — Quantum reservoir and differentiable surrogate product:
-  hardened exact-statevector allocation/input boundaries; added disjoint
-  synthetic QRC versus matched-feature ESN certificates, Gaussian-RBF value and
-  analytic-gradient fidelity gates, exact local validation of an unapplied
-  co-design proposal, and digest-bound deterministic evidence. The classification
-  row favours QRC while the forecast row strongly favours ESN; no general,
-  hardware, provider, control, optimisation-advantage, or deployment claim is
-  made.
-- 2026-07-29 — Adaptive FIM next-experiment proposals: upgraded the
-  point-estimate lambda rule with count-bound Wilson intervals, minimum-shot and
-  bounded-delta gates, complete hardware-safe paired-arm dry-run approval,
-  co-design observer/unapplied-proposal ports, synthetic calibration controls,
-  and digest-bound offline replay of committed repeated-FIM counts. Hardware,
-  closed-loop efficacy, FIM protection, optimal-policy, and advantage claims
-  remain refused.
-- 2026-07-28 — Bounded entangled initial-state coherence study:
-  replaced the `atan2(0, 0) -> R=1` phase proxy with visibility-aware local
-  phase order, added a separate transverse-exchange-coherence diagnostic,
-  population-matched dephased controls, a separable attribution control, and
-  digest-bound deterministic evidence. Bell/W differences and the GHZ
-  negative control pass, but the product control also differs; therefore
-  entanglement-specific, shifted-critical-coupling, spontaneous-synchronisation,
-  advantage, provider, and hardware claims are refused.
-- 2026-07-28 — Bounded ENAQT optimal-noise evidence: replaced the
-  degenerate phase proxy with finite-horizon target-sink population in a
-  trace-preserving single-excitation Lindblad model. One disordered-chain
-  interior optimum and two negative controls replay deterministically. The
-  forbidden ENAQT--BKT--consciousness leap is removed; universal, biological,
-  synchronisation, hardware, advantage, and noise-setpoint claims are refused.
-- 2026-07-28 — Bounded L16 director: three frozen exact-simulator scenarios,
-  deterministic replay, conservative `continue/adjust/halt` safety mapping,
-  closed-loop execution-policy gating, governed local/permanent-boundary routes,
-  and digest-bound evidence. The legacy weighted score remains a heuristic;
-  Lyapunov, PCS, stability, causal, autonomous-actuation, provider, and QPU
-  claims are refused.
-- 2026-07-28 — QNN/QGNN/QSNN convergence examples:
-  `scpn_quantum_control.ml_examples` composes the existing phase-QNN, QGNN,
-  and QSNN trainers into three frozen deterministic convergence certificates,
-  a complete framework-status matrix, and digest-bound JSON/Markdown evidence.
-  JAX and PyTorch QNN agreement ran locally; TensorFlow was explicitly
-  unavailable. Provider, QPU, neuromorphic-hardware, arbitrary-architecture,
-  generalisation, SOTA, and production-convergence claims remain excluded.
-- 2026-07-28 — Quantum-classical co-design loop:
-  `scpn_quantum_control.codesign` composes exact phase objectives, governed
-  planner explanations, optional bounded open-system evidence, existing
-  control-stack ports, and active-sensing/identity/geometry observers behind
-  deterministic latency and safety policies.
-  Digest-bound replay and functional non-isolated evidence are included;
-  hardware, provider submission, and operational plasma control remain refused.
-- 2026-07-25 — SSGF quantum-in-the-loop geometry gradient:
-  `scpn_quantum_control.ssgf_geometry_gradient_product` freezes the ambient
-  SSGF surface, cross-certifies `C=1-R`, checks finite-difference refinement and
-  phase periodicity, and emits bounded functional outer-cycle evidence. The
-  governed route matrix now supports latent finite difference and permanently
-  refuses direct latent parameter-shift through the nonlinear softplus geometry map.
-- 2026-07-25 — Identity / robustness control observers:
-  `scpn_quantum_control.identity_observer_product` adapts real robustness,
-  coherence-budget, and optional CHSH metrics into explicit control-stack safety
-  decisions. Threshold violations hold; missing or invalid requested witnesses
-  abort; identity-key and universal-identity claims remain out of scope.
-- 2026-07-25 — Active sensing / experimental design product:
-  `scpn_quantum_control.active_sensing_product` composes synthetic Gaussian
-  information-gain ranking with hardware-safe shot-budget enforcement, the real
-  analytic ansatz/pulse evidence harness, and co-design observer telemetry. Hardware-adaptive
-  requests fail before evaluation; NV 20 T remains research-only.
-- 2026-07-25 — Complete compose-existing-control-stack adapters:
-  `scpn_quantum_control.control_stack_runtime_adapters` now runs ambient realtime
-  feedback, abstract QAOA-MPC, and quantum/classical partition paths only after a
-  concrete `ClosedLoopExecutionPolicy` authorises local simulation. Pulse
-  execution fails closed to the optional pulse-execution adapter; hardware
-  submission and PCS claims remain refused. The co-design architecture uses
-  ports over the existing policy-gated control-stack adapters.
+
+### Fixed
+
+- Reject inputs that are not Gaussian parameters in the variational free-energy
+  KL divergence, and compute it through Cholesky factors. A negative-definite
+  covariance previously returned a negative divergence, which is impossible by
+  definition, because the sign from `slogdet` was discarded; an asymmetric
+  matrix was accepted as a covariance; a singular covariance leaked a solver
+  error out of the public function; and a non-finite mean produced `NaN`. Means
+  and covariances are now validated as finite, matching, symmetric and positive
+  definite, the solves go through the Cholesky factor instead of an explicit
+  inverse, and the log-determinants carry no separate sign. The ridge added to a
+  precision matrix before inversion is a named, documented constant rather than
+  a silent correction.
+- Keep IQM compilation bound to the device that will run the circuit. A failed
+  targeted transpilation fell back to compiling with no backend at all, so a
+  circuit with no coupling map, basis gates or qubit layout could still be
+  submitted; and a single run resolved the backend twice, once for compilation
+  and once for submission, so the two could differ. Compilation now targets one
+  resolved backend, that same backend is submitted to, an uncompilable circuit
+  raises `IQMTargetCompilationError` before submission, and the result records
+  which device it was compiled for.
+- Report the device and shot count an asynchronous IBM submission actually used.
+  A named backend that failed to resolve was quietly replaced by the least-busy
+  device, and a shot request above the runtime's per-job limit was silently
+  reduced, with neither recorded anywhere on the result — so a caller could not
+  tell which machine ran the work or how many shots backed the statistics. An
+  unresolvable named backend now raises `BackendSubstitutionError`; substitution
+  is available as an explicit opt-in and is recorded; the shot cap is reported;
+  and every submission returns its requested and effective device and shots.
+- Cross the provider boundary once per asynchronously submitted job. Awaiting a
+  submitted batch previously re-ran the whole submission on every call, so two
+  sequential awaits or a concurrent gather issued that many provider
+  submissions. The wrapper now holds a single in-flight submission task shared
+  by all awaiters, a cancelled awaiter no longer orphans or duplicates it, and a
+  failed submission is recorded as ambiguous and re-raised rather than retried,
+  since the provider may already hold the work. The state is readable through
+  the new `submission_state` and `submission_error` properties.
+- Preserve the measurement mapping when folding circuits for zero-noise
+  extrapolation. Folding previously rebuilt the circuit and called
+  `measure_all()`, which widened a partial readout to every qubit, replaced
+  named classical registers with a single generated one, reset a permuted
+  qubit-to-clbit map to the identity, dropped trailing barriers and discarded
+  the global phase — so the mitigated circuit could measure a different
+  observable than the one submitted. The trailing readout block is now
+  re-attached at its original positions and the input's registers, bits, name,
+  metadata and global phase are reused. The recorded `gate_fold_circuit`
+  performance figure is marked stale pending an isolated-core re-measurement.
+- Evaluate the binary MPC tracking cost on the vector residual
+  `u_t * (B @ ones) - target` instead of collapsing it to `||B||` and
+  `||target||`. The norm-only surrogate discarded the target's sign and its
+  direction relative to the actuation matrix, so a sign-flipped target produced
+  an identical cost landscape and the optimiser could select the opposite
+  action. Corrected identically in the Python fallback, the Rust kernel and the
+  QAOA Ising mapping, whose diagonal now equals the enumerated cost. The
+  recorded `brute_mpc` performance figure is marked stale pending an
+  isolated-core re-measurement.
+- Place readout counts at the position their label occupies in the supplied
+  label order. A permuted or partial order previously resolved each outcome by
+  its numeric bitstring value, silently mis-placing probabilities and raising an
+  index error for a label subset. Repeated and empty label orders are now
+  refused as ambiguous, and `bitstring_index` resolves against the supplied
+  labels. The canonical big-endian order, which every internal caller uses, is
+  unchanged.
+- Inventory declared provider routes without contacting a provider, keyed by
+  provider, broker, device, modality and observation date. Direct and
+  broker-hosted access to the same provider stay separate rows. Each operation
+  records source-declared and dated observed support in separate fields;
+  unknown support is preserved rather than narrowed, a positive claim requires
+  its source or its dated conformance owner, and an observation contradicting an
+  explicit non-declaration is refused.
+- Declare the analog execution-unit classifier as a public module symbol instead
+  of importing a private name across a module boundary. Admission outcomes,
+  refusal messages and the recorded unit contract and status are unchanged.
+- Validate analog execution-plan unit triples and record their versioned status;
+  prevent approval from promoting uncalibrated design units to SDK construction
+  or execution. Unsupported unit conversions now refuse without changing payloads.
+- Replay computational-basis bitstring counts through an explicit logical-wire
+  permutation in the existing Fisher API, retaining versioned raw-count mapping
+  evidence and refusing partial or ambiguous measurements. Existing vector
+  serialization is unchanged.
+- Preserve large integer count records and exact shot totals in computational-
+  basis Fisher replay without signed-64-bit overflow; document the count-vector
+  wire order and floating-point uncertainty boundary.
+- Resolve Qiskit Runtime, AWS Braket, Azure, qBraid and Strangeworks job handles
+  against stored submission settings before provider or cached-result access;
+  prevent recovered-handle annotations from altering shot checks or retained
+  cancellation metadata.
+- Reject workload metadata that shadows adapter-owned submission settings or
+  provenance before provider execution; retain application annotations and
+  adapter-produced job/result metadata.
+- Bind HAL submission, result and cancellation responses to the requested
+  job identities; reject substituted handles without rewriting result evidence
+  or treating lifecycle status changes as identity drift.
+- Reject missing or unexpected stable-core v2 model fields, including nested
+  experiment models, and reject contradictory serialized qubit counts at both
+  envelope boundaries. Preserve direct mapping-constructor compatibility.
+- Preserve gradient-result snapshots with owned read-only arrays and copied
+  parameter metadata; expose primitive-contract lowering metadata as a copied
+  read-only mapping so later caller or registry edits cannot change a snapshot.
+- Fix forward the current CI and Docker failures by refreshing deterministic
+  coverage and dependency-environment evidence, registering the notebook
+  curriculum hardening owner, and building the locked native quantum engine in
+  a digest-pinned Docker builder stage before running extension-dependent tests.
 
 ### Repository hygiene
 
@@ -1257,6 +1060,107 @@ control, or broad quantum-advantage claim is promoted by this release.
   `RESULTS_SUMMARY.md` (finding #17 + Campaign 2 table), `docs/hardware_status_ledger.md`,
   `docs/count_integrity_incident_2026-04.md` and `docs/notebooks.md` are updated to
   reflect the recovery.
+
+### Dated development log shipped in the 1.1.0 source tree
+
+- 2026-07-29 — DLA and topology-constrained differentiable control:
+  added exact finite parity-sector JVP/VJP and leakage gradients, a projected
+  synthetic optimisation trace, fixed-active-set topology-ledger JVP/VJP rules,
+  explicit non-smooth/discrete support reports, existing projected-optimiser
+  composition evidence, notebook 51, and deterministic evidence custody. Full-
+  DLA classification, controllability, persistent-homology derivatives, active
+  budget rescaling, positive connectivity thresholds, error correction,
+  hardware, provider, QPU, deployment, and application claims are refused;
+  Optional QGNN wiring is explicitly descoped because no typed parity/topology
+  consumer exists.
+- 2026-07-29 — Chimera and multiscale synchronisation control:
+  added immutable nested hierarchy/target contracts, exact finite two-
+  population Kuramoto–Sakaguchi regimes, multiscale Shanahan observables,
+  composed analytic cluster targets, an unapplied backtracking phase proposal,
+  topology-ledger projection custody, notebook 50, and deterministic evidence.
+  Thermodynamic-limit, biological/EEG, stability, controllability, provider,
+  QPU, hardware, deployment, and market-efficacy claims are refused; optional
+  Optional challenge-family F5–F6 catalogue rows are explicitly descoped.
+- 2026-07-29 — Multimodal forecasting under partial observation:
+  added immutable simulation-only series/graph/event/mask custody, disjoint
+  synthetic train/calibration/test trajectories, a training-only missingness-
+  aware ridge baseline, exact known-simulator Kuramoto-residual scoring,
+  empirical split residual intervals, no-submit active-sensing composition, an
+  unapplied controller proposal, and deterministic digest-bound evidence. Real
+  EEG/clinical/grid/SCADA/plasma/plant, hidden-state inference, provider,
+  hardware, safety, control-performance, and deployment claims are refused.
+- 2026-07-29 — Quantum reservoir and differentiable surrogate product:
+  hardened exact-statevector allocation/input boundaries; added disjoint
+  synthetic QRC versus matched-feature ESN certificates, Gaussian-RBF value and
+  analytic-gradient fidelity gates, exact local validation of an unapplied
+  co-design proposal, and digest-bound deterministic evidence. The classification
+  row favours QRC while the forecast row strongly favours ESN; no general,
+  hardware, provider, control, optimisation-advantage, or deployment claim is
+  made.
+- 2026-07-29 — Adaptive FIM next-experiment proposals: upgraded the
+  point-estimate lambda rule with count-bound Wilson intervals, minimum-shot and
+  bounded-delta gates, complete hardware-safe paired-arm dry-run approval,
+  co-design observer/unapplied-proposal ports, synthetic calibration controls,
+  and digest-bound offline replay of committed repeated-FIM counts. Hardware,
+  closed-loop efficacy, FIM protection, optimal-policy, and advantage claims
+  remain refused.
+- 2026-07-28 — Bounded entangled initial-state coherence study:
+  replaced the `atan2(0, 0) -> R=1` phase proxy with visibility-aware local
+  phase order, added a separate transverse-exchange-coherence diagnostic,
+  population-matched dephased controls, a separable attribution control, and
+  digest-bound deterministic evidence. Bell/W differences and the GHZ
+  negative control pass, but the product control also differs; therefore
+  entanglement-specific, shifted-critical-coupling, spontaneous-synchronisation,
+  advantage, provider, and hardware claims are refused.
+- 2026-07-28 — Bounded ENAQT optimal-noise evidence: replaced the
+  degenerate phase proxy with finite-horizon target-sink population in a
+  trace-preserving single-excitation Lindblad model. One disordered-chain
+  interior optimum and two negative controls replay deterministically. The
+  forbidden ENAQT--BKT--consciousness leap is removed; universal, biological,
+  synchronisation, hardware, advantage, and noise-setpoint claims are refused.
+- 2026-07-28 — Bounded L16 director: three frozen exact-simulator scenarios,
+  deterministic replay, conservative `continue/adjust/halt` safety mapping,
+  closed-loop execution-policy gating, governed local/permanent-boundary routes,
+  and digest-bound evidence. The legacy weighted score remains a heuristic;
+  Lyapunov, PCS, stability, causal, autonomous-actuation, provider, and QPU
+  claims are refused.
+- 2026-07-28 — QNN/QGNN/QSNN convergence examples:
+  `scpn_quantum_control.ml_examples` composes the existing phase-QNN, QGNN,
+  and QSNN trainers into three frozen deterministic convergence certificates,
+  a complete framework-status matrix, and digest-bound JSON/Markdown evidence.
+  JAX and PyTorch QNN agreement ran locally; TensorFlow was explicitly
+  unavailable. Provider, QPU, neuromorphic-hardware, arbitrary-architecture,
+  generalisation, SOTA, and production-convergence claims remain excluded.
+- 2026-07-28 — Quantum-classical co-design loop:
+  `scpn_quantum_control.codesign` composes exact phase objectives, governed
+  planner explanations, optional bounded open-system evidence, existing
+  control-stack ports, and active-sensing/identity/geometry observers behind
+  deterministic latency and safety policies.
+  Digest-bound replay and functional non-isolated evidence are included;
+  hardware, provider submission, and operational plasma control remain refused.
+- 2026-07-25 — SSGF quantum-in-the-loop geometry gradient:
+  `scpn_quantum_control.ssgf_geometry_gradient_product` freezes the ambient
+  SSGF surface, cross-certifies `C=1-R`, checks finite-difference refinement and
+  phase periodicity, and emits bounded functional outer-cycle evidence. The
+  governed route matrix now supports latent finite difference and permanently
+  refuses direct latent parameter-shift through the nonlinear softplus geometry map.
+- 2026-07-25 — Identity / robustness control observers:
+  `scpn_quantum_control.identity_observer_product` adapts real robustness,
+  coherence-budget, and optional CHSH metrics into explicit control-stack safety
+  decisions. Threshold violations hold; missing or invalid requested witnesses
+  abort; identity-key and universal-identity claims remain out of scope.
+- 2026-07-25 — Active sensing / experimental design product:
+  `scpn_quantum_control.active_sensing_product` composes synthetic Gaussian
+  information-gain ranking with hardware-safe shot-budget enforcement, the real
+  analytic ansatz/pulse evidence harness, and co-design observer telemetry. Hardware-adaptive
+  requests fail before evaluation; NV 20 T remains research-only.
+- 2026-07-25 — Complete compose-existing-control-stack adapters:
+  `scpn_quantum_control.control_stack_runtime_adapters` now runs ambient realtime
+  feedback, abstract QAOA-MPC, and quantum/classical partition paths only after a
+  concrete `ClosedLoopExecutionPolicy` authorises local simulation. Pulse
+  execution fails closed to the optional pulse-execution adapter; hardware
+  submission and PCS claims remain refused. The co-design architecture uses
+  ports over the existing policy-gated control-stack adapters.
 
 ## [1.0.0] - 2026-07-17
 
