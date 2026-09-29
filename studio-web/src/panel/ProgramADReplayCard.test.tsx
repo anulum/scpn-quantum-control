@@ -187,3 +187,24 @@ describe("ProgramADReplayCard", () => {
     expect(screen.queryByText(/does NOT match/)).toBeNull();
   });
 });
+
+
+it("invalidates the public replay card when only the editor revision changes", async () => {
+  const { rerender } = render(<ProgramADReplayCard unit={unit()} inputRevision="A" loadKernel={async () => replay} />);
+  fireEvent.click(screen.getByRole("button"));
+  await screen.findByRole("status");
+  rerender(<ProgramADReplayCard unit={unit()} inputRevision="B" loadKernel={async () => replay} />);
+  expect(screen.queryByRole("status")).toBeNull();
+});
+
+it("captures the caller's expected gradient before an asynchronous kernel load", async () => {
+  const expectedGradient = [...unit().expectedGradient];
+  const input = { ...unit(), expectedGradient };
+  const gate = deferred<KernelReplay>();
+  render(<ProgramADReplayCard unit={input} loadKernel={() => gate.promise} />);
+  fireEvent.click(screen.getByRole("button"));
+  expectedGradient[1] = 99;
+  gate.resolve(replay);
+  await waitFor(() => expect(screen.getByRole("status").getAttribute("data-verdict")).toBe("match"));
+  expect(expectedGradient[1]).toBe(99);
+});

@@ -16,6 +16,7 @@ import { GradientPlanExplanation } from "./panel/GradientPlanExplanation";
 import { KuramotoPlayPanel } from "./panel/KuramotoPlayPanel";
 import { Lab3DPanel } from "./panel/Lab3DPanel";
 import { ManifestCapabilities } from "./panel/ManifestCapabilities";
+import { EvidenceViewer } from "./shared/evidence/EvidenceViewer";
 import { ProgramADReplayCard } from "./panel/ProgramADReplayCard";
 import { RecomputeCard } from "./panel/RecomputeCard";
 import { ScorecardTable } from "./panel/ScorecardTable";
@@ -102,6 +103,7 @@ export function QuantumStudioPanel() {
           />
         )}
       </div>
+      <EvidenceViewer />
       {supportMatrix.ok ? (
         <SupportMatrixGrid matrix={supportMatrix.value} />
       ) : (

@@ -178,3 +178,49 @@ These metadata APIs add no numerical kernel, backend or hardware support claim.
 Existing Rust/PyO3, Julia and WASM numerical owners keep their original evidence
 and codecs. Workspace persistence UI and worker lifecycle integration are
 separate from these library contracts.
+
+
+## Evidence inspector
+
+The program-AD replay card uses the shared evidence inspector. It displays the
+source schema, identifier and digest, claim scope, scientific kind/status,
+admission, freshness, substrate, numeric parity declarations and provenance.
+Absent fields stay visible as **Not supplied**. A seal can be missing, malformed,
+or present but unverified; its presence does not validate a scientific claim.
+Producer declarations and the result of local recomputation remain separate.
+
+Use **Inspect evidence JSON** to paste an original
+`studio.evidence-replay.v1` or `studio.hardware-result-pack.v1` bundle. Click
+**Inspect snapshot** to load that text. The viewer projects the native schema-B
+fields emitted by `scpn_quantum_control.studio.evidence_bundle`; it does not
+implement the platform's admission or grading rules. Unsupported schemas and
+partial metadata remain visible with limitations. References and provenance
+commands are text only: the viewer does not fetch or execute them. A falsified
+or refuted claim remains falsified or refuted, including when it has an
+attestation or a separate bounded replay matches.
+
+The same viewer accepts the original bounded program-AD replay artefact. It
+passes that producer's binary64 JSON fields to the existing replay parser and
+uses the shipped WASM verifier. A changed expected gradient yields a numerical
+mismatch; altered input bytes fail their original SHA-256 binding. Neither
+outcome is relabelled as proof of intentional forgery. Original source digests
+are retained; workspace canonical encoding only binds the UI snapshot.
+
+Verification state includes the complete snapshot, displayed source fields
+and current input revision. Replacing any of them clears the displayed result
+before the new input is painted. A result arriving for an earlier snapshot
+cannot replace the current one. The inspector reuses the original
+`useUnitBoundRun` lifecycle guard.
+
+Browser applications can import `EvidenceInspector`, `EvidenceViewer`,
+`projectEvidenceBundle` and `projectProgramAdEvidence` from
+`src/shared/evidence/index.ts`. A verifier is an optional trusted application
+callback, never a function selected by imported JSON. Formats without a
+registered verifier explicitly report that verification is unavailable.
+
+The hosted `evidence_inspector` browser journey uses the real bundle and WASM,
+checks a delayed A result after B has finished, exercises altered source bytes,
+and checks missing schema/source/seal and attested negative metadata. The timing
+probe delegates to the browser's real SHA-256 implementation and counts its
+completion; it supplies no substitute digest or replay result. Component and
+projection tests have a separate exact-coverage gate in the Studio CI category.

@@ -32,7 +32,10 @@ import pytest
         "file:///tmp/index.html",
     ],
 )
-def test_runner_rejects_external_or_ambiguous_preview(url: str, tmp_path: Path) -> None:
+@pytest.mark.parametrize("scenario", ["capability_catalogue", "evidence_inspector"])
+def test_runner_rejects_external_or_ambiguous_preview(
+    url: str, tmp_path: Path, scenario: str
+) -> None:
     """Invalid preview addresses yield failed evidence without browser execution."""
     output = tmp_path / "refused.json"
     completed = subprocess.run(
@@ -40,7 +43,7 @@ def test_runner_rejects_external_or_ambiguous_preview(url: str, tmp_path: Path) 
             sys.executable,
             "tools/studio_browser_journey.py",
             "--scenario",
-            "capability_catalogue",
+            scenario,
             "--base-url",
             url,
             "--output",

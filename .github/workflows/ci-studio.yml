@@ -372,6 +372,15 @@ jobs:
           --coverage.thresholds.branches=100
           --coverage.thresholds.functions=100
           --coverage.thresholds.lines=100
+      - name: Enforce shared evidence owner coverage
+        run: >-
+          pnpm exec vitest run src/shared/evidence src/panel/ProgramADReplayCard.test.tsx
+          --coverage --coverage.reporter=text
+          --coverage.include='src/shared/evidence/*.{ts,tsx}'
+          --coverage.thresholds.statements=100
+          --coverage.thresholds.branches=100
+          --coverage.thresholds.functions=100
+          --coverage.thresholds.lines=100
       - name: Build the portal and the federation remote
         run: pnpm build
       - name: Assert the ESM remote entry carries the locked federation name
@@ -409,6 +418,8 @@ jobs:
           done
           python tools/studio_browser_journey.py --scenario capability_catalogue \
             --base-url http://127.0.0.1:4173/ --output "$RUNNER_TEMP/studio-catalogue-journey.json"
+          python tools/studio_browser_journey.py --scenario evidence_inspector \
+            --base-url http://127.0.0.1:4173/ --output "$RUNNER_TEMP/studio-evidence-journey.json"
       - name: Preserve browser acceptance evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
@@ -416,5 +427,6 @@ jobs:
           name: studio-catalogue-browser-evidence
           path: |
             ${{ runner.temp }}/studio-catalogue-journey.json
+            ${{ runner.temp }}/studio-evidence-journey.json
             ${{ runner.temp }}/studio-preview.log
           if-no-files-found: error

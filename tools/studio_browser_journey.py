@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — studio browser journey
-"""Run a real Studio catalogue journey against an owned loopback preview.
+"""Run real Studio catalogue and evidence journeys on an owned loopback preview.
 
 Install the hash-locked CI browser extra and Chromium on the runner. This
 command neither starts a provider nor permits navigation away from the preview.
@@ -176,6 +176,176 @@ def run_catalogue_journey(base_url: str) -> dict[str, object]:
             browser.close()
 
 
+def run_evidence_journey(base_url: str) -> dict[str, object]:
+    """Inspect original metadata and real WASM replay across snapshot changes.
+
+    Parameters
+    ----------
+    base_url
+        Owned loopback preview of the built Studio bundle.
+
+    Returns
+    -------
+    dict[str, object]
+        Observed source, mismatch, custody and asynchronous revision boundaries.
+
+    Raises
+    ------
+    ValueError
+        The preview URL is not a literal loopback address.
+    AssertionError
+        A visible claim or verification crosses the wrong snapshot boundary.
+
+    """
+    from playwright.sync_api import Error, Route, expect, sync_playwright
+
+    url = loopback_url(base_url)
+    origin = urlsplit(url).netloc
+    source = (
+        Path(__file__).resolve().parents[1]
+        / "data/studio/program_ad_replay_rational_20260714.json"
+    )
+    original_text = source.read_text(encoding="utf-8")
+    original = json.loads(original_text)
+    changed = json.loads(original_text)
+    changed["expected"]["gradient"][1] = 99.0
+    observations: list[str] = []
+    with sync_playwright() as runtime:
+        browser = runtime.chromium.launch()
+        context = browser.new_context(service_workers="block")
+        context.set_default_timeout(15_000)
+        held: list[Route] = []
+        hold_next = False
+        rejected: list[str] = []
+        errors: list[str] = []
+
+        def bound_request(route: Route) -> None:
+            nonlocal hold_next
+            target = urlsplit(route.request.url)
+            if target.scheme != "http" or target.netloc != origin:
+                rejected.append("outside-preview")
+                route.abort()
+            elif hold_next and target.path.endswith("scpn_quantum_studio_program_ad_wasm.wasm"):
+                hold_next = False
+                held.append(route)
+            else:
+                route.continue_()
+
+        try:
+            context.route("**/*", bound_request)
+            page = context.new_page()
+            page.add_init_script("""
+                window.__studioEvidenceDigests = 0;
+                const digest = crypto.subtle.digest.bind(crypto.subtle);
+                Object.defineProperty(crypto.subtle, "digest", {
+                    value: (...args) => digest(...args).finally(() => {
+                        window.__studioEvidenceDigests += 1;
+                    })
+                });
+            """)
+
+            def record_error(error: Error) -> None:
+                errors.append(str(error))
+
+            page.on("pageerror", record_error)
+            page.goto(url, wait_until="networkidle")
+            viewer = page.get_by_role("region", name="Inspect evidence JSON", exact=True)
+            editor = viewer.get_by_label("Evidence JSON")
+            inspect = viewer.get_by_role("button", name="Inspect snapshot")
+            editor.fill(original_text)
+            inspect.click()
+            inspector = viewer.get_by_role("region", name="Evidence inspector", exact=True)
+            inspector.get_by_role("button").click()
+            expect(inspector.get_by_role("status")).to_have_attribute("data-verdict", "match")
+            observations.append("original-source-real-wasm-match")
+
+            # Hold a real kernel response for A, finish B, then allow A to resolve last.
+            hold_next = True
+            inspector.get_by_role("button").click()
+            expect(inspector.get_by_role("button")).to_have_text("Recomputing…")
+            editor.fill(json.dumps(changed))
+            inspect.click()
+            expect(inspector.get_by_role("status")).to_have_count(0)
+            inspector.get_by_role("button").click()
+            expect(inspector.get_by_role("status")).to_have_attribute("data-verdict", "mismatch")
+            assert len(held) == 1, "Expected exactly one held original kernel response"
+            completed_digests = page.evaluate("window.__studioEvidenceDigests")
+            with page.expect_request_finished(
+                lambda request: request.url.endswith("scpn_quantum_studio_program_ad_wasm.wasm")
+            ):
+                held.pop().continue_()
+            page.wait_for_function(
+                "previous => window.__studioEvidenceDigests > previous", arg=completed_digests
+            )
+            expect(inspector.get_by_role("status")).to_have_attribute("data-verdict", "mismatch")
+            observations.append("same-id-changed-claim-retains-B-after-delayed-A")
+
+            tampered = json.loads(original_text)
+            tampered["input_hex"] = tampered["input_hex"][:-2] + "00"
+            if tampered["input_hex"] == original["input_hex"]:
+                tampered["input_hex"] = tampered["input_hex"][:-2] + "01"
+            editor.fill(json.dumps(tampered))
+            inspect.click()
+            inspector.get_by_role("button").click()
+            expect(inspector.get_by_role("status")).to_have_attribute(
+                "data-verdict", "unverifiable"
+            )
+            expect(inspector.get_by_role("status")).to_contain_text("SHA-256 binding")
+            observations.append("altered-source-digest-refused")
+
+            negative = {
+                "schema": "studio.evidence-replay.v1",
+                "prov": {
+                    "entity": {
+                        "id": "synthetic-negative-presentation",
+                        "digest": "sha256:" + "a" * 64,
+                    }
+                },
+                "evidence_kind": "falsified",
+                "claim_boundary": {"status": "refuted", "admission": "rejected"},
+                "freshness": "traceable-unchecked",
+                "attestation": {"signature": "synthetic-unverified-metadata"},
+            }
+            editor.fill(json.dumps(negative))
+            inspect.click()
+            expect(inspector.get_by_text("falsified", exact=True)).to_be_visible()
+            expect(inspector.get_by_text("refuted", exact=True)).to_be_visible()
+            expect(
+                inspector.get_by_text("Seal present — not verified", exact=True)
+            ).to_be_visible()
+            expect(inspector.get_by_role("button")).to_have_count(0)
+            expect(inspector.get_by_role("status")).to_have_count(0)
+            observations.append("attested-falsification-retains-source-status")
+            editor.fill("{}")
+            inspect.click()
+            for message in (
+                "Missing schema",
+                "Missing source",
+                "Missing seal",
+                "Partial or unsupported evidence",
+            ):
+                expect(inspector.get_by_text(message, exact=True)).to_be_visible()
+            observations.append("missing-source-schema-seal-visible")
+            editor.fill("{")
+            inspect.click()
+            expect(viewer.get_by_role("alert")).to_contain_text("Cannot inspect evidence")
+            expect(viewer.get_by_role("region", name="Evidence inspector")).to_have_count(0)
+            assert not errors, errors
+            assert not rejected, rejected
+            assert not page.workers, "Evidence inspection must not leak a worker"
+            return {
+                "scenario": "evidence_inspector",
+                "playwright": version("playwright"),
+                "browser": browser.version,
+                "observations": observations,
+            }
+        finally:
+            for route in held:
+                route.abort()
+            context.close()
+            browser.close()
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     """Run the selected journey and write bounded JSON evidence.
 
@@ -191,19 +361,26 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     """
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--scenario", choices=("capability_catalogue",), required=True)
+    parser.add_argument(
+        "--scenario", choices=("capability_catalogue", "evidence_inspector"), required=True
+    )
     parser.add_argument("--base-url", required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)
     evidence: dict[str, object] = {
         "scenario": args.scenario,
         "base_url": "rejected",
-        "command": "studio_browser_journey --scenario capability_catalogue",
+        "command": f"studio_browser_journey --scenario {args.scenario}",
     }
     try:
         url = loopback_url(args.base_url)
         evidence["base_url"] = url
-        evidence.update(run_catalogue_journey(url))
+        journey = (
+            run_catalogue_journey
+            if args.scenario == "capability_catalogue"
+            else run_evidence_journey
+        )
+        evidence.update(journey(url))
         evidence["passed"] = True
         code = 0
     except Exception as error:

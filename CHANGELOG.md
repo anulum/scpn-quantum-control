@@ -6,6 +6,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ### Added
 
+- Shared Studio evidence inspector and local JSON viewer that preserve source
+  claim status, custody and freshness separately from bounded verification.
+  The original program-AD replay uses the inspector and discards results from
+  replaced snapshots or input revisions.
+
 - Immutable Studio workspace contracts in Python and TypeScript for projects,
   revisions, parameter specifications, resolved settings and local run records.
   Lossless JSON and typed canonical digests preserve numeric identity; complete

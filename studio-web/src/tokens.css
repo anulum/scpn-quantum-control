@@ -257,3 +257,55 @@ scpn-quantum-control — vendored floor design tokens (until keeper K2)
 .qsp-catalogue-rows li { border: 1px solid currentColor; border-radius: .5rem; padding: 1rem; }
 .qsp-catalogue a:focus-visible, .qsp-catalogue input:focus-visible,
 .qsp-catalogue select:focus-visible, .qsp-panel [tabindex="-1"]:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+
+
+.qsp-evidence-inspector {
+  padding: 1rem;
+  border: 1px solid var(--qsp-line);
+  border-radius: 0.5rem;
+  background: var(--qsp-surface);
+}
+
+.qsp-evidence-inspector h4 { margin: 0 0 0.75rem; }
+.qsp-evidence-inspector dl { margin: 0; }
+.qsp-evidence-inspector dl > div {
+  display: grid;
+  grid-template-columns: minmax(8rem, 1fr) minmax(0, 3fr);
+  gap: 0.75rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--qsp-line);
+}
+.qsp-evidence-inspector dt { color: var(--qsp-muted); }
+.qsp-evidence-inspector dd { margin: 0; overflow-wrap: anywhere; }
+.qsp-evidence-viewer label { display: grid; gap: 0.5rem; }
+.qsp-evidence-viewer textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 10rem;
+  padding: 0.75rem;
+  color: var(--qsp-fg);
+  background: var(--qsp-bg);
+  border: 1px solid var(--qsp-line);
+  font-family: var(--qsp-mono);
+}
+.qsp-evidence-viewer button { margin-top: 0.75rem; }
+.qsp-evidence-viewer textarea:focus-visible,
+.qsp-evidence-viewer button:focus-visible,
+.qsp-evidence-inspector button:focus-visible {
+  outline: 2px solid var(--qsp-fg);
+  outline-offset: 3px;
+}
+@media (max-width: 40rem) {
+  .qsp-evidence-inspector dl > div { grid-template-columns: 1fr; gap: 0.2rem; }
+}
+
+.qsp-evidence-inspector dd[data-negative="true"] {
+  color: var(--qsp-unverifiable);
+  font-weight: 600;
+}
+.qsp-evidence-inspector dd[data-axis="Source digest"],
+.qsp-evidence-inspector dd[data-axis="Numeric parity declarations"] {
+  font-family: var(--qsp-mono);
+  font-size: 0.9em;
+}
