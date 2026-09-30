@@ -45,9 +45,18 @@ import sys
 import tomllib
 from collections import defaultdict
 from collections.abc import Iterable, Sequence
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
+
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from tools.split_import_visibility import (
+    DynamicImportSite,
+    ImportVisibility,
+    inspect_import_visibility,
+)
 
 PACKAGE = "scpn_quantum_control"
 SOURCE_PREFIX = f"src/{PACKAGE}/"
@@ -110,6 +119,7 @@ class Edge:
     root_export: bool = False
     import_names: tuple[str, ...] = ()
     typecheck_context: bool = False
+    literal_table: bool = False
 
 
 @dataclass
@@ -134,6 +144,7 @@ class Inventory:
     edges: list[Edge] = field(default_factory=list)
     external_imports: dict[str, set[str]] = field(default_factory=dict)
     problems: list[str] = field(default_factory=list)
+    dynamic_sites: list[DynamicImportSite] = field(default_factory=list)
 
 
 def _reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -287,7 +298,12 @@ def _resolve_from(node: ast.ImportFrom, module: list[str], is_package: bool) -> 
 
 
 def scan_python(
-    source: str, path: str, module: list[str] | None = None, is_package: bool = False
+    source: str,
+    path: str,
+    module: list[str] | None = None,
+    is_package: bool = False,
+    *,
+    visibility: ImportVisibility | None = None,
 ) -> tuple[list[Edge], set[str]]:
     """Find package-unit imports and third-party top-level imports in one Python file.
 
@@ -302,6 +318,8 @@ def scan_python(
         relative imports); ``None`` for files outside the package.
     is_package
         Whether the file is a package ``__init__``.
+    visibility
+        Optional accumulator for nonliteral production import sites and table errors.
 
     Returns
     -------
@@ -411,6 +429,28 @@ def scan_python(
             visit(child, [*stack, child])
 
     visit(tree, [])
+    if module is not None:
+        discovered = inspect_import_visibility(
+            tree, source, path, ".".join(module), ".".join(module if is_package else module[:-1])
+        )
+        for target, line, kind, typecheck in discovered.dependencies:
+            parts = target.split(".")
+            edges.append(
+                Edge(
+                    path,
+                    parts[1] if len(parts) > 1 else "__init__",
+                    kind,
+                    line,
+                    target,
+                    root_export=len(parts) == 1,
+                    typecheck_context=typecheck,
+                    literal_table=True,
+                )
+            )
+        if visibility is not None:
+            visibility.sites.extend(discovered.sites)
+            visibility.dependencies.extend(discovered.dependencies)
+            visibility.problems.extend(f"{path}: {problem}" for problem in discovered.problems)
     return edges, external
 
 
@@ -462,7 +502,12 @@ def build_inventory(repo: Path, domain_map: DomainMap) -> Inventory:
     for path, file_module, file_is_package in python_files:
         try:
             source = (repo / path).read_text(encoding="utf-8")
-            edges, external = scan_python(source, path, file_module, file_is_package)
+            visibility = ImportVisibility()
+            edges, external = scan_python(
+                source, path, file_module, file_is_package, visibility=visibility
+            )
+            inventory.dynamic_sites.extend(visibility.sites)
+            inventory.problems.extend(visibility.problems)
         except (SyntaxError, UnicodeDecodeError) as exc:
             inventory.problems.append(f"parse error: {path}: {type(exc).__name__}: {exc}")
             continue
@@ -480,6 +525,7 @@ def build_inventory(repo: Path, domain_map: DomainMap) -> Inventory:
                 e.root_export,
                 e.import_names,
                 e.typecheck_context,
+                e.literal_table,
             )
             for e in edges
         ]
@@ -794,10 +840,17 @@ def write_outputs(
             "root_export": e.root_export,
             "import_names": list(e.import_names),
             "typecheck_context": e.typecheck_context,
+            "literal_table": e.literal_table,
         }
         for e in inventory.edges
     ]
     written.append(_write(out_dir / "dependency_edges.json", _json(edges)))
+    written.append(
+        _write(
+            out_dir / "dynamic_import_sites.json",
+            _json([asdict(site) for site in inventory.dynamic_sites]),
+        )
+    )
 
     module_weights = domain_weights(inventory.edges, domain_map, MODULE_KINDS)
     runtime_weights = domain_weights(inventory.edges, domain_map, RUNTIME_KINDS)

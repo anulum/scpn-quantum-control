@@ -36,6 +36,7 @@ from tools.audit_split_ownership import (
     build_inventory,
     load_domain_map,
 )
+from tools.split_import_visibility import DynamicImportSite
 
 DEFAULT_BASELINE = Path("data/split_preparation/boundary_baseline.json")
 BLOCKING_KINDS = frozenset({"module", "module_try", "lazy", "dynamic", "string_ref"})
@@ -80,6 +81,25 @@ class BoundaryPolicy:
     dependencies: dict[str, frozenset[str]]
     exceptions: tuple[ExceptionRow, ...]
     non_module_references: tuple[ExceptionRow, ...] = ()
+    dynamic_import_reviews: tuple[DynamicImportReview, ...] = ()
+
+
+@dataclass(frozen=True)
+class DynamicImportReview:
+    """A counted semantic review of a complete nonliteral importer source."""
+
+    source: str
+    scope: str
+    call_sha256: str
+    source_sha256: str
+    role: str
+    reason: str
+    count: int
+
+    @property
+    def key(self) -> tuple[str, str, str]:
+        """Return the source, lexical scope and call AST identity."""
+        return self.source, self.scope, self.call_sha256
 
 
 @dataclass
@@ -92,6 +112,7 @@ class BoundaryReport:
     typecheck_edges: int = 0
     consumer_edges: int = 0
     non_module_references: Counter[BoundaryKey] = field(default_factory=Counter)
+    dynamic_sites: tuple[DynamicImportSite, ...] = ()
 
 
 def _mapping(value: object) -> dict[str, object]:
@@ -121,7 +142,7 @@ def load_policy(path: Path, domain_map: DomainMap) -> BoundaryPolicy:
     Parameters
     ----------
     path
-        JSON baseline using ``scpn_qc_boundary_baseline_v2``.
+        JSON baseline using ``scpn_qc_boundary_baseline_v3``.
     domain_map
         Current ownership assignments against which all targets are checked.
 
@@ -137,7 +158,7 @@ def load_policy(path: Path, domain_map: DomainMap) -> BoundaryPolicy:
 
     """
     raw = _mapping(json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=_unique_object))
-    if raw.get("schema") != "scpn_qc_boundary_baseline_v2":
+    if raw.get("schema") != "scpn_qc_boundary_baseline_v3":
         raise ValueError("unsupported boundary baseline schema")
     graph = _mapping(raw.get("dependencies"))
     targets = frozenset(domain_map.domain_target.values()) - {UMBRELLA}
@@ -216,10 +237,46 @@ def load_policy(path: Path, domain_map: DomainMap) -> BoundaryPolicy:
             raise ValueError(f"invalid or duplicate non-module reference: {item.key}")
         seen.add(item.key)
         non_modules.append(item)
+    review_values = raw.get("dynamic_import_reviews")
+    if not isinstance(review_values, list):
+        raise ValueError("dynamic import reviews must be a list")
+    reviews: list[DynamicImportReview] = []
+    review_keys: set[tuple[str, str, str]] = set()
+    for value in review_values:
+        row = _mapping(value)
+        count = row.get("count")
+        if not isinstance(count, int) or isinstance(count, bool) or count <= 0:
+            raise ValueError("dynamic import review count must be a positive integer")
+        item_review = DynamicImportReview(
+            _text(row.get("source")),
+            _text(row.get("scope")),
+            _text(row.get("call_sha256")),
+            _text(row.get("source_sha256")),
+            _text(row.get("role")),
+            _text(row.get("reason")),
+            count,
+        )
+        if (
+            not item_review.source.startswith(SOURCE_PREFIX)
+            or not item_review.source.endswith(".py")
+            or ".." in Path(item_review.source).parts
+            or item_review.role
+            not in {"external", "first-party-lazy", "mixed-probe", "mixed-descriptor"}
+            or any(
+                len(digest) != 64
+                or any(character not in "0123456789abcdef" for character in digest)
+                for digest in (item_review.call_sha256, item_review.source_sha256)
+            )
+            or item_review.key in review_keys
+        ):
+            raise ValueError(f"invalid or duplicate dynamic import review: {item_review.key}")
+        review_keys.add(item_review.key)
+        reviews.append(item_review)
     return BoundaryPolicy(
         {target: frozenset(members) for target, members in closure.items()},
         tuple(rows),
         tuple(non_modules),
+        tuple(reviews),
     )
 
 
@@ -243,7 +300,9 @@ def inspect_boundaries(
         Findings, violation counts, source line locations and consumer totals.
 
     """
-    report = BoundaryReport(problems=list(inventory.problems))
+    report = BoundaryReport(
+        problems=list(inventory.problems), dynamic_sites=tuple(inventory.dynamic_sites)
+    )
     records = {
         record.path: record for record in inventory.files if record.path.startswith(SOURCE_PREFIX)
     }
@@ -275,7 +334,12 @@ def inspect_boundaries(
         for imported_module in dict.fromkeys(candidates):
             candidate = imported_module
             target_path = modules.get(candidate)
-            while target_path is None and candidate.count(".") > 1:
+            while (
+                target_path is None
+                and candidate.count(".") > 1
+                and not edge.literal_table
+                and edge.kind != "dynamic"
+            ):
                 candidate = candidate.rsplit(".", 1)[0]
                 target_path = modules.get(candidate)
             if target_path is None and edge.root_export:
@@ -348,6 +412,23 @@ def check_boundaries(report: BoundaryReport, policy: BoundaryPolicy) -> list[str
         if observed != row.count:
             errors.append(
                 f"non-module reference count changed: {row.source} -> {row.target}: {row.count} -> {observed}"
+            )
+    reviews = {row.key: row for row in policy.dynamic_import_reviews}
+    observed_sites = Counter(site.key for site in report.dynamic_sites)
+    for site in report.dynamic_sites:
+        review = reviews.get(site.key)
+        if review is None:
+            errors.append(
+                f"unreviewed dynamic import: {site.source}:{site.line}: {site.callee}({site.argument})"
+            )
+        elif review.source_sha256 != site.source_sha256:
+            errors.append(
+                f"dynamic import source changed: {site.source}:{site.line}: {site.scope}"
+            )
+    for key, review in reviews.items():
+        if observed_sites[key] != review.count:
+            errors.append(
+                f"dynamic import review count changed: {review.source}: {review.scope}: {review.count} -> {observed_sites[key]}"
             )
     return errors
 

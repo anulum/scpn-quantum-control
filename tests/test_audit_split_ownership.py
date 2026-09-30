@@ -356,6 +356,7 @@ def test_cli_writes_deterministic_outputs_and_exits_zero(tmp_path: Path) -> None
         "cycle_minimum.json",
         "dependency_edges.json",
         "digest_bound_paths.json",
+        "dynamic_import_sites.json",
         "extras_map.json",
         "open_classifications.md",
         "ownership.csv",

@@ -14,7 +14,7 @@ import io
 import json
 import subprocess
 import sys
-from dataclasses import replace
+from dataclasses import asdict, replace
 from pathlib import Path
 from typing import cast
 
@@ -95,7 +95,8 @@ def repository(tmp_path: Path) -> Path:
     }
     _write(repo, str(DEFAULT_MAP), json.dumps(mapping))
     policy: dict[str, object] = {
-        "schema": "scpn_qc_boundary_baseline_v2",
+        "schema": "scpn_qc_boundary_baseline_v3",
+        "dynamic_import_reviews": [],
         "dependencies": {
             "CORE": [],
             "AD": ["CORE"],
@@ -148,6 +149,131 @@ def _policy(repo: Path) -> dict[str, object]:
     return cast(
         dict[str, object], json.loads((repo / guard.DEFAULT_BASELINE).read_text(encoding="utf-8"))
     )
+
+
+def _review_dynamic_source(repo: Path, source: str) -> None:
+    mapping = load_domain_map(repo / DEFAULT_MAP)
+    inventory = build_inventory(repo, mapping)
+    policy = _policy(repo)
+    policy["dynamic_import_reviews"] = [
+        {
+            **{
+                key: value
+                for key, value in asdict(site).items()
+                if key in {"source", "scope", "call_sha256", "source_sha256"}
+            },
+            "role": "mixed-probe",
+            "reason": "Reviewed fixture accepts both first-party and external probe names.",
+            "count": 1,
+        }
+        for site in inventory.dynamic_sites
+        if site.source == PREFIX + source
+    ]
+    _write(repo, str(guard.DEFAULT_BASELINE), json.dumps(policy))
+
+
+def test_dynamic_review_tracks_source_semantics_and_removed_calls(repository: Path) -> None:
+    """Require a fresh review after caller changes and refuse stale reviewed sites."""
+    source = "program_ad/__init__.py"
+    text = "from importlib.util import find_spec\ndef probe(module): return find_spec(module)\n"
+    _write(repository, PREFIX + source, text)
+    assert "unreviewed dynamic import" in _run(repository).stderr
+    _review_dynamic_source(repository, source)
+    assert _run(repository).returncode == 0
+    _write(repository, PREFIX + source, text + 'probe("scpn_quantum_control")\n')
+    assert "dynamic import source changed" in _run(repository).stderr
+    _write(repository, PREFIX + source, "from importlib.util import find_spec\n")
+    assert "dynamic import review count changed" in _run(repository).stderr
+
+
+@pytest.mark.parametrize(
+    "field,value,error",
+    [
+        ("dynamic_import_reviews", {}, "must be a list"),
+        ("schema", "scpn_qc_boundary_baseline_v2", "unsupported boundary baseline schema"),
+    ],
+)
+def test_dynamic_policy_requires_the_explicit_new_schema(
+    repository: Path, field: str, value: object, error: str
+) -> None:
+    """Refuse old contracts instead of silently omitting the import-site guard."""
+    policy = _policy(repository)
+    policy[field] = value
+    _write(repository, str(guard.DEFAULT_BASELINE), json.dumps(policy))
+    assert error in _run(repository).stderr
+
+
+@pytest.mark.parametrize(
+    "field,value,error",
+    [
+        ("count", True, "positive integer"),
+        ("count", 0, "positive integer"),
+        ("source", "outside.py", "invalid or duplicate"),
+        ("source", PREFIX + "../outside.py", "invalid or duplicate"),
+        ("source", PREFIX + "module.json", "invalid or duplicate"),
+        ("scope", "", "nonempty string"),
+        ("role", "unrestricted", "invalid or duplicate"),
+        ("reason", "", "nonempty string"),
+        ("call_sha256", "0" * 63, "invalid or duplicate"),
+        ("source_sha256", "z" * 64, "invalid or duplicate"),
+    ],
+)
+def test_malformed_dynamic_reviews_cannot_admit_a_call(
+    repository: Path, field: str, value: object, error: str
+) -> None:
+    """Validate every security-relevant review field through the production CLI."""
+    source = "program_ad/__init__.py"
+    _write(
+        repository,
+        PREFIX + source,
+        "import importlib\ndef load(name): return importlib.import_module(name)\n",
+    )
+    _review_dynamic_source(repository, source)
+    policy = _policy(repository)
+    reviews = policy["dynamic_import_reviews"]
+    assert isinstance(reviews, list) and isinstance(reviews[0], dict)
+    reviews[0][field] = value
+    _write(repository, str(guard.DEFAULT_BASELINE), json.dumps(policy))
+    assert error in _run(repository).stderr
+
+
+def test_duplicate_dynamic_review_rows_are_refused(repository: Path) -> None:
+    """Refuse duplicated receipts rather than double-counting their approval."""
+    source = "program_ad/__init__.py"
+    _write(repository, PREFIX + source, "def load(name): return __import__(name)\n")
+    _review_dynamic_source(repository, source)
+    policy = _policy(repository)
+    reviews = policy["dynamic_import_reviews"]
+    assert isinstance(reviews, list)
+    policy["dynamic_import_reviews"] = reviews * 2
+    _write(repository, str(guard.DEFAULT_BASELINE), json.dumps(policy))
+    assert "invalid or duplicate dynamic import review" in _run(repository).stderr
+
+
+@pytest.mark.parametrize(
+    "target,error",
+    [
+        ("qnode_tape", "new backward edge"),
+        ("does_not_exist", "unknown import target"),
+    ],
+)
+def test_lazy_table_dependencies_reach_the_real_boundary_guard(
+    repository: Path, target: str, error: str
+) -> None:
+    """Resolve lazy modules exactly and enforce domain direction on their targets."""
+    source = "phase/__init__.py"
+    text = f'''from importlib import import_module
+_EXPORT_GROUPS = {{"{target}": ("Tape",)}}
+_EXPORT_MODULES = {{export_name: module_name for module_name, export_names in _EXPORT_GROUPS.items() for export_name in export_names}}
+def __getattr__(name):
+    module_name = _EXPORT_MODULES.get(name)
+    return getattr(import_module(f"{{__name__}}.{{module_name}}"), name)
+'''
+    _write(repository, PREFIX + source, text)
+    _review_dynamic_source(repository, source)
+    result = _run(repository)
+    assert result.returncode == 1
+    assert error in result.stderr
 
 
 def test_live_cli_passes_exact_baseline(repository: Path) -> None:
@@ -244,6 +370,10 @@ if TYPE_CHECKING:
     "addition,expected",
     [
         ("import scpn_quantum_control.not_a_unit\n", "unknown import target"),
+        (
+            'import importlib\nimportlib.import_module("scpn_quantum_control.phase.missing")\n',
+            "unknown import target",
+        ),
         ("def broken(:\n", "parse error"),
     ],
 )

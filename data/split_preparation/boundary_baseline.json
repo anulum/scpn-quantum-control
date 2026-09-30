@@ -1,5 +1,5 @@
 {
-  "schema": "scpn_qc_boundary_baseline_v2",
+  "schema": "scpn_qc_boundary_baseline_v3",
   "measured_head": "0483a5a998ee064b6f7b2b28de486a87111e2c6c",
   "domain_map_sha256": "c6d0f72df3acfe8a5cacac7cf0f3520df463cc00545e866a8b3a52a5db4793e4",
   "dependencies": {
@@ -913,6 +913,14 @@
       "kind": "module",
       "count": 1,
       "reason": "HAL isolation must move classical reference/feedback/consumer responsibilities to their owners.",
+      "removal_owner": "hardware-isolation"
+    },
+    {
+      "source": "src/scpn_quantum_control/hardware/provider_smoke.py",
+      "target": "src/scpn_quantum_control/__init__.py",
+      "kind": "dynamic",
+      "count": 1,
+      "reason": "Previously invisible first-party root probe in the provider SDK declaration; retained until hardware dependency isolation removes the facade dependency.",
       "removal_owner": "hardware-isolation"
     },
     {
@@ -2694,6 +2702,125 @@
       "target_module": "scpn_quantum_control._private_helpers",
       "count": 1,
       "reason": "Illustrative private-helper classification pattern in the public API catalogue; explicitly labelled illustrative in its owning record."
+    }
+  ],
+  "dynamic_import_reviews": [
+    {
+      "source": "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
+      "scope": "_installed_version",
+      "call_sha256": "b549e1e61bc678ee20fc3cc627751e68618f3fcf20737d6d29d3c3d10175f5c7",
+      "source_sha256": "c3f4c78252d903a0ce4087ea63df4c92781f4736a539325f45292b4390ecb5cb",
+      "role": "external",
+      "reason": "The sole caller obtains dependency names from the literal packages_by_backend table; fallback imports external toolchain and framework modules.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/benchmarks/kuramoto_external_competitors.py",
+      "scope": "_python_module_present",
+      "call_sha256": "536f70b4366e3acfdc62bac94a672cf40085693bf4790d1eaf35d573afd61ec7",
+      "source_sha256": "199cb2e62a7c727a71069f2b38340fb53023b8c09981158e592da8a63cdaba23",
+      "role": "external",
+      "reason": "The probe callers pass the literal external names jitcdde and scipy.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/dla_parity/baselines.py",
+      "scope": "_have",
+      "call_sha256": "49d2ec7e97e36aee52aa9e5c1d1c94904dae23c316efd3cc32a384153bf297f2",
+      "source_sha256": "9683c2fb8fc3360d63c8da6744826f0a9e0bfde89fa39237a3ca1f36b983acde",
+      "role": "external",
+      "reason": "The probe caller passes the literal external name qutip.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/hardware/analog_kuramoto.py",
+      "scope": "_module_available",
+      "call_sha256": "2ab1adff6267c85b732f3308d4106bee774c57f206731b204e1a33040d34056b",
+      "source_sha256": "1979d1e7990a5d03afab8f83bdc819733786000d70b1291b10194ae3b2c75a1e",
+      "role": "external",
+      "reason": "The probe callers pass pulser, bloqade and qiskit.pulse from the reviewed adapter selection.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/hardware/iqm_backend.py",
+      "scope": "IQMQuantumBackend._resolve_fake_backend",
+      "call_sha256": "6fa5f9bd5c56333f47ece7f222a405fbef7bfd8b290e881e3ecd10e70f92aabc",
+      "source_sha256": "64e0212aa3d961f1111d840c2d8c4a97e6fc12b5503bcf957b8729a9b4cbe02e",
+      "role": "external",
+      "reason": "The constructor binds the importer to self._import_module; fake-backend module names come from the literal external IQM SDK table.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/hardware/plugin_registry.py",
+      "scope": "PluginRegistry.is_available",
+      "call_sha256": "24b710c987baf04540429a7d18625d60f37472b187c06026027fd8fcd7e4b56f",
+      "source_sha256": "16c00e3f3af960b2b7f81c10063dedd024246d96068afd706b4e5b006e362dea",
+      "role": "first-party-lazy",
+      "reason": "The only loader-table writer is the constructor literal mapping; both resolvers import its module_path. Each first-party defining module is expanded as a lazy dependency.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/hardware/plugin_registry.py",
+      "scope": "PluginRegistry.get_runner",
+      "call_sha256": "24b710c987baf04540429a7d18625d60f37472b187c06026027fd8fcd7e4b56f",
+      "source_sha256": "16c00e3f3af960b2b7f81c10063dedd024246d96068afd706b4e5b006e362dea",
+      "role": "first-party-lazy",
+      "reason": "The only loader-table writer is the constructor literal mapping; both resolvers import its module_path. Each first-party defining module is expanded as a lazy dependency.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/hardware/provider_certification.py",
+      "scope": "_check_adapter_import",
+      "call_sha256": "1e570ce42b42142436b933828eb51eede89fa925b6cf042db28f46edb54039ed",
+      "source_sha256": "b1f36d6ca9b68883cfdaff8709bc878a01ba70f9f9c600da410b4a47299acec6",
+      "role": "mixed-descriptor",
+      "reason": "Adapter module paths include literal first-party backend declarations and type(backend).__module__ for external runtime adapters; existing literal string dependencies remain counted.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/hardware/provider_smoke.py",
+      "scope": "_module_available",
+      "call_sha256": "ca487f0cf60ba58f70f48bff428a624feb63c97b5a0f2383b90553a4b3f30c98",
+      "source_sha256": "543a174695ceb4b339d692142923a97eca6cb6e805bb4348f0d977da2d221e19",
+      "role": "mixed-probe",
+      "reason": "The SDK probe mapping includes the first-party package root for python and external SDK names; descriptor.sdk_package supplies the fallback. The declared root probe is an explicit dynamic dependency.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/ml_examples/qnn_convergence.py",
+      "scope": "run_qnn_framework_rows",
+      "call_sha256": "2432f0ec3369c1a0b03e37db4b35afb6a1ec56262b5166f1d20b59097d16be91",
+      "source_sha256": "ee0353cf81ab00982224abb3a790f567b9689304f3ce30bdc64287d9b6e85b59",
+      "role": "external",
+      "reason": "Validated framework names select literal dependency strings jax, torch or tensorflow from the framework-runner table.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/qualification_status_projection.py",
+      "scope": "_runtime_status",
+      "call_sha256": "536f70b4366e3acfdc62bac94a672cf40085693bf4790d1eaf35d573afd61ec7",
+      "source_sha256": "41744b9dd42026555a4bf24026979b9f8acaf1c9a2494bca296e4759f6a18fd1",
+      "role": "mixed-probe",
+      "reason": "Receipt module identifiers and installed distribution ownership are validated, but first-party names remain permitted; this data-driven probe is not classified as external-only.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/stable_core_preflight.py",
+      "scope": "_dependency_available",
+      "call_sha256": "53a92599ebb917734de90eb4c10c21aac5b85696dc62adb8e77d15b95c845e18",
+      "source_sha256": "562121003d62be7539e552d513d591340c3554bb16db01662d46e37331c4df62",
+      "role": "external",
+      "reason": "The dependency probe caller obtains qiskit_ibm_runtime, qutip, pennylane and pulser from the literal backend dependency table.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/studio/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "223d1f2e0fb56e59f1a3659d5815ff792e697d9376f0c7c4d031000a54801fb5",
+      "source_sha256": "efe2072d2128f88e650b72061c1e9807b382c974f89226847ebd0542adb4821c",
+      "role": "first-party-lazy",
+      "reason": "The literal export groups feed the reviewed name-to-module comprehension and package-relative __getattr__ resolver; defining modules are expanded as lazy dependencies.",
+      "count": 1
     }
   ]
 }
