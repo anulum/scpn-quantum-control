@@ -157,6 +157,7 @@ def load_domain_map(path: Path) -> DomainMap:
     OwnershipError
         On duplicate keys, a unit listed under two domains, an unknown target, a split file
         listed twice or under an unknown domain or unit, or an unsupported schema.
+
     """
     raw = json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=_reject_duplicate_keys)
     if raw.get("schema") != "scpn_qc_split_domain_map_v1":
@@ -305,6 +306,7 @@ def scan_python(
     ------
     SyntaxError
         When the file does not parse.
+
     """
     tree = ast.parse(source, filename=path)
     here = module or []
