@@ -84,13 +84,13 @@
     {
       "path": "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json",
       "role": "Differentiable dependency and environment evidence map artefact",
-      "sha256": "29ae4cee3fa9450d0030ac506a77e7abb93a54295c1d1cf11127a16a536f6a3f",
+      "sha256": "b0cc8785a2a74491bea8ecfcedeb6984ea19c6351aeda00c0b21e1db12c2521a",
       "size_bytes": 20492
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.md",
       "role": "Differentiable dependency and environment evidence map reviewer summary",
-      "sha256": "3ea8eb0fe02fb6a555424ca9409391f8b8806627cbc7628158a4707cd6982559",
+      "sha256": "4b2bd313659a2a496fced83eeca5dba740d974c1b2c39da5801c3560db36e8c7",
       "size_bytes": 4763
     },
     {
