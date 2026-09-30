@@ -17,7 +17,8 @@
       "jobs": [
         "lint",
         "rust-lint",
-        "julia-lint"
+        "julia-lint",
+        "split-boundary-guard"
       ]
     },
     {
@@ -390,6 +391,7 @@
     "lint",
     "rust-lint",
     "julia-lint",
+    "split-boundary-guard",
     "native-wheels",
     "stable-core-product-quality",
     "open-system-completeness-quality",

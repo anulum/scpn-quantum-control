@@ -464,3 +464,77 @@ def test_open_classification_decisions_are_rendered(tmp_path: Path) -> None:
     text = (out / "open_classifications.md").read_text(encoding="utf-8")
     assert "- `gamma` — judgement call **Decision:** stays SIM" in text
     assert "- `alpha` — second call **Decision:** open" in text
+
+
+def test_split_boundary_metadata_preserves_unit_edge_projection() -> None:
+    """Keep legacy unit counts while retaining every split-file import candidate."""
+    source = """from .beta import first, second
+from scpn_quantum_control import PublicSymbol
+import scpn_quantum_control.beta.inner
+"""
+    edges, external = tool.scan_python(
+        source, "src/scpn_quantum_control/alpha.py", ["scpn_quantum_control", "alpha"]
+    )
+    assert external == set()
+    assert [(e.source_path, e.target_unit, e.kind, e.line) for e in edges] == [
+        ("src/scpn_quantum_control/alpha.py", "beta", "module", 1),
+        ("src/scpn_quantum_control/alpha.py", "PublicSymbol", "module", 2),
+        ("src/scpn_quantum_control/alpha.py", "beta", "module", 3),
+    ]
+    assert edges[0].target_module == "scpn_quantum_control.beta"
+    assert edges[0].import_names == ("first", "second")
+    assert edges[1].root_export is True
+    assert edges[2].target_module == "scpn_quantum_control.beta.inner"
+
+
+def test_facade_remap_keeps_the_original_target_for_boundary_resolution(tmp_path: Path) -> None:
+    """Preserve legacy facade accounting without losing the unresolved module spelling."""
+    repo = _make_repo(tmp_path)
+    path = repo / "src/scpn_quantum_control/alpha.py"
+    path.write_text(
+        "from scpn_quantum_control import PublicSymbol\nimport scpn_quantum_control.unknown_unit\n",
+        encoding="utf-8",
+    )
+    mapping = tool.load_domain_map(_write_map(tmp_path))
+    inventory = tool.build_inventory(repo, mapping)
+    rows = [e for e in inventory.edges if e.source_path == "src/scpn_quantum_control/alpha.py"]
+    assert [e.target_unit for e in rows] == ["__init__", "__init__"]
+    assert [(e.target_module, e.root_export) for e in rows] == [
+        ("scpn_quantum_control.PublicSymbol", True),
+        ("scpn_quantum_control.unknown_unit", False),
+    ]
+
+
+def test_type_only_metadata_does_not_reclassify_legacy_edge_kinds() -> None:
+    """The boundary guard can exempt type-only strings without altering the old census."""
+    source = """from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    import importlib
+    importlib.import_module("scpn_quantum_control.beta.inner")
+    NAME = "scpn_quantum_control.gamma.Type"
+"""
+    edges, _ = tool.scan_python(
+        source, "src/scpn_quantum_control/alpha.py", ["scpn_quantum_control", "alpha"]
+    )
+    assert [(e.target_unit, e.kind, e.line) for e in edges] == [
+        ("beta", "dynamic", 4),
+        ("gamma", "string_ref", 5),
+    ]
+    assert all(e.typecheck_context for e in edges)
+
+
+def test_repeated_package_prefix_keeps_both_legacy_unit_references() -> None:
+    """A dotted catalogue string must not consume a later package reference."""
+    edges, _ = tool.scan_python(
+        'NAME = "scpn_quantum_control.beta.scpn_quantum_control.gamma"\n',
+        "src/scpn_quantum_control/alpha.py",
+        ["scpn_quantum_control", "alpha"],
+    )
+    assert [(e.target_unit, e.kind, e.line) for e in edges] == [
+        ("beta", "string_ref", 1),
+        ("gamma", "string_ref", 1),
+    ]
+    assert [e.target_module for e in edges] == [
+        "scpn_quantum_control.beta",
+        "scpn_quantum_control.gamma",
+    ]

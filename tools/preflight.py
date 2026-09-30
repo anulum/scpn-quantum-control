@@ -982,6 +982,24 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
         ],
     ),
     (
+        "split-boundary-guard",
+        [_PY, "tools/split_boundary_guard.py"],
+    ),
+    (
+        "mypy-strict-split-boundary",
+        [
+            _PY,
+            "-m",
+            "mypy",
+            "--strict",
+            "--explicit-package-bases",
+            "tools/audit_split_ownership.py",
+            "tools/split_boundary_guard.py",
+            "tests/test_audit_split_ownership.py",
+            "tests/test_split_boundary_guard.py",
+        ],
+    ),
+    (
         "ci-workflow-modularity",
         [_PY, "tools/audit_ci_workflow_modularity.py"],
     ),

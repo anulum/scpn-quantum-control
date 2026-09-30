@@ -57,7 +57,9 @@ MODULE_KINDS = frozenset({"module", "module_try"})
 UMBRELLA = "workbench-umbrella"
 UNCLASSIFIED = "unclassified"
 DYNAMIC_CALLS = frozenset({"import_module", "find_spec", "__import__"})
-_STRING_REF = re.compile(rf"{PACKAGE}\.([A-Za-z_][A-Za-z0-9_]*)")
+_STRING_REF = re.compile(
+    rf"{PACKAGE}\.([A-Za-z_][A-Za-z0-9_]*)(?:(?!\.{PACKAGE}\.)\.[A-Za-z_][A-Za-z0-9_]*)*"
+)
 _SOURCE_PATH_REF = re.compile(rf"src/{PACKAGE}/[A-Za-z0-9_/]+\.py")
 _TEXT_SCAN_LIMIT = 8 * 1024 * 1024
 _STDLIB = frozenset(sys.stdlib_module_names)
@@ -104,6 +106,10 @@ class Edge:
     target_unit: str
     kind: str
     line: int
+    target_module: str = ""
+    root_export: bool = False
+    import_names: tuple[str, ...] = ()
+    typecheck_context: bool = False
 
 
 @dataclass
@@ -313,10 +319,29 @@ def scan_python(
     edges: list[Edge] = []
     external: set[str] = set()
 
-    def record(target: list[str], kind: str, line: int) -> None:
+    def record(
+        target: list[str],
+        kind: str,
+        line: int,
+        *,
+        root_export: bool = False,
+        import_names: tuple[str, ...] = (),
+        typecheck_context: bool = False,
+    ) -> None:
         if target and target[0] == PACKAGE:
             if len(target) > 1:
-                edges.append(Edge(path, target[1], kind, line))
+                edges.append(
+                    Edge(
+                        path,
+                        target[1],
+                        kind,
+                        line,
+                        ".".join(target),
+                        root_export,
+                        import_names,
+                        typecheck_context,
+                    )
+                )
         elif target and target[0] and target[0] not in _STDLIB and target[0] != "__future__":
             external.add(target[0])
 
@@ -332,7 +357,22 @@ def scan_python(
                 if child.level and module is None:
                     continue
                 for target in _resolve_from(child, here, is_package):
-                    record(target, _import_kind(stack), child.lineno)
+                    root_export = len(target) == 2 and (
+                        child.module == PACKAGE
+                        or (
+                            child.module is None
+                            and bool(child.level)
+                            and len(here) - int(not is_package) == child.level
+                        )
+                    )
+                    names = tuple(alias.name for alias in child.names) if not root_export else ()
+                    record(
+                        target,
+                        _import_kind(stack),
+                        child.lineno,
+                        root_export=root_export,
+                        import_names=names,
+                    )
             elif isinstance(child, ast.Call):
                 name = ast.unparse(child.func).split(".")[-1]
                 first = child.args[0] if child.args else None
@@ -341,7 +381,12 @@ def scan_python(
                     and isinstance(first, ast.Constant)
                     and isinstance(first.value, str)
                 ):
-                    record(first.value.split("."), "dynamic", child.lineno)
+                    record(
+                        first.value.split("."),
+                        "dynamic",
+                        child.lineno,
+                        typecheck_context=_import_kind(stack) == "typecheck",
+                    )
                     continue
             elif (
                 isinstance(child, ast.Expr)
@@ -353,7 +398,16 @@ def scan_python(
                 continue
             elif isinstance(child, ast.Constant) and isinstance(child.value, str):
                 for match in _STRING_REF.finditer(child.value):
-                    edges.append(Edge(path, match.group(1), "string_ref", child.lineno))
+                    edges.append(
+                        Edge(
+                            path,
+                            match.group(1),
+                            "string_ref",
+                            child.lineno,
+                            match.group(0),
+                            typecheck_context=_import_kind(stack) == "typecheck",
+                        )
+                    )
             visit(child, [*stack, child])
 
     visit(tree, [])
@@ -415,7 +469,18 @@ def build_inventory(repo: Path, domain_map: DomainMap) -> Inventory:
         # A name imported from the package root that is not a unit (a re-exported class or
         # function) is an import of the facade, exactly as Python executes it.
         edges = [
-            e if e.target_unit in source_units else Edge(e.source_path, "__init__", e.kind, e.line)
+            e
+            if e.target_unit in source_units
+            else Edge(
+                e.source_path,
+                "__init__",
+                e.kind,
+                e.line,
+                e.target_module,
+                e.root_export,
+                e.import_names,
+                e.typecheck_context,
+            )
             for e in edges
         ]
         inventory.edges.extend(edges)
@@ -720,7 +785,16 @@ def write_outputs(
     written.append(_write(out_dir / "ownership.csv", buffer.getvalue()))
 
     edges = [
-        {"source": e.source_path, "target_unit": e.target_unit, "kind": e.kind, "line": e.line}
+        {
+            "source": e.source_path,
+            "target_unit": e.target_unit,
+            "kind": e.kind,
+            "line": e.line,
+            "target_module": e.target_module,
+            "root_export": e.root_export,
+            "import_names": list(e.import_names),
+            "typecheck_context": e.typecheck_context,
+        }
         for e in inventory.edges
     ]
     written.append(_write(out_dir / "dependency_edges.json", _json(edges)))
