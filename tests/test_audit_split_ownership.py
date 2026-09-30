@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Tests for the split ownership inventory (QSP-01)
+# SCPN Quantum Control — Tests for the split ownership inventory
 """Tests for tools/audit_split_ownership.py.
 
 Every test builds a real, small Git repository in a temporary directory with a miniature
@@ -99,7 +99,7 @@ _FILES = {
 }
 
 _MAP: dict[str, object] = {
-    "schema": "scpn_qc_split_domain_map_v1",
+    "schema": "scpn_qc_split_domain_map_v2",
     "package": "scpn_quantum_control",
     "targets": ["T-CORE", "T-SIM", "T-EMPTY"],
     "empty_targets": {"T-EMPTY": "reserved"},
@@ -248,6 +248,7 @@ def test_duplicate_json_key_is_refused(tmp_path: Path) -> None:
     ("change", "message"),
     [
         (("schema", "other_v9"), "unsupported domain-map schema"),
+        (("schema", "scpn_qc_split_domain_map_v1"), "unsupported domain-map schema"),
         (("domains", {"core": {"target": "NOWHERE", "units": ["alpha"]}}), "unknown target"),
         (("empty_targets", {"NOWHERE": "x"}), "not a declared target"),
         (

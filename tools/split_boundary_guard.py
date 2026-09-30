@@ -17,7 +17,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import sys
 from collections import Counter
 from dataclasses import dataclass, field
@@ -40,6 +39,20 @@ from tools.audit_split_ownership import (
 
 DEFAULT_BASELINE = Path("data/split_preparation/boundary_baseline.json")
 BLOCKING_KINDS = frozenset({"module", "module_try", "lazy", "dynamic", "string_ref"})
+REMOVAL_OWNERS = frozenset(
+    (
+        "lazy-subpackage-exports",
+        "generic-hamiltonian-separation",
+        "shared-contract-nucleus",
+        "differentiable-contract-inversion",
+        "hardware-isolation",
+        "domain-public-api-freeze",
+        "optional-dependency-installation",
+        "domain-test-ci-partition",
+        "repository-extraction-rollback",
+        "residual-dependency-inversions",
+    )
+)
 BoundaryKey = tuple[str, str, str]
 
 
@@ -52,11 +65,11 @@ class ExceptionRow:
     kind: str
     count: int
     reason: str
-    removal_card: str
+    removal_owner: str
 
     @property
     def key(self) -> BoundaryKey:
-        """Return the line-independent identity that the ratchet counts."""
+        """Line-independent identity that the ratchet counts."""
         return self.source, self.target, self.kind
 
 
@@ -108,7 +121,7 @@ def load_policy(path: Path, domain_map: DomainMap) -> BoundaryPolicy:
     Parameters
     ----------
     path
-        JSON baseline using ``scpn_qc_boundary_baseline_v1``.
+        JSON baseline using ``scpn_qc_boundary_baseline_v2``.
     domain_map
         Current ownership assignments against which all targets are checked.
 
@@ -124,7 +137,7 @@ def load_policy(path: Path, domain_map: DomainMap) -> BoundaryPolicy:
 
     """
     raw = _mapping(json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=_unique_object))
-    if raw.get("schema") != "scpn_qc_boundary_baseline_v1":
+    if raw.get("schema") != "scpn_qc_boundary_baseline_v2":
         raise ValueError("unsupported boundary baseline schema")
     graph = _mapping(raw.get("dependencies"))
     targets = frozenset(domain_map.domain_target.values()) - {UMBRELLA}
@@ -161,7 +174,7 @@ def load_policy(path: Path, domain_map: DomainMap) -> BoundaryPolicy:
             _text(row.get("kind")),
             count,
             _text(row.get("reason")),
-            _text(row.get("removal_card")),
+            _text(row.get("removal_owner")),
         )
         if (
             not item.source.startswith(SOURCE_PREFIX)
@@ -171,7 +184,7 @@ def load_policy(path: Path, domain_map: DomainMap) -> BoundaryPolicy:
             or not item.target.endswith(".py")
             or ".." in Path(item.target).parts
             or item.kind not in BLOCKING_KINDS
-            or not re.fullmatch(r"QSP-(?:0[3-9]|1[013])", item.removal_card)
+            or item.removal_owner not in REMOVAL_OWNERS
             or item.key in seen
         ):
             raise ValueError(f"invalid or duplicate exception: {item.key}")

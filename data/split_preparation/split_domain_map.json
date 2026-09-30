@@ -1,6 +1,6 @@
 {
- "schema": "scpn_qc_split_domain_map_v1",
- "description": "Unit -> domain -> target repository map for QSP-01 (owner QD2/QD3 repository map, architecture section 3). Domain assignment is judgement; open_classifications lists the stage-0 judgement calls with the owner's decisions (2026-09-30); split_units assigns the files of a unit that is split across targets.",
+ "schema": "scpn_qc_split_domain_map_v2",
+ "description": "Unit-to-domain-to-repository ownership map. Domain assignments record reviewed architectural responsibilities; split_units assigns individual files within units shared across targets. Open classifications retain ownership reasons and decisions.",
  "package": "scpn_quantum_control",
  "targets": [
   "SCPN-QC-AD",
@@ -329,7 +329,7 @@
    "prefix": "src/scpn_quantum_engine.pyi",
    "kind": "sibling",
    "target": "sibling:scpn-quantum-engine",
-   "reason": "type stubs of the Rust engine (owner QD5: own sibling)"
+   "reason": "type stubs of the Rust engine (Rust engine remains an independent sibling)"
   },
   {
    "prefix": "tests/",
@@ -345,7 +345,7 @@
    "prefix": "scpn_quantum_engine/",
    "kind": "sibling",
    "target": "sibling:scpn-quantum-engine",
-   "reason": "owner QD5: own sibling"
+   "reason": "Rust engine remains an independent sibling"
   },
   {
    "prefix": "studio-web/",
@@ -448,38 +448,38 @@
   },
   {
    "unit": "bridge",
-   "reason": "Generic Kuramoto-XY Hamiltonian (CORE) next to Paper-27 constants and SCPN adapters (RESEARCH); QSP-04 separates them.",
-   "decision": "Owner 2026-09-30 accepted: stays CORE for now; QSP-04 separates the generic Hamiltonian (CORE) from Paper-27 constants and SCPN adapters (RESEARCH)."
+   "reason": "Generic Kuramoto-XY Hamiltonian (CORE) next to Paper-27 constants and SCPN adapters (RESEARCH); the generic-hamiltonian-separation work separates them.",
+   "decision": "Owner 2026-09-30 accepted: stays CORE for now; the generic-hamiltonian-separation work separates the generic Hamiltonian (CORE) from Paper-27 constants and SCPN adapters (RESEARCH)."
   },
   {
    "unit": "kuramoto_core",
-   "reason": "Placed in simulation because it imports phase at module level; could belong to CORE after QSP-03/QSP-04.",
-   "decision": "Owner 2026-09-30 accepted: SIM; re-examine for CORE after QSP-03/QSP-04."
+   "reason": "Placed in simulation because it imports phase at module level; could belong to CORE after the lazy-subpackage-exports and generic-hamiltonian-separation work.",
+   "decision": "Owner 2026-09-30 accepted: SIM; re-examine for CORE after the lazy-subpackage-exports and generic-hamiltonian-separation work."
   },
   {
    "unit": "hardware",
-   "reason": "hardware/classical.py (classical reference solver) belongs to SIM per architecture section 4; QSP-07 moves it.",
-   "decision": "Owner 2026-09-30 accepted: HAL; hardware/classical.py moves to SIM in QSP-07."
+   "reason": "hardware/classical.py (classical reference solver) belongs to SIM per architecture section 4; the hardware-isolation work moves it.",
+   "decision": "Owner 2026-09-30 accepted: HAL; hardware/classical.py moves to SIM in the hardware-isolation work."
   },
   {
    "unit": "qpu_compute_types",
-   "reason": "Contract-only types: HAL or CONTRACTS nucleus (QSP-05).",
-   "decision": "Owner 2026-09-30 accepted: HAL for now; HAL vs CONTRACTS decided in QSP-05."
+   "reason": "Contract-only types: HAL or CONTRACTS nucleus (the shared-contract-nucleus work).",
+   "decision": "Owner 2026-09-30 accepted: HAL for now; HAL vs CONTRACTS decided in the shared-contract-nucleus work."
   },
   {
    "unit": "stable_core",
-   "reason": "Durable v1 contract: CORE or CONTRACTS (QSP-05, QSP-08).",
-   "decision": "Owner 2026-09-30 accepted: CORE for now; CORE vs CONTRACTS decided in QSP-05/QSP-08."
+   "reason": "Durable v1 contract: CORE or CONTRACTS (the shared-contract-nucleus and domain-public-api-freeze work).",
+   "decision": "Owner 2026-09-30 accepted: CORE for now; CORE vs CONTRACTS decided in the shared-contract-nucleus and domain-public-api-freeze work."
   },
   {
    "unit": "attested_result_pack",
    "reason": "Result-pack attestation: BENCH today; overlaps HAL result packs and the QPU-RESULT-PACK tool.",
-   "decision": "Owner 2026-09-30 accepted: BENCH; overlap with HAL result packs and the QPU-RESULT-PACK tool revisited in QSP-07."
+   "decision": "Owner 2026-09-30 accepted: BENCH; overlap with HAL result packs and the QPU-RESULT-PACK tool revisited in the hardware-isolation work."
   },
   {
    "unit": "public_api_stability",
    "reason": "Governance catalogue mapped to CONTRACTS; may stay in the umbrella as a workbench-wide policy.",
-   "decision": "Owner 2026-09-30 accepted: CONTRACTS; umbrella alternative revisited in QSP-08."
+   "decision": "Owner 2026-09-30 accepted: CONTRACTS; umbrella alternative revisited in the domain-public-api-freeze work."
   },
   {
    "unit": "studio_workspace",

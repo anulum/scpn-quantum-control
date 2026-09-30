@@ -27,6 +27,8 @@ _TASK_CODE: Final[re.Pattern[str]] = re.compile(
     r"(?ix)(?<![A-Za-z0-9])(?:"
     r"qwc[_-]?\d+(?:\.\d+)+(?:[._-]?[a-z])?"
     r"|(?:bl|st|dp|rg|hg|qwc|ws|lock|kimi|aud)[_-]?\d+(?:[._-]?[a-z])?"
+    r"|qsp[_-]\d+|q[ds]\d+|core[_-][a-z]\d{2}|(?-i:F)(?!(?:16|32|64|80)(?![A-Za-z0-9]))\d{2}"
+    r"|(?-i:D)(?!(?:10[0-7]|20[0-9]|21[0-5]|30[0-2]|40[0-9]|41[0-9]|42[01])(?![A-Za-z0-9]))\d{3}"
     r"|kt-\d+(?:[._-]?[a-z])?"
     r"|fu[_-](?:\d+|[a-z])"
     r"|co\d+[_-][a-z]+[_-]\d+"
@@ -38,6 +40,8 @@ _PATH_TASK_CODE: Final[re.Pattern[str]] = re.compile(
     r"(?ix)(?:^|[/_.-])(?:"
     r"qwc[_-]?\d+(?:\.\d+)+(?:[._-]?[a-z])?"
     r"|(?:bl|st|dp|rg|hg|qwc|ws|lock|kimi|aud)[_-]?\d+(?:[._-]?[a-z])?"
+    r"|qsp[_-]\d+|q[ds]\d+|core[_-][a-z]\d{2}|(?-i:F)(?!(?:16|32|64|80)(?![A-Za-z0-9]))\d{2}"
+    r"|(?-i:D)(?!(?:10[0-7]|20[0-9]|21[0-5]|30[0-2]|40[0-9]|41[0-9]|42[01])(?![A-Za-z0-9]))\d{3}"
     r"|kt-\d+(?:[._-]?[a-z])?"
     r"|fu[_-](?:\d+|[a-z])"
     r"|co\d+[_-][a-z]+[_-]\d+"
@@ -111,6 +115,10 @@ _EXACT_NEGATIVE_VALUES: Final[frozenset[tuple[str, str]]] = frozenset(
         # ISO week-date rejected by the calendar-date-only public contract.
         # Keep this exact negative fixture; other strings in its owner remain audited.
         ("tests/test_provider_route_catalogue.py", "2026-W36-6"),
+        ("tools/contract_custody_corpus.py", "core_g02_contract_corpus.v1"),
+        ("tools/audit_descriptive_production_naming.py", "core_g02_contract_corpus.v1"),
+        ("tests/test_split_boundary_guard.py", "QSP-08"),
+        ("tools/audit_descriptive_production_naming.py", "QSP-08"),
         # The audited registry must be able to name its exact negative value.
         ("tools/audit_descriptive_production_naming.py", "2026-W36-6"),
     }
@@ -425,8 +433,14 @@ def main() -> int:
         action="store_true",
         help="replace the counted baseline with the current repository findings",
     )
+    parser.add_argument(
+        "--repo",
+        type=Path,
+        default=Path(__file__).resolve().parents[1],
+        help="repository root to audit (default: the current tool checkout)",
+    )
     args = parser.parse_args()
-    root = Path(__file__).resolve().parents[1]
+    root = args.repo.resolve()
     findings = audit_repository(root)
     baseline_path = root / _BASELINE_PATH
     if args.write_baseline:

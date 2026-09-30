@@ -44,7 +44,7 @@ def _row(source: str, target: str, kind: str = "module", count: int = 1) -> dict
         "kind": kind,
         "count": count,
         "reason": "Existing workbench dependency awaiting inversion.",
-        "removal_card": "QSP-08",
+        "removal_owner": "residual-dependency-inversions",
     }
 
 
@@ -68,7 +68,7 @@ def repository(tmp_path: Path) -> Path:
         _write(repo, PREFIX + name, text)
     _write(repo, "tests/test_consumer.py", "import scpn_quantum_control.studio\n")
     mapping = {
-        "schema": "scpn_qc_split_domain_map_v1",
+        "schema": "scpn_qc_split_domain_map_v2",
         "targets": ["CORE", "AD", "SIM", "QNODE", "LEARN", "RESEARCH", "STUDIO"],
         "domains": {
             "facade": {"target": "workbench-umbrella", "units": ["__init__"]},
@@ -95,7 +95,7 @@ def repository(tmp_path: Path) -> Path:
     }
     _write(repo, str(DEFAULT_MAP), json.dumps(mapping))
     policy: dict[str, object] = {
-        "schema": "scpn_qc_boundary_baseline_v1",
+        "schema": "scpn_qc_boundary_baseline_v2",
         "dependencies": {
             "CORE": [],
             "AD": ["CORE"],
@@ -277,6 +277,21 @@ def test_transitive_and_same_owner_dependencies_pass(repository: Path) -> None:
     "field,value,error",
     [
         ("schema", "old", "unsupported boundary"),
+        ("schema", "scpn_qc_boundary_baseline_v1", "unsupported boundary"),
+        (
+            "exceptions",
+            [
+                {
+                    **{
+                        k: v
+                        for k, v in _row("compile_budget.py", "psi_field.py").items()
+                        if k != "removal_owner"
+                    },
+                    "removal_card": "QSP-08",
+                }
+            ],
+            "nonempty string",
+        ),
         ("dependencies", [], "expected a JSON object"),
         ("dependencies", {"CORE": []}, "exactly the current"),
         ("exceptions", {}, "exceptions must be a list"),
@@ -300,12 +315,12 @@ def test_transitive_and_same_owner_dependencies_pass(repository: Path) -> None:
         ),
         (
             "exceptions",
-            [{**_row("compile_budget.py", "psi_field.py"), "removal_card": ""}],
+            [{**_row("compile_budget.py", "psi_field.py"), "removal_owner": ""}],
             "nonempty string",
         ),
         (
             "exceptions",
-            [{**_row("compile_budget.py", "psi_field.py"), "removal_card": "QSP-02"}],
+            [{**_row("compile_budget.py", "psi_field.py"), "removal_owner": "QSP-08"}],
             "invalid or duplicate",
         ),
         (

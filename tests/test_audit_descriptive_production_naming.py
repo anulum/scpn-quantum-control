@@ -9,7 +9,12 @@
 
 from __future__ import annotations
 
+import json
+import subprocess
+import sys
 from pathlib import Path
+
+import pytest
 
 from tools.audit_descriptive_production_naming import (
     audit_paths,
@@ -301,3 +306,115 @@ def test_counted_baseline_allows_removal_but_rejects_duplicates(tmp_path: Path) 
     assert unexpected_findings((finding,), counts) == ()
     assert unexpected_findings((finding, finding), counts) == (finding,)
     assert finding_fingerprint(finding) in counts
+
+
+def test_split_owner_and_programme_codes_are_rejected(tmp_path: Path) -> None:
+    """Audit task codes in real source, dataset values and tracked path names."""
+    codes = ("QSP-02", "QD2", "QS5", "CORE-E05", "F06", "D001", "D999")
+    for index, code in enumerate(codes):
+        source = f"src/package/surface_{index}.py"
+        data = f"data/surface_{index}.json"
+        path = f"data/{code}.json"
+        _write(tmp_path / source, f'VALUE = "{code}"\n')
+        _write(tmp_path / data, '{"owner": "' + code + '"}')
+        _write(tmp_path / path, "{}")
+        findings = audit_paths(tmp_path, (source, data, path))
+        assert {(item.path, item.value) for item in findings} == {
+            (source, code),
+            (data, code),
+            (path, path),
+        }
+
+
+def test_scientific_standards_and_lint_codes_remain_valid(tmp_path: Path) -> None:
+    """Scientific names and documented docstring rule identifiers are public terms."""
+    source = "tools/documentation.py"
+    _write(
+        tmp_path / source,
+        'VALUES = ("SHA-256", "QAOA", "D413", "D417", "D420", "D421", "D100", "f32", "f64", "_f64", "f21", "iqm_dla_core_n4_d10_even", "d800", "CORE")\n',
+    )
+    assert audit_paths(tmp_path, (source,)) == ()
+
+
+def test_exact_obsolete_removal_owner_does_not_exempt_new_aliases(tmp_path: Path) -> None:
+    """Keep only the stale contract refusal literal in the guard test owner."""
+    source = "tests/test_split_boundary_guard.py"
+    _write(tmp_path / source, 'STALE = "QSP-08"\nNEW = "QSP-07"\n')
+    assert [item.value for item in audit_paths(tmp_path, (source,))] == ["QSP-07"]
+
+
+def _naming_cli(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    """Run the public audit command against a real repository."""
+    tool = Path(__file__).resolve().parents[1] / "tools/audit_descriptive_production_naming.py"
+    return subprocess.run(
+        [sys.executable, str(tool), "--repo", str(repo), *args],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+
+def test_cli_writes_a_baseline_and_rejects_growth(tmp_path: Path) -> None:
+    """Exercise baseline creation, acceptance and new source debt through the CLI."""
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    _write(tmp_path / "tools/descriptive_production_naming_baseline.json", "{}")
+    _write(tmp_path / "src/package/surface.py", 'OWNER = "QSP-02"\n')
+    written = _naming_cli(tmp_path, "--write-baseline")
+    assert written.returncode == 0, written.stderr
+    assert "wrote 1 known findings" in written.stdout
+    assert _naming_cli(tmp_path).returncode == 0
+    _write(tmp_path / "src/package/another.py", 'OWNER = "QD2"\n')
+    rejected = _naming_cli(tmp_path)
+    assert rejected.returncode == 1
+    assert "another.py:1: machine-facing string: QD2" in rejected.stdout
+    assert "1 new finding(s)" in rejected.stdout
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        "{",
+        "[]",
+        '{"schema":"old"}',
+        json.dumps(
+            {
+                "schema": "scpn_qc.descriptive_production_naming_baseline.v1",
+                "known_finding_counts": [],
+            }
+        ),
+        json.dumps(
+            {
+                "schema": "scpn_qc.descriptive_production_naming_baseline.v1",
+                "known_finding_counts": {"invalid": 1},
+            }
+        ),
+    ],
+)
+def test_cli_refuses_invalid_counted_baselines(tmp_path: Path, payload: str) -> None:
+    """Malformed baseline schemas and invalid debt entries fail the public command."""
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    _write(tmp_path / "tools/descriptive_production_naming_baseline.json", payload)
+    rejected = _naming_cli(tmp_path)
+    assert rejected.returncode == 1
+    assert "baseline is invalid" in rejected.stdout
+
+
+def test_comment_only_source_and_workflow_steps_are_audited(tmp_path: Path) -> None:
+    """Parse empty source bodies and inspect codes inside workflow commands."""
+    source = "src/package/empty.py"
+    workflow = ".github/workflows/checks.yml"
+    _write(tmp_path / source, "# QSP-02\n")
+    _write(tmp_path / workflow, "jobs:\n  check:\n    steps:\n      - run: echo QSP-02\n")
+    findings = audit_paths(tmp_path, (source, workflow))
+    assert {item.kind for item in findings} == {"source comment", "workflow text"}
+
+
+def test_deleted_tracked_coded_path_still_fails(tmp_path: Path) -> None:
+    """Removing a tracked file does not excuse an internal-code path in the index."""
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    source = "src/package/QSP-02.py"
+    _write(tmp_path / source, "VALUE = 1\n")
+    subprocess.run(["git", "-C", str(tmp_path), "add", source], check=True)
+    (tmp_path / source).unlink()
+    findings = audit_repository(tmp_path)
+    assert [(item.path, item.kind) for item in findings] == [(source, "tracked path")]

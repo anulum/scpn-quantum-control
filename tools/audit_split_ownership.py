@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — split ownership and dependency inventory (QSP-01)
+# SCPN Quantum Control — split ownership and dependency inventory
 """Inventory who owns every tracked path and how the package's units depend on each other.
 
 The workbench is planned to split into focused ``SCPN-QC-*`` repositories. Before any
@@ -151,7 +151,7 @@ def load_domain_map(path: Path) -> DomainMap:
     Parameters
     ----------
     path
-        JSON file with schema ``scpn_qc_split_domain_map_v1``.
+        JSON file with schema ``scpn_qc_split_domain_map_v2``.
 
     Returns
     -------
@@ -166,7 +166,7 @@ def load_domain_map(path: Path) -> DomainMap:
 
     """
     raw = json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=_reject_duplicate_keys)
-    if raw.get("schema") != "scpn_qc_split_domain_map_v1":
+    if raw.get("schema") != "scpn_qc_split_domain_map_v2":
         raise OwnershipError(f"unsupported domain-map schema: {raw.get('schema')!r}")
     targets = frozenset(raw["targets"]) | {UMBRELLA}
     unit_domain: dict[str, str] = {}
