@@ -45,3 +45,6 @@ mcp==1.28.1
 jsonschema==4.26.0
 tomli==2.4.1
 wrapt==2.2.2
+# Security fixes for transitive provider and pre-commit dependencies.
+PyJWT[crypto]==2.15.1
+virtualenv==21.7.13

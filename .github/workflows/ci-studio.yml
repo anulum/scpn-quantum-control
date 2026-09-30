@@ -291,7 +291,7 @@ jobs:
             --include="*/tools/studio_browser_journey.py,*/tools/studio_workspace_browser_journey.py,*/tools/studio_workspace_browser_coverage.py,*/tools/studio_workspace_browser_ui.py" \
             -m pytest --noconftest -q tests/test_studio_browser_journey.py tests/test_studio_resource_browser_journey.py tests/test_studio_workspace_browser_journey.py
           python -m ruff check tools/studio_browser_journey.py tools/studio_resource_browser_journey.py tools/studio_workspace_browser_journey.py tools/studio_workspace_browser_coverage.py tools/studio_workspace_browser_ui.py tools/tests/test_studio_workspace_browser_coverage.py tools/tests/test_studio_browser_runtime_refusal.py
-          python -m ruff check --isolated --preview --select D,D413,D417,D420 --config 'lint.pydocstyle.convention = "numpy"' tools/studio_browser_journey.py tools/studio_resource_browser_journey.py tools/studio_workspace_browser_journey.py tools/studio_workspace_browser_coverage.py tools/studio_workspace_browser_ui.py
+          python -m ruff check --isolated --preview --select D,D413,D417,D420 --config 'lint.explicit-preview-rules = true' --config 'lint.pydocstyle.convention = "numpy"' tools/studio_browser_journey.py tools/studio_resource_browser_journey.py tools/studio_workspace_browser_journey.py tools/studio_workspace_browser_coverage.py tools/studio_workspace_browser_ui.py
       - name: Check workspace Python types and native API documentation
         working-directory: .
         env:
@@ -377,7 +377,7 @@ jobs:
       - name: Run the real catalogue browser journey
         working-directory: .
         env:
-          PYTHONPATH: .
+          PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src
         run: |
           browser_coverage_command=(python -m coverage run --rcfile=/dev/null --append --branch --concurrency=greenlet
             --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage"
@@ -412,7 +412,7 @@ jobs:
       - name: Exercise original panel refusal over isolated damaged input files
         working-directory: .
         env:
-          PYTHONPATH: .
+          PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src
         run: |
           python - <<'PY_SOURCE'
           import hashlib

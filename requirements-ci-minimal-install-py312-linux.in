@@ -19,4 +19,4 @@ qiskit-qasm3-import==0.6.0
 requests==2.34.2
 scipy==1.17.1
 symengine==0.14.1
-urllib3==2.7.0
+urllib3==2.8.0
