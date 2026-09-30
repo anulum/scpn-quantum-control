@@ -33,6 +33,7 @@ def test_docker_preserves_optional_workflow_audit_inputs() -> None:
         if parts and parts[0] == "COPY" and parts[-1] == "./":
             copied.update(parts[1:-1])
     required = {
+        "requirements-ci-studio-browser.txt",
         "requirements-ci-julia-tier.txt",
         "requirements-integration-sc-neurocore.txt",
         "requirements-publish.txt",

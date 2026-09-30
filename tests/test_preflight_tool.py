@@ -19,6 +19,7 @@ from types import ModuleType
 
 import pytest
 
+from scpn_quantum_control.ci_workflow_ownership import read_ci_job_blocks
 from tools.ci_workflow_inventory import read_ci_workflow_source, workflow_path_for_job
 
 
@@ -614,12 +615,12 @@ def test_ci_and_preflight_share_whole_program_trace_value_cohorts() -> None:
 
 def test_ci_and_preflight_share_the_docstring_ratchet_cohort() -> None:
     """CI and the local static gate must enforce the same ordered file cohort."""
-    workflow = read_ci_workflow_source()
-    block_start = workflow.index("      - name: Ruff docstring ratchet")
-    block_end = workflow.index("\n\n  stable-core-product-quality:", block_start)
+    lint_job = read_ci_job_blocks(read_ci_workflow_source())["lint"]
+    ratchet_step = lint_job.split("      - name: Ruff docstring ratchet", 1)[1]
+    ratchet_step = ratchet_step.split("\n      - ", 1)[0]
     ci_paths = [
         line.strip()
-        for line in workflow[block_start:block_end].splitlines()
+        for line in ratchet_step.splitlines()
         if line.strip().startswith(("src/", "tests/", "tools/"))
     ]
 
