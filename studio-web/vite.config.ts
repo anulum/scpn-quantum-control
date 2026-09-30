@@ -30,9 +30,10 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
-    include: ["src/**/*.test.{ts,tsx}"],
+    include: ["src/**/*.test.{ts,tsx}", "quality/**/*.test.ts"],
     coverage: {
-      provider: "v8",
+      provider: process.env["STUDIO_WORKSPACE_COVERAGE"] ? "custom" : "v8",
+      ...(process.env["STUDIO_WORKSPACE_COVERAGE"] ? { customProviderModule: "./quality/workspaceProvider.ts" } : {}),
       include: ["src/**/*.{ts,tsx}"],
       exclude: ["src/main.tsx", "src/**/*.test.{ts,tsx}"],
       thresholds: {

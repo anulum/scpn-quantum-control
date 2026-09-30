@@ -261,8 +261,6 @@ jobs:
           --include=*/studio/scorecard_bundle.py
   studio-web:
     runs-on: ubuntu-latest
-    env:
-      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     defaults:
       run:
         working-directory: studio-web
@@ -277,20 +275,23 @@ jobs:
           run_install: false
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with: {python-version: "3.12"}
-      - name: Install locked browser acceptance dependencies
-        working-directory: .
-        run: |
-          python -m pip install --require-hashes -r requirements-ci-studio-browser.txt
-          python -m playwright install --with-deps chromium
-          python -m mypy --strict --explicit-package-bases tools/studio_browser_journey.py tools/studio_resource_browser_journey.py tests/test_studio_browser_journey.py tests/test_studio_resource_browser_journey.py
-          python -m pytest --noconftest -q tests/test_studio_browser_journey.py tests/test_studio_resource_browser_journey.py
-          python -m ruff check tools/studio_browser_journey.py tools/studio_resource_browser_journey.py
-          python -m ruff check --isolated --preview --select D,D413,D417,D420 --config 'lint.explicit-preview-rules = true' --config 'lint.pydocstyle.convention = "numpy"' tools/studio_browser_journey.py tools/studio_resource_browser_journey.py
       - name: Install the locked workspace and native producer dependencies
         working-directory: .
         run: |
           python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
           python -m pip install --no-deps -e .
+      - name: Install locked browser acceptance dependencies
+        working-directory: .
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-studio-browser.txt
+          python -m playwright install --with-deps chromium
+          python -m mypy --strict --explicit-package-bases tools/studio_browser_journey.py tools/studio_resource_browser_journey.py tools/studio_workspace_browser_journey.py tools/studio_workspace_browser_coverage.py tools/studio_workspace_browser_ui.py tests/test_studio_browser_journey.py tests/test_studio_resource_browser_journey.py tests/test_studio_workspace_browser_journey.py tools/tests/test_studio_workspace_browser_coverage.py tools/tests/test_studio_browser_runtime_refusal.py
+          python -m coverage run --rcfile=/dev/null --branch --concurrency=greenlet \
+            --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" \
+            --include="*/tools/studio_browser_journey.py,*/tools/studio_workspace_browser_journey.py,*/tools/studio_workspace_browser_coverage.py,*/tools/studio_workspace_browser_ui.py" \
+            -m pytest --noconftest -q tests/test_studio_browser_journey.py tests/test_studio_resource_browser_journey.py tests/test_studio_workspace_browser_journey.py
+          python -m ruff check tools/studio_browser_journey.py tools/studio_resource_browser_journey.py tools/studio_workspace_browser_journey.py tools/studio_workspace_browser_coverage.py tools/studio_workspace_browser_ui.py tools/tests/test_studio_workspace_browser_coverage.py tools/tests/test_studio_browser_runtime_refusal.py
+          python -m ruff check --isolated --preview --select D,D413,D417,D420 --config 'lint.pydocstyle.convention = "numpy"' tools/studio_browser_journey.py tools/studio_resource_browser_journey.py tools/studio_workspace_browser_journey.py tools/studio_workspace_browser_coverage.py tools/studio_workspace_browser_ui.py
       - name: Check workspace Python types and native API documentation
         working-directory: .
         env:
@@ -325,7 +326,15 @@ jobs:
       - name: Install locked dependencies
         run: pnpm install --frozen-lockfile
       - name: Typecheck (TS strict)
-        run: pnpm typecheck
+        run: |
+          pnpm typecheck
+          pnpm exec tsc --project tsconfig.workspace-browser.json
+      - name: Validate native workspace and coverage API documentation
+        run: >-
+          pnpm exec typedoc --tsconfig tsconfig.workspace-browser.json
+          --entryPointStrategy expand --entryPoints src quality
+          --exclude '**/*.test.ts' --exclude '**/*.test.tsx'
+          --out "${{ runner.temp }}/studio-native-api" --treatWarningsAsErrors
       - name: Add the WASM build target
         run: rustup target add wasm32-unknown-unknown
       - name: Build the WASM kernel (browser recompute path needs it at test time)
@@ -340,8 +349,163 @@ jobs:
       - name: Test the program-AD WASM kernel
         working-directory: scpn_quantum_engine/studio_program_ad_wasm
         run: cargo test --locked
+      - name: Build the portal and the federation remote
+        run: pnpm build
+      - name: Assert the ESM remote entry carries the locked federation name
+        run: |
+          test -f dist/remoteEntry.js
+          grep -q "scpn_quantum_control" dist/remoteEntry.js
+      - name: Ship the WASM kernel into the bundle + write the deploy manifest
+        working-directory: .
+        run: python3 tools/build_studio_wasm_bundle.py
+      - name: Assert the deploy manifest content-addresses the shipped bundle
+        working-directory: .
+        run: |
+          test -f studio-web/dist/deploy-manifest.json
+          test -f studio-web/dist/wasm/scpn_quantum_studio_wasm_kernel.wasm
+          test -f studio-web/dist/wasm/scpn_quantum_studio_program_ad_wasm.wasm
+          python3 - <<'EOF'
+          import hashlib, json
+          from pathlib import Path
+          manifest = json.loads(Path("studio-web/dist/deploy-manifest.json").read_text())
+          for row in manifest["artifacts"]:
+              path = Path("studio-web/dist") / row["path"]
+              digest = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+              assert digest == row["sha256"], f"digest drift: {row['path']}"
+          print(f"deploy manifest verified: {len(manifest['artifacts'])} artefacts")
+          EOF
+      - name: Run the real catalogue browser journey
+        working-directory: .
+        env:
+          PYTHONPATH: .
+        run: |
+          browser_coverage_command=(python -m coverage run --rcfile=/dev/null --append --branch --concurrency=greenlet
+            --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage"
+            --include="*/tools/studio_browser_journey.py,*/tools/studio_workspace_browser_journey.py,*/tools/studio_workspace_browser_coverage.py,*/tools/studio_workspace_browser_ui.py")
+          python -m http.server 4173 --bind 127.0.0.1 --directory studio-web/dist > "$RUNNER_TEMP/studio-preview.log" 2>&1 &
+          preview_pid=$!
+          node studio-web/node_modules/vite/bin/vite.js studio-web --host 127.0.0.1 --port 4174 --strictPort > "$RUNNER_TEMP/studio-workspace-source.log" 2>&1 &
+          source_pid=$!
+          trap 'kill "$preview_pid" "$source_pid" 2>/dev/null || true; wait "$preview_pid" || true; wait "$source_pid" || true' EXIT
+          for attempt in 1 2 3 4 5; do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
+            sleep 1
+          done
+          "${browser_coverage_command[@]}" tools/studio_browser_journey.py --scenario capability_catalogue \
+            --base-url http://127.0.0.1:4173/ --output "$RUNNER_TEMP/studio-catalogue-journey.json"
+          "${browser_coverage_command[@]}" tools/studio_browser_journey.py --scenario evidence_inspector \
+            --base-url http://127.0.0.1:4173/ --output "$RUNNER_TEMP/studio-evidence-journey.json"
+          "${browser_coverage_command[@]}" tools/studio_browser_journey.py --scenario resource_plan_projection \
+            --base-url http://127.0.0.1:4173/ --output "$RUNNER_TEMP/studio-resource-journey.json"
+          for attempt in 1 2 3 4 5; do
+            if curl --fail --silent http://127.0.0.1:4174/browser-tests/workspace.html > /dev/null; then break; fi
+            sleep 1
+          done
+          STUDIO_WORKSPACE_SOURCE_URL=http://127.0.0.1:4174/ "${browser_coverage_command[@]}" \
+            -m pytest --noconftest -q tools/tests/test_studio_workspace_browser_coverage.py
+          STUDIO_WORKSPACE_SOURCE_URL=http://127.0.0.1:4174/ STUDIO_PREVIEW_DIR="$PWD/studio-web/dist" \
+            "${browser_coverage_command[@]}" -m pytest --noconftest -q \
+            tools/tests/test_studio_browser_runtime_refusal.py
+          "${browser_coverage_command[@]}" tools/studio_browser_journey.py --scenario workspace_recovery \
+            --base-url http://127.0.0.1:4173/ --workspace-source-url http://127.0.0.1:4174/ \
+            --output "$RUNNER_TEMP/studio-workspace-journey.json"
+      - name: Exercise original panel refusal over isolated damaged input files
+        working-directory: .
+        env:
+          PYTHONPATH: .
+        run: |
+          python - <<'PY_SOURCE'
+          import hashlib
+          import os
+          import shutil
+          from pathlib import Path
+
+          original = Path.cwd().resolve()
+          isolated = Path(os.environ["RUNNER_TEMP"]) / "studio-panel-refusal-source"
+          isolated.mkdir()
+          damaged = {
+              "docs/_generated/studio_manifest.json",
+              "data/studio/xy_compile_recompute_unit_20260708.json",
+              "data/studio/kuramoto_scenario_meanfield_20260708.json",
+              "data/studio/program_ad_replay_rational_20260714.json",
+              "data/differentiable_phase_qnode/differentiable_transform_support_matrix_20260708.json",
+              "data/differentiable_phase_qnode/gradient_plan_explanations_20260709.json",
+              "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.json",
+          }
+          before = {name: hashlib.sha256((original / name).read_bytes()).hexdigest() for name in damaged}
+          def copy_inputs(parent):
+              destination = isolated / parent.relative_to(original)
+              destination.mkdir(exist_ok=True)
+              for child in parent.iterdir():
+                  relative = child.relative_to(original).as_posix()
+                  target = destination / child.name
+                  if relative in damaged:
+                      shutil.copy2(child, target)
+                      assert target.resolve().is_relative_to(isolated)
+                      target.write_text("{}\n", encoding="utf-8")
+                  elif any(name.startswith(relative + "/") for name in damaged):
+                      copy_inputs(child)
+                  else:
+                      target.symlink_to(child, target_is_directory=child.is_dir())
+          copy_inputs(original / "docs")
+          copy_inputs(original / "data")
+          web = isolated / "studio-web"
+          web.mkdir()
+          for name in ("src", "browser-tests"):
+              shutil.copytree(original / "studio-web" / name, web / name)
+          for source in (original / "studio-web").iterdir():
+              if source.is_file() and source.suffix in {".ts", ".json"}:
+                  shutil.copy2(source, web / source.name)
+          (web / "node_modules").symlink_to(original / "studio-web/node_modules", target_is_directory=True)
+          assert before == {name: hashlib.sha256((original / name).read_bytes()).hexdigest() for name in damaged}
+          for source in (original / "studio-web/src").rglob("*"):
+              if source.is_file():
+                  assert source.read_bytes() == (web / source.relative_to(original / "studio-web")).read_bytes()
+          PY_SOURCE
+          node studio-web/node_modules/vite/bin/vite.js "$RUNNER_TEMP/studio-panel-refusal-source/studio-web" \
+            --host 127.0.0.1 --port 4175 --strictPort > "$RUNNER_TEMP/studio-panel-refusal-source.log" 2>&1 &
+          refusal_pid=$!
+          trap 'kill "$refusal_pid" 2>/dev/null || true; wait "$refusal_pid" || true' EXIT
+          for attempt in 1 2 3 4 5; do
+            if curl --fail --silent http://127.0.0.1:4175/browser-tests/workspace.html > /dev/null; then break; fi
+            sleep 1
+          done
+          python -m coverage run --rcfile=/dev/null --append --branch --concurrency=greenlet \
+            --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" \
+            --include="*/tools/studio_browser_journey.py,*/tools/studio_workspace_browser_journey.py,*/tools/studio_workspace_browser_coverage.py,*/tools/studio_workspace_browser_ui.py" \
+            tools/studio_browser_journey.py --scenario workspace_panel_refusal \
+            --base-url http://127.0.0.1:4175/ --output "$RUNNER_TEMP/studio-panel-refusal-journey.json"
+      - name: Enforce Python browser runner and workspace helper exact coverage
+        working-directory: .
+        run: |
+          python -m coverage json --rcfile=/dev/null \
+            --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" \
+            --pretty-print -o "$RUNNER_TEMP/studio-workspace-browser-coverage.json"
+          python -m coverage report --rcfile=/dev/null \
+            --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" \
+            --precision=2 --show-missing --fail-under=100
       - name: Test with enforced coverage thresholds
+        env:
+          STUDIO_WORKSPACE_COVERAGE: ${{ runner.temp }}/studio-workspace-journey.json
+          STUDIO_PANEL_REFUSAL_COVERAGE: ${{ runner.temp }}/studio-panel-refusal-journey.json
         run: pnpm test:coverage
+      - name: Enforce local workspace and coverage adapter owner exact coverage
+        env:
+          STUDIO_WORKSPACE_COVERAGE: ${{ runner.temp }}/studio-workspace-journey.json
+          STUDIO_PANEL_REFUSAL_COVERAGE: ${{ runner.temp }}/studio-panel-refusal-journey.json
+        run: >-
+          pnpm exec vitest run src/shared/storage src/features/workspace
+          src/QuantumStudioPanel.test.tsx quality
+          --coverage --coverage.reporter=text
+          --coverage.include='src/shared/storage/*.{ts,tsx}'
+          --coverage.include='src/features/workspace/*.{ts,tsx}'
+          --coverage.include=src/QuantumStudioPanel.tsx
+          --coverage.include='quality/*.ts'
+          --coverage.exclude='**/*.test.{ts,tsx}'
+          --coverage.thresholds.statements=100
+          --coverage.thresholds.branches=100
+          --coverage.thresholds.functions=100
+          --coverage.thresholds.lines=100
       - name: Enforce Program-AD browser owner exact coverage
         run: >-
           pnpm exec vitest run
@@ -403,47 +567,6 @@ jobs:
           --coverage.thresholds.branches=100
           --coverage.thresholds.functions=100
           --coverage.thresholds.lines=100
-      - name: Build the portal and the federation remote
-        run: pnpm build
-      - name: Assert the ESM remote entry carries the locked federation name
-        run: |
-          test -f dist/remoteEntry.js
-          grep -q "scpn_quantum_control" dist/remoteEntry.js
-      - name: Ship the WASM kernel into the bundle + write the deploy manifest
-        working-directory: .
-        run: python3 tools/build_studio_wasm_bundle.py
-      - name: Assert the deploy manifest content-addresses the shipped bundle
-        working-directory: .
-        run: |
-          test -f studio-web/dist/deploy-manifest.json
-          test -f studio-web/dist/wasm/scpn_quantum_studio_wasm_kernel.wasm
-          test -f studio-web/dist/wasm/scpn_quantum_studio_program_ad_wasm.wasm
-          python3 - <<'EOF'
-          import hashlib, json
-          from pathlib import Path
-          manifest = json.loads(Path("studio-web/dist/deploy-manifest.json").read_text())
-          for row in manifest["artifacts"]:
-              path = Path("studio-web/dist") / row["path"]
-              digest = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
-              assert digest == row["sha256"], f"digest drift: {row['path']}"
-          print(f"deploy manifest verified: {len(manifest['artifacts'])} artefacts")
-          EOF
-      - name: Run the real catalogue browser journey
-        working-directory: .
-        run: |
-          python -m http.server 4173 --bind 127.0.0.1 --directory studio-web/dist > "$RUNNER_TEMP/studio-preview.log" 2>&1 &
-          preview_pid=$!
-          trap 'kill "$preview_pid"; wait "$preview_pid" || true' EXIT
-          for attempt in 1 2 3 4 5; do
-            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
-            sleep 1
-          done
-          python tools/studio_browser_journey.py --scenario capability_catalogue \
-            --base-url http://127.0.0.1:4173/ --output "$RUNNER_TEMP/studio-catalogue-journey.json"
-          python tools/studio_browser_journey.py --scenario evidence_inspector \
-            --base-url http://127.0.0.1:4173/ --output "$RUNNER_TEMP/studio-evidence-journey.json"
-          PYTHONPATH=. python tools/studio_browser_journey.py --scenario resource_plan_projection \
-            --base-url http://127.0.0.1:4173/ --output "$RUNNER_TEMP/studio-resource-journey.json"
       - name: Preserve browser acceptance evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
@@ -453,5 +576,11 @@ jobs:
             ${{ runner.temp }}/studio-catalogue-journey.json
             ${{ runner.temp }}/studio-evidence-journey.json
             ${{ runner.temp }}/studio-resource-journey.json
+            ${{ runner.temp }}/studio-workspace-journey.json
+            ${{ runner.temp }}/studio-panel-refusal-journey.json
+            ${{ runner.temp }}/studio-panel-refusal-source.log
+            ${{ runner.temp }}/studio-workspace-browser.coverage
+            ${{ runner.temp }}/studio-workspace-browser-coverage.json
+            ${{ runner.temp }}/studio-workspace-source.log
             ${{ runner.temp }}/studio-preview.log
           if-no-files-found: error

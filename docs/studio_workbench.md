@@ -282,3 +282,109 @@ admit a guaranteed deadline by converting workload units into invented seconds.
 Leaving this optional field unset requests the bounded workload without a
 wall-clock guarantee; it does not infer a deadline. No smaller-shape action
 claims to repair an unsupported time guarantee.
+
+
+## Local workspace and portable archives
+
+The Local workspace editor keeps the exact archive text, immutable revision
+references and original source bytes in native IndexedDB. Create an empty
+project, read a local JSON archive, or edit the archive text. An empty project
+contains no experiment or result. Editing invalidates the preview while the
+saved workspace identity remains visible and unchanged.
+
+Preview checks the entire document/reference graph, typed parameters, source
+identities, versions and paths before enabling save. Apply records the complete
+archive, project head and selected project in one native transaction. Reload
+revalidates the saved archive and restores its exact text; conflicts from
+another tab require an explicit reload/reconciliation. Interrupted writes,
+quota failures and corrupt saved data surface errors. Missing/evicted cache
+requires an independent exported copy rather than a manufactured success.
+
+Export preview archive downloads the current admitted preview. Export saved
+archive downloads the last committed archive. These are separate actions:
+unpreviewed editor changes do not silently replace the saved backup. Keep an
+independent copy; browser cache is not server durability or an independent
+backup. Exported files are not encrypted and retain the supplied source data.
+
+The portable container is `quantum_workspace_archive.v1`. Its manifest is the
+original `quantum_workspace.v1` document; members carry immutable document JSON
+or exact original binary bytes as lowercase hex, with safe relative names,
+source schema and SHA-256 identities. Parameter units remain explicit. The
+encoded JSON limit is 64 MiB including hex/JSON overhead, decoded member data is
+bounded at 128 MiB, at most 1000 members include the root, and nesting is bounded
+at 64 levels. ZIP archives, links, executable members, duplicate names/identities,
+unsafe paths, corrupt references and unsupported major versions are refused.
+The supported version preview reports that no migration is required; no
+unknown schema is automatically migrated or allowed to change saved data.
+
+Original source verification belongs to the hosting application. It can supply
+already-qualified offline producer codecs through `QuantumStudioPanel`'s
+`rawCodecs` property. Imported files cannot install verifiers. Source formats
+without an available verifier refuse; the standalone panel does not declare
+all scientific producers supported. Workspace canonical hashing never replaces
+an original producer's raw digest. Saving or editing grants no numerical,
+provider or hardware execution authority and does not rebind the existing
+committed result panels to a changed draft.
+
+The hosted browser acceptance command uses two explicitly owned loopback servers:
+
+```bash
+PYTHONPATH=. python tools/studio_browser_journey.py \
+  --scenario workspace_recovery --base-url http://127.0.0.1:4173/ \
+  --workspace-source-url http://127.0.0.1:4174/ --output workspace-journey.json
+```
+
+The first serves the built Studio/WASM bundle. The second serves the original
+source API for native IndexedDB cases in isolated test contexts. UI export/import
+is exercised separately from full-reference synthetic metadata conformance.
+Test-only producer registries never enter the production panel. Recorded V8
+counters are raw observations; they require original-source mapping and exact
+coverage evaluation before any percentage is claimed.
+
+The native recovery journey also attempts path-escaping, oversized, corrupt-identity and future-major archives against a saved project, and checks that the exact prior archive and selection survive each refusal. Separate native cache fault cases remove an archive, corrupt its head and evict the cache; explicit restore uses the exported copy. Failed journeys retain completed observations, original failure diagnostics and already captured native script counters. These are acceptance assertions; authored checks alone do not establish runtime success.
+
+Browser coverage qualification retains the executed script and original owner SHA-256, verifies the inline source map against exact checkout text, and converts actual V8 ranges with the locked converter. The same Vitest V8 provider merges native counters before its unchanged global coverage gate. Set `STUDIO_WORKSPACE_COVERAGE` to the successful `workspace_recovery` JSON when running the combined coverage cohort. Failed, stale, incomplete or unowned evidence refuses; raw counters alone are not a coverage percentage. The owned source acceptance page mounts the real workspace component with an explicitly synthetic test-only producer registry, separately from the built Studio/WASM journey.
+
+The Python browser runner and workspace orchestration, native counter capture and UI helper have a separate branch-coverage gate. Studio CI collects their actual execution across the dedicated URL tests and existing browser journeys, then requires 100% for these complete owners. Its raw coverage data and measured JSON report are retained with the browser evidence. The gate declaration does not establish a passing result; acceptance requires the actual report from the source being reviewed.
+
+Recovery acceptance includes two actual tabs preparing the same native head before one commits and the stale tab attempts its save. The test host also imports the full original synthetic revision/evidence graph through the real File input, checks preview hashes, downloads preview and saved archives, reloads exact saved text, and refuses a future major without changing the saved graph. A fresh isolated context repeats the graph UI import/export. This qualifies storage and host-codec mechanics only; the synthetic producer is never installed in the built product registry.
+
+Archive files must contain valid UTF-8. Malformed byte sequences refuse before replacing the current editor. A leading UTF-8 BOM is preserved in the editor and refused by the original strict JSON reader during preview; it is never silently removed to make an otherwise unsupported archive pass. Saved revisions and original evidence remain unchanged.
+
+Each saved archive snapshot binds its exact JSON source text, including formatting, under the `quantum_workspace_archive_source.v1` canonical string domain. Formatting-only edits create a new snapshot while preserving the original workspace, revision and evidence hashes. Saving over an existing head validates the prior saved archive before the native write transaction, then checks the same head and exact prior source again inside it. Missing, inconsistent or concurrently altered prior cache refuses; it is not silently overwritten by the new draft.
+
+
+The `workspace_panel_refusal` scenario renders the original Studio panel against
+isolated copies of seven damaged JSON inputs. It requires the original facade
+and every workspace storage/controller owner, observes nine source refusals,
+and checks that the local editor stays mounted without numerical views. The CI
+fixture verifies that canonical JSON and copied production source bytes remain
+unchanged. Its successful evidence is supplied as `STUDIO_PANEL_REFUSAL_COVERAGE`
+alongside workspace recovery evidence; both pass the same source/hash/mapping
+qualification before the original coverage provider merges actual counters.
+Python runner coverage uses greenlet-aware collection for the synchronous
+Playwright lifecycle. Plain thread collection misses code executed after its
+context switch and is insufficient evidence for the complete browser owners.
+The dedicated runtime refusal cohort serves the original built UI and WASM
+through owned HTTP hosts. It checks uncaught page errors, unowned requests,
+truncated kernel responses and HTTP 503 during native imports. Failed native
+journeys retain their captured counters and partial diagnostics. Closing the
+profiled page after delivery of its counters preserves those records and the
+actual profiler cleanup error.
+
+
+`previewWorkspaceArchive(text, codecs, expandedByteLimit)` accepts an optional
+smaller positive integer budget for the root and decoded members. It refuses
+budgets above the 128 MiB product ceiling. The root counts even when there are
+no members; the preview accepts an exact byte bound and refuses an excess
+before producer admission or storage mutation. This parameter declares an
+application budget and does not represent observed host memory.
+
+
+Native cache opening has a 10-second product deadline. A queued request behind
+another tab's pending database operation refuses explicitly instead of keeping
+the editor busy indefinitely. If that native request later succeeds, the
+refused connection is closed. `openWorkspaceStore` accepts a shorter positive
+integer timeout as its third argument and refuses a value above the product
+bound. Saved cache contents and exported archives are separate from this
+opening deadline.

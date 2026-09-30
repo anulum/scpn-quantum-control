@@ -16,7 +16,7 @@ from __future__ import annotations
 import argparse
 import ipaddress
 import json
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from importlib.metadata import version
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -281,9 +281,9 @@ def run_evidence_journey(base_url: str) -> dict[str, object]:
             observations.append("same-id-changed-claim-retains-B-after-delayed-A")
 
             tampered = json.loads(original_text)
-            tampered["input_hex"] = tampered["input_hex"][:-2] + "00"
-            if tampered["input_hex"] == original["input_hex"]:
-                tampered["input_hex"] = tampered["input_hex"][:-2] + "01"
+            # Flip one original bit; this always changes the actual fixture bytes.
+            changed_byte = int(original["input_hex"][-2:], 16) ^ 1
+            tampered["input_hex"] = original["input_hex"][:-2] + f"{changed_byte:02x}"
             editor.fill(json.dumps(tampered))
             inspect.click()
             inspector.get_by_role("button").click()
@@ -363,10 +363,20 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--scenario",
-        choices=("capability_catalogue", "evidence_inspector", "resource_plan_projection"),
+        choices=(
+            "capability_catalogue",
+            "evidence_inspector",
+            "resource_plan_projection",
+            "workspace_recovery",
+            "workspace_panel_refusal",
+        ),
         required=True,
     )
     parser.add_argument("--base-url", required=True)
+    parser.add_argument(
+        "--workspace-source-url",
+        help="Distinct owned loopback Vite server for native workspace API cases",
+    )
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)
     evidence: dict[str, object] = {
@@ -377,15 +387,29 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         url = loopback_url(args.base_url)
         evidence["base_url"] = url
-        if args.scenario == "resource_plan_projection":
-            from tools.studio_resource_browser_journey import run_resource_journey
+        if args.scenario == "workspace_recovery":
+            from tools.studio_workspace_browser_journey import run_workspace_journey
 
-            journey = run_resource_journey
-        elif args.scenario == "capability_catalogue":
-            journey = run_catalogue_journey
+            if args.workspace_source_url is None:
+                raise ValueError("workspace_recovery requires --workspace-source-url")
+            run_workspace_journey(url, args.workspace_source_url, evidence)
         else:
-            journey = run_evidence_journey
-        evidence.update(journey(url))
+            if args.workspace_source_url is not None:
+                raise ValueError("--workspace-source-url is valid only for workspace_recovery")
+            journey: Callable[[str], dict[str, object]]
+            if args.scenario == "workspace_panel_refusal":
+                from tools.studio_workspace_browser_journey import run_panel_refusal_journey
+
+                journey = run_panel_refusal_journey
+            elif args.scenario == "resource_plan_projection":
+                from tools.studio_resource_browser_journey import run_resource_journey
+
+                journey = run_resource_journey
+            elif args.scenario == "capability_catalogue":
+                journey = run_catalogue_journey
+            else:
+                journey = run_evidence_journey
+            evidence.update(journey(url))
         evidence["passed"] = True
         code = 0
     except Exception as error:

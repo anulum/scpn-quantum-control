@@ -12,6 +12,12 @@ import { describe, expect, it } from "vitest";
 import QuantumStudioPanel from "./QuantumStudioPanel";
 
 describe("QuantumStudioPanel", () => {
+  it("mounts the local workspace without granting execution authority", () => {
+    render(<QuantumStudioPanel />);
+    const workspace = screen.getByRole("region", { name: "Local workspace" });
+    expect(within(workspace).getByLabelText("Workspace archive JSON")).toBeTruthy();
+    expect(within(workspace).getByText(/grants no execution, hardware or provider authority/)).toBeTruthy();
+  });
   it("renders the boundary banner before any evidence", () => {
     render(<QuantumStudioPanel />);
     expect(

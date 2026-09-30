@@ -24,7 +24,10 @@ permissions:
   contents: read
 
 jobs:
+  quality:
+    uses: ./.github/workflows/ci-studio.yml
   release:
+    needs: quality
     runs-on: ubuntu-latest
     permissions:
       contents: write # create the Release and upload its assets
@@ -52,7 +55,15 @@ jobs:
       - name: Build the program-AD WASM kernel
         working-directory: scpn_quantum_engine/studio_program_ad_wasm
         run: cargo build --release --locked --target wasm32-unknown-unknown
+      - name: Retrieve this run's verified native browser evidence
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: studio-catalogue-browser-evidence
+          path: ${{ runner.temp }}/studio-browser-evidence
       - name: Test with enforced coverage thresholds
+        env:
+          STUDIO_WORKSPACE_COVERAGE: ${{ runner.temp }}/studio-browser-evidence/studio-workspace-journey.json
+          STUDIO_PANEL_REFUSAL_COVERAGE: ${{ runner.temp }}/studio-browser-evidence/studio-panel-refusal-journey.json
         run: pnpm test:coverage
       - name: Build the portal and the federation remote
         run: pnpm build

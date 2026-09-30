@@ -7,6 +7,8 @@
 // scpn-quantum-control — QuantumStudioPanel (Module Federation expose)
 
 import "./tokens.css";
+import { WorkspacePanel } from "./features/workspace/WorkspacePanel";
+import type { WorkspacePanelProps } from "./features/workspace/WorkspacePanel";
 import catalogueJson from "../../docs/_generated/studio_manifest.json";
 import { CapabilityCatalogue } from "./features/catalogue/CapabilityCatalogue";
 import { parseCatalogue } from "./features/catalogue/catalogue";
@@ -41,7 +43,7 @@ import { recomputeUnit } from "./panel/recompute";
  * never dishonest: nothing here can upgrade a grade, and any surface that
  * fails its guard renders as a loud `unverifiable` block.
  */
-export function QuantumStudioPanel() {
+export function QuantumStudioPanel({ rawCodecs }: WorkspacePanelProps = {}) {
   const runtimes = useCatalogueRuntimes();
   const catalogue = parseCatalogue(catalogueJson);
   return (
@@ -103,6 +105,7 @@ export function QuantumStudioPanel() {
           />
         )}
       </div>
+      <WorkspacePanel {...(rawCodecs === undefined ? {} : { rawCodecs })} />
       <EvidenceViewer />
       {supportMatrix.ok ? (
         <SupportMatrixGrid matrix={supportMatrix.value} />

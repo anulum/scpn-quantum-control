@@ -33,7 +33,14 @@ import pytest
     ],
 )
 @pytest.mark.parametrize(
-    "scenario", ["capability_catalogue", "evidence_inspector", "resource_plan_projection"]
+    "scenario",
+    [
+        "capability_catalogue",
+        "evidence_inspector",
+        "resource_plan_projection",
+        "workspace_recovery",
+        "workspace_panel_refusal",
+    ],
 )
 def test_runner_rejects_external_or_ambiguous_preview(
     url: str, tmp_path: Path, scenario: str
@@ -60,4 +67,47 @@ def test_runner_rejects_external_or_ambiguous_preview(
     assert completed.returncode == 1, completed.stderr
     evidence = json.loads(output.read_text())
     assert evidence["passed"] is False
+    assert "ValueError" in evidence["error"]
+
+
+@pytest.mark.parametrize("scenario", ["workspace_recovery", "workspace_panel_refusal"])
+def test_public_dispatch_requires_matching_source_option(tmp_path: Path, scenario: str) -> None:
+    """Refuse a missing or misapplied source address through the public dispatcher."""
+    from tools.studio_browser_journey import main
+
+    output = tmp_path / "source-option-refused.json"
+    argv = [
+        "--scenario",
+        scenario,
+        "--base-url",
+        "http://127.0.0.1:4173/",
+        "--output",
+        str(output),
+    ]
+    if scenario == "workspace_panel_refusal":
+        argv.extend(["--workspace-source-url", "http://127.0.0.1:4174/"])
+    assert main(argv) == 1
+    evidence = json.loads(output.read_text())
+    assert evidence["passed"] is False
+    assert "ValueError" in evidence["error"]
+    assert "workspace-source-url" in evidence["error"]
+
+
+@pytest.mark.parametrize(
+    "url", ["https://127.0.0.1:4173/", "http://example.com:4173/", "http://127.0.0.1:4173/?q=1"]
+)
+def test_public_dispatch_records_url_refusal_before_browser_import(
+    tmp_path: Path, url: str
+) -> None:
+    """Retain the refusal through the public dispatcher without constructing a browser."""
+    from tools.studio_browser_journey import main
+
+    output = tmp_path / "unsafe-source.json"
+    assert (
+        main(["--scenario", "workspace_panel_refusal", "--base-url", url, "--output", str(output)])
+        == 1
+    )
+    evidence = json.loads(output.read_text())
+    assert evidence["passed"] is False
+    assert evidence["base_url"] == "rejected"
     assert "ValueError" in evidence["error"]

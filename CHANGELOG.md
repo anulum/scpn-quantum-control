@@ -6,6 +6,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ### Added
 
+- Native browser workspace transactions, exact archive previews, immutable
+  revision references and separate preview/saved portable exports. Unknown
+  source verifiers, unsafe imports, stale heads and storage failures refuse
+  without granting numerical or provider authority.
+
 - Declared Studio resource plans with integer-safe buffer estimates, explicit
   lower browser ceilings, pre-allocation Kuramoto refusal and a rechecked
   smaller-configuration action preserving topology and precision.
