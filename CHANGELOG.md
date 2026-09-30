@@ -38,8 +38,22 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   transformer on the held-out ordered pair `(R0, R1)`, query `a` only. The
   teacher-free design checks and the hand-set realisability check are
   executable (`scpn_quantum_control.benchmarks.kyma_v3`,
-  `scripts/run_kyma_v3_probe.py`) and gated by the `kyma-v3-quality` CI job. No
-  result exists yet.
+  `scripts/run_kyma_v3_probe.py`) and gated by the `kyma-v3-quality` CI job.
+  Result under the frozen contract: PASS. The substrate classified all 64
+  held-out items in all five seeds (1.000 ± 0.000); the best matched baseline,
+  the staged GNN, reached 0.441 ± 0.099; chance is 0.25. The artefact is
+  `data/kyma_v3_symbolic_composition/kyma_v3_symbolic_composition.json`.
+
+- KYMA v3 dynamics ablation, pre-registered before training
+  (`docs/campaigns/kyma_v3_dynamics_ablation_prereg_2026-09-30.md`,
+  `scripts/run_kyma_v3_ablation.py`). Four variants over five seeds: the frozen
+  stage (1.000 ± 0.000, reproducing v3), its fixed point without integration
+  dynamics (1.000 ± 0.000), no triadic coupling (0.253 ± 0.006) and five
+  instead of sixty integration steps (0.984 ± 0.031). Under the pre-registered
+  rules the v3 generalisation is attributed to the phase-arithmetic structure of
+  the stage rather than to oscillator dynamics, and the triadic phase sum is
+  necessary. The artefact is
+  `data/kyma_v3_symbolic_composition/kyma_v3_dynamics_ablation.json`.
 
 ### Fixed
 
