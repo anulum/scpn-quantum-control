@@ -185,3 +185,18 @@ def test_child_revision_edit_preserves_parent_and_original_child() -> None:
     assert changed.digest != child.digest
     assert changed.body["parent_revision_hashes"] == (parent.digest,)
     assert (write_json(parent.to_dict()), child.digest) == before
+
+
+@pytest.mark.parametrize("case", ["duplicate_revision", "reversed_timestamps"])
+def test_manifest_refuses_ambiguous_revisions_and_reversed_time(case: str) -> None:
+    """A manifest requires unique revision identities and chronological timestamps."""
+    payload = copy.deepcopy(_CORPUS["fixtures"]["workspace"])
+    body = payload["body"]
+    if case == "duplicate_revision":
+        body["revision_refs"].append(copy.deepcopy(body["revision_refs"][0]))
+        reason = "duplicate reference"
+    else:
+        body["updated_at"] = "2000-01-01T00:00:00Z"
+        reason = "precedes creation"
+    with pytest.raises(ValueError, match=reason):
+        parse_workspace_manifest(payload)

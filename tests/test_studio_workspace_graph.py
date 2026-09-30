@@ -304,3 +304,81 @@ def test_raw_verifier_cannot_bypass_workspace_document_validation() -> None:
     bundle[3][ExperimentRevision.schema] = workspace_codec
     with pytest.raises(ValueError, match="workspace reference requires indexed document"):
         admit_workspace(*bundle)
+
+
+def test_selected_draft_and_merging_revision_admit_complete_graph() -> None:
+    """A merge waits for both genuine parents and retains its selected draft identity."""
+    bundle = _bundle()
+    parent = next(
+        record
+        for record in bundle[1].values()
+        if isinstance(record, ExperimentRevision) and not record.body["parent_revision_hashes"]
+    )
+    sibling_wire = parent.to_dict()
+    cast(dict[str, object], sibling_wire["extensions"])["branch"] = "independent"
+    sibling = parse_document(sibling_wire)
+    merge_wire = copy.deepcopy(_FIXTURES["revision_child"])
+    merge_wire["body"]["parent_revision_hashes"] = [parent.digest, sibling.digest]
+    merged = parse_document(merge_wire)
+    for key, record in tuple(bundle[1].items()):
+        if isinstance(record, (ExperimentRevision, LocalRunRecord)) and key != parent.digest:
+            del bundle[1][key]
+    bundle[1][sibling.digest] = sibling
+    bundle[1][merged.digest] = merged
+    refs = [
+        {"schema": record.schema, "sha256": record.digest, "media_type": "application/json"}
+        for record in (parent, sibling, merged)
+    ]
+    manifest_wire = bundle[0].to_dict()
+    body = cast(dict[str, object], manifest_wire["body"])
+    body["revision_refs"] = refs
+    body["draft_ref"] = refs[-1]
+    manifest = parse_workspace_manifest(manifest_wire)
+    admission = admit_workspace(manifest, *bundle[1:])
+    assert merged.digest in admission.document_hashes
+    assert sibling.digest in admission.document_hashes
+
+
+def test_parameter_binding_requires_its_immutable_input_reference() -> None:
+    """Indexed context alone cannot supply a specification omitted by the revision."""
+    payload = copy.deepcopy(_FIXTURES["revision_root"])
+    payload["body"]["input_refs"] = []
+    with pytest.raises(ValueError, match="missing immutable specification reference"):
+        admit_workspace(*_revision_bundle(payload))
+
+
+def test_run_cannot_outlive_its_indexed_revision() -> None:
+    """Retaining a run receipt requires retaining the exact revision it references."""
+    bundle = _bundle()
+    child_hash = next(
+        key
+        for key, record in bundle[1].items()
+        if isinstance(record, ExperimentRevision) and record.body["parent_revision_hashes"]
+    )
+    del bundle[1][child_hash]
+    manifest_wire = bundle[0].to_dict()
+    body = cast(dict[str, object], manifest_wire["body"])
+    refs = cast(list[dict[str, object]], body["revision_refs"])
+    body["revision_refs"] = [ref for ref in refs if ref["sha256"] != child_hash]
+    manifest = parse_workspace_manifest(manifest_wire)
+    with pytest.raises(ValueError, match="missing revision"):
+        admit_workspace(manifest, *bundle[1:])
+
+
+def test_run_outputs_resolve_original_producer_bytes() -> None:
+    """An output receipt must resolve its original source before admission succeeds."""
+    bundle = _bundle()
+    payload = copy.deepcopy(_FIXTURES["run"])
+    digest = canonical_digest("review_fixture.v1", _FIXTURES["problem"])
+    payload["body"]["output_refs"] = [
+        {"schema": "review_fixture.v1", "sha256": digest, "media_type": "application/json"}
+    ]
+    for key, record in tuple(bundle[1].items()):
+        if isinstance(record, LocalRunRecord):
+            del bundle[1][key]
+    run = parse_document(payload)
+    bundle[1][run.digest] = run
+    assert digest in admit_workspace(*bundle).raw_hashes
+    del bundle[2][digest]
+    with pytest.raises(ValueError, match="dangling raw"):
+        admit_workspace(*bundle)
