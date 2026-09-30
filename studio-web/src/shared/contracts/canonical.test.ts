@@ -75,3 +75,24 @@ it("rejects custom array prototypes before a serializer can invoke their methods
   class Decorated extends Array<unknown> {}
   expect(() => canonicalBytes("example.v1", new Decorated(1, 2))).toThrow("unsupported array prototype");
 });
+
+
+it("orders prefix-sharing member names by their full UTF-8 bytes", () => {
+  expect(new TextDecoder().decode(canonicalBytes("test.v1", { aa: 2n, a: 1n }))).toBe('test.v1\n["object",[["a",["integer","1"]],["aa",["integer","2"]]]]');
+});
+
+it("accepts a scalar at the depth budget and refuses another container", () => {
+  const nested = (leaf: unknown) => { let value = leaf; for (let index = 0; index < 64; index++) value = [value]; return value; };
+  expect(() => canonicalBytes("test.v1", nested(0n))).not.toThrow();
+  expect(() => canonicalBytes("test.v1", nested(null))).not.toThrow();
+  expect(() => canonicalBytes("test.v1", nested({}))).toThrow("depth exceeded");
+  expect(() => canonicalBytes("test.v1", nested([]))).toThrow("depth exceeded");
+});
+
+it("refuses an accessor array element without invoking its getter", () => {
+  let reads = 0;
+  const values = [1n];
+  Object.defineProperty(values, "0", { get() { reads++; return 1n; }, enumerable: true });
+  expect(() => canonicalBytes("test.v1", values)).toThrow("array data element required");
+  expect(reads).toBe(0);
+});

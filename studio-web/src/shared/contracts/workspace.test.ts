@@ -128,3 +128,33 @@ it("preserves parent identity when an exported child is edited", async () => {
   expect(edited.body["parent_revision_hashes"]).toEqual([await documentDigest(parent)]);
   expect([writeJson(documentToWire(parent)), await documentDigest(child)]).toEqual(before);
 });
+
+
+it("retains a draft reference and refuses timestamps before creation", () => {
+  const payload = fixture("workspace");
+  payload.body["draft_ref"] = (payload.body["revision_refs"] as unknown[])[0];
+  const document = accepted(parseWorkspaceManifest(payload));
+  expect(document.body["draft_ref"]).toEqual(payload.body["draft_ref"]);
+  payload.body["updated_at"] = "2000-01-01T00:00:00Z";
+  expect(parseWorkspaceManifest(payload)).toMatchObject({ ok: false, message: "precedes creation" });
+});
+
+it("revalidates caller-supplied documents before exporting or binding", () => {
+  const invalid = fixture("parameter");
+  delete invalid.body["unit"];
+  expect(() => documentToWire(invalid as unknown as WorkspaceDocument)).toThrow("missing or unknown field");
+  const values = fixture("revision_root").body["parameters"] as Record<string, unknown>;
+  expect(validateParameterBinding(invalid as unknown as Parameters<typeof validateParameterBinding>[0], values["theta"], "rad")).toMatchObject({ ok: false, code: "invalid_document" });
+});
+
+it("refuses a hostile caller object without exposing its arbitrary thrown value", () => {
+  const payload = new Proxy(fixture("workspace"), { ownKeys() { throw "untrusted document inspection"; } });
+  expect(parseDocument(payload)).toEqual({ ok: false, code: "invalid_document", path: "$", message: "Document refused" });
+});
+
+it("refuses duplicate revision identities in a manifest", () => {
+  const payload = fixture("workspace");
+  const refs = payload.body["revision_refs"] as unknown[];
+  refs.push(structuredClone(refs[0]));
+  expect(parseWorkspaceManifest(payload)).toMatchObject({ ok: false, message: "duplicate reference" });
+});

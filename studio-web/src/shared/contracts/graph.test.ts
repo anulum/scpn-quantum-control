@@ -187,3 +187,65 @@ it("does not admit workspace documents through a raw verifier", async () => {
   });
   expect(await admitWorkspace(...inputs)).toMatchObject({ ok: false, message: expect.stringContaining("workspace reference requires indexed document") });
 });
+
+
+it("revalidates malformed caller-owned document objects before admission", async () => {
+  const inputs = await bundle();
+  const invalid = documentToWire(inputs[0]);
+  delete invalid["extensions"];
+  inputs[0] = invalid as unknown as WorkspaceManifest;
+  expect(await admitWorkspace(...inputs)).toMatchObject({ ok: false, message: expect.stringContaining("missing or unknown field") });
+});
+
+it("admits a selected two-parent merge without rewriting either parent", async () => {
+  const inputs = await bundle();
+  const parent = [...inputs[1]].find(([, document]) => document.schema === "experiment_revision.v1" && (document.body["parent_revision_hashes"] as readonly string[]).length === 0)!;
+  const siblingWire = documentToWire(parent[1]);
+  (siblingWire["extensions"] as Record<string, unknown>)["branch"] = "independent";
+  const sibling = take(parseDocument(siblingWire));
+  const siblingHash = await documentDigest(sibling);
+  const mergeWire = documentToWire(take(parseDocument(fixtures["revision_child"])));
+  (mergeWire["body"] as Record<string, unknown>)["parent_revision_hashes"] = [parent[0], siblingHash];
+  const merged = take(parseDocument(mergeWire));
+  const mergedHash = await documentDigest(merged);
+  for (const [digest, document] of inputs[1]) if ((document.schema === "experiment_revision.v1" || document.schema === "local_run_record.v1") && digest !== parent[0]) inputs[1].delete(digest);
+  inputs[1].set(siblingHash, sibling); inputs[1].set(mergedHash, merged);
+  const references = [parent[0], siblingHash, mergedHash].map(sha256 => ({ schema: "experiment_revision.v1", sha256, media_type: "application/json" }));
+  const manifestWire = documentToWire(inputs[0]);
+  Object.assign(manifestWire["body"] as object, { revision_refs: references, draft_ref: references[2] });
+  inputs[0] = take(parseWorkspaceManifest(manifestWire));
+  const admission = take(await admitWorkspace(...inputs));
+  expect(admission.documentHashes).toEqual([...inputs[1].keys()].sort());
+  expect(await documentDigest(parent[1])).toBe(parent[0]);
+  expect(await documentDigest(sibling)).toBe(siblingHash);
+});
+
+it("refuses an additional independently valid workspace root", async () => {
+  const inputs = await bundle();
+  const wire = documentToWire(inputs[0]);
+  (wire["extensions"] as Record<string, unknown>)["title"] = "Another root";
+  const root = take(parseWorkspaceManifest(wire));
+  inputs[1].set(await documentDigest(root), root);
+  expect(await admitWorkspace(...inputs)).toMatchObject({ ok: false, message: expect.stringContaining("unexpected workspace root") });
+});
+
+it("validates output references against original raw producer bytes", async () => {
+  const inputs = await bundle();
+  const [rawHash, raw] = [...inputs[2]][0]!;
+  const run = [...inputs[1]].find(([, document]) => document.schema === "local_run_record.v1")!;
+  const wire = documentToWire(run[1]);
+  (wire["body"] as Record<string, unknown>)["output_refs"] = [{ schema: raw.schema, sha256: rawHash, media_type: "application/json" }];
+  const changed = take(parseDocument(wire));
+  inputs[1].delete(run[0]); inputs[1].set(await documentDigest(changed), changed);
+  expect(take(await admitWorkspace(...inputs)).rawHashes).toContain(rawHash);
+});
+
+it("refuses caller-owned raw records whose inspection throws a non-error value", async () => {
+  const inputs = await bundle();
+  const [digest, raw] = [...inputs[2]][0]!;
+  const hostile = { get schema(): string { throw "untrusted raw record inspection"; }, content: raw.content };
+  inputs[2].set(digest, hostile);
+  expect(await admitWorkspace(...inputs)).toEqual({ ok: false, code: "invalid_graph", path: "$", message: "Workspace admission refused" });
+  expect(inputs[2].get(digest)).toBe(hostile);
+  expect(hostile.content).toBe(raw.content);
+});

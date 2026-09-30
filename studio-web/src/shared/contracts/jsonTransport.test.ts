@@ -55,3 +55,11 @@ it("bounds integer tokens before conversion", () => {
 it.each([["x", 128 * 1024 * 1024 + 1], ["é", 64 * 1024 * 1024 + 1]] as const)("bounds UTF-8 input for %s", (character, count) => {
   expect(() => readJson(character.repeat(count))).toThrow("byte limit");
 }, 30_000);
+
+
+it("accepts a leaf at the depth budget and refuses any further container", () => {
+  const nested = (leaf: string) => "[".repeat(64) + leaf + "]".repeat(64);
+  expect(readJson(nested("0"))).toEqual(readJson(writeJson(readJson(nested("0")))));
+  expect(() => readJson(nested("{}"))).toThrow("depth exceeded");
+  expect(() => readJson(nested("[]"))).toThrow("depth exceeded");
+});
