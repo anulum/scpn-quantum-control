@@ -34,11 +34,11 @@ def run_resource_journey(base_url: str) -> dict[str, object]:
         Refusal, numerical recovery, recalculation or disposal fails.
 
     """
-    from playwright.sync_api import Route, expect, sync_playwright
-
     from tools.studio_browser_journey import loopback_url
 
     url = loopback_url(base_url)
+    from playwright.sync_api import Route, expect, sync_playwright
+
     origin = urlsplit(url).netloc
     errors: list[str] = []
     rejected: list[str] = []
