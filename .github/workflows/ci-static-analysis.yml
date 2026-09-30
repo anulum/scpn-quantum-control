@@ -27,6 +27,8 @@ jobs:
           python-version: "3.12"
           cache: 'pip'
       - run: pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Install locked Playwright types for browser helper audits
+        run: python -m pip install --no-deps --require-hashes -r requirements-ci-studio-browser.txt
       - name: Verify the lock-faithful CI build environment
         run: |
           python -m mypy --strict --explicit-package-bases \
