@@ -14,6 +14,8 @@ its kind. This tool produces that inventory from the Git index and the source te
 never imports the package unless ``--measure-import-cost`` is given.
 
 The domain assignment is data (``data/split_preparation/split_domain_map.json``), not code.
+A unit whose files belong to different targets is listed under ``split_units`` with every
+file assigned explicitly; a file of such a unit that the map does not list is a problem.
 The tool fails closed: an unknown unit, a unit listed twice, a unit in the map that no longer
 exists, a tracked path no rule owns, or a Python file that does not parse is an error, and the
 command exits non-zero after writing the problems it found.
@@ -53,6 +55,7 @@ DEFAULT_MAP = Path("data/split_preparation/split_domain_map.json")
 RUNTIME_KINDS = frozenset({"module", "module_try", "lazy", "dynamic"})
 MODULE_KINDS = frozenset({"module", "module_try"})
 UMBRELLA = "workbench-umbrella"
+UNCLASSIFIED = "unclassified"
 DYNAMIC_CALLS = frozenset({"import_module", "find_spec", "__import__"})
 _STRING_REF = re.compile(rf"{PACKAGE}\.([A-Za-z_][A-Za-z0-9_]*)")
 _SOURCE_PATH_REF = re.compile(rf"src/{PACKAGE}/[A-Za-z0-9_/]+\.py")
@@ -83,8 +86,9 @@ class DomainMap:
     targets: frozenset[str]
     empty_targets: dict[str, str]
     path_rules: tuple[PathRule, ...]
-    open_classifications: tuple[tuple[str, str], ...]
+    open_classifications: tuple[tuple[str, str, str], ...]
     extra_import_names: dict[str, tuple[str, ...]]
+    split_files: dict[str, str] = field(default_factory=dict)
 
     def target_of_unit(self, unit: str) -> str | None:
         """Return the target repository of ``unit``, or ``None`` when the unit is unmapped."""
@@ -151,8 +155,8 @@ def load_domain_map(path: Path) -> DomainMap:
     Raises
     ------
     OwnershipError
-        On duplicate keys, a unit listed under two domains, an unknown target or an
-        unsupported schema.
+        On duplicate keys, a unit listed under two domains, an unknown target, a split file
+        listed twice or under an unknown domain or unit, or an unsupported schema.
     """
     raw = json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=_reject_duplicate_keys)
     if raw.get("schema") != "scpn_qc_split_domain_map_v1":
@@ -185,6 +189,18 @@ def load_domain_map(path: Path) -> DomainMap:
     for name in raw.get("empty_targets", {}):
         if name not in targets:
             raise OwnershipError(f"empty target {name!r} is not a declared target")
+    split_files: dict[str, str] = {}
+    for unit, by_domain in raw.get("split_units", {}).items():
+        if unit not in unit_domain:
+            raise OwnershipError(f"split unit {unit!r} is not a mapped unit")
+        for domain, names in by_domain.items():
+            if domain not in domain_target:
+                raise OwnershipError(f"split unit {unit!r} names unknown domain {domain!r}")
+            for name in names:
+                key = f"{unit}/{name}"
+                if key in split_files:
+                    raise OwnershipError(f"split file {key!r} assigned twice")
+                split_files[key] = domain
     return DomainMap(
         unit_domain=unit_domain,
         domain_target=domain_target,
@@ -192,11 +208,13 @@ def load_domain_map(path: Path) -> DomainMap:
         empty_targets=dict(raw.get("empty_targets", {})),
         path_rules=tuple(rules),
         open_classifications=tuple(
-            (item["unit"], item["reason"]) for item in raw.get("open_classifications", [])
+            (item["unit"], item["reason"], item.get("decision", "open"))
+            for item in raw.get("open_classifications", [])
         ),
         extra_import_names={
             dist: tuple(names) for dist, names in raw.get("extra_import_names", {}).items()
         },
+        split_files=split_files,
     )
 
 
@@ -410,7 +428,12 @@ def build_inventory(repo: Path, domain_map: DomainMap) -> Inventory:
         if record is None:
             inventory.problems.append(f"unowned path (no rule): {path}")
             continue
+        if record.target == UNCLASSIFIED:
+            inventory.problems.append(f"unclassified file in split unit: {path}")
         inventory.files.append(record)
+    present = {p[len(SOURCE_PREFIX) :] for p in paths if p.startswith(SOURCE_PREFIX)}
+    for key in sorted(domain_map.split_files.keys() - present):
+        inventory.problems.append(f"stale split file (in domain map, not in tree): {key}")
     inventory.edges.sort(key=lambda e: (e.source_path, e.line, e.target_unit, e.kind))
     return inventory
 
@@ -425,6 +448,12 @@ def _classify(
     if rule.target == "by-unit":
         unit = unit_of(path)
         domain = domain_map.unit_domain.get(unit, "")
+        if any(key.startswith(unit + "/") for key in domain_map.split_files):
+            split_domain = domain_map.split_files.get(path[len(SOURCE_PREFIX) :])
+            if split_domain is None:
+                return FileRecord(path, digest, rule.kind, unit, "", UNCLASSIFIED)
+            target = domain_map.domain_target[split_domain]
+            return FileRecord(path, digest, rule.kind, unit, split_domain, target, "split unit")
         target = domain_map.target_of_unit(unit) or "unmapped"
         return FileRecord(path, digest, rule.kind, unit, domain, target)
     if rule.target == "by-imports":
@@ -714,8 +743,11 @@ def write_outputs(
     for unit, domain in domain_map.unit_domain.items():
         target_units[domain_map.domain_target[domain]].append(unit)
     kinds: dict[str, int] = defaultdict(int)
+    source_files: dict[str, int] = defaultdict(int)
     for record in inventory.files:
         kinds[record.kind] += 1
+        if record.path.startswith(SOURCE_PREFIX):
+            source_files[record.target] += 1
     summary = {
         "schema": "scpn_qc_split_ownership_summary_v1",
         "head": inventory.head,
@@ -724,13 +756,17 @@ def write_outputs(
         "source_units": len(domain_map.unit_domain),
         "edges": len(inventory.edges),
         "units_per_target": {t: len(target_units.get(t, [])) for t in sorted(domain_map.targets)},
+        "source_files_per_target": {t: source_files.get(t, 0) for t in sorted(domain_map.targets)},
         "empty_targets": domain_map.empty_targets,
         "problems": inventory.problems,
     }
     written.append(_write(out_dir / "summary.json", _json(summary)))
 
-    lines = ["# Open classifications (stage-0 owner review)", ""]
-    lines += [f"- `{unit}` — {reason}" for unit, reason in domain_map.open_classifications]
+    lines = ["# Stage-0 classifications (owner review)", ""]
+    lines += [
+        f"- `{unit}` — {reason} **Decision:** {decision}"
+        for unit, reason, decision in domain_map.open_classifications
+    ]
     written.append(_write(out_dir / "open_classifications.md", "\n".join(lines) + "\n"))
     return written
 

@@ -1,6 +1,6 @@
 {
  "schema": "scpn_qc_split_domain_map_v1",
- "description": "Unit -> domain -> target repository map for QSP-01 (owner QD2/QD3 repository map, architecture section 3). Domain assignment is judgement; open_classifications lists the calls that need stage-0 owner review.",
+ "description": "Unit -> domain -> target repository map for QSP-01 (owner QD2/QD3 repository map, architecture section 3). Domain assignment is judgement; open_classifications lists the stage-0 judgement calls with the owner's decisions (2026-09-30); split_units assigns the files of a unit that is split across targets.",
  "package": "scpn_quantum_control",
  "targets": [
   "SCPN-QC-AD",
@@ -23,9 +23,7 @@
   "sibling:scpn-quantum-engine",
   "workbench-umbrella"
  ],
- "empty_targets": {
-  "SCPN-QC-QNODE": "Takes the QNode/tape/gradient and framework-bridge files of the `phase` unit (simulation domain); the file-level split of `phase` is an open classification decided at stage 0."
- },
+ "empty_targets": {},
  "domains": {
   "analysis": {
    "target": "SCPN-QC-ANALYSIS",
@@ -273,6 +271,10 @@
     "topology_kernel_product"
    ]
   },
+  "qnode": {
+   "target": "SCPN-QC-QNODE",
+   "units": []
+  },
   "research_scpn": {
    "target": "SCPN-QC-RESEARCH",
    "units": [
@@ -441,39 +443,48 @@
  "open_classifications": [
   {
    "unit": "phase",
-   "reason": "119 files: dynamics solvers (SIM), QNode/gradient/framework bridges (QNODE), NQS/VQE/QNN/ansatz groups (LEARN); split per file at stage 0."
+   "reason": "119 files: dynamics solvers (SIM), QNode/gradient/framework bridges (QNODE), NQS/VQE/QNN/ansatz groups (LEARN); split per file at stage 0.",
+   "decision": "Owner 2026-09-30 accepted the recommendation: split per file (split_units.phase): 72 framework-bridge and QNode/gradient/audit files -> QNODE; 24 QNN/NQS/VQE/ansatz and training/coupling-learning files -> LEARN; 23 dynamics-solver and synchronisation-objective files incl. __init__ -> SIM."
   },
   {
    "unit": "bridge",
-   "reason": "Generic Kuramoto-XY Hamiltonian (CORE) next to Paper-27 constants and SCPN adapters (RESEARCH); QSP-04 separates them."
+   "reason": "Generic Kuramoto-XY Hamiltonian (CORE) next to Paper-27 constants and SCPN adapters (RESEARCH); QSP-04 separates them.",
+   "decision": "Owner 2026-09-30 accepted: stays CORE for now; QSP-04 separates the generic Hamiltonian (CORE) from Paper-27 constants and SCPN adapters (RESEARCH)."
   },
   {
    "unit": "kuramoto_core",
-   "reason": "Placed in simulation because it imports phase at module level; could belong to CORE after QSP-03/QSP-04."
+   "reason": "Placed in simulation because it imports phase at module level; could belong to CORE after QSP-03/QSP-04.",
+   "decision": "Owner 2026-09-30 accepted: SIM; re-examine for CORE after QSP-03/QSP-04."
   },
   {
    "unit": "hardware",
-   "reason": "hardware/classical.py (classical reference solver) belongs to SIM per architecture section 4; QSP-07 moves it."
+   "reason": "hardware/classical.py (classical reference solver) belongs to SIM per architecture section 4; QSP-07 moves it.",
+   "decision": "Owner 2026-09-30 accepted: HAL; hardware/classical.py moves to SIM in QSP-07."
   },
   {
    "unit": "qpu_compute_types",
-   "reason": "Contract-only types: HAL or CONTRACTS nucleus (QSP-05)."
+   "reason": "Contract-only types: HAL or CONTRACTS nucleus (QSP-05).",
+   "decision": "Owner 2026-09-30 accepted: HAL for now; HAL vs CONTRACTS decided in QSP-05."
   },
   {
    "unit": "stable_core",
-   "reason": "Durable v1 contract: CORE or CONTRACTS (QSP-05, QSP-08)."
+   "reason": "Durable v1 contract: CORE or CONTRACTS (QSP-05, QSP-08).",
+   "decision": "Owner 2026-09-30 accepted: CORE for now; CORE vs CONTRACTS decided in QSP-05/QSP-08."
   },
   {
    "unit": "attested_result_pack",
-   "reason": "Result-pack attestation: BENCH today; overlaps HAL result packs and the QPU-RESULT-PACK tool."
+   "reason": "Result-pack attestation: BENCH today; overlaps HAL result packs and the QPU-RESULT-PACK tool.",
+   "decision": "Owner 2026-09-30 accepted: BENCH; overlap with HAL result packs and the QPU-RESULT-PACK tool revisited in QSP-07."
   },
   {
    "unit": "public_api_stability",
-   "reason": "Governance catalogue mapped to CONTRACTS; may stay in the umbrella as a workbench-wide policy."
+   "reason": "Governance catalogue mapped to CONTRACTS; may stay in the umbrella as a workbench-wide policy.",
+   "decision": "Owner 2026-09-30 accepted: CONTRACTS; umbrella alternative revisited in QSP-08."
   },
   {
    "unit": "studio_workspace",
-   "reason": "New unit after the planning snapshot (Quantum Studio work); mapped to STUDIO, confirm with the Studio owner."
+   "reason": "New unit after the planning snapshot (Quantum Studio work); mapped to STUDIO, confirm with the Studio owner.",
+   "decision": "Owner 2026-09-30 accepted: STUDIO (Studio owner informed)."
   }
  ],
  "extra_import_names": {
@@ -610,5 +621,134 @@
   "goatools": [
    "goatools"
   ]
+ },
+ "split_units": {
+  "phase": {
+   "simulation": [
+    "__init__.py",
+    "adiabatic_preparation.py",
+    "ancilla_lindblad.py",
+    "backend_selector.py",
+    "contraction_optimiser.py",
+    "floquet_kuramoto.py",
+    "general_unitary.py",
+    "kuramoto_variants.py",
+    "lindblad.py",
+    "lindblad_engine.py",
+    "mps_evolution.py",
+    "open_system_objectives.py",
+    "pulse_shaping.py",
+    "qsp_phases.py",
+    "qsvt_evolution.py",
+    "results.py",
+    "synchronisation_objectives.py",
+    "synchronisation_witness.py",
+    "tensor_jump.py",
+    "trotter_error.py",
+    "trotter_upde.py",
+    "xy_compiler.py",
+    "xy_kuramoto.py"
+   ],
+   "qnode": [
+    "differentiable_audit.py",
+    "differentiable_audit_contracts.py",
+    "differentiable_readiness.py",
+    "generalised_parameter_shift.py",
+    "gradient_backend.py",
+    "gradient_descent.py",
+    "gradient_support_matrix.py",
+    "gradient_tape.py",
+    "hardware_gradient_campaign.py",
+    "hardware_gradient_policy.py",
+    "hardware_gradient_publication.py",
+    "jax_bridge.py",
+    "jax_bridge_contracts.py",
+    "jax_compatibility.py",
+    "jax_gradients.py",
+    "jax_maturity.py",
+    "jax_nqs.py",
+    "jax_qnode_transforms.py",
+    "natural_gradient.py",
+    "objective_audit.py",
+    "objective_planner.py",
+    "optimizer_audit.py",
+    "optimizer_convergence_suite.py",
+    "param_shift.py",
+    "pennylane_bridge.py",
+    "pennylane_import.py",
+    "pennylane_provider_plugin.py",
+    "provider_gradient.py",
+    "provider_gradient_audit.py",
+    "provider_hardware_gradient_audit.py",
+    "provider_hardware_safety_audit.py",
+    "qiskit_bridge.py",
+    "qiskit_bridge_contracts.py",
+    "qiskit_gradients.py",
+    "qiskit_runtime.py",
+    "qnode_affinity_benchmark.py",
+    "qnode_circuit.py",
+    "qnode_circuit_builders.py",
+    "qnode_circuit_contracts.py",
+    "qnode_circuit_differentiation.py",
+    "qnode_circuit_execution.py",
+    "qnode_circuit_support.py",
+    "qnode_count_mapping.py",
+    "qnode_framework_parity.py",
+    "qnode_provider_transforms.py",
+    "qnode_tape.py",
+    "qnode_transforms.py",
+    "qnode_vector_transforms.py",
+    "tensorflow_bridge.py",
+    "tensorflow_bridge_contracts.py",
+    "tensorflow_compatibility.py",
+    "tensorflow_gradients.py",
+    "tensorflow_maintenance.py",
+    "torch_aot_autograd_export.py",
+    "torch_autograd_function.py",
+    "torch_bridge.py",
+    "torch_bridge_contracts.py",
+    "torch_checkpoint.py",
+    "torch_checkpoint_matrix.py",
+    "torch_compatibility.py",
+    "torch_device_state.py",
+    "torch_dynamic_shape_export.py",
+    "torch_export.py",
+    "torch_export_shape_matrix.py",
+    "torch_gradients.py",
+    "torch_maturity.py",
+    "torch_module_state.py",
+    "torch_qnode_transforms.py",
+    "torch_training_loop_matrix.py",
+    "trainability.py",
+    "transform_nesting.py",
+    "variational_metric.py"
+   ],
+   "qml": [
+    "adapt_vqe.py",
+    "ansatz_bench.py",
+    "ansatz_methodology.py",
+    "avqds.py",
+    "coupling_learning.py",
+    "coupling_time_series_recovery.py",
+    "cross_domain_transfer.py",
+    "domain_benchmark_datasets.py",
+    "gpu_batch_vqe.py",
+    "model_training_evidence.py",
+    "nqs_ansatz.py",
+    "objectives.py",
+    "phase_vqe.py",
+    "qgnn.py",
+    "qnn_conformance.py",
+    "qnn_convergence.py",
+    "qnn_finite_shot.py",
+    "qnn_framework_agreement.py",
+    "qnn_framework_bridge_matrix.py",
+    "qnn_loss_landscape.py",
+    "qnn_optimizer_benchmark.py",
+    "qnn_training.py",
+    "structured_ansatz.py",
+    "varqite.py"
+   ]
+  }
  }
 }

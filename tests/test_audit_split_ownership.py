@@ -394,5 +394,73 @@ def test_committed_domain_map_loads() -> None:
     """The committed workbench domain map is well formed and names every approved target."""
     domain_map = tool.load_domain_map(_REPO_ROOT / tool.DEFAULT_MAP)
     assert "SCPN-QC-CONTRACTS" in domain_map.targets
-    assert "SCPN-QC-QNODE" in domain_map.empty_targets
+    assert domain_map.split_files["phase/qnode_tape.py"] == "qnode"
     assert domain_map.unit_domain["__init__"] == "facade"
+    assert all(decision != "open" for _, _, decision in domain_map.open_classifications)
+
+
+def _split_map(split: dict[str, list[str]]) -> dict[str, object]:
+    data: dict[str, object] = json.loads(json.dumps(_MAP))
+    data["split_units"] = {"beta": split}
+    return data
+
+
+def test_split_unit_assigns_each_file_its_own_target(tmp_path: Path) -> None:
+    """Files of a split unit follow their listed domain, not the unit's domain."""
+    split = {"core": ["__init__.py"], "simulation": ["inner.py"]}
+    domain_map = tool.load_domain_map(_write_map(tmp_path, _split_map(split)))
+    inventory = tool.build_inventory(_make_repo(tmp_path), domain_map)
+    assert inventory.problems == []
+    by_path = {r.path: r for r in inventory.files}
+    assert by_path["src/scpn_quantum_control/beta/inner.py"].target == "T-SIM"
+    assert by_path["src/scpn_quantum_control/beta/__init__.py"].target == "T-CORE"
+    out = tmp_path / "out"
+    tool.write_outputs(_make_repo(tmp_path / "second"), domain_map, inventory, out, None)
+    summary = json.loads((out / "summary.json").read_text(encoding="utf-8"))
+    assert summary["source_files_per_target"]["T-SIM"] == 2
+
+
+def test_split_unit_reports_unlisted_and_stale_files(tmp_path: Path) -> None:
+    """A new file in a split unit and a listed file gone from the tree are both problems."""
+    split = {"core": ["__init__.py", "gone.py"]}
+    domain_map = tool.load_domain_map(_write_map(tmp_path, _split_map(split)))
+    inventory = tool.build_inventory(_make_repo(tmp_path), domain_map)
+    assert (
+        "unclassified file in split unit: src/scpn_quantum_control/beta/inner.py"
+        in inventory.problems
+    )
+    assert "stale split file (in domain map, not in tree): beta/gone.py" in inventory.problems
+
+
+@pytest.mark.parametrize(
+    ("split_units", "message"),
+    [
+        ({"beta": {"core": ["inner.py"], "simulation": ["inner.py"]}}, "assigned twice"),
+        ({"beta": {"nowhere": ["inner.py"]}}, "unknown domain"),
+        ({"omega": {"core": ["x.py"]}}, "not a mapped unit"),
+    ],
+)
+def test_malformed_split_units_are_refused(
+    tmp_path: Path, split_units: dict[str, object], message: str
+) -> None:
+    """A split file listed twice, under an unknown domain or for an unknown unit is refused."""
+    data = json.loads(json.dumps(_MAP))
+    data["split_units"] = split_units
+    with pytest.raises(tool.OwnershipError, match=message):
+        tool.load_domain_map(_write_map(tmp_path, data))
+
+
+def test_open_classification_decisions_are_rendered(tmp_path: Path) -> None:
+    """The stage-0 list shows each decision, and an undecided item reads as open."""
+    data = json.loads(json.dumps(_MAP))
+    data["open_classifications"] = [
+        {"unit": "gamma", "reason": "judgement call", "decision": "stays SIM"},
+        {"unit": "alpha", "reason": "second call"},
+    ]
+    domain_map = tool.load_domain_map(_write_map(tmp_path, data))
+    repo = _make_repo(tmp_path)
+    out = tmp_path / "out"
+    tool.write_outputs(repo, domain_map, tool.build_inventory(repo, domain_map), out, None)
+    text = (out / "open_classifications.md").read_text(encoding="utf-8")
+    assert "- `gamma` — judgement call **Decision:** stays SIM" in text
+    assert "- `alpha` — second call **Decision:** open" in text
