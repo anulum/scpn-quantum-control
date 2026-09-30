@@ -68,6 +68,7 @@ export function parseCatalogue(raw: unknown): Loaded<Catalogue> {
     const route = value["route"];
     const runtime = value["runtime"];
     if ((route !== null && (route !== catalogueRoutes[value["verb"]] || typeof route !== "string")) ||
+        (runtime !== "local-python" && runtime !== "browser-wasm") ||
         runtime !== (route === null ? "local-python" : "browser-wasm")) {
       return { ok: false, reason: "Catalogue route or runtime unsupported" };
     }

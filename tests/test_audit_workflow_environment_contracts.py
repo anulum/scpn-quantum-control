@@ -182,17 +182,18 @@ jobs:
     assert gate.audit(repo) == []
 
 
-def test_standard_library_modules_need_no_requirement_file(tmp_path: Path) -> None:
-    """Accept ``python -m venv`` without a requirement file pinning it."""
+@pytest.mark.parametrize("command", ["python -m venv .venv", "python -m http.server 4173"])
+def test_standard_library_modules_need_no_requirement_file(tmp_path: Path, command: str) -> None:
+    """Accept native CPython module commands without requirement-file pins."""
     repo = _repo(tmp_path)
     _workflow(
         repo,
         "example.yml",
-        """
+        f"""
 jobs:
   bootstraps:
     steps:
-      - run: python -m venv .venv
+      - run: {command}
 """,
     )
 
@@ -204,6 +205,41 @@ def test_the_live_repository_satisfies_its_own_workflow_contracts() -> None:
     repo = Path(__file__).resolve().parents[1]
 
     assert gate.audit(repo) == []
+
+
+def test_reusable_workflow_call_has_no_local_runtime_dependencies(tmp_path: Path) -> None:
+    """A workflow-call job delegates commands rather than installing a local runtime."""
+    repo = _repo(tmp_path)
+    _workflow(
+        repo,
+        "caller.yml",
+        """
+jobs:
+  studio:
+    uses: ./.github/workflows/ci-studio.yml
+""",
+    )
+    assert gate.main(["--repo", str(repo)]) == 0
+
+
+def test_nonmapping_step_cannot_supply_a_later_python_dependency(tmp_path: Path) -> None:
+    """Malformed step data cannot be interpreted as a dependency installation."""
+    repo = _repo(tmp_path)
+    _workflow(
+        repo,
+        "malformed-step.yml",
+        """
+jobs:
+  check:
+    env: {PYTHONPATH: src}
+    steps:
+      - python -m pip install -r requirements-ci.txt
+      - run: python -m pytest tests/test_thing.py
+""",
+    )
+    findings = gate.audit(repo)
+    assert len(findings) == 1
+    assert "each step must define exactly one nonempty run or uses" in str(findings[0])
 
 
 @pytest.mark.parametrize(

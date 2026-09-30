@@ -32,7 +32,21 @@ export type ResolvedSettings = WorkspaceDocument<"resolved_settings.v1">;
 /** Recorded local events without a successful-execution claim. */
 export type LocalRunRecord = WorkspaceDocument<"local_run_record.v1">;
 /** Explicit structural acceptance or a field-addressed refusal. */
-export type ParseResult<T> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly code: string; readonly path: string; readonly message: string };
+export type ParseResult<T> = {
+  /** Structural validation succeeded; the value is available. */
+  readonly ok: true;
+  /** Fully validated immutable document or projection. */
+  readonly value: T;
+} | {
+  /** Structural validation refused the supplied input. */
+  readonly ok: false;
+  /** Stable category identifying the contract refusal. */
+  readonly code: string;
+  /** Field address at which validation refused the input. */
+  readonly path: string;
+  /** Human-readable explanation of the refusal. */
+  readonly message: string;
+};
 
 const fields: Record<WorkspaceSchema, readonly string[]> = {
   "quantum_workspace.v1": ["project_id", "revision_refs", "draft_ref", "created_at", "updated_at", "artefact_refs"],

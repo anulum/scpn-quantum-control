@@ -44,7 +44,9 @@ from typing import Any, Final
 import yaml
 
 #: Modules that ship with CPython, so no requirement file has to provide them.
-STDLIB_MODULES: Final[frozenset[str]] = frozenset({"venv", "pip", "ensurepip", "json", "unittest"})
+STDLIB_MODULES: Final[frozenset[str]] = frozenset(
+    {"venv", "pip", "ensurepip", "json", "unittest", "http"}
+)
 
 #: Import roots this repository owns; a path or an install makes them available.
 FIRST_PARTY_ROOTS: Final[frozenset[str]] = frozenset(

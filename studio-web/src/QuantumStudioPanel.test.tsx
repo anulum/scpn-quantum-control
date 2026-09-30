@@ -105,7 +105,7 @@ describe("QuantumStudioPanel", () => {
 
 it("exposes the local evidence inspector without enabling a provider action", () => {
   render(<QuantumStudioPanel />);
-  expect(screen.getByRole("region", { name: "Inspect evidence JSON", exact: true })).toBeTruthy();
+  expect(screen.getByRole("region", { name: "Inspect evidence JSON" })).toBeTruthy();
   fireEvent.change(screen.getByLabelText("Evidence JSON"), { target: { value: '{}' } });
   fireEvent.click(screen.getByRole("button", { name: "Inspect snapshot" }));
   expect(screen.getByText("Missing schema")).toBeTruthy();
