@@ -211,3 +211,61 @@ or truthful "in progress" wording by 12 October 2026. Part B quotes no partial
 or assumed number.
 
 Seat: 90ad
+
+## RESULT
+
+Appended 2026-09-30 after the run; nothing above this heading has changed since the freeze commit `ddae107dc`
+(file SHA-256 before this section: `9248cf8a4fe9bfaf4d4807133f86dd9da51fac821fb71f70a3e8932eb232d1a5`).
+
+**Verdict under the frozen contract: PASS.**
+
+- Run: ML350 (hostname `god-of-the-math`), `systemd-run --user` unit pinned to cores 0–11, JAX CPU; source commit
+  `dbcb0b0778221f85723ab7f60118c27e6369260f`, a descendant of the freeze commit with **zero** changes under
+  `src/scpn_quantum_control/benchmarks/kyma_v3/`, `benchmarks/kyma_v2/` and `scripts/run_kyma_v3_probe.py` (it adds
+  only CI registrations and evidence digests). Started 2026-09-29T19:01:33Z (freeze pushed 17:11Z), finished
+  2026-09-30T01:25:17Z; 9 h 08 min CPU time. Artefact
+  `data/kyma_v3_symbolic_composition/kyma_v3_symbolic_composition.json`, SHA-256
+  `dd27ae8953d660626abbd23f23a7ea9c5c13123fa93280bef092982104f90cb8` (identical on the host and in the repository).
+- Design checks in the artefact match the table above: 2,112 training items, 64 test items, ambiguity by query
+  1.00 / 0.00 / 0.00, minimum distance 48, uniform label counts, hand-set realisability 1.000.
+
+Held-out accuracy on the pair `(R0, R1)`, query `a`, mean ± population SD over seeds 0–4 (training accuracy in
+brackets):
+
+| model | params | held-out | training |
+|---|---:|---:|---:|
+| **substrate** | 108 | **1.000 ± 0.000** | 0.9995 ± 0.0009 |
+| MLP (contract) | 109 | 0.256 ± 0.041 | 0.677 ± 0.012 |
+| staged GNN (contract) | 103 | 0.441 ± 0.099 | 0.943 ± 0.027 |
+| transformer (contract) | 100 | 0.253 ± 0.015 | 0.504 ± 0.002 |
+| sequential MLP (diagnostic) | 96 | 0.247 ± 0.025 | 0.495 ± 0.025 |
+| MLP, large (diagnostic) | 1,348 | 0.234 ± 0.043 | 1.000 ± 0.000 |
+| staged GNN, large (diagnostic) | 703 | 0.306 ± 0.021 | 1.000 ± 0.000 |
+| transformer, large (diagnostic) | 1,348 | 0.250 ± 0.000 | 0.496 ± 0.008 |
+
+Every seed of the substrate classified all 64 held-out items correctly (seed 2 missed 5 of 2,112 training items).
+
+**Contract.** (1) 1.000 ≥ 0.441 + 0.10: margin over the best contract baseline (staged GNN) **+55.9 percentage
+points**. (2) 1.000 − 0.000 > chance floor 0.25. Both hold → PASS.
+
+**Attribution rule (pre-declared).** Staged GNN within 10 points of the substrate: **no** (0.441). Sequential MLP:
+**no** (0.247). Large-capacity diagnostics within 10 points: **no** (best `gnn_large` 0.306). The generalisation is
+therefore not attributed to staged operator application alone, and the matched-budget margin is not stated as
+budget-dependent within the budgets tested.
+
+**What the result supports and what it does not.** As stated in the frozen limitation, the staged schedule makes a
+substrate that learns each operation exactly compose the held-out pair by construction. The result shows that
+gradient descent learned the three operation gates from end-of-program labels alone, and that parameter-matched and
+larger non-oscillator models, including two with the same staging, did not generalise to the pair. It does not
+separate the oscillator dynamics from the other architectural priors chosen for realisability (phase-lattice value
+encoding, reset phase, triadic coupling that can add phases); that separation would need an ablation not
+pre-registered here.
+
+**Energy proxy (not a measurement).** Declared nominal package power 190 W × measured warm wall time per test item,
+on cores shared with other projects' jobs on the host: substrate 1.68 J/item (8.8 ms/item, RK4 simulation
+on CPU); contract baselines 0.003–0.043 J/item; all baselines ≤ 0.050 J/item. The simulated substrate costs 33–536
+times more per item than the baselines on this CPU. This says nothing about oscillator hardware.
+
+**Exploratory (labelled; not part of the contract).** The matched-budget contract baselines under-fit the training
+set (MLP 0.68, transformer 0.50), while the large MLP and large staged GNN fit it exactly and still stay near chance
+on the held-out pair (0.23, 0.31): the baselines' held-out failure is not explained by capacity alone.

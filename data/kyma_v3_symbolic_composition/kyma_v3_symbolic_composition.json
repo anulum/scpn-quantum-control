@@ -1,0 +1,302 @@
+{
+  "probe": "kyma_v3_symbolic_composition",
+  "pre_registration": "docs/campaigns/kyma_v3_symbolic_composition_prereg_2026-09-29.md",
+  "source_commit": "dbcb0b0778221f85723ab7f60118c27e6369260f",
+  "host": {
+    "node": "god-of-the-math",
+    "processor": "x86_64",
+    "machine": "x86_64"
+  },
+  "started_utc": "2026-09-29T19:01:33Z",
+  "finished_utc": "2026-09-30T01:25:17Z",
+  "result": {
+    "schema": "kyma_v3_probe_result_v1",
+    "design": {
+      "training_items": 2112,
+      "test_items": 64,
+      "ambiguous_fraction_by_query": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "min_distance_to_trained_answers": 48,
+      "uniform_label_counts": true
+    },
+    "realisability_accuracy": 1.0,
+    "substrate_params": 108,
+    "baselines": [
+      {
+        "name": "mlp",
+        "width": 5,
+        "params": 109,
+        "contract": true
+      },
+      {
+        "name": "gnn",
+        "width": 4,
+        "params": 103,
+        "contract": true
+      },
+      {
+        "name": "transformer",
+        "width": 3,
+        "params": 100,
+        "contract": true
+      },
+      {
+        "name": "sequential",
+        "width": 2,
+        "params": 96,
+        "contract": false
+      },
+      {
+        "name": "mlp_large",
+        "width": 64,
+        "params": 1348,
+        "contract": false
+      },
+      {
+        "name": "gnn_large",
+        "width": 16,
+        "params": 703,
+        "contract": false
+      },
+      {
+        "name": "transformer_large",
+        "width": 16,
+        "params": 1348,
+        "contract": false
+      }
+    ],
+    "epochs": 3000,
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "per_seed": [
+      {
+        "seed": 0,
+        "substrate_train_accuracy": 1.0,
+        "substrate_test_accuracy": 1.0,
+        "substrate_seconds_per_item": 0.008809424063656479,
+        "baseline_train_accuracy": {
+          "mlp": 0.681344696969697,
+          "gnn": 0.8892045454545454,
+          "transformer": 0.506155303030303,
+          "sequential": 0.4744318181818182,
+          "mlp_large": 1.0,
+          "gnn_large": 1.0,
+          "transformer_large": 0.49242424242424243
+        },
+        "baseline_test_accuracy": {
+          "mlp": 0.3125,
+          "gnn": 0.25,
+          "transformer": 0.265625,
+          "sequential": 0.25,
+          "mlp_large": 0.203125,
+          "gnn_large": 0.34375,
+          "transformer_large": 0.25
+        },
+        "baseline_seconds_per_item": {
+          "mlp": 1.7821941582951695e-05,
+          "gnn": 0.0002470713297952898,
+          "transformer": 0.00020796365424757823,
+          "sequential": 0.00037341161078074947,
+          "mlp_large": 1.9958890334237367e-05,
+          "gnn_large": 0.0002515698943170719,
+          "transformer_large": 0.00020900932577205822
+        }
+      },
+      {
+        "seed": 1,
+        "substrate_train_accuracy": 1.0,
+        "substrate_test_accuracy": 1.0,
+        "substrate_seconds_per_item": 0.008556445965950843,
+        "baseline_train_accuracy": {
+          "mlp": 0.6732954545454546,
+          "gnn": 0.9573863636363636,
+          "transformer": 0.5052083333333334,
+          "sequential": 0.5288825757575758,
+          "mlp_large": 1.0,
+          "gnn_large": 1.0,
+          "transformer_large": 0.49242424242424243
+        },
+        "baseline_test_accuracy": {
+          "mlp": 0.25,
+          "gnn": 0.5,
+          "transformer": 0.265625,
+          "sequential": 0.203125,
+          "mlp_large": 0.3125,
+          "gnn_large": 0.3125,
+          "transformer_large": 0.25
+        },
+        "baseline_seconds_per_item": {
+          "mlp": 1.76488611032255e-05,
+          "gnn": 0.00025883136549964547,
+          "transformer": 0.00019855337450280786,
+          "sequential": 0.00023494381457567215,
+          "mlp_large": 1.9106541003566235e-05,
+          "gnn_large": 0.00019004163914360106,
+          "transformer_large": 0.00013995801418786868
+        }
+      },
+      {
+        "seed": 2,
+        "substrate_train_accuracy": 0.9976325757575758,
+        "substrate_test_accuracy": 1.0,
+        "substrate_seconds_per_item": 0.008250012731878087,
+        "baseline_train_accuracy": {
+          "mlp": 0.6974431818181818,
+          "gnn": 0.9554924242424242,
+          "transformer": 0.5018939393939394,
+          "sequential": 0.5066287878787878,
+          "mlp_large": 1.0,
+          "gnn_large": 1.0,
+          "transformer_large": 0.5127840909090909
+        },
+        "baseline_test_accuracy": {
+          "mlp": 0.25,
+          "gnn": 0.515625,
+          "transformer": 0.234375,
+          "sequential": 0.25,
+          "mlp_large": 0.1875,
+          "gnn_large": 0.28125,
+          "transformer_large": 0.25
+        },
+        "baseline_seconds_per_item": {
+          "mlp": 1.7605700122658163e-05,
+          "gnn": 0.0002164447505492717,
+          "transformer": 0.00019241381232859567,
+          "sequential": 0.00023806190438335761,
+          "mlp_large": 1.8200342310592532e-05,
+          "gnn_large": 0.00015934208204271272,
+          "transformer_large": 0.00019281839195173234
+        }
+      },
+      {
+        "seed": 3,
+        "substrate_train_accuracy": 1.0,
+        "substrate_test_accuracy": 1.0,
+        "substrate_seconds_per_item": 0.009146941541985143,
+        "baseline_train_accuracy": {
+          "mlp": 0.6647727272727273,
+          "gnn": 0.9550189393939394,
+          "transformer": 0.49952651515151514,
+          "sequential": 0.5033143939393939,
+          "mlp_large": 1.0,
+          "gnn_large": 1.0,
+          "transformer_large": 0.49242424242424243
+        },
+        "baseline_test_accuracy": {
+          "mlp": 0.1875,
+          "gnn": 0.4375,
+          "transformer": 0.234375,
+          "sequential": 0.28125,
+          "mlp_large": 0.234375,
+          "gnn_large": 0.296875,
+          "transformer_large": 0.25
+        },
+        "baseline_seconds_per_item": {
+          "mlp": 1.1425530829001218e-05,
+          "gnn": 0.0001952056263689883,
+          "transformer": 0.00020604976452887058,
+          "sequential": 0.0002351058428757824,
+          "mlp_large": 1.9649698515422642e-05,
+          "gnn_large": 0.0001886785466922447,
+          "transformer_large": 0.00015215996972983703
+        }
+      },
+      {
+        "seed": 4,
+        "substrate_train_accuracy": 1.0,
+        "substrate_test_accuracy": 1.0,
+        "substrate_seconds_per_item": 0.009345139995275531,
+        "baseline_train_accuracy": {
+          "mlp": 0.6666666666666666,
+          "gnn": 0.9554924242424242,
+          "transformer": 0.5047348484848485,
+          "sequential": 0.45928030303030304,
+          "mlp_large": 1.0,
+          "gnn_large": 1.0,
+          "transformer_large": 0.49242424242424243
+        },
+        "baseline_test_accuracy": {
+          "mlp": 0.28125,
+          "gnn": 0.5,
+          "transformer": 0.265625,
+          "sequential": 0.25,
+          "mlp_large": 0.234375,
+          "gnn_large": 0.296875,
+          "transformer_large": 0.25
+        },
+        "baseline_seconds_per_item": {
+          "mlp": 1.7783066141419113e-05,
+          "gnn": 0.0002242096234112978,
+          "transformer": 0.0002119031414622441,
+          "sequential": 0.00023930535826366395,
+          "mlp_large": 1.765500201145187e-05,
+          "gnn_large": 0.0001941911395988427,
+          "transformer_large": 0.00018254166934639215
+        }
+      }
+    ],
+    "verdict": {
+      "substrate_mean": 1.0,
+      "substrate_sd": 0.0,
+      "baseline_mean": {
+        "mlp": 0.25625,
+        "gnn": 0.440625,
+        "transformer": 0.253125,
+        "sequential": 0.246875,
+        "mlp_large": 0.234375,
+        "gnn_large": 0.30625,
+        "transformer_large": 0.25
+      },
+      "baseline_sd": {
+        "mlp": 0.041457809879442496,
+        "gnn": 0.09901862198596788,
+        "transformer": 0.015309310892394862,
+        "sequential": 0.025,
+        "mlp_large": 0.04307515235028194,
+        "gnn_large": 0.021194781197266463,
+        "transformer_large": 0.0
+      },
+      "best_contract_baseline": "gnn",
+      "margin_over_best_contract": 0.559375,
+      "chance_floor": 0.25,
+      "pass": true,
+      "staged_model_within_attribution_margin": {
+        "gnn": false,
+        "sequential": false
+      },
+      "best_diagnostic": "gnn_large"
+    },
+    "seconds_per_item": {
+      "substrate": 0.008821592859749216,
+      "mlp": 1.645701995585114e-05,
+      "gnn": 0.0002283525391248986,
+      "transformer": 0.0002033767494140193,
+      "sequential": 0.00026416570617584514,
+      "mlp_large": 1.891409483505413e-05,
+      "gnn_large": 0.00019676466035889462,
+      "transformer_large": 0.00017529747419757767
+    },
+    "energy_proxy": {
+      "kind": "ENERGY PROXY (nominal package power \u00d7 measured wall time), not a measurement",
+      "nominal_power_w": 190.0,
+      "joules_per_item": {
+        "substrate": 1.676102643352351,
+        "mlp": 0.003126833791611716,
+        "gnn": 0.043386982433730736,
+        "transformer": 0.038641582388663664,
+        "sequential": 0.05019148417341058,
+        "mlp_large": 0.0035936780186602846,
+        "gnn_large": 0.03738528546818998,
+        "transformer_large": 0.03330652009753976
+      }
+    }
+  }
+}
