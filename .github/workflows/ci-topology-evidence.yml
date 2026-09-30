@@ -328,11 +328,13 @@ jobs:
           src/scpn_quantum_control/benchmarks/kyma_v3/baselines.py
           src/scpn_quantum_control/benchmarks/kyma_v3/probe.py
           scripts/run_kyma_v3_probe.py
+          scripts/run_kyma_v3_ablation.py
           tests/test_kyma_v3_task.py
           tests/test_kyma_v3_substrate.py
           tests/test_kyma_v3_baselines.py
           tests/test_kyma_v3_probe.py
           tests/test_kyma_v3_runner.py
+          tests/test_kyma_v3_ablation.py
           tools/kyma_v3_quality_gates.py
           tests/test_kyma_v3_quality_gate.py
       - run: >-
@@ -345,11 +347,13 @@ jobs:
           src/scpn_quantum_control/benchmarks/kyma_v3/baselines.py
           src/scpn_quantum_control/benchmarks/kyma_v3/probe.py
           scripts/run_kyma_v3_probe.py
+          scripts/run_kyma_v3_ablation.py
           tests/test_kyma_v3_task.py
           tests/test_kyma_v3_substrate.py
           tests/test_kyma_v3_baselines.py
           tests/test_kyma_v3_probe.py
           tests/test_kyma_v3_runner.py
+          tests/test_kyma_v3_ablation.py
           tools/kyma_v3_quality_gates.py
           tests/test_kyma_v3_quality_gate.py
       - run: >-
@@ -361,11 +365,12 @@ jobs:
           tests/test_kyma_v3_baselines.py
           tests/test_kyma_v3_probe.py
           tests/test_kyma_v3_runner.py
+          tests/test_kyma_v3_ablation.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-kyma-v3-quality.coverage
           --precision=2 --show-missing --fail-under=100
-          --include=*/benchmarks/kyma_v3/*.py,*/scripts/run_kyma_v3_probe.py
+          --include=*/benchmarks/kyma_v3/*.py,*/scripts/run_kyma_v3_probe.py,*/scripts/run_kyma_v3_ablation.py
   differentiable-audit-contracts-quality:
     runs-on: ubuntu-latest
     env:

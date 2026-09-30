@@ -14,7 +14,7 @@
     "additions_only": true,
     "invalid_input_policy": "Keep intentionally invalid calls and add the narrow error-code suppression only when mypy cannot express the negative test.",
     "maximum_files_per_slice": 40,
-    "minimum_enforced_files": 1379,
+    "minimum_enforced_files": 1380,
     "required_verification": [
       "focused pytest",
       "mypy --strict",
@@ -435,6 +435,7 @@
         "tests/test_kuramoto_variants_quality_gate.py",
         "tests/test_kyma_v2_ablations.py",
         "tests/test_kyma_v2_baselines.py",
+        "tests/test_kyma_v3_ablation.py",
         "tests/test_kyma_v3_baselines.py",
         "tests/test_kyma_v3_probe.py",
         "tests/test_kyma_v3_quality_gate.py",

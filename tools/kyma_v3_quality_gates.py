@@ -19,6 +19,7 @@ KYMA_V3_SOURCES = [
     "src/scpn_quantum_control/benchmarks/kyma_v3/baselines.py",
     "src/scpn_quantum_control/benchmarks/kyma_v3/probe.py",
     "scripts/run_kyma_v3_probe.py",
+    "scripts/run_kyma_v3_ablation.py",
 ]
 """Production sources of the symbolic probe and its runner."""
 KYMA_V3_COVERAGE_COHORT = [
@@ -27,6 +28,7 @@ KYMA_V3_COVERAGE_COHORT = [
     "tests/test_kyma_v3_baselines.py",
     "tests/test_kyma_v3_probe.py",
     "tests/test_kyma_v3_runner.py",
+    "tests/test_kyma_v3_ablation.py",
 ]
 """Direct execution suites of every KYMA v3 source."""
 KYMA_V3_QUALITY_RATCHET = [
@@ -38,7 +40,9 @@ KYMA_V3_QUALITY_RATCHET = [
 """Strict-typing and NumPy-docstring cohort."""
 KYMA_V3_COVERAGE_DATA_FILE = "/tmp/scpn-qc-kyma-v3-quality.coverage"  # nosec B108
 """Isolated coverage database for KYMA v3."""
-KYMA_V3_COVERAGE_INCLUDE = "*/benchmarks/kyma_v3/*.py,*/scripts/run_kyma_v3_probe.py"
+KYMA_V3_COVERAGE_INCLUDE = (
+    "*/benchmarks/kyma_v3/*.py,*/scripts/run_kyma_v3_probe.py,*/scripts/run_kyma_v3_ablation.py"
+)
 """Exact production paths required to remain at full branch coverage."""
 
 

@@ -8,12 +8,12 @@
     "notebook_files": 109,
     "optional_extras": 43,
     "public_api_exports": 842,
-    "public_documentation_pages": 378,
+    "public_documentation_pages": 379,
     "python_model_classes": 1456,
     "python_model_source_modules": 748,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1441
+    "test_files": 1442
   },
   "documentation": {
     "examples": [
@@ -247,6 +247,7 @@
       "docs/campaigns/kyma_composition_probe_2026-07-18.md",
       "docs/campaigns/kyma_v2_1_rigor_2026-07-21.md",
       "docs/campaigns/kyma_v2_composition_probe_2026-07-21.md",
+      "docs/campaigns/kyma_v3_dynamics_ablation_prereg_2026-09-30.md",
       "docs/campaigns/kyma_v3_symbolic_composition_prereg_2026-09-29.md",
       "docs/campaigns/large_system_submission_extension_readiness_20260520T193857Z.md",
       "docs/campaigns/large_system_submission_extension_readiness_20260520T193903Z.md",
@@ -9186,6 +9187,7 @@
       "tests/test_kyma_v2_rigor.py",
       "tests/test_kyma_v2_task.py",
       "tests/test_kyma_v2_teacher.py",
+      "tests/test_kyma_v3_ablation.py",
       "tests/test_kyma_v3_baselines.py",
       "tests/test_kyma_v3_probe.py",
       "tests/test_kyma_v3_quality_gate.py",

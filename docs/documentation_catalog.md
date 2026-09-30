@@ -4,7 +4,7 @@ The primary navigation stays intentionally compact. This catalog keeps every
 public guide, evidence note, contract, campaign protocol, and reference page
 discoverable without crowding the main learning path.
 
-Current inventory: **378 public pages**; **162** are in the
+Current inventory: **379 public pages**; **162** are in the
 primary navigation and the remainder are indexed here.
 
 Labels marked `catalog` are intentionally outside the primary navigation; they
@@ -81,6 +81,7 @@ are still built, link-checked, searchable, and public.
 | [KYMA toy compositional-generalisation probe — 2026-07-18](campaigns/kyma_composition_probe_2026-07-18.md) | catalog | **Status:** completed, honest NEGATIVE result with a mechanistic diagnosis. **Pre-registration (frozen, no metric shopping):** .coordination/planning/CEO/KYMA_TOY_PROBE_PREREGISTRATION_7f6b_2026-07-18.md. **Raw artifact:** data/kyma_composi |
 | [KYMA v2.1 supplementary rigor — ablations, baselines, convergence, LOO — 2026-07-21](campaigns/kyma_v2_1_rigor_2026-07-21.md) | catalog | **Status:** complete — all four analyses run. Strengthens and **corrects** the landed v2 PASS (db7c5c47). **Code:** src/scpn_quantum_control/benchmarks/kyma_v2/{ablations,baselines,rigor}.py, runner scripts/run_kyma_v2_rigor.py, tests tests |
 | [KYMA v2 composition probe — corrected design, PASS — 2026-07-21](campaigns/kyma_v2_composition_probe_2026-07-21.md) | catalog | **Status:** run complete. **Verdict: PASS** (pre-committed contract, 5 seeds). Addresses the two defects diagnosed by the v1 NEGATIVE. **Code:** src/scpn_quantum_control/benchmarks/kyma_v2/, tests tests/test_kyma_v2_*.py, runner scripts/run |
+| [KYMA v3 Dynamics Ablation — Preregistration](campaigns/kyma_v3_dynamics_ablation_prereg_2026-09-30.md) | catalog | Date: 2026-09-30 |
 | [KYMA v3 Symbolic Composition Probe — Preregistration](campaigns/kyma_v3_symbolic_composition_prereg_2026-09-29.md) | catalog | Date: 2026-09-29 |
 | [Larger-System Submission Extension Readiness](campaigns/large_system_submission_extension_readiness_20260520T193857Z.md) | catalog | - Generated: 2026-05-20T19:38:57+00:00 - Backend: generic_backend_127q (generic_estimator) - Hardware submitted: False - Ready QPU estimate, one backend: 1152.0s (19.20 min) - Ready QPU estimate, Fez+Marrakesh pair: 2304.0s (38.40 min) - IB |
 | [Larger-System Submission Extension Readiness](campaigns/large_system_submission_extension_readiness_20260520T193903Z.md) | catalog | - Generated: 2026-05-20T19:39:03+00:00 - Backend: ibm_fez (live_ibm_backend) - Hardware submitted: False - Ready QPU estimate, one backend: 1152.0s (19.20 min) - Ready QPU estimate, Fez+Marrakesh pair: 2304.0s (38.40 min) - IBM usage probe: |
