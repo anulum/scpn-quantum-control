@@ -85,7 +85,7 @@ class ExecutionBuffer:
 
     @property
     def bytes_required(self) -> int:
-        """Return exact bytes, refusing native-size overflow before each product."""
+        """Exact bytes, refusing native-size overflow before each product."""
         size = np.dtype(self.dtype).itemsize
         for dimension in (*self.shape, self.count):
             _positive(dimension, "dimension/count")
