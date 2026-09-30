@@ -75,7 +75,12 @@ def _aliases(tree: ast.Module) -> set[str]:
         for node in ast.walk(tree):
             if isinstance(node, ast.arguments):
                 arguments = [*node.posonlyargs, *node.args]
-                pairs = zip(arguments[-len(node.defaults) :], node.defaults, strict=False)
+                pairs = list(zip(arguments[-len(node.defaults) :], node.defaults, strict=False))
+                pairs.extend(
+                    (argument, default)
+                    for argument, default in zip(node.kwonlyargs, node.kw_defaults, strict=True)
+                    if default is not None
+                )
                 for argument, default in pairs:
                     if _last_name(default) in aliases:
                         before = len(aliases)

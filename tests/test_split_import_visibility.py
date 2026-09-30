@@ -131,6 +131,10 @@ def test_lazy_table_mutations_cannot_hide_dependencies(tmp_path: Path, mutation:
             "import importlib\nclass Loader:\n    def __init__(self, load=importlib.import_module): self.loader = load\n    def resolve(self, name): return self.loader(name)\n",
             "self.loader",
         ),
+        (
+            "import importlib\nclass Loader:\n    def __init__(self, *, load=importlib.import_module, configuration): self.loader = load\n    def resolve(self, name): return self.loader(name)\n",
+            "self.loader",
+        ),
         ("def resolve(name): return __import__(name)\n", "__import__"),
         (
             "from importlib import import_module\ndef resolve(name): return import_module(name=name)\n",
