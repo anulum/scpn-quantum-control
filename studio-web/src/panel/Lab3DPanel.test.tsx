@@ -208,3 +208,26 @@ it("refuses the complete scene declaration before calling the actual capture ker
   expect(screen.queryByLabelText(/phase-space cylinder: oscillator phases over time/)).toBeNull();
   expect(screen.getAllByText(/declared_storage_exceeds_budget/).length).toBeGreaterThan(0);
 });
+
+
+it.each(["error", "primitive"])("refuses malformed scene policies without native capture: %s", async fault => {
+  let runs = 0;
+  const observed = { ...realLoaded, simulate: (request: Parameters<KernelSimulate>[0]) => { runs++; return realLoaded.simulate(request); } };
+  const policy = new Proxy({ source: "caller scene policy", addressableBytes: 0xffff_ffffn, memoryBytes: 4096n, workUnits: 1000000n, overheadBytes: 0n }, {
+    ownKeys() { throw fault === "error" ? new Error("caller scene policy unavailable") : "caller scene policy unavailable"; },
+  });
+  render(<Lab3DPanel scenario={scenario()} loadKernel={async () => observed} resourcePolicy={policy} />);
+  await waitFor(() => expect(screen.getByText(fault === "error" ? /caller scene policy unavailable/ : /Lab resource metadata refused/)).toBeTruthy());
+  expect(runs).toBe(0);
+  expect(screen.queryByLabelText(/phase-space cylinder: oscillator phases over time/)).toBeNull();
+});
+
+it("shows loading while the actual kernel connection is pending", async () => {
+  let finish!: (value: typeof realLoaded) => void;
+  const pending = new Promise<typeof realLoaded>(resolve => { finish = resolve; });
+  const component = render(<Lab3DPanel scenario={scenario()} loadKernel={() => pending} />);
+  expect(screen.getByText(/loading the WASM simulator kernel/)).toBeTruthy();
+  component.unmount();
+  finish(realLoaded);
+  await pending;
+});

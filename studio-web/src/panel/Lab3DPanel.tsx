@@ -212,16 +212,17 @@ export function Lab3DPanel({
   }, [kernel, controls, resourcePolicy]);
 
   const captured = useMemo(() => {
-    if (kernel.phase !== "ready" || !resource) return null;
+    if (kernel.phase !== "ready" || !resource) return { ok: false as const, reason: "no trajectory" };
     if (!resource.ok) return { ok: false as const, reason: resource.reason };
     if (!resource.admission.allowed) return { ok: false as const, reason: resource.admission.blockers.join(", ") };
     return captureTrajectory(kernel.simulate, controlsToRequest(controls));
   }, [kernel, controls, resource]);
 
   const derived = useMemo(() => {
-    if (captured === null || !captured.ok) return null;
+    if (!captured.ok) return captured;
     const series = orderParameterSeries(captured.trajectory);
     return {
+      ok: true as const,
       cylinder: phaseCylinderScene(captured.trajectory),
       bloch: blochEquatorScene(captured.trajectory),
       parity: kernelOrderParameterParity(captured.trajectory, series),
@@ -347,9 +348,9 @@ export function Lab3DPanel({
         </label>
       </div>
 
-      {derived === null ? (
+      {!derived.ok ? (
         <p className="qsp-badge qsp-badge-unverifiable" role="alert">
-          unverifiable — {captured && !captured.ok ? captured.reason : "no trajectory"}
+          unverifiable — {derived.reason}
         </p>
       ) : (
         <>

@@ -366,3 +366,59 @@ describe("real WASM allocation ownership", () => {
     if (encoded !== null) expect(new DataView(encoded.buffer).getUint32(12, true)).toBe(scenarioRequest().steps);
   });
 });
+
+
+it("refuses an unsupported mode in the original scenario envelope", () => {
+  const good = committedScenarioJson as Record<string, unknown>;
+  expect(parseScenario({ ...good, scenario: { ...(good["scenario"] as Record<string, unknown>), mode: "unsupported" } }).ok).toBe(false);
+});
+
+it("refuses malformed requests before original WASM allocation", async () => {
+  const { instance } = await WebAssembly.instantiate(wasmBytes, {});
+  const exports = instance.exports as unknown as KuramotoExports;
+  let allocations = 0;
+  const observed = { ...exports, scpn_alloc(length: number) { allocations++; return exports.scpn_alloc(length); } };
+  expect(bindKuramoto(observed)({ ...scenarioRequest(), steps: 0 })).toEqual({ ok: false, reason: "request is malformed" });
+  expect(allocations).toBe(0);
+});
+
+it.each(["nonfinite", "trap"])("refuses caller iteration changing during codec packing: %s", fault => {
+  let iterations = 0;
+  const omega = [...scenarioRequest().omega];
+  Object.defineProperty(omega, Symbol.iterator, { value: function* () {
+    iterations++;
+    if (iterations === 2 && fault === "trap") throw new Error("caller iteration unavailable");
+    yield iterations === 2 ? Number.NaN : omega[0]!;
+    yield* omega.slice(1);
+  } });
+  expect(encodeKuramotoInput({ ...scenarioRequest(), omega })).toBeNull();
+  expect(iterations).toBe(2);
+});
+
+it("refuses oversized caller metadata without allocating oscillator payloads", () => {
+  const huge = 0xffff_ffff;
+  const request = scenarioRequest();
+  const omega = new Proxy(request.omega, { get(target, key, receiver) { return key === "length" ? huge : Reflect.get(target, key, receiver); } });
+  const theta0 = new Proxy(request.theta0, { get(target, key, receiver) { return key === "length" ? huge : Reflect.get(target, key, receiver); } });
+  expect(encodeKuramotoInput({ ...request, mode: "networked", omega, theta0 })).toBeNull();
+  expect(encodeKuramotoInput({ ...request, mode: "mean-field", omega, theta0 })).toBeNull();
+});
+
+
+it.each([0xffff_ffff, Number.MAX_SAFE_INTEGER])("refuses caller step metadata changing after packing before guest allocation: %s", async lateSteps => {
+  const { instance } = await WebAssembly.instantiate(wasmBytes, {});
+  const exports = instance.exports as unknown as KuramotoExports;
+  let allocations = 0;
+  let iterations = 0;
+  const request = scenarioRequest();
+  const omega = [...request.omega];
+  Object.defineProperty(omega, Symbol.iterator, { value: function* () {
+    iterations++;
+    yield* request.omega;
+  } });
+  const changing = { ...request, omega, get steps() { return iterations < 2 ? request.steps : lateSteps; } };
+  const observed = { ...exports, scpn_alloc(length: number) { allocations++; return exports.scpn_alloc(length); } };
+  expect(bindKuramoto(observed)(changing)).toEqual({ ok: false, reason: "output bytes exceed kernel addressability" });
+  expect(iterations).toBe(2);
+  expect(allocations).toBe(0);
+});

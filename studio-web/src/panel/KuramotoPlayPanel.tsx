@@ -146,7 +146,7 @@ export function KuramotoPlayPanel({
   }, [kernel, controls, requestedPolicy, wallMs]);
 
   const result = useMemo(() => {
-    if (kernel.phase !== "ready" || !resource) return null;
+    if (kernel.phase !== "ready" || !resource) return { ok: false as const, reason: "no trajectory" };
     if (!resource.ok) return { ok: false as const, reason: resource.reason };
     if (!resource.admission.allowed) return { ok: false as const, reason: resource.admission.blockers.join(", ") };
     return kernel.simulate(controlsToRequest(controls));
@@ -201,9 +201,6 @@ export function KuramotoPlayPanel({
   }
 
   const bounds = kernel.bounds;
-  const rSeries = result?.ok ? result.run.orderParameter : null;
-  const rFinal = rSeries ? rSeries[rSeries.length - 1]! : null;
-  const rInitial = rSeries ? rSeries[0]! : null;
 
   return (
     <section className="qsp-play">
@@ -289,7 +286,7 @@ export function KuramotoPlayPanel({
         </label>
       </div>
 
-      {rSeries ? (
+      {result.ok ? (
         <>
           <svg
             className="qsp-play-chart"
@@ -299,20 +296,20 @@ export function KuramotoPlayPanel({
             aria-label="order parameter over time"
           >
             <polyline
-              points={sparklinePoints(rSeries, 300, 80)}
+              points={sparklinePoints(result.run.orderParameter, 300, 80)}
               fill="none"
               stroke="currentColor"
               strokeWidth="1.5"
             />
           </svg>
           <p className="qsp-meta">
-            R initial <strong>{rInitial!.toFixed(3)}</strong> → R final{" "}
-            <strong>{rFinal!.toFixed(3)}</strong>
+            R initial <strong>{result.run.orderParameter[0]!.toFixed(3)}</strong> → R final{" "}
+            <strong>{result.run.orderParameter[result.run.orderParameter.length - 1]!.toFixed(3)}</strong>
           </p>
         </>
       ) : (
         <p className="qsp-badge qsp-badge-unverifiable" role="alert">
-          unverifiable — {result && !result.ok ? result.reason : "no trajectory"}
+          unverifiable — {result.reason}
         </p>
       )}
 

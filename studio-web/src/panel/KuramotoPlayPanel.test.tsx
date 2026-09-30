@@ -9,7 +9,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { KuramotoPlayPanel, controlsToRequest, sparklinePoints } from "./KuramotoPlayPanel";
@@ -200,4 +200,81 @@ it("refuses malformed policy data without reading an accessor or running the nat
   expect(reads).toBe(0);
   expect(runs).toBe(0);
   expect(screen.queryByLabelText("order parameter over time")).toBeNull();
+});
+
+
+it("refuses out-of-bounds initial controls and leaves committed ground truth unevaluated", async () => {
+  let runs = 0;
+  const loaded = { ...realLoaded, simulate: (request: Parameters<KernelSimulate>[0]) => { runs++; return realLoaded.simulate(request); } };
+  render(<KuramotoPlayPanel scenario={{ ...scenario(), n: realLoaded.bounds.maxOscillators + 1 }} loadKernel={async () => loaded} />);
+  await waitFor(() => expect(screen.getAllByText(/request exceeds declared kernel bounds/).length).toBeGreaterThan(0));
+  expect(screen.getByText(/committed ground truth not evaluated/)).toBeTruthy();
+  expect(screen.queryByLabelText("order parameter over time")).toBeNull();
+  expect(runs).toBe(0);
+});
+
+it("refuses caller kernel-bound traps during admission without entering native execution", async () => {
+  let reads = 0;
+  let runs = 0;
+  const bounds = new Proxy(realLoaded.bounds, {
+    get(target, key, receiver) {
+      if (key === "maxOscillators" && ++reads <= 2) throw "caller bounds unavailable";
+      return Reflect.get(target, key, receiver);
+    },
+  });
+  const policy = { source: "caller policy", addressableBytes: 0xffff_ffffn, memoryBytes: 4096n, workUnits: 1000000n, overheadBytes: 0n };
+  const loaded = { ...realLoaded, bounds, simulate: (request: Parameters<KernelSimulate>[0]) => { runs++; return realLoaded.simulate(request); } };
+  render(<KuramotoPlayPanel scenario={scenario()} loadKernel={async () => loaded} resourcePolicy={policy} />);
+  await waitFor(() => expect(screen.getAllByText(/resource metadata refused/).length).toBeGreaterThan(0));
+  expect(screen.queryByLabelText("order parameter over time")).toBeNull();
+  expect(runs).toBe(0);
+});
+
+
+it.each([-1n, 1 as unknown as bigint])("refuses invalid source memory ceilings %s before native execution", async memoryBytes => {
+  const policy = { source: "caller policy", addressableBytes: 0xffff_ffffn, memoryBytes, workUnits: 1000000n, overheadBytes: 0n };
+  render(<KuramotoPlayPanel scenario={scenario()} loadKernel={async () => realLoaded} resourcePolicy={policy} />);
+  await waitFor(() => expect(screen.getAllByText(/source policy must be available/).length).toBeGreaterThan(0));
+  expect(screen.queryByLabelText("order parameter over time")).toBeNull();
+});
+
+it.each(["resolve", "reject-error", "reject-string"])("keeps kernel completion after unmount inert: %s", async terminal => {
+  let settle!: () => void;
+  const pending = new Promise<typeof realLoaded>((resolve, reject) => {
+    settle = () => terminal === "resolve" ? resolve(realLoaded) : reject(terminal === "reject-error" ? new Error("load interrupted") : "load interrupted");
+  });
+  const component = render(<KuramotoPlayPanel scenario={scenario()} loadKernel={() => pending} />);
+  expect(screen.getByText(/loading the WASM simulator kernel/)).toBeTruthy();
+  component.unmount();
+  await act(async () => { settle(); await pending.catch(() => undefined); });
+  expect(component.container.textContent).toBe("");
+});
+
+it("reports a non-Error loader refusal while mounted", async () => {
+  render(<KuramotoPlayPanel scenario={scenario()} loadKernel={async () => { throw "unavailable"; }} />);
+  await waitFor(() => expect(screen.getByText(/kernel load failed/)).toBeTruthy());
+});
+
+
+it("retains explicit refusal when the caller policy cannot enumerate its fields", async () => {
+  let runs = 0;
+  const observed = { ...realLoaded, simulate: (request: Parameters<KernelSimulate>[0]) => { runs++; return realLoaded.simulate(request); } };
+  const policy = new Proxy({ source: "caller policy", addressableBytes: 0xffff_ffffn, memoryBytes: 4096n, workUnits: 1000000n, overheadBytes: 0n }, {
+    ownKeys() { throw new Error("caller policy inaccessible"); },
+  });
+  render(<KuramotoPlayPanel scenario={scenario()} loadKernel={async () => observed} resourcePolicy={policy} />);
+  await waitFor(() => expect(screen.getAllByText(/source policy must be available/).length).toBeGreaterThan(0));
+  expect(screen.queryByLabelText("order parameter over time")).toBeNull();
+  expect(runs).toBe(0);
+});
+
+
+it("preserves an unknown source memory ceiling as refusal without executing a trajectory", async () => {
+  let runs = 0;
+  const observed = { ...realLoaded, simulate: (request: Parameters<KernelSimulate>[0]) => { runs++; return realLoaded.simulate(request); } };
+  render(<KuramotoPlayPanel scenario={scenario()} loadKernel={async () => observed} resourcePolicy={{ source: "unknown source memory", addressableBytes: 0xffff_ffffn, memoryBytes: null, workUnits: 1000000n, overheadBytes: 0n }} />);
+  await waitFor(() => expect(screen.getAllByText(/memory_limit_unknown/).length).toBeGreaterThan(0));
+  expect(screen.queryByLabelText("order parameter over time")).toBeNull();
+  expect(screen.getByText(/committed ground truth not evaluated/)).toBeTruthy();
+  expect(runs).toBe(0);
 });
