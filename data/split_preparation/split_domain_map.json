@@ -1,0 +1,614 @@
+{
+ "schema": "scpn_qc_split_domain_map_v1",
+ "description": "Unit -> domain -> target repository map for QSP-01 (owner QD2/QD3 repository map, architecture section 3). Domain assignment is judgement; open_classifications lists the calls that need stage-0 owner review.",
+ "package": "scpn_quantum_control",
+ "targets": [
+  "SCPN-QC-AD",
+  "SCPN-QC-ANALYSIS",
+  "SCPN-QC-APPS",
+  "SCPN-QC-BENCH",
+  "SCPN-QC-COMPILER",
+  "SCPN-QC-CONTRACTS",
+  "SCPN-QC-CONTROL",
+  "SCPN-QC-CORE",
+  "SCPN-QC-HAL",
+  "SCPN-QC-LEARN",
+  "SCPN-QC-MITIGATION",
+  "SCPN-QC-QEC",
+  "SCPN-QC-QNODE",
+  "SCPN-QC-RESEARCH",
+  "SCPN-QC-SIM",
+  "SCPN-QC-STUDIO",
+  "sibling:oscillatools",
+  "sibling:scpn-quantum-engine",
+  "workbench-umbrella"
+ ],
+ "empty_targets": {
+  "SCPN-QC-QNODE": "Takes the QNode/tape/gradient and framework-bridge files of the `phase` unit (simulation domain); the file-level split of `phase` is an open classification decided at stage 0."
+ },
+ "domains": {
+  "analysis": {
+   "target": "SCPN-QC-ANALYSIS",
+   "units": [
+    "advanced_witnesses_product",
+    "analysis",
+    "dla_parity"
+   ]
+  },
+  "applications": {
+   "target": "SCPN-QC-APPS",
+   "units": [
+    "applications",
+    "crypto",
+    "entropy",
+    "sensing"
+   ]
+  },
+  "benchmarks": {
+   "target": "SCPN-QC-BENCH",
+   "units": [
+    "attested_result_pack",
+    "bench_cli",
+    "benchmark_harness",
+    "benchmarks",
+    "campaign_harness_product",
+    "competitive_baseline_watch",
+    "hermetic_reproduction_kit",
+    "kyma_mechanism_benchmark_product",
+    "quantum_sync_challenge_oracle_product"
+   ]
+  },
+  "compiler": {
+   "target": "SCPN-QC-COMPILER",
+   "units": [
+    "codegen",
+    "compiler",
+    "compiler_boundary_product"
+   ]
+  },
+  "control": {
+   "target": "SCPN-QC-CONTROL",
+   "units": [
+    "active_sensing_product",
+    "chimera_control",
+    "codesign",
+    "control",
+    "control_stack_compose_product",
+    "control_stack_runtime_adapters",
+    "dla_topology_control",
+    "geometric_control_product",
+    "topology_control"
+   ]
+  },
+  "core": {
+   "target": "SCPN-QC-CORE",
+   "units": [
+    "_cgroup_paths",
+    "_constants",
+    "_paths",
+    "_rust_accel",
+    "accel",
+    "backend_dispatch",
+    "bridge",
+    "compile_budget",
+    "config",
+    "dense_budget",
+    "execution_memory",
+    "execution_reservations",
+    "kuramoto",
+    "logging_setup",
+    "native_replay_admission",
+    "source_admission",
+    "stable_core",
+    "stable_core_preflight",
+    "stable_core_product",
+    "structured_log_fallback"
+   ]
+  },
+  "differentiable": {
+   "target": "SCPN-QC-AD",
+   "units": [
+    "diff",
+    "diff_contract_audit",
+    "differentiable",
+    "differentiable_api",
+    "differentiable_api_contracts",
+    "differentiable_architecture_map",
+    "differentiable_baseline_scorecard",
+    "differentiable_batch_helpers",
+    "differentiable_benchmark_report",
+    "differentiable_canonical_api",
+    "differentiable_claim_ledger",
+    "differentiable_claim_rendering",
+    "differentiable_competitive_baselines",
+    "differentiable_consistency",
+    "differentiable_custom_derivatives",
+    "differentiable_dashboard",
+    "differentiable_dependency_environment_evidence",
+    "differentiable_dependency_environment_map",
+    "differentiable_exact_modes",
+    "differentiable_external_validation",
+    "differentiable_finite_difference",
+    "differentiable_fisher",
+    "differentiable_framework_overlay",
+    "differentiable_gradient_descent",
+    "differentiable_implicit_sensitivity",
+    "differentiable_jax_adapter",
+    "differentiable_levenberg_marquardt",
+    "differentiable_module_hardening_audit",
+    "differentiable_natural_gradient",
+    "differentiable_notebook_curriculum",
+    "differentiable_parameter_contracts",
+    "differentiable_parameter_shift",
+    "differentiable_registered_custom",
+    "differentiable_residual_weights",
+    "differentiable_result_contracts",
+    "differentiable_rust_python_inventory",
+    "differentiable_scalar_kernels",
+    "differentiable_sparse_derivatives",
+    "differentiable_stochastic_estimators",
+    "differentiable_stochastic_policy",
+    "differentiable_transform_algebra",
+    "differentiable_transform_helpers",
+    "differentiable_transform_support_matrix",
+    "differentiable_transform_support_matrix_artifact",
+    "differentiable_vmap",
+    "governed_route_matrix",
+    "gradient_plan_explanation_artifact",
+    "hardware_safe_execution",
+    "phase_qnode_product",
+    "scorecard_acceptance_engine",
+    "stochastic_estimators_product",
+    "unsuitable_scenario_registry"
+   ]
+  },
+  "facade": {
+   "target": "workbench-umbrella",
+   "units": [
+    "__init__"
+   ]
+  },
+  "governance": {
+   "target": "SCPN-QC-CONTRACTS",
+   "units": [
+    "advantage_language_protocol",
+    "ci_workflow_ownership",
+    "execution_surface",
+    "fisher_semantic_binding",
+    "hal_semantic_binding",
+    "migration_guides_product",
+    "native_semantic_binding",
+    "public_api_stability",
+    "qualification_status_projection",
+    "resource_budget_gate",
+    "semantic_operations",
+    "semantic_record"
+   ]
+  },
+  "hardware": {
+   "target": "SCPN-QC-HAL",
+   "units": [
+    "analog_mapping",
+    "circuit_cutting_product",
+    "cloud_native_deployment_product",
+    "deployment",
+    "hardware",
+    "hardware_result_pack_evidence",
+    "hardware_result_packs",
+    "multi_hal_federation_product",
+    "qpu_compute",
+    "qpu_compute_product",
+    "qpu_compute_runtime",
+    "qpu_compute_types"
+   ]
+  },
+  "mitigation": {
+   "target": "SCPN-QC-MITIGATION",
+   "units": [
+    "error_mitigation_product",
+    "mitigation"
+   ]
+  },
+  "program_ad": {
+   "target": "SCPN-QC-AD",
+   "units": [
+    "adjoint_replay_product",
+    "custom_derivatives_product",
+    "metamorphic_ad_verification",
+    "polyglot_edge_ad_product",
+    "polyglot_parity_certificate",
+    "program_ad_adjoint",
+    "program_ad_adjoint_generation",
+    "program_ad_alias_analysis",
+    "program_ad_alias_contracts",
+    "program_ad_array_indexing",
+    "program_ad_assembly_primitives",
+    "program_ad_broadcast_assembly",
+    "program_ad_cumulative_primitives",
+    "program_ad_effect_ir",
+    "program_ad_elementwise_primitives",
+    "program_ad_fuzz_assurance",
+    "program_ad_interpolation_primitives",
+    "program_ad_linalg_memory",
+    "program_ad_linalg_primitives",
+    "program_ad_product_primitives",
+    "program_ad_reduction_primitives",
+    "program_ad_registry",
+    "program_ad_rust_bridge",
+    "program_ad_selection_primitives",
+    "program_ad_shape_transforms",
+    "program_ad_signal_primitives",
+    "program_ad_stack_block_assembly",
+    "program_ad_stencil_primitives",
+    "program_ad_trapezoid_primitives",
+    "whole_program_ad_api",
+    "whole_program_ad_product",
+    "whole_program_ad_result",
+    "whole_program_frontend",
+    "whole_program_frontend_contracts",
+    "whole_program_trace_metadata",
+    "whole_program_trace_predicates",
+    "whole_program_trace_runtime",
+    "whole_program_trace_values",
+    "wirtinger_calculus",
+    "wirtinger_implicit_product"
+   ]
+  },
+  "qec": {
+   "target": "SCPN-QC-QEC",
+   "units": [
+    "fault_tolerant_resource_product",
+    "qec"
+   ]
+  },
+  "qml": {
+   "target": "SCPN-QC-LEARN",
+   "units": [
+    "forecasting",
+    "jax_nqs_baseline_product",
+    "ml_examples",
+    "neural_operator_baseline_product",
+    "qsnn",
+    "surrogates",
+    "topology_kernel_product"
+   ]
+  },
+  "research_scpn": {
+   "target": "SCPN-QC-RESEARCH",
+   "units": [
+    "experimental",
+    "fep",
+    "gauge",
+    "identity",
+    "identity_observer_product",
+    "l16",
+    "pgbo",
+    "pgbo_qgt_product",
+    "psi_field",
+    "ssgf",
+    "ssgf_geometry_gradient_product",
+    "tcbo",
+    "thermo_readiness_product",
+    "thermodynamics"
+   ]
+  },
+  "simulation": {
+   "target": "SCPN-QC-SIM",
+   "units": [
+    "cosimulation",
+    "kuramoto_core",
+    "open_system_mcwf_product",
+    "phase"
+   ]
+  },
+  "studio": {
+   "target": "SCPN-QC-STUDIO",
+   "units": [
+    "studio",
+    "studio_executive_product",
+    "studio_workspace",
+    "visualisation_dashboard_product"
+   ]
+  }
+ },
+ "path_rules": [
+  {
+   "prefix": "src/scpn_quantum_control/",
+   "kind": "source",
+   "target": "by-unit"
+  },
+  {
+   "prefix": "src/scpn/",
+   "kind": "source",
+   "target": "workbench-umbrella",
+   "reason": "compatibility import path re-exporting scpn_quantum_control.diff"
+  },
+  {
+   "prefix": "src/scpn_quantum_engine.pyi",
+   "kind": "sibling",
+   "target": "sibling:scpn-quantum-engine",
+   "reason": "type stubs of the Rust engine (owner QD5: own sibling)"
+  },
+  {
+   "prefix": "tests/",
+   "kind": "test",
+   "target": "by-imports"
+  },
+  {
+   "prefix": "oscillatools/",
+   "kind": "sibling",
+   "target": "sibling:oscillatools"
+  },
+  {
+   "prefix": "scpn_quantum_engine/",
+   "kind": "sibling",
+   "target": "sibling:scpn-quantum-engine",
+   "reason": "owner QD5: own sibling"
+  },
+  {
+   "prefix": "studio-web/",
+   "kind": "frontend",
+   "target": "SCPN-QC-STUDIO"
+  },
+  {
+   "prefix": "scripts/",
+   "kind": "script",
+   "target": "workbench-umbrella"
+  },
+  {
+   "prefix": "tools/",
+   "kind": "tool",
+   "target": "workbench-umbrella"
+  },
+  {
+   "prefix": ".github/",
+   "kind": "workflow",
+   "target": "workbench-umbrella"
+  },
+  {
+   "prefix": "data/",
+   "kind": "data",
+   "target": "workbench-umbrella"
+  },
+  {
+   "prefix": "results/",
+   "kind": "data",
+   "target": "workbench-umbrella"
+  },
+  {
+   "prefix": "figures/",
+   "kind": "data",
+   "target": "workbench-umbrella"
+  },
+  {
+   "prefix": "docs/",
+   "kind": "doc",
+   "target": "workbench-umbrella"
+  },
+  {
+   "prefix": "paper/",
+   "kind": "doc",
+   "target": "workbench-umbrella"
+  },
+  {
+   "prefix": "notebooks/",
+   "kind": "example",
+   "target": "workbench-umbrella"
+  },
+  {
+   "prefix": "examples/",
+   "kind": "example",
+   "target": "workbench-umbrella"
+  },
+  {
+   "prefix": "benchmarks/",
+   "kind": "example",
+   "target": "workbench-umbrella"
+  },
+  {
+   "prefix": "experimental_workers/",
+   "kind": "script",
+   "target": "workbench-umbrella",
+   "reason": "isolated LLM-QPU experimental worker boundary"
+  },
+  {
+   "prefix": ".githooks/",
+   "kind": "repo-meta",
+   "target": "workbench-umbrella"
+  },
+  {
+   "prefix": ".anulum/",
+   "kind": "repo-meta",
+   "target": "workbench-umbrella"
+  },
+  {
+   "prefix": ".well-known/",
+   "kind": "repo-meta",
+   "target": "workbench-umbrella"
+  },
+  {
+   "prefix": "LICENSES/",
+   "kind": "repo-meta",
+   "target": "workbench-umbrella"
+  },
+  {
+   "prefix": "",
+   "kind": "repo-meta",
+   "target": "workbench-umbrella",
+   "root_files_only": true
+  }
+ ],
+ "open_classifications": [
+  {
+   "unit": "phase",
+   "reason": "119 files: dynamics solvers (SIM), QNode/gradient/framework bridges (QNODE), NQS/VQE/QNN/ansatz groups (LEARN); split per file at stage 0."
+  },
+  {
+   "unit": "bridge",
+   "reason": "Generic Kuramoto-XY Hamiltonian (CORE) next to Paper-27 constants and SCPN adapters (RESEARCH); QSP-04 separates them."
+  },
+  {
+   "unit": "kuramoto_core",
+   "reason": "Placed in simulation because it imports phase at module level; could belong to CORE after QSP-03/QSP-04."
+  },
+  {
+   "unit": "hardware",
+   "reason": "hardware/classical.py (classical reference solver) belongs to SIM per architecture section 4; QSP-07 moves it."
+  },
+  {
+   "unit": "qpu_compute_types",
+   "reason": "Contract-only types: HAL or CONTRACTS nucleus (QSP-05)."
+  },
+  {
+   "unit": "stable_core",
+   "reason": "Durable v1 contract: CORE or CONTRACTS (QSP-05, QSP-08)."
+  },
+  {
+   "unit": "attested_result_pack",
+   "reason": "Result-pack attestation: BENCH today; overlaps HAL result packs and the QPU-RESULT-PACK tool."
+  },
+  {
+   "unit": "public_api_stability",
+   "reason": "Governance catalogue mapped to CONTRACTS; may stay in the umbrella as a workbench-wide policy."
+  },
+  {
+   "unit": "studio_workspace",
+   "reason": "New unit after the planning snapshot (Quantum Studio work); mapped to STUDIO, confirm with the Studio owner."
+  }
+ ],
+ "extra_import_names": {
+  "matplotlib": [
+   "matplotlib"
+  ],
+  "scpn-studio-platform": [
+   "scpn_studio_platform"
+  ],
+  "cupy-cuda12x": [
+   "cupy"
+  ],
+  "jax": [
+   "jax"
+  ],
+  "flatbuffers": [
+   "flatbuffers"
+  ],
+  "torch": [
+   "torch"
+  ],
+  "tensorflow": [
+   "tensorflow"
+  ],
+  "scpn-quantum-engine": [
+   "scpn_quantum_engine"
+  ],
+  "qiskit-ibm-runtime": [
+   "qiskit_ibm_runtime"
+  ],
+  "amazon-braket-sdk": [
+   "braket"
+  ],
+  "azure-quantum": [
+   "azure"
+  ],
+  "qbraid": [
+   "qbraid"
+  ],
+  "strangeworks": [
+   "strangeworks"
+  ],
+  "cirq-core": [
+   "cirq"
+  ],
+  "dwave-cloud-client": [
+   "dwave"
+  ],
+  "dwave-system": [
+   "dwave",
+   "dimod"
+  ],
+  "requests": [
+   "requests"
+  ],
+  "iqm-client": [
+   "iqm"
+  ],
+  "oqc-qcaas-client": [
+   "qcaas_client"
+  ],
+  "pulser-core": [
+   "pulser"
+  ],
+  "perceval-quandela": [
+   "perceval"
+  ],
+  "pytket-quantinuum": [
+   "pytket"
+  ],
+  "bloqade": [
+   "bloqade"
+  ],
+  "pyquil": [
+   "pyquil"
+  ],
+  "qiskit-aer": [
+   "qiskit_aer"
+  ],
+  "pennylane": [
+   "pennylane"
+  ],
+  "quimb": [
+   "quimb"
+  ],
+  "mitiq": [
+   "mitiq"
+  ],
+  "ply": [
+   "ply"
+  ],
+  "ripser": [
+   "ripser"
+  ],
+  "qutip": [
+   "qutip"
+  ],
+  "dynamiqs": [
+   "dynamiqs"
+  ],
+  "pydantic-settings": [
+   "pydantic_settings"
+  ],
+  "structlog": [
+   "structlog"
+  ],
+  "juliacall": [
+   "juliacall"
+  ],
+  "mne": [
+   "mne"
+  ],
+  "edfio": [
+   "edfio"
+  ],
+  "h5py": [
+   "h5py"
+  ],
+  "pandas": [
+   "pandas"
+  ],
+  "pandapower": [
+   "pandapower"
+  ],
+  "pydantic": [
+   "pydantic"
+  ],
+  "biopython": [
+   "Bio"
+  ],
+  "python-louvain": [
+   "community"
+  ],
+  "goatools": [
+   "goatools"
+  ]
+ }
+}

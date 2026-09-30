@@ -14,7 +14,7 @@
     "additions_only": true,
     "invalid_input_policy": "Keep intentionally invalid calls and add the narrow error-code suppression only when mypy cannot express the negative test.",
     "maximum_files_per_slice": 40,
-    "minimum_enforced_files": 1378,
+    "minimum_enforced_files": 1379,
     "required_verification": [
       "focused pytest",
       "mypy --strict",
@@ -31,6 +31,7 @@
         "tests/test_audit_license_readiness.py",
         "tests/test_audit_mock_stub_usage.py",
         "tests/test_audit_release_readiness.py",
+        "tests/test_audit_split_ownership.py",
         "tests/test_audit_test_behaviour.py",
         "tests/test_audit_test_ordering_state.py",
         "tests/test_audit_test_typing_policy.py",
