@@ -210,9 +210,10 @@ def _measure_call(call: Callable[[], object]) -> _tier.TierStats:
 
 def _package_version() -> str:
     """Return the installed ``scpn_quantum_control`` version for our Python-floor rows."""
-    from scpn_quantum_control import __version__ as our_version
-
-    return str(our_version)
+    try:
+        return _distribution_version("scpn-quantum-control")
+    except PackageNotFoundError:
+        return "0.0.0+local"
 
 
 def _rust_engine_version() -> str:

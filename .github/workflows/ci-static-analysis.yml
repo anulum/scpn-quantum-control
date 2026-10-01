@@ -249,19 +249,17 @@ jobs:
         run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/phase/qnode_affinity_benchmark.py
-          tools/lean_phase_import.py
           tools/run_phase_qnode_affinity_benchmark.py
           tests/test_phase_qnode_affinity_benchmark.py
-          tests/test_lean_phase_import.py
+          tests/test_run_phase_qnode_affinity_benchmark.py
       - name: Ruff NumPy docstrings for Phase-QNode affinity quality cohort
         run: >-
           python -m ruff check --isolated --select D,D413
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/phase/qnode_affinity_benchmark.py
-          tools/lean_phase_import.py
           tools/run_phase_qnode_affinity_benchmark.py
           tests/test_phase_qnode_affinity_benchmark.py
-          tests/test_lean_phase_import.py
+          tests/test_run_phase_qnode_affinity_benchmark.py
       - name: Type-check Studio Program-AD replay quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases

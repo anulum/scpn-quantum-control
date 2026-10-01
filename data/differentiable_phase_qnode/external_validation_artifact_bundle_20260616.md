@@ -41,8 +41,8 @@ SCPN Quantum Control — Differentiable external-validation artefact bundle
 | `data/differentiable_phase_qnode/compiler_alias_activity_evidence_20260706.md` | Program AD compiler alias-activity evidence reviewer summary | `93e71c273495508e86ca1ed0a116c243f58c2ccdf3ed81e18287bf8d89fd67ce` | 3253 |
 | `data/differentiable_phase_qnode/compiler_promotion_batch_20260706.json` | Non-promotional compiler evidence promotion-batch artefact | `0a05287c32e27198ecfc52e0477f054ea88e9586d775290eddf9509611b10b56` | 5850 |
 | `data/differentiable_phase_qnode/compiler_promotion_batch_20260706.md` | Non-promotional compiler evidence promotion-batch reviewer summary | `7a7658b7f2bda7bd6d7f6438038a614f37b6564842b6e0c066ff258c7ae4edcc` | 3785 |
-| `data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.json` | Exact environment-lock manifest | `4738eddce893d0d09f6b81970728eda9017a39fbe62300f7a83feb7e076ec485` | 3241 |
-| `data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.md` | Environment-lock reviewer summary | `1433ac183913ae433215198ad2e8e81b7c18a864ad39a202434a1fe753a41e91` | 2388 |
+| `data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.json` | Exact environment-lock manifest | `95ebffb8eb001ec9f94273fa09d5894abbccbd02e48ab43dbe0e28f398109cd3` | 3241 |
+| `data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.md` | Environment-lock reviewer summary | `b5fc1ae56dac7a9b07e8c40911dafd2e128a52a54cb6a3663983b55ba7d0fd42` | 2388 |
 | `data/differentiable_phase_qnode/domain_benchmark_dataset_closure_20260616.json` | Exact-answer domain dataset closure artefact | `f776e02d745652e122bfb41e30088a6515a53821f02cce30a5fcc35b7f52a5b3` | 13589 |
 | `data/differentiable_phase_qnode/identical_circuit_gradient_comparison_20260616.json` | Identical-circuit Qiskit/PennyLane gradient comparison artefact | `9bda8b96ec64aa5d5740862db7873a961315dab22d855a445677c4bad99d9529` | 3498 |
 | `data/differentiable_phase_qnode/torch_maturity_audit_20260616.json` | PyTorch maturity audit artefact | `77b59dea1ede83e4441aadcab51af59267a44de32c437eee45cd06614b0da295` | 11209 |

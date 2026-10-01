@@ -71,6 +71,9 @@ orchestration and every external integration:
 `kuramoto_competitive_benchmark` runs our own integrator tiers and assembles the
 record.
 
+Toolkit rows report the installed `scpn-quantum-control` distribution version.
+A source checkout without distribution metadata reports `0.0.0+local`.
+
 ## Measured comparison (committed artefact)
 
 The committed artefact was generated on the development workstation (11th-gen

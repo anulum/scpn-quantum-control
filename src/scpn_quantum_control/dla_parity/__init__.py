@@ -31,37 +31,41 @@ invariant breach.
 
 from __future__ import annotations
 
+from importlib import import_module
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from .baselines import (
+        ClassicalLeakagePoint,
+        ClassicalLeakageReference,
+        available_baselines,
+        compute_classical_leakage_reference,
+    )
+    from .dataset import (
+        DatasetIntegrityError,
+        load_dla_parity_dataset,
+    )
+    from .reproduce import (
+        FisherResult,
+        ReproductionResult,
+        ReproductionTolerance,
+        compute_depth_summaries,
+        recompute_parity_leakage,
+        reproduce_statistics,
+    )
+    from .schema import (
+        DlaParityCircuit,
+        DlaParityCircuitMeta,
+        DlaParityDataset,
+        DlaParityRun,
+        DlaParityRunName,
+        Sector,
+        StatisticalSummary,
+    )
+
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
-
-from .baselines import (
-    ClassicalLeakagePoint,
-    ClassicalLeakageReference,
-    available_baselines,
-    compute_classical_leakage_reference,
-)
-from .dataset import (
-    DatasetIntegrityError,
-    load_dla_parity_dataset,
-)
-from .reproduce import (
-    FisherResult,
-    ReproductionResult,
-    ReproductionTolerance,
-    compute_depth_summaries,
-    recompute_parity_leakage,
-    reproduce_statistics,
-)
-from .schema import (
-    DlaParityCircuit,
-    DlaParityCircuitMeta,
-    DlaParityDataset,
-    DlaParityRun,
-    DlaParityRunName,
-    Sector,
-    StatisticalSummary,
-)
 
 
 @dataclass(frozen=True, slots=True)
@@ -149,6 +153,122 @@ def run_full_harness(
         reproduction=reproduction,
         classical_reference=classical,
     )
+
+
+_PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
+    "ClassicalLeakagePoint": (
+        "scpn_quantum_control.dla_parity.baselines",
+        "ClassicalLeakagePoint",
+    ),
+    "ClassicalLeakageReference": (
+        "scpn_quantum_control.dla_parity.baselines",
+        "ClassicalLeakageReference",
+    ),
+    "available_baselines": ("scpn_quantum_control.dla_parity.baselines", "available_baselines"),
+    "compute_classical_leakage_reference": (
+        "scpn_quantum_control.dla_parity.baselines",
+        "compute_classical_leakage_reference",
+    ),
+    "DatasetIntegrityError": ("scpn_quantum_control.dla_parity.dataset", "DatasetIntegrityError"),
+    "load_dla_parity_dataset": (
+        "scpn_quantum_control.dla_parity.dataset",
+        "load_dla_parity_dataset",
+    ),
+    "FisherResult": ("scpn_quantum_control.dla_parity.reproduce", "FisherResult"),
+    "ReproductionResult": ("scpn_quantum_control.dla_parity.reproduce", "ReproductionResult"),
+    "ReproductionTolerance": (
+        "scpn_quantum_control.dla_parity.reproduce",
+        "ReproductionTolerance",
+    ),
+    "compute_depth_summaries": (
+        "scpn_quantum_control.dla_parity.reproduce",
+        "compute_depth_summaries",
+    ),
+    "recompute_parity_leakage": (
+        "scpn_quantum_control.dla_parity.reproduce",
+        "recompute_parity_leakage",
+    ),
+    "reproduce_statistics": ("scpn_quantum_control.dla_parity.reproduce", "reproduce_statistics"),
+    "DlaParityCircuit": ("scpn_quantum_control.dla_parity.schema", "DlaParityCircuit"),
+    "DlaParityCircuitMeta": ("scpn_quantum_control.dla_parity.schema", "DlaParityCircuitMeta"),
+    "DlaParityDataset": ("scpn_quantum_control.dla_parity.schema", "DlaParityDataset"),
+    "DlaParityRun": ("scpn_quantum_control.dla_parity.schema", "DlaParityRun"),
+    "DlaParityRunName": ("scpn_quantum_control.dla_parity.schema", "DlaParityRunName"),
+    "Sector": ("scpn_quantum_control.dla_parity.schema", "Sector"),
+    "StatisticalSummary": ("scpn_quantum_control.dla_parity.schema", "StatisticalSummary"),
+}
+
+_INLINE_EXPORTS = {"FullHarnessResult": FullHarnessResult, "run_full_harness": run_full_harness}
+del globals()["FullHarnessResult"]
+del globals()["run_full_harness"]
+_INLINE_DEPENDENCIES = (
+    "ClassicalLeakagePoint",
+    "ClassicalLeakageReference",
+    "available_baselines",
+    "compute_classical_leakage_reference",
+    "DatasetIntegrityError",
+    "load_dla_parity_dataset",
+    "FisherResult",
+    "ReproductionResult",
+    "ReproductionTolerance",
+    "compute_depth_summaries",
+    "recompute_parity_leakage",
+    "reproduce_statistics",
+    "DlaParityCircuit",
+    "DlaParityCircuitMeta",
+    "DlaParityDataset",
+    "DlaParityRun",
+    "DlaParityRunName",
+    "Sector",
+    "StatisticalSummary",
+)
+
+
+def __getattr__(name: str) -> Any:
+    """Resolve and cache a public export from its original owning module.
+
+    Parameters
+    ----------
+    name
+        Public export requested through this package.
+
+    Returns
+    -------
+    Any
+        Original object, including module-valued exports.
+
+    Raises
+    ------
+    AttributeError
+        If the name is undeclared or the original module lacks its attribute.
+    ImportError
+        If the owning module cannot be imported.
+
+    """
+    if name in _INLINE_EXPORTS:
+        for dependency in _INLINE_DEPENDENCIES:
+            __getattr__(dependency)
+        globals().update(_INLINE_EXPORTS)
+        return _INLINE_EXPORTS[name]
+    target = _PUBLIC_EXPORTS.get(name)
+    if target is None:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    origin = import_module(target[0])
+    value = origin if target[1] is None else getattr(origin, target[1])
+    globals()[name] = value
+    return value
+
+
+def __dir__() -> list[str]:
+    """List cached and deferred names for inspection tools.
+
+    Returns
+    -------
+    list[str]
+        Sorted package namespace and declared lazy export names.
+
+    """
+    return sorted(set(globals()) | set(_PUBLIC_EXPORTS) | set(_INLINE_EXPORTS))
 
 
 __all__ = [

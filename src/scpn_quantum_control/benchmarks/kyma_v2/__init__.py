@@ -26,6 +26,59 @@ is frozen in ``KYMA_V2_PROBE_PREREGISTRATION_7f6b_2026-07-21.md``.
 
 from __future__ import annotations
 
-from .task import ProbeConfigV2, TrialBatchV2, build_trials
+from importlib import import_module
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from .task import ProbeConfigV2, TrialBatchV2, build_trials
+
+_PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
+    "ProbeConfigV2": ("scpn_quantum_control.benchmarks.kyma_v2.task", "ProbeConfigV2"),
+    "TrialBatchV2": ("scpn_quantum_control.benchmarks.kyma_v2.task", "TrialBatchV2"),
+    "build_trials": ("scpn_quantum_control.benchmarks.kyma_v2.task", "build_trials"),
+}
+
+
+def __getattr__(name: str) -> Any:
+    """Resolve and cache a public export from its original owning module.
+
+    Parameters
+    ----------
+    name
+        Public export requested through this package.
+
+    Returns
+    -------
+    Any
+        Original object, including module-valued exports.
+
+    Raises
+    ------
+    AttributeError
+        If the name is undeclared or the original module lacks its attribute.
+    ImportError
+        If the owning module cannot be imported.
+
+    """
+    target = _PUBLIC_EXPORTS.get(name)
+    if target is None:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    origin = import_module(target[0])
+    value = origin if target[1] is None else getattr(origin, target[1])
+    globals()[name] = value
+    return value
+
+
+def __dir__() -> list[str]:
+    """List cached and deferred names for inspection tools.
+
+    Returns
+    -------
+    list[str]
+        Sorted package namespace and declared lazy export names.
+
+    """
+    return sorted(set(globals()) | set(_PUBLIC_EXPORTS))
+
 
 __all__ = ["ProbeConfigV2", "TrialBatchV2", "build_trials"]

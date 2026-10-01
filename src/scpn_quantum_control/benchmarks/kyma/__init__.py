@@ -25,13 +25,73 @@ through the RK4 solver during motif training.
 
 from __future__ import annotations
 
-from .dynamics import cluster_order_parameter, integrate_kuramoto, kuramoto_rhs
-from .task import (
-    ProbeConfig,
-    TrialBatch,
-    build_trials,
-    success_mask,
-)
+from importlib import import_module
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from .dynamics import cluster_order_parameter, integrate_kuramoto, kuramoto_rhs
+    from .task import (
+        ProbeConfig,
+        TrialBatch,
+        build_trials,
+        success_mask,
+    )
+
+_PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
+    "cluster_order_parameter": (
+        "scpn_quantum_control.benchmarks.kyma.dynamics",
+        "cluster_order_parameter",
+    ),
+    "integrate_kuramoto": ("scpn_quantum_control.benchmarks.kyma.dynamics", "integrate_kuramoto"),
+    "kuramoto_rhs": ("scpn_quantum_control.benchmarks.kyma.dynamics", "kuramoto_rhs"),
+    "ProbeConfig": ("scpn_quantum_control.benchmarks.kyma.task", "ProbeConfig"),
+    "TrialBatch": ("scpn_quantum_control.benchmarks.kyma.task", "TrialBatch"),
+    "build_trials": ("scpn_quantum_control.benchmarks.kyma.task", "build_trials"),
+    "success_mask": ("scpn_quantum_control.benchmarks.kyma.task", "success_mask"),
+}
+
+
+def __getattr__(name: str) -> Any:
+    """Resolve and cache a public export from its original owning module.
+
+    Parameters
+    ----------
+    name
+        Public export requested through this package.
+
+    Returns
+    -------
+    Any
+        Original object, including module-valued exports.
+
+    Raises
+    ------
+    AttributeError
+        If the name is undeclared or the original module lacks its attribute.
+    ImportError
+        If the owning module cannot be imported.
+
+    """
+    target = _PUBLIC_EXPORTS.get(name)
+    if target is None:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    origin = import_module(target[0])
+    value = origin if target[1] is None else getattr(origin, target[1])
+    globals()[name] = value
+    return value
+
+
+def __dir__() -> list[str]:
+    """List cached and deferred names for inspection tools.
+
+    Returns
+    -------
+    list[str]
+        Sorted package namespace and declared lazy export names.
+
+    """
+    return sorted(set(globals()) | set(_PUBLIC_EXPORTS))
+
 
 __all__ = [
     "ProbeConfig",

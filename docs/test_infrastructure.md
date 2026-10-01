@@ -104,6 +104,7 @@ hand-maintained count or a claim that every test is covered.
 | `hardware_provider_boundaries` | Provider, HAL, approval, budget and result-custody tests. |
 | `scientific_runtime_contracts` | Differentiable, phase and other scientific runtime contracts, including shared fixtures. |
 | `completed_test_surface` | Additional explicitly enrolled test paths; the name does not certify runtime or documentation completeness. |
+| `public_package_import_contracts` | Original public object identity, ordinary import counts, resolution failures and child-module import order. |
 
 The policy supplies each cohort's status and exact paths. New test files are
 not enrolled merely because they share a directory or filename prefix.
@@ -179,17 +180,16 @@ migrated as its own owner.
 
 ## Phase-QNode affinity quality ratchet
 
-The benchmark evidence source, lean loader, CLI, and their two public-path test
-owners form one ordered five-file quality cohort. CI and the local gate
+The benchmark evidence source, ordinary-import CLI, and their two public-path test
+owners form one ordered four-file quality cohort. CI and the local gate
 definition enforce strict typing and NumPy docstrings over exactly those files:
 
 ```bash
 quality_paths=(
   src/scpn_quantum_control/phase/qnode_affinity_benchmark.py
-  tools/lean_phase_import.py
   tools/run_phase_qnode_affinity_benchmark.py
   tests/test_phase_qnode_affinity_benchmark.py
-  tests/test_lean_phase_import.py
+  tests/test_run_phase_qnode_affinity_benchmark.py
 )
 python -m mypy --strict --explicit-package-bases "${quality_paths[@]}"
 python -m ruff check --isolated --select D,D413 \
@@ -204,7 +204,7 @@ only `qnode_affinity_benchmark.py` at an exact 100% threshold:
 python -m coverage run --rcfile=/dev/null \
   --data-file=.coverage.phase-qnode-affinity --branch \
   -m pytest -q tests/test_phase_qnode_affinity_benchmark.py \
-  tests/test_lean_phase_import.py
+  tests/test_run_phase_qnode_affinity_benchmark.py
 python -m coverage report --rcfile=/dev/null \
   --data-file=.coverage.phase-qnode-affinity --precision=2 \
   --fail-under=100 --include='*/qnode_affinity_benchmark.py'

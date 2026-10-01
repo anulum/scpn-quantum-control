@@ -18,8 +18,13 @@ not build the native engine.
 
 from __future__ import annotations
 
+import importlib
 import json
+import sys
+import sysconfig
 from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as distribution_version
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -141,6 +146,43 @@ def test_package_version_matches_distribution() -> None:
     from scpn_quantum_control import __version__ as expected
 
     assert m._package_version() == str(expected)
+
+
+@pytest.mark.parametrize("installed", [True, False])
+def test_public_comparison_records_real_distribution_or_source_version(
+    monkeypatch: pytest.MonkeyPatch, installed: bool
+) -> None:
+    """Record real provenance with installed and source-only metadata search paths.
+
+    Parameters
+    ----------
+    monkeypatch
+        Scoped interpreter search path for the genuine source-only profile.
+    installed
+        Whether the current distribution metadata remains discoverable.
+
+    """
+    importlib.import_module("scipy.integrate")
+
+    problem = build_default_problem(n_oscillators=2, t_max=0.02, dt=0.01, seed=7)
+    expected = distribution_version("scpn-quantum-control") if installed else "0.0.0+local"
+    with monkeypatch.context() as profile:
+        if not installed:
+            root = Path(__file__).resolve().parents[1]
+            profile.setattr(
+                sys,
+                "path",
+                [str(root / "src"), str(root / "oscillatools/src"), sysconfig.get_path("stdlib")],
+            )
+            with pytest.raises(PackageNotFoundError):
+                distribution_version("scpn-quantum-control")
+        comparison = m.run_kuramoto_competitive_comparison(problem, timeout=0.05)
+    for method in ("ours_rk4_python", "ours_dopri"):
+        row = comparison.row(method)
+        assert row.available
+        assert row.version == expected
+        assert row.r_final is not None and 0.0 <= row.r_final <= 1.0
+    assert json.dumps(comparison.to_dict())
 
 
 def test_rust_engine_version_is_a_string() -> None:

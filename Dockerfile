@@ -145,4 +145,5 @@ HEALTHCHECK --interval=60s --timeout=10s --start-period=10s --retries=3 \
     CMD python -c "import scpn_quantum_control; print('OK')"
 
 # Skip slow, hardware, private-corpus, and machine-dependent performance tests by default.
-CMD ["pytest", "tests/", "-v", "--tb=short", "-o", "cache_dir=/home/sqc/.cache/pytest", "-m", "not slow and not hardware and not internal_corpus and not performance"]
+# Exhaustive public imports run in the required CPU framework CI profile.
+CMD ["pytest", "tests/", "-v", "--tb=short", "-o", "cache_dir=/home/sqc/.cache/pytest", "-m", "not slow and not hardware and not internal_corpus and not performance and not framework_imports"]

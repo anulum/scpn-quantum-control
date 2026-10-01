@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import ast
+import json
 import re
 import tomllib
 from pathlib import Path
@@ -328,13 +329,65 @@ def test_ci_phase_qnode_affinity_job_enforces_exact_quality_and_coverage() -> No
     assert "phase-qnode-affinity-quality:" in workflow
     assert "Run Phase-QNode affinity focused coverage" in workflow
     assert "tests/test_phase_qnode_affinity_benchmark.py" in workflow
-    assert "tests/test_lean_phase_import.py" in workflow
+    assert "tests/test_run_phase_qnode_affinity_benchmark.py" in workflow
     assert "--data-file=.coverage.phase-qnode-affinity" in workflow
     assert "Enforce Phase-QNode affinity exact coverage" in workflow
     assert "--include=*/qnode_affinity_benchmark.py" in workflow
     assert "--fail-under=100" in workflow
     assert workflow_path_for_job("phase-qnode-affinity-quality").name == (
         "ci-application-domain.yml"
+    )
+
+
+def test_public_import_contracts_use_the_real_cpu_framework_environment() -> None:
+    """Run exhaustive lazy export coverage after the required real JAX probe."""
+    source = Path(".github/workflows/ci-framework-parity.yml").read_text(encoding="utf-8")
+    assert source.index("Verify real JAX runtime") < source.index(
+        "Run public package import compatibility coverage"
+    )
+    block = source.split("      - name: Run public package import compatibility coverage", 1)[1]
+    block = block.split("      - name: Run Phase-QNode JAX focused coverage", 1)[0]
+    for path in (
+        "tests/test_public_export_identity.py",
+        "tests/test_lazy_package_exports.py",
+        "tests/test_import_cost_budget.py",
+        "tests/test_benchmark_harness_public.py",
+        "tests/test_dla_parity_init.py",
+        "tests/experimental/llm_qpu/test_cell_contract_acceptance.py",
+        "tests/experimental/llm_qpu/test_experiment_protocol_contract.py",
+    ):
+        assert path in block
+    assert "--data-file=.coverage.public-package-imports" in block
+    assert "--fail-under=100" in block
+    assert "--rcfile=data/split_preparation/import_coverage.toml" in block
+    assert "*/scpn_quantum_control/**/__init__.py" in block
+    assert "continue-on-error" not in block
+    assert "if:" not in block
+    assert "not framework_imports" not in block
+    configuration = tomllib.loads(
+        Path("data/split_preparation/import_coverage.toml").read_text(encoding="utf-8")
+    )["tool"]["coverage"]
+    canonical = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))["tool"][
+        "coverage"
+    ]
+    assert configuration["report"]["exclude_also"] == canonical["report"]["exclude_also"]
+    assert configuration["report"]["exclude_lines"] == canonical["report"]["exclude_lines"]
+    assert configuration["run"]["include"] == [
+        "*/scpn_quantum_control/__init__.py",
+        "*/scpn_quantum_control/**/__init__.py",
+    ]
+    assert "omit" not in configuration["run"]
+    assert "omit" not in configuration["report"]
+    aggregate = Path(".github/workflows/ci-native-integration.yml").read_text(encoding="utf-8")
+    assert aggregate.count("and not framework_imports") == 2
+    dockerfile = Path("Dockerfile").read_text(encoding="utf-8")
+    docker_command = json.loads(
+        next(line[4:] for line in dockerfile.splitlines() if line.startswith("CMD "))
+    )
+    marker_position = docker_command.index("-m")
+    assert docker_command[marker_position + 1] == (
+        "not slow and not hardware and not internal_corpus and not performance "
+        "and not framework_imports"
     )
 
 

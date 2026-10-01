@@ -16,6 +16,25 @@ ordinary source module and every documented public module-level class or
 function. This curated page remains the decision guide: catalog membership does
 not make an advanced or research module a stable facade.
 
+## Package imports
+
+Importing a package exposes its public names without loading every scientific
+implementation. An exported object loads when first requested and keeps its
+original defining module, type annotations and identity:
+
+```python
+import scpn_quantum_control as sqc
+from scpn_quantum_control.phase import PhaseQNodeCircuit
+
+build_ansatz = sqc.knm_to_ansatz
+```
+
+Existing import paths, ordered `__all__` declarations and star imports remain
+available. Optional backend dependencies are required when selecting that
+backend; an import failure still reports the originating dependency error.
+`scpn_quantum_control.__version__` remains available for a source-tree import
+without distribution metadata. Phase tooling uses ordinary Python imports.
+
 ## Differentiable programming entry points
 
 The differentiable-programming surface has its own public guide and API map:

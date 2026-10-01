@@ -48,6 +48,32 @@ jobs:
           python -c
           "import jax; devices=jax.devices();
           print(f'JAX {jax.__version__}; devices={devices}; primary={devices[0]}')"
+      - name: Run public package import compatibility coverage
+        run: >-
+          python -m coverage run
+          --rcfile=data/split_preparation/import_coverage.toml
+          --data-file=.coverage.public-package-imports
+          --branch
+          -m pytest -q --no-cov
+          tests/test_public_export_identity.py
+          tests/test_lazy_package_exports.py
+          tests/test_import_cost_budget.py
+          tests/test_benchmark_harness_public.py
+          tests/test_dla_parity_init.py
+          tests/experimental/llm_qpu/test_cell_contract_acceptance.py
+          tests/experimental/llm_qpu/test_model_descriptor_contract.py
+          tests/experimental/llm_qpu/test_latent_batch_contract.py
+          tests/experimental/llm_qpu/test_compressor_artifact_contract.py
+          tests/experimental/llm_qpu/test_static_circuit_plan_contract.py
+          tests/experimental/llm_qpu/test_measurement_plan_contract.py
+          tests/experimental/llm_qpu/test_experiment_protocol_contract.py
+      - name: Enforce exact public package initializer coverage
+        run: >-
+          python -m coverage report
+          --rcfile=data/split_preparation/import_coverage.toml
+          --data-file=.coverage.public-package-imports
+          --precision=2 --show-missing --fail-under=100
+          --include='*/scpn_quantum_control/__init__.py,*/scpn_quantum_control/**/__init__.py'
       - name: Run Phase-QNode JAX focused coverage
         run: >-
           python -m coverage run

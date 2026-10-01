@@ -444,7 +444,7 @@
   {
    "unit": "phase",
    "reason": "119 files: dynamics solvers (SIM), QNode/gradient/framework bridges (QNODE), NQS/VQE/QNN/ansatz groups (LEARN); split per file at stage 0.",
-   "decision": "Owner 2026-09-30 accepted the recommendation: split per file (split_units.phase): 72 framework-bridge and QNode/gradient/audit files -> QNODE; 24 QNN/NQS/VQE/ansatz and training/coupling-learning files -> LEARN; 23 dynamics-solver and synchronisation-objective files incl. __init__ -> SIM."
+   "decision": "Owner 2026-09-30 accepted the recommendation: split per file (split_units.phase): 72 framework-bridge and QNode/gradient/audit files -> QNODE; 24 QNN/NQS/VQE/ansatz and training/coupling-learning files -> LEARN; 23 dynamics-solver and synchronisation-objective files incl. __init__ -> SIM. Owner QD17 2026-09-30 approved the pure cross-target phase/__init__.py compatibility facade as workbench-umbrella; independent boundary review accepted source SHA-256 cce90723ca60ca49a00e01ecbd1896fce3be82ba27216e1a817ef1b425852270. Remaining 22 SIM, 72 QNODE and 24 LEARN leaf files retain their approved owners; actual facade dependencies remain visible."
   },
   {
    "unit": "bridge",
@@ -625,7 +625,6 @@
  "split_units": {
   "phase": {
    "simulation": [
-    "__init__.py",
     "adiabatic_preparation.py",
     "ancilla_lindblad.py",
     "backend_selector.py",
@@ -748,6 +747,9 @@
     "qnn_training.py",
     "structured_ansatz.py",
     "varqite.py"
+   ],
+   "facade": [
+    "__init__.py"
    ]
   }
  }

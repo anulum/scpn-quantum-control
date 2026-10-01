@@ -821,15 +821,14 @@ REALTIME_RUNTIME_QUALITY_RATCHET = [
 
 PHASE_QNODE_AFFINITY_QUALITY_RATCHET = [
     "src/scpn_quantum_control/phase/qnode_affinity_benchmark.py",
-    "tools/lean_phase_import.py",
     "tools/run_phase_qnode_affinity_benchmark.py",
     "tests/test_phase_qnode_affinity_benchmark.py",
-    "tests/test_lean_phase_import.py",
+    "tests/test_run_phase_qnode_affinity_benchmark.py",
 ]
 
 PHASE_QNODE_AFFINITY_COVERAGE_COHORT = [
     "tests/test_phase_qnode_affinity_benchmark.py",
-    "tests/test_lean_phase_import.py",
+    "tests/test_run_phase_qnode_affinity_benchmark.py",
 ]
 
 PHASE_QNODE_VECTOR_QUALITY_RATCHET = [

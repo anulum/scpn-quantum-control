@@ -1,7 +1,7 @@
 {
   "schema": "scpn_qc_boundary_baseline_v3",
-  "measured_head": "0483a5a998ee064b6f7b2b28de486a87111e2c6c",
-  "domain_map_sha256": "c6d0f72df3acfe8a5cacac7cf0f3520df463cc00545e866a8b3a52a5db4793e4",
+  "measured_head": "a966165d1525e4a4537f6ade0cabcbe0f111603d",
+  "domain_map_sha256": "f2eb07088afc1410bddbbfb96f1ac9f089248bf8a6c2a2648e8d1c2b667a8959",
   "dependencies": {
     "SCPN-QC-CONTRACTS": [],
     "SCPN-QC-CORE": [
@@ -311,15 +311,15 @@
       "removal_owner": "residual-dependency-inversions"
     },
     {
-      "source": "src/scpn_quantum_control/benchmarks/kuramoto_competitive_benchmark.py",
-      "target": "src/scpn_quantum_control/__init__.py",
-      "target_unit": "__init__",
+      "source": "src/scpn_quantum_control/benchmarks/reproducible_comparison.py",
+      "target": "src/scpn_quantum_control/phase/__init__.py",
+      "target_unit": "phase",
       "source_target": "SCPN-QC-BENCH",
       "destination_target": "workbench-umbrella",
-      "kind": "lazy",
+      "kind": "module",
       "count": 1,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
+      "reason": "Existing source reference to the reviewed phase compatibility facade is now an explicit child-to-umbrella dependency. Preserve its exact count until the consumer uses an owned leaf or versioned domain contract.",
+      "removal_owner": "residual-dependency-inversions"
     },
     {
       "source": "src/scpn_quantum_control/bridge/fusion_core_frc.py",
@@ -1166,798 +1166,6 @@
       "removal_owner": "residual-dependency-inversions"
     },
     {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/adapt_vqe.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 2,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/ansatz_bench.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 3,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/ansatz_methodology.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 1,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/avqds.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 2,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/coupling_learning.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 5,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/coupling_time_series_recovery.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 14,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/cross_domain_transfer.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 3,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/differentiable_audit.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 14,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/differentiable_readiness.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 5,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/domain_benchmark_datasets.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 13,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/generalised_parameter_shift.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 9,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/gradient_backend.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 8,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/gradient_descent.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 5,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/gradient_support_matrix.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 8,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/gradient_tape.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 8,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/hardware_gradient_campaign.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 7,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/hardware_gradient_policy.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 7,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/hardware_gradient_publication.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 7,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/jax_bridge.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 18,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/jax_bridge_contracts.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 19,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/model_training_evidence.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 6,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/natural_gradient.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 8,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/objective_audit.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 4,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/objective_planner.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 5,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/objectives.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 15,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/optimizer_audit.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 3,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/optimizer_convergence_suite.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 9,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/param_shift.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 19,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/pennylane_bridge.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 10,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/pennylane_import.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 5,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/pennylane_provider_plugin.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 7,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/phase_vqe.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 2,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/provider_gradient.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 6,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/provider_gradient_audit.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 5,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/provider_hardware_gradient_audit.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 5,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/provider_hardware_safety_audit.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 4,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/qgnn.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 4,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/qiskit_bridge.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 16,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/qnn_conformance.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 6,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/qnn_convergence.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 9,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/qnn_finite_shot.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 8,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/qnn_framework_agreement.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 7,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/qnn_framework_bridge_matrix.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 4,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/qnn_loss_landscape.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 4,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/qnn_optimizer_benchmark.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 5,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/qnn_training.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 9,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/qnode_affinity_benchmark.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 6,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/qnode_circuit.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 42,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/qnode_framework_parity.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 4,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/qnode_provider_transforms.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 5,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/qnode_tape.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 5,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/qnode_transforms.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 7,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 8,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/structured_ansatz.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 1,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/tensorflow_bridge.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 19,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/tensorflow_maintenance.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 6,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/torch_aot_autograd_export.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 6,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/torch_autograd_function.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 6,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/torch_bridge.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 18,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/torch_bridge_contracts.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 19,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/torch_checkpoint.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 5,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/torch_checkpoint_matrix.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 7,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/torch_device_state.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 4,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/torch_dynamic_shape_export.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 8,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/torch_export.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 4,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/torch_export_shape_matrix.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 8,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/torch_module_state.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 7,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/torch_training_loop_matrix.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 8,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/trainability.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 6,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/transform_nesting.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 5,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/variational_metric.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 5,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/__init__.py",
-      "target": "src/scpn_quantum_control/phase/varqite.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-SIM",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 2,
-      "reason": "Packaging facade or eager export crosses the target dependency DAG; replace through the lazy export and public-name parity card.",
-      "removal_owner": "lazy-subpackage-exports"
-    },
-    {
       "source": "src/scpn_quantum_control/phase/ansatz_methodology.py",
       "target": "src/scpn_quantum_control/hardware/classical.py",
       "target_unit": "hardware",
@@ -2090,6 +1298,17 @@
       "removal_owner": "residual-dependency-inversions"
     },
     {
+      "source": "src/scpn_quantum_control/phase/jax_maturity.py",
+      "target": "src/scpn_quantum_control/phase/__init__.py",
+      "target_unit": "phase",
+      "source_target": "SCPN-QC-QNODE",
+      "destination_target": "workbench-umbrella",
+      "kind": "string_ref",
+      "count": 1,
+      "reason": "Existing source reference to the reviewed phase compatibility facade is now an explicit child-to-umbrella dependency. Preserve its exact count until the consumer uses an owned leaf or versioned domain contract.",
+      "removal_owner": "residual-dependency-inversions"
+    },
+    {
       "source": "src/scpn_quantum_control/phase/objective_audit.py",
       "target": "src/scpn_quantum_control/phase/objectives.py",
       "target_unit": "phase",
@@ -2179,6 +1398,17 @@
     },
     {
       "source": "src/scpn_quantum_control/phase/torch_aot_autograd_export.py",
+      "target": "src/scpn_quantum_control/phase/__init__.py",
+      "target_unit": "phase",
+      "source_target": "SCPN-QC-QNODE",
+      "destination_target": "workbench-umbrella",
+      "kind": "string_ref",
+      "count": 1,
+      "reason": "Existing source reference to the reviewed phase compatibility facade is now an explicit child-to-umbrella dependency. Preserve its exact count until the consumer uses an owned leaf or versioned domain contract.",
+      "removal_owner": "residual-dependency-inversions"
+    },
+    {
+      "source": "src/scpn_quantum_control/phase/torch_aot_autograd_export.py",
       "target": "src/scpn_quantum_control/phase/qnn_training.py",
       "target_unit": "phase",
       "source_target": "SCPN-QC-QNODE",
@@ -2190,6 +1420,17 @@
     },
     {
       "source": "src/scpn_quantum_control/phase/torch_autograd_function.py",
+      "target": "src/scpn_quantum_control/phase/__init__.py",
+      "target_unit": "phase",
+      "source_target": "SCPN-QC-QNODE",
+      "destination_target": "workbench-umbrella",
+      "kind": "string_ref",
+      "count": 1,
+      "reason": "Existing source reference to the reviewed phase compatibility facade is now an explicit child-to-umbrella dependency. Preserve its exact count until the consumer uses an owned leaf or versioned domain contract.",
+      "removal_owner": "residual-dependency-inversions"
+    },
+    {
+      "source": "src/scpn_quantum_control/phase/torch_autograd_function.py",
       "target": "src/scpn_quantum_control/phase/qnn_training.py",
       "target_unit": "phase",
       "source_target": "SCPN-QC-QNODE",
@@ -2197,6 +1438,28 @@
       "kind": "module",
       "count": 2,
       "reason": "Public boundary contract must invert this non-DAG dependency through an owned versioned interface; source unit must not silently acquire a new target dependency.",
+      "removal_owner": "residual-dependency-inversions"
+    },
+    {
+      "source": "src/scpn_quantum_control/phase/torch_checkpoint.py",
+      "target": "src/scpn_quantum_control/phase/__init__.py",
+      "target_unit": "phase",
+      "source_target": "SCPN-QC-QNODE",
+      "destination_target": "workbench-umbrella",
+      "kind": "string_ref",
+      "count": 1,
+      "reason": "Existing source reference to the reviewed phase compatibility facade is now an explicit child-to-umbrella dependency. Preserve its exact count until the consumer uses an owned leaf or versioned domain contract.",
+      "removal_owner": "residual-dependency-inversions"
+    },
+    {
+      "source": "src/scpn_quantum_control/phase/torch_checkpoint_matrix.py",
+      "target": "src/scpn_quantum_control/phase/__init__.py",
+      "target_unit": "phase",
+      "source_target": "SCPN-QC-QNODE",
+      "destination_target": "workbench-umbrella",
+      "kind": "string_ref",
+      "count": 1,
+      "reason": "Existing source reference to the reviewed phase compatibility facade is now an explicit child-to-umbrella dependency. Preserve its exact count until the consumer uses an owned leaf or versioned domain contract.",
       "removal_owner": "residual-dependency-inversions"
     },
     {
@@ -2212,6 +1475,17 @@
     },
     {
       "source": "src/scpn_quantum_control/phase/torch_dynamic_shape_export.py",
+      "target": "src/scpn_quantum_control/phase/__init__.py",
+      "target_unit": "phase",
+      "source_target": "SCPN-QC-QNODE",
+      "destination_target": "workbench-umbrella",
+      "kind": "string_ref",
+      "count": 1,
+      "reason": "Existing source reference to the reviewed phase compatibility facade is now an explicit child-to-umbrella dependency. Preserve its exact count until the consumer uses an owned leaf or versioned domain contract.",
+      "removal_owner": "residual-dependency-inversions"
+    },
+    {
+      "source": "src/scpn_quantum_control/phase/torch_dynamic_shape_export.py",
       "target": "src/scpn_quantum_control/phase/qnn_training.py",
       "target_unit": "phase",
       "source_target": "SCPN-QC-QNODE",
@@ -2219,6 +1493,17 @@
       "kind": "module",
       "count": 1,
       "reason": "Public boundary contract must invert this non-DAG dependency through an owned versioned interface; source unit must not silently acquire a new target dependency.",
+      "removal_owner": "residual-dependency-inversions"
+    },
+    {
+      "source": "src/scpn_quantum_control/phase/torch_export_shape_matrix.py",
+      "target": "src/scpn_quantum_control/phase/__init__.py",
+      "target_unit": "phase",
+      "source_target": "SCPN-QC-QNODE",
+      "destination_target": "workbench-umbrella",
+      "kind": "string_ref",
+      "count": 1,
+      "reason": "Existing source reference to the reviewed phase compatibility facade is now an explicit child-to-umbrella dependency. Preserve its exact count until the consumer uses an owned leaf or versioned domain contract.",
       "removal_owner": "residual-dependency-inversions"
     },
     {
@@ -2230,6 +1515,28 @@
       "kind": "module",
       "count": 2,
       "reason": "Public boundary contract must invert this non-DAG dependency through an owned versioned interface; source unit must not silently acquire a new target dependency.",
+      "removal_owner": "residual-dependency-inversions"
+    },
+    {
+      "source": "src/scpn_quantum_control/phase/torch_maturity.py",
+      "target": "src/scpn_quantum_control/phase/__init__.py",
+      "target_unit": "phase",
+      "source_target": "SCPN-QC-QNODE",
+      "destination_target": "workbench-umbrella",
+      "kind": "string_ref",
+      "count": 1,
+      "reason": "Existing source reference to the reviewed phase compatibility facade is now an explicit child-to-umbrella dependency. Preserve its exact count until the consumer uses an owned leaf or versioned domain contract.",
+      "removal_owner": "residual-dependency-inversions"
+    },
+    {
+      "source": "src/scpn_quantum_control/phase/torch_training_loop_matrix.py",
+      "target": "src/scpn_quantum_control/phase/__init__.py",
+      "target_unit": "phase",
+      "source_target": "SCPN-QC-QNODE",
+      "destination_target": "workbench-umbrella",
+      "kind": "string_ref",
+      "count": 1,
+      "reason": "Existing source reference to the reviewed phase compatibility facade is now an explicit child-to-umbrella dependency. Preserve its exact count until the consumer uses an owned leaf or versioned domain contract.",
       "removal_owner": "residual-dependency-inversions"
     },
     {
@@ -2629,6 +1936,28 @@
       "removal_owner": "residual-dependency-inversions"
     },
     {
+      "source": "src/scpn_quantum_control/studio/executive_simulate.py",
+      "target": "src/scpn_quantum_control/phase/__init__.py",
+      "target_unit": "phase",
+      "source_target": "SCPN-QC-STUDIO",
+      "destination_target": "workbench-umbrella",
+      "kind": "module",
+      "count": 1,
+      "reason": "Existing source reference to the reviewed phase compatibility facade is now an explicit child-to-umbrella dependency. Preserve its exact count until the consumer uses an owned leaf or versioned domain contract.",
+      "removal_owner": "residual-dependency-inversions"
+    },
+    {
+      "source": "src/scpn_quantum_control/studio/executive_simulate.py",
+      "target": "src/scpn_quantum_control/phase/__init__.py",
+      "target_unit": "phase",
+      "source_target": "SCPN-QC-STUDIO",
+      "destination_target": "workbench-umbrella",
+      "kind": "string_ref",
+      "count": 1,
+      "reason": "Existing source reference to the reviewed phase compatibility facade is now an explicit child-to-umbrella dependency. Preserve its exact count until the consumer uses an owned leaf or versioned domain contract.",
+      "removal_owner": "residual-dependency-inversions"
+    },
+    {
       "source": "src/scpn_quantum_control/studio/federation.py",
       "target": "src/scpn_quantum_control/bench_cli.py",
       "target_unit": "bench_cli",
@@ -2706,6 +2035,69 @@
   ],
   "dynamic_import_reviews": [
     {
+      "source": "src/scpn_quantum_control/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "066c313775a5f68070d4d700f42811ed14457c1a527aaca6f8ac4332ad364b62",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/accel/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "b3d6d16a776ea0d32b87e6f7b68b78318fe58797f231fe98615a9aff2e223f39",
+      "role": "external",
+      "reason": "Literal compatibility table dispatches only to original oscillatools exports; eager target forwarding and legacy warning remain.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/analog_mapping/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "b8d178656f839e33887ee41c6e9719c5005f6bdc4989e0a5bb657064210b551f",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/analysis/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "46d2d81962a034a470782d402daf1d1dcc4c5a1f479cc0205dee8abd2ffe79c2",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/applications/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "7a9520f8fd2225dfbc42dd6f5a289c1f2378193ed985a58cdcfcfe0e77839611",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/benchmark_harness/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "247f6ad3902040fd330a025011fc42756c2e349eb99106dc82f486abf4eedcb3",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/benchmarks/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "d3864c6330e0318745c3e6d86aac4d6b157a3bb50286f0d15ec2708f3dfc727e",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
       "source": "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
       "scope": "_installed_version",
       "call_sha256": "b549e1e61bc678ee20fc3cc627751e68618f3fcf20737d6d29d3c3d10175f5c7",
@@ -2724,12 +2116,201 @@
       "count": 1
     },
     {
+      "source": "src/scpn_quantum_control/benchmarks/kyma/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "2ff48fbd3cdfec98710803fd86b578061679ef9e72751d530339b18318cc7534",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/benchmarks/kyma_v2/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "c6c15a247ca2e29fc22b28d9c4b7ae9427e7093efc732627c1a84ea109ee0708",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/benchmarks/kyma_v3/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "23ee3a4e1ca419cd257a41aa7b6c84bb45f7475823bd6028972e718260470a40",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/bridge/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "0cf9dea01b52205ada9f0f3c7e33a9d6e2397d54b505cca3ee58100209f5c152",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/chimera_control/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "f1b366874ee4a2c140458052c370ff0cce62ea09a675c5260804613197a3fe20",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/codegen/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "27131e20360c3165f40b0ad23c4b3ade33d216809a39ac50c7f3a9dbe0e97221",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/codesign/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "09213dc9d8b884511151ccfe723cd82697bf52db0dde6b4be6648a9db7fdb14c",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/compiler/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "5a93ed07f387429514b6eb24edd71cd6402ac44929c01c95c7f2c5fd24a459bb",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/control/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "48fdac82e8442132c1051fb4bff3791da085143d934eb8b0de5f5ccfa92261c4",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/cosimulation/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "40cb50d7dd38ab9db79a7e6a2794d6b97bafc4be77ba4b490421bc5a3d9b64ce",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/crypto/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "21da5d3cbb548f98d011691d856761e99ef93d1f5c4c7ad2a4e850e1261a880b",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/deployment/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "4b273d1a7b5eaafc7a6031e443ee25a03be83f116abe621284a121fff3947839",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/dla_parity/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "82a8ae30f880f979bcbbe970608829190d64a279c802b4b12091b5b1db23c4a6",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
       "source": "src/scpn_quantum_control/dla_parity/baselines.py",
       "scope": "_have",
       "call_sha256": "49d2ec7e97e36aee52aa9e5c1d1c94904dae23c316efd3cc32a384153bf297f2",
       "source_sha256": "9683c2fb8fc3360d63c8da6744826f0a9e0bfde89fa39237a3ca1f36b983acde",
       "role": "external",
       "reason": "The probe caller passes the literal external name qutip.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/dla_topology_control/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "32eba90f6d6403edb55e7076159be6c70399013f3a805328305628715d975ffa",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/entropy/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "bf3152ae153e1f8823417ad271b4128748141be0e855275764fa76320b6de6ef",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/experimental/llm_qpu/contracts/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "dc4ccddfb0ed253e0cc1f86bf12832a915e3d918f84922a42d06a48450c343dc",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/experimental/llm_qpu/runtime/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "e76b3d2d577d9477c270fc0dd0339aec56bad9bc754f84e9e46a96e0aecf5a48",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/fep/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "e8c000e2905e2ac5f4adb5102304ab5b3e506fa7234d20613d5faa83f39edf5c",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/forecasting/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "e7ae715f836a0892acbb8eb3e9572f76d57b42bb8e515cf7828e803a6d14a73f",
+      "role": "mixed-descriptor",
+      "reason": "Literal table retains original first-party forecasting and sibling oscillatools.neural_operator origin pairs; all first-party targets stay visible and external targets remain separately inventoried. Dispatch imports only target[0] and caches genuine successful objects.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/gauge/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "ddd6128262cdac8b6c2abf09dbade40d877eddbd4004e0f0b39a8600db31b721",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/hardware/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "837a0f3023848f4e238ad8e8058db818aad20cca33e2ee265c919ac3ab910ae7",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
       "count": 1
     },
     {
@@ -2752,7 +2333,7 @@
     },
     {
       "source": "src/scpn_quantum_control/hardware/plugin_registry.py",
-      "scope": "PluginRegistry.is_available",
+      "scope": "PluginRegistry.get_runner",
       "call_sha256": "24b710c987baf04540429a7d18625d60f37472b187c06026027fd8fcd7e4b56f",
       "source_sha256": "16c00e3f3af960b2b7f81c10063dedd024246d96068afd706b4e5b006e362dea",
       "role": "first-party-lazy",
@@ -2761,7 +2342,7 @@
     },
     {
       "source": "src/scpn_quantum_control/hardware/plugin_registry.py",
-      "scope": "PluginRegistry.get_runner",
+      "scope": "PluginRegistry.is_available",
       "call_sha256": "24b710c987baf04540429a7d18625d60f37472b187c06026027fd8fcd7e4b56f",
       "source_sha256": "16c00e3f3af960b2b7f81c10063dedd024246d96068afd706b4e5b006e362dea",
       "role": "first-party-lazy",
@@ -2787,6 +2368,42 @@
       "count": 1
     },
     {
+      "source": "src/scpn_quantum_control/identity/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "52312f71702389ff1827cb0b9f73f3674cc18ef86e715c82a54d682b76efaf82",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/l16/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "f90b048490209cd935c22a6e5405422398b7e90b7cbeb0424ba80eb984c84a70",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/mitigation/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "0db0f6b674daf9f9bf99c72afd6979813bd2d8778f3a52557c72d41d6854f5a0",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/ml_examples/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "99e173f818150f2bfd620275c9b97e393cf96ae2ab955efbac715577f369e013",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
       "source": "src/scpn_quantum_control/ml_examples/qnn_convergence.py",
       "scope": "run_qnn_framework_rows",
       "call_sha256": "2432f0ec3369c1a0b03e37db4b35afb6a1ec56262b5166f1d20b59097d16be91",
@@ -2796,12 +2413,75 @@
       "count": 1
     },
     {
+      "source": "src/scpn_quantum_control/pgbo/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "906a70ab32cb4b6646442c36925cc3958622ff35dc7dd638612336d4cc28f677",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/phase/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "cce90723ca60ca49a00e01ecbd1896fce3be82ba27216e1a817ef1b425852270",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/psi_field/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "0b71c229803d195c7ae9140ae6adf744aeddb7bfcb43682a95f9ed51648d1096",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/qec/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "e328879fd99ab7f9b07d75df570c0fcd617bfa3327151c6d8c0b7ff0ed656a31",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/qsnn/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "bcf7f532119034b48fea9d373d0859103964dfd05bd51d357963b9ac94d8ce30",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
       "source": "src/scpn_quantum_control/qualification_status_projection.py",
       "scope": "_runtime_status",
       "call_sha256": "536f70b4366e3acfdc62bac94a672cf40085693bf4790d1eaf35d573afd61ec7",
       "source_sha256": "41744b9dd42026555a4bf24026979b9f8acaf1c9a2494bca296e4759f6a18fd1",
       "role": "mixed-probe",
       "reason": "Receipt module identifiers and installed distribution ownership are validated, but first-party names remain permitted; this data-driven probe is not classified as external-only.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/sensing/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "dafaf132269227c545243c53a8095483394fb2f722dc417364d67ec2e0ba2c59",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/ssgf/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "91ddc8f6237b3241182e74e5392c406340f3362d122ad3da2bfee84e86284470",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
       "count": 1
     },
     {
@@ -2817,9 +2497,63 @@
       "source": "src/scpn_quantum_control/studio/__init__.py",
       "scope": "__getattr__",
       "call_sha256": "223d1f2e0fb56e59f1a3659d5815ff792e697d9376f0c7c4d031000a54801fb5",
-      "source_sha256": "efe2072d2128f88e650b72061c1e9807b382c974f89226847ebd0542adb4821c",
+      "source_sha256": "264505d5d5e44bfb4da89d0982ba9677e1e192ed2d9c33f1946794e3a4652a80",
       "role": "first-party-lazy",
       "reason": "The literal export groups feed the reviewed name-to-module comprehension and package-relative __getattr__ resolver; defining modules are expanded as lazy dependencies.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/surrogates/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "3fa9fb85af898f546b654873190b5d97420685a01287eaabd3f8c6a1dfb04433",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/tcbo/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "b8ee605752a37731fa00c193ac030a0e9f04c99286abbe112b6c65315283cf2d",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/thermodynamics/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "9dee33ac2e23c437183fe4ae0f2b466c225854bf07a562c63ec9cb726f48b56c",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/topology_control/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "9f44dd0e481e52f784e77ec3df9ac24b8a8761f1dc01d6aa03ff52cbfa901269",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/topology_kernel_product/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "02fd827b5489f0c59dbbaa7b182749b6720dad77c5e30abb195884b9f863d991",
+      "role": "first-party-lazy",
+      "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
+      "count": 1
+    },
+    {
+      "source": "src/scpn_quantum_control/studio_workspace/__init__.py",
+      "scope": "__getattr__",
+      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "source_sha256": "172b16196c2962afddce3558dbe8c9c73db34f70fec6d7a05ea3ccb03bc90fcd",
+      "role": "first-party-lazy",
+      "reason": "Independently reviewed complete30-binding literal public-export table preserves the frozen original module/attribute pairs. The public resolver imports only target[0], caches only successful access, propagates real import/attribute errors and supports retry; no scientific logic is moved. Actual public identity/star/dir/unknown/cold/failure contracts are retained in final Studio/workspace source qualification.",
       "count": 1
     }
   ]

@@ -1,5 +1,4 @@
 {
-  "schema_version": 1,
   "baseline": {
     "command": "mypy --strict tests/",
     "dominant_error_code": "no-untyped-def",
@@ -9,18 +8,6 @@
     "measured_at": "2026-07-13",
     "scope_note": "Measured before adding the R2-M01 audit and test files; no test execution was involved.",
     "tracked_python_files": 968
-  },
-  "migration_rules": {
-    "additions_only": true,
-    "invalid_input_policy": "Keep intentionally invalid calls and add the narrow error-code suppression only when mypy cannot express the negative test.",
-    "maximum_files_per_slice": 40,
-    "minimum_enforced_files": 1380,
-    "required_verification": [
-      "focused pytest",
-      "mypy --strict",
-      "ruff check",
-      "ruff format --check"
-    ]
   },
   "cohorts": [
     {
@@ -445,7 +432,6 @@
         "tests/test_kyma_v3_substrate.py",
         "tests/test_kyma_v3_task.py",
         "tests/test_l16_director.py",
-        "tests/test_lean_phase_import.py",
         "tests/test_lindblad.py",
         "tests/test_lindblad_engine.py",
         "tests/test_lindblad_ness.py",
@@ -681,6 +667,7 @@
         "tests/test_report_decisive_advantage_gate.py",
         "tests/test_report_s2_scaling_claim_boundary.py",
         "tests/test_run_decisive_advantage_benchmark.py",
+        "tests/test_run_phase_qnode_affinity_benchmark.py",
         "tests/test_rust_ffi_safety_audit.py",
         "tests/test_rust_new_functions.py",
         "tests/test_rust_parity.py",
@@ -1389,7 +1376,6 @@
         "tests/test_studio_workspace_contracts.py",
         "tests/test_studio_workspace_graph.py",
         "tests/test_studio_workspace_json_transport.py",
-        "tests/test_studio_workspace_lazy.py",
         "tests/test_submit_bell_rerun_mitigated.py",
         "tests/test_submit_max_width_kuramoto_xy.py",
         "tests/test_submit_phase3_large_system_ibm.py",
@@ -1467,12 +1453,38 @@
       "status": "enforced"
     },
     {
+      "activation_criterion": "All public export, fresh-process import-budget and lazy resolution contracts pass focused runtime and strict typing checks in the real CPU framework environment.",
+      "files": [
+        "tests/test_import_cost_budget.py",
+        "tests/test_lazy_package_exports.py",
+        "tests/test_public_export_identity.py",
+        "tests/test_studio_workspace_lazy.py"
+      ],
+      "id": "public_package_import_contracts",
+      "order": 5,
+      "selection": "Original public export identity and ordinary package import behavior, including runtime failures and child import publication.",
+      "status": "enforced"
+    },
+    {
       "activation_criterion": "Address only after higher-risk cohorts; mechanical annotations alone do not justify displacing defect-bearing work.",
       "files": [],
       "id": "legacy_fixture_mechanics",
-      "order": 5,
+      "order": 6,
       "selection": "Legacy fixtures and broad parameterisation surfaces dominated by annotation-only debt.",
       "status": "deferred"
     }
-  ]
+  ],
+  "migration_rules": {
+    "additions_only": true,
+    "invalid_input_policy": "Keep intentionally invalid calls and add the narrow error-code suppression only when mypy cannot express the negative test.",
+    "maximum_files_per_slice": 40,
+    "minimum_enforced_files": 1380,
+    "required_verification": [
+      "focused pytest",
+      "mypy --strict",
+      "ruff check",
+      "ruff format --check"
+    ]
+  },
+  "schema_version": 1
 }

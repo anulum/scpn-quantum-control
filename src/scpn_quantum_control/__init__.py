@@ -7,923 +7,930 @@
 # SCPN Quantum Control — NISQ Quantum Simulation of Coupled Oscillator Networks
 """NISQ quantum simulation of coupled Kuramoto oscillator networks via XY Hamiltonian mapping."""
 
-from importlib.metadata import PackageNotFoundError, version
+from __future__ import annotations
 
-# Subpackage-level access for new modules
-from . import (
-    analysis,
-    applications,
-    diff,
-    entropy,
-    fep,
-    forecasting,
-    gauge,
-    l16,
-    pgbo,
-    psi_field,
-    sensing,
-    ssgf,
-    tcbo,
-)
-from .applications.eeg_classification import eeg_plv_to_vqe, eeg_quantum_kernel
-from .benchmarks.classical_baselines import (
-    ClassicalBaselineRun,
-    available_baselines,
-    mps_tebd_baseline,
-    qutip_lindblad_baseline,
-    run_documented_classical_baselines,
-    scipy_ode_baseline,
-)
-from .benchmarks.compiler_isolated_benchmark_evidence import (
-    CompilerIsolatedBenchmarkEvidence,
-    CompilerIsolatedBenchmarkEvidenceFiles,
-    build_compiler_isolated_benchmark_evidence,
-    render_compiler_isolated_benchmark_evidence_markdown,
-    write_compiler_isolated_benchmark_evidence,
-)
-from .benchmarks.differentiable_hardening_gate import (
-    DifferentiableBenchmarkClassificationCase,
-    DifferentiableHardeningGateCheck,
-    DifferentiableHardeningSliceGateResult,
-    run_differentiable_hardening_slice_gate,
-)
-from .benchmarks.differentiable_isolated_benchmark_plan import (
-    DifferentiableIsolatedBenchmarkPlan,
-    DifferentiableIsolatedBenchmarkPlanRow,
-    DifferentiableIsolatedBenchmarkPlanValidation,
-    render_differentiable_isolated_benchmark_plan_markdown,
-    run_differentiable_isolated_benchmark_plan,
-    validate_differentiable_isolated_benchmark_plan,
-)
-from .benchmarks.differentiable_programming import (
-    DifferentiableProgrammingBenchmarkResult,
-    DifferentiableProgrammingExternalReferenceResult,
-    QuantumGradientBenchmarkResult,
-    run_differentiable_programming_benchmark_suite,
-    run_differentiable_programming_external_reference_suite,
-    run_quantum_gradient_benchmark_suite,
-)
-from .benchmarks.quantum_advantage import (
-    AdvantageResult,
-    classical_benchmark,
-    estimate_crossover,
-    quantum_benchmark,
-    run_scaling_benchmark,
-)
-from .benchmarks.reproducible_comparison import (
-    ComparisonMethodRow,
-    ReproducibleKuramotoComparison,
-    run_reproducible_kuramoto_comparison,
-)
-from .bridge.control_plasma_knm import (
-    build_knm_plasma,
-    build_knm_plasma_from_config,
-    build_knm_plasma_spec,
-    plasma_omega,
-)
-from .bridge.knm_hamiltonian import (
-    OMEGA_N_16,
-    build_knm_paper27,
-    build_kuramoto_ring,
-    knm_to_ansatz,
-    knm_to_hamiltonian,
-    omega_for_oscillators,
-)
-from .bridge.orchestrator_adapter import PhaseOrchestratorAdapter
-from .bridge.phase_artifact import LayerStateArtifact, LockSignatureArtifact, UPDEPhaseArtifact
-from .bridge.snn_adapter import (
-    ArcaneNeuronBridge,
-    SNNQuantumBridge,
-    quantum_measurement_to_current,
-    spike_train_to_rotations,
-)
-from .bridge.ssgf_adapter import (
-    SSGFQuantumLoop,
-    quantum_to_ssgf_state,
-    ssgf_state_to_quantum,
-    ssgf_w_to_hamiltonian,
-)
-from .codegen import (
-    HLS_ARTIFACT_CLAIM_BOUNDARY,
-    HLS_ARTIFACT_SCHEMA_VERSION,
-    HLS_CONSUMER_CONTRACT_VERSION,
-    HLSArtifactFile,
-    HLSArtifactManifest,
-    HLSArtifactVerification,
-    HLSBundle,
-    emit_versioned_hls_artifact,
-    pulse_to_vivado_hls,
-    verify_hls_artifact_manifest,
-    write_bundle,
-)
-from .compiler.mlir import (
-    CompilerADExecutableConfig,
-    CompilerADKernelVerification,
-    CompilerADTransformPlan,
-    DifferentiableMLIRCompileConfig,
-    EnzymeMLIRBenchmarkAttachment,
-    EnzymeMLIRCompilerADBreadthArtifact,
-    EnzymeMLIRCompilerADBreadthArtifactFiles,
-    EnzymeMLIRCompilerADBreadthCaseEvidence,
-    EnzymeMLIRCompilerADBreadthEvidence,
-    EnzymeMLIRMaturityAuditResult,
-    EnzymeMLIRToolchainStatus,
-    EnzymeNativeExecutionEvidence,
-    ExecutableCompilerADKernel,
-    ExecutableWholeProgramADBatchResult,
-    ExecutableWholeProgramADKernel,
-    MLIRCompileConfig,
-    MLIRLLVMCorrectnessEvidence,
-    MLIRModule,
-    NativeWholeProgramADKernel,
-    PhaseQNodeMLIRRuntimeExecutable,
-    PrimitiveLoweringStatus,
-    WholeProgramADNativeLoweringReport,
-    analyse_whole_program_ad_native_lowering,
-    build_compiler_ad_transform_plan,
-    build_enzyme_mlir_benchmark_attachment,
-    build_enzyme_mlir_compiler_ad_breadth_artifact,
-    build_enzyme_mlir_compiler_ad_breadth_evidence,
-    build_enzyme_mlir_compiler_ad_breadth_gap_artifact,
-    clear_native_whole_program_ad_compile_cache,
-    compile_compiler_ad_transform_plan_to_mlir,
-    compile_custom_derivative_rule_to_executable,
-    compile_custom_derivative_rule_to_mlir,
-    compile_kuramoto_to_mlir,
-    compile_matrix_2x2_determinant_ad_to_native_llvm_jit,
-    compile_matrix_2x2_eigensystem_ad_to_native_llvm_jit,
-    compile_matrix_2x2_eigenvalues_ad_to_native_llvm_jit,
-    compile_matrix_2x2_inverse_ad_to_native_llvm_jit,
-    compile_matrix_2x2_solve_ad_to_native_llvm_jit,
-    compile_matrix_frobenius_norm_squared_ad_to_native_llvm_jit,
-    compile_matrix_matrix_product_ad_to_native_llvm_jit,
-    compile_matrix_quadratic_form_ad_to_native_llvm_jit,
-    compile_matrix_trace_ad_to_native_llvm_jit,
-    compile_matrix_vector_product_ad_to_native_llvm_jit,
-    compile_phase_qnode_circuit_to_mlir_runtime,
-    compile_registered_primitive_to_executable,
-    compile_scalar_binary_elementwise_ad_to_native_llvm_jit,
-    compile_scalar_quadratic_ad_to_native_llvm_jit,
-    compile_scalar_unary_elementwise_ad_to_native_llvm_jit,
-    compile_symmetric_2x2_cholesky_ad_to_native_llvm_jit,
-    compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit,
-    compile_vector_dot_ad_to_native_llvm_jit,
-    compile_vector_squared_norm_ad_to_native_llvm_jit,
-    compile_whole_program_ad_trace_to_executable,
-    compile_whole_program_ad_trace_to_mlir,
-    compile_whole_program_ad_trace_to_native_llvm_jit,
-    make_executable_ad_kernel_batching_rule,
-    make_matrix_2x2_determinant_native_llvm_jit_lowering_rule,
-    make_matrix_2x2_determinant_native_llvm_jit_primitive_transform,
-    make_matrix_2x2_eigensystem_native_llvm_jit_lowering_rule,
-    make_matrix_2x2_eigensystem_native_llvm_jit_primitive_transform,
-    make_matrix_2x2_eigenvalues_native_llvm_jit_lowering_rule,
-    make_matrix_2x2_eigenvalues_native_llvm_jit_primitive_transform,
-    make_matrix_2x2_inverse_native_llvm_jit_lowering_rule,
-    make_matrix_2x2_inverse_native_llvm_jit_primitive_transform,
-    make_matrix_2x2_solve_native_llvm_jit_lowering_rule,
-    make_matrix_2x2_solve_native_llvm_jit_primitive_transform,
-    make_matrix_frobenius_norm_squared_native_llvm_jit_lowering_rule,
-    make_matrix_frobenius_norm_squared_native_llvm_jit_primitive_transform,
-    make_matrix_matrix_product_native_llvm_jit_lowering_rule,
-    make_matrix_matrix_product_native_llvm_jit_primitive_transform,
-    make_matrix_quadratic_form_native_llvm_jit_lowering_rule,
-    make_matrix_quadratic_form_native_llvm_jit_primitive_transform,
-    make_matrix_trace_native_llvm_jit_lowering_rule,
-    make_matrix_trace_native_llvm_jit_primitive_transform,
-    make_matrix_vector_product_native_llvm_jit_lowering_rule,
-    make_matrix_vector_product_native_llvm_jit_primitive_transform,
-    make_program_ad_linalg_matrix_power_executable_lowering_rule,
-    make_program_ad_linalg_multi_dot_executable_lowering_rule,
-    make_scalar_binary_elementwise_native_llvm_jit_lowering_rule,
-    make_scalar_quadratic_native_llvm_jit_lowering_rule,
-    make_scalar_unary_elementwise_native_llvm_jit_lowering_rule,
-    make_symmetric_2x2_cholesky_native_llvm_jit_lowering_rule,
-    make_symmetric_2x2_cholesky_native_llvm_jit_primitive_transform,
-    make_symmetric_2x2_eigenvalues_native_llvm_jit_lowering_rule,
-    make_symmetric_2x2_eigenvalues_native_llvm_jit_primitive_transform,
-    make_vector_dot_native_llvm_jit_lowering_rule,
-    make_vector_dot_native_llvm_jit_primitive_transform,
-    make_vector_squared_norm_native_llvm_jit_lowering_rule,
-    make_vector_squared_norm_native_llvm_jit_primitive_transform,
-    native_whole_program_ad_compile_cache_stats,
-    native_whole_program_ad_linalg_support,
-    render_enzyme_mlir_compiler_ad_breadth_artifact_markdown,
-    run_enzyme_mlir_maturity_audit,
-    write_enzyme_mlir_compiler_ad_breadth_artifact,
-)
-from .control.frc_pulsed_qaoa import (
-    FRCScheduleResult,
-    classical_sqp_schedule,
-    optimal_schedule,
-    solve_frc_pulsed_qaoa,
-)
-from .control.hardware_topological_optimizer import HardwareTopologicalOptimizer
-from .control.q_disruption import QuantumDisruptionClassifier
-from .control.q_disruption_iter import (
-    DisruptionBenchmark,
-    ITERFeatureSpec,
-    from_fusion_core_shot,
-    generate_synthetic_iter_data,
-    normalize_iter_features,
-    scpn_control_bridge_dependency_contract,
-    validate_scpn_control_bridge_dependency_contract,
-)
-from .control.qaoa_mpc import QAOA_MPC
-from .control.qaoa_pulsed_cost import (
-    FRCPlasmaSurrogate,
-    FRCQAOAObjective,
-    frc_pulsed_shot_cost,
-)
-from .control.qpetri import QuantumPetriCampaignReport, QuantumPetriNet, QuantumPetriStepReport
-from .control.realtime_runtime import (
-    CycleSample,
-    MonotonicRealtimeClock,
-    RealtimeClock,
-    RealtimeRunResult,
-    RealtimeRuntimeConfig,
-    RealtimeSLAConfig,
-    RealtimeSLAReport,
-    RealtimeTickRecord,
-    SubMicrosecondReport,
-    SubMicrosecondTracker,
-    VirtualRealtimeClock,
-    enforce_realtime_sla,
-    evaluate_realtime_sla,
-    run_realtime_control_loop,
-    summarise_cycle_samples,
-)
-from .control.topological_optimizer import TopologicalCouplingOptimizer
-from .control.vqls_gs import VQLS_GradShafranov, VQLSGradShafranovResult
-from .cosimulation import (
-    CoSimulationResult,
-    KnmPartition,
-    cosimulate,
-    partition_knm,
-)
-from .crypto.pqc_trigger import PqcTriggerSigner
-from .deployment.cloud_native import (
-    CloudDeploymentSpec,
-    CloudManifestBundle,
-    ContainerResources,
-    generate_cloud_manifests,
-)
-from .diff import (
-    DIFFERENTIABLE_CIRCUIT_CONTRACT_CLAIM_BOUNDARY,
-    DIFFERENTIABLE_CIRCUIT_SCHEMA,
-    BackendCapabilityMetadata,
-    DifferentiableCircuit,
-    DifferentiableCircuitContractAuditResult,
-    DifferentiableCircuitContractCheck,
-    DifferentiableCircuitContractStatus,
-    DifferentiableCircuitDiagnostics,
-    EstimatorProvenance,
-    JITExplanation,
-    QuantumFunction,
-    ShotPolicy,
-    differentiable_circuit,
-    jit_or_explain,
-    namespace_metadata,
-    run_differentiable_circuit_contract_audit,
-    supported_transforms,
-)
-from .differentiable import (
-    DEFAULT_CUSTOM_DERIVATIVE_REGISTRY,
-    FINITE_SHOT_SAMPLE_SOURCE_CLASSES,
-    ArmijoLineSearchResult,
-    CustomDerivativeCheckResult,
-    CustomDerivativeRegistry,
-    CustomDerivativeRule,
-    DifferentiableOptimizer,
-    DualNumber,
-    FiniteShotSampleProvenance,
-    FisherConjugateGradientResult,
-    FisherVectorProductResult,
-    FixedPointSensitivityResult,
-    GradientCheckResult,
-    GradientFailurePolicy,
-    GradientResult,
-    HessianResult,
-    HVPResult,
-    ImplicitSensitivityResult,
-    JacobianResult,
-    JVPResult,
-    LeastSquaresCovarianceResult,
-    LevenbergMarquardtDampingUpdate,
-    LevenbergMarquardtOptimizer,
-    LevenbergMarquardtResult,
-    LevenbergMarquardtStep,
-    LevenbergMarquardtTrial,
-    NaturalGradientOptimizationResult,
-    NaturalGradientOptimizer,
-    NaturalGradientResult,
-    OptimizationResult,
-    Parameter,
-    ParameterBounds,
-    ParameterShiftRule,
-    PrimitiveBatchingRule,
-    PrimitiveContract,
-    PrimitiveDTypeRule,
-    PrimitiveIdentity,
-    PrimitiveLoweringRule,
-    PrimitiveShapeRule,
-    PrimitiveStaticArgumentRule,
-    PrimitiveTransformRule,
-    ProgramADAdjointResult,
-    ProgramADAdjointStep,
-    ProgramADAliasEdge,
-    ProgramADAliasEffectAnalysis,
-    ProgramADAliasSet,
-    ProgramADControlPathAliasProvenance,
-    ProgramADControlRegion,
-    ProgramADEffect,
-    ProgramADEffectIR,
-    ProgramADLinalgConditioningDiagnostic,
-    ProgramADListAliasProvenance,
-    ProgramADLoopCarriedStateProvenance,
-    ProgramADPhiNode,
-    ProgramADRebindingAliasProvenance,
-    ProgramADRegistryDispatchCoverageReport,
-    ProgramADRegistryDispatchCoverageRow,
-    ProgramADSSAValue,
-    ProgramADStaticAliasLatticeComponent,
-    ProgramADStaticAliasLatticeReport,
-    ProgramADUnknownAliasEdge,
-    ProgramADViewAliasProvenance,
-    ReverseNode,
-    RustProgramADInterpreterResult,
-    RustProgramADRegistryMetadataMirrorResult,
-    RustProgramADValueAndGradientResult,
-    ScoreFunctionGradientResult,
-    ScoreFunctionSampleRecord,
-    ShotAllocationResult,
-    SparseMatrixResult,
-    SPSAGradientResult,
-    SPSAObjectiveSample,
-    SPSAProbeRecord,
-    StochasticGradientConfidenceInterval,
-    StochasticGradientResult,
-    TraceADArray,
-    TraceADScalar,
-    VJPResult,
-    WeightedGradientResult,
-    WholeProgramADResult,
-    WholeProgramBytecodeBasicBlock,
-    WholeProgramBytecodeInstruction,
-    WholeProgramCompilerFrontendReport,
-    WholeProgramIRNode,
-    WholeProgramSemanticsReport,
-    WholeProgramSourceBytecodeLineMap,
-    WholeProgramSourceIRFeature,
-    WholeProgramSourceRegion,
-    WholeProgramSymbolScopeEntry,
-    WholeProgramTraceEvent,
-    WholeProgramUnsupportedSemanticDiagnostic,
-    allocate_parameter_shift_shots,
-    analyze_program_ad_alias_effects,
-    armijo_backtracking_line_search,
-    batch_complex_step_gradient,
-    batch_custom_jacobian,
-    batch_custom_jvp,
-    batch_custom_vjp,
-    batch_finite_difference_hvp,
-    batch_finite_difference_jvp,
-    batch_finite_difference_vjp,
-    batch_parameter_shift_gradient,
-    batch_value_and_complex_step_grad,
-    batch_value_and_custom_jacobian,
-    batch_value_and_custom_jvp,
-    batch_value_and_custom_vjp,
-    batch_value_and_finite_difference_grad,
-    batch_value_and_finite_difference_hvp,
-    batch_value_and_finite_difference_jvp,
-    batch_value_and_finite_difference_vjp,
-    batch_value_and_parameter_shift_grad,
-    batch_vector_jacobian_product,
-    check_custom_derivative_consistency,
-    check_parameter_shift_consistency,
-    compile_whole_program_frontend,
-    complex_step_gradient,
-    custom_derivative_rule_for,
-    custom_gauss_newton_gradient,
-    custom_jacobian,
-    custom_jvp,
-    custom_levenberg_marquardt_step,
-    custom_vjp,
-    dense_to_sparse_matrix,
-    diagnose_program_ad_linalg_conditioning,
-    dual_cos,
-    dual_exp,
-    dual_log,
-    dual_sin,
-    empirical_fisher_conjugate_gradient,
-    empirical_fisher_metric,
-    empirical_fisher_vector_product,
-    evaluate_levenberg_marquardt_step,
-    finite_difference_gradient,
-    finite_difference_hessian,
-    finite_difference_hvp,
-    finite_difference_jacobian,
-    finite_difference_jvp,
-    finite_difference_vjp,
-    forward_mode_gradient,
-    gauss_newton_gradient,
-    grad,
-    gradient_confidence_interval,
-    hessian,
-    huber_residual_weights,
-    implicit_fixed_point_sensitivity,
-    implicit_stationary_sensitivity,
-    interpret_program_ad_effect_ir_with_rust,
-    is_jax_autodiff_available,
-    jacfwd,
-    jacobian,
-    jacrev,
-    jax_value_and_grad,
-    jvp,
-    least_squares_covariance,
-    levenberg_marquardt_step,
-    mirror_program_ad_registry_metadata_with_rust,
-    multi_frequency_parameter_shift_rule,
-    natural_gradient,
-    parameter_shift_gradient,
-    parameter_shift_gradient_with_uncertainty,
-    parse_program_ad_effect_ir,
-    primitive_complete_contract_for,
-    primitive_contract_for,
-    primitive_dtype_rule_for,
-    primitive_effect_for,
-    primitive_nondifferentiable_policy_for,
-    primitive_shape_rule_for,
-    primitive_static_argument_rule_for,
-    program_ad_array_delete_derivative_rule,
-    program_ad_array_insert_derivative_rule,
-    program_ad_array_pad_derivative_rule,
-    program_ad_array_take_along_axis_derivative_rule,
-    program_ad_assembly_append_derivative_rule,
-    program_ad_assembly_block_derivative_rule,
-    program_ad_assembly_broadcast_arrays_derivative_rule,
-    program_ad_assembly_broadcast_to_derivative_rule,
-    program_ad_assembly_column_stack_derivative_rule,
-    program_ad_assembly_concatenate_derivative_rule,
-    program_ad_assembly_diagonal_derivative_rule,
-    program_ad_assembly_dstack_derivative_rule,
-    program_ad_assembly_hstack_derivative_rule,
-    program_ad_assembly_split_derivative_rule,
-    program_ad_assembly_stack_derivative_rule,
-    program_ad_assembly_tril_derivative_rule,
-    program_ad_assembly_triu_derivative_rule,
-    program_ad_assembly_vstack_derivative_rule,
-    program_ad_interpolation_interp_derivative_rule,
-    program_ad_linalg_diag_derivative_rule,
-    program_ad_linalg_diagflat_derivative_rule,
-    program_ad_linalg_eig_derivative_rule,
-    program_ad_linalg_eigh_derivative_rule,
-    program_ad_linalg_eigvals_derivative_rule,
-    program_ad_linalg_eigvalsh_derivative_rule,
-    program_ad_linalg_matrix_power_derivative_rule,
-    program_ad_linalg_multi_dot_derivative_rule,
-    program_ad_linalg_pinv_derivative_rule,
-    program_ad_linalg_svdvals_derivative_rule,
-    program_ad_linalg_trace_derivative_rule,
-    program_ad_product_einsum_derivative_rule,
-    program_ad_product_inner_derivative_rule,
-    program_ad_product_outer_derivative_rule,
-    program_ad_product_tensordot_derivative_rule,
-    program_ad_registry_dispatch_coverage_report,
-    program_ad_selection_clip_derivative_rule,
-    program_ad_selection_where_derivative_rule,
-    program_ad_shape_atleast_1d_derivative_rule,
-    program_ad_shape_atleast_2d_derivative_rule,
-    program_ad_shape_atleast_3d_derivative_rule,
-    program_ad_shape_expand_dims_derivative_rule,
-    program_ad_shape_flip_derivative_rule,
-    program_ad_shape_fliplr_derivative_rule,
-    program_ad_shape_flipud_derivative_rule,
-    program_ad_shape_moveaxis_derivative_rule,
-    program_ad_shape_ravel_derivative_rule,
-    program_ad_shape_repeat_derivative_rule,
-    program_ad_shape_reshape_derivative_rule,
-    program_ad_shape_roll_derivative_rule,
-    program_ad_shape_rot90_derivative_rule,
-    program_ad_shape_squeeze_derivative_rule,
-    program_ad_shape_swapaxes_derivative_rule,
-    program_ad_shape_tile_derivative_rule,
-    program_ad_shape_transpose_derivative_rule,
-    program_ad_signal_convolve_derivative_rule,
-    program_ad_signal_correlate_derivative_rule,
-    program_ad_static_alias_lattice_report,
-    program_ad_stencil_gradient_derivative_rule,
-    program_adjoint_grad,
-    program_adjoint_gradient,
-    program_adjoint_replay_gradient,
-    program_adjoint_result,
-    program_adjoint_value_and_grad,
-    register_custom_derivative_rule,
-    register_primitive_batching_rule,
-    register_primitive_lowering_rule,
-    register_primitive_transform_rule,
-    registered_custom_jacobian,
-    registered_custom_jvp,
-    registered_custom_vjp,
-    reverse_cos,
-    reverse_exp,
-    reverse_log,
-    reverse_mode_gradient,
-    reverse_sin,
-    score_function_gradient_estimate,
-    soft_l1_residual_weights,
-    sparse_empirical_fisher_metric,
-    sparse_hessian,
-    sparse_jacobian,
-    spsa_gradient_estimate,
-    update_levenberg_marquardt_damping,
-    value_and_complex_step_grad,
-    value_and_custom_jacobian,
-    value_and_custom_jvp,
-    value_and_custom_vjp,
-    value_and_finite_difference_grad,
-    value_and_finite_difference_hessian,
-    value_and_finite_difference_hvp,
-    value_and_finite_difference_jacobian,
-    value_and_finite_difference_jvp,
-    value_and_finite_difference_vjp,
-    value_and_forward_mode_grad,
-    value_and_grad,
-    value_and_grad_program_ad_effect_ir_with_rust,
-    value_and_hessian,
-    value_and_jacfwd,
-    value_and_jacobian,
-    value_and_jacrev,
-    value_and_jvp,
-    value_and_parameter_shift_grad,
-    value_and_reverse_mode_grad,
-    value_and_vjp,
-    vector_jacobian_product,
-    vjp,
-    vmap,
-    weighted_gradient_sum,
-    whole_program_grad,
-    whole_program_value_and_grad,
-)
-from .differentiable_api import (
-    DifferentiabilityDiagnosticReport,
-    DifferentiableDashboardCapabilityRow,
-    DifferentiableDashboardCapabilityState,
-    DifferentiableDashboardStatus,
-    UnifiedDifferentiableAPIResult,
-    differentiable_api,
-    differentiable_architecture_map_report,
-    differentiable_baseline_scorecard_report,
-    differentiable_benchmark_report,
-    differentiable_competitive_baseline_refresh_report,
-    differentiable_compile_report,
-    differentiable_dashboard_status,
-    differentiable_dependency_environment_map_report,
-    differentiable_frontend_report,
-    differentiable_gradient,
-    differentiable_hessian,
-    differentiable_isolated_benchmark_plan_report,
-    differentiable_jacobian,
-    differentiable_qfi_fss_report,
-    differentiable_rust_python_inventory_report,
-    differentiable_support_report,
-    differentiable_transform_algebra_report,
-    differentiable_value,
-    explain_differentiability,
-)
-from .differentiable_architecture_map import (
-    DifferentiableArchitectureLayerId,
-    DifferentiableArchitectureMap,
-    DifferentiableArchitectureMapLayer,
-    DifferentiableArchitectureMapValidation,
-    render_differentiable_architecture_map_markdown,
-    run_differentiable_architecture_map,
-    validate_differentiable_architecture_map,
-)
-from .differentiable_baseline_scorecard import (
-    DifferentiableBaselineCategory,
-    DifferentiableBaselineScorecard,
-    DifferentiableBaselineScorecardRow,
-    DifferentiableBaselineScorecardValidation,
-    DifferentiableBaselineStatus,
-    DifferentiablePromotionLanguageAudit,
-    audit_differentiable_promotion_language,
-    build_differentiable_release_profile,
-    render_differentiable_baseline_scorecard_markdown,
-    run_differentiable_baseline_scorecard,
-    validate_differentiable_baseline_scorecard,
-)
-from .differentiable_benchmark_report import (
-    DifferentiableBenchmarkReport,
-    build_differentiable_benchmark_report,
-)
-from .differentiable_competitive_baselines import (
-    CompetitiveBaselineId,
-    CompetitiveBaselinePromotionGate,
-    CompetitiveBaselineRefresh,
-    CompetitiveBaselineRow,
-    CompetitiveBaselineSourceKind,
-    CompetitiveBaselineValidation,
-    audit_competitive_baseline_promotion_gate,
-    load_competitive_baseline_refresh,
-    render_competitive_baseline_refresh_markdown,
-    run_competitive_baseline_refresh,
-    validate_competitive_baseline_refresh,
-)
-from .differentiable_dependency_environment_evidence import (
-    DifferentiableDependencyEnvironmentEvidence,
-    DifferentiableDependencyEnvironmentEvidenceCategory,
-    DifferentiableDependencyEnvironmentEvidenceId,
-    DifferentiableDependencyEnvironmentEvidenceStatus,
-    build_differentiable_dependency_environment_evidence,
-)
-from .differentiable_dependency_environment_map import (
-    DifferentiableDependencyEnvironmentMap,
-    DifferentiableDependencyEnvironmentMapValidation,
-    DifferentiableDependencyEnvironmentProfile,
-    DifferentiableDependencyEnvironmentProfileId,
-    DifferentiableDependencyEnvironmentStatus,
-    render_differentiable_dependency_environment_map_markdown,
-    run_differentiable_dependency_environment_map,
-    validate_differentiable_dependency_environment_map,
-)
-from .differentiable_module_hardening_audit import (
-    DifferentiableModuleHardeningAuditResult,
-    DifferentiableModuleHardeningRecord,
-    differentiable_module_hardening_registry,
-    run_differentiable_module_hardening_audit,
-)
-from .differentiable_rust_python_inventory import (
-    DifferentiableRustPythonInventory,
-    DifferentiableRustPythonInventoryBenchmarkStatus,
-    DifferentiableRustPythonInventoryClassification,
-    DifferentiableRustPythonInventoryPolyglotStatus,
-    DifferentiableRustPythonInventoryRow,
-    DifferentiableRustPythonInventoryRustParityStatus,
-    DifferentiableRustPythonInventoryValidation,
-    render_differentiable_rust_python_inventory_markdown,
-    run_differentiable_rust_python_inventory,
-    validate_differentiable_rust_python_inventory,
-)
-from .differentiable_transform_algebra import (
-    TransformAlgebraAudit,
-    TransformAlgebraCase,
-    TransformAlgebraStatus,
-    assert_transform_algebra_audit_passes,
-    run_transform_algebra_audit,
-)
-from .entropy import AerQuantumEntropySource, EntropyHealthReport, QRNGStream
-from .forecasting import (
-    ForecastModelRun,
-    SynchronisationForecastBenchmarkResult,
-    SynchronisationForecastDataset,
-    load_hardware_kuramoto_4osc_trace,
-    load_ieee5bus_sync_forecast_case,
-    run_real_data_sync_forecast_benchmark,
-    run_real_data_sync_forecast_suite,
-)
-from .hardware.aggregators import (
-    AggregatorProviderRoute,
-    ResolvedAggregatorProviderRoute,
-    aggregator_provider_routes_for,
-    built_in_aggregator_provider_routes,
-    resolve_aggregator_provider_route,
-)
-from .hardware.fast_classical import fast_sparse_evolution
-from .hardware.hal import (
-    BackendCapabilities,
-    BackendProfile,
-    HardwareAbstractionLayer,
-    LocalDeterministicSimulator,
-    QuantumBackend,
-    QuantumJobRef,
-    QuantumJobResult,
-    QuantumWorkload,
-    built_in_backend_profiles,
-)
-from .hardware.hal_azure import AzureQuantumHALAdapter, azure_openqasm3_to_workload
-from .hardware.hal_braket import (
-    BraketAwsHALAdapter,
-    BraketLocalHALAdapter,
-    braket_circuit_to_workload,
-)
-from .hardware.hal_cirq import CirqLocalHALAdapter, cirq_circuit_workload
-from .hardware.hal_dwave import DWaveLeapHALAdapter, dwave_bqm_workload
-from .hardware.hal_ionq import IonQCloudHALAdapter, ionq_qis_workload
-from .hardware.hal_iqm import IQMHALAdapter, iqm_qiskit_workload
-from .hardware.hal_oqc import OQCHALAdapter, oqc_openqasm3_workload
-from .hardware.hal_pasqal import PasqalPulserHALAdapter, pulser_sequence_workload
-from .hardware.hal_pennylane import PennyLaneDeviceHALAdapter, pennylane_gate_workload
-from .hardware.hal_qbraid import QbraidRuntimeHALAdapter, qbraid_program_to_workload
-from .hardware.hal_qiskit import (
-    QiskitAerHALAdapter,
-    QiskitRuntimeHALAdapter,
-    qiskit_circuit_to_qasm3_workload,
-    qiskit_circuit_to_workload,
-)
-from .hardware.hal_quandela import QuandelaPercevalHALAdapter, quandela_perceval_workload
-from .hardware.hal_quantinuum import QuantinuumCloudHALAdapter, quantinuum_tket_workload
-from .hardware.hal_quera_bloqade import QuEraBloqadeHALAdapter, bloqade_ahs_workload
-from .hardware.hal_rigetti import RigettiQCSHALAdapter, rigetti_quil_workload
-from .hardware.hal_strangeworks import (
-    StrangeworksComputeHALAdapter,
-    strangeworks_program_to_workload,
-)
-from .hardware.provider_capability_discovery import (
-    CapabilityDecisionStatus,
-    ProviderCapabilityDecision,
-    ProviderCapabilitySnapshot,
-    ProviderMetadataProbe,
-    assess_provider_capability_snapshot,
-    probe_aggregator_provider_capability,
-    snapshot_from_azure_target,
-    snapshot_from_braket_device,
-    snapshot_from_dwave_solver,
-    snapshot_from_ionq_backend,
-    snapshot_from_iqm_backend,
-    snapshot_from_oqc_target,
-    snapshot_from_pasqal_target,
-    snapshot_from_qbraid_device,
-    snapshot_from_qiskit_runtime_backend,
-    snapshot_from_quandela_processor,
-    snapshot_from_quantinuum_backend,
-    snapshot_from_quera_bloqade,
-    snapshot_from_rigetti_qcs,
-    snapshot_from_strangeworks_backend,
-)
-from .hardware.provider_smoke import (
-    AggregatorProviderOptionalDependencyRow,
-    ProviderOptionalDependencyRow,
-    aggregator_provider_optional_dependency_matrix,
-    provider_optional_dependency_matrix,
-)
-from .hardware.qubit_mapper import (
-    ExecutionRegion,
-    QubitMappingResult,
-    dynq_initial_layout,
-)
-from .hardware.runner import HardwareRunner, JobResult
-from .hardware.trapped_ion import transpile_for_trapped_ion, trapped_ion_noise_model
-from .identity.binding_spec import (
-    ARCANE_SAPIENCE_SPEC,
-    ORCHESTRATOR_MAPPING,
-    build_identity_attractor,
-    orchestrator_to_quantum_phases,
-    quantum_to_orchestrator_phases,
-    solve_identity,
-)
-from .identity.coherence_budget import coherence_budget, fidelity_at_depth
-from .identity.entanglement_witness import chsh_from_statevector, disposition_entanglement_map
-from .identity.ground_state import IdentityAttractor
-from .identity.identity_key import identity_fingerprint, prove_identity, verify_identity
-from .kuramoto_core import (
-    KuramotoProblem,
-    build_kuramoto_problem,
-    compile_analog_program,
-    compile_dense_hamiltonian,
-    compile_hamiltonian,
-    compile_hybrid_program,
-    compile_trotter_circuit,
-    measure_order_parameter,
-    simulate_variant_trajectory,
-    validate_kuramoto_inputs,
-)
-from .mitigation.compound_mitigation import compound_mitigate_pipeline
-from .mitigation.pec import PECResult, pauli_twirl_decompose, pec_sample
-from .mitigation.symmetry_decay import (
-    GUESSResult,
-    SymmetryDecayModel,
-    guess_extrapolate,
-    learn_symmetry_decay,
-)
-from .mitigation.zne import ZNEResult, gate_fold_circuit, zne_extrapolate
-from .phase.kuramoto_variants import (
-    HigherOrderKuramotoSpec,
-    KuramotoVariant,
-    KuramotoVariantResult,
-    MonitoredKuramotoSpec,
-    PTSymmetricKuramotoSpec,
-    build_triadic_ring_terms,
-    simulate_higher_order_kuramoto,
-    simulate_monitored_kuramoto,
-    simulate_pt_symmetric_kuramoto,
-)
-from .phase.lindblad_engine import LindbladSyncEngine
-from .phase.phase_vqe import PhaseVQE
-from .phase.results import TrajectoryResult
-from .phase.structured_ansatz import build_structured_ansatz
-from .phase.trotter_upde import QuantumUPDESolver
-from .phase.xy_kuramoto import QuantumKuramotoSolver, TrotterEvolutionConfig
-from .qec.biological_diagnostics import (
-    BiologicalSurfaceDiagnostics,
-    analyse_biological_surface_code,
-)
-from .qec.biological_pipeline import (
-    BiologicalQecBatchExecution,
-    BiologicalQecExecution,
-    run_biological_qec_batch_execution,
-    run_biological_qec_execution,
-)
-from .qec.biological_surface_code import BiologicalMWPMDecoder, BiologicalSurfaceCode
-from .qec.control_qec import ControlQEC
-from .qec.fault_tolerant import FaultTolerantUPDE, LogicalQubit
-from .qec.multiscale_qec import (
-    MultiscaleQECResult,
-    QECLevel,
-    build_multiscale_qec,
-    concatenated_logical_rate,
-)
-from .qec.surface_code_upde import SurfaceCodeSpec, SurfaceCodeUPDE
-from .qec.syndrome_flow import syndrome_flow_analysis
-from .qsnn.dynamic_coupling import DynamicCouplingEngine
-from .qsnn.qlayer import QuantumDenseLayer
-from .qsnn.qlif import QuantumLIFNeuron
-from .qsnn.qstdp import QuantumSTDP
-from .qsnn.qsynapse import QuantumSynapse
-from .qsnn.quantum_neuromorphic_bridge import (
-    CLAIM_BOUNDARY,
-    DynamicCouplingConfig,
-    NeuromorphicStepResult,
-    QuantumLIFConfig,
-    QuantumNeuromorphicBridge,
-    RecurrentCouplingPolicy,
-    TraceSTDPConfig,
-    TraceSTDPState,
-)
-from .qsnn.training import QSNNParameterShiftDescentRun, QSNNTrainer
-from .sensing import (
-    NVCenter,
-    NVFieldCalibration,
-    calibrate_field_from_odmr,
-    cw_odmr_dc_sensitivity_t_per_sqrt_hz,
-    odmr_resonances_hz,
-)
-from .stable_core import (
-    Backend,
-    Experiment,
-    Problem,
-    Result,
-    backend_capability_matrix,
-    build_backend,
-    build_experiment,
-    build_problem,
-    build_result,
-    classical_reference_backend,
-    hardware_replay_backend,
-    pennylane_backend,
-    problem_from_kuramoto,
-    problem_to_kuramoto,
-    pulser_surrogate_backend,
-    qiskit_backend,
-    qutip_backend,
-    stable_core_capability_markdown,
-    stable_core_capability_payload,
-    write_stable_core_capability_artifacts,
-)
-from .stable_core_preflight import (
-    StableCorePreflightResult,
-    run_stable_core_preflight,
-    stable_core_backend_dependencies,
-    stable_core_preflight_fixtures_json,
-    stable_core_preflight_fixtures_markdown,
-    stable_core_preflight_fixtures_payload,
-)
-from .topology_control import (
-    CouplingGraphBounds,
-    CouplingTopologyObjective,
-    DegeneracyMode,
-    H1Summary,
-    HardwareEmbeddingConstraint,
-    NetworkCycleBackend,
-    ObjectiveBreakdown,
-    PersistenceDiagram,
-    PersistentHomologyBackend,
-    ProjectedScipyOptimizer,
-    ProjectedSPSAOptimizer,
-    RipserPHBackend,
-    TopologicalDynamicCouplingPolicy,
-    TopologyConstraintLedger,
-    TopologyHardwareManifest,
-    TopologyOptimisationArtifact,
-    TopologyOptimisationStep,
-    TopologyOptimisationTrace,
-    algebraic_connectivity,
-    build_correlation_distance_matrix,
-    build_coupling_distance_matrix,
-    export_topology_optimisation_artifact,
-    spike_trace_correlation_distance,
-    validate_topology_hardware_manifest,
-)
-from .wirtinger_calculus import (
-    WirtingerDerivative,
-    WirtingerOptimisationResult,
-    holomorphic_gradient,
-    is_holomorphic,
-    minimise_real_objective,
-    real_objective_gradient,
-    wirtinger_partials,
-)
+import sys as _sys
+from importlib import import_module
+from types import ModuleType
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from . import (
+        analysis,
+        applications,
+        diff,
+        entropy,
+        fep,
+        forecasting,
+        gauge,
+        l16,
+        pgbo,
+        psi_field,
+        sensing,
+        ssgf,
+        tcbo,
+    )
+    from .applications.eeg_classification import eeg_plv_to_vqe, eeg_quantum_kernel
+    from .benchmarks.classical_baselines import (
+        ClassicalBaselineRun,
+        available_baselines,
+        mps_tebd_baseline,
+        qutip_lindblad_baseline,
+        run_documented_classical_baselines,
+        scipy_ode_baseline,
+    )
+    from .benchmarks.compiler_isolated_benchmark_evidence import (
+        CompilerIsolatedBenchmarkEvidence,
+        CompilerIsolatedBenchmarkEvidenceFiles,
+        build_compiler_isolated_benchmark_evidence,
+        render_compiler_isolated_benchmark_evidence_markdown,
+        write_compiler_isolated_benchmark_evidence,
+    )
+    from .benchmarks.differentiable_hardening_gate import (
+        DifferentiableBenchmarkClassificationCase,
+        DifferentiableHardeningGateCheck,
+        DifferentiableHardeningSliceGateResult,
+        run_differentiable_hardening_slice_gate,
+    )
+    from .benchmarks.differentiable_isolated_benchmark_plan import (
+        DifferentiableIsolatedBenchmarkPlan,
+        DifferentiableIsolatedBenchmarkPlanRow,
+        DifferentiableIsolatedBenchmarkPlanValidation,
+        render_differentiable_isolated_benchmark_plan_markdown,
+        run_differentiable_isolated_benchmark_plan,
+        validate_differentiable_isolated_benchmark_plan,
+    )
+    from .benchmarks.differentiable_programming import (
+        DifferentiableProgrammingBenchmarkResult,
+        DifferentiableProgrammingExternalReferenceResult,
+        QuantumGradientBenchmarkResult,
+        run_differentiable_programming_benchmark_suite,
+        run_differentiable_programming_external_reference_suite,
+        run_quantum_gradient_benchmark_suite,
+    )
+    from .benchmarks.quantum_advantage import (
+        AdvantageResult,
+        classical_benchmark,
+        estimate_crossover,
+        quantum_benchmark,
+        run_scaling_benchmark,
+    )
+    from .benchmarks.reproducible_comparison import (
+        ComparisonMethodRow,
+        ReproducibleKuramotoComparison,
+        run_reproducible_kuramoto_comparison,
+    )
+    from .bridge.control_plasma_knm import (
+        build_knm_plasma,
+        build_knm_plasma_from_config,
+        build_knm_plasma_spec,
+        plasma_omega,
+    )
+    from .bridge.knm_hamiltonian import (
+        OMEGA_N_16,
+        build_knm_paper27,
+        build_kuramoto_ring,
+        knm_to_ansatz,
+        knm_to_hamiltonian,
+        omega_for_oscillators,
+    )
+    from .bridge.orchestrator_adapter import PhaseOrchestratorAdapter
+    from .bridge.phase_artifact import LayerStateArtifact, LockSignatureArtifact, UPDEPhaseArtifact
+    from .bridge.snn_adapter import (
+        ArcaneNeuronBridge,
+        SNNQuantumBridge,
+        quantum_measurement_to_current,
+        spike_train_to_rotations,
+    )
+    from .bridge.ssgf_adapter import (
+        SSGFQuantumLoop,
+        quantum_to_ssgf_state,
+        ssgf_state_to_quantum,
+        ssgf_w_to_hamiltonian,
+    )
+    from .codegen import (
+        HLS_ARTIFACT_CLAIM_BOUNDARY,
+        HLS_ARTIFACT_SCHEMA_VERSION,
+        HLS_CONSUMER_CONTRACT_VERSION,
+        HLSArtifactFile,
+        HLSArtifactManifest,
+        HLSArtifactVerification,
+        HLSBundle,
+        emit_versioned_hls_artifact,
+        pulse_to_vivado_hls,
+        verify_hls_artifact_manifest,
+        write_bundle,
+    )
+    from .compiler.mlir import (
+        CompilerADExecutableConfig,
+        CompilerADKernelVerification,
+        CompilerADTransformPlan,
+        DifferentiableMLIRCompileConfig,
+        EnzymeMLIRBenchmarkAttachment,
+        EnzymeMLIRCompilerADBreadthArtifact,
+        EnzymeMLIRCompilerADBreadthArtifactFiles,
+        EnzymeMLIRCompilerADBreadthCaseEvidence,
+        EnzymeMLIRCompilerADBreadthEvidence,
+        EnzymeMLIRMaturityAuditResult,
+        EnzymeMLIRToolchainStatus,
+        EnzymeNativeExecutionEvidence,
+        ExecutableCompilerADKernel,
+        ExecutableWholeProgramADBatchResult,
+        ExecutableWholeProgramADKernel,
+        MLIRCompileConfig,
+        MLIRLLVMCorrectnessEvidence,
+        MLIRModule,
+        NativeWholeProgramADKernel,
+        PhaseQNodeMLIRRuntimeExecutable,
+        PrimitiveLoweringStatus,
+        WholeProgramADNativeLoweringReport,
+        analyse_whole_program_ad_native_lowering,
+        build_compiler_ad_transform_plan,
+        build_enzyme_mlir_benchmark_attachment,
+        build_enzyme_mlir_compiler_ad_breadth_artifact,
+        build_enzyme_mlir_compiler_ad_breadth_evidence,
+        build_enzyme_mlir_compiler_ad_breadth_gap_artifact,
+        clear_native_whole_program_ad_compile_cache,
+        compile_compiler_ad_transform_plan_to_mlir,
+        compile_custom_derivative_rule_to_executable,
+        compile_custom_derivative_rule_to_mlir,
+        compile_kuramoto_to_mlir,
+        compile_matrix_2x2_determinant_ad_to_native_llvm_jit,
+        compile_matrix_2x2_eigensystem_ad_to_native_llvm_jit,
+        compile_matrix_2x2_eigenvalues_ad_to_native_llvm_jit,
+        compile_matrix_2x2_inverse_ad_to_native_llvm_jit,
+        compile_matrix_2x2_solve_ad_to_native_llvm_jit,
+        compile_matrix_frobenius_norm_squared_ad_to_native_llvm_jit,
+        compile_matrix_matrix_product_ad_to_native_llvm_jit,
+        compile_matrix_quadratic_form_ad_to_native_llvm_jit,
+        compile_matrix_trace_ad_to_native_llvm_jit,
+        compile_matrix_vector_product_ad_to_native_llvm_jit,
+        compile_phase_qnode_circuit_to_mlir_runtime,
+        compile_registered_primitive_to_executable,
+        compile_scalar_binary_elementwise_ad_to_native_llvm_jit,
+        compile_scalar_quadratic_ad_to_native_llvm_jit,
+        compile_scalar_unary_elementwise_ad_to_native_llvm_jit,
+        compile_symmetric_2x2_cholesky_ad_to_native_llvm_jit,
+        compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit,
+        compile_vector_dot_ad_to_native_llvm_jit,
+        compile_vector_squared_norm_ad_to_native_llvm_jit,
+        compile_whole_program_ad_trace_to_executable,
+        compile_whole_program_ad_trace_to_mlir,
+        compile_whole_program_ad_trace_to_native_llvm_jit,
+        make_executable_ad_kernel_batching_rule,
+        make_matrix_2x2_determinant_native_llvm_jit_lowering_rule,
+        make_matrix_2x2_determinant_native_llvm_jit_primitive_transform,
+        make_matrix_2x2_eigensystem_native_llvm_jit_lowering_rule,
+        make_matrix_2x2_eigensystem_native_llvm_jit_primitive_transform,
+        make_matrix_2x2_eigenvalues_native_llvm_jit_lowering_rule,
+        make_matrix_2x2_eigenvalues_native_llvm_jit_primitive_transform,
+        make_matrix_2x2_inverse_native_llvm_jit_lowering_rule,
+        make_matrix_2x2_inverse_native_llvm_jit_primitive_transform,
+        make_matrix_2x2_solve_native_llvm_jit_lowering_rule,
+        make_matrix_2x2_solve_native_llvm_jit_primitive_transform,
+        make_matrix_frobenius_norm_squared_native_llvm_jit_lowering_rule,
+        make_matrix_frobenius_norm_squared_native_llvm_jit_primitive_transform,
+        make_matrix_matrix_product_native_llvm_jit_lowering_rule,
+        make_matrix_matrix_product_native_llvm_jit_primitive_transform,
+        make_matrix_quadratic_form_native_llvm_jit_lowering_rule,
+        make_matrix_quadratic_form_native_llvm_jit_primitive_transform,
+        make_matrix_trace_native_llvm_jit_lowering_rule,
+        make_matrix_trace_native_llvm_jit_primitive_transform,
+        make_matrix_vector_product_native_llvm_jit_lowering_rule,
+        make_matrix_vector_product_native_llvm_jit_primitive_transform,
+        make_program_ad_linalg_matrix_power_executable_lowering_rule,
+        make_program_ad_linalg_multi_dot_executable_lowering_rule,
+        make_scalar_binary_elementwise_native_llvm_jit_lowering_rule,
+        make_scalar_quadratic_native_llvm_jit_lowering_rule,
+        make_scalar_unary_elementwise_native_llvm_jit_lowering_rule,
+        make_symmetric_2x2_cholesky_native_llvm_jit_lowering_rule,
+        make_symmetric_2x2_cholesky_native_llvm_jit_primitive_transform,
+        make_symmetric_2x2_eigenvalues_native_llvm_jit_lowering_rule,
+        make_symmetric_2x2_eigenvalues_native_llvm_jit_primitive_transform,
+        make_vector_dot_native_llvm_jit_lowering_rule,
+        make_vector_dot_native_llvm_jit_primitive_transform,
+        make_vector_squared_norm_native_llvm_jit_lowering_rule,
+        make_vector_squared_norm_native_llvm_jit_primitive_transform,
+        native_whole_program_ad_compile_cache_stats,
+        native_whole_program_ad_linalg_support,
+        render_enzyme_mlir_compiler_ad_breadth_artifact_markdown,
+        run_enzyme_mlir_maturity_audit,
+        write_enzyme_mlir_compiler_ad_breadth_artifact,
+    )
+    from .control.frc_pulsed_qaoa import (
+        FRCScheduleResult,
+        classical_sqp_schedule,
+        optimal_schedule,
+        solve_frc_pulsed_qaoa,
+    )
+    from .control.hardware_topological_optimizer import HardwareTopologicalOptimizer
+    from .control.q_disruption import QuantumDisruptionClassifier
+    from .control.q_disruption_iter import (
+        DisruptionBenchmark,
+        ITERFeatureSpec,
+        from_fusion_core_shot,
+        generate_synthetic_iter_data,
+        normalize_iter_features,
+        scpn_control_bridge_dependency_contract,
+        validate_scpn_control_bridge_dependency_contract,
+    )
+    from .control.qaoa_mpc import QAOA_MPC
+    from .control.qaoa_pulsed_cost import (
+        FRCPlasmaSurrogate,
+        FRCQAOAObjective,
+        frc_pulsed_shot_cost,
+    )
+    from .control.qpetri import QuantumPetriCampaignReport, QuantumPetriNet, QuantumPetriStepReport
+    from .control.realtime_runtime import (
+        CycleSample,
+        MonotonicRealtimeClock,
+        RealtimeClock,
+        RealtimeRunResult,
+        RealtimeRuntimeConfig,
+        RealtimeSLAConfig,
+        RealtimeSLAReport,
+        RealtimeTickRecord,
+        SubMicrosecondReport,
+        SubMicrosecondTracker,
+        VirtualRealtimeClock,
+        enforce_realtime_sla,
+        evaluate_realtime_sla,
+        run_realtime_control_loop,
+        summarise_cycle_samples,
+    )
+    from .control.topological_optimizer import TopologicalCouplingOptimizer
+    from .control.vqls_gs import VQLS_GradShafranov, VQLSGradShafranovResult
+    from .cosimulation import (
+        CoSimulationResult,
+        KnmPartition,
+        cosimulate,
+        partition_knm,
+    )
+    from .crypto.pqc_trigger import PqcTriggerSigner
+    from .deployment.cloud_native import (
+        CloudDeploymentSpec,
+        CloudManifestBundle,
+        ContainerResources,
+        generate_cloud_manifests,
+    )
+    from .diff import (
+        DIFFERENTIABLE_CIRCUIT_CONTRACT_CLAIM_BOUNDARY,
+        DIFFERENTIABLE_CIRCUIT_SCHEMA,
+        BackendCapabilityMetadata,
+        DifferentiableCircuit,
+        DifferentiableCircuitContractAuditResult,
+        DifferentiableCircuitContractCheck,
+        DifferentiableCircuitContractStatus,
+        DifferentiableCircuitDiagnostics,
+        EstimatorProvenance,
+        JITExplanation,
+        QuantumFunction,
+        ShotPolicy,
+        differentiable_circuit,
+        jit_or_explain,
+        namespace_metadata,
+        run_differentiable_circuit_contract_audit,
+        supported_transforms,
+    )
+    from .differentiable import (
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY,
+        FINITE_SHOT_SAMPLE_SOURCE_CLASSES,
+        ArmijoLineSearchResult,
+        CustomDerivativeCheckResult,
+        CustomDerivativeRegistry,
+        CustomDerivativeRule,
+        DifferentiableOptimizer,
+        DualNumber,
+        FiniteShotSampleProvenance,
+        FisherConjugateGradientResult,
+        FisherVectorProductResult,
+        FixedPointSensitivityResult,
+        GradientCheckResult,
+        GradientFailurePolicy,
+        GradientResult,
+        HessianResult,
+        HVPResult,
+        ImplicitSensitivityResult,
+        JacobianResult,
+        JVPResult,
+        LeastSquaresCovarianceResult,
+        LevenbergMarquardtDampingUpdate,
+        LevenbergMarquardtOptimizer,
+        LevenbergMarquardtResult,
+        LevenbergMarquardtStep,
+        LevenbergMarquardtTrial,
+        NaturalGradientOptimizationResult,
+        NaturalGradientOptimizer,
+        NaturalGradientResult,
+        OptimizationResult,
+        Parameter,
+        ParameterBounds,
+        ParameterShiftRule,
+        PrimitiveBatchingRule,
+        PrimitiveContract,
+        PrimitiveDTypeRule,
+        PrimitiveIdentity,
+        PrimitiveLoweringRule,
+        PrimitiveShapeRule,
+        PrimitiveStaticArgumentRule,
+        PrimitiveTransformRule,
+        ProgramADAdjointResult,
+        ProgramADAdjointStep,
+        ProgramADAliasEdge,
+        ProgramADAliasEffectAnalysis,
+        ProgramADAliasSet,
+        ProgramADControlPathAliasProvenance,
+        ProgramADControlRegion,
+        ProgramADEffect,
+        ProgramADEffectIR,
+        ProgramADLinalgConditioningDiagnostic,
+        ProgramADListAliasProvenance,
+        ProgramADLoopCarriedStateProvenance,
+        ProgramADPhiNode,
+        ProgramADRebindingAliasProvenance,
+        ProgramADRegistryDispatchCoverageReport,
+        ProgramADRegistryDispatchCoverageRow,
+        ProgramADSSAValue,
+        ProgramADStaticAliasLatticeComponent,
+        ProgramADStaticAliasLatticeReport,
+        ProgramADUnknownAliasEdge,
+        ProgramADViewAliasProvenance,
+        ReverseNode,
+        RustProgramADInterpreterResult,
+        RustProgramADRegistryMetadataMirrorResult,
+        RustProgramADValueAndGradientResult,
+        ScoreFunctionGradientResult,
+        ScoreFunctionSampleRecord,
+        ShotAllocationResult,
+        SparseMatrixResult,
+        SPSAGradientResult,
+        SPSAObjectiveSample,
+        SPSAProbeRecord,
+        StochasticGradientConfidenceInterval,
+        StochasticGradientResult,
+        TraceADArray,
+        TraceADScalar,
+        VJPResult,
+        WeightedGradientResult,
+        WholeProgramADResult,
+        WholeProgramBytecodeBasicBlock,
+        WholeProgramBytecodeInstruction,
+        WholeProgramCompilerFrontendReport,
+        WholeProgramIRNode,
+        WholeProgramSemanticsReport,
+        WholeProgramSourceBytecodeLineMap,
+        WholeProgramSourceIRFeature,
+        WholeProgramSourceRegion,
+        WholeProgramSymbolScopeEntry,
+        WholeProgramTraceEvent,
+        WholeProgramUnsupportedSemanticDiagnostic,
+        allocate_parameter_shift_shots,
+        analyze_program_ad_alias_effects,
+        armijo_backtracking_line_search,
+        batch_complex_step_gradient,
+        batch_custom_jacobian,
+        batch_custom_jvp,
+        batch_custom_vjp,
+        batch_finite_difference_hvp,
+        batch_finite_difference_jvp,
+        batch_finite_difference_vjp,
+        batch_parameter_shift_gradient,
+        batch_value_and_complex_step_grad,
+        batch_value_and_custom_jacobian,
+        batch_value_and_custom_jvp,
+        batch_value_and_custom_vjp,
+        batch_value_and_finite_difference_grad,
+        batch_value_and_finite_difference_hvp,
+        batch_value_and_finite_difference_jvp,
+        batch_value_and_finite_difference_vjp,
+        batch_value_and_parameter_shift_grad,
+        batch_vector_jacobian_product,
+        check_custom_derivative_consistency,
+        check_parameter_shift_consistency,
+        compile_whole_program_frontend,
+        complex_step_gradient,
+        custom_derivative_rule_for,
+        custom_gauss_newton_gradient,
+        custom_jacobian,
+        custom_jvp,
+        custom_levenberg_marquardt_step,
+        custom_vjp,
+        dense_to_sparse_matrix,
+        diagnose_program_ad_linalg_conditioning,
+        dual_cos,
+        dual_exp,
+        dual_log,
+        dual_sin,
+        empirical_fisher_conjugate_gradient,
+        empirical_fisher_metric,
+        empirical_fisher_vector_product,
+        evaluate_levenberg_marquardt_step,
+        finite_difference_gradient,
+        finite_difference_hessian,
+        finite_difference_hvp,
+        finite_difference_jacobian,
+        finite_difference_jvp,
+        finite_difference_vjp,
+        forward_mode_gradient,
+        gauss_newton_gradient,
+        grad,
+        gradient_confidence_interval,
+        hessian,
+        huber_residual_weights,
+        implicit_fixed_point_sensitivity,
+        implicit_stationary_sensitivity,
+        interpret_program_ad_effect_ir_with_rust,
+        is_jax_autodiff_available,
+        jacfwd,
+        jacobian,
+        jacrev,
+        jax_value_and_grad,
+        jvp,
+        least_squares_covariance,
+        levenberg_marquardt_step,
+        mirror_program_ad_registry_metadata_with_rust,
+        multi_frequency_parameter_shift_rule,
+        natural_gradient,
+        parameter_shift_gradient,
+        parameter_shift_gradient_with_uncertainty,
+        parse_program_ad_effect_ir,
+        primitive_complete_contract_for,
+        primitive_contract_for,
+        primitive_dtype_rule_for,
+        primitive_effect_for,
+        primitive_nondifferentiable_policy_for,
+        primitive_shape_rule_for,
+        primitive_static_argument_rule_for,
+        program_ad_array_delete_derivative_rule,
+        program_ad_array_insert_derivative_rule,
+        program_ad_array_pad_derivative_rule,
+        program_ad_array_take_along_axis_derivative_rule,
+        program_ad_assembly_append_derivative_rule,
+        program_ad_assembly_block_derivative_rule,
+        program_ad_assembly_broadcast_arrays_derivative_rule,
+        program_ad_assembly_broadcast_to_derivative_rule,
+        program_ad_assembly_column_stack_derivative_rule,
+        program_ad_assembly_concatenate_derivative_rule,
+        program_ad_assembly_diagonal_derivative_rule,
+        program_ad_assembly_dstack_derivative_rule,
+        program_ad_assembly_hstack_derivative_rule,
+        program_ad_assembly_split_derivative_rule,
+        program_ad_assembly_stack_derivative_rule,
+        program_ad_assembly_tril_derivative_rule,
+        program_ad_assembly_triu_derivative_rule,
+        program_ad_assembly_vstack_derivative_rule,
+        program_ad_interpolation_interp_derivative_rule,
+        program_ad_linalg_diag_derivative_rule,
+        program_ad_linalg_diagflat_derivative_rule,
+        program_ad_linalg_eig_derivative_rule,
+        program_ad_linalg_eigh_derivative_rule,
+        program_ad_linalg_eigvals_derivative_rule,
+        program_ad_linalg_eigvalsh_derivative_rule,
+        program_ad_linalg_matrix_power_derivative_rule,
+        program_ad_linalg_multi_dot_derivative_rule,
+        program_ad_linalg_pinv_derivative_rule,
+        program_ad_linalg_svdvals_derivative_rule,
+        program_ad_linalg_trace_derivative_rule,
+        program_ad_product_einsum_derivative_rule,
+        program_ad_product_inner_derivative_rule,
+        program_ad_product_outer_derivative_rule,
+        program_ad_product_tensordot_derivative_rule,
+        program_ad_registry_dispatch_coverage_report,
+        program_ad_selection_clip_derivative_rule,
+        program_ad_selection_where_derivative_rule,
+        program_ad_shape_atleast_1d_derivative_rule,
+        program_ad_shape_atleast_2d_derivative_rule,
+        program_ad_shape_atleast_3d_derivative_rule,
+        program_ad_shape_expand_dims_derivative_rule,
+        program_ad_shape_flip_derivative_rule,
+        program_ad_shape_fliplr_derivative_rule,
+        program_ad_shape_flipud_derivative_rule,
+        program_ad_shape_moveaxis_derivative_rule,
+        program_ad_shape_ravel_derivative_rule,
+        program_ad_shape_repeat_derivative_rule,
+        program_ad_shape_reshape_derivative_rule,
+        program_ad_shape_roll_derivative_rule,
+        program_ad_shape_rot90_derivative_rule,
+        program_ad_shape_squeeze_derivative_rule,
+        program_ad_shape_swapaxes_derivative_rule,
+        program_ad_shape_tile_derivative_rule,
+        program_ad_shape_transpose_derivative_rule,
+        program_ad_signal_convolve_derivative_rule,
+        program_ad_signal_correlate_derivative_rule,
+        program_ad_static_alias_lattice_report,
+        program_ad_stencil_gradient_derivative_rule,
+        program_adjoint_grad,
+        program_adjoint_gradient,
+        program_adjoint_replay_gradient,
+        program_adjoint_result,
+        program_adjoint_value_and_grad,
+        register_custom_derivative_rule,
+        register_primitive_batching_rule,
+        register_primitive_lowering_rule,
+        register_primitive_transform_rule,
+        registered_custom_jacobian,
+        registered_custom_jvp,
+        registered_custom_vjp,
+        reverse_cos,
+        reverse_exp,
+        reverse_log,
+        reverse_mode_gradient,
+        reverse_sin,
+        score_function_gradient_estimate,
+        soft_l1_residual_weights,
+        sparse_empirical_fisher_metric,
+        sparse_hessian,
+        sparse_jacobian,
+        spsa_gradient_estimate,
+        update_levenberg_marquardt_damping,
+        value_and_complex_step_grad,
+        value_and_custom_jacobian,
+        value_and_custom_jvp,
+        value_and_custom_vjp,
+        value_and_finite_difference_grad,
+        value_and_finite_difference_hessian,
+        value_and_finite_difference_hvp,
+        value_and_finite_difference_jacobian,
+        value_and_finite_difference_jvp,
+        value_and_finite_difference_vjp,
+        value_and_forward_mode_grad,
+        value_and_grad,
+        value_and_grad_program_ad_effect_ir_with_rust,
+        value_and_hessian,
+        value_and_jacfwd,
+        value_and_jacobian,
+        value_and_jacrev,
+        value_and_jvp,
+        value_and_parameter_shift_grad,
+        value_and_reverse_mode_grad,
+        value_and_vjp,
+        vector_jacobian_product,
+        vjp,
+        vmap,
+        weighted_gradient_sum,
+        whole_program_grad,
+        whole_program_value_and_grad,
+    )
+    from .differentiable_api import (
+        DifferentiabilityDiagnosticReport,
+        DifferentiableDashboardCapabilityRow,
+        DifferentiableDashboardCapabilityState,
+        DifferentiableDashboardStatus,
+        UnifiedDifferentiableAPIResult,
+        differentiable_api,
+        differentiable_architecture_map_report,
+        differentiable_baseline_scorecard_report,
+        differentiable_benchmark_report,
+        differentiable_competitive_baseline_refresh_report,
+        differentiable_compile_report,
+        differentiable_dashboard_status,
+        differentiable_dependency_environment_map_report,
+        differentiable_frontend_report,
+        differentiable_gradient,
+        differentiable_hessian,
+        differentiable_isolated_benchmark_plan_report,
+        differentiable_jacobian,
+        differentiable_qfi_fss_report,
+        differentiable_rust_python_inventory_report,
+        differentiable_support_report,
+        differentiable_transform_algebra_report,
+        differentiable_value,
+        explain_differentiability,
+    )
+    from .differentiable_architecture_map import (
+        DifferentiableArchitectureLayerId,
+        DifferentiableArchitectureMap,
+        DifferentiableArchitectureMapLayer,
+        DifferentiableArchitectureMapValidation,
+        render_differentiable_architecture_map_markdown,
+        run_differentiable_architecture_map,
+        validate_differentiable_architecture_map,
+    )
+    from .differentiable_baseline_scorecard import (
+        DifferentiableBaselineCategory,
+        DifferentiableBaselineScorecard,
+        DifferentiableBaselineScorecardRow,
+        DifferentiableBaselineScorecardValidation,
+        DifferentiableBaselineStatus,
+        DifferentiablePromotionLanguageAudit,
+        audit_differentiable_promotion_language,
+        build_differentiable_release_profile,
+        render_differentiable_baseline_scorecard_markdown,
+        run_differentiable_baseline_scorecard,
+        validate_differentiable_baseline_scorecard,
+    )
+    from .differentiable_benchmark_report import (
+        DifferentiableBenchmarkReport,
+        build_differentiable_benchmark_report,
+    )
+    from .differentiable_competitive_baselines import (
+        CompetitiveBaselineId,
+        CompetitiveBaselinePromotionGate,
+        CompetitiveBaselineRefresh,
+        CompetitiveBaselineRow,
+        CompetitiveBaselineSourceKind,
+        CompetitiveBaselineValidation,
+        audit_competitive_baseline_promotion_gate,
+        load_competitive_baseline_refresh,
+        render_competitive_baseline_refresh_markdown,
+        run_competitive_baseline_refresh,
+        validate_competitive_baseline_refresh,
+    )
+    from .differentiable_dependency_environment_evidence import (
+        DifferentiableDependencyEnvironmentEvidence,
+        DifferentiableDependencyEnvironmentEvidenceCategory,
+        DifferentiableDependencyEnvironmentEvidenceId,
+        DifferentiableDependencyEnvironmentEvidenceStatus,
+        build_differentiable_dependency_environment_evidence,
+    )
+    from .differentiable_dependency_environment_map import (
+        DifferentiableDependencyEnvironmentMap,
+        DifferentiableDependencyEnvironmentMapValidation,
+        DifferentiableDependencyEnvironmentProfile,
+        DifferentiableDependencyEnvironmentProfileId,
+        DifferentiableDependencyEnvironmentStatus,
+        render_differentiable_dependency_environment_map_markdown,
+        run_differentiable_dependency_environment_map,
+        validate_differentiable_dependency_environment_map,
+    )
+    from .differentiable_module_hardening_audit import (
+        DifferentiableModuleHardeningAuditResult,
+        DifferentiableModuleHardeningRecord,
+        differentiable_module_hardening_registry,
+        run_differentiable_module_hardening_audit,
+    )
+    from .differentiable_rust_python_inventory import (
+        DifferentiableRustPythonInventory,
+        DifferentiableRustPythonInventoryBenchmarkStatus,
+        DifferentiableRustPythonInventoryClassification,
+        DifferentiableRustPythonInventoryPolyglotStatus,
+        DifferentiableRustPythonInventoryRow,
+        DifferentiableRustPythonInventoryRustParityStatus,
+        DifferentiableRustPythonInventoryValidation,
+        render_differentiable_rust_python_inventory_markdown,
+        run_differentiable_rust_python_inventory,
+        validate_differentiable_rust_python_inventory,
+    )
+    from .differentiable_transform_algebra import (
+        TransformAlgebraAudit,
+        TransformAlgebraCase,
+        TransformAlgebraStatus,
+        assert_transform_algebra_audit_passes,
+        run_transform_algebra_audit,
+    )
+    from .entropy import AerQuantumEntropySource, EntropyHealthReport, QRNGStream
+    from .forecasting import (
+        ForecastModelRun,
+        SynchronisationForecastBenchmarkResult,
+        SynchronisationForecastDataset,
+        load_hardware_kuramoto_4osc_trace,
+        load_ieee5bus_sync_forecast_case,
+        run_real_data_sync_forecast_benchmark,
+        run_real_data_sync_forecast_suite,
+    )
+    from .hardware.aggregators import (
+        AggregatorProviderRoute,
+        ResolvedAggregatorProviderRoute,
+        aggregator_provider_routes_for,
+        built_in_aggregator_provider_routes,
+        resolve_aggregator_provider_route,
+    )
+    from .hardware.fast_classical import fast_sparse_evolution
+    from .hardware.hal import (
+        BackendCapabilities,
+        BackendProfile,
+        HardwareAbstractionLayer,
+        LocalDeterministicSimulator,
+        QuantumBackend,
+        QuantumJobRef,
+        QuantumJobResult,
+        QuantumWorkload,
+        built_in_backend_profiles,
+    )
+    from .hardware.hal_azure import AzureQuantumHALAdapter, azure_openqasm3_to_workload
+    from .hardware.hal_braket import (
+        BraketAwsHALAdapter,
+        BraketLocalHALAdapter,
+        braket_circuit_to_workload,
+    )
+    from .hardware.hal_cirq import CirqLocalHALAdapter, cirq_circuit_workload
+    from .hardware.hal_dwave import DWaveLeapHALAdapter, dwave_bqm_workload
+    from .hardware.hal_ionq import IonQCloudHALAdapter, ionq_qis_workload
+    from .hardware.hal_iqm import IQMHALAdapter, iqm_qiskit_workload
+    from .hardware.hal_oqc import OQCHALAdapter, oqc_openqasm3_workload
+    from .hardware.hal_pasqal import PasqalPulserHALAdapter, pulser_sequence_workload
+    from .hardware.hal_pennylane import PennyLaneDeviceHALAdapter, pennylane_gate_workload
+    from .hardware.hal_qbraid import QbraidRuntimeHALAdapter, qbraid_program_to_workload
+    from .hardware.hal_qiskit import (
+        QiskitAerHALAdapter,
+        QiskitRuntimeHALAdapter,
+        qiskit_circuit_to_qasm3_workload,
+        qiskit_circuit_to_workload,
+    )
+    from .hardware.hal_quandela import QuandelaPercevalHALAdapter, quandela_perceval_workload
+    from .hardware.hal_quantinuum import QuantinuumCloudHALAdapter, quantinuum_tket_workload
+    from .hardware.hal_quera_bloqade import QuEraBloqadeHALAdapter, bloqade_ahs_workload
+    from .hardware.hal_rigetti import RigettiQCSHALAdapter, rigetti_quil_workload
+    from .hardware.hal_strangeworks import (
+        StrangeworksComputeHALAdapter,
+        strangeworks_program_to_workload,
+    )
+    from .hardware.provider_capability_discovery import (
+        CapabilityDecisionStatus,
+        ProviderCapabilityDecision,
+        ProviderCapabilitySnapshot,
+        ProviderMetadataProbe,
+        assess_provider_capability_snapshot,
+        probe_aggregator_provider_capability,
+        snapshot_from_azure_target,
+        snapshot_from_braket_device,
+        snapshot_from_dwave_solver,
+        snapshot_from_ionq_backend,
+        snapshot_from_iqm_backend,
+        snapshot_from_oqc_target,
+        snapshot_from_pasqal_target,
+        snapshot_from_qbraid_device,
+        snapshot_from_qiskit_runtime_backend,
+        snapshot_from_quandela_processor,
+        snapshot_from_quantinuum_backend,
+        snapshot_from_quera_bloqade,
+        snapshot_from_rigetti_qcs,
+        snapshot_from_strangeworks_backend,
+    )
+    from .hardware.provider_smoke import (
+        AggregatorProviderOptionalDependencyRow,
+        ProviderOptionalDependencyRow,
+        aggregator_provider_optional_dependency_matrix,
+        provider_optional_dependency_matrix,
+    )
+    from .hardware.qubit_mapper import (
+        ExecutionRegion,
+        QubitMappingResult,
+        dynq_initial_layout,
+    )
+    from .hardware.runner import HardwareRunner, JobResult
+    from .hardware.trapped_ion import transpile_for_trapped_ion, trapped_ion_noise_model
+    from .identity.binding_spec import (
+        ARCANE_SAPIENCE_SPEC,
+        ORCHESTRATOR_MAPPING,
+        build_identity_attractor,
+        orchestrator_to_quantum_phases,
+        quantum_to_orchestrator_phases,
+        solve_identity,
+    )
+    from .identity.coherence_budget import coherence_budget, fidelity_at_depth
+    from .identity.entanglement_witness import chsh_from_statevector, disposition_entanglement_map
+    from .identity.ground_state import IdentityAttractor
+    from .identity.identity_key import identity_fingerprint, prove_identity, verify_identity
+    from .kuramoto_core import (
+        KuramotoProblem,
+        build_kuramoto_problem,
+        compile_analog_program,
+        compile_dense_hamiltonian,
+        compile_hamiltonian,
+        compile_hybrid_program,
+        compile_trotter_circuit,
+        measure_order_parameter,
+        simulate_variant_trajectory,
+        validate_kuramoto_inputs,
+    )
+    from .mitigation.compound_mitigation import compound_mitigate_pipeline
+    from .mitigation.pec import PECResult, pauli_twirl_decompose, pec_sample
+    from .mitigation.symmetry_decay import (
+        GUESSResult,
+        SymmetryDecayModel,
+        guess_extrapolate,
+        learn_symmetry_decay,
+    )
+    from .mitigation.zne import ZNEResult, gate_fold_circuit, zne_extrapolate
+    from .phase.kuramoto_variants import (
+        HigherOrderKuramotoSpec,
+        KuramotoVariant,
+        KuramotoVariantResult,
+        MonitoredKuramotoSpec,
+        PTSymmetricKuramotoSpec,
+        build_triadic_ring_terms,
+        simulate_higher_order_kuramoto,
+        simulate_monitored_kuramoto,
+        simulate_pt_symmetric_kuramoto,
+    )
+    from .phase.lindblad_engine import LindbladSyncEngine
+    from .phase.phase_vqe import PhaseVQE
+    from .phase.results import TrajectoryResult
+    from .phase.structured_ansatz import build_structured_ansatz
+    from .phase.trotter_upde import QuantumUPDESolver
+    from .phase.xy_kuramoto import QuantumKuramotoSolver, TrotterEvolutionConfig
+    from .qec.biological_diagnostics import (
+        BiologicalSurfaceDiagnostics,
+        analyse_biological_surface_code,
+    )
+    from .qec.biological_pipeline import (
+        BiologicalQecBatchExecution,
+        BiologicalQecExecution,
+        run_biological_qec_batch_execution,
+        run_biological_qec_execution,
+    )
+    from .qec.biological_surface_code import BiologicalMWPMDecoder, BiologicalSurfaceCode
+    from .qec.control_qec import ControlQEC
+    from .qec.fault_tolerant import FaultTolerantUPDE, LogicalQubit
+    from .qec.multiscale_qec import (
+        MultiscaleQECResult,
+        QECLevel,
+        build_multiscale_qec,
+        concatenated_logical_rate,
+    )
+    from .qec.surface_code_upde import SurfaceCodeSpec, SurfaceCodeUPDE
+    from .qec.syndrome_flow import syndrome_flow_analysis
+    from .qsnn.dynamic_coupling import DynamicCouplingEngine
+    from .qsnn.qlayer import QuantumDenseLayer
+    from .qsnn.qlif import QuantumLIFNeuron
+    from .qsnn.qstdp import QuantumSTDP
+    from .qsnn.qsynapse import QuantumSynapse
+    from .qsnn.quantum_neuromorphic_bridge import (
+        CLAIM_BOUNDARY,
+        DynamicCouplingConfig,
+        NeuromorphicStepResult,
+        QuantumLIFConfig,
+        QuantumNeuromorphicBridge,
+        RecurrentCouplingPolicy,
+        TraceSTDPConfig,
+        TraceSTDPState,
+    )
+    from .qsnn.training import QSNNParameterShiftDescentRun, QSNNTrainer
+    from .sensing import (
+        NVCenter,
+        NVFieldCalibration,
+        calibrate_field_from_odmr,
+        cw_odmr_dc_sensitivity_t_per_sqrt_hz,
+        odmr_resonances_hz,
+    )
+    from .stable_core import (
+        Backend,
+        Experiment,
+        Problem,
+        Result,
+        backend_capability_matrix,
+        build_backend,
+        build_experiment,
+        build_problem,
+        build_result,
+        classical_reference_backend,
+        hardware_replay_backend,
+        pennylane_backend,
+        problem_from_kuramoto,
+        problem_to_kuramoto,
+        pulser_surrogate_backend,
+        qiskit_backend,
+        qutip_backend,
+        stable_core_capability_markdown,
+        stable_core_capability_payload,
+        write_stable_core_capability_artifacts,
+    )
+    from .stable_core_preflight import (
+        StableCorePreflightResult,
+        run_stable_core_preflight,
+        stable_core_backend_dependencies,
+        stable_core_preflight_fixtures_json,
+        stable_core_preflight_fixtures_markdown,
+        stable_core_preflight_fixtures_payload,
+    )
+    from .topology_control import (
+        CouplingGraphBounds,
+        CouplingTopologyObjective,
+        DegeneracyMode,
+        H1Summary,
+        HardwareEmbeddingConstraint,
+        NetworkCycleBackend,
+        ObjectiveBreakdown,
+        PersistenceDiagram,
+        PersistentHomologyBackend,
+        ProjectedScipyOptimizer,
+        ProjectedSPSAOptimizer,
+        RipserPHBackend,
+        TopologicalDynamicCouplingPolicy,
+        TopologyConstraintLedger,
+        TopologyHardwareManifest,
+        TopologyOptimisationArtifact,
+        TopologyOptimisationStep,
+        TopologyOptimisationTrace,
+        algebraic_connectivity,
+        build_correlation_distance_matrix,
+        build_coupling_distance_matrix,
+        export_topology_optimisation_artifact,
+        spike_trace_correlation_distance,
+        validate_topology_hardware_manifest,
+    )
+    from .wirtinger_calculus import (
+        WirtingerDerivative,
+        WirtingerOptimisationResult,
+        holomorphic_gradient,
+        is_holomorphic,
+        minimise_real_objective,
+        real_objective_gradient,
+        wirtinger_partials,
+    )
+
+from importlib.metadata import PackageNotFoundError, version
 
 
 def _resolve_version() -> str:
@@ -940,6 +947,2566 @@ def _resolve_version() -> str:
 
 
 __version__ = _resolve_version()
+
+_PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
+    "analysis": ("scpn_quantum_control.analysis", None),
+    "applications": ("scpn_quantum_control.applications", None),
+    "diff": ("scpn_quantum_control.diff", None),
+    "entropy": ("scpn_quantum_control.entropy", None),
+    "fep": ("scpn_quantum_control.fep", None),
+    "forecasting": ("scpn_quantum_control.forecasting", None),
+    "gauge": ("scpn_quantum_control.gauge", None),
+    "l16": ("scpn_quantum_control.l16", None),
+    "pgbo": ("scpn_quantum_control.pgbo", None),
+    "psi_field": ("scpn_quantum_control.psi_field", None),
+    "sensing": ("scpn_quantum_control.sensing", None),
+    "ssgf": ("scpn_quantum_control.ssgf", None),
+    "tcbo": ("scpn_quantum_control.tcbo", None),
+    "eeg_plv_to_vqe": ("scpn_quantum_control.applications.eeg_classification", "eeg_plv_to_vqe"),
+    "eeg_quantum_kernel": (
+        "scpn_quantum_control.applications.eeg_classification",
+        "eeg_quantum_kernel",
+    ),
+    "ClassicalBaselineRun": (
+        "scpn_quantum_control.benchmarks.classical_baselines",
+        "ClassicalBaselineRun",
+    ),
+    "available_baselines": (
+        "scpn_quantum_control.benchmarks.classical_baselines",
+        "available_baselines",
+    ),
+    "mps_tebd_baseline": (
+        "scpn_quantum_control.benchmarks.classical_baselines",
+        "mps_tebd_baseline",
+    ),
+    "qutip_lindblad_baseline": (
+        "scpn_quantum_control.benchmarks.classical_baselines",
+        "qutip_lindblad_baseline",
+    ),
+    "run_documented_classical_baselines": (
+        "scpn_quantum_control.benchmarks.classical_baselines",
+        "run_documented_classical_baselines",
+    ),
+    "scipy_ode_baseline": (
+        "scpn_quantum_control.benchmarks.classical_baselines",
+        "scipy_ode_baseline",
+    ),
+    "CompilerIsolatedBenchmarkEvidence": (
+        "scpn_quantum_control.benchmarks.compiler_isolated_benchmark_evidence",
+        "CompilerIsolatedBenchmarkEvidence",
+    ),
+    "CompilerIsolatedBenchmarkEvidenceFiles": (
+        "scpn_quantum_control.benchmarks.compiler_isolated_benchmark_evidence",
+        "CompilerIsolatedBenchmarkEvidenceFiles",
+    ),
+    "build_compiler_isolated_benchmark_evidence": (
+        "scpn_quantum_control.benchmarks.compiler_isolated_benchmark_evidence",
+        "build_compiler_isolated_benchmark_evidence",
+    ),
+    "render_compiler_isolated_benchmark_evidence_markdown": (
+        "scpn_quantum_control.benchmarks.compiler_isolated_benchmark_evidence",
+        "render_compiler_isolated_benchmark_evidence_markdown",
+    ),
+    "write_compiler_isolated_benchmark_evidence": (
+        "scpn_quantum_control.benchmarks.compiler_isolated_benchmark_evidence",
+        "write_compiler_isolated_benchmark_evidence",
+    ),
+    "DifferentiableBenchmarkClassificationCase": (
+        "scpn_quantum_control.benchmarks.differentiable_hardening_gate",
+        "DifferentiableBenchmarkClassificationCase",
+    ),
+    "DifferentiableHardeningGateCheck": (
+        "scpn_quantum_control.benchmarks.differentiable_hardening_gate",
+        "DifferentiableHardeningGateCheck",
+    ),
+    "DifferentiableHardeningSliceGateResult": (
+        "scpn_quantum_control.benchmarks.differentiable_hardening_gate",
+        "DifferentiableHardeningSliceGateResult",
+    ),
+    "run_differentiable_hardening_slice_gate": (
+        "scpn_quantum_control.benchmarks.differentiable_hardening_gate",
+        "run_differentiable_hardening_slice_gate",
+    ),
+    "DifferentiableIsolatedBenchmarkPlan": (
+        "scpn_quantum_control.benchmarks.differentiable_isolated_benchmark_plan",
+        "DifferentiableIsolatedBenchmarkPlan",
+    ),
+    "DifferentiableIsolatedBenchmarkPlanRow": (
+        "scpn_quantum_control.benchmarks.differentiable_isolated_benchmark_plan",
+        "DifferentiableIsolatedBenchmarkPlanRow",
+    ),
+    "DifferentiableIsolatedBenchmarkPlanValidation": (
+        "scpn_quantum_control.benchmarks.differentiable_isolated_benchmark_plan",
+        "DifferentiableIsolatedBenchmarkPlanValidation",
+    ),
+    "render_differentiable_isolated_benchmark_plan_markdown": (
+        "scpn_quantum_control.benchmarks.differentiable_isolated_benchmark_plan",
+        "render_differentiable_isolated_benchmark_plan_markdown",
+    ),
+    "run_differentiable_isolated_benchmark_plan": (
+        "scpn_quantum_control.benchmarks.differentiable_isolated_benchmark_plan",
+        "run_differentiable_isolated_benchmark_plan",
+    ),
+    "validate_differentiable_isolated_benchmark_plan": (
+        "scpn_quantum_control.benchmarks.differentiable_isolated_benchmark_plan",
+        "validate_differentiable_isolated_benchmark_plan",
+    ),
+    "DifferentiableProgrammingBenchmarkResult": (
+        "scpn_quantum_control.benchmarks.differentiable_programming",
+        "DifferentiableProgrammingBenchmarkResult",
+    ),
+    "DifferentiableProgrammingExternalReferenceResult": (
+        "scpn_quantum_control.benchmarks.differentiable_programming",
+        "DifferentiableProgrammingExternalReferenceResult",
+    ),
+    "QuantumGradientBenchmarkResult": (
+        "scpn_quantum_control.benchmarks.differentiable_programming",
+        "QuantumGradientBenchmarkResult",
+    ),
+    "run_differentiable_programming_benchmark_suite": (
+        "scpn_quantum_control.benchmarks.differentiable_programming",
+        "run_differentiable_programming_benchmark_suite",
+    ),
+    "run_differentiable_programming_external_reference_suite": (
+        "scpn_quantum_control.benchmarks.differentiable_programming",
+        "run_differentiable_programming_external_reference_suite",
+    ),
+    "run_quantum_gradient_benchmark_suite": (
+        "scpn_quantum_control.benchmarks.differentiable_programming",
+        "run_quantum_gradient_benchmark_suite",
+    ),
+    "AdvantageResult": ("scpn_quantum_control.benchmarks.quantum_advantage", "AdvantageResult"),
+    "classical_benchmark": (
+        "scpn_quantum_control.benchmarks.quantum_advantage",
+        "classical_benchmark",
+    ),
+    "estimate_crossover": (
+        "scpn_quantum_control.benchmarks.quantum_advantage",
+        "estimate_crossover",
+    ),
+    "quantum_benchmark": (
+        "scpn_quantum_control.benchmarks.quantum_advantage",
+        "quantum_benchmark",
+    ),
+    "run_scaling_benchmark": (
+        "scpn_quantum_control.benchmarks.quantum_advantage",
+        "run_scaling_benchmark",
+    ),
+    "ComparisonMethodRow": (
+        "scpn_quantum_control.benchmarks.reproducible_comparison",
+        "ComparisonMethodRow",
+    ),
+    "ReproducibleKuramotoComparison": (
+        "scpn_quantum_control.benchmarks.reproducible_comparison",
+        "ReproducibleKuramotoComparison",
+    ),
+    "run_reproducible_kuramoto_comparison": (
+        "scpn_quantum_control.benchmarks.reproducible_comparison",
+        "run_reproducible_kuramoto_comparison",
+    ),
+    "build_knm_plasma": ("scpn_quantum_control.bridge.control_plasma_knm", "build_knm_plasma"),
+    "build_knm_plasma_from_config": (
+        "scpn_quantum_control.bridge.control_plasma_knm",
+        "build_knm_plasma_from_config",
+    ),
+    "build_knm_plasma_spec": (
+        "scpn_quantum_control.bridge.control_plasma_knm",
+        "build_knm_plasma_spec",
+    ),
+    "plasma_omega": ("scpn_quantum_control.bridge.control_plasma_knm", "plasma_omega"),
+    "OMEGA_N_16": ("scpn_quantum_control.bridge.knm_hamiltonian", "OMEGA_N_16"),
+    "build_knm_paper27": ("scpn_quantum_control.bridge.knm_hamiltonian", "build_knm_paper27"),
+    "build_kuramoto_ring": ("scpn_quantum_control.bridge.knm_hamiltonian", "build_kuramoto_ring"),
+    "knm_to_ansatz": ("scpn_quantum_control.bridge.knm_hamiltonian", "knm_to_ansatz"),
+    "knm_to_hamiltonian": ("scpn_quantum_control.bridge.knm_hamiltonian", "knm_to_hamiltonian"),
+    "omega_for_oscillators": (
+        "scpn_quantum_control.bridge.knm_hamiltonian",
+        "omega_for_oscillators",
+    ),
+    "PhaseOrchestratorAdapter": (
+        "scpn_quantum_control.bridge.orchestrator_adapter",
+        "PhaseOrchestratorAdapter",
+    ),
+    "LayerStateArtifact": ("scpn_quantum_control.bridge.phase_artifact", "LayerStateArtifact"),
+    "LockSignatureArtifact": (
+        "scpn_quantum_control.bridge.phase_artifact",
+        "LockSignatureArtifact",
+    ),
+    "UPDEPhaseArtifact": ("scpn_quantum_control.bridge.phase_artifact", "UPDEPhaseArtifact"),
+    "ArcaneNeuronBridge": ("scpn_quantum_control.bridge.snn_adapter", "ArcaneNeuronBridge"),
+    "SNNQuantumBridge": ("scpn_quantum_control.bridge.snn_adapter", "SNNQuantumBridge"),
+    "quantum_measurement_to_current": (
+        "scpn_quantum_control.bridge.snn_adapter",
+        "quantum_measurement_to_current",
+    ),
+    "spike_train_to_rotations": (
+        "scpn_quantum_control.bridge.snn_adapter",
+        "spike_train_to_rotations",
+    ),
+    "SSGFQuantumLoop": ("scpn_quantum_control.bridge.ssgf_adapter", "SSGFQuantumLoop"),
+    "quantum_to_ssgf_state": ("scpn_quantum_control.bridge.ssgf_adapter", "quantum_to_ssgf_state"),
+    "ssgf_state_to_quantum": ("scpn_quantum_control.bridge.ssgf_adapter", "ssgf_state_to_quantum"),
+    "ssgf_w_to_hamiltonian": ("scpn_quantum_control.bridge.ssgf_adapter", "ssgf_w_to_hamiltonian"),
+    "HLS_ARTIFACT_CLAIM_BOUNDARY": ("scpn_quantum_control.codegen", "HLS_ARTIFACT_CLAIM_BOUNDARY"),
+    "HLS_ARTIFACT_SCHEMA_VERSION": ("scpn_quantum_control.codegen", "HLS_ARTIFACT_SCHEMA_VERSION"),
+    "HLS_CONSUMER_CONTRACT_VERSION": (
+        "scpn_quantum_control.codegen",
+        "HLS_CONSUMER_CONTRACT_VERSION",
+    ),
+    "HLSArtifactFile": ("scpn_quantum_control.codegen", "HLSArtifactFile"),
+    "HLSArtifactManifest": ("scpn_quantum_control.codegen", "HLSArtifactManifest"),
+    "HLSArtifactVerification": ("scpn_quantum_control.codegen", "HLSArtifactVerification"),
+    "HLSBundle": ("scpn_quantum_control.codegen", "HLSBundle"),
+    "emit_versioned_hls_artifact": ("scpn_quantum_control.codegen", "emit_versioned_hls_artifact"),
+    "pulse_to_vivado_hls": ("scpn_quantum_control.codegen", "pulse_to_vivado_hls"),
+    "verify_hls_artifact_manifest": (
+        "scpn_quantum_control.codegen",
+        "verify_hls_artifact_manifest",
+    ),
+    "write_bundle": ("scpn_quantum_control.codegen", "write_bundle"),
+    "CompilerADExecutableConfig": (
+        "scpn_quantum_control.compiler.mlir",
+        "CompilerADExecutableConfig",
+    ),
+    "CompilerADKernelVerification": (
+        "scpn_quantum_control.compiler.mlir",
+        "CompilerADKernelVerification",
+    ),
+    "CompilerADTransformPlan": ("scpn_quantum_control.compiler.mlir", "CompilerADTransformPlan"),
+    "DifferentiableMLIRCompileConfig": (
+        "scpn_quantum_control.compiler.mlir",
+        "DifferentiableMLIRCompileConfig",
+    ),
+    "EnzymeMLIRBenchmarkAttachment": (
+        "scpn_quantum_control.compiler.mlir",
+        "EnzymeMLIRBenchmarkAttachment",
+    ),
+    "EnzymeMLIRCompilerADBreadthArtifact": (
+        "scpn_quantum_control.compiler.mlir",
+        "EnzymeMLIRCompilerADBreadthArtifact",
+    ),
+    "EnzymeMLIRCompilerADBreadthArtifactFiles": (
+        "scpn_quantum_control.compiler.mlir",
+        "EnzymeMLIRCompilerADBreadthArtifactFiles",
+    ),
+    "EnzymeMLIRCompilerADBreadthCaseEvidence": (
+        "scpn_quantum_control.compiler.mlir",
+        "EnzymeMLIRCompilerADBreadthCaseEvidence",
+    ),
+    "EnzymeMLIRCompilerADBreadthEvidence": (
+        "scpn_quantum_control.compiler.mlir",
+        "EnzymeMLIRCompilerADBreadthEvidence",
+    ),
+    "EnzymeMLIRMaturityAuditResult": (
+        "scpn_quantum_control.compiler.mlir",
+        "EnzymeMLIRMaturityAuditResult",
+    ),
+    "EnzymeMLIRToolchainStatus": (
+        "scpn_quantum_control.compiler.mlir",
+        "EnzymeMLIRToolchainStatus",
+    ),
+    "EnzymeNativeExecutionEvidence": (
+        "scpn_quantum_control.compiler.mlir",
+        "EnzymeNativeExecutionEvidence",
+    ),
+    "ExecutableCompilerADKernel": (
+        "scpn_quantum_control.compiler.mlir",
+        "ExecutableCompilerADKernel",
+    ),
+    "ExecutableWholeProgramADBatchResult": (
+        "scpn_quantum_control.compiler.mlir",
+        "ExecutableWholeProgramADBatchResult",
+    ),
+    "ExecutableWholeProgramADKernel": (
+        "scpn_quantum_control.compiler.mlir",
+        "ExecutableWholeProgramADKernel",
+    ),
+    "MLIRCompileConfig": ("scpn_quantum_control.compiler.mlir", "MLIRCompileConfig"),
+    "MLIRLLVMCorrectnessEvidence": (
+        "scpn_quantum_control.compiler.mlir",
+        "MLIRLLVMCorrectnessEvidence",
+    ),
+    "MLIRModule": ("scpn_quantum_control.compiler.mlir", "MLIRModule"),
+    "NativeWholeProgramADKernel": (
+        "scpn_quantum_control.compiler.mlir",
+        "NativeWholeProgramADKernel",
+    ),
+    "PhaseQNodeMLIRRuntimeExecutable": (
+        "scpn_quantum_control.compiler.mlir",
+        "PhaseQNodeMLIRRuntimeExecutable",
+    ),
+    "PrimitiveLoweringStatus": ("scpn_quantum_control.compiler.mlir", "PrimitiveLoweringStatus"),
+    "WholeProgramADNativeLoweringReport": (
+        "scpn_quantum_control.compiler.mlir",
+        "WholeProgramADNativeLoweringReport",
+    ),
+    "analyse_whole_program_ad_native_lowering": (
+        "scpn_quantum_control.compiler.mlir",
+        "analyse_whole_program_ad_native_lowering",
+    ),
+    "build_compiler_ad_transform_plan": (
+        "scpn_quantum_control.compiler.mlir",
+        "build_compiler_ad_transform_plan",
+    ),
+    "build_enzyme_mlir_benchmark_attachment": (
+        "scpn_quantum_control.compiler.mlir",
+        "build_enzyme_mlir_benchmark_attachment",
+    ),
+    "build_enzyme_mlir_compiler_ad_breadth_artifact": (
+        "scpn_quantum_control.compiler.mlir",
+        "build_enzyme_mlir_compiler_ad_breadth_artifact",
+    ),
+    "build_enzyme_mlir_compiler_ad_breadth_evidence": (
+        "scpn_quantum_control.compiler.mlir",
+        "build_enzyme_mlir_compiler_ad_breadth_evidence",
+    ),
+    "build_enzyme_mlir_compiler_ad_breadth_gap_artifact": (
+        "scpn_quantum_control.compiler.mlir",
+        "build_enzyme_mlir_compiler_ad_breadth_gap_artifact",
+    ),
+    "clear_native_whole_program_ad_compile_cache": (
+        "scpn_quantum_control.compiler.mlir",
+        "clear_native_whole_program_ad_compile_cache",
+    ),
+    "compile_compiler_ad_transform_plan_to_mlir": (
+        "scpn_quantum_control.compiler.mlir",
+        "compile_compiler_ad_transform_plan_to_mlir",
+    ),
+    "compile_custom_derivative_rule_to_executable": (
+        "scpn_quantum_control.compiler.mlir",
+        "compile_custom_derivative_rule_to_executable",
+    ),
+    "compile_custom_derivative_rule_to_mlir": (
+        "scpn_quantum_control.compiler.mlir",
+        "compile_custom_derivative_rule_to_mlir",
+    ),
+    "compile_kuramoto_to_mlir": ("scpn_quantum_control.compiler.mlir", "compile_kuramoto_to_mlir"),
+    "compile_matrix_2x2_determinant_ad_to_native_llvm_jit": (
+        "scpn_quantum_control.compiler.mlir",
+        "compile_matrix_2x2_determinant_ad_to_native_llvm_jit",
+    ),
+    "compile_matrix_2x2_eigensystem_ad_to_native_llvm_jit": (
+        "scpn_quantum_control.compiler.mlir",
+        "compile_matrix_2x2_eigensystem_ad_to_native_llvm_jit",
+    ),
+    "compile_matrix_2x2_eigenvalues_ad_to_native_llvm_jit": (
+        "scpn_quantum_control.compiler.mlir",
+        "compile_matrix_2x2_eigenvalues_ad_to_native_llvm_jit",
+    ),
+    "compile_matrix_2x2_inverse_ad_to_native_llvm_jit": (
+        "scpn_quantum_control.compiler.mlir",
+        "compile_matrix_2x2_inverse_ad_to_native_llvm_jit",
+    ),
+    "compile_matrix_2x2_solve_ad_to_native_llvm_jit": (
+        "scpn_quantum_control.compiler.mlir",
+        "compile_matrix_2x2_solve_ad_to_native_llvm_jit",
+    ),
+    "compile_matrix_frobenius_norm_squared_ad_to_native_llvm_jit": (
+        "scpn_quantum_control.compiler.mlir",
+        "compile_matrix_frobenius_norm_squared_ad_to_native_llvm_jit",
+    ),
+    "compile_matrix_matrix_product_ad_to_native_llvm_jit": (
+        "scpn_quantum_control.compiler.mlir",
+        "compile_matrix_matrix_product_ad_to_native_llvm_jit",
+    ),
+    "compile_matrix_quadratic_form_ad_to_native_llvm_jit": (
+        "scpn_quantum_control.compiler.mlir",
+        "compile_matrix_quadratic_form_ad_to_native_llvm_jit",
+    ),
+    "compile_matrix_trace_ad_to_native_llvm_jit": (
+        "scpn_quantum_control.compiler.mlir",
+        "compile_matrix_trace_ad_to_native_llvm_jit",
+    ),
+    "compile_matrix_vector_product_ad_to_native_llvm_jit": (
+        "scpn_quantum_control.compiler.mlir",
+        "compile_matrix_vector_product_ad_to_native_llvm_jit",
+    ),
+    "compile_phase_qnode_circuit_to_mlir_runtime": (
+        "scpn_quantum_control.compiler.mlir",
+        "compile_phase_qnode_circuit_to_mlir_runtime",
+    ),
+    "compile_registered_primitive_to_executable": (
+        "scpn_quantum_control.compiler.mlir",
+        "compile_registered_primitive_to_executable",
+    ),
+    "compile_scalar_binary_elementwise_ad_to_native_llvm_jit": (
+        "scpn_quantum_control.compiler.mlir",
+        "compile_scalar_binary_elementwise_ad_to_native_llvm_jit",
+    ),
+    "compile_scalar_quadratic_ad_to_native_llvm_jit": (
+        "scpn_quantum_control.compiler.mlir",
+        "compile_scalar_quadratic_ad_to_native_llvm_jit",
+    ),
+    "compile_scalar_unary_elementwise_ad_to_native_llvm_jit": (
+        "scpn_quantum_control.compiler.mlir",
+        "compile_scalar_unary_elementwise_ad_to_native_llvm_jit",
+    ),
+    "compile_symmetric_2x2_cholesky_ad_to_native_llvm_jit": (
+        "scpn_quantum_control.compiler.mlir",
+        "compile_symmetric_2x2_cholesky_ad_to_native_llvm_jit",
+    ),
+    "compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit": (
+        "scpn_quantum_control.compiler.mlir",
+        "compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit",
+    ),
+    "compile_vector_dot_ad_to_native_llvm_jit": (
+        "scpn_quantum_control.compiler.mlir",
+        "compile_vector_dot_ad_to_native_llvm_jit",
+    ),
+    "compile_vector_squared_norm_ad_to_native_llvm_jit": (
+        "scpn_quantum_control.compiler.mlir",
+        "compile_vector_squared_norm_ad_to_native_llvm_jit",
+    ),
+    "compile_whole_program_ad_trace_to_executable": (
+        "scpn_quantum_control.compiler.mlir",
+        "compile_whole_program_ad_trace_to_executable",
+    ),
+    "compile_whole_program_ad_trace_to_mlir": (
+        "scpn_quantum_control.compiler.mlir",
+        "compile_whole_program_ad_trace_to_mlir",
+    ),
+    "compile_whole_program_ad_trace_to_native_llvm_jit": (
+        "scpn_quantum_control.compiler.mlir",
+        "compile_whole_program_ad_trace_to_native_llvm_jit",
+    ),
+    "make_executable_ad_kernel_batching_rule": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_executable_ad_kernel_batching_rule",
+    ),
+    "make_matrix_2x2_determinant_native_llvm_jit_lowering_rule": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_matrix_2x2_determinant_native_llvm_jit_lowering_rule",
+    ),
+    "make_matrix_2x2_determinant_native_llvm_jit_primitive_transform": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_matrix_2x2_determinant_native_llvm_jit_primitive_transform",
+    ),
+    "make_matrix_2x2_eigensystem_native_llvm_jit_lowering_rule": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_matrix_2x2_eigensystem_native_llvm_jit_lowering_rule",
+    ),
+    "make_matrix_2x2_eigensystem_native_llvm_jit_primitive_transform": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_matrix_2x2_eigensystem_native_llvm_jit_primitive_transform",
+    ),
+    "make_matrix_2x2_eigenvalues_native_llvm_jit_lowering_rule": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_matrix_2x2_eigenvalues_native_llvm_jit_lowering_rule",
+    ),
+    "make_matrix_2x2_eigenvalues_native_llvm_jit_primitive_transform": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_matrix_2x2_eigenvalues_native_llvm_jit_primitive_transform",
+    ),
+    "make_matrix_2x2_inverse_native_llvm_jit_lowering_rule": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_matrix_2x2_inverse_native_llvm_jit_lowering_rule",
+    ),
+    "make_matrix_2x2_inverse_native_llvm_jit_primitive_transform": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_matrix_2x2_inverse_native_llvm_jit_primitive_transform",
+    ),
+    "make_matrix_2x2_solve_native_llvm_jit_lowering_rule": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_matrix_2x2_solve_native_llvm_jit_lowering_rule",
+    ),
+    "make_matrix_2x2_solve_native_llvm_jit_primitive_transform": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_matrix_2x2_solve_native_llvm_jit_primitive_transform",
+    ),
+    "make_matrix_frobenius_norm_squared_native_llvm_jit_lowering_rule": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_matrix_frobenius_norm_squared_native_llvm_jit_lowering_rule",
+    ),
+    "make_matrix_frobenius_norm_squared_native_llvm_jit_primitive_transform": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_matrix_frobenius_norm_squared_native_llvm_jit_primitive_transform",
+    ),
+    "make_matrix_matrix_product_native_llvm_jit_lowering_rule": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_matrix_matrix_product_native_llvm_jit_lowering_rule",
+    ),
+    "make_matrix_matrix_product_native_llvm_jit_primitive_transform": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_matrix_matrix_product_native_llvm_jit_primitive_transform",
+    ),
+    "make_matrix_quadratic_form_native_llvm_jit_lowering_rule": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_matrix_quadratic_form_native_llvm_jit_lowering_rule",
+    ),
+    "make_matrix_quadratic_form_native_llvm_jit_primitive_transform": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_matrix_quadratic_form_native_llvm_jit_primitive_transform",
+    ),
+    "make_matrix_trace_native_llvm_jit_lowering_rule": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_matrix_trace_native_llvm_jit_lowering_rule",
+    ),
+    "make_matrix_trace_native_llvm_jit_primitive_transform": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_matrix_trace_native_llvm_jit_primitive_transform",
+    ),
+    "make_matrix_vector_product_native_llvm_jit_lowering_rule": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_matrix_vector_product_native_llvm_jit_lowering_rule",
+    ),
+    "make_matrix_vector_product_native_llvm_jit_primitive_transform": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_matrix_vector_product_native_llvm_jit_primitive_transform",
+    ),
+    "make_program_ad_linalg_matrix_power_executable_lowering_rule": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_program_ad_linalg_matrix_power_executable_lowering_rule",
+    ),
+    "make_program_ad_linalg_multi_dot_executable_lowering_rule": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_program_ad_linalg_multi_dot_executable_lowering_rule",
+    ),
+    "make_scalar_binary_elementwise_native_llvm_jit_lowering_rule": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_scalar_binary_elementwise_native_llvm_jit_lowering_rule",
+    ),
+    "make_scalar_quadratic_native_llvm_jit_lowering_rule": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_scalar_quadratic_native_llvm_jit_lowering_rule",
+    ),
+    "make_scalar_unary_elementwise_native_llvm_jit_lowering_rule": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_scalar_unary_elementwise_native_llvm_jit_lowering_rule",
+    ),
+    "make_symmetric_2x2_cholesky_native_llvm_jit_lowering_rule": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_symmetric_2x2_cholesky_native_llvm_jit_lowering_rule",
+    ),
+    "make_symmetric_2x2_cholesky_native_llvm_jit_primitive_transform": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_symmetric_2x2_cholesky_native_llvm_jit_primitive_transform",
+    ),
+    "make_symmetric_2x2_eigenvalues_native_llvm_jit_lowering_rule": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_symmetric_2x2_eigenvalues_native_llvm_jit_lowering_rule",
+    ),
+    "make_symmetric_2x2_eigenvalues_native_llvm_jit_primitive_transform": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_symmetric_2x2_eigenvalues_native_llvm_jit_primitive_transform",
+    ),
+    "make_vector_dot_native_llvm_jit_lowering_rule": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_vector_dot_native_llvm_jit_lowering_rule",
+    ),
+    "make_vector_dot_native_llvm_jit_primitive_transform": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_vector_dot_native_llvm_jit_primitive_transform",
+    ),
+    "make_vector_squared_norm_native_llvm_jit_lowering_rule": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_vector_squared_norm_native_llvm_jit_lowering_rule",
+    ),
+    "make_vector_squared_norm_native_llvm_jit_primitive_transform": (
+        "scpn_quantum_control.compiler.mlir",
+        "make_vector_squared_norm_native_llvm_jit_primitive_transform",
+    ),
+    "native_whole_program_ad_compile_cache_stats": (
+        "scpn_quantum_control.compiler.mlir",
+        "native_whole_program_ad_compile_cache_stats",
+    ),
+    "native_whole_program_ad_linalg_support": (
+        "scpn_quantum_control.compiler.mlir",
+        "native_whole_program_ad_linalg_support",
+    ),
+    "render_enzyme_mlir_compiler_ad_breadth_artifact_markdown": (
+        "scpn_quantum_control.compiler.mlir",
+        "render_enzyme_mlir_compiler_ad_breadth_artifact_markdown",
+    ),
+    "run_enzyme_mlir_maturity_audit": (
+        "scpn_quantum_control.compiler.mlir",
+        "run_enzyme_mlir_maturity_audit",
+    ),
+    "write_enzyme_mlir_compiler_ad_breadth_artifact": (
+        "scpn_quantum_control.compiler.mlir",
+        "write_enzyme_mlir_compiler_ad_breadth_artifact",
+    ),
+    "FRCScheduleResult": ("scpn_quantum_control.control.frc_pulsed_qaoa", "FRCScheduleResult"),
+    "classical_sqp_schedule": (
+        "scpn_quantum_control.control.frc_pulsed_qaoa",
+        "classical_sqp_schedule",
+    ),
+    "optimal_schedule": ("scpn_quantum_control.control.frc_pulsed_qaoa", "optimal_schedule"),
+    "solve_frc_pulsed_qaoa": (
+        "scpn_quantum_control.control.frc_pulsed_qaoa",
+        "solve_frc_pulsed_qaoa",
+    ),
+    "HardwareTopologicalOptimizer": (
+        "scpn_quantum_control.control.hardware_topological_optimizer",
+        "HardwareTopologicalOptimizer",
+    ),
+    "QuantumDisruptionClassifier": (
+        "scpn_quantum_control.control.q_disruption",
+        "QuantumDisruptionClassifier",
+    ),
+    "DisruptionBenchmark": (
+        "scpn_quantum_control.control.q_disruption_iter",
+        "DisruptionBenchmark",
+    ),
+    "ITERFeatureSpec": ("scpn_quantum_control.control.q_disruption_iter", "ITERFeatureSpec"),
+    "from_fusion_core_shot": (
+        "scpn_quantum_control.control.q_disruption_iter",
+        "from_fusion_core_shot",
+    ),
+    "generate_synthetic_iter_data": (
+        "scpn_quantum_control.control.q_disruption_iter",
+        "generate_synthetic_iter_data",
+    ),
+    "normalize_iter_features": (
+        "scpn_quantum_control.control.q_disruption_iter",
+        "normalize_iter_features",
+    ),
+    "scpn_control_bridge_dependency_contract": (
+        "scpn_quantum_control.control.q_disruption_iter",
+        "scpn_control_bridge_dependency_contract",
+    ),
+    "validate_scpn_control_bridge_dependency_contract": (
+        "scpn_quantum_control.control.q_disruption_iter",
+        "validate_scpn_control_bridge_dependency_contract",
+    ),
+    "QAOA_MPC": ("scpn_quantum_control.control.qaoa_mpc", "QAOA_MPC"),
+    "FRCPlasmaSurrogate": ("scpn_quantum_control.control.qaoa_pulsed_cost", "FRCPlasmaSurrogate"),
+    "FRCQAOAObjective": ("scpn_quantum_control.control.qaoa_pulsed_cost", "FRCQAOAObjective"),
+    "frc_pulsed_shot_cost": (
+        "scpn_quantum_control.control.qaoa_pulsed_cost",
+        "frc_pulsed_shot_cost",
+    ),
+    "QuantumPetriCampaignReport": (
+        "scpn_quantum_control.control.qpetri",
+        "QuantumPetriCampaignReport",
+    ),
+    "QuantumPetriNet": ("scpn_quantum_control.control.qpetri", "QuantumPetriNet"),
+    "QuantumPetriStepReport": ("scpn_quantum_control.control.qpetri", "QuantumPetriStepReport"),
+    "CycleSample": ("scpn_quantum_control.control.realtime_runtime", "CycleSample"),
+    "MonotonicRealtimeClock": (
+        "scpn_quantum_control.control.realtime_runtime",
+        "MonotonicRealtimeClock",
+    ),
+    "RealtimeClock": ("scpn_quantum_control.control.realtime_runtime", "RealtimeClock"),
+    "RealtimeRunResult": ("scpn_quantum_control.control.realtime_runtime", "RealtimeRunResult"),
+    "RealtimeRuntimeConfig": (
+        "scpn_quantum_control.control.realtime_runtime",
+        "RealtimeRuntimeConfig",
+    ),
+    "RealtimeSLAConfig": ("scpn_quantum_control.control.realtime_runtime", "RealtimeSLAConfig"),
+    "RealtimeSLAReport": ("scpn_quantum_control.control.realtime_runtime", "RealtimeSLAReport"),
+    "RealtimeTickRecord": ("scpn_quantum_control.control.realtime_runtime", "RealtimeTickRecord"),
+    "SubMicrosecondReport": (
+        "scpn_quantum_control.control.realtime_runtime",
+        "SubMicrosecondReport",
+    ),
+    "SubMicrosecondTracker": (
+        "scpn_quantum_control.control.realtime_runtime",
+        "SubMicrosecondTracker",
+    ),
+    "VirtualRealtimeClock": (
+        "scpn_quantum_control.control.realtime_runtime",
+        "VirtualRealtimeClock",
+    ),
+    "enforce_realtime_sla": (
+        "scpn_quantum_control.control.realtime_runtime",
+        "enforce_realtime_sla",
+    ),
+    "evaluate_realtime_sla": (
+        "scpn_quantum_control.control.realtime_runtime",
+        "evaluate_realtime_sla",
+    ),
+    "run_realtime_control_loop": (
+        "scpn_quantum_control.control.realtime_runtime",
+        "run_realtime_control_loop",
+    ),
+    "summarise_cycle_samples": (
+        "scpn_quantum_control.control.realtime_runtime",
+        "summarise_cycle_samples",
+    ),
+    "TopologicalCouplingOptimizer": (
+        "scpn_quantum_control.control.topological_optimizer",
+        "TopologicalCouplingOptimizer",
+    ),
+    "VQLS_GradShafranov": ("scpn_quantum_control.control.vqls_gs", "VQLS_GradShafranov"),
+    "VQLSGradShafranovResult": ("scpn_quantum_control.control.vqls_gs", "VQLSGradShafranovResult"),
+    "CoSimulationResult": ("scpn_quantum_control.cosimulation", "CoSimulationResult"),
+    "KnmPartition": ("scpn_quantum_control.cosimulation", "KnmPartition"),
+    "cosimulate": ("scpn_quantum_control.cosimulation", "cosimulate"),
+    "partition_knm": ("scpn_quantum_control.cosimulation", "partition_knm"),
+    "PqcTriggerSigner": ("scpn_quantum_control.crypto.pqc_trigger", "PqcTriggerSigner"),
+    "CloudDeploymentSpec": ("scpn_quantum_control.deployment.cloud_native", "CloudDeploymentSpec"),
+    "CloudManifestBundle": ("scpn_quantum_control.deployment.cloud_native", "CloudManifestBundle"),
+    "ContainerResources": ("scpn_quantum_control.deployment.cloud_native", "ContainerResources"),
+    "generate_cloud_manifests": (
+        "scpn_quantum_control.deployment.cloud_native",
+        "generate_cloud_manifests",
+    ),
+    "DIFFERENTIABLE_CIRCUIT_CONTRACT_CLAIM_BOUNDARY": (
+        "scpn_quantum_control.diff",
+        "DIFFERENTIABLE_CIRCUIT_CONTRACT_CLAIM_BOUNDARY",
+    ),
+    "DIFFERENTIABLE_CIRCUIT_SCHEMA": (
+        "scpn_quantum_control.diff",
+        "DIFFERENTIABLE_CIRCUIT_SCHEMA",
+    ),
+    "BackendCapabilityMetadata": ("scpn_quantum_control.diff", "BackendCapabilityMetadata"),
+    "DifferentiableCircuit": ("scpn_quantum_control.diff", "DifferentiableCircuit"),
+    "DifferentiableCircuitContractAuditResult": (
+        "scpn_quantum_control.diff",
+        "DifferentiableCircuitContractAuditResult",
+    ),
+    "DifferentiableCircuitContractCheck": (
+        "scpn_quantum_control.diff",
+        "DifferentiableCircuitContractCheck",
+    ),
+    "DifferentiableCircuitContractStatus": (
+        "scpn_quantum_control.diff",
+        "DifferentiableCircuitContractStatus",
+    ),
+    "DifferentiableCircuitDiagnostics": (
+        "scpn_quantum_control.diff",
+        "DifferentiableCircuitDiagnostics",
+    ),
+    "EstimatorProvenance": ("scpn_quantum_control.diff", "EstimatorProvenance"),
+    "JITExplanation": ("scpn_quantum_control.diff", "JITExplanation"),
+    "QuantumFunction": ("scpn_quantum_control.diff", "QuantumFunction"),
+    "ShotPolicy": ("scpn_quantum_control.diff", "ShotPolicy"),
+    "differentiable_circuit": ("scpn_quantum_control.diff", "differentiable_circuit"),
+    "jit_or_explain": ("scpn_quantum_control.diff", "jit_or_explain"),
+    "namespace_metadata": ("scpn_quantum_control.diff", "namespace_metadata"),
+    "run_differentiable_circuit_contract_audit": (
+        "scpn_quantum_control.diff",
+        "run_differentiable_circuit_contract_audit",
+    ),
+    "supported_transforms": ("scpn_quantum_control.diff", "supported_transforms"),
+    "DEFAULT_CUSTOM_DERIVATIVE_REGISTRY": (
+        "scpn_quantum_control.differentiable",
+        "DEFAULT_CUSTOM_DERIVATIVE_REGISTRY",
+    ),
+    "FINITE_SHOT_SAMPLE_SOURCE_CLASSES": (
+        "scpn_quantum_control.differentiable",
+        "FINITE_SHOT_SAMPLE_SOURCE_CLASSES",
+    ),
+    "ArmijoLineSearchResult": ("scpn_quantum_control.differentiable", "ArmijoLineSearchResult"),
+    "CustomDerivativeCheckResult": (
+        "scpn_quantum_control.differentiable",
+        "CustomDerivativeCheckResult",
+    ),
+    "CustomDerivativeRegistry": (
+        "scpn_quantum_control.differentiable",
+        "CustomDerivativeRegistry",
+    ),
+    "CustomDerivativeRule": ("scpn_quantum_control.differentiable", "CustomDerivativeRule"),
+    "DifferentiableOptimizer": ("scpn_quantum_control.differentiable", "DifferentiableOptimizer"),
+    "DualNumber": ("scpn_quantum_control.differentiable", "DualNumber"),
+    "FiniteShotSampleProvenance": (
+        "scpn_quantum_control.differentiable",
+        "FiniteShotSampleProvenance",
+    ),
+    "FisherConjugateGradientResult": (
+        "scpn_quantum_control.differentiable",
+        "FisherConjugateGradientResult",
+    ),
+    "FisherVectorProductResult": (
+        "scpn_quantum_control.differentiable",
+        "FisherVectorProductResult",
+    ),
+    "FixedPointSensitivityResult": (
+        "scpn_quantum_control.differentiable",
+        "FixedPointSensitivityResult",
+    ),
+    "GradientCheckResult": ("scpn_quantum_control.differentiable", "GradientCheckResult"),
+    "GradientFailurePolicy": ("scpn_quantum_control.differentiable", "GradientFailurePolicy"),
+    "GradientResult": ("scpn_quantum_control.differentiable", "GradientResult"),
+    "HessianResult": ("scpn_quantum_control.differentiable", "HessianResult"),
+    "HVPResult": ("scpn_quantum_control.differentiable", "HVPResult"),
+    "ImplicitSensitivityResult": (
+        "scpn_quantum_control.differentiable",
+        "ImplicitSensitivityResult",
+    ),
+    "JacobianResult": ("scpn_quantum_control.differentiable", "JacobianResult"),
+    "JVPResult": ("scpn_quantum_control.differentiable", "JVPResult"),
+    "LeastSquaresCovarianceResult": (
+        "scpn_quantum_control.differentiable",
+        "LeastSquaresCovarianceResult",
+    ),
+    "LevenbergMarquardtDampingUpdate": (
+        "scpn_quantum_control.differentiable",
+        "LevenbergMarquardtDampingUpdate",
+    ),
+    "LevenbergMarquardtOptimizer": (
+        "scpn_quantum_control.differentiable",
+        "LevenbergMarquardtOptimizer",
+    ),
+    "LevenbergMarquardtResult": (
+        "scpn_quantum_control.differentiable",
+        "LevenbergMarquardtResult",
+    ),
+    "LevenbergMarquardtStep": ("scpn_quantum_control.differentiable", "LevenbergMarquardtStep"),
+    "LevenbergMarquardtTrial": ("scpn_quantum_control.differentiable", "LevenbergMarquardtTrial"),
+    "NaturalGradientOptimizationResult": (
+        "scpn_quantum_control.differentiable",
+        "NaturalGradientOptimizationResult",
+    ),
+    "NaturalGradientOptimizer": (
+        "scpn_quantum_control.differentiable",
+        "NaturalGradientOptimizer",
+    ),
+    "NaturalGradientResult": ("scpn_quantum_control.differentiable", "NaturalGradientResult"),
+    "OptimizationResult": ("scpn_quantum_control.differentiable", "OptimizationResult"),
+    "Parameter": ("scpn_quantum_control.differentiable", "Parameter"),
+    "ParameterBounds": ("scpn_quantum_control.differentiable", "ParameterBounds"),
+    "ParameterShiftRule": ("scpn_quantum_control.differentiable", "ParameterShiftRule"),
+    "PrimitiveBatchingRule": ("scpn_quantum_control.differentiable", "PrimitiveBatchingRule"),
+    "PrimitiveContract": ("scpn_quantum_control.differentiable", "PrimitiveContract"),
+    "PrimitiveDTypeRule": ("scpn_quantum_control.differentiable", "PrimitiveDTypeRule"),
+    "PrimitiveIdentity": ("scpn_quantum_control.differentiable", "PrimitiveIdentity"),
+    "PrimitiveLoweringRule": ("scpn_quantum_control.differentiable", "PrimitiveLoweringRule"),
+    "PrimitiveShapeRule": ("scpn_quantum_control.differentiable", "PrimitiveShapeRule"),
+    "PrimitiveStaticArgumentRule": (
+        "scpn_quantum_control.differentiable",
+        "PrimitiveStaticArgumentRule",
+    ),
+    "PrimitiveTransformRule": ("scpn_quantum_control.differentiable", "PrimitiveTransformRule"),
+    "ProgramADAdjointResult": ("scpn_quantum_control.differentiable", "ProgramADAdjointResult"),
+    "ProgramADAdjointStep": ("scpn_quantum_control.differentiable", "ProgramADAdjointStep"),
+    "ProgramADAliasEdge": ("scpn_quantum_control.differentiable", "ProgramADAliasEdge"),
+    "ProgramADAliasEffectAnalysis": (
+        "scpn_quantum_control.differentiable",
+        "ProgramADAliasEffectAnalysis",
+    ),
+    "ProgramADAliasSet": ("scpn_quantum_control.differentiable", "ProgramADAliasSet"),
+    "ProgramADControlPathAliasProvenance": (
+        "scpn_quantum_control.differentiable",
+        "ProgramADControlPathAliasProvenance",
+    ),
+    "ProgramADControlRegion": ("scpn_quantum_control.differentiable", "ProgramADControlRegion"),
+    "ProgramADEffect": ("scpn_quantum_control.differentiable", "ProgramADEffect"),
+    "ProgramADEffectIR": ("scpn_quantum_control.differentiable", "ProgramADEffectIR"),
+    "ProgramADLinalgConditioningDiagnostic": (
+        "scpn_quantum_control.differentiable",
+        "ProgramADLinalgConditioningDiagnostic",
+    ),
+    "ProgramADListAliasProvenance": (
+        "scpn_quantum_control.differentiable",
+        "ProgramADListAliasProvenance",
+    ),
+    "ProgramADLoopCarriedStateProvenance": (
+        "scpn_quantum_control.differentiable",
+        "ProgramADLoopCarriedStateProvenance",
+    ),
+    "ProgramADPhiNode": ("scpn_quantum_control.differentiable", "ProgramADPhiNode"),
+    "ProgramADRebindingAliasProvenance": (
+        "scpn_quantum_control.differentiable",
+        "ProgramADRebindingAliasProvenance",
+    ),
+    "ProgramADRegistryDispatchCoverageReport": (
+        "scpn_quantum_control.differentiable",
+        "ProgramADRegistryDispatchCoverageReport",
+    ),
+    "ProgramADRegistryDispatchCoverageRow": (
+        "scpn_quantum_control.differentiable",
+        "ProgramADRegistryDispatchCoverageRow",
+    ),
+    "ProgramADSSAValue": ("scpn_quantum_control.differentiable", "ProgramADSSAValue"),
+    "ProgramADStaticAliasLatticeComponent": (
+        "scpn_quantum_control.differentiable",
+        "ProgramADStaticAliasLatticeComponent",
+    ),
+    "ProgramADStaticAliasLatticeReport": (
+        "scpn_quantum_control.differentiable",
+        "ProgramADStaticAliasLatticeReport",
+    ),
+    "ProgramADUnknownAliasEdge": (
+        "scpn_quantum_control.differentiable",
+        "ProgramADUnknownAliasEdge",
+    ),
+    "ProgramADViewAliasProvenance": (
+        "scpn_quantum_control.differentiable",
+        "ProgramADViewAliasProvenance",
+    ),
+    "ReverseNode": ("scpn_quantum_control.differentiable", "ReverseNode"),
+    "RustProgramADInterpreterResult": (
+        "scpn_quantum_control.differentiable",
+        "RustProgramADInterpreterResult",
+    ),
+    "RustProgramADRegistryMetadataMirrorResult": (
+        "scpn_quantum_control.differentiable",
+        "RustProgramADRegistryMetadataMirrorResult",
+    ),
+    "RustProgramADValueAndGradientResult": (
+        "scpn_quantum_control.differentiable",
+        "RustProgramADValueAndGradientResult",
+    ),
+    "ScoreFunctionGradientResult": (
+        "scpn_quantum_control.differentiable",
+        "ScoreFunctionGradientResult",
+    ),
+    "ScoreFunctionSampleRecord": (
+        "scpn_quantum_control.differentiable",
+        "ScoreFunctionSampleRecord",
+    ),
+    "ShotAllocationResult": ("scpn_quantum_control.differentiable", "ShotAllocationResult"),
+    "SparseMatrixResult": ("scpn_quantum_control.differentiable", "SparseMatrixResult"),
+    "SPSAGradientResult": ("scpn_quantum_control.differentiable", "SPSAGradientResult"),
+    "SPSAObjectiveSample": ("scpn_quantum_control.differentiable", "SPSAObjectiveSample"),
+    "SPSAProbeRecord": ("scpn_quantum_control.differentiable", "SPSAProbeRecord"),
+    "StochasticGradientConfidenceInterval": (
+        "scpn_quantum_control.differentiable",
+        "StochasticGradientConfidenceInterval",
+    ),
+    "StochasticGradientResult": (
+        "scpn_quantum_control.differentiable",
+        "StochasticGradientResult",
+    ),
+    "TraceADArray": ("scpn_quantum_control.differentiable", "TraceADArray"),
+    "TraceADScalar": ("scpn_quantum_control.differentiable", "TraceADScalar"),
+    "VJPResult": ("scpn_quantum_control.differentiable", "VJPResult"),
+    "WeightedGradientResult": ("scpn_quantum_control.differentiable", "WeightedGradientResult"),
+    "WholeProgramADResult": ("scpn_quantum_control.differentiable", "WholeProgramADResult"),
+    "WholeProgramBytecodeBasicBlock": (
+        "scpn_quantum_control.differentiable",
+        "WholeProgramBytecodeBasicBlock",
+    ),
+    "WholeProgramBytecodeInstruction": (
+        "scpn_quantum_control.differentiable",
+        "WholeProgramBytecodeInstruction",
+    ),
+    "WholeProgramCompilerFrontendReport": (
+        "scpn_quantum_control.differentiable",
+        "WholeProgramCompilerFrontendReport",
+    ),
+    "WholeProgramIRNode": ("scpn_quantum_control.differentiable", "WholeProgramIRNode"),
+    "WholeProgramSemanticsReport": (
+        "scpn_quantum_control.differentiable",
+        "WholeProgramSemanticsReport",
+    ),
+    "WholeProgramSourceBytecodeLineMap": (
+        "scpn_quantum_control.differentiable",
+        "WholeProgramSourceBytecodeLineMap",
+    ),
+    "WholeProgramSourceIRFeature": (
+        "scpn_quantum_control.differentiable",
+        "WholeProgramSourceIRFeature",
+    ),
+    "WholeProgramSourceRegion": (
+        "scpn_quantum_control.differentiable",
+        "WholeProgramSourceRegion",
+    ),
+    "WholeProgramSymbolScopeEntry": (
+        "scpn_quantum_control.differentiable",
+        "WholeProgramSymbolScopeEntry",
+    ),
+    "WholeProgramTraceEvent": ("scpn_quantum_control.differentiable", "WholeProgramTraceEvent"),
+    "WholeProgramUnsupportedSemanticDiagnostic": (
+        "scpn_quantum_control.differentiable",
+        "WholeProgramUnsupportedSemanticDiagnostic",
+    ),
+    "allocate_parameter_shift_shots": (
+        "scpn_quantum_control.differentiable",
+        "allocate_parameter_shift_shots",
+    ),
+    "analyze_program_ad_alias_effects": (
+        "scpn_quantum_control.differentiable",
+        "analyze_program_ad_alias_effects",
+    ),
+    "armijo_backtracking_line_search": (
+        "scpn_quantum_control.differentiable",
+        "armijo_backtracking_line_search",
+    ),
+    "batch_complex_step_gradient": (
+        "scpn_quantum_control.differentiable",
+        "batch_complex_step_gradient",
+    ),
+    "batch_custom_jacobian": ("scpn_quantum_control.differentiable", "batch_custom_jacobian"),
+    "batch_custom_jvp": ("scpn_quantum_control.differentiable", "batch_custom_jvp"),
+    "batch_custom_vjp": ("scpn_quantum_control.differentiable", "batch_custom_vjp"),
+    "batch_finite_difference_hvp": (
+        "scpn_quantum_control.differentiable",
+        "batch_finite_difference_hvp",
+    ),
+    "batch_finite_difference_jvp": (
+        "scpn_quantum_control.differentiable",
+        "batch_finite_difference_jvp",
+    ),
+    "batch_finite_difference_vjp": (
+        "scpn_quantum_control.differentiable",
+        "batch_finite_difference_vjp",
+    ),
+    "batch_parameter_shift_gradient": (
+        "scpn_quantum_control.differentiable",
+        "batch_parameter_shift_gradient",
+    ),
+    "batch_value_and_complex_step_grad": (
+        "scpn_quantum_control.differentiable",
+        "batch_value_and_complex_step_grad",
+    ),
+    "batch_value_and_custom_jacobian": (
+        "scpn_quantum_control.differentiable",
+        "batch_value_and_custom_jacobian",
+    ),
+    "batch_value_and_custom_jvp": (
+        "scpn_quantum_control.differentiable",
+        "batch_value_and_custom_jvp",
+    ),
+    "batch_value_and_custom_vjp": (
+        "scpn_quantum_control.differentiable",
+        "batch_value_and_custom_vjp",
+    ),
+    "batch_value_and_finite_difference_grad": (
+        "scpn_quantum_control.differentiable",
+        "batch_value_and_finite_difference_grad",
+    ),
+    "batch_value_and_finite_difference_hvp": (
+        "scpn_quantum_control.differentiable",
+        "batch_value_and_finite_difference_hvp",
+    ),
+    "batch_value_and_finite_difference_jvp": (
+        "scpn_quantum_control.differentiable",
+        "batch_value_and_finite_difference_jvp",
+    ),
+    "batch_value_and_finite_difference_vjp": (
+        "scpn_quantum_control.differentiable",
+        "batch_value_and_finite_difference_vjp",
+    ),
+    "batch_value_and_parameter_shift_grad": (
+        "scpn_quantum_control.differentiable",
+        "batch_value_and_parameter_shift_grad",
+    ),
+    "batch_vector_jacobian_product": (
+        "scpn_quantum_control.differentiable",
+        "batch_vector_jacobian_product",
+    ),
+    "check_custom_derivative_consistency": (
+        "scpn_quantum_control.differentiable",
+        "check_custom_derivative_consistency",
+    ),
+    "check_parameter_shift_consistency": (
+        "scpn_quantum_control.differentiable",
+        "check_parameter_shift_consistency",
+    ),
+    "compile_whole_program_frontend": (
+        "scpn_quantum_control.differentiable",
+        "compile_whole_program_frontend",
+    ),
+    "complex_step_gradient": ("scpn_quantum_control.differentiable", "complex_step_gradient"),
+    "custom_derivative_rule_for": (
+        "scpn_quantum_control.differentiable",
+        "custom_derivative_rule_for",
+    ),
+    "custom_gauss_newton_gradient": (
+        "scpn_quantum_control.differentiable",
+        "custom_gauss_newton_gradient",
+    ),
+    "custom_jacobian": ("scpn_quantum_control.differentiable", "custom_jacobian"),
+    "custom_jvp": ("scpn_quantum_control.differentiable", "custom_jvp"),
+    "custom_levenberg_marquardt_step": (
+        "scpn_quantum_control.differentiable",
+        "custom_levenberg_marquardt_step",
+    ),
+    "custom_vjp": ("scpn_quantum_control.differentiable", "custom_vjp"),
+    "dense_to_sparse_matrix": ("scpn_quantum_control.differentiable", "dense_to_sparse_matrix"),
+    "diagnose_program_ad_linalg_conditioning": (
+        "scpn_quantum_control.differentiable",
+        "diagnose_program_ad_linalg_conditioning",
+    ),
+    "dual_cos": ("scpn_quantum_control.differentiable", "dual_cos"),
+    "dual_exp": ("scpn_quantum_control.differentiable", "dual_exp"),
+    "dual_log": ("scpn_quantum_control.differentiable", "dual_log"),
+    "dual_sin": ("scpn_quantum_control.differentiable", "dual_sin"),
+    "empirical_fisher_conjugate_gradient": (
+        "scpn_quantum_control.differentiable",
+        "empirical_fisher_conjugate_gradient",
+    ),
+    "empirical_fisher_metric": ("scpn_quantum_control.differentiable", "empirical_fisher_metric"),
+    "empirical_fisher_vector_product": (
+        "scpn_quantum_control.differentiable",
+        "empirical_fisher_vector_product",
+    ),
+    "evaluate_levenberg_marquardt_step": (
+        "scpn_quantum_control.differentiable",
+        "evaluate_levenberg_marquardt_step",
+    ),
+    "finite_difference_gradient": (
+        "scpn_quantum_control.differentiable",
+        "finite_difference_gradient",
+    ),
+    "finite_difference_hessian": (
+        "scpn_quantum_control.differentiable",
+        "finite_difference_hessian",
+    ),
+    "finite_difference_hvp": ("scpn_quantum_control.differentiable", "finite_difference_hvp"),
+    "finite_difference_jacobian": (
+        "scpn_quantum_control.differentiable",
+        "finite_difference_jacobian",
+    ),
+    "finite_difference_jvp": ("scpn_quantum_control.differentiable", "finite_difference_jvp"),
+    "finite_difference_vjp": ("scpn_quantum_control.differentiable", "finite_difference_vjp"),
+    "forward_mode_gradient": ("scpn_quantum_control.differentiable", "forward_mode_gradient"),
+    "gauss_newton_gradient": ("scpn_quantum_control.differentiable", "gauss_newton_gradient"),
+    "grad": ("scpn_quantum_control.differentiable", "grad"),
+    "gradient_confidence_interval": (
+        "scpn_quantum_control.differentiable",
+        "gradient_confidence_interval",
+    ),
+    "hessian": ("scpn_quantum_control.differentiable", "hessian"),
+    "huber_residual_weights": ("scpn_quantum_control.differentiable", "huber_residual_weights"),
+    "implicit_fixed_point_sensitivity": (
+        "scpn_quantum_control.differentiable",
+        "implicit_fixed_point_sensitivity",
+    ),
+    "implicit_stationary_sensitivity": (
+        "scpn_quantum_control.differentiable",
+        "implicit_stationary_sensitivity",
+    ),
+    "interpret_program_ad_effect_ir_with_rust": (
+        "scpn_quantum_control.differentiable",
+        "interpret_program_ad_effect_ir_with_rust",
+    ),
+    "is_jax_autodiff_available": (
+        "scpn_quantum_control.differentiable",
+        "is_jax_autodiff_available",
+    ),
+    "jacfwd": ("scpn_quantum_control.differentiable", "jacfwd"),
+    "jacobian": ("scpn_quantum_control.differentiable", "jacobian"),
+    "jacrev": ("scpn_quantum_control.differentiable", "jacrev"),
+    "jax_value_and_grad": ("scpn_quantum_control.differentiable", "jax_value_and_grad"),
+    "jvp": ("scpn_quantum_control.differentiable", "jvp"),
+    "least_squares_covariance": (
+        "scpn_quantum_control.differentiable",
+        "least_squares_covariance",
+    ),
+    "levenberg_marquardt_step": (
+        "scpn_quantum_control.differentiable",
+        "levenberg_marquardt_step",
+    ),
+    "mirror_program_ad_registry_metadata_with_rust": (
+        "scpn_quantum_control.differentiable",
+        "mirror_program_ad_registry_metadata_with_rust",
+    ),
+    "multi_frequency_parameter_shift_rule": (
+        "scpn_quantum_control.differentiable",
+        "multi_frequency_parameter_shift_rule",
+    ),
+    "natural_gradient": ("scpn_quantum_control.differentiable", "natural_gradient"),
+    "parameter_shift_gradient": (
+        "scpn_quantum_control.differentiable",
+        "parameter_shift_gradient",
+    ),
+    "parameter_shift_gradient_with_uncertainty": (
+        "scpn_quantum_control.differentiable",
+        "parameter_shift_gradient_with_uncertainty",
+    ),
+    "parse_program_ad_effect_ir": (
+        "scpn_quantum_control.differentiable",
+        "parse_program_ad_effect_ir",
+    ),
+    "primitive_complete_contract_for": (
+        "scpn_quantum_control.differentiable",
+        "primitive_complete_contract_for",
+    ),
+    "primitive_contract_for": ("scpn_quantum_control.differentiable", "primitive_contract_for"),
+    "primitive_dtype_rule_for": (
+        "scpn_quantum_control.differentiable",
+        "primitive_dtype_rule_for",
+    ),
+    "primitive_effect_for": ("scpn_quantum_control.differentiable", "primitive_effect_for"),
+    "primitive_nondifferentiable_policy_for": (
+        "scpn_quantum_control.differentiable",
+        "primitive_nondifferentiable_policy_for",
+    ),
+    "primitive_shape_rule_for": (
+        "scpn_quantum_control.differentiable",
+        "primitive_shape_rule_for",
+    ),
+    "primitive_static_argument_rule_for": (
+        "scpn_quantum_control.differentiable",
+        "primitive_static_argument_rule_for",
+    ),
+    "program_ad_array_delete_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_array_delete_derivative_rule",
+    ),
+    "program_ad_array_insert_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_array_insert_derivative_rule",
+    ),
+    "program_ad_array_pad_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_array_pad_derivative_rule",
+    ),
+    "program_ad_array_take_along_axis_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_array_take_along_axis_derivative_rule",
+    ),
+    "program_ad_assembly_append_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_assembly_append_derivative_rule",
+    ),
+    "program_ad_assembly_block_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_assembly_block_derivative_rule",
+    ),
+    "program_ad_assembly_broadcast_arrays_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_assembly_broadcast_arrays_derivative_rule",
+    ),
+    "program_ad_assembly_broadcast_to_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_assembly_broadcast_to_derivative_rule",
+    ),
+    "program_ad_assembly_column_stack_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_assembly_column_stack_derivative_rule",
+    ),
+    "program_ad_assembly_concatenate_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_assembly_concatenate_derivative_rule",
+    ),
+    "program_ad_assembly_diagonal_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_assembly_diagonal_derivative_rule",
+    ),
+    "program_ad_assembly_dstack_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_assembly_dstack_derivative_rule",
+    ),
+    "program_ad_assembly_hstack_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_assembly_hstack_derivative_rule",
+    ),
+    "program_ad_assembly_split_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_assembly_split_derivative_rule",
+    ),
+    "program_ad_assembly_stack_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_assembly_stack_derivative_rule",
+    ),
+    "program_ad_assembly_tril_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_assembly_tril_derivative_rule",
+    ),
+    "program_ad_assembly_triu_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_assembly_triu_derivative_rule",
+    ),
+    "program_ad_assembly_vstack_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_assembly_vstack_derivative_rule",
+    ),
+    "program_ad_interpolation_interp_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_interpolation_interp_derivative_rule",
+    ),
+    "program_ad_linalg_diag_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_linalg_diag_derivative_rule",
+    ),
+    "program_ad_linalg_diagflat_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_linalg_diagflat_derivative_rule",
+    ),
+    "program_ad_linalg_eig_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_linalg_eig_derivative_rule",
+    ),
+    "program_ad_linalg_eigh_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_linalg_eigh_derivative_rule",
+    ),
+    "program_ad_linalg_eigvals_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_linalg_eigvals_derivative_rule",
+    ),
+    "program_ad_linalg_eigvalsh_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_linalg_eigvalsh_derivative_rule",
+    ),
+    "program_ad_linalg_matrix_power_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_linalg_matrix_power_derivative_rule",
+    ),
+    "program_ad_linalg_multi_dot_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_linalg_multi_dot_derivative_rule",
+    ),
+    "program_ad_linalg_pinv_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_linalg_pinv_derivative_rule",
+    ),
+    "program_ad_linalg_svdvals_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_linalg_svdvals_derivative_rule",
+    ),
+    "program_ad_linalg_trace_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_linalg_trace_derivative_rule",
+    ),
+    "program_ad_product_einsum_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_product_einsum_derivative_rule",
+    ),
+    "program_ad_product_inner_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_product_inner_derivative_rule",
+    ),
+    "program_ad_product_outer_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_product_outer_derivative_rule",
+    ),
+    "program_ad_product_tensordot_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_product_tensordot_derivative_rule",
+    ),
+    "program_ad_registry_dispatch_coverage_report": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_registry_dispatch_coverage_report",
+    ),
+    "program_ad_selection_clip_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_selection_clip_derivative_rule",
+    ),
+    "program_ad_selection_where_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_selection_where_derivative_rule",
+    ),
+    "program_ad_shape_atleast_1d_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_shape_atleast_1d_derivative_rule",
+    ),
+    "program_ad_shape_atleast_2d_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_shape_atleast_2d_derivative_rule",
+    ),
+    "program_ad_shape_atleast_3d_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_shape_atleast_3d_derivative_rule",
+    ),
+    "program_ad_shape_expand_dims_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_shape_expand_dims_derivative_rule",
+    ),
+    "program_ad_shape_flip_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_shape_flip_derivative_rule",
+    ),
+    "program_ad_shape_fliplr_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_shape_fliplr_derivative_rule",
+    ),
+    "program_ad_shape_flipud_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_shape_flipud_derivative_rule",
+    ),
+    "program_ad_shape_moveaxis_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_shape_moveaxis_derivative_rule",
+    ),
+    "program_ad_shape_ravel_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_shape_ravel_derivative_rule",
+    ),
+    "program_ad_shape_repeat_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_shape_repeat_derivative_rule",
+    ),
+    "program_ad_shape_reshape_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_shape_reshape_derivative_rule",
+    ),
+    "program_ad_shape_roll_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_shape_roll_derivative_rule",
+    ),
+    "program_ad_shape_rot90_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_shape_rot90_derivative_rule",
+    ),
+    "program_ad_shape_squeeze_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_shape_squeeze_derivative_rule",
+    ),
+    "program_ad_shape_swapaxes_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_shape_swapaxes_derivative_rule",
+    ),
+    "program_ad_shape_tile_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_shape_tile_derivative_rule",
+    ),
+    "program_ad_shape_transpose_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_shape_transpose_derivative_rule",
+    ),
+    "program_ad_signal_convolve_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_signal_convolve_derivative_rule",
+    ),
+    "program_ad_signal_correlate_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_signal_correlate_derivative_rule",
+    ),
+    "program_ad_static_alias_lattice_report": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_static_alias_lattice_report",
+    ),
+    "program_ad_stencil_gradient_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "program_ad_stencil_gradient_derivative_rule",
+    ),
+    "program_adjoint_grad": ("scpn_quantum_control.differentiable", "program_adjoint_grad"),
+    "program_adjoint_gradient": (
+        "scpn_quantum_control.differentiable",
+        "program_adjoint_gradient",
+    ),
+    "program_adjoint_replay_gradient": (
+        "scpn_quantum_control.differentiable",
+        "program_adjoint_replay_gradient",
+    ),
+    "program_adjoint_result": ("scpn_quantum_control.differentiable", "program_adjoint_result"),
+    "program_adjoint_value_and_grad": (
+        "scpn_quantum_control.differentiable",
+        "program_adjoint_value_and_grad",
+    ),
+    "register_custom_derivative_rule": (
+        "scpn_quantum_control.differentiable",
+        "register_custom_derivative_rule",
+    ),
+    "register_primitive_batching_rule": (
+        "scpn_quantum_control.differentiable",
+        "register_primitive_batching_rule",
+    ),
+    "register_primitive_lowering_rule": (
+        "scpn_quantum_control.differentiable",
+        "register_primitive_lowering_rule",
+    ),
+    "register_primitive_transform_rule": (
+        "scpn_quantum_control.differentiable",
+        "register_primitive_transform_rule",
+    ),
+    "registered_custom_jacobian": (
+        "scpn_quantum_control.differentiable",
+        "registered_custom_jacobian",
+    ),
+    "registered_custom_jvp": ("scpn_quantum_control.differentiable", "registered_custom_jvp"),
+    "registered_custom_vjp": ("scpn_quantum_control.differentiable", "registered_custom_vjp"),
+    "reverse_cos": ("scpn_quantum_control.differentiable", "reverse_cos"),
+    "reverse_exp": ("scpn_quantum_control.differentiable", "reverse_exp"),
+    "reverse_log": ("scpn_quantum_control.differentiable", "reverse_log"),
+    "reverse_mode_gradient": ("scpn_quantum_control.differentiable", "reverse_mode_gradient"),
+    "reverse_sin": ("scpn_quantum_control.differentiable", "reverse_sin"),
+    "score_function_gradient_estimate": (
+        "scpn_quantum_control.differentiable",
+        "score_function_gradient_estimate",
+    ),
+    "soft_l1_residual_weights": (
+        "scpn_quantum_control.differentiable",
+        "soft_l1_residual_weights",
+    ),
+    "sparse_empirical_fisher_metric": (
+        "scpn_quantum_control.differentiable",
+        "sparse_empirical_fisher_metric",
+    ),
+    "sparse_hessian": ("scpn_quantum_control.differentiable", "sparse_hessian"),
+    "sparse_jacobian": ("scpn_quantum_control.differentiable", "sparse_jacobian"),
+    "spsa_gradient_estimate": ("scpn_quantum_control.differentiable", "spsa_gradient_estimate"),
+    "update_levenberg_marquardt_damping": (
+        "scpn_quantum_control.differentiable",
+        "update_levenberg_marquardt_damping",
+    ),
+    "value_and_complex_step_grad": (
+        "scpn_quantum_control.differentiable",
+        "value_and_complex_step_grad",
+    ),
+    "value_and_custom_jacobian": (
+        "scpn_quantum_control.differentiable",
+        "value_and_custom_jacobian",
+    ),
+    "value_and_custom_jvp": ("scpn_quantum_control.differentiable", "value_and_custom_jvp"),
+    "value_and_custom_vjp": ("scpn_quantum_control.differentiable", "value_and_custom_vjp"),
+    "value_and_finite_difference_grad": (
+        "scpn_quantum_control.differentiable",
+        "value_and_finite_difference_grad",
+    ),
+    "value_and_finite_difference_hessian": (
+        "scpn_quantum_control.differentiable",
+        "value_and_finite_difference_hessian",
+    ),
+    "value_and_finite_difference_hvp": (
+        "scpn_quantum_control.differentiable",
+        "value_and_finite_difference_hvp",
+    ),
+    "value_and_finite_difference_jacobian": (
+        "scpn_quantum_control.differentiable",
+        "value_and_finite_difference_jacobian",
+    ),
+    "value_and_finite_difference_jvp": (
+        "scpn_quantum_control.differentiable",
+        "value_and_finite_difference_jvp",
+    ),
+    "value_and_finite_difference_vjp": (
+        "scpn_quantum_control.differentiable",
+        "value_and_finite_difference_vjp",
+    ),
+    "value_and_forward_mode_grad": (
+        "scpn_quantum_control.differentiable",
+        "value_and_forward_mode_grad",
+    ),
+    "value_and_grad": ("scpn_quantum_control.differentiable", "value_and_grad"),
+    "value_and_grad_program_ad_effect_ir_with_rust": (
+        "scpn_quantum_control.differentiable",
+        "value_and_grad_program_ad_effect_ir_with_rust",
+    ),
+    "value_and_hessian": ("scpn_quantum_control.differentiable", "value_and_hessian"),
+    "value_and_jacfwd": ("scpn_quantum_control.differentiable", "value_and_jacfwd"),
+    "value_and_jacobian": ("scpn_quantum_control.differentiable", "value_and_jacobian"),
+    "value_and_jacrev": ("scpn_quantum_control.differentiable", "value_and_jacrev"),
+    "value_and_jvp": ("scpn_quantum_control.differentiable", "value_and_jvp"),
+    "value_and_parameter_shift_grad": (
+        "scpn_quantum_control.differentiable",
+        "value_and_parameter_shift_grad",
+    ),
+    "value_and_reverse_mode_grad": (
+        "scpn_quantum_control.differentiable",
+        "value_and_reverse_mode_grad",
+    ),
+    "value_and_vjp": ("scpn_quantum_control.differentiable", "value_and_vjp"),
+    "vector_jacobian_product": ("scpn_quantum_control.differentiable", "vector_jacobian_product"),
+    "vjp": ("scpn_quantum_control.differentiable", "vjp"),
+    "vmap": ("scpn_quantum_control.differentiable", "vmap"),
+    "weighted_gradient_sum": ("scpn_quantum_control.differentiable", "weighted_gradient_sum"),
+    "whole_program_grad": ("scpn_quantum_control.differentiable", "whole_program_grad"),
+    "whole_program_value_and_grad": (
+        "scpn_quantum_control.differentiable",
+        "whole_program_value_and_grad",
+    ),
+    "DifferentiabilityDiagnosticReport": (
+        "scpn_quantum_control.differentiable_api",
+        "DifferentiabilityDiagnosticReport",
+    ),
+    "DifferentiableDashboardCapabilityRow": (
+        "scpn_quantum_control.differentiable_api",
+        "DifferentiableDashboardCapabilityRow",
+    ),
+    "DifferentiableDashboardCapabilityState": (
+        "scpn_quantum_control.differentiable_api",
+        "DifferentiableDashboardCapabilityState",
+    ),
+    "DifferentiableDashboardStatus": (
+        "scpn_quantum_control.differentiable_api",
+        "DifferentiableDashboardStatus",
+    ),
+    "UnifiedDifferentiableAPIResult": (
+        "scpn_quantum_control.differentiable_api",
+        "UnifiedDifferentiableAPIResult",
+    ),
+    "differentiable_api": ("scpn_quantum_control.differentiable_api", "differentiable_api"),
+    "differentiable_architecture_map_report": (
+        "scpn_quantum_control.differentiable_api",
+        "differentiable_architecture_map_report",
+    ),
+    "differentiable_baseline_scorecard_report": (
+        "scpn_quantum_control.differentiable_api",
+        "differentiable_baseline_scorecard_report",
+    ),
+    "differentiable_benchmark_report": (
+        "scpn_quantum_control.differentiable_api",
+        "differentiable_benchmark_report",
+    ),
+    "differentiable_competitive_baseline_refresh_report": (
+        "scpn_quantum_control.differentiable_api",
+        "differentiable_competitive_baseline_refresh_report",
+    ),
+    "differentiable_compile_report": (
+        "scpn_quantum_control.differentiable_api",
+        "differentiable_compile_report",
+    ),
+    "differentiable_dashboard_status": (
+        "scpn_quantum_control.differentiable_api",
+        "differentiable_dashboard_status",
+    ),
+    "differentiable_dependency_environment_map_report": (
+        "scpn_quantum_control.differentiable_api",
+        "differentiable_dependency_environment_map_report",
+    ),
+    "differentiable_frontend_report": (
+        "scpn_quantum_control.differentiable_api",
+        "differentiable_frontend_report",
+    ),
+    "differentiable_gradient": (
+        "scpn_quantum_control.differentiable_api",
+        "differentiable_gradient",
+    ),
+    "differentiable_hessian": (
+        "scpn_quantum_control.differentiable_api",
+        "differentiable_hessian",
+    ),
+    "differentiable_isolated_benchmark_plan_report": (
+        "scpn_quantum_control.differentiable_api",
+        "differentiable_isolated_benchmark_plan_report",
+    ),
+    "differentiable_jacobian": (
+        "scpn_quantum_control.differentiable_api",
+        "differentiable_jacobian",
+    ),
+    "differentiable_qfi_fss_report": (
+        "scpn_quantum_control.differentiable_api",
+        "differentiable_qfi_fss_report",
+    ),
+    "differentiable_rust_python_inventory_report": (
+        "scpn_quantum_control.differentiable_api",
+        "differentiable_rust_python_inventory_report",
+    ),
+    "differentiable_support_report": (
+        "scpn_quantum_control.differentiable_api",
+        "differentiable_support_report",
+    ),
+    "differentiable_transform_algebra_report": (
+        "scpn_quantum_control.differentiable_api",
+        "differentiable_transform_algebra_report",
+    ),
+    "differentiable_value": ("scpn_quantum_control.differentiable_api", "differentiable_value"),
+    "explain_differentiability": (
+        "scpn_quantum_control.differentiable_api",
+        "explain_differentiability",
+    ),
+    "DifferentiableArchitectureLayerId": (
+        "scpn_quantum_control.differentiable_architecture_map",
+        "DifferentiableArchitectureLayerId",
+    ),
+    "DifferentiableArchitectureMap": (
+        "scpn_quantum_control.differentiable_architecture_map",
+        "DifferentiableArchitectureMap",
+    ),
+    "DifferentiableArchitectureMapLayer": (
+        "scpn_quantum_control.differentiable_architecture_map",
+        "DifferentiableArchitectureMapLayer",
+    ),
+    "DifferentiableArchitectureMapValidation": (
+        "scpn_quantum_control.differentiable_architecture_map",
+        "DifferentiableArchitectureMapValidation",
+    ),
+    "render_differentiable_architecture_map_markdown": (
+        "scpn_quantum_control.differentiable_architecture_map",
+        "render_differentiable_architecture_map_markdown",
+    ),
+    "run_differentiable_architecture_map": (
+        "scpn_quantum_control.differentiable_architecture_map",
+        "run_differentiable_architecture_map",
+    ),
+    "validate_differentiable_architecture_map": (
+        "scpn_quantum_control.differentiable_architecture_map",
+        "validate_differentiable_architecture_map",
+    ),
+    "DifferentiableBaselineCategory": (
+        "scpn_quantum_control.differentiable_baseline_scorecard",
+        "DifferentiableBaselineCategory",
+    ),
+    "DifferentiableBaselineScorecard": (
+        "scpn_quantum_control.differentiable_baseline_scorecard",
+        "DifferentiableBaselineScorecard",
+    ),
+    "DifferentiableBaselineScorecardRow": (
+        "scpn_quantum_control.differentiable_baseline_scorecard",
+        "DifferentiableBaselineScorecardRow",
+    ),
+    "DifferentiableBaselineScorecardValidation": (
+        "scpn_quantum_control.differentiable_baseline_scorecard",
+        "DifferentiableBaselineScorecardValidation",
+    ),
+    "DifferentiableBaselineStatus": (
+        "scpn_quantum_control.differentiable_baseline_scorecard",
+        "DifferentiableBaselineStatus",
+    ),
+    "DifferentiablePromotionLanguageAudit": (
+        "scpn_quantum_control.differentiable_baseline_scorecard",
+        "DifferentiablePromotionLanguageAudit",
+    ),
+    "audit_differentiable_promotion_language": (
+        "scpn_quantum_control.differentiable_baseline_scorecard",
+        "audit_differentiable_promotion_language",
+    ),
+    "build_differentiable_release_profile": (
+        "scpn_quantum_control.differentiable_baseline_scorecard",
+        "build_differentiable_release_profile",
+    ),
+    "render_differentiable_baseline_scorecard_markdown": (
+        "scpn_quantum_control.differentiable_baseline_scorecard",
+        "render_differentiable_baseline_scorecard_markdown",
+    ),
+    "run_differentiable_baseline_scorecard": (
+        "scpn_quantum_control.differentiable_baseline_scorecard",
+        "run_differentiable_baseline_scorecard",
+    ),
+    "validate_differentiable_baseline_scorecard": (
+        "scpn_quantum_control.differentiable_baseline_scorecard",
+        "validate_differentiable_baseline_scorecard",
+    ),
+    "DifferentiableBenchmarkReport": (
+        "scpn_quantum_control.differentiable_benchmark_report",
+        "DifferentiableBenchmarkReport",
+    ),
+    "build_differentiable_benchmark_report": (
+        "scpn_quantum_control.differentiable_benchmark_report",
+        "build_differentiable_benchmark_report",
+    ),
+    "CompetitiveBaselineId": (
+        "scpn_quantum_control.differentiable_competitive_baselines",
+        "CompetitiveBaselineId",
+    ),
+    "CompetitiveBaselinePromotionGate": (
+        "scpn_quantum_control.differentiable_competitive_baselines",
+        "CompetitiveBaselinePromotionGate",
+    ),
+    "CompetitiveBaselineRefresh": (
+        "scpn_quantum_control.differentiable_competitive_baselines",
+        "CompetitiveBaselineRefresh",
+    ),
+    "CompetitiveBaselineRow": (
+        "scpn_quantum_control.differentiable_competitive_baselines",
+        "CompetitiveBaselineRow",
+    ),
+    "CompetitiveBaselineSourceKind": (
+        "scpn_quantum_control.differentiable_competitive_baselines",
+        "CompetitiveBaselineSourceKind",
+    ),
+    "CompetitiveBaselineValidation": (
+        "scpn_quantum_control.differentiable_competitive_baselines",
+        "CompetitiveBaselineValidation",
+    ),
+    "audit_competitive_baseline_promotion_gate": (
+        "scpn_quantum_control.differentiable_competitive_baselines",
+        "audit_competitive_baseline_promotion_gate",
+    ),
+    "load_competitive_baseline_refresh": (
+        "scpn_quantum_control.differentiable_competitive_baselines",
+        "load_competitive_baseline_refresh",
+    ),
+    "render_competitive_baseline_refresh_markdown": (
+        "scpn_quantum_control.differentiable_competitive_baselines",
+        "render_competitive_baseline_refresh_markdown",
+    ),
+    "run_competitive_baseline_refresh": (
+        "scpn_quantum_control.differentiable_competitive_baselines",
+        "run_competitive_baseline_refresh",
+    ),
+    "validate_competitive_baseline_refresh": (
+        "scpn_quantum_control.differentiable_competitive_baselines",
+        "validate_competitive_baseline_refresh",
+    ),
+    "DifferentiableDependencyEnvironmentEvidence": (
+        "scpn_quantum_control.differentiable_dependency_environment_evidence",
+        "DifferentiableDependencyEnvironmentEvidence",
+    ),
+    "DifferentiableDependencyEnvironmentEvidenceCategory": (
+        "scpn_quantum_control.differentiable_dependency_environment_evidence",
+        "DifferentiableDependencyEnvironmentEvidenceCategory",
+    ),
+    "DifferentiableDependencyEnvironmentEvidenceId": (
+        "scpn_quantum_control.differentiable_dependency_environment_evidence",
+        "DifferentiableDependencyEnvironmentEvidenceId",
+    ),
+    "DifferentiableDependencyEnvironmentEvidenceStatus": (
+        "scpn_quantum_control.differentiable_dependency_environment_evidence",
+        "DifferentiableDependencyEnvironmentEvidenceStatus",
+    ),
+    "build_differentiable_dependency_environment_evidence": (
+        "scpn_quantum_control.differentiable_dependency_environment_evidence",
+        "build_differentiable_dependency_environment_evidence",
+    ),
+    "DifferentiableDependencyEnvironmentMap": (
+        "scpn_quantum_control.differentiable_dependency_environment_map",
+        "DifferentiableDependencyEnvironmentMap",
+    ),
+    "DifferentiableDependencyEnvironmentMapValidation": (
+        "scpn_quantum_control.differentiable_dependency_environment_map",
+        "DifferentiableDependencyEnvironmentMapValidation",
+    ),
+    "DifferentiableDependencyEnvironmentProfile": (
+        "scpn_quantum_control.differentiable_dependency_environment_map",
+        "DifferentiableDependencyEnvironmentProfile",
+    ),
+    "DifferentiableDependencyEnvironmentProfileId": (
+        "scpn_quantum_control.differentiable_dependency_environment_map",
+        "DifferentiableDependencyEnvironmentProfileId",
+    ),
+    "DifferentiableDependencyEnvironmentStatus": (
+        "scpn_quantum_control.differentiable_dependency_environment_map",
+        "DifferentiableDependencyEnvironmentStatus",
+    ),
+    "render_differentiable_dependency_environment_map_markdown": (
+        "scpn_quantum_control.differentiable_dependency_environment_map",
+        "render_differentiable_dependency_environment_map_markdown",
+    ),
+    "run_differentiable_dependency_environment_map": (
+        "scpn_quantum_control.differentiable_dependency_environment_map",
+        "run_differentiable_dependency_environment_map",
+    ),
+    "validate_differentiable_dependency_environment_map": (
+        "scpn_quantum_control.differentiable_dependency_environment_map",
+        "validate_differentiable_dependency_environment_map",
+    ),
+    "DifferentiableModuleHardeningAuditResult": (
+        "scpn_quantum_control.differentiable_module_hardening_audit",
+        "DifferentiableModuleHardeningAuditResult",
+    ),
+    "DifferentiableModuleHardeningRecord": (
+        "scpn_quantum_control.differentiable_module_hardening_audit",
+        "DifferentiableModuleHardeningRecord",
+    ),
+    "differentiable_module_hardening_registry": (
+        "scpn_quantum_control.differentiable_module_hardening_audit",
+        "differentiable_module_hardening_registry",
+    ),
+    "run_differentiable_module_hardening_audit": (
+        "scpn_quantum_control.differentiable_module_hardening_audit",
+        "run_differentiable_module_hardening_audit",
+    ),
+    "DifferentiableRustPythonInventory": (
+        "scpn_quantum_control.differentiable_rust_python_inventory",
+        "DifferentiableRustPythonInventory",
+    ),
+    "DifferentiableRustPythonInventoryBenchmarkStatus": (
+        "scpn_quantum_control.differentiable_rust_python_inventory",
+        "DifferentiableRustPythonInventoryBenchmarkStatus",
+    ),
+    "DifferentiableRustPythonInventoryClassification": (
+        "scpn_quantum_control.differentiable_rust_python_inventory",
+        "DifferentiableRustPythonInventoryClassification",
+    ),
+    "DifferentiableRustPythonInventoryPolyglotStatus": (
+        "scpn_quantum_control.differentiable_rust_python_inventory",
+        "DifferentiableRustPythonInventoryPolyglotStatus",
+    ),
+    "DifferentiableRustPythonInventoryRow": (
+        "scpn_quantum_control.differentiable_rust_python_inventory",
+        "DifferentiableRustPythonInventoryRow",
+    ),
+    "DifferentiableRustPythonInventoryRustParityStatus": (
+        "scpn_quantum_control.differentiable_rust_python_inventory",
+        "DifferentiableRustPythonInventoryRustParityStatus",
+    ),
+    "DifferentiableRustPythonInventoryValidation": (
+        "scpn_quantum_control.differentiable_rust_python_inventory",
+        "DifferentiableRustPythonInventoryValidation",
+    ),
+    "render_differentiable_rust_python_inventory_markdown": (
+        "scpn_quantum_control.differentiable_rust_python_inventory",
+        "render_differentiable_rust_python_inventory_markdown",
+    ),
+    "run_differentiable_rust_python_inventory": (
+        "scpn_quantum_control.differentiable_rust_python_inventory",
+        "run_differentiable_rust_python_inventory",
+    ),
+    "validate_differentiable_rust_python_inventory": (
+        "scpn_quantum_control.differentiable_rust_python_inventory",
+        "validate_differentiable_rust_python_inventory",
+    ),
+    "TransformAlgebraAudit": (
+        "scpn_quantum_control.differentiable_transform_algebra",
+        "TransformAlgebraAudit",
+    ),
+    "TransformAlgebraCase": (
+        "scpn_quantum_control.differentiable_transform_algebra",
+        "TransformAlgebraCase",
+    ),
+    "TransformAlgebraStatus": (
+        "scpn_quantum_control.differentiable_transform_algebra",
+        "TransformAlgebraStatus",
+    ),
+    "assert_transform_algebra_audit_passes": (
+        "scpn_quantum_control.differentiable_transform_algebra",
+        "assert_transform_algebra_audit_passes",
+    ),
+    "run_transform_algebra_audit": (
+        "scpn_quantum_control.differentiable_transform_algebra",
+        "run_transform_algebra_audit",
+    ),
+    "AerQuantumEntropySource": ("scpn_quantum_control.entropy", "AerQuantumEntropySource"),
+    "EntropyHealthReport": ("scpn_quantum_control.entropy", "EntropyHealthReport"),
+    "QRNGStream": ("scpn_quantum_control.entropy", "QRNGStream"),
+    "ForecastModelRun": ("scpn_quantum_control.forecasting", "ForecastModelRun"),
+    "SynchronisationForecastBenchmarkResult": (
+        "scpn_quantum_control.forecasting",
+        "SynchronisationForecastBenchmarkResult",
+    ),
+    "SynchronisationForecastDataset": (
+        "scpn_quantum_control.forecasting",
+        "SynchronisationForecastDataset",
+    ),
+    "load_hardware_kuramoto_4osc_trace": (
+        "scpn_quantum_control.forecasting",
+        "load_hardware_kuramoto_4osc_trace",
+    ),
+    "load_ieee5bus_sync_forecast_case": (
+        "scpn_quantum_control.forecasting",
+        "load_ieee5bus_sync_forecast_case",
+    ),
+    "run_real_data_sync_forecast_benchmark": (
+        "scpn_quantum_control.forecasting",
+        "run_real_data_sync_forecast_benchmark",
+    ),
+    "run_real_data_sync_forecast_suite": (
+        "scpn_quantum_control.forecasting",
+        "run_real_data_sync_forecast_suite",
+    ),
+    "AggregatorProviderRoute": (
+        "scpn_quantum_control.hardware.aggregators",
+        "AggregatorProviderRoute",
+    ),
+    "ResolvedAggregatorProviderRoute": (
+        "scpn_quantum_control.hardware.aggregators",
+        "ResolvedAggregatorProviderRoute",
+    ),
+    "aggregator_provider_routes_for": (
+        "scpn_quantum_control.hardware.aggregators",
+        "aggregator_provider_routes_for",
+    ),
+    "built_in_aggregator_provider_routes": (
+        "scpn_quantum_control.hardware.aggregators",
+        "built_in_aggregator_provider_routes",
+    ),
+    "resolve_aggregator_provider_route": (
+        "scpn_quantum_control.hardware.aggregators",
+        "resolve_aggregator_provider_route",
+    ),
+    "fast_sparse_evolution": (
+        "scpn_quantum_control.hardware.fast_classical",
+        "fast_sparse_evolution",
+    ),
+    "BackendCapabilities": ("scpn_quantum_control.hardware.hal", "BackendCapabilities"),
+    "BackendProfile": ("scpn_quantum_control.hardware.hal", "BackendProfile"),
+    "HardwareAbstractionLayer": ("scpn_quantum_control.hardware.hal", "HardwareAbstractionLayer"),
+    "LocalDeterministicSimulator": (
+        "scpn_quantum_control.hardware.hal",
+        "LocalDeterministicSimulator",
+    ),
+    "QuantumBackend": ("scpn_quantum_control.hardware.hal", "QuantumBackend"),
+    "QuantumJobRef": ("scpn_quantum_control.hardware.hal", "QuantumJobRef"),
+    "QuantumJobResult": ("scpn_quantum_control.hardware.hal", "QuantumJobResult"),
+    "QuantumWorkload": ("scpn_quantum_control.hardware.hal", "QuantumWorkload"),
+    "built_in_backend_profiles": (
+        "scpn_quantum_control.hardware.hal",
+        "built_in_backend_profiles",
+    ),
+    "AzureQuantumHALAdapter": (
+        "scpn_quantum_control.hardware.hal_azure",
+        "AzureQuantumHALAdapter",
+    ),
+    "azure_openqasm3_to_workload": (
+        "scpn_quantum_control.hardware.hal_azure",
+        "azure_openqasm3_to_workload",
+    ),
+    "BraketAwsHALAdapter": ("scpn_quantum_control.hardware.hal_braket", "BraketAwsHALAdapter"),
+    "BraketLocalHALAdapter": ("scpn_quantum_control.hardware.hal_braket", "BraketLocalHALAdapter"),
+    "braket_circuit_to_workload": (
+        "scpn_quantum_control.hardware.hal_braket",
+        "braket_circuit_to_workload",
+    ),
+    "CirqLocalHALAdapter": ("scpn_quantum_control.hardware.hal_cirq", "CirqLocalHALAdapter"),
+    "cirq_circuit_workload": ("scpn_quantum_control.hardware.hal_cirq", "cirq_circuit_workload"),
+    "DWaveLeapHALAdapter": ("scpn_quantum_control.hardware.hal_dwave", "DWaveLeapHALAdapter"),
+    "dwave_bqm_workload": ("scpn_quantum_control.hardware.hal_dwave", "dwave_bqm_workload"),
+    "IonQCloudHALAdapter": ("scpn_quantum_control.hardware.hal_ionq", "IonQCloudHALAdapter"),
+    "ionq_qis_workload": ("scpn_quantum_control.hardware.hal_ionq", "ionq_qis_workload"),
+    "IQMHALAdapter": ("scpn_quantum_control.hardware.hal_iqm", "IQMHALAdapter"),
+    "iqm_qiskit_workload": ("scpn_quantum_control.hardware.hal_iqm", "iqm_qiskit_workload"),
+    "OQCHALAdapter": ("scpn_quantum_control.hardware.hal_oqc", "OQCHALAdapter"),
+    "oqc_openqasm3_workload": ("scpn_quantum_control.hardware.hal_oqc", "oqc_openqasm3_workload"),
+    "PasqalPulserHALAdapter": (
+        "scpn_quantum_control.hardware.hal_pasqal",
+        "PasqalPulserHALAdapter",
+    ),
+    "pulser_sequence_workload": (
+        "scpn_quantum_control.hardware.hal_pasqal",
+        "pulser_sequence_workload",
+    ),
+    "PennyLaneDeviceHALAdapter": (
+        "scpn_quantum_control.hardware.hal_pennylane",
+        "PennyLaneDeviceHALAdapter",
+    ),
+    "pennylane_gate_workload": (
+        "scpn_quantum_control.hardware.hal_pennylane",
+        "pennylane_gate_workload",
+    ),
+    "QbraidRuntimeHALAdapter": (
+        "scpn_quantum_control.hardware.hal_qbraid",
+        "QbraidRuntimeHALAdapter",
+    ),
+    "qbraid_program_to_workload": (
+        "scpn_quantum_control.hardware.hal_qbraid",
+        "qbraid_program_to_workload",
+    ),
+    "QiskitAerHALAdapter": ("scpn_quantum_control.hardware.hal_qiskit", "QiskitAerHALAdapter"),
+    "QiskitRuntimeHALAdapter": (
+        "scpn_quantum_control.hardware.hal_qiskit",
+        "QiskitRuntimeHALAdapter",
+    ),
+    "qiskit_circuit_to_qasm3_workload": (
+        "scpn_quantum_control.hardware.hal_qiskit",
+        "qiskit_circuit_to_qasm3_workload",
+    ),
+    "qiskit_circuit_to_workload": (
+        "scpn_quantum_control.hardware.hal_qiskit",
+        "qiskit_circuit_to_workload",
+    ),
+    "QuandelaPercevalHALAdapter": (
+        "scpn_quantum_control.hardware.hal_quandela",
+        "QuandelaPercevalHALAdapter",
+    ),
+    "quandela_perceval_workload": (
+        "scpn_quantum_control.hardware.hal_quandela",
+        "quandela_perceval_workload",
+    ),
+    "QuantinuumCloudHALAdapter": (
+        "scpn_quantum_control.hardware.hal_quantinuum",
+        "QuantinuumCloudHALAdapter",
+    ),
+    "quantinuum_tket_workload": (
+        "scpn_quantum_control.hardware.hal_quantinuum",
+        "quantinuum_tket_workload",
+    ),
+    "QuEraBloqadeHALAdapter": (
+        "scpn_quantum_control.hardware.hal_quera_bloqade",
+        "QuEraBloqadeHALAdapter",
+    ),
+    "bloqade_ahs_workload": (
+        "scpn_quantum_control.hardware.hal_quera_bloqade",
+        "bloqade_ahs_workload",
+    ),
+    "RigettiQCSHALAdapter": ("scpn_quantum_control.hardware.hal_rigetti", "RigettiQCSHALAdapter"),
+    "rigetti_quil_workload": (
+        "scpn_quantum_control.hardware.hal_rigetti",
+        "rigetti_quil_workload",
+    ),
+    "StrangeworksComputeHALAdapter": (
+        "scpn_quantum_control.hardware.hal_strangeworks",
+        "StrangeworksComputeHALAdapter",
+    ),
+    "strangeworks_program_to_workload": (
+        "scpn_quantum_control.hardware.hal_strangeworks",
+        "strangeworks_program_to_workload",
+    ),
+    "CapabilityDecisionStatus": (
+        "scpn_quantum_control.hardware.provider_capability_discovery",
+        "CapabilityDecisionStatus",
+    ),
+    "ProviderCapabilityDecision": (
+        "scpn_quantum_control.hardware.provider_capability_discovery",
+        "ProviderCapabilityDecision",
+    ),
+    "ProviderCapabilitySnapshot": (
+        "scpn_quantum_control.hardware.provider_capability_discovery",
+        "ProviderCapabilitySnapshot",
+    ),
+    "ProviderMetadataProbe": (
+        "scpn_quantum_control.hardware.provider_capability_discovery",
+        "ProviderMetadataProbe",
+    ),
+    "assess_provider_capability_snapshot": (
+        "scpn_quantum_control.hardware.provider_capability_discovery",
+        "assess_provider_capability_snapshot",
+    ),
+    "probe_aggregator_provider_capability": (
+        "scpn_quantum_control.hardware.provider_capability_discovery",
+        "probe_aggregator_provider_capability",
+    ),
+    "snapshot_from_azure_target": (
+        "scpn_quantum_control.hardware.provider_capability_discovery",
+        "snapshot_from_azure_target",
+    ),
+    "snapshot_from_braket_device": (
+        "scpn_quantum_control.hardware.provider_capability_discovery",
+        "snapshot_from_braket_device",
+    ),
+    "snapshot_from_dwave_solver": (
+        "scpn_quantum_control.hardware.provider_capability_discovery",
+        "snapshot_from_dwave_solver",
+    ),
+    "snapshot_from_ionq_backend": (
+        "scpn_quantum_control.hardware.provider_capability_discovery",
+        "snapshot_from_ionq_backend",
+    ),
+    "snapshot_from_iqm_backend": (
+        "scpn_quantum_control.hardware.provider_capability_discovery",
+        "snapshot_from_iqm_backend",
+    ),
+    "snapshot_from_oqc_target": (
+        "scpn_quantum_control.hardware.provider_capability_discovery",
+        "snapshot_from_oqc_target",
+    ),
+    "snapshot_from_pasqal_target": (
+        "scpn_quantum_control.hardware.provider_capability_discovery",
+        "snapshot_from_pasqal_target",
+    ),
+    "snapshot_from_qbraid_device": (
+        "scpn_quantum_control.hardware.provider_capability_discovery",
+        "snapshot_from_qbraid_device",
+    ),
+    "snapshot_from_qiskit_runtime_backend": (
+        "scpn_quantum_control.hardware.provider_capability_discovery",
+        "snapshot_from_qiskit_runtime_backend",
+    ),
+    "snapshot_from_quandela_processor": (
+        "scpn_quantum_control.hardware.provider_capability_discovery",
+        "snapshot_from_quandela_processor",
+    ),
+    "snapshot_from_quantinuum_backend": (
+        "scpn_quantum_control.hardware.provider_capability_discovery",
+        "snapshot_from_quantinuum_backend",
+    ),
+    "snapshot_from_quera_bloqade": (
+        "scpn_quantum_control.hardware.provider_capability_discovery",
+        "snapshot_from_quera_bloqade",
+    ),
+    "snapshot_from_rigetti_qcs": (
+        "scpn_quantum_control.hardware.provider_capability_discovery",
+        "snapshot_from_rigetti_qcs",
+    ),
+    "snapshot_from_strangeworks_backend": (
+        "scpn_quantum_control.hardware.provider_capability_discovery",
+        "snapshot_from_strangeworks_backend",
+    ),
+    "AggregatorProviderOptionalDependencyRow": (
+        "scpn_quantum_control.hardware.provider_smoke",
+        "AggregatorProviderOptionalDependencyRow",
+    ),
+    "ProviderOptionalDependencyRow": (
+        "scpn_quantum_control.hardware.provider_smoke",
+        "ProviderOptionalDependencyRow",
+    ),
+    "aggregator_provider_optional_dependency_matrix": (
+        "scpn_quantum_control.hardware.provider_smoke",
+        "aggregator_provider_optional_dependency_matrix",
+    ),
+    "provider_optional_dependency_matrix": (
+        "scpn_quantum_control.hardware.provider_smoke",
+        "provider_optional_dependency_matrix",
+    ),
+    "ExecutionRegion": ("scpn_quantum_control.hardware.qubit_mapper", "ExecutionRegion"),
+    "QubitMappingResult": ("scpn_quantum_control.hardware.qubit_mapper", "QubitMappingResult"),
+    "dynq_initial_layout": ("scpn_quantum_control.hardware.qubit_mapper", "dynq_initial_layout"),
+    "HardwareRunner": ("scpn_quantum_control.hardware.runner", "HardwareRunner"),
+    "JobResult": ("scpn_quantum_control.hardware.runner", "JobResult"),
+    "transpile_for_trapped_ion": (
+        "scpn_quantum_control.hardware.trapped_ion",
+        "transpile_for_trapped_ion",
+    ),
+    "trapped_ion_noise_model": (
+        "scpn_quantum_control.hardware.trapped_ion",
+        "trapped_ion_noise_model",
+    ),
+    "ARCANE_SAPIENCE_SPEC": ("scpn_quantum_control.identity.binding_spec", "ARCANE_SAPIENCE_SPEC"),
+    "ORCHESTRATOR_MAPPING": ("scpn_quantum_control.identity.binding_spec", "ORCHESTRATOR_MAPPING"),
+    "build_identity_attractor": (
+        "scpn_quantum_control.identity.binding_spec",
+        "build_identity_attractor",
+    ),
+    "orchestrator_to_quantum_phases": (
+        "scpn_quantum_control.identity.binding_spec",
+        "orchestrator_to_quantum_phases",
+    ),
+    "quantum_to_orchestrator_phases": (
+        "scpn_quantum_control.identity.binding_spec",
+        "quantum_to_orchestrator_phases",
+    ),
+    "solve_identity": ("scpn_quantum_control.identity.binding_spec", "solve_identity"),
+    "coherence_budget": ("scpn_quantum_control.identity.coherence_budget", "coherence_budget"),
+    "fidelity_at_depth": ("scpn_quantum_control.identity.coherence_budget", "fidelity_at_depth"),
+    "chsh_from_statevector": (
+        "scpn_quantum_control.identity.entanglement_witness",
+        "chsh_from_statevector",
+    ),
+    "disposition_entanglement_map": (
+        "scpn_quantum_control.identity.entanglement_witness",
+        "disposition_entanglement_map",
+    ),
+    "IdentityAttractor": ("scpn_quantum_control.identity.ground_state", "IdentityAttractor"),
+    "identity_fingerprint": ("scpn_quantum_control.identity.identity_key", "identity_fingerprint"),
+    "prove_identity": ("scpn_quantum_control.identity.identity_key", "prove_identity"),
+    "verify_identity": ("scpn_quantum_control.identity.identity_key", "verify_identity"),
+    "KuramotoProblem": ("scpn_quantum_control.kuramoto_core", "KuramotoProblem"),
+    "build_kuramoto_problem": ("scpn_quantum_control.kuramoto_core", "build_kuramoto_problem"),
+    "compile_analog_program": ("scpn_quantum_control.kuramoto_core", "compile_analog_program"),
+    "compile_dense_hamiltonian": (
+        "scpn_quantum_control.kuramoto_core",
+        "compile_dense_hamiltonian",
+    ),
+    "compile_hamiltonian": ("scpn_quantum_control.kuramoto_core", "compile_hamiltonian"),
+    "compile_hybrid_program": ("scpn_quantum_control.kuramoto_core", "compile_hybrid_program"),
+    "compile_trotter_circuit": ("scpn_quantum_control.kuramoto_core", "compile_trotter_circuit"),
+    "measure_order_parameter": ("scpn_quantum_control.kuramoto_core", "measure_order_parameter"),
+    "simulate_variant_trajectory": (
+        "scpn_quantum_control.kuramoto_core",
+        "simulate_variant_trajectory",
+    ),
+    "validate_kuramoto_inputs": ("scpn_quantum_control.kuramoto_core", "validate_kuramoto_inputs"),
+    "compound_mitigate_pipeline": (
+        "scpn_quantum_control.mitigation.compound_mitigation",
+        "compound_mitigate_pipeline",
+    ),
+    "PECResult": ("scpn_quantum_control.mitigation.pec", "PECResult"),
+    "pauli_twirl_decompose": ("scpn_quantum_control.mitigation.pec", "pauli_twirl_decompose"),
+    "pec_sample": ("scpn_quantum_control.mitigation.pec", "pec_sample"),
+    "GUESSResult": ("scpn_quantum_control.mitigation.symmetry_decay", "GUESSResult"),
+    "SymmetryDecayModel": ("scpn_quantum_control.mitigation.symmetry_decay", "SymmetryDecayModel"),
+    "guess_extrapolate": ("scpn_quantum_control.mitigation.symmetry_decay", "guess_extrapolate"),
+    "learn_symmetry_decay": (
+        "scpn_quantum_control.mitigation.symmetry_decay",
+        "learn_symmetry_decay",
+    ),
+    "ZNEResult": ("scpn_quantum_control.mitigation.zne", "ZNEResult"),
+    "gate_fold_circuit": ("scpn_quantum_control.mitigation.zne", "gate_fold_circuit"),
+    "zne_extrapolate": ("scpn_quantum_control.mitigation.zne", "zne_extrapolate"),
+    "HigherOrderKuramotoSpec": (
+        "scpn_quantum_control.phase.kuramoto_variants",
+        "HigherOrderKuramotoSpec",
+    ),
+    "KuramotoVariant": ("scpn_quantum_control.phase.kuramoto_variants", "KuramotoVariant"),
+    "KuramotoVariantResult": (
+        "scpn_quantum_control.phase.kuramoto_variants",
+        "KuramotoVariantResult",
+    ),
+    "MonitoredKuramotoSpec": (
+        "scpn_quantum_control.phase.kuramoto_variants",
+        "MonitoredKuramotoSpec",
+    ),
+    "PTSymmetricKuramotoSpec": (
+        "scpn_quantum_control.phase.kuramoto_variants",
+        "PTSymmetricKuramotoSpec",
+    ),
+    "build_triadic_ring_terms": (
+        "scpn_quantum_control.phase.kuramoto_variants",
+        "build_triadic_ring_terms",
+    ),
+    "simulate_higher_order_kuramoto": (
+        "scpn_quantum_control.phase.kuramoto_variants",
+        "simulate_higher_order_kuramoto",
+    ),
+    "simulate_monitored_kuramoto": (
+        "scpn_quantum_control.phase.kuramoto_variants",
+        "simulate_monitored_kuramoto",
+    ),
+    "simulate_pt_symmetric_kuramoto": (
+        "scpn_quantum_control.phase.kuramoto_variants",
+        "simulate_pt_symmetric_kuramoto",
+    ),
+    "LindbladSyncEngine": ("scpn_quantum_control.phase.lindblad_engine", "LindbladSyncEngine"),
+    "PhaseVQE": ("scpn_quantum_control.phase.phase_vqe", "PhaseVQE"),
+    "TrajectoryResult": ("scpn_quantum_control.phase.results", "TrajectoryResult"),
+    "build_structured_ansatz": (
+        "scpn_quantum_control.phase.structured_ansatz",
+        "build_structured_ansatz",
+    ),
+    "QuantumUPDESolver": ("scpn_quantum_control.phase.trotter_upde", "QuantumUPDESolver"),
+    "QuantumKuramotoSolver": ("scpn_quantum_control.phase.xy_kuramoto", "QuantumKuramotoSolver"),
+    "TrotterEvolutionConfig": ("scpn_quantum_control.phase.xy_kuramoto", "TrotterEvolutionConfig"),
+    "BiologicalSurfaceDiagnostics": (
+        "scpn_quantum_control.qec.biological_diagnostics",
+        "BiologicalSurfaceDiagnostics",
+    ),
+    "analyse_biological_surface_code": (
+        "scpn_quantum_control.qec.biological_diagnostics",
+        "analyse_biological_surface_code",
+    ),
+    "BiologicalQecBatchExecution": (
+        "scpn_quantum_control.qec.biological_pipeline",
+        "BiologicalQecBatchExecution",
+    ),
+    "BiologicalQecExecution": (
+        "scpn_quantum_control.qec.biological_pipeline",
+        "BiologicalQecExecution",
+    ),
+    "run_biological_qec_batch_execution": (
+        "scpn_quantum_control.qec.biological_pipeline",
+        "run_biological_qec_batch_execution",
+    ),
+    "run_biological_qec_execution": (
+        "scpn_quantum_control.qec.biological_pipeline",
+        "run_biological_qec_execution",
+    ),
+    "BiologicalMWPMDecoder": (
+        "scpn_quantum_control.qec.biological_surface_code",
+        "BiologicalMWPMDecoder",
+    ),
+    "BiologicalSurfaceCode": (
+        "scpn_quantum_control.qec.biological_surface_code",
+        "BiologicalSurfaceCode",
+    ),
+    "ControlQEC": ("scpn_quantum_control.qec.control_qec", "ControlQEC"),
+    "FaultTolerantUPDE": ("scpn_quantum_control.qec.fault_tolerant", "FaultTolerantUPDE"),
+    "LogicalQubit": ("scpn_quantum_control.qec.fault_tolerant", "LogicalQubit"),
+    "MultiscaleQECResult": ("scpn_quantum_control.qec.multiscale_qec", "MultiscaleQECResult"),
+    "QECLevel": ("scpn_quantum_control.qec.multiscale_qec", "QECLevel"),
+    "build_multiscale_qec": ("scpn_quantum_control.qec.multiscale_qec", "build_multiscale_qec"),
+    "concatenated_logical_rate": (
+        "scpn_quantum_control.qec.multiscale_qec",
+        "concatenated_logical_rate",
+    ),
+    "SurfaceCodeSpec": ("scpn_quantum_control.qec.surface_code_upde", "SurfaceCodeSpec"),
+    "SurfaceCodeUPDE": ("scpn_quantum_control.qec.surface_code_upde", "SurfaceCodeUPDE"),
+    "syndrome_flow_analysis": ("scpn_quantum_control.qec.syndrome_flow", "syndrome_flow_analysis"),
+    "DynamicCouplingEngine": (
+        "scpn_quantum_control.qsnn.dynamic_coupling",
+        "DynamicCouplingEngine",
+    ),
+    "QuantumDenseLayer": ("scpn_quantum_control.qsnn.qlayer", "QuantumDenseLayer"),
+    "QuantumLIFNeuron": ("scpn_quantum_control.qsnn.qlif", "QuantumLIFNeuron"),
+    "QuantumSTDP": ("scpn_quantum_control.qsnn.qstdp", "QuantumSTDP"),
+    "QuantumSynapse": ("scpn_quantum_control.qsnn.qsynapse", "QuantumSynapse"),
+    "CLAIM_BOUNDARY": ("scpn_quantum_control.qsnn.quantum_neuromorphic_bridge", "CLAIM_BOUNDARY"),
+    "DynamicCouplingConfig": (
+        "scpn_quantum_control.qsnn.quantum_neuromorphic_bridge",
+        "DynamicCouplingConfig",
+    ),
+    "NeuromorphicStepResult": (
+        "scpn_quantum_control.qsnn.quantum_neuromorphic_bridge",
+        "NeuromorphicStepResult",
+    ),
+    "QuantumLIFConfig": (
+        "scpn_quantum_control.qsnn.quantum_neuromorphic_bridge",
+        "QuantumLIFConfig",
+    ),
+    "QuantumNeuromorphicBridge": (
+        "scpn_quantum_control.qsnn.quantum_neuromorphic_bridge",
+        "QuantumNeuromorphicBridge",
+    ),
+    "RecurrentCouplingPolicy": (
+        "scpn_quantum_control.qsnn.quantum_neuromorphic_bridge",
+        "RecurrentCouplingPolicy",
+    ),
+    "TraceSTDPConfig": (
+        "scpn_quantum_control.qsnn.quantum_neuromorphic_bridge",
+        "TraceSTDPConfig",
+    ),
+    "TraceSTDPState": ("scpn_quantum_control.qsnn.quantum_neuromorphic_bridge", "TraceSTDPState"),
+    "QSNNParameterShiftDescentRun": (
+        "scpn_quantum_control.qsnn.training",
+        "QSNNParameterShiftDescentRun",
+    ),
+    "QSNNTrainer": ("scpn_quantum_control.qsnn.training", "QSNNTrainer"),
+    "NVCenter": ("scpn_quantum_control.sensing", "NVCenter"),
+    "NVFieldCalibration": ("scpn_quantum_control.sensing", "NVFieldCalibration"),
+    "calibrate_field_from_odmr": ("scpn_quantum_control.sensing", "calibrate_field_from_odmr"),
+    "cw_odmr_dc_sensitivity_t_per_sqrt_hz": (
+        "scpn_quantum_control.sensing",
+        "cw_odmr_dc_sensitivity_t_per_sqrt_hz",
+    ),
+    "odmr_resonances_hz": ("scpn_quantum_control.sensing", "odmr_resonances_hz"),
+    "Backend": ("scpn_quantum_control.stable_core", "Backend"),
+    "Experiment": ("scpn_quantum_control.stable_core", "Experiment"),
+    "Problem": ("scpn_quantum_control.stable_core", "Problem"),
+    "Result": ("scpn_quantum_control.stable_core", "Result"),
+    "backend_capability_matrix": ("scpn_quantum_control.stable_core", "backend_capability_matrix"),
+    "build_backend": ("scpn_quantum_control.stable_core", "build_backend"),
+    "build_experiment": ("scpn_quantum_control.stable_core", "build_experiment"),
+    "build_problem": ("scpn_quantum_control.stable_core", "build_problem"),
+    "build_result": ("scpn_quantum_control.stable_core", "build_result"),
+    "classical_reference_backend": (
+        "scpn_quantum_control.stable_core",
+        "classical_reference_backend",
+    ),
+    "hardware_replay_backend": ("scpn_quantum_control.stable_core", "hardware_replay_backend"),
+    "pennylane_backend": ("scpn_quantum_control.stable_core", "pennylane_backend"),
+    "problem_from_kuramoto": ("scpn_quantum_control.stable_core", "problem_from_kuramoto"),
+    "problem_to_kuramoto": ("scpn_quantum_control.stable_core", "problem_to_kuramoto"),
+    "pulser_surrogate_backend": ("scpn_quantum_control.stable_core", "pulser_surrogate_backend"),
+    "qiskit_backend": ("scpn_quantum_control.stable_core", "qiskit_backend"),
+    "qutip_backend": ("scpn_quantum_control.stable_core", "qutip_backend"),
+    "stable_core_capability_markdown": (
+        "scpn_quantum_control.stable_core",
+        "stable_core_capability_markdown",
+    ),
+    "stable_core_capability_payload": (
+        "scpn_quantum_control.stable_core",
+        "stable_core_capability_payload",
+    ),
+    "write_stable_core_capability_artifacts": (
+        "scpn_quantum_control.stable_core",
+        "write_stable_core_capability_artifacts",
+    ),
+    "StableCorePreflightResult": (
+        "scpn_quantum_control.stable_core_preflight",
+        "StableCorePreflightResult",
+    ),
+    "run_stable_core_preflight": (
+        "scpn_quantum_control.stable_core_preflight",
+        "run_stable_core_preflight",
+    ),
+    "stable_core_backend_dependencies": (
+        "scpn_quantum_control.stable_core_preflight",
+        "stable_core_backend_dependencies",
+    ),
+    "stable_core_preflight_fixtures_json": (
+        "scpn_quantum_control.stable_core_preflight",
+        "stable_core_preflight_fixtures_json",
+    ),
+    "stable_core_preflight_fixtures_markdown": (
+        "scpn_quantum_control.stable_core_preflight",
+        "stable_core_preflight_fixtures_markdown",
+    ),
+    "stable_core_preflight_fixtures_payload": (
+        "scpn_quantum_control.stable_core_preflight",
+        "stable_core_preflight_fixtures_payload",
+    ),
+    "CouplingGraphBounds": ("scpn_quantum_control.topology_control", "CouplingGraphBounds"),
+    "CouplingTopologyObjective": (
+        "scpn_quantum_control.topology_control",
+        "CouplingTopologyObjective",
+    ),
+    "DegeneracyMode": ("scpn_quantum_control.topology_control", "DegeneracyMode"),
+    "H1Summary": ("scpn_quantum_control.topology_control", "H1Summary"),
+    "HardwareEmbeddingConstraint": (
+        "scpn_quantum_control.topology_control",
+        "HardwareEmbeddingConstraint",
+    ),
+    "NetworkCycleBackend": ("scpn_quantum_control.topology_control", "NetworkCycleBackend"),
+    "ObjectiveBreakdown": ("scpn_quantum_control.topology_control", "ObjectiveBreakdown"),
+    "PersistenceDiagram": ("scpn_quantum_control.topology_control", "PersistenceDiagram"),
+    "PersistentHomologyBackend": (
+        "scpn_quantum_control.topology_control",
+        "PersistentHomologyBackend",
+    ),
+    "ProjectedScipyOptimizer": (
+        "scpn_quantum_control.topology_control",
+        "ProjectedScipyOptimizer",
+    ),
+    "ProjectedSPSAOptimizer": ("scpn_quantum_control.topology_control", "ProjectedSPSAOptimizer"),
+    "RipserPHBackend": ("scpn_quantum_control.topology_control", "RipserPHBackend"),
+    "TopologicalDynamicCouplingPolicy": (
+        "scpn_quantum_control.topology_control",
+        "TopologicalDynamicCouplingPolicy",
+    ),
+    "TopologyConstraintLedger": (
+        "scpn_quantum_control.topology_control",
+        "TopologyConstraintLedger",
+    ),
+    "TopologyHardwareManifest": (
+        "scpn_quantum_control.topology_control",
+        "TopologyHardwareManifest",
+    ),
+    "TopologyOptimisationArtifact": (
+        "scpn_quantum_control.topology_control",
+        "TopologyOptimisationArtifact",
+    ),
+    "TopologyOptimisationStep": (
+        "scpn_quantum_control.topology_control",
+        "TopologyOptimisationStep",
+    ),
+    "TopologyOptimisationTrace": (
+        "scpn_quantum_control.topology_control",
+        "TopologyOptimisationTrace",
+    ),
+    "algebraic_connectivity": ("scpn_quantum_control.topology_control", "algebraic_connectivity"),
+    "build_correlation_distance_matrix": (
+        "scpn_quantum_control.topology_control",
+        "build_correlation_distance_matrix",
+    ),
+    "build_coupling_distance_matrix": (
+        "scpn_quantum_control.topology_control",
+        "build_coupling_distance_matrix",
+    ),
+    "export_topology_optimisation_artifact": (
+        "scpn_quantum_control.topology_control",
+        "export_topology_optimisation_artifact",
+    ),
+    "spike_trace_correlation_distance": (
+        "scpn_quantum_control.topology_control",
+        "spike_trace_correlation_distance",
+    ),
+    "validate_topology_hardware_manifest": (
+        "scpn_quantum_control.topology_control",
+        "validate_topology_hardware_manifest",
+    ),
+    "WirtingerDerivative": ("scpn_quantum_control.wirtinger_calculus", "WirtingerDerivative"),
+    "WirtingerOptimisationResult": (
+        "scpn_quantum_control.wirtinger_calculus",
+        "WirtingerOptimisationResult",
+    ),
+    "holomorphic_gradient": ("scpn_quantum_control.wirtinger_calculus", "holomorphic_gradient"),
+    "is_holomorphic": ("scpn_quantum_control.wirtinger_calculus", "is_holomorphic"),
+    "minimise_real_objective": (
+        "scpn_quantum_control.wirtinger_calculus",
+        "minimise_real_objective",
+    ),
+    "real_objective_gradient": (
+        "scpn_quantum_control.wirtinger_calculus",
+        "real_objective_gradient",
+    ),
+    "wirtinger_partials": ("scpn_quantum_control.wirtinger_calculus", "wirtinger_partials"),
+}
+
+
+class _ExportModule(ModuleType):
+    """Keep declared object exports when Python publishes child modules."""
+
+    def __setattr__(self, name: str, value: object) -> None:
+        """Publish a module attribute while preserving same-named exports.
+
+        Parameters
+        ----------
+        name
+            Attribute assigned by the import system or a caller.
+        value
+            Value to publish in the package namespace.
+
+        """
+        target = _PUBLIC_EXPORTS.get(name)
+        if (
+            target is not None
+            and target[1] is not None
+            and isinstance(value, ModuleType)
+            and value.__name__ in {target[0], f"{__name__}.{name}"}
+        ):
+            value = __getattr__(name)
+        super().__setattr__(name, value)
+
+
+_sys.modules[__name__].__class__ = _ExportModule
+
+
+def __getattr__(name: str) -> Any:
+    """Resolve and cache a public export from its original owning module.
+
+    Parameters
+    ----------
+    name
+        Public export requested through this package.
+
+    Returns
+    -------
+    Any
+        Original object, including module-valued exports.
+
+    Raises
+    ------
+    AttributeError
+        If the name is undeclared or the original module lacks its attribute.
+    ImportError
+        If the owning module cannot be imported.
+
+    """
+    target = _PUBLIC_EXPORTS.get(name)
+    if target is None:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    origin = import_module(target[0])
+    value = origin if target[1] is None else getattr(origin, target[1])
+    globals()[name] = value
+    return value
+
+
+def __dir__() -> list[str]:
+    """List cached and deferred names for inspection tools.
+
+    Returns
+    -------
+    list[str]
+        Sorted package namespace and declared lazy export names.
+
+    """
+    return sorted(set(globals()) | set(_PUBLIC_EXPORTS))
+
 
 __all__ = [
     "eeg_plv_to_vqe",

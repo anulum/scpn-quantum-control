@@ -32,7 +32,7 @@ class DynamicImportSite:
 
     @property
     def key(self) -> tuple[str, str, str]:
-        """Return the line-independent identity used by reviewed-site counts."""
+        """Line-independent identity used by reviewed-site counts."""
         return self.source, self.scope, self.call_sha256
 
 
@@ -238,6 +238,59 @@ def _exports(tree: ast.Module, module: str, result: ImportVisibility) -> None:
         result.dependencies.append((module + "." + child, value.lineno, "lazy", False))
 
 
+def _public_exports(tree: ast.Module, result: ImportVisibility) -> None:
+    """Expose absolute module/attribute bindings in a checked lazy resolver."""
+    table = _table(tree, "_PUBLIC_EXPORTS", result)
+    if table is None:
+        return
+    resolvers = [
+        node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "__getattr__"
+    ]
+    lookup = _digest(ast.parse("target = _PUBLIC_EXPORTS.get(name)").body[0])
+    load = _digest(ast.parse("import_module(target[0])", mode="eval").body)
+    if (
+        len(resolvers) != 1
+        or not any(_digest(node) == lookup for node in resolvers[0].body)
+        or not any(_digest(node) == load for node in ast.walk(resolvers[0]))
+        or sum(
+            isinstance(node, ast.Name) and node.id == "target" and isinstance(node.ctx, ast.Store)
+            for node in ast.walk(resolvers[0])
+        )
+        != 1
+    ):
+        result.problems.append("absolute lazy table/resolver mismatch")
+    modules: set[str] = set()
+    for name, value in _entries(table, "_PUBLIC_EXPORTS", result):
+        if not name.isidentifier():
+            result.problems.append(f"invalid lazy binding name: {name}")
+        if not isinstance(value, ast.Tuple) or len(value.elts) != 2:
+            result.problems.append(f"expected literal module/attribute pair: {name}")
+            continue
+        module, attribute = value.elts
+        if (
+            not isinstance(module, ast.Constant)
+            or not isinstance(module.value, str)
+            or not module.value
+            or not all(part.isidentifier() for part in module.value.split("."))
+        ):
+            result.problems.append(f"invalid absolute lazy module: {name}")
+            continue
+        if not isinstance(attribute, ast.Constant) or not (
+            attribute.value is None
+            or isinstance(attribute.value, str)
+            and attribute.value.isidentifier()
+        ):
+            result.problems.append(f"invalid lazy origin attribute: {name}")
+            continue
+        if module.value not in modules and (
+            module.value == PACKAGE or module.value.startswith(PACKAGE + ".")
+        ):
+            modules.add(module.value)
+            result.dependencies.append((module.value, value.lineno, "lazy", False))
+
+
 def _plugins(tree: ast.Module, result: ImportVisibility) -> None:
     table = _table(tree, "self._lazy_loaders", result)
     if table is None:
@@ -402,6 +455,7 @@ def inspect_import_visibility(
 
     visit(tree, ())
     _exports(tree, module, result)
+    _public_exports(tree, result)
     _plugins(tree, result)
     # The provider SDK probe table includes the package root, outside dotted string refs.
     sdk = _table(tree, "_SDK_IMPORTS", result)

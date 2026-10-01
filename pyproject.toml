@@ -159,6 +159,7 @@ markers = [
     "slow: marks tests as slow (run with '-m slow')",
     "hardware: requires IBM Quantum credentials",
     "internal_corpus: requires ignored internal manuscript extraction artefacts",
+    "framework_imports: exhaustive import compatibility requiring the real CPU framework profile",
     "performance: wall-clock performance gate for controlled benchmark runs",
 ]
 xfail_strict = true

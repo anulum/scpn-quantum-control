@@ -667,7 +667,7 @@ jobs:
           --branch
           -m pytest -q
           tests/test_phase_qnode_affinity_benchmark.py
-          tests/test_lean_phase_import.py
+          tests/test_run_phase_qnode_affinity_benchmark.py
       - name: Enforce Phase-QNode affinity exact coverage
         run: >-
           python -m coverage report

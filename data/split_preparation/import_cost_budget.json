@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "module_prefix": "scpn_quantum_control",
+  "measurement": "fresh interpreter, ordinary importlib import, complete sys.modules prefix count",
+  "source_revision": "81a00f61472cea575f10a862134c0e9964127938",
+  "cases": [
+    {
+      "module": "scpn_quantum_control",
+      "maximum_first_party_modules": 1,
+      "observed_modules": [
+        "scpn_quantum_control"
+      ]
+    },
+    {
+      "module": "scpn_quantum_control.phase",
+      "maximum_first_party_modules": 2,
+      "observed_modules": [
+        "scpn_quantum_control",
+        "scpn_quantum_control.phase"
+      ]
+    },
+    {
+      "module": "scpn_quantum_control.analysis",
+      "maximum_first_party_modules": 2,
+      "observed_modules": [
+        "scpn_quantum_control",
+        "scpn_quantum_control.analysis"
+      ]
+    },
+    {
+      "module": "scpn_quantum_control.compiler",
+      "maximum_first_party_modules": 2,
+      "observed_modules": [
+        "scpn_quantum_control",
+        "scpn_quantum_control.compiler"
+      ]
+    },
+    {
+      "module": "scpn_quantum_control.benchmark_harness",
+      "maximum_first_party_modules": 2,
+      "observed_modules": [
+        "scpn_quantum_control",
+        "scpn_quantum_control.benchmark_harness"
+      ]
+    },
+    {
+      "module": "scpn_quantum_control.dla_parity",
+      "maximum_first_party_modules": 2,
+      "observed_modules": [
+        "scpn_quantum_control",
+        "scpn_quantum_control.dla_parity"
+      ]
+    },
+    {
+      "module": "scpn_quantum_control.experimental.llm_qpu.contracts",
+      "maximum_first_party_modules": 4,
+      "observed_modules": [
+        "scpn_quantum_control",
+        "scpn_quantum_control.experimental",
+        "scpn_quantum_control.experimental.llm_qpu",
+        "scpn_quantum_control.experimental.llm_qpu.contracts"
+      ]
+    },
+    {
+      "module": "scpn_quantum_control.phase.qnode_affinity_benchmark",
+      "maximum_first_party_modules": 71,
+      "observed_modules": [
+        "scpn_quantum_control",
+        "scpn_quantum_control._cgroup_paths",
+        "scpn_quantum_control._rust_accel",
+        "scpn_quantum_control.dense_budget",
+        "scpn_quantum_control.differentiable",
+        "scpn_quantum_control.differentiable_batch_helpers",
+        "scpn_quantum_control.differentiable_canonical_api",
+        "scpn_quantum_control.differentiable_consistency",
+        "scpn_quantum_control.differentiable_custom_derivatives",
+        "scpn_quantum_control.differentiable_exact_modes",
+        "scpn_quantum_control.differentiable_finite_difference",
+        "scpn_quantum_control.differentiable_fisher",
+        "scpn_quantum_control.differentiable_gradient_descent",
+        "scpn_quantum_control.differentiable_implicit_sensitivity",
+        "scpn_quantum_control.differentiable_jax_adapter",
+        "scpn_quantum_control.differentiable_levenberg_marquardt",
+        "scpn_quantum_control.differentiable_natural_gradient",
+        "scpn_quantum_control.differentiable_parameter_contracts",
+        "scpn_quantum_control.differentiable_parameter_shift",
+        "scpn_quantum_control.differentiable_registered_custom",
+        "scpn_quantum_control.differentiable_residual_weights",
+        "scpn_quantum_control.differentiable_result_contracts",
+        "scpn_quantum_control.differentiable_scalar_kernels",
+        "scpn_quantum_control.differentiable_sparse_derivatives",
+        "scpn_quantum_control.differentiable_stochastic_estimators",
+        "scpn_quantum_control.differentiable_stochastic_policy",
+        "scpn_quantum_control.differentiable_transform_helpers",
+        "scpn_quantum_control.differentiable_vmap",
+        "scpn_quantum_control.execution_memory",
+        "scpn_quantum_control.execution_reservations",
+        "scpn_quantum_control.phase",
+        "scpn_quantum_control.phase.qnode_affinity_benchmark",
+        "scpn_quantum_control.phase.qnode_circuit",
+        "scpn_quantum_control.phase.qnode_circuit_builders",
+        "scpn_quantum_control.phase.qnode_circuit_contracts",
+        "scpn_quantum_control.phase.qnode_circuit_differentiation",
+        "scpn_quantum_control.phase.qnode_circuit_execution",
+        "scpn_quantum_control.phase.qnode_circuit_support",
+        "scpn_quantum_control.phase.qnode_count_mapping",
+        "scpn_quantum_control.program_ad_adjoint",
+        "scpn_quantum_control.program_ad_adjoint_generation",
+        "scpn_quantum_control.program_ad_alias_analysis",
+        "scpn_quantum_control.program_ad_alias_contracts",
+        "scpn_quantum_control.program_ad_array_indexing",
+        "scpn_quantum_control.program_ad_assembly_primitives",
+        "scpn_quantum_control.program_ad_broadcast_assembly",
+        "scpn_quantum_control.program_ad_cumulative_primitives",
+        "scpn_quantum_control.program_ad_effect_ir",
+        "scpn_quantum_control.program_ad_elementwise_primitives",
+        "scpn_quantum_control.program_ad_interpolation_primitives",
+        "scpn_quantum_control.program_ad_linalg_memory",
+        "scpn_quantum_control.program_ad_linalg_primitives",
+        "scpn_quantum_control.program_ad_product_primitives",
+        "scpn_quantum_control.program_ad_reduction_primitives",
+        "scpn_quantum_control.program_ad_registry",
+        "scpn_quantum_control.program_ad_rust_bridge",
+        "scpn_quantum_control.program_ad_selection_primitives",
+        "scpn_quantum_control.program_ad_shape_transforms",
+        "scpn_quantum_control.program_ad_signal_primitives",
+        "scpn_quantum_control.program_ad_stack_block_assembly",
+        "scpn_quantum_control.program_ad_stencil_primitives",
+        "scpn_quantum_control.program_ad_trapezoid_primitives",
+        "scpn_quantum_control.source_admission",
+        "scpn_quantum_control.whole_program_ad_api",
+        "scpn_quantum_control.whole_program_ad_result",
+        "scpn_quantum_control.whole_program_frontend",
+        "scpn_quantum_control.whole_program_frontend_contracts",
+        "scpn_quantum_control.whole_program_trace_metadata",
+        "scpn_quantum_control.whole_program_trace_predicates",
+        "scpn_quantum_control.whole_program_trace_runtime",
+        "scpn_quantum_control.whole_program_trace_values"
+      ]
+    },
+    {
+      "module": "scpn_quantum_control.studio_workspace",
+      "maximum_first_party_modules": 2,
+      "observed_modules": [
+        "scpn_quantum_control",
+        "scpn_quantum_control.studio_workspace"
+      ]
+    }
+  ]
+}

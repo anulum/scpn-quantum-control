@@ -24,6 +24,13 @@ def __getattr__(name):
     module_name = _EXPORT_MODULES.get(name)
     return getattr(import_module(f"{__name__}.{module_name}"), name)
 """
+ABSOLUTE_FACADE = """from importlib import import_module
+_PUBLIC_EXPORTS = {"Public": ("scpn_quantum_control.phase.child", "Original")}
+def __getattr__(name):
+    target = _PUBLIC_EXPORTS.get(name)
+    origin = import_module(target[0])
+    return origin if target[1] is None else getattr(origin, target[1])
+"""
 
 
 def _scan(tmp_path: Path, source: str) -> tuple[list[Edge], ImportVisibility]:
@@ -49,6 +56,185 @@ def test_lazy_export_table_exposes_one_dependency_per_module(tmp_path: Path) -> 
     ]
     assert len(visibility.sites) == 1
     assert visibility.sites[0].scope == "__getattr__"
+
+
+def test_absolute_alias_and_module_exports_retain_their_runtime_dependency(
+    tmp_path: Path,
+) -> None:
+    """Expose one defining-module edge for aliases and genuine module exports.
+
+    Parameters
+    ----------
+    tmp_path
+        Temporary source file passed through the actual ownership scanner.
+
+    """
+    source = ABSOLUTE_FACADE.replace(
+        '"Public": ("scpn_quantum_control.phase.child", "Original")',
+        '"Public": ("scpn_quantum_control.phase.child", "Original"), '
+        '"Module": ("scpn_quantum_control.phase.child", None), '
+        '"External": ("numpy", "array")',
+    )
+    edges, visibility = _scan(tmp_path, source)
+    assert not visibility.problems
+    assert [
+        (edge.target_module, edge.kind, edge.literal_table) for edge in edges if edge.literal_table
+    ] == [("scpn_quantum_control.phase.child", "lazy", True)]
+    assert [edge.target_module for edge in edges if edge.kind == "string_ref"] == [
+        "scpn_quantum_control.phase.child",
+        "scpn_quantum_control.phase.child",
+    ]
+    assert [dependency[0] for dependency in visibility.dependencies] == [
+        "scpn_quantum_control.phase.child",
+    ]
+    assert len(visibility.sites) == 1
+    assert visibility.sites[0].scope == "__getattr__"
+
+
+@pytest.mark.parametrize(
+    "before,after,error",
+    [
+        ('"Public":', '"not a name":', "invalid lazy binding name"),
+        ('"Public":', "None:", "nonliteral key"),
+        (
+            '"Public": ("scpn_quantum_control.phase.child", "Original")',
+            '"Public": ("scpn_quantum_control.phase.child", "Original"), '
+            '"Public": ("scpn_quantum_control.phase.other", "Other")',
+            "duplicate key",
+        ),
+        (
+            '("scpn_quantum_control.phase.child", "Original")',
+            "()",
+            "literal module/attribute pair",
+        ),
+        (
+            '("scpn_quantum_control.phase.child", "Original")',
+            "build_pair()",
+            "literal module/attribute pair",
+        ),
+        (
+            '("scpn_quantum_control.phase.child", "Original")',
+            '["module", "Original"]',
+            "literal module/attribute pair",
+        ),
+        ('"scpn_quantum_control.phase.child"', "module_name", "invalid absolute lazy module"),
+        ('"scpn_quantum_control.phase.child"', "None", "invalid absolute lazy module"),
+        ('"scpn_quantum_control.phase.child"', '""', "invalid absolute lazy module"),
+        ('"scpn_quantum_control.phase.child"', '".phase.child"', "invalid absolute lazy module"),
+        (
+            '"scpn_quantum_control.phase.child"',
+            '"package../child"',
+            "invalid absolute lazy module",
+        ),
+        ('"Original"', "runtime_attribute", "invalid lazy origin attribute"),
+        ('"Original"', "1", "invalid lazy origin attribute"),
+        ('"Original"', '"not.an.attribute"', "invalid lazy origin attribute"),
+        ('"Original"', '""', "invalid lazy origin attribute"),
+        (
+            '_PUBLIC_EXPORTS = {"Public": ("scpn_quantum_control.phase.child", "Original")}',
+            "_PUBLIC_EXPORTS = build_table()",
+            "one literal lazy declaration",
+        ),
+        ("def __getattr__", "def resolve", "absolute lazy table/resolver mismatch"),
+        ("_PUBLIC_EXPORTS.get(name)", "_OTHER.get(name)", "absolute lazy table/resolver mismatch"),
+        (
+            "import_module(target[0])",
+            "import_module(other[0])",
+            "absolute lazy table/resolver mismatch",
+        ),
+        (
+            "    origin =",
+            '    target = ("outside.module", "Wrong")\n    origin =',
+            "absolute lazy table/resolver mismatch",
+        ),
+    ],
+)
+def test_absolute_lazy_declarations_fail_closed(
+    tmp_path: Path, before: str, after: str, error: str
+) -> None:
+    """Refuse nonliteral origins and loaders disconnected from the declared mapping.
+
+    Parameters
+    ----------
+    tmp_path
+        Actual scanner input path.
+    before
+        Original declaration or resolver fragment.
+    after
+        Malformed replacement whose provenance must be rejected.
+    error
+        Required declaration error emitted by the source scanner.
+
+    """
+    _, visibility = _scan(tmp_path, ABSOLUTE_FACADE.replace(before, after))
+    assert any(error in problem for problem in visibility.problems)
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        '_PUBLIC_EXPORTS["Other"] = ("outside.module", "Wrong")',
+        '_PUBLIC_EXPORTS.update({"Other": ("outside.module", "Wrong")})',
+        '_PUBLIC_EXPORTS |= {"Other": ("outside.module", "Wrong")}',
+        'del _PUBLIC_EXPORTS["Public"]',
+        "del _PUBLIC_EXPORTS",
+        "_PUBLIC_EXPORTS = {}",
+    ],
+)
+def test_absolute_lazy_mapping_cannot_gain_an_unreviewed_writer(
+    tmp_path: Path, mutation: str
+) -> None:
+    """Expose mutation rather than trusting a now-incomplete literal declaration.
+
+    Parameters
+    ----------
+    tmp_path
+        Actual scanner input path.
+    mutation
+        Runtime write appended to an otherwise valid declaration.
+
+    """
+    _, visibility = _scan(tmp_path, ABSOLUTE_FACADE + mutation + "\n")
+    assert visibility.problems
+
+
+def test_converted_production_facades_have_visible_original_origins() -> None:
+    """Scan every actual converted resolver without importing scientific modules."""
+    converted = 0
+    for path in (ROOT / "src/scpn_quantum_control").rglob("__init__.py"):
+        source = path.read_text(encoding="utf-8")
+        if "_PUBLIC_EXPORTS:" not in source:
+            continue
+        relative = path.relative_to(ROOT).as_posix()
+        module = relative[4:].removesuffix("/__init__.py").split("/")
+        visibility = ImportVisibility()
+        edges, _ = scan_python(source, relative, module, True, visibility=visibility)
+        assert not visibility.problems, (relative, visibility.problems)
+        assert len(visibility.sites) == 1, relative
+        assert any(edge.literal_table and edge.kind == "lazy" for edge in edges) or (
+            relative == "src/scpn_quantum_control/accel/__init__.py"
+        ), relative
+        converted += 1
+    assert converted == 45
+
+
+def test_literal_external_import_alias_is_not_a_first_party_dependency(tmp_path: Path) -> None:
+    """Keep an inspectable external importer out of the first-party target graph.
+
+    Parameters
+    ----------
+    tmp_path
+        Actual source-scanner input file.
+
+    """
+    edges, visibility = _scan(
+        tmp_path,
+        'from importlib import import_module as load\nload("external_package.child")\n',
+    )
+    assert not visibility.problems
+    assert not visibility.sites
+    assert not visibility.dependencies
+    assert not edges
 
 
 @pytest.mark.parametrize(
