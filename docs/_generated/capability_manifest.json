@@ -7,13 +7,13 @@
     "model_documentation_pages": 14,
     "notebook_files": 109,
     "optional_extras": 43,
-    "public_api_exports": 842,
+    "public_api_exports": 847,
     "public_documentation_pages": 379,
-    "python_model_classes": 1459,
-    "python_model_source_modules": 750,
+    "python_model_classes": 1463,
+    "python_model_source_modules": 752,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1451
+    "test_files": 1454
   },
   "documentation": {
     "examples": [
@@ -1848,6 +1848,10 @@
       {
         "name": "DepthProvider",
         "path": "src/scpn_quantum_control/hardware/kuramoto_layout_cost.py"
+      },
+      {
+        "name": "DesignObjective",
+        "path": "src/scpn_quantum_control/scientific_design.py"
       },
       {
         "name": "DesignReport",
@@ -5822,8 +5826,20 @@
         "path": "src/scpn_quantum_control/unsuitable_scenario_registry.py"
       },
       {
+        "name": "ScientificDesign",
+        "path": "src/scpn_quantum_control/scientific_design.py"
+      },
+      {
+        "name": "ScientificProblemParameters",
+        "path": "src/scpn_quantum_control/scientific_problem_parameters.py"
+      },
+      {
         "name": "ScientificSemantics",
         "path": "src/scpn_quantum_control/semantic_record.py"
+      },
+      {
+        "name": "ScientificUnits",
+        "path": "src/scpn_quantum_control/scientific_design.py"
       },
       {
         "name": "ScoreFunctionGradientResult",
@@ -7291,6 +7307,8 @@
       "src/scpn_quantum_control/qualification_status_projection.py",
       "src/scpn_quantum_control/quantum_sync_challenge_oracle_product.py",
       "src/scpn_quantum_control/resource_budget_gate.py",
+      "src/scpn_quantum_control/scientific_design.py",
+      "src/scpn_quantum_control/scientific_problem_parameters.py",
       "src/scpn_quantum_control/scorecard_acceptance_engine.py",
       "src/scpn_quantum_control/semantic_operations.py",
       "src/scpn_quantum_control/semantic_record.py",
@@ -7665,6 +7683,7 @@
     "DIFFERENTIABLE_CIRCUIT_SCHEMA",
     "DWaveLeapHALAdapter",
     "DegeneracyMode",
+    "DesignObjective",
     "DifferentiabilityDiagnosticReport",
     "DifferentiableArchitectureLayerId",
     "DifferentiableArchitectureMap",
@@ -7905,6 +7924,9 @@
     "SPSAObjectiveSample",
     "SPSAProbeRecord",
     "SSGFQuantumLoop",
+    "ScientificDesign",
+    "ScientificProblemParameters",
+    "ScientificUnits",
     "ScoreFunctionGradientResult",
     "ScoreFunctionSampleRecord",
     "ShotAllocationResult",
@@ -8419,6 +8441,7 @@
     "validate_differentiable_isolated_benchmark_plan",
     "validate_differentiable_rust_python_inventory",
     "validate_kuramoto_inputs",
+    "validate_scientific_design",
     "validate_scpn_control_bridge_dependency_contract",
     "validate_topology_hardware_manifest",
     "value_and_complex_step_grad",
@@ -9767,6 +9790,9 @@
       "tests/test_s4_provider_preregistration.py",
       "tests/test_sc_to_quantum.py",
       "tests/test_scientific_crosscheck_quality_gate.py",
+      "tests/test_scientific_design.py",
+      "tests/test_scientific_problem_parameters.py",
+      "tests/test_scientific_problem_quality_gate.py",
       "tests/test_scorecard_acceptance_engine.py",
       "tests/test_scorecard_acceptance_engine_quality_gate.py",
       "tests/test_scpn_upde_edge.py",

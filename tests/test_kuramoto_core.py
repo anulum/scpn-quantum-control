@@ -98,6 +98,22 @@ def test_problem_rejects_boolean_frequency_coercion() -> None:
         build_kuramoto_problem(cast(Any, [[0.0, 0.25], [0.25, 0.0]]), cast(Any, [True, False]))
 
 
+@pytest.mark.parametrize(
+    "coupling",
+    [
+        [[0.0], [0.0, 0.2]],
+        np.array([[0.0, 0.2j], [0.2j, 0.0]], dtype=np.complex128),
+        np.zeros((2, 2), dtype=[("coefficient", "f8"), ("other", "f8")]),
+    ],
+)
+def test_public_problem_refuses_unsupported_numeric_matrix_inputs(coupling: object) -> None:
+    """Public construction exercises every original numeric-conversion refusal."""
+    frequencies = np.zeros(2)
+    with pytest.raises(ValueError):
+        build_kuramoto_problem(cast(Any, coupling), frequencies)
+    np.testing.assert_array_equal(frequencies, [0.0, 0.0])
+
+
 def test_facade_compiles_hamiltonians_and_circuit_for_arbitrary_problem() -> None:
     """The public facade compiles sparse, dense, and circuit forms."""
     problem = _problem()

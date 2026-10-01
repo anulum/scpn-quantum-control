@@ -119,6 +119,7 @@
         "static-analysis"
       ],
       "jobs": [
+        "scientific-problem-quality",
         "qpu-compute-types-quality",
         "cosimulation-quality",
         "dla-topology-objectives-quality",
@@ -444,6 +445,7 @@
     "fep-ffi-contract-quality",
     "differentiable-sparse-derivatives-quality",
     "program-ad-adjoint-quality",
+    "scientific-problem-quality",
     "qpu-compute-types-quality",
     "hls-cosimulation-evidence-quality",
     "cosimulation-quality",

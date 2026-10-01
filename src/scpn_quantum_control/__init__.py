@@ -793,6 +793,7 @@ if TYPE_CHECKING:
         measure_order_parameter,
         simulate_variant_trajectory,
         validate_kuramoto_inputs,
+        validate_scientific_design,
     )
     from .mitigation.compound_mitigation import compound_mitigate_pipeline
     from .mitigation.pec import PECResult, pauli_twirl_decompose, pec_sample
@@ -857,6 +858,8 @@ if TYPE_CHECKING:
         TraceSTDPState,
     )
     from .qsnn.training import QSNNParameterShiftDescentRun, QSNNTrainer
+    from .scientific_design import DesignObjective, ScientificDesign, ScientificUnits
+    from .scientific_problem_parameters import ScientificProblemParameters
     from .sensing import (
         NVCenter,
         NVFieldCalibration,
@@ -3127,6 +3130,17 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
     "prove_identity": ("scpn_quantum_control.identity.identity_key", "prove_identity"),
     "verify_identity": ("scpn_quantum_control.identity.identity_key", "verify_identity"),
     "KuramotoProblem": ("scpn_quantum_control.kuramoto_core", "KuramotoProblem"),
+    "ScientificDesign": ("scpn_quantum_control.scientific_design", "ScientificDesign"),
+    "ScientificUnits": ("scpn_quantum_control.scientific_design", "ScientificUnits"),
+    "DesignObjective": ("scpn_quantum_control.scientific_design", "DesignObjective"),
+    "ScientificProblemParameters": (
+        "scpn_quantum_control.scientific_problem_parameters",
+        "ScientificProblemParameters",
+    ),
+    "validate_scientific_design": (
+        "scpn_quantum_control.kuramoto_core",
+        "validate_scientific_design",
+    ),
     "build_kuramoto_problem": ("scpn_quantum_control.kuramoto_core", "build_kuramoto_problem"),
     "compile_analog_program": ("scpn_quantum_control.kuramoto_core", "compile_analog_program"),
     "compile_dense_hamiltonian": (
@@ -3512,6 +3526,11 @@ __all__ = [
     "eeg_plv_to_vqe",
     "eeg_quantum_kernel",
     "KuramotoProblem",
+    "ScientificDesign",
+    "ScientificUnits",
+    "DesignObjective",
+    "ScientificProblemParameters",
+    "validate_scientific_design",
     "Problem",
     "Backend",
     "Experiment",

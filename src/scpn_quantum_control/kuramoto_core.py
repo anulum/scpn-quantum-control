@@ -27,6 +27,7 @@ if TYPE_CHECKING:
     from .hardware.analog_kuramoto import AnalogKuramotoPlatform, AnalogKuramotoProgram
     from .hardware.hybrid_digital_analog import HybridDigitalAnalogProgram
     from .phase.kuramoto_variants import KuramotoVariantResult
+    from .scientific_design import ScientificDesign
 
 JsonScalar = str | int | float | bool | None
 
@@ -127,6 +128,139 @@ def build_kuramoto_problem(
 ) -> KuramotoProblem:
     """Create a validated Kuramoto-XY problem from arbitrary arrays."""
     return KuramotoProblem(K_nm=K_nm, omega=omega, metadata=metadata or {})
+
+
+def validate_scientific_design(problem: KuramotoProblem, design: ScientificDesign) -> None:
+    """Validate a scientific declaration against this original problem owner.
+
+    Parameters
+    ----------
+    problem
+        Existing finite symmetric coupling matrix and intrinsic frequencies.
+    design
+        Immutable explicit model, units, graph, initial/history state and objective.
+
+    Raises
+    ------
+    ValueError
+        Units, indices, shapes or declared model semantics are unsupported.
+
+    Notes
+    -----
+    No state is saved or submitted and no unit or phase-to-spin conversion occurs.
+
+    """
+    from .scientific_design import DesignObjective, ScientificDesign, ScientificUnits
+
+    if not isinstance(problem, KuramotoProblem):
+        raise ValueError("problem requires KuramotoProblem")
+    problem.validate()
+    if not isinstance(design, ScientificDesign):
+        raise ValueError("design requires ScientificDesign")
+    if design.model not in ("phase_kuramoto", "quantum_xy"):
+        raise ValueError("model must be phase_kuramoto or quantum_xy")
+    if design.normalisation not in ("pairwise_sum", "population_mean"):
+        raise ValueError("normalisation must be pairwise_sum or population_mean")
+    if design.coordinate_space not in ("logical", "physical"):
+        raise ValueError("coordinate_space must be logical or physical")
+    if not isinstance(design.units, ScientificUnits):
+        raise ValueError("units requires explicit ScientificUnits")
+    units = design.units
+    if (units.time, units.frequency, units.coupling) not in (
+        ("s", "rad/s", "rad/s"),
+        ("1", "1", "1"),
+    ) or units.observable != "1":
+        raise ValueError("units must declare one consistent dimensional or dimensionless regime")
+    n = problem.n_oscillators
+    phase = design.model == "phase_kuramoto"
+    if units.state != ("rad" if phase else "1"):
+        raise ValueError("units.state must distinguish phase angles from quantum amplitudes")
+    expected_observable = "phase_order_parameter" if phase else "spin_z"
+    if design.observable != expected_observable:
+        raise ValueError("observable must match the declared phase or quantum-spin model")
+    if design.observable_weights.shape != (n,):
+        raise ValueError(f"observable_weights must have shape ({n},)")
+    if phase and (
+        np.any(design.observable_weights < 0.0) or not np.any(design.observable_weights > 0.0)
+    ):
+        raise ValueError("phase observable_weights must be nonnegative and have positive total")
+    if not phase and design.normalisation != "pairwise_sum":
+        raise ValueError("quantum_xy requires the original pairwise_sum convention")
+    state_shape = (n,) if phase else (2**n,)
+    if design.initial_state.shape != state_shape:
+        raise ValueError(f"initial_state must have shape {state_shape}")
+    if not phase and not np.isclose(
+        np.vdot(design.initial_state, design.initial_state).real, 1.0, rtol=0.0, atol=1e-12
+    ):
+        raise ValueError("quantum initial_state must have unit norm")
+    edges: set[tuple[int, int]] = set()
+    for edge in design.topology:
+        if len(edge) != 2 or any(not isinstance(i, int) or isinstance(i, bool) for i in edge):
+            raise ValueError("topology requires integer index pairs")
+        first, second = edge
+        if not 0 <= first < second < n or edge in edges:
+            raise ValueError("topology requires unique ordered undirected edges")
+        edges.add(edge)
+    if tuple(sorted(edges)) != design.topology:
+        raise ValueError("topology edges must be sorted")
+    for first in range(n):
+        for second in range(first + 1, n):
+            if (problem.K_nm[first, second] != 0.0 or problem.K_nm[second, first] != 0.0) and (
+                first,
+                second,
+            ) not in edges:
+                raise ValueError("topology must cover every nonzero coupling")
+    times, states = design.history_times, design.history_states
+    if (times is None) != (states is None):
+        raise ValueError("history_times and history_states must be supplied together")
+    if times is not None and states is not None:
+        if not phase:
+            raise ValueError("quantum_xy phase history is unsupported")
+        if times.ndim != 1 or len(times) == 0 or states.shape != (len(times), n):
+            raise ValueError("history must have shapes (H,) and (H,N) with H > 0")
+        if times[-1] != 0.0 or np.any(np.diff(times) <= 0.0):
+            raise ValueError("history_times must increase strictly and end at zero")
+        if not np.array_equal(states[-1], design.initial_state):
+            raise ValueError("history_states must end at initial_state")
+    objective = design.objective
+    if not isinstance(objective, DesignObjective):
+        raise ValueError("objective requires DesignObjective")
+    if objective.kind not in (
+        "simulate",
+        "synchronise",
+        "maximise_observable",
+        "minimise_gate_cost",
+    ):
+        raise ValueError("objective kind is unsupported")
+    expected_unit = "gate" if objective.kind == "minimise_gate_cost" else "1"
+    if objective.unit != expected_unit:
+        raise ValueError("objective unit does not match its estimand")
+    target = objective.target
+    if target is not None and (
+        isinstance(target, bool) or not isinstance(target, (int, float)) or not np.isfinite(target)
+    ):
+        raise ValueError("objective target must be a finite scalar")
+    if objective.kind == "simulate" and target is not None:
+        raise ValueError("simulate objective has no target")
+    if objective.kind == "synchronise" and (
+        not phase or target is None or not 0.0 <= target <= 1.0
+    ):
+        raise ValueError("synchronise requires a phase-order target in [0,1]")
+    if objective.kind == "minimise_gate_cost" and (
+        phase or (target is not None and (target < 0.0 or target != int(target)))
+    ):
+        raise ValueError(
+            "minimise_gate_cost requires a quantum model and nonnegative integer target"
+        )
+    allowed = {"omega", "K_nm", "initial_state_real", "observable_weights"}
+    if not phase:
+        allowed.add("initial_state_imag")
+    if times is not None:
+        allowed.update(("history_times", "history_states"))
+    if len(set(design.trainable)) != len(design.trainable) or any(
+        key not in allowed for key in design.trainable
+    ):
+        raise ValueError("trainable requires unique declared parameter keys")
 
 
 def compile_hamiltonian(problem: KuramotoProblem) -> SparsePauliOp:

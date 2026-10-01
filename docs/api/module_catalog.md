@@ -4,9 +4,9 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **750 modules** across **41 package families**
-- **4152 documented public module-level symbols**
-- **842 root-package exports** governed by the stable API surface
+- **752 modules** across **41 package families**
+- **4157 documented public module-level symbols**
+- **847 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
 the [API selection guide](../api.md) and [stable facades](../stable_facades_api.md).
@@ -6281,11 +6281,11 @@ No public module-level class or function is declared.
 
 Small public facade for Kuramoto-XY problems.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/kuramoto_core.py) · Public symbols: **10**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/kuramoto_core.py) · Public symbols: **11**
 
 **Classes:** `KuramotoProblem`
 
-**Functions:** `validate_kuramoto_inputs()`, `build_kuramoto_problem()`, `compile_hamiltonian()`, `compile_dense_hamiltonian()`, `compile_trotter_circuit()`, `compile_analog_program()`, `compile_hybrid_program()`, `measure_order_parameter()`, `simulate_variant_trajectory()`
+**Functions:** `validate_kuramoto_inputs()`, `build_kuramoto_problem()`, `validate_scientific_design()`, `compile_hamiltonian()`, `compile_dense_hamiltonian()`, `compile_trotter_circuit()`, `compile_analog_program()`, `compile_hybrid_program()`, `measure_order_parameter()`, `simulate_variant_trajectory()`
 
 ### `scpn_quantum_control.kyma_mechanism_benchmark_product`
 
@@ -6692,6 +6692,22 @@ Fail-closed compile & dense resource budget product surface.
 **Classes:** `BudgetDimension`, `ResourceBudgetEstimate`, `ResourceBudgetDecision`, `ResourceBudgetExceededError`
 
 **Functions:** `list_budget_dimension_ids()`, `get_budget_dimension()`, `iter_budget_dimensions()`, `estimate_resource_budget()`, `check_resource_budget()`, `enforce_resource_budget()`, `build_resource_budget_registry()`, `assert_resource_budget_integrity()`
+
+### `scpn_quantum_control.scientific_design`
+
+Immutable supplied design inputs, independent of Studio and solver engines.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/scientific_design.py) · Public symbols: **3**
+
+**Classes:** `ScientificUnits`, `DesignObjective`, `ScientificDesign`
+
+### `scpn_quantum_control.scientific_problem_parameters`
+
+Bind original problems to immutable scientific identity and workspace schemas.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/scientific_problem_parameters.py) · Public symbols: **1**
+
+**Classes:** `ScientificProblemParameters`
 
 ### `scpn_quantum_control.scorecard_acceptance_engine`
 

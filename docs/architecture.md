@@ -21,6 +21,84 @@ under `accel/` now ships as the standalone `oscillatools` distribution;
 This split is why the same repository can support both reproducible research
 workflows and integration-oriented development.
 
+## Scientific problem inputs and parameter schemas
+
+`KuramotoProblem` remains the original symmetric coupling/frequency owner.
+Its existing constructors, compilers and raw metadata codec retain their
+contracts. `ScientificDesign` supplies an immutable declaration;
+`ScientificProblemParameters(problem, design)` validates that declaration
+against the actual problem and produces a separate `scientific_problem.v1`
+companion. The numerical owners never import Studio or Atlas. The adapter
+consumes the existing workspace `ParameterSpec`, typed float64 payloads and
+canonical codec instead of defining another workspace format or solver.
+
+The companion identity includes the declared model and coupling convention,
+logical/physical coordinates, explicit graph, units, initial/history state,
+observable, design objective and trainable parameter names. Arrays own immutable
+byte buffers; caller edits and mutations of exported dictionaries cannot rebind
+an existing identity. Topology contains sorted unique undirected index pairs,
+covers every nonzero coupling, and retains declared zero-weight edges.
+
+| Declaration | Phase dynamics | Quantum XY spin model |
+|---|---|---|
+| Model | `phase_kuramoto` | `quantum_xy` |
+| Coupling convention | `pairwise_sum` or `population_mean` | Original `pairwise_sum` |
+| Initial state | `float64 (N,)` phase angles | Normalized `complex128 (2**N,)` amplitudes |
+| State unit | `rad` | `1` |
+| Observable | `phase_order_parameter`, nonnegative weights with positive total | `spin_z`, finite per-qubit weights |
+| History | Optional strictly increasing times ending at zero; final state equals initial state | Phase history refused |
+| Objective | Simulation, synchronisation target in `[0,1]`, observable maximisation | Simulation, observable maximisation, gate-count minimisation |
+
+Rates and coupling must declare `rad/s` with time `s`, or explicitly declare
+dimensionless rates/coupling/time as `1`. Both observables use unit `1`;
+gate-count targets use `gate`. A `Hz` label, mixed dimensional regime, invalid
+observable/state shape, nonfinite input or incompatible model refuses before
+export or compilation. Units are checked exactly and never converted by labels.
+Physical indices are a declaration, without placement or calibration evidence.
+
+`effective_problem()` returns an independent original-owner problem. Phase
+`population_mean` explicitly projects the supplied weights to `K/N`; pairwise
+sum preserves them. The frequency vector and units retain their meaning.
+The companion's `compile_hamiltonian()` only accepts a declared quantum XY
+model and calls the original compiler. A phase declaration cannot silently
+become a quantum-spin model. Initial state, history, observable and objectives
+are design inputs; the companion does not execute a trajectory or optimise them.
+Existing numerical consumers keep their own allocation/execution admission.
+
+```python
+import numpy as np
+from scpn_quantum_control import (
+    DesignObjective, ScientificDesign, ScientificProblemParameters,
+    ScientificUnits, build_kuramoto_problem,
+)
+
+problem = build_kuramoto_problem(
+    np.array([[0.0, 0.8], [0.8, 0.0]]), np.array([0.2, -0.3])
+)
+design = ScientificDesign(
+    model="phase_kuramoto", normalisation="population_mean",
+    coordinate_space="logical",
+    units=ScientificUnits("s", "rad/s", "rad/s", "rad", "1"),
+    topology=((0, 1),), initial_state=np.array([0.0, np.pi / 2]),
+    observable="phase_order_parameter", observable_weights=np.ones(2),
+    objective=DesignObjective("simulate", None, "1"),
+)
+parameters = ScientificProblemParameters(problem, design)
+effective = parameters.effective_problem()  # K contains 0.4 off diagonal
+values = parameters.parameter_values()
+specs = parameters.parameter_specs()
+```
+
+Schemas and values start with `omega`, then `K_nm`, preserving the established
+producer order. Quantum amplitudes have separate real/imaginary float64
+parameters; history parameters carry their original time/state units. Payloads
+retain row-major shapes and exact IEEE754 hexadecimal elements, including
+negative zero. Each specification references the companion identity and declares
+its trainable flag. Individual schema acceptance does not replace cross-field
+scientific validation: edited values require a fresh bound design/companion.
+The output is a descriptive snapshot, rather than an executor or raw-result
+reader; original stable-core/result codecs and readers are unchanged.
+
 ## Chimera and multiscale control composition
 
 `scpn_quantum_control.chimera_control` separates the surface into six
@@ -464,7 +542,7 @@ auto-generated block is the source of truth if the two ever drift.
 
 | Metric | Count |
 |--------|-------|
-| Python modules | 748 (excluding package initialisers) |
+| Python modules | 752 (excluding package initialisers) |
 | Rust crate | 1 (PyO3 0.29, **177 bindings**, 120 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
 | Julia tier | 1 (now in the `oscillatools` distribution: `oscillatools/accel/julia/order_parameter.jl`; juliacall-bridged, opt-in via `oscillatools[julia]`) |
 | Tests | CI-gated suite (90% line gate; branch telemetry required and currently observational) |
@@ -567,7 +645,7 @@ flowchart LR
 
 | Stage | Primary modules | Contract |
 |---|---|---|
-| Problem input | `kuramoto_core`, `bridge/phase_artifact.py`, `applications/*` | Validate `K_nm`, `omega`, labels, units, and provenance before compilation. |
+| Problem input | `kuramoto_core`, `scientific_design`, `scientific_problem_parameters`, `bridge/phase_artifact.py`, `applications/*` | Validate `K_nm`, `omega` and explicit model/units/state/observable declarations; bind schemas to scientific identity before compilation. |
 | Hamiltonian compiler | `bridge/knm_hamiltonian.py`, `bridge/sparse_hamiltonian.py` | Emit Pauli, dense, sparse, or analogue design representations without changing claim class. |
 | Circuit or simulator kernel | `phase/*`, `hardware/analog_kuramoto.py`, `control/*` | Build the executable circuit/kernel and record depth, shots, seeds, and parameterisation. |
 | Execution target | `hardware/*`, `benchmarks/*`, `scpn_quantum_engine` | Route to CPU/GPU/Rust references or a QPU runner; QPU submission needs explicit budget and promotion gates. |
@@ -837,6 +915,11 @@ blocked on both implementation and the governed pulse-execution boundary.
 ## Classical-to-Quantum Mapping
 
 Each module maps a classical SCPN computation to its quantum analog:
+
+These are declared encoding or modelling choices. The phase Kuramoto ODE and
+quantum XY spin dynamics have different state spaces and observables; matching
+coupling/frequency coefficients does not establish dynamical equivalence.
+Scientific problem companions keep the two models distinct.
 
 | Classical (SCPN) | Quantum (this repo) | Mapping |
 |-------------------|---------------------|---------|
