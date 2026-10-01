@@ -41,6 +41,8 @@ export interface WorkspaceController {
   inspect(): Promise<void>;
   /** Commit the exact current preview and its immutable references atomically. */
   save(): Promise<void>;
+  /** Commit a validated child archive only while its original source remains selected. */
+  saveRevision(archive: WorkspaceArchivePreview, priorJson: string, signal: AbortSignal): Promise<void>;
   /** Reload current browser selection, preserving the editor on corrupt state. */
   reload(): Promise<void>;
 }
@@ -177,6 +179,34 @@ export function useWorkspace(
         setPreview(null);
         setMessage("Workspace transaction committed. Browser cache can be evicted; export a portable backup.");
       });
+    },
+    async saveRevision(archive: WorkspaceArchivePreview, priorJson: string, signal: AbortSignal): Promise<void> {
+      cancellation.current?.abort();
+      const epoch = ++generation.current;
+      const controller = new AbortController();
+      cancellation.current = controller;
+      const combined = AbortSignal.any([signal, controller.signal]);
+      setBusy(true);
+      try {
+        const connection = store.current;
+        if (connection === null) throw new Error("Browser persistence unavailable; export the archive as a portable backup");
+        if (draft !== priorJson || (preview?.json !== priorJson && saved?.preview.json !== priorJson)) throw new Error("Parameter source changed; preview or reload the current workspace before saving");
+        const admitted = await previewWorkspaceArchive(archive.json, rawCodecs);
+        const prior = await previewWorkspaceArchive(priorJson, rawCodecs);
+        if (admitted.projectId !== prior.projectId) throw new Error("Parameter revision must retain its original project");
+        if (!current(epoch) || combined.aborted) throw new Error("Parameter revision save cancelled before transaction");
+        const priorDigest = preview?.json === priorJson ? expected.current : saved!.preview.archiveDigest;
+        const result = await connection.save(admitted.json, priorDigest, combined);
+        if (!current(epoch)) return;
+        expected.current = result.preview.archiveDigest;
+        setSaved(result);
+        setDraft(result.preview.json);
+        setPreview(null);
+        setMessage("Parameter revision transaction committed; prior revisions and results retained. Export a portable backup.");
+      } catch (cause: unknown) {
+        if (current(epoch)) report(cause);
+        throw cause;
+      } finally { if (current(epoch)) setBusy(false); }
     },
     async reload(): Promise<void> {
       await operation(async epoch => {

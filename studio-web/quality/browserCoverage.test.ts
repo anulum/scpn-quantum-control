@@ -13,9 +13,35 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { readBrowserCoverage } from "./browserCoverage";
-import { browserOwners, coverageObject, panelBrowserOwner, qualifyBrowserRecord, workbenchBrowserOwners } from "./browserRecord";
+import { browserOwners, coverageObject, panelBrowserOwner, parameterBrowserOwners, qualifyBrowserRecord, workbenchBrowserOwners } from "./browserRecord";
 
 describe("original native counter conversion", () => {
+  it("admits all eight original owners from the actual linked parameter journey", async () => {
+    const filename = process.env["STUDIO_PARAMETER_COVERAGE"];
+    if (!filename) throw new Error("Supply actual parameter_graph_editor evidence");
+    const maps = await readBrowserCoverage(filename, process.cwd());
+    expect(new Set(maps.flatMap(map => Object.keys(map)))).toEqual(
+      new Set([...parameterBrowserOwners].map(owner => resolve(process.cwd(), "." + owner))),
+    );
+  });
+  it.each([...parameterBrowserOwners])("keeps %s mandatory in actual parameter evidence", async omitted => {
+    const filename = process.env["STUDIO_PARAMETER_COVERAGE"];
+    if (!filename) throw new Error("Supply actual parameter_graph_editor evidence");
+    await readBrowserCoverage(filename, process.cwd());
+    const evidence = coverageObject(JSON.parse(await readFile(filename, "utf8")) as unknown);
+    if (!Array.isArray(evidence["native_v8_coverage"])) throw new Error("Actual native counters missing");
+    evidence["native_v8_coverage"] = evidence["native_v8_coverage"].filter(value => {
+      const native = coverageObject(coverageObject(value)["coverage"]);
+      if (typeof native["url"] !== "string") throw new Error("Actual source URL missing");
+      return new URL(native["url"]).pathname !== omitted;
+    });
+    const directory = await mkdtemp(join(tmpdir(), "studio-parameter-owner-refusal-"));
+    try {
+      const rejected = join(directory, "omitted-owner.json");
+      await writeFile(rejected, JSON.stringify(evidence), "utf8");
+      await expect(readBrowserCoverage(rejected, process.cwd())).rejects.toThrow("Native workspace coverage has missing production owners");
+    } finally { await rm(directory, { recursive: true }); }
+  });
   it("admits all fourteen owners from the actual workbench navigation journey", async () => {
     const filename = process.env["STUDIO_WORKBENCH_COVERAGE"];
     if (!filename) throw new Error("Run actual workbench_navigation and supply its evidence path");

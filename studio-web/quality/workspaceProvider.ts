@@ -30,6 +30,8 @@ const provider: CoverageProviderModule = {
       if (panelFilename) browser.push(...await readBrowserCoverage(panelFilename, context.config.root));
       const workbenchFilename = process.env["STUDIO_WORKBENCH_COVERAGE"];
       if (workbenchFilename) browser.push(...await readBrowserCoverage(workbenchFilename, context.config.root));
+      const parameterFilename = process.env["STUDIO_PARAMETER_COVERAGE"];
+      if (parameterFilename) browser.push(...await readBrowserCoverage(parameterFilename, context.config.root));
       await initialize(context);
     };
     delegate.generateCoverage = async context => {

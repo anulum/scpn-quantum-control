@@ -376,6 +376,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "workspace_recovery",
             "workspace_panel_refusal",
             "workbench_navigation",
+            "parameter_graph_editor",
         ),
         required=True,
     )
@@ -394,10 +395,18 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         url = loopback_url(args.base_url)
         evidence["base_url"] = url
-        if args.scenario in ("workspace_recovery", "workbench_navigation"):
+        if args.scenario in (
+            "workspace_recovery",
+            "workbench_navigation",
+            "parameter_graph_editor",
+        ):
             if args.workspace_source_url is None:
                 raise ValueError(f"{args.scenario} requires --workspace-source-url")
-            if args.scenario == "workbench_navigation":
+            if args.scenario == "parameter_graph_editor":
+                from tools.studio_parameter_browser_journey import run_parameter_journey
+
+                run_parameter_journey(url, args.workspace_source_url, evidence)
+            elif args.scenario == "workbench_navigation":
                 from tools.studio_workbench_browser_journey import run_workbench_journey
 
                 run_workbench_journey(url, args.workspace_source_url, evidence)
@@ -408,7 +417,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         else:
             if args.workspace_source_url is not None:
                 raise ValueError(
-                    "--workspace-source-url is valid only for workspace_recovery/workbench_navigation"
+                    "--workspace-source-url is valid only for workspace_recovery/workbench_navigation/parameter_graph_editor"
                 )
             journey: Callable[[str], dict[str, object]]
             if args.scenario == "workspace_panel_refusal":

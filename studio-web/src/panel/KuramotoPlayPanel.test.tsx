@@ -52,6 +52,7 @@ describe("KuramotoPlayPanel with the real kernel", () => {
     await waitFor(() => expect(screen.getByText(/R initial/)).toBeTruthy());
     expect(screen.getByText(/verified against the committed ground truth/)).toBeTruthy();
     expect(screen.getByLabelText(/order parameter over time/)).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Edit source parameters in Workspace" }).getAttribute("href")).toBe("#/workspace");
   });
 
   it("re-integrates when a control changes", async () => {

@@ -285,13 +285,13 @@ jobs:
         run: |
           python -m pip install --require-hashes -r requirements-ci-studio-browser.txt
           python -m playwright install --with-deps chromium
-          python -m mypy --strict --explicit-package-bases tools/studio_browser_journey.py tools/studio_workbench_browser_journey.py tools/studio_resource_browser_journey.py tools/studio_workspace_browser_journey.py tools/studio_workspace_browser_coverage.py tools/studio_workspace_browser_ui.py tests/test_studio_browser_journey.py tests/test_studio_resource_browser_journey.py tests/test_studio_workspace_browser_journey.py tools/tests/test_studio_workspace_browser_coverage.py tools/tests/test_studio_browser_runtime_refusal.py tools/tests/test_studio_workbench_browser_journey.py
+          python -m mypy --strict --explicit-package-bases tools/studio_browser_journey.py tools/studio_parameter_browser_journey.py tools/studio_workbench_browser_journey.py tools/studio_resource_browser_journey.py tools/studio_workspace_browser_journey.py tools/studio_workspace_browser_coverage.py tools/studio_workspace_browser_ui.py tests/test_studio_browser_journey.py tests/test_studio_resource_browser_journey.py tests/test_studio_workspace_browser_journey.py tools/tests/test_studio_workspace_browser_coverage.py tools/tests/test_studio_browser_runtime_refusal.py tools/tests/test_studio_workbench_browser_journey.py tools/tests/test_studio_parameter_browser_journey.py
           python -m coverage run --rcfile=/dev/null --branch --concurrency=greenlet \
             --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" \
-            --include="*/tools/studio_browser_journey.py,*/tools/studio_workbench_browser_journey.py,*/tools/studio_workspace_browser_journey.py,*/tools/studio_workspace_browser_coverage.py,*/tools/studio_workspace_browser_ui.py" \
+            --include="*/tools/studio_browser_journey.py,*/tools/studio_parameter_browser_journey.py,*/tools/studio_workbench_browser_journey.py,*/tools/studio_workspace_browser_journey.py,*/tools/studio_workspace_browser_coverage.py,*/tools/studio_workspace_browser_ui.py" \
             -m pytest --noconftest -q tests/test_studio_browser_journey.py tests/test_studio_resource_browser_journey.py tests/test_studio_workspace_browser_journey.py
-          python -m ruff check tools/studio_browser_journey.py tools/studio_workbench_browser_journey.py tools/studio_resource_browser_journey.py tools/studio_workspace_browser_journey.py tools/studio_workspace_browser_coverage.py tools/studio_workspace_browser_ui.py tools/tests/test_studio_workspace_browser_coverage.py tools/tests/test_studio_browser_runtime_refusal.py tools/tests/test_studio_workbench_browser_journey.py
-          python -m ruff check --isolated --preview --select D,D413,D417,D420 --config 'lint.explicit-preview-rules = true' --config 'lint.pydocstyle.convention = "numpy"' tools/studio_browser_journey.py tools/studio_workbench_browser_journey.py tools/studio_resource_browser_journey.py tools/studio_workspace_browser_journey.py tools/studio_workspace_browser_coverage.py tools/studio_workspace_browser_ui.py
+          python -m ruff check tools/studio_browser_journey.py tools/studio_parameter_browser_journey.py tools/studio_workbench_browser_journey.py tools/studio_resource_browser_journey.py tools/studio_workspace_browser_journey.py tools/studio_workspace_browser_coverage.py tools/studio_workspace_browser_ui.py tools/tests/test_studio_workspace_browser_coverage.py tools/tests/test_studio_browser_runtime_refusal.py tools/tests/test_studio_workbench_browser_journey.py tools/tests/test_studio_parameter_browser_journey.py
+          python -m ruff check --isolated --preview --select D,D413,D417,D420 --config 'lint.explicit-preview-rules = true' --config 'lint.pydocstyle.convention = "numpy"' tools/studio_browser_journey.py tools/studio_parameter_browser_journey.py tools/studio_workbench_browser_journey.py tools/studio_resource_browser_journey.py tools/studio_workspace_browser_journey.py tools/studio_workspace_browser_coverage.py tools/studio_workspace_browser_ui.py
       - name: Check workspace Python types and native API documentation
         working-directory: .
         env:
@@ -432,13 +432,13 @@ jobs:
         run: |
           browser_coverage_command=(python -m coverage run --rcfile=/dev/null --append --branch --concurrency=greenlet
             --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage"
-            --include="*/tools/studio_browser_journey.py,*/tools/studio_workbench_browser_journey.py,*/tools/studio_workspace_browser_journey.py,*/tools/studio_workspace_browser_coverage.py,*/tools/studio_workspace_browser_ui.py")
+            --include="*/tools/studio_browser_journey.py,*/tools/studio_parameter_browser_journey.py,*/tools/studio_workbench_browser_journey.py,*/tools/studio_workspace_browser_journey.py,*/tools/studio_workspace_browser_coverage.py,*/tools/studio_workspace_browser_ui.py")
           python -m http.server 4173 --bind 127.0.0.1 --directory "$RUNNER_TEMP/studio-browser-preview" > "$RUNNER_TEMP/studio-preview.log" 2>&1 &
           preview_pid=$!
           node studio-web/node_modules/vite/bin/vite.js "$RUNNER_TEMP/studio-workbench-source/studio-web" --host 127.0.0.1 --port 4174 --strictPort > "$RUNNER_TEMP/studio-workspace-source.log" 2>&1 &
           source_pid=$!
           trap 'kill "$preview_pid" "$source_pid" 2>/dev/null || true; wait "$preview_pid" || true; wait "$source_pid" || true' EXIT
-          for attempt in 1 2 3 4 5; do
+          for ((attempt = 1; attempt <= 5; attempt++)); do
             if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
             sleep 1
           done
@@ -448,7 +448,7 @@ jobs:
             --base-url http://127.0.0.1:4173/ --output "$RUNNER_TEMP/studio-evidence-journey.json"
           "${browser_coverage_command[@]}" tools/studio_browser_journey.py --scenario resource_plan_projection \
             --base-url http://127.0.0.1:4173/ --output "$RUNNER_TEMP/studio-resource-journey.json"
-          for attempt in 1 2 3 4 5; do
+          for ((attempt = 1; attempt <= 5; attempt++)); do
             if curl --fail --silent http://127.0.0.1:4174/browser-tests/workspace.html > /dev/null; then break; fi
             sleep 1
           done
@@ -456,13 +456,16 @@ jobs:
             -m pytest --noconftest -q tools/tests/test_studio_workspace_browser_coverage.py
           STUDIO_WORKSPACE_SOURCE_URL=http://127.0.0.1:4174/ STUDIO_PREVIEW_DIR="$RUNNER_TEMP/studio-browser-preview" \
             "${browser_coverage_command[@]}" -m pytest --noconftest -q \
-            tools/tests/test_studio_browser_runtime_refusal.py tools/tests/test_studio_workbench_browser_journey.py
+            tools/tests/test_studio_browser_runtime_refusal.py tools/tests/test_studio_workbench_browser_journey.py tools/tests/test_studio_parameter_browser_journey.py
           "${browser_coverage_command[@]}" tools/studio_browser_journey.py --scenario workspace_recovery \
             --base-url http://127.0.0.1:4173/ --workspace-source-url http://127.0.0.1:4174/ \
             --output "$RUNNER_TEMP/studio-workspace-journey.json"
           "${browser_coverage_command[@]}" tools/studio_browser_journey.py --scenario workbench_navigation \
             --base-url http://127.0.0.1:4173/ --workspace-source-url http://127.0.0.1:4174/ \
             --output "$RUNNER_TEMP/studio-workbench-journey.json"
+          "${browser_coverage_command[@]}" tools/studio_browser_journey.py --scenario parameter_graph_editor \
+            --base-url http://127.0.0.1:4173/ --workspace-source-url http://127.0.0.1:4174/ \
+            --output "$RUNNER_TEMP/studio-parameter-journey.json"
       - name: Exercise original panel refusal over isolated damaged input files
         working-directory: .
         env:
@@ -520,13 +523,13 @@ jobs:
             --host 127.0.0.1 --port 4175 --strictPort > "$RUNNER_TEMP/studio-panel-refusal-source.log" 2>&1 &
           refusal_pid=$!
           trap 'kill "$refusal_pid" 2>/dev/null || true; wait "$refusal_pid" || true' EXIT
-          for attempt in 1 2 3 4 5; do
+          for ((attempt = 1; attempt <= 5; attempt++)); do
             if curl --fail --silent http://127.0.0.1:4175/browser-tests/workspace.html > /dev/null; then break; fi
             sleep 1
           done
           python -m coverage run --rcfile=/dev/null --append --branch --concurrency=greenlet \
             --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" \
-            --include="*/tools/studio_browser_journey.py,*/tools/studio_workbench_browser_journey.py,*/tools/studio_workspace_browser_journey.py,*/tools/studio_workspace_browser_coverage.py,*/tools/studio_workspace_browser_ui.py" \
+            --include="*/tools/studio_browser_journey.py,*/tools/studio_parameter_browser_journey.py,*/tools/studio_workbench_browser_journey.py,*/tools/studio_workspace_browser_journey.py,*/tools/studio_workspace_browser_coverage.py,*/tools/studio_workspace_browser_ui.py" \
             tools/studio_browser_journey.py --scenario workspace_panel_refusal \
             --base-url http://127.0.0.1:4175/ --output "$RUNNER_TEMP/studio-panel-refusal-journey.json"
       - name: Enforce Python browser runner and workspace helper exact coverage
@@ -543,22 +546,35 @@ jobs:
           STUDIO_WORKSPACE_COVERAGE: ${{ runner.temp }}/studio-workspace-journey.json
           STUDIO_PANEL_REFUSAL_COVERAGE: ${{ runner.temp }}/studio-panel-refusal-journey.json
           STUDIO_WORKBENCH_COVERAGE: ${{ runner.temp }}/studio-workbench-journey.json
+          STUDIO_PARAMETER_COVERAGE: ${{ runner.temp }}/studio-parameter-journey.json
         run: pnpm test:coverage
-      - name: Enforce workbench, workspace and coverage adapter owner exact coverage
+      - name: Enforce workbench, parameter, workspace and coverage adapter owner exact coverage
         env:
           STUDIO_WORKSPACE_COVERAGE: ${{ runner.temp }}/studio-workspace-journey.json
           STUDIO_PANEL_REFUSAL_COVERAGE: ${{ runner.temp }}/studio-panel-refusal-journey.json
           STUDIO_WORKBENCH_COVERAGE: ${{ runner.temp }}/studio-workbench-journey.json
+          STUDIO_PARAMETER_COVERAGE: ${{ runner.temp }}/studio-parameter-journey.json
         run: >-
-          pnpm exec vitest run src/app src/shared/storage src/features/workspace src/features/catalogue
+          pnpm exec vitest run src/app src/shared/storage src/features/workspace src/features/catalogue src/features/parameters
           src/QuantumStudioPanel.test.tsx src/QuantumStudioPanel.unverifiable.test.tsx quality
           --coverage --coverage.reporter=text
           --coverage.include='src/app/**/*.{ts,tsx}'
           --coverage.include='src/features/catalogue/*.{ts,tsx}'
+          --coverage.include='src/features/parameters/*.{ts,tsx}'
           --coverage.include='src/shared/storage/*.{ts,tsx}'
           --coverage.include='src/features/workspace/*.{ts,tsx}'
           --coverage.include=src/QuantumStudioPanel.tsx
           --coverage.include='quality/*.ts'
+          --coverage.exclude='**/*.test.{ts,tsx}'
+          --coverage.thresholds.statements=100
+          --coverage.thresholds.branches=100
+          --coverage.thresholds.functions=100
+          --coverage.thresholds.lines=100
+      - name: Enforce linked parameter editor owner exact coverage
+        run: >-
+          pnpm exec vitest run src/features/parameters
+          --coverage --coverage.reporter=text
+          --coverage.include='src/features/parameters/*.{ts,tsx}'
           --coverage.exclude='**/*.test.{ts,tsx}'
           --coverage.thresholds.statements=100
           --coverage.thresholds.branches=100
@@ -647,6 +663,7 @@ jobs:
             ${{ runner.temp }}/studio-resource-journey.json
             ${{ runner.temp }}/studio-workspace-journey.json
             ${{ runner.temp }}/studio-workbench-journey.json
+            ${{ runner.temp }}/studio-parameter-journey.json
             ${{ runner.temp }}/studio-workbench-source-qualification.json
             ${{ runner.temp }}/studio-panel-refusal-journey.json
             ${{ runner.temp }}/studio-panel-refusal-source.log

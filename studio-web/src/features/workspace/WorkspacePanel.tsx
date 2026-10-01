@@ -8,6 +8,7 @@
 
 import { useEffect, useState } from "react";
 import { SettingsInspector } from "../settings/SettingsInspector";
+import { ParameterWorkspace } from "../parameters/ParameterWorkspace";
 import type { RawCodec } from "../../shared/contracts";
 import type { WorkspaceArchivePreview } from "../../shared/storage/workspaceArchive";
 import type { StoredWorkspace } from "../../shared/storage/workspaceStore";
@@ -77,6 +78,8 @@ export function WorkspacePanel({ rawCodecs = noWorkspaceProducers, onSavedWorksp
         <dt>Members</dt><dd>{workspace.preview.memberNames.join(" · ") || "Root manifest only"}</dd>
       </dl>}
       {workspace.preview && <SettingsInspector preview={workspace.preview} />}
+      {(workspace.preview || (workspace.saved?.preview.json === workspace.draft && workspace.saved.preview)) &&
+        <ParameterWorkspace preview={workspace.preview ?? workspace.saved!.preview} rawCodecs={rawCodecs} saveArchive={workspace.saveRevision} />}
     </section>
   );
 }

@@ -45,6 +45,7 @@ def take_native_coverage(
     *,
     include_panel: bool = False,
     include_workbench: bool = False,
+    include_parameters: bool = False,
 ) -> list[dict[str, object]]:
     """Retain actual executed scripts and counters for source mapping.
 
@@ -58,6 +59,8 @@ def take_native_coverage(
         Also require the original panel during a real damaged-source journey.
     include_workbench
         Require the original facade, catalogue and all eight navigation owners.
+    include_parameters
+        Require the linked parameter editor, binding, draft and revision owners.
 
     Returns
     -------
@@ -95,6 +98,15 @@ def take_native_coverage(
                 "/src/app/routes/BuildView.tsx",
                 "/src/app/routes/ResultsView.tsx",
                 "/src/app/routes/UnavailableView.tsx",
+            }
+        )
+    if include_parameters:
+        owners.update(
+            {
+                "/src/features/parameters/parameterDraft.ts",
+                "/src/features/parameters/parameterRevision.ts",
+                "/src/features/parameters/ParameterEditor.tsx",
+                "/src/features/parameters/ParameterWorkspace.tsx",
             }
         )
     root = Path(__file__).resolve().parents[1] / "studio-web"

@@ -436,6 +436,44 @@ wall-clock guarantee; it does not infer a deadline. No smaller-shape action
 claims to repair an unsupported time guarantee.
 
 
+## Linked parameter editing
+
+Preview or restore a supported complete experiment archive in Workspace to
+open its parameter editor. The host must provide the archive's original source
+verifiers. An empty project has no parameters to edit. Kuramoto Play links back
+to Workspace; its bounded playback controls remain a separate instrument.
+
+Parameter specifications supply each label, dtype, shape, unit, domain and
+trainable eligibility. Scalar and vector forms, matrix cells and sparse edge
+buttons share one selection and draft. For a square matrix, coefficient `[i,j]`
+appears as edge `j → i`; negative coefficients are dashed in the diagram. Zero
+coefficients have no sparse edge and can be selected through the matrix.
+
+Directed mode edits only the selected coefficient. Choose Symmetric explicitly
+to update both coefficients on a subsequent edit; changing the policy alone
+does not repair an asymmetric matrix. Trainable checkboxes select a subset of
+the original specification's eligibility and follow the same pair policy.
+
+Apply value validates decimal text in the original unit. A separate conversion
+button supports float64 SI prefixes: `rad`/`mrad`/`urad`, `s`/`ms`/`us`, and
+`rad/s`/`mrad/s`/`rad/ms`. Conversion uses binary64 multiplication and retains the
+original stored unit. Other units and integer conversions refuse. Integer
+values remain exact decimal strings; float64 negative zero retains its sign.
+Nonfinite values, invalid domains, incompatible shapes or units leave the
+current semantic draft and saved archive unchanged.
+
+Saving waits for the draft identity and requires all form changes to be applied.
+If identity calculation fails, Retry draft identity repeats it without changing
+the draft or saved archive. Restore browser cryptography support before retrying.
+
+Undo and redo restore exact draft identity, with up to 64 retained edits.
+The editor supports scalar, vector and matrix shapes with at most 4096 total
+elements. Save parameter revision appends a new immutable child through the
+original workspace transaction. Earlier revision documents, raw source bytes
+and result references remain intact. Reload restores the saved values and
+trainable mask. Saving grants no execution authority and does not attach old
+results to the edited revision. Export a portable backup after saving.
+
 ## Local workspace and portable archives
 
 The Local workspace editor keeps the exact archive text, immutable revision

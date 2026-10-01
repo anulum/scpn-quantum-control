@@ -29,6 +29,22 @@ async function actualInput(): Promise<{ record: Record<string, unknown>; origin:
 }
 
 describe("browser coverage evidence qualification", () => {
+  it("admits actual linked parameter scripts only with their explicit cohort", async () => {
+    const filename = process.env["STUDIO_PARAMETER_COVERAGE"];
+    if (!filename) throw new Error("Supply actual parameter_graph_editor evidence");
+    const evidence = coverageObject(JSON.parse(await readFile(filename, "utf8")) as unknown);
+    if (!Array.isArray(evidence["native_v8_coverage"]) || typeof evidence["source_url"] !== "string") throw new Error("Actual parameter source counters missing");
+    for (const record of evidence["native_v8_coverage"]) {
+      const qualified = await qualifyBrowserRecord(record, process.cwd(), evidence["source_url"], false, true);
+      expect(qualified.coverage.functions.length).toBeGreaterThan(0);
+      const native = coverageObject(coverageObject(record)["coverage"]);
+      if (typeof native["url"] !== "string") throw new Error("Actual source URL missing");
+      if (new URL(native["url"]).pathname.startsWith("/src/features/parameters/")) {
+        await expect(qualifyBrowserRecord(record, process.cwd(), evidence["source_url"])).rejects.toThrow("Unowned browser coverage source");
+        await expect(qualifyBrowserRecord(record, process.cwd(), evidence["source_url"], true)).rejects.toThrow("Unowned browser coverage source");
+      }
+    }
+  });
   it("qualifies actual navigation scripts only when the complete workbench cohort is requested", async () => {
     const filename = process.env["STUDIO_WORKBENCH_COVERAGE"];
     if (!filename) throw new Error("Supply actual workbench_navigation evidence");

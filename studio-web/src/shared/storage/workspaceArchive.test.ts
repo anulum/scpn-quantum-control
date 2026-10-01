@@ -10,7 +10,35 @@
 import { expect, it } from "vitest";
 import { readFile } from "node:fs/promises";
 import { documentDigest, parseDocument, parseWorkspaceManifest, readJson, writeJson } from "../contracts";
-import { createWorkspaceArchive, maxArchiveMembers, maxExpandedBytes, previewWorkspaceArchive } from "./workspaceArchive";
+import { admitWorkspaceArchive, createWorkspaceArchive, maxArchiveMembers, maxExpandedBytes, previewWorkspaceArchive } from "./workspaceArchive";
+import corpusText from "../../../../tests/data/studio_workspace/documents.json?raw";
+import { conformanceArchive, conformanceCodecs } from "../../../browser-tests/workspaceFixture";
+
+it("exposes the original admitted revision and specifications while retaining every member byte", async () => {
+  const original = await conformanceArchive(corpusText, false);
+  const admitted = await admitWorkspaceArchive(original.json, conformanceCodecs);
+  const wire = readJson(original.json) as { members: unknown[]; parameter_units: Record<string, string> };
+  expect(admitted.preview).toEqual(original);
+  expect(admitted.members).toEqual(wire.members);
+  expect(admitted.parameterUnits).toEqual(wire.parameter_units);
+  const refs = admitted.manifest.body["revision_refs"] as readonly { sha256: string }[];
+  for (const ref of refs) {
+    expect(admitted.revisions[ref.sha256]?.schema).toBe("experiment_revision.v1");
+    expect(await documentDigest(admitted.revisions[ref.sha256]!)).toBe(ref.sha256);
+  }
+  expect(admitted.parameterSpecs["theta"]?.schema).toBe("parameter_spec.v1");
+  for (const value of [admitted, admitted.members, ...admitted.members, admitted.parameterUnits, admitted.revisions, ...Object.values(admitted.revisions), admitted.parameterSpecs, ...Object.values(admitted.parameterSpecs)]) {
+    expect(Object.isFrozen(value)).toBe(true);
+  }
+});
+
+it("retains full graph refusal at the typed admission boundary", async () => {
+  const original = await conformanceArchive(corpusText, false);
+  const wire = readJson(original.json) as { members: unknown[] };
+  wire.members.pop();
+  await expect(admitWorkspaceArchive(writeJson(wire), conformanceCodecs)).rejects.toThrow();
+  expect((await previewWorkspaceArchive(original.json, conformanceCodecs)).archiveDigest).toBe(original.archiveDigest);
+});
 
 const root = {
   schema: "quantum_workspace.v1", extensions: { exact: 9007199254740993n, negative: -0 },

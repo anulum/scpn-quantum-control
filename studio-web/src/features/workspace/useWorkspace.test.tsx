@@ -10,6 +10,26 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { expect, it } from "vitest";
 import { useWorkspace } from "./useWorkspace";
 import { maxArchiveBytes, previewWorkspaceArchive } from "../../shared/storage/workspaceArchive";
+import corpusText from "../../../../tests/data/studio_workspace/documents.json?raw";
+import { conformanceArchive, conformanceCodecs } from "../../../browser-tests/workspaceFixture";
+
+it("refuses a parameter child request when native persistence is unavailable and retains its admitted preview", async () => {
+  const archive = await conformanceArchive(corpusText, false);
+  const hook = renderHook(() => useWorkspace(conformanceCodecs));
+  await waitFor(() => expect(hook.result.current.busy).toBe(false));
+  expect(hook.result.current.storageAvailable).toBe(false);
+  act(() => hook.result.current.edit(archive.json));
+  await act(async () => { await hook.result.current.inspect(); });
+  expect(hook.result.current.preview?.archiveDigest).toBe(archive.archiveDigest);
+  await act(async () => {
+    await expect(hook.result.current.saveRevision(archive, archive.json, new AbortController().signal)).rejects.toThrow("Browser persistence unavailable; export the archive");
+  });
+  expect(hook.result.current.saved).toBeNull();
+  expect(hook.result.current.draft).toBe(archive.json);
+  expect(hook.result.current.preview?.archiveDigest).toBe(archive.archiveDigest);
+  expect(hook.result.current.busy).toBe(false);
+  hook.unmount();
+});
 
 it("retains an edited draft through unavailable cache reload", async () => {
   const hook = renderHook(() => useWorkspace());

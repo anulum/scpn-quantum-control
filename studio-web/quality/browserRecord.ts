@@ -23,6 +23,15 @@ export const browserOwners = new Set([
 /** Additional original facade required by the damaged-source browser scenario. */
 export const panelBrowserOwner = "/src/QuantumStudioPanel.tsx";
 
+/** Complete linked parameter cohort sharing the original archive and store owners. */
+export const parameterBrowserOwners = new Set([
+  ...browserOwners,
+  "/src/features/parameters/parameterDraft.ts",
+  "/src/features/parameters/parameterRevision.ts",
+  "/src/features/parameters/ParameterEditor.tsx",
+  "/src/features/parameters/ParameterWorkspace.tsx",
+]);
+
 /** Complete native workbench cohort, including the original storage/controller owners. */
 export const workbenchBrowserOwners = new Set([
   ...browserOwners, panelBrowserOwner, "/src/features/catalogue/CapabilityCatalogue.tsx",
@@ -87,13 +96,13 @@ function nativeFunctions(value: unknown, codeLength: number): Profiler.FunctionC
 }
 
 /** Verify every browser counter against executed code and this checkout's original owner. */
-export async function qualifyBrowserRecord(value: unknown, root: string, sourceOrigin: string, includeWorkbench = false): Promise<QualifiedBrowserRecord> {
+export async function qualifyBrowserRecord(value: unknown, root: string, sourceOrigin: string, includeWorkbench = false, includeParameters = false): Promise<QualifiedBrowserRecord> {
   const record = coverageObject(value);
   const native = coverageObject(record["coverage"]);
   const url = new URL(text(native["url"]));
   const ownedOrigin = new URL(sourceOrigin);
   if (ownedOrigin.protocol !== "http:" || !["127.0.0.1", "localhost", "[::1]"].includes(ownedOrigin.hostname) || ownedOrigin.username || ownedOrigin.password || !ownedOrigin.port || ownedOrigin.search || ownedOrigin.hash || ownedOrigin.pathname !== "/") throw new Error("Owned root loopback source origin required");
-  const admitted = includeWorkbench ? workbenchBrowserOwners.has(url.pathname) : browserOwners.has(url.pathname) || url.pathname === panelBrowserOwner;
+  const admitted = includeParameters ? parameterBrowserOwners.has(url.pathname) : includeWorkbench ? workbenchBrowserOwners.has(url.pathname) : browserOwners.has(url.pathname) || url.pathname === panelBrowserOwner;
   if (url.origin !== ownedOrigin.origin || url.username || url.password || url.search || url.hash || !admitted) throw new Error("Unowned browser coverage source");
   const code = text(record["code"]);
   if (sha256(code) !== record["code_sha256"]) throw new Error("Executed script hash mismatch");

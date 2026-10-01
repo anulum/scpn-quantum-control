@@ -41,6 +41,7 @@ import pytest
         "workspace_recovery",
         "workspace_panel_refusal",
         "workbench_navigation",
+        "parameter_graph_editor",
     ],
 )
 def test_runner_rejects_external_or_ambiguous_preview(
@@ -72,7 +73,13 @@ def test_runner_rejects_external_or_ambiguous_preview(
 
 
 @pytest.mark.parametrize(
-    "scenario", ["workspace_recovery", "workspace_panel_refusal", "workbench_navigation"]
+    "scenario",
+    [
+        "workspace_recovery",
+        "workspace_panel_refusal",
+        "workbench_navigation",
+        "parameter_graph_editor",
+    ],
 )
 def test_public_dispatch_requires_matching_source_option(tmp_path: Path, scenario: str) -> None:
     """Refuse a missing or misapplied source address through the public dispatcher."""

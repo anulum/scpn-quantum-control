@@ -213,6 +213,7 @@ export function KuramotoPlayPanel({
         </strong>
         .
       </p>
+      <p><a href="#/workspace">Edit source parameters in Workspace</a>. Open a supported experiment archive to edit its individual signed coefficients and immutable revisions. These live playback controls retain their own bounded kernel request.</p>
 
       {resource?.ok ? <ResourcePlanInspector admission={resource.admission} /> : <p role="alert">Resource plan refused: {resource?.reason}</p>}
 
