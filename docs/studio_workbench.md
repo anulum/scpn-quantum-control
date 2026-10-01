@@ -68,6 +68,67 @@ stopping that preview. This verifies local instruments, not deployed availabilit
 or scientific qualification.
 
 
+## Settings and policy provenance
+
+The workspace inspector shows the original requested and effective values,
+their winning source layer, and the policy and environment references. It
+reads the admitted archive without changing its settings or granting permission
+to execute them. Exact integers remain exact in the table and in portable JSON.
+Embedded `WorkspacePanel` consumers supply the original trusted raw-codec
+registry for their policy and environment sources. Unknown producers refuse
+archive admission; imported settings cannot install a verifier or policy.
+
+Use `scpn_quantum_control.studio.workspace.resolve_settings` to resolve trusted
+defaults, project, experiment and run layers, in that order. Supply an immutable
+`SettingsPolicy`, the current environment reference and an existing HAL profile.
+Every layer is validated, including a forbidden value later overwritten by a
+valid run value. Shot, memory and qubit requests must have an explicit policy
+ceiling; a request above the ceiling refuses and identifies its policy. Device
+choices and the declared HAL route cannot be replaced by an imported request.
+Resolution reads declarations and never submits a provider job.
+
+`settings_plan_digest` identifies the settings contribution to a numerical
+plan. Changes to precision, seed, shots, numeric parameters or units change this
+identity. Theme, notation, plot rounding and layout do not; they still change the
+full `ResolvedSettings.digest`, which also preserves provenance. Units are
+labels of the admitted source values; no conversion is inferred.
+
+```python
+from scpn_quantum_control.studio.workspace import (
+    confirm_settings_reset, export_settings, import_settings,
+    preview_settings_reset, resolve_settings, settings_plan_digest,
+)
+
+# policy, environment_ref and profile come from the trusted application.
+current = resolve_settings(
+    defaults, project_values, experiment_values, run_values,
+    policy=policy, environment_ref=environment_ref, profile=profile,
+)
+numerical_settings_hash = settings_plan_digest(current)
+portable_text = export_settings(current)
+imported_values = import_settings(portable_text)
+candidate = resolve_settings(
+    defaults, imported_values, {}, {},
+    policy=policy, environment_ref=environment_ref, profile=profile,
+)
+reset = preview_settings_reset(
+    current, defaults,
+    policy=policy, environment_ref=environment_ref, profile=profile,
+)
+# Inspect reset.candidate first; confirmation checks the current full identity.
+replacement = confirm_settings_reset(current, reset)
+```
+
+Portable `quantum_workspace_settings.v1` JSON contains supported requested
+values only, with a 65,536-byte UTF-8 limit. Credentials, policy and environment
+authority cannot be imported. Malformed Unicode, duplicate keys and future
+versions refuse before returning values; unsupported versions require an
+explicit supported migration. Import and reset preview do not alter saved state.
+Imported values require a fresh resolution against the current policy. Confirming
+a reset after the current record changed refuses; inspect a new preview instead.
+The caller applies an accepted replacement explicitly through its normal saved
+state transaction.
+
 ## Immutable workspace contracts
 
 The Python `scpn_quantum_control.studio.workspace` API and the browser's

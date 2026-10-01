@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 842,
     "public_documentation_pages": 379,
-    "python_model_classes": 1456,
-    "python_model_source_modules": 748,
+    "python_model_classes": 1459,
+    "python_model_source_modules": 750,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1445
+    "test_files": 1448
   },
   "documentation": {
     "examples": [
@@ -760,7 +760,7 @@
       {
         "package": "studio_workspace",
         "path": "src/scpn_quantum_control/studio_workspace",
-        "python_modules": 4
+        "python_modules": 6
       },
       {
         "package": "surrogates",
@@ -5886,6 +5886,18 @@
         "path": "src/scpn_quantum_control/fault_tolerant_resource_product.py"
       },
       {
+        "name": "SettingsPolicy",
+        "path": "src/scpn_quantum_control/studio_workspace/settings.py"
+      },
+      {
+        "name": "SettingsRefused",
+        "path": "src/scpn_quantum_control/studio_workspace/settings.py"
+      },
+      {
+        "name": "SettingsResetPreview",
+        "path": "src/scpn_quantum_control/studio_workspace/settings_portability.py"
+      },
+      {
         "name": "ShadowResult",
         "path": "src/scpn_quantum_control/analysis/shadow_tomography.py"
       },
@@ -7330,6 +7342,8 @@
       "src/scpn_quantum_control/studio_workspace/contracts.py",
       "src/scpn_quantum_control/studio_workspace/graph.py",
       "src/scpn_quantum_control/studio_workspace/json_transport.py",
+      "src/scpn_quantum_control/studio_workspace/settings.py",
+      "src/scpn_quantum_control/studio_workspace/settings_portability.py",
       "src/scpn_quantum_control/surrogates/fidelity.py",
       "src/scpn_quantum_control/surrogates/hybrid.py",
       "src/scpn_quantum_control/surrogates/models.py",
@@ -9704,6 +9718,7 @@
       "tests/test_reproducible_comparison.py",
       "tests/test_research_lane_registry.py",
       "tests/test_research_lane_registry_quality_gate.py",
+      "tests/test_resolved_workspace_settings.py",
       "tests/test_resource_admission_boundaries.py",
       "tests/test_resource_budget_gate.py",
       "tests/test_resource_budget_gate_quality_gate.py",
@@ -9844,6 +9859,7 @@
       "tests/test_studio_workspace_contracts.py",
       "tests/test_studio_workspace_graph.py",
       "tests/test_studio_workspace_json_transport.py",
+      "tests/test_studio_workspace_lazy.py",
       "tests/test_studio_xy_compile_recompute_artifact.py",
       "tests/test_sub_us_tracker.py",
       "tests/test_submit_bell_rerun_mitigated.py",
@@ -9980,6 +9996,7 @@
       "tests/test_wirtinger_implicit_product_quality_gate.py",
       "tests/test_witness_discovery.py",
       "tests/test_witness_discovery_engine_fallback.py",
+      "tests/test_workspace_settings_portability.py",
       "tests/test_xxz_hamiltonian.py",
       "tests/test_xxz_phase_diagram.py",
       "tests/test_xy_compile_recompute_artifact_quality_gate.py",

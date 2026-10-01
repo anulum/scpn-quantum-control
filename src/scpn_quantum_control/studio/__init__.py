@@ -22,6 +22,15 @@ from typing import Any
 
 _EXPORT_GROUPS: dict[str, tuple[str, ...]] = {
     "workspace": (
+        "SettingsPolicy",
+        "SettingsRefused",
+        "resolve_settings",
+        "settings_plan_digest",
+        "SettingsResetPreview",
+        "export_settings",
+        "import_settings",
+        "preview_settings_reset",
+        "confirm_settings_reset",
         "ExperimentRevision",
         "LocalRunRecord",
         "ParameterSpec",
@@ -226,6 +235,15 @@ def __dir__() -> list[str]:
 
 
 __all__ = [
+    "SettingsPolicy",
+    "SettingsRefused",
+    "resolve_settings",
+    "settings_plan_digest",
+    "SettingsResetPreview",
+    "export_settings",
+    "import_settings",
+    "preview_settings_reset",
+    "confirm_settings_reset",
     "ExperimentRevision",
     "LocalRunRecord",
     "ParameterSpec",

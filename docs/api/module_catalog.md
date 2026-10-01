@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **748 modules** across **41 package families**
-- **4142 documented public module-level symbols**
+- **750 modules** across **41 package families**
+- **4152 documented public module-level symbols**
 - **842 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -5396,6 +5396,26 @@ Read and write bounded JSON without losing numeric token identity.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio_workspace/json_transport.py) · Public symbols: **2**
 
 **Functions:** `read_json()`, `write_json()`
+
+### `scpn_quantum_control.studio_workspace.settings`
+
+Resolve explicit settings layers against an immutable, source-owned policy.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio_workspace/settings.py) · Public symbols: **5**
+
+**Classes:** `SettingsRefused`, `SettingsPolicy`
+
+**Functions:** `validate_setting_values()`, `resolve_settings()`, `settings_plan_digest()`
+
+### `scpn_quantum_control.studio_workspace.settings_portability`
+
+Carry requested settings without importing policy authority or changing saved state.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio_workspace/settings_portability.py) · Public symbols: **5**
+
+**Classes:** `SettingsResetPreview`
+
+**Functions:** `export_settings()`, `import_settings()`, `preview_settings_reset()`, `confirm_settings_reset()`
 
 ## `surrogates`
 

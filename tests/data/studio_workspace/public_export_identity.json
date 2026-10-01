@@ -1,0 +1,467 @@
+{
+  "packages": [
+    {
+      "path": "src/scpn_quantum_control/studio_workspace/__init__.py",
+      "module": "scpn_quantum_control.studio_workspace",
+      "source_sha256": "91f55f1958969d70dfff9f1de95e02a9b3f40631e8e713c9c446f95a263c0327",
+      "has_declared_all": true,
+      "declared_all": [
+        "SettingsPolicy",
+        "SettingsRefused",
+        "resolve_settings",
+        "settings_plan_digest",
+        "SettingsResetPreview",
+        "export_settings",
+        "import_settings",
+        "preview_settings_reset",
+        "confirm_settings_reset",
+        "ExperimentRevision",
+        "LocalRunRecord",
+        "ParameterSpec",
+        "RawArtifact",
+        "RawIdentity",
+        "ResolvedSettings",
+        "WorkspaceAdmission",
+        "WorkspaceDocument",
+        "WorkspaceManifest",
+        "admit_workspace",
+        "canonical_bytes",
+        "canonical_digest",
+        "parse_document",
+        "parse_experiment_revision",
+        "parse_local_run_record",
+        "parse_parameter_spec",
+        "parse_resolved_settings",
+        "parse_workspace_manifest",
+        "read_json",
+        "validate_parameter_binding",
+        "write_json"
+      ],
+      "all_container_type": "list",
+      "star_names": [
+        "ExperimentRevision",
+        "LocalRunRecord",
+        "ParameterSpec",
+        "RawArtifact",
+        "RawIdentity",
+        "ResolvedSettings",
+        "SettingsPolicy",
+        "SettingsRefused",
+        "SettingsResetPreview",
+        "WorkspaceAdmission",
+        "WorkspaceDocument",
+        "WorkspaceManifest",
+        "admit_workspace",
+        "canonical_bytes",
+        "canonical_digest",
+        "confirm_settings_reset",
+        "export_settings",
+        "import_settings",
+        "parse_document",
+        "parse_experiment_revision",
+        "parse_local_run_record",
+        "parse_parameter_spec",
+        "parse_resolved_settings",
+        "parse_workspace_manifest",
+        "preview_settings_reset",
+        "read_json",
+        "resolve_settings",
+        "settings_plan_digest",
+        "validate_parameter_binding",
+        "write_json"
+      ],
+      "bindings": [
+        {
+          "name": "SettingsPolicy",
+          "origin_module": "scpn_quantum_control.studio_workspace.settings",
+          "origin_attribute": "SettingsPolicy",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "type",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.settings",
+            "qualname": "SettingsPolicy"
+          }
+        },
+        {
+          "name": "SettingsRefused",
+          "origin_module": "scpn_quantum_control.studio_workspace.settings",
+          "origin_attribute": "SettingsRefused",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "type",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.settings",
+            "qualname": "SettingsRefused"
+          }
+        },
+        {
+          "name": "resolve_settings",
+          "origin_module": "scpn_quantum_control.studio_workspace.settings",
+          "origin_attribute": "resolve_settings",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "function",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.settings",
+            "qualname": "resolve_settings"
+          }
+        },
+        {
+          "name": "settings_plan_digest",
+          "origin_module": "scpn_quantum_control.studio_workspace.settings",
+          "origin_attribute": "settings_plan_digest",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "function",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.settings",
+            "qualname": "settings_plan_digest"
+          }
+        },
+        {
+          "name": "SettingsResetPreview",
+          "origin_module": "scpn_quantum_control.studio_workspace.settings_portability",
+          "origin_attribute": "SettingsResetPreview",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "type",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.settings_portability",
+            "qualname": "SettingsResetPreview"
+          }
+        },
+        {
+          "name": "export_settings",
+          "origin_module": "scpn_quantum_control.studio_workspace.settings_portability",
+          "origin_attribute": "export_settings",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "function",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.settings_portability",
+            "qualname": "export_settings"
+          }
+        },
+        {
+          "name": "import_settings",
+          "origin_module": "scpn_quantum_control.studio_workspace.settings_portability",
+          "origin_attribute": "import_settings",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "function",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.settings_portability",
+            "qualname": "import_settings"
+          }
+        },
+        {
+          "name": "preview_settings_reset",
+          "origin_module": "scpn_quantum_control.studio_workspace.settings_portability",
+          "origin_attribute": "preview_settings_reset",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "function",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.settings_portability",
+            "qualname": "preview_settings_reset"
+          }
+        },
+        {
+          "name": "confirm_settings_reset",
+          "origin_module": "scpn_quantum_control.studio_workspace.settings_portability",
+          "origin_attribute": "confirm_settings_reset",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "function",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.settings_portability",
+            "qualname": "confirm_settings_reset"
+          }
+        },
+        {
+          "name": "ExperimentRevision",
+          "origin_module": "scpn_quantum_control.studio_workspace.contracts",
+          "origin_attribute": "ExperimentRevision",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "type",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.contracts",
+            "qualname": "ExperimentRevision"
+          }
+        },
+        {
+          "name": "LocalRunRecord",
+          "origin_module": "scpn_quantum_control.studio_workspace.contracts",
+          "origin_attribute": "LocalRunRecord",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "type",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.contracts",
+            "qualname": "LocalRunRecord"
+          }
+        },
+        {
+          "name": "ParameterSpec",
+          "origin_module": "scpn_quantum_control.studio_workspace.contracts",
+          "origin_attribute": "ParameterSpec",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "type",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.contracts",
+            "qualname": "ParameterSpec"
+          }
+        },
+        {
+          "name": "RawArtifact",
+          "origin_module": "scpn_quantum_control.studio_workspace.graph",
+          "origin_attribute": "RawArtifact",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "type",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.graph",
+            "qualname": "RawArtifact"
+          }
+        },
+        {
+          "name": "RawIdentity",
+          "origin_module": "scpn_quantum_control.studio_workspace.graph",
+          "origin_attribute": "RawIdentity",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "type",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.graph",
+            "qualname": "RawIdentity"
+          }
+        },
+        {
+          "name": "ResolvedSettings",
+          "origin_module": "scpn_quantum_control.studio_workspace.contracts",
+          "origin_attribute": "ResolvedSettings",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "type",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.contracts",
+            "qualname": "ResolvedSettings"
+          }
+        },
+        {
+          "name": "WorkspaceAdmission",
+          "origin_module": "scpn_quantum_control.studio_workspace.graph",
+          "origin_attribute": "WorkspaceAdmission",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "type",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.graph",
+            "qualname": "WorkspaceAdmission"
+          }
+        },
+        {
+          "name": "WorkspaceDocument",
+          "origin_module": "scpn_quantum_control.studio_workspace.contracts",
+          "origin_attribute": "WorkspaceDocument",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "type",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.contracts",
+            "qualname": "WorkspaceDocument"
+          }
+        },
+        {
+          "name": "WorkspaceManifest",
+          "origin_module": "scpn_quantum_control.studio_workspace.contracts",
+          "origin_attribute": "WorkspaceManifest",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "type",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.contracts",
+            "qualname": "WorkspaceManifest"
+          }
+        },
+        {
+          "name": "admit_workspace",
+          "origin_module": "scpn_quantum_control.studio_workspace.graph",
+          "origin_attribute": "admit_workspace",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "function",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.graph",
+            "qualname": "admit_workspace"
+          }
+        },
+        {
+          "name": "canonical_bytes",
+          "origin_module": "scpn_quantum_control.studio_workspace.canonical",
+          "origin_attribute": "canonical_bytes",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "function",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.canonical",
+            "qualname": "canonical_bytes"
+          }
+        },
+        {
+          "name": "canonical_digest",
+          "origin_module": "scpn_quantum_control.studio_workspace.canonical",
+          "origin_attribute": "canonical_digest",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "function",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.canonical",
+            "qualname": "canonical_digest"
+          }
+        },
+        {
+          "name": "parse_document",
+          "origin_module": "scpn_quantum_control.studio_workspace.contracts",
+          "origin_attribute": "parse_document",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "function",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.contracts",
+            "qualname": "parse_document"
+          }
+        },
+        {
+          "name": "parse_experiment_revision",
+          "origin_module": "scpn_quantum_control.studio_workspace.contracts",
+          "origin_attribute": "parse_experiment_revision",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "function",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.contracts",
+            "qualname": "parse_experiment_revision"
+          }
+        },
+        {
+          "name": "parse_local_run_record",
+          "origin_module": "scpn_quantum_control.studio_workspace.contracts",
+          "origin_attribute": "parse_local_run_record",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "function",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.contracts",
+            "qualname": "parse_local_run_record"
+          }
+        },
+        {
+          "name": "parse_parameter_spec",
+          "origin_module": "scpn_quantum_control.studio_workspace.contracts",
+          "origin_attribute": "parse_parameter_spec",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "function",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.contracts",
+            "qualname": "parse_parameter_spec"
+          }
+        },
+        {
+          "name": "parse_resolved_settings",
+          "origin_module": "scpn_quantum_control.studio_workspace.contracts",
+          "origin_attribute": "parse_resolved_settings",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "function",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.contracts",
+            "qualname": "parse_resolved_settings"
+          }
+        },
+        {
+          "name": "parse_workspace_manifest",
+          "origin_module": "scpn_quantum_control.studio_workspace.contracts",
+          "origin_attribute": "parse_workspace_manifest",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "function",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.contracts",
+            "qualname": "parse_workspace_manifest"
+          }
+        },
+        {
+          "name": "read_json",
+          "origin_module": "scpn_quantum_control.studio_workspace.json_transport",
+          "origin_attribute": "read_json",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "function",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.json_transport",
+            "qualname": "read_json"
+          }
+        },
+        {
+          "name": "validate_parameter_binding",
+          "origin_module": "scpn_quantum_control.studio_workspace.contracts",
+          "origin_attribute": "validate_parameter_binding",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "function",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.contracts",
+            "qualname": "validate_parameter_binding"
+          }
+        },
+        {
+          "name": "write_json",
+          "origin_module": "scpn_quantum_control.studio_workspace.json_transport",
+          "origin_attribute": "write_json",
+          "origin_kind": "source-import",
+          "type_module": "builtins",
+          "type_name": "function",
+          "local_definition_ast_sha256": null,
+          "metadata": {
+            "module": "scpn_quantum_control.studio_workspace.json_transport",
+            "qualname": "write_json"
+          }
+        }
+      ]
+    }
+  ]
+}

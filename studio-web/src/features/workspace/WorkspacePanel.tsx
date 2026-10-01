@@ -7,6 +7,7 @@
 // SCPN Quantum Control — local workspace editor
 
 import { useState } from "react";
+import { SettingsInspector } from "../settings/SettingsInspector";
 import type { RawCodec } from "../../shared/contracts";
 import type { WorkspaceArchivePreview } from "../../shared/storage/workspaceArchive";
 import { noWorkspaceProducers, useWorkspace } from "./useWorkspace";
@@ -71,6 +72,7 @@ export function WorkspacePanel({ rawCodecs = noWorkspaceProducers }: WorkspacePa
         <dt>Archive digest</dt><dd>{workspace.preview.archiveDigest}</dd>
         <dt>Members</dt><dd>{workspace.preview.memberNames.join(" · ") || "Root manifest only"}</dd>
       </dl>}
+      {workspace.preview && <SettingsInspector preview={workspace.preview} />}
     </section>
   );
 }

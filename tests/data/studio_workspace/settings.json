@@ -1,0 +1,91 @@
+{
+  "boundary": "Synthetic policy/environment conformance records only; no provider or measured environment claim. Expected settings/origins are literal independent inputs.",
+  "layers": {
+    "defaults": {
+      "seed": 9007199254740993
+    },
+    "project": {
+      "precision": "float64",
+      "theme": "dark"
+    },
+    "experiment": {},
+    "run": {
+      "shots": 7
+    }
+  },
+  "document": {
+    "schema": "resolved_settings.v1",
+    "extensions": {},
+    "body": {
+      "requested": {
+        "shots": 7,
+        "precision": "float64",
+        "theme": "dark",
+        "seed": 9007199254740993
+      },
+      "effective": {
+        "shots": 7,
+        "precision": "float64",
+        "theme": "dark",
+        "seed": 9007199254740993
+      },
+      "origins": {
+        "shots": "run",
+        "precision": "project",
+        "theme": "project",
+        "seed": "defaults"
+      },
+      "policy_ref": {
+        "schema": "review_fixture.v1",
+        "sha256": "b0e94bfd0ad934a748eabb20196b69d46a0e1012abcec6eebad6e0c3ad12dde7",
+        "media_type": "application/json"
+      },
+      "environment_ref": {
+        "schema": "review_fixture.v1",
+        "sha256": "f31d2fcf288cbfef29917b17df1155f86119da1966d178e85ef51191ff9d794f",
+        "media_type": "application/json"
+      },
+      "rejected_fields": []
+    }
+  },
+  "manifest": {
+    "schema": "quantum_workspace.v1",
+    "extensions": {},
+    "body": {
+      "project_id": "10000000-0000-4000-8000-000000000001",
+      "revision_refs": [],
+      "draft_ref": null,
+      "created_at": "2026-09-29T00:00:00Z",
+      "updated_at": "2026-09-29T00:00:00Z",
+      "artefact_refs": []
+    }
+  },
+  "raw": [
+    {
+      "digest": "b0e94bfd0ad934a748eabb20196b69d46a0e1012abcec6eebad6e0c3ad12dde7",
+      "record": {
+        "schema": "review_fixture.v1",
+        "body": {
+          "role": "policy",
+          "synthetic": true,
+          "purpose": "opaque reference validation only",
+          "claim_boundary": "No solver, executed plan, scientific or hardware evidence"
+        },
+        "extensions": {}
+      }
+    },
+    {
+      "digest": "f31d2fcf288cbfef29917b17df1155f86119da1966d178e85ef51191ff9d794f",
+      "record": {
+        "schema": "review_fixture.v1",
+        "body": {
+          "role": "environment",
+          "synthetic": true,
+          "purpose": "opaque reference validation only",
+          "claim_boundary": "No solver, executed plan, scientific or hardware evidence"
+        },
+        "extensions": {}
+      }
+    }
+  ]
+}
