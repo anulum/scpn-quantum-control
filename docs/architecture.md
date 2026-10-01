@@ -100,6 +100,66 @@ scientific validation: edited values require a fresh bound design/companion.
 The output is a descriptive snapshot, rather than an executor or raw-result
 reader; original stable-core/result codecs and readers are unchanged.
 
+## Circuit transformations and measurement preservation
+
+`scpn_quantum_control.compiler.compile_circuit_to_mlir` accepts a bound native
+Qiskit circuit or a bounded static OpenQASM 2 source. It lowers the unitary body
+through the original native transpiler to `rx`, `ry`, `rz` and `cx`, then attaches
+the original trailing measurement/barrier block at its original bit indices.
+Optimising the unitary body separately preserves phase-sensitive semantics that
+an optimisation conditioned on final measurement could otherwise discard.
+The transpiler receives no assumption that input qubits are zero. Its virtual
+output permutations are materialised through native permutation synthesis before
+readout is attached, preserving both arbitrary input states and original bit indices.
+
+`qualify_circuit_pass` also qualifies an existing transformation, including the
+original global unitary folding output. Its immutable `CircuitPassRecord` stores
+both instruction IRs, exact source text and digests, real statement spans, register
+indices, logical-to-physical layouts, observable correspondence, the explicit
+global-phase policy and the measured reference error. Source offsets count Python
+Unicode characters; line and column are one-based. Generated rotation source uses
+round-trip decimal parameters instead of approximate multiples of pi.
+
+The native `qiskit.quantum_info.Operator` reference checks every input basis,
+after normalising declared qubit layouts. Readout comparison includes partial,
+permuted and multi-register measurements, explicit output classical-bit layouts,
+and the final assignment to each classical bit. The maximum complex128 operator
+entry error must be at most `1e-12`; callers can tighten this bound. With
+`allow_global_phase=True`, one constant phase may relate the full operators.
+With `False`, that phase difference is also refused. Layouts are complete
+bijections; ancilla insertion and changed circuit widths are unsupported.
+
+```python
+import numpy as np
+from qiskit import QuantumCircuit
+from scpn_quantum_control.compiler import compile_circuit_to_mlir
+
+circuit = QuantumCircuit(2, 2)
+circuit.ry(np.pi / 3, 0)
+circuit.cx(0, 1)
+circuit.rz(0.37, 1)
+circuit.measure([0, 1], [1, 0])
+compiled = compile_circuit_to_mlir(circuit, optimisation_level=2)
+assert compiled.pass_record.input_ir.measurements == ((0, 1), (1, 0))
+assert compiled.mlir_module.metadata["execution_status"] == "textual_ir"
+```
+
+Import admits at most eight qubits, 64 classical bits, 4096 operations and 1 MiB
+of UTF-8 source. Register widths are checked before native parsing. The original
+SDK gate compatibility registry retains native exporter names such as `swap`,
+`u`, `p`, `id` and `sx`. Only the native standard gate include is admitted;
+arbitrary filesystem includes, custom
+definitions, reset, conditions and operations after readout are refused. A
+`CircuitPassRefused` carries an authored code/message and source coordinates.
+The existing memory reservation admits the dense reference buffers and observes
+its deadline/cancellation guards before and after synchronous native work.
+
+The exported `MLIRModule` is textual interchange. Local Qiskit equivalence does
+not establish executed MLIR, physical hardware placement or provider execution.
+Neither the original numerical solvers nor their Rust/WASM kernels are replaced.
+Changing a returned native circuit later does not change its immutable evidence,
+and that earlier evidence does not qualify the later mutation.
+
 ## Phase-model conventions and original numerical owners
 
 [`kuramoto_conventions.md`](kuramoto_conventions.md) records the model, solver,
@@ -328,7 +388,7 @@ mirror the single closed-form dense-2x2 production family and share the same reg
 Python-native, and Rust-native lifecycle. All 26 original definitions remain exactly once with
 AST-equivalent bodies.
 
-The MLIR compiler facade is now 504 lines of exact records, kernel, evidence, and implementation
+The MLIR compiler facade contains exact records, kernel, evidence, and implementation
 re-exports. Transform-plan assembly lives in `mlir_transform_plan_assembly.py`;
 Kuramoto/custom executable compilation in `mlir_workload_compilation.py`; toolchain probing and
 maturity aggregation in `mlir_enzyme_audit.py`; and registered Phase-QNode lowering/runtime

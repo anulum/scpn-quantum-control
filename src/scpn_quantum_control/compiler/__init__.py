@@ -22,6 +22,20 @@ if TYPE_CHECKING:
         build_compiler_alias_activity_evidence,
         render_compiler_alias_activity_evidence_markdown,
     )
+    from .circuit_pass_qualification import (
+        QualifiedCircuitCompilation,
+        compile_circuit_to_mlir,
+        qualify_circuit_pass,
+    )
+    from .circuit_pass_records import (
+        CircuitDiagnostic,
+        CircuitIR,
+        CircuitOperation,
+        CircuitPassRecord,
+        CircuitPassRefused,
+        SourceSpan,
+    )
+    from .circuit_source import import_circuit_source, snapshot_circuit
     from .mlir import (
         LLVM_JIT_CLAIM_GATE_BOUNDARY,
         CompilerADExecutableConfig,
@@ -125,6 +139,38 @@ if TYPE_CHECKING:
     )
 
 _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
+    "SourceSpan": ("scpn_quantum_control.compiler.circuit_pass_records", "SourceSpan"),
+    "CircuitDiagnostic": (
+        "scpn_quantum_control.compiler.circuit_pass_records",
+        "CircuitDiagnostic",
+    ),
+    "CircuitPassRefused": (
+        "scpn_quantum_control.compiler.circuit_pass_records",
+        "CircuitPassRefused",
+    ),
+    "CircuitOperation": ("scpn_quantum_control.compiler.circuit_pass_records", "CircuitOperation"),
+    "CircuitIR": ("scpn_quantum_control.compiler.circuit_pass_records", "CircuitIR"),
+    "CircuitPassRecord": (
+        "scpn_quantum_control.compiler.circuit_pass_records",
+        "CircuitPassRecord",
+    ),
+    "import_circuit_source": (
+        "scpn_quantum_control.compiler.circuit_source",
+        "import_circuit_source",
+    ),
+    "snapshot_circuit": ("scpn_quantum_control.compiler.circuit_source", "snapshot_circuit"),
+    "QualifiedCircuitCompilation": (
+        "scpn_quantum_control.compiler.circuit_pass_qualification",
+        "QualifiedCircuitCompilation",
+    ),
+    "qualify_circuit_pass": (
+        "scpn_quantum_control.compiler.circuit_pass_qualification",
+        "qualify_circuit_pass",
+    ),
+    "compile_circuit_to_mlir": (
+        "scpn_quantum_control.compiler.circuit_pass_qualification",
+        "compile_circuit_to_mlir",
+    ),
     "COMPILER_ALIAS_ACTIVITY_EVIDENCE_ID": (
         "scpn_quantum_control.compiler.alias_activity_evidence",
         "COMPILER_ALIAS_ACTIVITY_EVIDENCE_ID",
@@ -562,6 +608,17 @@ def __dir__() -> list[str]:
 
 
 __all__ = [
+    "SourceSpan",
+    "CircuitDiagnostic",
+    "CircuitPassRefused",
+    "CircuitOperation",
+    "CircuitIR",
+    "CircuitPassRecord",
+    "import_circuit_source",
+    "snapshot_circuit",
+    "QualifiedCircuitCompilation",
+    "qualify_circuit_pass",
+    "compile_circuit_to_mlir",
     "CompilerADExecutableConfig",
     "CompilerADKernelVerification",
     "CompilerADTransformPlan",

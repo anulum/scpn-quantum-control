@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 851,
     "public_documentation_pages": 380,
-    "python_model_classes": 1464,
-    "python_model_source_modules": 753,
+    "python_model_classes": 1471,
+    "python_model_source_modules": 756,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1457
+    "test_files": 1462
   },
   "documentation": {
     "examples": [
@@ -636,7 +636,7 @@
       {
         "package": "compiler",
         "path": "src/scpn_quantum_control/compiler",
-        "python_modules": 21
+        "python_modules": 24
       },
       {
         "package": "control",
@@ -1305,6 +1305,26 @@
       {
         "name": "CircuitCuttingPlan",
         "path": "src/scpn_quantum_control/hardware/circuit_cutting.py"
+      },
+      {
+        "name": "CircuitDiagnostic",
+        "path": "src/scpn_quantum_control/compiler/circuit_pass_records.py"
+      },
+      {
+        "name": "CircuitIR",
+        "path": "src/scpn_quantum_control/compiler/circuit_pass_records.py"
+      },
+      {
+        "name": "CircuitOperation",
+        "path": "src/scpn_quantum_control/compiler/circuit_pass_records.py"
+      },
+      {
+        "name": "CircuitPassRecord",
+        "path": "src/scpn_quantum_control/compiler/circuit_pass_records.py"
+      },
+      {
+        "name": "CircuitPassRefused",
+        "path": "src/scpn_quantum_control/compiler/circuit_pass_records.py"
       },
       {
         "name": "CirqLocalHALAdapter",
@@ -5279,6 +5299,10 @@
         "path": "src/scpn_quantum_control/differentiable_baseline_scorecard.py"
       },
       {
+        "name": "QualifiedCircuitCompilation",
+        "path": "src/scpn_quantum_control/compiler/circuit_pass_qualification.py"
+      },
+      {
         "name": "QuandelaPercevalHALAdapter",
         "path": "src/scpn_quantum_control/hardware/hal_quandela.py"
       },
@@ -5953,6 +5977,10 @@
       {
         "name": "SizeBlockPlan",
         "path": "src/scpn_quantum_control/benchmarks/iqm_layout_transfer_benchmark.py"
+      },
+      {
+        "name": "SourceSpan",
+        "path": "src/scpn_quantum_control/compiler/circuit_pass_records.py"
       },
       {
         "name": "SparseMatrixResult",
@@ -6845,6 +6873,9 @@
       "src/scpn_quantum_control/competitive_baseline_watch.py",
       "src/scpn_quantum_control/compile_budget.py",
       "src/scpn_quantum_control/compiler/alias_activity_evidence.py",
+      "src/scpn_quantum_control/compiler/circuit_pass_qualification.py",
+      "src/scpn_quantum_control/compiler/circuit_pass_records.py",
+      "src/scpn_quantum_control/compiler/circuit_source.py",
       "src/scpn_quantum_control/compiler/mlir.py",
       "src/scpn_quantum_control/compiler/mlir_enzyme_audit.py",
       "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py",
@@ -8771,6 +8802,10 @@
       "tests/test_circuit_depth.py",
       "tests/test_circuit_export.py",
       "tests/test_circuit_export_contracts.py",
+      "tests/test_circuit_pass_qualification.py",
+      "tests/test_circuit_pass_records.py",
+      "tests/test_circuit_preservation_quality_gate.py",
+      "tests/test_circuit_source.py",
       "tests/test_cirq_adapter.py",
       "tests/test_classical.py",
       "tests/test_classical_baselines.py",
@@ -8804,6 +8839,7 @@
       "tests/test_compiler_boundary_product.py",
       "tests/test_compiler_boundary_product_quality_gate.py",
       "tests/test_compiler_isolated_benchmark_evidence.py",
+      "tests/test_compiler_observable_preservation.py",
       "tests/test_compiler_promotion_batch.py",
       "tests/test_compound_mitigation.py",
       "tests/test_config.py",

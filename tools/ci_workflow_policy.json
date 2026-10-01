@@ -120,6 +120,7 @@
         "static-analysis"
       ],
       "jobs": [
+        "circuit-preservation-quality",
         "scientific-problem-quality",
         "qpu-compute-types-quality",
         "cosimulation-quality",
@@ -447,6 +448,7 @@
     "fep-ffi-contract-quality",
     "differentiable-sparse-derivatives-quality",
     "program-ad-adjoint-quality",
+    "circuit-preservation-quality",
     "scientific-problem-quality",
     "qpu-compute-types-quality",
     "hls-cosimulation-evidence-quality",

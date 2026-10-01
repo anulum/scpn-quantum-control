@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **753 modules** across **41 package families**
-- **4161 documented public module-level symbols**
+- **756 modules** across **41 package families**
+- **4172 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -1750,6 +1750,32 @@ Compiler alias-activity evidence assembled from Program AD lattice reports.
 **Classes:** `CompilerAliasActivityCase`, `CompilerAliasActivityEvidence`
 
 **Functions:** `build_compiler_alias_activity_evidence()`, `render_compiler_alias_activity_evidence_markdown()`
+
+### `scpn_quantum_control.compiler.circuit_pass_qualification`
+
+Qualify native circuit transforms before exporting textual MLIR provenance.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/compiler/circuit_pass_qualification.py) · Public symbols: **3**
+
+**Classes:** `QualifiedCircuitCompilation`
+
+**Functions:** `qualify_circuit_pass()`, `compile_circuit_to_mlir()`
+
+### `scpn_quantum_control.compiler.circuit_pass_records`
+
+Immutable source, operand and semantic-reference records for circuit passes.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/compiler/circuit_pass_records.py) · Public symbols: **6**
+
+**Classes:** `SourceSpan`, `CircuitDiagnostic`, `CircuitPassRefused`, `CircuitOperation`, `CircuitIR`, `CircuitPassRecord`
+
+### `scpn_quantum_control.compiler.circuit_source`
+
+Bounded static OpenQASM 2 import using the native parser and source spans.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/compiler/circuit_source.py) · Public symbols: **2**
+
+**Functions:** `import_circuit_source()`, `snapshot_circuit()`
 
 ### `scpn_quantum_control.compiler.mlir`
 

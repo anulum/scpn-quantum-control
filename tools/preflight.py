@@ -39,6 +39,7 @@ from importlib import import_module
 from os import X_OK, access, devnull, environ, pathsep
 from pathlib import Path
 from shutil import which
+from tempfile import gettempdir
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -60,6 +61,7 @@ if TYPE_CHECKING:
         campaign_harness_product_quality_gates as _campaign_harness_product_quality_gates,
     )
     from tools import chimera_control_quality_gates as _chimera_control_quality_gates
+    from tools import circuit_preservation_quality_gates as _circuit_preservation_quality_gates
     from tools import (
         closed_loop_publication_quality_gates as _closed_loop_publication_quality_gates,
     )
@@ -587,6 +589,7 @@ else:
     )
     _cosimulation_quality_gates = import_module("tools.cosimulation_quality_gates")
     _kuramoto_model_quality_gates = import_module("tools.kuramoto_model_quality_gates")
+    _circuit_preservation_quality_gates = import_module("tools.circuit_preservation_quality_gates")
     _scientific_problem_quality_gates = import_module("tools.scientific_problem_quality_gates")
     _hardware_safe_quality_gates = import_module("tools.hardware_safe_execution_quality_gates")
     _identity_binding_spec_quality_gates = import_module(
@@ -1159,6 +1162,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_hls_cosimulation_evidence_quality_gates.build_static_quality_gates(_PY),
     *_cosimulation_quality_gates.build_static_quality_gates(_PY),
     *_kuramoto_model_quality_gates.build_static_quality_gates(_PY),
+    *_circuit_preservation_quality_gates.build_static_quality_gates(_PY),
     *_scientific_problem_quality_gates.build_static_quality_gates(_PY),
     *_dla_topology_objectives_quality_gates.build_static_quality_gates(_PY),
     *_dla_parity_witness_quality_gates.build_static_quality_gates(_PY),
@@ -1721,6 +1725,12 @@ HLS_COSIMULATION_EVIDENCE_COVERAGE_GATES = (
 )
 COSIMULATION_COVERAGE_GATES = _cosimulation_quality_gates.build_coverage_gates(_PY)
 KURAMOTO_MODEL_COVERAGE_GATES = _kuramoto_model_quality_gates.build_coverage_gates(_PY)
+CIRCUIT_PRESERVATION_COVERAGE_DATA = str(
+    Path(gettempdir()) / "scpn-qc-circuit-preservation.coverage"
+)
+CIRCUIT_PRESERVATION_COVERAGE_GATES = _circuit_preservation_quality_gates.build_coverage_gates(
+    _PY, CIRCUIT_PRESERVATION_COVERAGE_DATA
+)
 SCIENTIFIC_PROBLEM_COVERAGE_GATES = _scientific_problem_quality_gates.build_coverage_gates(_PY)
 DLA_TOPOLOGY_OBJECTIVES_COVERAGE_GATES = (
     _dla_topology_objectives_quality_gates.build_coverage_gates(_PY)
@@ -2222,6 +2232,7 @@ def main() -> int:
             gates.extend(HLS_COSIMULATION_EVIDENCE_COVERAGE_GATES)
             gates.extend(COSIMULATION_COVERAGE_GATES)
             gates.extend(KURAMOTO_MODEL_COVERAGE_GATES)
+            gates.extend(CIRCUIT_PRESERVATION_COVERAGE_GATES)
             gates.extend(SCIENTIFIC_PROBLEM_COVERAGE_GATES)
             gates.extend(DLA_TOPOLOGY_OBJECTIVES_COVERAGE_GATES)
             gates.extend(DLA_PARITY_WITNESS_COVERAGE_GATES)

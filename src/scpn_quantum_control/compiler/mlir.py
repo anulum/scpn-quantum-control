@@ -10,6 +10,17 @@
 
 from __future__ import annotations
 
+from .circuit_pass_qualification import QualifiedCircuitCompilation as QualifiedCircuitCompilation
+from .circuit_pass_qualification import compile_circuit_to_mlir as compile_circuit_to_mlir
+from .circuit_pass_qualification import qualify_circuit_pass as qualify_circuit_pass
+from .circuit_pass_records import CircuitDiagnostic as CircuitDiagnostic
+from .circuit_pass_records import CircuitIR as CircuitIR
+from .circuit_pass_records import CircuitOperation as CircuitOperation
+from .circuit_pass_records import CircuitPassRecord as CircuitPassRecord
+from .circuit_pass_records import CircuitPassRefused as CircuitPassRefused
+from .circuit_pass_records import SourceSpan as SourceSpan
+from .circuit_source import import_circuit_source as import_circuit_source
+from .circuit_source import snapshot_circuit as snapshot_circuit
 from .mlir_enzyme_audit import (
     _default_enzyme_mlir_audit_circuit as _default_enzyme_mlir_audit_circuit,
 )
@@ -398,6 +409,17 @@ from .mlir_workload_compilation import (
 )
 
 __all__ = [
+    "SourceSpan",
+    "CircuitDiagnostic",
+    "CircuitPassRefused",
+    "CircuitOperation",
+    "CircuitIR",
+    "CircuitPassRecord",
+    "import_circuit_source",
+    "snapshot_circuit",
+    "QualifiedCircuitCompilation",
+    "qualify_circuit_pass",
+    "compile_circuit_to_mlir",
     "CompilerADTransformPlan",
     "CompilerADExecutableConfig",
     "CompilerADKernelVerification",

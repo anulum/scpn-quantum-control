@@ -14,6 +14,62 @@ permissions:
   contents: read
 
 jobs:
+  circuit-preservation-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check circuit preservation owners
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/compiler/circuit_pass_records.py
+          src/scpn_quantum_control/compiler/circuit_source.py
+          src/scpn_quantum_control/compiler/circuit_pass_qualification.py
+          tests/test_circuit_pass_records.py
+          tests/test_circuit_source.py
+          tests/test_circuit_pass_qualification.py
+          tests/test_compiler_observable_preservation.py
+          tests/test_circuit_preservation_quality_gate.py
+          tools/circuit_preservation_quality_gates.py
+      - name: Check circuit preservation native documentation
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/compiler/circuit_pass_records.py
+          src/scpn_quantum_control/compiler/circuit_source.py
+          src/scpn_quantum_control/compiler/circuit_pass_qualification.py
+          tests/test_circuit_pass_records.py
+          tests/test_circuit_source.py
+          tests/test_circuit_pass_qualification.py
+          tests/test_compiler_observable_preservation.py
+          tests/test_circuit_preservation_quality_gate.py
+          tools/circuit_preservation_quality_gates.py
+      - name: Exercise native circuit lowering and original observable contracts
+        run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-circuit-preservation.coverage --branch
+          -m pytest -q --no-cov
+          tests/test_circuit_pass_records.py
+          tests/test_circuit_source.py
+          tests/test_circuit_pass_qualification.py
+          tests/test_compiler_observable_preservation.py
+          tests/test_circuit_preservation_quality_gate.py
+      - name: Require complete circuit preservation owner coverage
+        run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-circuit-preservation.coverage
+          --precision=2 --show-missing --fail-under=100
+          --include=*/compiler/circuit_pass_records.py,*/compiler/circuit_source.py,*/compiler/circuit_pass_qualification.py,*/tools/circuit_preservation_quality_gates.py
   scientific-problem-quality:
     runs-on: ubuntu-latest
     env:
