@@ -96,6 +96,7 @@
     "kuramoto",
     "logging_setup",
     "native_replay_admission",
+    "scientific_design",
     "source_admission",
     "stable_core",
     "stable_core_preflight",
@@ -299,6 +300,7 @@
    "units": [
     "cosimulation",
     "kuramoto_core",
+    "kuramoto_model_conventions",
     "open_system_mcwf_product",
     "phase"
    ]
@@ -306,6 +308,7 @@
   "studio": {
    "target": "SCPN-QC-STUDIO",
    "units": [
+    "scientific_problem_parameters",
     "studio",
     "studio_executive_product",
     "studio_workspace",
@@ -485,6 +488,21 @@
    "unit": "studio_workspace",
    "reason": "New unit after the planning snapshot (Quantum Studio work); mapped to STUDIO, confirm with the Studio owner.",
    "decision": "Owner 2026-09-30 accepted: STUDIO (Studio owner informed)."
+  },
+  {
+   "unit": "scientific_design",
+   "reason": "Immutable NumPy scientific design, units and objective declarations; no simulation, Studio or backend import.",
+   "decision": "Current source responsibility retained for the approved scientific-input/model-convention work. No generic Hamiltonian extraction, shared-contract nucleus or repository split is implied."
+  },
+  {
+   "unit": "kuramoto_model_conventions",
+   "reason": "Model/solver-specific phase and quantum evolution conventions and original-owner provenance; finite, delayed, noisy and reduced simulation interpretations remain distinct.",
+   "decision": "Current source responsibility retained for the approved scientific-input/model-convention work. No generic Hamiltonian extraction, shared-contract nucleus or repository split is implied."
+  },
+  {
+   "unit": "scientific_problem_parameters",
+   "reason": "Original problem/design to Studio ParameterSpec and canonical-identity adapter; the simulation factory consumes problem/design directly and imports no Studio companion.",
+   "decision": "Current source responsibility retained for the approved scientific-input/model-convention work. No generic Hamiltonian extraction, shared-contract nucleus or repository split is implied."
   }
  ],
  "extra_import_names": {

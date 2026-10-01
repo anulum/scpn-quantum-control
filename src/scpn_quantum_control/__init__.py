@@ -785,6 +785,7 @@ if TYPE_CHECKING:
     from .kuramoto_core import (
         KuramotoProblem,
         build_kuramoto_problem,
+        build_scientific_phase_system,
         compile_analog_program,
         compile_dense_hamiltonian,
         compile_hamiltonian,
@@ -794,6 +795,11 @@ if TYPE_CHECKING:
         simulate_variant_trajectory,
         validate_kuramoto_inputs,
         validate_scientific_design,
+    )
+    from .kuramoto_model_conventions import (
+        KuramotoModelConvention,
+        kuramoto_convention_matrix,
+        kuramoto_model_convention,
     )
     from .mitigation.compound_mitigation import compound_mitigate_pipeline
     from .mitigation.pec import PECResult, pauli_twirl_decompose, pec_sample
@@ -3130,6 +3136,22 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
     "prove_identity": ("scpn_quantum_control.identity.identity_key", "prove_identity"),
     "verify_identity": ("scpn_quantum_control.identity.identity_key", "verify_identity"),
     "KuramotoProblem": ("scpn_quantum_control.kuramoto_core", "KuramotoProblem"),
+    "build_scientific_phase_system": (
+        "scpn_quantum_control.kuramoto_core",
+        "build_scientific_phase_system",
+    ),
+    "KuramotoModelConvention": (
+        "scpn_quantum_control.kuramoto_model_conventions",
+        "KuramotoModelConvention",
+    ),
+    "kuramoto_convention_matrix": (
+        "scpn_quantum_control.kuramoto_model_conventions",
+        "kuramoto_convention_matrix",
+    ),
+    "kuramoto_model_convention": (
+        "scpn_quantum_control.kuramoto_model_conventions",
+        "kuramoto_model_convention",
+    ),
     "ScientificDesign": ("scpn_quantum_control.scientific_design", "ScientificDesign"),
     "ScientificUnits": ("scpn_quantum_control.scientific_design", "ScientificUnits"),
     "DesignObjective": ("scpn_quantum_control.scientific_design", "DesignObjective"),
@@ -3530,6 +3552,10 @@ __all__ = [
     "ScientificUnits",
     "DesignObjective",
     "ScientificProblemParameters",
+    "build_scientific_phase_system",
+    "KuramotoModelConvention",
+    "kuramoto_convention_matrix",
+    "kuramoto_model_convention",
     "validate_scientific_design",
     "Problem",
     "Backend",

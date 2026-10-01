@@ -4,7 +4,7 @@ The primary navigation stays intentionally compact. This catalog keeps every
 public guide, evidence note, contract, campaign protocol, and reference page
 discoverable without crowding the main learning path.
 
-Current inventory: **379 public pages**; **162** are in the
+Current inventory: **380 public pages**; **162** are in the
 primary navigation and the remainder are indexed here.
 
 Labels marked `catalog` are intentionally outside the primary navigation; they
@@ -295,6 +295,7 @@ are still built, link-checked, searchable, and public.
 | [Josephson K_nm Magnitude Study](josephson_knm_magnitude_study.md) | primary nav | This preregistration records the Josephson topology-correlation candidate and the measured-magnitude gates required before any physical K_nm coupling claim. |
 | [Kuramoto Competitive Benchmark](kuramoto_competitive_benchmark.md) | primary nav | This page documents the external competitive harness that measures our Kuramoto toolkit against real third-party solvers on one deterministic Kuramoto forward problem. It is the cross-package counterpart to the in-repository Kuramoto Tier B |
 | [Kuramoto competitive evidence — oscillatools vs the Julia SciML tools](kuramoto_competitive_evidence.md) | primary nav | This note records a measured head-to-head between the oscillatools coupled-phase-oscillator toolkit and the established Julia libraries on two axes — **integration throughput** and **differentiability** — so the toolkit's standing is stated |
+| [Kuramoto model conventions](kuramoto_conventions.md) | catalog | Generated from the original scientific owners by tools/build_kuramoto_conventions.py. The JSON companion binds exact source/declaration hashes, original native documentation and declared dispatch chains. These are source capabilities; insta |
 | [Kuramoto Core Facade](kuramoto_core_facade.md) | primary nav | The scpn_quantum_control.kuramoto_core facade is the stable entry point for users who only need the Kuramoto-XY compiler layer: |
 | [Kuramoto Handbook](kuramoto_handbook.md) | primary nav | This handbook is the reference page for the in-repository Kuramoto toolkit. It is generated from the live scpn_quantum_control.kuramoto facade and the committed multi-tier benchmark artefact, so the public API inventory, model families, and |
 | [Kuramoto JAX delayed-tier](kuramoto_jax_delayed_tier.md) | primary nav | The time-delayed Kuramoto model $\dot\theta_j(t) = \omega_j + \sum_k K_{jk}\sin(\theta_k(t-\tau) - \theta_j(t))$ is integrated by accel.kuramoto_delayed.integrate_delayed_kuramoto, a delay-aware method-of-steps RK4, and its gradient by the |

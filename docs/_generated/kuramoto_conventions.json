@@ -1,0 +1,1782 @@
+{
+  "claim_boundary": "source-qualified implemented conventions; no runtime availability, accuracy or benchmark promotion",
+  "conventions": [
+    {
+      "assumptions": [],
+      "backend_owners": [
+        "oscillatools.accel.networked_kuramoto.networked_kuramoto_force",
+        "oscillatools.accel.diff_kuramoto_euler.kuramoto_euler_vjp"
+      ],
+      "equation": "theta_dot[j]=omega[j]+sum_k C[j,k]*sin(theta[k]-theta[j])",
+      "evolution_owner": "oscillatools.accel.kuramoto_system.KuramotoSystem.networked",
+      "force_owner": "oscillatools.accel.networked_kuramoto.networked_kuramoto_force",
+      "history": "none; initial theta at t=0",
+      "interpretation": "finite_phase",
+      "model": "finite_networked",
+      "noise": "none",
+      "normalisation": "pairwise sum; no implicit division by N",
+      "observable_owner": "oscillatools.accel.order_parameter_observables.order_parameter",
+      "sensitivity_owner": "oscillatools.accel.diff_kuramoto_euler.kuramoto_euler_vjp",
+      "sensitivity_semantics": "VJP of the separate fixed-step discrete networked trajectory",
+      "solver": "euler",
+      "state": "unwrapped theta[N] in rad; omega in rad/time",
+      "state_jacobian_owner": "oscillatools.accel.networked_kuramoto.networked_kuramoto_jacobian",
+      "topology": "dense directed matrix owner; scientific facade requires symmetric C"
+    },
+    {
+      "assumptions": [],
+      "backend_owners": [
+        "oscillatools.accel.networked_kuramoto.networked_kuramoto_force",
+        "oscillatools.accel.diff_kuramoto_rk4.kuramoto_rk4_vjp"
+      ],
+      "equation": "theta_dot[j]=omega[j]+sum_k C[j,k]*sin(theta[k]-theta[j])",
+      "evolution_owner": "oscillatools.accel.kuramoto_system.KuramotoSystem.networked",
+      "force_owner": "oscillatools.accel.networked_kuramoto.networked_kuramoto_force",
+      "history": "none; initial theta at t=0",
+      "interpretation": "finite_phase",
+      "model": "finite_networked",
+      "noise": "none",
+      "normalisation": "pairwise sum; no implicit division by N",
+      "observable_owner": "oscillatools.accel.order_parameter_observables.order_parameter",
+      "sensitivity_owner": "oscillatools.accel.diff_kuramoto_rk4.kuramoto_rk4_vjp",
+      "sensitivity_semantics": "VJP of the separate fixed-step discrete networked trajectory",
+      "solver": "rk4",
+      "state": "unwrapped theta[N] in rad; omega in rad/time",
+      "state_jacobian_owner": "oscillatools.accel.networked_kuramoto.networked_kuramoto_jacobian",
+      "topology": "dense directed matrix owner; scientific facade requires symmetric C"
+    },
+    {
+      "assumptions": [
+        "This is an exact finite-N phase equation, not a continuum closure."
+      ],
+      "backend_owners": [
+        "oscillatools.accel.kuramoto_mean_field.mean_field_force"
+      ],
+      "equation": "theta_dot[j]=omega[j]+(K/N)*sum_k sin(theta[k]-theta[j])",
+      "evolution_owner": "oscillatools.accel.kuramoto_system.KuramotoSystem.mean_field",
+      "force_owner": "oscillatools.accel.kuramoto_mean_field.mean_field_force",
+      "history": "none; initial theta at t=0",
+      "interpretation": "finite_phase",
+      "model": "finite_mean_field",
+      "noise": "none",
+      "normalisation": "scalar global K/N for finite population N",
+      "observable_owner": "oscillatools.accel.order_parameter_observables.order_parameter",
+      "sensitivity_owner": null,
+      "sensitivity_semantics": "no parameter sensitivity declared for this owner",
+      "solver": "euler",
+      "state": "unwrapped theta[N] in rad; omega in rad/time",
+      "state_jacobian_owner": "oscillatools.accel.kuramoto_mean_field.mean_field_jacobian",
+      "topology": "uniform all-to-all; self terms vanish"
+    },
+    {
+      "assumptions": [
+        "This is an exact finite-N phase equation, not a continuum closure."
+      ],
+      "backend_owners": [
+        "oscillatools.accel.kuramoto_mean_field.mean_field_force"
+      ],
+      "equation": "theta_dot[j]=omega[j]+(K/N)*sum_k sin(theta[k]-theta[j])",
+      "evolution_owner": "oscillatools.accel.kuramoto_system.KuramotoSystem.mean_field",
+      "force_owner": "oscillatools.accel.kuramoto_mean_field.mean_field_force",
+      "history": "none; initial theta at t=0",
+      "interpretation": "finite_phase",
+      "model": "finite_mean_field",
+      "noise": "none",
+      "normalisation": "scalar global K/N for finite population N",
+      "observable_owner": "oscillatools.accel.order_parameter_observables.order_parameter",
+      "sensitivity_owner": null,
+      "sensitivity_semantics": "no parameter sensitivity declared for this owner",
+      "solver": "rk4",
+      "state": "unwrapped theta[N] in rad; omega in rad/time",
+      "state_jacobian_owner": "oscillatools.accel.kuramoto_mean_field.mean_field_jacobian",
+      "topology": "uniform all-to-all; self terms vanish"
+    },
+    {
+      "assumptions": [
+        "Requires explicit nonzero frustration, absent from the plain phase factory."
+      ],
+      "backend_owners": [
+        "oscillatools.accel.sakaguchi_kuramoto.sakaguchi_force"
+      ],
+      "equation": "theta_dot[j]=omega[j]+sum_k C[j,k]*sin(theta[k]-theta[j]-alpha)",
+      "evolution_owner": "oscillatools.accel.kuramoto_system.KuramotoSystem.networked",
+      "force_owner": "oscillatools.accel.sakaguchi_kuramoto.sakaguchi_force",
+      "history": "none; initial theta at t=0",
+      "interpretation": "finite_phase",
+      "model": "finite_sakaguchi_networked",
+      "noise": "none",
+      "normalisation": "pairwise sum; diagonal terms need not vanish when alpha != 0",
+      "observable_owner": "oscillatools.accel.order_parameter_observables.order_parameter",
+      "sensitivity_owner": null,
+      "sensitivity_semantics": "no parameter sensitivity declared for this owner",
+      "solver": "euler",
+      "state": "unwrapped theta[N] in rad; omega in rad/time",
+      "state_jacobian_owner": "oscillatools.accel.sakaguchi_kuramoto.sakaguchi_jacobian",
+      "topology": "supplied matrix and common frustration alpha in rad"
+    },
+    {
+      "assumptions": [
+        "Requires explicit nonzero frustration, absent from the plain phase factory."
+      ],
+      "backend_owners": [
+        "oscillatools.accel.sakaguchi_kuramoto.sakaguchi_force"
+      ],
+      "equation": "theta_dot[j]=omega[j]+sum_k C[j,k]*sin(theta[k]-theta[j]-alpha)",
+      "evolution_owner": "oscillatools.accel.kuramoto_system.KuramotoSystem.networked",
+      "force_owner": "oscillatools.accel.sakaguchi_kuramoto.sakaguchi_force",
+      "history": "none; initial theta at t=0",
+      "interpretation": "finite_phase",
+      "model": "finite_sakaguchi_networked",
+      "noise": "none",
+      "normalisation": "pairwise sum; diagonal terms need not vanish when alpha != 0",
+      "observable_owner": "oscillatools.accel.order_parameter_observables.order_parameter",
+      "sensitivity_owner": null,
+      "sensitivity_semantics": "no parameter sensitivity declared for this owner",
+      "solver": "rk4",
+      "state": "unwrapped theta[N] in rad; omega in rad/time",
+      "state_jacobian_owner": "oscillatools.accel.sakaguchi_kuramoto.sakaguchi_jacobian",
+      "topology": "supplied matrix and common frustration alpha in rad"
+    },
+    {
+      "assumptions": [
+        "Requires explicit frustration; not inferred from plain Kuramoto inputs."
+      ],
+      "backend_owners": [
+        "oscillatools.accel.sakaguchi_mean_field.sakaguchi_mean_field_force"
+      ],
+      "equation": "theta_dot[j]=omega[j]+(K/N)*sum_k sin(theta[k]-theta[j]-alpha)",
+      "evolution_owner": "oscillatools.accel.kuramoto_system.KuramotoSystem.mean_field",
+      "force_owner": "oscillatools.accel.sakaguchi_mean_field.sakaguchi_mean_field_force",
+      "history": "none; initial theta at t=0",
+      "interpretation": "finite_phase",
+      "model": "finite_sakaguchi_mean_field",
+      "noise": "none",
+      "normalisation": "scalar K/N including the self term of the mean field",
+      "observable_owner": "oscillatools.accel.order_parameter_observables.order_parameter",
+      "sensitivity_owner": null,
+      "sensitivity_semantics": "no parameter sensitivity declared for this owner",
+      "solver": "euler",
+      "state": "unwrapped theta[N] in rad; omega in rad/time",
+      "state_jacobian_owner": "oscillatools.accel.sakaguchi_mean_field.sakaguchi_mean_field_jacobian",
+      "topology": "uniform all-to-all and common frustration alpha in rad"
+    },
+    {
+      "assumptions": [
+        "Requires explicit frustration; not inferred from plain Kuramoto inputs."
+      ],
+      "backend_owners": [
+        "oscillatools.accel.sakaguchi_mean_field.sakaguchi_mean_field_force"
+      ],
+      "equation": "theta_dot[j]=omega[j]+(K/N)*sum_k sin(theta[k]-theta[j]-alpha)",
+      "evolution_owner": "oscillatools.accel.kuramoto_system.KuramotoSystem.mean_field",
+      "force_owner": "oscillatools.accel.sakaguchi_mean_field.sakaguchi_mean_field_force",
+      "history": "none; initial theta at t=0",
+      "interpretation": "finite_phase",
+      "model": "finite_sakaguchi_mean_field",
+      "noise": "none",
+      "normalisation": "scalar K/N including the self term of the mean field",
+      "observable_owner": "oscillatools.accel.order_parameter_observables.order_parameter",
+      "sensitivity_owner": null,
+      "sensitivity_semantics": "no parameter sensitivity declared for this owner",
+      "solver": "rk4",
+      "state": "unwrapped theta[N] in rad; omega in rad/time",
+      "state_jacobian_owner": "oscillatools.accel.sakaguchi_mean_field.sakaguchi_mean_field_jacobian",
+      "topology": "uniform all-to-all and common frustration alpha in rad"
+    },
+    {
+      "assumptions": [],
+      "backend_owners": [
+        "oscillatools.accel.sparse_kuramoto.sparse_networked_kuramoto_force"
+      ],
+      "equation": "theta_dot[j]=omega[j]+sum_(j,k in E) C[j,k]*sin(theta[k]-theta[j])",
+      "evolution_owner": "oscillatools.accel.sparse_kuramoto.sparse_kuramoto_euler_trajectory",
+      "force_owner": "oscillatools.accel.sparse_kuramoto.sparse_networked_kuramoto_force",
+      "history": "none; initial theta at t=0",
+      "interpretation": "finite_phase",
+      "model": "finite_sparse_networked",
+      "noise": "none",
+      "normalisation": "supplied edge weights; no division by N",
+      "observable_owner": "oscillatools.accel.order_parameter_observables.order_parameter",
+      "sensitivity_owner": null,
+      "sensitivity_semantics": "no parameter sensitivity declared for this owner",
+      "solver": "euler",
+      "state": "unwrapped theta[N] in rad; omega in rad/time",
+      "state_jacobian_owner": null,
+      "topology": "COO row/column/weight edges; duplicate contributions add; SciPy adapter sums duplicates and removes diagonals"
+    },
+    {
+      "assumptions": [],
+      "backend_owners": [
+        "oscillatools.accel.sparse_kuramoto.sparse_networked_kuramoto_force"
+      ],
+      "equation": "theta_dot[j]=omega[j]+sum_(j,k in E) C[j,k]*sin(theta[k]-theta[j])",
+      "evolution_owner": "oscillatools.accel.sparse_kuramoto.sparse_kuramoto_rk4_trajectory",
+      "force_owner": "oscillatools.accel.sparse_kuramoto.sparse_networked_kuramoto_force",
+      "history": "none; initial theta at t=0",
+      "interpretation": "finite_phase",
+      "model": "finite_sparse_networked",
+      "noise": "none",
+      "normalisation": "supplied edge weights; no division by N",
+      "observable_owner": "oscillatools.accel.order_parameter_observables.order_parameter",
+      "sensitivity_owner": null,
+      "sensitivity_semantics": "no parameter sensitivity declared for this owner",
+      "solver": "rk4",
+      "state": "unwrapped theta[N] in rad; omega in rad/time",
+      "state_jacobian_owner": null,
+      "topology": "COO row/column/weight edges; duplicate contributions add; SciPy adapter sums duplicates and removes diagonals"
+    },
+    {
+      "assumptions": [
+        "Initial history includes its t=0 state; zero delay is not admitted here."
+      ],
+      "backend_owners": [
+        "oscillatools.accel.kuramoto_delayed.delayed_networked_force"
+      ],
+      "equation": "theta_dot[j](t)=omega[j]+sum_k C[j,k]*sin(theta[k](t-tau)-theta[j](t))",
+      "evolution_owner": "oscillatools.accel.kuramoto_delayed.integrate_delayed_kuramoto",
+      "force_owner": "oscillatools.accel.kuramoto_delayed.delayed_networked_force",
+      "history": "tau>0 is an integer multiple of dt; history[t=-tau..0], shape(tau/dt+1,N); delayed RK4 half stages interpolate the stored grid",
+      "interpretation": "finite_phase",
+      "model": "finite_delayed_networked",
+      "noise": "none",
+      "normalisation": "pairwise sum; no N division",
+      "observable_owner": "oscillatools.accel.order_parameter_observables.order_parameter",
+      "sensitivity_owner": "oscillatools.accel.diff_kuramoto_delayed.delayed_terminal_value_and_grad",
+      "sensitivity_semantics": "networked matrix parameters at fixed integer-grid delay; not a continuous derivative of tau",
+      "solver": "rk4",
+      "state": "unwrapped theta[N] in rad; omega in rad/time",
+      "state_jacobian_owner": null,
+      "topology": "fixed supplied network or uniform mean field"
+    },
+    {
+      "assumptions": [
+        "Initial history includes its t=0 state; zero delay is not admitted here."
+      ],
+      "backend_owners": [
+        "oscillatools.accel.kuramoto_delayed.delayed_mean_field_force"
+      ],
+      "equation": "theta_dot[j](t)=omega[j]+sum_k C[j,k]*sin(theta[k](t-tau)-theta[j](t))",
+      "evolution_owner": "oscillatools.accel.kuramoto_delayed.integrate_delayed_kuramoto",
+      "force_owner": "oscillatools.accel.kuramoto_delayed.delayed_mean_field_force",
+      "history": "tau>0 is an integer multiple of dt; history[t=-tau..0], shape(tau/dt+1,N); delayed RK4 half stages interpolate the stored grid",
+      "interpretation": "finite_phase",
+      "model": "finite_delayed_mean_field",
+      "noise": "none",
+      "normalisation": "scalar global K/N",
+      "observable_owner": "oscillatools.accel.order_parameter_observables.order_parameter",
+      "sensitivity_owner": null,
+      "sensitivity_semantics": "no scalar mean-field K sensitivity declared by this owner",
+      "solver": "rk4",
+      "state": "unwrapped theta[N] in rad; omega in rad/time",
+      "state_jacobian_owner": null,
+      "topology": "fixed supplied network or uniform mean field"
+    },
+    {
+      "assumptions": [
+        "Integrator observable series samples after steps, not an initial-state row."
+      ],
+      "backend_owners": [
+        "oscillatools.accel.networked_kuramoto.networked_kuramoto_force"
+      ],
+      "equation": "dtheta[j]=(omega[j]+F[j](theta))*dt+sqrt(2*D)*dW[j]",
+      "evolution_owner": "oscillatools.accel.kuramoto_noisy.integrate_noisy_kuramoto",
+      "force_owner": "oscillatools.accel.networked_kuramoto.networked_kuramoto_force",
+      "history": "none; initial theta at t=0",
+      "interpretation": "finite_phase",
+      "model": "finite_noisy_networked",
+      "noise": "additive phase-independent Ito white noise, sqrt(2*D*dt)*xi; D>=0; caller increments or explicit seeded generator",
+      "normalisation": "pairwise sum",
+      "observable_owner": "oscillatools.accel.order_parameter_observables.order_parameter",
+      "sensitivity_owner": "oscillatools.accel.diff_kuramoto_noisy.noisy_terminal_value_and_grad",
+      "sensitivity_semantics": "networked matrix parameters on the same fixed noise path; D>0; not an expectation or multiplicative-noise gradient",
+      "solver": "euler_maruyama",
+      "state": "unwrapped theta[N] in rad; omega in rad/time",
+      "state_jacobian_owner": null,
+      "topology": "fixed supplied force; independent phase noise"
+    },
+    {
+      "assumptions": [
+        "Integrator observable series samples after steps, not an initial-state row."
+      ],
+      "backend_owners": [
+        "oscillatools.accel.kuramoto_mean_field.mean_field_force"
+      ],
+      "equation": "dtheta[j]=(omega[j]+F[j](theta))*dt+sqrt(2*D)*dW[j]",
+      "evolution_owner": "oscillatools.accel.kuramoto_noisy.integrate_noisy_kuramoto",
+      "force_owner": "oscillatools.accel.kuramoto_mean_field.mean_field_force",
+      "history": "none; initial theta at t=0",
+      "interpretation": "finite_phase",
+      "model": "finite_noisy_mean_field",
+      "noise": "additive phase-independent Ito white noise, sqrt(2*D*dt)*xi; D>=0; caller increments or explicit seeded generator",
+      "normalisation": "scalar K/N",
+      "observable_owner": "oscillatools.accel.order_parameter_observables.order_parameter",
+      "sensitivity_owner": null,
+      "sensitivity_semantics": "no scalar mean-field K sensitivity declared by this owner",
+      "solver": "euler_maruyama",
+      "state": "unwrapped theta[N] in rad; omega in rad/time",
+      "state_jacobian_owner": null,
+      "topology": "fixed supplied force; independent phase noise"
+    },
+    {
+      "assumptions": [
+        "omega is the original normalised drive; velocity is separate initial state."
+      ],
+      "backend_owners": [
+        "oscillatools.accel.kuramoto_inertial.inertial_vector_field"
+      ],
+      "equation": "theta_dot=v; mass*v_dot=omega+F(theta)-damping*v",
+      "evolution_owner": "oscillatools.accel.kuramoto_inertial.integrate_inertial",
+      "force_owner": "oscillatools.accel.kuramoto_inertial.inertial_vector_field",
+      "history": "none; initial theta at t=0",
+      "interpretation": "finite_phase",
+      "model": "finite_inertial",
+      "noise": "none",
+      "normalisation": "supplied force; positive mass and nonnegative damping",
+      "observable_owner": "oscillatools.accel.order_parameter_observables.order_parameter",
+      "sensitivity_owner": null,
+      "sensitivity_semantics": "no parameter sensitivity declared for this owner",
+      "solver": "rk4",
+      "state": "theta[N] in rad and velocity[N] in rad/time; mass and damping explicit",
+      "state_jacobian_owner": "oscillatools.accel.kuramoto_inertial.inertial_jacobian",
+      "topology": "caller-supplied phase force and its Jacobian"
+    },
+    {
+      "assumptions": [
+        "Plasticity is explicit; the original Hebbian Jacobian applies only to the Hebbian rule."
+      ],
+      "backend_owners": [
+        "oscillatools.accel.kuramoto_adaptive.adaptive_vector_field"
+      ],
+      "equation": "theta_dot=omega+F(theta,K); K_dot=R(theta,K)",
+      "evolution_owner": "oscillatools.accel.kuramoto_adaptive.integrate_adaptive_kuramoto",
+      "force_owner": "oscillatools.accel.kuramoto_adaptive.adaptive_vector_field",
+      "history": "none; initial theta at t=0",
+      "interpretation": "finite_phase",
+      "model": "finite_adaptive",
+      "noise": "none",
+      "normalisation": "supplied phase force and coupling plasticity rule",
+      "observable_owner": "oscillatools.accel.order_parameter_observables.order_parameter",
+      "sensitivity_owner": null,
+      "sensitivity_semantics": "no parameter sensitivity declared for this owner",
+      "solver": "rk4",
+      "state": "unwrapped theta[N] in rad and time-dependent coupling[N,N]",
+      "state_jacobian_owner": null,
+      "topology": "joint evolving matrix, not fixed network parameters"
+    },
+    {
+      "assumptions": [],
+      "backend_owners": [
+        "oscillatools.accel.multiplex_kuramoto.multiplex_field"
+      ],
+      "equation": "theta_dot[a,i]=omega[a,i]+sum_j A[a,i,j]*sin(theta[a,j]-theta[a,i])+sum_b B[a,b]*sin(theta[b,i]-theta[a,i])",
+      "evolution_owner": "oscillatools.accel.multiplex_kuramoto.integrate_multiplex",
+      "force_owner": "oscillatools.accel.multiplex_kuramoto.multiplex_field",
+      "history": "none; initial theta at t=0",
+      "interpretation": "finite_phase",
+      "model": "finite_multiplex",
+      "noise": "none",
+      "normalisation": "pairwise intra-layer and inter-layer sums; no N or L division",
+      "observable_owner": "oscillatools.accel.multiplex_kuramoto.layer_order_parameters",
+      "sensitivity_owner": null,
+      "sensitivity_semantics": "no parameter sensitivity declared for this owner",
+      "solver": "rk4",
+      "state": "unwrapped theta[L,N] in rad; omega[L,N] in rad/time",
+      "state_jacobian_owner": "oscillatools.accel.multiplex_kuramoto.multiplex_jacobian",
+      "topology": "same N replicas per layer; A[L,N,N] and B[L,L]"
+    },
+    {
+      "assumptions": [
+        "Not an exact arbitrary finite-N phase system.",
+        "Original trajectory requires positive K and Delta."
+      ],
+      "backend_owners": [
+        "oscillatools.accel.kuramoto_ott_antonsen.ott_antonsen_trajectory"
+      ],
+      "equation": "z_dot=(i*omega0-Delta+K/2)*z-(K/2)*abs(z)**2*z",
+      "evolution_owner": "oscillatools.accel.kuramoto_ott_antonsen.ott_antonsen_trajectory",
+      "force_owner": "oscillatools.accel.kuramoto_ott_antonsen.ott_antonsen_field",
+      "history": "initial z at t=0",
+      "interpretation": "continuum_reduction",
+      "model": "continuum_ott_antonsen",
+      "noise": "none",
+      "normalisation": "global K in Lorentzian continuum closure",
+      "observable_owner": "oscillatools.accel.kuramoto_ott_antonsen.ott_antonsen_order_parameter",
+      "sensitivity_owner": "oscillatools.accel.kuramoto_ott_antonsen.ott_antonsen_terminal_order_parameter_value_and_grad",
+      "sensitivity_semantics": "augmented RK4 derivatives of K and Delta; modulus singularity at z=0 refuses",
+      "solver": "rk4",
+      "state": "complex dimensionless order parameter z",
+      "state_jacobian_owner": null,
+      "topology": "thermodynamic Lorentzian frequency distribution and OA manifold"
+    },
+    {
+      "assumptions": [
+        "Exact finite-model reduction; RK4 still has integration error.",
+        "Reconstructed phase angles are modulo 2*pi, not unwrapped coordinates."
+      ],
+      "backend_owners": [
+        "oscillatools.accel.kuramoto_watanabe_strogatz.integrate_watanabe_strogatz"
+      ],
+      "equation": "common Riccati flow; theta reconstructed by the original Mobius map",
+      "evolution_owner": "oscillatools.accel.kuramoto_watanabe_strogatz.integrate_watanabe_strogatz",
+      "force_owner": null,
+      "history": "initial phases define immutable constants of motion",
+      "interpretation": "exact_finite_reduction",
+      "model": "finite_watanabe_strogatz",
+      "noise": "none",
+      "normalisation": "H=K*Z with Z=sum_j exp(i*theta[j])/N",
+      "observable_owner": "oscillatools.accel.kuramoto_watanabe_strogatz.watanabe_strogatz_order_parameter",
+      "sensitivity_owner": null,
+      "sensitivity_semantics": "no parameter sensitivity declared for this owner",
+      "solver": "rk4",
+      "state": "complex SU(1,1) alpha,beta and N constants b[j]=exp(i*theta0[j])",
+      "state_jacobian_owner": null,
+      "topology": "identical common omega; sinusoidal common forcing"
+    },
+    {
+      "assumptions": [
+        "Harmonic phases do not identify the original phase branch.",
+        "SU(1,1) coordinate cancellation near synchrony is not a scientific accuracy guarantee."
+      ],
+      "backend_owners": [
+        "oscillatools.accel.kuramoto_higher_order_watanabe_strogatz.integrate_higher_order_watanabe_strogatz"
+      ],
+      "equation": "phi_dot=p*omega+p*K*Im(Z_p*exp(-i*phi))",
+      "evolution_owner": "oscillatools.accel.kuramoto_higher_order_watanabe_strogatz.integrate_higher_order_watanabe_strogatz",
+      "force_owner": null,
+      "history": "initial harmonic phases define constants of motion",
+      "interpretation": "exact_finite_reduction",
+      "model": "finite_harmonic_watanabe_strogatz",
+      "noise": "none",
+      "normalisation": "Z_p=sum_j exp(i*p*theta[j])/N",
+      "observable_owner": null,
+      "sensitivity_owner": null,
+      "sensitivity_semantics": "no parameter sensitivity declared for this owner",
+      "solver": "rk4",
+      "state": "SU(1,1) alpha,beta and N constants exp(i*p*theta0); harmonic phases phi=p*theta",
+      "state_jacobian_owner": null,
+      "topology": "identical common omega; integer harmonic p>=1"
+    },
+    {
+      "assumptions": [
+        "Quantum transverse-spin order is not the classical phase order parameter or weighted spin_z.",
+        "Trotter discretisation and hardware/noise qualification remain separate.",
+        "Original sparse compiler omits abs(K)<KNM_SPARSITY_EPS and abs(omega)<=KNM_SPARSITY_EPS; selection is not a lossless arbitrary-coefficient Hamiltonian."
+      ],
+      "backend_owners": [
+        "scpn_quantum_control.phase.xy_kuramoto.QuantumKuramotoSolver.evolve"
+      ],
+      "equation": "H=-sum_(j<k) K[j,k]*(X_j*X_k+Y_j*Y_k)-sum_j omega[j]*Z_j; U=exp(-i*H*t)",
+      "evolution_owner": "scpn_quantum_control.kuramoto_core.compile_trotter_circuit",
+      "force_owner": "scpn_quantum_control.bridge.knm_hamiltonian.knm_to_hamiltonian",
+      "history": "none; circuit evolution of a supplied state",
+      "interpretation": "quantum_spin",
+      "model": "quantum_xy",
+      "noise": "none in ideal gate evolution",
+      "normalisation": "original pairwise Hamiltonian coefficients; no classical K/N inference",
+      "observable_owner": "scpn_quantum_control.phase.xy_kuramoto.QuantumKuramotoSolver.measure_order_parameter",
+      "sensitivity_owner": null,
+      "sensitivity_semantics": "no gradient declared for this circuit compiler",
+      "solver": "suzuki_trotter",
+      "state": "normalised complex amplitudes[2**N]; little-endian qubits",
+      "state_jacobian_owner": null,
+      "topology": "symmetric matrix; one term per unordered edge"
+    },
+    {
+      "assumptions": [
+        "Initial history includes its t=0 state; zero delay is not admitted here.",
+        "Requires installed JAX; its actual selected device is separate runtime evidence."
+      ],
+      "backend_owners": [
+        "oscillatools.accel.jax_kuramoto_delayed.jax_kuramoto_delayed_trajectory"
+      ],
+      "equation": "theta_dot[j](t)=omega[j]+sum_k C[j,k]*sin(theta[k](t-tau)-theta[j](t))",
+      "evolution_owner": "oscillatools.accel.jax_kuramoto_delayed.jax_kuramoto_delayed_trajectory",
+      "force_owner": "oscillatools.accel.kuramoto_delayed.delayed_networked_force",
+      "history": "tau>0 is an integer multiple of dt; history[t=-tau..0], shape(tau/dt+1,N); delayed RK4 half stages interpolate the stored grid",
+      "interpretation": "finite_phase",
+      "model": "finite_delayed_networked",
+      "noise": "none",
+      "normalisation": "pairwise sum; no N division",
+      "observable_owner": "oscillatools.accel.order_parameter_observables.order_parameter",
+      "sensitivity_owner": "oscillatools.accel.jax_kuramoto_delayed.jax_kuramoto_delayed_gradient",
+      "sensitivity_semantics": "reverse-mode derivative of fixed-shape history/omega/matrix solve; grid delay is structural",
+      "solver": "jax_rk4",
+      "state": "unwrapped theta[N] in rad; omega in rad/time",
+      "state_jacobian_owner": null,
+      "topology": "fixed supplied network or uniform mean field"
+    },
+    {
+      "assumptions": [
+        "A force and state Jacobian do not qualify a time integrator or parameter gradient."
+      ],
+      "backend_owners": [
+        "oscillatools.accel.kuramoto_simplex_mean_field.simplex_mean_field_force"
+      ],
+      "equation": "F[j]=K*Im(Z**p*exp(-i*p*theta[j]))",
+      "evolution_owner": null,
+      "force_owner": "oscillatools.accel.kuramoto_simplex_mean_field.simplex_mean_field_force",
+      "history": "no trajectory owner in this row",
+      "interpretation": "force_operator",
+      "model": "finite_simplex_mean_field",
+      "noise": "none",
+      "normalisation": "Z=sum_j exp(i*theta[j])/N; p>=1",
+      "observable_owner": "oscillatools.accel.order_parameter_observables.order_parameter",
+      "sensitivity_owner": null,
+      "sensitivity_semantics": "no parameter sensitivity declared for this owner",
+      "solver": "force_only",
+      "state": "unwrapped theta[N] in rad; omega in rad/time",
+      "state_jacobian_owner": "oscillatools.accel.kuramoto_simplex_mean_field.simplex_mean_field_jacobian",
+      "topology": "uniform p-simplex mean field; distinct from harmonic Daido coupling"
+    },
+    {
+      "assumptions": [
+        "A force and state Jacobian do not qualify a time integrator or parameter gradient."
+      ],
+      "backend_owners": [
+        "oscillatools.accel.triadic_mean_field.triadic_mean_field_force"
+      ],
+      "equation": "F[j]=K*Im(Z**2*exp(-2i*theta[j]))",
+      "evolution_owner": null,
+      "force_owner": "oscillatools.accel.triadic_mean_field.triadic_mean_field_force",
+      "history": "no trajectory owner in this row",
+      "interpretation": "force_operator",
+      "model": "finite_triadic_mean_field",
+      "noise": "none",
+      "normalisation": "Z=sum_j exp(i*theta[j])/N",
+      "observable_owner": "oscillatools.accel.order_parameter_observables.order_parameter",
+      "sensitivity_owner": null,
+      "sensitivity_semantics": "no parameter sensitivity declared for this owner",
+      "solver": "force_only",
+      "state": "unwrapped theta[N] in rad; omega in rad/time",
+      "state_jacobian_owner": "oscillatools.accel.triadic_mean_field.triadic_mean_field_jacobian",
+      "topology": "uniform three-body mean field; original p=2 simplex interaction"
+    },
+    {
+      "assumptions": [
+        "A force and state Jacobian do not qualify a time integrator or parameter gradient."
+      ],
+      "backend_owners": [
+        "oscillatools.accel.daido_mean_field.daido_mean_field_force"
+      ],
+      "equation": "F[j]=K*Im(Z_m*exp(-i*m*theta[j]))",
+      "evolution_owner": null,
+      "force_owner": "oscillatools.accel.daido_mean_field.daido_mean_field_force",
+      "history": "no trajectory owner in this row",
+      "interpretation": "force_operator",
+      "model": "finite_daido_mean_field",
+      "noise": "none",
+      "normalisation": "Z_m=sum_j exp(i*m*theta[j])/N; integer m>=1",
+      "observable_owner": "oscillatools.accel.order_parameter_observables.order_parameter",
+      "sensitivity_owner": null,
+      "sensitivity_semantics": "no parameter sensitivity declared for this owner",
+      "solver": "force_only",
+      "state": "unwrapped theta[N] in rad; omega in rad/time",
+      "state_jacobian_owner": "oscillatools.accel.daido_mean_field.daido_mean_field_jacobian",
+      "topology": "uniform harmonic field; not Z**m simplex mean field"
+    },
+    {
+      "assumptions": [
+        "A force and state Jacobian do not qualify a time integrator or parameter gradient."
+      ],
+      "backend_owners": [
+        "oscillatools.accel.kuramoto_hyperedge.hyperedge_force"
+      ],
+      "equation": "F[i]=sum_(e contains i) K[e]*sin(sum_(k in e) theta[k]-len(e)*theta[i])",
+      "evolution_owner": null,
+      "force_owner": "oscillatools.accel.kuramoto_hyperedge.hyperedge_force",
+      "history": "no trajectory owner in this row",
+      "interpretation": "force_operator",
+      "model": "finite_hypergraph",
+      "noise": "none",
+      "normalisation": "explicit hyperedge weights; no population division",
+      "observable_owner": "oscillatools.accel.order_parameter_observables.order_parameter",
+      "sensitivity_owner": null,
+      "sensitivity_semantics": "no parameter sensitivity declared for this owner",
+      "solver": "force_only",
+      "state": "unwrapped theta[N] in rad; omega in rad/time",
+      "state_jacobian_owner": "oscillatools.accel.kuramoto_hyperedge.hyperedge_jacobian",
+      "topology": "hyperedges have at least two distinct in-range members; mixed arities admitted"
+    }
+  ],
+  "definition_path": "src/scpn_quantum_control/kuramoto_model_conventions.py",
+  "definition_sha256": "e5edb172fb8b37deffcfc48105141697b6bc936179e29f3f8342eb1cd35f4690",
+  "identity": "daab26390668ca4c6ba464830cbc6b26046011a18b015576fe527b374443529f",
+  "schema": "kuramoto_conventions.v1",
+  "source_owners": {
+    "oscillatools.accel.daido_mean_field.daido_mean_field_force": {
+      "declaration_sha256": "3dfcb649ec33696b2baabe9e6548655f1d83555a5c52d6624db369055628fc60",
+      "direct_test_paths": [
+        "oscillatools/tests/test_daido_mean_field.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 153,
+      "module_declared_dispatch_chains": {
+        "_DAIDO_MEAN_FIELD_FORCE_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.daido_mean_field._rust_daido_mean_field_force"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.daido_mean_field._julia_daido_mean_field_force"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.daido_mean_field._python_daido_mean_field_force"
+          }
+        ],
+        "_DAIDO_MEAN_FIELD_JACOBIAN_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.daido_mean_field._rust_daido_mean_field_jacobian"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.daido_mean_field._julia_daido_mean_field_jacobian"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.daido_mean_field._python_daido_mean_field_jacobian"
+          }
+        ]
+      },
+      "path": "oscillatools/src/oscillatools/accel/daido_mean_field.py",
+      "qualified_name": "oscillatools.accel.daido_mean_field.daido_mean_field_force",
+      "signature": "theta: NDArray[np.float64], coupling: float, m: int",
+      "source_sha256": "b72d21380f2ec8b1820a58a274c0e671e6a3794d07a41fd13de7da2eca78f6a3",
+      "summary": "Daido m-th-harmonic mean-field force with multi-language dispatch."
+    },
+    "oscillatools.accel.daido_mean_field.daido_mean_field_jacobian": {
+      "declaration_sha256": "e4e76e183be92733acff1c622f2989f991d13109624286723a14fe5a66e63359",
+      "direct_test_paths": [
+        "oscillatools/tests/test_daido_mean_field.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 192,
+      "module_declared_dispatch_chains": {
+        "_DAIDO_MEAN_FIELD_FORCE_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.daido_mean_field._rust_daido_mean_field_force"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.daido_mean_field._julia_daido_mean_field_force"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.daido_mean_field._python_daido_mean_field_force"
+          }
+        ],
+        "_DAIDO_MEAN_FIELD_JACOBIAN_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.daido_mean_field._rust_daido_mean_field_jacobian"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.daido_mean_field._julia_daido_mean_field_jacobian"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.daido_mean_field._python_daido_mean_field_jacobian"
+          }
+        ]
+      },
+      "path": "oscillatools/src/oscillatools/accel/daido_mean_field.py",
+      "qualified_name": "oscillatools.accel.daido_mean_field.daido_mean_field_jacobian",
+      "signature": "theta: NDArray[np.float64], coupling: float, m: int",
+      "source_sha256": "b72d21380f2ec8b1820a58a274c0e671e6a3794d07a41fd13de7da2eca78f6a3",
+      "summary": "Daido m-th-harmonic mean-field stability Jacobian with multi-language dispatch."
+    },
+    "oscillatools.accel.diff_kuramoto_delayed.delayed_terminal_value_and_grad": {
+      "declaration_sha256": "dc14a5029c951cb34c6ed27f78c9a8e658a62babe36721647c51e1647e5d8170",
+      "direct_test_paths": [
+        "oscillatools/tests/test_diff_kuramoto_delayed.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 262,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/diff_kuramoto_delayed.py",
+      "qualified_name": "oscillatools.accel.diff_kuramoto_delayed.delayed_terminal_value_and_grad",
+      "signature": "initial_history: NDArray[np.float64], omega: NDArray[np.float64], coupling: NDArray[np.float64], *, delay: float, dt: float, n_steps: int, objective: DelayedTerminalObjective, objective_grad: DelayedTerminalObjectiveGrad, delay_tolerance: float=1e-09",
+      "source_sha256": "a041ae920d73c699e2514b864968cf206dc6f11374b8053984edeab5e7388d2b",
+      "summary": "Differentiate a terminal objective through the time-delayed Kuramoto integrator."
+    },
+    "oscillatools.accel.diff_kuramoto_euler.kuramoto_euler_vjp": {
+      "declaration_sha256": "38f1bbf8512add628d761d337e017c6f27b616179f23995fd2e3034c45f0b8ad",
+      "direct_test_paths": [
+        "oscillatools/tests/test_diff_kuramoto_euler.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 330,
+      "module_declared_dispatch_chains": {
+        "_KURAMOTO_EULER_TRAJECTORY_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.diff_kuramoto_euler._rust_kuramoto_euler_trajectory"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.diff_kuramoto_euler._julia_kuramoto_euler_trajectory"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.diff_kuramoto_euler._python_kuramoto_euler_trajectory"
+          }
+        ],
+        "_KURAMOTO_EULER_VJP_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.diff_kuramoto_euler._rust_kuramoto_euler_vjp"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.diff_kuramoto_euler._julia_kuramoto_euler_vjp"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.diff_kuramoto_euler._python_kuramoto_euler_vjp"
+          }
+        ]
+      },
+      "path": "oscillatools/src/oscillatools/accel/diff_kuramoto_euler.py",
+      "qualified_name": "oscillatools.accel.diff_kuramoto_euler.kuramoto_euler_vjp",
+      "signature": "trajectory: object, coupling: object, dt: float, cotangent: object",
+      "source_sha256": "3f9e21702f4876cd8c1fa05f2c8bb6484c4468c90fae24f7ee0bdcc5d37c5411",
+      "summary": "Reverse-mode adjoint of the networked-Kuramoto Euler integrator."
+    },
+    "oscillatools.accel.diff_kuramoto_noisy.noisy_terminal_value_and_grad": {
+      "declaration_sha256": "c209b1fc122f2d9312ed81c5780c7437a74ddc161e520d4e14742192a2f4a250",
+      "direct_test_paths": [
+        "oscillatools/tests/test_diff_kuramoto_noisy.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 183,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/diff_kuramoto_noisy.py",
+      "qualified_name": "oscillatools.accel.diff_kuramoto_noisy.noisy_terminal_value_and_grad",
+      "signature": "phases: NDArray[np.float64], omega: NDArray[np.float64], coupling: NDArray[np.float64], *, diffusion: float, dt: float, n_steps: int, seed: int, objective: NoisyTerminalObjective, objective_grad: NoisyTerminalObjectiveGrad",
+      "source_sha256": "5160abb4d9375d4e6694479b2ff9fcbfd21d9b014c17f7e32ad9b1844816417f",
+      "summary": "Differentiate a terminal objective through the noisy Kuramoto integrator (fixed noise)."
+    },
+    "oscillatools.accel.diff_kuramoto_rk4.kuramoto_rk4_vjp": {
+      "declaration_sha256": "3877ce372c59d11adb859dabcc5fac685550a701b28bb6116a5364b8363d1e6c",
+      "direct_test_paths": [
+        "oscillatools/tests/test_diff_kuramoto_rk4.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 392,
+      "module_declared_dispatch_chains": {
+        "_KURAMOTO_RK4_TRAJECTORY_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.diff_kuramoto_rk4._rust_kuramoto_rk4_trajectory"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.diff_kuramoto_rk4._julia_kuramoto_rk4_trajectory"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.diff_kuramoto_rk4._python_kuramoto_rk4_trajectory"
+          }
+        ],
+        "_KURAMOTO_RK4_VJP_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.diff_kuramoto_rk4._rust_kuramoto_rk4_vjp"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.diff_kuramoto_rk4._julia_kuramoto_rk4_vjp"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.diff_kuramoto_rk4._python_kuramoto_rk4_vjp"
+          }
+        ]
+      },
+      "path": "oscillatools/src/oscillatools/accel/diff_kuramoto_rk4.py",
+      "qualified_name": "oscillatools.accel.diff_kuramoto_rk4.kuramoto_rk4_vjp",
+      "signature": "trajectory: object, omega: object, coupling: object, dt: float, cotangent: object",
+      "source_sha256": "b2a428fe79128d4764edb1307187feabaeb73f51c436028829f3b3d0a37a9f4b",
+      "summary": "Reverse-mode adjoint of the networked-Kuramoto RK4 integrator."
+    },
+    "oscillatools.accel.jax_kuramoto_delayed.jax_kuramoto_delayed_gradient": {
+      "declaration_sha256": "0a2bb0b785f36aaca05aec54d4ac441cb1c2d2b00c42c12d0ddd60ef80e7bf8b",
+      "direct_test_paths": [
+        "oscillatools/tests/test_jax_kuramoto_delayed.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 246,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/jax_kuramoto_delayed.py",
+      "qualified_name": "oscillatools.accel.jax_kuramoto_delayed.jax_kuramoto_delayed_gradient",
+      "signature": "initial_history: NDArray[np.float64], omega: NDArray[np.float64], coupling: NDArray[np.float64], *, delay: float, dt: float, n_steps: int, cotangent: NDArray[np.float64], delay_tolerance: float=1e-09",
+      "source_sha256": "f537b947b851cdb83a6b6b6c5df9d2d732efbba9cd2e3581ca7977f026ba684b",
+      "summary": "Reverse-mode (autodiff) gradient of the delayed solve on the JAX accelerator tier."
+    },
+    "oscillatools.accel.jax_kuramoto_delayed.jax_kuramoto_delayed_trajectory": {
+      "declaration_sha256": "91ed2a8e9fb254cc668d7c3769a3638eaaa67e23cf22036c7079f8a0b28f2623",
+      "direct_test_paths": [
+        "oscillatools/tests/test_jax_kuramoto_delayed.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 180,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/jax_kuramoto_delayed.py",
+      "qualified_name": "oscillatools.accel.jax_kuramoto_delayed.jax_kuramoto_delayed_trajectory",
+      "signature": "initial_history: NDArray[np.float64], omega: NDArray[np.float64], coupling: NDArray[np.float64], *, delay: float, dt: float, n_steps: int, delay_tolerance: float=1e-09",
+      "source_sha256": "f537b947b851cdb83a6b6b6c5df9d2d732efbba9cd2e3581ca7977f026ba684b",
+      "summary": "Forward delayed networked-Kuramoto method-of-steps trajectory on the JAX accelerator tier."
+    },
+    "oscillatools.accel.kuramoto_adaptive.adaptive_vector_field": {
+      "declaration_sha256": "bc4b3c4d45a9338d390973a3b37604631c6da15acfbfbc4d171278b827a57427",
+      "direct_test_paths": [
+        "oscillatools/tests/test_kuramoto_adaptive.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 194,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/kuramoto_adaptive.py",
+      "qualified_name": "oscillatools.accel.kuramoto_adaptive.adaptive_vector_field",
+      "signature": "phases: NDArray[np.float64], coupling: NDArray[np.float64], omega: NDArray[np.float64], force: AdaptivePhaseForce, plasticity: PlasticityRule",
+      "source_sha256": "12c37c085f9e9f59de9784439a6a2c636223ed51b23221fcba92f9471beeaa2e",
+      "summary": "Return the joint vector field ``(θ̇, K̇)`` of the adaptive Kuramoto model."
+    },
+    "oscillatools.accel.kuramoto_adaptive.integrate_adaptive_kuramoto": {
+      "declaration_sha256": "ded4b1f98695ee6730605863a630f1a85893901772d96c70741a91a3248f86d5",
+      "direct_test_paths": [
+        "oscillatools/tests/test_kuramoto_adaptive.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 322,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/kuramoto_adaptive.py",
+      "qualified_name": "oscillatools.accel.kuramoto_adaptive.integrate_adaptive_kuramoto",
+      "signature": "initial_phases: NDArray[np.float64], initial_coupling: NDArray[np.float64], omega: NDArray[np.float64], force: AdaptivePhaseForce, plasticity: PlasticityRule, *, dt: float, n_steps: int",
+      "source_sha256": "12c37c085f9e9f59de9784439a6a2c636223ed51b23221fcba92f9471beeaa2e",
+      "summary": "Integrate the adaptive Kuramoto model by a functional RK4 on the joint ``(θ, K)`` state."
+    },
+    "oscillatools.accel.kuramoto_delayed.delayed_mean_field_force": {
+      "declaration_sha256": "5060889556ac93a16e4a9c9809801ef96bd6d2f4d6cd13ad7ac28412f92963b8",
+      "direct_test_paths": [
+        "oscillatools/tests/test_kuramoto_delayed.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 59,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/kuramoto_delayed.py",
+      "qualified_name": "oscillatools.accel.kuramoto_delayed.delayed_mean_field_force",
+      "signature": "current_phases: NDArray[np.float64], delayed_phases: NDArray[np.float64], coupling: float",
+      "source_sha256": "eda5f4fc4e9cf6a621fb132ce0e0db218b2fc1e9dae26139832d25f9a8d38298",
+      "summary": "Return the delayed mean-field Kuramoto force ``F_j = (K/N) Σ_k sin(θ_k(t-τ) − θ_j(t))``."
+    },
+    "oscillatools.accel.kuramoto_delayed.delayed_networked_force": {
+      "declaration_sha256": "0b742fdcfd71f4e06074a73a1824f8e2fde60591175249bc3627659e8c3535dc",
+      "direct_test_paths": [
+        "oscillatools/tests/test_kuramoto_delayed.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 97,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/kuramoto_delayed.py",
+      "qualified_name": "oscillatools.accel.kuramoto_delayed.delayed_networked_force",
+      "signature": "current_phases: NDArray[np.float64], delayed_phases: NDArray[np.float64], coupling_matrix: NDArray[np.float64]",
+      "source_sha256": "eda5f4fc4e9cf6a621fb132ce0e0db218b2fc1e9dae26139832d25f9a8d38298",
+      "summary": "Return the delayed networked Kuramoto force ``F_j = Σ_k K_{jk} sin(θ_k(t-τ) − θ_j(t))``."
+    },
+    "oscillatools.accel.kuramoto_delayed.integrate_delayed_kuramoto": {
+      "declaration_sha256": "37f45b3e0d4b8ad09d9e18276f69942a0ba0d8c21d6201de01f4d841b1a3b3b7",
+      "direct_test_paths": [
+        "oscillatools/tests/test_kuramoto_delayed.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 220,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/kuramoto_delayed.py",
+      "qualified_name": "oscillatools.accel.kuramoto_delayed.integrate_delayed_kuramoto",
+      "signature": "initial_history: NDArray[np.float64], omega: NDArray[np.float64], force: DelayedForce, *, delay: float, dt: float, n_steps: int, delay_tolerance: float=1e-09",
+      "source_sha256": "eda5f4fc4e9cf6a621fb132ce0e0db218b2fc1e9dae26139832d25f9a8d38298",
+      "summary": "Integrate the time-delayed Kuramoto model by a delay-aware method-of-steps RK4."
+    },
+    "oscillatools.accel.kuramoto_higher_order_watanabe_strogatz.integrate_higher_order_watanabe_strogatz": {
+      "declaration_sha256": "68bc765c41cf5de9b9ae5caff4fd0ee6f26bfa6502325736bff928c5ace5e3c2",
+      "direct_test_paths": [
+        "oscillatools/tests/test_kuramoto_higher_order_watanabe_strogatz.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 81,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/kuramoto_higher_order_watanabe_strogatz.py",
+      "qualified_name": "oscillatools.accel.kuramoto_higher_order_watanabe_strogatz.integrate_higher_order_watanabe_strogatz",
+      "signature": "initial_phases: NDArray[np.float64], *, omega: float, coupling: float, harmonic: int, dt: float, n_steps: int",
+      "source_sha256": "65731e29a017bee16d47d6f93a74896f275ba7976d9f7f37ab02a5b5731e9c66",
+      "summary": "Integrate the ``p``-th harmonic identical-oscillator flow by the Watanabe–Strogatz reduction."
+    },
+    "oscillatools.accel.kuramoto_hyperedge.hyperedge_force": {
+      "declaration_sha256": "43448079af0e1b5c7c0a6edd764cd7e6bd4f79cd4795dd62653f2b3e57a019d1",
+      "direct_test_paths": [
+        "oscillatools/tests/test_kuramoto_hyperedge.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 73,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/kuramoto_hyperedge.py",
+      "qualified_name": "oscillatools.accel.kuramoto_hyperedge.hyperedge_force",
+      "signature": "theta: NDArray[np.float64], hyperedges: Sequence[Sequence[int]], coupling: float | Sequence[float]",
+      "source_sha256": "5dbb9bbd2add6f659f43ae093e5c79b0d4a04a6c76a0a7faad882fa334f84f2e",
+      "summary": "Return the structural hypergraph force ``F_i = Σ_{e∋i} K_e sin(Σ_{k∈e} θ_k − |e| θ_i)``."
+    },
+    "oscillatools.accel.kuramoto_hyperedge.hyperedge_jacobian": {
+      "declaration_sha256": "29d05b1c3d23f5907a192a36464f97cef096f4fc8731809fc303f3128806c26f",
+      "direct_test_paths": [
+        "oscillatools/tests/test_kuramoto_hyperedge.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 116,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/kuramoto_hyperedge.py",
+      "qualified_name": "oscillatools.accel.kuramoto_hyperedge.hyperedge_jacobian",
+      "signature": "theta: NDArray[np.float64], hyperedges: Sequence[Sequence[int]], coupling: float | Sequence[float]",
+      "source_sha256": "5dbb9bbd2add6f659f43ae093e5c79b0d4a04a6c76a0a7faad882fa334f84f2e",
+      "summary": "Return the ``(N, N)`` Jacobian of the structural hypergraph force."
+    },
+    "oscillatools.accel.kuramoto_inertial.inertial_jacobian": {
+      "declaration_sha256": "6f61d0e35d02e38f05110305074acf4df4e2f2d5ae7a18f328d541447d6b6ed3",
+      "direct_test_paths": [
+        "oscillatools/tests/test_kuramoto_inertial.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 199,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/kuramoto_inertial.py",
+      "qualified_name": "oscillatools.accel.kuramoto_inertial.inertial_jacobian",
+      "signature": "phases: NDArray[np.float64], force_jacobian: PhaseJacobian, mass: float, *, damping: float=1.0",
+      "source_sha256": "0bb6c7529708817b1cf6d88eff55bcf21c83aa6001cbf51f04ebab42f5811308",
+      "summary": "Return the ``2N × 2N`` Jacobian of the inertial Kuramoto phase-space vector field."
+    },
+    "oscillatools.accel.kuramoto_inertial.inertial_vector_field": {
+      "declaration_sha256": "971daeadd2f489b3a2c54d0cccd11106872877df551ab3a55372ced27c3dc88d",
+      "direct_test_paths": [
+        "oscillatools/tests/test_kuramoto_inertial.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 146,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/kuramoto_inertial.py",
+      "qualified_name": "oscillatools.accel.kuramoto_inertial.inertial_vector_field",
+      "signature": "phases: NDArray[np.float64], velocities: NDArray[np.float64], omega: NDArray[np.float64], force: PhaseForce, mass: float, *, damping: float=1.0",
+      "source_sha256": "0bb6c7529708817b1cf6d88eff55bcf21c83aa6001cbf51f04ebab42f5811308",
+      "summary": "Return the ``(θ, θ̇)`` phase-space vector field of the inertial Kuramoto model."
+    },
+    "oscillatools.accel.kuramoto_inertial.integrate_inertial": {
+      "declaration_sha256": "ae9a13b3331ef85aa2074d77cccc98a7b885b923b6b181d3cbed78d8a7a61906",
+      "direct_test_paths": [
+        "oscillatools/tests/test_kuramoto_inertial.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 260,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/kuramoto_inertial.py",
+      "qualified_name": "oscillatools.accel.kuramoto_inertial.integrate_inertial",
+      "signature": "phases: NDArray[np.float64], velocities: NDArray[np.float64], omega: NDArray[np.float64], force: PhaseForce, mass: float, *, damping: float=1.0, dt: float, n_steps: int",
+      "source_sha256": "0bb6c7529708817b1cf6d88eff55bcf21c83aa6001cbf51f04ebab42f5811308",
+      "summary": "Integrate the inertial Kuramoto model by a fixed-step RK4 over the ``(θ, v)`` state."
+    },
+    "oscillatools.accel.kuramoto_mean_field.mean_field_force": {
+      "declaration_sha256": "88cd036731d7aac58d1dc9ddb48deefb79137218d72407e122f5989270f92c85",
+      "direct_test_paths": [
+        "oscillatools/tests/test_kuramoto_mean_field.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 129,
+      "module_declared_dispatch_chains": {
+        "_MEAN_FIELD_FORCE_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.kuramoto_mean_field._rust_mean_field_force"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.kuramoto_mean_field._julia_mean_field_force"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.kuramoto_mean_field._python_mean_field_force"
+          }
+        ],
+        "_MEAN_FIELD_JACOBIAN_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.kuramoto_mean_field._rust_mean_field_jacobian"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.kuramoto_mean_field._julia_mean_field_jacobian"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.kuramoto_mean_field._python_mean_field_jacobian"
+          }
+        ]
+      },
+      "path": "oscillatools/src/oscillatools/accel/kuramoto_mean_field.py",
+      "qualified_name": "oscillatools.accel.kuramoto_mean_field.mean_field_force",
+      "signature": "theta: NDArray[np.float64], coupling: float",
+      "source_sha256": "36a6b6eef4beaf143dac9ffa6a9c78d4a8517deb9fb2976c3adc026326df2581",
+      "summary": "Kuramoto mean-field coupling force with multi-language dispatch."
+    },
+    "oscillatools.accel.kuramoto_mean_field.mean_field_jacobian": {
+      "declaration_sha256": "cb13587cc6e6f7d7b44b99bbdd420ed73c921d17ae0cdb93c502da9a4406668d",
+      "direct_test_paths": [
+        "oscillatools/tests/test_kuramoto_mean_field.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 160,
+      "module_declared_dispatch_chains": {
+        "_MEAN_FIELD_FORCE_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.kuramoto_mean_field._rust_mean_field_force"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.kuramoto_mean_field._julia_mean_field_force"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.kuramoto_mean_field._python_mean_field_force"
+          }
+        ],
+        "_MEAN_FIELD_JACOBIAN_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.kuramoto_mean_field._rust_mean_field_jacobian"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.kuramoto_mean_field._julia_mean_field_jacobian"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.kuramoto_mean_field._python_mean_field_jacobian"
+          }
+        ]
+      },
+      "path": "oscillatools/src/oscillatools/accel/kuramoto_mean_field.py",
+      "qualified_name": "oscillatools.accel.kuramoto_mean_field.mean_field_jacobian",
+      "signature": "theta: NDArray[np.float64], coupling: float",
+      "source_sha256": "36a6b6eef4beaf143dac9ffa6a9c78d4a8517deb9fb2976c3adc026326df2581",
+      "summary": "Kuramoto synchronisation stability Jacobian with multi-language dispatch."
+    },
+    "oscillatools.accel.kuramoto_noisy.integrate_noisy_kuramoto": {
+      "declaration_sha256": "76c2481a676b46168a3a7328cb357e857910a35753222c4f2b8d86ebda5b6426",
+      "direct_test_paths": [
+        "oscillatools/tests/test_kuramoto_noisy.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 143,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/kuramoto_noisy.py",
+      "qualified_name": "oscillatools.accel.kuramoto_noisy.integrate_noisy_kuramoto",
+      "signature": "initial_phases: NDArray[np.float64], omega: NDArray[np.float64], force: StochasticForce, *, diffusion: float, dt: float, n_steps: int, seed: int, settle_steps: int | None=None",
+      "source_sha256": "2ecffee0ecbe402c3e1ec8a3c9e5456ae95ac874e7f0d6c97e77f9c50c7ac1ee",
+      "summary": "Integrate the noisy Kuramoto model by a seeded Euler–Maruyama scheme."
+    },
+    "oscillatools.accel.kuramoto_ott_antonsen.ott_antonsen_field": {
+      "declaration_sha256": "b6880786b01e94d1f85550d4ea77686e74812711bad7687d2b51b0f59dde7c01",
+      "direct_test_paths": [
+        "oscillatools/tests/test_kuramoto_ott_antonsen.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 118,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/kuramoto_ott_antonsen.py",
+      "qualified_name": "oscillatools.accel.kuramoto_ott_antonsen.ott_antonsen_field",
+      "signature": "z: complex, coupling: float, half_width: float, *, centre: float=0.0",
+      "source_sha256": "86de2d7e07c5b13b07198ef05fc1a9524307e7606aea61bcebb4fb0e480db614",
+      "summary": "Ott–Antonsen vector field ``ż = (iω₀ − Δ + K/2) z − (K/2) |z|² z``."
+    },
+    "oscillatools.accel.kuramoto_ott_antonsen.ott_antonsen_order_parameter": {
+      "declaration_sha256": "7f4b8fde59b90b865645ef0dc185d3d8a999f89dd5314683b07adba5d85336ed",
+      "direct_test_paths": [
+        "oscillatools/tests/test_kuramoto_ott_antonsen.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 189,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/kuramoto_ott_antonsen.py",
+      "qualified_name": "oscillatools.accel.kuramoto_ott_antonsen.ott_antonsen_order_parameter",
+      "signature": "z0: complex, coupling: float, half_width: float, dt: float, n_steps: int, *, centre: float=0.0",
+      "source_sha256": "86de2d7e07c5b13b07198ef05fc1a9524307e7606aea61bcebb4fb0e480db614",
+      "summary": "Modulus trajectory ``r(t) = |z(t)|`` of the reduced flow."
+    },
+    "oscillatools.accel.kuramoto_ott_antonsen.ott_antonsen_terminal_order_parameter_value_and_grad": {
+      "declaration_sha256": "96ba764e2d8c04be1a4bc415b9027fc59f41b2497ae3d3cd128889b08f248aa4",
+      "direct_test_paths": [
+        "oscillatools/tests/test_kuramoto_ott_antonsen.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 223,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/kuramoto_ott_antonsen.py",
+      "qualified_name": "oscillatools.accel.kuramoto_ott_antonsen.ott_antonsen_terminal_order_parameter_value_and_grad",
+      "signature": "z0: complex, coupling: float, half_width: float, dt: float, n_steps: int, *, centre: float=0.0",
+      "source_sha256": "86de2d7e07c5b13b07198ef05fc1a9524307e7606aea61bcebb4fb0e480db614",
+      "summary": "Terminal order parameter ``r(T) = |z(T)|`` and its gradient ``(∂r/∂K, ∂r/∂Δ)``."
+    },
+    "oscillatools.accel.kuramoto_ott_antonsen.ott_antonsen_trajectory": {
+      "declaration_sha256": "95e30c562bea0af18dd035db6bbc207301181a5db9a279e050a852bcf604c5f6",
+      "direct_test_paths": [
+        "oscillatools/tests/test_kuramoto_ott_antonsen.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 144,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/kuramoto_ott_antonsen.py",
+      "qualified_name": "oscillatools.accel.kuramoto_ott_antonsen.ott_antonsen_trajectory",
+      "signature": "z0: complex, coupling: float, half_width: float, dt: float, n_steps: int, *, centre: float=0.0",
+      "source_sha256": "86de2d7e07c5b13b07198ef05fc1a9524307e7606aea61bcebb4fb0e480db614",
+      "summary": "Integrate the reduced order-parameter flow with RK4."
+    },
+    "oscillatools.accel.kuramoto_simplex_mean_field.simplex_mean_field_force": {
+      "declaration_sha256": "b6741d449a288b726de673b0e6514f4c9d81c88dfc026337f130d2b8be156d0a",
+      "direct_test_paths": [
+        "oscillatools/tests/test_kuramoto_simplex_mean_field.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 48,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/kuramoto_simplex_mean_field.py",
+      "qualified_name": "oscillatools.accel.kuramoto_simplex_mean_field.simplex_mean_field_force",
+      "signature": "theta: NDArray[np.float64], coupling: float, order: int",
+      "source_sha256": "a32db8b16733da4dbee8ff44ea487540e5ddc3a3e02f8f0779c0f7807b2a8a35",
+      "summary": "Return the all-to-all ``p``-simplex mean-field force ``F_i = K r^p sin(p ψ − p θ_i)``."
+    },
+    "oscillatools.accel.kuramoto_simplex_mean_field.simplex_mean_field_jacobian": {
+      "declaration_sha256": "6c37aa9143cfd080e26df3ced63e95d6aededc329c060431ef585e54aa4877fb",
+      "direct_test_paths": [
+        "oscillatools/tests/test_kuramoto_simplex_mean_field.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 89,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/kuramoto_simplex_mean_field.py",
+      "qualified_name": "oscillatools.accel.kuramoto_simplex_mean_field.simplex_mean_field_jacobian",
+      "signature": "theta: NDArray[np.float64], coupling: float, order: int",
+      "source_sha256": "a32db8b16733da4dbee8ff44ea487540e5ddc3a3e02f8f0779c0f7807b2a8a35",
+      "summary": "Return the ``(N, N)`` stability Jacobian of the ``p``-simplex mean-field force."
+    },
+    "oscillatools.accel.kuramoto_system.KuramotoSystem.mean_field": {
+      "declaration_sha256": "f34f446bbc479cf952c1edc7c07f31ea8ea1619dc99bb2ba2a73df0a06cfd89a",
+      "direct_test_paths": [
+        "oscillatools/tests/test_kuramoto_system.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 370,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/kuramoto_system.py",
+      "qualified_name": "oscillatools.accel.kuramoto_system.KuramotoSystem.mean_field",
+      "signature": "cls, initial_phases: NDArray[np.float64], natural_frequencies: NDArray[np.float64], coupling: float, *, frustration: float=0.0, dt: float, scheme: str='rk4'",
+      "source_sha256": "fe02d665dd792d576dc8d3bc9b785558cc73cea56d6dd8941a4bebd8304e48f2",
+      "summary": "Build an all-to-all mean-field system from raw arrays."
+    },
+    "oscillatools.accel.kuramoto_system.KuramotoSystem.networked": {
+      "declaration_sha256": "750435272411b1666c9116dac70aaf1a863392a58383608dbbdb58434edb7e84",
+      "direct_test_paths": [
+        "oscillatools/tests/test_kuramoto_system.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 409,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/kuramoto_system.py",
+      "qualified_name": "oscillatools.accel.kuramoto_system.KuramotoSystem.networked",
+      "signature": "cls, initial_phases: NDArray[np.float64], natural_frequencies: NDArray[np.float64], coupling: NDArray[np.float64], *, frustration: float=0.0, dt: float, scheme: str='rk4'",
+      "source_sha256": "fe02d665dd792d576dc8d3bc9b785558cc73cea56d6dd8941a4bebd8304e48f2",
+      "summary": "Build a networked/graph system from raw arrays."
+    },
+    "oscillatools.accel.kuramoto_watanabe_strogatz.integrate_watanabe_strogatz": {
+      "declaration_sha256": "09f0726ac1884098789c05ce88139f55a06b4800f8e4f9788e36585b6e3d8d53",
+      "direct_test_paths": [
+        "oscillatools/tests/test_kuramoto_watanabe_strogatz.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 144,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/kuramoto_watanabe_strogatz.py",
+      "qualified_name": "oscillatools.accel.kuramoto_watanabe_strogatz.integrate_watanabe_strogatz",
+      "signature": "initial_phases: NDArray[np.float64], *, omega: float, coupling: float, dt: float, n_steps: int",
+      "source_sha256": "95dbb1bdc69bed3255437ea0b2e96325cc6b416a4b682eb83163b570529dfdf5",
+      "summary": "Integrate the identical-oscillator mean-field Kuramoto flow by the WS reduction."
+    },
+    "oscillatools.accel.kuramoto_watanabe_strogatz.watanabe_strogatz_order_parameter": {
+      "declaration_sha256": "e44532ff3de59373d610b78de73bb7b09288c1a4824d195d41645a803706adfd",
+      "direct_test_paths": [
+        "oscillatools/tests/test_kuramoto_watanabe_strogatz.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 132,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/kuramoto_watanabe_strogatz.py",
+      "qualified_name": "oscillatools.accel.kuramoto_watanabe_strogatz.watanabe_strogatz_order_parameter",
+      "signature": "alpha: complex, beta: complex, constants: NDArray[np.complex128]",
+      "source_sha256": "95dbb1bdc69bed3255437ea0b2e96325cc6b416a4b682eb83163b570529dfdf5",
+      "summary": "Return the Kuramoto order parameter ``Z = N^{-1}\\sum_j w_j`` of a Möbius state."
+    },
+    "oscillatools.accel.multiplex_kuramoto.integrate_multiplex": {
+      "declaration_sha256": "1ef06d70fef2ec231f96a26503ca1c4582ec02637b6b398fd9452e73d6bcd1d0",
+      "direct_test_paths": [
+        "oscillatools/tests/test_multiplex_kuramoto.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 195,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/multiplex_kuramoto.py",
+      "qualified_name": "oscillatools.accel.multiplex_kuramoto.integrate_multiplex",
+      "signature": "phases: NDArray[np.float64], omega: NDArray[np.float64], intra_coupling: NDArray[np.float64], inter_coupling: NDArray[np.float64], dt: float, n_steps: int",
+      "source_sha256": "9601cf4cb8c0a683a85ffefc82e9d51d1ffc34f6eaee91ad5d508e5214a80f81",
+      "summary": "Integrate the multiplex Kuramoto network with classic RK4."
+    },
+    "oscillatools.accel.multiplex_kuramoto.layer_order_parameters": {
+      "declaration_sha256": "1734c62f80a296f0806d2f2df0027f39f1e199beb44abc174f2d527a96e55185",
+      "direct_test_paths": [
+        "oscillatools/tests/test_multiplex_kuramoto.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 249,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/multiplex_kuramoto.py",
+      "qualified_name": "oscillatools.accel.multiplex_kuramoto.layer_order_parameters",
+      "signature": "phases: NDArray[np.float64]",
+      "source_sha256": "9601cf4cb8c0a683a85ffefc82e9d51d1ffc34f6eaee91ad5d508e5214a80f81",
+      "summary": "Compute the per-layer Kuramoto order-parameter magnitudes ``r_α = |⟨e^{iθ^α}⟩|`` (shape ``(L,)``)."
+    },
+    "oscillatools.accel.multiplex_kuramoto.multiplex_field": {
+      "declaration_sha256": "749714c5fe3b73d64617d480edb7f18bc08a69f0d57a494b5ed9679c2810d838",
+      "direct_test_paths": [
+        "oscillatools/tests/test_multiplex_kuramoto.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 113,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/multiplex_kuramoto.py",
+      "qualified_name": "oscillatools.accel.multiplex_kuramoto.multiplex_field",
+      "signature": "phases: NDArray[np.float64], omega: NDArray[np.float64], intra_coupling: NDArray[np.float64], inter_coupling: NDArray[np.float64]",
+      "source_sha256": "9601cf4cb8c0a683a85ffefc82e9d51d1ffc34f6eaee91ad5d508e5214a80f81",
+      "summary": "Evaluate the multiplex Kuramoto vector field ``θ̇`` (shape ``(L, N)``)."
+    },
+    "oscillatools.accel.multiplex_kuramoto.multiplex_jacobian": {
+      "declaration_sha256": "e3d38f75d3898b2c1736b925e4b6c637abe96b60b934785e69331b345c9a0fc7",
+      "direct_test_paths": [
+        "oscillatools/tests/test_multiplex_kuramoto.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 151,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/multiplex_kuramoto.py",
+      "qualified_name": "oscillatools.accel.multiplex_kuramoto.multiplex_jacobian",
+      "signature": "phases: NDArray[np.float64], omega: NDArray[np.float64], intra_coupling: NDArray[np.float64], inter_coupling: NDArray[np.float64]",
+      "source_sha256": "9601cf4cb8c0a683a85ffefc82e9d51d1ffc34f6eaee91ad5d508e5214a80f81",
+      "summary": "Compute the ``(LN, LN)`` Jacobian of the multiplex field (row-major ``(layer, node)`` order)."
+    },
+    "oscillatools.accel.networked_kuramoto.networked_kuramoto_force": {
+      "declaration_sha256": "a2923eede4dc52c9dfaf1658d96f4b0856323c36721ead7b7e5d6df83f2853e5",
+      "direct_test_paths": [
+        "oscillatools/tests/test_networked_kuramoto.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 160,
+      "module_declared_dispatch_chains": {
+        "_NETWORKED_KURAMOTO_FORCE_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.networked_kuramoto._rust_networked_kuramoto_force"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.networked_kuramoto._julia_networked_kuramoto_force"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.networked_kuramoto._python_networked_kuramoto_force"
+          }
+        ],
+        "_NETWORKED_KURAMOTO_JACOBIAN_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.networked_kuramoto._rust_networked_kuramoto_jacobian"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.networked_kuramoto._julia_networked_kuramoto_jacobian"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.networked_kuramoto._python_networked_kuramoto_jacobian"
+          }
+        ]
+      },
+      "path": "oscillatools/src/oscillatools/accel/networked_kuramoto.py",
+      "qualified_name": "oscillatools.accel.networked_kuramoto.networked_kuramoto_force",
+      "signature": "theta: object, coupling: object",
+      "source_sha256": "151ff5a506f5f798635c9e9453644ff7f9be3c0530464ca1319f46dd09f5d59b",
+      "summary": "Networked Kuramoto coupling force with multi-language dispatch."
+    },
+    "oscillatools.accel.networked_kuramoto.networked_kuramoto_jacobian": {
+      "declaration_sha256": "d3dd42770d3cee8e4596ceb22f054b92eabd6b80fed56061c06847cd700980dd",
+      "direct_test_paths": [
+        "oscillatools/tests/test_networked_kuramoto.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 208,
+      "module_declared_dispatch_chains": {
+        "_NETWORKED_KURAMOTO_FORCE_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.networked_kuramoto._rust_networked_kuramoto_force"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.networked_kuramoto._julia_networked_kuramoto_force"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.networked_kuramoto._python_networked_kuramoto_force"
+          }
+        ],
+        "_NETWORKED_KURAMOTO_JACOBIAN_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.networked_kuramoto._rust_networked_kuramoto_jacobian"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.networked_kuramoto._julia_networked_kuramoto_jacobian"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.networked_kuramoto._python_networked_kuramoto_jacobian"
+          }
+        ]
+      },
+      "path": "oscillatools/src/oscillatools/accel/networked_kuramoto.py",
+      "qualified_name": "oscillatools.accel.networked_kuramoto.networked_kuramoto_jacobian",
+      "signature": "theta: object, coupling: object",
+      "source_sha256": "151ff5a506f5f798635c9e9453644ff7f9be3c0530464ca1319f46dd09f5d59b",
+      "summary": "Networked Kuramoto stability Jacobian with multi-language dispatch."
+    },
+    "oscillatools.accel.order_parameter_observables.order_parameter": {
+      "declaration_sha256": "6d1b4588503fcc81d75bdd7deeb925da99b33211947e5134b848bffe3c58e814",
+      "direct_test_paths": [],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 194,
+      "module_declared_dispatch_chains": {
+        "_ORDER_PARAMETER_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.order_parameter_observables._rust_order_parameter"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.order_parameter_observables._julia_order_parameter"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.order_parameter_observables._python_order_parameter"
+          }
+        ],
+        "_ORDER_PARAMETER_GRADIENT_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.order_parameter_observables._rust_order_parameter_gradient"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.order_parameter_observables._julia_order_parameter_gradient"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.order_parameter_observables._python_order_parameter_gradient"
+          }
+        ],
+        "_ORDER_PARAMETER_HESSIAN_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.order_parameter_observables._rust_order_parameter_hessian"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.order_parameter_observables._julia_order_parameter_hessian"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.order_parameter_observables._python_order_parameter_hessian"
+          }
+        ]
+      },
+      "path": "oscillatools/src/oscillatools/accel/order_parameter_observables.py",
+      "qualified_name": "oscillatools.accel.order_parameter_observables.order_parameter",
+      "signature": "theta: NDArray[np.float64]",
+      "source_sha256": "b3616010e0979b665603f18f0a2e60f249124cb1b6186ac3b08687a090ff94cc",
+      "summary": "Kuramoto order parameter with multi-language dispatch."
+    },
+    "oscillatools.accel.sakaguchi_kuramoto.sakaguchi_force": {
+      "declaration_sha256": "9dbed36aa3a06bf7ca0c7eec01a6937ba60a1218c83c326f72af3715264113ca",
+      "direct_test_paths": [
+        "oscillatools/tests/test_sakaguchi_kuramoto.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 159,
+      "module_declared_dispatch_chains": {
+        "_SAKAGUCHI_FORCE_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.sakaguchi_kuramoto._rust_sakaguchi_force"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.sakaguchi_kuramoto._julia_sakaguchi_force"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.sakaguchi_kuramoto._python_sakaguchi_force"
+          }
+        ],
+        "_SAKAGUCHI_JACOBIAN_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.sakaguchi_kuramoto._rust_sakaguchi_jacobian"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.sakaguchi_kuramoto._julia_sakaguchi_jacobian"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.sakaguchi_kuramoto._python_sakaguchi_jacobian"
+          }
+        ]
+      },
+      "path": "oscillatools/src/oscillatools/accel/sakaguchi_kuramoto.py",
+      "qualified_name": "oscillatools.accel.sakaguchi_kuramoto.sakaguchi_force",
+      "signature": "theta: NDArray[np.float64], coupling: NDArray[np.float64], frustration: float",
+      "source_sha256": "4cab0fae5dc1c46ff7b4222c311d9364fde378cabb0ae96c6c2958c24316608f",
+      "summary": "Kuramoto–Sakaguchi frustrated coupling force with multi-language dispatch."
+    },
+    "oscillatools.accel.sakaguchi_kuramoto.sakaguchi_jacobian": {
+      "declaration_sha256": "9c078997f902293296b3d049d4bde5758791b6d0b2cb84f95ac72e026bd5da59",
+      "direct_test_paths": [
+        "oscillatools/tests/test_sakaguchi_kuramoto.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 198,
+      "module_declared_dispatch_chains": {
+        "_SAKAGUCHI_FORCE_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.sakaguchi_kuramoto._rust_sakaguchi_force"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.sakaguchi_kuramoto._julia_sakaguchi_force"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.sakaguchi_kuramoto._python_sakaguchi_force"
+          }
+        ],
+        "_SAKAGUCHI_JACOBIAN_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.sakaguchi_kuramoto._rust_sakaguchi_jacobian"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.sakaguchi_kuramoto._julia_sakaguchi_jacobian"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.sakaguchi_kuramoto._python_sakaguchi_jacobian"
+          }
+        ]
+      },
+      "path": "oscillatools/src/oscillatools/accel/sakaguchi_kuramoto.py",
+      "qualified_name": "oscillatools.accel.sakaguchi_kuramoto.sakaguchi_jacobian",
+      "signature": "theta: NDArray[np.float64], coupling: NDArray[np.float64], frustration: float",
+      "source_sha256": "4cab0fae5dc1c46ff7b4222c311d9364fde378cabb0ae96c6c2958c24316608f",
+      "summary": "Kuramoto–Sakaguchi stability Jacobian with multi-language dispatch."
+    },
+    "oscillatools.accel.sakaguchi_mean_field.sakaguchi_mean_field_force": {
+      "declaration_sha256": "1a4c629383d410906f1709e6b871701add0f781dbd4fc4238468065af2062920",
+      "direct_test_paths": [
+        "oscillatools/tests/test_sakaguchi_mean_field.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 155,
+      "module_declared_dispatch_chains": {
+        "_SAKAGUCHI_MEAN_FIELD_FORCE_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.sakaguchi_mean_field._rust_sakaguchi_mean_field_force"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.sakaguchi_mean_field._julia_sakaguchi_mean_field_force"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.sakaguchi_mean_field._python_sakaguchi_mean_field_force"
+          }
+        ],
+        "_SAKAGUCHI_MEAN_FIELD_JACOBIAN_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.sakaguchi_mean_field._rust_sakaguchi_mean_field_jacobian"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.sakaguchi_mean_field._julia_sakaguchi_mean_field_jacobian"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.sakaguchi_mean_field._python_sakaguchi_mean_field_jacobian"
+          }
+        ]
+      },
+      "path": "oscillatools/src/oscillatools/accel/sakaguchi_mean_field.py",
+      "qualified_name": "oscillatools.accel.sakaguchi_mean_field.sakaguchi_mean_field_force",
+      "signature": "theta: NDArray[np.float64], coupling: float, frustration: float",
+      "source_sha256": "20be21199a009c984b428007ef631ab8cc456ea84606c3b266896170604b905c",
+      "summary": "Sakaguchi–Kuramoto mean-field force with multi-language dispatch."
+    },
+    "oscillatools.accel.sakaguchi_mean_field.sakaguchi_mean_field_jacobian": {
+      "declaration_sha256": "02f9a36f5d0fc6edad9385a563aa9b4084c77b1bbe0093462fa08406a5fc85fb",
+      "direct_test_paths": [
+        "oscillatools/tests/test_sakaguchi_mean_field.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 191,
+      "module_declared_dispatch_chains": {
+        "_SAKAGUCHI_MEAN_FIELD_FORCE_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.sakaguchi_mean_field._rust_sakaguchi_mean_field_force"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.sakaguchi_mean_field._julia_sakaguchi_mean_field_force"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.sakaguchi_mean_field._python_sakaguchi_mean_field_force"
+          }
+        ],
+        "_SAKAGUCHI_MEAN_FIELD_JACOBIAN_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.sakaguchi_mean_field._rust_sakaguchi_mean_field_jacobian"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.sakaguchi_mean_field._julia_sakaguchi_mean_field_jacobian"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.sakaguchi_mean_field._python_sakaguchi_mean_field_jacobian"
+          }
+        ]
+      },
+      "path": "oscillatools/src/oscillatools/accel/sakaguchi_mean_field.py",
+      "qualified_name": "oscillatools.accel.sakaguchi_mean_field.sakaguchi_mean_field_jacobian",
+      "signature": "theta: NDArray[np.float64], coupling: float, frustration: float",
+      "source_sha256": "20be21199a009c984b428007ef631ab8cc456ea84606c3b266896170604b905c",
+      "summary": "Sakaguchi–Kuramoto mean-field stability Jacobian with multi-language dispatch."
+    },
+    "oscillatools.accel.sparse_kuramoto.sparse_kuramoto_euler_trajectory": {
+      "declaration_sha256": "017f865789b339002114b14ac0c6577042fe75be17a50b64576198b993ba6954",
+      "direct_test_paths": [
+        "oscillatools/tests/test_sparse_kuramoto.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 202,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/sparse_kuramoto.py",
+      "qualified_name": "oscillatools.accel.sparse_kuramoto.sparse_kuramoto_euler_trajectory",
+      "signature": "theta0: object, omega: object, coupling: SparseInput, dt: float, n_steps: int",
+      "source_sha256": "88e78bb78bcfed188485ea764068ae084f73844cf84453dc3b259fea6dec79e1",
+      "summary": "Integrate sparse networked Kuramoto dynamics with explicit Euler steps."
+    },
+    "oscillatools.accel.sparse_kuramoto.sparse_kuramoto_rk4_trajectory": {
+      "declaration_sha256": "255be060cfa345b743f56b92b88413c5718facef53c381c39a75b9cb7b79012a",
+      "direct_test_paths": [
+        "oscillatools/tests/test_sparse_kuramoto.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 224,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/sparse_kuramoto.py",
+      "qualified_name": "oscillatools.accel.sparse_kuramoto.sparse_kuramoto_rk4_trajectory",
+      "signature": "theta0: object, omega: object, coupling: SparseInput, dt: float, n_steps: int",
+      "source_sha256": "88e78bb78bcfed188485ea764068ae084f73844cf84453dc3b259fea6dec79e1",
+      "summary": "Integrate sparse networked Kuramoto dynamics with fourth-order RK4 steps."
+    },
+    "oscillatools.accel.sparse_kuramoto.sparse_networked_kuramoto_force": {
+      "declaration_sha256": "f3104f17a40c96818e5fff5d0932b7e4dd0969dec41f12f12af40b144136e8d1",
+      "direct_test_paths": [
+        "oscillatools/tests/test_sparse_kuramoto.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 172,
+      "module_declared_dispatch_chains": {},
+      "path": "oscillatools/src/oscillatools/accel/sparse_kuramoto.py",
+      "qualified_name": "oscillatools.accel.sparse_kuramoto.sparse_networked_kuramoto_force",
+      "signature": "theta: object, coupling: SparseInput",
+      "source_sha256": "88e78bb78bcfed188485ea764068ae084f73844cf84453dc3b259fea6dec79e1",
+      "summary": "Evaluate the networked Kuramoto force from sparse coupling edges."
+    },
+    "oscillatools.accel.triadic_mean_field.triadic_mean_field_force": {
+      "declaration_sha256": "d7dac4b68cd1f7d19fbe3b3766120ddef161d3bf8ed8e93ec19143593af5222d",
+      "direct_test_paths": [
+        "oscillatools/tests/test_triadic_mean_field.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 156,
+      "module_declared_dispatch_chains": {
+        "_TRIADIC_MEAN_FIELD_FORCE_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.triadic_mean_field._rust_triadic_mean_field_force"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.triadic_mean_field._julia_triadic_mean_field_force"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.triadic_mean_field._python_triadic_mean_field_force"
+          }
+        ],
+        "_TRIADIC_MEAN_FIELD_JACOBIAN_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.triadic_mean_field._rust_triadic_mean_field_jacobian"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.triadic_mean_field._julia_triadic_mean_field_jacobian"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.triadic_mean_field._python_triadic_mean_field_jacobian"
+          }
+        ]
+      },
+      "path": "oscillatools/src/oscillatools/accel/triadic_mean_field.py",
+      "qualified_name": "oscillatools.accel.triadic_mean_field.triadic_mean_field_force",
+      "signature": "theta: NDArray[np.float64], coupling: float",
+      "source_sha256": "d022715b6970f46426218d0a4ed53cfccc4ba2907f6a4540dfce5fdc6d869578",
+      "summary": "Triadic (2-simplex) Kuramoto mean-field force with multi-language dispatch."
+    },
+    "oscillatools.accel.triadic_mean_field.triadic_mean_field_jacobian": {
+      "declaration_sha256": "9189237eea044f16789aa285677e32b286f6dc17286c70c72146d26d37eb703e",
+      "direct_test_paths": [
+        "oscillatools/tests/test_triadic_mean_field.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 185,
+      "module_declared_dispatch_chains": {
+        "_TRIADIC_MEAN_FIELD_FORCE_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.triadic_mean_field._rust_triadic_mean_field_force"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.triadic_mean_field._julia_triadic_mean_field_force"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.triadic_mean_field._python_triadic_mean_field_force"
+          }
+        ],
+        "_TRIADIC_MEAN_FIELD_JACOBIAN_CHAIN": [
+          {
+            "tier": "rust",
+            "wrapper": "oscillatools.accel.triadic_mean_field._rust_triadic_mean_field_jacobian"
+          },
+          {
+            "tier": "julia",
+            "wrapper": "oscillatools.accel.triadic_mean_field._julia_triadic_mean_field_jacobian"
+          },
+          {
+            "tier": "python",
+            "wrapper": "oscillatools.accel.triadic_mean_field._python_triadic_mean_field_jacobian"
+          }
+        ]
+      },
+      "path": "oscillatools/src/oscillatools/accel/triadic_mean_field.py",
+      "qualified_name": "oscillatools.accel.triadic_mean_field.triadic_mean_field_jacobian",
+      "signature": "theta: NDArray[np.float64], coupling: float",
+      "source_sha256": "d022715b6970f46426218d0a4ed53cfccc4ba2907f6a4540dfce5fdc6d869578",
+      "summary": "Triadic (2-simplex) Kuramoto mean-field stability Jacobian with multi-language dispatch."
+    },
+    "scpn_quantum_control.bridge.knm_hamiltonian.knm_to_hamiltonian": {
+      "declaration_sha256": "231154c1d58fe3ef4280af03933999fb97dd9006824f6eb17600e1035494f095",
+      "direct_test_paths": [
+        "tests/test_knm_hamiltonian.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 247,
+      "module_declared_dispatch_chains": {},
+      "path": "src/scpn_quantum_control/bridge/knm_hamiltonian.py",
+      "qualified_name": "scpn_quantum_control.bridge.knm_hamiltonian.knm_to_hamiltonian",
+      "signature": "K: NDArray[np.float64], omega: NDArray[np.float64]",
+      "source_sha256": "08f6fa8419a63799e813b6d227f91dd6e5751330ee1991214b04e5e3864fab52",
+      "summary": "Convert Knm coupling matrix + natural frequencies to SparsePauliOp."
+    },
+    "scpn_quantum_control.kuramoto_core.compile_trotter_circuit": {
+      "declaration_sha256": "ac10f98b8ef5984a66f5da9edac753b9f56c75a952d899b9d4d5a6f37d85d673",
+      "direct_test_paths": [
+        "tests/test_kuramoto_core.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 365,
+      "module_declared_dispatch_chains": {},
+      "path": "src/scpn_quantum_control/kuramoto_core.py",
+      "qualified_name": "scpn_quantum_control.kuramoto_core.compile_trotter_circuit",
+      "signature": "problem: KuramotoProblem, time: float, trotter_steps: int=10, trotter_order: int=1",
+      "source_sha256": "e81fd60c23ada0242a0604b593a6b57ae22d543df180fd178a9f0a645dd6ed33",
+      "summary": "Compile a Trotterised gate-model evolution circuit."
+    },
+    "scpn_quantum_control.phase.xy_kuramoto.QuantumKuramotoSolver.evolve": {
+      "declaration_sha256": "b4f6fcc7f0eb4ad613330be30a5bf86ef08df22f895ebde18bcc88c3e6f0caaa",
+      "direct_test_paths": [
+        "tests/test_xy_kuramoto.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 138,
+      "module_declared_dispatch_chains": {},
+      "path": "src/scpn_quantum_control/phase/xy_kuramoto.py",
+      "qualified_name": "scpn_quantum_control.phase.xy_kuramoto.QuantumKuramotoSolver.evolve",
+      "signature": "self, time: float, trotter_steps: int | None=None",
+      "source_sha256": "194b8f59048efd20c63f33c224e6262f7d0d65f385c28f10c150154a0acbbb11",
+      "summary": "Build Trotterized evolution circuit U(t) = exp(-iHt)."
+    },
+    "scpn_quantum_control.phase.xy_kuramoto.QuantumKuramotoSolver.measure_order_parameter": {
+      "declaration_sha256": "464902bc1c9c8d0c226b35f8e8fde485666ffcb464221e6bc490d2635941d6e2",
+      "direct_test_paths": [
+        "tests/test_xy_kuramoto.py"
+      ],
+      "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
+      "line": 162,
+      "module_declared_dispatch_chains": {},
+      "path": "src/scpn_quantum_control/phase/xy_kuramoto.py",
+      "qualified_name": "scpn_quantum_control.phase.xy_kuramoto.QuantumKuramotoSolver.measure_order_parameter",
+      "signature": "self, sv: Statevector",
+      "source_sha256": "194b8f59048efd20c63f33c224e6262f7d0d65f385c28f10c150154a0acbbb11",
+      "summary": "Compute Kuramoto R from qubit X,Y expectations."
+    }
+  }
+}

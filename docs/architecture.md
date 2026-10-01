@@ -28,7 +28,8 @@ Its existing constructors, compilers and raw metadata codec retain their
 contracts. `ScientificDesign` supplies an immutable declaration;
 `ScientificProblemParameters(problem, design)` validates that declaration
 against the actual problem and produces a separate `scientific_problem.v1`
-companion. The numerical owners never import Studio or Atlas. The adapter
+companion. The original `oscillatools` numerical kernels remain independent
+of Studio and Atlas. The scientific companion adapter
 consumes the existing workspace `ParameterSpec`, typed float64 payloads and
 canonical codec instead of defining another workspace format or solver.
 
@@ -98,6 +99,38 @@ its trainable flag. Individual schema acceptance does not replace cross-field
 scientific validation: edited values require a fresh bound design/companion.
 The output is a descriptive snapshot, rather than an executor or raw-result
 reader; original stable-core/result codecs and readers are unchanged.
+
+## Phase-model conventions and original numerical owners
+
+[`kuramoto_conventions.md`](kuramoto_conventions.md) records the model, solver,
+observable, gradient and source-declared backend matrix. Each row identifies
+the actual original declaration, units, sign, normalisation, topology,
+history and noise assumptions. Finite networks, exact finite reductions,
+continuum reductions and quantum XY amplitudes retain separate identities.
+Source/declaration hashes bind the generated JSON inventory; a declared backend
+or test path does not establish installed availability or execution evidence.
+The source producer refuses incomplete dispatch declarations before generating
+either artefact, and its check mode preserves saved files on disagreement.
+
+`build_scientific_phase_system(problem, design, dt=..., model=..., scheme=...)`
+validates the original `KuramotoProblem` and supplied `ScientificDesign`, then
+binds them to the original instantaneous finite `KuramotoSystem`, using its
+existing Euler or RK4 evolution. It imports no Studio schemas or companion;
+workspace consumers pass `parameters.problem` and `parameters.design` explicitly.
+Networked forces sum supplied pairwise coefficients; a population-mean declaration explicitly
+projects them to `K_nm/N`. The finite mean-field path requires equal effective
+off-diagonal coefficients and recovers the original scalar coupling, rather
+than averaging a heterogeneous network. Positive coupling uses
+`sin(theta[k] - theta[j])`. Phases remain in radians without wrapping or
+automatic unit conversion.
+
+The factory refuses supplied delay history, quantum amplitudes, unsupported
+model/solver pairs, nonfinite steps and invalid mean-field projections.
+Delayed, noisy, inertial, adaptive, multiplex, reduced and force-only rows
+retain their separate original entry points. Trajectories contain phases;
+a declared weighted observable needs its matching observable consumer.
+The convention inventory does not promote convergence, sensitivity accuracy,
+physical-device support or benchmark results.
 
 ## Chimera and multiscale control composition
 

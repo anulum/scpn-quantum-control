@@ -4,9 +4,9 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **752 modules** across **41 package families**
-- **4157 documented public module-level symbols**
-- **847 root-package exports** governed by the stable API surface
+- **753 modules** across **41 package families**
+- **4161 documented public module-level symbols**
+- **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
 the [API selection guide](../api.md) and [stable facades](../stable_facades_api.md).
@@ -6281,11 +6281,21 @@ No public module-level class or function is declared.
 
 Small public facade for Kuramoto-XY problems.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/kuramoto_core.py) · Public symbols: **11**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/kuramoto_core.py) · Public symbols: **12**
 
 **Classes:** `KuramotoProblem`
 
-**Functions:** `validate_kuramoto_inputs()`, `build_kuramoto_problem()`, `validate_scientific_design()`, `compile_hamiltonian()`, `compile_dense_hamiltonian()`, `compile_trotter_circuit()`, `compile_analog_program()`, `compile_hybrid_program()`, `measure_order_parameter()`, `simulate_variant_trajectory()`
+**Functions:** `validate_kuramoto_inputs()`, `build_kuramoto_problem()`, `validate_scientific_design()`, `build_scientific_phase_system()`, `compile_hamiltonian()`, `compile_dense_hamiltonian()`, `compile_trotter_circuit()`, `compile_analog_program()`, `compile_hybrid_program()`, `measure_order_parameter()`, `simulate_variant_trajectory()`
+
+### `scpn_quantum_control.kuramoto_model_conventions`
+
+Immutable model conventions referring to the original numerical owners.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/kuramoto_model_conventions.py) · Public symbols: **3**
+
+**Classes:** `KuramotoModelConvention`
+
+**Functions:** `kuramoto_convention_matrix()`, `kuramoto_model_convention()`
 
 ### `scpn_quantum_control.kyma_mechanism_benchmark_product`
 

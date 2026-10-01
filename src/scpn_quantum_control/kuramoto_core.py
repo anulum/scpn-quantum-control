@@ -13,7 +13,7 @@ import json
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from types import MappingProxyType
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -24,6 +24,8 @@ from .bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
 from .phase.xy_kuramoto import QuantumKuramotoSolver
 
 if TYPE_CHECKING:
+    from oscillatools.accel.kuramoto_system import KuramotoSystem
+
     from .hardware.analog_kuramoto import AnalogKuramotoPlatform, AnalogKuramotoProgram
     from .hardware.hybrid_digital_analog import HybridDigitalAnalogProgram
     from .phase.kuramoto_variants import KuramotoVariantResult
@@ -261,6 +263,89 @@ def validate_scientific_design(problem: KuramotoProblem, design: ScientificDesig
         key not in allowed for key in design.trainable
     ):
         raise ValueError("trainable requires unique declared parameter keys")
+
+
+def build_scientific_phase_system(
+    problem: KuramotoProblem,
+    design: ScientificDesign,
+    *,
+    dt: float,
+    model: str = "finite_networked",
+    scheme: str = "rk4",
+) -> KuramotoSystem:
+    r"""Bind an explicit finite phase design to the original numerical system.
+
+    Parameters
+    ----------
+    problem
+        Original ``(N, N)`` symmetric coupling/frequency owner. Frequencies
+        are in radians per declared time unit, without unit conversion.
+    design
+        Explicit phase model, ``(N,)`` initial phases in radians, units,
+        topology and coupling normalisation. The original scientific validator
+        checks the binding before constructing a numerical system.
+    dt
+        Finite positive step in the declared time unit.
+    model
+        ``finite_networked`` uses pairwise matrix coefficients;
+        ``finite_mean_field`` requires uniform off-diagonal coefficients and
+        projects them to the original scalar ``K/N`` mean-field owner.
+    scheme
+        Original ``euler`` or ``rk4`` integrator, without phase wrapping.
+
+    Returns
+    -------
+    oscillatools.accel.kuramoto_system.KuramotoSystem
+        Original system with independent state and parameter arrays, time zero
+        and the supplied step. Its trajectory includes the initial state.
+
+    Raises
+    ------
+    ValueError
+        The binding, model/solver pair, time step or mean-field topology is
+        unsupported. Supplied history is refused by this instantaneous owner.
+
+    Notes
+    -----
+    The phase rule is :math:`\dot\theta_j=\omega_j+
+    \sum_k C_{jk}\sin(\theta_k-\theta_j)`. No phase-to-spin conversion,
+    history truncation, unit conversion, new kernel or backend selection occurs.
+    Existing numerical owners retain their dispatch and resource policies.
+
+    """
+    from oscillatools.accel.kuramoto_system import KuramotoSystem
+
+    from .kuramoto_model_conventions import kuramoto_model_convention
+
+    validate_scientific_design(problem, design)
+    convention = kuramoto_model_convention(model, scheme)
+    if convention.model not in ("finite_networked", "finite_mean_field"):
+        raise ValueError("this factory requires an instantaneous finite phase model")
+    if isinstance(dt, bool) or not isinstance(dt, (int, float)) or not np.isfinite(dt) or dt <= 0:
+        raise ValueError("dt must be a finite positive scalar")
+    if design.model != "phase_kuramoto":
+        raise ValueError("this factory requires phase_kuramoto scientific inputs")
+    if design.history_times is not None:
+        raise ValueError("this instantaneous phase model does not consume history")
+    phases = cast(NDArray[np.float64], design.initial_state)
+    count = problem.n_oscillators
+    coupling = problem.K_nm
+    if design.normalisation == "population_mean":
+        coupling = coupling / count
+    if model == "finite_networked":
+        return KuramotoSystem.networked(
+            phases, problem.omega, coupling, dt=float(dt), scheme=scheme
+        )
+    off_diagonal = coupling[~np.eye(count, dtype=np.bool_)]
+    coefficient = float(off_diagonal[0]) if count > 1 else 0.0
+    if np.any(off_diagonal != coefficient):
+        raise ValueError("finite_mean_field requires uniform off-diagonal coupling")
+    scalar_coupling = count * coefficient
+    if not np.isfinite(scalar_coupling):
+        raise ValueError("finite_mean_field scalar coupling must remain finite")
+    return KuramotoSystem.mean_field(
+        phases, problem.omega, scalar_coupling, dt=float(dt), scheme=scheme
+    )
 
 
 def compile_hamiltonian(problem: KuramotoProblem) -> SparsePauliOp:

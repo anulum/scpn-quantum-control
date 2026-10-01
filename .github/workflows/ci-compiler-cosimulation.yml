@@ -60,6 +60,7 @@ jobs:
           tests/test_kuramoto_core.py
           tests/test_kuramoto_core_branches.py
           tests/test_kuramoto_variants.py
+          tests/test_kuramoto_model_conventions.py
           tests/test_scientific_problem_quality_gate.py
       - name: Require complete scientific input owner coverage
         run: >-

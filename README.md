@@ -72,6 +72,7 @@ than implied coverage.
 |---|---|---|
 | Understand the software | [Onboarding](docs/onboarding.md) -> [Quickstart](docs/quickstart.md) | A small local Kuramoto-XY run and a clear claim boundary. |
 | Bring your own coupled system | [Physics-First Kuramoto-XY](docs/physics_first_kuramoto_xy.md) | A validated `K_nm`/`omega` problem compiled to simulator-ready quantum objects. |
+| Choose a classical phase model | [Kuramoto Model Conventions](docs/kuramoto_conventions.md) | Explicit finite/reduced model identities and source-qualified solver, observable and sensitivity contracts. |
 | Train or inspect gradients | [Differentiable Tutorials](docs/differentiable_tutorials.md) -> [Differentiable Programming](docs/differentiable_programming.md) -> [Quantum Gradients](docs/quantum_gradients.md) | Exact, finite-shot, framework-comparison, or fail-closed gradient evidence. |
 | Review hardware claims | [Hardware Status Ledger](docs/hardware_status_ledger.md) -> [Hardware Result Packs](docs/hardware_result_packs.md) | Raw-count-backed evidence or an explicit blocked promotion route. |
 | Use v0.10 control surfaces | [API Overview](docs/api.md) -> [Tutorials](docs/tutorials.md) -> [Example Gallery](docs/examples_gallery.md) | QRNG health checks, PQC trigger signing, UltraScale+ HLS emission, realtime telemetry, Studio federation, and sensing workflows. |
@@ -121,9 +122,9 @@ claims only when the evidence exists.
 | Surface | Current inventory |
 |---|---:|
 | Package version | 1.2.0 |
-| Public API exports | 847 |
-| Python source modules | 752 |
-| Public Python classes | 1463 |
+| Public API exports | 851 |
+| Python source modules | 753 |
+| Public Python classes | 1464 |
 | Domain package families | 40 |
 | API documentation pages | 14 |
 | Rust PyO3 function bindings | 177 |
@@ -131,8 +132,8 @@ claims only when the evidence exists.
 | Notebook files | 109 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 1454 |
-| Public documentation pages | 379 |
+| Python test files | 1457 |
+| Public documentation pages | 380 |
 | GitHub Actions workflows | 44 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
@@ -902,6 +903,7 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [Stable Facades API](docs/stable_facades_api.md) — first-path public API for notebooks, tutorials, and integrations
 - [Kuramoto Standalone Package Decision](docs/kuramoto_standalone_package_decision.md) — the `oscillatools` package split, CEO/IP-approved 2026-07-04
 - [Sparse Kuramoto CPU Path](docs/kuramoto_sparse_cpu.md) — SciPy sparse force/Euler/RK4 route with 1M-node ring scaling evidence
+- [Kuramoto Model Conventions](docs/kuramoto_conventions.md) — original model/solver owners, sign, normalisation, history, noise and explicit refusal boundaries
 - [API Overview](docs/api.md) — stable facade route first, advanced module references second
 - [Complete Python Module and API Catalog](docs/api/module_catalog.md) — every source module and documented public module-level symbol
 - [Complete Documentation Catalog](docs/documentation_catalog.md) — every public guide, contract, protocol, and evidence page

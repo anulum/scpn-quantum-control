@@ -38,6 +38,7 @@
         "static-analysis"
       ],
       "jobs": [
+        "kuramoto-model-quality",
         "stable-core-product-quality",
         "open-system-completeness-quality",
         "thermo-readiness-product-quality",
@@ -394,6 +395,7 @@
     "julia-lint",
     "split-boundary-guard",
     "native-wheels",
+    "kuramoto-model-quality",
     "stable-core-product-quality",
     "open-system-completeness-quality",
     "thermo-readiness-product-quality",

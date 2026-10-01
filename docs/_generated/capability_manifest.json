@@ -7,13 +7,13 @@
     "model_documentation_pages": 14,
     "notebook_files": 109,
     "optional_extras": 43,
-    "public_api_exports": 847,
-    "public_documentation_pages": 379,
-    "python_model_classes": 1463,
-    "python_model_source_modules": 752,
+    "public_api_exports": 851,
+    "public_documentation_pages": 380,
+    "python_model_classes": 1464,
+    "python_model_source_modules": 753,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1454
+    "test_files": 1457
   },
   "documentation": {
     "examples": [
@@ -400,6 +400,7 @@
       "docs/josephson_knm_magnitude_study.md",
       "docs/kuramoto_competitive_benchmark.md",
       "docs/kuramoto_competitive_evidence.md",
+      "docs/kuramoto_conventions.md",
       "docs/kuramoto_core_facade.md",
       "docs/kuramoto_handbook.md",
       "docs/kuramoto_jax_delayed_tier.md",
@@ -3188,6 +3189,10 @@
       {
         "name": "KuramotoCompetitiveComparison",
         "path": "src/scpn_quantum_control/benchmarks/kuramoto_competitive_benchmark.py"
+      },
+      {
+        "name": "KuramotoModelConvention",
+        "path": "src/scpn_quantum_control/kuramoto_model_conventions.py"
       },
       {
         "name": "KuramotoProblem",
@@ -7095,6 +7100,7 @@
       "src/scpn_quantum_control/jax_nqs_baseline_product.py",
       "src/scpn_quantum_control/kuramoto.py",
       "src/scpn_quantum_control/kuramoto_core.py",
+      "src/scpn_quantum_control/kuramoto_model_conventions.py",
       "src/scpn_quantum_control/kyma_mechanism_benchmark_product.py",
       "src/scpn_quantum_control/l16/director_contracts.py",
       "src/scpn_quantum_control/l16/director_evidence.py",
@@ -7790,6 +7796,7 @@
     "JacobianResult",
     "JobResult",
     "KnmPartition",
+    "KuramotoModelConvention",
     "KuramotoProblem",
     "KuramotoVariant",
     "KuramotoVariantResult",
@@ -8042,6 +8049,7 @@
     "build_multiscale_qec",
     "build_problem",
     "build_result",
+    "build_scientific_phase_system",
     "build_structured_ansatz",
     "build_triadic_ring_terms",
     "built_in_aggregator_provider_routes",
@@ -8183,6 +8191,8 @@
     "jvp",
     "knm_to_ansatz",
     "knm_to_hamiltonian",
+    "kuramoto_convention_matrix",
+    "kuramoto_model_convention",
     "l16",
     "learn_symmetry_decay",
     "least_squares_covariance",
@@ -8725,6 +8735,7 @@
       "tests/test_bkt_universals.py",
       "tests/test_bridge_feedback_contracts.py",
       "tests/test_bridge_properties.py",
+      "tests/test_build_kuramoto_conventions.py",
       "tests/test_build_march_job_id_commitments.py",
       "tests/test_build_studio_wasm_bundle.py",
       "tests/test_campaign_harness_product.py",
@@ -9201,6 +9212,8 @@
       "tests/test_kuramoto_layout_optimiser_quality_gate.py",
       "tests/test_kuramoto_layout_relaxation.py",
       "tests/test_kuramoto_layout_relaxation_quality_gate.py",
+      "tests/test_kuramoto_model_conventions.py",
+      "tests/test_kuramoto_model_quality_gate.py",
       "tests/test_kuramoto_public_face_hygiene.py",
       "tests/test_kuramoto_relocation_shims.py",
       "tests/test_kuramoto_standalone_package_decision.py",

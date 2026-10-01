@@ -14,6 +14,95 @@ permissions:
   contents: read
 
 jobs:
+  kuramoto-model-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: mypy-strict-kuramoto-model
+        run: >-
+          python
+          -m
+          mypy
+          --strict
+          --explicit-package-bases
+          src/scpn_quantum_control/kuramoto_core.py
+          src/scpn_quantum_control/kuramoto_model_conventions.py
+          tools/build_kuramoto_conventions.py
+          tools/kuramoto_model_quality_gates.py
+          src/scpn_quantum_control/__init__.py
+          tests/test_kuramoto_model_conventions.py
+          tests/test_build_kuramoto_conventions.py
+          tests/test_kuramoto_model_quality_gate.py
+      - name: ruff D kuramoto model
+        run: >-
+          python
+          -m
+          ruff
+          check
+          --isolated
+          --preview
+          --select
+          D,D413,D417,D420
+          --config
+          'lint.explicit-preview-rules = true'
+          --config
+          'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/kuramoto_core.py
+          src/scpn_quantum_control/kuramoto_model_conventions.py
+          tools/build_kuramoto_conventions.py
+          tools/kuramoto_model_quality_gates.py
+          src/scpn_quantum_control/__init__.py
+          tests/test_kuramoto_model_conventions.py
+          tests/test_build_kuramoto_conventions.py
+          tests/test_kuramoto_model_quality_gate.py
+      - name: kuramoto convention source drift
+        run: >-
+          python
+          tools/build_kuramoto_conventions.py
+          --check
+      - name: kuramoto model focused coverage
+        run: >-
+          python
+          -m
+          coverage
+          run
+          --rcfile=/dev/null
+          --data-file=.coverage.kuramoto-model-conventions
+          --branch
+          -m
+          pytest
+          -q
+          --no-cov
+          tests/test_kuramoto_model_conventions.py
+          tests/test_build_kuramoto_conventions.py
+          tests/test_kuramoto_model_quality_gate.py
+          tests/test_kuramoto_core.py
+          tests/test_kuramoto_core_branches.py
+          tests/test_kuramoto_variants.py
+          tests/test_scientific_design.py
+          tests/test_scientific_problem_parameters.py
+      - name: kuramoto model exact owner coverage
+        run: >-
+          python
+          -m
+          coverage
+          report
+          --rcfile=/dev/null
+          --data-file=.coverage.kuramoto-model-conventions
+          --precision=2
+          --show-missing
+          --fail-under=100
+          '--include=*/kuramoto_core.py,*/kuramoto_model_conventions.py,*/tools/build_kuramoto_conventions.py,*/tools/kuramoto_model_quality_gates.py'
   stable-core-product-quality:
     runs-on: ubuntu-latest
     env:

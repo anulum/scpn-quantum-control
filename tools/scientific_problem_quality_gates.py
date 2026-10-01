@@ -20,6 +20,7 @@ SCIENTIFIC_PROBLEM_SOURCES = [
 ]
 """Original problem facade, supplied design and semantic input adapter owners."""
 SCIENTIFIC_PROBLEM_TESTS = [
+    "tests/test_kuramoto_model_conventions.py",
     "tests/test_scientific_design.py",
     "tests/test_scientific_problem_parameters.py",
     "tests/test_kuramoto_core.py",
