@@ -27,13 +27,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Final, TypeVar, cast
 
+from scpn_quantum_control.differentiable import (
+    ProgramADRegistryDispatchCoverageReport,
+    program_ad_registry_dispatch_coverage_report,
+)
 from scpn_quantum_control.phase.gradient_support_matrix import (
     GradientSupportMatrixAuditResult,
     run_gradient_support_matrix_audit,
-)
-from scpn_quantum_control.program_ad_registry import (
-    ProgramADRegistryDispatchCoverageReport,
-    program_ad_registry_dispatch_coverage_report,
 )
 
 REPO_ROOT: Final[Path] = Path(__file__).resolve().parents[1]

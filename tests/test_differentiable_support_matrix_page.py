@@ -12,7 +12,9 @@ from __future__ import annotations
 import copy
 import dataclasses
 import json
+import os
 import runpy
+import subprocess
 import sys
 from pathlib import Path
 from typing import cast
@@ -38,6 +40,31 @@ from tools.differentiable_support_matrix_page import (
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 TOOL_PATH = REPO_ROOT / "tools/differentiable_support_matrix_page.py"
+
+
+def test_native_cli_initializes_builtin_registry_in_a_fresh_process() -> None:
+    """Render all builtins without relying on an earlier eager package import."""
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = os.pathsep.join(
+        [
+            str(REPO_ROOT / "src"),
+            str(REPO_ROOT / "oscillatools/src"),
+            environment.get("PYTHONPATH", ""),
+        ]
+    )
+    for arguments in ([], ["--check"]):
+        result = subprocess.run(
+            [sys.executable, str(TOOL_PATH), *arguments],
+            cwd=REPO_ROOT,
+            env=environment,
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+        assert result.returncode == 0, result.stdout + result.stderr
+        if not arguments:
+            assert "`118/118` complete" in result.stdout
 
 
 def _mapping(container: dict[str, object], key: str) -> dict[str, object]:
