@@ -7,8 +7,10 @@
 // scpn-quantum-control — QuantumStudioPanel (Module Federation expose)
 
 import "./tokens.css";
-import { WorkspacePanel } from "./features/workspace/WorkspacePanel";
 import type { WorkspacePanelProps } from "./features/workspace/WorkspacePanel";
+import { Workbench } from "./app/Workbench";
+import type { WorkbenchMode } from "./app/Workbench";
+import { formatWorkbenchContext } from "./app/routing";
 import catalogueJson from "../../docs/_generated/studio_manifest.json";
 import { CapabilityCatalogue } from "./features/catalogue/CapabilityCatalogue";
 import { parseCatalogue } from "./features/catalogue/catalogue";
@@ -34,6 +36,12 @@ import { committedScenario } from "./panel/kuramoto";
 import { programAdUnit } from "./panel/programAd";
 import { recomputeUnit } from "./panel/recompute";
 
+/** Original host producer contract with an additive layout mode. */
+export interface QuantumStudioPanelProps extends Pick<WorkspacePanelProps, "rawCodecs"> {
+  /** Standalone by default; embedded adapts the shell to its host's available width. */
+  readonly mode?: WorkbenchMode;
+}
+
 /**
  * The QUANTUM studio panel the Hub mounts through Module Federation.
  *
@@ -43,10 +51,12 @@ import { recomputeUnit } from "./panel/recompute";
  * never dishonest: nothing here can upgrade a grade, and any surface that
  * fails its guard renders as a loud `unverifiable` block.
  */
-export function QuantumStudioPanel({ rawCodecs }: WorkspacePanelProps = {}) {
+export function QuantumStudioPanel({ rawCodecs, mode }: QuantumStudioPanelProps = {}) {
   const runtimes = useCatalogueRuntimes();
   const catalogue = parseCatalogue(catalogueJson);
   return (
+    <Workbench {...(rawCodecs === undefined ? {} : { rawCodecs })} {...(mode === undefined ? {} : { mode })}>
+      {context => (
     <article className="qsp-panel">
       <header className="qsp-header">
         <h2>SCPN QUANTUM CONTROL</h2>
@@ -65,6 +75,7 @@ export function QuantumStudioPanel({ rawCodecs }: WorkspacePanelProps = {}) {
           catalogue={catalogue.value}
           manifest={studioManifest.value}
           runtimes={runtimes}
+          routeHref={href => href + formatWorkbenchContext(context)}
         />
       ) : (
         <Unverifiable surface="capability catalogue" reason="Catalogue or source manifest unavailable" />
@@ -105,7 +116,6 @@ export function QuantumStudioPanel({ rawCodecs }: WorkspacePanelProps = {}) {
           />
         )}
       </div>
-      <WorkspacePanel {...(rawCodecs === undefined ? {} : { rawCodecs })} />
       <EvidenceViewer />
       {supportMatrix.ok ? (
         <SupportMatrixGrid matrix={supportMatrix.value} />
@@ -132,6 +142,8 @@ export function QuantumStudioPanel({ rawCodecs }: WorkspacePanelProps = {}) {
         />
       )}
     </article>
+      )}
+    </Workbench>
   );
 }
 

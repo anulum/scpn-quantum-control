@@ -44,6 +44,7 @@ def take_native_coverage(
     records: list[dict[str, object]] | None = None,
     *,
     include_panel: bool = False,
+    include_workbench: bool = False,
 ) -> list[dict[str, object]]:
     """Retain actual executed scripts and counters for source mapping.
 
@@ -55,6 +56,8 @@ def take_native_coverage(
         Caller-owned destination preserving collected scripts if capture fails.
     include_panel
         Also require the original panel during a real damaged-source journey.
+    include_workbench
+        Require the original facade, catalogue and all eight navigation owners.
 
     Returns
     -------
@@ -79,6 +82,21 @@ def take_native_coverage(
     }
     if include_panel:
         owners.add("/src/QuantumStudioPanel.tsx")
+    if include_workbench:
+        owners.update(
+            {
+                "/src/QuantumStudioPanel.tsx",
+                "/src/features/catalogue/CapabilityCatalogue.tsx",
+                "/src/app/Workbench.tsx",
+                "/src/app/WorkbenchInspector.tsx",
+                "/src/app/RouteBoundary.tsx",
+                "/src/app/routing.ts",
+                "/src/app/useWorkbenchRoute.ts",
+                "/src/app/routes/BuildView.tsx",
+                "/src/app/routes/ResultsView.tsx",
+                "/src/app/routes/UnavailableView.tsx",
+            }
+        )
     root = Path(__file__).resolve().parents[1] / "studio-web"
     records = [] if records is None else records
     captured: set[str] = set()

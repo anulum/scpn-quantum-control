@@ -319,3 +319,34 @@ scpn-quantum-control — vendored floor design tokens (until keeper K2)
 .qsp-workspace label { display: block; margin-block: .75rem; }
 .qsp-workspace-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
 .qsp-workspace dd { overflow-wrap: anywhere; }
+.qsp-workbench {
+  box-sizing: border-box;
+  color: var(--qsp-fg);
+  background: var(--qsp-bg);
+  font-family: var(--qsp-font);
+  width: 100%;
+  min-width: 0;
+  max-width: 76rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.qsp-workbench[data-mode="embedded"] { margin: 0; max-width: none; }
+.qsp-workbench *, .qsp-workbench *::before, .qsp-workbench *::after { box-sizing: border-box; }
+.qsp-workbench-header nav { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 0.8rem 0; }
+.qsp-workbench-header a { color: var(--qsp-fg); padding: 0.4rem; }
+.qsp-workbench-header a[aria-current="page"] { font-weight: 700; text-decoration-thickness: 0.2rem; }
+.qsp-workbench :focus-visible, .qsp-workbench-content:focus { outline: 3px solid var(--qsp-fail-closed); outline-offset: 3px; }
+.qsp-workbench-content, .qsp-workbench-inspector { min-width: 0; overflow-wrap: anywhere; }
+.qsp-workbench-inspector { padding: 1rem; border: 1px solid var(--qsp-line); }
+.qsp-workbench-inspector dl { display: grid; grid-template-columns: minmax(0, 12rem) minmax(0, 1fr); gap: 0.4rem; }
+.qsp-workbench-inspector dd { margin: 0; }
+.qsp-workbench .qsp-panel { width: 100%; min-width: 0; }
+.qsp-workbench .qsp-lab-figures { grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); }
+.qsp-workbench .qsp-workspace textarea, .qsp-workbench .qsp-workspace input { max-width: 100%; }
+.qsp-workbench [hidden] { display: none; }
+@media (max-width: 480px) {
+  .qsp-workbench { padding: 0.5rem; }
+  .qsp-workbench-inspector dl { grid-template-columns: minmax(0, 1fr); }
+  .qsp-workbench .qsp-panel { padding: 0.5rem; }
+}

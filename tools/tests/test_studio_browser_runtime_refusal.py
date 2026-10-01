@@ -89,6 +89,8 @@ def owned_fault_host(
                     if relative.endswith(".js")
                     else "application/wasm"
                     if relative.endswith(".wasm")
+                    else "text/css"
+                    if relative.endswith(".css")
                     else "application/octet-stream"
                 )
                 if relative.endswith("scpn_quantum_studio_program_ad_wasm.wasm"):

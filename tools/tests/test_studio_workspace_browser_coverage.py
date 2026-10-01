@@ -14,7 +14,7 @@ from collections.abc import Iterator
 from urllib.parse import urlsplit
 
 import pytest
-from playwright.sync_api import Browser, Error, Route, sync_playwright
+from playwright.sync_api import Browser, Error, Route, expect, sync_playwright
 
 from tools.studio_browser_journey import loopback_url
 from tools.studio_workspace_browser_coverage import start_native_coverage, take_native_coverage
@@ -80,6 +80,60 @@ def test_capture_actual_workspace_owners(native_browser: Browser) -> None:
             "/src/shared/storage/workspaceArchive.ts",
             "/src/features/workspace/WorkspacePanel.tsx",
             "/src/features/workspace/useWorkspace.ts",
+        }
+    finally:
+        context.close()
+
+
+def test_capture_actual_workbench_navigation_owners(native_browser: Browser) -> None:
+    """Retain all fourteen real source owners after public lazy-route navigation.
+
+    Parameters
+    ----------
+    native_browser
+        Owned Chromium process exercising the original facade and source controllers.
+
+    """
+    supplied = os.environ.get("STUDIO_WORKSPACE_SOURCE_URL")
+    if supplied is None:
+        raise RuntimeError("Start the owned source host and supply STUDIO_WORKSPACE_SOURCE_URL")
+    source = loopback_url(supplied)
+    context = native_browser.new_context(service_workers="block")
+    try:
+        page = context.new_page()
+        session = start_native_coverage(page)
+        page.goto(source + "browser-tests/workbench.html", wait_until="networkidle")
+        nav = page.get_by_role("navigation", name="Workbench views")
+        for view in ("Build", "Results", "Atlas"):
+            nav.get_by_role("link", name=view, exact=True).click()
+            expect(
+                page.get_by_role(
+                    "heading", name=view if view != "Atlas" else "Atlas unavailable", exact=True
+                )
+            ).to_be_visible()
+        records = take_native_coverage(session, include_workbench=True)
+        actual: set[str] = set()
+        for record in records:
+            native = record["coverage"]
+            assert isinstance(native, dict)
+            url = native.get("url")
+            assert isinstance(url, str)
+            actual.add(urlsplit(url).path)
+        assert actual == {
+            "/src/shared/storage/workspaceStore.ts",
+            "/src/shared/storage/workspaceArchive.ts",
+            "/src/features/workspace/WorkspacePanel.tsx",
+            "/src/features/workspace/useWorkspace.ts",
+            "/src/QuantumStudioPanel.tsx",
+            "/src/features/catalogue/CapabilityCatalogue.tsx",
+            "/src/app/Workbench.tsx",
+            "/src/app/WorkbenchInspector.tsx",
+            "/src/app/RouteBoundary.tsx",
+            "/src/app/routing.ts",
+            "/src/app/useWorkbenchRoute.ts",
+            "/src/app/routes/BuildView.tsx",
+            "/src/app/routes/ResultsView.tsx",
+            "/src/app/routes/UnavailableView.tsx",
         }
     finally:
         context.close()

@@ -125,7 +125,7 @@ data/phase2_readout_mitigation/phase2_readout_mitigation_summary_2026-05-05.json
 data/phase3_multicircuit_qec/qec_readiness_2026-05-07.json
 ```
 
-## Studio web remote (Phase 0)
+## Studio web remote
 
 The `studio-web/` workspace builds the QUANTUM studio's federated UI from one
 Vite app: a static portal (`dist/index.html`) and a Module Federation remote
@@ -136,8 +136,8 @@ react/react-dom shared as version-pinned singletons.
 
 ```bash
 cd studio-web
-pnpm install
-pnpm test:coverage
+pnpm install --frozen-lockfile
+pnpm typecheck
 pnpm build
 ```
 
@@ -149,11 +149,43 @@ surface that fails its fail-closed guard renders as a loud `unverifiable` block.
 The gradient-plan view is sourced from
 `data/differentiable_phase_qnode/gradient_plan_explanations_20260709.json`; it
 explains the planner-selected method and fail-closed boundaries, but it does not
-execute a browser differentiate run. The manifest `ui_module` is LIVE: the
-remote is pull-deployed under the Hub origin and the manifest points at
+execute a general browser differentiate run. The manifest `ui_module` points at
 `https://www.anulum.org/studios/scpn-quantum-control/remoteEntry.js`, exposing
-`./QuantumStudioPanel` (probe-verified by the platform keeper; a regression
-test pins the values against `module-federation.config.ts`).
+`./QuantumStudioPanel`. A recorded platform-keeper probe verified an earlier
+Hub deployment; current hosted availability requires a fresh probe. A regression
+test pins the declared values against `module-federation.config.ts`.
+
+### Standalone and embedded navigation
+
+The exposed module retains the same named and default `QuantumStudioPanel`
+component. Its default mode is `standalone`; a host can render the admitted,
+initialized remote component in its existing React tree with:
+
+```tsx
+<QuantumStudioPanel mode="embedded" />
+```
+
+Both modes use the same Workspace, Build, Experiments, Results and Atlas hash
+routes. Embedded mode uses the host layout while retaining the original archive
+editor, saved-state admission and requested-context inspector. `project`,
+`revision` and `snapshot` address fields are opaque context; they grant no
+storage or execution authority. Navigation preserves the mounted draft; reload
+restores the last saved archive. A route-module failure has a Workspace recovery
+link. See [workbench navigation](studio_workbench.md#workbench-navigation) for
+addresses, bounds, unavailable workflows and local acceptance commands.
+
+The independent acceptance host is built from
+`studio-web/browser-tests/federation.vite.ts`. It initializes the actual ESM
+remote with the locked React/react-dom singleton providers and mounts the
+embedded panel. The browser journey checks the host's real React state and the
+original named/default export identity. These fixtures live outside the shipped
+production bundle and do not establish a hosted deployment result.
+
+The coverage cohort requires successful source-qualified workspace,
+panel-refusal and workbench browser evidence. Studio CI supplies these records
+before its existing global and exact-owner coverage gates; see the
+[local navigation verification](studio_workbench.md#verify-local-navigation)
+instructions before running that cohort locally.
 
 ### 3D Lab
 

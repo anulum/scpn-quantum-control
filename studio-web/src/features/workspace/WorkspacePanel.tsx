@@ -6,21 +6,25 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // SCPN Quantum Control — local workspace editor
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SettingsInspector } from "../settings/SettingsInspector";
 import type { RawCodec } from "../../shared/contracts";
 import type { WorkspaceArchivePreview } from "../../shared/storage/workspaceArchive";
+import type { StoredWorkspace } from "../../shared/storage/workspaceStore";
 import { noWorkspaceProducers, useWorkspace } from "./useWorkspace";
 
 /** Trusted producer registry from the host; imported data cannot install verifiers. */
 export interface WorkspacePanelProps {
   /** Existing source-owned codecs; unsupported source formats refuse admission. */
   readonly rawCodecs?: ReadonlyMap<string, RawCodec>;
+  /** Observe the original store's admitted head; navigation cannot manufacture one. */
+  readonly onSavedWorkspace?: (saved: StoredWorkspace | null) => void;
 }
 
 /** Original panel's local workspace editor, atomic save and portable archive recovery. */
-export function WorkspacePanel({ rawCodecs = noWorkspaceProducers }: WorkspacePanelProps) {
+export function WorkspacePanel({ rawCodecs = noWorkspaceProducers, onSavedWorkspace }: WorkspacePanelProps) {
   const workspace = useWorkspace(rawCodecs);
+  useEffect(() => { onSavedWorkspace?.(workspace.saved); }, [onSavedWorkspace, workspace.saved]);
   const [title, setTitle] = useState("Untitled workspace");
   const exportArchive = (portable: WorkspaceArchivePreview) => {
     const blob = new Blob([portable.json], { type: "application/json" });

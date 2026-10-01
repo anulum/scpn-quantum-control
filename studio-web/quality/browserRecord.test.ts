@@ -29,6 +29,21 @@ async function actualInput(): Promise<{ record: Record<string, unknown>; origin:
 }
 
 describe("browser coverage evidence qualification", () => {
+  it("qualifies actual navigation scripts only when the complete workbench cohort is requested", async () => {
+    const filename = process.env["STUDIO_WORKBENCH_COVERAGE"];
+    if (!filename) throw new Error("Supply actual workbench_navigation evidence");
+    const evidence = coverageObject(JSON.parse(await readFile(filename, "utf8")) as unknown);
+    if (!Array.isArray(evidence["native_v8_coverage"]) || typeof evidence["source_url"] !== "string") throw new Error("Actual workbench source counters missing");
+    for (const record of evidence["native_v8_coverage"]) {
+      const qualified = await qualifyBrowserRecord(record, process.cwd(), evidence["source_url"], true);
+      expect(qualified.coverage.functions.length).toBeGreaterThan(0);
+      const native = coverageObject(coverageObject(record)["coverage"]);
+      if (typeof native["url"] !== "string") throw new Error("Actual source URL missing");
+      if (new URL(native["url"]).pathname.startsWith("/src/app/")) {
+        await expect(qualifyBrowserRecord(record, process.cwd(), evidence["source_url"])).rejects.toThrow("Unowned browser coverage source");
+      }
+    }
+  });
   it.each([null, [], 0, false, "counter"])("refuses non-object metadata %j", value => {
     expect(() => coverageObject(value)).toThrow("Coverage object required");
   });

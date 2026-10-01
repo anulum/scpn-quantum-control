@@ -29,6 +29,97 @@ a separate approved action. A recorded July 2026 keeper check verified a live
 Hub panel render; this document makes no assertion about current hosted
 availability without a fresh deployment probe.
 
+## Workbench navigation
+
+The Workspace view retains the original capability catalogue, committed cards
+and local archive editor. Build opens the existing compile recomputation,
+Kuramoto Play and 3D Lab instruments. Results opens program-AD replay, evidence
+inspection, the support explorer, gradient explanations and scorecard.
+Experiments and Atlas show their unavailable workflows and a link back to
+Workspace. The mode banner distinguishes standalone and embedded layouts;
+federation hosts can pass `mode="embedded"` to the same exposed panel.
+
+Hash addresses work on static hosting without server rewrite rules:
+
+| View | Address |
+| --- | --- |
+| Workspace | `#/workspace` (also the empty address) |
+| Build | `#/build` or `#/build/compile-recompute` |
+| Experiments | `#/experiments` |
+| Results | `#/results` or `#/results/program-ad-replay` |
+| Atlas | `#/atlas` |
+
+Optional `project`, `revision` and `snapshot` query fields retain exact opaque
+identity through links, reload and browser history. For example,
+`#/build/compile-recompute?project=my-project&revision=revision-1` opens the
+committed instrument while displaying that requested context. Opening an
+address does not load or validate those identifiers, change the selected saved
+archive, or attach a committed instrument result to that revision. The common
+inspector displays requested identity separately from the original storage
+owner's admitted saved project, workspace, archive and document digests.
+
+Addresses are bounded to 4096 UTF-16 code units in both input and stable encoded
+form; each supplied identifier has a 256-code-unit bound. A character outside
+the Basic Multilingual Plane occupies two code units. Empty identifiers, repeated
+or unknown fields, malformed UTF-8/percent encoding, control characters and
+unsupported paths render an explicit route refusal. The current draft and
+saved archive remain unchanged. Return to Workspace to continue editing.
+
+The original editor remains mounted while navigating. A feature import or
+render error has its own boundary and offers a Workspace recovery link without
+clearing the editor. Unsaved edits survive navigation within the mounted panel;
+reload restores the last saved archive. Export remains the independent backup.
+View links and breadcrumbs are keyboard accessible, and navigating focuses the
+view or its instrument target. Navigation wraps to fit narrow host layouts.
+
+Build, Results and unavailable-view modules load on navigation. The compatibility
+Workspace overview still includes its original instrument dependencies at
+startup; lazy route modules do not imply that all numerical code has been
+removed from the initial bundle. Existing federation name, expose key and
+version-pinned shared React contracts are preserved.
+
+### Verify local navigation
+
+The `workbench_navigation` scenario exercises the original standalone panel,
+an independently built federation consumer, a refused route chunk and the
+original source panel. It checks saved archive and draft retention, deep links,
+reload and browser history, malformed addresses, narrow-layout keyboard focus
+and actual compile/gradient WASM recomputation. The federation consumer uses
+the real remote `get`/`init` exports and the locked shared React providers.
+
+Prepare the production bundle with `pnpm build` in `studio-web/` and
+`python tools/build_studio_wasm_bundle.py` from the repository root. Build the
+independent consumer with `pnpm exec vite build --config
+browser-tests/federation.vite.ts --outDir <owned-host-directory>` in
+`studio-web/`. Serve a separate preview containing the original built bundle
+at its root and that consumer under `acceptance-host/`; keep the shipped
+production bundle separate from these acceptance fixtures.
+
+The second server is a root Vite server over an exact copy of the original
+source, browser fixtures and configuration, with the original data and installed
+dependencies available. Copy the two actual built files from `dist/wasm/`
+inside that copy's `src/wasm/` so the source-relative imports resolve within
+Vite's serving boundary. Studio CI prepares and verifies these copies in its
+temporary directory, preserving the canonical source and kernel hashes.
+
+With both owned loopback servers running, use a new output path:
+
+```bash
+PYTHONPATH=. python tools/studio_browser_journey.py \
+  --scenario workbench_navigation --base-url http://127.0.0.1:4173/ \
+  --workspace-source-url http://127.0.0.1:4174/ \
+  --output /tmp/workbench-journey.json
+```
+
+The runner closes its browser contexts; the server owner stops both servers.
+The result includes native V8 records for all fourteen workbench, catalogue,
+facade and original storage/controller owners. Set
+`STUDIO_WORKBENCH_COVERAGE` to this successful JSON alongside the required
+`STUDIO_WORKSPACE_COVERAGE` and original panel-refusal evidence when running
+the affected owner coverage cohort. The source qualifier verifies actual code,
+source maps and current owner hashes before merging counters through the
+existing Vitest provider. Stale, failed or incomplete evidence refuses.
+
 ## Capability catalogue
 
 Search by task and intersect the runtime and declared-backend filters. Each row

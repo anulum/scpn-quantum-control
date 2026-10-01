@@ -23,6 +23,11 @@ const ready = { compile: { available: true, reason: "Kernel loaded" }, different
 afterEach(cleanup);
 
 describe("capability catalogue", () => {
+  it("retains shell context on admitted links while keeping absent runtime links refused", () => {
+    render(<CapabilityCatalogue catalogue={projection} manifest={source} runtimes={{ compile: ready.compile }} routeHref={route => route + "?project=p&revision=r"} />);
+    expect(screen.getByRole("link", { name: /Open XY/ }).getAttribute("href")).toBe("#/build/compile-recompute?project=p&revision=r");
+    expect(screen.queryByRole("link", { name: /Open Program/ })).toBeNull();
+  });
   it("disables missing runtimes with a reason and recovers from fresh availability", () => {
     const { rerender } = render(<CapabilityCatalogue catalogue={projection} manifest={source} runtimes={{}} />);
     expect(screen.queryByRole("link", { name: /Open XY/ })).toBeNull();

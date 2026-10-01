@@ -13,10 +13,12 @@ import { catalogueMatchesSource } from "./catalogue";
 import type { Catalogue, RuntimeAvailability } from "./catalogue";
 
 /** Read-only search over source declarations and measured browser kernel availability. */
-export function CapabilityCatalogue({ catalogue, manifest, runtimes }: {
+export function CapabilityCatalogue({ catalogue, manifest, runtimes, routeHref }: {
   catalogue: Catalogue;
   manifest: StudioManifestView;
   runtimes: Readonly<Record<string, RuntimeAvailability>>;
+  /** Shell-provided context encoding; the catalogue retains original runtime/source admission. */
+  routeHref?: (route: string) => string;
 }) {
   const [task, setTask] = useState("");
   const [runtime, setRuntime] = useState("");
@@ -86,7 +88,7 @@ export function CapabilityCatalogue({ catalogue, manifest, runtimes }: {
               </details>
               {route !== null && (
                 current && availability?.available ? (
-                  <a href={route} onClick={() => { document.getElementById(route.slice(1))?.focus(); }}>
+                  <a href={routeHref === undefined ? route : routeHref(route)} onClick={() => { document.getElementById(route.slice(1))?.focus(); }}>
                     Open {row.label}
                   </a>
                 ) : (

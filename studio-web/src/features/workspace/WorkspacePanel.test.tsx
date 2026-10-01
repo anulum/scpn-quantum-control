@@ -7,7 +7,7 @@
 // SCPN Quantum Control — workspace UI refusal tests
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
 import { WorkspacePanel } from "./WorkspacePanel";
 
 it("shows native storage absence and keeps successful save unavailable", async () => {
@@ -38,4 +38,15 @@ it("refuses invalid project titles rather than manufacturing an empty valid draf
   fireEvent.click(screen.getByRole("button", { name: "Create empty project" }));
   await waitFor(() => expect(screen.getByRole("status").textContent).toContain("Project title"));
   expect((screen.getByLabelText("Workspace archive JSON") as HTMLTextAreaElement).value).toBe("");
+});
+
+it("reports storage absence without manufacturing an admitted workspace and observes callback replacement", async () => {
+  const first = vi.fn();
+  const second = vi.fn();
+  const { rerender } = render(<WorkspacePanel onSavedWorkspace={first} />);
+  await waitFor(() => expect(screen.getByRole("status").textContent).toContain("IndexedDB unavailable"));
+  expect(first).toHaveBeenCalledWith(null);
+  rerender(<WorkspacePanel onSavedWorkspace={second} />);
+  expect(second).toHaveBeenCalledWith(null);
+  expect(screen.queryByLabelText("Saved workspace identity")).toBeNull();
 });

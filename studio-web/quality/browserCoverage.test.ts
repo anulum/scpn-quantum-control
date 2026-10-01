@@ -13,9 +13,39 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { readBrowserCoverage } from "./browserCoverage";
-import { browserOwners, coverageObject, panelBrowserOwner, qualifyBrowserRecord } from "./browserRecord";
+import { browserOwners, coverageObject, panelBrowserOwner, qualifyBrowserRecord, workbenchBrowserOwners } from "./browserRecord";
 
 describe("original native counter conversion", () => {
+  it("admits all fourteen owners from the actual workbench navigation journey", async () => {
+    const filename = process.env["STUDIO_WORKBENCH_COVERAGE"];
+    if (!filename) throw new Error("Run actual workbench_navigation and supply its evidence path");
+    const maps = await readBrowserCoverage(filename, process.cwd());
+    const actual = new Set(maps.flatMap(map => Object.keys(map)));
+    expect(actual).toEqual(new Set([
+      ...browserOwners, panelBrowserOwner, "/src/features/catalogue/CapabilityCatalogue.tsx",
+      "/src/app/Workbench.tsx", "/src/app/WorkbenchInspector.tsx", "/src/app/RouteBoundary.tsx",
+      "/src/app/routing.ts", "/src/app/useWorkbenchRoute.ts",
+      "/src/app/routes/BuildView.tsx", "/src/app/routes/ResultsView.tsx", "/src/app/routes/UnavailableView.tsx",
+    ].map(owner => resolve(process.cwd(), "." + owner))));
+  });
+  it.each([...workbenchBrowserOwners])("keeps %s mandatory in actual workbench evidence", async omitted => {
+    const filename = process.env["STUDIO_WORKBENCH_COVERAGE"];
+    if (!filename) throw new Error("Supply actual workbench_navigation evidence");
+    await readBrowserCoverage(filename, process.cwd());
+    const evidence = coverageObject(JSON.parse(await readFile(filename, "utf8")) as unknown);
+    if (!Array.isArray(evidence["native_v8_coverage"])) throw new Error("Actual native counters missing");
+    evidence["native_v8_coverage"] = evidence["native_v8_coverage"].filter(value => {
+      const native = coverageObject(coverageObject(value)["coverage"]);
+      if (typeof native["url"] !== "string") throw new Error("Actual source URL missing");
+      return new URL(native["url"]).pathname !== omitted;
+    });
+    const directory = await mkdtemp(join(tmpdir(), "studio-workbench-owner-refusal-"));
+    try {
+      const rejected = join(directory, "omitted-owner.json");
+      await writeFile(rejected, JSON.stringify(evidence), "utf8");
+      await expect(readBrowserCoverage(rejected, process.cwd())).rejects.toThrow("Native workspace coverage has missing production owners");
+    } finally { await rm(directory, { recursive: true }); }
+  });
   it("refuses a recorded script whose source mapping omits executable ownership", async () => {
     const actualFilename = process.env["STUDIO_WORKSPACE_COVERAGE"];
     if (!actualFilename) throw new Error("Run native workspace_recovery first and supply its actual evidence path");

@@ -119,6 +119,7 @@ def run_catalogue_journey(base_url: str) -> dict[str, object]:
                     page.on("pageerror", record_error)
                     page.goto(url, wait_until="networkidle")
                     catalogue = page.get_by_role("region", name="Capability catalogue")
+                    identity = catalogue.locator(".qsp-digest code").inner_text()
                     expect(
                         catalogue.get_by_test_id("capability-execute").get_by_role("link")
                     ).to_have_count(0)
@@ -146,7 +147,12 @@ def run_catalogue_journey(base_url: str) -> dict[str, object]:
                             "recomputed digest matches the signed claim"
                         )
                         outcome = panel.get_by_role("status").inner_text()
-                    identity = catalogue.locator(".qsp-digest code").inner_text()
+                        page.get_by_role("navigation", name="Workbench views").get_by_role(
+                            "link", name="Workspace", exact=True
+                        ).click()
+                        catalogue.get_by_label("Capability task").fill("compile")
+                        catalogue.get_by_label("Capability runtime").select_option("browser-wasm")
+                    expect(catalogue.locator(".qsp-digest code")).to_have_text(identity)
                     catalogue.get_by_label("Capability backend").select_option("numpy")
                     expect(
                         catalogue.get_by_text("No capability matches these filters.")
@@ -369,13 +375,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             "resource_plan_projection",
             "workspace_recovery",
             "workspace_panel_refusal",
+            "workbench_navigation",
         ),
         required=True,
     )
     parser.add_argument("--base-url", required=True)
     parser.add_argument(
         "--workspace-source-url",
-        help="Distinct owned loopback Vite server for native workspace API cases",
+        help="Distinct owned loopback Vite server for native workspace/workbench cases",
     )
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)
@@ -387,15 +394,22 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         url = loopback_url(args.base_url)
         evidence["base_url"] = url
-        if args.scenario == "workspace_recovery":
-            from tools.studio_workspace_browser_journey import run_workspace_journey
-
+        if args.scenario in ("workspace_recovery", "workbench_navigation"):
             if args.workspace_source_url is None:
-                raise ValueError("workspace_recovery requires --workspace-source-url")
-            run_workspace_journey(url, args.workspace_source_url, evidence)
+                raise ValueError(f"{args.scenario} requires --workspace-source-url")
+            if args.scenario == "workbench_navigation":
+                from tools.studio_workbench_browser_journey import run_workbench_journey
+
+                run_workbench_journey(url, args.workspace_source_url, evidence)
+            else:
+                from tools.studio_workspace_browser_journey import run_workspace_journey
+
+                run_workspace_journey(url, args.workspace_source_url, evidence)
         else:
             if args.workspace_source_url is not None:
-                raise ValueError("--workspace-source-url is valid only for workspace_recovery")
+                raise ValueError(
+                    "--workspace-source-url is valid only for workspace_recovery/workbench_navigation"
+                )
             journey: Callable[[str], dict[str, object]]
             if args.scenario == "workspace_panel_refusal":
                 from tools.studio_workspace_browser_journey import run_panel_refusal_journey
