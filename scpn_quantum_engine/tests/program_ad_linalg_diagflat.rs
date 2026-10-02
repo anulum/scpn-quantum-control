@@ -8,6 +8,7 @@
 
 use scpn_quantum_engine::program_ad_ir::interpret_program_ad_effect_ir_value_and_gradient;
 
+/// Encode weighted diagflat effects with the pure kind emitted by Python capture.
 fn weighted_diagflat_ir(
     shape_label: &str,
     offset: &str,
@@ -35,7 +36,7 @@ fn weighted_diagflat_ir(
             r#"{{"name": "%{next_index}", "producer": {next_index}, "version": 0, "shape": [], "dtype": "float64", "effect": {next_index}}}"#
         ));
         effects.push(format!(
-            r#"{{"index": {next_index}, "kind": "op", "target": "%{next_index}", "inputs": ["%{source}"], "version": 0, "ordering": {next_index}, "operation": "linalg:diagflat:{shape_label}:offset:{offset}:construct:{construct}"}}"#
+            r#"{{"index": {next_index}, "kind": "pure", "target": "%{next_index}", "inputs": ["%{source}"], "version": 0, "ordering": {next_index}, "operation": "linalg:diagflat:{shape_label}:offset:{offset}:construct:{construct}"}}"#
         ));
         output_targets.push(next_index);
         next_index += 1;
@@ -49,7 +50,7 @@ fn weighted_diagflat_ir(
             r#"{{"name": "%{mul_index}", "producer": {mul_index}, "version": 0, "shape": [], "dtype": "float64", "effect": {mul_index}}}"#
         ));
         effects.push(format!(
-            r#"{{"index": {mul_index}, "kind": "op", "target": "%{mul_index}", "inputs": ["%{output_target}", "{weight}"], "version": 0, "ordering": {mul_index}, "operation": "mul"}}"#
+            r#"{{"index": {mul_index}, "kind": "pure", "target": "%{mul_index}", "inputs": ["%{output_target}", "{weight}"], "version": 0, "ordering": {mul_index}, "operation": "mul"}}"#
         ));
         next_index += 1;
         accumulated_target = match accumulated_target {
@@ -60,7 +61,7 @@ fn weighted_diagflat_ir(
                     r#"{{"name": "%{add_index}", "producer": {add_index}, "version": 0, "shape": [], "dtype": "float64", "effect": {add_index}}}"#
                 ));
                 effects.push(format!(
-                    r#"{{"index": {add_index}, "kind": "op", "target": "%{add_index}", "inputs": ["%{left_target}", "%{mul_index}"], "version": 0, "ordering": {add_index}, "operation": "add"}}"#
+                    r#"{{"index": {add_index}, "kind": "pure", "target": "%{add_index}", "inputs": ["%{left_target}", "%{mul_index}"], "version": 0, "ordering": {add_index}, "operation": "add"}}"#
                 ));
                 next_index += 1;
                 Some(add_index)
@@ -207,5 +208,28 @@ fn rust_program_ad_diagflat_fails_closed_on_extra_source_operands() {
     assert!(
         error.contains("diagflat replay requires exactly one source operand"),
         "{error}"
+    );
+}
+
+/// Refuse an obsolete effect kind without returning a partial value or gradient.
+#[test]
+fn rust_program_ad_diagflat_fails_closed_on_unknown_effect_kind() {
+    let ir = weighted_diagflat_ir("3", "0", &ascending_indices(3), &[0.4, -0.2, 0.3]).replacen(
+        r#""kind": "pure""#,
+        r#""kind": "op""#,
+        1,
+    );
+    let result = interpret_program_ad_effect_ir_value_and_gradient(&ir, &[1.0, 2.0, 3.0])
+        .expect("unknown effect kinds should gate, not crash");
+
+    assert!(!result.supported);
+    assert_eq!(result.value, None);
+    assert!(result.gradient.is_empty());
+    assert!(result.parameter_targets.is_empty());
+    assert_eq!(result.effect_count, 11);
+    assert_eq!(result.supported_effect_count, 0);
+    assert_eq!(
+        result.blocked_reasons,
+        vec![r#"program AD effect 3 has unsupported kind "op""#.to_owned()]
     );
 }

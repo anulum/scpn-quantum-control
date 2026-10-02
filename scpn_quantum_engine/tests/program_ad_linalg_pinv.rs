@@ -8,6 +8,7 @@
 
 use scpn_quantum_engine::program_ad_ir::interpret_program_ad_effect_ir_value_and_gradient;
 
+/// Encode weighted pseudoinverse effects with the pure kind emitted by Python capture.
 fn weighted_pinv_ir(rows: usize, cols: usize, rcond: &str, weights: &[f64]) -> String {
     let input_count = rows * cols;
     let output_count = rows * cols;
@@ -36,7 +37,7 @@ fn weighted_pinv_ir(rows: usize, cols: usize, rcond: &str, weights: &[f64]) -> S
                 r#"{{"name": "%{next_index}", "producer": {next_index}, "version": 0, "shape": [], "dtype": "float64", "effect": {next_index}}}"#
             ));
             effects.push(format!(
-                r#"{{"index": {next_index}, "kind": "op", "target": "%{next_index}", "inputs": [{input_names}], "version": 0, "ordering": {next_index}, "operation": "linalg:pinv:{rows}x{cols}:{rcond}:{output_row}:{output_col}"}}"#
+                r#"{{"index": {next_index}, "kind": "pure", "target": "%{next_index}", "inputs": [{input_names}], "version": 0, "ordering": {next_index}, "operation": "linalg:pinv:{rows}x{cols}:{rcond}:{output_row}:{output_col}"}}"#
             ));
             output_targets.push(next_index);
             next_index += 1;
@@ -51,7 +52,7 @@ fn weighted_pinv_ir(rows: usize, cols: usize, rcond: &str, weights: &[f64]) -> S
             r#"{{"name": "%{mul_index}", "producer": {mul_index}, "version": 0, "shape": [], "dtype": "float64", "effect": {mul_index}}}"#
         ));
         effects.push(format!(
-            r#"{{"index": {mul_index}, "kind": "op", "target": "%{mul_index}", "inputs": ["%{output_target}", "{weight}"], "version": 0, "ordering": {mul_index}, "operation": "mul"}}"#
+            r#"{{"index": {mul_index}, "kind": "pure", "target": "%{mul_index}", "inputs": ["%{output_target}", "{weight}"], "version": 0, "ordering": {mul_index}, "operation": "mul"}}"#
         ));
         next_index += 1;
         accumulated_target = match accumulated_target {
@@ -62,7 +63,7 @@ fn weighted_pinv_ir(rows: usize, cols: usize, rcond: &str, weights: &[f64]) -> S
                     r#"{{"name": "%{add_index}", "producer": {add_index}, "version": 0, "shape": [], "dtype": "float64", "effect": {add_index}}}"#
                 ));
                 effects.push(format!(
-                    r#"{{"index": {add_index}, "kind": "op", "target": "%{add_index}", "inputs": ["%{left_target}", "%{mul_index}"], "version": 0, "ordering": {add_index}, "operation": "add"}}"#
+                    r#"{{"index": {add_index}, "kind": "pure", "target": "%{add_index}", "inputs": ["%{left_target}", "%{mul_index}"], "version": 0, "ordering": {add_index}, "operation": "add"}}"#
                 ));
                 next_index += 1;
                 Some(add_index)

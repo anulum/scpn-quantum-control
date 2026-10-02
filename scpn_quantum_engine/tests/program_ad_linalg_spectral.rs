@@ -8,6 +8,7 @@
 
 use scpn_quantum_engine::program_ad_ir::interpret_program_ad_effect_ir_value_and_gradient;
 
+/// Encode an eigenspectrum sum using the captured pure linalg and arithmetic kinds.
 fn spectral_ir() -> String {
     r#"{
         "format": "program_ad_effect_ir.v1",
@@ -27,11 +28,11 @@ fn spectral_ir() -> String {
             {"index": 1, "kind": "parameter", "target": "%1", "inputs": [], "version": 0, "ordering": 1, "operation": "parameter"},
             {"index": 2, "kind": "parameter", "target": "%2", "inputs": [], "version": 0, "ordering": 2, "operation": "parameter"},
             {"index": 3, "kind": "parameter", "target": "%3", "inputs": [], "version": 0, "ordering": 3, "operation": "parameter"},
-            {"index": 4, "kind": "op", "target": "%4", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 4, "operation": "linalg:eigvalsh:0"},
-            {"index": 5, "kind": "op", "target": "%5", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 5, "operation": "linalg:eigvalsh:1"},
-            {"index": 6, "kind": "op", "target": "%6", "inputs": ["%4", "0.75"], "version": 0, "ordering": 6, "operation": "mul"},
-            {"index": 7, "kind": "op", "target": "%7", "inputs": ["%5", "-1.25"], "version": 0, "ordering": 7, "operation": "mul"},
-            {"index": 8, "kind": "op", "target": "%8", "inputs": ["%6", "%7"], "version": 0, "ordering": 8, "operation": "add"}
+            {"index": 4, "kind": "pure", "target": "%4", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 4, "operation": "linalg:eigvalsh:0"},
+            {"index": 5, "kind": "pure", "target": "%5", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 5, "operation": "linalg:eigvalsh:1"},
+            {"index": 6, "kind": "pure", "target": "%6", "inputs": ["%4", "0.75"], "version": 0, "ordering": 6, "operation": "mul"},
+            {"index": 7, "kind": "pure", "target": "%7", "inputs": ["%5", "-1.25"], "version": 0, "ordering": 7, "operation": "mul"},
+            {"index": 8, "kind": "pure", "target": "%8", "inputs": ["%6", "%7"], "version": 0, "ordering": 8, "operation": "add"}
         ],
         "alias_edges": [],
         "control_regions": [],
@@ -41,6 +42,7 @@ fn spectral_ir() -> String {
     .to_owned()
 }
 
+/// Encode an eigvals sum using the captured pure linalg and arithmetic kinds.
 fn eigvals_spectral_ir() -> String {
     r#"{
         "format": "program_ad_effect_ir.v1",
@@ -60,11 +62,11 @@ fn eigvals_spectral_ir() -> String {
             {"index": 1, "kind": "parameter", "target": "%1", "inputs": [], "version": 0, "ordering": 1, "operation": "parameter"},
             {"index": 2, "kind": "parameter", "target": "%2", "inputs": [], "version": 0, "ordering": 2, "operation": "parameter"},
             {"index": 3, "kind": "parameter", "target": "%3", "inputs": [], "version": 0, "ordering": 3, "operation": "parameter"},
-            {"index": 4, "kind": "op", "target": "%4", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 4, "operation": "linalg:eigvals:2x2:0"},
-            {"index": 5, "kind": "op", "target": "%5", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 5, "operation": "linalg:eigvals:2x2:1"},
-            {"index": 6, "kind": "op", "target": "%6", "inputs": ["%4", "0.75"], "version": 0, "ordering": 6, "operation": "mul"},
-            {"index": 7, "kind": "op", "target": "%7", "inputs": ["%5", "-1.25"], "version": 0, "ordering": 7, "operation": "mul"},
-            {"index": 8, "kind": "op", "target": "%8", "inputs": ["%6", "%7"], "version": 0, "ordering": 8, "operation": "add"}
+            {"index": 4, "kind": "pure", "target": "%4", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 4, "operation": "linalg:eigvals:2x2:0"},
+            {"index": 5, "kind": "pure", "target": "%5", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 5, "operation": "linalg:eigvals:2x2:1"},
+            {"index": 6, "kind": "pure", "target": "%6", "inputs": ["%4", "0.75"], "version": 0, "ordering": 6, "operation": "mul"},
+            {"index": 7, "kind": "pure", "target": "%7", "inputs": ["%5", "-1.25"], "version": 0, "ordering": 7, "operation": "mul"},
+            {"index": 8, "kind": "pure", "target": "%8", "inputs": ["%6", "%7"], "version": 0, "ordering": 8, "operation": "add"}
         ],
         "alias_edges": [],
         "control_regions": [],
@@ -74,6 +76,7 @@ fn eigvals_spectral_ir() -> String {
     .to_owned()
 }
 
+/// Encode eigenvalue and eigenvector outputs with captured pure effect metadata.
 fn eig_spectral_ir() -> String {
     r#"{
         "format": "program_ad_effect_ir.v1",
@@ -105,23 +108,23 @@ fn eig_spectral_ir() -> String {
             {"index": 1, "kind": "parameter", "target": "%1", "inputs": [], "version": 0, "ordering": 1, "operation": "parameter"},
             {"index": 2, "kind": "parameter", "target": "%2", "inputs": [], "version": 0, "ordering": 2, "operation": "parameter"},
             {"index": 3, "kind": "parameter", "target": "%3", "inputs": [], "version": 0, "ordering": 3, "operation": "parameter"},
-            {"index": 4, "kind": "op", "target": "%4", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 4, "operation": "linalg:eig:eigenvalue:2x2:0"},
-            {"index": 5, "kind": "op", "target": "%5", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 5, "operation": "linalg:eig:eigenvalue:2x2:1"},
-            {"index": 6, "kind": "op", "target": "%6", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 6, "operation": "linalg:eig:eigenvector:2x2:0:0"},
-            {"index": 7, "kind": "op", "target": "%7", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 7, "operation": "linalg:eig:eigenvector:2x2:1:0"},
-            {"index": 8, "kind": "op", "target": "%8", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 8, "operation": "linalg:eig:eigenvector:2x2:0:1"},
-            {"index": 9, "kind": "op", "target": "%9", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 9, "operation": "linalg:eig:eigenvector:2x2:1:1"},
-            {"index": 10, "kind": "op", "target": "%10", "inputs": ["%4", "0.75"], "version": 0, "ordering": 10, "operation": "mul"},
-            {"index": 11, "kind": "op", "target": "%11", "inputs": ["%5", "-1.25"], "version": 0, "ordering": 11, "operation": "mul"},
-            {"index": 12, "kind": "op", "target": "%12", "inputs": ["%6", "0.2"], "version": 0, "ordering": 12, "operation": "mul"},
-            {"index": 13, "kind": "op", "target": "%13", "inputs": ["%7", "-0.4"], "version": 0, "ordering": 13, "operation": "mul"},
-            {"index": 14, "kind": "op", "target": "%14", "inputs": ["%8", "0.6"], "version": 0, "ordering": 14, "operation": "mul"},
-            {"index": 15, "kind": "op", "target": "%15", "inputs": ["%9", "0.1"], "version": 0, "ordering": 15, "operation": "mul"},
-            {"index": 16, "kind": "op", "target": "%16", "inputs": ["%10", "%11"], "version": 0, "ordering": 16, "operation": "add"},
-            {"index": 17, "kind": "op", "target": "%17", "inputs": ["%16", "%12"], "version": 0, "ordering": 17, "operation": "add"},
-            {"index": 18, "kind": "op", "target": "%18", "inputs": ["%17", "%13"], "version": 0, "ordering": 18, "operation": "add"},
-            {"index": 19, "kind": "op", "target": "%19", "inputs": ["%18", "%14"], "version": 0, "ordering": 19, "operation": "add"},
-            {"index": 20, "kind": "op", "target": "%20", "inputs": ["%19", "%15"], "version": 0, "ordering": 20, "operation": "add"}
+            {"index": 4, "kind": "pure", "target": "%4", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 4, "operation": "linalg:eig:eigenvalue:2x2:0"},
+            {"index": 5, "kind": "pure", "target": "%5", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 5, "operation": "linalg:eig:eigenvalue:2x2:1"},
+            {"index": 6, "kind": "pure", "target": "%6", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 6, "operation": "linalg:eig:eigenvector:2x2:0:0"},
+            {"index": 7, "kind": "pure", "target": "%7", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 7, "operation": "linalg:eig:eigenvector:2x2:1:0"},
+            {"index": 8, "kind": "pure", "target": "%8", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 8, "operation": "linalg:eig:eigenvector:2x2:0:1"},
+            {"index": 9, "kind": "pure", "target": "%9", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 9, "operation": "linalg:eig:eigenvector:2x2:1:1"},
+            {"index": 10, "kind": "pure", "target": "%10", "inputs": ["%4", "0.75"], "version": 0, "ordering": 10, "operation": "mul"},
+            {"index": 11, "kind": "pure", "target": "%11", "inputs": ["%5", "-1.25"], "version": 0, "ordering": 11, "operation": "mul"},
+            {"index": 12, "kind": "pure", "target": "%12", "inputs": ["%6", "0.2"], "version": 0, "ordering": 12, "operation": "mul"},
+            {"index": 13, "kind": "pure", "target": "%13", "inputs": ["%7", "-0.4"], "version": 0, "ordering": 13, "operation": "mul"},
+            {"index": 14, "kind": "pure", "target": "%14", "inputs": ["%8", "0.6"], "version": 0, "ordering": 14, "operation": "mul"},
+            {"index": 15, "kind": "pure", "target": "%15", "inputs": ["%9", "0.1"], "version": 0, "ordering": 15, "operation": "mul"},
+            {"index": 16, "kind": "pure", "target": "%16", "inputs": ["%10", "%11"], "version": 0, "ordering": 16, "operation": "add"},
+            {"index": 17, "kind": "pure", "target": "%17", "inputs": ["%16", "%12"], "version": 0, "ordering": 17, "operation": "add"},
+            {"index": 18, "kind": "pure", "target": "%18", "inputs": ["%17", "%13"], "version": 0, "ordering": 18, "operation": "add"},
+            {"index": 19, "kind": "pure", "target": "%19", "inputs": ["%18", "%14"], "version": 0, "ordering": 19, "operation": "add"},
+            {"index": 20, "kind": "pure", "target": "%20", "inputs": ["%19", "%15"], "version": 0, "ordering": 20, "operation": "add"}
         ],
         "alias_edges": [],
         "control_regions": [],
@@ -131,6 +134,7 @@ fn eig_spectral_ir() -> String {
     .to_owned()
 }
 
+/// Encode symmetric eigenvalue and eigenvector outputs with pure effect metadata.
 fn eigh_spectral_ir() -> String {
     r#"{
         "format": "program_ad_effect_ir.v1",
@@ -162,23 +166,23 @@ fn eigh_spectral_ir() -> String {
             {"index": 1, "kind": "parameter", "target": "%1", "inputs": [], "version": 0, "ordering": 1, "operation": "parameter"},
             {"index": 2, "kind": "parameter", "target": "%2", "inputs": [], "version": 0, "ordering": 2, "operation": "parameter"},
             {"index": 3, "kind": "parameter", "target": "%3", "inputs": [], "version": 0, "ordering": 3, "operation": "parameter"},
-            {"index": 4, "kind": "op", "target": "%4", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 4, "operation": "linalg:eigh:eigenvalue:2x2:L:0"},
-            {"index": 5, "kind": "op", "target": "%5", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 5, "operation": "linalg:eigh:eigenvalue:2x2:L:1"},
-            {"index": 6, "kind": "op", "target": "%6", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 6, "operation": "linalg:eigh:eigenvector:2x2:L:0:0"},
-            {"index": 7, "kind": "op", "target": "%7", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 7, "operation": "linalg:eigh:eigenvector:2x2:L:1:0"},
-            {"index": 8, "kind": "op", "target": "%8", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 8, "operation": "linalg:eigh:eigenvector:2x2:L:0:1"},
-            {"index": 9, "kind": "op", "target": "%9", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 9, "operation": "linalg:eigh:eigenvector:2x2:L:1:1"},
-            {"index": 10, "kind": "op", "target": "%10", "inputs": ["%4", "0.75"], "version": 0, "ordering": 10, "operation": "mul"},
-            {"index": 11, "kind": "op", "target": "%11", "inputs": ["%5", "-1.25"], "version": 0, "ordering": 11, "operation": "mul"},
-            {"index": 12, "kind": "op", "target": "%12", "inputs": ["%6", "0.2"], "version": 0, "ordering": 12, "operation": "mul"},
-            {"index": 13, "kind": "op", "target": "%13", "inputs": ["%7", "-0.4"], "version": 0, "ordering": 13, "operation": "mul"},
-            {"index": 14, "kind": "op", "target": "%14", "inputs": ["%8", "0.6"], "version": 0, "ordering": 14, "operation": "mul"},
-            {"index": 15, "kind": "op", "target": "%15", "inputs": ["%9", "0.1"], "version": 0, "ordering": 15, "operation": "mul"},
-            {"index": 16, "kind": "op", "target": "%16", "inputs": ["%10", "%11"], "version": 0, "ordering": 16, "operation": "add"},
-            {"index": 17, "kind": "op", "target": "%17", "inputs": ["%16", "%12"], "version": 0, "ordering": 17, "operation": "add"},
-            {"index": 18, "kind": "op", "target": "%18", "inputs": ["%17", "%13"], "version": 0, "ordering": 18, "operation": "add"},
-            {"index": 19, "kind": "op", "target": "%19", "inputs": ["%18", "%14"], "version": 0, "ordering": 19, "operation": "add"},
-            {"index": 20, "kind": "op", "target": "%20", "inputs": ["%19", "%15"], "version": 0, "ordering": 20, "operation": "add"}
+            {"index": 4, "kind": "pure", "target": "%4", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 4, "operation": "linalg:eigh:eigenvalue:2x2:L:0"},
+            {"index": 5, "kind": "pure", "target": "%5", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 5, "operation": "linalg:eigh:eigenvalue:2x2:L:1"},
+            {"index": 6, "kind": "pure", "target": "%6", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 6, "operation": "linalg:eigh:eigenvector:2x2:L:0:0"},
+            {"index": 7, "kind": "pure", "target": "%7", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 7, "operation": "linalg:eigh:eigenvector:2x2:L:1:0"},
+            {"index": 8, "kind": "pure", "target": "%8", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 8, "operation": "linalg:eigh:eigenvector:2x2:L:0:1"},
+            {"index": 9, "kind": "pure", "target": "%9", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 9, "operation": "linalg:eigh:eigenvector:2x2:L:1:1"},
+            {"index": 10, "kind": "pure", "target": "%10", "inputs": ["%4", "0.75"], "version": 0, "ordering": 10, "operation": "mul"},
+            {"index": 11, "kind": "pure", "target": "%11", "inputs": ["%5", "-1.25"], "version": 0, "ordering": 11, "operation": "mul"},
+            {"index": 12, "kind": "pure", "target": "%12", "inputs": ["%6", "0.2"], "version": 0, "ordering": 12, "operation": "mul"},
+            {"index": 13, "kind": "pure", "target": "%13", "inputs": ["%7", "-0.4"], "version": 0, "ordering": 13, "operation": "mul"},
+            {"index": 14, "kind": "pure", "target": "%14", "inputs": ["%8", "0.6"], "version": 0, "ordering": 14, "operation": "mul"},
+            {"index": 15, "kind": "pure", "target": "%15", "inputs": ["%9", "0.1"], "version": 0, "ordering": 15, "operation": "mul"},
+            {"index": 16, "kind": "pure", "target": "%16", "inputs": ["%10", "%11"], "version": 0, "ordering": 16, "operation": "add"},
+            {"index": 17, "kind": "pure", "target": "%17", "inputs": ["%16", "%12"], "version": 0, "ordering": 17, "operation": "add"},
+            {"index": 18, "kind": "pure", "target": "%18", "inputs": ["%17", "%13"], "version": 0, "ordering": 18, "operation": "add"},
+            {"index": 19, "kind": "pure", "target": "%19", "inputs": ["%18", "%14"], "version": 0, "ordering": 19, "operation": "add"},
+            {"index": 20, "kind": "pure", "target": "%20", "inputs": ["%19", "%15"], "version": 0, "ordering": 20, "operation": "add"}
         ],
         "alias_edges": [],
         "control_regions": [],
@@ -188,6 +192,7 @@ fn eigh_spectral_ir() -> String {
     .to_owned()
 }
 
+/// Encode singular-value outputs with the pure effect kind emitted by capture.
 fn svdvals_spectral_ir() -> String {
     r#"{
         "format": "program_ad_effect_ir.v1",
@@ -207,11 +212,11 @@ fn svdvals_spectral_ir() -> String {
             {"index": 1, "kind": "parameter", "target": "%1", "inputs": [], "version": 0, "ordering": 1, "operation": "parameter"},
             {"index": 2, "kind": "parameter", "target": "%2", "inputs": [], "version": 0, "ordering": 2, "operation": "parameter"},
             {"index": 3, "kind": "parameter", "target": "%3", "inputs": [], "version": 0, "ordering": 3, "operation": "parameter"},
-            {"index": 4, "kind": "op", "target": "%4", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 4, "operation": "linalg:svdvals:2x2:0"},
-            {"index": 5, "kind": "op", "target": "%5", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 5, "operation": "linalg:svdvals:2x2:1"},
-            {"index": 6, "kind": "op", "target": "%6", "inputs": ["%4", "0.5"], "version": 0, "ordering": 6, "operation": "mul"},
-            {"index": 7, "kind": "op", "target": "%7", "inputs": ["%5", "-1.3"], "version": 0, "ordering": 7, "operation": "mul"},
-            {"index": 8, "kind": "op", "target": "%8", "inputs": ["%6", "%7"], "version": 0, "ordering": 8, "operation": "add"}
+            {"index": 4, "kind": "pure", "target": "%4", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 4, "operation": "linalg:svdvals:2x2:0"},
+            {"index": 5, "kind": "pure", "target": "%5", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 5, "operation": "linalg:svdvals:2x2:1"},
+            {"index": 6, "kind": "pure", "target": "%6", "inputs": ["%4", "0.5"], "version": 0, "ordering": 6, "operation": "mul"},
+            {"index": 7, "kind": "pure", "target": "%7", "inputs": ["%5", "-1.3"], "version": 0, "ordering": 7, "operation": "mul"},
+            {"index": 8, "kind": "pure", "target": "%8", "inputs": ["%6", "%7"], "version": 0, "ordering": 8, "operation": "add"}
         ],
         "alias_edges": [],
         "control_regions": [],
@@ -221,6 +226,7 @@ fn svdvals_spectral_ir() -> String {
     .to_owned()
 }
 
+/// Encode one eigenvalue with the pure effect kind emitted by capture.
 fn single_eigenvalue_ir(operation: &str) -> String {
     format!(
         r#"{{
@@ -237,7 +243,7 @@ fn single_eigenvalue_ir(operation: &str) -> String {
             {{"index": 1, "kind": "parameter", "target": "%1", "inputs": [], "version": 0, "ordering": 1, "operation": "parameter"}},
             {{"index": 2, "kind": "parameter", "target": "%2", "inputs": [], "version": 0, "ordering": 2, "operation": "parameter"}},
             {{"index": 3, "kind": "parameter", "target": "%3", "inputs": [], "version": 0, "ordering": 3, "operation": "parameter"}},
-            {{"index": 4, "kind": "op", "target": "%4", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 4, "operation": "{operation}"}}
+            {{"index": 4, "kind": "pure", "target": "%4", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 4, "operation": "{operation}"}}
         ],
         "alias_edges": [],
         "control_regions": [],
