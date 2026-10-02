@@ -5,7 +5,12 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Studio executive compile handler
-"""The ``compile`` executive action handler — bounded XY compile of a network.
+"""Read-only supported program emission or bounded XY network compilation.
+
+Requests containing only ``program_source`` emit the supported source IR through
+the actual native Qiskit importer and an immutable source-bound plan. They retain
+phase parameters, classical controls and readout and report emitted_not_executed.
+Their reproduction scripts import source as data and never run imported Python.
 
 The read-only ``compile`` verb compiles an arbitrary bounded ``K_nm``/``omega``
 oscillator network into the studio's bit-exact XY compile unit
@@ -22,6 +27,7 @@ execution.
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from types import MappingProxyType
 from typing import Any, Final
 
 import numpy as np
@@ -36,6 +42,7 @@ from .executive import (
     VerbContract,
     build_generated_script,
 )
+from .program_authoring import compile_program_source
 from .recompute_kernel import (
     XY_COMPILE_RECOMPUTE_SCHEMA,
     build_xy_compile_recompute_unit,
@@ -135,7 +142,7 @@ class CompileActionHandler(ActionHandler):
         return COMPILE_VERB
 
     def plan(self, request: ExecutiveRequest, contract: VerbContract) -> ExecutionPlan:
-        """Validate the network and resolve a read-only compile plan.
+        """Validate a supported source or network and resolve its read-only plan.
 
         Parameters
         ----------
@@ -145,6 +152,8 @@ class CompileActionHandler(ActionHandler):
             Trotter steps and order must be integers, not booleans or floats;
             the supported orders are 1 and 2. Invalid input raises ValueError
             before a plan is returned; no order coercion is performed.
+            Alternatively, the sole ``program_source`` parameter selects exact
+            native source emission with the Python backend and no gate execution.
         contract : VerbContract
             The resolved ``compile`` contract.
 
@@ -157,6 +166,29 @@ class CompileActionHandler(ActionHandler):
         backend = request.backend or _DEFAULT_BACKEND
         if backend not in contract.backends:
             raise ValueError(f"backend {backend!r} is not declared for the compile verb")
+        if "program_source" in request.parameters:
+            if set(request.parameters) != {"program_source"}:
+                raise ValueError("program_source cannot be combined with network parameters")
+            if backend != "python":
+                raise ValueError(
+                    "program_source executive compilation requires the Python backend"
+                )
+            program = compile_program_source(request.parameters["program_source"])
+            return ExecutionPlan(
+                verb=self.verb,
+                action_id=request.action_id,
+                backend=backend,
+                contract=contract,
+                claim_boundary="supported source emission with exact operands, phases and readout; emitted, not executed",
+                steps=(
+                    "validate the bounded supported source",
+                    "emit immutable source-bound IR",
+                    "write a reproducible source import script",
+                ),
+                parameters=MappingProxyType(
+                    {"program_source": program.source, "source_sha256": program.source_sha256}
+                ),
+            )
         compile_spec = _normalise_compile(request.parameters)
         steps = (
             f"validate the {len(compile_spec['K_nm'])}-node K_nm/omega network",
@@ -175,12 +207,12 @@ class CompileActionHandler(ActionHandler):
         )
 
     def execute(self, plan: ExecutionPlan) -> ExecutionResult:
-        """Compile the network into the bit-exact XY compile unit.
+        """Emit a sealed supported source record or build the XY compile unit.
 
         Parameters
         ----------
         plan : ExecutionPlan
-            The planned compile network.
+            The sealed source identity or planned compile network.
 
         Returns
         -------
@@ -189,6 +221,19 @@ class CompileActionHandler(ActionHandler):
             the self-verification verdict.
 
         """
+        if "program_source" in plan.parameters:
+            program = compile_program_source(plan.parameters["program_source"])
+            if program.source_sha256 != plan.parameters["source_sha256"]:
+                raise ValueError("program source differs from its sealed compilation plan")
+            return ExecutionResult(
+                status="succeeded",
+                outputs={
+                    "backend": plan.backend,
+                    "execution_status": program.execution_status,
+                    "source_sha256": program.source_sha256,
+                    "program": program.to_dict(),
+                },
+            )
         compile_spec: dict[str, Any] = dict(plan.parameters)
         k_nm, omega = _arrays(compile_spec)
         unit = build_xy_compile_recompute_unit(
@@ -215,7 +260,7 @@ class CompileActionHandler(ActionHandler):
         return ExecutionResult(status="succeeded", outputs=outputs)
 
     def generate_script(self, plan: ExecutionPlan, result: ExecutionResult) -> GeneratedScript:
-        """Write a standalone script that reproduces the XY compile unit.
+        """Write a standalone script reproducing source emission or the XY unit.
 
         Parameters
         ----------
@@ -231,11 +276,27 @@ class CompileActionHandler(ActionHandler):
 
         """
         compile_spec: dict[str, Any] = dict(plan.parameters)
-        source = _render_script(
-            action_id=plan.action_id,
-            compile_spec=compile_spec,
-            input_sha256=str(result.outputs["input_sha256"]),
-        )
+        if "program_source" in compile_spec:
+            source = (
+                '"""Reproduce supported source emission; this script does not execute gates."""\n'
+                "from scpn_quantum_control.studio.program_authoring import compile_program_source\n\n"
+                f"SOURCE = {compile_spec['program_source']!r}\n"
+                f"EXPECTED_SOURCE_SHA256 = {result.outputs['source_sha256']!r}\n\n"
+                "def main() -> int:\n"
+                '    """Emit the original program and verify its source identity."""\n'
+                "    program = compile_program_source(SOURCE)\n"
+                "    assert program.source_sha256 == EXPECTED_SOURCE_SHA256\n"
+                "    print(f'source_sha256={program.source_sha256} emitted_not_executed')\n"
+                "    return 0\n\n"
+                "if __name__ == '__main__':\n"
+                "    raise SystemExit(main())\n"
+            )
+        else:
+            source = _render_script(
+                action_id=plan.action_id,
+                compile_spec=compile_spec,
+                input_sha256=str(result.outputs["input_sha256"]),
+            )
         slug = _safe_slug(plan.action_id)
         return build_generated_script(
             filename=f"compile_{slug}.py",

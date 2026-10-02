@@ -23,6 +23,8 @@ afterEach(() => { cleanup(); faults.compile = false; faults.scenario = false; })
 it("renders the actual original instrument owners with their committed inputs", () => {
   render(<BuildView focusInstrument />);
   expect(screen.getByRole("heading", { name: "Build" })).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "Program editor" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Compile source" })).toBeTruthy();
   expect(screen.getByRole("button", { name: "Recompute in browser" })).toBeTruthy();
   expect(screen.getByText(/A requested workspace revision is not substituted/)).toBeTruthy();
   expect(screen.queryByRole("alert")).toBeNull();

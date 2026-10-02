@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import runpy
 import sys
+from dataclasses import replace
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -216,3 +217,97 @@ def test_normalise_compile_accepts_bounded_network() -> None:
     compile_spec = _normalise_compile(_NETWORK)
     assert len(compile_spec["K_nm"]) == 3
     assert compile_spec["trotter_order"] == 1
+
+
+def test_supported_program_source_emits_original_ir_without_execution() -> None:
+    """Preserve phase, condition and readout through the actual executive action."""
+    source = 'OPENQASM 2.0; include "qelib1.inc"; qreg q[2]; creg c[2]; rz(-0.7853981633974492) q[0]; if(c==2) x q[1]; measure q[1] -> c[0];'
+    request = ExecutiveRequest(
+        verb=COMPILE_VERB, action_id="source-emission", parameters={"program_source": source}
+    )
+    record = run_action(request, registry=_registry())
+    assert record.result.status == "succeeded"
+    assert record.result.outputs["execution_status"] == "emitted_not_executed"
+    program = record.result.outputs["program"]
+    assert program["source"] == source
+    assert program["measurements"] == [[1, 0]]
+    assert program["operations"][0]["parameters"] == ["bfe921fb54442d20"]
+    assert program["operations"][1]["condition"] == {"register": "c", "value": "2"}
+    assert "verified" not in record.result.outputs
+
+
+def test_source_reproduction_script_emits_only_original_source(
+    capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Execute the generated safe producer through its actual public import."""
+    source = 'OPENQASM 2.0; include "qelib1.inc"; qreg q[1]; // inert quote """\nrz(-0.0) q[0];'
+    record = run_action(
+        ExecutiveRequest(
+            verb=COMPILE_VERB, action_id='source """', parameters={"program_source": source}
+        ),
+        registry=_registry(),
+    )
+    assert record.script is not None
+    script = tmp_path / record.script.filename
+    script.write_text(record.script.source, encoding="utf-8")
+    monkeypatch.setattr(sys, "argv", [str(script)])
+    with pytest.raises(SystemExit) as exit_info:
+        runpy.run_path(str(script), run_name="__main__")
+    assert exit_info.value.code == 0
+    assert (
+        capsys.readouterr().out.strip()
+        == f"source_sha256={record.result.outputs['source_sha256']} emitted_not_executed"
+    )
+
+
+@pytest.mark.parametrize(
+    "parameters,backend,message",
+    [
+        ({"program_source": "source", "K_nm": []}, None, "cannot be combined"),
+        ({"program_source": "source"}, "rust", "requires the Python backend"),
+        ({"program_source": "import os"}, None, "grammar"),
+    ],
+)
+def test_source_preview_refuses_unsupported_requests(
+    parameters: dict[str, Any], backend: str | None, message: str
+) -> None:
+    """No source plan substitutes a backend, mixes modes or admits Python."""
+    with pytest.raises(ValueError, match=message):
+        preview_action(
+            ExecutiveRequest(
+                verb=COMPILE_VERB,
+                action_id="refused-source",
+                parameters=parameters,
+                backend=backend,
+            ),
+            registry=_registry(),
+        )
+
+
+def test_source_plan_is_sealed_against_request_mutation() -> None:
+    """Keep the actual immutable plan after the caller changes its draft mapping."""
+    source = 'OPENQASM 2.0; include "qelib1.inc"; qreg q[1]; h q[0];'
+    parameters: dict[str, Any] = {"program_source": source}
+    plan = preview_action(
+        ExecutiveRequest(verb=COMPILE_VERB, action_id="sealed-source", parameters=parameters),
+        registry=_registry(),
+    )
+    parameters["program_source"] = "import os"
+    assert plan.parameters["program_source"] == source
+    with pytest.raises(TypeError):
+        plan.parameters["program_source"] = "changed"  # type: ignore[index]
+    assert CompileActionHandler().execute(plan).outputs["program"]["source"] == source
+
+
+def test_forged_source_plan_digest_is_refused_before_emission() -> None:
+    """Refuse an independently replaced plan whose actual source identity differs."""
+    source = 'OPENQASM 2.0; include "qelib1.inc"; qreg q[1]; h q[0];'
+    plan = preview_action(
+        ExecutiveRequest(
+            verb=COMPILE_VERB, action_id="digest-refusal", parameters={"program_source": source}
+        ),
+        registry=_registry(),
+    )
+    altered = replace(plan, parameters={"program_source": source, "source_sha256": "0" * 64})
+    with pytest.raises(ValueError, match="differs from its sealed"):
+        CompileActionHandler().execute(altered)

@@ -33,7 +33,7 @@ availability without a fresh deployment probe.
 
 The Workspace view retains the original capability catalogue, committed cards
 and local archive editor. Build opens the existing compile recomputation,
-Kuramoto Play and 3D Lab instruments. Results opens program-AD replay, evidence
+Kuramoto Play and 3D Lab instruments, together with the program editor. Results opens program-AD replay, evidence
 inspection, the support explorer, gradient explanations and scorecard.
 Experiments and Atlas show their unavailable workflows and a link back to
 Workspace. The mode banner distinguishes standalone and embedded layouts;
@@ -119,6 +119,91 @@ facade and original storage/controller owners. Set
 the affected owner coverage cohort. The source qualifier verifies actual code,
 source maps and current owner hashes before merging counters through the
 existing Vitest provider. Stale, failed or incomplete evidence refuses.
+
+## Supported program authoring
+
+Open Build to edit a program source or append an operation through the form.
+Compile source invokes the shipped Rust/WASM compiler. The result displays
+ordered IR, parameter bits, source positions, classical conditions and readout
+pairs. **Emitted — not executed** means the source was admitted and recorded.
+This action constructs no numerical result and submits no provider job.
+
+Changing source immediately clears the current compiled plan and disables its
+export. A late result for an earlier draft is discarded. The last ten compilation
+attempts retain their original revision and digest or refusal category. This
+history belongs to the mounted editor; export the source before leaving Build
+or reloading. Workspace archives and earlier saved results remain independent.
+
+The supported source is a bounded OpenQASM 2.0 subset:
+
+| Construct | Supported form |
+| --- | --- |
+| Preamble | `OPENQASM 2.0; include "qelib1.inc";` |
+| Registers | One `qreg q[n];`, 1–8 qubits; optional `creg c[n];`, 1–64 bits |
+| Single-qubit gates | `h x y z s sdg t tdg id sx sxdg` |
+| Parameter gates | `rx ry rz p u1` with one parameter; `u2` with two; `u u3` with three |
+| Two-qubit gates | `cx cz swap`; `rxx ryy rzz` with one parameter |
+| Effects | `measure q[i] -> c[j];`, `reset q[i];`, `barrier q;` or indexed barrier operands |
+| Classical control | `if(c==unsigned_integer)` followed by one supported gate |
+
+Parameters are finite decimal binary64 values in radians. Expressions such as
+`pi/4`, custom gate definitions, other register names, arbitrary includes and
+Python are refused. Indices and conditions use canonical unsigned decimal text.
+Conditions retain all 64 bits without conversion to JavaScript numbers. Source
+is limited to 1 MiB of UTF-8, 65,536 tokens and 4,096 operations. Comments remain
+inert and are retained in the exact original source. An unsupported token or
+missing token has an original half-open Unicode scalar span and one-based
+line/column. Select offending source transfers that location to the text field.
+
+Export exact source downloads `program.qasm` with the compiled source unchanged,
+including its comments and formatting. The `studio.program-source.v1` record
+stores SHA-256 of those UTF-8 bytes and ordered IEEE float64 parameter hex values,
+including signed zero. Its `execution_status` is `emitted_not_executed`.
+
+Native Python imports use the actual Qiskit compiler through the same admitted
+subset. The `ryy` extension binds explicitly to Qiskit's `RYYGate`. Exact native
+export uses roundtrippable decimal parameters; it does not approximate them with
+pi aliases. An independent nonzero global phase is refused because this source
+format cannot encode it. Conditional blocks must contain a single supported gate
+with no else branch or independent block phase.
+
+```python
+from scpn_quantum_control.studio.program_authoring import (
+    compile_program_source, export_program_source, import_program_source,
+)
+
+source = '''OPENQASM 2.0;
+include "qelib1.inc";
+qreg q[2];
+creg c[2];
+rz(-0.7853981633974492) q[0];
+measure q[0] -> c[1];
+if(c==2) x q[1];
+'''
+record = compile_program_source(source)
+circuit = import_program_source(record.source)
+restored = compile_program_source(export_program_source(circuit))
+assert restored.measurements == record.measurements
+```
+
+The existing `compile` executive handler accepts `{"program_source": source}`
+as its source mode, using the declared Python backend. Network parameters cannot
+be mixed into this request. Its generated reproduction script emits the original
+source record and verifies its digest; running gates remains a separate action.
+The original XY network mode and static-unitary qualifier retain their own
+contracts for backends and effectful circuits.
+
+Against an owned built preview with the actual WASM, the shared acceptance runner
+checks source cases, exact downloads, structured controls, draft invalidation and
+delayed real compiler responses:
+
+```bash
+PYTHONPATH=. python tools/studio_browser_journey.py --scenario program_authoring \
+  --base-url http://127.0.0.1:4173/ --output /tmp/program-authoring-journey.json
+```
+
+Use a new output path. The runner blocks requests outside the preview and closes
+its contexts; the process owner stops the preview server.
 
 ## Capability catalogue
 

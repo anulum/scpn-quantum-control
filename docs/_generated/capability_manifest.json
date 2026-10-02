@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 851,
     "public_documentation_pages": 380,
-    "python_model_classes": 1471,
-    "python_model_source_modules": 756,
+    "python_model_classes": 1478,
+    "python_model_source_modules": 768,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1462
+    "test_files": 1474
   },
   "documentation": {
     "examples": [
@@ -756,7 +756,7 @@
       {
         "package": "studio",
         "path": "src/scpn_quantum_control/studio",
-        "python_modules": 31
+        "python_modules": 33
       },
       {
         "package": "studio_workspace",
@@ -1453,6 +1453,10 @@
       {
         "name": "CompileActionHandler",
         "path": "src/scpn_quantum_control/studio/executive_compile.py"
+      },
+      {
+        "name": "CompiledProgram",
+        "path": "src/scpn_quantum_control/studio/program_authoring_contracts.py"
       },
       {
         "name": "CompilerADExecutableConfig",
@@ -4903,6 +4907,10 @@
         "path": "src/scpn_quantum_control/program_ad_effect_ir.py"
       },
       {
+        "name": "ProgramADEffectFinding",
+        "path": "src/scpn_quantum_control/program_ad_effect_analysis.py"
+      },
+      {
         "name": "ProgramADEffectIR",
         "path": "src/scpn_quantum_control/program_ad_effect_ir.py"
       },
@@ -4961,6 +4969,26 @@
       {
         "name": "ProgramADViewAliasProvenance",
         "path": "src/scpn_quantum_control/program_ad_alias_contracts.py"
+      },
+      {
+        "name": "ProgramCondition",
+        "path": "src/scpn_quantum_control/studio/program_authoring_contracts.py"
+      },
+      {
+        "name": "ProgramDiagnostic",
+        "path": "src/scpn_quantum_control/studio/program_authoring_contracts.py"
+      },
+      {
+        "name": "ProgramOperation",
+        "path": "src/scpn_quantum_control/studio/program_authoring_contracts.py"
+      },
+      {
+        "name": "ProgramSourceRefused",
+        "path": "src/scpn_quantum_control/studio/program_authoring_contracts.py"
+      },
+      {
+        "name": "ProgramSourceSpan",
+        "path": "src/scpn_quantum_control/studio/program_authoring_contracts.py"
       },
       {
         "name": "ProjectedGradientConfig",
@@ -7295,8 +7323,16 @@
       "src/scpn_quantum_control/program_ad_array_indexing.py",
       "src/scpn_quantum_control/program_ad_assembly_primitives.py",
       "src/scpn_quantum_control/program_ad_broadcast_assembly.py",
+      "src/scpn_quantum_control/program_ad_captured_memory.py",
+      "src/scpn_quantum_control/program_ad_captured_state.py",
       "src/scpn_quantum_control/program_ad_cumulative_primitives.py",
+      "src/scpn_quantum_control/program_ad_effect_admission.py",
+      "src/scpn_quantum_control/program_ad_effect_analysis.py",
+      "src/scpn_quantum_control/program_ad_effect_call_binding.py",
+      "src/scpn_quantum_control/program_ad_effect_dispatch.py",
       "src/scpn_quantum_control/program_ad_effect_ir.py",
+      "src/scpn_quantum_control/program_ad_effect_source_binding.py",
+      "src/scpn_quantum_control/program_ad_effect_values.py",
       "src/scpn_quantum_control/program_ad_elementwise_primitives.py",
       "src/scpn_quantum_control/program_ad_fuzz_assurance.py",
       "src/scpn_quantum_control/program_ad_interpolation_primitives.py",
@@ -7311,6 +7347,7 @@
       "src/scpn_quantum_control/program_ad_signal_primitives.py",
       "src/scpn_quantum_control/program_ad_stack_block_assembly.py",
       "src/scpn_quantum_control/program_ad_stencil_primitives.py",
+      "src/scpn_quantum_control/program_ad_tape_binding.py",
       "src/scpn_quantum_control/program_ad_trapezoid_primitives.py",
       "src/scpn_quantum_control/psi_field/infoton.py",
       "src/scpn_quantum_control/psi_field/lattice.py",
@@ -7381,6 +7418,8 @@
       "src/scpn_quantum_control/studio/kuramoto_scenario_artifact.py",
       "src/scpn_quantum_control/studio/manifest.py",
       "src/scpn_quantum_control/studio/program_ad_replay_artifact.py",
+      "src/scpn_quantum_control/studio/program_authoring.py",
+      "src/scpn_quantum_control/studio/program_authoring_contracts.py",
       "src/scpn_quantum_control/studio/qec_readiness_bundle.py",
       "src/scpn_quantum_control/studio/qpu_result_pack.py",
       "src/scpn_quantum_control/studio/readout_mitigation_bundle.py",
@@ -7429,6 +7468,7 @@
       "src/scpn_quantum_control/whole_program_trace_metadata.py",
       "src/scpn_quantum_control/whole_program_trace_predicates.py",
       "src/scpn_quantum_control/whole_program_trace_runtime.py",
+      "src/scpn_quantum_control/whole_program_trace_scatter.py",
       "src/scpn_quantum_control/whole_program_trace_values.py",
       "src/scpn_quantum_control/wirtinger_calculus.py",
       "src/scpn_quantum_control/wirtinger_implicit_product.py"
@@ -9031,6 +9071,7 @@
       "tests/test_eeg_benchmark_branches.py",
       "tests/test_eeg_classification.py",
       "tests/test_eeg_classification_validation.py",
+      "tests/test_effectful_program_semantics.py",
       "tests/test_enaqt.py",
       "tests/test_enaqt_evidence.py",
       "tests/test_enaqt_evidence_quality_gate.py",
@@ -9601,9 +9642,17 @@
       "tests/test_program_ad_array_indexing_registry.py",
       "tests/test_program_ad_binary_elementwise_registry.py",
       "tests/test_program_ad_broadcast_assembly.py",
+      "tests/test_program_ad_captured_memory.py",
+      "tests/test_program_ad_captured_state.py",
       "tests/test_program_ad_cumulative_primitives.py",
       "tests/test_program_ad_cumulative_primitives_docstrings.py",
+      "tests/test_program_ad_effect_admission.py",
+      "tests/test_program_ad_effect_analysis.py",
+      "tests/test_program_ad_effect_call_binding.py",
+      "tests/test_program_ad_effect_dispatch.py",
       "tests/test_program_ad_effect_ir.py",
+      "tests/test_program_ad_effect_source_binding.py",
+      "tests/test_program_ad_effect_values.py",
       "tests/test_program_ad_elementwise_registry.py",
       "tests/test_program_ad_fail_closed_boundaries.py",
       "tests/test_program_ad_finite_difference_gradient_check.py",
@@ -9653,6 +9702,7 @@
       "tests/test_program_ad_static_array_assembly.py",
       "tests/test_program_ad_stencil_primitives_docstrings.py",
       "tests/test_program_ad_structural_finite_difference_gradient_check.py",
+      "tests/test_program_ad_tape_binding.py",
       "tests/test_program_ad_trapezoid.py",
       "tests/test_program_ad_triangular_diagonal_assembly.py",
       "tests/test_program_ad_unary_ufuncs.py",
@@ -9918,6 +9968,7 @@
       "tests/test_studio_manifest.py",
       "tests/test_studio_program_ad_quality_gate.py",
       "tests/test_studio_program_ad_replay_artifact.py",
+      "tests/test_studio_program_authoring.py",
       "tests/test_studio_qec_readiness_bundle.py",
       "tests/test_studio_qec_readiness_bundle_quality_gate.py",
       "tests/test_studio_qpu_result_pack.py",
@@ -10061,6 +10112,7 @@
       "tests/test_whole_program_trace_metadata.py",
       "tests/test_whole_program_trace_predicates.py",
       "tests/test_whole_program_trace_runtime.py",
+      "tests/test_whole_program_trace_scatter.py",
       "tests/test_whole_program_trace_value_linalg.py",
       "tests/test_whole_program_trace_value_operators.py",
       "tests/test_whole_program_trace_value_quality_gate.py",

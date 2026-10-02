@@ -106,10 +106,96 @@ def build_coverage_gates(python: str) -> list[Gate]:
     ]
 
 
+def build_program_authoring_quality_gates(python: str) -> list[Gate]:
+    """Build the additive native program-source owner gates for Studio CI.
+
+    Parameters
+    ----------
+    python
+        Existing locked interpreter selected by the caller.
+
+    Returns
+    -------
+    list
+        Strict typing, native documentation and exact branch-coverage commands.
+
+    """
+    production = [
+        "src/scpn_quantum_control/studio/program_authoring.py",
+        "src/scpn_quantum_control/studio/program_authoring_contracts.py",
+        "src/scpn_quantum_control/studio/executive_compile.py",
+    ]
+    tests = ["tests/test_studio_program_authoring.py", "tests/test_studio_executive_compile.py"]
+    owners = [
+        *production,
+        *tests,
+        "tools/studio_program_authoring_browser.py",
+        "tools/tests/test_studio_program_authoring_browser.py",
+        "tools/studio_executive_product_quality_gates.py",
+    ]
+    data_file = "/tmp/scpn-qc-studio-program-authoring.coverage"  # nosec B108
+    return [
+        (
+            "studio-program-authoring-strict",
+            [python, "-m", "mypy", "--strict", "--explicit-package-bases", *owners],
+        ),
+        (
+            "studio-program-authoring-native-docs",
+            [
+                python,
+                "-m",
+                "ruff",
+                "check",
+                "--isolated",
+                "--preview",
+                "--select",
+                "D,D413,D417,D420",
+                "--config",
+                "lint.explicit-preview-rules = true",
+                "--config",
+                'lint.pydocstyle.convention = "numpy"',
+                *owners,
+            ],
+        ),
+        (
+            "studio-program-authoring-native-coverage",
+            [
+                python,
+                "-m",
+                "coverage",
+                "run",
+                f"--rcfile={devnull}",
+                f"--data-file={data_file}",
+                "--branch",
+                "-m",
+                "pytest",
+                "-q",
+                *tests,
+            ],
+        ),
+        (
+            "studio-program-authoring-native-exact",
+            [
+                python,
+                "-m",
+                "coverage",
+                "report",
+                f"--rcfile={devnull}",
+                f"--data-file={data_file}",
+                "--precision=2",
+                "--show-missing",
+                "--fail-under=100",
+                "--include=*/studio/program_authoring.py,*/studio/program_authoring_contracts.py,*/studio/executive_compile.py",
+            ],
+        ),
+    ]
+
+
 __all__ = [
     "STUDIO_EXECUTIVE_PRODUCT_COVERAGE_COHORT",
     "STUDIO_EXECUTIVE_PRODUCT_COVERAGE_DATA_FILE",
     "STUDIO_EXECUTIVE_PRODUCT_QUALITY_RATCHET",
     "build_coverage_gates",
     "build_static_quality_gates",
+    "build_program_authoring_quality_gates",
 ]

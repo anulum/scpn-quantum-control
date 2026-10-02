@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **766 modules** across **41 package families**
-- **4174 documented public module-level symbols**
+- **768 modules** across **41 package families**
+- **4183 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -5191,7 +5191,7 @@ The ``scpn-studio-run`` executive dispatch command line interface.
 
 ### `scpn_quantum_control.studio.executive_compile`
 
-The ``compile`` executive action handler — bounded XY compile of a network.
+Read-only supported program emission or bounded XY network compilation.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/executive_compile.py) · Public symbols: **1**
 
@@ -5290,6 +5290,22 @@ Committed-artefact emission for the browser-verifiable program-AD gradient repla
 **Classes:** `ProgramADReplayArtifactValidation`
 
 **Functions:** `encode_replay_input()`, `build_program_ad_replay_artifact()`, `inspect_program_ad_replay_artifact()`, `validate_program_ad_replay_artifact()`, `main()`
+
+### `scpn_quantum_control.studio.program_authoring`
+
+Bounded native OpenQASM2 emission preserving readout and classical conditions.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/program_authoring.py) · Public symbols: **3**
+
+**Functions:** `compile_program_source()`, `import_program_source()`, `export_program_source()`
+
+### `scpn_quantum_control.studio.program_authoring_contracts`
+
+Exact source, operands, phase parameters and located emitted-only diagnostics.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/program_authoring_contracts.py) · Public symbols: **6**
+
+**Classes:** `ProgramSourceSpan`, `ProgramDiagnostic`, `ProgramSourceRefused`, `ProgramCondition`, `ProgramOperation`, `CompiledProgram`
 
 ### `scpn_quantum_control.studio.qec_readiness_bundle`
 

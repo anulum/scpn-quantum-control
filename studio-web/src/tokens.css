@@ -342,6 +342,7 @@ scpn-quantum-control — vendored floor design tokens (until keeper K2)
 .qsp-workbench-inspector dl { display: grid; grid-template-columns: minmax(0, 12rem) minmax(0, 1fr); gap: 0.4rem; }
 .qsp-workbench-inspector dd { margin: 0; }
 .qsp-workbench .qsp-panel { width: 100%; min-width: 0; }
+.qsp-workbench .qsp-badge { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
 .qsp-workbench .qsp-lab-figures { grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); }
 .qsp-workbench .qsp-workspace textarea, .qsp-workbench .qsp-workspace input { max-width: 100%; }
 .qsp-workbench [hidden] { display: none; }

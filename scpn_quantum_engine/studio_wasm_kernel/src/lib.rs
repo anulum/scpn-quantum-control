@@ -18,6 +18,9 @@
 use sha2::{Digest, Sha256};
 
 pub mod kuramoto;
+pub mod program_source;
+pub mod program_source_abi;
+mod program_source_lexer;
 
 const SCHEMA_TAG: &[u8] = b"scpn.quantum.xy_compile.v1\0";
 const INPUT_VERSION: u32 = 1;

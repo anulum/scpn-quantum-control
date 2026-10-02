@@ -1,0 +1,690 @@
+{
+  "schema": "studio.program-source.corpus.v1",
+  "cases": [
+    {
+      "name": "ordered_readout",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[2]; creg c[2]; h q[0]; cx q[0],q[1]; measure q[1] -> c[0]; measure q[0] -> c[1];",
+      "ok": true,
+      "operations": [
+        "h",
+        "cx",
+        "measure",
+        "measure"
+      ],
+      "measurements": [
+        [
+          1,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "name": "exact_conditional_phase",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[2]; creg c[2]; if(c==2) rz(-0.7853981633974492) q[1];",
+      "ok": true,
+      "operations": [
+        "rz"
+      ],
+      "measurements": [],
+      "parameters": [
+        [
+          "bfe921fb54442d20"
+        ]
+      ],
+      "conditions": [
+        {
+          "register": "c",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "name": "signed_zero",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[2]; creg c[2]; rx(-0.0) q[0];",
+      "ok": true,
+      "operations": [
+        "rx"
+      ],
+      "measurements": [],
+      "parameters": [
+        [
+          "8000000000000000"
+        ]
+      ]
+    },
+    {
+      "name": "native_effects",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[2]; creg c[2]; barrier q; reset q[1]; barrier q[1],q[0]; measure q[0] -> c[1]; measure q[0] -> c[0];",
+      "ok": true,
+      "operations": [
+        "barrier",
+        "reset",
+        "barrier",
+        "measure",
+        "measure"
+      ],
+      "measurements": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "unicode_comments",
+      "source": "// \ud83e\udded p\u00f4vodn\u00fd zdroj\nOPENQASM 2.0; include \"qelib1.inc\"; qreg q[2]; creg c[2]; h q[1]; // \u03bb\n",
+      "ok": true,
+      "operations": [
+        "h"
+      ],
+      "measurements": []
+    },
+    {
+      "name": "no_classical_register",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[1]; h q[0];",
+      "ok": true,
+      "operations": [
+        "h"
+      ],
+      "measurements": []
+    },
+    {
+      "name": "uint64_condition",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[1]; creg c[64]; if(c==18446744073709551615) x q[0];",
+      "ok": true,
+      "operations": [
+        "x"
+      ],
+      "measurements": [],
+      "conditions": [
+        {
+          "register": "c",
+          "value": "18446744073709551615"
+        }
+      ]
+    },
+    {
+      "name": "unknown_gate",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[2]; creg c[2]; mystery q[0];",
+      "ok": false,
+      "code": "unsupported_operation",
+      "token": "mystery",
+      "token_after": 58
+    },
+    {
+      "name": "phase_expression",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[2]; creg c[2]; rz(pi/4) q[0];",
+      "ok": false,
+      "code": "invalid_token",
+      "token": "/",
+      "token_after": 58
+    },
+    {
+      "name": "parameter_name",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[2]; creg c[2]; rz(theta) q[0];",
+      "ok": false,
+      "code": "invalid_parameter",
+      "token": "theta",
+      "token_after": 58
+    },
+    {
+      "name": "nonfinite",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[2]; creg c[2]; rz(1e999) q[0];",
+      "ok": false,
+      "code": "invalid_parameter",
+      "token": "1e999",
+      "token_after": 58
+    },
+    {
+      "name": "out_of_range",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[2]; creg c[2]; h q[2];",
+      "ok": false,
+      "code": "invalid_operand",
+      "token": "2",
+      "token_after": 58
+    },
+    {
+      "name": "negative_operand",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[2]; creg c[2]; h q[-1];",
+      "ok": false,
+      "code": "invalid_operand",
+      "token": "-1",
+      "token_after": 58
+    },
+    {
+      "name": "leading_zero_operand",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[2]; creg c[2]; h q[01];",
+      "ok": false,
+      "code": "invalid_operand",
+      "token": "01",
+      "token_after": 58
+    },
+    {
+      "name": "duplicate_operand",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[2]; creg c[2]; cx q[0],q[0];",
+      "ok": false,
+      "code": "invalid_operand",
+      "token": "cx",
+      "token_after": 58
+    },
+    {
+      "name": "missing_operand",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[2]; creg c[2]; cx q[0];",
+      "ok": false,
+      "code": "invalid_operand",
+      "token": "cx",
+      "token_after": 58
+    },
+    {
+      "name": "condition_overflow",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[2]; creg c[2]; if(c==4) x q[0];",
+      "ok": false,
+      "code": "invalid_condition",
+      "token": "4",
+      "token_after": 58
+    },
+    {
+      "name": "condition_leading_zero",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[2]; creg c[2]; if(c==01) x q[0];",
+      "ok": false,
+      "code": "invalid_condition",
+      "token": "01",
+      "token_after": 58
+    },
+    {
+      "name": "conditional_measure",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[2]; creg c[2]; if(c==1) measure q[0] -> c[0];",
+      "ok": false,
+      "code": "unsupported_operation",
+      "token": "measure",
+      "token_after": 58
+    },
+    {
+      "name": "conditional_reset",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[2]; creg c[2]; if(c==1) reset q[0];",
+      "ok": false,
+      "code": "unsupported_operation",
+      "token": "reset",
+      "token_after": 58
+    },
+    {
+      "name": "unknown_classical_register",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[2]; creg c[2]; measure q[0] -> d[0];",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "d",
+      "token_after": 58
+    },
+    {
+      "name": "trailing_python",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[2]; creg c[2]; import os;",
+      "ok": false,
+      "code": "unsupported_operation",
+      "token": "import",
+      "token_after": 58
+    },
+    {
+      "name": "custom_gate",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[2]; creg c[2]; gate custom a { x a; }",
+      "ok": false,
+      "code": "invalid_token",
+      "token": "{",
+      "token_after": 58
+    },
+    {
+      "name": "arbitrary_python",
+      "source": "import os\nos.system(\"touch forbidden\")",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "import",
+      "token_after": 0
+    },
+    {
+      "name": "external_include",
+      "source": "OPENQASM 2.0; include \"secret.inc\"; qreg q[1];",
+      "ok": false,
+      "code": "unsupported_include",
+      "token": "\"secret.inc\"",
+      "token_after": 0
+    },
+    {
+      "name": "future_version",
+      "source": "OPENQASM 3.0; include \"qelib1.inc\"; qreg q[1];",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "3.0",
+      "token_after": 0
+    },
+    {
+      "name": "too_many_qubits",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[9];",
+      "ok": false,
+      "code": "circuit_budget",
+      "token": "9",
+      "token_after": 0
+    },
+    {
+      "name": "zero_width",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[0];",
+      "ok": false,
+      "code": "circuit_budget",
+      "token": "0",
+      "token_after": 36
+    },
+    {
+      "name": "leading_zero_width",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[01];",
+      "ok": false,
+      "code": "circuit_budget",
+      "token": "01",
+      "token_after": 0
+    },
+    {
+      "name": "classical_width",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[1]; creg c[65];",
+      "ok": false,
+      "code": "circuit_budget",
+      "token": "65",
+      "token_after": 0
+    },
+    {
+      "name": "all_declared_native_gates",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[2]; h q[0]; x q[0]; y q[0]; z q[0]; s q[0]; sdg q[0]; t q[0]; tdg q[0]; id q[0]; sx q[0]; sxdg q[0]; rx(0.25) q[0]; ry(0.25) q[0]; rz(0.25) q[0]; p(0.25) q[0]; u1(0.25) q[0]; u2(0.25,0.5) q[0]; u(0.25,0.5,1.0) q[0]; u3(0.25,0.5,1.0) q[0]; cx q[1],q[0]; cz q[1],q[0]; swap q[1],q[0]; rxx(0.25) q[1],q[0]; ryy(0.25) q[1],q[0]; rzz(0.25) q[1],q[0]; ",
+      "ok": true,
+      "operations": [
+        "h",
+        "x",
+        "y",
+        "z",
+        "s",
+        "sdg",
+        "t",
+        "tdg",
+        "id",
+        "sx",
+        "sxdg",
+        "rx",
+        "ry",
+        "rz",
+        "p",
+        "u1",
+        "u2",
+        "u",
+        "u3",
+        "cx",
+        "cz",
+        "swap",
+        "rxx",
+        "ryy",
+        "rzz"
+      ],
+      "measurements": [],
+      "parameters": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [
+          "3fd0000000000000"
+        ],
+        [
+          "3fd0000000000000"
+        ],
+        [
+          "3fd0000000000000"
+        ],
+        [
+          "3fd0000000000000"
+        ],
+        [
+          "3fd0000000000000"
+        ],
+        [
+          "3fd0000000000000",
+          "3fe0000000000000"
+        ],
+        [
+          "3fd0000000000000",
+          "3fe0000000000000",
+          "3ff0000000000000"
+        ],
+        [
+          "3fd0000000000000",
+          "3fe0000000000000",
+          "3ff0000000000000"
+        ],
+        [],
+        [],
+        [],
+        [
+          "3fd0000000000000"
+        ],
+        [
+          "3fd0000000000000"
+        ],
+        [
+          "3fd0000000000000"
+        ]
+      ]
+    },
+    {
+      "name": "unterminated_include",
+      "source": "OPENQASM 2.0; include \"qelib1.inc; qreg q[1];",
+      "ok": false,
+      "code": "invalid_token",
+      "token": "\"",
+      "token_after": 20
+    },
+    {
+      "name": "truncated_required_source_token_01",
+      "source": "OPENQASM",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 8
+    },
+    {
+      "name": "truncated_required_source_token_02",
+      "source": "OPENQASM 2.0",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 12
+    },
+    {
+      "name": "truncated_required_source_token_03",
+      "source": "OPENQASM 2.0 ;",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 14
+    },
+    {
+      "name": "truncated_required_source_token_04",
+      "source": "OPENQASM 2.0 ; include",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 22
+    },
+    {
+      "name": "truncated_required_source_token_05",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\"",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 35
+    },
+    {
+      "name": "truncated_required_source_token_06",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ;",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 37
+    },
+    {
+      "name": "truncated_required_source_token_07",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 42
+    },
+    {
+      "name": "truncated_required_source_token_08",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg q",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 44
+    },
+    {
+      "name": "truncated_required_source_token_09",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg q [",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 46
+    },
+    {
+      "name": "truncated_required_source_token_10",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg q [ 2",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 48
+    },
+    {
+      "name": "truncated_required_source_token_11",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg q [ 2 ]",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 50
+    },
+    {
+      "name": "truncated_required_source_token_13",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg q [ 2 ] ; creg",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 57
+    },
+    {
+      "name": "truncated_required_source_token_14",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg q [ 2 ] ; creg c",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 59
+    },
+    {
+      "name": "truncated_required_source_token_15",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg q [ 2 ] ; creg c [",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 61
+    },
+    {
+      "name": "truncated_required_source_token_16",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg q [ 2 ] ; creg c [ 2",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 63
+    },
+    {
+      "name": "truncated_required_source_token_17",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg q [ 2 ] ; creg c [ 2 ]",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 65
+    },
+    {
+      "name": "truncated_required_source_token_19",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg q [ 2 ] ; creg c [ 2 ] ; if",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 70
+    },
+    {
+      "name": "truncated_required_source_token_20",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg q [ 2 ] ; creg c [ 2 ] ; if (",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 72
+    },
+    {
+      "name": "truncated_required_source_token_21",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg q [ 2 ] ; creg c [ 2 ] ; if ( c",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 74
+    },
+    {
+      "name": "truncated_required_source_token_22",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg q [ 2 ] ; creg c [ 2 ] ; if ( c ==",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 77
+    },
+    {
+      "name": "truncated_required_source_token_23",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg q [ 2 ] ; creg c [ 2 ] ; if ( c == 2",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 79
+    },
+    {
+      "name": "truncated_required_source_token_24",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg q [ 2 ] ; creg c [ 2 ] ; if ( c == 2 )",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 81
+    },
+    {
+      "name": "truncated_required_source_token_25",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg q [ 2 ] ; creg c [ 2 ] ; if ( c == 2 ) u3",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 84
+    },
+    {
+      "name": "truncated_required_source_token_26",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg q [ 2 ] ; creg c [ 2 ] ; if ( c == 2 ) u3 (",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 86
+    },
+    {
+      "name": "truncated_required_source_token_27",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg q [ 2 ] ; creg c [ 2 ] ; if ( c == 2 ) u3 ( 0.25",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 91
+    },
+    {
+      "name": "truncated_required_source_token_28",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg q [ 2 ] ; creg c [ 2 ] ; if ( c == 2 ) u3 ( 0.25 ,",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 93
+    },
+    {
+      "name": "truncated_required_source_token_29",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg q [ 2 ] ; creg c [ 2 ] ; if ( c == 2 ) u3 ( 0.25 , 0.5",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 97
+    },
+    {
+      "name": "truncated_required_source_token_30",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg q [ 2 ] ; creg c [ 2 ] ; if ( c == 2 ) u3 ( 0.25 , 0.5 ,",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 99
+    },
+    {
+      "name": "truncated_required_source_token_31",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg q [ 2 ] ; creg c [ 2 ] ; if ( c == 2 ) u3 ( 0.25 , 0.5 , 1.0",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 103
+    },
+    {
+      "name": "truncated_required_source_token_32",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg q [ 2 ] ; creg c [ 2 ] ; if ( c == 2 ) u3 ( 0.25 , 0.5 , 1.0 )",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 105
+    },
+    {
+      "name": "truncated_required_source_token_33",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg q [ 2 ] ; creg c [ 2 ] ; if ( c == 2 ) u3 ( 0.25 , 0.5 , 1.0 ) q",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 107
+    },
+    {
+      "name": "truncated_required_source_token_34",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg q [ 2 ] ; creg c [ 2 ] ; if ( c == 2 ) u3 ( 0.25 , 0.5 , 1.0 ) q [",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 109
+    },
+    {
+      "name": "truncated_required_source_token_35",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg q [ 2 ] ; creg c [ 2 ] ; if ( c == 2 ) u3 ( 0.25 , 0.5 , 1.0 ) q [ 0",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 111
+    },
+    {
+      "name": "truncated_required_source_token_36",
+      "source": "OPENQASM 2.0 ; include \"qelib1.inc\" ; qreg q [ 2 ] ; creg c [ 2 ] ; if ( c == 2 ) u3 ( 0.25 , 0.5 , 1.0 ) q [ 0 ]",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 113
+    },
+    {
+      "name": "truncated_second_qubit",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[2]; creg c[2]; cx q[0],",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 66
+    },
+    {
+      "name": "truncated_readout_arrow",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[2]; creg c[2]; measure q[0]",
+      "ok": false,
+      "code": "invalid_source",
+      "token": "",
+      "token_after": 70
+    },
+    {
+      "name": "missing_classical_register_zero_condition",
+      "source": "OPENQASM 2.0; include \"qelib1.inc\"; qreg q[1]; if(c==0) x q[0];",
+      "ok": false,
+      "code": "invalid_condition",
+      "token": "0",
+      "token_after": 47
+    }
+  ]
+}

@@ -17,6 +17,7 @@ import argparse
 import ipaddress
 import json
 from collections.abc import Callable, Sequence
+from functools import partial
 from importlib.metadata import version
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -377,6 +378,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "workspace_panel_refusal",
             "workbench_navigation",
             "parameter_graph_editor",
+            "program_authoring",
         ),
         required=True,
     )
@@ -430,6 +432,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 journey = run_resource_journey
             elif args.scenario == "capability_catalogue":
                 journey = run_catalogue_journey
+            elif args.scenario == "program_authoring":
+                from tools.studio_program_authoring_browser import run_program_authoring_journey
+
+                journey = partial(run_program_authoring_journey, evidence=evidence)
             else:
                 journey = run_evidence_journey
             evidence.update(journey(url))
