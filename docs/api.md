@@ -1778,6 +1778,30 @@ The canonical transform helpers `grad()`, `value_and_grad()`, `jacobian()`, `jac
 `hessian()` provide stable user-facing names with explicit method dispatch. `jacfwd()` and `jacrev()` are explicit transform-algebra aliases over the current finite-difference Jacobian backend until true forward- and reverse-Jacobian engines land; `jvp()` and `vjp()` are canonical finite-difference directional and adjoint-product transform names over the same validated backend. Tests guarantee their composition semantics without overclaiming backend implementation. Transform nesting contracts cover `grad(vmap(f))`, `vmap(grad(f))`, JVP/VJP consistency against Jacobians, Hessian symmetry, custom derivative rules under `vmap`, whole-program AD under `vmap`, whole-program `grad(vmap(f))` with JVP/VJP/Hessian composition over the resulting program-AD gradient, and JVP/VJP over whole-program AD Hessian transforms against analytic third-derivative contractions.
 `vmap()` adds a composable eager vectorization transform over selected input axes, with broadcast arguments, nested tuple/list/dict outputs, explicit `out_axes`, trace-aware slicing and stacking inside whole-program AD objectives, and fail-closed shape validation. It is deterministic NumPy execution, not a JIT claim.
 `whole_program_value_and_grad()` is the exact operator-intercepted whole-program AD path for differentiable Python programs that execute through traceable scalar and array values. It emits bytecode/source IR metadata, records `WholeProgramIRNode` graph nodes, preserves trainable masks, executes Python loops, local aliasing, list and rank-1/rank-2 array mutation, accepted closure/default/keyword-only/`*args`/`**kwargs`/generator-expression semantics, supported Python scalar `abs()` plus NumPy scalar and vector ufuncs including `absolute`/`abs`, reciprocal, `log1p`, `expm1`, `tan`, `arcsin`, and `arccos` with zero-cusp absolute-value and singular reciprocal/log1p/tan/inverse-trig boundaries rejected, axis reductions, means, registry-gated static-axis stack/concatenate/append, `np.hstack`/`np.vstack`/`np.column_stack`/`np.dstack` convenience assembly, nested `np.block` assembly, static `np.split`/`np.array_split`/`np.hsplit`/`np.vsplit`/`np.dsplit` gather assembly, static `np.tril`/`np.triu` triangular masking with zeroed masked-entry adjoints, static `np.diagonal` offset/axis gather assembly, registry-gated `np.append`, including `axis=None` concatenate flattening, reshape including static `np.broadcast_to`/`np.broadcast_arrays` broadcast assembly, registry-gated singleton-axis `expand_dims`/`squeeze`, static axis-permutation `swapaxes`/`moveaxis`, and static index-permutation `roll`/`flip`/`rot90`, registry-gated static `repeat` and `tile` scatter-add adjoints, registry-gated static atleast-rank promotion, and one inferred `-1` dimension/ravel composition, registry-gated clip/norm workflows including axis-aware Euclidean vector norms and static two-axis Frobenius matrix norms with non-Euclidean, spectral/nuclear/induced-matrix, dynamic-axis, repeated-axis, and zero-norm boundaries rejected, dot/vdot/matmul products, static-axis `np.tensordot` tensor contractions, explicit static `np.einsum` tensor contractions, registry-gated `np.convolve` and `np.correlate` signal kernels with compact `signal:` IR nodes and exact reverse replay, determinant with compact `linalg:det:{n}x{n}` IR nodes and exact reverse cofactor replay, inverse with compact `linalg:inv:{n}x{n}:{row}:{col}` IR nodes and exact inverse-output reverse replay, solve with compact `linalg:solve:{n}x{n}:rhs:{shape}` IR nodes and exact implicit-system reverse replay, trace with compact `linalg:trace:{rows}x{cols}:offset:{k}` IR nodes, diagonal extraction/construction with compact `linalg:diag:{shape}:offset:{k}` gather/scatter nodes, flattened diagonal construction with compact `linalg:diagflat:{shape}:offset:{k}` scatter nodes, matrix powers with compact `linalg:matrix_power:{n}x{n}:power:{p}` IR nodes and exact static-power reverse replay, and static `multi_dot` rank-1/rank-2 matrix-chain composition with compact operand-shape IR nodes and exact chain-rule reverse replay, real-simple `np.linalg.eig` eigenvalue/eigenvector outputs, distinct-spectrum symmetric `np.linalg.eigh` eigenvalue/eigenvector outputs, real-simple `np.linalg.eigvals` eigenvalue spectra with reverse adjoint replay, distinct-spectrum symmetric `np.linalg.eigvalsh` eigenvalue spectra with reverse adjoint replay, distinct-positive `np.linalg.svd(..., compute_uv=False)` singular-value spectra with reverse adjoint replay, constant-full-rank `np.linalg.pinv` pseudoinverse matrices with reverse adjoint replay, transpose, registry-gated static integer/boolean getitem gather semantics, registry-gated `np.take` raise/wrap/clip gather semantics, registry-gated `take_along_axis` semantics, registry-gated static `np.delete` gather semantics, registry-gated static constant `np.pad` scatter semantics, registry-gated static constant `np.insert` scatter semantics, strict-order `np.sort`/`np.median`/`np.quantile`/`np.percentile` order-statistic selection semantics, registry-gated piecewise `where`/`minimum`/`maximum` semantics, static-condition `np.select` folds, callable `np.piecewise` folds, and executed-branch control flow with derivative-carrying values, and rejects derivative-losing operations such as dynamic indices, `float()` conversion, raw ndarray coercion, materialized comprehensions, captured object/dataclass attributes, recursion, async functions, await expressions, async iteration, generator functions, context managers, exception control flow, decorators, source-unavailable objectives, and unsupported spectral options (`svd` with `compute_uv=True`, `pinv` outside constant-full-rank static-cutoff semantics) without explicit degeneracy/multiplicity/nondifferentiability primitive policies instead of falling back to finite differences. `compile_whole_program_frontend()` returns a `WholeProgramCompilerFrontendReport` with static bytecode instructions, bytecode basic blocks, source AST features, source regions, source-bytecode line maps with source-relative and absolute CPython line coordinates, symbol-scope entries, unsupported-semantics diagnostics with source-relative lines, optional absolute file lines, source-region IDs, and bytecode offsets, source start/end line bounds, deterministic source/bytecode/frontend digests, semantics diagnostics, hard gaps, and a no-execution claim boundary for dashboard/frontend preflight. `whole_program_value_and_grad()` requires that report to be `frontend_ready` before objective execution, rejects hard gaps with the function name, frontend digest, and source/region/bytecode diagnostics, and attaches the accepted report as `WholeProgramADResult.frontend_report`. `WholeProgramSemanticsReport` exposes `accepted_python_semantics` and `unsupported_python_semantics` tuples so source/bytecode audits can distinguish supported calling semantics from fail-closed interpreter constructs. The differentiable-programming benchmark suite includes static concatenate/stack assembly, stack convenience assembly, nested block assembly, static split-family assembly, static triangular-mask assembly, static diagonal gather assembly, static broadcast-arrays assembly, static repeat scatter-add, static tile scatter-add, static atleast-rank promotion, static advanced-indexing, strict-order sort/order-statistic reductions, take raise/wrap/clip, take-along-axis, static delete, and static constant-pad, static constant-insert, and append conformance paths, an elementwise boundary conformance row for builtin `abs`, NumPy absolute value, positive-domain, nonzero-denominator, and inverse-trig contracts, a selection conformance row for `where`, `clip`, `np.select`, and callable `np.piecewise`, plus matrix-heavy static-axis `np.tensordot` and explicit `np.einsum` tensor-contraction coverage and a linalg primitive conformance row for `det`, `inv`, `solve`, `trace`, `diag`, `diagflat`, axis-aware Euclidean/Frobenius `norm`, `matrix_power`, `multi_dot`, `eig`, `eigh`, `eigvals`, `eigvalsh`, `svd`, and `pinv` against closed-form analytic derivatives plus optional JAX external-reference rows for loop-heavy, linalg, and transform-nesting cases when that backend is installed. Broad Rust registry promotion and LLVM/JIT executable whole-program AD lowerings remain blocked until broader polyglot interpreter or compiler backends exist.
+
+
+The public frontend binds unsupported synchronous objective effects to caller locations and the numerical API refuses them before execution. See [objective effect admission](differentiable_programming.md#objective-effects-before-execution) for the diagnostic categories and accepted helper boundary.
+
+Malformed calls on native list or dictionary storage also receive a located
+`external_callback` refusal before objective execution. Known operands after
+an unresolved positional expansion count toward the method's limit; keyword
+and receiver-family checks remain active. See [native container call signatures](differentiable_programming.md#native-container-call-signatures)
+for admission, native read-method and deletion boundaries.
+
+Adjoint access revalidates the result's captured callable and numeric state
+without rerunning the objective. Copying and replay apply their resource
+controls before this inspection; the metadata getter inherits an active
+parent's controls. See [captured-state resource limits](differentiable_programming.md#captured-state-and-adjoint-resource-limits)
+for the declared snapshot charges and accounting scope.
+The result and attached adjoint share the same live capture binding, retained
+by ordinary copies and checked by every adjoint accessor. Imported effects with
+unsupported kinds refuse numerical admission; see [imported effect admission](differentiable_programming.md#imported-effect-admission).
+Runtime results also bind the primal, numeric buffers, typed and serialised IR,
+and attached adjoint to the captured computation. Mismatched content refuses
+construction or derivative access; ordinary copies preserve it and restoration
+recovers access. Numerical Rust inputs require typed/wire correspondence; see
+[runtime IR and derivative correspondence](differentiable_programming.md#runtime-ir-and-derivative-correspondence).
+
 `TraceADScalar` and `TraceADArray` are the public derivative-carrying value
 types behind this path. They preserve one trace context, reject cross-context
 construction and mutation, and expose fail-closed Python/NumPy operator
@@ -1897,6 +1921,24 @@ Claim boundary: this is a native differentiable-programming foundation for
 scalar SCPN quantum objectives and QSNN training. It is not yet a full
 PyTorch/JAX-style parameter-container system, hardware-shot gradient estimator,
 or optimiser suite.
+
+Frontend reports retain nested code provenance without process memory addresses.
+Loaded objective filenames must be native strings. Filename subclasses raise
+`ValueError` before source caches or path handling can invoke their protocols.
+
+`compile_whole_program_frontend()` retains nested functions' multiline string
+contents and absolute source lines. See [objective source extraction](differentiable_programming.md#objective-effects-before-execution)
+for the lexical indentation and loaded-function identity contract.
+An unreadable or unterminated current definition reports `source_frontend_missing`
+and is refused before numerical execution.
+
+Disassembly admits native code names and immutable constants within the existing
+4096-node and depth-64 limits. Foreign names, container subclasses and graphs
+beyond those limits retain a located source-mismatch diagnostic and are refused
+before objective execution, without invoking their formatting, comparison or
+container protocols.
+See [Frontend report reproducibility](differentiable_programming.md#frontend-report-reproducibility)
+for how nested code constants contribute to reproducible reports.
 
 ## phase
 
@@ -3126,3 +3168,16 @@ disp.last_tier                      # which tier served the call
 See `docs/pipeline_performance.md` §"Multi-language accel chain" for
 wall-time measurements and `docs/language_policy.md` for the
 ordering rules.
+
+Captured snapshot byte copies use actual UTF-8 payload size and remaining-budget
+admission before allocation. Unsupported captured class attributes are refused
+by actual receiver identity, including conventional-name aliases; genuine
+supported NumPy immutable metadata remains available. See
+[captured storage and class identity admission](differentiable_programming.md#captured-storage-and-class-identity-admission)
+for reservation recovery and the remaining workspace and concurrency limits.
+
+Whole-program AD accessors prospectively admit declared captured-state
+traversal tables and references under the enclosing memory reservation.
+Cancellation and insufficient allowance release child charges before later
+valid access recovers. The [workspace admission contract](differentiable_programming.md#captured-traversal-workspace-admission)
+states the supported scope and its remaining allocation and concurrency limits.

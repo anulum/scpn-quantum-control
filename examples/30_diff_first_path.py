@@ -9,15 +9,51 @@
 
 from __future__ import annotations
 
+from typing import cast
+
 import numpy as np
 from numpy.typing import NDArray
 
-from scpn_quantum_control import diff
+from scpn_quantum_control import TraceADArray, diff, whole_program_value_and_grad
+from scpn_quantum_control.differentiable import program_adjoint_replay_gradient
 
 
 def phase_cost(params: NDArray[np.float64]) -> float:
     """Return a scalar local phase-control objective."""
     return float(np.sin(params[0]) + params[1] ** 2)
+
+
+def effectful_program_demo() -> None:
+    """Demonstrate repeated-index mutation and captured-coefficient replay."""
+    coefficient = np.array([1.0], dtype=np.float64)
+
+    def objective(values: TraceADArray) -> object:
+        working = values.copy()
+        np.add.at(working, [0, 0, 2], values)
+        return cast(TraceADArray, working**2).sum() * coefficient[0]
+
+    inputs = np.array([1.0, 2.0, 3.0], dtype=np.float64)
+    result = whole_program_value_and_grad(objective, inputs, trace=False)
+    # working=(2*x+y,y,2*z), so its squared norm has gradient (16,12,24).
+    np.testing.assert_allclose(result.gradient, [16.0, 12.0, 24.0], rtol=0.0, atol=1.0e-12)
+    np.testing.assert_array_equal(inputs, [1.0, 2.0, 3.0])
+    print("\nwhole-program effects")
+    print(f"  value: {result.value:.8f}")
+    print(f"  replay gradient: {program_adjoint_replay_gradient(result).tolist()}")
+
+    coefficient[0] = 2.0
+    try:
+        program_adjoint_replay_gradient(result)
+    except ValueError:
+        print("  changed coefficient: replay refused")
+    else:
+        raise RuntimeError("replay accepted a changed captured coefficient")
+    finally:
+        coefficient[0] = 1.0
+    np.testing.assert_allclose(
+        program_adjoint_replay_gradient(result), [16.0, 12.0, 24.0], rtol=0.0, atol=1.0e-12
+    )
+    print("  restored coefficient: replay available")
 
 
 def main() -> None:
@@ -40,6 +76,7 @@ def main() -> None:
     print(f"  jit fail_closed: {jit_status.fail_closed}")
     print(f"  contract audit passed: {contract.passed}")
     print(f"  claim boundary: {circuit.claim_boundary}")
+    effectful_program_demo()
 
 
 if __name__ == "__main__":

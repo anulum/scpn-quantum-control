@@ -8,6 +8,7 @@
 """Propagate execution-memory policy through real public adjoint entry points."""
 
 import sys
+from dataclasses import replace
 from threading import Event
 from time import monotonic
 from types import FrameType
@@ -16,6 +17,7 @@ from typing import Any, cast
 import numpy as np
 import pytest
 
+from scpn_quantum_control import TraceADArray
 from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.differentiable_parameter_contracts import Parameter
 from scpn_quantum_control.execution_memory import ExecutionBuffer, ExecutionMemoryPlan
@@ -30,6 +32,7 @@ from scpn_quantum_control.program_ad_adjoint import (
     program_adjoint_replay_gradient,
     program_adjoint_value_and_grad,
 )
+from scpn_quantum_control.program_ad_captured_state import _CapturedProgramState
 from scpn_quantum_control.whole_program_ad_api import whole_program_value_and_grad
 from scpn_quantum_control.whole_program_ad_result import WholeProgramIRNode
 
@@ -348,4 +351,80 @@ def test_public_adjoint_refuses_unaddressable_shape_after_real_ir_capture() -> N
     value, gradient = program_adjoint_value_and_grad(objective, [2.0, 3.0], trace=False)
     assert value == 5.0
     np.testing.assert_array_equal(gradient, [1.0, 1.0])
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("metadata", ["missing", "unsupported"])
+def test_gradient_access_refuses_absent_or_unsupported_captured_adjoint(metadata: str) -> None:
+    """Invalid retained metadata refuses before a numerical gradient is exposed.
+
+    Parameters
+    ----------
+    metadata
+        Missing or unsupported replacement observed by the public accessor.
+
+    """
+
+    def objective(values: TraceADArray) -> object:
+        return values[0] * values[0]
+
+    result = whole_program_value_and_grad(objective, [2.0], trace=False)
+    original = result.adjoint_result
+    assert original is not None
+    candidate = (
+        None
+        if metadata == "missing"
+        else replace(original, supported=False, unsupported_ops=("unsupported_op",))
+    )
+    baseline = active_reserved_bytes()
+    object.__setattr__(result, "adjoint_result", candidate)
+    try:
+        reason = "does not contain adjoint" if metadata == "missing" else "unsupported for ops"
+        with pytest.raises(ValueError, match=reason):
+            program_adjoint_gradient(result)
+        assert active_reserved_bytes() == baseline
+    finally:
+        object.__setattr__(result, "adjoint_result", original)
+    np.testing.assert_array_equal(program_adjoint_gradient(result), [4.0])
+    np.testing.assert_array_equal(program_adjoint_replay_gradient(result), [4.0])
+
+
+def test_adjoint_construction_refuses_opaque_binding_without_protocol_dispatch() -> None:
+    """A captured-state field accepts only the actual runtime binding type."""
+    calls: list[str] = []
+
+    class OpaqueBinding:
+        def __getattribute__(self, name: str) -> object:
+            calls.append(name)
+            raise AssertionError("opaque binding attribute was read")
+
+    def objective(values: TraceADArray) -> object:
+        return values[0] * values[0]
+
+    result = whole_program_value_and_grad(objective, [2.0], trace=False)
+    assert result.adjoint_result is not None
+    baseline = active_reserved_bytes()
+    with pytest.raises(ValueError, match="captured_state must be a captured program state"):
+        replace(result.adjoint_result, captured_state=cast(_CapturedProgramState, OpaqueBinding()))
+    assert calls == []
+    assert active_reserved_bytes() == baseline
+    np.testing.assert_array_equal(program_adjoint_gradient(result), [4.0])
+    np.testing.assert_array_equal(program_adjoint_replay_gradient(result), [4.0])
+
+
+def test_gradient_access_requires_whole_program_result_and_preserves_capture() -> None:
+    """Passing adjoint metadata instead of its whole result refuses without losing replay."""
+
+    def objective(values: TraceADArray) -> object:
+        return values[0] * values[0]
+
+    result = whole_program_value_and_grad(objective, [2.0], trace=False)
+    assert result.adjoint_result is not None
+    baseline = active_reserved_bytes()
+    with pytest.raises(ValueError, match="^program adjoint input must be a WholeProgramADResult$"):
+        program_adjoint_gradient(result.adjoint_result)
+    assert active_reserved_bytes() == baseline
+    assert result.value == 4.0
+    np.testing.assert_array_equal(program_adjoint_gradient(result), [4.0])
+    np.testing.assert_array_equal(program_adjoint_replay_gradient(result), [4.0])
     assert active_reserved_bytes() == baseline

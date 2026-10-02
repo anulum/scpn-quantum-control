@@ -13,7 +13,7 @@ bytecode rows, source regions, symbol scopes, semantic diagnostics, and determin
 report digests. Immutable public records live in "whole_program_frontend_contracts"
 and are re-exported here for compatibility.
 
-The residual private metadata record and 45 functions form one connected introspection
+The residual private metadata record and 48 functions form one connected introspection
 and report-assembly pipeline. Runtime operator interception remains in
 "scpn_quantum_control.differentiable".
 """
@@ -24,13 +24,15 @@ import ast
 import dis
 import hashlib
 import inspect
+import io
 import json
 import stat
 import sys
-import textwrap
+import tokenize
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from types import CodeType as _CodeType
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -38,6 +40,7 @@ import numpy as np
 from .dense_budget import DenseAllocationError
 from .execution_memory import ExecutionBuffer, ExecutionMemoryPlan, json_encoded_bytes
 from .execution_reservations import reserve_execution_memory
+from .program_ad_effect_admission import find_objective_effects
 from .source_admission import objective_source_block, read_source_lines
 from .whole_program_frontend_contracts import (
     WholeProgramBytecodeBasicBlock,
@@ -77,9 +80,15 @@ def _objective_source_metadata(
     *,
     context: _WholeProgramTraceContext | None = None,
 ) -> _ObjectiveSourceMetadata | None:
-    """Return dedented source and file-line bounds when introspection permits."""
+    """Read source after admitting the loaded filename before inspect cache lookup."""
     try:
         objective = inspect.unwrap(objective)
+        source_object = objective.__func__ if inspect.ismethod(objective) else objective
+        if (
+            inspect.isfunction(source_object)
+            and type(source_object.__code__.co_filename) is not str
+        ):
+            raise ValueError("objective source filename must be a plain string")
         filename = inspect.getsourcefile(objective)
         if filename is None:
             return None
@@ -102,7 +111,7 @@ def _objective_source_metadata(
         file_lines, plan = read_source_lines(filename, observation, reservation)
         try:
             source_lines, start_line = objective_source_block(objective, file_lines)
-        except (OSError, TypeError):
+        except (OSError, TypeError, SyntaxError, tokenize.TokenError):
             return None
         reservation.checkpoint()
         try:
@@ -150,7 +159,7 @@ def _objective_source_metadata(
             )
         )
         reservation.resize(source_plan)
-        source = textwrap.dedent("".join(source_lines)).strip()
+        source = _source_without_outer_indent(source_lines).strip()
         if not source:
             return None
         source_line_count = max(1, len(source.splitlines()))
@@ -165,6 +174,61 @@ def _objective_source_metadata(
         return metadata
 
 
+def _source_without_outer_indent(source_lines: Sequence[str]) -> str:
+    """Remove lexical outer indentation while retaining every string token byte.
+
+    Parameters
+    ----------
+    source_lines
+        Nonempty, tokenised universal-newline block returned by source admission.
+
+    Returns
+    -------
+    str
+        The same source with only outside-string outer indentation removed.
+
+    """
+    source = "".join(source_lines)
+    protected = bytearray(len(source_lines))
+    string_depth = 0
+    string_start = 0
+    for token in tokenize.generate_tokens(io.StringIO(source).readline):
+        if token.type == tokenize.STRING:
+            for protected_line in range(token.start[0], token.end[0]):
+                protected[protected_line] = 1
+        elif token.type == getattr(tokenize, "FSTRING_START", -1):
+            if string_depth == 0:
+                string_start = token.start[0]
+            string_depth += 1
+        elif token.type == getattr(tokenize, "FSTRING_END", -1):
+            string_depth -= 1
+            if string_depth == 0:
+                for protected_line in range(string_start, token.end[0]):
+                    protected[protected_line] = 1
+    first = source_lines[0]
+    margin = len(first[: len(first) - len(first.lstrip(" \t"))].expandtabs(8))
+    result: list[str] = []
+    for line_number, line in enumerate(source_lines):
+        if protected[line_number]:
+            result.append(line)
+            continue
+        if not line.strip():
+            result.append("\n" if line.endswith("\n") else "")
+            continue
+        prefix = line[: len(line) - len(line.lstrip(" \t"))]
+        cut = width = 0
+        while cut < len(prefix) and width < margin:
+            width = width + 1 if prefix[cut] == " " else (width // 8 + 1) * 8
+            cut += 1
+        if width < margin:
+            result.append(line)
+        elif width > margin or (margin % 8 and "\t" in prefix[cut:]):
+            result.append(" " * (len(prefix.expandtabs(8)) - margin) + line[len(prefix) :])
+        else:
+            result.append(line[cut:])
+    return "".join(result)
+
+
 def _objective_source(
     objective: Callable[..., object], *, context: _WholeProgramTraceContext | None = None
 ) -> str | None:
@@ -173,10 +237,63 @@ def _objective_source(
     return None if metadata is None else metadata.source
 
 
+def _bytecode_constants_are_native(code: _CodeType) -> bool:
+    """Admit bounded native constant graphs before disassembly formats values.
+
+    Parameters
+    ----------
+    code
+        Loaded Python code inspected without calling constant protocols.
+
+    Returns
+    -------
+    bool
+        Whether the graph contains only native code metadata and immutable
+        compiler constants, within the existing 4096-node and 64-depth bounds
+        used by source-effect admission.
+
+    """
+    pending: list[tuple[object, int]] = [(code, 0)]
+    remaining = 4096
+    while pending:
+        value, depth = pending.pop()
+        remaining -= 1
+        if remaining < 0 or depth > 64:
+            return False
+        if isinstance(value, _CodeType):
+            names = (value.co_name, value.co_qualname, value.co_filename)
+            groups = (value.co_names, value.co_varnames, value.co_freevars, value.co_cellvars)
+            if any(type(name) is not str for name in names) or any(
+                type(group) is not tuple or any(type(name) is not str for name in group)
+                for group in groups
+            ):
+                return False
+            pending.append((value.co_consts, depth + 1))
+        elif isinstance(value, tuple | frozenset):
+            if type(value) not in (tuple, frozenset) or len(value) > remaining:
+                return False
+            pending.extend((item, depth + 1) for item in value)
+        elif type(value) not in (
+            type(None),
+            type(Ellipsis),
+            bool,
+            int,
+            float,
+            complex,
+            str,
+            bytes,
+        ):
+            return False
+    return True
+
+
 def _objective_bytecode(
     objective: Callable[..., object],
 ) -> tuple[WholeProgramBytecodeInstruction, ...]:
-    """Return bytecode frontend IR for a Python objective when available."""
+    """Return bytecode IR with source-based representations of nested code."""
+    function = objective.__func__ if inspect.ismethod(objective) else objective
+    if inspect.isfunction(function) and not _bytecode_constants_are_native(function.__code__):
+        return ()
     try:
         instructions = dis.get_instructions(objective)
     except TypeError:
@@ -186,7 +303,13 @@ def _objective_bytecode(
         WholeProgramBytecodeInstruction(
             offset=int(instruction.offset),
             opname=instruction.opname,
-            argrepr=instruction.argrepr,
+            argrepr=(
+                f"<code object {instruction.argval.co_name}, "
+                f"file {instruction.argval.co_filename!r}, "
+                f"line {instruction.argval.co_firstlineno}>"
+                if isinstance(instruction.argval, _CodeType)
+                else instruction.argrepr
+            ),
             line_number=_instruction_line_number(instruction),
             jump_target_offset=(
                 int(instruction.argval)
@@ -718,6 +841,8 @@ def _unsupported_python_semantic_diagnostics(
             root_name = _ast_attribute_root(node)
             if root_name in captured_attribute_roots and root_name not in allowed_attribute_roots:
                 add(node, "object_attribute", detail=f"object_attribute:{root_name}")
+    for finding in find_objective_effects(objective, tree):
+        add(finding.node, finding.semantic, finding.detail)
     return tuple(
         diagnostics[key]
         for key in sorted(diagnostics, key=lambda item: (item[1], item[0], item[2]))
@@ -824,7 +949,9 @@ def compile_whole_program_frontend(
     Raises
     ------
     ValueError
-        If ``objective`` is not callable.
+        If ``objective`` is not callable or its loaded source filename is not
+        a native string. Filename subclasses are refused before source caches
+        or path handling can invoke their protocols.
 
     """
     if not callable(objective):

@@ -766,6 +766,10 @@ def materialise_demo_adjoint_replay_probe(
         program_adjoint_gradient,
         program_adjoint_replay_gradient,
     )
+    from .program_ad_tape_binding import (
+        _MissingCapturedAdjoint,
+        _UnsupportedCapturedAdjoint,
+    )
 
     decision = decide_adjoint_replay_path(has_supported_unitary_ir=True)
     if not decision.allowed:
@@ -777,11 +781,16 @@ def materialise_demo_adjoint_replay_probe(
     if not np.all(np.isfinite(x)):
         raise ValueError("values must be finite")
 
-    result = whole_program_value_and_grad(
-        _demo_quadratic_objective,
-        x,
-        trace=False,
-    )
+    try:
+        result = whole_program_value_and_grad(
+            _demo_quadratic_objective,
+            x,
+            trace=False,
+        )
+    except _MissingCapturedAdjoint:
+        raise ValueError("whole-program result missing adjoint metadata") from None
+    except _UnsupportedCapturedAdjoint:
+        raise ValueError("ambient adjoint generation unsupported for demo objective") from None
     if result.adjoint_result is None:
         raise ValueError("whole-program result missing adjoint metadata")
     if not result.adjoint_result.supported:

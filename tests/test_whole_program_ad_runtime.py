@@ -21,7 +21,7 @@ from pathlib import Path
 from threading import Event
 from time import monotonic
 from types import FrameType
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import numpy as np
 import pytest
@@ -39,6 +39,9 @@ from scpn_quantum_control.execution_reservations import (
 )
 
 FloatArray = NDArray[np.float64]
+
+if TYPE_CHECKING:
+    from _typeshed import TraceFunction
 
 
 @pytest.fixture
@@ -645,21 +648,32 @@ def test_public_ad_retains_source_charge_during_objective_execution(tmp_path: Pa
     """Real AD keeps source data charged throughout its objective and disposes on return."""
     path = tmp_path / "retained_objective_source.py"
     path.write_text(
-        "#" + "x" * (2 * 1024**2) + "\n"
-        "from scpn_quantum_control.execution_reservations import active_reserved_bytes\n"
-        "def objective(values):\n"
-        "    return values[0] * 0.0 + active_reserved_bytes()\n"
+        "#" + "x" * (2 * 1024**2) + "\ndef objective(values):\n    return values[0] * values[0]\n"
     )
     spec = importlib.util.spec_from_file_location("retained_objective_source", path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     baseline = active_reserved_bytes()
-    result = whole_program_value_and_grad(
-        module.objective, [2.0], trace=False, max_execution_gib=0.1
-    )
-    assert result.value >= path.stat().st_size
-    np.testing.assert_array_equal(result.gradient, [0.0])
+    observed: list[int] = []
+
+    def observe(frame: FrameType, event: str, _argument: object) -> TraceFunction:
+        """Measure the real objective frame without adding an objective effect."""
+        if frame.f_code is module.objective.__code__ and event == "line":
+            observed.append(active_reserved_bytes())
+        return observe
+
+    previous = sys.gettrace()
+    sys.settrace(observe)
+    try:
+        result = whole_program_value_and_grad(
+            module.objective, [2.0], trace=False, max_execution_gib=0.1
+        )
+    finally:
+        sys.settrace(previous)
+    assert observed and min(observed) >= path.stat().st_size
+    assert result.value == 4.0
+    np.testing.assert_array_equal(result.gradient, [4.0])
     assert active_reserved_bytes() == baseline
 
 

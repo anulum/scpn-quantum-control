@@ -239,6 +239,29 @@ class TraceADScalar:
             "whole-program AD scalar cannot be converted to float without losing derivatives"
         )
 
+    def __int__(self) -> NoReturn:
+        """Reject parameter-dependent integer conversion.
+
+        Raises
+        ------
+        ValueError
+            Integer conversion would discard the active derivative and could
+            turn a traced parameter into an unqualified dynamic shape or index.
+
+        """
+        raise ValueError("whole-program AD parameter-dependent integer conversion is unsupported")
+
+    def __index__(self) -> NoReturn:
+        """Reject using a traced parameter as an integer shape or index.
+
+        Raises
+        ------
+        ValueError
+            A derivative-carrying scalar has no static integer indexing contract.
+
+        """
+        raise ValueError("whole-program AD parameter-dependent integer index is unsupported")
+
     def _coerce(self, other: object) -> TraceADScalar:
         if isinstance(other, TraceADScalar):
             if other.context is not self.context:
@@ -483,9 +506,23 @@ class TraceADArray:
             )
         raise ValueError("whole-program AD array iteration supports arrays with rank <= 2")
 
-    def __array__(self, dtype: object = None) -> object:
-        """Reject ndarray coercion that would discard trace metadata."""
-        del dtype
+    def __array__(self, dtype: object = None, *, copy: bool | None = None) -> NoReturn:
+        """Reject ndarray coercion that would discard trace metadata.
+
+        Parameters
+        ----------
+        dtype
+            Requested native dtype; conversion is refused for every dtype.
+        copy
+            Native NumPy copy request; no value authorizes derivative loss.
+
+        Raises
+        ------
+        ValueError
+            Trace values cannot become plain arrays without dropping derivatives.
+
+        """
+        del dtype, copy
         raise ValueError(
             "whole-program AD array cannot be converted to a NumPy ndarray without losing derivatives"
         )
@@ -706,8 +743,13 @@ class TraceADArray:
 
     def __array_ufunc__(
         self, ufunc: np.ufunc, method: str, *inputs: object, **kwargs: object
-    ) -> TraceADScalar | TraceADArray:
-        """Dispatch a supported NumPy ufunc through array trace semantics."""
+    ) -> TraceADScalar | TraceADArray | None:
+        """Dispatch direct ufuncs or bounded unbuffered ``np.add.at`` mutations."""
+        if method == "at":
+            from .whole_program_trace_scatter import _trace_add_at
+
+            _trace_add_at(ufunc, tuple(inputs), kwargs)
+            return None
         if method != "__call__" or kwargs:
             raise ValueError("whole-program AD supports only direct NumPy array ufunc calls")
         return _apply_trace_ufunc(ufunc, tuple(inputs), self.context)

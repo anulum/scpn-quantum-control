@@ -109,8 +109,7 @@
         "varqite-quality",
         "xy-compiler-quality",
         "psi-lattice-quality",
-        "differentiable-sparse-derivatives-quality",
-        "program-ad-adjoint-quality"
+        "differentiable-sparse-derivatives-quality"
       ]
     },
     {
@@ -121,6 +120,7 @@
       ],
       "jobs": [
         "circuit-preservation-quality",
+        "program-ad-adjoint-quality",
         "scientific-problem-quality",
         "qpu-compute-types-quality",
         "cosimulation-quality",

@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **756 modules** across **41 package families**
-- **4172 documented public module-level symbols**
+- **766 modules** across **41 package families**
+- **4174 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -6507,6 +6507,22 @@ Static broadcast assembly derivative rules for Program AD.
 
 **Functions:** `program_ad_assembly_broadcast_to_derivative_rule()`, `program_ad_assembly_broadcast_arrays_derivative_rule()`
 
+### `scpn_quantum_control.program_ad_captured_memory`
+
+Declare traversal storage before identity tables and reference lists grow.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/program_ad_captured_memory.py) · Public symbols: **0**
+
+No public module-level class or function is declared.
+
+### `scpn_quantum_control.program_ad_captured_state`
+
+Bind an in-memory derivative tape to its callable and captured numeric state.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/program_ad_captured_state.py) · Public symbols: **0**
+
+No public module-level class or function is declared.
+
 ### `scpn_quantum_control.program_ad_cumulative_primitives`
 
 Static cumulative derivative rules for Program AD registry dispatch.
@@ -6514,6 +6530,38 @@ Static cumulative derivative rules for Program AD registry dispatch.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/program_ad_cumulative_primitives.py) · Public symbols: **3**
 
 **Functions:** `program_ad_cumulative_cumsum_derivative_rule()`, `program_ad_cumulative_cumprod_derivative_rule()`, `program_ad_cumulative_diff_derivative_rule()`
+
+### `scpn_quantum_control.program_ad_effect_admission`
+
+Inspect source-visible calls and external writes without executing objectives.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/program_ad_effect_admission.py) · Public symbols: **1**
+
+**Functions:** `find_objective_effects()`
+
+### `scpn_quantum_control.program_ad_effect_analysis`
+
+Bind helper source, captured namespaces and argument origins for effect admission.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/program_ad_effect_analysis.py) · Public symbols: **1**
+
+**Classes:** `ProgramADEffectFinding`
+
+### `scpn_quantum_control.program_ad_effect_call_binding`
+
+Admit ordinary list and dictionary signatures before local method execution.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/program_ad_effect_call_binding.py) · Public symbols: **0**
+
+No public module-level class or function is declared.
+
+### `scpn_quantum_control.program_ad_effect_dispatch`
+
+Freeze admitted NumPy identities, output positions and storage classifications.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/program_ad_effect_dispatch.py) · Public symbols: **0**
+
+No public module-level class or function is declared.
 
 ### `scpn_quantum_control.program_ad_effect_ir`
 
@@ -6524,6 +6572,22 @@ Validated Program AD effect-IR records and metadata parser.
 **Classes:** `ProgramADSSAValue`, `ProgramADEffect`, `ProgramADAliasEdge`, `ProgramADPhiNode`, `ProgramADControlRegion`, `ProgramADEffectIR`
 
 **Functions:** `parse_program_ad_effect_ir()`
+
+### `scpn_quantum_control.program_ad_effect_source_binding`
+
+Compare parsed effect metadata with the actual lexical source definition.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/program_ad_effect_source_binding.py) · Public symbols: **0**
+
+No public module-level class or function is declared.
+
+### `scpn_quantum_control.program_ad_effect_values`
+
+Carry storage provenance through abstract values and shared container state.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/program_ad_effect_values.py) · Public symbols: **0**
+
+No public module-level class or function is declared.
 
 ### `scpn_quantum_control.program_ad_elementwise_primitives`
 
@@ -6644,6 +6708,14 @@ Static finite-difference stencil derivative rules for Program AD.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/program_ad_stencil_primitives.py) · Public symbols: **1**
 
 **Functions:** `program_ad_stencil_gradient_derivative_rule()`
+
+### `scpn_quantum_control.program_ad_tape_binding`
+
+Check the content of a runtime tape without changing its historical codec.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/program_ad_tape_binding.py) · Public symbols: **0**
+
+No public module-level class or function is declared.
 
 ### `scpn_quantum_control.program_ad_trapezoid_primitives`
 
@@ -6946,6 +7018,14 @@ Derivative-safe primal control-flow predicates for whole-program AD.
 Runtime trace-context builders for whole-program automatic differentiation.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/whole_program_trace_runtime.py) · Public symbols: **0**
+
+No public module-level class or function is declared.
+
+### `scpn_quantum_control.whole_program_trace_scatter`
+
+Validate and execute bounded NumPy scatter through existing trace primitives.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/whole_program_trace_scatter.py) · Public symbols: **0**
 
 No public module-level class or function is declared.
 

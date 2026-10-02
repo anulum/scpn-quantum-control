@@ -55,6 +55,8 @@ from .program_ad_adjoint import (
     _program_adjoint_input_value,
     _program_adjoint_is_ir_value,
 )
+from .program_ad_alias_analysis import _require_supported_program_ad_effects
+from .program_ad_captured_state import _CapturedProgramState
 from .program_ad_cumulative_primitives import (
     program_ad_cumulative_cumprod_derivative_rule,
     program_ad_cumulative_cumsum_derivative_rule,
@@ -1341,8 +1343,11 @@ def _program_adjoint_result_from_nodes(
     deadline_monotonic: float | None = None,
     cancelled: Event | None = None,
     context: _WholeProgramTraceContext | None = None,
+    captured_state: _CapturedProgramState | None = None,
 ) -> ProgramADAdjointResult:
     """Generate reverse-mode adjoints over supported scalar Program AD IR nodes."""
+    if program_ir is not None:
+        _require_supported_program_ad_effects(program_ir)
     node_count = len(nodes)
     input_count = max((len(node.inputs) for node in nodes), default=1)
     record_bytes = dataclass_storage_bytes(ProgramADAdjointResult) + sum(
@@ -1486,6 +1491,7 @@ def _program_adjoint_result_from_nodes(
             ),
             replay_ir_format="program_ad_effect_ir.v1",
             adjoint_steps=adjoint_steps,
+            captured_state=captured_state,
         )
         reservation.checkpoint()
         if context is not None:

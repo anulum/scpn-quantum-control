@@ -17,6 +17,8 @@ import numpy as np
 from numpy.typing import NDArray
 
 from .program_ad_adjoint import ProgramADAdjointResult
+from .program_ad_alias_analysis import _require_supported_program_ad_effects
+from .program_ad_captured_state import _CapturedProgramState
 from .program_ad_effect_ir import ProgramADEffectIR
 from .whole_program_frontend import (
     WholeProgramBytecodeInstruction,
@@ -74,7 +76,21 @@ class WholeProgramIRNode:
 
 @dataclass(frozen=True)
 class WholeProgramADResult:
-    """Value, gradient, frontend gate, adjoint replay contract, and AD status."""
+    """Value, gradient, frontend gate, adjoint replay contract, and AD status.
+
+    Notes
+    -----
+    Results produced by the whole-program runtime retain ``captured_state``,
+    an in-memory callable and numeric-state binding checked by adjoint access.
+    The attached adjoint shares the same binding, so result replacement cannot
+    remove it or substitute another objective's state. It keeps the callable
+    alive for the result's lifetime and never changes the historical effect IR
+    serialization. ``None`` preserves construction of standalone historical
+    tape records whose adjoint also has no live callable binding.
+    Runtime capture also binds primal, buffers, typed/raw IR and adjoint content;
+    replacement or later mutation of these artifacts refuses derivative access.
+
+    """
 
     value: float
     gradient: NDArray[np.float64]
@@ -96,6 +112,7 @@ class WholeProgramADResult:
     program_ir: ProgramADEffectIR | None = None
     adjoint_result: ProgramADAdjointResult | None = None
     frontend_report: WholeProgramCompilerFrontendReport | None = None
+    captured_state: _CapturedProgramState | None = None
 
     def __post_init__(self) -> None:
         """Validate whole-program AD result metadata at construction time."""
@@ -137,6 +154,8 @@ class WholeProgramADResult:
             raise ValueError("semantics_report must be a WholeProgramSemanticsReport or None")
         if self.program_ir is not None and not isinstance(self.program_ir, ProgramADEffectIR):
             raise ValueError("program_ir must be a ProgramADEffectIR or None")
+        if self.program_ir is not None:
+            _require_supported_program_ad_effects(self.program_ir)
         if self.adjoint_result is not None and not isinstance(
             self.adjoint_result, ProgramADAdjointResult
         ):
@@ -147,6 +166,18 @@ class WholeProgramADResult:
             raise ValueError(
                 "frontend_report must be a WholeProgramCompilerFrontendReport or None"
             )
+        if (
+            self.captured_state is not None
+            and type(self.captured_state) is not _CapturedProgramState
+        ):
+            raise ValueError("captured_state must be a captured program state binding or None")
+        if (
+            self.adjoint_result is not None
+            and self.adjoint_result.captured_state is not self.captured_state
+        ):
+            raise ValueError("captured state binding does not match attached adjoint metadata")
+        if self.captured_state is not None:
+            self.captured_state.require_current()
         if (
             self.adjoint_result is not None
             and self.adjoint_result.gradient.shape != gradient.shape
@@ -178,6 +209,10 @@ class WholeProgramADResult:
         object.__setattr__(self, "value", value)
         object.__setattr__(self, "gradient", gradient)
         object.__setattr__(self, "step", step)
+        if self.captured_state is not None and self.captured_state.tape_digest is not None:
+            from .program_ad_tape_binding import _require_bound_program_tape
+
+            _require_bound_program_tape(self)
 
 
 def _require_zero_frozen_entries(

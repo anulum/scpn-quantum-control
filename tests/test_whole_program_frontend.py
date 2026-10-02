@@ -20,9 +20,10 @@ import os
 import subprocess
 import sys
 from collections.abc import AsyncIterator, Callable
+from functools import wraps
 from pathlib import Path
 from threading import Event
-from types import FrameType, FunctionType, SimpleNamespace
+from types import CodeType, FrameType, FunctionType, SimpleNamespace
 from typing import cast
 
 import numpy as np
@@ -35,6 +36,7 @@ from scpn_quantum_control.differentiable import (
     compile_whole_program_frontend as facade_compile_whole_program_frontend,
 )
 from scpn_quantum_control.differentiable import (
+    program_adjoint_replay_gradient,
     whole_program_value_and_grad,
 )
 from scpn_quantum_control.execution_memory import ExecutionBuffer, ExecutionMemoryPlan
@@ -75,7 +77,7 @@ def test_whole_program_frontend_module_matches_facade_report() -> None:
     assert calls == {"count": 0}
     assert module_report == facade_report
     assert isinstance(module_report, WholeProgramCompilerFrontendReport)
-    assert module_report.frontend_ready is True
+    assert module_report.frontend_ready is False
     assert module_report.source_available is True
     assert module_report.source_sha256 is not None
     assert len(module_report.source_sha256) == 64
@@ -92,7 +94,7 @@ def test_whole_program_frontend_module_matches_facade_report() -> None:
     assert module_report.source_bytecode_line_map_count > 0
     assert module_report.symbol_scope_entry_count > 0
     assert module_report.ast_node_count > 0
-    assert module_report.hard_gaps == ()
+    assert module_report.hard_gaps == ("unsupported_python_semantics:captured_mutation",)
     assert all(
         isinstance(block, WholeProgramBytecodeBasicBlock)
         for block in module_report.bytecode_basic_blocks
@@ -140,7 +142,7 @@ def test_whole_program_frontend_module_matches_facade_report() -> None:
     assert {"loop", "control_flow", "numpy"}.issubset(
         {feature.kind for feature in module_report.source_ir_features}
     )
-    assert payload["frontend_ready"] is True
+    assert payload["frontend_ready"] is False
     assert str(payload["function_name"]).endswith("objective")
     assert payload["source_start_line"] == module_report.source_start_line
     assert payload["source_end_line"] == module_report.source_end_line
@@ -154,7 +156,7 @@ def test_whole_program_frontend_module_matches_facade_report() -> None:
     assert (
         payload["unsupported_semantic_diagnostic_count"]
         == module_report.unsupported_semantic_diagnostic_count
-        == 0
+        == 1
     )
     assert payload["frontend_digest"] == module_report.frontend_digest
     bytecode_basic_blocks = payload["bytecode_basic_blocks"]
@@ -800,6 +802,48 @@ def test_public_frontend_digest_inherits_owner_cancellation_and_recovers() -> No
     assert active_reserved_bytes() == baseline
 
 
+def test_public_frontend_nested_code_reports_match_across_native_processes() -> None:
+    """The actual QEC method retains code provenance with stable complete reports."""
+    from scpn_quantum_control.qec.fault_tolerant import RepetitionCodeUPDE
+
+    objective = RepetitionCodeUPDE.step_with_qec
+    direct = compile_whole_program_frontend(objective)
+    facade = facade_compile_whole_program_frontend(objective)
+    assert direct == facade
+    nested_code = [value for value in objective.__code__.co_consts if isinstance(value, CodeType)]
+    assert nested_code
+    for code in nested_code:
+        assert any(
+            instruction.opname == "LOAD_CONST"
+            and code.co_name in instruction.argrepr
+            and code.co_filename in instruction.argrepr
+            and str(code.co_firstlineno) in instruction.argrepr
+            for instruction in direct.bytecode_instructions
+        )
+
+    program = """
+import json
+from scpn_quantum_control.differentiable import compile_whole_program_frontend
+from scpn_quantum_control.qec.fault_tolerant import RepetitionCodeUPDE
+
+report = compile_whole_program_frontend(RepetitionCodeUPDE.step_with_qec)
+print(json.dumps(report.to_dict(), sort_keys=True))
+"""
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = os.pathsep.join(sys.path)
+    expected = direct.to_dict()
+    for _ in range(2):
+        result = subprocess.run(
+            [sys.executable, "-c", program],
+            env=environment,
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        assert json.loads(result.stdout) == expected
+
+
 @pytest.mark.parametrize("change", ["append", "overwrite", "replace", "remove"])
 def test_public_frontend_rejects_source_change_during_read_and_recovers(
     tmp_path: Path, change: str
@@ -988,4 +1032,602 @@ def test_public_frontend_digest_refuses_actual_payload_change_and_recovers(fault
     assert active_reserved_bytes() == baseline
     report = facade_compile_whole_program_frontend(objective)
     assert report.frontend_ready
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("entry_point", ["compiler", "runtime"])
+def test_public_frontend_refuses_foreign_filename_before_protocols(entry_point: str) -> None:
+    """Refuse filename subclasses before introspection and recover the public gradient.
+
+    Parameters
+    ----------
+    entry_point
+        Public static compiler or numerical differentiation entry point.
+
+    """
+    calls: list[str] = []
+
+    class Filename(str):
+        """Observe protocols that source admission must never invoke."""
+
+        def __hash__(self) -> int:
+            """Record an unwanted source-cache hash."""
+            calls.append("hashing")
+            return super().__hash__()
+
+        def __eq__(self, other: object) -> bool:
+            """Record an unwanted source-path comparison."""
+            calls.append("equality")
+            return super().__eq__(other)
+
+    def objective(values: NDArray[np.float64]) -> object:
+        """Provide a source-visible linear objective for refusal and recovery."""
+        return values[0] * 3.0
+
+    function = cast(FunctionType, objective)
+    original_code = function.__code__
+    function.__code__ = original_code.replace(co_filename=Filename(original_code.co_filename))
+    baseline = active_reserved_bytes()
+    with pytest.raises(ValueError, match="objective source filename must be a plain string"):
+        if entry_point == "compiler":
+            facade_compile_whole_program_frontend(function)
+        else:
+            whole_program_value_and_grad(function, np.array([2.0]), trace=False)
+    assert calls == []
+    assert active_reserved_bytes() == baseline
+
+    function.__code__ = original_code
+    assert facade_compile_whole_program_frontend(function).frontend_ready
+    result = whole_program_value_and_grad(function, np.array([2.0]), trace=False)
+    assert result.value == 6.0
+    np.testing.assert_array_equal(result.gradient, [3.0])
+    assert calls == []
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("form", ["method", "wrapped", "class"])
+def test_public_frontend_filename_admission_preserves_callable_forms(form: str) -> None:
+    """Retain source lookup for bound methods, classes and unwrapped functions.
+
+    Parameters
+    ----------
+    form
+        Existing callable form accepted by the source introspection path.
+
+    """
+
+    class Objective:
+        """Expose an ordinary class and bound-method source owner."""
+
+        def __call__(self, values: NDArray[np.float64]) -> object:
+            """Return the supported scalar objective."""
+            return values[0] * 3.0
+
+    def objective(values: NDArray[np.float64]) -> object:
+        """Provide the original source owner retained by the decorated form."""
+        return values[0] * 3.0
+
+    @wraps(objective)
+    def wrapped(values: NDArray[np.float64]) -> object:
+        """Forward to the function whose source metadata unwrap inspects."""
+        return objective(values)
+
+    selected: Callable[..., object]
+    if form == "method":
+        selected = Objective().__call__
+        function = cast(FunctionType, Objective.__call__)
+    elif form == "wrapped":
+        selected = wrapped
+        function = cast(FunctionType, objective)
+    else:
+        selected = Objective
+        function = cast(FunctionType, objective)
+
+    baseline = active_reserved_bytes()
+    assert facade_compile_whole_program_frontend(selected).source_available
+    assert active_reserved_bytes() == baseline
+    if form != "class":
+        original_code = function.__code__
+
+        class Filename(str):
+            """Reject accidental lookup of the foreign source-cache key."""
+
+            def __hash__(self) -> int:
+                """Fail if introspection reaches an unadmitted source cache key."""
+                raise AssertionError("filename subclass reached source cache")
+
+        function.__code__ = original_code.replace(co_filename=Filename(original_code.co_filename))
+        with pytest.raises(ValueError, match="objective source filename must be a plain string"):
+            facade_compile_whole_program_frontend(selected)
+        assert active_reserved_bytes() == baseline
+        function.__code__ = original_code
+        assert facade_compile_whole_program_frontend(selected).source_available
+        assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("constant_kind", ["object", "tuple", "frozenset", "nested_code"])
+def test_public_frontend_refuses_foreign_constants_without_protocols(constant_kind: str) -> None:
+    """Keep a located source refusal before disassembly can represent a foreign value.
+
+    Parameters
+    ----------
+    constant_kind
+        Direct, container-nested or nested-code foreign constant.
+
+    """
+    calls: list[str] = []
+
+    class ForeignConstant:
+        """Observe protocols that refused source metadata must never execute."""
+
+        def __repr__(self) -> str:
+            """Record an unwanted disassembler representation."""
+            calls.append("representation")
+            return "foreign"
+
+        def __eq__(self, other: object) -> bool:
+            """Record an unwanted loaded/source constant comparison."""
+            calls.append("equality")
+            return False
+
+        def __hash__(self) -> int:
+            """Record hashing separately from immutable fixture construction."""
+            calls.append("hashing")
+            return 1
+
+    def objective(values: NDArray[np.float64]) -> object:
+        """Provide the real source whose changed constant must be refused."""
+        return values[0] * 3.0
+
+    function = cast(FunctionType, objective)
+    original_code = function.__code__
+    constant: object = ForeignConstant()
+    if constant_kind == "tuple":
+        constant = (constant,)
+    elif constant_kind == "frozenset":
+        constant = frozenset([constant])
+    elif constant_kind == "nested_code":
+        constant = original_code.replace(co_consts=(None, constant))
+    function.__code__ = original_code.replace(co_consts=(None, 0, constant))
+    calls.clear()
+    baseline = active_reserved_bytes()
+    report = facade_compile_whole_program_frontend(function)
+    assert not report.frontend_ready
+    diagnostic = next(
+        row
+        for row in report.unsupported_semantic_diagnostics
+        if row.semantic == "external_callback"
+    )
+    assert diagnostic.detail == "external callback source does not match captured function"
+    assert diagnostic.absolute_line_number is not None
+    assert diagnostic.region_ids
+    with pytest.raises(ValueError, match="external_callback"):
+        whole_program_value_and_grad(function, np.array([2.0]), trace=False)
+    assert calls == []
+    assert active_reserved_bytes() == baseline
+
+    function.__code__ = original_code
+    assert facade_compile_whole_program_frontend(function).frontend_ready
+    result = whole_program_value_and_grad(function, np.array([2.0]), trace=False)
+    assert result.value == 6.0
+    np.testing.assert_array_equal(result.gradient, [3.0])
+    assert calls == []
+    assert active_reserved_bytes() == baseline
+
+
+def test_public_frontend_pure_captured_helper_preserves_real_gradient() -> None:
+    """Admit a source-visible numeric helper and exercise the public AD runtime."""
+    coefficient = [2.0]
+
+    def helper(value: object) -> object:
+        return coefficient[0] * cast(float, value) ** 2
+
+    def objective(values: NDArray[np.float64]) -> object:
+        return helper(values[0]) + np.sin(values[1])
+
+    report = compile_whole_program_frontend(objective)
+    assert report.frontend_ready
+    assert report.unsupported_semantic_diagnostics == ()
+    result = whole_program_value_and_grad(objective, np.array([0.3, -0.2]))
+    assert result.value == pytest.approx(2.0 * 0.3**2 + np.sin(-0.2))
+    np.testing.assert_allclose(result.gradient, [1.2, np.cos(-0.2)], atol=1e-14)
+    assert coefficient == [2.0]
+
+
+def test_public_frontend_refuses_callback_before_runtime_execution() -> None:
+    """Bind caller locations and refuse a real external write before evaluation."""
+    ledger: list[str] = []
+
+    def callback(value: object) -> object:
+        ledger.append("executed")
+        return value
+
+    def objective(values: NDArray[np.float64]) -> object:
+        return callback(values[0])
+
+    report = compile_whole_program_frontend(objective)
+    assert not report.frontend_ready
+    assert compile_whole_program_frontend(objective) == report
+    diagnostic = next(
+        item
+        for item in report.unsupported_semantic_diagnostics
+        if item.semantic == "external_callback"
+    )
+    assert diagnostic.absolute_line_number is not None
+    assert diagnostic.region_ids and diagnostic.bytecode_offsets
+    with pytest.raises(ValueError, match="external_callback"):
+        whole_program_value_and_grad(objective, np.array([0.3]))
+    assert ledger == []
+
+
+def test_public_frontend_refuses_captured_alias_write_before_runtime() -> None:
+    """Preserve captured storage across static inspection and numerical refusal."""
+    state = [2.0]
+
+    def objective(values: NDArray[np.float64]) -> object:
+        alias = state
+        alias[0] = 5.0
+        return values[0] * state[0]
+
+    report = compile_whole_program_frontend(objective)
+    assert not report.frontend_ready
+    assert "captured_mutation" in report.semantics_report.unsupported_python_semantics
+    with pytest.raises(ValueError, match="captured_mutation"):
+        whole_program_value_and_grad(objective, np.array([0.3]))
+    assert state == [2.0]
+
+
+def test_public_frontend_refuses_ambient_rng_without_state_advance() -> None:
+    """The public frontend and runtime refuse ambient draws without performing one."""
+
+    def objective(values: NDArray[np.float64]) -> object:
+        return values[0] + np.random.random()
+
+    before = np.random.get_state(legacy=True)
+    report = compile_whole_program_frontend(objective)
+    assert not report.frontend_ready
+    assert "ambient_rng" in report.semantics_report.unsupported_python_semantics
+    with pytest.raises(ValueError, match="ambient_rng"):
+        whole_program_value_and_grad(objective, np.array([0.3]))
+    after = np.random.get_state(legacy=True)
+    assert isinstance(before, tuple) and isinstance(after, tuple)
+    np.testing.assert_array_equal(before[1], after[1])
+    assert before[2:] == after[2:]
+
+
+def test_public_frontend_refuses_active_integer_shape_conversion() -> None:
+    """Locate parameter-dependent integer metadata before entering the AD runtime."""
+
+    def objective(values: NDArray[np.float64]) -> object:
+        count = int(values[0])
+        return np.sum(np.zeros(count)) + values[0]
+
+    report = compile_whole_program_frontend(objective)
+    assert not report.frontend_ready
+    assert "dynamic_integer" in report.semantics_report.unsupported_python_semantics
+    with pytest.raises(ValueError, match="dynamic_integer"):
+        whole_program_value_and_grad(objective, np.array([2.3]))
+
+
+@pytest.mark.parametrize(
+    ("literal", "key", "outer_indent", "body_indent", "newline"),
+    [
+        (
+            '"""coefficient\n        preserved"""',
+            "coefficient\n        preserved",
+            "    ",
+            "        ",
+            "\n",
+        ),
+        ('"""coefficient\npreserved"""', "coefficient\npreserved", "    ", "        ", "\n"),
+        (
+            '"""coefficient\n        \n        preserved"""',
+            "coefficient\n        \n        preserved",
+            "    ",
+            "        ",
+            "\n",
+        ),
+        (
+            'b"""coefficient\n        preserved"""',
+            b"coefficient\n        preserved",
+            "    ",
+            "        ",
+            "\n",
+        ),
+        (
+            '"""coefficient\\\n        preserved"""',
+            "coefficient        preserved",
+            "    ",
+            "        ",
+            "\n",
+        ),
+        (
+            'r"""coefficient\\n\n        preserved"""',
+            "coefficient\\n\n        preserved",
+            "    ",
+            "        ",
+            "\n",
+        ),
+        ('f"""coefficient\n        {2}"""', "coefficient\n        2", "    ", "        ", "\n"),
+        (
+            'f"""coefficient\n        {f\'{2}\'}"""',
+            "coefficient\n        2",
+            "    ",
+            "        ",
+            "\n",
+        ),
+        ('"""coefficient\n\t\tpreserved"""', "coefficient\n\t\tpreserved", "\t", "\t\t", "\n"),
+        (
+            '"""coefficient\n        preserved"""',
+            "coefficient\n        preserved",
+            "    ",
+            "    \t",
+            "\n",
+        ),
+        (
+            '"""coefficient\n        preserved"""',
+            "coefficient\n        preserved",
+            "    ",
+            "  \t\t\t",
+            "\n",
+        ),
+        (
+            '"""coefficient\n        preserved"""',
+            "coefficient\n        preserved",
+            "    ",
+            "        ",
+            "\r\n",
+        ),
+    ],
+    ids=[
+        "margin",
+        "no-margin",
+        "blank-line",
+        "bytes",
+        "escaped-line",
+        "raw",
+        "formatted",
+        "nested-formatted",
+        "tabs",
+        "mixed-tabs",
+        "tab-crossing-margin",
+        "crlf",
+    ],
+)
+def test_public_frontend_keeps_nested_string_contents_and_source_coordinates(
+    tmp_path: Path,
+    literal: str,
+    key: str | bytes,
+    outer_indent: str,
+    body_indent: str,
+    newline: str,
+) -> None:
+    """Preserve real source literals through compiler, differentiation and replay.
+
+    Parameters
+    ----------
+    tmp_path
+        Owned location of the real Python objective module.
+    literal
+        Original multiline token, including its actual interior whitespace.
+    key
+        Independently specified dictionary key consumed by the objective.
+    outer_indent
+        Actual lexical nesting margin of the objective definition.
+    body_indent
+        Actual statement indentation, including legal mixed tab margins.
+    newline
+        Actual source file line ending.
+
+    """
+    source = (
+        "def build():\n"
+        f"{outer_indent}def objective(values):\n"
+        f'{body_indent}"""Original documentation.\n        Retain this margin.\n        """\n'
+        f"{body_indent}options = {{{literal}: 2.0}}\n"
+        f"{body_indent}return values[0] * options[{key!r}]\n"
+        f"{outer_indent}return objective\n"
+        "objective = build()\n"
+    )
+    path = tmp_path / "literal_objective.py"
+    path.write_bytes(source.replace("\n", newline).encode("utf-8"))
+    specification = importlib.util.spec_from_file_location("literal_objective", path)
+    assert specification is not None and specification.loader is not None
+    module = importlib.util.module_from_spec(specification)
+    specification.loader.exec_module(module)
+    function = module.objective
+    assert isinstance(function, FunctionType)
+    baseline = active_reserved_bytes()
+    original_constants = function.__code__.co_consts
+    report = compile_whole_program_frontend(function)
+    assert report.frontend_ready
+    assert report.source_start_line == function.__code__.co_firstlineno == 2
+    assert report.source_end_line == source.splitlines().index(f"{outer_indent}return objective")
+    assert function.__code__.co_consts == original_constants
+    result = whole_program_value_and_grad(function, [3.0], trace=False)
+    assert result.value == 6.0
+    np.testing.assert_array_equal(result.gradient, [2.0])
+    np.testing.assert_array_equal(program_adjoint_replay_gradient(result), [2.0])
+    assert active_reserved_bytes() == baseline
+
+
+def test_public_frontend_keeps_outside_margin_expression_continuations(tmp_path: Path) -> None:
+    """Retain legal implicit continuations through source binding and native replay.
+
+    Parameters
+    ----------
+    tmp_path
+        Owned location for a normally imported nested objective module.
+
+    """
+    source = (
+        "def build():\n"
+        "    def objective(values):\n"
+        "        return (\n"
+        "values[0] *\n"
+        "  2.0\n"
+        "        )\n"
+        "    return objective\n"
+        "objective = build()\n"
+    )
+    path = tmp_path / "continuation_objective.py"
+    path.write_text(source, encoding="utf-8")
+    specification = importlib.util.spec_from_file_location("continuation_objective", path)
+    assert specification is not None and specification.loader is not None
+    module = importlib.util.module_from_spec(specification)
+    specification.loader.exec_module(module)
+    function = module.objective
+    assert isinstance(function, FunctionType)
+    baseline = active_reserved_bytes()
+    report = facade_compile_whole_program_frontend(function)
+    assert report.frontend_ready
+    assert report.source_start_line == function.__code__.co_firstlineno == 2
+    assert report.source_end_line == 6
+    result = whole_program_value_and_grad(function, [3.0], trace=False)
+    assert result.value == 6.0
+    np.testing.assert_array_equal(result.gradient, [2.0])
+    np.testing.assert_array_equal(program_adjoint_replay_gradient(result), [2.0])
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize(
+    "code_shape", ["co_name", "co_qualname", "wide", "deep", "tuple_subclass"]
+)
+def test_public_frontend_refuses_non_native_or_unbounded_code_metadata(code_shape: str) -> None:
+    """Refuse real loaded metadata before protocols, then recover ordinary execution.
+
+    Parameters
+    ----------
+    code_shape
+        CPython-admitted foreign name, container subclass or oversized constant graph.
+
+    """
+    calls: list[str] = []
+
+    class ForeignName(str):
+        """Observe unwanted protocols on an admitted CPython code-name subclass."""
+
+        def __repr__(self) -> str:
+            """Record accidental metadata formatting."""
+            calls.append("name_representation")
+            return "foreign"
+
+        def __eq__(self, other: object) -> bool:
+            """Record accidental source-identity comparison."""
+            calls.append("name_equality")
+            return False
+
+        def __hash__(self) -> int:
+            """Record accidental metadata hashing."""
+            calls.append("name_hashing")
+            return 1
+
+    class ForeignTuple(tuple[object, ...]):
+        """Observe container protocols before a native-type refusal."""
+
+        def __len__(self) -> int:
+            """Record accidental constant-container traversal."""
+            calls.append("container_length")
+            return super().__len__()
+
+    def objective(values: NDArray[np.float64]) -> object:
+        """Provide genuine source for the loaded metadata refusal and recovery."""
+        return values[0] * 3.0
+
+    function = cast(FunctionType, objective)
+    original_code = function.__code__
+    if code_shape == "co_name":
+        changed_code = original_code.replace(co_name=ForeignName(original_code.co_name))
+    elif code_shape == "co_qualname":
+        changed_code = original_code.replace(co_qualname=ForeignName(original_code.co_qualname))
+    else:
+        constant: object = tuple(range(4097))
+        if code_shape == "deep":
+            constant = 3.0
+            for _ in range(65):
+                constant = (constant,)
+        elif code_shape == "tuple_subclass":
+            constant = ForeignTuple((3.0,))
+        changed_code = original_code.replace(co_consts=(None, 0, constant))
+    function.__code__ = changed_code
+    calls.clear()
+    baseline = active_reserved_bytes()
+    report = facade_compile_whole_program_frontend(function)
+    assert not report.frontend_ready
+    assert report.bytecode_instructions == ()
+    assert "unsupported_python_semantics:external_callback" in report.hard_gaps
+    with pytest.raises(ValueError, match="external_callback"):
+        whole_program_value_and_grad(function, [2.0], trace=False)
+    assert calls == []
+    assert active_reserved_bytes() == baseline
+    function.__code__ = original_code
+    assert facade_compile_whole_program_frontend(function).frontend_ready
+    result = whole_program_value_and_grad(function, [2.0], trace=False)
+    assert result.value == 6.0
+    np.testing.assert_array_equal(result.gradient, [3.0])
+    np.testing.assert_array_equal(program_adjoint_replay_gradient(result), [3.0])
+    assert calls == []
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize(
+    "replacement", ["def objective(\n", 'def objective(values):\n    """', ""]
+)
+def test_public_frontend_refuses_malformed_current_source_and_recovers(
+    tmp_path: Path, replacement: str
+) -> None:
+    """Refuse actual malformed on-disk source before the loaded objective runs.
+
+    Parameters
+    ----------
+    tmp_path
+        Owned location for the real normally imported source module.
+    replacement
+        Current malformed or absent definition replacing the loaded source bytes.
+
+    """
+    source = "def objective(values):\n    return values[0] * 3.0\n"
+    path = tmp_path / "changed_source_objective.py"
+    path.write_text(source, encoding="utf-8")
+    specification = importlib.util.spec_from_file_location("changed_source_objective", path)
+    assert specification is not None and specification.loader is not None
+    module = importlib.util.module_from_spec(specification)
+    specification.loader.exec_module(module)
+    function = module.objective
+    assert isinstance(function, FunctionType)
+    original_code = function.__code__
+    path.write_text(replacement, encoding="utf-8")
+    baseline = active_reserved_bytes()
+    calls: list[str] = []
+
+    def profile(frame: FrameType, event: str, argument: object) -> None:
+        """Observe actual entry into the already loaded objective code."""
+        del argument
+        if event == "call" and frame.f_code is original_code:
+            calls.append(event)
+
+    previous = sys.getprofile()
+    sys.setprofile(profile)
+    try:
+        report = facade_compile_whole_program_frontend(function)
+        assert not report.frontend_ready
+        assert "source_frontend_missing" in report.hard_gaps
+        with pytest.raises(ValueError, match="source_frontend_missing"):
+            whole_program_value_and_grad(function, [2.0], trace=False)
+    finally:
+        sys.setprofile(previous)
+    assert calls == []
+    assert function.__code__ is original_code
+    assert active_reserved_bytes() == baseline
+    path.write_text(source, encoding="utf-8")
+    assert facade_compile_whole_program_frontend(function).frontend_ready
+    sys.setprofile(profile)
+    try:
+        result = whole_program_value_and_grad(function, [2.0], trace=False)
+        assert result.value == 6.0
+        np.testing.assert_array_equal(result.gradient, [3.0])
+        np.testing.assert_array_equal(program_adjoint_replay_gradient(result), [3.0])
+    finally:
+        sys.setprofile(previous)
+    assert calls == ["call"]
     assert active_reserved_bytes() == baseline

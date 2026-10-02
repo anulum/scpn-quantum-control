@@ -210,6 +210,9 @@ def interpret_program_ad_effect_ir_with_rust(
     non-executed branch adjoints fail closed instead of falling back to Python
     execution. This is not LLVM, JIT, reverse-mode compiler AD, provider,
     hardware, or performance evidence.
+    Typed ``ProgramADEffectIR`` inputs must match their serialization; a
+    disagreement raises ``ValueError`` before numerical replay. Raw strings
+    retain the historical metadata format and native refusal contract.
     """
     serialization = _program_ad_serialization(program_ir)
     checked_inputs = _validate_inputs("Rust Program AD interpreter inputs", inputs)
@@ -288,6 +291,9 @@ def value_and_grad_program_ad_effect_ir_with_rust(
     Executed runtime branch metadata is replayed only as provenance for the
     already-executed path; non-executed branch adjoints and source-level
     control-flow lowering remain fail-closed.
+    Typed ``ProgramADEffectIR`` inputs must match their serialization before
+    numerical replay; disagreement raises ``ValueError``. Raw strings retain
+    the historical metadata format and native refusal contract.
     """
     serialization = _program_ad_serialization(program_ir)
     checked_inputs = _validate_inputs("Rust Program AD value+gradient inputs", inputs)
@@ -467,6 +473,11 @@ def _unsupported_registry_metadata_mirror(
 
 
 def _program_ad_serialization(program_ir: ProgramADEffectIRLike | str) -> str:
+    from .program_ad_effect_ir import ProgramADEffectIR
+    from .program_ad_tape_binding import _require_program_ad_ir_serialization
+
+    if isinstance(program_ir, ProgramADEffectIR):
+        _require_program_ad_ir_serialization(program_ir)
     serialization = program_ir if isinstance(program_ir, str) else program_ir.serialization
     if not isinstance(serialization, str) or not serialization:
         raise ValueError("program AD IR serialization must be a non-empty string")

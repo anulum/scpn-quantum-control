@@ -24,6 +24,8 @@ from .differentiable_transform_helpers import _normalise_parameters
 from .execution_memory import ExecutionBuffer, ExecutionMemoryPlan, dataclass_storage_bytes
 from .execution_reservations import ExecutionMemoryReservation, reserve_execution_memory
 from .program_ad_adjoint_generation import _program_adjoint_result_from_nodes
+from .program_ad_captured_state import _capture_program_state
+from .program_ad_tape_binding import _TAPE_DIGEST_BYTES, _bind_program_tape
 from .whole_program_ad_result import WholeProgramADResult
 from .whole_program_frontend import (
     WholeProgramCompilerFrontendReport,
@@ -90,14 +92,17 @@ def whole_program_value_and_grad(
     WholeProgramADResult
         Exact executed-program value, gradient, source/bytecode metadata, IR
         nodes, frontend report, semantics report, and scalar adjoint replay
-        provenance.
+        provenance. An in-memory binding checks callable code and captured
+        numeric state, and retains the primal, numeric buffers, typed/raw IR and
+        adjoint content together. Derivative access refuses changed artifacts.
 
     Raises
     ------
     ValueError
         If the objective is not callable, fails the source/bytecode frontend
         execution gate, uses unsupported Python semantics, or does not return a
-        traceable scalar.
+        traceable scalar; also if captured state has unsupported storage or
+        changes while the objective is evaluated.
 
     """
     if not callable(objective):
@@ -133,6 +138,7 @@ def whole_program_value_and_grad(
             _require_whole_program_frontend_execution_ready(frontend_report)
             source = _objective_source(objective, context=context)
             reservation.checkpoint()
+            captured_state = _capture_program_state(objective, reservation.checkpoint)
             traced_values: list[TraceADScalar] = []
             for index, (value, parameter) in enumerate(
                 zip(parameter_values, parameter_meta, strict=True)
@@ -159,6 +165,7 @@ def whole_program_value_and_grad(
                 raw = raw.item()
             if not isinstance(raw, TraceADScalar):
                 raise ValueError("whole-program objective must return a whole-program AD scalar")
+            captured_state.require_current(reservation.checkpoint)
             reservation.checkpoint()
             trace_events = (
                 _trace_whole_program_objective(
@@ -206,8 +213,10 @@ def whole_program_value_and_grad(
                 deadline_monotonic=deadline_monotonic,
                 cancelled=cancelled,
                 context=context,
+                captured_state=captured_state,
             )
             reservation.checkpoint()
+            captured_state.require_current(reservation.checkpoint)
             ad_result = WholeProgramADResult(
                 value=raw.primal,
                 gradient=raw.tangent.copy(),
@@ -241,8 +250,23 @@ def whole_program_value_and_grad(
                 program_ir=program_ir,
                 adjoint_result=adjoint_result,
                 frontend_report=frontend_report,
+                captured_state=captured_state,
             )
             reservation.checkpoint()
+            tape_plan = ExecutionMemoryPlan(
+                (
+                    ExecutionBuffer(
+                        "captured_derivative_digest",
+                        "adjoint",
+                        (_TAPE_DIGEST_BYTES,),
+                        "uint8",
+                    ),
+                )
+            )
+            with reserve_execution_memory(tape_plan) as tape_reservation:
+                _bind_program_tape(ad_result, tape_reservation.checkpoint)
+                context.retain_buffers(tape_reservation, tape_plan)
+            captured_state.require_current(reservation.checkpoint)
             return ad_result
         finally:
             context._memory_reservation = None

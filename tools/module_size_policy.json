@@ -290,6 +290,15 @@
       "reassess_when": "A non-assembly primitive or independent dispatch lifecycle enters the module."
     },
     {
+      "path": "src/scpn_quantum_control/program_ad_effect_admission.py",
+      "lines": 1096,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Source-visible Python AST effect propagation through arguments, aliases, containers, mutation and control flow.",
+      "dependency_boundary": "Depends on the separately owned function-binding analysis, frozen callable dispatch and abstract storage modules; the public frontend calls find_objective_effects before numerical execution.",
+      "reassess_when": "A second independently consumed analysis lifecycle enters the AST visitor or its mutation projection can be split without divergent storage joins."
+    },
+    {
       "path": "src/scpn_quantum_control/program_ad_linalg_primitives.py",
       "lines": 2657,
       "kind": "source",
@@ -495,6 +504,15 @@
       "responsibility": "Program-AD alias/effect analysis execution and static-lattice report tests.",
       "dependency_boundary": "Owns the program_ad_alias_analysis execution lifecycle through the differentiable facade; immutable schema validation stays in the separate contract test.",
       "reassess_when": "The source analysis pipeline splits into independently consumed execution lifecycles."
+    },
+    {
+      "path": "tests/test_program_ad_effect_admission.py",
+      "lines": 1366,
+      "kind": "test",
+      "disposition": "cohesive",
+      "responsibility": "Public effect-admission regression matrix for the source-visible Python AST visitor.",
+      "dependency_boundary": "Exercises the public compiler frontend and actual value/gradient/replay routes; the function-binding companion has a separate dedicated owner and no test module imports this module.",
+      "reassess_when": "The production AST visitor splits into independently consumed traversal or mutation modules."
     },
     {
       "path": "tests/test_program_ad_registry.py",

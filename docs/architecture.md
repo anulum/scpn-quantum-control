@@ -572,6 +572,49 @@ diagnostic, and aggregate report records. `whole_program_frontend.py` retains pr
 metadata, source/bytecode inspection, semantic classification, digest construction, and report
 assembly, and re-exports the exact public records for compatibility.
 
+Whole-program numerical execution checks effects before calling the objective.
+`program_ad_effect_analysis.py` binds inspected source to the loaded function and
+its referenced namespace. `program_ad_effect_source_binding.py` compares source
+semantics with the loaded code; `program_ad_effect_admission.py` follows local
+storage, helper arguments, branches and loops. Its value, dispatch and native
+container-signature companions retain storage ownership and registered callable
+identity. An unsupported callback, ambient random operation or write through
+captured storage produces a source-located diagnostic before execution. Known
+list, dictionary, tuple and generator receivers retain their actual method
+families, including operand and keyword restrictions across argument expansions.
+
+```mermaid
+flowchart LR
+    A[Source and effect admission] --> B[Capture callable and numeric state]
+    B --> C[Execute supported trace]
+    C --> D[Generate derivative and bind tape content]
+    D --> E[Return result]
+    E --> F[Validate binding before derivative access]
+    F --> G[Replay supported derivative]
+```
+
+`program_ad_captured_state.py` fingerprints callable code, referenced globals,
+closures, defaults and supported numeric storage. Its memory companion admits
+inspection and copy workspace before allocation. `program_ad_tape_binding.py`
+binds the result's primal, typed and serialized IR, and derivative metadata.
+Result construction and derivative access reject changed observations. Derivative
+access checks the live state before and after its numerical work; restoring
+the original supported state permits replay again. These live bindings retain
+their callable dependencies in memory. They do not lock caller storage, detect
+changes reverted between observations, or authenticate manually reconstructed
+records. Historical standalone IR retains its existing wire format and has no
+live callable binding.
+
+Objective-owned duplicate-index scatter uses `whole_program_trace_scatter.py`
+to accumulate contributions sequentially. Python derivative consumers and the
+Rust Program AD metadata validator reject unregistered imported effect kinds.
+The Rust bridge also requires typed IR to agree with its serialized payload
+before numerical execution. Supported native replay remains bounded to its
+registered operations; source admission does not promote an executable LLVM,
+WASM, provider or hardware route. See the
+[effect and replay contracts](differentiable_programming.md#native-container-call-signatures)
+and the executable [first-path example](https://github.com/anulum/scpn-quantum-control/blob/main/examples/30_diff_first_path.py).
+
 The unified differentiable API also isolates its dependency-free public envelopes.
 `differentiable_api_contracts.py` owns the operation and dashboard-state aliases, shared claim
 boundary, and four immutable result, diagnostic, capability-row, and dashboard-status records.
@@ -601,7 +644,7 @@ framework, identical-circuit, runner, dependency, and fail-closed classification
 | `benchmarks/differentiable_programming.py` | Differentiable-programming execution facade after contract/quantum leaf extraction | Program/external cases are tested facade monkeypatch seams for ten runtime/compiler/JAX dependencies; alias moves would break diagnostic substitution |
 | `benchmarks/differentiable_external_comparison.py` | External framework, runner, and identical-circuit comparison facade after contract extraction | The 40-function residual is one 65-edge component; focused tests make 43 monkeypatch calls across 16 facade globals, so alias moves would bypass substitutions |
 | `program_ad_linalg_primitives.py` | Program-AD linear-algebra primitive rules and conditioning diagnostics | One dominant cluster; satellites are registry-dispatched rules |
-| `whole_program_frontend.py` | Static source/bytecode introspection and report assembly after contract extraction | The residual private metadata record and 45 functions form one connected pipeline; public records live in the one-way contracts leaf |
+| `whole_program_frontend.py` | Static source/bytecode introspection and report assembly after contract extraction | Its 48 top-level functions cover source/bytecode inspection, lexical normalization and report assembly; public records live in the one-way contracts leaf |
 | `program_ad_assembly_primitives.py` | Program-AD assembly primitive rules (stack/concat/triu/tril) | One dominant cluster |
 
 The 2026-07-14 trace-value rescan reduced the runtime from 4,994 to 4,562

@@ -10,6 +10,7 @@
 
 from __future__ import annotations
 
+import json
 from typing import Any, cast
 
 import numpy as np
@@ -32,10 +33,49 @@ from scpn_quantum_control.differentiable import (
     WholeProgramUnsupportedSemanticDiagnostic,
     analyze_program_ad_alias_effects,
     compile_whole_program_frontend,
+    parse_program_ad_effect_ir,
     program_ad_static_alias_lattice_report,
     program_adjoint_gradient,
     whole_program_value_and_grad,
 )
+
+
+@pytest.mark.parametrize(
+    "kind", ["external_callback", "ambient_rng", "nondifferentiable", "unregistered_effect"]
+)
+def test_imported_effect_kind_blocks_alias_completion(kind: str) -> None:
+    """Actual captured IR cannot hide an imported unknown effect behind aliases.
+
+    Parameters
+    ----------
+    kind
+        Unsupported effect kind retained by the historical metadata parser.
+
+    """
+
+    def objective(values: Any) -> object:
+        return values[0] * values[0]
+
+    result = whole_program_value_and_grad(objective, [2.0], trace=False)
+    assert result.program_ir is not None
+    original = result.program_ir.serialization
+    payload: object = json.loads(original)
+    assert isinstance(payload, dict)
+    effects: object = payload["effects"]
+    assert isinstance(effects, list)
+    row: object = effects[-1]
+    assert isinstance(row, dict)
+    effect_index = row["index"]
+    row["kind"] = kind
+    imported = parse_program_ad_effect_ir(json.dumps(payload, sort_keys=True))
+    with pytest.raises(ValueError, match=rf"effect {effect_index}.*{kind}"):
+        analyze_program_ad_alias_effects(imported)
+    report = program_ad_static_alias_lattice_report(imported)
+    assert not report.complete
+    assert f"unsupported_effect_kind:{kind}:effect:{effect_index}" in report.blocker_reasons
+    assert result.program_ir.serialization == original
+    assert program_ad_static_alias_lattice_report(result.program_ir).complete
+    assert not analyze_program_ad_alias_effects(result.program_ir).unknown_aliasing
 
 
 def test_program_ad_alias_analysis_fail_closed_entry_points() -> None:

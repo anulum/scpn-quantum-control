@@ -9,9 +9,12 @@
 
 from __future__ import annotations
 
+import subprocess
+import sys
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 
 def test_top_level_version() -> None:
@@ -32,7 +35,6 @@ def test_top_level_version() -> None:
 
 def test_top_level_version_is_not_hardcoded_carrier() -> None:
     """Runtime version is resolved from package metadata, not duplicated by hand."""
-
     init_source = (
         Path(__file__).resolve().parents[1] / "src" / "scpn_quantum_control" / "__init__.py"
     ).read_text(encoding="utf-8")
@@ -88,7 +90,6 @@ def test_benchmark_exports() -> None:
 
 def test_no_private_in_all() -> None:
     """No __all__ contains underscore-prefixed names."""
-
     for submod_name in [
         "bridge",
         "phase",
@@ -111,12 +112,14 @@ def test_no_private_in_all() -> None:
 
 
 def test_top_level_all_nonempty() -> None:
+    """Keep the package's declared public export list populated."""
     import scpn_quantum_control
 
     assert len(scpn_quantum_control.__all__) > 50
 
 
 def test_top_level_all_no_duplicates() -> None:
+    """Keep each public export declared exactly once."""
     import scpn_quantum_control
 
     names = scpn_quantum_control.__all__
@@ -145,3 +148,60 @@ def test_all_submodules_importable() -> None:
     ]:
         mod = __import__(f"scpn_quantum_control.{submod}")
         assert mod is not None
+
+
+@pytest.mark.parametrize(
+    "first_module",
+    [
+        "differentiable_dashboard",
+        "differentiable_api",
+        "differentiable_benchmark_report",
+        "phase",
+        "program_ad_adjoint",
+    ],
+)
+def test_cold_differentiable_import_order_preserves_public_execution(
+    tmp_path: Path, first_module: str
+) -> None:
+    """Cold imports preserve public aliases and execute a source-visible objective.
+
+    Parameters
+    ----------
+    tmp_path
+        Owned directory containing the actual imported numerical objective.
+    first_module
+        Differentiable owner or adjacent package loaded before public API access.
+
+    """
+    (tmp_path / "cold_objective.py").write_text(
+        "from scpn_quantum_control import TraceADArray\n"
+        "def objective(values: TraceADArray) -> object:\n"
+        "    return values[0] ** 2\n",
+        encoding="utf-8",
+    )
+    script = """
+import importlib
+import sys
+importlib.import_module('scpn_quantum_control.' + sys.argv[1])
+import scpn_quantum_control as control
+api = importlib.import_module('scpn_quantum_control.differentiable_api')
+assert control.differentiable_dashboard_status is api.differentiable_dashboard_status
+assert control.differentiable_benchmark_report is api.differentiable_benchmark_report
+status = control.differentiable_dashboard_status()
+assert any(row.surface == 'program_ad_ir' for row in status.rows)
+sys.path.insert(0, sys.argv[2])
+from cold_objective import objective
+result = control.whole_program_value_and_grad(objective, [2.0], trace=False)
+assert result.value == 4.0
+assert result.gradient.tolist() == [4.0]
+from scpn_quantum_control.differentiable import program_adjoint_replay_gradient
+assert program_adjoint_replay_gradient(result).tolist() == [4.0]
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", script, first_module, str(tmp_path)],
+        capture_output=True,
+        text=True,
+        timeout=60,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr

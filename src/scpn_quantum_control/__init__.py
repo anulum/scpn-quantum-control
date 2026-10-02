@@ -3495,7 +3495,9 @@ class _ExportModule(ModuleType):
             and isinstance(value, ModuleType)
             and value.__name__ in {target[0], f"{__name__}.{name}"}
         ):
-            value = __getattr__(name)
+            # Resolve the public object on access after its owner finishes loading.
+            # Eager resolution here can re-enter a partially initialized owner.
+            return
         super().__setattr__(name, value)
 
 

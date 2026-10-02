@@ -14,6 +14,31 @@ from os import devnull
 Gate = tuple[str, list[str]]
 PROGRAM_AD_ADJOINT_SOURCE = "src/scpn_quantum_control/program_ad_adjoint.py"
 PROGRAM_AD_ADJOINT_GENERATION_SOURCE = "src/scpn_quantum_control/program_ad_adjoint_generation.py"
+PROGRAM_AD_CAPTURED_SOURCES = [
+    "src/scpn_quantum_control/program_ad_captured_state.py",
+    "src/scpn_quantum_control/program_ad_captured_memory.py",
+    "src/scpn_quantum_control/program_ad_tape_binding.py",
+    "src/scpn_quantum_control/program_ad_effect_admission.py",
+    "src/scpn_quantum_control/program_ad_effect_analysis.py",
+    "src/scpn_quantum_control/program_ad_effect_source_binding.py",
+    "src/scpn_quantum_control/program_ad_effect_call_binding.py",
+    "src/scpn_quantum_control/program_ad_effect_dispatch.py",
+    "src/scpn_quantum_control/program_ad_effect_values.py",
+    "src/scpn_quantum_control/whole_program_trace_scatter.py",
+]
+PROGRAM_AD_CAPTURED_TESTS = [
+    "tests/test_effectful_program_semantics.py",
+    "tests/test_program_ad_captured_state.py",
+    "tests/test_program_ad_captured_memory.py",
+    "tests/test_program_ad_tape_binding.py",
+    "tests/test_program_ad_effect_admission.py",
+    "tests/test_program_ad_effect_analysis.py",
+    "tests/test_program_ad_effect_source_binding.py",
+    "tests/test_program_ad_effect_call_binding.py",
+    "tests/test_program_ad_effect_dispatch.py",
+    "tests/test_program_ad_effect_values.py",
+    "tests/test_whole_program_trace_scatter.py",
+]
 PROGRAM_AD_ADJOINT_COVERAGE_COHORT = [
     "tests/test_program_ad_adjoint.py",
     "tests/test_adjoint_replay_product.py",
@@ -22,6 +47,8 @@ PROGRAM_AD_ADJOINT_COVERAGE_COHORT = [
     "tests/test_program_ad_adjoint_generation_docstrings.py",
     "tests/test_program_adjoint_replay.py",
     "tests/test_program_ad_runtime_registry_dispatch.py",
+    *PROGRAM_AD_CAPTURED_TESTS,
+    "tests/test_program_ad_adjoint_quality_gate.py",
 ]
 PROGRAM_AD_ADJOINT_TYPING_RATCHET = [
     "tests/test_program_ad_adjoint.py",
@@ -31,6 +58,8 @@ PROGRAM_AD_ADJOINT_TYPING_RATCHET = [
     "tests/test_program_ad_adjoint_generation_docstrings.py",
     "tools/program_ad_adjoint_quality_gates.py",
     "tests/test_program_ad_adjoint_quality_gate.py",
+    *PROGRAM_AD_CAPTURED_SOURCES,
+    *PROGRAM_AD_CAPTURED_TESTS,
 ]
 PROGRAM_AD_ADJOINT_DOCSTRING_RATCHET = [
     "tests/test_program_ad_adjoint.py",
@@ -43,6 +72,8 @@ PROGRAM_AD_ADJOINT_DOCSTRING_RATCHET = [
     "tests/test_program_adjoint_replay.py",
     "tools/program_ad_adjoint_quality_gates.py",
     "tests/test_program_ad_adjoint_quality_gate.py",
+    *PROGRAM_AD_CAPTURED_SOURCES,
+    *PROGRAM_AD_CAPTURED_TESTS,
 ]
 PROGRAM_AD_ADJOINT_COVERAGE_DATA_FILE = "/tmp/scpn-qc-program-ad-adjoint-quality.coverage"  # nosec B108
 
@@ -113,6 +144,29 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 "--include=*/program_ad_adjoint.py,*/program_ad_adjoint_generation.py",
             ],
         ),
+        (
+            "Program AD captured state exact coverage threshold",
+            [
+                python,
+                "-m",
+                "coverage",
+                "report",
+                f"--rcfile={devnull}",
+                f"--data-file={PROGRAM_AD_ADJOINT_COVERAGE_DATA_FILE}",
+                "--precision=2",
+                "--fail-under=100",
+                "--include="
+                + ",".join(
+                    [
+                        *(
+                            "*/" + source.rsplit("/", 1)[-1]
+                            for source in PROGRAM_AD_CAPTURED_SOURCES
+                        ),
+                        "*/program_ad_adjoint_quality_gates.py",
+                    ]
+                ),
+            ],
+        ),
     ]
 
 
@@ -123,6 +177,8 @@ __all__ = [
     "PROGRAM_AD_ADJOINT_GENERATION_SOURCE",
     "PROGRAM_AD_ADJOINT_SOURCE",
     "PROGRAM_AD_ADJOINT_TYPING_RATCHET",
+    "PROGRAM_AD_CAPTURED_SOURCES",
+    "PROGRAM_AD_CAPTURED_TESTS",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]

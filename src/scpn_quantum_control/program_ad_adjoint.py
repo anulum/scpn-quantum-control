@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import sys
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from numbers import Real
 from threading import Event
 from typing import TYPE_CHECKING, Any, cast
@@ -22,13 +22,25 @@ from numpy.typing import ArrayLike, NDArray
 
 from .execution_memory import ExecutionBuffer, ExecutionMemoryPlan
 from .execution_reservations import reserve_execution_memory
+from .program_ad_alias_analysis import _require_supported_program_ad_effects
+from .program_ad_captured_state import _CAPTURED_STATE_DIGEST_BYTES, _CapturedProgramState
 
 if TYPE_CHECKING:
     from .differentiable_parameter_contracts import Parameter
-    from .whole_program_ad_result import WholeProgramIRNode
+    from .whole_program_ad_result import WholeProgramADResult, WholeProgramIRNode
 
 
 _PROGRAM_ADJOINT_REPLAY_ATOL = 1.0e-12
+_ADJOINT_INSPECTION_PLAN = ExecutionMemoryPlan(
+    (
+        ExecutionBuffer(
+            "captured_state_binding", "adjoint", (_CAPTURED_STATE_DIGEST_BYTES,), "uint8"
+        ),
+        ExecutionBuffer(
+            "captured_tape_binding", "adjoint", (_CAPTURED_STATE_DIGEST_BYTES,), "uint8"
+        ),
+    )
+)
 
 
 @dataclass(frozen=True)
@@ -267,7 +279,17 @@ class ProgramADAdjointStep:
 
 @dataclass(frozen=True)
 class ProgramADAdjointResult:
-    """Reverse-mode adjoint generation result for a captured Program AD graph."""
+    """Reverse-mode adjoint generation result for a captured Program AD graph.
+
+    Notes
+    -----
+    Runtime results share their live ``captured_state`` with the enclosing
+    whole-program result. The optional binding is excluded from ``to_dict``;
+    standalone historical records continue to have no live callable binding.
+    Runtime derivative access checks the bound primal, numeric storage and
+    typed/raw IR together with the adjoint content.
+
+    """
 
     gradient: NDArray[np.float64]
     supported: bool
@@ -282,9 +304,17 @@ class ProgramADAdjointResult:
     blocked_non_executed_phi_input_count: int = 0
     replay_ir_format: str = "program_ad_effect_ir.v1"
     adjoint_steps: tuple[ProgramADAdjointStep, ...] = ()
+    captured_state: _CapturedProgramState | None = field(
+        default=None, repr=False, compare=False, kw_only=True
+    )
 
     def __post_init__(self) -> None:
         """Validate reverse-adjoint result metadata at construction time."""
+        if (
+            self.captured_state is not None
+            and type(self.captured_state) is not _CapturedProgramState
+        ):
+            raise ValueError("captured_state must be a captured program state binding or None")
         gradient = _as_real_numeric_array("program AD adjoint gradient", self.gradient)
         if gradient.ndim != 1:
             raise ValueError("program AD adjoint gradient must be one-dimensional")
@@ -399,14 +429,31 @@ def program_adjoint_result(result: object) -> ProgramADAdjointResult:
     Raises
     ------
     ValueError
-        If ``result`` is not a whole-program AD result or has no attached
-        adjoint metadata.
+        If ``result`` is not a whole-program AD result, has no attached
+        adjoint metadata, or its live captured state or derivative tape changed.
 
     """
+    from .program_ad_tape_binding import _require_bound_program_tape
     from .whole_program_ad_result import WholeProgramADResult
 
     if not isinstance(result, WholeProgramADResult):
         raise ValueError("program adjoint input must be a WholeProgramADResult")
+    adjoint = _program_adjoint_current_metadata(result)
+    _require_bound_program_tape(result)
+    return adjoint
+
+
+def _program_adjoint_current_metadata(result: WholeProgramADResult) -> ProgramADAdjointResult:
+    """Check live state and effect admission before inspecting numerical storage."""
+    if (
+        result.adjoint_result is not None
+        and result.adjoint_result.captured_state is not result.captured_state
+    ):
+        raise ValueError("captured state binding does not match attached adjoint metadata")
+    if result.captured_state is not None:
+        result.captured_state.require_current()
+    if result.program_ir is not None:
+        _require_supported_program_ad_effects(result.program_ir)
     if result.adjoint_result is None:
         raise ValueError("program AD result does not contain adjoint generation metadata")
     return result.adjoint_result
@@ -427,11 +474,11 @@ def program_adjoint_gradient(
         Whole-program AD result whose attached reverse-adjoint metadata should
         be supported.
     max_execution_gib:
-        Optional cap for retained and copied numeric gradient buffers.
+        Optional cap for captured-state inspection and retained/copied gradient buffers.
     deadline_monotonic:
-        Absolute monotonic deadline checked before and after copying.
+        Absolute monotonic deadline checked during state inspection and copying.
     cancelled:
-        Optional cancellation event checked before and after copying.
+        Cancellation event checked before state inspection and during copying.
 
     Returns
     -------
@@ -443,10 +490,18 @@ def program_adjoint_gradient(
     ValueError
         If no adjoint metadata is attached or the captured IR has unsupported
         operations, or its mutable gradient storage no longer has the captured
-        float64 shape or finite values, or a frozen coordinate is nonzero.
+        float64 shape or finite values, or a frozen coordinate is nonzero,
+        or its live captured state or derivative tape changed.
 
     """
-    adjoint = program_adjoint_result(result)
+    from .program_ad_tape_binding import _require_bound_program_tape
+    from .whole_program_ad_result import WholeProgramADResult
+
+    if not isinstance(result, WholeProgramADResult):
+        raise ValueError("program adjoint input must be a WholeProgramADResult")
+    if result.adjoint_result is None:
+        raise ValueError("program AD result does not contain adjoint generation metadata")
+    adjoint = result.adjoint_result
     if not adjoint.supported:
         unsupported = ", ".join(adjoint.unsupported_ops)
         raise ValueError(f"program AD adjoint generation unsupported for ops: {unsupported}")
@@ -455,15 +510,12 @@ def program_adjoint_gradient(
         raise ValueError(
             "attached adjoint gradient must remain a plain one-dimensional float64 array"
         )
-    from .whole_program_ad_result import WholeProgramADResult
-
-    if not isinstance(result, WholeProgramADResult) or source.shape != (
-        len(result.parameter_names),
-    ):
+    if source.shape != (len(result.parameter_names),):
         raise ValueError("attached adjoint gradient shape must match parameter names")
     count = int(source.size)
     plan = ExecutionMemoryPlan(
         (
+            *_ADJOINT_INSPECTION_PLAN.buffers,
             ExecutionBuffer("gradient_copy", "dense_output", (max(1, count),), "float64", 3),
             ExecutionBuffer(
                 "gradient_copy_validation", "intermediate", (max(1, count),), "bool", 2
@@ -483,6 +535,8 @@ def program_adjoint_gradient(
         deadline_monotonic=deadline_monotonic,
         cancelled=cancelled,
     ) as reservation:
+        _program_adjoint_current_metadata(result)
+        reservation.checkpoint()
         gradient = np.empty(count, dtype=np.float64)
         if source.shape != (count,) or source.dtype != np.dtype(np.float64):
             raise ValueError("attached adjoint gradient changed after admission")
@@ -497,6 +551,7 @@ def program_adjoint_gradient(
                     "attached adjoint gradient must be zero for non-trainable parameters"
                 )
         reservation.checkpoint()
+        _require_bound_program_tape(result)
         return gradient
 
 
@@ -516,11 +571,11 @@ def program_adjoint_replay_gradient(
         rows bound to ``program_ad_effect_ir.v1`` and the captured stabilized
         IR node sequence.
     max_execution_gib:
-        Optional cap for replay numeric buffers and declared Python workspace.
+        Optional cap for captured-state inspection, replay buffers and Python workspace.
     deadline_monotonic:
-        Absolute monotonic deadline checked at replay steps.
+        Absolute monotonic deadline checked during state inspection and replay steps.
     cancelled:
-        Optional cancellation event checked at replay steps.
+        Cancellation event checked before state inspection and during replay steps.
 
     Returns
     -------
@@ -534,28 +589,40 @@ def program_adjoint_replay_gradient(
         If the input is not a whole-program result, the adjoint result is
         unsupported, the generated step stream is missing or not bound to the
         captured stabilized IR, or executable replay diverges from the attached
-        adjoint gradient.
+        adjoint gradient, or its live captured state or derivative tape changed.
 
     """
-    from .whole_program_ad_result import WholeProgramADResult
+    from .program_ad_tape_binding import _require_bound_program_tape
 
-    if not isinstance(result, WholeProgramADResult):
-        raise ValueError("program adjoint replay input must be a WholeProgramADResult")
-    adjoint = program_adjoint_result(result)
-    if not adjoint.supported:
-        unsupported = ", ".join(adjoint.unsupported_ops)
-        raise ValueError(f"program AD adjoint generation unsupported for ops: {unsupported}")
-
-    return _program_adjoint_execute_steps(
-        adjoint=adjoint,
-        ir_nodes=result.ir_nodes,
-        parameter_names=result.parameter_names,
-        trainable=result.trainable,
-        max_execution_gib=max_execution_gib,
+    with reserve_execution_memory(
+        _ADJOINT_INSPECTION_PLAN,
+        max_gib=max_execution_gib,
         deadline_monotonic=deadline_monotonic,
         cancelled=cancelled,
-        expected_gradient=adjoint.gradient,
-    )
+    ) as inspection:
+        from .whole_program_ad_result import WholeProgramADResult
+
+        if not isinstance(result, WholeProgramADResult):
+            raise ValueError("program adjoint replay input must be a WholeProgramADResult")
+        adjoint = _program_adjoint_current_metadata(result)
+        inspection.checkpoint()
+        if not adjoint.supported:
+            unsupported = ", ".join(adjoint.unsupported_ops)
+            raise ValueError(f"program AD adjoint generation unsupported for ops: {unsupported}")
+
+        gradient = _program_adjoint_execute_steps(
+            adjoint=adjoint,
+            ir_nodes=result.ir_nodes,
+            parameter_names=result.parameter_names,
+            trainable=result.trainable,
+            max_execution_gib=max_execution_gib,
+            deadline_monotonic=deadline_monotonic,
+            cancelled=cancelled,
+            expected_gradient=adjoint.gradient,
+        )
+        _require_bound_program_tape(result)
+        inspection.checkpoint()
+        return gradient
 
 
 def program_adjoint_grad(

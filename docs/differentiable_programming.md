@@ -199,6 +199,149 @@ operations through `compile_whole_program_ad_trace_to_mlir(...)`. The
 local conformance only; executable Rust, LLVM, JIT, provider, hardware, and
 performance promotion remain blocked.
 
+## Frontend report reproducibility
+
+Nested code constants retain their name, source file, and line. Their
+representations exclude process memory addresses, so a fresh process does not
+change report digests through those addresses. This applies to both
+`compile_whole_program_frontend()` and its compatibility exports. Complete report
+comparisons also require matching callable source, code provenance, interpreter,
+and global bindings.
+
+## Objective effects before execution
+
+Loaded objective filenames must be native strings. Filename subclasses raise
+`ValueError` before source caches or path handling can invoke their protocols.
+
+Source extraction removes the callable's lexical nesting indentation outside
+string tokens. Multiline docstrings, string and bytes literals, raw strings and
+formatted strings retain their interior whitespace, including blank lines and
+lines with no nesting margin. Legal implicit expression continuations may also
+begin before the callable's outer margin and retain their relative indentation.
+Source files use universal newlines; original
+absolute line bounds and loaded-code constants remain unchanged. The parsed
+source must still match the actual loaded function before numerical execution.
+If the current file no longer contains a readable definition, including an
+unterminated expression or string, preflight reports `source_frontend_missing`.
+The numerical entry point refuses that gap before calling the loaded function;
+restoring its original source restores normal differentiation and replay.
+
+Disassembly admits native code names and immutable constants within the existing
+4096-node and depth-64 limits. Foreign names, container subclasses and graphs
+beyond those limits retain a located source-mismatch diagnostic and are refused
+before objective execution, without invoking their formatting, comparison or
+container protocols.
+
+`compile_whole_program_frontend()` reports `external_callback`, `ambient_rng`,
+`captured_mutation`, and `dynamic_integer` findings for unsupported synchronous
+objective effects. Each finding retains its caller line, source region, and
+bytecode offsets when available. `whole_program_value_and_grad()` refuses these
+hard gaps before running the objective, so captured writes and ambient random
+draws do not occur during a refused call.
+
+Source-visible pure numeric helpers and read-only captured coefficients remain
+eligible for the numerical runtime gate. Local mutation and static metadata
+still require the existing trace contracts. Async objectives retain their
+existing async/await/iteration refusals. A ready frontend report alone does not
+prove native lowering, replay validity, or general Python support.
+
+### Native container call signatures
+
+Supported calls on objective-owned native lists and dictionaries must match
+the receiver's method family, positional operand limits and permitted keyword
+names. An incompatible method, missing or excessive known operands, or an
+unsupported keyword produces a located `external_callback` diagnostic with
+`local container call signature is unsupported`. The numerical entry point
+refuses that finding before executing the objective.
+
+Known operands count across the entire call, including operands after an
+unresolved `*args` expansion. For example, `storage.append(*values, 1.0, 2.0)`
+already supplies too many operands for `append`, regardless of the expansion's
+length, and is refused during preflight. An unresolved expansion remains
+eligible only when its possible cardinality can match the method; it still
+requires the numerical runtime's trace and value contracts.
+
+Native positional-only methods retain their keyword restrictions. The supported
+`list.sort` signature permits `key` and `reverse`, while `dict.update` permits
+keyword entries. Signature admission does not admit an unsupported sort-key
+callback or a write to captured storage: those retain their separate effect
+and ownership checks. Valid objective-owned operations preserve normal
+differentiation and replay.
+
+Read methods follow the same receiver checks: native list and dictionary
+`copy()` take no operands, and native dictionary `get()` takes a key and an
+optional default. Source-known tuples and generators cannot use list or
+dictionary methods. Supported generator consumption through `sum` or `list`
+still requires the existing trace and value contracts.
+
+Subscript deletion requires source-known mutable list or dictionary storage.
+Deleting through a tuple, generator or NumPy array produces a located
+`external_callback` finding with `local deletion requires known mutable container
+storage` before objective execution. Attribute deletion on an objective-owned
+plain passive instance remains eligible for the numerical runtime gate;
+deletion through captured storage retains its captured-mutation refusal.
+
+## Imported effect admission
+
+The numerical Program AD consumers accept effect kinds `parameter`, `pure`,
+`primitive`, `control_branch`, and `mutation` in imported `program_ad_effect_ir.v1`
+records. Alias analysis, result construction, Python replay and Rust replay
+refuse an unsupported effect kind, including `external_callback`, `ambient_rng`,
+`nondifferentiable`, or an unregistered kind. The diagnostic retains the effect
+index and kind; the static alias lattice reports a located readiness blocker.
+The historical metadata codec continues to preserve unknown rows for inspection.
+Numerical admission validates their effect vocabulary before replay.
+
+## Runtime IR and derivative correspondence
+
+Before exposing a whole-program runtime result, the callable binding records
+its primal value, forward gradient, parameter names and trainability, captured
+node values and tangents, typed effect-IR rows and serialisation, and attached
+adjoint content. Result construction and adjoint access refuse a replacement
+or later storage change that mixes those parts from different computations.
+A finite numeric value alone does not make the changed result valid.
+
+Ordinary shallow, deep and dataclass copies preserve equal tape content.
+Changing a retained gradient buffer, captured node or IR row invalidates access;
+restoring its captured content permits access again. Inspection inherits the
+active memory allowance, deadline and cancellation controls. It observes state
+between reads; it does not lock caller-owned storage or record fully reverted
+mutations.
+
+Numerical Rust replay and value-plus-gradient entry points require a typed
+`ProgramADEffectIR` to match its original serialisation before invoking the
+native engine. Historical raw strings and standalone records without a live
+capture keep their existing codec and replay behaviour. The live binding and
+its tape content check are omitted from `to_dict()` and the historical effect-IR
+codec; they do not authenticate arbitrarily reconstructed persistent records.
+
+## Captured state and adjoint resource limits
+
+Whole-program derivative results retain an in-memory binding to the callable
+and its captured numeric state. Adjoint access checks that binding without
+running the objective again and refuses a changed or unsupported capture.
+
+The runtime result and its attached `ProgramADAdjointResult` share the same
+`captured_state` object. All three adjoint accessors require that identity to
+match. Removing the binding or substituting another objective's binding through
+`dataclasses.replace()` refuses while the original adjoint remains attached.
+Shallow and deep copies retain the live callable binding; later capture changes
+invalidate derivative access until the captured state is restored. The optional
+keyword-only adjoint companion is omitted from `to_dict()` and the historical
+effect-IR codec. This checks current in-memory state; it does not authenticate
+arbitrarily reconstructed records.
+
+`program_adjoint_gradient()` and `program_adjoint_replay_gradient()` apply
+their memory cap, deadline and cancellation controls before inspecting the
+capture. The declared inspection budget includes the state digest, snapshot
+byte copies and retained code references. These charges share the active
+parent allowance with gradient copying or replay. `program_adjoint_result()`
+also inherits an active parent's controls when it validates the binding.
+
+The cap covers declared buffers and inspection storage. General allocator
+overhead and undeclared user or third-party allocations remain outside that
+accounting.
+
 ## Evidence Promotion Lane
 
 The differentiable Phase-QNode lane is a promotion candidate until the committed claim
@@ -677,3 +820,52 @@ Unsupported does not mean ignored. Current public boundaries include:
 - wide native quotient-linalg traces beyond the documented support profile.
 
 See [Differentiable Roadmap](differentiable_roadmap.md) for the staged closure plan.
+
+## Captured storage and class identity admission
+
+Captured snapshot admission counts the actual UTF-8 encoded string payload,
+including surrogate handling, against the remaining snapshot byte budget. The
+bounded traversal also checks container counts, depth, visited nodes and integer
+storage. Array, string and integer byte copies are admitted before allocation
+and charged to the enclosing execution reservation. Deadline and cancellation
+checks release those charges on refusal; subsequent valid access can recover.
+These bounds cover the declared snapshot payload and traversal limits. They do
+not establish a bound for every Python dictionary, set, parser or allocator
+workspace, and they do not lock caller storage during inspection.
+
+Effect admission examines the actual captured receiver identity. An unsupported
+class remains unsupported when bound to a conventional name such as `np`;
+located `object_attribute` refusal precedes attribute descriptor or objective
+execution. Anchored genuine NumPy classes retain supported immutable metadata
+reads, including `float64` and `dtype`. Aliasing a user class to a NumPy name
+therefore grants no additional support. Existing source-visible callbacks and
+permitted passive local containers retain their own admission contracts.
+
+## Captured traversal workspace admission
+
+Captured-state inspection admits its declared traversal workspace before
+identity tables, module-scope sets and code-reference lists grow. It measures
+the current interpreter's insertion-only set and append-only list layouts once
+at import, then reserves table capacity, identity integers, scope tuples,
+reference-list capacity and the simultaneously returned reference tuple.
+A declared frame estimate also grows with traversal depth. Capacity admission
+uses bounded batches under the existing node limit and keeps prior charges
+while the workspace remains live.
+
+An insufficient enclosing reservation refuses the access before prospective
+growth. Parent cancellation is checked during traversal, and refusal releases
+the child reservation so later valid metadata, copied-gradient and replay
+access can recover. The memory allowance changes admission; it does not change
+the objective's primal value or derivative.
+
+Permitted passive local classes retain bounded metadata admission. Malformed
+annotation storage, unsupported inherited container behaviour and foreign
+descriptors refuse before implicit descriptor or objective execution.
+Supported immutable integer and tuple-of-string metadata remain available.
+
+These reservations cover the named traversal tables, references and declared
+frame estimates. They do not establish complete admission for import-time
+calibration, Python allocator or RSS overhead, disassembly/parser temporaries,
+all namespace tuples, retained binding lifetimes, persistence or concurrent
+caller mutation. Snapshot validation does not lock caller-owned storage or
+detect a mutation wholly reverted between observations.

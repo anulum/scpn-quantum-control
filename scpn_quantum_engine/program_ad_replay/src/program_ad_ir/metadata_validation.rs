@@ -139,6 +139,15 @@ fn validate_executed_branch_metadata(ir: &ProgramADEffectIR) -> Result<(), Strin
         if index % 256 == 0 {
             crate::program_ad_lifecycle::replay_checkpoint()?;
         }
+        if !matches!(
+            effect.kind.as_str(),
+            "parameter" | "pure" | "primitive" | "control_branch" | "mutation"
+        ) {
+            return Err(format!(
+                "program AD effect {} has unsupported kind {:?}",
+                effect.index, effect.kind
+            ));
+        }
         if effect
             .operation
             .as_deref()

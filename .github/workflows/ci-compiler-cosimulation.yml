@@ -70,6 +70,133 @@ jobs:
           --data-file=/tmp/scpn-qc-circuit-preservation.coverage
           --precision=2 --show-missing --fail-under=100
           --include=*/compiler/circuit_pass_records.py,*/compiler/circuit_source.py,*/compiler/circuit_pass_qualification.py,*/tools/circuit_preservation_quality_gates.py
+  program-ad-adjoint-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Build native Program AD replay wheel
+        uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b  # v1.51.0
+        with:
+          args: --release --locked --features extension-module --out dist -m scpn_quantum_engine/Cargo.toml
+      - name: Install native Program AD replay wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
+      - name: Type-check Program AD adjoint quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/program_ad_adjoint.py
+          src/scpn_quantum_control/program_ad_adjoint_generation.py
+          tests/test_program_ad_adjoint.py
+          tests/test_program_ad_adjoint_generation.py
+          tests/test_program_ad_adjoint_generation_docstrings.py
+          tools/program_ad_adjoint_quality_gates.py
+          tests/test_program_ad_adjoint_quality_gate.py
+          src/scpn_quantum_control/program_ad_captured_state.py
+          src/scpn_quantum_control/program_ad_captured_memory.py
+          src/scpn_quantum_control/program_ad_tape_binding.py
+          src/scpn_quantum_control/program_ad_effect_admission.py
+          src/scpn_quantum_control/program_ad_effect_analysis.py
+          src/scpn_quantum_control/program_ad_effect_source_binding.py
+          src/scpn_quantum_control/program_ad_effect_call_binding.py
+          src/scpn_quantum_control/program_ad_effect_dispatch.py
+          src/scpn_quantum_control/program_ad_effect_values.py
+          src/scpn_quantum_control/whole_program_trace_scatter.py
+          tests/test_program_ad_captured_state.py
+          tests/test_program_ad_captured_memory.py
+          tests/test_program_ad_tape_binding.py
+          tests/test_program_ad_effect_admission.py
+          tests/test_program_ad_effect_analysis.py
+          tests/test_program_ad_effect_source_binding.py
+          tests/test_program_ad_effect_call_binding.py
+          tests/test_program_ad_effect_dispatch.py
+          tests/test_program_ad_effect_values.py
+          tests/test_whole_program_trace_scatter.py
+          tests/test_effectful_program_semantics.py
+      - name: Ruff NumPy docstrings for Program AD adjoint quality cohort
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/program_ad_adjoint.py
+          src/scpn_quantum_control/program_ad_adjoint_generation.py
+          tests/test_adjoint_replay_product.py
+          tests/test_differentiable_programming_benchmark_program_ir_edges.py
+          tests/test_program_ad_adjoint.py
+          tests/test_program_ad_adjoint_generation.py
+          tests/test_program_ad_adjoint_generation_docstrings.py
+          tests/test_program_adjoint_replay.py
+          tools/program_ad_adjoint_quality_gates.py
+          tests/test_program_ad_adjoint_quality_gate.py
+          src/scpn_quantum_control/program_ad_captured_state.py
+          src/scpn_quantum_control/program_ad_captured_memory.py
+          src/scpn_quantum_control/program_ad_tape_binding.py
+          src/scpn_quantum_control/program_ad_effect_admission.py
+          src/scpn_quantum_control/program_ad_effect_analysis.py
+          src/scpn_quantum_control/program_ad_effect_source_binding.py
+          src/scpn_quantum_control/program_ad_effect_call_binding.py
+          src/scpn_quantum_control/program_ad_effect_dispatch.py
+          src/scpn_quantum_control/program_ad_effect_values.py
+          src/scpn_quantum_control/whole_program_trace_scatter.py
+          tests/test_program_ad_captured_state.py
+          tests/test_program_ad_captured_memory.py
+          tests/test_program_ad_tape_binding.py
+          tests/test_program_ad_effect_admission.py
+          tests/test_program_ad_effect_analysis.py
+          tests/test_program_ad_effect_source_binding.py
+          tests/test_program_ad_effect_call_binding.py
+          tests/test_program_ad_effect_dispatch.py
+          tests/test_program_ad_effect_values.py
+          tests/test_whole_program_trace_scatter.py
+          tests/test_effectful_program_semantics.py
+      - name: Run Program AD adjoint focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-program-ad-adjoint-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_adjoint_replay_product.py
+          tests/test_differentiable_programming_benchmark_program_ir_edges.py
+          tests/test_program_ad_adjoint.py
+          tests/test_program_ad_adjoint_generation.py
+          tests/test_program_ad_adjoint_generation_docstrings.py
+          tests/test_program_adjoint_replay.py
+          tests/test_program_ad_runtime_registry_dispatch.py
+          tests/test_program_ad_captured_state.py
+          tests/test_program_ad_captured_memory.py
+          tests/test_program_ad_tape_binding.py
+          tests/test_program_ad_effect_admission.py
+          tests/test_program_ad_effect_analysis.py
+          tests/test_program_ad_effect_source_binding.py
+          tests/test_program_ad_effect_call_binding.py
+          tests/test_program_ad_effect_dispatch.py
+          tests/test_program_ad_effect_values.py
+          tests/test_whole_program_trace_scatter.py
+          tests/test_effectful_program_semantics.py
+          tests/test_program_ad_adjoint_quality_gate.py
+      - name: Enforce Program AD adjoint exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-program-ad-adjoint-quality.coverage
+          --precision=2 --show-missing
+          --fail-under=100
+          --include=*/program_ad_adjoint.py,*/program_ad_adjoint_generation.py
+      - name: Enforce captured program state exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-program-ad-adjoint-quality.coverage
+          --precision=2 --show-missing
+          --fail-under=100
+          --include=*/program_ad_captured_state.py,*/program_ad_captured_memory.py,*/program_ad_tape_binding.py,*/program_ad_effect_admission.py,*/program_ad_effect_analysis.py,*/program_ad_effect_source_binding.py,*/program_ad_effect_call_binding.py,*/program_ad_effect_dispatch.py,*/program_ad_effect_values.py,*/whole_program_trace_scatter.py,*/program_ad_adjoint_quality_gates.py
   scientific-problem-quality:
     runs-on: ubuntu-latest
     env:

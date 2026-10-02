@@ -204,6 +204,49 @@ packages.
 | product | `whole_program_value_and_grad` product entry |
 | residual | Polyglot parity certificates and edge/WASM routing boundaries |
 
+
+Frontend effect refusals are described in [objective effect admission](differentiable_programming.md#objective-effects-before-execution). They protect the numerical entry point from unsupported captured writes, callbacks and ambient random draws before objective execution.
+
+Native list and dictionary calls must match the supported receiver, operand and
+keyword contracts. Excessive known operands remain a pre-execution refusal even
+when they follow an unresolved `*args` expansion. The located diagnostic is
+`external_callback`; see [native container call signatures](differentiable_programming.md#native-container-call-signatures)
+for signature, native read-method, captured-storage, callback and deletion checks.
+
+Loaded objective filenames must be native strings. Filename subclasses raise
+`ValueError` before source caches or path handling can invoke their protocols.
+
+The compiler and numerical runtime preserve multiline strings in nested
+objectives through source extraction. Their contents must match the loaded
+function, as described in the [source admission contract](differentiable_programming.md#objective-effects-before-execution).
+An unreadable or unterminated current definition reports `source_frontend_missing`
+and is refused before numerical execution.
+
+Disassembly admits native code names and immutable constants within the existing
+4096-node and depth-64 limits. Foreign names, container subclasses and graphs
+beyond those limits retain a located source-mismatch diagnostic and are refused
+before objective execution, without invoking their formatting, comparison or
+container protocols.
+
+Derivative access validates the captured callable and numeric state without
+rerunning the objective. Copying and replay include declared snapshot storage
+in their resource admission; the metadata getter uses an active parent's
+controls. See [captured-state resource limits](differentiable_programming.md#captured-state-and-adjoint-resource-limits)
+for the caller contract.
+The result and attached adjoint share the same live capture binding, retained
+by ordinary copies and checked by every adjoint accessor. Imported effects with
+unsupported kinds refuse numerical admission; see [imported effect admission](differentiable_programming.md#imported-effect-admission).
+Runtime results also bind the primal, numeric buffers, typed and serialised IR,
+and attached adjoint to the captured computation. Mismatched content refuses
+construction or derivative access; ordinary copies preserve it and restoration
+recovers access. Numerical Rust inputs require typed/wire correspondence; see
+[runtime IR and derivative correspondence](differentiable_programming.md#runtime-ir-and-derivative-correspondence).
+
+
+Frontend reports retain nested code provenance without process memory addresses.
+See [Frontend report reproducibility](differentiable_programming.md#frontend-report-reproducibility)
+for how nested code constants contribute to reproducible reports.
+
 ## Bounded product status
 
 Shipped: layered architecture map · public entrypoints catalogue · unsupported
@@ -214,3 +257,18 @@ Open: polyglot parity certificate subset · edge/WASM routing · mass call-site
 migration of ambient workbench exports.
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)
+
+Captured snapshot byte copies use actual UTF-8 payload size and remaining-budget
+admission before allocation. Unsupported captured class attributes are refused
+by actual receiver identity, including conventional-name aliases; genuine
+supported NumPy immutable metadata remains available. See
+[captured storage and class identity admission](differentiable_programming.md#captured-storage-and-class-identity-admission)
+for reservation recovery and the remaining workspace and concurrency limits.
+
+Captured metadata, copied-gradient and replay access reserve declared
+identity-table, module-scope, code-reference and frame workspace before
+prospective growth. Refusal and cancellation release the child reservation;
+sufficient allowance preserves primal and derivative results. See
+[captured traversal workspace admission](differentiable_programming.md#captured-traversal-workspace-admission)
+for passive-class metadata admission and the open allocator, lifetime,
+persistence and concurrency boundaries.

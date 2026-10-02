@@ -34,6 +34,19 @@ from .program_ad_alias_contracts import (
 from .program_ad_effect_ir import ProgramADAliasEdge, ProgramADEffectIR
 from .whole_program_frontend_contracts import WholeProgramUnsupportedSemanticDiagnostic
 
+_PROGRAM_AD_SUPPORTED_EFFECT_KINDS = frozenset(
+    {"parameter", "pure", "primitive", "control_branch", "mutation"}
+)
+
+
+def _require_supported_program_ad_effects(program_ir: ProgramADEffectIR) -> None:
+    """Refuse unregistered effects before an alias or derivative plan is admitted."""
+    for effect in program_ir.effects:
+        if effect.kind not in _PROGRAM_AD_SUPPORTED_EFFECT_KINDS:
+            raise ValueError(
+                f"program AD effect {effect.index} has unsupported kind {effect.kind!r}"
+            )
+
 
 def analyze_program_ad_alias_effects(
     program_ir: ProgramADEffectIR,
@@ -64,6 +77,7 @@ def analyze_program_ad_alias_effects(
     """
     if not isinstance(program_ir, ProgramADEffectIR):
         raise ValueError("program AD alias analysis requires ProgramADEffectIR")
+    _require_supported_program_ad_effects(program_ir)
 
     parent: dict[str, str] = {}
     versions_by_member: dict[str, set[int]] = {}
@@ -295,6 +309,9 @@ def program_ad_static_alias_lattice_report(
         sorted(effect.index for effect in program_ir.effects if effect.kind == "mutation")
     )
     blocker_reasons: set[str] = set()
+    for effect in program_ir.effects:
+        if effect.kind not in _PROGRAM_AD_SUPPORTED_EFFECT_KINDS:
+            blocker_reasons.add(f"unsupported_effect_kind:{effect.kind}:effect:{effect.index}")
     if unknown_alias_edge_kinds:
         blocker_reasons.add("unknown_alias_edge_kinds")
     if mutation_effects:
