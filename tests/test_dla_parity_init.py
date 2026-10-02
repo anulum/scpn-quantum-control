@@ -51,6 +51,15 @@ def test_all_names_in_all_are_importable() -> None:
     """Expose every symbol declared by the package export contract."""
     for name in dp.__all__:
         assert hasattr(dp, name), f"{name} declared in __all__ but not importable"
+    assert set(dp.__all__) <= set(dir(dp))
+
+
+def test_unknown_public_export_is_refused() -> None:
+    """Reject undeclared package names without adding them to the public namespace."""
+    name = "undeclared_parity_export"
+    with pytest.raises(AttributeError, match=name):
+        getattr(dp, name)
+    assert name not in vars(dp)
 
 
 @needs_real_data

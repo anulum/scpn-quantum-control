@@ -15,6 +15,24 @@ import pytest
 from scpn_quantum_control.benchmarks.kyma_v3 import task
 
 
+def test_public_package_exports_preserve_task_identity_and_behavior() -> None:
+    """Use deferred public exports to build and inspect the real symbolic dataset."""
+    from scpn_quantum_control.benchmarks import kyma_v3
+
+    assert kyma_v3.SymbolicDataset is task.SymbolicDataset
+    assert kyma_v3.build_dataset is task.build_dataset
+    assert kyma_v3.design_report is task.design_report
+    dataset = kyma_v3.build_dataset()
+    assert isinstance(dataset, kyma_v3.SymbolicDataset)
+    assert dataset.size == 2176
+    assert kyma_v3.design_report().test_items == 64
+    assert set(kyma_v3.__all__) <= set(dir(kyma_v3))
+    name = "undeclared_symbolic_export"
+    with pytest.raises(AttributeError, match=name):
+        getattr(kyma_v3, name)
+    assert name not in vars(kyma_v3)
+
+
 def test_operations_match_their_definitions() -> None:
     """Check that operations match their definitions."""
     assert task.apply_operation((1, 2, 3), 0) == (2, 3, 1)
