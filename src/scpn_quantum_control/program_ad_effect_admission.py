@@ -125,6 +125,7 @@ class _Visitor(ast.NodeVisitor):
         self.expression_values: dict[ast.AST, _Value] = {}
 
     def add(self, node: ast.AST, semantic: str, detail: str) -> None:
+        """Retain an effect diagnostic at its objective or helper call location."""
         self.analysis.add(self.location or node, semantic, detail)
 
     def visit_Attribute(self, node: ast.Attribute) -> None:
@@ -144,6 +145,7 @@ class _Visitor(ast.NodeVisitor):
         self.generic_visit(node)
 
     def value(self, node: ast.AST) -> _Value:
+        """Resolve expression activity and storage provenance without execution."""
         if node in self.expression_values:
             return self.analysis.resolve(self.expression_values[node])
         if isinstance(node, ast.Name):
@@ -378,6 +380,7 @@ class _Visitor(ast.NodeVisitor):
         return _Value(active=any(child.active for child in children), local=True)
 
     def write(self, target: ast.AST, node: ast.AST) -> None:
+        """Locate unsupported writes to external names or captured storage."""
         if isinstance(target, ast.Name):
             if target.id in self.external_names:
                 self.add(node, "captured_mutation", "captured or global mutation is unsupported")
@@ -392,12 +395,15 @@ class _Visitor(ast.NodeVisitor):
                 self.write(element, node)
 
     def visit_Global(self, node: ast.Global) -> None:
+        """Record global names so assignments retain external write provenance."""
         self.external_names.update(node.names)
 
     def visit_Nonlocal(self, node: ast.Nonlocal) -> None:
+        """Record nonlocal names so assignments retain captured write provenance."""
         self.external_names.update(node.names)
 
     def visit_Assign(self, node: ast.Assign) -> None:
+        """Inspect assignment effects and bind the incoming storage provenance."""
         self.visit(node.value)
         value = self.analysis.resolve(self.value(node.value))
         for target in node.targets:
@@ -405,6 +411,7 @@ class _Visitor(ast.NodeVisitor):
             self.bind_target(target, value)
 
     def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
+        """Inspect an annotated write and bind its value when one is present."""
         self.write(node.target, node)
         if node.value is not None:
             self.visit(node.value)
@@ -519,6 +526,7 @@ class _Visitor(ast.NodeVisitor):
         self.analysis.store(receiver, updated)
 
     def visit_AugAssign(self, node: ast.AugAssign) -> None:
+        """Propagate augmented values while refusing captured in-place writes."""
         self.write(node.target, node)
         if isinstance(node.target, ast.Name | ast.Subscript):
             value = self.value(node.target)
@@ -570,6 +578,7 @@ class _Visitor(ast.NodeVisitor):
                 )
 
     def visit_Delete(self, node: ast.Delete) -> None:
+        """Validate deletion receivers and update supported local storage."""
         for target in node.targets:
             self.write(target, node)
             if isinstance(target, ast.Name):
@@ -620,11 +629,13 @@ class _Visitor(ast.NodeVisitor):
                     self.analysis.store(receiver, updated)
 
     def visit_Return(self, node: ast.Return) -> None:
+        """Inspect a return expression and retain its value for helper callers."""
         if node.value is not None:
             self.visit(node.value)
             self.returns.append(self.value(node.value))
 
     def visit_If(self, node: ast.If) -> None:
+        """Join both branch environments without dropping captured alias origins."""
         self.visit(node.test)
         before = self.environment.copy()
         storage_before = self.analysis.storage.copy()
@@ -651,6 +662,7 @@ class _Visitor(ast.NodeVisitor):
         }
 
     def visit_For(self, node: ast.For) -> None:
+        """Bind loop items and inspect loop-carried effects and the else body."""
         self.visit(node.iter)
         self.write(node.target, node)
         value = self.iterated_value(self.value(node.iter))
@@ -662,11 +674,13 @@ class _Visitor(ast.NodeVisitor):
             self.visit(statement)
 
     def visit_While(self, node: ast.While) -> None:
+        """Inspect repeated condition and body effects before the else body."""
         self.loop(node, [ast.Expr(value=node.test), *node.body])
         for statement in node.orelse:
             self.visit(statement)
 
     def loop(self, node: ast.AST, statements: list[ast.stmt]) -> None:
+        """Join loop-carried aliases to a bounded fixed point or refuse the loop."""
         for _ in range(16):
             storage_before = self.analysis.storage.copy()
             before = {
@@ -698,6 +712,7 @@ class _Visitor(ast.NodeVisitor):
         )
 
     def visit_ListComp(self, node: ast.ListComp | ast.GeneratorExp) -> None:
+        """Propagate comprehension item activity within its temporary scope."""
         before = self.environment.copy()
         for generator in node.generators:
             self.visit(generator.iter)
@@ -721,6 +736,7 @@ class _Visitor(ast.NodeVisitor):
     visit_GeneratorExp = visit_ListComp
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        """Locate nested callback definitions without an admitted effect contract."""
         self.add(
             node,
             "external_callback",
@@ -1066,6 +1082,7 @@ class _Visitor(ast.NodeVisitor):
                 )
 
     def visit_Call(self, node: ast.Call) -> None:
+        """Admit registered calls and refuse unsupported callbacks or output writes."""
         self.generic_visit(node)
         callee = self.value(node.func)
         if id(callee.value) in _PURE_IDS:

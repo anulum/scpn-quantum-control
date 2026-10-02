@@ -1,7 +1,7 @@
 {
   "schema": "scpn_qc_boundary_baseline_v3",
   "measured_head": "a966165d1525e4a4537f6ade0cabcbe0f111603d",
-  "domain_map_sha256": "3c4f31c9b6f3da5f09574cb2ff4c176189eb1e4a5a238c7f0f0e7a95009cb77e",
+  "domain_map_sha256": "cf7aafc76793f37cae2cabd7c50f271249615ba2270adbb055ce7d5f850f9482",
   "dependencies": {
     "SCPN-QC-CONTRACTS": [],
     "SCPN-QC-CORE": [
@@ -2038,9 +2038,9 @@
       "source": "src/scpn_quantum_control/__init__.py",
       "scope": "__getattr__",
       "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
-      "source_sha256": "32a9af646eb4a0b6f76ba1c6abfeb18fc05fc3fc5dcac3454ffe0bd3a84523e3",
+      "source_sha256": "47e0cf51857887162f97afac0a67c1cdf6d355d89f5b0516e1de8a26df2b68db",
       "role": "first-party-lazy",
-      "reason": "Complete literal public-export table retains all 847 existing module/attribute pairs and adds the original finite phase factory plus three model-convention exports. The unchanged resolver imports only target[0], preserves genuine objects, and caches successful access; implementations remain in owning leaves. Source AST preservation and public original-runtime/refusal/cold-import tests qualify these additions.",
+      "reason": "Complete literal table retains all 851 existing module/attribute bindings. The unchanged resolver imports only target[0] and caches successful access. Module assignment now defers public-object resolution until the owning module finishes loading, avoiding partial-initialisation re-entry without changing export identity. Actual cold/public API and failure/restoration fixtures qualify this complete source; no new dynamic call or target is admitted.",
       "count": 1
     },
     {

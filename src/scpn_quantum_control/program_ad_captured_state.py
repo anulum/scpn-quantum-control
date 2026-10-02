@@ -185,6 +185,7 @@ class _Fingerprint:
         self.nodes = 0
 
     def add(self, value: bytes) -> None:
+        """Hash a length-delimited payload within the snapshot byte limit."""
         self.bytes += len(value)
         if self.bytes > _MAX_BYTES:
             raise _UnsupportedState("captured state exceeds the bounded snapshot")
@@ -271,6 +272,7 @@ class _Fingerprint:
             self.aggregate(value, depth, module_names)
 
     def aggregate(self, value: object, depth: int, module_names: tuple[str, ...]) -> None:
+        """Fingerprint supported storage and references at the current depth."""
         identity = id(value)
         self.add(str(identity).encode("ascii"))
         kind = type(value)
@@ -350,6 +352,7 @@ class _Fingerprint:
             raise _UnsupportedState("captured state storage type is unsupported")
 
     def function(self, function: FunctionType, depth: int) -> None:
+        """Fingerprint callable code and captures without executing the callable."""
         self.memory.reference(len(self.code_references) + 1)
         self.code_references.append(function.__code__)
         self.add(b"function")

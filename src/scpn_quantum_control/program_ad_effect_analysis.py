@@ -249,6 +249,7 @@ class _Analysis(_Storage):
         super().__init__()
 
     def add(self, node: ast.AST, semantic: str, detail: str) -> None:
+        """Retain one diagnostic for each distinct source node and effect reason."""
         if not any(
             finding.node is node and finding.semantic == semantic and finding.detail == detail
             for finding in self.findings
@@ -343,6 +344,7 @@ class _Analysis(_Storage):
         location: ast.AST | None,
         variadic: _Value | None = None,
     ) -> _Value:
+        """Inspect a source-bound callable with propagated arguments and captures."""
         self.inspections += 1
         root = definition if location is None else location
         if isinstance(definition, ast.AsyncFunctionDef):
