@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "cohorts": [
+    {
+      "id": "workspace",
+      "fixtures": [
+        "tests/data/studio_workspace/canonical.json",
+        "tests/data/studio_workspace/documents.json",
+        "tests/data/studio_workspace/structural.json",
+        "tests/data/studio_workspace/transport.json",
+        "tests/data/studio_workspace/settings.json"
+      ],
+      "consumers": [
+        {
+          "id": "python",
+          "source": [
+            "src/scpn_quantum_control/canonical_encoding.py",
+            "src/scpn_quantum_control/studio_workspace/contracts.py",
+            "src/scpn_quantum_control/studio_workspace/json_transport.py",
+            "src/scpn_quantum_control/studio_workspace/graph.py",
+            "src/scpn_quantum_control/studio_workspace/settings.py"
+          ],
+          "tests": [
+            "tests/test_studio_workspace_canonical.py",
+            "tests/test_studio_workspace_contracts.py",
+            "tests/test_studio_workspace_json_transport.py",
+            "tests/test_resolved_workspace_settings.py",
+            "tests/test_studio_workspace_graph.py"
+          ],
+          "command": [
+            "{python}",
+            "-m",
+            "pytest",
+            "--noconftest",
+            "--no-cov",
+            "-q",
+            "tests/test_studio_workspace_canonical.py",
+            "tests/test_studio_workspace_contracts.py",
+            "tests/test_studio_workspace_json_transport.py",
+            "tests/test_resolved_workspace_settings.py",
+            "tests/test_studio_workspace_graph.py"
+          ],
+          "cwd": ".",
+          "native_docs": [
+            "src/scpn_quantum_control/canonical_encoding.py",
+            "src/scpn_quantum_control/studio_workspace/contracts.py",
+            "src/scpn_quantum_control/studio_workspace/json_transport.py",
+            "src/scpn_quantum_control/studio_workspace/graph.py",
+            "src/scpn_quantum_control/studio_workspace/settings.py"
+          ]
+        },
+        {
+          "id": "typescript",
+          "source": [
+            "studio-web/src/shared/contracts/canonical.ts",
+            "studio-web/src/shared/contracts/workspace.ts",
+            "studio-web/src/shared/contracts/jsonTransport.ts",
+            "studio-web/src/shared/contracts/settings.ts",
+            "studio-web/src/shared/contracts/graph.ts"
+          ],
+          "tests": [
+            "studio-web/src/shared/contracts/canonical.test.ts",
+            "studio-web/src/shared/contracts/workspace.test.ts",
+            "studio-web/src/shared/contracts/jsonTransport.test.ts",
+            "studio-web/src/shared/contracts/settings.test.ts",
+            "studio-web/src/shared/contracts/graph.test.ts"
+          ],
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "src/shared/contracts/canonical.test.ts",
+            "src/shared/contracts/workspace.test.ts",
+            "src/shared/contracts/jsonTransport.test.ts",
+            "src/shared/contracts/settings.test.ts",
+            "src/shared/contracts/graph.test.ts"
+          ],
+          "cwd": "studio-web",
+          "native_docs": [
+            "studio-web/src/shared/contracts/canonical.ts",
+            "studio-web/src/shared/contracts/workspace.ts",
+            "studio-web/src/shared/contracts/jsonTransport.ts",
+            "studio-web/src/shared/contracts/settings.ts",
+            "studio-web/src/shared/contracts/graph.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "program-source",
+      "fixtures": [
+        "tests/data/program_authoring/corpus.json"
+      ],
+      "consumers": [
+        {
+          "id": "python",
+          "source": [
+            "src/scpn_quantum_control/studio/program_authoring.py"
+          ],
+          "tests": [
+            "tests/test_studio_program_authoring.py"
+          ],
+          "command": [
+            "{python}",
+            "-m",
+            "pytest",
+            "--noconftest",
+            "--no-cov",
+            "-q",
+            "tests/test_studio_program_authoring.py",
+            "-k",
+            "native_shared_source_corpus"
+          ],
+          "cwd": ".",
+          "native_docs": [
+            "src/scpn_quantum_control/studio/program_authoring.py"
+          ]
+        },
+        {
+          "id": "rust",
+          "source": [
+            "scpn_quantum_engine/studio_wasm_kernel/src/program_source.rs"
+          ],
+          "tests": [
+            "scpn_quantum_engine/studio_wasm_kernel/tests/program_source.rs"
+          ],
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "--test",
+            "program_source",
+            "shared_source_corpus"
+          ],
+          "cwd": "scpn_quantum_engine/studio_wasm_kernel",
+          "native_docs": [
+            "scpn_quantum_engine/studio_wasm_kernel/src/program_source.rs"
+          ]
+        },
+        {
+          "id": "wasm",
+          "source": [
+            "studio-web/src/features/programs/programCompiler.ts",
+            "scpn_quantum_engine/studio_wasm_kernel/src/program_source_abi.rs"
+          ],
+          "tests": [
+            "studio-web/src/features/programs/programCompiler.test.ts"
+          ],
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "src/features/programs/programCompiler.test.ts",
+            "-t",
+            "shared native source"
+          ],
+          "cwd": "studio-web",
+          "native_docs": [
+            "studio-web/src/features/programs/programCompiler.ts",
+            "scpn_quantum_engine/studio_wasm_kernel/src/program_source_abi.rs"
+          ]
+        }
+      ]
+    }
+  ]
+}

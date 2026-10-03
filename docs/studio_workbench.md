@@ -456,6 +456,39 @@ state transaction.
 
 ## Immutable workspace contracts
 
+### Shared contract conformance
+
+The shared fixture registry binds workspace documents, typed canonical bytes
+and lossless transport to their real Python and TypeScript consumers. The
+supported program-source corpus also runs through native Python, native Rust
+and the TypeScript binding to the compiled Rust WASM module. These checks retain
+the existing independent byte, digest, measurement-order, parameter and refusal
+oracles; a source plan still means emitted source rather than executed hardware.
+
+From the repository root, use the existing locked environment:
+
+```bash
+PYTHONPATH=src:oscillatools/src:. python -m tools.studio_contract_quality_gates
+PYTHONPATH=src:oscillatools/src:. python -m tools.studio_contract_quality_gates --run
+```
+
+The first command validates the declared fixture, source, native-documentation
+and dedicated-test owners plus their required CI aggregation. The second runs
+all five actual consumers. It requires the already installed browser dependency
+lock and compiled Studio WASM kernel; an unavailable runtime fails visibly.
+Each consumer has a 120-second limit and failures stop the command immediately.
+No retry or optional substitute can produce a passing conformance result.
+
+`tools.ci_workflow_inventory.load_contract_cohorts` exposes the checked local
+registry; `validate_contract_workflow` verifies the executable Studio owner,
+mandatory conformance step and existing aggregate failure predicate. The Studio
+workflow owns runtime parity. Native Python jobs run portable ownership and
+refusal tests; the Studio category supplies Node, native Rust and WASM for the
+runtime integration tests. Removing a required language, test argument, source
+owner or aggregate dependency is a failure, as are conditional or error-tolerant
+qualification steps. Original saved documents and corpus files remain unchanged
+when a malformed input or deliberately damaged oracle is refused.
+
 The Python `scpn_quantum_control.studio.workspace` API and the browser's
 `src/shared/contracts/index.ts` export the same five metadata contracts:
 

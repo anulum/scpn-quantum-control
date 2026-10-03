@@ -49,8 +49,10 @@
         "tests/test_split_boundary_guard.py",
         "tests/test_split_import_visibility.py",
         "tests/test_stable_core_release_gate.py",
+        "tests/test_studio_contract_quality_gate.py",
         "tests/test_synchronisation_benchmark_compare.py",
         "tests/test_wheel_contents.py",
+        "tests/test_workspace_cross_language_conformance.py",
         "tests/test_zenodo_metadata.py"
       ],
       "id": "repository_policy",

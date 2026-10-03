@@ -13,7 +13,7 @@
     "python_model_source_modules": 771,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1477
+    "test_files": 1479
   },
   "documentation": {
     "examples": [
@@ -9959,6 +9959,7 @@
       "tests/test_studio_browser_journey.py",
       "tests/test_studio_claim_frontier_quality_gate.py",
       "tests/test_studio_compiler_trace.py",
+      "tests/test_studio_contract_quality_gate.py",
       "tests/test_studio_coupling_invariant.py",
       "tests/test_studio_evidence_bundle.py",
       "tests/test_studio_executive.py",
@@ -10140,6 +10141,7 @@
       "tests/test_wirtinger_implicit_product_quality_gate.py",
       "tests/test_witness_discovery.py",
       "tests/test_witness_discovery_engine_fallback.py",
+      "tests/test_workspace_cross_language_conformance.py",
       "tests/test_workspace_settings_portability.py",
       "tests/test_xxz_hamiltonian.py",
       "tests/test_xxz_phase_diagram.py",

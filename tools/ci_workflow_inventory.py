@@ -20,6 +20,18 @@ from scpn_quantum_control.ci_workflow_ownership import (
     read_ci_workflow_policy,
     resolve_ci_workflow_owner,
 )
+from tools.studio_contract_ownership import (
+    ContractCohort as ContractCohort,
+)
+from tools.studio_contract_ownership import (
+    ContractConsumer as ContractConsumer,
+)
+from tools.studio_contract_ownership import (
+    load_contract_cohorts as load_contract_cohorts,
+)
+from tools.studio_contract_ownership import (
+    validate_contract_workflow as validate_contract_workflow,
+)
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 CI_WORKFLOW_POLICY = REPOSITORY_ROOT / "tools/ci_workflow_policy.json"
@@ -208,12 +220,16 @@ def workflow_path_for_job(job_id: str, *, policy: WorkflowPolicy | None = None) 
 
 __all__ = [
     "CI_WORKFLOW_POLICY",
+    "ContractCohort",
+    "ContractConsumer",
     "REPOSITORY_ROOT",
     "WorkflowCategory",
     "WorkflowLimits",
     "WorkflowPolicy",
     "ci_workflow_paths",
     "load_ci_workflow_policy",
+    "load_contract_cohorts",
     "read_ci_workflow_source",
+    "validate_contract_workflow",
     "workflow_path_for_job",
 ]
