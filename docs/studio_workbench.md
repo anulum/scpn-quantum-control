@@ -154,7 +154,12 @@ device. References survive only for the exact same row digest. Selection belongs
 to the mounted profile view; export before leaving it or reloading. Workspace
 archives and unsaved workspace drafts remain independent.
 
-The native adapter reuses the existing route catalogue and HAL profiles:
+The native adapter reuses the existing route catalogue and HAL profiles. Its
+typed canonical bytes and schema-prefixed SHA-256 digests come from the shared
+`scpn_quantum_control.canonical_encoding` contracts owner. Workspace readers use
+the same implementation through their existing `studio_workspace.canonical`
+imports; HAL export loads no Studio module. Profile wire fields and digests are
+unchanged by this shared ownership.
 
 ```python
 from scpn_quantum_control.hardware.provider_capability_discovery import build_backend_profiles

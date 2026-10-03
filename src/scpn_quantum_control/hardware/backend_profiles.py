@@ -22,7 +22,7 @@ from dataclasses import asdict, dataclass
 from datetime import date, datetime
 from typing import Any
 
-from ..studio_workspace.canonical import canonical_digest
+from ..canonical_encoding import canonical_digest
 from .hal import BackendProfile, built_in_backend_profiles
 from .provider_capability_core import (
     ProviderCapabilitySnapshot,

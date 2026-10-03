@@ -29,6 +29,15 @@ under `accel/` now ships as the standalone `oscillatools` distribution;
 This split is why the same repository can support both reproducible research
 workflows and integration-oriented development.
 
+## Shared canonical encoding
+
+`canonical_encoding` is a dependency-free contracts owner for typed JSON bytes
+and schema-prefixed SHA-256 digests. Both HAL backend profile exporters and
+Studio workspace readers depend on this lower layer. The original
+`studio_workspace.canonical` imports remain available as explicit aliases.
+No HAL producer imports Studio to bind metadata; encoding domains and byte
+corpora retain their established semantics.
+
 ## Scientific problem inputs and parameter schemas
 
 `KuramotoProblem` remains the original symmetric coupling/frequency owner.

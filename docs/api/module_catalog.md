@@ -4,7 +4,7 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **770 modules** across **41 package families**
+- **771 modules** across **41 package families**
 - **4189 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
@@ -5425,11 +5425,11 @@ Committed-artefact emission for a browser-verifiable XY-compile recompute unit.
 
 ### `scpn_quantum_control.studio_workspace.canonical`
 
-Encode typed values without conflating integer, float or user-array tags.
+Preserve the established workspace API through the shared contracts codec.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio_workspace/canonical.py) · Public symbols: **2**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio_workspace/canonical.py) · Public symbols: **0**
 
-**Functions:** `canonical_bytes()`, `canonical_digest()`
+No public module-level class or function is declared.
 
 ### `scpn_quantum_control.studio_workspace.contracts`
 
@@ -5666,6 +5666,14 @@ Fail-closed **campaign harness productisation** surface.
 **Classes:** `CampaignHarnessRow`, `PathEligibilityDecision`, `MaterialisedCampaignProbe`
 
 **Functions:** `list_campaign_harness_ids()`, `get_campaign_harness()`, `iter_campaign_harnesses()`, `list_ambient_benchmark_family_ids()`, `decide_campaign_path()`, `materialise_appqsim_probe()`, `materialise_iqm_layout_probe()`, `materialise_closed_loop_probe()`, `materialise_demo_campaign_probe()`, `map_campaign_harness_public_surfaces()`, `build_campaign_harness_product_registry()`, `assert_campaign_harness_product_integrity()`
+
+### `scpn_quantum_control.canonical_encoding`
+
+Encode typed JSON values for producers and consumers in the contracts layer.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/canonical_encoding.py) · Public symbols: **2**
+
+**Functions:** `canonical_bytes()`, `canonical_digest()`
 
 ### `scpn_quantum_control.ci_workflow_ownership`
 

@@ -171,6 +171,7 @@
    "target": "SCPN-QC-CONTRACTS",
    "units": [
     "advantage_language_protocol",
+    "canonical_encoding",
     "ci_workflow_ownership",
     "execution_surface",
     "fisher_semantic_binding",

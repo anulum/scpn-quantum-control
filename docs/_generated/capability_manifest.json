@@ -10,10 +10,10 @@
     "public_api_exports": 851,
     "public_documentation_pages": 380,
     "python_model_classes": 1480,
-    "python_model_source_modules": 770,
+    "python_model_source_modules": 771,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1476
+    "test_files": 1477
   },
   "documentation": {
     "examples": [
@@ -6889,6 +6889,7 @@
       "src/scpn_quantum_control/bridge/ssgf_adapter.py",
       "src/scpn_quantum_control/bridge/ssgf_w_adapter.py",
       "src/scpn_quantum_control/campaign_harness_product.py",
+      "src/scpn_quantum_control/canonical_encoding.py",
       "src/scpn_quantum_control/chimera_control/evidence.py",
       "src/scpn_quantum_control/chimera_control/objectives.py",
       "src/scpn_quantum_control/chimera_control/observables.py",
@@ -8823,6 +8824,7 @@
       "tests/test_campaign_harness_product.py",
       "tests/test_campaign_harness_product_quality_gate.py",
       "tests/test_campaign_parameter_generators.py",
+      "tests/test_canonical_encoding.py",
       "tests/test_capability_manifest.py",
       "tests/test_cft_analysis.py",
       "tests/test_cgroup_paths.py",

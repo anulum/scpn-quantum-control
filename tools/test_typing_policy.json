@@ -884,6 +884,7 @@
         "tests/test_build_march_job_id_commitments.py",
         "tests/test_campaign_harness_product.py",
         "tests/test_campaign_harness_product_quality_gate.py",
+        "tests/test_canonical_encoding.py",
         "tests/test_changelog_consistency.py",
         "tests/test_check_published_record_freeze.py",
         "tests/test_check_retired_claims.py",

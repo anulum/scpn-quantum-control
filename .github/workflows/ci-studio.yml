@@ -298,15 +298,15 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src
         run: |
           python -m mypy --strict --explicit-package-bases \
-            src/scpn_quantum_control/studio_workspace src/scpn_quantum_control/studio/workspace.py \
-            tests/test_studio_workspace.py tests/test_studio_workspace_canonical.py \
+            src/scpn_quantum_control/canonical_encoding.py src/scpn_quantum_control/studio_workspace src/scpn_quantum_control/studio/workspace.py \
+            tests/test_canonical_encoding.py tests/test_studio_workspace.py tests/test_studio_workspace_canonical.py \
             tests/test_studio_workspace_json_transport.py tests/test_studio_workspace_contracts.py \
             tests/test_studio_workspace_graph.py tests/test_resolved_workspace_settings.py \
             tests/test_workspace_settings_portability.py tests/test_studio_workspace_lazy.py
           python -m ruff check --isolated --preview --select D,D413,D417,D420 \
             --config 'lint.explicit-preview-rules = true' --config 'lint.pydocstyle.convention = "numpy"' \
-            src/scpn_quantum_control/studio_workspace src/scpn_quantum_control/studio/workspace.py \
-            tests/test_studio_workspace.py tests/test_studio_workspace_canonical.py \
+            src/scpn_quantum_control/canonical_encoding.py src/scpn_quantum_control/studio_workspace src/scpn_quantum_control/studio/workspace.py \
+            tests/test_canonical_encoding.py tests/test_studio_workspace.py tests/test_studio_workspace_canonical.py \
             tests/test_studio_workspace_json_transport.py tests/test_studio_workspace_contracts.py \
             tests/test_studio_workspace_graph.py tests/test_resolved_workspace_settings.py \
             tests/test_workspace_settings_portability.py tests/test_studio_workspace_lazy.py
@@ -318,14 +318,14 @@ jobs:
           python -m coverage run --rcfile=/dev/null --branch \
             --data-file="$RUNNER_TEMP/studio-workspace.coverage" \
             --source=src/scpn_quantum_control \
-            -m pytest -q tests/test_studio_workspace.py tests/test_studio_workspace_canonical.py \
+            -m pytest -q tests/test_canonical_encoding.py tests/test_studio_workspace.py tests/test_studio_workspace_canonical.py \
             tests/test_studio_workspace_json_transport.py tests/test_studio_workspace_contracts.py \
             tests/test_studio_workspace_graph.py tests/test_studio_lazy_import.py \
             tests/test_resolved_workspace_settings.py tests/test_workspace_settings_portability.py \
             tests/test_studio_workspace_lazy.py
           python -m coverage report --rcfile=/dev/null \
             --data-file="$RUNNER_TEMP/studio-workspace.coverage" \
-            --include="*/scpn_quantum_control/studio_workspace/*.py,*/scpn_quantum_control/studio/workspace.py" \
+            --include="*/scpn_quantum_control/canonical_encoding.py,*/scpn_quantum_control/studio_workspace/*.py,*/scpn_quantum_control/studio/workspace.py" \
             --precision=2 --show-missing --fail-under=100
       - name: Enforce supported program and compiler trace native types, docs and exact coverage
         working-directory: .
