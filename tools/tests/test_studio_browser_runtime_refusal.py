@@ -93,7 +93,9 @@ def owned_fault_host(
                     if relative.endswith(".css")
                     else "application/octet-stream"
                 )
-                if relative.endswith("scpn_quantum_studio_program_ad_wasm.wasm"):
+                if Path(relative).name.startswith(
+                    "scpn_quantum_studio_program_ad_wasm"
+                ) and relative.endswith(".wasm"):
                     kernels += 1
                     if corrupt_kernel and kernels == 3:
                         content = b"owned transport returned a truncated real kernel"

@@ -1388,6 +1388,7 @@
         "tests/test_structured_ansatz.py",
         "tests/test_structured_ansatz_branches.py",
         "tests/test_structured_log_fallback.py",
+        "tests/test_studio_accessibility_browser_journey.py",
         "tests/test_studio_browser_journey.py",
         "tests/test_studio_workspace.py",
         "tests/test_studio_workspace_canonical.py",

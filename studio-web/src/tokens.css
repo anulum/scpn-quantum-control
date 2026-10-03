@@ -351,3 +351,21 @@ scpn-quantum-control — vendored floor design tokens (until keeper K2)
   .qsp-workbench-inspector dl { grid-template-columns: minmax(0, 1fr); }
   .qsp-workbench .qsp-panel { padding: 0.5rem; }
 }
+
+.qsp-workbench button, .qsp-workbench input, .qsp-workbench select, .qsp-workbench textarea {
+  font: inherit;
+  max-width: 100%;
+}
+.qsp-workbench button { white-space: normal; }
+.qsp-workbench a, .qsp-workbench a:visited { color: var(--qsp-fail-closed); }
+.qsp-skip { position: absolute; clip-path: inset(50%); width: 1px; height: 1px; overflow: hidden; }
+.qsp-skip:focus-visible { position: static; clip-path: none; width: auto; height: auto; overflow: visible; }
+.qsp-keyboard-help { color: var(--qsp-fg); background: var(--qsp-bg); border: 2px solid var(--qsp-line); width: min(40rem, calc(100% - 2rem)); max-height: calc(100% - 2rem); overflow: auto; }
+.qsp-keyboard-help::backdrop { background: rgb(0 0 0 / 55%); }
+.qsp-data-scroll { max-width: 100%; overflow-x: auto; }
+.qsp-data-scroll table { border-collapse: collapse; width: 100%; }
+.qsp-data-scroll caption { text-align: left; font-weight: 600; margin-block: .75rem; }
+.qsp-data-scroll th, .qsp-data-scroll td { border: 1px solid var(--qsp-line); padding: .4rem; text-align: left; }
+@media (prefers-reduced-motion: reduce) {
+  .qsp-workbench, .qsp-workbench * { scroll-behavior: auto; animation: none; transition: none; }
+}

@@ -82,6 +82,52 @@ startup; lazy route modules do not imply that all numerical code has been
 removed from the initial bundle. Existing federation name, expose key and
 version-pinned shared React contracts are preserved.
 
+### Keyboard, tables and display preferences
+
+Use **Skip to current view** to focus the active view directly. **Keyboard help**
+opens a modal with the native keyboard actions. Tab and Shift+Tab stay on its
+Close control; Escape or Close returns focus to the button that opened it.
+Navigation closes the helper and focuses the selected view.
+
+The layout supports light and dark system preferences, 200% zoom and reduced
+motion. Actions wrap within the view. Wide data regions have a keyboard focus
+target so their contents can be scrolled horizontally. Claim and verification
+statuses remain written as text in either theme.
+
+Kuramoto Play and 3D Lab provide **Order parameter data** and **Phase trajectory
+data** tables. They show the original sample index, dimensionless order parameter
+and each oscillator's phase in radians. Every sample remains available through
+Previous samples and Next samples; at most 20 rows are mounted at once. Values
+come from the same captured run used by the plots, with their original numeric
+precision and oscillator order.
+
+The linked coupling editor provides a **K_nm coupling edges** table alongside
+its diagram. Its rows retain directed `j → i` identity, signed coefficient and
+original unit. Choosing a row selects the same coefficient in the matrix and
+value form. Zero coefficients remain selectable in the matrix.
+
+The accessibility journey audits every delivered view in both themes, including
+loading, empty filters, compiler refusals, malformed routes/evidence, offline
+kernel transport, altered source digests and delayed old verification. It uses
+the locked axe-core source with its default rules, retains complete reports,
+and refuses serious or critical findings. A recorded walkthrough with an actual
+screen reader supplies the separate assistive-technology evidence.
+
+Run it against the actual built bundle and a separately owned source host:
+
+```bash
+PYTHONPATH=src:oscillatools/src:. python tools/studio_browser_journey.py \
+  --scenario workbench_accessibility --base-url http://127.0.0.1:4173/ \
+  --workspace-source-url http://127.0.0.1:4174/ \
+  --output studio-accessibility-journey.json
+```
+
+Both addresses must be literal HTTP loopback origins with distinct ports; the
+source host must serve the repository's Studio source at its root. The normal
+locked Studio dependencies provide the auditor. `--axe-source` can identify an
+already installed copy with the exact same content digest. The command performs
+no installation, provider submission, workspace export or screenshot capture.
+
 ### Verify local navigation
 
 The `workbench_navigation` scenario exercises the original standalone panel,

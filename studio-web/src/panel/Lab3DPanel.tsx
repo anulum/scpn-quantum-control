@@ -19,6 +19,7 @@ import type { BlochEquatorScene, PhaseCylinderScene } from "./labGeometry";
 import { blochEquatorScene, phaseCylinderScene } from "./labGeometry";
 import type { Frame, Orbit, Vec3 } from "./orbitProjection";
 import { depthOpacity, paintersOrder, projectPoint, projectPolyline } from "./orbitProjection";
+import { SimulationDataTable } from "./SimulationDataTable";
 import {
   LAB_MAX_OSCILLATORS,
   LAB_MAX_STEPS,
@@ -223,6 +224,7 @@ export function Lab3DPanel({
     const series = orderParameterSeries(captured.trajectory);
     return {
       ok: true as const,
+      trajectory: captured.trajectory,
       cylinder: phaseCylinderScene(captured.trajectory),
       bloch: blochEquatorScene(captured.trajectory),
       parity: kernelOrderParameterParity(captured.trajectory, series),
@@ -358,6 +360,7 @@ export function Lab3DPanel({
             <PhaseCylinderFigure scene={derived.cylinder} orbit={orbit} />
             <BlochEquatorFigure scene={derived.bloch} orbit={orbit} />
           </div>
+          <SimulationDataTable label="Phase trajectory data" orderParameter={derived.trajectory.orderParameter} phases={derived.trajectory} />
           {derived.parity.verified ? (
             <p className="qsp-badge qsp-badge-boundary" role="status">
               capture verified — chained integration bit-identical to the kernel&apos;s one-shot

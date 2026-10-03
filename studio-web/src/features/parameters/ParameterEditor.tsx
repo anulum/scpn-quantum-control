@@ -10,6 +10,7 @@ import { useEffect, useId, useMemo, useReducer, useRef, useState } from "react";
 import { canonicalBytes } from "../../shared/contracts";
 import { createParameterDraft, parameterDraftDigest, parameterDraftReducer, parameterElementText, parameterInputUnits } from "./parameterDraft";
 import type { ParameterDraft, ParameterDraftSource, ParameterSnapshot } from "./parameterDraft";
+import { CouplingTable } from "./CouplingTable";
 
 /** Source declarations and a host-owned validated revision-save boundary. */
 export interface ParameterEditorProps {
@@ -130,12 +131,9 @@ function ParameterDraftEditor({ initial, onSave }: { readonly initial: Parameter
               return <g key={node}><circle cx={x} cy={y} r="10" fill="Canvas" stroke="currentColor" /><text x={x} y={y} textAnchor="middle" dominantBaseline="central" fill="currentColor" fontSize="10">{node}</text></g>;
             })}
           </svg>
-          {value.values.map((_, index) => {
-            const display = parameterElementText(value, index);
-            if (display === "0" || display === "-0") return null;
-            const n = Number(value.shape[0]);
-            return <button type="button" key={index} aria-pressed={selection?.key === key && selection.index === index} onClick={() => dispatch({ type: "select", key, index })}>Edge {index % n} → {Math.floor(index / n)}: {display} {draft.snapshot.units[key]}</button>;
-          })}
+          <CouplingTable parameterKey={key} value={value} unit={draft.snapshot.units[key]!}
+            selectedIndex={selection?.key === key ? selection.index : null}
+            onSelect={index => dispatch({ type: "select", key, index })} />
         </div>}
       </section>)}
       {selection && selected && <div role="group" aria-label="Selected parameter form">

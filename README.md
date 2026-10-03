@@ -76,6 +76,7 @@ than implied coverage.
 | Train or inspect gradients | [Differentiable Tutorials](docs/differentiable_tutorials.md) -> [Differentiable Programming](docs/differentiable_programming.md) -> [Quantum Gradients](docs/quantum_gradients.md) | Exact, finite-shot, framework-comparison, or fail-closed gradient evidence. |
 | Review hardware claims | [Hardware Status Ledger](docs/hardware_status_ledger.md) -> [Hardware Result Packs](docs/hardware_result_packs.md) | Raw-count-backed evidence or an explicit blocked promotion route. |
 | Inspect compiler mappings | [Studio workbench](docs/studio_workbench.md#compiler-trace-inspection) | Native pass snapshots, logical/physical layouts, pinned source and exact metadata export; emitted IR remains unexecuted. |
+| Navigate Studio with a keyboard | [Studio keyboard and data tables](docs/studio_workbench.md#keyboard-tables-and-display-preferences) | Modal help, focus recovery, full sample and coupling tables, theme and reduced-motion support. |
 | Inspect provider and device profiles | [Studio workbench](docs/studio_workbench.md#provider-and-device-profiles) | Dated offline metadata, separate declarations and observations, exact broker identities and reference invalidation; no provider contact or submission. |
 | Use v0.10 control surfaces | [API Overview](docs/api.md) -> [Tutorials](docs/tutorials.md) -> [Example Gallery](docs/examples_gallery.md) | QRNG health checks, PQC trigger signing, UltraScale+ HLS emission, realtime telemetry, Studio federation, and sensing workflows. |
 | Evaluate adoption | [API Overview](docs/api.md) -> [Release Readiness Gate](docs/release_readiness.md) | Stable integration surfaces, release gates, and licensing boundaries. |
@@ -134,7 +135,7 @@ claims only when the evidence exists.
 | Notebook files | 109 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 1479 |
+| Python test files | 1480 |
 | Public documentation pages | 380 |
 | GitHub Actions workflows | 44 |
 

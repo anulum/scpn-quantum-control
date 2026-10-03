@@ -45,14 +45,14 @@ function ProgramRecord({ plan }: { /** Current source-bound immutable emission. 
     <p>{plan.num_qubits} qubits · {plan.num_clbits} classical bits · {plan.operations.length} operations</p>
     <p>Source SHA-256: <code>{plan.source_sha256}</code></p>
     <p aria-label="Measurement map">Readout: {plan.measurements.length === 0 ? "none" : plan.measurements.map(([q, c]) => `q[${q}] → c[${c}]`).join(", ")}</p>
-    <div className="qsp-table-scroll"><table aria-label="Program IR"><thead><tr><th>Operation</th><th>Parameters (radians)</th><th>Qubits</th><th>Classical effect</th><th>Source</th></tr></thead>
+    <div className="qsp-table-scroll" role="region" aria-label="Program IR table scrolling" tabIndex={0}><table aria-label="Program IR"><thead><tr><th>Operation</th><th>Parameters (radians)</th><th>Qubits</th><th>Classical effect</th><th>Source</th></tr></thead>
       <tbody>{plan.operations.map((op, index) => <tr key={index}>
         <td>{op.name}</td><td>{op.parameters.map(hex => `${String(parameterValue(hex))} [${hex}]`).join(", ")}</td>
         <td>{op.qubits.join(", ")}</td><td>{op.condition === null ? op.clbits.map(c => `c[${c}]`).join(", ") : `if(c==${op.condition.value})`}</td>
         <td>{op.source_span.line}:{op.source_span.column} [{op.source_span.start}, {op.source_span.end})</td>
       </tr>)}</tbody>
     </table></div>
-    <details><summary>Exact emitted record</summary><div className="qsp-table-scroll"><pre>{JSON.stringify(plan, null, 2)}</pre></div></details>
+    <details><summary>Exact emitted record</summary><div className="qsp-table-scroll" role="region" aria-label="Exact emitted record scrolling" tabIndex={0}><pre>{JSON.stringify(plan, null, 2)}</pre></div></details>
   </section>;
 }
 
@@ -134,7 +134,7 @@ export function ProgramEditor({ compiler = compileProgramSource }: {
     {plan === null && !pending && diagnostic === null && <p role="status">Draft — no current compiled plan</p>}
     {diagnostic !== null && <div role="alert"><p>{diagnostic.message} ({diagnostic.code}) at {diagnostic.source_span.line}:{diagnostic.source_span.column}</p>
       <button type="button" onClick={() => selectDiagnostic(diagnostic)}>Select offending source</button>
-      <div className="qsp-table-scroll"><pre aria-label="Located source diagnostic">{source.slice(0, selected![0])}<mark>{source.slice(selected![0], selected![1])}</mark>{source.slice(selected![1])}</pre></div>
+      <div className="qsp-table-scroll" role="region" aria-label="Located source diagnostic scrolling" tabIndex={0}><pre aria-label="Located source diagnostic">{source.slice(0, selected![0])}<mark>{source.slice(selected![0], selected![1])}</mark>{source.slice(selected![1])}</pre></div>
     </div>}
     {plan !== null && <ProgramRecord plan={plan} />}
     <section aria-label="Compilation trace"><h4>Compilation trace</h4>

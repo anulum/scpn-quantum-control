@@ -20,7 +20,11 @@ from collections.abc import Callable, Sequence
 from functools import partial
 from importlib.metadata import version
 from pathlib import Path
+from typing import TYPE_CHECKING, Literal
 from urllib.parse import urlsplit
+
+if TYPE_CHECKING:
+    from playwright.sync_api import Page
 
 
 def loopback_url(value: str) -> str:
@@ -183,13 +187,22 @@ def run_catalogue_journey(base_url: str) -> dict[str, object]:
             browser.close()
 
 
-def run_evidence_journey(base_url: str) -> dict[str, object]:
+def run_evidence_journey(
+    base_url: str,
+    *,
+    audit: Callable[[Page, str], None] | None = None,
+    color_scheme: Literal["light", "dark"] = "light",
+) -> dict[str, object]:
     """Inspect original metadata and real WASM replay across snapshot changes.
 
     Parameters
     ----------
     base_url
         Owned loopback preview of the built Studio bundle.
+    audit
+        Optional actual-page audit at each observed evidence state.
+    color_scheme
+        Native browser theme used for the original evidence journey.
 
     Returns
     -------
@@ -219,7 +232,7 @@ def run_evidence_journey(base_url: str) -> dict[str, object]:
     observations: list[str] = []
     with sync_playwright() as runtime:
         browser = runtime.chromium.launch()
-        context = browser.new_context(service_workers="block")
+        context = browser.new_context(service_workers="block", color_scheme=color_scheme)
         context.set_default_timeout(15_000)
         held: list[Route] = []
         hold_next = False
@@ -232,7 +245,11 @@ def run_evidence_journey(base_url: str) -> dict[str, object]:
             if target.scheme != "http" or target.netloc != origin:
                 rejected.append("outside-preview")
                 route.abort()
-            elif hold_next and target.path.endswith("scpn_quantum_studio_program_ad_wasm.wasm"):
+            elif (
+                hold_next
+                and Path(target.path).name.startswith("scpn_quantum_studio_program_ad_wasm")
+                and target.path.endswith(".wasm")
+            ):
                 hold_next = False
                 held.append(route)
             else:
@@ -255,6 +272,13 @@ def run_evidence_journey(base_url: str) -> dict[str, object]:
                 errors.append(str(error))
 
             page.on("pageerror", record_error)
+
+            def record(state: str) -> None:
+                """Retain the original observation and its optional live-page audit."""
+                observations.append(state)
+                if audit is not None:
+                    audit(page, state)
+
             page.goto(url, wait_until="networkidle")
             viewer = page.get_by_role("region", name="Inspect evidence JSON", exact=True)
             editor = viewer.get_by_label("Evidence JSON")
@@ -264,12 +288,14 @@ def run_evidence_journey(base_url: str) -> dict[str, object]:
             inspector = viewer.get_by_role("region", name="Evidence inspector", exact=True)
             inspector.get_by_role("button").click()
             expect(inspector.get_by_role("status")).to_have_attribute("data-verdict", "match")
-            observations.append("original-source-real-wasm-match")
+            record("original-source-real-wasm-match")
 
             # Hold a real kernel response for A, finish B, then allow A to resolve last.
             hold_next = True
             inspector.get_by_role("button").click()
             expect(inspector.get_by_role("button")).to_have_text("Recomputing…")
+            if audit is not None:
+                audit(page, "actual-original-verification-pending")
             editor.fill(json.dumps(changed))
             inspect.click()
             expect(inspector.get_by_role("status")).to_have_count(0)
@@ -278,14 +304,19 @@ def run_evidence_journey(base_url: str) -> dict[str, object]:
             assert len(held) == 1, "Expected exactly one held original kernel response"
             completed_digests = page.evaluate("window.__studioEvidenceDigests")
             with page.expect_request_finished(
-                lambda request: request.url.endswith("scpn_quantum_studio_program_ad_wasm.wasm")
+                lambda request: (
+                    Path(urlsplit(request.url).path).name.startswith(
+                        "scpn_quantum_studio_program_ad_wasm"
+                    )
+                    and urlsplit(request.url).path.endswith(".wasm")
+                )
             ):
                 held.pop().continue_()
             page.wait_for_function(
                 "previous => window.__studioEvidenceDigests > previous", arg=completed_digests
             )
             expect(inspector.get_by_role("status")).to_have_attribute("data-verdict", "mismatch")
-            observations.append("same-id-changed-claim-retains-B-after-delayed-A")
+            record("same-id-changed-claim-retains-B-after-delayed-A")
 
             tampered = json.loads(original_text)
             # Flip one original bit; this always changes the actual fixture bytes.
@@ -298,7 +329,7 @@ def run_evidence_journey(base_url: str) -> dict[str, object]:
                 "data-verdict", "unverifiable"
             )
             expect(inspector.get_by_role("status")).to_contain_text("SHA-256 binding")
-            observations.append("altered-source-digest-refused")
+            record("altered-source-digest-refused")
 
             negative = {
                 "schema": "studio.evidence-replay.v1",
@@ -322,7 +353,7 @@ def run_evidence_journey(base_url: str) -> dict[str, object]:
             ).to_be_visible()
             expect(inspector.get_by_role("button")).to_have_count(0)
             expect(inspector.get_by_role("status")).to_have_count(0)
-            observations.append("attested-falsification-retains-source-status")
+            record("attested-falsification-retains-source-status")
             editor.fill("{}")
             inspect.click()
             for message in (
@@ -332,11 +363,13 @@ def run_evidence_journey(base_url: str) -> dict[str, object]:
                 "Partial or unsupported evidence",
             ):
                 expect(inspector.get_by_text(message, exact=True)).to_be_visible()
-            observations.append("missing-source-schema-seal-visible")
+            record("missing-source-schema-seal-visible")
             editor.fill("{")
             inspect.click()
             expect(viewer.get_by_role("alert")).to_contain_text("Cannot inspect evidence")
             expect(viewer.get_by_role("region", name="Evidence inspector")).to_have_count(0)
+            if audit is not None:
+                audit(page, "malformed-evidence-retains-raw-input")
             assert not errors, errors
             assert not rejected, rejected
             assert not page.workers, "Evidence inspection must not leak a worker"
@@ -381,6 +414,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "program_authoring",
             "compiler_trace_inspector",
             "operator_backend_profiles",
+            "workbench_accessibility",
         ),
         required=True,
     )
@@ -388,6 +422,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument(
         "--workspace-source-url",
         help="Distinct owned loopback Vite server for native workspace/workbench cases",
+    )
+    parser.add_argument(
+        "--axe-source", type=Path, help="Exact locked axe-core auditor for workbench_accessibility"
     )
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)
@@ -399,14 +436,23 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         url = loopback_url(args.base_url)
         evidence["base_url"] = url
+        if args.axe_source is not None and args.scenario != "workbench_accessibility":
+            raise ValueError("--axe-source is valid only for workbench_accessibility")
         if args.scenario in (
             "workspace_recovery",
             "workbench_navigation",
             "parameter_graph_editor",
+            "workbench_accessibility",
         ):
             if args.workspace_source_url is None:
                 raise ValueError(f"{args.scenario} requires --workspace-source-url")
-            if args.scenario == "parameter_graph_editor":
+            if args.scenario == "workbench_accessibility":
+                from tools.studio_accessibility_browser import run_accessibility_journey
+
+                run_accessibility_journey(
+                    url, args.workspace_source_url, args.axe_source, evidence
+                )
+            elif args.scenario == "parameter_graph_editor":
                 from tools.studio_parameter_browser_journey import run_parameter_journey
 
                 run_parameter_journey(url, args.workspace_source_url, evidence)
@@ -421,7 +467,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         else:
             if args.workspace_source_url is not None:
                 raise ValueError(
-                    "--workspace-source-url is valid only for workspace_recovery/workbench_navigation/parameter_graph_editor"
+                    "--workspace-source-url is valid only for workspace_recovery/workbench_navigation/parameter_graph_editor/workbench_accessibility"
                 )
             journey: Callable[[str], dict[str, object]]
             if args.scenario == "workspace_panel_refusal":

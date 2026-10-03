@@ -120,7 +120,7 @@ export function SupportMatrixGrid({ matrix }: { matrix: SupportMatrixView }) {
           </select>
         </label>
       </div>
-      <div className="qsp-table-scroll">
+      <div className="qsp-table-scroll" role="region" aria-label="Support matrix table scrolling" tabIndex={0}>
         <table>
           <thead>
             <tr>

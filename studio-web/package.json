@@ -28,6 +28,7 @@
     "@vitejs/plugin-react": "6.0.3",
     "@vitest/coverage-v8": "4.1.11",
     "ast-v8-to-istanbul": "1.0.7",
+    "axe-core": "4.13.0",
     "jsdom": "29.1.1",
     "typedoc": "0.28.20",
     "typescript": "5.9.3",

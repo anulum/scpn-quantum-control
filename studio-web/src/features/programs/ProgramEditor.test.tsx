@@ -30,6 +30,13 @@ it("test_program_authoring_01", async () => {
   await compile();
   expect(screen.getByLabelText("Measurement map").textContent).toBe("Readout: q[1] → c[0], q[0] → c[1]");
   expect(screen.getByRole("table", { name: "Program IR" }).querySelectorAll("tbody tr")).toHaveLength(4);
+  for (const name of ["Program IR table scrolling", "Exact emitted record scrolling"]) {
+    const scrolling = screen.getByRole("region", { name, hidden: true });
+    expect(scrolling.tabIndex).toBe(0);
+  }
+  const scrolling = screen.getByRole("region", { name: "Program IR table scrolling" });
+  scrolling.focus();
+  expect(document.activeElement).toBe(scrolling);
   expect(screen.getByLabelText("Program source")).toHaveProperty("value", INITIAL_PROGRAM_SOURCE);
 });
 
@@ -39,6 +46,10 @@ it("test_program_authoring_02", async () => {
   edit(source); await compile();
   expect(screen.getByRole("alert").textContent).toContain("unsupported_operation");
   expect(screen.getByLabelText("Located source diagnostic").querySelector("mark")?.textContent).toBe("mystery");
+  const scrolling = screen.getByRole("region", { name: "Located source diagnostic scrolling" });
+  expect(scrolling.tabIndex).toBe(0);
+  scrolling.focus();
+  expect(document.activeElement).toBe(scrolling);
   fireEvent.click(screen.getByRole("button", { name: "Select offending source" }));
   const textarea = screen.getByLabelText<HTMLTextAreaElement>("Program source");
   expect(textarea.selectionStart).toBe(source.indexOf("mystery"));

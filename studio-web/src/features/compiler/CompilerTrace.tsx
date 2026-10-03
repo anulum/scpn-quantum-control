@@ -20,13 +20,13 @@ function PassDetails({ pass }: { /** Selected original native pass declaration. 
     <h4>{pass.name}</h4>
     <p>Native record digest: <code>{pass.nativeDigest}</code></p>
     <p>Operator error {String(pass.operatorError)} / tolerance {String(pass.tolerance)}; global phase delta {String(pass.phaseDelta)} radians; global phase {pass.allowGlobalPhase ? "allowed" : "refused"}.</p>
-    <div className="qsp-table-scroll"><table aria-label="Qubit mapping"><thead><tr><th>Logical</th><th>Input physical</th><th>Output physical</th></tr></thead>
+    <div className="qsp-table-scroll" role="region" aria-label="Qubit mapping table scrolling" tabIndex={0}><table aria-label="Qubit mapping"><thead><tr><th>Logical</th><th>Input physical</th><th>Output physical</th></tr></thead>
       <tbody>{pass.inputLayout.map((physical, logical) => <tr key={logical}><td>q[{logical}]</td><td>q[{physical}]</td><td>q[{pass.outputLayout[logical]}]</td></tr>)}</tbody>
     </table></div>
     <p aria-label="Classical mapping">Classical output: {pass.classicalLayout.length === 0 ? "none" : pass.classicalLayout.map((physical, logical) => `c[${logical}] → c[${physical}]`).join(", ")}</p>
     <p aria-label="Mapped readout">Mapped readout: {pass.observableMap.length === 0 ? "none" : pass.observableMap.map(([q, c, mappedQ, mappedC]) => `q[${q}] / c[${c}] → q[${mappedQ}] / c[${mappedC}]`).join(", ")}</p>
     <p aria-label="Readout effects">Ordered input readout: {writeJson(pass.inputMeasurements)}; ordered output readout: {writeJson(pass.outputMeasurements)}.</p>
-    <div className="qsp-table-scroll"><table aria-label="Gate changes"><thead><tr><th>Gate</th><th>Input</th><th>Output</th><th>Delta</th></tr></thead>
+    <div className="qsp-table-scroll" role="region" aria-label="Gate changes table scrolling" tabIndex={0}><table aria-label="Gate changes"><thead><tr><th>Gate</th><th>Input</th><th>Output</th><th>Delta</th></tr></thead>
       <tbody>{gates.map(name => <tr key={name}><td>{name}</td><td>{pass.before.gates[name] ?? 0}</td><td>{pass.after.gates[name] ?? 0}</td><td>{(pass.after.gates[name] ?? 0) - (pass.before.gates[name] ?? 0)}</td></tr>)}</tbody>
     </table></div>
     <p>Operation depth: {pass.before.depth} → {pass.after.depth} (delta {pass.after.depth - pass.before.depth}); operations: {pass.before.operationCount} → {pass.after.operationCount}.</p>

@@ -16,6 +16,7 @@ import type { WorkbenchContext, WorkbenchView } from "./routing";
 import { useWorkbenchRoute } from "./useWorkbenchRoute";
 import { RouteBoundary } from "./RouteBoundary";
 import { WorkbenchInspector } from "./WorkbenchInspector";
+import { WorkbenchHelp } from "./WorkbenchHelp";
 
 const OperationsView = lazy(() => import("./routes/OperationsView"));
 const BuildView = lazy(() => import("./routes/BuildView"));
@@ -48,11 +49,19 @@ export function Workbench({ children, rawCodecs, mode = "standalone" }: Workbenc
   const routeKey = location.ok ? formatWorkbenchRoute(location.route) : window.location.hash;
   const title = views.find(([candidate]) => candidate === view)?.[1] ?? (view === "operations" ? "Devices & Operations" : "Unavailable route");
   useEffect(() => { content.current?.focus(); }, [routeKey]);
+  useEffect(() => {
+    // Native fragment navigation can clear focus after the history notification.
+    const recover = () => { if (document.activeElement === document.body) content.current!.focus(); };
+    window.addEventListener("hashchange", recover);
+    return () => window.removeEventListener("hashchange", recover);
+  }, []);
   return (
     <section className="qsp-workbench" data-mode={mode} aria-label="Quantum Studio workbench">
+      <button className="qsp-skip" type="button" onClick={() => content.current!.focus()}>Skip to current view</button>
       <header className="qsp-workbench-header">
         <h2>Quantum Studio</h2>
         <p>{mode === "embedded" ? "Embedded workbench" : "Standalone workbench"} · Local browser storage and available browser instruments. Navigation does not submit provider jobs.</p>
+        <WorkbenchHelp routeKey={routeKey} />
         <nav aria-label="Workbench views">
           {views.map(([target, label]) => <a key={target} href={href(target)} aria-current={view === target ? "page" : undefined}>{label}</a>)}
         </nav>

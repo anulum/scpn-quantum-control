@@ -57,7 +57,7 @@ export function QuantumStudioPanel({ rawCodecs, mode }: QuantumStudioPanelProps 
   return (
     <Workbench {...(rawCodecs === undefined ? {} : { rawCodecs })} {...(mode === undefined ? {} : { mode })}>
       {context => (
-    <article className="qsp-panel">
+    <article className="qsp-panel" aria-label="Committed evidence overview">
       <header className="qsp-header">
         <h2>SCPN QUANTUM CONTROL</h2>
         <p className="qsp-banner">

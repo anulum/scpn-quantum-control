@@ -45,6 +45,12 @@ it("test_compiler_trace_inspector_01: displays the actual qualified physical swa
   expect(screen.getByText(/Import binds metadata/)).toBeTruthy();
   expect(screen.getByText("2.5.1")).toBeTruthy();
   expect(screen.getByRole("table", { name: "Gate changes" }).textContent).toContain("ry");
+  for (const name of ["Qubit mapping table scrolling", "Gate changes table scrolling"]) {
+    const scrolling = screen.getByRole("region", { name });
+    expect(scrolling.tabIndex).toBe(0);
+    scrolling.focus();
+    expect(document.activeElement).toBe(scrolling);
+  }
   expect(screen.getByLabelText("Pass parameters").textContent).toContain("output_layout");
 });
 

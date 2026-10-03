@@ -21,6 +21,7 @@ import type {
   KuramotoScenario,
 } from "./kuramoto";
 import { fetchKuramoto, maxOrderParameterDeviation } from "./kuramoto";
+import { SimulationDataTable } from "./SimulationDataTable";
 
 /** Loader for the WASM kernel; overridable so tests inject a built kernel. */
 /** How the panel obtains a kernel; injectable so tests need no WASM fetch. */
@@ -307,6 +308,7 @@ export function KuramotoPlayPanel({
             R initial <strong>{result.run.orderParameter[0]!.toFixed(3)}</strong> → R final{" "}
             <strong>{result.run.orderParameter[result.run.orderParameter.length - 1]!.toFixed(3)}</strong>
           </p>
+          <SimulationDataTable label="Order parameter data" orderParameter={result.run.orderParameter} />
         </>
       ) : (
         <p className="qsp-badge qsp-badge-unverifiable" role="alert">
