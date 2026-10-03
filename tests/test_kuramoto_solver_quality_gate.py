@@ -12,13 +12,12 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
-from pathlib import Path
 
 import numpy as np
 
 from tools import kuramoto_solver_quality_gates as gates
 from tools import preflight
-from tools.ci_workflow_inventory import read_ci_workflow_source
+from tools.ci_workflow_inventory import ci_workflow_paths, read_ci_workflow_source
 
 
 def test_solver_public_example_runs_original_scientific_factory() -> None:
@@ -66,5 +65,5 @@ def test_solver_ci_and_preflight_keep_whole_owner_coverage() -> None:
         assert dict(preflight.STATIC_GATES)[name] == command
     assert gates.build_coverage_gates(preflight._PY) == preflight.KURAMOTO_SOLVER_COVERAGE_GATES
     assert "kuramoto-solver-quality" in source[source.index("  ci-gate:") :]
-    coordinator = (Path(__file__).resolve().parents[1] / ".github/workflows/ci.yml").read_text()
+    coordinator = ci_workflow_paths()[0].read_text()
     assert "core-science" in coordinator[coordinator.index("  ci-gate:") :]
