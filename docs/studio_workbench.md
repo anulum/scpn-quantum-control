@@ -166,6 +166,8 @@ export uses roundtrippable decimal parameters; it does not approximate them with
 pi aliases. An independent nonzero global phase is refused because this source
 format cannot encode it. Conditional blocks must contain a single supported gate
 with no else branch or independent block phase.
+Native operations must use the supported gate's standard native classes;
+custom or modified gates cannot export under a built-in name.
 
 ```python
 from scpn_quantum_control.studio.program_authoring import (

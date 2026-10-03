@@ -16,7 +16,7 @@ import struct
 from dataclasses import dataclass
 
 from qiskit import QuantumCircuit, qasm2
-from qiskit.circuit import ClassicalRegister
+from qiskit.circuit import ClassicalRegister, Instruction
 from qiskit.circuit.controlflow import IfElseOp
 from qiskit.circuit.library import RYYGate
 
@@ -111,6 +111,8 @@ def export_program_source(circuit: QuantumCircuit) -> str:
         supported bounds. Whole-register if blocks must contain exactly one
         admitted gate with no else branch. Nonzero global phase is refused
         because OpenQASM2 cannot encode it independently of gate phases.
+        Operations must use the compiler's standard native gate classes;
+        a custom or altered definition cannot borrow a supported gate name.
 
     Returns
     -------
@@ -149,6 +151,7 @@ def export_program_source(circuit: QuantumCircuit) -> str:
     lines = ["OPENQASM 2.0;", 'include "qelib1.inc";', f"qreg q[{circuit.num_qubits}];"]
     if circuit.num_clbits:
         lines.append(f"creg c[{circuit.num_clbits}];")
+    native_operations: list[Instruction] = []
     for instruction in circuit.data:
         operation = instruction.operation
         gate_qubits = instruction.qubits
@@ -178,6 +181,7 @@ def export_program_source(circuit: QuantumCircuit) -> str:
             operation = inner.operation
         if operation.name not in _GATES:
             raise _refuse("unsupported_export", "Operation has no supported source export.", span)
+        native_operations.append(operation)
         try:
             parameters = [float(value) for value in operation.params]
         except (TypeError, ValueError) as error:
@@ -191,11 +195,25 @@ def export_program_source(circuit: QuantumCircuit) -> str:
         )
         operands = ",".join(f"q[{circuit.find_bit(bit).index}]" for bit in gate_qubits)
         if operation.name == "measure":
+            if len(instruction.clbits) != 1:
+                raise _refuse(
+                    "unsupported_export", "Measurement requires one classical destination.", span
+                )
             operands += f" -> c[{circuit.find_bit(instruction.clbits[0]).index}]"
         lines.append(f"{prefix}{operation.name}{arguments} {operands};")
     source = "\n".join(lines)
     # Reimport validates exact arities, widths, native conditions and original bits.
-    _compile(source)
+    restored = _compile(source)[1]
+    for original, instruction in zip(native_operations, restored.data, strict=True):
+        operation = instruction.operation
+        if isinstance(operation, IfElseOp):
+            operation = operation.blocks[0].data[0].operation
+        if type(original) not in (type(operation), operation.base_class):
+            raise _refuse(
+                "unsupported_export",
+                "Operation differs from its supported native definition.",
+                span,
+            )
     return source
 
 

@@ -345,3 +345,42 @@ def test_native_two_qubit_phase_matches_independent_pauli_oracle(
     assert compile_program_source(export_program_source(native)).operations[0].parameters == (
         "bfe921fb54442d20",
     )
+
+
+@pytest.mark.parametrize(
+    "kind",
+    ["custom_h", "renamed_x", "custom_measure", "malformed_measure", "conditional_custom_h"],
+)
+def test_native_export_refuses_aliased_or_changed_gate_definitions(kind: str) -> None:
+    """Refuse aliased native definitions without replacing their actual semantics.
+
+    Parameters
+    ----------
+    kind
+        Real SDK operation whose name collides with the admitted native subset.
+
+    """
+    from qiskit.circuit import Gate, Instruction
+    from qiskit.circuit.library import XGate
+
+    native = QuantumCircuit(1, 1)
+    if kind in ("custom_measure", "malformed_measure"):
+        count = int(kind == "custom_measure")
+        native.append(Instruction("measure", 1, count, []), [0], [0] if count else [])
+    else:
+        operation = XGate().to_mutable() if kind == "renamed_x" else Gate("h", 1, [])
+        operation.name = "h"
+        definition = QuantumCircuit(1)
+        definition.x(0)
+        operation.definition = definition
+        if kind == "conditional_custom_h":
+            with native.if_test((native.cregs[0], 1)):
+                native.append(operation, [0])
+        else:
+            native.append(operation, [0])
+            np.testing.assert_array_equal(Operator(native).data, np.array([[0, 1], [1, 0]]))
+    original = native.copy()
+    with pytest.raises(ProgramSourceRefused) as refused:
+        export_program_source(native)
+    assert refused.value.diagnostic.code == "unsupported_export"
+    assert native == original
