@@ -36,6 +36,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from typing import Literal
 
 import numpy as np
 from numpy.typing import NDArray
@@ -62,15 +63,19 @@ class KuramotoIvpSolution:
         The ``(T, N)`` phase trajectory (transposed from the SciPy ``(N, T)``
         layout so it matches :meth:`KuramotoSystem.trajectory`).
     success : bool
-        Whether the solver reached the end of the interval.
+        SciPy success: either the interval completed or a terminal event occurred.
     status : int
-        The SciPy solver status code (``0`` on success).
+        SciPy status: ``0`` completed, ``1`` terminal event, ``-1`` failed.
     message : str
         The human-readable SciPy termination message.
     function_evaluations : int
         The number of right-hand-side evaluations (``nfev``).
     jacobian_evaluations : int
         The number of Jacobian evaluations (``njev``; ``0`` for explicit methods).
+    event_times : tuple of numpy.ndarray
+        Root times ``(E,)`` for each event, including roots between sample times.
+    event_phases : tuple of numpy.ndarray
+        Unwrapped phases ``(E, N)`` at each root, from SciPy interpolation.
 
     """
 
@@ -81,10 +86,25 @@ class KuramotoIvpSolution:
     message: str
     function_evaluations: int
     jacobian_evaluations: int
+    event_times: tuple[NDArray[np.float64], ...] = ()
+    event_phases: tuple[NDArray[np.float64], ...] = ()
+
+    @property
+    def termination(self) -> Literal["completed", "event", "failed"]:
+        """Distinguish reaching the endpoint, a terminal event and solver failure."""
+        if not self.success:
+            return "failed"
+        return "event" if self.status == 1 else "completed"
 
     @property
     def terminal_phases(self) -> NDArray[np.float64]:
-        """A copy of the final phase state on the solution."""
+        """Copy the final sampled state; raise ValueError if no samples were stored.
+
+        A terminal event may occur before the first requested sample; its state
+        remains available in :attr:`event_phases` even when this accessor refuses.
+        """
+        if self.phases.shape[0] == 0:
+            raise ValueError("solution has no stored samples; inspect event_phases")
         return np.asarray(self.phases[-1], dtype=np.float64).copy()
 
 
@@ -98,9 +118,12 @@ def kuramoto_ode_rhs(system: KuramotoSystem) -> OdeRightHandSide:
     rule = system.rule
 
     def right_hand_side(time: float, state: NDArray[np.float64]) -> NDArray[np.float64]:
-        return np.asarray(
+        velocity = np.asarray(
             rule(np.asarray(state, dtype=np.float64), parameters, time), dtype=np.float64
         )
+        if velocity.shape != (system.dimension,) or not np.all(np.isfinite(velocity)):
+            raise ValueError("rule must return a finite vector matching the state shape")
+        return velocity
 
     return right_hand_side
 
@@ -129,6 +152,9 @@ def solve_kuramoto_ivp(
     rtol: float = 1.0e-6,
     atol: float = 1.0e-9,
     use_jacobian: bool = False,
+    events: Callable[[float, NDArray[np.float64]], float]
+    | Sequence[Callable[[float, NDArray[np.float64]], float]]
+    | None = None,
 ) -> KuramotoIvpSolution:
     """Integrate ``system`` over ``t_span`` with :func:`scipy.integrate.solve_ivp`.
 
@@ -152,6 +178,9 @@ def solve_kuramoto_ivp(
     use_jacobian : bool, optional
         Supply the analytic Jacobian to the solver (requires the system to have
         one; ignored by explicit methods but accepted for uniformity).
+    events : callable or sequence of callable, optional
+        SciPy ``event(t, phases)`` functions. Their ``terminal`` and ``direction``
+        attributes are passed through; root times/states use SciPy interpolation.
 
     Returns
     -------
@@ -161,13 +190,17 @@ def solve_kuramoto_ivp(
     Raises
     ------
     ValueError
-        If ``t_span`` is not a two-element interval, or ``use_jacobian`` is set on
-        a system without an analytic Jacobian.
+        If the interval, sample times or tolerances are nonfinite or malformed,
+        or ``use_jacobian`` is set on a system without an analytic Jacobian.
 
     """
     span = tuple(float(value) for value in t_span)
     if len(span) != 2:
         raise ValueError("t_span must be a (t0, tf) pair")
+    if not np.all(np.isfinite(span)):
+        raise ValueError("t_span must be finite")
+    if not np.isfinite(rtol) or not np.isfinite(atol) or rtol < 0.0 or atol < 0.0:
+        raise ValueError("rtol and atol must be finite and non-negative")
     keyword_options: dict[str, OdeJacobian] = {}
     if use_jacobian:
         jacobian = kuramoto_ode_jacobian(system)
@@ -175,6 +208,8 @@ def solve_kuramoto_ivp(
             raise ValueError("use_jacobian=True requires a system with an analytic Jacobian")
         keyword_options["jac"] = jacobian
     evaluation_times = None if t_eval is None else np.asarray(t_eval, dtype=np.float64)
+    if evaluation_times is not None and not np.all(np.isfinite(evaluation_times)):
+        raise ValueError("t_eval must be finite")
     solution = solve_ivp(
         kuramoto_ode_rhs(system),
         span,
@@ -183,16 +218,24 @@ def solve_kuramoto_ivp(
         t_eval=evaluation_times,
         rtol=rtol,
         atol=atol,
+        events=events,
         **keyword_options,
     )
     return KuramotoIvpSolution(
         times=np.asarray(solution.t, dtype=np.float64),
-        phases=np.asarray(solution.y, dtype=np.float64).T,
+        phases=np.asarray(solution.y, dtype=np.float64).reshape(system.dimension, -1).T,
         success=bool(solution.success),
         status=int(solution.status),
         message=str(solution.message),
         function_evaluations=int(solution.nfev),
         jacobian_evaluations=int(solution.njev),
+        event_times=tuple(
+            np.asarray(values, dtype=np.float64) for values in (solution.t_events or ())
+        ),
+        event_phases=tuple(
+            np.asarray(values, dtype=np.float64).reshape(-1, system.dimension)
+            for values in (solution.y_events or ())
+        ),
     )
 
 

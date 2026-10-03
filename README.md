@@ -133,10 +133,10 @@ claims only when the evidence exists.
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 53 |
 | Notebook files | 109 |
-| Example files | 37 |
+| Example files | 38 |
 | Optional extras | 43 |
-| Python test files | 1480 |
-| Public documentation pages | 380 |
+| Python test files | 1482 |
+| Public documentation pages | 381 |
 | GitHub Actions workflows | 44 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
@@ -345,6 +345,7 @@ Direct entry points:
   — offline manifest and integrity verifier for promoted IBM raw-count datasets
 - [Physics-First Kuramoto-XY](docs/physics_first_kuramoto_xy.md)
   — start from arbitrary oscillator networks before SCPN-specific layers
+- [Kuramoto solver times, events and termination](docs/kuramoto_solver_outcomes.md)
 - [Differentiable Programming](docs/differentiable_programming.md)
   — current AD surface, support boundaries, and user routes
 - [Differentiable Support Matrix](docs/differentiable_support_matrix.md)

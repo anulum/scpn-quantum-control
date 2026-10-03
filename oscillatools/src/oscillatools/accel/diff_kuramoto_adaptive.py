@@ -89,12 +89,20 @@ def _validate(
         raise ValueError(f"coupling must have shape {(count, count)}, got {coupling.shape}")
     if omega.shape != (count,):
         raise ValueError(f"omega must have shape {(count,)}, got {omega.shape}")
-    if plasticity_rate < 0.0:
-        raise ValueError(f"plasticity_rate must be non-negative, got {plasticity_rate}")
-    if dt <= 0.0:
-        raise ValueError(f"dt must be positive, got {dt}")
-    if n_steps < 1:
-        raise ValueError(f"n_steps must be positive, got {n_steps}")
+    if (
+        not np.all(np.isfinite(phases))
+        or not np.all(np.isfinite(coupling))
+        or not np.all(np.isfinite(omega))
+    ):
+        raise ValueError("phases, coupling and omega must be finite")
+    if not np.isfinite(plasticity_rate) or plasticity_rate < 0.0:
+        raise ValueError(f"plasticity_rate must be non-negative and finite, got {plasticity_rate}")
+    if not np.isfinite(dt) or dt <= 0.0:
+        raise ValueError(f"dt must be positive and finite, got {dt}")
+    if isinstance(n_steps, bool) or not isinstance(n_steps, (int, np.integer)) or n_steps < 1:
+        raise ValueError(f"n_steps must be positive integer, got {n_steps}")
+    if not np.isfinite(n_steps * dt):
+        raise ValueError("trajectory end time must be finite")
     return count
 
 
@@ -240,6 +248,8 @@ def adaptive_state_sensitivity(
         sensitivity = sensitivity + (dt / 6.0) * (s1 + 2.0 * s2 + 2.0 * s3 + s4)
 
     theta_final = state[:count]
+    if not np.all(np.isfinite(state)) or not np.all(np.isfinite(sensitivity)):
+        raise ValueError("evolved state and sensitivity must be finite")
     coupling_final = state[count:].reshape(count, count)
     return theta_final, coupling_final, sensitivity
 

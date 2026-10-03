@@ -600,7 +600,7 @@
   ],
   "definition_path": "src/scpn_quantum_control/kuramoto_model_conventions.py",
   "definition_sha256": "e5edb172fb8b37deffcfc48105141697b6bc936179e29f3f8342eb1cd35f4690",
-  "identity": "daab26390668ca4c6ba464830cbc6b26046011a18b015576fe527b374443529f",
+  "identity": "3ac1cd042ba5e1d95ad070323de32d34ad25bb31e515c8a77f6b8d08cabbefc3",
   "schema": "kuramoto_conventions.v1",
   "source_owners": {
     "oscillatools.accel.daido_mean_field.daido_mean_field_force": {
@@ -832,31 +832,31 @@
       "summary": "Forward delayed networked-Kuramoto method-of-steps trajectory on the JAX accelerator tier."
     },
     "oscillatools.accel.kuramoto_adaptive.adaptive_vector_field": {
-      "declaration_sha256": "bc4b3c4d45a9338d390973a3b37604631c6da15acfbfbc4d171278b827a57427",
+      "declaration_sha256": "3c7dac1db036b9bde23a81b3a4c434aa723f1d5b7e5e61ddbba71c3423eb841e",
       "direct_test_paths": [
         "oscillatools/tests/test_kuramoto_adaptive.py"
       ],
       "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
-      "line": 194,
+      "line": 196,
       "module_declared_dispatch_chains": {},
       "path": "oscillatools/src/oscillatools/accel/kuramoto_adaptive.py",
       "qualified_name": "oscillatools.accel.kuramoto_adaptive.adaptive_vector_field",
       "signature": "phases: NDArray[np.float64], coupling: NDArray[np.float64], omega: NDArray[np.float64], force: AdaptivePhaseForce, plasticity: PlasticityRule",
-      "source_sha256": "12c37c085f9e9f59de9784439a6a2c636223ed51b23221fcba92f9471beeaa2e",
+      "source_sha256": "c3ff442c014be400c4014220e5eec3959c481af72efd25c82c15f03bf5b51793",
       "summary": "Return the joint vector field ``(θ̇, K̇)`` of the adaptive Kuramoto model."
     },
     "oscillatools.accel.kuramoto_adaptive.integrate_adaptive_kuramoto": {
-      "declaration_sha256": "ded4b1f98695ee6730605863a630f1a85893901772d96c70741a91a3248f86d5",
+      "declaration_sha256": "31e08a65f7c061ea64e62af560cb07c0bb08e05f1df2bd094ee7eaa16f7450ea",
       "direct_test_paths": [
         "oscillatools/tests/test_kuramoto_adaptive.py"
       ],
       "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
-      "line": 322,
+      "line": 331,
       "module_declared_dispatch_chains": {},
       "path": "oscillatools/src/oscillatools/accel/kuramoto_adaptive.py",
       "qualified_name": "oscillatools.accel.kuramoto_adaptive.integrate_adaptive_kuramoto",
       "signature": "initial_phases: NDArray[np.float64], initial_coupling: NDArray[np.float64], omega: NDArray[np.float64], force: AdaptivePhaseForce, plasticity: PlasticityRule, *, dt: float, n_steps: int",
-      "source_sha256": "12c37c085f9e9f59de9784439a6a2c636223ed51b23221fcba92f9471beeaa2e",
+      "source_sha256": "c3ff442c014be400c4014220e5eec3959c481af72efd25c82c15f03bf5b51793",
       "summary": "Integrate the adaptive Kuramoto model by a functional RK4 on the joint ``(θ, K)`` state."
     },
     "oscillatools.accel.kuramoto_delayed.delayed_mean_field_force": {
@@ -870,7 +870,7 @@
       "path": "oscillatools/src/oscillatools/accel/kuramoto_delayed.py",
       "qualified_name": "oscillatools.accel.kuramoto_delayed.delayed_mean_field_force",
       "signature": "current_phases: NDArray[np.float64], delayed_phases: NDArray[np.float64], coupling: float",
-      "source_sha256": "eda5f4fc4e9cf6a621fb132ce0e0db218b2fc1e9dae26139832d25f9a8d38298",
+      "source_sha256": "7a124f0ade2b7d74c87fcf9dd8889773c6210a6c57b006ca07f8cfe05d2ce63d",
       "summary": "Return the delayed mean-field Kuramoto force ``F_j = (K/N) Σ_k sin(θ_k(t-τ) − θ_j(t))``."
     },
     "oscillatools.accel.kuramoto_delayed.delayed_networked_force": {
@@ -884,11 +884,11 @@
       "path": "oscillatools/src/oscillatools/accel/kuramoto_delayed.py",
       "qualified_name": "oscillatools.accel.kuramoto_delayed.delayed_networked_force",
       "signature": "current_phases: NDArray[np.float64], delayed_phases: NDArray[np.float64], coupling_matrix: NDArray[np.float64]",
-      "source_sha256": "eda5f4fc4e9cf6a621fb132ce0e0db218b2fc1e9dae26139832d25f9a8d38298",
+      "source_sha256": "7a124f0ade2b7d74c87fcf9dd8889773c6210a6c57b006ca07f8cfe05d2ce63d",
       "summary": "Return the delayed networked Kuramoto force ``F_j = Σ_k K_{jk} sin(θ_k(t-τ) − θ_j(t))``."
     },
     "oscillatools.accel.kuramoto_delayed.integrate_delayed_kuramoto": {
-      "declaration_sha256": "37f45b3e0d4b8ad09d9e18276f69942a0ba0d8c21d6201de01f4d841b1a3b3b7",
+      "declaration_sha256": "19dc2f44165853f690472d6e00e2468b0abeca6553479d35dbee3a0eee31724d",
       "direct_test_paths": [
         "oscillatools/tests/test_kuramoto_delayed.py"
       ],
@@ -898,7 +898,7 @@
       "path": "oscillatools/src/oscillatools/accel/kuramoto_delayed.py",
       "qualified_name": "oscillatools.accel.kuramoto_delayed.integrate_delayed_kuramoto",
       "signature": "initial_history: NDArray[np.float64], omega: NDArray[np.float64], force: DelayedForce, *, delay: float, dt: float, n_steps: int, delay_tolerance: float=1e-09",
-      "source_sha256": "eda5f4fc4e9cf6a621fb132ce0e0db218b2fc1e9dae26139832d25f9a8d38298",
+      "source_sha256": "7a124f0ade2b7d74c87fcf9dd8889773c6210a6c57b006ca07f8cfe05d2ce63d",
       "summary": "Integrate the time-delayed Kuramoto model by a delay-aware method-of-steps RK4."
     },
     "oscillatools.accel.kuramoto_higher_order_watanabe_strogatz.integrate_higher_order_watanabe_strogatz": {
@@ -1175,12 +1175,12 @@
         "oscillatools/tests/test_kuramoto_system.py"
       ],
       "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
-      "line": 370,
+      "line": 376,
       "module_declared_dispatch_chains": {},
       "path": "oscillatools/src/oscillatools/accel/kuramoto_system.py",
       "qualified_name": "oscillatools.accel.kuramoto_system.KuramotoSystem.mean_field",
       "signature": "cls, initial_phases: NDArray[np.float64], natural_frequencies: NDArray[np.float64], coupling: float, *, frustration: float=0.0, dt: float, scheme: str='rk4'",
-      "source_sha256": "fe02d665dd792d576dc8d3bc9b785558cc73cea56d6dd8941a4bebd8304e48f2",
+      "source_sha256": "84c57efd93b1d6aad0cfa1117a14660d4b768e04ae7eb9688e623ebcb4ef9fb5",
       "summary": "Build an all-to-all mean-field system from raw arrays."
     },
     "oscillatools.accel.kuramoto_system.KuramotoSystem.networked": {
@@ -1189,12 +1189,12 @@
         "oscillatools/tests/test_kuramoto_system.py"
       ],
       "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
-      "line": 409,
+      "line": 415,
       "module_declared_dispatch_chains": {},
       "path": "oscillatools/src/oscillatools/accel/kuramoto_system.py",
       "qualified_name": "oscillatools.accel.kuramoto_system.KuramotoSystem.networked",
       "signature": "cls, initial_phases: NDArray[np.float64], natural_frequencies: NDArray[np.float64], coupling: NDArray[np.float64], *, frustration: float=0.0, dt: float, scheme: str='rk4'",
-      "source_sha256": "fe02d665dd792d576dc8d3bc9b785558cc73cea56d6dd8941a4bebd8304e48f2",
+      "source_sha256": "84c57efd93b1d6aad0cfa1117a14660d4b768e04ae7eb9688e623ebcb4ef9fb5",
       "summary": "Build a networked/graph system from raw arrays."
     },
     "oscillatools.accel.kuramoto_watanabe_strogatz.integrate_watanabe_strogatz": {

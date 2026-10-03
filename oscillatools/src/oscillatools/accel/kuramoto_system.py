@@ -98,6 +98,8 @@ class KuramotoParameters:
         omega = np.asarray(self.natural_frequencies, dtype=np.float64)
         if omega.ndim != 1 or omega.size == 0:
             raise ValueError("natural_frequencies must be a non-empty one-dimensional array")
+        if not np.all(np.isfinite(omega)):
+            raise ValueError("natural_frequencies must be finite")
         object.__setattr__(self, "natural_frequencies", omega)
         if np.ndim(self.coupling) == 0:
             object.__setattr__(self, "coupling", float(self.coupling))
@@ -109,6 +111,8 @@ class KuramotoParameters:
                 )
             object.__setattr__(self, "coupling", matrix)
         object.__setattr__(self, "frustration", float(self.frustration))
+        if not np.all(np.isfinite(self.coupling)) or not np.isfinite(self.frustration):
+            raise ValueError("coupling and frustration must be finite")
 
     @property
     def size(self) -> int:
@@ -352,10 +356,12 @@ class KuramotoSystem:
             raise ValueError("initial_state must be a non-empty one-dimensional phase vector")
         if state.size != parameters.size:
             raise ValueError("initial_state and natural_frequencies must have the same length")
+        if not np.all(np.isfinite(state)):
+            raise ValueError("initial_state must be finite")
         if scheme not in _INTEGRATION_SCHEMES:
             raise ValueError(f"scheme must be one of {_INTEGRATION_SCHEMES}, got {scheme!r}")
-        if not dt > 0.0:
-            raise ValueError("dt must be positive")
+        if not np.isfinite(dt) or not dt > 0.0:
+            raise ValueError("dt must be positive and finite")
         self._rule = rule
         self._jacobian = jacobian
         self._parameters = parameters
@@ -507,6 +513,8 @@ class KuramotoSystem:
         new_state = np.asarray(state, dtype=np.float64)
         if new_state.shape != self._state.shape:
             raise ValueError(f"state must have shape {self._state.shape}, got {new_state.shape}")
+        if not np.all(np.isfinite(new_state)):
+            raise ValueError("state must be finite")
         self._state = new_state.copy()
 
     def set_parameter(self, name: str, value: float | NDArray[np.float64]) -> None:
@@ -551,8 +559,11 @@ class KuramotoSystem:
                     f"state must have shape {self._initial_state.shape}, got {target.shape}"
                 )
             target = target.copy()
+        target_time = self._initial_time if time is None else float(time)
+        if not np.all(np.isfinite(target)) or not np.isfinite(target_time):
+            raise ValueError("state and time must be finite")
         self._state = target
-        self._time = self._initial_time if time is None else float(time)
+        self._time = target_time
 
     def rule_value(self, *, time: float | None = None) -> NDArray[np.float64]:
         """Evaluate ``f(u, p, t)`` — the phase velocity ``dθ/dt`` at the current state.
@@ -592,12 +603,42 @@ class KuramotoSystem:
     def _advance(self, state: NDArray[np.float64], time: float, dt: float) -> NDArray[np.float64]:
         """Return the state one fixed step later under the active scheme."""
         if self._scheme == "euler":
-            return state + dt * self._rule(state, self._parameters, time)
-        k1 = self._rule(state, self._parameters, time)
-        k2 = self._rule(state + 0.5 * dt * k1, self._parameters, time + 0.5 * dt)
-        k3 = self._rule(state + 0.5 * dt * k2, self._parameters, time + 0.5 * dt)
-        k4 = self._rule(state + dt * k3, self._parameters, time + dt)
+            return state + dt * self._checked_rule(state, time)
+        k1 = self._checked_rule(state, time)
+        k2 = self._checked_rule(state + 0.5 * dt * k1, time + 0.5 * dt)
+        k3 = self._checked_rule(state + 0.5 * dt * k2, time + 0.5 * dt)
+        k4 = self._checked_rule(state + dt * k3, time + dt)
         return state + (dt / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4)
+
+    def _checked_rule(self, state: NDArray[np.float64], time: float) -> NDArray[np.float64]:
+        """Require the declared finite vector field at every existing RK stage."""
+        velocity = np.asarray(self._rule(state, self._parameters, time), dtype=np.float64)
+        if velocity.shape != self._initial_state.shape or not np.all(np.isfinite(velocity)):
+            raise ValueError("rule must return a finite vector matching the state shape")
+        return velocity
+
+    def _step_size(self, n: int, dt: float | None, count_name: str = "n_steps") -> float:
+        """Validate the call's discrete budget and finite representable clock."""
+        if isinstance(n, bool) or not isinstance(n, (int, np.integer)) or n < 1:
+            raise ValueError(f"{count_name} must be a positive integer")
+        step_size = self._dt if dt is None else float(dt)
+        if not np.isfinite(step_size) or not step_size > 0.0:
+            raise ValueError("dt must be positive and finite")
+        if not np.isfinite(self._time + n * step_size):
+            raise ValueError("trajectory end time must be finite")
+        return step_size
+
+    def _accepted_step(
+        self, state: NDArray[np.float64], time: float, dt: float
+    ) -> tuple[NDArray[np.float64], float]:
+        """Validate a local proposal without changing the system's accepted state."""
+        next_time = time + dt
+        if not np.isfinite(next_time) or next_time <= time:
+            raise ValueError("step must advance a finite representable time")
+        next_state = self._advance(state, time, dt)
+        if not np.all(np.isfinite(next_state)):
+            raise ValueError("evolved state must be finite")
+        return next_state, next_time
 
     def step(self, *, n: int = 1, dt: float | None = None) -> NDArray[np.float64]:
         """Advance the system ``n`` steps and return the new state.
@@ -615,14 +656,11 @@ class KuramotoSystem:
             If ``n`` is not positive or ``dt`` is not positive.
 
         """
-        if n < 1:
-            raise ValueError("n must be a positive integer")
-        step_size = self._dt if dt is None else float(dt)
-        if not step_size > 0.0:
-            raise ValueError("dt must be positive")
+        step_size = self._step_size(n, dt, "n")
+        state, time = self._state.copy(), self._time
         for _ in range(n):
-            self._state = self._advance(self._state, self._time, step_size)
-            self._time += step_size
+            state, time = self._accepted_step(state, time, step_size)
+        self._state, self._time = state, time
         return self._state.copy()
 
     def trajectory(self, n_steps: int, *, dt: float | None = None) -> NDArray[np.float64]:
@@ -649,18 +687,50 @@ class KuramotoSystem:
             If ``n_steps`` is not positive or ``dt`` is not positive.
 
         """
-        if n_steps < 1:
-            raise ValueError("n_steps must be a positive integer")
-        step_size = self._dt if dt is None else float(dt)
-        if not step_size > 0.0:
-            raise ValueError("dt must be positive")
+        return self.trajectory_with_times(n_steps, dt=dt)[1]
+
+    def trajectory_with_times(
+        self, n_steps: int, *, dt: float | None = None
+    ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+        """Advance atomically and record each state with its actual evolved time.
+
+        Parameters
+        ----------
+        n_steps : int
+            Positive number of fixed steps; booleans are not step budgets.
+        dt : float, optional
+            Positive finite step in seconds; defaults to the system step.
+
+        Returns
+        -------
+        tuple of numpy.ndarray
+            Float64 times ``(n_steps + 1,)`` and unwrapped phases in radians
+            ``(n_steps + 1, N)``. Row zero is the pre-call state and time.
+
+        Raises
+        ------
+        ValueError
+            On invalid inputs, an unrepresentable clock, malformed vector field
+            or nonfinite evolution. State and time retain their pre-call values.
+
+        Notes
+        -----
+        Times are recorded from each actual clock increment, including after
+        :meth:`reinit`; they are not replaced by a requested endpoint grid.
+        A successful fixed step does not establish accuracy across discontinuities.
+        Custom rules must be pure functions of their supplied state and parameters.
+
+        """
+        step_size = self._step_size(n_steps, dt)
+        state, time = self._state.copy(), self._time
         path = np.empty((n_steps + 1, self._state.size), dtype=np.float64)
-        path[0] = self._state
+        times = np.empty(n_steps + 1, dtype=np.float64)
+        path[0], times[0] = state, time
         for index in range(n_steps):
-            self._state = self._advance(self._state, self._time, step_size)
-            self._time += step_size
-            path[index + 1] = self._state
-        return path
+            state, time = self._accepted_step(state, time, step_size)
+            path[index + 1], times[index + 1] = state, time
+        self._state, self._time = state, time
+        return times, path
 
     def __repr__(self) -> str:
         """Show the size, topology, integration scheme and the current time."""

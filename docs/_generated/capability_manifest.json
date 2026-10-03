@@ -2,18 +2,18 @@
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
     "domain_package_families": 40,
-    "example_files": 37,
+    "example_files": 38,
     "github_workflows": 44,
     "model_documentation_pages": 14,
     "notebook_files": 109,
     "optional_extras": 43,
     "public_api_exports": 851,
-    "public_documentation_pages": 380,
+    "public_documentation_pages": 381,
     "python_model_classes": 1480,
     "python_model_source_modules": 771,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1480
+    "test_files": 1482
   },
   "documentation": {
     "examples": [
@@ -53,7 +53,8 @@
       "examples/33_qgt_qfi_crosscheck.py",
       "examples/34_gauge_lattice_crosscheck.py",
       "examples/35_quantum_ssgf_descent.py",
-      "examples/README.md"
+      "examples/README.md",
+      "examples/kuramoto_solver_outcomes.py"
     ],
     "notebooks": [
       "notebooks/01_kuramoto_xy_dynamics.ipynb",
@@ -406,6 +407,7 @@
       "docs/kuramoto_jax_delayed_tier.md",
       "docs/kuramoto_jax_tier.md",
       "docs/kuramoto_mpc_tier.md",
+      "docs/kuramoto_solver_outcomes.md",
       "docs/kuramoto_sparse_cpu.md",
       "docs/kuramoto_standalone_package_decision.md",
       "docs/kuramoto_variants.md",
@@ -9306,6 +9308,8 @@
       "tests/test_kuramoto_model_quality_gate.py",
       "tests/test_kuramoto_public_face_hygiene.py",
       "tests/test_kuramoto_relocation_shims.py",
+      "tests/test_kuramoto_solver_quality_gate.py",
+      "tests/test_kuramoto_solver_trajectories.py",
       "tests/test_kuramoto_standalone_package_decision.py",
       "tests/test_kuramoto_variants.py",
       "tests/test_kuramoto_variants_quality_gate.py",

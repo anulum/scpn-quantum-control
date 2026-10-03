@@ -103,6 +103,95 @@ jobs:
           --show-missing
           --fail-under=100
           '--include=*/kuramoto_core.py,*/kuramoto_model_conventions.py,*/tools/build_kuramoto_conventions.py,*/tools/kuramoto_model_quality_gates.py'
+  kuramoto-solver-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: mypy-strict-kuramoto-solvers
+        run: >-
+          python
+          -m
+          mypy
+          --strict
+          --explicit-package-bases
+          oscillatools/src/oscillatools/accel/kuramoto_system.py
+          oscillatools/src/oscillatools/accel/diff_kuramoto_adaptive.py
+          oscillatools/src/oscillatools/accel/diff_kuramoto_dopri.py
+          oscillatools/src/oscillatools/accel/kuramoto_adaptive.py
+          oscillatools/src/oscillatools/accel/kuramoto_delayed.py
+          oscillatools/src/oscillatools/accel/kuramoto_scipy_interop.py
+          tools/kuramoto_solver_quality_gates.py
+          tests/test_kuramoto_solver_trajectories.py
+          tests/test_kuramoto_solver_quality_gate.py
+          examples/kuramoto_solver_outcomes.py
+      - name: ruff D kuramoto solvers
+        run: >-
+          python
+          -m
+          ruff
+          check
+          --isolated
+          --preview
+          --select
+          D,D413,D417,D420
+          --config
+          'lint.explicit-preview-rules = true'
+          --config
+          'lint.pydocstyle.convention = "numpy"'
+          oscillatools/src/oscillatools/accel/kuramoto_system.py
+          oscillatools/src/oscillatools/accel/diff_kuramoto_adaptive.py
+          oscillatools/src/oscillatools/accel/diff_kuramoto_dopri.py
+          oscillatools/src/oscillatools/accel/kuramoto_adaptive.py
+          oscillatools/src/oscillatools/accel/kuramoto_delayed.py
+          oscillatools/src/oscillatools/accel/kuramoto_scipy_interop.py
+          tools/kuramoto_solver_quality_gates.py
+          tests/test_kuramoto_solver_trajectories.py
+          tests/test_kuramoto_solver_quality_gate.py
+          examples/kuramoto_solver_outcomes.py
+      - name: kuramoto solver focused coverage
+        run: >-
+          python
+          -m
+          coverage
+          run
+          --rcfile=/dev/null
+          --data-file=.coverage.kuramoto-solvers
+          --branch
+          -m
+          pytest
+          -q
+          --no-cov
+          tests/test_kuramoto_solver_trajectories.py
+          tests/test_kuramoto_solver_quality_gate.py
+          oscillatools/tests/test_kuramoto_system.py
+          oscillatools/tests/test_diff_kuramoto_adaptive.py
+          oscillatools/tests/test_diff_kuramoto_dopri.py
+          oscillatools/tests/test_kuramoto_adaptive.py
+          oscillatools/tests/test_kuramoto_delayed.py
+          oscillatools/tests/test_kuramoto_scipy_interop.py
+          tests/test_kuramoto_model_conventions.py
+      - name: kuramoto solver exact owner coverage
+        run: >-
+          python
+          -m
+          coverage
+          report
+          --rcfile=oscillatools/pyproject.toml
+          --data-file=.coverage.kuramoto-solvers
+          --precision=2
+          --show-missing
+          --fail-under=100
+          '--include=*/kuramoto_system.py,*/diff_kuramoto_adaptive.py,*/diff_kuramoto_dopri.py,*/kuramoto_adaptive.py,*/kuramoto_delayed.py,*/kuramoto_scipy_interop.py,*/tools/kuramoto_solver_quality_gates.py'
   stable-core-product-quality:
     runs-on: ubuntu-latest
     env:

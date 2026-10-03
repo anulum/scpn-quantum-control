@@ -133,8 +133,8 @@ def hebbian_plasticity_rate(
     theta = np.ascontiguousarray(phases, dtype=np.float64)
     weights = np.ascontiguousarray(coupling, dtype=np.float64)
     _validate_adaptive_state(theta, weights)
-    if plasticity_rate < 0.0:
-        raise ValueError(f"plasticity_rate must be non-negative, got {plasticity_rate}")
+    if not np.isfinite(plasticity_rate) or plasticity_rate < 0.0:
+        raise ValueError(f"plasticity_rate must be non-negative and finite, got {plasticity_rate}")
     equilibrium = np.cos(_phase_difference_matrix(theta))
     return np.asarray(plasticity_rate * (equilibrium - weights), dtype=np.float64)
 
@@ -146,6 +146,8 @@ def _validate_adaptive_state(phases: NDArray[np.float64], coupling: NDArray[np.f
     count = phases.size
     if coupling.shape != (count, count):
         raise ValueError(f"coupling must have shape ({count}, {count}), got {coupling.shape}")
+    if not np.all(np.isfinite(phases)) or not np.all(np.isfinite(coupling)):
+        raise ValueError("phases and coupling must be finite")
 
 
 @dataclass(frozen=True)
@@ -233,8 +235,15 @@ def adaptive_vector_field(
     _validate_adaptive_state(theta, weights)
     if frequencies.shape != theta.shape:
         raise ValueError(f"omega must have shape {theta.shape}, got {frequencies.shape}")
-    phase_velocity = frequencies + force(theta, weights)
-    coupling_velocity = plasticity(theta, weights)
+    if not np.all(np.isfinite(frequencies)):
+        raise ValueError("omega must be finite")
+    phase_force = np.asarray(force(theta, weights), dtype=np.float64)
+    coupling_velocity = np.asarray(plasticity(theta, weights), dtype=np.float64)
+    if phase_force.shape != theta.shape or coupling_velocity.shape != weights.shape:
+        raise ValueError("force and plasticity must match the phase and coupling shapes")
+    phase_velocity = frequencies + phase_force
+    if not np.all(np.isfinite(phase_velocity)) or not np.all(np.isfinite(coupling_velocity)):
+        raise ValueError("force and plasticity velocities must be finite")
     return np.asarray(phase_velocity, dtype=np.float64), np.asarray(
         coupling_velocity, dtype=np.float64
     )
@@ -285,8 +294,8 @@ def hebbian_adaptive_jacobian(
     theta = np.ascontiguousarray(phases, dtype=np.float64)
     weights = np.ascontiguousarray(coupling, dtype=np.float64)
     _validate_adaptive_state(theta, weights)
-    if plasticity_rate < 0.0:
-        raise ValueError(f"plasticity_rate must be non-negative, got {plasticity_rate}")
+    if not np.isfinite(plasticity_rate) or plasticity_rate < 0.0:
+        raise ValueError(f"plasticity_rate must be non-negative and finite, got {plasticity_rate}")
     count = theta.size
     difference = _phase_difference_matrix(theta)  # Δ_{ij} = θ_j − θ_i
     cosine = np.cos(difference)
@@ -371,18 +380,18 @@ def integrate_adaptive_kuramoto(
     _validate_adaptive_state(theta, weights)
     if frequencies.shape != theta.shape:
         raise ValueError(f"omega must have shape {theta.shape}, got {frequencies.shape}")
-    if dt <= 0.0:
-        raise ValueError(f"dt must be positive, got {dt}")
-    if n_steps < 1:
-        raise ValueError(f"n_steps must be positive, got {n_steps}")
+    if not np.isfinite(dt) or dt <= 0.0:
+        raise ValueError(f"dt must be positive and finite, got {dt}")
+    if isinstance(n_steps, bool) or not isinstance(n_steps, (int, np.integer)) or n_steps < 1:
+        raise ValueError(f"n_steps must be positive integer, got {n_steps}")
+    if not np.isfinite(n_steps * dt):
+        raise ValueError("trajectory end time must be finite")
     count = theta.size
 
     def rhs(
         state_phases: NDArray[np.float64], state_coupling: NDArray[np.float64]
     ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
-        return frequencies + force(state_phases, state_coupling), plasticity(
-            state_phases, state_coupling
-        )
+        return adaptive_vector_field(state_phases, state_coupling, frequencies, force, plasticity)
 
     phase_history = np.empty((n_steps + 1, count), dtype=np.float64)
     coupling_history = np.empty((n_steps + 1, count, count), dtype=np.float64)
@@ -397,6 +406,7 @@ def integrate_adaptive_kuramoto(
         p4, c4 = rhs(theta + dt * p3, weights + dt * c3)
         theta = theta + (dt / 6.0) * (p1 + 2.0 * p2 + 2.0 * p3 + p4)
         weights = weights + (dt / 6.0) * (c1 + 2.0 * c2 + 2.0 * c3 + c4)
+        _validate_adaptive_state(theta, weights)
         phase_history[step + 1] = theta
         coupling_history[step + 1] = weights
         series[step + 1] = order_parameter(theta)

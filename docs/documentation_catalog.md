@@ -4,7 +4,7 @@ The primary navigation stays intentionally compact. This catalog keeps every
 public guide, evidence note, contract, campaign protocol, and reference page
 discoverable without crowding the main learning path.
 
-Current inventory: **380 public pages**; **162** are in the
+Current inventory: **381 public pages**; **162** are in the
 primary navigation and the remainder are indexed here.
 
 Labels marked `catalog` are intentionally outside the primary navigation; they
@@ -301,6 +301,7 @@ are still built, link-checked, searchable, and public.
 | [Kuramoto JAX delayed-tier](kuramoto_jax_delayed_tier.md) | primary nav | The time-delayed Kuramoto model $\dot\theta_j(t) = \omega_j + \sum_k K_{jk}\sin(\theta_k(t-\tau) - \theta_j(t))$ is integrated by accel.kuramoto_delayed.integrate_delayed_kuramoto, a delay-aware method-of-steps RK4, and its gradient by the |
 | [Kuramoto JAX tier](kuramoto_jax_tier.md) | primary nav | The networked-Kuramoto production integrators dispatch Rust → Julia → NumPy. This page documents the opt-in **JAX** tier: fixed-step Euler, RK4, adaptive Dormand-Prince, networked inertial RK4, networked symplectic inertial, and seeded nois |
 | [Kuramoto JAX differentiable-model MPC tier](kuramoto_mpc_tier.md) | primary nav | Model-predictive control (MPC) plans a finite-horizon control from the current measured state, applies the first control, then re-plans from the new measurement. This page documents an MPC for the Kuramoto network whose **predictive model i |
+| [Kuramoto trajectories and solver outcomes](kuramoto_solver_outcomes.md) | catalog | The public oscillatools solvers retain unwrapped phases in radians and float64 arrays. A returned time describes the state actually evolved or interpolated at that time. Use the solver appropriate to the declared equation and inspect its te |
 | [Sparse Kuramoto CPU Path](kuramoto_sparse_cpu.md) | primary nav | oscillatools exposes an explicit sparse CPU route for large classical Kuramoto networks: |
 | [Kuramoto Standalone Package Decision](kuramoto_standalone_package_decision.md) | primary nav | Decision status: APPROVED 2026-07-04 (CEO/IP). This record supersedes the prior deferral (2026-06-26) and satisfies the Promotion Gate by recording all eight required decisions below. Implementation proceeds in phases; the standalone packag |
 | [Higher-Order, Monitored, and PT-Symmetric Kuramoto Variants](kuramoto_variants.md) | primary nav | scpn_quantum_control.phase.kuramoto_variants formalises three Kuramoto extensions that previously only existed as campaign-level experiments: |

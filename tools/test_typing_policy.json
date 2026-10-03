@@ -424,6 +424,8 @@
         "tests/test_koopman.py",
         "tests/test_krylov_complexity.py",
         "tests/test_kuramoto_input_hardening.py",
+        "tests/test_kuramoto_solver_quality_gate.py",
+        "tests/test_kuramoto_solver_trajectories.py",
         "tests/test_kuramoto_variants.py",
         "tests/test_kuramoto_variants_quality_gate.py",
         "tests/test_kyma_v2_ablations.py",

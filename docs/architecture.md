@@ -209,6 +209,23 @@ a declared weighted observable needs its matching observable consumer.
 The convention inventory does not promote convergence, sensitivity accuracy,
 physical-device support or benchmark results.
 
+## Solver times and termination
+
+The original `KuramotoSystem.trajectory_with_times` pairs each accepted fixed-step
+state with the clock that evolved it. Its legacy `trajectory` still returns the
+phase array. Fixed-step calls validate inputs and intermediate vector fields,
+then accept the whole call's state and time together; rejected evolution retains
+the pre-call state. This remains the original Euler/RK4 owner and force dispatch.
+
+`solve_kuramoto_ivp` delegates adaptive/stiff integration and event interpolation
+to SciPy. Its result keeps original success/status diagnostics, adds event roots
+and states, and distinguishes `completed`, `event` and `failed` termination.
+Terminal events can precede the first requested sample; partial failed output and
+event arrays remain observable. Plastic-coupling and delayed paths retain their
+own existing RK4 equations; linear lag interpolation and history derivative jumps
+have separate accuracy limits. See [solver outcomes](kuramoto_solver_outcomes.md)
+and the runnable scientific factory example for the exact public contracts.
+
 ## Chimera and multiscale control composition
 
 `scpn_quantum_control.chimera_control` separates the surface into six

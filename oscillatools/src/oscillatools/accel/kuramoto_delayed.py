@@ -268,12 +268,16 @@ def integrate_delayed_kuramoto(
         ``dt``, or ``initial_history``/``omega`` are malformed.
 
     """
-    if dt <= 0.0:
-        raise ValueError(f"dt must be positive, got {dt}")
-    if delay <= 0.0:
-        raise ValueError(f"delay must be positive, got {delay}")
-    if n_steps < 1:
-        raise ValueError(f"n_steps must be positive, got {n_steps}")
+    if not np.isfinite(dt) or dt <= 0.0:
+        raise ValueError(f"dt must be positive and finite, got {dt}")
+    if not np.isfinite(delay) or delay <= 0.0:
+        raise ValueError(f"delay must be positive and finite, got {delay}")
+    if isinstance(n_steps, bool) or not isinstance(n_steps, (int, np.integer)) or n_steps < 1:
+        raise ValueError(f"n_steps must be positive integer, got {n_steps}")
+    if not np.isfinite(delay_tolerance) or delay_tolerance < 0.0:
+        raise ValueError("delay_tolerance must be finite and non-negative")
+    if not np.isfinite(delay / dt) or not np.isfinite(n_steps * dt):
+        raise ValueError("delay grid and end time must be finite")
     delay_steps = int(round(delay / dt))
     if delay_steps < 1 or abs(delay - delay_steps * dt) > delay_tolerance:
         raise ValueError(
@@ -288,6 +292,8 @@ def integrate_delayed_kuramoto(
         raise ValueError(
             f"initial_history must have shape ({delay_steps + 1}, {count}), got {history.shape}"
         )
+    if not np.all(np.isfinite(history)) or not np.all(np.isfinite(frequencies)):
+        raise ValueError("initial_history and omega must be finite")
 
     # The running phase grid: grid index g holds θ at time (g - delay_steps)·dt, so the initial
     # history fills g = 0 … delay_steps (g = delay_steps is θ(0)) and integration appends g > delay_steps.
@@ -302,7 +308,10 @@ def integrate_delayed_kuramoto(
         return (1.0 - weight) * buffer[lower] + weight * buffer[lower + 1]
 
     def rhs(current: NDArray[np.float64], lagged: NDArray[np.float64]) -> NDArray[np.float64]:
-        return frequencies + force(current, lagged)
+        velocity = np.asarray(force(current, lagged), dtype=np.float64)
+        if velocity.shape != frequencies.shape or not np.all(np.isfinite(velocity)):
+            raise ValueError("force must return a finite vector matching omega")
+        return frequencies + velocity
 
     phase_history = np.empty((n_steps + 1, count), dtype=np.float64)
     series = np.empty(n_steps + 1, dtype=np.float64)
@@ -316,6 +325,8 @@ def integrate_delayed_kuramoto(
         k3 = rhs(theta + 0.5 * dt * k2, delayed_at(step + 0.5))
         k4 = rhs(theta + dt * k3, delayed_at(step + 1.0))
         nxt = theta + (dt / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4)
+        if not np.all(np.isfinite(nxt)):
+            raise ValueError("evolved phases must be finite")
         buffer.append(nxt)
         phase_history[step + 1] = nxt
         series[step + 1] = order_parameter(nxt)

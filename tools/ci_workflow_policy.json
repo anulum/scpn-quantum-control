@@ -39,6 +39,7 @@
       ],
       "jobs": [
         "kuramoto-model-quality",
+        "kuramoto-solver-quality",
         "stable-core-product-quality",
         "open-system-completeness-quality",
         "thermo-readiness-product-quality",
@@ -397,6 +398,7 @@
     "split-boundary-guard",
     "native-wheels",
     "kuramoto-model-quality",
+    "kuramoto-solver-quality",
     "stable-core-product-quality",
     "open-system-completeness-quality",
     "thermo-readiness-product-quality",

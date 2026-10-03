@@ -103,6 +103,12 @@ def _validate_state(
     count = phases.size
     if matrix.shape != (count, count):
         raise ValueError(f"coupling must be a square matrix of order {count}, got {matrix.shape}")
+    if (
+        not np.all(np.isfinite(phases))
+        or not np.all(np.isfinite(frequencies))
+        or not np.all(np.isfinite(matrix))
+    ):
+        raise ValueError("theta0, omega and coupling must be finite")
     return phases, frequencies, matrix
 
 
@@ -350,10 +356,12 @@ def kuramoto_dopri_trajectory(
         Python floor (the accelerated tiers use the automatic guess).
     max_steps : int, optional
         The maximum number of accepted steps; if the integration does not reach ``t_end`` within
-        this budget a ``ValueError`` is raised. Defaults to ``100000``.
+        this positive integer budget a ``ValueError`` is raised. Booleans are refused.
+        Defaults to ``100000``.
     safety, min_factor, max_factor : float, optional
         The elementary step-controller safety factor and its growth/shrink clamps. Defaults
-        ``0.9``, ``0.2`` and ``5.0``.
+        ``0.9``, ``0.2`` and ``5.0``. Require ``0 < safety,min_factor < 1`` and
+        ``max_factor >= 1`` so rejected steps can shrink.
 
     Returns
     -------
@@ -363,15 +371,27 @@ def kuramoto_dopri_trajectory(
     Raises
     ------
     ValueError
-        If the state shapes are inconsistent, ``t_end``/``rtol``/``atol`` are not positive, or the
-        integration exceeds ``max_steps``.
+        If source arrays or controller scalars are nonfinite, state shapes are
+        inconsistent, scalar/count/controller bounds are invalid, or the final
+        accepted time is more than four ULPs short of ``t_end``. This also refuses
+        horizons below the unchanged integrator's clock resolution.
 
     """
     phases, frequencies, matrix = _validate_state(theta0, omega, coupling)
+    if not np.all(np.isfinite((t_end, rtol, atol, first_step, safety, min_factor, max_factor))):
+        raise ValueError("time, tolerances and controller scalars must be finite")
     if t_end <= 0.0:
         raise ValueError(f"t_end must be strictly positive, got {t_end}")
     if rtol <= 0.0 or atol <= 0.0:
         raise ValueError(f"rtol and atol must be strictly positive, got {rtol} and {atol}")
+    if (
+        isinstance(max_steps, bool)
+        or not isinstance(max_steps, (int, np.integer))
+        or max_steps < 1
+    ):
+        raise ValueError("max_steps must be a positive integer")
+    if not 0.0 < safety < 1.0 or not 0.0 < min_factor < 1.0 or max_factor < 1.0:
+        raise ValueError("controller requires 0 < safety,min_factor < 1 and max_factor >= 1")
 
     if first_step > 0.0:
         times, path, steps = _dopri_core(
@@ -392,7 +412,7 @@ def kuramoto_dopri_trajectory(
             theta0, omega, coupling, t_end, rtol, atol, max_steps, safety, min_factor, max_factor
         )
 
-    if float(times[-1]) < t_end - 1e-9:
+    if float(times[-1]) < t_end - 4 * float(np.spacing(t_end)):
         raise ValueError(f"integration exceeded max_steps={max_steps} before reaching t_end")
 
     return DopriTrajectory(times=times, phases=path, steps=steps)
