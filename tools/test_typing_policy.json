@@ -223,6 +223,7 @@
         "tests/test_appqsim.py",
         "tests/test_backend_dispatch.py",
         "tests/test_backend_dispatch_integration.py",
+        "tests/test_backend_profiles.py",
         "tests/test_backend_selector_contracts.py",
         "tests/test_bench_kuramoto_tiers.py",
         "tests/test_bench_s2_scaling_lite.py",

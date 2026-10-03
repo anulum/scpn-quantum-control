@@ -7,7 +7,7 @@
 // SCPN Quantum Control — bounded workbench hash routing
 
 /** Static-hosted views; navigation confers no execution authority. */
-export type WorkbenchView = "workspace" | "build" | "experiments" | "results" | "atlas";
+export type WorkbenchView = "workspace" | "build" | "experiments" | "results" | "atlas" | "operations";
 
 /** Opaque requested identity, independent of admitted storage or scientific provenance. */
 export interface WorkbenchContext {
@@ -21,7 +21,7 @@ export interface WorkbenchContext {
 
 /** Admitted view and compatibility instrument address with exact requested context. */
 export interface WorkbenchRoute extends WorkbenchContext {
-  /** One of the five fixed views. */
+  /** One primary view or the operator context destination. */
   readonly view: WorkbenchView;
   /** Original browser instrument deep link, or the view's landing page. */
   readonly instrument: "compile-recompute" | "program-ad-replay" | null;
@@ -49,6 +49,7 @@ const paths = new Map<string, Pick<WorkbenchRoute, "view" | "instrument">>([
   ["/experiments", { view: "experiments", instrument: null }],
   ["/results", { view: "results", instrument: null }],
   ["/atlas", { view: "atlas", instrument: null }],
+  ["/operations", { view: "operations", instrument: null }],
   ["/build/compile-recompute", { view: "build", instrument: "compile-recompute" }],
   ["/results/program-ad-replay", { view: "results", instrument: "program-ad-replay" }],
 ]);

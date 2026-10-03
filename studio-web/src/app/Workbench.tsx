@@ -17,6 +17,7 @@ import { useWorkbenchRoute } from "./useWorkbenchRoute";
 import { RouteBoundary } from "./RouteBoundary";
 import { WorkbenchInspector } from "./WorkbenchInspector";
 
+const OperationsView = lazy(() => import("./routes/OperationsView"));
 const BuildView = lazy(() => import("./routes/BuildView"));
 const ResultsView = lazy(() => import("./routes/ResultsView"));
 const UnavailableView = lazy(() => import("./routes/UnavailableView"));
@@ -45,7 +46,7 @@ export function Workbench({ children, rawCodecs, mode = "standalone" }: Workbenc
   const content = useRef<HTMLDivElement>(null);
   const href = (target: WorkbenchView) => formatWorkbenchRoute({ ...context, view: target, instrument: null });
   const routeKey = location.ok ? formatWorkbenchRoute(location.route) : window.location.hash;
-  const title = views.find(([candidate]) => candidate === view)?.[1] ?? "Unavailable route";
+  const title = views.find(([candidate]) => candidate === view)?.[1] ?? (view === "operations" ? "Devices & Operations" : "Unavailable route");
   useEffect(() => { content.current?.focus(); }, [routeKey]);
   return (
     <section className="qsp-workbench" data-mode={mode} aria-label="Quantum Studio workbench">
@@ -55,6 +56,7 @@ export function Workbench({ children, rawCodecs, mode = "standalone" }: Workbenc
         <nav aria-label="Workbench views">
           {views.map(([target, label]) => <a key={target} href={href(target)} aria-current={view === target ? "page" : undefined}>{label}</a>)}
         </nav>
+        <nav aria-label="Workbench context destinations"><a href={href("operations")} aria-current={view === "operations" ? "page" : undefined}>Devices &amp; Operations</a></nav>
         <nav aria-label="Breadcrumbs"><a href={href("workspace")}>Quantum Studio</a><span aria-hidden="true"> / </span><span aria-current="page">{title}</span>{instrument !== null && <span> / {instrument}</span>}</nav>
       </header>
       <WorkbenchInspector context={context} saved={saved} />
@@ -64,6 +66,7 @@ export function Workbench({ children, rawCodecs, mode = "standalone" }: Workbenc
             <Suspense fallback={<p role="status">Loading {title} view…</p>}>
               {view === "workspace" && children(context)}
               {view === "build" && <BuildView focusInstrument={instrument === "compile-recompute"} />}
+              {view === "operations" && <OperationsView />}
               {view === "results" && <ResultsView focusInstrument={instrument === "program-ad-replay"} />}
               {(view === "experiments" || view === "atlas") && <UnavailableView view={view} workspaceHref={href("workspace")} />}
             </Suspense>

@@ -380,6 +380,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "parameter_graph_editor",
             "program_authoring",
             "compiler_trace_inspector",
+            "operator_backend_profiles",
         ),
         required=True,
     )
@@ -437,6 +438,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 from tools.studio_program_authoring_browser import run_program_authoring_journey
 
                 journey = partial(run_program_authoring_journey, evidence=evidence)
+            elif args.scenario == "operator_backend_profiles":
+                from tools.studio_backend_profiles_browser import run_backend_profiles_journey
+
+                journey = partial(run_backend_profiles_journey, evidence=evidence)
             elif args.scenario == "compiler_trace_inspector":
                 from tools.studio_compiler_trace_browser import run_compiler_trace_journey
 

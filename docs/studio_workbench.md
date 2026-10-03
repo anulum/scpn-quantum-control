@@ -39,6 +39,8 @@ inspection, the support explorer, gradient explanations and scorecard.
 Experiments and Atlas show their unavailable workflows and a link back to
 Workspace. The mode banner distinguishes standalone and embedded layouts;
 federation hosts can pass `mode="embedded"` to the same exposed panel.
+Devices & Operations is a separate context destination for dated provider and
+device profiles. It retains the requested project, revision and snapshot context.
 
 Hash addresses work on static hosting without server rewrite rules:
 
@@ -49,6 +51,7 @@ Hash addresses work on static hosting without server rewrite rules:
 | Experiments | `#/experiments` |
 | Results | `#/results` or `#/results/program-ad-replay` |
 | Atlas | `#/atlas` |
+| Devices & Operations | `#/operations` |
 
 Optional `project`, `revision` and `snapshot` query fields retain exact opaque
 identity through links, reload and browser history. For example,
@@ -120,6 +123,66 @@ facade and original storage/controller owners. Set
 the affected owner coverage cohort. The source qualifier verifies actual code,
 source maps and current owner hashes before merging counters through the
 existing Vitest provider. Stale, failed or incomplete evidence refuses.
+
+## Provider and device profiles
+
+Open Devices & Operations, then Open declared profiles to inspect the committed
+offline catalogue. Select an exact route explicitly. The view shows provider,
+broker, physical device, HAL backend, modality, region, SDK and IR declarations,
+capture date and age, calibration timestamp/reference and opaque credential
+configuration references. Pulse and analog options retain the native HAL reason
+when disabled; an enabled option displays its declaration without executing it.
+
+HAL declarations and route-operation declarations are displayed separately from
+supplied observations. Unknown availability, limits and support remain unknown;
+an observed zero queue depth and an explicit unsupported value retain their
+meaning. Dates and supplied observations do not certify current availability,
+calibration freshness or authentication. Open declared profiles performs no
+provider refresh and reads no credential values.
+
+Inspect profiles admits `studio.backend-profiles.v1` JSON with exact row and
+envelope SHA-256 identities. Counts retain unsigned 64-bit precision. The input
+ceiling is 1 MiB of UTF-8 and 256 distinct routes; these are contract limits,
+not measured latency guarantees. Extra fields, malformed references, invalid
+dates or altered digests refuse the whole import and preserve the prior admitted
+selection. Export admitted profiles downloads the exact admitted input text.
+
+Imported plan, calibration and review digests are metadata references. They grant
+no run approval. Selecting another route or importing changed dated metadata
+clears all dependent references, including when two brokers name the same physical
+device. References survive only for the exact same row digest. Selection belongs
+to the mounted profile view; export before leaving it or reloading. Workspace
+archives and unsaved workspace drafts remain independent.
+
+The native adapter reuses the existing route catalogue and HAL profiles:
+
+```python
+from scpn_quantum_control.hardware.provider_capability_discovery import build_backend_profiles
+
+profiles = build_backend_profiles(observed_at="2026-10-03")
+assert profiles["body"]["no_submit"] is True
+```
+
+Supply an explicit capture date when producing a new offline catalogue:
+
+```bash
+PYTHONPATH=src:oscillatools/src python tools/export_backend_profiles.py \
+  --observed-at 2026-10-03 --output /tmp/backend-profiles.json
+```
+
+Against an owned built preview with its actual WASM, `operator_backend_profiles`
+checks exact integer transport, offline/unknown state, malformed recovery,
+route-bound reference invalidation, exact downloads, original workspace draft
+custody and genuine compile recomputation. It refuses actual page errors,
+requests outside that preview and submission attempts:
+
+```bash
+PYTHONPATH=. python tools/studio_browser_journey.py \
+  --scenario operator_backend_profiles --base-url http://127.0.0.1:4173/ \
+  --output /tmp/backend-profiles-journey.json
+```
+
+The runner closes its browser context; the preview owner stops its server.
 
 ## Supported program authoring
 

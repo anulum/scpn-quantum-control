@@ -92,3 +92,32 @@ def test_compiler_trace_is_qualified_by_the_existing_studio_cohort() -> None:
     assert "tools/tests/test_studio_compiler_trace_browser.py" in workflow
     assert "--coverage.include='src/features/compiler/*.{ts,tsx}'" in workflow
     assert "build_program_authoring_quality_gates" in workflow
+
+
+def test_backend_profiles_have_native_and_actual_browser_gates() -> None:
+    """Require additive profile ownership in the existing Studio CI job."""
+    from pathlib import Path
+
+    gates = dict(quality_gates.build_backend_profiles_quality_gates("/python"))
+    for owner in (
+        "src/scpn_quantum_control/hardware/backend_profiles.py",
+        "tools/export_backend_profiles.py",
+        "tests/test_backend_profiles.py",
+        "tools/studio_backend_profiles_browser.py",
+        "tools/tests/test_studio_backend_profiles_browser.py",
+    ):
+        assert owner in gates["studio-backend-profiles-strict"]
+        assert owner in gates["studio-backend-profiles-native-docs"]
+    assert (
+        "tests/test_provider_route_catalogue.py"
+        in gates["studio-backend-profiles-native-coverage"]
+    )
+    assert "--branch" in gates["studio-backend-profiles-native-coverage"]
+    assert "--fail-under=100" in gates["studio-backend-profiles-native-exact"]
+    workflow = (
+        Path(__file__).resolve().parents[1] / ".github/workflows/ci-studio.yml"
+    ).read_text()
+    assert workflow.count("--scenario operator_backend_profiles") == 1
+    assert "tools/tests/test_studio_backend_profiles_browser.py" in workflow
+    assert "--coverage.include='src/features/operators/profiles/*.{ts,tsx}'" in workflow
+    assert "build_backend_profiles_quality_gates" in workflow

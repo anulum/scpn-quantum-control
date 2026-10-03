@@ -45,3 +45,10 @@ it("refuses context whose stable URL encoding would exceed the shared address bo
   const value = "α".repeat(256);
   expect(parseWorkbenchRoute(`#/atlas?project=${value}&revision=${value}&snapshot=${value}`)).toEqual({ ok: false, reason: "Encoded workbench address exceeds its bound" });
 });
+
+it("admits the operator context destination while retaining exact project/revision identity", () => {
+ const result=parseWorkbenchRoute("#/operations?project=project+%CE%B1&revision=r%2F1&snapshot=s%2B2");
+ expect(result).toEqual({ok:true,route:{view:"operations",instrument:null,project:"project α",revision:"r/1",snapshot:"s+2"}});
+ if (!result.ok) throw new Error("Operator destination refused");
+ expect(formatWorkbenchRoute(result.route)).toBe("#/operations?project=project+%CE%B1&revision=r%2F1&snapshot=s%2B2");
+});

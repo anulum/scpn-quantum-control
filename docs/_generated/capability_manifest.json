@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 851,
     "public_documentation_pages": 380,
-    "python_model_classes": 1479,
-    "python_model_source_modules": 769,
+    "python_model_classes": 1480,
+    "python_model_source_modules": 770,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1475
+    "test_files": 1476
   },
   "documentation": {
     "examples": [
@@ -696,7 +696,7 @@
       {
         "package": "hardware",
         "path": "src/scpn_quantum_control/hardware",
-        "python_modules": 79
+        "python_modules": 80
       },
       {
         "package": "identity",
@@ -4879,6 +4879,10 @@
         "path": "src/scpn_quantum_control/semantic_record.py"
       },
       {
+        "name": "ProfileBinding",
+        "path": "src/scpn_quantum_control/hardware/backend_profiles.py"
+      },
+      {
         "name": "ProgramADAdjointResult",
         "path": "src/scpn_quantum_control/program_ad_adjoint.py"
       },
@@ -7077,6 +7081,7 @@
       "src/scpn_quantum_control/hardware/analog_kuramoto.py",
       "src/scpn_quantum_control/hardware/analog_native_readiness.py",
       "src/scpn_quantum_control/hardware/async_runner.py",
+      "src/scpn_quantum_control/hardware/backend_profiles.py",
       "src/scpn_quantum_control/hardware/backends.py",
       "src/scpn_quantum_control/hardware/circuit_cutting.py",
       "src/scpn_quantum_control/hardware/circuit_export.py",
@@ -8780,6 +8785,7 @@
       "tests/test_backend_dispatch_branches.py",
       "tests/test_backend_dispatch_conversion_contract.py",
       "tests/test_backend_dispatch_integration.py",
+      "tests/test_backend_profiles.py",
       "tests/test_backend_registry.py",
       "tests/test_backend_selector.py",
       "tests/test_backend_selector_contracts.py",

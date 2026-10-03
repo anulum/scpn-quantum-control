@@ -14,6 +14,14 @@ exact core and provider-adapter objects for compatibility.
 
 from __future__ import annotations
 
+from .backend_profiles import (
+    BACKEND_PROFILE_SCHEMA,
+    BACKEND_PROFILES_SCHEMA,
+    MAX_PROFILE_BYTES,
+    MAX_PROFILES,
+    ProfileBinding,
+    build_backend_profiles,
+)
 from .provider_capability_cloud_adapters import (
     _azure_declared_ir_formats as _azure_declared_ir_formats,
 )
@@ -355,6 +363,12 @@ from .provider_capability_specialized_adapters import (
 )
 
 __all__ = [
+    "BACKEND_PROFILES_SCHEMA",
+    "BACKEND_PROFILE_SCHEMA",
+    "MAX_PROFILE_BYTES",
+    "MAX_PROFILES",
+    "ProfileBinding",
+    "build_backend_profiles",
     "DIRECT_AGGREGATOR",
     "ROUTE_CATALOGUE_CONTRACT",
     "ROUTE_VERBS",

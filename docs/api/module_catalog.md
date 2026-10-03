@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **769 modules** across **41 package families**
-- **4187 documented public module-level symbols**
+- **770 modules** across **41 package families**
+- **4189 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2792,6 +2792,16 @@ Concurrent IBM job submission via asyncio.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/async_runner.py) · Public symbols: **3**
 
 **Classes:** `BackendSubstitutionError`, `AsyncJobHandle`, `AsyncHardwareRunner`
+
+### `scpn_quantum_control.hardware.backend_profiles`
+
+Project existing route and HAL metadata without constructing an SDK adapter.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/backend_profiles.py) · Public symbols: **2**
+
+**Classes:** `ProfileBinding`
+
+**Functions:** `build_backend_profiles()`
 
 ### `scpn_quantum_control.hardware.backends`
 

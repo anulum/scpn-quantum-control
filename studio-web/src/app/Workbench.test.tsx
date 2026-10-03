@@ -88,3 +88,19 @@ it("test_workbench_navigation_05: feature view is absent until navigation and re
   await screen.findByRole("heading", { name: "Results" });
   expect(screen.getByRole("region", { name: "Inspect evidence JSON" })).toBeTruthy();
 });
+
+it("operator profiles are reachable from the production shell without replacing the original workspace draft", async () => {
+ render(<QuantumStudioPanel />);
+ const editor=screen.getByLabelText("Workspace archive JSON") as HTMLTextAreaElement;
+ fireEvent.change(editor,{target:{value:'{"unsaved":"profile-navigation α"}'}});
+ const navigation=screen.getByRole("navigation",{name:"Workbench context destinations"});
+ expect(within(navigation).getByRole("link",{name:"Devices & Operations"}).getAttribute("href")).toBe("#/operations");
+ visit("#/operations");
+ await screen.findByRole("heading",{name:"Devices & Operations"});
+ expect(within(navigation).getByRole("link",{name:"Devices & Operations"}).getAttribute("aria-current")).toBe("page");
+ fireEvent.click(screen.getByRole("button",{name:"Open declared profiles"}));
+ await screen.findByLabelText("Backend profile");
+ expect(screen.getByRole("navigation",{name:"Workbench views"}).querySelectorAll("a")).toHaveLength(5);
+ visit("#/workspace");expect(screen.getByLabelText("Workspace archive JSON")).toBe(editor);
+ expect(editor.value).toBe('{"unsaved":"profile-navigation α"}');
+});

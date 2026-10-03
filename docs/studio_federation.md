@@ -59,6 +59,13 @@ metadata import does not rerun the native numerical qualifier.
 
 ## Schema-B bundle API
 
+The [provider and device profile inspector](studio_workbench.md#provider-and-device-profiles)
+also consumes dated `studio.backend-profiles.v1` offline metadata. This document
+is separate from schema-B execution evidence. Its row and envelope digests bind
+exact source values; they do not certify provider availability, calibration
+freshness, authentication or permission to submit. The same native adapter is
+re-exported by `hardware.provider_capability_discovery` for Python callers.
+
 Use the library API when the Hub or a local audit needs concrete evidence
 objects rather than a capability declaration:
 

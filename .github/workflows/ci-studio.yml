@@ -336,8 +336,8 @@ jobs:
           python - <<'PY_PROGRAM'
           import subprocess
           import sys
-          from tools.studio_executive_product_quality_gates import build_program_authoring_quality_gates
-          for name, command in build_program_authoring_quality_gates(sys.executable):
+          from tools.studio_executive_product_quality_gates import build_backend_profiles_quality_gates, build_program_authoring_quality_gates
+          for name, command in [*build_program_authoring_quality_gates(sys.executable), *build_backend_profiles_quality_gates(sys.executable)]:
               print(name, flush=True)
               subprocess.run(command, check=True)
           PY_PROGRAM
@@ -507,6 +507,21 @@ jobs:
             -m pytest --noconftest -q tools/tests/test_studio_compiler_trace_browser.py
           python -m coverage report --rcfile=/dev/null \
             --data-file="$RUNNER_TEMP/studio-compiler-browser.coverage" --precision=2 --show-missing --fail-under=100
+          python -m coverage run --rcfile=/dev/null --branch --concurrency=greenlet \
+            --data-file="$RUNNER_TEMP/studio-profiles-browser.coverage" \
+            --include="*/tools/studio_backend_profiles_browser.py,*/tools/studio_browser_journey.py" \
+            tools/studio_browser_journey.py --scenario operator_backend_profiles \
+            --base-url http://127.0.0.1:4173/ --output "$RUNNER_TEMP/studio-profiles-journey.json"
+          STUDIO_PREVIEW_DIR="$RUNNER_TEMP/studio-browser-preview" \
+            python -m coverage run --rcfile=/dev/null --append --branch --concurrency=greenlet \
+            --data-file="$RUNNER_TEMP/studio-profiles-browser.coverage" \
+            --include="*/tools/studio_backend_profiles_browser.py" \
+            -m pytest --noconftest -q tools/tests/test_studio_backend_profiles_browser.py
+          python -m coverage report --rcfile=/dev/null \
+            --data-file="$RUNNER_TEMP/studio-profiles-browser.coverage" \
+            --include="*/tools/studio_backend_profiles_browser.py" --precision=2 --show-missing --fail-under=100
+          python -m coverage combine --rcfile=/dev/null --append --keep \
+            --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" "$RUNNER_TEMP/studio-profiles-browser.coverage"
       - name: Exercise original panel refusal over isolated damaged input files
         working-directory: .
         env:
@@ -631,6 +646,16 @@ jobs:
           --coverage.thresholds.branches=100
           --coverage.thresholds.functions=100
           --coverage.thresholds.lines=100
+      - name: Enforce offline backend profiles exact coverage
+        run: >-
+          pnpm exec vitest run src/features/operators/profiles/*.test.ts src/features/operators/profiles/*.test.tsx
+          --coverage
+          --coverage.include='src/features/operators/profiles/*.{ts,tsx}'
+          --coverage.reportsDirectory=coverage/profiles
+          --coverage.thresholds.statements=100
+          --coverage.thresholds.branches=100
+          --coverage.thresholds.functions=100
+          --coverage.thresholds.lines=100
       - name: Enforce supported program editor and binding exact coverage
         run: >-
           pnpm exec vitest run src/features/programs src/app/routes/BuildView.test.tsx
@@ -729,6 +754,8 @@ jobs:
             ${{ runner.temp }}/studio-program-browser.coverage
             ${{ runner.temp }}/studio-compiler-journey.json
             ${{ runner.temp }}/studio-compiler-browser.coverage
+            ${{ runner.temp }}/studio-profiles-browser.coverage
+            ${{ runner.temp }}/studio-profiles-journey.json
             ${{ runner.temp }}/studio-workbench-source-qualification.json
             ${{ runner.temp }}/studio-panel-refusal-journey.json
             ${{ runner.temp }}/studio-panel-refusal-source.log

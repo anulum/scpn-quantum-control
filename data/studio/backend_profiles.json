@@ -1,0 +1,5202 @@
+{
+  "schema": "studio.backend-profiles.v1",
+  "body": {
+    "observed_at": "2026-10-03",
+    "no_submit": true,
+    "profiles": [
+      {
+        "body": {
+          "route_id": "aws_braket/amazon_simulators",
+          "provider": "amazon",
+          "broker": "aws_braket",
+          "device": "aws_braket_sv1",
+          "backend_id": "aws_braket_sv1",
+          "modality": "managed_statevector_simulator",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "amazon-braket-sdk",
+          "ir_formats": [
+            "openqasm3",
+            "braket_ir",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:7413ad5a51bc39ef83ed22704d5c0c7bdb656ca77cfe79ad6b52f4da320cbedc",
+            "credential-ref:a063ff312523dadf8cbcb2ed3aa27fe5c50af491b4f7e09ab78a0deec5243731"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": true,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "540d85f3996a6c3c51f98ee45db61d56b2c3c0656ea7248166badd53df7cb771"
+      },
+      {
+        "body": {
+          "route_id": "aws_braket/aqt",
+          "provider": "aqt",
+          "broker": "aws_braket",
+          "device": "aws_braket_aqt",
+          "backend_id": "aws_braket_aqt",
+          "modality": "trapped_ion_gate_model",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "amazon-braket-sdk",
+          "ir_formats": [
+            "openqasm3",
+            "braket_ir",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:7413ad5a51bc39ef83ed22704d5c0c7bdb656ca77cfe79ad6b52f4da320cbedc",
+            "credential-ref:a063ff312523dadf8cbcb2ed3aa27fe5c50af491b4f7e09ab78a0deec5243731"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "d555f917260f7bacb332a7b5d28dff32f98ab5152a2fd865b5bc974051a366a3"
+      },
+      {
+        "body": {
+          "route_id": "aws_braket/ionq",
+          "provider": "ionq",
+          "broker": "aws_braket",
+          "device": "aws_braket_ionq",
+          "backend_id": "aws_braket_ionq",
+          "modality": "trapped_ion_gate_model",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "amazon-braket-sdk",
+          "ir_formats": [
+            "openqasm3",
+            "braket_ir",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:7413ad5a51bc39ef83ed22704d5c0c7bdb656ca77cfe79ad6b52f4da320cbedc",
+            "credential-ref:a063ff312523dadf8cbcb2ed3aa27fe5c50af491b4f7e09ab78a0deec5243731"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "a848c9af913b6c2981ceadc2f02ea5e09c9d9f1d05f32f3a358a4639f7618264"
+      },
+      {
+        "body": {
+          "route_id": "aws_braket/iqm",
+          "provider": "iqm",
+          "broker": "aws_braket",
+          "device": "aws_braket_iqm",
+          "backend_id": "aws_braket_iqm",
+          "modality": "superconducting_gate_model",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "amazon-braket-sdk",
+          "ir_formats": [
+            "openqasm3",
+            "braket_ir",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:7413ad5a51bc39ef83ed22704d5c0c7bdb656ca77cfe79ad6b52f4da320cbedc",
+            "credential-ref:a063ff312523dadf8cbcb2ed3aa27fe5c50af491b4f7e09ab78a0deec5243731"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "45a820d3d3fd6873735a5cb3489d456a58191afb415fbb5824249d474801e25a"
+      },
+      {
+        "body": {
+          "route_id": "aws_braket/quera",
+          "provider": "quera",
+          "broker": "aws_braket",
+          "device": "aws_braket_quera",
+          "backend_id": "aws_braket_quera",
+          "modality": "neutral_atom_analog",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "amazon-braket-sdk",
+          "ir_formats": [
+            "braket_ahs",
+            "bloqade",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:7413ad5a51bc39ef83ed22704d5c0c7bdb656ca77cfe79ad6b52f4da320cbedc",
+            "credential-ref:a063ff312523dadf8cbcb2ed3aa27fe5c50af491b4f7e09ab78a0deec5243731"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": true,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": true,
+              "reason": "Declared by HAL; runtime support remains unverified"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "a32dab5f057ffdc2eba5ecc3e10a1b907d5e6f3b4407d8e1f44500405787867b"
+      },
+      {
+        "body": {
+          "route_id": "aws_braket/rigetti",
+          "provider": "rigetti",
+          "broker": "aws_braket",
+          "device": "aws_braket_rigetti",
+          "backend_id": "aws_braket_rigetti",
+          "modality": "superconducting_gate_model",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "amazon-braket-sdk",
+          "ir_formats": [
+            "openqasm3",
+            "quil",
+            "braket_ir",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:7413ad5a51bc39ef83ed22704d5c0c7bdb656ca77cfe79ad6b52f4da320cbedc",
+            "credential-ref:a063ff312523dadf8cbcb2ed3aa27fe5c50af491b4f7e09ab78a0deec5243731"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "9698f62608e90ef123b873bc555829ee6f0098a41685069eb495f6b6cbac6e7d"
+      },
+      {
+        "body": {
+          "route_id": "azure_quantum/ionq",
+          "provider": "ionq",
+          "broker": "azure_quantum",
+          "device": "azure_quantum_ionq",
+          "backend_id": "azure_quantum_ionq",
+          "modality": "trapped_ion_gate_model",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "azure-quantum",
+          "ir_formats": [
+            "openqasm3",
+            "qir",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:01544129f4e834bdc37d60a6d9624937d23cab1ea9ea4512d4ff0d4ff4c57f2b",
+            "credential-ref:d4bac2e74aa9cc6e17e7f6f3f217ddcd8e1f5953face03ed606a6d08cdcf179a",
+            "credential-ref:0855d3f3a320c3cb2bdb2c46a058d6d26b6a6af4da9fe6fa8fba8520eaab9cd8"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "c3bdf5cc60e8a237759da0118bf85187d34176e6f7133a796a86abae8357a397"
+      },
+      {
+        "body": {
+          "route_id": "azure_quantum/pasqal",
+          "provider": "pasqal",
+          "broker": "azure_quantum",
+          "device": "azure_quantum_pasqal",
+          "backend_id": "azure_quantum_pasqal",
+          "modality": "neutral_atom_analog",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "azure-quantum",
+          "ir_formats": [
+            "pasqal_ir",
+            "openqasm3",
+            "qir",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:01544129f4e834bdc37d60a6d9624937d23cab1ea9ea4512d4ff0d4ff4c57f2b",
+            "credential-ref:d4bac2e74aa9cc6e17e7f6f3f217ddcd8e1f5953face03ed606a6d08cdcf179a",
+            "credential-ref:0855d3f3a320c3cb2bdb2c46a058d6d26b6a6af4da9fe6fa8fba8520eaab9cd8"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": true,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": true,
+              "reason": "Declared by HAL; runtime support remains unverified"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "32cc9c5c7997fc0d87ad7e3349c949f895d1cdfc9d837185fa7474408cfda030"
+      },
+      {
+        "body": {
+          "route_id": "azure_quantum/qci_preview",
+          "provider": "qci",
+          "broker": "azure_quantum",
+          "device": "azure_quantum_qci_preview",
+          "backend_id": "azure_quantum_qci_preview",
+          "modality": "superconducting_feedback_gate_model",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "azure-quantum",
+          "ir_formats": [
+            "openqasm3",
+            "qir",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:01544129f4e834bdc37d60a6d9624937d23cab1ea9ea4512d4ff0d4ff4c57f2b",
+            "credential-ref:d4bac2e74aa9cc6e17e7f6f3f217ddcd8e1f5953face03ed606a6d08cdcf179a",
+            "credential-ref:0855d3f3a320c3cb2bdb2c46a058d6d26b6a6af4da9fe6fa8fba8520eaab9cd8"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": true,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "241a9dd487ab63c1bdd06b554644f57f85af714a8c143a72e090697027a2a6a7"
+      },
+      {
+        "body": {
+          "route_id": "azure_quantum/quantinuum",
+          "provider": "quantinuum",
+          "broker": "azure_quantum",
+          "device": "azure_quantum_quantinuum",
+          "backend_id": "azure_quantum_quantinuum",
+          "modality": "trapped_ion_gate_model",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "azure-quantum",
+          "ir_formats": [
+            "openqasm3",
+            "qir",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:01544129f4e834bdc37d60a6d9624937d23cab1ea9ea4512d4ff0d4ff4c57f2b",
+            "credential-ref:d4bac2e74aa9cc6e17e7f6f3f217ddcd8e1f5953face03ed606a6d08cdcf179a",
+            "credential-ref:0855d3f3a320c3cb2bdb2c46a058d6d26b6a6af4da9fe6fa8fba8520eaab9cd8"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": true,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "2d5fb2b79ab3f93647e7e603e9366c0707b0b4aea496203f3655611b5bc949d0"
+      },
+      {
+        "body": {
+          "route_id": "azure_quantum/rigetti",
+          "provider": "rigetti",
+          "broker": "azure_quantum",
+          "device": "azure_quantum_rigetti",
+          "backend_id": "azure_quantum_rigetti",
+          "modality": "superconducting_gate_model",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "azure-quantum",
+          "ir_formats": [
+            "quil",
+            "openqasm3",
+            "qir",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:01544129f4e834bdc37d60a6d9624937d23cab1ea9ea4512d4ff0d4ff4c57f2b",
+            "credential-ref:d4bac2e74aa9cc6e17e7f6f3f217ddcd8e1f5953face03ed606a6d08cdcf179a",
+            "credential-ref:0855d3f3a320c3cb2bdb2c46a058d6d26b6a6af4da9fe6fa8fba8520eaab9cd8"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "c2bf288fff6e31de0c50226cc0dbea0407c4605571ba731348c5951d74dbc0b5"
+      },
+      {
+        "body": {
+          "route_id": "direct/dwave",
+          "provider": "dwave",
+          "broker": null,
+          "device": "dwave_leap",
+          "backend_id": "dwave_leap",
+          "modality": "quantum_annealing",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "dwave-cloud-client",
+          "ir_formats": [
+            "bqm",
+            "ising",
+            "qubo",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:375fca5da1ca0036ecbaaad76492d8e9d5da7ac4bb5acad34f8b9007c7a95ac0",
+            "credential-ref:645958ea3c4c4a655a289fd339692d2e2bfb31c3a06659f0540b8eab229ca8c1"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "dce8ca438e5cd829c0d3c632a04dd729385cfb7192f3997a6c5a801c3ea96995"
+      },
+      {
+        "body": {
+          "route_id": "direct/ibm_quantum",
+          "provider": "ibm_quantum",
+          "broker": null,
+          "device": "ibm_quantum",
+          "backend_id": "ibm_quantum",
+          "modality": "superconducting_gate_model",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "qiskit-ibm-runtime",
+          "ir_formats": [
+            "qiskit_qpy",
+            "openqasm3",
+            "qiskit",
+            "qir",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:8421257eaf78ddd67dd271d4bf2f8869b7bd315c91f6e8e7b66d305d65339710",
+            "credential-ref:13b479db6a72089ee6e20f76ab1ff9e106b63bb9abb39a3f5398f88c924e70ad"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": true,
+            "supports_analog": false,
+            "supports_pulse": true,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": true,
+              "reason": "Declared by HAL; runtime support remains unverified"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "3250fa507a53247f089a4c969abd3aa3010ddce34ab90f1715a198ecad41e45e"
+      },
+      {
+        "body": {
+          "route_id": "direct/ionq",
+          "provider": "ionq",
+          "broker": null,
+          "device": "ionq_cloud",
+          "backend_id": "ionq_cloud",
+          "modality": "trapped_ion_gate_model",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "requests",
+          "ir_formats": [
+            "openqasm3",
+            "ionq_json",
+            "qir",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:1b77c6654302e68dab15f87692643dbb085f679e4338e74acd8ae272264d86a6",
+            "credential-ref:e93806885806fe966f4b223787ef323b85e76ef53e08a0ce31df8822e43d67c9"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "1f78358fd95b388b8d930210e47bae9507894454b832d10971637255e32d5e02"
+      },
+      {
+        "body": {
+          "route_id": "direct/iqm",
+          "provider": "iqm",
+          "broker": null,
+          "device": "iqm_cloud",
+          "backend_id": "iqm_cloud",
+          "modality": "superconducting_gate_model",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "iqm-client",
+          "ir_formats": [
+            "qiskit_qpy",
+            "openqasm3",
+            "qiskit",
+            "circuit",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:20415381d1683475b42d1934a23ca59cbde35945fb78cccf15450bf441f43a97"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "6eb5486cad59baacea83dbb4fd7d8d5effc2718552e2e43916de4bfc3b5b6bbc"
+      },
+      {
+        "body": {
+          "route_id": "direct/oqc",
+          "provider": "oqc",
+          "broker": null,
+          "device": "oqc_cloud",
+          "backend_id": "oqc_cloud",
+          "modality": "superconducting_gate_model",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "oqc-qcaas-client",
+          "ir_formats": [
+            "openqasm3",
+            "qir",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:2ebf25df0112cda0a96686e6d9bbb0b257375dd2eb3627e64d6f128fcb20a4e7",
+            "credential-ref:a976569387ae91af73858759f1ac66668a82bb3b4c637111930bb600987a5e70"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "88a22396956195b249b0fd3dbbafc49bf55dabb5ad62bdc46e7570883b6781f4"
+      },
+      {
+        "body": {
+          "route_id": "direct/pasqal",
+          "provider": "pasqal",
+          "broker": null,
+          "device": "pasqal_cloud",
+          "backend_id": "pasqal_cloud",
+          "modality": "neutral_atom_analog",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "pulser-core",
+          "ir_formats": [
+            "pulser",
+            "pasqal_ir",
+            "openqasm3",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:3f82539a893383173275b42c8d2551564183e5899523a0d25412d116436bdf73",
+            "credential-ref:eb7327d6993b9334a5da1d8450b84c4e6a6661a068d3471be53afe61d5ee7d0c"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": true,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": true,
+              "reason": "Declared by HAL; runtime support remains unverified"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "74891b9b23f25afe11aedb0795582fd49eed7182fe7724f4838a86a77026c238"
+      },
+      {
+        "body": {
+          "route_id": "direct/quandela",
+          "provider": "quandela",
+          "broker": null,
+          "device": "quandela_cloud",
+          "backend_id": "quandela_cloud",
+          "modality": "photonic_gate_model",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "perceval-quandela",
+          "ir_formats": [
+            "perceval",
+            "openqasm3",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:d5fee38bde86c9ab058e4f414e4eca9bf2fad833b77a6c1dc8658eaca5682e3d",
+            "credential-ref:a238bfcdd09c309f7d47f5012151de4b197b33fb25f5299a3348e57b2eb287f1"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "eb2008baecf328eeddf033c2f941808563282c803ccecb3628b5837593f2d43b"
+      },
+      {
+        "body": {
+          "route_id": "direct/quantinuum",
+          "provider": "quantinuum",
+          "broker": null,
+          "device": "quantinuum_cloud",
+          "backend_id": "quantinuum_cloud",
+          "modality": "trapped_ion_gate_model",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "pytket-quantinuum",
+          "ir_formats": [
+            "openqasm3",
+            "qir",
+            "tket",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:fd76f0daf6442b13f9cbec5b397c922225c079857a42261b71d41535d97fa894",
+            "credential-ref:1f9734482dbc817e6e4f6b94605e5df2341443bccdfffc67c4e35d9d675a49a0"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": true,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "68863b6d91ec3a38c1bfc409430f2e5c83a8fe715964f50030f5d9c149943159"
+      },
+      {
+        "body": {
+          "route_id": "direct/quera",
+          "provider": "quera",
+          "broker": null,
+          "device": "quera_bloqade",
+          "backend_id": "quera_bloqade",
+          "modality": "neutral_atom_analog",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "bloqade",
+          "ir_formats": [
+            "bloqade",
+            "braket_ahs",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:da162e507183f04ac1e038bbbf6191adb8de6fff8e7305c770ce4f8650dcbfe0",
+            "credential-ref:8daa66e53d22abf6a329052df8f1ca47d850672206576c23fdd2a6039abdc450"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": true,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": true,
+              "reason": "Declared by HAL; runtime support remains unverified"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "4d7ba85083a9fcd7a311927c180eb535e34ac32f8154076e8526a8a12d2a6e01"
+      },
+      {
+        "body": {
+          "route_id": "direct/rigetti",
+          "provider": "rigetti",
+          "broker": null,
+          "device": "rigetti_qcs",
+          "backend_id": "rigetti_qcs",
+          "modality": "superconducting_gate_model",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "pyquil",
+          "ir_formats": [
+            "quil",
+            "openqasm3",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:5728d986644e98b21f65a1038bc727133266cd5a9cc30188714de6f1b51c5153",
+            "credential-ref:ec8e00f86aee99831780a683957a5b4d1be45584ab855502df9479e83c8e3006"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "4b39695a4e1928a685ce92451cf2d8de2419c3275b0bff51276ec04c19840bfc"
+      },
+      {
+        "body": {
+          "route_id": "qbraid/aws_braket",
+          "provider": "aws_braket",
+          "broker": "qbraid",
+          "device": "qbraid_runtime",
+          "backend_id": "qbraid_runtime",
+          "modality": "provider_agnostic_runtime",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "qbraid",
+          "ir_formats": [
+            "openqasm3",
+            "qiskit",
+            "cirq",
+            "quil",
+            "braket_ir",
+            "pennylane",
+            "pyqubo",
+            "tket",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:576b68b2fbe395950266d31292b48b29ccd0ce2c094c761ba63ad51978eaa202",
+            "credential-ref:c88ec79e97ceaefb31ed8019693129991a082a111e43694060f07f4b7635098d",
+            "credential-ref:8192652ddf4241241a6f65d63999a931957a4add83f1f3e4fb925ee41239d8db"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "a6927f002828615cf6589dc21c34bdf554a42e28f14ee1754074360ff41dfb63"
+      },
+      {
+        "body": {
+          "route_id": "qbraid/azure_quantum",
+          "provider": "azure_quantum",
+          "broker": "qbraid",
+          "device": "qbraid_runtime",
+          "backend_id": "qbraid_runtime",
+          "modality": "provider_agnostic_runtime",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "qbraid",
+          "ir_formats": [
+            "openqasm3",
+            "qiskit",
+            "cirq",
+            "quil",
+            "braket_ir",
+            "pennylane",
+            "pyqubo",
+            "tket",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:576b68b2fbe395950266d31292b48b29ccd0ce2c094c761ba63ad51978eaa202",
+            "credential-ref:c88ec79e97ceaefb31ed8019693129991a082a111e43694060f07f4b7635098d",
+            "credential-ref:8192652ddf4241241a6f65d63999a931957a4add83f1f3e4fb925ee41239d8db"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "f1f99d2375ab18c44db60bb33d78c10a1910324f3a9d9b0b431761a602d72804"
+      },
+      {
+        "body": {
+          "route_id": "qbraid/equal1",
+          "provider": "equal1",
+          "broker": "qbraid",
+          "device": "qbraid_runtime",
+          "backend_id": "qbraid_runtime",
+          "modality": "provider_agnostic_runtime",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "qbraid",
+          "ir_formats": [
+            "openqasm3",
+            "qiskit",
+            "cirq",
+            "quil",
+            "braket_ir",
+            "pennylane",
+            "pyqubo",
+            "tket",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:576b68b2fbe395950266d31292b48b29ccd0ce2c094c761ba63ad51978eaa202",
+            "credential-ref:c88ec79e97ceaefb31ed8019693129991a082a111e43694060f07f4b7635098d",
+            "credential-ref:8192652ddf4241241a6f65d63999a931957a4add83f1f3e4fb925ee41239d8db"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "593eb7dfa2f0b1543f5abe2e70e8a4189eaf26baa78e387e5fa54b6e31367dde"
+      },
+      {
+        "body": {
+          "route_id": "qbraid/ibm_quantum",
+          "provider": "ibm_quantum",
+          "broker": "qbraid",
+          "device": "qbraid_runtime",
+          "backend_id": "qbraid_runtime",
+          "modality": "provider_agnostic_runtime",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "qbraid",
+          "ir_formats": [
+            "openqasm3",
+            "qiskit",
+            "cirq",
+            "quil",
+            "braket_ir",
+            "pennylane",
+            "pyqubo",
+            "tket",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:576b68b2fbe395950266d31292b48b29ccd0ce2c094c761ba63ad51978eaa202",
+            "credential-ref:c88ec79e97ceaefb31ed8019693129991a082a111e43694060f07f4b7635098d",
+            "credential-ref:8192652ddf4241241a6f65d63999a931957a4add83f1f3e4fb925ee41239d8db"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "1b299aff2fbcf83261bd8036576e44ca4f227ab90d6b584d9a25c98c6aa13d18"
+      },
+      {
+        "body": {
+          "route_id": "qbraid/ionq",
+          "provider": "ionq",
+          "broker": "qbraid",
+          "device": "qbraid_ionq",
+          "backend_id": "qbraid_ionq",
+          "modality": "trapped_ion_gate_model",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "qbraid",
+          "ir_formats": [
+            "openqasm3",
+            "qiskit",
+            "cirq",
+            "quil",
+            "braket_ir",
+            "pennylane",
+            "pyqubo",
+            "tket",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:576b68b2fbe395950266d31292b48b29ccd0ce2c094c761ba63ad51978eaa202",
+            "credential-ref:c88ec79e97ceaefb31ed8019693129991a082a111e43694060f07f4b7635098d",
+            "credential-ref:8192652ddf4241241a6f65d63999a931957a4add83f1f3e4fb925ee41239d8db"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "23a8dc4f9fc6a6eaeafa0d9663d0909923e3abd7a4944230db26afa1b629a5b5"
+      },
+      {
+        "body": {
+          "route_id": "qbraid/iqm",
+          "provider": "iqm",
+          "broker": "qbraid",
+          "device": "qbraid_runtime",
+          "backend_id": "qbraid_runtime",
+          "modality": "provider_agnostic_runtime",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "qbraid",
+          "ir_formats": [
+            "openqasm3",
+            "qiskit",
+            "cirq",
+            "quil",
+            "braket_ir",
+            "pennylane",
+            "pyqubo",
+            "tket",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:576b68b2fbe395950266d31292b48b29ccd0ce2c094c761ba63ad51978eaa202",
+            "credential-ref:c88ec79e97ceaefb31ed8019693129991a082a111e43694060f07f4b7635098d",
+            "credential-ref:8192652ddf4241241a6f65d63999a931957a4add83f1f3e4fb925ee41239d8db"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "48aba09f904c213e6aaa1c044478b0057269bb0bb798ed9b023bb5883d3aedf3"
+      },
+      {
+        "body": {
+          "route_id": "qbraid/nec_vector_annealer",
+          "provider": "nec_vector_annealer",
+          "broker": "qbraid",
+          "device": "qbraid_runtime",
+          "backend_id": "qbraid_runtime",
+          "modality": "provider_agnostic_runtime",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "qbraid",
+          "ir_formats": [
+            "openqasm3",
+            "qiskit",
+            "cirq",
+            "quil",
+            "braket_ir",
+            "pennylane",
+            "pyqubo",
+            "tket",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:576b68b2fbe395950266d31292b48b29ccd0ce2c094c761ba63ad51978eaa202",
+            "credential-ref:c88ec79e97ceaefb31ed8019693129991a082a111e43694060f07f4b7635098d",
+            "credential-ref:8192652ddf4241241a6f65d63999a931957a4add83f1f3e4fb925ee41239d8db"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "81d0c9451f0676f068895567ac0f04c19cface10c537e798a252165ca755c14c"
+      },
+      {
+        "body": {
+          "route_id": "qbraid/oqc",
+          "provider": "oqc",
+          "broker": "qbraid",
+          "device": "qbraid_runtime",
+          "backend_id": "qbraid_runtime",
+          "modality": "provider_agnostic_runtime",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "qbraid",
+          "ir_formats": [
+            "openqasm3",
+            "qiskit",
+            "cirq",
+            "quil",
+            "braket_ir",
+            "pennylane",
+            "pyqubo",
+            "tket",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:576b68b2fbe395950266d31292b48b29ccd0ce2c094c761ba63ad51978eaa202",
+            "credential-ref:c88ec79e97ceaefb31ed8019693129991a082a111e43694060f07f4b7635098d",
+            "credential-ref:8192652ddf4241241a6f65d63999a931957a4add83f1f3e4fb925ee41239d8db"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "f27020706c0a072e84139a4135065cf8af1547684a5927f7330720c76dcc439a"
+      },
+      {
+        "body": {
+          "route_id": "qbraid/pasqal",
+          "provider": "pasqal",
+          "broker": "qbraid",
+          "device": "qbraid_runtime",
+          "backend_id": "qbraid_runtime",
+          "modality": "provider_agnostic_runtime",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "qbraid",
+          "ir_formats": [
+            "openqasm3",
+            "qiskit",
+            "cirq",
+            "quil",
+            "braket_ir",
+            "pennylane",
+            "pyqubo",
+            "tket",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:576b68b2fbe395950266d31292b48b29ccd0ce2c094c761ba63ad51978eaa202",
+            "credential-ref:c88ec79e97ceaefb31ed8019693129991a082a111e43694060f07f4b7635098d",
+            "credential-ref:8192652ddf4241241a6f65d63999a931957a4add83f1f3e4fb925ee41239d8db"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "8e3d9a36adcb5b7776dcfc5e8900333ac17ab6e41f7c6e6f656a9a774661f151"
+      },
+      {
+        "body": {
+          "route_id": "qbraid/qir_simulator",
+          "provider": "qbraid",
+          "broker": "qbraid",
+          "device": "qbraid_runtime",
+          "backend_id": "qbraid_runtime",
+          "modality": "provider_agnostic_runtime",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "qbraid",
+          "ir_formats": [
+            "openqasm3",
+            "qiskit",
+            "cirq",
+            "quil",
+            "braket_ir",
+            "pennylane",
+            "pyqubo",
+            "tket",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:576b68b2fbe395950266d31292b48b29ccd0ce2c094c761ba63ad51978eaa202",
+            "credential-ref:c88ec79e97ceaefb31ed8019693129991a082a111e43694060f07f4b7635098d",
+            "credential-ref:8192652ddf4241241a6f65d63999a931957a4add83f1f3e4fb925ee41239d8db"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "4320d6ea7b74c64c2eddad0ecadf91f627cc69f7311a043e68e8a9074fbb06c4"
+      },
+      {
+        "body": {
+          "route_id": "qbraid/quantinuum",
+          "provider": "quantinuum",
+          "broker": "qbraid",
+          "device": "qbraid_runtime",
+          "backend_id": "qbraid_runtime",
+          "modality": "provider_agnostic_runtime",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "qbraid",
+          "ir_formats": [
+            "openqasm3",
+            "qiskit",
+            "cirq",
+            "quil",
+            "braket_ir",
+            "pennylane",
+            "pyqubo",
+            "tket",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:576b68b2fbe395950266d31292b48b29ccd0ce2c094c761ba63ad51978eaa202",
+            "credential-ref:c88ec79e97ceaefb31ed8019693129991a082a111e43694060f07f4b7635098d",
+            "credential-ref:8192652ddf4241241a6f65d63999a931957a4add83f1f3e4fb925ee41239d8db"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "a59b0d12825e71c229985fa9dc588186b3d8f907b4a416171b7557d36a5b350f"
+      },
+      {
+        "body": {
+          "route_id": "qbraid/quera",
+          "provider": "quera",
+          "broker": "qbraid",
+          "device": "qbraid_runtime",
+          "backend_id": "qbraid_runtime",
+          "modality": "provider_agnostic_runtime",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "qbraid",
+          "ir_formats": [
+            "openqasm3",
+            "qiskit",
+            "cirq",
+            "quil",
+            "braket_ir",
+            "pennylane",
+            "pyqubo",
+            "tket",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:576b68b2fbe395950266d31292b48b29ccd0ce2c094c761ba63ad51978eaa202",
+            "credential-ref:c88ec79e97ceaefb31ed8019693129991a082a111e43694060f07f4b7635098d",
+            "credential-ref:8192652ddf4241241a6f65d63999a931957a4add83f1f3e4fb925ee41239d8db"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "1713a270eb20cc1ba7ca9219ce0370d9245127241744a4deb636d6e377c203af"
+      },
+      {
+        "body": {
+          "route_id": "qbraid/rigetti",
+          "provider": "rigetti",
+          "broker": "qbraid",
+          "device": "qbraid_runtime",
+          "backend_id": "qbraid_runtime",
+          "modality": "provider_agnostic_runtime",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "qbraid",
+          "ir_formats": [
+            "openqasm3",
+            "qiskit",
+            "cirq",
+            "quil",
+            "braket_ir",
+            "pennylane",
+            "pyqubo",
+            "tket",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:576b68b2fbe395950266d31292b48b29ccd0ce2c094c761ba63ad51978eaa202",
+            "credential-ref:c88ec79e97ceaefb31ed8019693129991a082a111e43694060f07f4b7635098d",
+            "credential-ref:8192652ddf4241241a6f65d63999a931957a4add83f1f3e4fb925ee41239d8db"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "7b3ea7c273ba8094ed2a6e4a21e008c70aa93cdca2dbf7c3b3f56901d46d3dc3"
+      },
+      {
+        "body": {
+          "route_id": "strangeworks/aqt",
+          "provider": "aqt",
+          "broker": "strangeworks",
+          "device": "strangeworks_compute",
+          "backend_id": "strangeworks_compute",
+          "modality": "provider_agnostic_compute",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "strangeworks",
+          "ir_formats": [
+            "openqasm3",
+            "qiskit",
+            "quil",
+            "braket_ir",
+            "cirq",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:f8a9f66752c4a37a6750375b8fd4728a1481b42efc1c7e5219aef7c4ac04c6ae",
+            "credential-ref:41a757495d8c2daa9945e7070f8a4c0cc1d71726f0b90e6a9f3b8cbcdec56779",
+            "credential-ref:e4656a1181ff1a947b8cc64568fde4ea7cb7f4e87d4a072fec1e1882b2e8fb8a"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "737ce286df88e5e482da1ccd388ad265953167aa1005c536441fa23935ced37b"
+      },
+      {
+        "body": {
+          "route_id": "strangeworks/aws_braket",
+          "provider": "aws_braket",
+          "broker": "strangeworks",
+          "device": "strangeworks_compute",
+          "backend_id": "strangeworks_compute",
+          "modality": "provider_agnostic_compute",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "strangeworks",
+          "ir_formats": [
+            "openqasm3",
+            "qiskit",
+            "quil",
+            "braket_ir",
+            "cirq",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:f8a9f66752c4a37a6750375b8fd4728a1481b42efc1c7e5219aef7c4ac04c6ae",
+            "credential-ref:41a757495d8c2daa9945e7070f8a4c0cc1d71726f0b90e6a9f3b8cbcdec56779",
+            "credential-ref:e4656a1181ff1a947b8cc64568fde4ea7cb7f4e87d4a072fec1e1882b2e8fb8a"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "164bc95126247965ff8392ed0a095b97a18d918357857f6b1b596e13975b6760"
+      },
+      {
+        "body": {
+          "route_id": "strangeworks/azure_quantum",
+          "provider": "azure_quantum",
+          "broker": "strangeworks",
+          "device": "strangeworks_compute",
+          "backend_id": "strangeworks_compute",
+          "modality": "provider_agnostic_compute",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "strangeworks",
+          "ir_formats": [
+            "openqasm3",
+            "qiskit",
+            "quil",
+            "braket_ir",
+            "cirq",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:f8a9f66752c4a37a6750375b8fd4728a1481b42efc1c7e5219aef7c4ac04c6ae",
+            "credential-ref:41a757495d8c2daa9945e7070f8a4c0cc1d71726f0b90e6a9f3b8cbcdec56779",
+            "credential-ref:e4656a1181ff1a947b8cc64568fde4ea7cb7f4e87d4a072fec1e1882b2e8fb8a"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "50e768a3edffa13a5ca64c6463fb2e9b2353702f814c6386a6b046b8ea2e4c08"
+      },
+      {
+        "body": {
+          "route_id": "strangeworks/classical_hpc",
+          "provider": "classical_hpc",
+          "broker": "strangeworks",
+          "device": "strangeworks_compute",
+          "backend_id": "strangeworks_compute",
+          "modality": "provider_agnostic_compute",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "strangeworks",
+          "ir_formats": [
+            "openqasm3",
+            "qiskit",
+            "quil",
+            "braket_ir",
+            "cirq",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:f8a9f66752c4a37a6750375b8fd4728a1481b42efc1c7e5219aef7c4ac04c6ae",
+            "credential-ref:41a757495d8c2daa9945e7070f8a4c0cc1d71726f0b90e6a9f3b8cbcdec56779",
+            "credential-ref:e4656a1181ff1a947b8cc64568fde4ea7cb7f4e87d4a072fec1e1882b2e8fb8a"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "2a222395c25c9b5199668eaf2594fb6874849517ead3b54e673e250cd1070fad"
+      },
+      {
+        "body": {
+          "route_id": "strangeworks/ibm_quantum",
+          "provider": "ibm_quantum",
+          "broker": "strangeworks",
+          "device": "strangeworks_compute",
+          "backend_id": "strangeworks_compute",
+          "modality": "provider_agnostic_compute",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "strangeworks",
+          "ir_formats": [
+            "openqasm3",
+            "qiskit",
+            "quil",
+            "braket_ir",
+            "cirq",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:f8a9f66752c4a37a6750375b8fd4728a1481b42efc1c7e5219aef7c4ac04c6ae",
+            "credential-ref:41a757495d8c2daa9945e7070f8a4c0cc1d71726f0b90e6a9f3b8cbcdec56779",
+            "credential-ref:e4656a1181ff1a947b8cc64568fde4ea7cb7f4e87d4a072fec1e1882b2e8fb8a"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "ef05b3c49c042485126a78f27f8b3b41bf071af7e35ebf06c470debf561837ae"
+      },
+      {
+        "body": {
+          "route_id": "strangeworks/ionq",
+          "provider": "ionq",
+          "broker": "strangeworks",
+          "device": "strangeworks_compute",
+          "backend_id": "strangeworks_compute",
+          "modality": "provider_agnostic_compute",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "strangeworks",
+          "ir_formats": [
+            "openqasm3",
+            "qiskit",
+            "quil",
+            "braket_ir",
+            "cirq",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:f8a9f66752c4a37a6750375b8fd4728a1481b42efc1c7e5219aef7c4ac04c6ae",
+            "credential-ref:41a757495d8c2daa9945e7070f8a4c0cc1d71726f0b90e6a9f3b8cbcdec56779",
+            "credential-ref:e4656a1181ff1a947b8cc64568fde4ea7cb7f4e87d4a072fec1e1882b2e8fb8a"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "f27ae83fb6493e6f07d2deeded853db28f8ff93c7619be130bed994101931526"
+      },
+      {
+        "body": {
+          "route_id": "strangeworks/iqm",
+          "provider": "iqm",
+          "broker": "strangeworks",
+          "device": "strangeworks_compute",
+          "backend_id": "strangeworks_compute",
+          "modality": "provider_agnostic_compute",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "strangeworks",
+          "ir_formats": [
+            "openqasm3",
+            "qiskit",
+            "quil",
+            "braket_ir",
+            "cirq",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:f8a9f66752c4a37a6750375b8fd4728a1481b42efc1c7e5219aef7c4ac04c6ae",
+            "credential-ref:41a757495d8c2daa9945e7070f8a4c0cc1d71726f0b90e6a9f3b8cbcdec56779",
+            "credential-ref:e4656a1181ff1a947b8cc64568fde4ea7cb7f4e87d4a072fec1e1882b2e8fb8a"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "a3aa3d8d2cf52ae2cbacd11ba12b47fb45eda3e321926cf322cf619c695d175c"
+      },
+      {
+        "body": {
+          "route_id": "strangeworks/qiskit_runtime",
+          "provider": "ibm_quantum",
+          "broker": "strangeworks",
+          "device": "strangeworks_compute",
+          "backend_id": "strangeworks_compute",
+          "modality": "provider_agnostic_compute",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "strangeworks",
+          "ir_formats": [
+            "openqasm3",
+            "qiskit",
+            "quil",
+            "braket_ir",
+            "cirq",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:f8a9f66752c4a37a6750375b8fd4728a1481b42efc1c7e5219aef7c4ac04c6ae",
+            "credential-ref:41a757495d8c2daa9945e7070f8a4c0cc1d71726f0b90e6a9f3b8cbcdec56779",
+            "credential-ref:e4656a1181ff1a947b8cc64568fde4ea7cb7f4e87d4a072fec1e1882b2e8fb8a"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "2a3ffee1bae27d9dd000ff0e7e8bcb76c712d39abbebbda817b36d358c9404bb"
+      },
+      {
+        "body": {
+          "route_id": "strangeworks/quantinuum",
+          "provider": "quantinuum",
+          "broker": "strangeworks",
+          "device": "strangeworks_compute",
+          "backend_id": "strangeworks_compute",
+          "modality": "provider_agnostic_compute",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "strangeworks",
+          "ir_formats": [
+            "openqasm3",
+            "qiskit",
+            "quil",
+            "braket_ir",
+            "cirq",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:f8a9f66752c4a37a6750375b8fd4728a1481b42efc1c7e5219aef7c4ac04c6ae",
+            "credential-ref:41a757495d8c2daa9945e7070f8a4c0cc1d71726f0b90e6a9f3b8cbcdec56779",
+            "credential-ref:e4656a1181ff1a947b8cc64568fde4ea7cb7f4e87d4a072fec1e1882b2e8fb8a"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "ca0d96110e0cfa23d7a352e96808127fc165eb4cae884eacffa200b7af68b343"
+      },
+      {
+        "body": {
+          "route_id": "strangeworks/quera",
+          "provider": "quera",
+          "broker": "strangeworks",
+          "device": "strangeworks_compute",
+          "backend_id": "strangeworks_compute",
+          "modality": "provider_agnostic_compute",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "strangeworks",
+          "ir_formats": [
+            "openqasm3",
+            "qiskit",
+            "quil",
+            "braket_ir",
+            "cirq",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:f8a9f66752c4a37a6750375b8fd4728a1481b42efc1c7e5219aef7c4ac04c6ae",
+            "credential-ref:41a757495d8c2daa9945e7070f8a4c0cc1d71726f0b90e6a9f3b8cbcdec56779",
+            "credential-ref:e4656a1181ff1a947b8cc64568fde4ea7cb7f4e87d4a072fec1e1882b2e8fb8a"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "9c304ac1a50f5758cdfb8409cfb32c7b928eed1777d85155a725075347edee12"
+      },
+      {
+        "body": {
+          "route_id": "strangeworks/rigetti",
+          "provider": "rigetti",
+          "broker": "strangeworks",
+          "device": "strangeworks_compute",
+          "backend_id": "strangeworks_compute",
+          "modality": "provider_agnostic_compute",
+          "observed_at": "2026-10-03",
+          "region": null,
+          "sdk_package": "strangeworks",
+          "ir_formats": [
+            "openqasm3",
+            "qiskit",
+            "quil",
+            "braket_ir",
+            "cirq",
+            "mlir"
+          ],
+          "credential_refs": [
+            "credential-ref:f8a9f66752c4a37a6750375b8fd4728a1481b42efc1c7e5219aef7c4ac04c6ae",
+            "credential-ref:41a757495d8c2daa9945e7070f8a4c0cc1d71726f0b90e6a9f3b8cbcdec56779",
+            "credential-ref:e4656a1181ff1a947b8cc64568fde4ea7cb7f4e87d4a072fec1e1882b2e8fb8a"
+          ],
+          "declared": {
+            "supports_shots": true,
+            "supports_counts": true,
+            "supports_statevector": false,
+            "supports_mid_circuit_measurement": false,
+            "supports_analog": false,
+            "supports_pulse": false,
+            "max_qubits": null,
+            "supports_cancellation": true,
+            "supports_cost_estimate": false
+          },
+          "observed": {
+            "online": null,
+            "n_qubits": null,
+            "max_shots": null,
+            "max_circuits": null,
+            "queue_depth": null,
+            "calibration_timestamp": null,
+            "calibration_ref": null,
+            "ir_formats": null,
+            "basis_gates": null,
+            "native_features": null
+          },
+          "options": {
+            "pulse": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            },
+            "analog": {
+              "supported": false,
+              "reason": "Unsupported by this HAL profile"
+            }
+          },
+          "verbs": [
+            {
+              "verb": "metadata",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "compile",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "submit",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "retrieve",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "cancel",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            },
+            {
+              "verb": "result_formats",
+              "declared": null,
+              "declared_source": null,
+              "declared_on": null,
+              "observed": null,
+              "observed_on": null,
+              "conformance_owner": null
+            }
+          ]
+        },
+        "sha256": "adce7687ba4ef2f59f76cbc41703335b4533a7ca541333133847040a0c575021"
+      }
+    ],
+    "binding": null
+  },
+  "extensions": {},
+  "sha256": "9e995d3d7fc30f3e01c384727a8b41862af91b8095371b40b939cf12d3a0a8fb"
+}

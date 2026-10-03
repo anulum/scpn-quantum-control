@@ -198,6 +198,92 @@ def build_program_authoring_quality_gates(python: str) -> list[Gate]:
     ]
 
 
+def build_backend_profiles_quality_gates(python: str) -> list[Gate]:
+    """Build native profile, export and browser boundary gates for Studio CI.
+
+    Parameters
+    ----------
+    python
+        Existing locked interpreter selected by the caller.
+
+    Returns
+    -------
+    list
+        Strict types, native docs and exact public adapter/export coverage.
+
+    """
+    production = [
+        "src/scpn_quantum_control/hardware/backend_profiles.py",
+        "src/scpn_quantum_control/hardware/provider_capability_discovery.py",
+        "tools/export_backend_profiles.py",
+    ]
+    tests = ["tests/test_backend_profiles.py", "tests/test_provider_route_catalogue.py"]
+    owners = [
+        *production,
+        "tests/test_backend_profiles.py",
+        "tools/studio_backend_profiles_browser.py",
+        "tools/tests/test_studio_backend_profiles_browser.py",
+        "tools/studio_executive_product_quality_gates.py",
+        "tests/test_studio_executive_product_quality_gate.py",
+    ]
+    data_file = "/tmp/scpn-qc-studio-backend-profiles.coverage"  # nosec B108
+    return [
+        (
+            "studio-backend-profiles-strict",
+            [python, "-m", "mypy", "--strict", "--explicit-package-bases", *owners],
+        ),
+        (
+            "studio-backend-profiles-native-docs",
+            [
+                python,
+                "-m",
+                "ruff",
+                "check",
+                "--isolated",
+                "--preview",
+                "--select",
+                "D,D413,D417,D420",
+                "--config",
+                "lint.explicit-preview-rules = true",
+                "--config",
+                'lint.pydocstyle.convention = "numpy"',
+                *owners,
+            ],
+        ),
+        (
+            "studio-backend-profiles-native-coverage",
+            [
+                python,
+                "-m",
+                "coverage",
+                "run",
+                f"--rcfile={devnull}",
+                f"--data-file={data_file}",
+                "--branch",
+                "-m",
+                "pytest",
+                "-q",
+                *tests,
+            ],
+        ),
+        (
+            "studio-backend-profiles-native-exact",
+            [
+                python,
+                "-m",
+                "coverage",
+                "report",
+                f"--rcfile={devnull}",
+                f"--data-file={data_file}",
+                "--precision=2",
+                "--show-missing",
+                "--fail-under=100",
+                "--include=*/hardware/backend_profiles.py,*/hardware/provider_capability_discovery.py,*/tools/export_backend_profiles.py",
+            ],
+        ),
+    ]
+
+
 __all__ = [
     "STUDIO_EXECUTIVE_PRODUCT_COVERAGE_COHORT",
     "STUDIO_EXECUTIVE_PRODUCT_COVERAGE_DATA_FILE",
@@ -205,4 +291,5 @@ __all__ = [
     "build_coverage_gates",
     "build_static_quality_gates",
     "build_program_authoring_quality_gates",
+    "build_backend_profiles_quality_gates",
 ]
