@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **768 modules** across **41 package families**
-- **4183 documented public module-level symbols**
+- **769 modules** across **41 package families**
+- **4187 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -5122,6 +5122,16 @@ Federate the committed native-speedup benchmark rows as a schema-B bundle.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/benchmark_databank_bundle.py) · Public symbols: **2**
 
 **Functions:** `build_benchmark_databank_bundle()`, `main()`
+
+### `scpn_quantum_control.studio.compiler_trace`
+
+Project actual native pass evidence without replacing its numerical authority.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/compiler_trace.py) · Public symbols: **4**
+
+**Classes:** `CompilerTrace`
+
+**Functions:** `compiler_backend_snapshot()`, `project_compiler_passes()`, `build_compiler_trace()`
 
 ### `scpn_quantum_control.studio.coupling_invariant`
 

@@ -327,7 +327,7 @@ jobs:
             --data-file="$RUNNER_TEMP/studio-workspace.coverage" \
             --include="*/scpn_quantum_control/studio_workspace/*.py,*/scpn_quantum_control/studio/workspace.py" \
             --precision=2 --show-missing --fail-under=100
-      - name: Enforce supported program native types, docs and exact coverage
+      - name: Enforce supported program and compiler trace native types, docs and exact coverage
         working-directory: .
         env:
           PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
@@ -485,7 +485,7 @@ jobs:
             --output "$RUNNER_TEMP/studio-parameter-journey.json"
           python -m coverage run --rcfile=/dev/null --branch --concurrency=greenlet \
             --data-file="$RUNNER_TEMP/studio-program-browser.coverage" \
-            --include="*/tools/studio_program_authoring_browser.py" \
+            --include="*/tools/studio_program_authoring_browser.py,*/tools/studio_browser_journey.py" \
             tools/studio_browser_journey.py --scenario program_authoring \
             --base-url http://127.0.0.1:4173/ --output "$RUNNER_TEMP/studio-program-journey.json"
           STUDIO_PREVIEW_DIR="$RUNNER_TEMP/studio-browser-preview" \
@@ -494,7 +494,19 @@ jobs:
             --include="*/tools/studio_program_authoring_browser.py" \
             -m pytest --noconftest -q tools/tests/test_studio_program_authoring_browser.py
           python -m coverage report --rcfile=/dev/null \
-            --data-file="$RUNNER_TEMP/studio-program-browser.coverage" --precision=2 --show-missing --fail-under=100
+            --data-file="$RUNNER_TEMP/studio-program-browser.coverage" \
+            --include="*/tools/studio_program_authoring_browser.py" --precision=2 --show-missing --fail-under=100
+          python -m coverage combine --rcfile=/dev/null --append --keep \
+            --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" "$RUNNER_TEMP/studio-program-browser.coverage"
+          "${browser_coverage_command[@]}" tools/studio_browser_journey.py --scenario compiler_trace_inspector \
+            --base-url http://127.0.0.1:4173/ --output "$RUNNER_TEMP/studio-compiler-journey.json"
+          STUDIO_PREVIEW_DIR="$RUNNER_TEMP/studio-browser-preview" \
+            python -m coverage run --rcfile=/dev/null --branch --concurrency=greenlet \
+            --data-file="$RUNNER_TEMP/studio-compiler-browser.coverage" \
+            --include="*/tools/studio_compiler_trace_browser.py" \
+            -m pytest --noconftest -q tools/tests/test_studio_compiler_trace_browser.py
+          python -m coverage report --rcfile=/dev/null \
+            --data-file="$RUNNER_TEMP/studio-compiler-browser.coverage" --precision=2 --show-missing --fail-under=100
       - name: Exercise original panel refusal over isolated damaged input files
         working-directory: .
         env:
@@ -609,6 +621,16 @@ jobs:
           --coverage.thresholds.branches=100
           --coverage.thresholds.functions=100
           --coverage.thresholds.lines=100
+      - name: Enforce compiler trace inspector exact coverage
+        run: >-
+          pnpm exec vitest run src/features/compiler src/app/routes/BuildView.test.tsx
+          --coverage
+          --coverage.include='src/features/compiler/*.{ts,tsx}'
+          --coverage.reportsDirectory=coverage/compiler
+          --coverage.thresholds.statements=100
+          --coverage.thresholds.branches=100
+          --coverage.thresholds.functions=100
+          --coverage.thresholds.lines=100
       - name: Enforce supported program editor and binding exact coverage
         run: >-
           pnpm exec vitest run src/features/programs src/app/routes/BuildView.test.tsx
@@ -705,6 +727,8 @@ jobs:
             ${{ runner.temp }}/studio-parameter-journey.json
             ${{ runner.temp }}/studio-program-journey.json
             ${{ runner.temp }}/studio-program-browser.coverage
+            ${{ runner.temp }}/studio-compiler-journey.json
+            ${{ runner.temp }}/studio-compiler-browser.coverage
             ${{ runner.temp }}/studio-workbench-source-qualification.json
             ${{ runner.temp }}/studio-panel-refusal-journey.json
             ${{ runner.temp }}/studio-panel-refusal-source.log

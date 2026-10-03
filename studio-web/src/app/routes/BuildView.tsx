@@ -14,6 +14,7 @@ import { Unverifiable } from "../../panel/Unverifiable";
 import { committedScenario } from "../../panel/kuramoto";
 import { recomputeUnit } from "../../panel/recompute";
 import { ProgramEditor } from "../../features/programs/ProgramEditor";
+import { CompilerTrace } from "../../features/compiler/CompilerTrace";
 
 /** Reuse original guarded instruments; no new solver, quota or provider policy. */
 export default function BuildView({ focusInstrument = false }: {
@@ -25,6 +26,7 @@ export default function BuildView({ focusInstrument = false }: {
   return <article className="qsp-panel">
     <h3>Build</h3>
     <ProgramEditor />
+    <CompilerTrace />
     <p>Browser instruments use their committed inputs and original resource admission. A requested workspace revision is not substituted into these fixtures.</p>
     <div id="/build/compile-recompute" tabIndex={-1} ref={target}>
       {recomputeUnit.ok ? <RecomputeCard unit={recomputeUnit.value} /> : <Unverifiable surface="xy_compile_recompute_unit_20260708.json" reason={recomputeUnit.reason} />}

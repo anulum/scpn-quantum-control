@@ -6,7 +6,7 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // SCPN Quantum Control — guarded Build projection
 
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 const faults = vi.hoisted(() => ({ compile: false, scenario: false }));
 vi.mock("../../panel/recompute", async original => {
@@ -25,10 +25,20 @@ it("renders the actual original instrument owners with their committed inputs", 
   expect(screen.getByRole("heading", { name: "Build" })).toBeTruthy();
   expect(screen.getByRole("heading", { name: "Program editor" })).toBeTruthy();
   expect(screen.getByRole("button", { name: "Compile source" })).toBeTruthy();
+  expect(screen.getByRole("region", { name: "Compiler trace inspector" })).toBeTruthy();
   expect(screen.getByRole("button", { name: "Recompute in browser" })).toBeTruthy();
   expect(screen.getByText(/A requested workspace revision is not substituted/)).toBeTruthy();
   expect(screen.queryByRole("alert")).toBeNull();
   expect(document.activeElement?.id).toBe("/build/compile-recompute");
+});
+
+it("opens original native compiler metadata through the Build route beside source authoring", async () => {
+  render(<BuildView />);
+  fireEvent.click(screen.getByRole("button", { name: "Open native example" }));
+  await screen.findByRole("table", { name: "Qubit mapping" });
+  expect(screen.getByRole("region", { name: "Program authoring" })).toBeTruthy();
+  expect(screen.getByLabelText("Mapped readout").textContent).toContain("q[0] / c[1] → q[1] / c[1]");
+  expect(screen.getByRole("button", { name: "Export admitted trace" }).hasAttribute("disabled")).toBe(false);
 });
 
 it("refuses a missing compile source without removing available simulation instruments", () => {

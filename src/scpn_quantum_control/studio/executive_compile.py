@@ -33,6 +33,7 @@ from typing import Any, Final
 import numpy as np
 from numpy.typing import NDArray
 
+from .compiler_trace import build_compiler_trace
 from .executive import (
     ActionHandler,
     ExecutionPlan,
@@ -154,6 +155,9 @@ class CompileActionHandler(ActionHandler):
             before a plan is returned; no order coercion is performed.
             Alternatively, the sole ``program_source`` parameter selects exact
             native source emission with the Python backend and no gate execution.
+            Add ``compiler_trace=True`` and optional ``optimisation_level``
+            (integer 0..3) for actual bounded static native pass qualification
+            and textual MLIR. Effectful lowering is explicitly refused.
         contract : VerbContract
             The resolved ``compile`` contract.
 
@@ -167,8 +171,22 @@ class CompileActionHandler(ActionHandler):
         if backend not in contract.backends:
             raise ValueError(f"backend {backend!r} is not declared for the compile verb")
         if "program_source" in request.parameters:
-            if set(request.parameters) != {"program_source"}:
+            if set(request.parameters) - {
+                "program_source",
+                "compiler_trace",
+                "optimisation_level",
+            }:
                 raise ValueError("program_source cannot be combined with network parameters")
+            trace_mode = "compiler_trace" in request.parameters
+            if trace_mode and request.parameters["compiler_trace"] is not True:
+                raise ValueError(
+                    "compiler_trace must be true when requesting native pass evidence"
+                )
+            level = request.parameters.get("optimisation_level", 2)
+            if not trace_mode and "optimisation_level" in request.parameters:
+                raise ValueError("optimisation_level requires compiler_trace")
+            if type(level) is not int or not 0 <= level <= 3:
+                raise ValueError("optimisation_level must be an integer between 0 and 3")
             if backend != "python":
                 raise ValueError(
                     "program_source executive compilation requires the Python backend"
@@ -179,14 +197,30 @@ class CompileActionHandler(ActionHandler):
                 action_id=request.action_id,
                 backend=backend,
                 contract=contract,
-                claim_boundary="supported source emission with exact operands, phases and readout; emitted, not executed",
+                claim_boundary=(
+                    "native static operator qualification with source-bound pass metadata and textual MLIR; emitted, not executed"
+                    if trace_mode
+                    else "supported source emission with exact operands, phases and readout; emitted, not executed"
+                ),
                 steps=(
                     "validate the bounded supported source",
-                    "emit immutable source-bound IR",
-                    "write a reproducible source import script",
+                    "qualify the actual static native compiler pass and emit textual MLIR"
+                    if trace_mode
+                    else "emit immutable source-bound IR",
+                    "write a reproducible trace export script"
+                    if trace_mode
+                    else "write a reproducible source import script",
                 ),
                 parameters=MappingProxyType(
-                    {"program_source": program.source, "source_sha256": program.source_sha256}
+                    {
+                        "program_source": program.source,
+                        "source_sha256": program.source_sha256,
+                        **(
+                            {"compiler_trace": True, "optimisation_level": level}
+                            if trace_mode
+                            else {}
+                        ),
+                    }
                 ),
             )
         compile_spec = _normalise_compile(request.parameters)
@@ -225,6 +259,19 @@ class CompileActionHandler(ActionHandler):
             program = compile_program_source(plan.parameters["program_source"])
             if program.source_sha256 != plan.parameters["source_sha256"]:
                 raise ValueError("program source differs from its sealed compilation plan")
+            if plan.parameters.get("compiler_trace") is True:
+                trace = build_compiler_trace(
+                    program.source, optimisation_level=plan.parameters["optimisation_level"]
+                )
+                return ExecutionResult(
+                    status="succeeded",
+                    outputs={
+                        "backend": plan.backend,
+                        "execution_status": "emitted_not_executed",
+                        "source_sha256": program.source_sha256,
+                        "compiler_trace": trace.to_dict(),
+                    },
+                )
             return ExecutionResult(
                 status="succeeded",
                 outputs={
@@ -277,20 +324,39 @@ class CompileActionHandler(ActionHandler):
         """
         compile_spec: dict[str, Any] = dict(plan.parameters)
         if "program_source" in compile_spec:
-            source = (
-                '"""Reproduce supported source emission; this script does not execute gates."""\n'
-                "from scpn_quantum_control.studio.program_authoring import compile_program_source\n\n"
-                f"SOURCE = {compile_spec['program_source']!r}\n"
-                f"EXPECTED_SOURCE_SHA256 = {result.outputs['source_sha256']!r}\n\n"
-                "def main() -> int:\n"
-                '    """Emit the original program and verify its source identity."""\n'
-                "    program = compile_program_source(SOURCE)\n"
-                "    assert program.source_sha256 == EXPECTED_SOURCE_SHA256\n"
-                "    print(f'source_sha256={program.source_sha256} emitted_not_executed')\n"
-                "    return 0\n\n"
-                "if __name__ == '__main__':\n"
-                "    raise SystemExit(main())\n"
-            )
+            if compile_spec.get("compiler_trace") is True:
+                source = (
+                    '"""Reproduce native compiler evidence; emitted MLIR is not executed."""\n'
+                    "from scpn_quantum_control.studio.compiler_trace import build_compiler_trace\n\n"
+                    f"SOURCE = {compile_spec['program_source']!r}\n"
+                    f"OPTIMISATION_LEVEL = {compile_spec['optimisation_level']!r}\n"
+                    f"EXPECTED_SOURCE_SHA256 = {result.outputs['source_sha256']!r}\n\n"
+                    f"EXPECTED_TRACE_SHA256 = {result.outputs['compiler_trace']['sha256']!r}\n\n"
+                    "def main() -> int:\n"
+                    '    """Emit actual native pass evidence for the original source."""\n'
+                    "    trace = build_compiler_trace(SOURCE, optimisation_level=OPTIMISATION_LEVEL)\n"
+                    "    assert trace.to_dict()['body']['source_sha256'] == EXPECTED_SOURCE_SHA256\n"
+                    "    assert trace.to_dict()['sha256'] == EXPECTED_TRACE_SHA256\n"
+                    "    print(trace.to_json())\n"
+                    "    return 0\n\n"
+                    "if __name__ == '__main__':\n"
+                    "    raise SystemExit(main())\n"
+                )
+            else:
+                source = (
+                    '"""Reproduce supported source emission; this script does not execute gates."""\n'
+                    "from scpn_quantum_control.studio.program_authoring import compile_program_source\n\n"
+                    f"SOURCE = {compile_spec['program_source']!r}\n"
+                    f"EXPECTED_SOURCE_SHA256 = {result.outputs['source_sha256']!r}\n\n"
+                    "def main() -> int:\n"
+                    '    """Emit the original program and verify its source identity."""\n'
+                    "    program = compile_program_source(SOURCE)\n"
+                    "    assert program.source_sha256 == EXPECTED_SOURCE_SHA256\n"
+                    "    print(f'source_sha256={program.source_sha256} emitted_not_executed')\n"
+                    "    return 0\n\n"
+                    "if __name__ == '__main__':\n"
+                    "    raise SystemExit(main())\n"
+                )
         else:
             source = _render_script(
                 action_id=plan.action_id,

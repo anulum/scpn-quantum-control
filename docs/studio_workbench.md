@@ -33,7 +33,8 @@ availability without a fresh deployment probe.
 
 The Workspace view retains the original capability catalogue, committed cards
 and local archive editor. Build opens the existing compile recomputation,
-Kuramoto Play and 3D Lab instruments, together with the program editor. Results opens program-AD replay, evidence
+Kuramoto Play and 3D Lab instruments, together with the program editor and compiler
+trace inspector. Results opens program-AD replay, evidence
 inspection, the support explorer, gradient explanations and scorecard.
 Experiments and Atlas show their unavailable workflows and a link back to
 Workspace. The mode banner distinguishes standalone and embedded layouts;
@@ -206,6 +207,84 @@ PYTHONPATH=. python tools/studio_browser_journey.py --scenario program_authoring
 
 Use a new output path. The runner blocks requests outside the preview and closes
 its contexts; the process owner stops the preview server.
+
+## Compiler trace inspection
+
+Open Build to import a native compiler trace or open the explicit native example.
+The inspector shows each pass's input and output source, IR digests, parameters,
+logical-to-physical qubit layouts, classical output layout, readout correspondence,
+ordered measurement effects and declared gate/depth/resource changes. The example
+contains an actual native qualified physical swap followed by an identity pass.
+It is separate from the current editor draft and saved workspace.
+
+Select source operation pins a span in the original source. Navigating subsequent
+passes leaves that selection unchanged. Each representation retains its own
+source spans; cross-pass operation correspondence is unavailable. The text field
+normalises line endings for display and converts caret positions accordingly;
+source identities and exported bytes retain the original CRLF/LF. Missing pass
+artifacts remain explicit and make the trace incomplete. Unsupported versions,
+duplicate fields, altered source/IR digests and inconsistent metadata refuse
+without replacing the prior admitted trace or writing the saved archive. A late
+import result for an edited draft or unmounted inspector is discarded.
+
+The browser validates metadata identity and structure. It does not rerun the
+native operator qualifier. The retained native record digest uses the original
+native codec; the new envelope and complete IR snapshots use the typed workspace
+codec. These digests bind content and do not attest that an untrusted producer
+performed its declared numerical qualification.
+
+Create a trace through the original native compiler:
+
+```python
+from pathlib import Path
+from scpn_quantum_control.studio.compiler_trace import build_compiler_trace
+
+source = 'OPENQASM 2.0;\ninclude "qelib1.inc";\nqreg q[1];\nh q[0];\n'
+trace = build_compiler_trace(source, optimisation_level=2)
+Path("compiler-trace.json").write_text(trace.to_json(), encoding="utf-8")
+```
+
+The existing executive `compile` source request also accepts
+`{"program_source": source, "compiler_trace": true, "optimisation_level": 2}`.
+The level is an exact integer from zero to three and requires trace mode. The
+trace is at `result.outputs.compiler_trace`; import that envelope, rather than
+the surrounding CLI execution plan. The generated reproduction script exports
+the bare trace and checks both original source and complete trace identities.
+Changing the compiler version or settings may correctly fail that identity check.
+
+Trace mode uses the original bounded static-unitary lowering contract. Reset,
+conditional gates and nonterminal measurement are explicitly refused; their
+effects are never discarded to produce a successful trace. The original source
+editor continues to support its own broader effectful source subset. The actual
+aggregate basis-lowering pass is recorded; unobserved internal SDK pass stages
+are not invented.
+
+The exact backend snapshot retains Qiskit version, settings, reference backend
+and little-endian basis convention. Its target is no physical device. Export
+admitted trace downloads the original admitted UTF-8 text unchanged, including
+the full backend snapshot. **Emitted — not executed** applies to the entire
+trace; an included MLIR artifact remains textual interchange output. Import,
+inspection and export execute no emitted gates and submit no provider job.
+
+Imports are bounded to 16 MiB of UTF-8, one through 32 pass slots, a source-bearing
+first pass, eight qubits, 64 classical bits and 4,096 operations per representation.
+Each source has a 1 MiB UTF-8 ceiling. Declared complex128 payloads are
+`16 * 2**n` statevector bytes and `16 * 4**n` dense operator bytes, without
+allocation; compiler scratch, allocator overhead and available host memory are
+outside these declarations.
+
+The genuine built UI/WASM acceptance journey exercises source compilation,
+mapped native metadata, Unicode selection, exact trace download, missing
+artifacts, refusal and recovery, while checking saved-state and network custody:
+
+```bash
+PYTHONPATH=src:oscillatools/src:. python tools/studio_browser_journey.py \
+  --scenario compiler_trace_inspector --base-url http://127.0.0.1:4173/ \
+  --output /tmp/compiler-trace-journey.json
+```
+
+Use a fresh output path and an owned preview with the actual shipped WASM. The
+runner closes its browser; the preview server remains its owner's responsibility.
 
 ## Capability catalogue
 

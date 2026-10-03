@@ -379,6 +379,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "workbench_navigation",
             "parameter_graph_editor",
             "program_authoring",
+            "compiler_trace_inspector",
         ),
         required=True,
     )
@@ -436,6 +437,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 from tools.studio_program_authoring_browser import run_program_authoring_journey
 
                 journey = partial(run_program_authoring_journey, evidence=evidence)
+            elif args.scenario == "compiler_trace_inspector":
+                from tools.studio_compiler_trace_browser import run_compiler_trace_journey
+
+                journey = partial(run_compiler_trace_journey, evidence=evidence)
             else:
                 journey = run_evidence_journey
             evidence.update(journey(url))

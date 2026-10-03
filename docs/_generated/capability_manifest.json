@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 851,
     "public_documentation_pages": 380,
-    "python_model_classes": 1478,
-    "python_model_source_modules": 768,
+    "python_model_classes": 1479,
+    "python_model_source_modules": 769,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1474
+    "test_files": 1475
   },
   "documentation": {
     "examples": [
@@ -756,7 +756,7 @@
       {
         "package": "studio",
         "path": "src/scpn_quantum_control/studio",
-        "python_modules": 33
+        "python_modules": 34
       },
       {
         "package": "studio_workspace",
@@ -1497,6 +1497,10 @@
       {
         "name": "CompilerPromotionBatchEvidenceFile",
         "path": "src/scpn_quantum_control/compiler/promotion_batch.py"
+      },
+      {
+        "name": "CompilerTrace",
+        "path": "src/scpn_quantum_control/studio/compiler_trace.py"
       },
       {
         "name": "ComplexContractDecision",
@@ -7399,6 +7403,7 @@
       "src/scpn_quantum_control/stochastic_estimators_product.py",
       "src/scpn_quantum_control/structured_log_fallback.py",
       "src/scpn_quantum_control/studio/benchmark_databank_bundle.py",
+      "src/scpn_quantum_control/studio/compiler_trace.py",
       "src/scpn_quantum_control/studio/coupling_invariant.py",
       "src/scpn_quantum_control/studio/coverage_frontier.py",
       "src/scpn_quantum_control/studio/evidence_bundle.py",
@@ -9945,6 +9950,7 @@
       "tests/test_studio_benchmark_databank_bundle.py",
       "tests/test_studio_browser_journey.py",
       "tests/test_studio_claim_frontier_quality_gate.py",
+      "tests/test_studio_compiler_trace.py",
       "tests/test_studio_coupling_invariant.py",
       "tests/test_studio_evidence_bundle.py",
       "tests/test_studio_executive.py",

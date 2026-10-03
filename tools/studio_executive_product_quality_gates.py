@@ -124,13 +124,20 @@ def build_program_authoring_quality_gates(python: str) -> list[Gate]:
         "src/scpn_quantum_control/studio/program_authoring.py",
         "src/scpn_quantum_control/studio/program_authoring_contracts.py",
         "src/scpn_quantum_control/studio/executive_compile.py",
+        "src/scpn_quantum_control/studio/compiler_trace.py",
     ]
-    tests = ["tests/test_studio_program_authoring.py", "tests/test_studio_executive_compile.py"]
+    tests = [
+        "tests/test_studio_program_authoring.py",
+        "tests/test_studio_executive_compile.py",
+        "tests/test_studio_compiler_trace.py",
+    ]
     owners = [
         *production,
         *tests,
         "tools/studio_program_authoring_browser.py",
         "tools/tests/test_studio_program_authoring_browser.py",
+        "tools/studio_compiler_trace_browser.py",
+        "tools/tests/test_studio_compiler_trace_browser.py",
         "tools/studio_executive_product_quality_gates.py",
     ]
     data_file = "/tmp/scpn-qc-studio-program-authoring.coverage"  # nosec B108
@@ -185,7 +192,7 @@ def build_program_authoring_quality_gates(python: str) -> list[Gate]:
                 "--precision=2",
                 "--show-missing",
                 "--fail-under=100",
-                "--include=*/studio/program_authoring.py,*/studio/program_authoring_contracts.py,*/studio/executive_compile.py",
+                "--include=*/studio/program_authoring.py,*/studio/program_authoring_contracts.py,*/studio/executive_compile.py,*/studio/compiler_trace.py",
             ],
         ),
     ]

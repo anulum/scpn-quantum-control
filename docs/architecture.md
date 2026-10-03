@@ -1,3 +1,11 @@
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<!-- Commercial license available -->
+<!-- (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved. -->
+<!-- (c) Code 2020-2026 Miroslav Sotek. All rights reserved. -->
+<!-- ORCID: 0009-0009-3560-0851 -->
+<!-- Contact: www.anulum.li | protoscience@anulum.li -->
+<!-- scpn-quantum-control -- architecture -->
+
 # Architecture
 
 ## Purpose and boundaries
@@ -371,7 +379,7 @@ native primitives, operand-class compilation, whole-program lowering/emission, a
 evidence. The later cross-language rescan found four residual `compiler/mlir.py` implementation
 clusters; the 2026-07-13 extraction below closes them behind the stable facade.
 
-After all five reopened refactors, the register contains 58 reviewed module decisions: all 58
+The current register contains 60 reviewed module decisions: all 60
 have an approved cohesive, facade, test-owner, or entry-point decision, and 0 remain open.
 The strict responsibility certification is therefore green. This is an architectural ownership
 claim, not a LOC limit and not a substitute for runtime or scientific validation.

@@ -50,6 +50,13 @@ contract-reserved QUANTUM verb: gradient evaluation over compiled phase
 programmes, fail-closed outside the declared support matrix, producing
 `studio.differentiation-evidence.v1` claims.
 
+The `compile` declaration also lists `studio.program-source.v1` and
+`studio.compiler-trace.v1` for exact supported-source emission and native
+compiler-pass metadata. These source modes retain emitted-not-executed status;
+they do not submit provider jobs. The [compiler trace inspector](studio_workbench.md#compiler-trace-inspection)
+preserves the original source, pass layouts and exact backend snapshot. Its
+metadata import does not rerun the native numerical qualifier.
+
 ## Schema-B bundle API
 
 Use the library API when the Hub or a local audit needs concrete evidence

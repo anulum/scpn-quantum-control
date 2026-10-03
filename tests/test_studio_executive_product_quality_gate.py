@@ -65,3 +65,30 @@ def test_ci_runs_and_aggregates_gate() -> None:
         in block
     )
     assert "studio-executive-product-quality" in workflow[workflow.index("  ci-gate:") :]
+
+
+def test_compiler_trace_is_qualified_by_the_existing_studio_cohort() -> None:
+    """Require native and browser trace ownership in the original coherent category."""
+    from pathlib import Path
+
+    gates = dict(quality_gates.build_program_authoring_quality_gates("/python"))
+    strict = gates["studio-program-authoring-strict"]
+    docs = gates["studio-program-authoring-native-docs"]
+    run = gates["studio-program-authoring-native-coverage"]
+    exact = gates["studio-program-authoring-native-exact"]
+    for owner in [
+        "src/scpn_quantum_control/studio/compiler_trace.py",
+        "tests/test_studio_compiler_trace.py",
+        "tools/studio_compiler_trace_browser.py",
+        "tools/tests/test_studio_compiler_trace_browser.py",
+    ]:
+        assert owner in strict and owner in docs
+    assert "tests/test_studio_compiler_trace.py" in run
+    assert any("*/studio/compiler_trace.py" in field for field in exact)
+    assert "--fail-under=100" in exact
+    repo = Path(__file__).resolve().parents[1]
+    workflow = (repo / ".github/workflows/ci-studio.yml").read_text()
+    assert workflow.count("--scenario compiler_trace_inspector") == 1
+    assert "tools/tests/test_studio_compiler_trace_browser.py" in workflow
+    assert "--coverage.include='src/features/compiler/*.{ts,tsx}'" in workflow
+    assert "build_program_authoring_quality_gates" in workflow

@@ -58,6 +58,10 @@ HARDWARE_RESULT_PACK_SCHEMA = "studio.hardware-result-pack.v1"
 QPU_RESULT_PACK_SCHEMA = "studio.qpu-result-pack.v1"
 XY_COMPILE_RECOMPUTE_SCHEMA = "studio.xy-compile-recompute.v1"
 DIFFERENTIATION_EVIDENCE_SCHEMA = "studio.differentiation-evidence.v1"
+PROGRAM_SOURCE_SCHEMA = "studio.program-source.v1"
+"""Exact source-emission family; records admission without executing gates."""
+COMPILER_TRACE_SCHEMA = "studio.compiler-trace.v1"
+"""Native pass metadata family; declarations and textual IR remain unexecuted."""
 
 VERB_SUBSTRATES: dict[str, tuple[str, ...]] = {
     "analyse": ("classical-reference", "numerical-model", "simulator"),
@@ -73,10 +77,19 @@ COMPILE = Verb(
     side_effect=SideEffect.READ_ONLY,
     timing=Timing(TimingClass.INTERACTIVE),
     fidelity=Fidelity.FIRST_PRINCIPLES,
-    produces=(KURAMOTO_COMPILATION_SCHEMA, XY_COMPILE_RECOMPUTE_SCHEMA),
+    produces=(
+        KURAMOTO_COMPILATION_SCHEMA,
+        XY_COMPILE_RECOMPUTE_SCHEMA,
+        PROGRAM_SOURCE_SCHEMA,
+        COMPILER_TRACE_SCHEMA,
+    ),
     backends=("rust", "qiskit", "python"),
 )
-"""Compile an arbitrary ``K_nm``/``omega`` network into XY/XXZ Hamiltonians and circuits."""
+"""Emit bounded network, supported source or native compiler-pass records.
+
+Source emission and native static qualification do not execute emitted gates
+or submit hardware jobs. The existing network modes retain their own scope.
+"""
 
 SIMULATE = Verb(
     name="simulate",
@@ -231,6 +244,8 @@ def evidence_schemas() -> tuple[str, ...]:
         QPU_RESULT_PACK_SCHEMA,
         XY_COMPILE_RECOMPUTE_SCHEMA,
         DIFFERENTIATION_EVIDENCE_SCHEMA,
+        PROGRAM_SOURCE_SCHEMA,
+        COMPILER_TRACE_SCHEMA,
     )
 
 

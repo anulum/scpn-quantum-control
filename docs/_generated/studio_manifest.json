@@ -139,7 +139,7 @@
       }
     ],
     "catalogue": {
-      "identity": "sha256:41041a1ba1b37a2735d4757ab3e8784f08b972e7a9c77fdc868ba47191300407",
+      "identity": "sha256:8695ddd4a0a2bd52070dfc2a26bd3a2e1e883dcfa11249e203a60570a1827d38",
       "rows": [
         {
           "api": "scpn-studio-run analyse",
@@ -185,7 +185,9 @@
           ],
           "evidence": [
             "studio.kuramoto-compilation.v1",
-            "studio.xy-compile-recompute.v1"
+            "studio.xy-compile-recompute.v1",
+            "studio.program-source.v1",
+            "studio.compiler-trace.v1"
           ],
           "label": "XY compile recomputation",
           "reason": "Replays the committed XY input only; no general circuit editor.",
@@ -292,7 +294,7 @@
         }
       ],
       "schema": "studio-capability-catalogue.v1",
-      "source_digest": "sha256:369e5a6c5df881ee502ffa7d6872d522e1047e21f099ad4f5cd55035e9f8fe59",
+      "source_digest": "sha256:31a28dc1c3293eeb53b3343db1cfe82cdf24bc7a7a0ac098d7de89774d98d83d",
       "source_studio": "scpn-quantum-control",
       "source_version": "1.2.0"
     },
@@ -485,7 +487,7 @@
     ]
   },
   "schema_a": {
-    "content_digest": "sha256:369e5a6c5df881ee502ffa7d6872d522e1047e21f099ad4f5cd55035e9f8fe59",
+    "content_digest": "sha256:31a28dc1c3293eeb53b3343db1cfe82cdf24bc7a7a0ac098d7de89774d98d83d",
     "contract_era": "v1",
     "enumeration": "language-agnostic",
     "evidence_types": [
@@ -503,7 +505,9 @@
       "studio.hardware-result-pack.v1",
       "studio.qpu-result-pack.v1",
       "studio.xy-compile-recompute.v1",
-      "studio.differentiation-evidence.v1"
+      "studio.differentiation-evidence.v1",
+      "studio.program-source.v1",
+      "studio.compiler-trace.v1"
     ],
     "platform_sdk": ">=0.9,<0.12",
     "protocol_version": "1",
@@ -527,7 +531,9 @@
         "fidelity": "first-principles",
         "produces": [
           "studio.kuramoto-compilation.v1",
-          "studio.xy-compile-recompute.v1"
+          "studio.xy-compile-recompute.v1",
+          "studio.program-source.v1",
+          "studio.compiler-trace.v1"
         ],
         "safety_tier": "research",
         "side_effect": "read-only",
