@@ -68,10 +68,35 @@ export function admitKuramotoResources(
   }, policy, requestedWallMs);
 }
 
+/** Admit original numeric buffers plus explicit worker transport copies before allocation. */
+export function admitOwnedKuramotoResources(
+  request: KuramotoResourceRequest, bounds: KuramotoBounds, binaryBytes: number,
+  policy: ResourcePolicy = browserResourcePolicy(bounds), requestedWallMs: bigint | null = null,
+): ResourceAdmission {
+  if (!Number.isSafeInteger(binaryBytes) || binaryBytes < 1 || binaryBytes > 2 * 1024 * 1024) throw new Error("bounded worker binary bytes required");
+  const original = admitKuramotoResources(request, bounds, policy);
+  const n = BigInt(request.n);
+  const values = 2n * n + (request.mode === "networked" ? n * n : 0n);
+  const buffers: ResourceBuffer[] = original.estimate.components.map(component => ({
+    name: component.name, role: component.role, shape: component.shape,
+    dtype: component.dtype, count: component.count,
+  }));
+  buffers.push(
+    { name: "owned_worker_transfer_codec_vectors_and_source_request", role: "transfer", shape: [values], dtype: "float64", count: 3n },
+    { name: "parent_source_codec_validation", role: "transfer", shape: [32n + 8n * values], dtype: "uint8", count: 1n },
+    { name: "retained_and_transferred_kernel_binary", role: "transfer", shape: [BigInt(binaryBytes)], dtype: "uint8", count: 2n },
+  );
+  return checkResourcePlan({
+    backend: "shipped-kuramoto-wasm-float64-owned-worker", method: request.mode,
+    buffers, concurrency: 1n, workUnits: original.estimate.workUnits,
+  }, policy, requestedWallMs);
+}
+
 
 /** Offer an explicitly applied smaller shape after checking the complete same-method plan. */
 export function smallerKuramotoRequest(
   request: KuramotoResourceRequest, bounds: KuramotoBounds, policy: ResourcePolicy,
+  binaryBytes?: number,
 ): KuramotoResourceRequest | null {
   count(request.n, "oscillators");
   count(request.steps, "steps");
@@ -82,7 +107,9 @@ export function smallerKuramotoRequest(
     n = Math.max(1, Math.floor(n / 2));
     steps = Math.max(1, Math.floor(steps / 2));
     const candidate = Object.freeze({ n, steps, mode: request.mode });
-    if (admitKuramotoResources(candidate, bounds, policy).allowed) return candidate;
+    const admission = binaryBytes === undefined ? admitKuramotoResources(candidate, bounds, policy)
+      : admitOwnedKuramotoResources(candidate, bounds, binaryBytes, policy);
+    if (admission.allowed) return candidate;
   }
   return null;
 }

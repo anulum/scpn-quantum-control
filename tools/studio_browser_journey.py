@@ -415,6 +415,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "compiler_trace_inspector",
             "operator_backend_profiles",
             "workbench_accessibility",
+            "owned_kernel_worker",
         ),
         required=True,
     )
@@ -478,6 +479,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 from tools.studio_resource_browser_journey import run_resource_journey
 
                 journey = run_resource_journey
+            elif args.scenario == "owned_kernel_worker":
+                from tools.studio_owned_worker_journey import run_owned_worker_journey
+
+                journey = partial(run_owned_worker_journey, evidence=evidence)
             elif args.scenario == "capability_catalogue":
                 journey = run_catalogue_journey
             elif args.scenario == "program_authoring":

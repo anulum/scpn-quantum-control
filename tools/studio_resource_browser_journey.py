@@ -51,6 +51,14 @@ def run_resource_journey(base_url: str) -> dict[str, object]:
             context.add_init_script(
                 """(() => {
                   window.__studioResourceAllocations = 0;
+                  window.__studioResourceWorkers = 0;
+                  const NativeWorker = window.Worker;
+                  window.Worker = class extends NativeWorker {
+                    constructor(...args) {
+                      super(...args);
+                      window.__studioResourceWorkers += 1;
+                    }
+                  };
                   const nativeInstantiate = WebAssembly.instantiate.bind(WebAssembly);
                   WebAssembly.instantiate = async (...args) => {
                     const native = await nativeInstantiate(...args);
@@ -95,21 +103,33 @@ def run_resource_journey(base_url: str) -> dict[str, object]:
             play.get_by_label("Steps:", exact=False).press("End")
             play.get_by_label("Topology").select_option("networked")
             expect(plan).to_contain_text("networked")
+            expect(play.get_by_role("img", name="order parameter over time")).to_be_visible()
             allocations_before = page.evaluate("window.__studioResourceAllocations")
             assert isinstance(allocations_before, int) and allocations_before > 0
+            workers_before = page.evaluate("window.__studioResourceWorkers")
             play.get_by_label("Memory ceiling (KiB)").fill("0")
             expect(plan.get_by_role("alert")).to_contain_text("declared_storage_exceeds_budget")
             expect(play.get_by_role("img", name="order parameter over time")).to_have_count(0)
             allocations_after = page.evaluate("window.__studioResourceAllocations")
             assert allocations_after == allocations_before
+            assert page.evaluate("window.__studioResourceWorkers") == workers_before
             observations.append(
                 {
                     "outcome": "refused-before-native-allocation",
                     "before": allocations_before,
                     "after": allocations_after,
+                    "worker_constructors": workers_before,
                 }
             )
-            play.get_by_label("Memory ceiling (KiB)").fill("1")
+            manifest = page.request.get(url + "deploy-manifest.json").json()
+            binary_bytes = next(
+                row["bytes"]
+                for row in manifest["artifacts"]
+                if row["path"] == "wasm/scpn_quantum_studio_wasm_kernel.wasm"
+            )
+            play.get_by_label("Memory ceiling (KiB)").fill(
+                str((2 * binary_bytes + 2048 + 1023) // 1024)
+            )
             expect(play.get_by_role("img", name="order parameter over time")).to_have_count(0)
             play.get_by_role(
                 "button", name="Apply smaller supported configuration", exact=False
@@ -119,22 +139,26 @@ def run_resource_journey(base_url: str) -> dict[str, object]:
             expect(play.get_by_label("Topology")).to_have_value("networked")
             expect(plan).to_contain_text("float64")
             allocations_recovered = page.evaluate("window.__studioResourceAllocations")
-            assert (
-                isinstance(allocations_recovered, int)
-                and allocations_recovered > allocations_after
-            )
+            workers_recovered = page.evaluate("window.__studioResourceWorkers")
+            assert isinstance(workers_recovered, int) and workers_recovered > workers_before
             observations.append(
-                {"outcome": "same-method-smaller-recovered", "allocations": allocations_recovered}
+                {
+                    "outcome": "same-method-smaller-recovered",
+                    "main_allocations": allocations_recovered,
+                    "worker_constructors": workers_recovered,
+                }
             )
             play.get_by_label("Memory ceiling (KiB)").fill("4096")
             play.get_by_label("Topology").select_option("mean-field")
             expect(plan).to_contain_text("mean-field")
             expect(play.get_by_role("img", name="order parameter over time")).to_be_visible()
             before_deadline = page.evaluate("window.__studioResourceAllocations")
+            workers_before_deadline = page.evaluate("window.__studioResourceWorkers")
             play.get_by_label("Wall-clock ceiling (ms; optional)").fill("1")
             expect(plan.get_by_role("alert")).to_contain_text("wall_clock_admission_unavailable")
             expect(play.get_by_role("img", name="order parameter over time")).to_have_count(0)
             assert page.evaluate("window.__studioResourceAllocations") == before_deadline
+            assert page.evaluate("window.__studioResourceWorkers") == workers_before_deadline
             observations.append(
                 {"outcome": "unsupported-wall-clock-refused", "allocations": before_deadline}
             )

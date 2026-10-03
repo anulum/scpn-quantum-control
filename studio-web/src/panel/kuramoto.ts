@@ -23,6 +23,10 @@
 import { admitKuramotoResources } from "../shared/resources/kuramotoResources";
 import type { ResourcePolicy } from "../shared/resources/admission";
 
+export { createOwnedKuramotoRun } from "../workers/kernelClient";
+export type { OwnedKuramotoHandle, OwnedKuramotoOptions } from "../workers/kernelClient";
+export type { KernelRunIdentity, OwnedKernelOutcome } from "../workers/kernelProtocol";
+
 import committedScenarioJson from "../../../data/studio/kuramoto_scenario_meanfield_20260708.json";
 
 /** Schema version stamped into the kernel's binary input. */
@@ -128,6 +132,8 @@ export interface KuramotoKernel {
   readonly simulate: KernelSimulate;
   /** The ceilings this kernel build declares. */
   readonly bounds: KuramotoBounds;
+  /** Captured original binary for owned execution; absent legacy loaders visibly refuse it. */
+  readonly sourceBytes?: Uint8Array<ArrayBuffer>;
 }
 
 /** The kernel's declared fail-closed bounds, read from the WASM itself. */
@@ -276,9 +282,12 @@ export function bindKuramoto(exports: KuramotoExports, resourcePolicy?: Resource
 export async function instantiateKuramoto(
   wasmBytes: BufferSource,
 ): Promise<KuramotoKernel> {
-  const { instance } = await WebAssembly.instantiate(wasmBytes, {});
+  const sourceBytes = ArrayBuffer.isView(wasmBytes)
+    ? new Uint8Array(wasmBytes.buffer, wasmBytes.byteOffset, wasmBytes.byteLength).slice()
+    : new Uint8Array(wasmBytes).slice();
+  const { instance } = await WebAssembly.instantiate(sourceBytes, {});
   const exports = instance.exports as unknown as KuramotoExports;
-  return { simulate: bindKuramoto(exports), bounds: readBounds(exports) };
+  return { simulate: bindKuramoto(exports), bounds: readBounds(exports), sourceBytes };
 }
 
 /** Fetch and instantiate the deployed kernel (browser runtime path). */

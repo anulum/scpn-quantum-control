@@ -42,6 +42,7 @@ import pytest
         "workspace_panel_refusal",
         "workbench_navigation",
         "parameter_graph_editor",
+        "owned_kernel_worker",
     ],
 )
 def test_runner_rejects_external_or_ambiguous_preview(

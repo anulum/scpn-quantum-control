@@ -12,7 +12,7 @@ import { resolve } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { bindKuramoto, readBounds } from "../../panel/kuramoto";
 import type { KuramotoExports, KuramotoRequest } from "../../panel/kuramoto";
-import { admitKuramotoResources, browserResourcePolicy, smallerKuramotoRequest } from "./kuramotoResources";
+import { admitKuramotoResources, admitOwnedKuramotoResources, browserResourcePolicy, smallerKuramotoRequest } from "./kuramotoResources";
 import type { ResourcePolicy } from "./admission";
 
 let exports: KuramotoExports;
@@ -106,4 +106,26 @@ it("refuses a wall-clock request before real WASM allocation", () => {
   const result = bindKuramoto(observed, policy(), 1n)(request());
   expect(result.ok).toBe(false);
   expect(entered).toBe(0);
+});
+
+it("accounts for native binary transfers, saved values, codec vectors and exact resource boundaries", () => {
+  const binaryBytes = readFileSync(resolve("..", "scpn_quantum_engine/studio_wasm_kernel/target/wasm32-unknown-unknown/release/scpn_quantum_studio_wasm_kernel.wasm")).byteLength;
+  const bounds = readBounds(exports);
+  const input = { n: 2, steps: 10, mode: "mean-field" as const };
+  const row = admitOwnedKuramotoResources(input, bounds, binaryBytes);
+  expect(row.estimate.components.map(component => component.bytes)).toEqual([32n, 128n, 32n, 96n, 312n, 96n, 64n, 2n * BigInt(binaryBytes)]);
+  expect(row.bytesRequired).toBe(760n + 2n * BigInt(binaryBytes));
+  if (row.bytesRequired === null) throw new Error("actual source byte projection missing");
+  expect(admitOwnedKuramotoResources(input, bounds, binaryBytes, policy({ memoryBytes: row.bytesRequired })).allowed).toBe(true);
+  expect(admitOwnedKuramotoResources(input, bounds, binaryBytes, policy({ memoryBytes: row.bytesRequired - 1n })).allowed).toBe(false);
+  expect(admitOwnedKuramotoResources(input, bounds, binaryBytes, policy(), 1n).blockers).toContain("wall_clock_admission_unavailable");
+  const network = { n: 16, steps: 100, mode: "networked" as const };
+  const budget = policy({ memoryBytes: 2n * BigInt(binaryBytes) + 2048n });
+  const smaller = smallerKuramotoRequest(network, bounds, budget, binaryBytes);
+  expect(smaller).not.toBeNull();
+  if (!smaller) throw new Error("supported worker shape missing");
+  expect(smaller.mode).toBe("networked");
+  expect(admitOwnedKuramotoResources(smaller, bounds, binaryBytes, budget).allowed).toBe(true);
+  expect(smallerKuramotoRequest(network, bounds, policy({ memoryBytes: 0n }), binaryBytes)).toBeNull();
+  for (const invalid of [0, -1, 1.5, Number.NaN, 2 * 1024 * 1024 + 1]) expect(() => admitOwnedKuramotoResources(input, bounds, invalid)).toThrow("binary bytes");
 });

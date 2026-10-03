@@ -285,13 +285,13 @@ jobs:
         run: |
           python -m pip install --require-hashes -r requirements-ci-studio-browser.txt
           python -m playwright install --with-deps chromium
-          python -m mypy --strict --explicit-package-bases tools/studio_browser_journey.py tools/studio_parameter_browser_journey.py tools/studio_workbench_browser_journey.py tools/studio_resource_browser_journey.py tools/studio_workspace_browser_journey.py tools/studio_workspace_browser_coverage.py tools/studio_workspace_browser_ui.py tests/test_studio_browser_journey.py tests/test_studio_resource_browser_journey.py tests/test_studio_workspace_browser_journey.py tools/tests/test_studio_workspace_browser_coverage.py tools/tests/test_studio_browser_runtime_refusal.py tools/tests/test_studio_workbench_browser_journey.py tools/tests/test_studio_parameter_browser_journey.py tools/studio_accessibility_browser.py tools/studio_accessibility_checks.py tests/test_studio_accessibility_browser_journey.py tools/tests/test_studio_accessibility_browser_runtime.py tools/tests/test_studio_accessibility_checks.py
+          python -m mypy --strict --explicit-package-bases tools/studio_browser_journey.py tools/studio_owned_worker_journey.py tools/studio_parameter_browser_journey.py tools/studio_workbench_browser_journey.py tools/studio_resource_browser_journey.py tools/studio_workspace_browser_journey.py tools/studio_workspace_browser_coverage.py tools/studio_workspace_browser_ui.py tests/test_studio_browser_journey.py tests/test_studio_owned_worker_journey.py tests/test_studio_resource_browser_journey.py tests/test_studio_workspace_browser_journey.py tools/tests/test_studio_workspace_browser_coverage.py tools/tests/test_studio_browser_runtime_refusal.py tools/tests/test_studio_owned_worker_browser_runtime.py tools/tests/test_studio_workbench_browser_journey.py tools/tests/test_studio_parameter_browser_journey.py tools/studio_accessibility_browser.py tools/studio_accessibility_checks.py tests/test_studio_accessibility_browser_journey.py tools/tests/test_studio_accessibility_browser_runtime.py tools/tests/test_studio_accessibility_checks.py
           python -m coverage run --rcfile=/dev/null --branch --concurrency=greenlet \
             --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" \
-            --include="*/tools/studio_browser_journey.py,*/tools/studio_accessibility_browser.py,*/tools/studio_accessibility_checks.py,*/tools/studio_parameter_browser_journey.py,*/tools/studio_workbench_browser_journey.py,*/tools/studio_workspace_browser_journey.py,*/tools/studio_workspace_browser_coverage.py,*/tools/studio_workspace_browser_ui.py" \
-            -m pytest --noconftest -q tests/test_studio_browser_journey.py tests/test_studio_resource_browser_journey.py tests/test_studio_workspace_browser_journey.py tests/test_studio_accessibility_browser_journey.py
-          python -m ruff check tools/studio_browser_journey.py tools/studio_parameter_browser_journey.py tools/studio_workbench_browser_journey.py tools/studio_resource_browser_journey.py tools/studio_workspace_browser_journey.py tools/studio_workspace_browser_coverage.py tools/studio_workspace_browser_ui.py tools/tests/test_studio_workspace_browser_coverage.py tools/tests/test_studio_browser_runtime_refusal.py tools/tests/test_studio_workbench_browser_journey.py tools/tests/test_studio_parameter_browser_journey.py tools/studio_accessibility_browser.py tools/studio_accessibility_checks.py tests/test_studio_accessibility_browser_journey.py tools/tests/test_studio_accessibility_browser_runtime.py tools/tests/test_studio_accessibility_checks.py
-          python -m ruff check --isolated --preview --select D,D413,D417,D420 --config 'lint.explicit-preview-rules = true' --config 'lint.pydocstyle.convention = "numpy"' tools/studio_browser_journey.py tools/studio_parameter_browser_journey.py tools/studio_workbench_browser_journey.py tools/studio_resource_browser_journey.py tools/studio_workspace_browser_journey.py tools/studio_workspace_browser_coverage.py tools/studio_workspace_browser_ui.py tools/studio_accessibility_browser.py tools/studio_accessibility_checks.py tests/test_studio_accessibility_browser_journey.py tools/tests/test_studio_accessibility_browser_runtime.py tools/tests/test_studio_accessibility_checks.py
+            --include="*/tools/studio_browser_journey.py,*/tools/studio_owned_worker_journey.py,*/tools/studio_resource_browser_journey.py,*/tools/studio_accessibility_browser.py,*/tools/studio_accessibility_checks.py,*/tools/studio_parameter_browser_journey.py,*/tools/studio_workbench_browser_journey.py,*/tools/studio_workspace_browser_journey.py,*/tools/studio_workspace_browser_coverage.py,*/tools/studio_workspace_browser_ui.py" \
+            -m pytest --noconftest -q tests/test_studio_browser_journey.py tests/test_studio_owned_worker_journey.py tests/test_studio_resource_browser_journey.py tests/test_studio_workspace_browser_journey.py tests/test_studio_accessibility_browser_journey.py
+          python -m ruff check tools/studio_browser_journey.py tools/studio_owned_worker_journey.py tools/studio_parameter_browser_journey.py tools/studio_workbench_browser_journey.py tools/studio_resource_browser_journey.py tools/studio_workspace_browser_journey.py tools/studio_workspace_browser_coverage.py tools/studio_workspace_browser_ui.py tools/tests/test_studio_workspace_browser_coverage.py tools/tests/test_studio_browser_runtime_refusal.py tools/tests/test_studio_owned_worker_browser_runtime.py tools/tests/test_studio_workbench_browser_journey.py tools/tests/test_studio_parameter_browser_journey.py tools/studio_accessibility_browser.py tools/studio_accessibility_checks.py tests/test_studio_accessibility_browser_journey.py tools/tests/test_studio_accessibility_browser_runtime.py tools/tests/test_studio_accessibility_checks.py
+          python -m ruff check --isolated --preview --select D,D413,D417,D420 --config 'lint.explicit-preview-rules = true' --config 'lint.pydocstyle.convention = "numpy"' tools/studio_browser_journey.py tools/studio_owned_worker_journey.py tools/studio_parameter_browser_journey.py tools/studio_workbench_browser_journey.py tools/studio_resource_browser_journey.py tools/studio_workspace_browser_journey.py tools/studio_workspace_browser_coverage.py tools/studio_workspace_browser_ui.py tools/studio_accessibility_browser.py tools/studio_accessibility_checks.py tests/test_studio_accessibility_browser_journey.py tools/tests/test_studio_accessibility_browser_runtime.py tools/tests/test_studio_accessibility_checks.py tools/tests/test_studio_owned_worker_browser_runtime.py
       - name: Check workspace Python types and native API documentation
         working-directory: .
         env:
@@ -390,13 +390,18 @@ jobs:
           test -f studio-web/dist/wasm/scpn_quantum_studio_wasm_kernel.wasm
           test -f studio-web/dist/wasm/scpn_quantum_studio_program_ad_wasm.wasm
           python3 - <<'EOF'
-          import hashlib, json
+          import hashlib, json, os
           from pathlib import Path
           manifest = json.loads(Path("studio-web/dist/deploy-manifest.json").read_text())
           for row in manifest["artifacts"]:
               path = Path("studio-web/dist") / row["path"]
               digest = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
               assert digest == row["sha256"], f"digest drift: {row['path']}"
+          workers = [row for row in manifest["artifacts"] if row["path"].startswith("assets/kernelWorker-") and row["path"].endswith(".js")]
+          assert len(workers) == 1, "Exactly one actual worker entry is required"
+          worker = (Path("studio-web/dist") / workers[0]["path"]).resolve()
+          with Path(os.environ["GITHUB_ENV"]).open("a") as env:
+              env.write(f"STUDIO_KERNEL_WORKER_ENTRY={worker}\n")
           print(f"deploy manifest verified: {len(manifest['artifacts'])} artefacts")
           EOF
       - name: Prepare the real preview and source workbench kernels
@@ -416,11 +421,11 @@ jobs:
           shutil.copytree(temporary / "studio-federation-host", preview / "acceptance-host")
           isolated = temporary / "studio-workbench-source"
           isolated.mkdir()
-          for name in ("docs", "data"):
+          for name in ("docs", "data", "tests"):
               (isolated / name).symlink_to(original / name, target_is_directory=True)
           web = isolated / "studio-web"
           web.mkdir()
-          for name in ("src", "browser-tests"):
+          for name in ("src", "browser-tests", "test-support"):
               shutil.copytree(original / "studio-web" / name, web / name)
           for source in (original / "studio-web").iterdir():
               if source.is_file() and source.suffix in {".ts", ".json"}:
@@ -449,7 +454,7 @@ jobs:
         run: |
           browser_coverage_command=(python -m coverage run --rcfile=/dev/null --append --branch --concurrency=greenlet
             --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage"
-            --include="*/tools/studio_browser_journey.py,*/tools/studio_accessibility_browser.py,*/tools/studio_accessibility_checks.py,*/tools/studio_parameter_browser_journey.py,*/tools/studio_workbench_browser_journey.py,*/tools/studio_workspace_browser_journey.py,*/tools/studio_workspace_browser_coverage.py,*/tools/studio_workspace_browser_ui.py")
+            --include="*/tools/studio_browser_journey.py,*/tools/studio_owned_worker_journey.py,*/tools/studio_resource_browser_journey.py,*/tools/studio_accessibility_browser.py,*/tools/studio_accessibility_checks.py,*/tools/studio_parameter_browser_journey.py,*/tools/studio_workbench_browser_journey.py,*/tools/studio_workspace_browser_journey.py,*/tools/studio_workspace_browser_coverage.py,*/tools/studio_workspace_browser_ui.py")
           python -m http.server 4173 --bind 127.0.0.1 --directory "$RUNNER_TEMP/studio-browser-preview" > "$RUNNER_TEMP/studio-preview.log" 2>&1 &
           preview_pid=$!
           node studio-web/node_modules/vite/bin/vite.js "$RUNNER_TEMP/studio-workbench-source/studio-web" --host 127.0.0.1 --port 4174 --strictPort > "$RUNNER_TEMP/studio-workspace-source.log" 2>&1 &
@@ -465,6 +470,8 @@ jobs:
             --base-url http://127.0.0.1:4173/ --output "$RUNNER_TEMP/studio-evidence-journey.json"
           "${browser_coverage_command[@]}" tools/studio_browser_journey.py --scenario resource_plan_projection \
             --base-url http://127.0.0.1:4173/ --output "$RUNNER_TEMP/studio-resource-journey.json"
+          "${browser_coverage_command[@]}" tools/studio_browser_journey.py --scenario owned_kernel_worker \
+            --base-url http://127.0.0.1:4173/ --output "$RUNNER_TEMP/studio-owned-worker-journey.json"
           for ((attempt = 1; attempt <= 5; attempt++)); do
             if curl --fail --silent http://127.0.0.1:4174/browser-tests/workspace.html > /dev/null; then break; fi
             sleep 1
@@ -473,7 +480,7 @@ jobs:
             -m pytest --noconftest -q tools/tests/test_studio_workspace_browser_coverage.py
           STUDIO_WORKSPACE_SOURCE_URL=http://127.0.0.1:4174/ STUDIO_PREVIEW_DIR="$RUNNER_TEMP/studio-browser-preview" \
             "${browser_coverage_command[@]}" -m pytest --noconftest -q \
-            tools/tests/test_studio_browser_runtime_refusal.py tools/tests/test_studio_workbench_browser_journey.py tools/tests/test_studio_parameter_browser_journey.py
+            tools/tests/test_studio_browser_runtime_refusal.py tools/tests/test_studio_owned_worker_browser_runtime.py tools/tests/test_studio_workbench_browser_journey.py tools/tests/test_studio_parameter_browser_journey.py
           "${browser_coverage_command[@]}" tools/studio_browser_journey.py --scenario workspace_recovery \
             --base-url http://127.0.0.1:4173/ --workspace-source-url http://127.0.0.1:4174/ \
             --output "$RUNNER_TEMP/studio-workspace-journey.json"
@@ -568,9 +575,10 @@ jobs:
                       target.symlink_to(child, target_is_directory=child.is_dir())
           copy_inputs(original / "docs")
           copy_inputs(original / "data")
+          (isolated / "tests").symlink_to(original / "tests", target_is_directory=True)
           web = isolated / "studio-web"
           web.mkdir()
-          for name in ("src", "browser-tests"):
+          for name in ("src", "browser-tests", "test-support"):
               shutil.copytree(original / "studio-web" / name, web / name)
           for source in (original / "studio-web").iterdir():
               if source.is_file() and source.suffix in {".ts", ".json"}:
@@ -591,7 +599,7 @@ jobs:
           done
           python -m coverage run --rcfile=/dev/null --append --branch --concurrency=greenlet \
             --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" \
-            --include="*/tools/studio_browser_journey.py,*/tools/studio_accessibility_browser.py,*/tools/studio_accessibility_checks.py,*/tools/studio_parameter_browser_journey.py,*/tools/studio_workbench_browser_journey.py,*/tools/studio_workspace_browser_journey.py,*/tools/studio_workspace_browser_coverage.py,*/tools/studio_workspace_browser_ui.py" \
+            --include="*/tools/studio_browser_journey.py,*/tools/studio_owned_worker_journey.py,*/tools/studio_resource_browser_journey.py,*/tools/studio_accessibility_browser.py,*/tools/studio_accessibility_checks.py,*/tools/studio_parameter_browser_journey.py,*/tools/studio_workbench_browser_journey.py,*/tools/studio_workspace_browser_journey.py,*/tools/studio_workspace_browser_coverage.py,*/tools/studio_workspace_browser_ui.py" \
             tools/studio_browser_journey.py --scenario workspace_panel_refusal \
             --base-url http://127.0.0.1:4175/ --output "$RUNNER_TEMP/studio-panel-refusal-journey.json"
       - name: Enforce Python browser runner and workspace helper exact coverage
@@ -767,12 +775,15 @@ jobs:
           python -m pytest -q tests/test_resource_budget_gate.py
       - name: Enforce resource admission owner coverage
         run: >-
-          pnpm exec vitest run src/shared/resources src/panel/KuramotoPlayPanel.test.tsx src/panel/Lab3DPanel.test.tsx src/panel/kuramoto.test.ts
+          pnpm exec vitest run src/shared/resources src/panel/KuramotoPlayPanel.test.tsx src/panel/Lab3DPanel.test.tsx src/panel/kuramoto.test.ts src/workers src/panel/useOwnedKuramoto.test.tsx --maxWorkers=2
           --coverage --coverage.reporter=text
           --coverage.include='src/shared/resources/*.{ts,tsx}'
           --coverage.include=src/panel/KuramotoPlayPanel.tsx
           --coverage.include=src/panel/Lab3DPanel.tsx
           --coverage.include=src/panel/kuramoto.ts
+          --coverage.include=src/panel/useOwnedKuramoto.ts
+          --coverage.include='src/workers/*.ts'
+          --coverage.thresholds.perFile=true
           --coverage.thresholds.statements=100
           --coverage.thresholds.branches=100
           --coverage.thresholds.functions=100
@@ -786,6 +797,7 @@ jobs:
             ${{ runner.temp }}/studio-catalogue-journey.json
             ${{ runner.temp }}/studio-evidence-journey.json
             ${{ runner.temp }}/studio-resource-journey.json
+            ${{ runner.temp }}/studio-owned-worker-journey.json
             ${{ runner.temp }}/studio-workspace-journey.json
             ${{ runner.temp }}/studio-workbench-journey.json
             ${{ runner.temp }}/studio-parameter-journey.json

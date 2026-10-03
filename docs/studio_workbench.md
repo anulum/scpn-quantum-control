@@ -722,9 +722,11 @@ execution continues to use the existing `check_execution_memory` observation
 and admission owner; browser product ceilings cannot replace those observations.
 
 The hosted `resource_plan_projection` journey uses the built WASM and the real
-public controls. A counter forwards native allocations unchanged, observes no
-new allocation after a zero-byte refusal, then observes allocations resume after
-an explicitly applied smaller same-method plan. Invocation from the repository:
+public controls. Counters forward native allocations and worker construction
+unchanged, observe no new worker after a zero-byte refusal, and observe owned
+computation resume after an explicitly applied smaller same-method plan.
+The admitted worker plan includes both retained and transferred binary bytes.
+Invocation from the repository:
 
 ```bash
 PYTHONPATH=. python tools/studio_browser_journey.py --scenario resource_plan_projection \
@@ -741,12 +743,68 @@ the numeric payload estimate. Lab limits and numerical capture/parity checks
 remain the original owners; this declaration does not replace them.
 
 A requested wall-clock ceiling currently refuses before allocation with
-`wall_clock_admission_unavailable`. The synchronous kernel has no qualified
-elapsed-time predictor or cancellable deadline mechanism, so Studio cannot
+`wall_clock_admission_unavailable`. The kernel has no qualified
+elapsed-time predictor, so Studio cannot
 admit a guaranteed deadline by converting workload units into invented seconds.
 Leaving this optional field unset requests the bounded workload without a
 wall-clock guarantee; it does not infer a deadline. No smaller-shape action
 claims to repair an unsupported time guarantee.
+
+## Owned browser simulation
+
+Kuramoto Play runs the shipped Rust/WASM kernel in a worker. Each mounted panel
+owns one active worker at a time. Playback and the original committed reference
+run sequentially. Float64 inputs, RK4 equations, source time units and the native
+binary codec retain their original owners. Display sampling does not supply a
+numerical seed; the existing controls produce deterministic input values.
+
+The resource plan admits the complete declared numeric buffer chain, transport
+copies, source-codec validation and retained/transferred binary before a worker
+or transferable copy is created. Reference admission also reserves the retained
+playback arrays. Saved input arrays, source bytes and previous results are never
+transferred. A shared backing buffer, a malformed source request, an unavailable
+binary or an exceeded source limit gives a visible refusal. JavaScript objects,
+canonical metadata strings, engine baseline storage and allocator bookkeeping
+remain outside this payload declaration; this is not a measured heap bound.
+
+Use **Cancel simulation** to stop the current operation. Changing its input,
+leaving the route or project, or unmounting the panel disposes its worker and
+clears its current plot. A late or duplicate event cannot restore a result for
+an earlier input. **Run simulation** starts an explicit new operation using the
+current settings after cancellation or recovery.
+The cancellation control stays available after completion so keyboard focus
+keeps its target; cancelling a completed run clears its displayed plot.
+
+**Simulation timeout (ms)** accepts 1 through 60000 and defaults to 5000. It is
+an operational termination timer for each worker. Browser scheduling can delay
+delivery; it does not guarantee that computation will finish within that time.
+The separate optional wall-clock guarantee retains its explicit refusal.
+Completed results and cancellation are published only after the owner observes
+disposal. Failed disposal stays visible as an unconfirmed disposal and blocks
+further runs in that mounted panel. The host must dispose the outstanding worker
+before reopening the panel.
+
+The public `createOwnedKuramotoRun` facade captures a v1 envelope with run,
+input-revision, numerical-plan and original WASM SHA-256 identities. Events carry
+monotonic sequences. The worker verifies the transferred binary digest and its
+native bounds before acceptance, then uses the original simulation binding.
+Existing synchronous `simulate` callers remain supported. A custom Play loader
+must provide the original `sourceBytes`; a closure without its binary cannot
+qualify owned execution and visibly refuses. `instantiateKuramoto` and
+`fetchKuramoto` supply those captured bytes.
+
+The shared real-browser runner observes the deployed worker, the independent
+two-oscillator reference, native transfer ownership, refusal, cancellation,
+timeout and route/project disposal:
+
+```bash
+PYTHONPATH=. python tools/studio_browser_journey.py --scenario owned_kernel_worker \
+  --base-url http://127.0.0.1:4173/ --output /tmp/studio-owned-worker-journey.json
+```
+
+The build manifest requires exactly one emitted worker asset and records its
+digest and size alongside the original WASM kernels. An unused worker module
+omitted from the built bundle cannot qualify that manifest.
 
 
 ## Linked parameter editing

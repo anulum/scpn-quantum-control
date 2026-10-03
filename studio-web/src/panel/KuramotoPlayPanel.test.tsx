@@ -8,14 +8,17 @@
 
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { webcrypto } from "node:crypto";
 
-import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, beforeAll, describe, expect, it } from "vitest";
+import { act, cleanup, configure, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { BuiltKernelWorker } from "../../test-support/kernelWorker";
 
 import { KuramotoPlayPanel, controlsToRequest, sparklinePoints } from "./KuramotoPlayPanel";
 import {
   type KernelSimulate,
   type KuramotoBounds,
+  type KuramotoKernel,
   type KuramotoScenario,
   committedScenario,
   instantiateKuramoto,
@@ -28,7 +31,7 @@ const WASM_PATH = resolve(
 
 const BOUNDS: KuramotoBounds = { maxOscillators: 128, maxSteps: 4096 };
 
-let realLoaded: { simulate: KernelSimulate; bounds: KuramotoBounds };
+let realLoaded: KuramotoKernel;
 
 function scenario(): KuramotoScenario {
   if (!committedScenario.ok) throw new Error(committedScenario.reason);
@@ -36,6 +39,7 @@ function scenario(): KuramotoScenario {
 }
 
 beforeAll(async () => {
+  configure({ asyncUtilTimeout: 12000 });
   const buffer = readFileSync(WASM_PATH);
   const bytes = buffer.buffer.slice(
     buffer.byteOffset,
@@ -44,9 +48,30 @@ beforeAll(async () => {
   realLoaded = await instantiateKuramoto(bytes);
 });
 
-afterEach(cleanup);
+beforeEach(() => {
+  vi.stubGlobal("Worker", BuiltKernelWorker);
+  vi.stubGlobal("crypto", webcrypto);
+});
+afterEach(async () => {
+  cleanup();
+  await waitFor(() => expect(BuiltKernelWorker.activeCount).toBe(0));
+  vi.unstubAllGlobals();
+});
 
 describe("KuramotoPlayPanel with the real kernel", () => {
+  it("keeps cancellation available after real completion so keyboard focus has a stable target", async () => {
+    render(<KuramotoPlayPanel scenario={scenario()} loadKernel={async () => realLoaded} />);
+    await waitFor(() => expect(screen.getByLabelText("order parameter over time")).toBeTruthy());
+    const cancel = screen.getByRole("button", { name: "Cancel simulation" });
+    cancel.focus();
+    expect(document.activeElement).toBe(cancel);
+    fireEvent.click(cancel);
+    await waitFor(() => expect(screen.getByText(/cancelled after worker disposal/)).toBeTruthy());
+    expect(screen.getByRole("button", { name: "Cancel simulation" })).toBe(cancel);
+    expect(document.activeElement).toBe(cancel);
+    expect(screen.queryByLabelText("order parameter over time")).toBeNull();
+  });
+
   it("integrates R(t) and verifies the committed ground truth", async () => {
     render(<KuramotoPlayPanel scenario={scenario()} loadKernel={async () => realLoaded} />);
     await waitFor(() => expect(screen.getByText(/R initial/)).toBeTruthy());
@@ -92,15 +117,14 @@ describe("KuramotoPlayPanel degraded paths", () => {
   });
 
   it("renders a loud boundary when the kernel rejects the request", async () => {
-    const simulate: KernelSimulate = () => ({ ok: false, reason: "n out of range" });
     render(
       <KuramotoPlayPanel
         scenario={scenario()}
-        loadKernel={async () => ({ simulate, bounds: BOUNDS })}
+        loadKernel={async () => ({ ...realLoaded, bounds: { ...BOUNDS, maxOscillators: 127 } })}
       />,
     );
-    await waitFor(() => expect(screen.getByText(/unverifiable — n out of range/)).toBeTruthy());
-    expect(screen.getByText(/committed ground truth not reproduced/)).toBeTruthy();
+    await waitFor(() => expect(screen.getByText(/source kernel limits differ/)).toBeTruthy());
+    expect(screen.getByText(/committed ground truth not evaluated/)).toBeTruthy();
   });
 });
 
@@ -136,7 +160,7 @@ describe("Kuramoto Play resource admission with the real kernel", () => {
     const base = { source: "component declared test policy", addressableBytes: 0xffff_ffffn, memoryBytes: 4n * 1024n * 1024n, overheadBytes: 0n, workUnits: 1000000000n };
     const component = render(<KuramotoPlayPanel scenario={scenario()} loadKernel={async () => observed} resourcePolicy={base} />);
     await waitFor(() => expect(screen.getByLabelText("Resource plan")).toBeTruthy());
-    expect(screen.getByLabelText("order parameter over time")).toBeTruthy();
+    await waitFor(() => expect(screen.getByLabelText("order parameter over time")).toBeTruthy());
     const previousRuns = runs;
     component.rerender(<KuramotoPlayPanel scenario={scenario()} loadKernel={async () => observed} resourcePolicy={{ ...base, memoryBytes: 0n }} />);
     await waitFor(() => expect(screen.queryByLabelText("order parameter over time")).toBeNull());
@@ -152,7 +176,7 @@ describe("Kuramoto Play resource admission with the real kernel", () => {
     fireEvent.change(screen.getByLabelText(/Topology/), { target: { value: "networked" } });
     expect(screen.getByLabelText("Resource plan").textContent).not.toBe(previous);
     expect(screen.getByLabelText("Resource plan").textContent).toContain("float64");
-    expect(screen.getByLabelText("order parameter over time")).toBeTruthy();
+    await waitFor(() => expect(screen.getByLabelText("order parameter over time")).toBeTruthy());
   });
 });
 
@@ -167,10 +191,10 @@ it("allows an explicit smaller configuration after user resource refusal", async
   expect(screen.queryByLabelText("order parameter over time")).toBeNull();
   expect(screen.getByText(/committed ground truth not evaluated/)).toBeTruthy();
   expect(screen.queryByText("committed ground truth not reproduced")).toBeNull();
-  fireEvent.change(screen.getByLabelText("Memory ceiling (KiB)"), { target: { value: "1" } });
+  fireEvent.change(screen.getByLabelText("Memory ceiling (KiB)"), { target: { value: String(Math.ceil((2 * realLoaded.sourceBytes!.byteLength + 2048) / 1024)) } });
   const smaller = screen.getByRole("button", { name: /Apply smaller supported configuration/ });
   fireEvent.click(smaller);
-  expect(screen.getByLabelText("order parameter over time")).toBeTruthy();
+  await waitFor(() => expect(screen.getByLabelText("order parameter over time")).toBeTruthy());
   fireEvent.change(screen.getByLabelText("Memory ceiling (KiB)"), { target: { value: "5000" } });
   expect(screen.getAllByText(/memory ceiling must be an integer/).length).toBeGreaterThan(0);
 });
@@ -186,7 +210,7 @@ it("clears the actual trajectory on unsupported or invalid wall-clock admission"
   fireEvent.change(screen.getByLabelText("Wall-clock ceiling (ms; optional)"), { target: { value: "-1" } });
   expect(screen.getAllByText(/wall-clock ceiling must be a positive integer/).length).toBeGreaterThan(0);
   fireEvent.change(screen.getByLabelText("Wall-clock ceiling (ms; optional)"), { target: { value: "" } });
-  expect(screen.getByLabelText("order parameter over time")).toBeTruthy();
+  await waitFor(() => expect(screen.getByLabelText("order parameter over time")).toBeTruthy());
 });
 
 
@@ -278,4 +302,46 @@ it("preserves an unknown source memory ceiling as refusal without executing a tr
   expect(screen.queryByLabelText("order parameter over time")).toBeNull();
   expect(screen.getByText(/committed ground truth not evaluated/)).toBeTruthy();
   expect(runs).toBe(0);
+});
+
+it("visibly refuses absent source bytes and invalid limits before creating a worker", async () => {
+  const started = BuiltKernelWorker.started;
+  const component = render(<KuramotoPlayPanel scenario={scenario()} loadKernel={async () => ({ simulate: realLoaded.simulate, bounds: realLoaded.bounds })} />);
+  await waitFor(() => expect(screen.getAllByText(/original WASM binary unavailable/).length).toBeGreaterThan(0));
+  component.rerender(<KuramotoPlayPanel scenario={scenario()} loadKernel={async () => ({ ...realLoaded, bounds: { maxOscillators: 0, maxSteps: 4096 } })} />);
+  await waitFor(() => expect(screen.getByText(/original kernel limits unavailable/)).toBeTruthy());
+  const inaccessible = new Proxy(realLoaded.bounds, { ownKeys() { throw new Error("host bounds cannot be enumerated"); } });
+  component.rerender(<KuramotoPlayPanel scenario={scenario()} loadKernel={async () => ({ ...realLoaded, bounds: inaccessible })} />);
+  await waitFor(() => expect(screen.getByText(/original kernel limits unavailable/)).toBeTruthy());
+  expect(BuiltKernelWorker.started).toBe(started);
+});
+
+it("operational timeout, cancellation and an explicit rerun retain no stale plot", async () => {
+  render(<KuramotoPlayPanel scenario={scenario()} loadKernel={async () => realLoaded} />);
+  await waitFor(() => expect(screen.getByLabelText("order parameter over time")).toBeTruthy());
+  for (const invalid of ["0", "60001"]) {
+    fireEvent.change(screen.getByLabelText("Simulation timeout (ms)"), { target: { value: invalid } });
+    expect(screen.getAllByText(/simulation timeout must be an integer/).length).toBeGreaterThan(0);
+    expect(screen.queryByLabelText("order parameter over time")).toBeNull();
+  }
+  fireEvent.change(screen.getByLabelText("Simulation timeout (ms)"), { target: { value: "1" } });
+  await waitFor(() => expect(screen.getByText(/operational deadline reached/)).toBeTruthy());
+  fireEvent.change(screen.getByLabelText("Simulation timeout (ms)"), { target: { value: "5000" } });
+  fireEvent.click(screen.getByRole("button", { name: "Cancel simulation" }));
+  await waitFor(() => expect(screen.getByText(/cancelled after worker disposal/)).toBeTruthy());
+  expect(screen.queryByLabelText("order parameter over time")).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Run simulation" }));
+  await waitFor(() => expect(screen.getByLabelText("order parameter over time")).toBeTruthy());
+});
+
+it("keeps incorrect reference values unverified and refused reference shapes unevaluated", async () => {
+  const source = scenario();
+  const component = render(<KuramotoPlayPanel scenario={{ ...source, expectedOrderParameter: source.expectedOrderParameter.map(() => 2) }} loadKernel={async () => realLoaded} />);
+  await waitFor(() => expect(screen.getByText(/committed ground truth not reproduced/)).toBeTruthy());
+  expect(screen.getByLabelText("order parameter over time")).toBeTruthy();
+  component.rerender(<KuramotoPlayPanel scenario={{ ...source, n: 0 }} loadKernel={async () => realLoaded} />);
+  await waitFor(() => expect(screen.getByText(/committed ground truth not evaluated — resource metadata refused/)).toBeTruthy());
+  component.rerender(<KuramotoPlayPanel scenario={{ ...source, mode: "networked" }} loadKernel={async () => realLoaded} />);
+  await waitFor(() => expect(screen.getByText(/committed ground truth not reproduced/)).toBeTruthy());
+  expect(screen.getByLabelText("order parameter over time")).toBeTruthy();
 });

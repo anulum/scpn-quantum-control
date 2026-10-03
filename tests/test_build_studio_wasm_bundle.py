@@ -28,6 +28,10 @@ def _fake_bundle(tmp_path: Path) -> Path:
     (dist / "remoteEntry.js").write_text("export{};", encoding="utf-8")
     (dist / "wasm" / bundle_tool.KERNEL_WASM_NAME).write_bytes(b"\0asm-fake")
     (dist / "wasm" / bundle_tool.PROGRAM_AD_WASM_NAME).write_bytes(b"\0asm-program-ad")
+    (dist / "assets").mkdir()
+    (dist / "assets/kernelWorker-fixture.js").write_text(
+        "self.addEventListener('message', () => {});", encoding="utf-8"
+    )
     return dist
 
 
@@ -131,6 +135,7 @@ def test_deploy_manifest_digests_every_tracked_artefact(tmp_path: Path) -> None:
         "remoteEntry.js",
         f"wasm/{bundle_tool.KERNEL_WASM_NAME}",
         f"wasm/{bundle_tool.PROGRAM_AD_WASM_NAME}",
+        "assets/kernelWorker-fixture.js",
     ]
     for row in artefacts:
         assert str(row["sha256"]).startswith("sha256:")
@@ -143,6 +148,21 @@ def test_deploy_manifest_fails_closed_on_a_partial_bundle(tmp_path: Path) -> Non
     dist = _fake_bundle(tmp_path)
     (dist / "remoteEntry.js").unlink()
     with pytest.raises(ValueError, match="bundle artefact missing: remoteEntry.js"):
+        bundle_tool.build_deploy_manifest(dist, toolchain="rustc", crate_version="0.1.0")
+
+
+@pytest.mark.parametrize("kind", ["absent", "ambiguous", "directory"])
+def test_deploy_manifest_requires_one_actual_worker(tmp_path: Path, kind: str) -> None:
+    """Missing, ambiguous and non-file worker entries cannot qualify a bundle."""
+    dist = _fake_bundle(tmp_path)
+    worker = dist / "assets/kernelWorker-fixture.js"
+    if kind == "ambiguous":
+        (dist / "assets/kernelWorker-second.js").write_text("export{};", encoding="utf-8")
+    else:
+        worker.unlink()
+        if kind == "directory":
+            worker.mkdir()
+    with pytest.raises(ValueError, match="exactly one shipped kernelWorker"):
         bundle_tool.build_deploy_manifest(dist, toolchain="rustc", crate_version="0.1.0")
 
 

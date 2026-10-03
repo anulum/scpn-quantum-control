@@ -192,7 +192,8 @@ def build_deploy_manifest(
     Raises
     ------
     ValueError
-        If a tracked bundle artefact is missing — a partial bundle is never
+        If a tracked bundle artefact is missing or the emitted worker asset
+        is absent, ambiguous or not a file. A partial bundle is never
         manifest-signed.
 
     """
@@ -202,6 +203,10 @@ def build_deploy_manifest(
         f"wasm/{KERNEL_WASM_NAME}",
         f"wasm/{PROGRAM_AD_WASM_NAME}",
     ]
+    workers = sorted((dist_dir / "assets").glob("kernelWorker-*.js"))
+    if len(workers) != 1 or not workers[0].is_file():
+        raise ValueError("bundle requires exactly one shipped kernelWorker asset")
+    tracked.append(workers[0].relative_to(dist_dir).as_posix())
     for relative in tracked:
         path = dist_dir / relative
         if not path.is_file():

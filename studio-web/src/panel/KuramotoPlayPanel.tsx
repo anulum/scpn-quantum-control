@@ -8,13 +8,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { dataEntries } from "../shared/contracts/canonical";
-import { admitKuramotoResources, browserResourcePolicy, smallerKuramotoRequest } from "../shared/resources/kuramotoResources";
+import { admitOwnedKuramotoResources, browserResourcePolicy, smallerKuramotoRequest } from "../shared/resources/kuramotoResources";
 import { ResourcePlanInspector } from "../shared/resources/ResourcePlanInspector";
 import type { ResourcePolicy } from "../shared/resources/admission";
 
 import type {
-  KernelSimulate,
-  KuramotoBounds,
   KuramotoKernel,
   KuramotoMode,
   KuramotoRequest,
@@ -22,6 +20,8 @@ import type {
 } from "./kuramoto";
 import { fetchKuramoto, maxOrderParameterDeviation } from "./kuramoto";
 import { SimulationDataTable } from "./SimulationDataTable";
+import { useOwnedKuramoto } from "./useOwnedKuramoto";
+import { kernelBinarySize, ownedWorkerBinary } from "../workers/kernelProtocol";
 
 /** Loader for the WASM kernel; overridable so tests inject a built kernel. */
 /** How the panel obtains a kernel; injectable so tests need no WASM fetch. */
@@ -76,7 +76,7 @@ export function sparklinePoints(series: Float64Array, width: number, height: num
 
 type KernelState =
   | { readonly phase: "loading" }
-  | { readonly phase: "ready"; readonly simulate: KernelSimulate; readonly bounds: KuramotoBounds }
+  | ({ readonly phase: "ready" } & KuramotoKernel)
   | { readonly phase: "error"; readonly reason: string };
 
 /**
@@ -98,6 +98,8 @@ export function KuramotoPlayPanel({
   const [kernel, setKernel] = useState<KernelState>({ phase: "loading" });
   const [memoryKiB, setMemoryKiB] = useState(4096);
   const [wallMs, setWallMs] = useState("");
+  const [deadlineMs, setDeadlineMs] = useState(5000);
+  const [restart, setRestart] = useState(0);
   const [controls, setControls] = useState<Controls>({
     mode: scenario.mode,
     n: scenario.n,
@@ -109,8 +111,8 @@ export function KuramotoPlayPanel({
   useEffect(() => {
     let live = true;
     loadKernel()
-      .then(({ simulate, bounds }) => {
-        if (live) setKernel({ phase: "ready", simulate, bounds });
+      .then(loaded => {
+        if (live) setKernel({ phase: "ready", ...loaded });
       })
       .catch((error: unknown) => {
         const reason = error instanceof Error ? error.message : "kernel load failed";
@@ -135,49 +137,67 @@ export function KuramotoPlayPanel({
     }
   }, [kernel, memoryKiB, resourcePolicy]);
 
+  const displayBounds = useMemo(() => {
+    if (kernel.phase !== "ready") return null;
+    try {
+      const values = Object.fromEntries(dataEntries(kernel.bounds));
+      const n = values["maxOscillators"];
+      const steps = values["maxSteps"];
+      if (typeof n !== "number" || typeof steps !== "number" || !Number.isSafeInteger(n) || !Number.isSafeInteger(steps) || n < 1 || steps < 1) return null;
+      return { maxOscillators: n, maxSteps: steps };
+    } catch { return null; }
+  }, [kernel]);
+
   const resource = useMemo(() => {
     if (kernel.phase !== "ready") return null;
     if (!requestedPolicy) return { ok: false as const, reason: "memory ceiling must be an integer between 0 and 4096 KiB and the source policy must be available" };
     if (wallMs !== "" && !/^[1-9][0-9]{0,8}$/.test(wallMs)) return { ok: false as const, reason: "wall-clock ceiling must be a positive integer or left unset" };
+    if (!Number.isSafeInteger(deadlineMs) || deadlineMs < 1 || deadlineMs > 60000) return { ok: false as const, reason: "simulation timeout must be an integer between 1 and 60000 ms" };
+    if (!ownedWorkerBinary(kernel.sourceBytes)) return { ok: false as const, reason: "original WASM binary unavailable for owned execution" };
     try {
-      return { ok: true as const, admission: admitKuramotoResources(controls, kernel.bounds, requestedPolicy, wallMs === "" ? null : BigInt(wallMs)) };
+      return { ok: true as const, admission: admitOwnedKuramotoResources(controls, kernel.bounds, kernelBinarySize(kernel.sourceBytes), requestedPolicy, wallMs === "" ? null : BigInt(wallMs)) };
     } catch (error: unknown) {
       return { ok: false as const, reason: error instanceof Error ? error.message : "resource metadata refused" };
     }
-  }, [kernel, controls, requestedPolicy, wallMs]);
+  }, [kernel, controls, requestedPolicy, wallMs, deadlineMs]);
 
-  const result = useMemo(() => {
-    if (kernel.phase !== "ready" || !resource) return { ok: false as const, reason: "no trajectory" };
-    if (!resource.ok) return { ok: false as const, reason: resource.reason };
-    if (!resource.admission.allowed) return { ok: false as const, reason: resource.admission.blockers.join(", ") };
-    return kernel.simulate(controlsToRequest(controls));
-  }, [kernel, controls, resource]);
-
-  const groundTruth = useMemo(() => {
+  const reference = useMemo(() => {
     if (kernel.phase !== "ready") return null;
-    if (!requestedPolicy || wallMs !== "") return { evaluated: false as const, reason: "resource policy refused" };
+    if (!requestedPolicy || wallMs !== "" || !resource?.ok || !resource.admission.allowed) return { ok: false as const, reason: "resource policy refused" };
     try {
-      const admission = admitKuramotoResources({ n: scenario.n, steps: scenario.steps, mode: scenario.mode }, kernel.bounds, requestedPolicy);
-      if (!admission.allowed) return { evaluated: false as const, reason: admission.blockers.join(", ") };
+      const retainedBytes = 8n * BigInt(controls.steps + 1 + controls.n);
+      const policy = { ...resource.admission.policy, overheadBytes: resource.admission.policy.overheadBytes! + retainedBytes };
+      const admission = admitOwnedKuramotoResources({ n: scenario.n, steps: scenario.steps, mode: scenario.mode }, kernel.bounds, kernelBinarySize(kernel.sourceBytes!), policy);
+      if (!admission.allowed) return { ok: false as const, reason: admission.blockers.join(", ") };
     } catch {
-      return { evaluated: false as const, reason: "resource metadata refused" };
+      return { ok: false as const, reason: "resource metadata refused" };
     }
-    const run = kernel.simulate({
+    return { ok: true as const, request: {
       mode: scenario.mode,
       omega: scenario.omega,
       theta0: scenario.theta0,
       steps: scenario.steps,
       dt: scenario.dt,
       coupling: scenario.coupling,
-    });
-    if (!run.ok) return { evaluated: true as const, verified: false };
-    const deviation = maxOrderParameterDeviation(run.run, scenario.expectedOrderParameter);
-    return { evaluated: true as const, verified: deviation < GROUND_TRUTH_TOL, deviation };
-  }, [kernel, scenario, requestedPolicy, wallMs]);
+    } };
+  }, [kernel, scenario, controls, requestedPolicy, wallMs, resource]);
+
+  const job = useMemo(() => {
+    if (kernel.phase !== "ready" || !requestedPolicy || !resource?.ok || !resource.admission.allowed) return null;
+    return { kernel, request: controlsToRequest(controls), reference: reference?.ok ? reference.request : null, resourcePolicy: resource.admission.policy, deadlineMs };
+  }, [kernel, controls, reference, requestedPolicy, resource, deadlineMs, restart]);
+  const owned = useOwnedKuramoto(job);
+  const result = !resource?.ok ? { ok: false as const, reason: resource?.reason ?? "no trajectory" }
+    : !resource.admission.allowed ? { ok: false as const, reason: resource.admission.blockers.join(", ") }
+    : owned.result ?? { ok: false as const, reason: "simulation running" };
+  const groundTruth = !reference?.ok ? { evaluated: false as const, reason: reference?.reason ?? "reference unavailable" }
+    : owned.reference === null ? { evaluated: false as const, reason: "simulation has not completed" }
+    : !owned.reference.ok ? { evaluated: true as const, verified: false }
+    : { evaluated: true as const, verified: maxOrderParameterDeviation(owned.reference.run, scenario.expectedOrderParameter) < GROUND_TRUTH_TOL };
 
   const smaller = useMemo(() => {
     if (kernel.phase !== "ready" || !requestedPolicy || wallMs !== "" || !resource?.ok || resource.admission.allowed) return null;
-    return smallerKuramotoRequest(controls, kernel.bounds, requestedPolicy);
+    return smallerKuramotoRequest(controls, kernel.bounds, requestedPolicy, kernelBinarySize(kernel.sourceBytes!));
   }, [kernel, controls, requestedPolicy, resource, wallMs]);
 
   if (kernel.phase === "loading") {
@@ -201,7 +221,8 @@ export function KuramotoPlayPanel({
     );
   }
 
-  const bounds = kernel.bounds;
+  if (displayBounds === null) return <section className="qsp-play"><h3>Kuramoto Play</h3><p role="alert">unverifiable — original kernel limits unavailable</p></section>;
+  const bounds = displayBounds;
 
   return (
     <section className="qsp-play">
@@ -227,6 +248,11 @@ export function KuramotoPlayPanel({
         <label>Wall-clock ceiling (ms; optional)
           <input type="number" min={1} step={1} value={wallMs} onChange={event => setWallMs(event.target.value)} />
         </label>
+        <label>Simulation timeout (ms)
+          <input type="number" min={1} max={60000} step={1} value={deadlineMs} onChange={event => setDeadlineMs(Number(event.target.value))} />
+        </label>
+        <button type="button" disabled={job === null} onClick={() => setRestart(current => current + 1)}>Run simulation</button>
+        {job !== null && <button type="button" onClick={() => { void owned.cancel(); }}>Cancel simulation</button>}
         {smaller && <button type="button" onClick={() => setControls(current => ({ ...current, n: smaller.n, steps: smaller.steps }))}>
           Apply smaller supported configuration (N={smaller.n}, steps={smaller.steps})
         </button>}
@@ -311,7 +337,7 @@ export function KuramotoPlayPanel({
           <SimulationDataTable label="Order parameter data" orderParameter={result.run.orderParameter} />
         </>
       ) : (
-        <p className="qsp-badge qsp-badge-unverifiable" role="alert">
+        <p className="qsp-badge qsp-badge-unverifiable" role={job !== null && owned.phase === "running" ? "status" : "alert"}>
           unverifiable — {result.reason}
         </p>
       )}
