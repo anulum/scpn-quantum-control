@@ -13,7 +13,7 @@
     "python_model_source_modules": 780,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1504
+    "test_files": 1505
   },
   "documentation": {
     "examples": [
@@ -8846,6 +8846,7 @@
       "tests/test_async_runner.py",
       "tests/test_attested_result_pack.py",
       "tests/test_attested_result_pack_quality_gate.py",
+      "tests/test_audit_advisory_workflow_steps.py",
       "tests/test_audit_ci_build_environment.py",
       "tests/test_audit_coverage_debt.py",
       "tests/test_audit_coverage_gaps.py",

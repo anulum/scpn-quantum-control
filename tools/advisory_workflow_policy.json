@@ -1,0 +1,86 @@
+{
+ "schema": "advisory_workflow_steps_v1",
+ "sites": [
+  {
+   "workflow": "actions-history-audit.yml",
+   "job": "classify-history",
+   "step": "Classify workflow history",
+   "kind": "step-continue-on-error",
+   "reason": "The weekly audit uploads the collected history and the classification as an artefact; the upload step runs after this one.",
+   "undecided": "The upload step already runs with if: always(), so the classification could fail the job without losing the artefact. Nobody has decided whether a classified failure should fail this weekly job."
+  },
+  {
+   "workflow": "ci-native-integration.yml",
+   "job": "integration-optional",
+   "kind": "job-continue-on-error",
+   "reason": "Cross-repository integration tests against the pinned sibling package; the job runs on the main branch only and is listed as optional in the workflow policy.",
+   "undecided": "No promotion condition is written in the workflow. Needed: either a condition under which the sibling integration blocks the main branch, or the statement that it stays informative."
+  },
+  {
+   "workflow": "ci-studio.yml",
+   "job": "studio-web",
+   "step": "Run the real catalogue browser journey",
+   "kind": "shell-tolerance",
+   "count": 3,
+   "reason": "An exit trap stops the two local servers the step started and waits for them.",
+   "permanent": "The tolerated commands are the cleanup in the trap; the journey commands of the step run without tolerance and decide its result."
+  },
+  {
+   "workflow": "ci-studio.yml",
+   "job": "studio-web",
+   "step": "Exercise original panel refusal over isolated damaged input files",
+   "kind": "shell-tolerance",
+   "count": 2,
+   "reason": "An exit trap stops the local server the step started and waits for it.",
+   "permanent": "The tolerated commands are the cleanup in the trap; the refusal checks of the step run without tolerance and decide its result."
+  },
+  {
+   "workflow": "differentiable-frameworks.yml",
+   "job": "optional-gpu-contract",
+   "kind": "job-continue-on-error",
+   "reason": "Optional accelerator contract tests that run only on manual dispatch and write functional, non-isolated evidence.",
+   "undecided": "No promotion condition is written in the workflow. Needed: whether a manually dispatched run should report failure, since nothing depends on this job."
+  },
+  {
+   "workflow": "mutation-testing.yml",
+   "job": "mutmut",
+   "kind": "job-continue-on-error",
+   "reason": "Weekly mutation run of one module; staged as non-blocking in the workflow header.",
+   "promotion": "Three consecutive weekly runs complete without a surprise semantic survivor, as the workflow header states."
+  },
+  {
+   "workflow": "mutation-testing.yml",
+   "job": "mutmut",
+   "step": "Run mutmut baseline",
+   "kind": "shell-tolerance",
+   "count": 1,
+   "reason": "The mutation tool exits non-zero when any mutant survives; the results are printed and uploaded by the following commands.",
+   "promotion": "Removed when the job is promoted, under the job's condition: three consecutive weekly runs without a surprise semantic survivor."
+  },
+  {
+   "workflow": "mutation-testing.yml",
+   "job": "mutmut",
+   "step": "Summarise",
+   "kind": "shell-tolerance",
+   "count": 1,
+   "reason": "The summary prints the head of the results file, which is absent when the run stopped early.",
+   "permanent": "The step only writes the job summary and runs with if: always(); it decides nothing."
+  },
+  {
+   "workflow": "rust-benches.yml",
+   "job": "criterion",
+   "kind": "job-continue-on-error",
+   "reason": "Weekly benchmark suite on shared runners; staged as non-blocking in the workflow header.",
+   "promotion": "One release cycle of green runs on both push and pull request, as the workflow header states."
+  },
+  {
+   "workflow": "rust-benches.yml",
+   "job": "criterion",
+   "step": "Summary",
+   "kind": "shell-tolerance",
+   "count": 1,
+   "reason": "The summary prints the head of the benchmark output, which is absent when the benchmarks did not run.",
+   "permanent": "The step only writes the job summary and runs with if: always(); it decides nothing."
+  }
+ ]
+}

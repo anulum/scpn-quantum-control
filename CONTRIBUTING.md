@@ -295,6 +295,27 @@ configuration leaves off, so the layout of a page is not checked. A parse error 
 not a counted finding. The gate reports what Biome reports under the recorded
 configuration; it does not judge accessibility or behaviour beyond those rules.
 
+## Advisory Workflow Steps
+
+A job or a step with `continue-on-error`, and a `run` step that contains
+`|| true`, `|| :` or `set +e`, tolerates a failure and reports nothing when it
+breaks. `python tools/audit_advisory_workflow_steps.py` finds every such site
+in the tracked workflows and compares it with
+`tools/advisory_workflow_policy.json`. Each site needs a row with the reason
+and exactly one outcome:
+
+- `promotion`: the condition under which the site becomes blocking;
+- `permanent`: why it never decides a result (a cleanup in an exit trap, a
+  summary step);
+- `undecided`: what is still missing for either. Undecided rows do not fail
+  the gate; they are printed on every run until someone decides.
+
+An unrecorded site, a row without a site and a tolerance count that differs
+from the recorded one fail the gate, so a new tolerance cannot arrive without
+its reason. Name a step that tolerates a failure; two unnamed steps that run
+the same first command cannot be told apart and are refused. The gate does not
+judge a reason, and it does not find other ways of discarding a failure.
+
 ## Git Location Isolation In Tests
 
 Git exports `GIT_DIR`, `GIT_INDEX_FILE` and related variables to its hooks, and

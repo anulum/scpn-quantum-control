@@ -249,7 +249,8 @@
         "metamorphic-ad-verification-quality",
         "competitive-baseline-watch-quality",
         "semantic-record-contract-quality",
-        "qualification-projection-quality"
+        "qualification-projection-quality",
+        "advisory-workflow-steps"
       ]
     },
     {
@@ -542,6 +543,7 @@
     "competitive-baseline-watch-quality",
     "semantic-record-contract-quality",
     "qualification-projection-quality",
+    "advisory-workflow-steps",
     "whole-program-ad-product-quality",
     "neural-operator-cost-model-quality",
     "neural-operator-baseline-product-quality",

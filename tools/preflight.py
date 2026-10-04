@@ -1075,6 +1075,22 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
         ],
     ),
     (
+        "advisory-workflow-steps",
+        [_PY, "tools/audit_advisory_workflow_steps.py"],
+    ),
+    (
+        "mypy-strict-advisory-workflow-steps",
+        [
+            _PY,
+            "-m",
+            "mypy",
+            "--strict",
+            "--explicit-package-bases",
+            "tools/audit_advisory_workflow_steps.py",
+            "tests/test_audit_advisory_workflow_steps.py",
+        ],
+    ),
+    (
         "mypy-strict-source-surface-inventory",
         [
             _PY,
