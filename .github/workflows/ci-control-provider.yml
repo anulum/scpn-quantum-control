@@ -517,7 +517,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
-      TMPDIR: ${{ runner.temp }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
@@ -659,6 +658,8 @@ jobs:
           tests/test_hardware_hal_quera_bloqade_adapters.py
           tests/test_hal_semantic_binding.py
       - name: Run hardware HAL focused coverage
+        env:
+          TMPDIR: ${{ runner.temp }}
         run: >-
           python
           -m
@@ -707,12 +708,16 @@ jobs:
           tests/test_hal_semantic_binding.py
           tests/test_hardware_hal_quality_gate.py
       - name: Verify hardware HAL coverage owner enrollment
+        env:
+          TMPDIR: ${{ runner.temp }}
         run: >-
           python
           -c
           'import sys; from tools.hardware_hal_quality_gates import validate_coverage_sources; validate_coverage_sources(sys.argv[1])'
           "${TMPDIR}/scpn-qc-hardware-hal-quality.coverage"
       - name: Enforce hardware HAL exact coverage
+        env:
+          TMPDIR: ${{ runner.temp }}
         run: >-
           python
           -m

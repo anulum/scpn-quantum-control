@@ -174,7 +174,15 @@ def test_native_owner_enrollment_matches_each_existing_ci_command() -> None:
         assert len(cohort) == len(set(cohort))
     workflow = yaml.safe_load(Path(".github/workflows/ci-control-provider.yml").read_text())
     job = workflow["jobs"]["hardware-hal-quality"]
-    assert job["env"]["TMPDIR"] == "${{ runner.temp }}"
+    assert "TMPDIR" not in job["env"]
+    coverage_step_names = {
+        "Run hardware HAL focused coverage",
+        "Verify hardware HAL coverage owner enrollment",
+        "Enforce hardware HAL exact coverage",
+    }
+    for step in job["steps"]:
+        if step.get("name") in coverage_step_names:
+            assert step["env"]["TMPDIR"] == "${{ runner.temp }}"
     steps = {step.get("name"): step.get("run", "") for step in job["steps"]}
     titles = {
         "mypy-strict-hardware-hal-quality": "Type-check hardware HAL quality cohort",
