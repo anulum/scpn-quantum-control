@@ -85,7 +85,7 @@ interpreter and tool pins, `requirements-ci-py312-linux.txt` for distributions,
 machine says something different. It is a report, not a gate: a workstation
 legitimately differs from a runner on the optional tiers.
 
-Four pieces are not in the base lock and have to be provisioned:
+Five pieces are not in the base lock and have to be provisioned:
 
 ```bash
 # the native engine, with the arguments CI builds it with
@@ -103,6 +103,9 @@ python -m venv .venv-julia
 
 # the shell linter, in the project environment as the CI job installs it
 python -m pip install --no-deps --require-hashes -r requirements-ci-shell-lint.txt
+
+# the licence-information linter; its shared dependencies follow the base lock
+python -m pip install --require-hashes -r requirements-ci-licence-lint.txt
 ```
 
 Two axes cannot be closed on a workstation and the report says so rather than
@@ -323,6 +326,21 @@ old and the new text to show that nothing else changed.
 Silence a ShellCheck finding only where it is wrong, with a `# shellcheck`
 directive on the line above and a comment that says why. The gate runs in CI
 and in the pre-push check, with the same pinned tools.
+
+## Licence Information
+
+`python -m reuse lint` requires copyright and licence information for every
+file, tracked or not yet tracked, and fails on a licence expression it cannot
+parse. The linter is pinned in `requirements-ci-licence-lint.txt`. The gate runs
+in CI and in the pre-push check.
+
+- A source file carries the header described above.
+- A file that cannot carry a comment (JSON, binary, generated data) gets a
+  `<name>.license` sidecar, or its directory gets an annotation in `REUSE.toml`.
+- A file that *contains* a licence tag as data, such as a generator that emits
+  a header, wraps those lines in `REUSE-IgnoreStart` / `REUSE-IgnoreEnd`
+  comments and says why.
+- Tool output that is not source belongs in `.gitignore`.
 
 ## Commit Messages
 

@@ -977,3 +977,16 @@ jobs:
             tools/audit_shell_scripts.py
           python -m coverage report --rcfile=/dev/null --precision=2 --show-missing \
             --fail-under=100 --include='*/audit_shell_scripts.py'
+
+  licence-information-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install the pinned licence linter
+        run: python -m pip install --require-hashes -r requirements-ci-licence-lint.txt
+      - name: Require copyright and licence information for every file
+        run: python -m reuse lint

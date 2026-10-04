@@ -66,7 +66,10 @@ def test_physical_review_script_never_submits(case: str, tmp_path: Path) -> None
     assert result.stdout == (dossier.text if case in ("show", "match") else "")
     assert "NotImplementedError" not in script.source
     assert script.source.splitlines()[:7] == [
+        # Expected header of the emitted script, not a licence tag of this file.
+        # REUSE-IgnoreStart
         "# SPDX-License-Identifier: AGPL-3.0-or-later",
+        # REUSE-IgnoreEnd
         "# Commercial license available",
         "# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.",
         "# © Code 2020–2026 Miroslav Šotek. All rights reserved.",

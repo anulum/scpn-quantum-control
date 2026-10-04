@@ -128,3 +128,6 @@ node_modules/
 studio-web/release/
 
 docs/internal/**
+
+# Module federation diagnostics written by the Studio web tooling
+.mf/

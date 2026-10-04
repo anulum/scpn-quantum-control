@@ -22,7 +22,8 @@
         "test-documentation-ceiling",
         "git-location-isolation",
         "source-surface-inventory",
-        "shell-script-lint"
+        "shell-script-lint",
+        "licence-information-lint"
       ]
     },
     {
@@ -405,6 +406,7 @@
     "git-location-isolation",
     "source-surface-inventory",
     "shell-script-lint",
+    "licence-information-lint",
     "native-wheels",
     "kuramoto-model-quality",
     "kuramoto-solver-quality",

@@ -81,7 +81,11 @@ def build_review_script(dossier_text: str) -> GeneratedScript:
     if _execution_identity(body) != body["execution_sha256"]:
         raise ValueError("review script refuses a changed execution reference")
     source = (
+        # The next line is the header of the emitted script, not a licence tag
+        # of this file; the licence linter must not read it as one.
+        # REUSE-IgnoreStart
         "# SPDX-License-Identifier: AGPL-3.0-or-later\n"
+        # REUSE-IgnoreEnd
         "# Commercial license available\n"
         "# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.\n"
         "# © Code 2020–2026 Miroslav Šotek. All rights reserved.\n"

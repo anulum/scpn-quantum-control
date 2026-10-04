@@ -1066,6 +1066,10 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
         ],
     ),
     (
+        "licence-information-lint",
+        [_PY, "-m", "reuse", "lint"],
+    ),
+    (
         "mypy-strict-rust-source-import-guard",
         [_PY, "-m", "mypy", "--strict", "scpn_quantum_engine/__init__.py"],
     ),
