@@ -18,6 +18,7 @@ import re
 import struct
 import sys
 import unicodedata
+from typing import Any
 
 _MAX_REQUEST_BYTES = 65_536
 _SCHEMA = "scpn.experimental.llm_qpu.worker_boundary.v1"
@@ -421,9 +422,10 @@ def _roundtrip_model_descriptor(request: dict[str, object]) -> dict[str, object]
 def _roundtrip_latent_batch(request: dict[str, object]) -> dict[str, object]:
     if set(request) != {"op", "task", "split", "model", "latent", "tensor_base64"}:
         raise ValueError("latent request fields mismatch")
-    task = request["task"]
-    split = request["split"]
-    model = request["model"]
+    # The two calls below refuse a task, split or model that is not a complete record.
+    task: Any = request["task"]
+    split: Any = request["split"]
+    model: Any = request["model"]
     latent = request["latent"]
     _roundtrip_task_split({"op": "roundtrip_task_split", "task": task, "split": split})
     _roundtrip_model_descriptor({"op": "roundtrip_model_descriptor", "model": model})
@@ -632,10 +634,13 @@ def _roundtrip_compression(request: dict[str, object]) -> dict[str, object]:
     }
     if set(request) != fields:
         raise ValueError("compression request fields mismatch")
-    task = request["task"]
-    split = request["split"]
-    model = request["model"]
-    latent = request["latent"]
+    # The call below refuses a task, split, model, latent batch or latent payload
+    # that is not a complete record of its kind.
+    task: Any = request["task"]
+    split: Any = request["split"]
+    model: Any = request["model"]
+    latent: Any = request["latent"]
+    latent_base64: Any = request["latent_base64"]
     compressor = request["compressor"]
     compressed = request["compressed"]
     _roundtrip_latent_batch(
@@ -645,7 +650,7 @@ def _roundtrip_compression(request: dict[str, object]) -> dict[str, object]:
             "split": split,
             "model": model,
             "latent": latent,
-            "tensor_base64": request["latent_base64"],
+            "tensor_base64": latent_base64,
         }
     )
     compressor_fields = {
@@ -784,7 +789,7 @@ def _roundtrip_compression(request: dict[str, object]) -> dict[str, object]:
         ),
         task["source_kind"],
     )
-    source_raw = base64.b64decode(request["latent_base64"], validate=True)
+    source_raw = base64.b64decode(latent_base64, validate=True)
     source_values = tuple(item[0] for item in struct.iter_unpack("<f", source_raw))
     steps = 1 if latent["layout"] == "contextual" else source_shape[1]
     for row_index, length in enumerate(latent["lengths"]):

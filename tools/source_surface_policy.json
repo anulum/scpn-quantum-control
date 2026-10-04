@@ -110,8 +110,12 @@
   {
    "kind": ".py",
    "root": "experimental_workers",
-   "missing": "no strict type check",
    "gates": [
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "lint",
+     "command": "python -m mypy --strict scpn_quantum_engine/__init__.py experimental_workers/"
+    },
     {
      "workflow": "ci-static-analysis.yml",
      "job": "lint",

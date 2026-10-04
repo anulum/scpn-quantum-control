@@ -94,9 +94,9 @@ jobs:
           python -m pytest -q tests/test_differentiable_framework_ci_workflow.py --no-cov
       - run: ruff check src/ tests/ examples/ figures/ tools/ scripts/ notebooks/ experimental_workers/ run_hardware.py scpn_quantum_engine/__init__.py
       - run: ruff format --check src/ tests/ examples/ figures/ tools/ scripts/ notebooks/ experimental_workers/ run_hardware.py scpn_quantum_engine/__init__.py
-      - name: Type-check and document the Rust source import guard
+      - name: Type-check and document the Rust source import guard and the experimental workers
         run: |
-          python -m mypy --strict scpn_quantum_engine/__init__.py
+          python -m mypy --strict scpn_quantum_engine/__init__.py experimental_workers/
           python -m ruff check --isolated --preview --select D,D413,D417,D420 \
             --config 'lint.explicit-preview-rules = true' \
             --config 'lint.pydocstyle.convention = "numpy"' \
