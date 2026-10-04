@@ -173,6 +173,7 @@ jobs:
           tests/test_qpu_result_pack_bridge.py
           tests/test_studio_executive_execute.py
           tests/test_studio_executive_cli.py
+          tests/test_operator_review_dossier.py
       - name: Enforce QPU result-pack exact coverage
         run: >-
           python -m coverage report

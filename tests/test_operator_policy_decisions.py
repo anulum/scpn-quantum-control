@@ -396,3 +396,42 @@ def test_native_profile_capacity_precedes_operator_policy_and_transport() -> Non
             pricing_estimate=price(plan),
         )
     assert adapter.calls == [] and work.shots == 1024
+
+
+def test_decision_export_preserves_inputs_verdict_and_refusal_provenance() -> None:
+    """A decision exports its exact inputs, its verdict and its ordered reasons.
+
+    An admitted plan exports the supplied estimate and empty reason lists. A
+    plan for a region the profile and the policy do not allow, assessed without
+    a price, exports no estimate, the refusal reasons in assessment order and
+    the refused substitution, with the request it was given.
+    """
+    hal, adapter = route()
+    work = workload()
+    plan = request(work)
+    estimate = price(plan)
+    admitted = hal.assess_operator_policy(
+        adapter.backend_id, work, plan, estimate=estimate, now=NOW
+    )
+    assert admitted.to_dict() == {
+        "request": plan.to_dict(),
+        "policy": policy().to_dict(),
+        "estimate": estimate.to_dict(),
+        "assessed_at": NOW,
+        "allowed": True,
+        "reasons": [],
+        "rejected_substitutions": [],
+    }
+
+    elsewhere = request(work, region="us-east1")
+    refused = hal.assess_operator_policy(adapter.backend_id, work, elsewhere, now=NOW)
+    assert refused.to_dict() == {
+        "request": elsewhere.to_dict(),
+        "policy": policy().to_dict(),
+        "estimate": None,
+        "assessed_at": NOW,
+        "allowed": False,
+        "reasons": ["profile_region_mismatch", "region_forbidden", "price_unknown"],
+        "rejected_substitutions": ["profile_region_mismatch"],
+    }
+    assert adapter.calls == []

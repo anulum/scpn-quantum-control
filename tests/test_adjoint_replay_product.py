@@ -618,3 +618,65 @@ def test_materialise_refuses_unsupported_adjoint(
     )
     with pytest.raises(ValueError, match="unsupported for demo objective"):
         materialise_demo_adjoint_replay_probe()
+
+
+def test_materialise_refuses_unbound_result_without_adjoint_metadata(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A result detached from its captured tape and lacking an adjoint is refused.
+
+    The two tests above alter a result that is still bound to its captured tape,
+    which the tape integrity check refuses inside the call. A detached result
+    passes that check, so the probe itself must refuse the missing metadata.
+    """
+    from dataclasses import replace
+
+    from scpn_quantum_control.differentiable import whole_program_value_and_grad
+
+    real = whole_program_value_and_grad
+
+    def _detached_without_adjoint(objective: Any, values: Any, **kwargs: Any) -> Any:
+        result = real(objective, values, **kwargs)
+        return replace(result, adjoint_result=None, captured_state=None)
+
+    monkeypatch.setattr(
+        "scpn_quantum_control.differentiable.whole_program_value_and_grad",
+        _detached_without_adjoint,
+    )
+    with pytest.raises(ValueError, match="^whole-program result missing adjoint metadata$"):
+        materialise_demo_adjoint_replay_probe()
+
+
+def test_materialise_refuses_unbound_result_with_unsupported_adjoint(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A detached result whose adjoint reports unsupported operations is refused by name."""
+    from dataclasses import replace
+
+    from scpn_quantum_control.differentiable import whole_program_value_and_grad
+
+    real = whole_program_value_and_grad
+
+    def _detached_unsupported(objective: Any, values: Any, **kwargs: Any) -> Any:
+        result = real(objective, values, **kwargs)
+        assert result.adjoint_result is not None
+        return replace(
+            result,
+            adjoint_result=replace(
+                result.adjoint_result,
+                supported=False,
+                unsupported_ops=("first_op", "second_op"),
+                captured_state=None,
+            ),
+            captured_state=None,
+        )
+
+    monkeypatch.setattr(
+        "scpn_quantum_control.differentiable.whole_program_value_and_grad",
+        _detached_unsupported,
+    )
+    with pytest.raises(
+        ValueError,
+        match="^ambient adjoint generation unsupported for demo objective: first_op, second_op$",
+    ):
+        materialise_demo_adjoint_replay_probe()

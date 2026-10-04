@@ -18,11 +18,13 @@ EXECUTE_SOURCE = "src/scpn_quantum_control/studio/executive_execute.py"
 EXECUTIVE_CLI_SOURCE = "src/scpn_quantum_control/studio/executive_cli.py"
 EXECUTE_TEST = "tests/test_studio_executive_execute.py"
 EXECUTIVE_CLI_TEST = "tests/test_studio_executive_cli.py"
+OPERATOR_REVIEW_TEST = "tests/test_operator_review_dossier.py"
 QPU_RESULT_PACK_COVERAGE_COHORT = [
     "tests/test_studio_qpu_result_pack.py",
     "tests/test_qpu_result_pack_bridge.py",
     EXECUTE_TEST,
     EXECUTIVE_CLI_TEST,
+    OPERATOR_REVIEW_TEST,
 ]
 QPU_RESULT_PACK_TYPING_RATCHET = [
     QPU_RESULT_PACK_SOURCE,
@@ -124,6 +126,7 @@ __all__ = [
     "EXECUTE_TEST",
     "EXECUTIVE_CLI_SOURCE",
     "EXECUTIVE_CLI_TEST",
+    "OPERATOR_REVIEW_TEST",
     "QPU_RESULT_PACK_BRIDGE",
     "QPU_RESULT_PACK_COVERAGE_COHORT",
     "QPU_RESULT_PACK_COVERAGE_DATA_FILE",

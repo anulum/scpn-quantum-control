@@ -19,10 +19,12 @@ COMPILE_SOURCE = "src/scpn_quantum_control/studio/executive_compile.py"
 EXECUTIVE_CLI_SOURCE = "src/scpn_quantum_control/studio/executive_cli.py"
 COMPILE_TEST = "tests/test_studio_executive_compile.py"
 EXECUTIVE_CLI_TEST = "tests/test_studio_executive_cli.py"
+COMPILER_TRACE_TEST = "tests/test_studio_compiler_trace.py"
 XY_COMPILE_RECOMPUTE_ARTIFACT_COVERAGE_COHORT = [
     "tests/test_studio_xy_compile_recompute_artifact.py",
     COMPILE_TEST,
     EXECUTIVE_CLI_TEST,
+    COMPILER_TRACE_TEST,
 ]
 XY_COMPILE_RECOMPUTE_ARTIFACT_TYPING_RATCHET = [
     XY_COMPILE_RECOMPUTE_ARTIFACT_SOURCE,
@@ -118,6 +120,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
 
 
 __all__ = [
+    "COMPILER_TRACE_TEST",
     "COMPILE_SOURCE",
     "COMPILE_TEST",
     "EXECUTIVE_CLI_SOURCE",

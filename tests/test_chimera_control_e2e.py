@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import importlib
 import importlib.util
 import os
 import subprocess
@@ -99,3 +100,31 @@ def test_evidence_runner_main_and_parser_execute_in_process(
     output = capsys.readouterr().out
     assert f"wrote {json_path}" in output
     assert f"checked {json_path}" in output
+
+
+def test_public_facade_lists_every_export_and_refuses_undeclared_names() -> None:
+    """The facade the runner imports lists, resolves and refuses names exactly.
+
+    Inspection lists every declared export in sorted order, each declared
+    export is the object one of the owning modules defines, and a name the
+    package does not declare is refused instead of resolved.
+    """
+    facade = importlib.import_module("scpn_quantum_control.chimera_control")
+    owners = [
+        importlib.import_module(f"scpn_quantum_control.chimera_control.{name}")
+        for name in ("evidence", "objectives", "observables", "schema", "synthetic", "topology")
+    ]
+
+    listed = dir(facade)
+    assert listed == sorted(listed)
+    assert set(facade.__all__) <= set(listed)
+    assert len(facade.__all__) == len(set(facade.__all__)) == 29
+    for name in facade.__all__:
+        exported = getattr(facade, name)
+        assert any(getattr(owner, name, None) is exported for owner in owners), name
+
+    with pytest.raises(AttributeError) as refusal:
+        getattr(facade, "undeclared_export")  # noqa: B009 - the refusal is the subject
+    assert str(refusal.value) == (
+        "module 'scpn_quantum_control.chimera_control' has no attribute 'undeclared_export'"
+    )
