@@ -33,12 +33,17 @@ Two physical channels are implemented, parameterised per qubit:
 
 | Channel | Lindblad operator | Rate | Physical meaning |
 |---------|-------------------|------|------------------|
-| Amplitude damping | $L_k = \sqrt{\gamma_\text{amp}}\, \sigma^-_k$ | $\gamma_\text{amp}$ | Energy relaxation ($T_1$ decay) |
+| Amplitude damping | $L_k = \sqrt{\gamma_\text{amp}}\, \sigma^-_k$ | $\gamma_\text{amp}$ | Population transfer in the stated local basis |
 | Pure dephasing | $L_k = \sqrt{\gamma_\text{deph}/2}\, \sigma^z_k$ | $\gamma_\text{deph}$ | Phase randomisation ($T_2$ decay) |
 
-For the Kuramoto-XY system, amplitude damping destroys synchronisation by
-relaxing excitations toward the ground state. Dephasing destroys off-diagonal
+The amplitude channel changes populations and reduces transverse coherences
+according to its jump-basis convention below. Dephasing destroys off-diagonal
 coherences without changing populations.
+
+The existing angular-momentum convention is
+`sigma_minus = [[0, 0], [1, 0]]`: its local jump maps basis state `|0>` to
+`|1>`. Ground-state identification depends on the Hamiltonian sign; this is
+not a claim that the channel relaxes every qubit to the computational `|0>`.
 
 ### The XY Hamiltonian
 
@@ -104,13 +109,36 @@ footprint and raises `DenseAllocationError` before an over-budget allocation.
 | Method | Signature | Returns | Description |
 |--------|-----------|---------|-------------|
 | `build()` | `(*, max_dense_gib=None) → None` | — | Build and cache the Hamiltonian and channel operators under the active dense budget. |
-| `run()` | `(t_max, dt, method="RK45", *, max_dense_gib=None) → dict` | See below | Evolve through `t_max`; `dt` bounds adjacent output spacing. A zero horizon returns the initial state without SciPy. |
+| `run()` | `(t_max, dt, method="RK45", *, max_dense_gib=None, initial_density_matrix=None, atol=1e-8, rtol=1e-6) → dict` | See below | Evolve through `t_max`; `dt` bounds adjacent output spacing. A zero horizon returns the admitted initial state without SciPy. |
 | `order_parameter()` | `(rho) → float` | Kuramoto $R$ | Return the mean transverse-expectation magnitude. |
 | `purity()` | `(rho) → float` | $\text{Tr}(\rho^2)$ | Return density-matrix purity. |
 
-The `run()` budget argument is a build-time override. If the solver is already
-built, its cached operators are reused. Invalid grids fail with `ValueError`,
-and an unsuccessful SciPy integration fails with `RuntimeError`.
+Every `run()` checks its active dense allowance, including when operators are
+cached. Its execution reservation includes the density workspace, integration
+history and returned scalar histories before their arrays are materialised.
+Unrepresentable or over-budget histories raise `DenseAllocationError`; refusal
+leaves prior cached operators intact. The shared reservation coordinates
+cooperating calls in this process; it does not guarantee absence of native or
+external memory pressure.
+
+`initial_density_matrix` accepts a float64 or complex128 array of shape
+`(2**n, 2**n)` in the Hamiltonian's Qiskit little-endian basis order. Admission
+requires finite values, Hermiticity, unit trace and positive semidefiniteness
+within absolute `1e-10`. Values are copied exactly: there is no trace
+normalisation, eigenvalue projection or basis reordering, and the caller's array
+is not mutated. Invalid inputs raise `ValueError` before building dense
+operators. The shared admission function is
+`scpn_quantum_control.phase.density_input.validate_density_matrix`.
+
+`atol` and `rtol` are positive finite SciPy integration tolerances. `dt` controls
+output sampling, not the adaptive integrator's internal maximum step or error
+bound. Invalid grids or tolerances fail with `ValueError`, and an unsuccessful
+SciPy integration fails with `RuntimeError`.
+
+Physical admission constrains the initial matrix. The returned matrix remains
+the unprojected SciPy solution; tighten integration tolerances when checking
+trace or positivity at a fixed reference precision. Input validation does not
+repair numerical drift in the output.
 
 #### `run()` Return Value
 
@@ -123,8 +151,45 @@ and an unsuccessful SciPy integration fails with `RuntimeError`.
 }
 ```
 
-The initial density matrix is a pure product state obtained by applying one
-$R_y(\omega_i \bmod 2\pi)$ rotation to each qubit of the all-zero state.
+When `initial_density_matrix` is omitted, the legacy pure product seed uses
+$R_y(\omega_i \bmod 2\pi)$ rotations with index zero as the most significant
+tensor factor. That existing seed ordering is preserved; it differs from the
+Hamiltonian's qubit-index convention. Supply an explicit matrix when comparing
+routes from the same state. The four result keys and positional arguments are
+unchanged.
+
+### Analytic single-qubit reference
+
+With `hbar = 1`, the implemented Hamiltonian is `H = -omega * Z`. Setting
+`omega = -Omega/2` therefore gives `H = Omega * Z/2`. A plus-state reference
+has Bloch coordinates `X = cos(Omega*t)` and `Y = sin(Omega*t)`.
+
+```python
+import numpy as np
+from scpn_quantum_control.phase.lindblad import LindbladKuramotoSolver
+
+Omega, time = 1.3, 0.83
+plus = np.array([1, 1], dtype=np.complex128) / np.sqrt(2)
+rho = np.outer(plus, plus.conj())
+solver = LindbladKuramotoSolver(1, np.zeros((1, 1)), np.array([-Omega / 2]))
+result = solver.run(
+    time, 0.1, initial_density_matrix=rho, atol=1e-12, rtol=1e-11
+)
+pauli_x = np.array([[0, 1], [1, 0]])
+pauli_y = np.array([[0, -1j], [1j, 0]])
+actual = [np.trace(p @ result["rho_final"]).real for p in (pauli_x, pauli_y)]
+np.testing.assert_allclose(
+    actual, [np.cos(Omega * time), np.sin(Omega * time)], atol=1e-10, rtol=1e-8
+)
+```
+
+The direct reference tests compare this density route, Qiskit Trotter evolution
+and zero-noise sparse action from the same explicit state. A separate
+noncommuting two-qubit fixture checks norm conservation and first-/second-order
+product-formula convergence at 4, 8 and 16 repetitions against an independently
+specified Hamiltonian. Output-grid checks at `dt = 0.2, 0.1, 0.05` retain their
+separate sampling meaning. These local correctness checks are not isolated
+timings or general stochastic-channel qualification.
 
 ---
 

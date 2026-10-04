@@ -18,6 +18,8 @@ compatible with the QuantumKuramotoSolver interface.
 
 from __future__ import annotations
 
+import math
+import sys
 from typing import Any
 
 import numpy as np
@@ -25,7 +27,10 @@ from numpy.typing import NDArray
 from scipy.integrate import solve_ivp
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
-from ..dense_budget import require_dense_allocation
+from ..dense_budget import DenseAllocationError, require_dense_allocation
+from ..execution_memory import ExecutionBuffer, ExecutionMemoryPlan
+from ..execution_reservations import reserve_execution_memory
+from .density_input import validate_density_matrix
 
 
 def _as_real_numeric_array(name: str, values: object) -> NDArray[np.float64]:
@@ -207,7 +212,7 @@ class LindbladKuramotoSolver:
         gamma_deph: float = 0.0,
         *,
         max_dense_gib: float | None = None,
-    ):
+    ) -> None:
         """Initialize validated solver state without allocating dense operators."""
         self.n, self.K, self.omega, self.gamma_amp, self.gamma_deph = _validate_lindblad_inputs(
             n_oscillators,
@@ -370,6 +375,9 @@ class LindbladKuramotoSolver:
         method: str = "RK45",
         *,
         max_dense_gib: float | None = None,
+        initial_density_matrix: NDArray[np.complex128] | NDArray[np.float64] | None = None,
+        atol: float = 1e-8,
+        rtol: float = 1e-6,
     ) -> dict[str, Any]:
         """Evolve the density matrix under the configured Lindblad dynamics.
 
@@ -382,8 +390,17 @@ class LindbladKuramotoSolver:
         method
             Integration method forwarded to :func:`scipy.integrate.solve_ivp`.
         max_dense_gib
-            Optional dense-workspace override used when this call must build
-            the Hamiltonian and channels. A previously built solver is reused.
+            Optional GiB limit rechecked for all declared operators, input,
+            solver and output history, including a previously built solver.
+        initial_density_matrix
+            Optional physical float64 or complex128 matrix of shape
+            ``(dim, dim)`` in the Hamiltonian's little-endian basis. It is
+            copied without normalization. ``None`` retains the legacy
+            frequency-seeded product state with oscillator zero leftmost.
+        atol
+            Finite positive absolute integration tolerance, forwarded to SciPy.
+        rtol
+            Finite positive relative integration tolerance, forwarded to SciPy.
 
         Returns
         -------
@@ -396,23 +413,98 @@ class LindbladKuramotoSolver:
         Raises
         ------
         ValueError
-            If the time grid, integration method, or active dense budget is
-            invalid.
+            If the grid, tolerances, physical input matrix, integration method
+            or active dense budget is invalid.
         DenseAllocationError
-            If an unbuilt solver's dense workspace exceeds the active budget.
+            If any declared live workspace/history exceeds the active budget
+            or native addressability. Third-party workspace overhead is not
+            bounded by this declaration.
         RuntimeError
             If SciPy reports an unsuccessful integration.
 
         """
         t_max, dt = _validate_time_grid(t_max, dt)
+        atol = _as_nonnegative_rate("atol", atol)
+        rtol = _as_nonnegative_rate("rtol", rtol)
+        if atol == 0 or rtol == 0:
+            raise ValueError("atol and rtol must be positive")
         budget_gib = self.max_dense_gib if max_dense_gib is None else max_dense_gib
-        if self._H is None:
-            self.build(max_dense_gib=budget_gib)
-
+        require_dense_allocation(
+            self.n,
+            rank=2,
+            object_count=self._dense_object_count(),
+            max_gib=budget_gib,
+            label="Lindblad dense density workspace",
+        )
+        intervals = t_max / dt
+        if not math.isfinite(intervals) or intervals > sys.maxsize - 2:
+            raise DenseAllocationError("density history exceeds native addressable size")
         n_steps = max(1, int(np.ceil(t_max / dt)))
-        times = np.linspace(0, t_max, n_steps + 1)
+        sample_count = 1 if t_max == 0 else n_steps + 1
+        plan = ExecutionMemoryPlan(
+            (
+                ExecutionBuffer.hilbert(
+                    "density_workspace",
+                    "intermediate",
+                    self.n,
+                    rank=2,
+                    count=self._dense_object_count() + 8,
+                ),
+                ExecutionBuffer(
+                    "density_history", "dense_output", (self.dim, self.dim, sample_count)
+                ),
+                ExecutionBuffer("sample_histories", "dense_output", (sample_count,), "float64", 3),
+            )
+        )
+        with reserve_execution_memory(plan, max_gib=budget_gib):
+            rho0 = (
+                self._initial_density_matrix()
+                if initial_density_matrix is None
+                else validate_density_matrix(
+                    initial_density_matrix, self.n, max_dense_gib=budget_gib
+                )
+            )
+            if self._H is None:
+                self.build(max_dense_gib=budget_gib)
+            return self._evolve_density(t_max, n_steps, method, rho0, atol, rtol)
 
-        rho0 = self._initial_density_matrix()
+    def _evolve_density(
+        self,
+        t_max: float,
+        n_steps: int,
+        method: str,
+        rho0: NDArray[np.complex128],
+        atol: float,
+        rtol: float,
+    ) -> dict[str, Any]:
+        """Integrate an admitted density input with the original SciPy generator.
+
+        Parameters
+        ----------
+        t_max
+            Non-negative evolution time in inverse Hamiltonian units.
+        n_steps
+            Positive number of output intervals admitted by ``run``.
+        method
+            Original SciPy integration method.
+        rho0
+            Owned complex128 input of shape ``(dim, dim)``.
+        atol
+            Positive absolute integration tolerance.
+        rtol
+            Positive relative integration tolerance.
+
+        Returns
+        -------
+        dict
+            Original time, order-parameter, purity and final-matrix payload.
+
+        Raises
+        ------
+        RuntimeError
+            If the integrator reports failure; no partial result is returned.
+
+        """
         if t_max == 0.0:
             return {
                 "times": np.array([0.0]),
@@ -421,14 +513,15 @@ class LindbladKuramotoSolver:
                 "rho_final": rho0,
             }
 
+        times = np.linspace(0, t_max, n_steps + 1)
         sol = solve_ivp(
             self._rhs,
             [0, t_max],
             rho0.ravel(),
             t_eval=times,
             method=method,
-            atol=1e-8,
-            rtol=1e-6,
+            atol=atol,
+            rtol=rtol,
         )
         if not sol.success:
             raise RuntimeError(f"Lindblad integration failed: {sol.message}")

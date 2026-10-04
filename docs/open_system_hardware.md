@@ -256,6 +256,13 @@ print(f"Lindblad R(T) = {lindblad['R'][-1]:.3f}")
 # They should agree within statistical error
 ```
 
+For a deterministic unitary reference, pass the same explicit density matrix
+to `LindbladKuramotoSolver.run(initial_density_matrix=...)` and set `atol` and
+`rtol`. Its `dt` controls output spacing rather than the adaptive integration
+error. See the [analytic reference](lindblad.md#analytic-single-qubit-reference)
+for Hamiltonian sign, basis ordering and physical-input admission. This local
+reference check does not establish stochastic-channel or hardware agreement.
+
 ### Scaling Comparison: Lindblad vs MCWF
 
 | $n$ | Lindblad memory | MCWF memory (1 traj) | MCWF advantage |

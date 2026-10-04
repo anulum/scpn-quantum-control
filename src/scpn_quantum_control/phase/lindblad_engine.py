@@ -28,6 +28,8 @@ from scipy.sparse.linalg import expm_multiply
 from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_sparse_matrix
 from scpn_quantum_control.dense_budget import require_dense_allocation
 
+from .density_input import validate_density_matrix
+
 try:
     import scpn_quantum_engine as _engine  # pragma: no cover
 
@@ -46,7 +48,7 @@ class LindbladSyncEngine:
         gamma: float = 0.1,
         *,
         max_dense_gib: float | None = None,
-    ):
+    ) -> None:
         self.n = len(omega)
         self.dim = 1 << self.n
         self.K = K
@@ -174,14 +176,73 @@ class LindbladSyncEngine:
         t_max: float,
         n_steps: int = 100,
         method: str = "trajectory",
-        initial_state: NDArray[np.complex128] | None = None,
+        initial_state: NDArray[np.complex128] | NDArray[np.float64] | None = None,
         n_traj: int = 20,
         seed: int = 42,
         observables: list[SparsePauliOp] | None = None,
         max_dense_gib: float | None = None,
     ) -> dict[str, Any]:
-        """Evolve system using density matrix or quantum trajectories."""
+        """Evolve a local density matrix or seeded sparse-action trajectories.
+
+        Parameters
+        ----------
+        t_max
+            Evolution horizon in inverse Hamiltonian units.
+        n_steps
+            Number of equally spaced intervals.
+        method
+            ``density_matrix`` or ``trajectory``; no automatic route switch.
+        initial_state
+            Optional density matrix for the density route or statevector for
+            trajectories. Explicit density inputs must have shape
+            ``(2**n, 2**n)``, float64/complex128 values, unit trace, Hermiticity
+            and positive semidefiniteness within absolute ``1e-10``. Density
+            admission copies exact values without normalization or projection
+            before any dense Hamiltonian is built. Both routes retain the
+            Hamiltonian's Qiskit little-endian basis ordering.
+        n_traj
+            Number of trajectories in the seeded ensemble.
+        seed
+            NumPy random generator seed for the trajectory route.
+        observables
+            Optional Pauli operators for expectation histories.
+        max_dense_gib
+            Optional GiB override for density input validation and lazy dense
+            operator setup. This does not bound the trajectory ensemble history.
+
+        Returns
+        -------
+        dict
+            Original time, optional state and observable histories. The density
+            route retains its final density matrix; large trajectory routes
+            omit dense state histories.
+
+        Raises
+        ------
+        ValueError
+            If the route is unknown or the explicit density input is invalid.
+        RuntimeError
+            If density evolution is requested above ten qubits.
+        DenseAllocationError
+            If density validation or lazy operator setup exceeds the allowance.
+
+        """
         if method == "density_matrix":
+            if self.n > 10:
+                raise RuntimeError("Density matrix path only supported for N <= 10.")
+            require_dense_allocation(
+                self.n,
+                rank=2,
+                object_count=max(3, 3 + self._active_jump_operator_count()),
+                max_gib=self.max_dense_gib if max_dense_gib is None else max_dense_gib,
+                label="Lindblad density-matrix dense workspace",
+            )
+            if initial_state is not None:
+                initial_state = validate_density_matrix(
+                    initial_state,
+                    self.n,
+                    max_dense_gib=(self.max_dense_gib if max_dense_gib is None else max_dense_gib),
+                )
             return self._evolve_density_matrix(
                 t_max,
                 n_steps,
@@ -246,7 +307,7 @@ class LindbladSyncEngine:
         t_max: float,
         n_steps: int,
         n_traj: int,
-        initial_psi: NDArray[np.complex128] | None,
+        initial_psi: NDArray[np.complex128] | NDArray[np.float64] | None,
         seed: int,
         observables: list[SparsePauliOp] | None,
     ) -> dict[str, Any]:
@@ -303,7 +364,7 @@ class LindbladSyncEngine:
     def _update_stats(
         self,
         step: int,
-        psi: NDArray[np.complex128],
+        psi: NDArray[np.complex128] | NDArray[np.float64],
         avg_rho: list[NDArray[np.complex128]] | None,
         obs_avg: dict[str, NDArray[np.float64]],
         obs_mats: list[Any],

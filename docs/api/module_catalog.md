@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **779 modules** across **41 package families**
-- **4219 documented public module-level symbols**
+- **780 modules** across **41 package families**
+- **4220 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -3912,6 +3912,14 @@ Cross-domain VQE transfer learning.
 **Classes:** `TransferSummary`, `TransferResult`, `PhysicalSystem`
 
 **Functions:** `build_systems()`, `transfer_experiment()`, `run_transfer_matrix()`, `summarize_transfer()`
+
+### `scpn_quantum_control.phase.density_input`
+
+Admit explicit physical density matrices without repairing their values.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase/density_input.py) · Public symbols: **1**
+
+**Functions:** `validate_density_matrix()`
 
 ### `scpn_quantum_control.phase.differentiable_audit`
 

@@ -17,10 +17,22 @@ XY_KURAMOTO_SOURCE = "src/scpn_quantum_control/phase/xy_kuramoto.py"
 PHASE_RESULTS_COVERAGE_COHORT = [
     "tests/test_phase_results.py",
     "tests/test_xy_kuramoto.py",
+    "tests/test_lindblad.py",
+    "tests/test_lindblad_branches.py",
+    "tests/test_lindblad_engine.py",
+    "tests/test_lindblad_engine_branches.py",
+    "tests/test_lindblad_trajectory.py",
+    "tests/test_density_input.py",
+    "tests/test_quantum_reference_evolution.py",
 ]
 PHASE_RESULTS_TYPING_RATCHET = [
     PHASE_RESULTS_SOURCE,
     XY_KURAMOTO_SOURCE,
+    "src/scpn_quantum_control/phase/lindblad.py",
+    "src/scpn_quantum_control/phase/lindblad_engine.py",
+    "src/scpn_quantum_control/phase/density_input.py",
+    "tests/test_density_input.py",
+    "tests/test_quantum_reference_evolution.py",
     "tests/test_xy_kuramoto.py",
     "tools/phase_results_quality_gates.py",
     "tests/test_phase_results_quality_gate.py",
@@ -28,13 +40,21 @@ PHASE_RESULTS_TYPING_RATCHET = [
 PHASE_RESULTS_DOCSTRING_RATCHET = [
     PHASE_RESULTS_SOURCE,
     XY_KURAMOTO_SOURCE,
+    "src/scpn_quantum_control/phase/lindblad.py",
+    "src/scpn_quantum_control/phase/lindblad_engine.py",
+    "src/scpn_quantum_control/phase/density_input.py",
+    "tests/test_density_input.py",
+    "tests/test_quantum_reference_evolution.py",
     "tests/test_phase_results.py",
     "tests/test_xy_kuramoto.py",
     "tools/phase_results_quality_gates.py",
     "tests/test_phase_results_quality_gate.py",
 ]
 PHASE_RESULTS_COVERAGE_DATA_FILE = "/tmp/scpn-qc-phase-results-quality.coverage"  # nosec B108
-PHASE_RESULTS_COVERAGE_INCLUDE = "*/phase/results.py,*/phase/xy_kuramoto.py"
+PHASE_RESULTS_COVERAGE_INCLUDE = (
+    "*/phase/results.py,*/phase/xy_kuramoto.py,*/phase/lindblad.py,"
+    "*/phase/lindblad_engine.py,*/phase/density_input.py"
+)
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:

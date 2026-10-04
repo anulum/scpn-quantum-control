@@ -62,9 +62,16 @@ print(f"Purity: {result['purity'][0]:.3f} → {result['purity'][-1]:.3f}")
 | `.order_parameter(rho)` | Kuramoto R from density matrix |
 | `.purity(rho)` | $\text{Tr}(\rho^2)$ |
 
-**Tests:** 13 (purity preservation under unitary, purity decay under damping,
-R bounded, strong damping kills sync, density matrix positivity, matches
-unitary solver at zero dissipation)
+The optional `initial_density_matrix`, `atol` and `rtol` keywords admit a shared
+physical initial state and explicit integration accuracy. Every run checks its
+dense allowance and reserves density history before materialisation. See the
+[Lindblad API](lindblad.md) for the preserved legacy seed and jump conventions.
+
+**Tests:** Direct Lindblad and shared density-admission tests cover purity,
+trace, positivity, invalid inputs and budget refusals. The public quantum
+reference cohort independently checks Bloch phase, norm preservation,
+product-formula refinement, output-grid semantics and actual Python/Rust
+Hamiltonian and expectation kernels.
 
 ---
 

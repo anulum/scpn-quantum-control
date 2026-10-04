@@ -10,10 +10,10 @@
     "public_api_exports": 851,
     "public_documentation_pages": 381,
     "python_model_classes": 1498,
-    "python_model_source_modules": 779,
+    "python_model_source_modules": 780,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1494
+    "test_files": 1496
   },
   "documentation": {
     "examples": [
@@ -728,7 +728,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 118
+        "python_modules": 119
       },
       {
         "package": "psi_field",
@@ -7295,6 +7295,7 @@
       "src/scpn_quantum_control/phase/coupling_learning.py",
       "src/scpn_quantum_control/phase/coupling_time_series_recovery.py",
       "src/scpn_quantum_control/phase/cross_domain_transfer.py",
+      "src/scpn_quantum_control/phase/density_input.py",
       "src/scpn_quantum_control/phase/differentiable_audit.py",
       "src/scpn_quantum_control/phase/differentiable_audit_contracts.py",
       "src/scpn_quantum_control/phase/differentiable_readiness.py",
@@ -9034,6 +9035,7 @@
       "tests/test_dense_allocation_admission.py",
       "tests/test_dense_budget.py",
       "tests/test_dense_budget_container_awareness.py",
+      "tests/test_density_input.py",
       "tests/test_dependency_hygiene.py",
       "tests/test_dependency_security_closure.py",
       "tests/test_determinism.py",
@@ -9914,6 +9916,7 @@
       "tests/test_quantum_persistent_homology.py",
       "tests/test_quantum_phi.py",
       "tests/test_quantum_phi_quality_gate.py",
+      "tests/test_quantum_reference_evolution.py",
       "tests/test_quantum_reservoir.py",
       "tests/test_quantum_reservoir_product.py",
       "tests/test_quantum_sensing_quality_gate.py",

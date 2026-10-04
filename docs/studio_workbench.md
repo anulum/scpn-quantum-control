@@ -1083,3 +1083,11 @@ refused connection is closed. `openWorkspaceStore` accepts a shorter positive
 integer timeout as its third argument and refuses a value above the product
 bound. Saved cache contents and exported archives are separate from this
 opening deadline.
+
+The native quantum reference APIs are documented in the
+[Lindblad guide](lindblad.md#analytic-single-qubit-reference). They admit a
+shared physical initial density matrix, preserve explicit Hamiltonian basis
+ordering and distinguish output sampling from integration accuracy. Their
+local analytic and Python/Rust kernel conformance supplies a numerical
+foundation; it does not add a quantum solver panel or execution authority to
+the Studio workspace.

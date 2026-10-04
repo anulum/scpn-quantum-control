@@ -1961,6 +1961,19 @@ as the gate-model XY path: coupling, frequency, and damping-rate values must be
 explicit real numeric values, not strings, booleans, objects, or complex values
 that NumPy could silently coerce before validation.
 
+For `method="density_matrix"`, an explicit `initial_state` must be a finite
+float64/complex128 matrix with matching shape, unit trace, Hermiticity and
+positive semidefiniteness within absolute `1e-10`. Admission copies the original
+values before dense setup and checks the active allowance even with cached
+operators. The density route retains its ten-qubit limit; this input/operator
+allowance does not bound trajectory ensemble histories.
+
+`lindblad.LindbladKuramotoSolver.run()` additionally accepts keyword-only
+`initial_density_matrix`, `atol` and `rtol`. Its `dt` sets output spacing and its
+execution reservation includes the density history. See the
+[Lindblad API and analytic reference](lindblad.md#analytic-single-qubit-reference)
+for basis ordering, defaults and a same-state comparison.
+
 ### `xy_kuramoto.QuantumKuramotoSolver`
 
 ```python
