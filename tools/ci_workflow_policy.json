@@ -177,7 +177,8 @@
       "id": "simulation-artifact",
       "workflow": ".github/workflows/ci-simulation-artifact.yml",
       "caller_needs": [
-        "static-analysis"
+        "static-analysis",
+        "native-build"
       ],
       "jobs": [
         "nqs-ansatz-quality",

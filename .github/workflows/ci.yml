@@ -55,7 +55,7 @@ jobs:
     needs: static-analysis
     uses: ./.github/workflows/ci-algorithm-experiment.yml
   simulation-artifact:
-    needs: static-analysis
+    needs: [static-analysis, native-build]
     uses: ./.github/workflows/ci-simulation-artifact.yml
   product-deployment:
     needs: static-analysis

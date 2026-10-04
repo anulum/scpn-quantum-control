@@ -9,9 +9,15 @@
 
 from pathlib import Path
 
+from scpn_quantum_control.ci_workflow_ownership import read_ci_job_blocks
 from tools import phase_results_quality_gates as quality_gates
 from tools import preflight
-from tools.ci_workflow_inventory import read_ci_workflow_source
+from tools.ci_workflow_inventory import (
+    REPOSITORY_ROOT,
+    load_ci_workflow_policy,
+    read_ci_workflow_source,
+    workflow_path_for_job,
+)
 
 
 def test_static_gate_is_strict_and_completely_documented() -> None:
@@ -69,3 +75,29 @@ def test_ci_runs_and_aggregates_phase_results_gate() -> None:
     assert "--fail-under=100" in block
     assert quality_gates.PHASE_RESULTS_COVERAGE_INCLUDE in block
     assert "phase-results-quality" in workflow[workflow.index("  ci-gate:") :]
+
+
+def test_ci_provisions_the_native_reference_wheel_before_execution() -> None:
+    """Build and install the current ABI wheel before real FFI reference tests."""
+    policy = load_ci_workflow_policy()
+    category = next(row for row in policy["categories"] if "phase-results-quality" in row["jobs"])
+    assert "native-build" in category["caller_needs"]
+    coordinator = (REPOSITORY_ROOT / policy["coordinator"]).read_text(encoding="utf-8")
+    caller = read_ci_job_blocks(coordinator)[category["id"]]
+    assert "needs: [static-analysis, native-build]" in caller
+
+    source = workflow_path_for_job("phase-results-quality").read_text(encoding="utf-8")
+    job = read_ci_job_blocks(source)["phase-results-quality"]
+    assert 'python-version: "3.12"' in job
+    assert "name: scpn-quantum-engine-3.12" in job
+    download = job.index("actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c")
+    install = job.index(
+        "python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl"
+    )
+    assert download < install < job.index("python -m coverage run")
+    assert "tests/test_quantum_reference_evolution.py" in job
+
+    producer = workflow_path_for_job("native-wheels").read_text(encoding="utf-8")
+    assert 'python-version: ["3.11", "3.12", "3.13"]' in producer
+    assert "name: scpn-quantum-engine-${{ matrix.python-version }}" in producer
+    assert "path: dist/scpn_quantum_engine-*.whl" in producer

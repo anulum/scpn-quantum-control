@@ -658,6 +658,7 @@
     "ancilla_lindblad.py",
     "backend_selector.py",
     "contraction_optimiser.py",
+    "density_input.py",
     "floquet_kuramoto.py",
     "general_unitary.py",
     "kuramoto_variants.py",
