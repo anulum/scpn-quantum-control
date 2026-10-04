@@ -39,6 +39,12 @@ from ..studio_workspace import (
     validate_parameter_binding,
     write_json,
 )
+from ..studio_workspace import (
+    assess_workspace_operator_policy as assess_workspace_operator_policy,
+)
+from ..studio_workspace import (
+    operator_request_from_settings as operator_request_from_settings,
+)
 
 __all__ = [
     "SettingsPolicy",

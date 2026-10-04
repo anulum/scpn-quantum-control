@@ -271,7 +271,12 @@ def _profile(
 
     """
     device, observed = _observation(row, snapshot)
+    # The original dated v1 declaration has no shot-capacity field. Never
+    # silently export a configured native limit as unrestricted/unknown.
+    if profile.capabilities.max_shots is not None:
+        raise ValueError("dated profile v1 cannot represent declared max_shots")
     capabilities = asdict(profile.capabilities)
+    del capabilities["max_shots"]
     for name, value in capabilities.items():
         if name == "max_qubits":
             _count(value, positive=True)

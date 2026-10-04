@@ -33,6 +33,10 @@ SEMANTIC_FIELDS = frozenset(
         "units",
         "memory_budget_bytes",
         "n_qubits",
+        "concurrency",
+        "time_limit_ms",
+        "region",
+        "unattended",
     }
 )
 DISPLAY_FIELDS = frozenset({"theme", "notation", "plot_rounding", "layout"})
@@ -74,12 +78,18 @@ class SettingsPolicy:
             }
         )
         for key, value in self.ceilings.items():
-            if key not in {"shots", "memory_budget_bytes", "n_qubits"}:
+            if key not in {
+                "shots",
+                "memory_budget_bytes",
+                "n_qubits",
+                "concurrency",
+                "time_limit_ms",
+            }:
                 raise SettingsRefused("Unsupported policy ceiling field.")
             if type(value) is not int or value <= 0:
                 raise SettingsRefused("Policy ceilings must be positive integers.")
         for key, values in self.choices.items():
-            if key not in {"method", "backend", "device", "precision", "units"}:
+            if key not in {"method", "backend", "device", "precision", "units", "region"}:
                 raise SettingsRefused("Unsupported policy choice field.")
             if (
                 not isinstance(values, tuple)
@@ -111,9 +121,22 @@ def validate_setting_values(values: Mapping[str, object]) -> None:
     for key, value in values.items():
         if key not in SEMANTIC_FIELDS | DISPLAY_FIELDS:
             raise SettingsRefused("Unsupported settings field; credentials cannot be imported.")
-        if key in {"shots", "memory_budget_bytes", "n_qubits", "seed", "plot_rounding"}:
+        if key in {
+            "shots",
+            "memory_budget_bytes",
+            "n_qubits",
+            "seed",
+            "plot_rounding",
+            "concurrency",
+            "time_limit_ms",
+        }:
             if type(value) is not int or value < (0 if key in {"seed", "plot_rounding"} else 1):
                 raise SettingsRefused(f"Setting {key} requires a valid integer.")
+        elif key == "region" and value is None:
+            continue
+        elif key == "unattended":
+            if type(value) is not bool:
+                raise SettingsRefused("Setting unattended requires an explicit boolean.")
         elif key == "parameters":
             if not isinstance(value, Mapping) or any(
                 not isinstance(name, str)
@@ -132,7 +155,7 @@ def _admit_layer(
 ) -> None:
     authority = str(policy.reference["sha256"])
     for key, value in requested.items():
-        if key in {"shots", "memory_budget_bytes", "n_qubits"}:
+        if key in {"shots", "memory_budget_bytes", "n_qubits", "concurrency", "time_limit_ms"}:
             cap = policy.ceilings.get(key)
             if cap is None or isinstance(value, int) and value > cap:
                 raise SettingsRefused(
@@ -142,6 +165,8 @@ def _admit_layer(
             raise SettingsRefused(f"Setting {key} is forbidden by policy {authority}.")
     if requested.get("backend", profile.backend_id) != profile.backend_id:
         raise SettingsRefused(f"Backend differs from governing route in policy {authority}.")
+    if "region" in requested and requested["region"] != profile.region:
+        raise SettingsRefused(f"Region differs from governing route in policy {authority}.")
     if "shots" in requested and not profile.capabilities.supports_shots:
         raise SettingsRefused(f"Shots are unsupported by governing route in policy {authority}.")
     qubits = requested.get("n_qubits")

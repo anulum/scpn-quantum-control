@@ -22,6 +22,8 @@ from typing import Any
 
 _EXPORT_GROUPS: dict[str, tuple[str, ...]] = {
     "workspace": (
+        "assess_workspace_operator_policy",
+        "operator_request_from_settings",
         "SettingsPolicy",
         "SettingsRefused",
         "resolve_settings",

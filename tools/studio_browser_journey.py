@@ -414,6 +414,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "program_authoring",
             "compiler_trace_inspector",
             "operator_backend_profiles",
+            "operator_policy_decisions",
             "workbench_accessibility",
             "owned_kernel_worker",
         ),
@@ -493,6 +494,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 from tools.studio_backend_profiles_browser import run_backend_profiles_journey
 
                 journey = partial(run_backend_profiles_journey, evidence=evidence)
+            elif args.scenario == "operator_policy_decisions":
+                from tools.studio_operator_policy_browser import run_operator_policy_journey
+
+                journey = partial(run_operator_policy_journey, evidence=evidence)
             elif args.scenario == "compiler_trace_inspector":
                 from tools.studio_compiler_trace_browser import run_compiler_trace_journey
 

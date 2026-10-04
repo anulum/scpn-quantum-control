@@ -302,14 +302,14 @@ jobs:
             tests/test_canonical_encoding.py tests/test_studio_workspace.py tests/test_studio_workspace_canonical.py \
             tests/test_studio_workspace_json_transport.py tests/test_studio_workspace_contracts.py \
             tests/test_studio_workspace_graph.py tests/test_resolved_workspace_settings.py \
-            tests/test_workspace_settings_portability.py tests/test_studio_workspace_lazy.py
+            tests/test_workspace_settings_portability.py tests/test_studio_workspace_lazy.py tests/test_workspace_operator_policy.py
           python -m ruff check --isolated --preview --select D,D413,D417,D420 \
             --config 'lint.explicit-preview-rules = true' --config 'lint.pydocstyle.convention = "numpy"' \
             src/scpn_quantum_control/canonical_encoding.py src/scpn_quantum_control/studio_workspace src/scpn_quantum_control/studio/workspace.py \
             tests/test_canonical_encoding.py tests/test_studio_workspace.py tests/test_studio_workspace_canonical.py \
             tests/test_studio_workspace_json_transport.py tests/test_studio_workspace_contracts.py \
             tests/test_studio_workspace_graph.py tests/test_resolved_workspace_settings.py \
-            tests/test_workspace_settings_portability.py tests/test_studio_workspace_lazy.py
+            tests/test_workspace_settings_portability.py tests/test_studio_workspace_lazy.py tests/test_workspace_operator_policy.py
       - name: Enforce workspace Python owner coverage
         working-directory: .
         env:
@@ -322,7 +322,7 @@ jobs:
             tests/test_studio_workspace_json_transport.py tests/test_studio_workspace_contracts.py \
             tests/test_studio_workspace_graph.py tests/test_studio_lazy_import.py \
             tests/test_resolved_workspace_settings.py tests/test_workspace_settings_portability.py \
-            tests/test_studio_workspace_lazy.py
+            tests/test_studio_workspace_lazy.py tests/test_workspace_operator_policy.py
           python -m coverage report --rcfile=/dev/null \
             --data-file="$RUNNER_TEMP/studio-workspace.coverage" \
             --include="*/scpn_quantum_control/canonical_encoding.py,*/scpn_quantum_control/studio_workspace/*.py,*/scpn_quantum_control/studio/workspace.py" \
@@ -336,8 +336,8 @@ jobs:
           python - <<'PY_PROGRAM'
           import subprocess
           import sys
-          from tools.studio_executive_product_quality_gates import build_backend_profiles_quality_gates, build_program_authoring_quality_gates
-          for name, command in [*build_program_authoring_quality_gates(sys.executable), *build_backend_profiles_quality_gates(sys.executable)]:
+          from tools.studio_executive_product_quality_gates import build_backend_profiles_quality_gates, build_program_authoring_quality_gates, build_operator_policy_quality_gates
+          for name, command in [*build_program_authoring_quality_gates(sys.executable), *build_backend_profiles_quality_gates(sys.executable), *build_operator_policy_quality_gates(sys.executable)]:
               print(name, flush=True)
               subprocess.run(command, check=True)
           PY_PROGRAM
@@ -535,6 +535,21 @@ jobs:
             --include="*/tools/studio_backend_profiles_browser.py" --precision=2 --show-missing --fail-under=100
           python -m coverage combine --rcfile=/dev/null --append --keep \
             --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" "$RUNNER_TEMP/studio-profiles-browser.coverage"
+          python -m coverage run --rcfile=/dev/null --branch --concurrency=greenlet \
+            --data-file="$RUNNER_TEMP/studio-policy-browser.coverage" \
+            --include="*/tools/studio_operator_policy_browser.py,*/tools/studio_browser_journey.py" \
+            tools/studio_browser_journey.py --scenario operator_policy_decisions \
+            --base-url http://127.0.0.1:4173/ --output "$RUNNER_TEMP/studio-policy-journey.json"
+          STUDIO_PREVIEW_DIR="$RUNNER_TEMP/studio-browser-preview" \
+            python -m coverage run --rcfile=/dev/null --append --branch --concurrency=greenlet \
+            --data-file="$RUNNER_TEMP/studio-policy-browser.coverage" \
+            --include="*/tools/studio_operator_policy_browser.py" \
+            -m pytest --noconftest -q tools/tests/test_studio_operator_policy_browser.py
+          python -m coverage report --rcfile=/dev/null \
+            --data-file="$RUNNER_TEMP/studio-policy-browser.coverage" \
+            --include="*/tools/studio_operator_policy_browser.py" --precision=2 --show-missing --fail-under=100
+          python -m coverage combine --rcfile=/dev/null --append --keep \
+            --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" "$RUNNER_TEMP/studio-policy-browser.coverage"
       - name: Exercise original panel refusal over isolated damaged input files
         working-directory: .
         env:
@@ -737,6 +752,15 @@ jobs:
           OPENBLAS_NUM_THREADS: "1"
           OMP_NUM_THREADS: "1"
         run: python -m tools.studio_contract_quality_gates --run
+      - name: Enforce operator policy browser owner exact coverage
+        run: >-
+          pnpm exec vitest run src/features/operators/policy src/app/routes/OperationsView.test.tsx
+          --coverage.enabled=true --coverage.provider=v8
+          --coverage.include='src/features/operators/policy/*.{ts,tsx}'
+          --coverage.exclude='**/*.test.*'
+          --coverage.thresholds.statements=100 --coverage.thresholds.branches=100
+          --coverage.thresholds.functions=100 --coverage.thresholds.lines=100
+          --coverage.reportsDirectory="${{ runner.temp }}/studio-policy-ui-coverage"
       - name: Enforce workspace browser contract owner coverage
         run: >-
           pnpm exec vitest run src/shared/contracts
@@ -808,6 +832,9 @@ jobs:
             ${{ runner.temp }}/studio-compiler-browser.coverage
             ${{ runner.temp }}/studio-profiles-browser.coverage
             ${{ runner.temp }}/studio-profiles-journey.json
+            ${{ runner.temp }}/studio-policy-journey.json
+            ${{ runner.temp }}/studio-policy-browser.coverage
+            ${{ runner.temp }}/studio-policy-ui-coverage
             ${{ runner.temp }}/studio-workbench-source-qualification.json
             ${{ runner.temp }}/studio-panel-refusal-journey.json
             ${{ runner.temp }}/studio-panel-refusal-source.log

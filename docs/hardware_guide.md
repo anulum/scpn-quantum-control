@@ -118,6 +118,41 @@ require their own evidence. No hardware result or performance claim follows
 from native semantics capture alone.
 
 
+## Operator admission before transport
+
+Configure `HardwareAbstractionLayer(profiles, operator_policy=policy)` with an
+immutable `OperatorPolicy` from `hardware.operator_policy_contracts`. Every
+submission through that configured HAL then requires an `OperatorRequest` and
+a known, request-bound `PricingEstimate`. The request binds the original
+workload source and complete native semantics, exact backend, native target,
+region, shots, declared concurrency, declared time limit and unattended flag.
+
+`hal.assess_operator_policy(backend_id, workload, request, estimate=estimate)`
+returns an immutable offline verdict with ordered refusal reasons and rejected
+substitutions. Optional `now` is an explicit UTC-second clock for offline
+assessment. `hal.submit(..., operator_request=request, pricing_estimate=estimate)`
+reassesses using current UTC before adapter transport and accepts no caller
+clock or stored decision. Existing cloud approval and native capability checks
+remain required.
+
+Equality at a ceiling is admitted; excess refuses without changing shots or
+other values. Target and region must agree with the original native workload
+and governing profile. Missing cloud target/region bindings, a future or expired
+policy, and unknown, stale, future, wrong-currency or request-mismatched pricing
+refuse before transport. Amounts are nonnegative decimal strings with at most
+nine fractional digits; no floating-point price, exchange rate or tariff is
+inferred. Expiry is exclusive, including at the exact second.
+
+This admission checks the declared plan. It does not authenticate the supplied
+estimate, predict elapsed time, charge an account or enforce cross-process
+concurrency. Configure this boundary for automated execution; the original
+unconfigured HAL keeps its established local and explicitly approved cloud
+routes. Passing policy admission does not prove device availability, account
+credit, calibration or a hardware observation.
+
+For the complete original settings/provenance export and browser inspection,
+see [Operator policy decisions](studio_workbench.md#operator-policy-decisions).
+
 ## Architecture
 
 ### HAL job identity custody

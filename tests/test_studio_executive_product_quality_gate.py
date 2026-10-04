@@ -121,3 +121,31 @@ def test_backend_profiles_have_native_and_actual_browser_gates() -> None:
     assert "tools/tests/test_studio_backend_profiles_browser.py" in workflow
     assert "--coverage.include='src/features/operators/profiles/*.{ts,tsx}'" in workflow
     assert "build_backend_profiles_quality_gates" in workflow
+
+
+def test_operator_policy_is_in_original_native_and_real_browser_cohorts() -> None:
+    """Retain whole policy ownership, exact thresholds and one original public dispatcher."""
+    from pathlib import Path
+
+    gates = dict(quality_gates.build_operator_policy_quality_gates("/python"))
+    for owner in (
+        "src/scpn_quantum_control/hardware/operator_policy_contracts.py",
+        "src/scpn_quantum_control/hardware/operator_policy.py",
+        "src/scpn_quantum_control/studio_workspace/operator_policy.py",
+        "tools/export_operator_policy_decisions.py",
+        "tests/test_workspace_operator_policy.py",
+        "tools/studio_operator_policy_browser.py",
+        "tools/tests/test_studio_operator_policy_browser.py",
+    ):
+        assert owner in gates["studio-operator-policy-strict"]
+        assert owner in gates["studio-operator-policy-native-docs"]
+    assert "--branch" in gates["studio-operator-policy-native-coverage"]
+    assert "--fail-under=100" in gates["studio-operator-policy-native-exact"]
+    workflow = (
+        Path(__file__).resolve().parents[1] / ".github/workflows/ci-studio.yml"
+    ).read_text()
+    assert workflow.count("--scenario operator_policy_decisions") == 1
+    assert "tools/tests/test_studio_operator_policy_browser.py" in workflow
+    assert "--coverage.include='src/features/operators/policy/*.{ts,tsx}'" in workflow
+    assert "build_operator_policy_quality_gates" in workflow
+    assert workflow.count("tests/test_workspace_operator_policy.py") == 3

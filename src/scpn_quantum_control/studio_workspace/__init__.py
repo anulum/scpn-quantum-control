@@ -31,6 +31,10 @@ if TYPE_CHECKING:
     )
     from .graph import RawArtifact, RawIdentity, WorkspaceAdmission, admit_workspace
     from .json_transport import read_json, write_json
+    from .operator_policy import (
+        assess_workspace_operator_policy as assess_workspace_operator_policy,
+    )
+    from .operator_policy import operator_request_from_settings as operator_request_from_settings
     from .settings import SettingsPolicy, SettingsRefused, resolve_settings, settings_plan_digest
     from .settings_portability import (
         SettingsResetPreview,
@@ -41,6 +45,14 @@ if TYPE_CHECKING:
     )
 
 _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
+    "assess_workspace_operator_policy": (
+        "scpn_quantum_control.studio_workspace.operator_policy",
+        "assess_workspace_operator_policy",
+    ),
+    "operator_request_from_settings": (
+        "scpn_quantum_control.studio_workspace.operator_policy",
+        "operator_request_from_settings",
+    ),
     "SettingsPolicy": ("scpn_quantum_control.studio_workspace.settings", "SettingsPolicy"),
     "SettingsRefused": ("scpn_quantum_control.studio_workspace.settings", "SettingsRefused"),
     "resolve_settings": ("scpn_quantum_control.studio_workspace.settings", "resolve_settings"),

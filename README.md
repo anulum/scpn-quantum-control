@@ -77,6 +77,7 @@ than implied coverage.
 | Review hardware claims | [Hardware Status Ledger](docs/hardware_status_ledger.md) -> [Hardware Result Packs](docs/hardware_result_packs.md) | Raw-count-backed evidence or an explicit blocked promotion route. |
 | Inspect compiler mappings | [Studio workbench](docs/studio_workbench.md#compiler-trace-inspection) | Native pass snapshots, logical/physical layouts, pinned source and exact metadata export; emitted IR remains unexecuted. |
 | Navigate Studio with a keyboard | [Studio keyboard and data tables](docs/studio_workbench.md#keyboard-tables-and-display-preferences) | Modal help, focus recovery, full sample and coupling tables, theme and reduced-motion support. |
+| Inspect operator policy decisions | [Studio workbench](docs/studio_workbench.md#operator-policy-decisions) | Exact native admission, dated pricing and requested/effective provenance; no provider contact. |
 | Inspect provider and device profiles | [Studio workbench](docs/studio_workbench.md#provider-and-device-profiles) | Dated offline metadata, separate declarations and observations, exact broker identities and reference invalidation; no provider contact or submission. |
 | Use v0.10 control surfaces | [API Overview](docs/api.md) -> [Tutorials](docs/tutorials.md) -> [Example Gallery](docs/examples_gallery.md) | QRNG health checks, PQC trigger signing, UltraScale+ HLS emission, realtime telemetry, Studio federation, and sensing workflows. |
 | Evaluate adoption | [API Overview](docs/api.md) -> [Release Readiness Gate](docs/release_readiness.md) | Stable integration surfaces, release gates, and licensing boundaries. |
@@ -126,8 +127,8 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 1.2.0 |
 | Public API exports | 851 |
-| Python source modules | 774 |
-| Public Python classes | 1491 |
+| Python source modules | 777 |
+| Public Python classes | 1496 |
 | Domain package families | 40 |
 | API documentation pages | 14 |
 | Rust PyO3 function bindings | 177 |
@@ -135,7 +136,7 @@ claims only when the evidence exists.
 | Notebook files | 109 |
 | Example files | 38 |
 | Optional extras | 43 |
-| Python test files | 1487 |
+| Python test files | 1491 |
 | Public documentation pages | 381 |
 | GitHub Actions workflows | 44 |
 
@@ -687,7 +688,7 @@ graph TD
     end
 
     subgraph "Hardware & QEC"
-        hw["hardware/ (83)\nIBM runner, backends\nGPU offload, cutting"]
+        hw["hardware/ (85)\nIBM runner, backends\nGPU offload, cutting"]
         mit["mitigation/ (12)\nZNE, PEC, DD\nZ2 post-selection"]
         qec["qec/ (13)\nToric code, surface code\nrep code, error budget"]
     end
@@ -716,7 +717,7 @@ graph TD
 | Subpackage | Modules | Purpose |
 |------------|:-------:|---------|
 | `analysis` | 61 | Synchronisation probes: witnesses, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
-| `hardware` | 83 | IBM Quantum runner, plugin backends registry, AsyncHardwareRunner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ), provenance |
+| `hardware` | 85 | IBM Quantum runner, plugin backends registry, AsyncHardwareRunner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ), provenance |
 | `phase` | 29 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad |
 | `applications` | 17 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS, QRC+ESN baseline, honesty kits |
 | `bridge` | 13 | K_nm → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
@@ -833,7 +834,7 @@ simulation. No IBM credentials are needed.
 ```
 scpn_quantum_control/
 ├── analysis/       59 modules — synchronisation probes
-├── hardware/       83 modules — IBM runner, backends, GPU, cutting, provenance
+├── hardware/       85 modules — IBM runner, backends, GPU, cutting, provenance
 ├── phase/          76 modules — time evolution + variational + Lindblad
 ├── bridge/         14 modules — K_nm → quantum objects + cross-repo
 ├── applications/   17 modules — physical benchmarks + honesty kits

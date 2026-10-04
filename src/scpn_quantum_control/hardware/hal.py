@@ -24,6 +24,14 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Protocol, runtime_checkable
 
+from .operator_policy import assess_operator_policy as assess_plan
+from .operator_policy_contracts import (
+    OperatorPolicy,
+    OperatorPolicyDecision,
+    OperatorPolicyRefused,
+    OperatorRequest,
+    PricingEstimate,
+)
 from .provider_modalities import (
     AnalogObservation,
     AnnealingObservation,
@@ -540,8 +548,23 @@ class LocalDeterministicSimulator:
 class HardwareAbstractionLayer:
     """Profile registry plus approval-gated execution router."""
 
-    def __init__(self, profiles: Sequence[BackendProfile]) -> None:
-        """Register unique profiles without creating provider adapters."""
+    def __init__(
+        self, profiles: Sequence[BackendProfile], *, operator_policy: OperatorPolicy | None = None
+    ) -> None:
+        """Register profiles and immutable policy without creating provider adapters.
+
+        Parameters
+        ----------
+        profiles
+            Unique source-owned route declarations.
+        operator_policy
+            Trusted immutable plan ceilings. When configured, every submit
+            requires a bound request and a fresh policy verdict. Unconfigured
+            legacy interactive callers retain their original approval rules.
+
+        """
+        if operator_policy is not None and not isinstance(operator_policy, OperatorPolicy):
+            raise TypeError("operator policy must be an immutable OperatorPolicy")
         by_id: dict[str, BackendProfile] = {}
         for profile in profiles:
             if profile.backend_id in by_id:
@@ -549,6 +572,7 @@ class HardwareAbstractionLayer:
             by_id[profile.backend_id] = profile
         self._profiles = by_id
         self._backends: dict[str, QuantumBackend] = {}
+        self._operator_policy = operator_policy
 
     @classmethod
     def with_builtin_profiles(cls) -> HardwareAbstractionLayer:
@@ -576,12 +600,57 @@ class HardwareAbstractionLayer:
             raise ValueError(f"backend already registered: {backend.backend_id}")
         self._backends[backend.backend_id] = backend
 
+    def assess_operator_policy(
+        self,
+        backend_id: str,
+        workload: QuantumWorkload,
+        request: OperatorRequest,
+        *,
+        estimate: PricingEstimate | None = None,
+        now: str | None = None,
+    ) -> OperatorPolicyDecision:
+        """Inspect configured plan admission without invoking an adapter.
+
+        Parameters
+        ----------
+        backend_id, workload
+            Exact original route and request to be assessed.
+        request
+            Immutable operational plan bound to the original workload.
+        estimate
+            Dated supplied price for this complete plan, or unknown.
+        now
+            Explicit UTC seconds for offline inspection; submit never accepts this clock.
+
+        Returns
+        -------
+        OperatorPolicyDecision
+            Source-owned verdict with unchanged values and explicit refusals.
+
+        Raises
+        ------
+        PermissionError
+            If no trusted operator policy is configured.
+        ValueError
+            If original HAL workload admission fails.
+
+        """
+        profile = self.profile(backend_id)
+        _validate_workload_for_profile(profile, workload)
+        if self._operator_policy is None:
+            raise PermissionError("operator policy is not configured")
+        return assess_plan(
+            profile, workload, request, self._operator_policy, estimate=estimate, now=now
+        )
+
     def submit(
         self,
         backend_id: str,
         workload: QuantumWorkload,
         *,
         approval_id: str | None = None,
+        operator_request: OperatorRequest | None = None,
+        pricing_estimate: PricingEstimate | None = None,
     ) -> QuantumJobRef:
         """Submit a workload and verify the returned route and workload identity.
 
@@ -593,6 +662,12 @@ class HardwareAbstractionLayer:
             Validated programme and requested resources.
         approval_id
             Explicit approval required by cloud profiles.
+        operator_request
+            Exact declared plan required by a configured operator policy.
+            Historical verdicts and imported decisions cannot authorise this call.
+        pricing_estimate
+            Dated complete-plan price input. Unknown or stale price refuses
+            configured cost admission before adapter transport.
 
         Returns
         -------
@@ -614,6 +689,16 @@ class HardwareAbstractionLayer:
         """
         profile = self.profile(backend_id)
         _validate_workload_for_profile(profile, workload)
+        if self._operator_policy is not None:
+            if operator_request is None:
+                raise PermissionError("operator policy requires an exact request")
+            decision = self.assess_operator_policy(
+                backend_id, workload, operator_request, estimate=pricing_estimate
+            )
+            if not decision.allowed:
+                raise OperatorPolicyRefused(decision)
+        elif operator_request is not None or pricing_estimate is not None:
+            raise PermissionError("operator policy is not configured")
         backend = self._backends.get(backend_id)
         if backend is None:
             raise PermissionError(f"backend is not registered: {backend_id}")

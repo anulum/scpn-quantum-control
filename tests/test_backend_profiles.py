@@ -282,6 +282,24 @@ def test_profile_count_and_encoded_byte_ceilings_refuse_whole_envelope() -> None
         build_backend_profiles(observed_at=DAY, catalogue=selected, snapshots=snapshots)
 
 
+def test_native_shot_capacity_cannot_disappear_from_the_original_dated_contract() -> None:
+    """An unrepresentable native limit refuses rather than rewriting the frozen v1 wire."""
+    profile = next(p for p in built_in_backend_profiles() if p.backend_id == "iqm_cloud")
+    limited = replace(profile, capabilities=replace(profile.capabilities, max_shots=4096))
+    rows = tuple(
+        row
+        for row in build_provider_route_catalogue(observed_at=DAY)
+        if row.route_id == "direct/iqm"
+    )
+    with pytest.raises(ValueError, match="cannot represent declared max_shots"):
+        build_backend_profiles(observed_at=DAY, profiles=(limited,), catalogue=rows)
+    assert limited.capabilities.max_shots == 4096
+    expected = json.loads(
+        (Path(__file__).resolve().parents[1] / "data/studio/backend_profiles.json").read_text()
+    )
+    assert build_backend_profiles(observed_at=DAY) == expected
+
+
 def test_original_offline_export_cli_is_reproducible_and_checks_custody(
     tmp_path: Path,
 ) -> None:

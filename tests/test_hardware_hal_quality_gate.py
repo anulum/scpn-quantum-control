@@ -156,6 +156,8 @@ def test_native_owner_enrollment_matches_each_existing_ci_command() -> None:
         "hal_dwave",
         "hal_pasqal",
         "hal_quera_bloqade",
+        "operator_policy",
+        "operator_policy_contracts",
     ]
     for name in sources:
         source = f"src/scpn_quantum_control/hardware/{name}.py"

@@ -10,6 +10,8 @@
 from __future__ import annotations
 
 from os import devnull
+from pathlib import Path
+from tempfile import gettempdir
 
 Gate = tuple[str, list[str]]
 STUDIO_EXECUTIVE_PRODUCT_QUALITY_RATCHET = [
@@ -284,6 +286,110 @@ def build_backend_profiles_quality_gates(python: str) -> list[Gate]:
     ]
 
 
+def build_operator_policy_quality_gates(python: str) -> list[Gate]:
+    """Build full native policy provenance gates within the existing Studio job.
+
+    Parameters
+    ----------
+    python
+        Existing locked interpreter; caller-configured temporary storage owns output.
+
+    Returns
+    -------
+    list
+        Native strict types, complete documentation and exact statement/branch gates.
+        Browser runtime coverage is produced by the shared real-browser journey.
+
+    """
+    production = [
+        "src/scpn_quantum_control/hardware/operator_policy_contracts.py",
+        "src/scpn_quantum_control/hardware/operator_policy.py",
+        "src/scpn_quantum_control/studio_workspace/operator_policy.py",
+        "tools/export_operator_policy_decisions.py",
+    ]
+    tests = [
+        "tests/test_operator_policy_contracts.py",
+        "tests/test_operator_policy_decisions.py",
+        "tests/test_workspace_operator_policy.py",
+        "tests/test_export_operator_policy_decisions.py",
+    ]
+    owners = [
+        *production,
+        *tests,
+        "tools/studio_operator_policy_browser.py",
+        "tools/tests/test_studio_operator_policy_browser.py",
+        "tools/studio_executive_product_quality_gates.py",
+        "tests/test_studio_executive_product_quality_gate.py",
+    ]
+    data_file = str(Path(gettempdir()) / "scpn-qc-studio-operator-policy.coverage")
+    include = ",".join(
+        "*/" + path.removeprefix("src/scpn_quantum_control/") for path in production
+    )
+    return [
+        (
+            "studio-operator-policy-strict",
+            [
+                python,
+                "-m",
+                "mypy",
+                "--strict",
+                "--explicit-package-bases",
+                *owners,
+            ],
+        ),
+        (
+            "studio-operator-policy-native-docs",
+            [
+                python,
+                "-m",
+                "ruff",
+                "check",
+                "--isolated",
+                "--preview",
+                "--select",
+                "D,D413,D417,D420",
+                "--config",
+                "lint.explicit-preview-rules = true",
+                "--config",
+                'lint.pydocstyle.convention = "numpy"',
+                *owners,
+            ],
+        ),
+        (
+            "studio-operator-policy-native-coverage",
+            [
+                python,
+                "-m",
+                "coverage",
+                "run",
+                f"--rcfile={devnull}",
+                f"--data-file={data_file}",
+                "--branch",
+                f"--include={include}",
+                "-m",
+                "pytest",
+                "-q",
+                *tests,
+            ],
+        ),
+        (
+            "studio-operator-policy-native-exact",
+            [
+                python,
+                "-m",
+                "coverage",
+                "report",
+                f"--rcfile={devnull}",
+                f"--data-file={data_file}",
+                "--precision=2",
+                "--show-missing",
+                "--fail-under=100",
+                f"--include={include}",
+            ],
+        ),
+    ]
+
+
 __all__ = [
     "STUDIO_EXECUTIVE_PRODUCT_COVERAGE_COHORT",
     "STUDIO_EXECUTIVE_PRODUCT_COVERAGE_DATA_FILE",
@@ -292,4 +398,5 @@ __all__ = [
     "build_static_quality_gates",
     "build_program_authoring_quality_gates",
     "build_backend_profiles_quality_gates",
+    "build_operator_policy_quality_gates",
 ]

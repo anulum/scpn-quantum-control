@@ -563,6 +563,10 @@ jobs:
           tests/test_hardware_hal_provider_certification.py
           tools/hardware_hal_quality_gates.py
           tests/test_hardware_hal_quality_gate.py
+          tests/test_operator_policy_contracts.py
+          tests/test_operator_policy_decisions.py
+          src/scpn_quantum_control/hardware/operator_policy_contracts.py
+          src/scpn_quantum_control/hardware/operator_policy.py
           src/scpn_quantum_control/hardware/_count_integrity.py
           src/scpn_quantum_control/hardware/provider_semantics.py
           src/scpn_quantum_control/hardware/provider_measurement.py
@@ -632,6 +636,10 @@ jobs:
           tests/test_hardware_hal_provider_certification.py
           tools/hardware_hal_quality_gates.py
           tests/test_hardware_hal_quality_gate.py
+          tests/test_operator_policy_contracts.py
+          tests/test_operator_policy_decisions.py
+          src/scpn_quantum_control/hardware/operator_policy_contracts.py
+          src/scpn_quantum_control/hardware/operator_policy.py
           src/scpn_quantum_control/hardware/_count_integrity.py
           src/scpn_quantum_control/hardware/provider_semantics.py
           src/scpn_quantum_control/hardware/provider_measurement.py
@@ -666,9 +674,9 @@ jobs:
           coverage
           run
           --rcfile=/dev/null
-          --data-file="${TMPDIR}/scpn-qc-hardware-hal-quality.coverage"
+          "--data-file=${TMPDIR}/scpn-qc-hardware-hal-quality.coverage"
           --branch
-          --source=scpn_quantum_control.hardware.hal,scpn_quantum_control.hardware.async_runner,scpn_quantum_control.hardware.circuit_cutting,scpn_quantum_control.hardware.circuit_export,scpn_quantum_control.hardware.fast_classical,scpn_quantum_control.hardware.iqm_backend,scpn_quantum_control.hardware.aggregators,scpn_quantum_control.hardware.provider_capability_core,scpn_quantum_control.hardware.provider_submission_gate,scpn_quantum_control.hardware.provider_route_configuration,scpn_quantum_control.hardware.provider_capability_cloud_adapters,scpn_quantum_control.hardware.provider_capability_gate_adapters,scpn_quantum_control.hardware.provider_capability_specialized_adapters,scpn_quantum_control.hardware.provider_certification,scpn_quantum_control.hardware._count_integrity,scpn_quantum_control.hardware.provider_semantics,scpn_quantum_control.hardware.provider_measurement,scpn_quantum_control.hardware.provider_modalities,scpn_quantum_control.hardware.hal_qiskit,scpn_quantum_control.hardware.hal_braket,scpn_quantum_control.hardware.hal_iqm,scpn_quantum_control.hardware.hal_quandela,scpn_quantum_control.hardware.hal_dwave,scpn_quantum_control.hardware.hal_pasqal,scpn_quantum_control.hardware.hal_quera_bloqade,tools.hardware_hal_quality_gates
+          --source=scpn_quantum_control.hardware.hal,scpn_quantum_control.hardware.async_runner,scpn_quantum_control.hardware.circuit_cutting,scpn_quantum_control.hardware.circuit_export,scpn_quantum_control.hardware.fast_classical,scpn_quantum_control.hardware.iqm_backend,scpn_quantum_control.hardware.aggregators,scpn_quantum_control.hardware.provider_capability_core,scpn_quantum_control.hardware.provider_submission_gate,scpn_quantum_control.hardware.provider_route_configuration,scpn_quantum_control.hardware.provider_capability_cloud_adapters,scpn_quantum_control.hardware.provider_capability_gate_adapters,scpn_quantum_control.hardware.provider_capability_specialized_adapters,scpn_quantum_control.hardware.provider_certification,scpn_quantum_control.hardware.operator_policy_contracts,scpn_quantum_control.hardware.operator_policy,scpn_quantum_control.hardware._count_integrity,scpn_quantum_control.hardware.provider_semantics,scpn_quantum_control.hardware.provider_measurement,scpn_quantum_control.hardware.provider_modalities,scpn_quantum_control.hardware.hal_qiskit,scpn_quantum_control.hardware.hal_braket,scpn_quantum_control.hardware.hal_iqm,scpn_quantum_control.hardware.hal_quandela,scpn_quantum_control.hardware.hal_dwave,scpn_quantum_control.hardware.hal_pasqal,scpn_quantum_control.hardware.hal_quera_bloqade,tools.hardware_hal_quality_gates
           -m
           pytest
           -q
@@ -707,6 +715,8 @@ jobs:
           tests/test_hardware_hal_quera_bloqade_adapters.py
           tests/test_hal_semantic_binding.py
           tests/test_hardware_hal_quality_gate.py
+          tests/test_operator_policy_contracts.py
+          tests/test_operator_policy_decisions.py
       - name: Verify hardware HAL coverage owner enrollment
         env:
           TMPDIR: ${{ runner.temp }}
@@ -724,8 +734,8 @@ jobs:
           coverage
           report
           --rcfile=/dev/null
-          --data-file="${TMPDIR}/scpn-qc-hardware-hal-quality.coverage"
+          "--data-file=${TMPDIR}/scpn-qc-hardware-hal-quality.coverage"
           --show-missing
           --precision=2
           --fail-under=100
-          '--include=*/hardware/hal.py,*/hardware/async_runner.py,*/hardware/circuit_cutting.py,*/hardware/circuit_export.py,*/hardware/fast_classical.py,*/hardware/iqm_backend.py,*/hardware/aggregators.py,*/hardware/provider_capability_core.py,*/hardware/provider_submission_gate.py,*/hardware/provider_route_configuration.py,*/hardware/provider_capability_cloud_adapters.py,*/hardware/provider_capability_gate_adapters.py,*/hardware/provider_capability_specialized_adapters.py,*/hardware/provider_certification.py,*/hardware/_count_integrity.py,*/hardware/provider_semantics.py,*/hardware/provider_measurement.py,*/hardware/provider_modalities.py,*/hardware/hal_qiskit.py,*/hardware/hal_braket.py,*/hardware/hal_iqm.py,*/hardware/hal_quandela.py,*/hardware/hal_dwave.py,*/hardware/hal_pasqal.py,*/hardware/hal_quera_bloqade.py,*/tools/hardware_hal_quality_gates.py'
+          '--include=*/hardware/hal.py,*/hardware/async_runner.py,*/hardware/circuit_cutting.py,*/hardware/circuit_export.py,*/hardware/fast_classical.py,*/hardware/iqm_backend.py,*/hardware/aggregators.py,*/hardware/provider_capability_core.py,*/hardware/provider_submission_gate.py,*/hardware/provider_route_configuration.py,*/hardware/provider_capability_cloud_adapters.py,*/hardware/provider_capability_gate_adapters.py,*/hardware/provider_capability_specialized_adapters.py,*/hardware/provider_certification.py,*/hardware/operator_policy_contracts.py,*/hardware/operator_policy.py,*/hardware/_count_integrity.py,*/hardware/provider_semantics.py,*/hardware/provider_measurement.py,*/hardware/provider_modalities.py,*/hardware/hal_qiskit.py,*/hardware/hal_braket.py,*/hardware/hal_iqm.py,*/hardware/hal_quandela.py,*/hardware/hal_dwave.py,*/hardware/hal_pasqal.py,*/hardware/hal_quera_bloqade.py,*/tools/hardware_hal_quality_gates.py'

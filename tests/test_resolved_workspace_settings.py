@@ -259,3 +259,140 @@ def test_shared_inspector_fixture_matches_real_source_owned_resolution() -> None
     )
     assert resolved.to_dict() == document.to_dict()
     assert resolved.digest == document.digest
+
+
+@pytest.mark.parametrize("field,ceiling", [("concurrency", 2), ("time_limit_ms", 60000)])
+def test_operator_limits_require_explicit_capacity(field: str, ceiling: int) -> None:
+    """Each operational ceiling admits equality and refuses excess or absent capacity."""
+    restrictions = SettingsPolicy(REF, {field: ceiling}, {})
+    admitted = resolve_settings(
+        {}, {}, {}, {field: ceiling}, policy=restrictions, environment_ref=ENV, profile=PROFILE
+    )
+    assert admitted.body["requested"] == admitted.body["effective"] == {field: ceiling}
+    for forbidden, caps in ((ceiling + 1, {field: ceiling}), (1, {})):
+        with pytest.raises(SettingsRefused, match="capacity"):
+            resolve_settings(
+                {},
+                {},
+                {},
+                {field: forbidden},
+                policy=SettingsPolicy(REF, caps, {}),
+                environment_ref=ENV,
+                profile=PROFILE,
+            )
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("concurrency", True),
+        ("concurrency", 0),
+        ("time_limit_ms", 1.5),
+        ("time_limit_ms", -1),
+        ("unattended", 1),
+        ("unattended", "false"),
+        ("region", ""),
+    ],
+)
+def test_operator_settings_reject_ambiguous_types(field: str, value: object) -> None:
+    """Operational settings cannot silently coerce strings, booleans or fractional limits."""
+    with pytest.raises(SettingsRefused):
+        resolve_settings(
+            {},
+            {},
+            {},
+            {field: value},
+            policy=SettingsPolicy(REF, {"concurrency": 2, "time_limit_ms": 60000}, {}),
+            environment_ref=ENV,
+            profile=PROFILE,
+        )
+
+
+def test_operator_settings_preserve_winning_origins_and_semantic_identity() -> None:
+    """Four authored layers retain exact origins and bind operational changes to the plan."""
+    restrictions = SettingsPolicy(REF, {"concurrency": 4, "time_limit_ms": 60000}, {})
+    resolved = resolve_settings(
+        {"concurrency": 1, "region": None},
+        {"concurrency": 2},
+        {"time_limit_ms": 60000, "unattended": False},
+        {"concurrency": 4},
+        policy=restrictions,
+        environment_ref=ENV,
+        profile=PROFILE,
+    )
+    assert resolved.body["effective"] == {
+        "concurrency": 4,
+        "region": None,
+        "time_limit_ms": 60000,
+        "unattended": False,
+    }
+    assert resolved.body["origins"] == {
+        "concurrency": "run",
+        "region": "defaults",
+        "time_limit_ms": "experiment",
+        "unattended": "experiment",
+    }
+    changed = resolve_settings(
+        {},
+        {},
+        {},
+        {
+            "concurrency": 4,
+            "region": None,
+            "time_limit_ms": 60000,
+            "unattended": True,
+        },
+        policy=restrictions,
+        environment_ref=ENV,
+        profile=PROFILE,
+    )
+    assert settings_plan_digest(changed) != settings_plan_digest(resolved)
+    with pytest.raises(SettingsRefused, match="capacity"):
+        resolve_settings(
+            {"concurrency": 5},
+            {},
+            {},
+            {"concurrency": 1},
+            policy=restrictions,
+            environment_ref=ENV,
+            profile=PROFILE,
+        )
+    with pytest.raises(SettingsRefused, match="Region"):
+        resolve_settings(
+            {},
+            {},
+            {},
+            {"region": "eu-north1"},
+            policy=restrictions,
+            environment_ref=ENV,
+            profile=PROFILE,
+        )
+
+
+def test_cloud_region_policy_is_literal_and_never_replaced() -> None:
+    """A governing cloud region and policy choices are checked before layer precedence."""
+    from dataclasses import replace
+
+    cloud = replace(PROFILE, is_cloud=True, region="eu-north1", submit_requires_approval=True)
+    restrictions = SettingsPolicy(REF, {}, {"region": ("eu-north1",)})
+    resolved = resolve_settings(
+        {},
+        {},
+        {},
+        {"region": "eu-north1", "unattended": True},
+        policy=restrictions,
+        environment_ref=ENV,
+        profile=cloud,
+    )
+    assert resolved.body["effective"] == {"region": "eu-north1", "unattended": True}
+    for forbidden in ("us-east1", None):
+        with pytest.raises(SettingsRefused):
+            resolve_settings(
+                {"region": forbidden},
+                {},
+                {},
+                {"region": "eu-north1"},
+                policy=restrictions,
+                environment_ref=ENV,
+                profile=cloud,
+            )

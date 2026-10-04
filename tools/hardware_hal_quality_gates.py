@@ -116,6 +116,16 @@ PROVIDER_SEMANTICS_TESTS = [
     "tests/test_hal_semantic_binding.py",
 ]
 """Direct native owner tests, public SDK boundaries and retained metadata-only compatibility."""
+OPERATOR_POLICY_SOURCES = [
+    "src/scpn_quantum_control/hardware/operator_policy_contracts.py",
+    "src/scpn_quantum_control/hardware/operator_policy.py",
+]
+"""Immutable operator inputs and exact fresh pre-transport admission."""
+OPERATOR_POLICY_TESTS = [
+    "tests/test_operator_policy_contracts.py",
+    "tests/test_operator_policy_decisions.py",
+]
+"""Literal ceilings, dated prices, workload bindings and actual HAL dispatch refusals."""
 HARDWARE_HAL_COVERAGE_COHORT = list(
     dict.fromkeys(
         [
@@ -139,6 +149,7 @@ HARDWARE_HAL_COVERAGE_COHORT = list(
             PROVIDER_CERTIFICATION_TEST,
             *PROVIDER_SEMANTICS_TESTS,
             "tests/test_hardware_hal_quality_gate.py",
+            *OPERATOR_POLICY_TESTS,
         ]
     )
 )
@@ -175,6 +186,8 @@ HARDWARE_HAL_TYPING_RATCHET = list(
             PROVIDER_CERTIFICATION_TEST,
             "tools/hardware_hal_quality_gates.py",
             "tests/test_hardware_hal_quality_gate.py",
+            *OPERATOR_POLICY_TESTS,
+            *OPERATOR_POLICY_SOURCES,
             *PROVIDER_SEMANTICS_SOURCES,
             *PROVIDER_SEMANTICS_TESTS,
         ]
@@ -214,6 +227,8 @@ HARDWARE_HAL_DOCSTRING_RATCHET = list(
             PROVIDER_CERTIFICATION_TEST,
             "tools/hardware_hal_quality_gates.py",
             "tests/test_hardware_hal_quality_gate.py",
+            *OPERATOR_POLICY_TESTS,
+            *OPERATOR_POLICY_SOURCES,
             *PROVIDER_SEMANTICS_SOURCES,
             *PROVIDER_SEMANTICS_TESTS,
         ]
@@ -237,6 +252,7 @@ HARDWARE_HAL_COVERAGE_SOURCES = [
     PROVIDER_CAPABILITY_GATE_ADAPTERS_SOURCE,
     PROVIDER_CAPABILITY_SPECIALIZED_ADAPTERS_SOURCE,
     PROVIDER_CERTIFICATION_SOURCE,
+    *OPERATOR_POLICY_SOURCES,
     *PROVIDER_SEMANTICS_SOURCES,
     "tools/hardware_hal_quality_gates.py",
 ]

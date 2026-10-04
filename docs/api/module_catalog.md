@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **774 modules** across **41 package families**
-- **4206 documented public module-level symbols**
+- **777 modules** across **41 package families**
+- **4216 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -3265,6 +3265,24 @@ OpenPulse schedule construction and calibration workflow primitives.
 
 **Functions:** `compile_hypergeometric_openpulse_schedule()`, `build_rabi_amplitude_calibration_workflow()`, `estimate_rabi_pi_amplitude()`, `schedule_to_qiskit_pulse()`
 
+### `scpn_quantum_control.hardware.operator_policy`
+
+Admit declared operator plans against exact workloads before transport.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/operator_policy.py) · Public symbols: **2**
+
+**Functions:** `workload_fingerprint()`, `assess_operator_policy()`
+
+### `scpn_quantum_control.hardware.operator_policy_contracts`
+
+Bound operator policy and dated estimates without loading a provider SDK.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/operator_policy_contracts.py) · Public symbols: **6**
+
+**Classes:** `OperatorPolicy`, `OperatorRequest`, `PricingEstimate`, `OperatorPolicyDecision`, `OperatorPolicyRefused`
+
+**Functions:** `utc_second()`
+
 ### `scpn_quantum_control.hardware.pennylane_adapter`
 
 PennyLane backend adapter for cross-platform quantum execution.
@@ -5484,6 +5502,14 @@ Read and write bounded JSON without losing numeric token identity.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio_workspace/json_transport.py) · Public symbols: **2**
 
 **Functions:** `read_json()`, `write_json()`
+
+### `scpn_quantum_control.studio_workspace.operator_policy`
+
+Bind original resolved settings to the core's no-submit policy boundary.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio_workspace/operator_policy.py) · Public symbols: **2**
+
+**Functions:** `operator_request_from_settings()`, `assess_workspace_operator_policy()`
 
 ### `scpn_quantum_control.studio_workspace.settings`
 

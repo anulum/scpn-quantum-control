@@ -186,6 +186,12 @@ meaning. Dates and supplied observations do not certify current availability,
 calibration freshness or authentication. Open declared profiles performs no
 provider refresh and reads no credential values.
 
+The original dated profile format cannot represent a configured native HAL
+`max_shots` declaration. The producer refuses such a declaration rather than
+dropping its limit; ordinary built-in profiles with no declared shot ceiling
+retain their exact existing export. Operator admission uses the native HAL
+capacity checks independently of the dated profile export.
+
 Inspect profiles admits `studio.backend-profiles.v1` JSON with exact row and
 envelope SHA-256 identities. Counts retain unsigned 64-bit precision. The input
 ceiling is 1 MiB of UTF-8 and 256 distinct routes; these are contract limits,
@@ -439,6 +445,53 @@ stopping that preview. This verifies local instruments, not deployed availabilit
 or scientific qualification.
 
 
+## Operator policy decisions
+
+Open **Devices & Operations**, then **Open policy example**. The inspector
+displays the native core's dated decision, all requested and effective values,
+winning origins, original policy/environment identities, rejected substitutions
+and refusal reasons. It reads a `studio.operator-policy-decision.v1` source
+export. A passing historical decision grants no execution authority: HAL checks
+the current policy and estimate again at submission time.
+
+The inspector exposes shot, declared concurrency, declared time-limit and cost
+ceilings, exact backend/target/region bindings and policy validity dates. Price
+amounts use decimal strings in the policy currency. An unknown amount stays
+unknown and refuses a configured cost ceiling. The estimate retains its source,
+observation time, expiry and complete-request SHA-256; it does not claim actual
+charges or the account balance. Concurrency and time limits bound the declared
+plan; they do not measure elapsed execution or enforce an account-wide quota.
+
+Import preserves the previously admitted record when validation fails. Export
+downloads the exact admitted source text, including integers above JavaScript's
+safe-number range. Inspection and export make no provider calls or workspace
+storage writes. The committed example uses synthetic conformance inputs.
+
+Generate or check that offline example without submitting anything:
+
+```bash
+python tools/export_operator_policy_decisions.py --case unknown_price --output /path/to/new-decision.json
+python tools/export_operator_policy_decisions.py --check --output data/studio/operator_policy_decisions.json
+```
+
+The output directory must already exist; generation refuses to overwrite a
+file. For real source inputs, use `operator_request_from_settings` and
+`assess_workspace_operator_policy` from `scpn_quantum_control.studio.workspace`.
+The bridge preserves the original `ResolvedSettings` record and requires an
+explicit backend, device, region, shots, concurrency, time limit and unattended
+flag. The settings policy reference must bind the exact configured operator
+policy using schema `operator_policy.v1` and its typed canonical body digest.
+Imported settings cannot install that policy or substitute a source workload.
+
+The shared browser runner's `operator_policy_decisions` scenario exercises
+eight native verdicts through the actual inspector, exact export, malformed
+import retention, network/storage observations and the original WASM recompute:
+
+```bash
+python tools/studio_browser_journey.py --scenario operator_policy_decisions \
+  --base-url http://127.0.0.1:4173/ --output /path/to/policy-journey.json
+```
+
 ## Settings and policy provenance
 
 The workspace inspector shows the original requested and effective values,
@@ -453,10 +506,15 @@ Use `scpn_quantum_control.studio.workspace.resolve_settings` to resolve trusted
 defaults, project, experiment and run layers, in that order. Supply an immutable
 `SettingsPolicy`, the current environment reference and an existing HAL profile.
 Every layer is validated, including a forbidden value later overwritten by a
-valid run value. Shot, memory and qubit requests must have an explicit policy
+valid run value. Shot, memory, qubit, concurrency and time-limit requests must have an explicit policy
 ceiling; a request above the ceiling refuses and identifies its policy. Device
 choices and the declared HAL route cannot be replaced by an imported request.
 Resolution reads declarations and never submits a provider job.
+
+`unattended` requires a literal boolean. `region` must match the governing HAL
+profile; explicit `None` represents a non-geographic local route or an unknown
+cloud region. A cloud operator decision refuses an unknown region. These
+operational fields also contribute to `settings_plan_digest`.
 
 `settings_plan_digest` identifies the settings contribution to a numerical
 plan. Changes to precision, seed, shots, numeric parameters or units change this

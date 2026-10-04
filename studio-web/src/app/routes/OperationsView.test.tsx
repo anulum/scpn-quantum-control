@@ -14,5 +14,8 @@ it("the real operator view exposes source-owned profiles without a submission ac
  expect(screen.getByRole("heading",{name:"Devices & Operations"})).toBeTruthy();
  fireEvent.click(screen.getByRole("button",{name:"Open declared profiles"}));
  await screen.findByLabelText("Backend profile");
+ fireEvent.click(screen.getByRole("button",{name:"Open policy example"}));
+ expect((await screen.findByLabelText("Core policy verdict")).textContent).toBe("refused plan");
+ expect(screen.getByRole("table",{name:"Operator requested and effective settings"}).textContent).toContain("9007199254740993");
  expect(screen.queryByRole("button",{name:/submit/i})).toBeNull();
 });
