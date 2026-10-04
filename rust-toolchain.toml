@@ -6,23 +6,26 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Rust toolchain contract
 
-# The channel is `stable` because that is what both sides already resolve to:
-# the Ubuntu runners ship a recent stable rustc and cargo, and no workflow
-# installs a toolchain. Naming it here does not change which compiler is used;
-# it states the requirement so a workstation and a runner provision the same
-# one instead of agreeing by accident.
+# The channel is an exact release. With the floating `stable` channel every
+# job that ran cargo first updated the runner's preinstalled toolchain in
+# place, and that update failed intermittently on the hosted image with a
+# component conflict, in a different job from run to run. An exact release
+# is installed by rustup as a toolchain of its own, next to whatever the
+# runner ships, so nothing is updated in place, and a workstation and a
+# runner compile, lint and format with the same compiler.
 #
-# A pinned *version* is deliberately not set. The build tooling records the
-# resolved `rustc` into release manifests, so a version pin is an evidence
-# decision, not a convenience — it belongs to the owner and cannot be validated
-# from here without a CI run. `tools/audit_local_environment_parity.py` reports
-# the resolved version so a bump is visible rather than silent.
+# The pinned release is the one the hosted lint and format job last passed
+# with. The build tooling records the resolved `rustc` into release
+# manifests, so changing this line changes that evidence: bump it in a
+# change of its own, with a hosted run on the new release.
+# `tools/audit_local_environment_parity.py` reports what a workstation has
+# installed.
 #
 # The components and target are the ones the repository actually invokes:
 # `cargo fmt` and `cargo clippy` in the static-analysis gates, and the wasm
 # target for the Studio kernels, which `ci-studio.yml` and
 # `studio-remote-release.yml` currently add by hand.
 [toolchain]
-channel = "stable"
+channel = "1.99.0"
 components = ["rustfmt", "clippy"]
 targets = ["wasm32-unknown-unknown"]
