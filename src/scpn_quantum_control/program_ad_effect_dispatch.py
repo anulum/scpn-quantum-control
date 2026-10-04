@@ -77,6 +77,7 @@ _PURE = (
             "expand_dims",
             "expm1",
             "extract",
+            "eye",
             "flip",
             "fliplr",
             "flipud",

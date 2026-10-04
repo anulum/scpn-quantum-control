@@ -10,7 +10,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import cast
+from typing import Any, cast
 
 import numpy as np
 import pytest
@@ -95,3 +95,32 @@ def test_frozen_unary_identity_preserves_nonlinear_derivative_and_replay() -> No
     assert result.value == pytest.approx(float(np.sin(0.5)), abs=1e-14)
     np.testing.assert_allclose(result.gradient, [np.cos(0.5)], rtol=1e-14)
     np.testing.assert_allclose(program_adjoint_replay_gradient(result), [np.cos(0.5)], rtol=1e-14)
+
+
+@pytest.mark.parametrize("angle", [0.3, -0.6])
+def test_frozen_identity_allocator_is_admitted_with_exact_value_and_derivative(
+    angle: float,
+) -> None:
+    """A constant identity matrix enters an objective as a passive operand.
+
+    The objective is the leading entry of ``I - v v^T`` for the unit vector
+    ``v = (sin t, 0, cos t)``; its value is ``cos(t)**2`` and its derivative
+    ``-sin(2 t)``.
+
+    Parameters
+    ----------
+    angle
+        Angle ``t`` at which the value and the gradient are compared.
+
+    """
+
+    def objective(values: Any) -> object:
+        theta = values[0]
+        direction = np.stack((np.sin(theta), theta * 0.0, np.cos(theta)))
+        return (np.eye(3) - np.outer(direction, direction))[0, 0]
+
+    baseline = active_reserved_bytes()
+    result = whole_program_value_and_grad(objective, [angle], trace=False)
+    assert result.value == pytest.approx(np.cos(angle) ** 2, abs=1e-14)
+    np.testing.assert_allclose(result.gradient, [-np.sin(2.0 * angle)], rtol=0.0, atol=1e-14)
+    assert active_reserved_bytes() == baseline
