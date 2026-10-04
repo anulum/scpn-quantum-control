@@ -37,6 +37,8 @@ KURAMOTO_CORE_COVERAGE_COHORT = [
     "tests/test_kuramoto_core.py",
     "tests/test_kuramoto_core_branches.py",
     "tests/test_kuramoto_input_hardening.py",
+    "tests/test_scientific_design.py",
+    "tests/test_kuramoto_model_conventions.py",
     "tests/test_kuramoto_variants.py",
     "tests/test_analog_kuramoto.py",
     "tests/test_analog_execution_units.py",
