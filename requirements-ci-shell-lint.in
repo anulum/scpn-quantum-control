@@ -5,5 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — requirements-ci-shell-lint
-# CI-only shell script linter; the wheel carries the ShellCheck binary.
+# Shell script linter and formatter; each wheel carries its binary. The same
+# file provisions the project environment and the CI job.
 shellcheck-py==0.11.0.1
+shfmt-py==4.2.0

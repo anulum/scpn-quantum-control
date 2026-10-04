@@ -5,12 +5,13 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — shell script lint gate
-"""Fail when a tracked shell script has a ShellCheck finding.
+"""Fail when a tracked shell script has a ShellCheck finding or is not formatted.
 
 The repository's lint gates read Python, Rust, Julia and TypeScript. Shell
 scripts provision runners, drive hardware campaigns and guard pushes, and no
 gate read them. This gate lists every tracked shell script, runs ShellCheck
-over all of them and fails on any finding, down to style level.
+over all of them and fails on any finding, down to style level, and fails on
+any script that the ``shfmt`` formatter would change.
 
 A tracked file is a shell script when its suffix is ``.sh`` or ``.bash``, or
 when it has no suffix and its first line names ``sh``, ``bash``, ``dash`` or
@@ -23,13 +24,20 @@ one instead of reporting a result that the pinned release might not give.
 The gate uses the ShellCheck installed next to the running interpreter, which
 is where that requirement file puts it, and falls back to the one on ``PATH``.
 
-The gate reports what ShellCheck reports. It does not format scripts and it
-does not run them.
+The formatter is pinned in the same file as the ``shfmt-py`` distribution, whose
+version differs from the version of the binary it carries. The gate therefore
+checks that the distribution installed beside the running interpreter is the
+pinned one and uses that binary. The layout follows the repository's editor
+configuration, which the formatter reads by itself.
+
+The gate reports what the two tools report. It does not rewrite scripts and
+it does not run them.
 """
 
 from __future__ import annotations
 
 import argparse
+import importlib.metadata
 import json
 import re
 import subprocess
@@ -39,8 +47,8 @@ from pathlib import Path, PurePosixPath
 
 PIN_FILE = Path("requirements-ci-shell-lint.txt")
 DISTRIBUTION = "shellcheck-py"
+FORMATTER_DISTRIBUTION = "shfmt-py"
 SHELL_SUFFIXES = frozenset({".sh", ".bash"})
-_PIN = re.compile(rf"^{re.escape(DISTRIBUTION)}==(\d+\.\d+\.\d+)(?:\.\d+)*\b", re.MULTILINE)
 _VERSION = re.compile(r"^version: (\d+\.\d+\.\d+)$", re.MULTILINE)
 _INTERPRETER = re.compile(rb"^#![^\n]*?(?:/|\s)(?:ba|da|k)?sh(?:\s|$)")
 
@@ -81,13 +89,40 @@ def environment_executable(interpreter: Path) -> str:
     return str(candidate) if candidate.is_file() else "shellcheck"
 
 
-def pinned_release(repo: Path) -> str:
-    """Return the ShellCheck release the repository pins.
+def pinned_version(repo: Path, distribution: str) -> str:
+    """Return the version a distribution is pinned to in the linter lock.
 
     Parameters
     ----------
     repo
         Repository root.
+    distribution
+        Distribution name as written in the lock.
+
+    Returns
+    -------
+    str
+        The complete pinned version.
+
+    Raises
+    ------
+    ValueError
+        If the pin file is unreadable or has no pin for ``distribution``.
+
+    """
+    path = repo / PIN_FILE
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError as error:
+        raise ValueError(f"cannot read the linter pin: {error}") from error
+    match = re.search(rf"^{re.escape(distribution)}==([0-9][0-9A-Za-z.]*)", text, re.MULTILINE)
+    if match is None:
+        raise ValueError(f"{PIN_FILE} does not pin {distribution}")
+    return match.group(1)
+
+
+def pinned_release(repo: Path) -> str:
+    """Return the ShellCheck release the repository pins.
 
     Returns
     -------
@@ -101,15 +136,50 @@ def pinned_release(repo: Path) -> str:
         If the pin file is unreadable or has no such pin.
 
     """
-    path = repo / PIN_FILE
+    return ".".join(pinned_version(repo, DISTRIBUTION).split(".")[:3])
+
+
+def pinned_formatter(
+    repo: Path, interpreter: Path, distribution: str = FORMATTER_DISTRIBUTION
+) -> str:
+    """Return the pinned formatter that belongs to an interpreter's environment.
+
+    Parameters
+    ----------
+    repo
+        Repository root.
+    interpreter
+        Path of the Python executable whose environment is inspected. The
+        installed version is read from the environment of the running
+        interpreter, so this is the running interpreter in normal use.
+    distribution
+        Distribution that carries the formatter.
+
+    Returns
+    -------
+    str
+        Path of the ``shfmt`` file beside ``interpreter``.
+
+    Raises
+    ------
+    ValueError
+        If the distribution is not installed, is installed in another version
+        than the pinned one, or left no ``shfmt`` beside the interpreter.
+
+    """
+    pinned = pinned_version(repo, distribution)
     try:
-        text = path.read_text(encoding="utf-8")
-    except OSError as error:
-        raise ValueError(f"cannot read the linter pin: {error}") from error
-    match = _PIN.search(text)
-    if match is None:
-        raise ValueError(f"{PIN_FILE} does not pin {DISTRIBUTION}")
-    return match.group(1)
+        installed = importlib.metadata.version(distribution)
+    except importlib.metadata.PackageNotFoundError as error:
+        raise ValueError(f"{distribution} is not installed; install {PIN_FILE}") from error
+    if installed != pinned:
+        raise ValueError(
+            f"{distribution} {installed} is not the pinned {pinned}; install {PIN_FILE}"
+        )
+    candidate = interpreter.parent / "shfmt"
+    if not candidate.is_file():
+        raise ValueError(f"{distribution} left no shfmt beside {interpreter}")
+    return str(candidate)
 
 
 def installed_release(repo: Path, executable: str) -> str:
@@ -208,8 +278,45 @@ def lint(repo: Path, scripts: Sequence[str], executable: str) -> list[str]:
     ]
 
 
+def unformatted(repo: Path, scripts: Sequence[str], executable: str) -> list[str]:
+    """Return one message per script that the formatter would change.
+
+    Parameters
+    ----------
+    repo
+        Repository root; the paths in ``scripts`` are relative to it.
+    scripts
+        Shell scripts to read.
+    executable
+        ``shfmt`` executable.
+
+    Returns
+    -------
+    list[str]
+        Messages of the form ``path: not formatted; run shfmt -w path``; empty
+        when there is no script or every script is formatted.
+
+    Raises
+    ------
+    ValueError
+        If the formatter cannot parse or read a script. The formatter's exit
+        status is not used: it is non-zero both for an error and for a
+        script that merely needs formatting; only an error writes to the
+        error stream.
+
+    """
+    if not scripts:
+        return []
+    completed = _run(repo, [executable, "-l", "--", *scripts])
+    if completed.stderr.strip():
+        raise ValueError(f"{executable} failed: {' '.join(completed.stderr.split())}")
+    return [
+        f"{name}: not formatted; run shfmt -w {name}" for name in completed.stdout.splitlines()
+    ]
+
+
 def main(argv: Sequence[str] | None = None) -> int:
-    """Lint every tracked shell script with the pinned ShellCheck release.
+    """Lint and format-check every tracked shell script with the pinned tools.
 
     Parameters
     ----------
@@ -219,8 +326,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     Returns
     -------
     int
-        Zero when no script has a finding; one on a finding, on a release
-        other than the pinned one, or when the linter or Git cannot run.
+        Zero when no script has a finding and none needs formatting; one on
+        a finding, on a tool other than the pinned one, or when a tool or
+        Git cannot run.
 
     """
     parser = argparse.ArgumentParser(description=__doc__)
@@ -239,8 +347,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             raise ValueError(
                 f"ShellCheck {installed} is not the pinned release {pinned}; install {PIN_FILE}"
             )
+        formatter = pinned_formatter(repo, Path(sys.executable))
         scripts = shell_scripts(repo)
         findings = lint(repo, scripts, args.shellcheck)
+        findings += unformatted(repo, scripts, formatter)
     except ValueError as error:
         print(f"shell script lint failed: {error}", file=sys.stderr)
         return 1
@@ -248,6 +358,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(message, file=sys.stderr)
     print(
         f"Shell script lint: {len(scripts)} scripts; ShellCheck {installed}; "
+        f"{FORMATTER_DISTRIBUTION} {pinned_version(repo, FORMATTER_DISTRIBUTION)}; "
         f"{len(findings)} findings"
     )
     return int(bool(findings))

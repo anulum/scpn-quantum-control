@@ -22,7 +22,7 @@ echo ""
 echo "[1/6] Installing system packages..."
 sudo apt-get update -qq
 sudo apt-get install -y -qq python3.12 python3.12-venv python3.12-dev python3-pip \
-    build-essential pkg-config libhdf5-dev git curl > /dev/null 2>&1
+    build-essential pkg-config libhdf5-dev git curl >/dev/null 2>&1
 echo "  done."
 
 # ── 2. Create venv ──────────────────────────────────────────────────

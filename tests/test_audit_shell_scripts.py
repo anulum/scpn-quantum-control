@@ -5,10 +5,11 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Tests for the shell script lint gate
-"""Exercise the shell script lint gate with real Git and the real ShellCheck."""
+"""Exercise the shell script gate with real Git, ShellCheck and the formatter."""
 
 from __future__ import annotations
 
+import importlib.metadata
 import shutil
 import subprocess
 import sys
@@ -20,12 +21,19 @@ from tools import audit_shell_scripts as gate
 
 LINTER = gate.environment_executable(Path(sys.executable))
 
+try:
+    FORMATTER_VERSION: str | None = importlib.metadata.version(gate.FORMATTER_DISTRIBUTION)
+except importlib.metadata.PackageNotFoundError:
+    FORMATTER_VERSION = None
+
 pytestmark = pytest.mark.skipif(
-    shutil.which(LINTER) is None, reason="ShellCheck executable unavailable"
+    shutil.which(LINTER) is None or FORMATTER_VERSION is None,
+    reason="ShellCheck or the shfmt-py distribution unavailable",
 )
 
 CLEAN = "#!/bin/sh\nprintf '%s\\n' \"$1\"\n"
 UNQUOTED = "#!/bin/sh\necho $1\n"
+TWO_SPACES = "#!/bin/sh\nif true; then\n  echo ok\nfi\n"
 
 
 def _git(repository: Path, *arguments: str) -> str:
@@ -48,6 +56,14 @@ def _write(repository: Path, name: str, text: str) -> None:
     _git(repository, "add", "--", name)
 
 
+def _pins(linter: str, formatter: str | None = FORMATTER_VERSION) -> str:
+    """Return lock text that pins the linter release and the formatter version."""
+    lines = [f"{gate.DISTRIBUTION}=={linter}.1 \\\n    --hash=sha256:00\n"]
+    if formatter is not None:
+        lines.append(f"{gate.FORMATTER_DISTRIBUTION}=={formatter} \\\n    --hash=sha256:00\n")
+    return "".join(lines)
+
+
 def _run(repository: Path, *arguments: str) -> int:
     """Run the gate's command line against ``repository``."""
     return gate.main(["--repo", str(repository), *arguments])
@@ -65,9 +81,7 @@ def repository(tmp_path: Path, installed: str) -> Path:
     root = tmp_path / "repository"
     root.mkdir()
     _git(root, "init", "--quiet")
-    _write(
-        root, str(gate.PIN_FILE), f"{gate.DISTRIBUTION}=={installed}.1 \\\n    --hash=sha256:00\n"
-    )
+    _write(root, str(gate.PIN_FILE), _pins(installed))
     _write(root, "scripts/run.sh", CLEAN)
     _write(root, "README.md", "# Title\n")
     return root
@@ -89,7 +103,10 @@ def test_clean_scripts_pass(
 
     captured = capsys.readouterr()
     assert captured.err == ""
-    assert captured.out == f"Shell script lint: 1 scripts; ShellCheck {installed}; 0 findings\n"
+    assert captured.out == (
+        f"Shell script lint: 1 scripts; ShellCheck {installed}; "
+        f"{gate.FORMATTER_DISTRIBUTION} {FORMATTER_VERSION}; 0 findings\n"
+    )
 
 
 def test_finding_fails(repository: Path, capsys: pytest.CaptureFixture[str]) -> None:
@@ -239,9 +256,74 @@ def test_directory_without_a_repository_fails(
     directory, wherever the test session places it.
     """
     monkeypatch.setenv("GIT_CEILING_DIRECTORIES", str(tmp_path.parent))
-    (tmp_path / gate.PIN_FILE).write_text(
-        f"{gate.DISTRIBUTION}=={installed}.1\n", encoding="utf-8"
-    )
+    (tmp_path / gate.PIN_FILE).write_text(_pins(installed), encoding="utf-8")
 
     assert _run(tmp_path) == 1
     assert "shell script lint failed: git ls-files failed" in capsys.readouterr().err
+
+
+def test_unformatted_script_fails(repository: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    """A script the formatter would change fails the gate and names the repair."""
+    _write(repository, "scripts/indent.sh", TWO_SPACES)
+
+    assert _run(repository) == 1
+
+    captured = capsys.readouterr()
+    assert captured.err == "scripts/indent.sh: not formatted; run shfmt -w scripts/indent.sh\n"
+    assert captured.out.endswith("1 findings\n")
+
+
+def test_formatter_follows_the_editor_configuration(
+    repository: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """With an editor configuration for two spaces the same script is formatted."""
+    _write(repository, "scripts/indent.sh", TWO_SPACES)
+    _write(
+        repository,
+        ".editorconfig",
+        "root = true\n\n[*.sh]\nindent_style = space\nindent_size = 2\n",
+    )
+
+    assert _run(repository) == 0
+    assert capsys.readouterr().err == ""
+
+
+def test_formatter_other_than_the_pinned_one_is_refused(
+    repository: Path, installed: str, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """A formatter distribution other than the pinned version fails the gate."""
+    _write(repository, str(gate.PIN_FILE), _pins(installed, "99.98.97"))
+
+    assert _run(repository) == 1
+    assert (
+        f"shell script lint failed: {gate.FORMATTER_DISTRIBUTION} {FORMATTER_VERSION} is not the "
+        f"pinned 99.98.97; install {gate.PIN_FILE}" in capsys.readouterr().err
+    )
+
+
+def test_formatter_must_be_pinned_installed_and_present(
+    repository: Path, installed: str, tmp_path: Path
+) -> None:
+    """The formatter needs a pin, an installed distribution and a binary beside the interpreter."""
+    interpreter = Path(sys.executable)
+
+    assert gate.pinned_formatter(repository, interpreter) == str(interpreter.parent / "shfmt")
+    with pytest.raises(ValueError, match="left no shfmt beside"):
+        gate.pinned_formatter(repository, tmp_path / "bin" / "python")
+    _write(repository, str(gate.PIN_FILE), _pins(installed) + "absent-formatter==1.0\n")
+    with pytest.raises(ValueError, match="absent-formatter is not installed"):
+        gate.pinned_formatter(repository, interpreter, "absent-formatter")
+    _write(repository, str(gate.PIN_FILE), _pins(installed, None))
+    with pytest.raises(ValueError, match=f"does not pin {gate.FORMATTER_DISTRIBUTION}"):
+        gate.pinned_formatter(repository, interpreter)
+
+
+def test_script_the_formatter_cannot_parse_is_an_error(repository: Path) -> None:
+    """A script with a syntax error is an error of the format check, not a pass."""
+    formatter = gate.pinned_formatter(repository, Path(sys.executable))
+    _write(repository, "scripts/broken.sh", "#!/bin/sh\nif then\n")
+
+    assert gate.unformatted(repository, [], formatter) == []
+    assert gate.unformatted(repository, ["scripts/run.sh"], formatter) == []
+    with pytest.raises(ValueError, match="shfmt failed: scripts/broken.sh"):
+        gate.unformatted(repository, ["scripts/broken.sh"], formatter)

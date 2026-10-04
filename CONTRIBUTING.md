@@ -298,27 +298,31 @@ compares the result with `tools/source_surface_policy.json`:
 The gate proves that a recorded command exists. It does not prove that the job
 passes or that the command reads every file of the row.
 
-## Shell Script Lint
+## Shell Script Lint And Format
 
 `python tools/audit_shell_scripts.py` runs ShellCheck over every tracked shell
-script and fails on any finding, down to style level. A script is a tracked
-`.sh` or `.bash` file, or a tracked file without a suffix whose first line names
-`sh`, `bash`, `dash` or `ksh` as the interpreter, such as `.githooks/pre-push`.
+script and fails on any finding, down to style level, and fails on any script
+that the `shfmt` formatter would change. A script is a tracked `.sh` or `.bash`
+file, or a tracked file without a suffix whose first line names `sh`, `bash`,
+`dash` or `ksh` as the interpreter, such as `.githooks/pre-push`.
 
-Findings depend on the ShellCheck release. It is pinned in
-`requirements-ci-shell-lint.txt`, and the gate refuses to run with another
-release. Install the pinned one into the project environment with
+Both tools are pinned in `requirements-ci-shell-lint.txt`, and the gate refuses
+to run with other versions. Install them into the project environment with
 `python -m pip install --no-deps --require-hashes -r requirements-ci-shell-lint.txt`;
-the gate uses the ShellCheck beside the interpreter that runs it and falls back
-to the one on `PATH`. To change the pin, edit `requirements-ci-shell-lint.in`
-and regenerate the lock with the command recorded at the top of the `.txt`
-file; keep it at the newest release, like every other pin.
+the gate uses the binaries beside the interpreter that runs it (for ShellCheck
+it falls back to the one on `PATH`). To change a pin, edit
+`requirements-ci-shell-lint.in` and regenerate the lock with the command
+recorded at the top of the `.txt` file; keep the pins at the newest releases,
+like every other pin.
 
-Silence a finding only where it is wrong, with a `# shellcheck` directive on
-the line above and a comment that says why. The gate runs in CI and in the
-pre-push check, with the same pinned release. Script formatting is not enforced
-yet; the source surface inventory keeps the shell rows open for
-that reason.
+Format a script with `shfmt -w <script>`. The formatter reads `.editorconfig`,
+so the layout is the repository's: four spaces. It changes layout only; when a
+script that cannot be executed here is reformatted, compare `shfmt -mn` of the
+old and the new text to show that nothing else changed.
+
+Silence a ShellCheck finding only where it is wrong, with a `# shellcheck`
+directive on the line above and a comment that says why. The gate runs in CI
+and in the pre-push check, with the same pinned tools.
 
 ## Commit Messages
 

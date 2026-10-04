@@ -36,17 +36,35 @@ WORK_DIR="${HOME}/actions-runner"
 RESERVED_CORE="0"
 
 while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --repo) REPO="$2"; shift 2 ;;
-    --name) RUNNER_NAME="$2"; shift 2 ;;
-    --work-dir) WORK_DIR="$2"; shift 2 ;;
-    --reserved-core) RESERVED_CORE="$2"; shift 2 ;;
-    *) echo "unknown argument: $1" >&2; exit 2 ;;
-  esac
+    case "$1" in
+    --repo)
+        REPO="$2"
+        shift 2
+        ;;
+    --name)
+        RUNNER_NAME="$2"
+        shift 2
+        ;;
+    --work-dir)
+        WORK_DIR="$2"
+        shift 2
+        ;;
+    --reserved-core)
+        RESERVED_CORE="$2"
+        shift 2
+        ;;
+    *)
+        echo "unknown argument: $1" >&2
+        exit 2
+        ;;
+    esac
 done
 
 for tool in curl tar sha256sum gh sudo; do
-  command -v "$tool" >/dev/null 2>&1 || { echo "missing required tool: $tool" >&2; exit 1; }
+    command -v "$tool" >/dev/null 2>&1 || {
+        echo "missing required tool: $tool" >&2
+        exit 1
+    }
 done
 
 archive="actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz"
@@ -57,32 +75,38 @@ mkdir -p "${WORK_DIR}"
 cd "${WORK_DIR}"
 
 if [[ ! -f "${archive}" ]]; then
-  echo "==> Downloading runner ${RUNNER_VERSION}"
-  curl -fsSL -o "${archive}" "${url}"
+    echo "==> Downloading runner ${RUNNER_VERSION}"
+    curl -fsSL -o "${archive}" "${url}"
 fi
 
 echo "==> Verifying SHA-256"
-echo "${RUNNER_SHA256}  ${archive}" | sha256sum --check --status \
-  || { echo "SHA-256 verification FAILED for ${archive}" >&2; exit 1; }
+echo "${RUNNER_SHA256}  ${archive}" | sha256sum --check --status ||
+    {
+        echo "SHA-256 verification FAILED for ${archive}" >&2
+        exit 1
+    }
 
 if [[ ! -x "./config.sh" ]]; then
-  echo "==> Extracting runner"
-  tar xzf "${archive}"
+    echo "==> Extracting runner"
+    tar xzf "${archive}"
 fi
 
 echo "==> Requesting a registration token for ${REPO}"
 token="$(gh api -X POST "repos/${REPO}/actions/runners/registration-token" --jq '.token')"
-[[ -n "${token}" ]] || { echo "failed to obtain a registration token" >&2; exit 1; }
+[[ -n "${token}" ]] || {
+    echo "failed to obtain a registration token" >&2
+    exit 1
+}
 
 echo "==> Configuring runner ${RUNNER_NAME}"
 ./config.sh \
-  --unattended \
-  --replace \
-  --url "https://github.com/${REPO}" \
-  --token "${token}" \
-  --name "${RUNNER_NAME}" \
-  --labels "self-hosted,linux,isolated-benchmark" \
-  --work "_work"
+    --unattended \
+    --replace \
+    --url "https://github.com/${REPO}" \
+    --token "${token}" \
+    --name "${RUNNER_NAME}" \
+    --labels "self-hosted,linux,isolated-benchmark" \
+    --work "_work"
 
 echo "==> Installing the runner as a systemd service"
 sudo ./svc.sh install
@@ -91,10 +115,10 @@ sudo ./svc.sh start
 echo "==> Pinning cpu${RESERVED_CORE} to the performance governor"
 governor_path="/sys/devices/system/cpu/cpu${RESERVED_CORE}/cpufreq/scaling_governor"
 if [[ -w "${governor_path}" ]] || sudo test -w "${governor_path}"; then
-  echo performance | sudo tee "${governor_path}" >/dev/null
-  echo "    cpu${RESERVED_CORE} governor: $(cat "${governor_path}")"
+    echo performance | sudo tee "${governor_path}" >/dev/null
+    echo "    cpu${RESERVED_CORE} governor: $(cat "${governor_path}")"
 else
-  echo "    WARNING: ${governor_path} is not writable; set the governor manually." >&2
+    echo "    WARNING: ${governor_path} is not writable; set the governor manually." >&2
 fi
 
 echo

@@ -327,8 +327,7 @@
      "job": "shell-script-lint",
      "command": "tools/audit_shell_scripts.py"
     }
-   ],
-   "missing": "no format check runs over these scripts"
+   ]
   },
   {
    "kind": ".sh",
@@ -339,8 +338,7 @@
      "job": "shell-script-lint",
      "command": "tools/audit_shell_scripts.py"
     }
-   ],
-   "missing": "no format check runs over these scripts"
+   ]
   },
   {
    "kind": ".sh",
@@ -351,8 +349,7 @@
      "job": "shell-script-lint",
      "command": "tools/audit_shell_scripts.py"
     }
-   ],
-   "missing": "no format check runs over these scripts"
+   ]
   },
   {
    "kind": ".tmpl",
@@ -409,8 +406,7 @@
      "job": "shell-script-lint",
      "command": "tools/audit_shell_scripts.py"
     }
-   ],
-   "missing": "no format check runs over these scripts"
+   ]
   }
  ],
  "outside": {
