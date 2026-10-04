@@ -15,25 +15,53 @@ from typing import Any
 
 from scpn_quantum_control import stable_core_product as codec
 from scpn_quantum_control.hardware.hal import (
+    BackendProfile,
     HardwareAbstractionLayer,
     LocalDeterministicSimulator,
     QuantumWorkload,
 )
 
 
-def hal_evidence_source() -> dict[str, Any]:
-    """Capture the full input and output of a fresh offline HAL job.
+def hal_evidence_source(*, profile: BackendProfile | None = None) -> dict[str, Any]:
+    """Capture a fresh offline HAL job in the original corpus v1 field layout.
+
+    Parameters
+    ----------
+    profile
+        Supplied local native declaration, or the built-in local statevector
+        profile. Its capabilities govern the real sixteen-shot submission.
 
     Returns
     -------
     dict
-        Original profile, workload, job and count result with qualified native
+        Original v1 profile, workload, job and count result with qualified native
         identities. The injected adapter produces deterministic fixture counts;
         profile capabilities do not qualify SDK, statevector or QPU execution.
 
+    Raises
+    ------
+    ValueError
+        A finite native shot limit cannot be represented by the original v1
+        capture, or the supplied profile cannot admit the actual local job.
+
+    Notes
+    -----
+    The original layout predates optional native shot limits and provider
+    semantics. Only an unset shot limit is omitted; a declared limit refuses
+    before execution rather than disappearing from evidence. The fresh local
+    job has no workload semantics, submission companion or provider observation.
+    Native HAL admission and dataclass fields retain their current contracts.
+
     """
-    hal = HardwareAbstractionLayer.with_builtin_profiles()
-    profile = hal.profile("local_statevector")
+    if profile is None:
+        hal = HardwareAbstractionLayer.with_builtin_profiles()
+        profile = hal.profile("local_statevector")
+    else:
+        hal = HardwareAbstractionLayer((profile,))
+    if profile.capabilities.max_shots is not None:
+        raise ValueError("HAL evidence v1 cannot represent declared max_shots")
+    profile_fields = asdict(profile)
+    del profile_fields["capabilities"]["max_shots"]
     adapter = LocalDeterministicSimulator(profile)
     hal.register_backend(adapter)
     inputs: dict[str, Any] = {
@@ -64,7 +92,7 @@ def hal_evidence_source() -> dict[str, Any]:
     source = {
         "producer": "scpn_quantum_control.hardware.hal.HardwareAbstractionLayer.result",
         "adapter_type": f"{type(adapter).__module__}.{type(adapter).__qualname__}",
-        "profile": asdict(profile),
+        "profile": profile_fields,
         "workload": inputs,
         "job": job_fields,
         "result": result_fields,

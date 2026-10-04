@@ -7,9 +7,13 @@
 # SCPN Quantum Control — offline HAL and result custody tests
 """Replay native offline HAL evidence and its explicitly limited Result projection."""
 
+import json
 import subprocess
 import sys
-from dataclasses import fields
+from dataclasses import fields, replace
+from pathlib import Path
+
+import pytest
 
 from scpn_quantum_control import stable_core_product as codec
 from scpn_quantum_control.hardware.hal import (
@@ -22,9 +26,16 @@ from tools.contract_custody_hal_source import hal_evidence_source, non_count_qua
 from tools.contract_custody_result_source import stable_result_evidence_source
 
 
-def test_hal_capture_replays_actual_job_and_full_native_fields() -> None:
-    """Compare a fresh public HAL execution with all frozen owner fields."""
+def test_hal_capture_replays_actual_job_and_frozen_v1_fields() -> None:
+    """Retain complete original v1 bytes and explicitly unset native extensions."""
     source = hal_evidence_source()
+    frozen = json.loads(
+        (
+            Path(__file__).parent
+            / "data/contract_custody_corpus/offline_hal_preserves_native_result.json"
+        ).read_bytes()
+    )
+    assert source == frozen
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     profile = hal.profile(source["profile"]["backend_id"])
     hal.register_backend(LocalDeterministicSimulator(profile))
@@ -37,13 +48,25 @@ def test_hal_capture_replays_actual_job_and_full_native_fields() -> None:
     assert source["job"]["job_id"] == job.job_id
     assert source["result"]["counts"] == dict(result.counts) == {"00": 9, "11": 7}
     assert source["result"]["shots"] == result.shots == sum(result.counts.values()) == 16
+    extensions = {
+        "profile": {},
+        "workload": {"semantics": None},
+        "job": {"submission": None},
+        "result": {"provider_observation": None},
+    }
+    assert profile.capabilities.max_shots is None
+    assert {field.name for field in fields(profile.capabilities)} == (
+        set(source["profile"]["capabilities"]) | {"max_shots"}
+    )
     for name, value in (
         ("profile", profile),
         ("workload", workload),
         ("job", job),
         ("result", result),
     ):
-        assert set(source[name]) == {field.name for field in fields(value)}
+        assert {field.name for field in fields(value)} == set(source[name]) | set(extensions[name])
+        for field_name, expected in extensions[name].items():
+            assert getattr(value, field_name) is expected
         assert (
             source["native_types"][name] == f"{type(value).__module__}.{type(value).__qualname__}"
         )
@@ -121,3 +144,75 @@ print('base corpus executed without Studio')
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert result.stdout.strip() == "base corpus executed without Studio"
+
+
+def test_hal_capture_preserves_supplied_local_profile_and_detached_counts() -> None:
+    """Capture a real supplied declaration without replacing its route or annotations."""
+    original = HardwareAbstractionLayer.with_builtin_profiles().profile("local_statevector")
+    profile = replace(
+        original,
+        backend_id="local_capture",
+        region="eu",
+        target_family="custom",
+        notes=("caller-declaration", "offline"),
+    )
+    source = hal_evidence_source(profile=profile)
+    for field in fields(profile):
+        if field.name != "capabilities":
+            assert codec.canonical_json_bytes({"value": source["profile"][field.name]}) == (
+                codec.canonical_json_bytes({"value": getattr(profile, field.name)})
+            )
+    for name, value in source["profile"]["capabilities"].items():
+        assert value == getattr(profile.capabilities, name)
+    capabilities = original.to_semantic_source()["capabilities"]
+    assert isinstance(capabilities, dict)
+    assert source["profile"]["capabilities"].keys() == capabilities.keys()
+    assert (
+        source["job"]["backend_id"] == source["result"]["job"]["backend_id"] == profile.backend_id
+    )
+    assert source["result"]["counts"] == {"00": 9, "11": 7}
+    assert source["result"]["shots"] == 16
+    source["profile"]["notes"].append("mutated")
+    source["result"]["counts"]["00"] = 0
+    again = hal_evidence_source(profile=profile)
+    assert again["profile"]["notes"] == ["caller-declaration", "offline"]
+    assert again["result"]["counts"] == {"00": 9, "11": 7}
+    assert profile.notes == ("caller-declaration", "offline")
+
+
+@pytest.mark.parametrize("limit", [8, 16, 32])
+def test_legacy_hal_capture_refuses_meaningful_native_shot_limit(limit: int) -> None:
+    """Refuse capacity loss even when the original capture would fit below the limit.
+
+    Parameters
+    ----------
+    limit
+        Native finite capacity below, at or above the sixteen-shot capture.
+
+    """
+    original = HardwareAbstractionLayer.with_builtin_profiles().profile("local_statevector")
+    profile = replace(original, capabilities=replace(original.capabilities, max_shots=limit))
+    with pytest.raises(ValueError, match="HAL evidence v1 cannot represent declared max_shots"):
+        hal_evidence_source(profile=profile)
+    assert profile.capabilities.max_shots == limit
+
+
+def test_native_finite_shot_admission_survives_legacy_capture_refusal() -> None:
+    """Admit the exact native boundary, refuse excess, and retain earlier real evidence."""
+    original = HardwareAbstractionLayer.with_builtin_profiles().profile("local_statevector")
+    profile = replace(original, capabilities=replace(original.capabilities, max_shots=16))
+    hal = HardwareAbstractionLayer((profile,))
+    hal.register_backend(LocalDeterministicSimulator(profile))
+    workload = QuantumWorkload(
+        "finite-capture", "openqasm3", "OPENQASM 3;", 2, shots=16, metadata={"seed": 17}
+    )
+    job = hal.submit(profile.backend_id, workload)
+    result = hal.result(job)
+    with pytest.raises(ValueError, match="workload shots exceed local_statevector limit: 17 > 16"):
+        hal.submit(profile.backend_id, replace(workload, workload_id="excess", shots=17))
+    with pytest.raises(ValueError, match="HAL evidence v1 cannot represent declared max_shots"):
+        hal_evidence_source(profile=profile)
+    assert hal.result(job) is result
+    assert hal.status(job) == "completed"
+    assert result.counts == {"00": 9, "11": 7}
+    assert result.shots == profile.capabilities.max_shots == 16
