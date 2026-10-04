@@ -1,0 +1,28 @@
+{
+  "rule": "A successor differs from its frozen fixture only by further produced families listed after the frozen ones in the plan's verb contract, and by the plan digest recomputed over that plan. The frozen fixtures are not rewritten.",
+  "schema": "contract_custody_successors.v1",
+  "successors": [
+    {
+      "cause": "Since 2026-10-03 the compile verb also declares the program source and compiler trace families, and a plan carries the whole contract of its verb.",
+      "fixture": "studio_compile_default_preserves_plan.json",
+      "fixture_sha256": "fe8b4f296afebcc0ebd0c4f99d91a73bb8d652d592424e0b230387e47f283223",
+      "produces": [
+        "studio.kuramoto-compilation.v1",
+        "studio.xy-compile-recompute.v1",
+        "studio.program-source.v1",
+        "studio.compiler-trace.v1"
+      ]
+    },
+    {
+      "cause": "Since 2026-10-03 the compile verb also declares the program source and compiler trace families, and a plan carries the whole contract of its verb.",
+      "fixture": "studio_compile_requested_rust_preserves_plan.json",
+      "fixture_sha256": "69936b2ee0acdb5861981b7dc2b4c5792b2c09e2fcdf0ded3054eec6341d4e09",
+      "produces": [
+        "studio.kuramoto-compilation.v1",
+        "studio.xy-compile-recompute.v1",
+        "studio.program-source.v1",
+        "studio.compiler-trace.v1"
+      ]
+    }
+  ]
+}

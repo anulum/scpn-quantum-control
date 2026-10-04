@@ -11,12 +11,19 @@ The observed-count Fisher replay differed by six binary64 ULPs across the
 host and Docker numerical environments. Permit at most eight ULPs for its two
 1x1 uncertainty outputs only; all other results, inputs and metadata stay exact.
 This is a corpus regression budget, not a scientific accuracy guarantee.
+
+A frozen fixture is never rewritten. When a producer changes on purpose, the
+change is recorded in ``data/contract_custody_successors.json`` and the replay
+derives the expected successor from the frozen fixture and that record, then
+compares it with the fresh output byte for byte. The only recorded kind of
+change is growth of the produced families in a plan's verb contract.
 """
 
 from __future__ import annotations
 
 import copy
 import json
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
@@ -25,6 +32,62 @@ import numpy as np
 from scpn_quantum_control import stable_core_product as codec
 
 FISHER_FIXTURE = "fisher_observed_and_expected_routes_stay_distinct.json"
+SUCCESSOR_RECORD = Path(__file__).parent / "data" / "contract_custody_successors.json"
+SUCCESSOR_SCHEMA = "contract_custody_successors.v1"
+
+
+def recorded_successors(record: Path = SUCCESSOR_RECORD) -> dict[str, dict[str, Any]]:
+    """Return the recorded successors of frozen fixtures, keyed by fixture name.
+
+    Parameters
+    ----------
+    record
+        Successor record to read.
+
+    Returns
+    -------
+    dict
+        One row per frozen fixture that has a recorded successor.
+
+    """
+    body = json.loads(record.read_text(encoding="utf-8"))
+    assert body["schema"] == SUCCESSOR_SCHEMA
+    rows: list[dict[str, Any]] = body["successors"]
+    names = [row["fixture"] for row in rows]
+    assert len(names) == len(set(names))
+    return dict(zip(names, rows, strict=True))
+
+
+def successor_bytes(frozen: Mapping[str, Any], row: Mapping[str, Any]) -> bytes:
+    """Derive the successor of a frozen plan fixture from its recorded contract growth.
+
+    Parameters
+    ----------
+    frozen
+        Original captured plan fixture, never modified.
+    row
+        Recorded successor: the grown list of produced families and the digest
+        of the whole successor fixture.
+
+    Returns
+    -------
+    bytes
+        Canonical bytes of the successor. It equals the frozen fixture except
+        for the produced families, which must keep the frozen ones first and
+        add at least one distinct family, and the plan digest recomputed over
+        the changed plan. Its digest must be the recorded one.
+
+    """
+    original: list[str] = frozen["plan"]["contract"]["produces"]
+    grown: list[str] = row["produces"]
+    assert len(grown) > len(original)
+    assert grown[: len(original)] == original
+    assert len(set(grown)) == len(grown)
+    successor = copy.deepcopy(dict(frozen))
+    successor["plan"]["contract"]["produces"] = list(grown)
+    successor["plan_sha256"] = codec.digest_stable_core_payload(successor["plan"])
+    assert codec.digest_stable_core_payload(successor) == row["fixture_sha256"]
+    return codec.canonical_json_bytes(successor)
 
 
 def assert_fisher_result(actual: dict[str, Any], frozen: dict[str, Any], route: str) -> None:
@@ -81,6 +144,7 @@ def assert_corpus_replay(actual_root: Path, frozen_root: Path, manifest_name: st
     actual = json.loads((actual_root / manifest_name).read_text())
     frozen = json.loads((frozen_root / manifest_name).read_text())
     normalized = copy.deepcopy(actual)
+    successors = recorded_successors()
     assert len(actual["cases"]) == len(frozen["cases"])
     for index, (left, right) in enumerate(zip(actual["cases"], frozen["cases"], strict=True)):
         assert left["fixture"] == right["fixture"]
@@ -100,9 +164,13 @@ def assert_corpus_replay(actual_root: Path, frozen_root: Path, manifest_name: st
         if filename == FISHER_FIXTURE:
             _assert_fisher_payload(left_payload, right_payload)
             normalized["cases"][index]["fixture_sha256"] = right["fixture_sha256"]
+        elif filename in successors:
+            assert left_bytes == successor_bytes(right_payload, successors[filename])
+            normalized["cases"][index]["fixture_sha256"] = right["fixture_sha256"]
         else:
             assert left_bytes == right_bytes
     if manifest_name == "manifest_studio.json":
+        assert set(successors) <= {row["fixture"] for row in frozen["cases"]}
         assert_corpus_replay(actual_root, frozen_root, "manifest.json")
         for root, manifest in ((actual_root, actual), (frozen_root, frozen)):
             base = json.loads((root / "manifest.json").read_text())
