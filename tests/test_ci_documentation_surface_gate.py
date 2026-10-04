@@ -90,19 +90,21 @@ def test_configured_python_documentation_scope_is_fail_closed() -> None:
         "tools/",
         "scripts/",
         "notebooks/",
+        "experimental_workers/",
         "run_hardware.py",
+        "scpn_quantum_engine/__init__.py",
     ]
     assert commands["ruff check"][-len(owned_paths) :] == owned_paths
     assert commands["ruff format"][-len(owned_paths) :] == owned_paths
 
     workflow = Path(".github/workflows/ci-static-analysis.yml").read_text(encoding="utf-8")
     assert (
-        "ruff check src/ tests/ examples/ figures/ tools/ scripts/ notebooks/ run_hardware.py"
-        in workflow
+        "ruff check src/ tests/ examples/ figures/ tools/ scripts/ notebooks/ experimental_workers/ "
+        "run_hardware.py scpn_quantum_engine/__init__.py" in workflow
     )
     assert (
         "ruff format --check src/ tests/ examples/ figures/ tools/ scripts/ notebooks/ "
-        "run_hardware.py" in workflow
+        "experimental_workers/ run_hardware.py scpn_quantum_engine/__init__.py" in workflow
     )
 
 
