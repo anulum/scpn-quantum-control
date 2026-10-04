@@ -418,3 +418,107 @@ def test_deleted_tracked_coded_path_still_fails(tmp_path: Path) -> None:
     (tmp_path / source).unlink()
     findings = audit_repository(tmp_path)
     assert [(item.path, item.kind) for item in findings] == [(source, "tracked path")]
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "http://www.w3.org/2000/svg",
+        "https://www.w3.org/2000/svg",
+        "HTTPS://www.w3.org/2000/svg",
+        "{http://www.w3.org/2000/svg}metadata",
+        "{https://standards.w2.example/xml}metadata",
+        "See http://www.w3.org/2000/svg for the namespace.",
+        "{urn:example:namespace}metadata",
+    ],
+)
+def test_standard_uri_authorities_and_expanded_xml_names_are_valid(
+    tmp_path: Path, value: str
+) -> None:
+    """Accept technical namespace references across the real public audit surfaces.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Isolated repository root for source, JSON and public documentation.
+    value : str
+        Standard URI, expanded XML name or explanatory namespace reference.
+
+    """
+    python = "tools/namespace.py"
+    data = "data/namespace.json"
+    doc = "docs/namespace.md"
+    _write(tmp_path / python, f"NAMESPACE = {value!r}\n")
+    _write(tmp_path / data, json.dumps({"namespace": value}))
+    _write(tmp_path / doc, "# Namespace\n\n" + value + "\n")
+    assert audit_paths(tmp_path, (python, data, doc)) == ()
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "http://www.w3.org/w7/results.json",
+        "{http://www.w3.org/2000/svg}w7_results",
+        "{http://www.w3.org/2000/svg}post_w7_status",
+        "https://www.w3.org/BL-19/schema",
+        "data/results_w7.json",
+        "http://www.w3.org/w7/schema#metadata",
+    ],
+)
+def test_uri_paths_and_expanded_xml_local_names_retain_code_detection(
+    tmp_path: Path, value: str
+) -> None:
+    """Reject coded paths and local names without reporting the URI authority.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Isolated repository root containing each actual public scanner input.
+    value : str
+        URI path or expanded XML local name that exposes an internal code.
+
+    """
+    python = "tools/namespace.py"
+    data = "data/namespace.json"
+    doc = "docs/namespace.md"
+    _write(tmp_path / python, f"NAMESPACE = {value!r}\n")
+    _write(tmp_path / data, json.dumps({"namespace": value}))
+    _write(tmp_path / doc, "# Namespace\n\n" + value + "\n")
+    findings = audit_paths(tmp_path, (python, data, doc))
+    assert {item.path for item in findings} == {python, data, doc}
+    assert {item.value for item in findings} == {value}
+
+
+def test_cli_accepts_native_svg_names_without_mutating_the_debt_baseline(
+    tmp_path: Path,
+) -> None:
+    """Qualify standard SVG names and coded-path refusal through the native CLI.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Real isolated Git repository whose source and debt baseline are retained.
+
+    """
+    from xml.etree.ElementTree import QName
+
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    baseline = tmp_path / "tools/descriptive_production_naming_baseline.json"
+    original_baseline = json.dumps(baseline_payload(()))
+    _write(baseline, original_baseline)
+    source = tmp_path / "tools/namespace.py"
+    native_name = str(QName("http://www.w3.org/2000/svg", "metadata"))
+    _write(source, f"SVG_METADATA = {native_name!r}\n")
+    original_source = source.read_bytes()
+    accepted = _naming_cli(tmp_path)
+    assert accepted.returncode == 0, accepted.stdout + accepted.stderr
+    assert "passed (0 known finding(s))" in accepted.stdout
+    assert source.read_bytes() == original_source
+    assert baseline.read_text() == original_baseline
+    coded_name = str(QName("http://www.w3.org/2000/svg", "w7_results"))
+    _write(source, f"SVG_METADATA = {coded_name!r}\n")
+    rejected = _naming_cli(tmp_path)
+    assert rejected.returncode == 1
+    assert coded_name in rejected.stdout
+    assert "1 new finding(s)" in rejected.stdout
+    assert baseline.read_text() == original_baseline

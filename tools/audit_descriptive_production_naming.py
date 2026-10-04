@@ -126,9 +126,29 @@ _EXACT_NEGATIVE_VALUES: Final[frozenset[tuple[str, str]]] = frozenset(
 
 
 def _contains_path_campaign_stage(value: str) -> bool:
-    """Return whether a path-like value contains abbreviated window staging."""
+    """Detect campaign stages in paths and XML local names, excluding URI authority.
+
+    Parameters
+    ----------
+    value : str
+        Original source string, URI reference or expanded XML name.
+
+    Returns
+    -------
+    bool
+        Whether the path or XML local name contains campaign-stage shorthand.
+        URI scheme and authority are technical namespace identity, not path names.
+
+    """
     path_like = "/" in value or value.endswith((".json", ".md", ".yaml", ".yml"))
-    return path_like and bool(_PATH_CAMPAIGN_STAGE.search(value))
+    expanded_name = re.fullmatch(r"\{([^{}]+)\}([^{}]+)", value)
+    path_value = "/".join(expanded_name.groups()) if expanded_name else value
+    path_value = re.sub(
+        r"(?<![A-Za-z0-9+.-])[A-Za-z][A-Za-z0-9+.-]*://[^/{}\s]+",
+        "",
+        path_value,
+    )
+    return path_like and bool(_PATH_CAMPAIGN_STAGE.search(path_value))
 
 
 def _contains_identifier_campaign_stage(value: str) -> bool:

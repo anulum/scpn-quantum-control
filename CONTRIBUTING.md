@@ -186,7 +186,8 @@ python tools/preflight.py
   jobs, and public documentation by their domain purpose. Internal work-item or
   roadmap identifiers belong only in private traceability records, not product
   names. Run `python tools/audit_descriptive_production_naming.py` to verify the
-  boundary.
+  boundary. Standard URI authorities and expanded XML namespace names are
+  technical references; their paths and local names still obey the naming rule.
 - Keep new dependencies justified and optional unless they are required by the
   core package.
 - Preserve scientific claim boundaries. Simulator output, generated fixtures,
