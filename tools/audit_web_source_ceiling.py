@@ -8,7 +8,8 @@
 """Hold the lint and format debt of the web workspace under a ceiling that only falls.
 
 The web workspace is type-checked, tested and built, but no gate linted its
-TypeScript and stylesheets or checked their layout. The sources were never
+TypeScript and stylesheets or checked their layout, and nothing read the
+script and stylesheet of the documentation site. The sources were never
 formatted by a tool, so a plain "everything must pass" gate would demand one
 mass rewrite. This gate measures every tracked web source with the pinned
 Biome release and compares each file with a recorded ceiling instead.
@@ -37,6 +38,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
@@ -47,7 +49,8 @@ from pathlib import Path, PurePosixPath
 from typing import Final, cast
 
 WEB_ROOT: Final[str] = "studio-web"
-SOURCE_SUFFIXES: Final[frozenset[str]] = frozenset({".ts", ".tsx", ".css"})
+SOURCE_ROOTS: Final[tuple[str, ...]] = (WEB_ROOT, "docs/css", "docs/js")
+SOURCE_SUFFIXES: Final[frozenset[str]] = frozenset({".ts", ".tsx", ".css", ".js"})
 DISTRIBUTION: Final[str] = "@biomejs/biome"
 DEFAULT_CEILING: Final[Path] = Path("tools/web_source_ceiling.json")
 SCHEMA: Final[str] = "web_source_ceiling_v1"
@@ -83,7 +86,9 @@ def _in_scope(path: str) -> bool:
     """Return whether ``path`` is a web source the gate measures."""
     pure = PurePosixPath(path)
     return (
-        pure.parts[:1] == (WEB_ROOT,) and ".." not in pure.parts and pure.suffix in SOURCE_SUFFIXES
+        ".." not in pure.parts
+        and pure.suffix in SOURCE_SUFFIXES
+        and any(pure.is_relative_to(root) for root in SOURCE_ROOTS)
     )
 
 
@@ -276,7 +281,7 @@ def tracked_sources(repo: Path) -> list[str]:
         If Git cannot list the tracked files.
 
     """
-    names = _git(repo, ["ls-files", "-z", "--", WEB_ROOT]).split("\0")
+    names = _git(repo, ["ls-files", "-z", "--", *SOURCE_ROOTS]).split("\0")
     return sorted(name for name in names if name and _in_scope(name))
 
 
@@ -285,6 +290,10 @@ def _diagnostics(
 ) -> list[tuple[str, str]]:
     """Run one Biome command over ``sources`` and return ``(category, path)`` pairs.
 
+    Biome runs in the web workspace, where its configuration lives. It reports
+    a file inside the workspace by its path relative to the workspace and a file
+    outside it, such as the documentation site's script, by its absolute path.
+
     Raises
     ------
     ValueError
@@ -292,7 +301,8 @@ def _diagnostics(
         names a file outside ``sources``.
 
     """
-    relative = [PurePosixPath(name).relative_to(WEB_ROOT).as_posix() for name in sources]
+    root = repo.resolve()
+    relative = [os.path.relpath(root / name, root / WEB_ROOT) for name in sources]
     completed = _run(
         repo / WEB_ROOT,
         [str(executable), command, "--reporter=json", "--max-diagnostics=none", "--", *relative],
@@ -307,11 +317,14 @@ def _diagnostics(
     except (json.JSONDecodeError, KeyError, TypeError, ValueError) as error:
         detail = " ".join(completed.stderr.split())[:300]
         raise ValueError(f"biome {command} gave no usable report: {error} {detail}") from error
-    known = set(relative)
+    known = set(sources)
+    located: list[tuple[str, str]] = []
     for category, path in pairs:
-        if path not in known:
+        name = PurePosixPath(os.path.relpath(root / WEB_ROOT / path, root)).as_posix()
+        if name not in known:
             raise ValueError(f"biome {command} reported {category} outside the sources: {path}")
-    return [(category, f"{WEB_ROOT}/{path}") for category, path in pairs]
+        located.append((category, name))
+    return located
 
 
 def measure(repo: Path, executable: Path) -> Measurement:
@@ -374,7 +387,7 @@ def changed_sources(repo: Path, revision: str) -> list[str]:
         If ``revision`` does not resolve or Git cannot produce the comparison.
 
     """
-    names = _git(repo, ["diff", "--name-only", "--diff-filter=AMR", revision, "--", WEB_ROOT])
+    names = _git(repo, ["diff", "--name-only", "--diff-filter=AMR", revision, "--", *SOURCE_ROOTS])
     return sorted(name for name in names.splitlines() if _in_scope(name))
 
 

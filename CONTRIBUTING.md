@@ -261,13 +261,15 @@ well formed; it does not judge whether a description is accurate.
 
 ## Web Source Ceiling
 
-The TypeScript and stylesheet sources of `studio-web` are linted and
-format-checked with Biome, pinned as an exact development dependency in
-`studio-web/package.json` and configured in `studio-web/biome.jsonc`. The
-sources were never formatted by a tool, so the gate does not demand one mass
-rewrite: `python tools/audit_web_source_ceiling.py` compares every tracked
-`.ts`, `.tsx` and `.css` file with `tools/web_source_ceiling.json`, which
-records the lint finding count per file and the files that are not formatted.
+The TypeScript and stylesheet sources of `studio-web`, and the script and
+stylesheet of the documentation site under `docs/js` and `docs/css`, are
+linted and format-checked with Biome, pinned as an exact development
+dependency in `studio-web/package.json` and configured in
+`studio-web/biome.jsonc`. The sources were never formatted by a tool, so the
+gate does not demand one mass rewrite: `python tools/audit_web_source_ceiling.py`
+compares every tracked `.ts`, `.tsx`, `.css` and `.js` file under those roots
+with `tools/web_source_ceiling.json`, which records the lint finding count per
+file and the files that are not formatted.
 The ceiling only falls:
 
 - a source that is not in the ceiling must have no lint finding and be

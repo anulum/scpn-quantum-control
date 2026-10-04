@@ -32,6 +32,7 @@ TWO_FINDINGS = (
 )
 UNFORMATTED = "export const  spaced = 1;\n"
 STYLESHEET = "a {\n  color: red;\n}\n"
+SCRIPT = 'export const greeting = (name) => "hello " + name;\n'
 BROKEN = "export const = ;\n"
 
 
@@ -125,7 +126,11 @@ def _record(repo: Path, **changes: Any) -> Path:
 
 
 def test_measure_counts_findings_and_lists_unformatted_sources(tmp_path: Path) -> None:
-    """Lint findings are counted per file; unformatted files are listed; other files are ignored."""
+    """Lint findings are counted per file; unformatted files are listed; other files are ignored.
+
+    The documentation site's script lies outside the web workspace; Biome
+    reports it by its absolute path and the gate records it by its repository path.
+    """
     repo = _workspace(
         tmp_path,
         {
@@ -136,12 +141,18 @@ def test_measure_counts_findings_and_lists_unformatted_sources(tmp_path: Path) -
             "src/sheet.css": STYLESHEET,
             "src/note.md": "# not a web source\n",
             "index.html": "<p>not measured</p>\n",
+            "../docs/js/loader.js": SCRIPT,
+            "../docs/css/site.css": STYLESHEET,
+            "../docs/guide.css": STYLESHEET,
+            "../scripts/other.js": SCRIPT,
         },
     )
     executable = gate.workspace_executable(repo)
 
     assert gate.installed_release(repo, executable) == gate.pinned_release(REPOSITORY)
     assert gate.tracked_sources(repo) == [
+        "docs/css/site.css",
+        "docs/js/loader.js",
         "studio-web/src/clean.ts",
         "studio-web/src/one.ts",
         "studio-web/src/sheet.css",
@@ -149,7 +160,7 @@ def test_measure_counts_findings_and_lists_unformatted_sources(tmp_path: Path) -
         "studio-web/src/two.tsx",
     ]
     assert gate.measure(repo, executable) == gate.Measurement(
-        {"studio-web/src/one.ts": 1, "studio-web/src/two.tsx": 2},
+        {"docs/js/loader.js": 1, "studio-web/src/one.ts": 1, "studio-web/src/two.tsx": 2},
         ("studio-web/src/spaced.ts",),
     )
 
@@ -417,13 +428,14 @@ _VALID: dict[str, Any] = {
         ({"measured_commit": " "}, "must record the commit"),
         ({"lint": []}, "lint counts must be an object"),
         ({"lint": {"src/a.ts": 1}}, "not a web source: src/a.ts"),
+        ({"lint": {"docs/a.css": 1}}, "not a web source: docs/a.css"),
         ({"lint": {"studio-web/../a.ts": 1}}, "not a web source"),
         ({"lint": {"studio-web/a.md": 1}}, "not a web source"),
         ({"lint": {"studio-web/a.ts": 0}}, "must be a positive integer"),
         ({"lint": {"studio-web/a.ts": True}}, "must be a positive integer"),
         ({"unformatted": "studio-web/a.ts"}, "must be a list of paths"),
         ({"unformatted": [1]}, "must be a list of paths"),
-        ({"unformatted": ["docs/a.css"]}, "not a web source: docs/a.css"),
+        ({"unformatted": ["scripts/a.js"]}, "not a web source: scripts/a.js"),
         ({"unformatted": ["studio-web/b.ts", "studio-web/a.ts"]}, "sorted and unique"),
         ({"unformatted": ["studio-web/a.ts", "studio-web/a.ts"]}, "sorted and unique"),
         ({"history": {}}, "history must be a list of objects"),

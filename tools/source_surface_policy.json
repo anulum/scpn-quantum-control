@@ -4,7 +4,13 @@
   {
    "kind": ".css",
    "root": "docs",
-   "missing": "no stylesheet lint"
+   "gates": [
+    {
+     "workflow": "ci-studio.yml",
+     "job": "studio-web",
+     "command": "tools/audit_web_source_ceiling.py"
+    }
+   ]
   },
   {
    "kind": ".css",
@@ -68,7 +74,13 @@
   {
    "kind": ".js",
    "root": "docs",
-   "missing": "no script lint"
+   "gates": [
+    {
+     "workflow": "ci-studio.yml",
+     "job": "studio-web",
+     "command": "tools/audit_web_source_ceiling.py"
+    }
+   ]
   },
   {
    "kind": ".py",

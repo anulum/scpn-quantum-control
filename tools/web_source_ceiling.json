@@ -1,11 +1,12 @@
 {
  "schema": "web_source_ceiling_v1",
  "release": "2.5.15",
- "measured_commit": "3c1104b04eb7daf2d774893a6f208e633d2475bb",
- "total_lint_findings": 686,
- "total_lint_files": 100,
+ "measured_commit": "a7986a61f267ea30b8da7017bf7407068a4dc2ab",
+ "total_lint_findings": 689,
+ "total_lint_files": 101,
  "total_unformatted_files": 171,
  "lint": {
+  "docs/js/goatcounter.js": 3,
   "studio-web/browser-tests/federation.native.tsx": 1,
   "studio-web/browser-tests/parameterEditor.native.tsx": 1,
   "studio-web/browser-tests/workspaceController.native.tsx": 1,
