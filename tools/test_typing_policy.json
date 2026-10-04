@@ -20,6 +20,7 @@
         "tests/test_audit_release_readiness.py",
         "tests/test_audit_split_ownership.py",
         "tests/test_audit_test_behaviour.py",
+        "tests/test_audit_test_documentation_ceiling.py",
         "tests/test_audit_test_ordering_state.py",
         "tests/test_audit_test_typing_policy.py",
         "tests/test_behavioural_test_audit.py",

@@ -229,6 +229,29 @@ scopes were inspected without unexempted findings, 1 reports documentation debt,
 and 2 reports an incomplete scan. This gate does not certify test documentation,
 other languages or the semantic accuracy of docstrings.
 
+## Test Documentation Ceiling
+
+Test files are measured separately with
+`python tools/audit_test_documentation_ceiling.py`, using the same isolated
+NumPy documentation profile over `tests` and `oscillatools/tests`. The recorded
+per-file counts in `tools/test_documentation_ceiling.json` are a ceiling that
+only falls:
+
+- a test file that is not in the ceiling must have no documentation finding;
+- a recorded file may not gain findings;
+- when a file's findings fall, or a file becomes clean or is removed, lower the
+  ceiling in the same change with `--lower` (it refuses while any file grew);
+- with `--changed-against <revision>` every test file that differs from that
+  revision must have no finding at all. CI compares with the previous head and
+  the pre-push check compares with `origin/main`, so a test file that is
+  touched is documented completely in the same change.
+
+The counts depend on the Ruff release. The ceiling records the release it was
+measured with, and the gate refuses to compare across releases; after a Ruff
+upgrade record the new measurement with `--rebaseline`, which keeps the previous
+totals in the file's history. The gate checks that documentation is present and
+well formed; it does not judge whether a description is accurate.
+
 ## Commit Messages
 
 Use conventional subjects:

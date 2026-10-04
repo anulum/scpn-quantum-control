@@ -1008,6 +1008,28 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
         ],
     ),
     (
+        "test-documentation-ceiling",
+        [
+            _PY,
+            "tools/audit_test_documentation_ceiling.py",
+            "--changed-against",
+            "origin/main",
+        ],
+    ),
+    (
+        "mypy-strict-test-documentation-ceiling",
+        [
+            _PY,
+            "-m",
+            "mypy",
+            "--strict",
+            "--explicit-package-bases",
+            "tools/audit_documentation_scopes.py",
+            "tools/audit_test_documentation_ceiling.py",
+            "tests/test_audit_test_documentation_ceiling.py",
+        ],
+    ),
+    (
         "ci-workflow-modularity",
         [_PY, "tools/audit_ci_workflow_modularity.py"],
     ),

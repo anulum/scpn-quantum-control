@@ -18,7 +18,8 @@
         "lint",
         "rust-lint",
         "julia-lint",
-        "split-boundary-guard"
+        "split-boundary-guard",
+        "test-documentation-ceiling"
       ]
     },
     {
@@ -397,6 +398,7 @@
     "rust-lint",
     "julia-lint",
     "split-boundary-guard",
+    "test-documentation-ceiling",
     "native-wheels",
     "kuramoto-model-quality",
     "kuramoto-solver-quality",
