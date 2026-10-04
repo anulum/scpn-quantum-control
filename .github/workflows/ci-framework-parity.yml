@@ -36,6 +36,7 @@ jobs:
         run: |
           python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
           python -m pip install --no-deps -e .
+          python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt
       - name: Build CPU-only differentiable framework overlay
         run: |
           # CPU wheels: jax[cpu], tensorflow-cpu, pennylane, torch.
@@ -67,6 +68,11 @@ jobs:
           tests/experimental/llm_qpu/test_static_circuit_plan_contract.py
           tests/experimental/llm_qpu/test_measurement_plan_contract.py
           tests/experimental/llm_qpu/test_experiment_protocol_contract.py
+      - name: Combine public package import subprocess coverage
+        run: >-
+          python -m coverage combine --keep
+          --rcfile=data/split_preparation/import_coverage.toml
+          --data-file=.coverage.public-package-imports
       - name: Enforce exact public package initializer coverage
         run: >-
           python -m coverage report

@@ -9,7 +9,9 @@
 
 import json
 import math
+import pickle
 import struct
+from collections.abc import Callable
 from pathlib import Path
 from typing import cast
 
@@ -21,6 +23,27 @@ from scpn_quantum_control.studio_workspace.canonical import (
 )
 
 _CORPUS = json.loads((Path(__file__).parent / "data/studio_workspace/canonical.json").read_text())
+
+
+@pytest.mark.parametrize("encoder", [canonical_bytes, canonical_digest])
+def test_historical_codec_pickle_restores_an_executable_public_function(
+    encoder: Callable[[str, object], bytes | str],
+) -> None:
+    """Recover a persisted workspace encoder and exercise its canonical output.
+
+    Parameters
+    ----------
+    encoder
+        Historical public encoder or digest function persisted by consumers.
+
+    """
+    restored = cast(Callable[[str, object], bytes | str], pickle.loads(pickle.dumps(encoder)))
+    assert restored is encoder
+    assert restored.__module__ == "scpn_quantum_control.studio_workspace.canonical"
+    body = {"float": -0.0, "integer": 1, "array": [None, True, "😀"]}
+    assert restored("workspace.v1", body) == encoder("workspace.v1", body)
+    with pytest.raises(ValueError, match="non-finite"):
+        restored("workspace.v1", {"invalid": math.nan})
 
 
 def _materialise(descriptor: dict[str, object]) -> object:

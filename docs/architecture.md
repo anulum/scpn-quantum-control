@@ -34,7 +34,8 @@ workflows and integration-oriented development.
 `canonical_encoding` is a dependency-free contracts owner for typed JSON bytes
 and schema-prefixed SHA-256 digests. Both HAL backend profile exporters and
 Studio workspace readers depend on this lower layer. The original
-`studio_workspace.canonical` imports remain available as explicit aliases.
+`studio_workspace.canonical` functions retain their defining names and pickle
+paths while delegating encoding and hashing to the shared codec.
 No HAL producer imports Studio to bind metadata; encoding domains and byte
 corpora retain their established semantics.
 

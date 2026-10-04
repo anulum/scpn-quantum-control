@@ -3497,6 +3497,7 @@ class _ExportModule(ModuleType):
         ):
             # Resolve the public object on access after its owner finishes loading.
             # Eager resolution here can re-enter a partially initialized owner.
+            self.__dict__.pop(name, None)
             return
         super().__setattr__(name, value)
 

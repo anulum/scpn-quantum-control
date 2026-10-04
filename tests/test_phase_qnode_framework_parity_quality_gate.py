@@ -7,6 +7,9 @@
 # SCPN Quantum Control — QNode framework-parity quality-gate tests
 """Lock the local QNode framework-parity owner into preflight and CI."""
 
+from pathlib import Path
+from tempfile import gettempdir
+
 from tools import phase_qnode_framework_parity_quality_gates as quality_gates
 from tools import preflight
 from tools.ci_workflow_inventory import read_ci_workflow_source
@@ -32,7 +35,11 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     cohort = quality_gates.PHASE_QNODE_FRAMEWORK_PARITY_COVERAGE_COHORT
     assert "--branch" in run
     assert run[-len(cohort) :] == cohort
-    assert quality_gates.PHASE_QNODE_FRAMEWORK_PARITY_COVERAGE_DATA_FILE.startswith("/tmp/")
+    coverage_path = Path(quality_gates.PHASE_QNODE_FRAMEWORK_PARITY_COVERAGE_DATA_FILE)
+    assert coverage_path.parent == Path(gettempdir())
+    assert coverage_path.name == "scpn-qc-phase-qnode-framework-parity.coverage"
+    assert run.count(f"--data-file={coverage_path}") == 1
+    assert report.count(f"--data-file={coverage_path}") == 1
     assert "--fail-under=100" in report
     assert f"--include={quality_gates.PHASE_QNODE_FRAMEWORK_PARITY_COVERAGE_INCLUDE}" in report
 
@@ -53,5 +60,6 @@ def test_ci_runs_the_exact_helper_owned_surface() -> None:
         assert path in workflow
     for path in quality_gates.PHASE_QNODE_FRAMEWORK_PARITY_COVERAGE_COHORT:
         assert path in workflow
-    assert quality_gates.PHASE_QNODE_FRAMEWORK_PARITY_COVERAGE_DATA_FILE in workflow
+    coverage_name = Path(quality_gates.PHASE_QNODE_FRAMEWORK_PARITY_COVERAGE_DATA_FILE).name
+    assert workflow.count(f"--data-file=/tmp/{coverage_name}") == 2
     assert quality_gates.PHASE_QNODE_FRAMEWORK_PARITY_COVERAGE_INCLUDE in workflow

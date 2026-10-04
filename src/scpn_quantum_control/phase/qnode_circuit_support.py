@@ -21,7 +21,7 @@ from typing import cast
 import numpy as np
 from numpy.typing import ArrayLike
 
-from ..differentiable import multi_frequency_parameter_shift_rule
+from ..differentiable_parameter_contracts import multi_frequency_parameter_shift_rule
 from .qnode_circuit_contracts import (
     _GATE_ARITY,
     _PARAMETRIC_GATES,
