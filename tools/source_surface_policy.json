@@ -42,7 +42,13 @@
   {
    "kind": ".html",
    "root": "studio-web",
-   "missing": "no markup lint; the pages are exercised by the browser journeys only"
+   "gates": [
+    {
+     "workflow": "ci-studio.yml",
+     "job": "studio-web",
+     "command": "tools/audit_web_source_ceiling.py"
+    }
+   ]
   },
   {
    "kind": ".ipynb",

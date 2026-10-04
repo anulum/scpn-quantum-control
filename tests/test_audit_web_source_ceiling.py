@@ -32,6 +32,7 @@ TWO_FINDINGS = (
 )
 UNFORMATTED = "export const  spaced = 1;\n"
 STYLESHEET = "a {\n  color: red;\n}\n"
+PAGE = "<!doctype html>\n<html>\n  <body>\n    <p>measured</p>\n  </body>\n</html>\n"
 SCRIPT = 'export const greeting = (name) => "hello " + name;\n'
 BROKEN = "export const = ;\n"
 
@@ -130,6 +131,7 @@ def test_measure_counts_findings_and_lists_unformatted_sources(tmp_path: Path) -
 
     The documentation site's script lies outside the web workspace; Biome
     reports it by its absolute path and the gate records it by its repository path.
+    The page has no language attribute, which is one lint finding.
     """
     repo = _workspace(
         tmp_path,
@@ -140,7 +142,8 @@ def test_measure_counts_findings_and_lists_unformatted_sources(tmp_path: Path) -
             "src/spaced.ts": UNFORMATTED,
             "src/sheet.css": STYLESHEET,
             "src/note.md": "# not a web source\n",
-            "index.html": "<p>not measured</p>\n",
+            "index.html": PAGE,
+            "notes.txt": "not measured\n",
             "../docs/js/loader.js": SCRIPT,
             "../docs/css/site.css": STYLESHEET,
             "../docs/guide.css": STYLESHEET,
@@ -153,6 +156,7 @@ def test_measure_counts_findings_and_lists_unformatted_sources(tmp_path: Path) -
     assert gate.tracked_sources(repo) == [
         "docs/css/site.css",
         "docs/js/loader.js",
+        "studio-web/index.html",
         "studio-web/src/clean.ts",
         "studio-web/src/one.ts",
         "studio-web/src/sheet.css",
@@ -160,7 +164,12 @@ def test_measure_counts_findings_and_lists_unformatted_sources(tmp_path: Path) -
         "studio-web/src/two.tsx",
     ]
     assert gate.measure(repo, executable) == gate.Measurement(
-        {"docs/js/loader.js": 1, "studio-web/src/one.ts": 1, "studio-web/src/two.tsx": 2},
+        {
+            "docs/js/loader.js": 1,
+            "studio-web/index.html": 1,
+            "studio-web/src/one.ts": 1,
+            "studio-web/src/two.tsx": 2,
+        },
         ("studio-web/src/spaced.ts",),
     )
 

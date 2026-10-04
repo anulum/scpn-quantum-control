@@ -8,8 +8,8 @@
 """Hold the lint and format debt of the web workspace under a ceiling that only falls.
 
 The web workspace is type-checked, tested and built, but no gate linted its
-TypeScript and stylesheets or checked their layout, and nothing read the
-script and stylesheet of the documentation site. The sources were never
+TypeScript, stylesheets and pages or checked their layout, and nothing read
+the script and stylesheet of the documentation site. The sources were never
 formatted by a tool, so a plain "everything must pass" gate would demand one
 mass rewrite. This gate measures every tracked web source with the pinned
 Biome release and compares each file with a recorded ceiling instead.
@@ -32,6 +32,10 @@ to compare with a ceiling measured by another release. ``--rebaseline`` records
 a new measurement only in that situation and keeps the previous totals as
 history. A diagnostic that is neither a lint finding nor a format difference,
 such as a parse error, is a failure of the gate, never a counted finding.
+
+Pages are linted only: the pinned release does not format HTML unless an
+experimental formatter is switched on, and the gate does not switch it on, so
+the layout of a page is not checked.
 """
 
 from __future__ import annotations
@@ -50,7 +54,7 @@ from typing import Final, cast
 
 WEB_ROOT: Final[str] = "studio-web"
 SOURCE_ROOTS: Final[tuple[str, ...]] = (WEB_ROOT, "docs/css", "docs/js")
-SOURCE_SUFFIXES: Final[frozenset[str]] = frozenset({".ts", ".tsx", ".css", ".js"})
+SOURCE_SUFFIXES: Final[frozenset[str]] = frozenset({".ts", ".tsx", ".css", ".js", ".html"})
 DISTRIBUTION: Final[str] = "@biomejs/biome"
 DEFAULT_CEILING: Final[Path] = Path("tools/web_source_ceiling.json")
 SCHEMA: Final[str] = "web_source_ceiling_v1"
