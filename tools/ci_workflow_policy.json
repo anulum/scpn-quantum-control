@@ -21,7 +21,8 @@
         "split-boundary-guard",
         "test-documentation-ceiling",
         "git-location-isolation",
-        "source-surface-inventory"
+        "source-surface-inventory",
+        "shell-script-lint"
       ]
     },
     {
@@ -403,6 +404,7 @@
     "test-documentation-ceiling",
     "git-location-isolation",
     "source-surface-inventory",
+    "shell-script-lint",
     "native-wheels",
     "kuramoto-model-quality",
     "kuramoto-solver-quality",

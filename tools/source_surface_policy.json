@@ -283,17 +283,38 @@
   {
    "kind": ".sh",
    "root": "notebooks",
-   "missing": "no shell lint runs over these scripts"
+   "gates": [
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "shell-script-lint",
+     "command": "tools/audit_shell_scripts.py"
+    }
+   ],
+   "missing": "no format check runs over these scripts"
   },
   {
    "kind": ".sh",
    "root": "scripts",
-   "missing": "no shell lint runs over these scripts"
+   "gates": [
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "shell-script-lint",
+     "command": "tools/audit_shell_scripts.py"
+    }
+   ],
+   "missing": "no format check runs over these scripts"
   },
   {
    "kind": ".sh",
    "root": "tools",
-   "missing": "no shell lint runs over these scripts"
+   "gates": [
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "shell-script-lint",
+     "command": "tools/audit_shell_scripts.py"
+    }
+   ],
+   "missing": "no format check runs over these scripts"
   },
   {
    "kind": ".tmpl",
@@ -344,7 +365,14 @@
   {
    "kind": "pre-push",
    "root": ".githooks",
-   "missing": "no shell lint runs over these scripts"
+   "gates": [
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "shell-script-lint",
+     "command": "tools/audit_shell_scripts.py"
+    }
+   ],
+   "missing": "no format check runs over these scripts"
   }
  ],
  "outside": {

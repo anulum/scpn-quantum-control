@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — WSL Ubuntu 24.04 bootstrap
+#
 # WSL Ubuntu 24.04 bootstrap for scpn-quantum-control
 # Run from Windows: wsl -d Ubuntu-24.04 -- bash /mnt/c/aaa_God_of_the_Math_Collection/03_CODE/scpn-quantum-control/scripts/wsl_bootstrap.sh
 set -euo pipefail
@@ -25,6 +33,9 @@ else
     python3.12 -m venv "$VENV"
     echo "  created."
 fi
+# The activation script is created by the venv step above, so it cannot be
+# read when this file is linted.
+# shellcheck source=/dev/null
 source "$VENV/bin/activate"
 
 # ── 3. Upgrade pip, install project ─────────────────────────────────

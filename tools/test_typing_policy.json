@@ -19,6 +19,7 @@
         "tests/test_audit_license_readiness.py",
         "tests/test_audit_mock_stub_usage.py",
         "tests/test_audit_release_readiness.py",
+        "tests/test_audit_shell_scripts.py",
         "tests/test_audit_source_surface_inventory.py",
         "tests/test_audit_split_ownership.py",
         "tests/test_audit_test_behaviour.py",

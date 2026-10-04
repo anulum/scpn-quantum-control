@@ -294,6 +294,26 @@ compares the result with `tools/source_surface_policy.json`:
 The gate proves that a recorded command exists. It does not prove that the job
 passes or that the command reads every file of the row.
 
+## Shell Script Lint
+
+`python tools/audit_shell_scripts.py` runs ShellCheck over every tracked shell
+script and fails on any finding, down to style level. A script is a tracked
+`.sh` or `.bash` file, or a tracked file without a suffix whose first line names
+`sh`, `bash`, `dash` or `ksh` as the interpreter, such as `.githooks/pre-push`.
+
+Findings depend on the ShellCheck release. It is pinned in
+`requirements-ci-shell-lint.txt`, and the gate refuses to run with another
+release. Install the pinned one with
+`python -m pip install --no-deps --require-hashes -r requirements-ci-shell-lint.txt`;
+to change the pin, edit `requirements-ci-shell-lint.in` and regenerate the lock
+with the command recorded at the top of the `.txt` file.
+
+Silence a finding only where it is wrong, with a `# shellcheck` directive on
+the line above and a comment that says why. The gate runs in CI; the pre-push
+check does not run it, because it needs the pinned release. Script formatting
+is not enforced yet; the source surface inventory keeps the shell rows open for
+that reason.
+
 ## Commit Messages
 
 Use conventional subjects:
