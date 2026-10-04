@@ -45,3 +45,10 @@ it("renders every missing source explicitly while retaining the original evidenc
   expect(screen.getByLabelText("Evidence JSON")).toBeTruthy();
   expect(screen.queryByText("Baseline scorecard")).toBeNull();
 });
+
+
+it("reaches the original producer result inspector from the production Results route", () => {
+  render(<ResultsView />);
+  expect(screen.getByLabelText("Result producer JSON")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Inspect producer result" })).toBeTruthy();
+});

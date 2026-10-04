@@ -71,6 +71,7 @@ ARCHIVE/
 # JSON files during live runs; `results/` below is the legacy cache
 # directory for older experiments (pre-2026-04) and is not committed.
 results/
+!studio-web/src/features/results/
 
 # Generated QPU campaign parameter caches. Source-backed publication
 # artifacts belong under `data/<experiment>/`; local `.npy` transport

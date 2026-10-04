@@ -437,3 +437,88 @@ def test_disposal_after_capture_preserves_records_and_stop_error(native_browser:
         assert all(isinstance(record["coverage"], dict) for record in records)
     finally:
         context.close()
+
+
+def test_capture_actual_result_owners(native_browser: Browser) -> None:
+    """Retain all eleven result and storage owners through actual Results navigation.
+
+    Parameters
+    ----------
+    native_browser
+        Owned Chromium process using the original production Results route.
+
+    """
+    supplied = os.environ.get("STUDIO_WORKSPACE_SOURCE_URL")
+    if supplied is None:
+        raise RuntimeError("Supply the owned source host")
+    context = native_browser.new_context(service_workers="block")
+    try:
+        page = context.new_page()
+        session = start_native_coverage(page)
+        page.goto(loopback_url(supplied) + "#/results", wait_until="networkidle")
+        expect(page.get_by_role("region", name="Source result inspector")).to_be_visible()
+        records = take_native_coverage(session, include_results=True)
+        actual: set[str] = set()
+        for record in records:
+            native = record["coverage"]
+            assert isinstance(native, dict)
+            url = native.get("url")
+            assert isinstance(url, str)
+            actual.add(urlsplit(url).path)
+        assert actual == {
+            "/src/shared/storage/workspaceStore.ts",
+            "/src/shared/storage/workspaceArchive.ts",
+            "/src/features/workspace/WorkspacePanel.tsx",
+            "/src/features/workspace/useWorkspace.ts",
+            "/src/app/Workbench.tsx",
+            "/src/app/routes/ResultsView.tsx",
+            "/src/features/results/resultModel.ts",
+            "/src/features/results/resultSources.ts",
+            "/src/features/results/resultExport.ts",
+            "/src/features/results/ResultInspector.tsx",
+            "/src/features/results/ResultLoader.tsx",
+        }
+    finally:
+        context.close()
+
+
+def test_result_capture_refuses_interrupted_original_owner(native_browser: Browser) -> None:
+    """Preserve native records and stop profiling when an original result module fails.
+
+    Parameters
+    ----------
+    native_browser
+        Owned Chromium process with one genuinely unavailable source-module request.
+
+    """
+    supplied = os.environ.get("STUDIO_WORKSPACE_SOURCE_URL")
+    if supplied is None:
+        raise RuntimeError("Supply the owned source host")
+    context = native_browser.new_context(service_workers="block")
+    try:
+        page = context.new_page()
+        interrupted: list[str] = []
+
+        def unavailable_result(route: Route) -> None:
+            """Retain and interrupt the actual original result module request."""
+            interrupted.append(route.request.url)
+            route.abort()
+
+        page.route("**/src/features/results/resultModel.ts", unavailable_result)
+        session = start_native_coverage(page)
+        page.goto(loopback_url(supplied) + "#/results", wait_until="networkidle")
+        expect(page.get_by_role("alert")).to_contain_text("View unavailable")
+        records: list[dict[str, object]] = []
+        with pytest.raises(AssertionError, match="Missing current-page native owners"):
+            take_native_coverage(session, records, include_results=True)
+        assert len(interrupted) == 1
+        assert records
+        assert all(
+            isinstance(record["coverage"], dict)
+            and not str(record["coverage"].get("url", "")).endswith("/resultModel.ts")
+            for record in records
+        )
+        with pytest.raises(Error):
+            session.send("Profiler.takePreciseCoverage")
+    finally:
+        context.close()

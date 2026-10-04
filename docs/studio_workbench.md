@@ -34,8 +34,8 @@ availability without a fresh deployment probe.
 The Workspace view retains the original capability catalogue, committed cards
 and local archive editor. Build opens the existing compile recomputation,
 Kuramoto Play and 3D Lab instruments, together with the program editor and compiler
-trace inspector. Results opens program-AD replay, evidence
-inspection, the support explorer, gradient explanations and scorecard.
+trace inspector. Results opens the source result inspector, program-AD replay,
+evidence inspection, the support explorer, gradient explanations and scorecard.
 Experiments opens the source-bound local experiment workflow described below.
 Atlas shows its unavailable workflow and a link back to Workspace. The mode
 banner distinguishes standalone and embedded layouts;
@@ -265,6 +265,63 @@ Rust plan remains inspectable, but full quantum-trajectory execution on that
 backend is unavailable and refuses explicitly; it cannot silently execute
 through Python while claiming Rust. This handler and the browser's classical
 phase worker have distinct model and output contracts.
+
+## Source result values and exports
+
+After a successful disposed local experiment, open **Results**. **Result value
+inspector** shows the original order-parameter trajectory and final phases from
+that plan and output. The caption identifies the requested model-time grid:
+the kernel reports no measured timestamps or full phase history. The output
+artifact SHA256 matches the saved experiment's original output bytes. A failed,
+unconfirmed or differently bound attempt refuses result admission.
+
+To inspect an existing Python synchronisation analysis, paste the complete
+`scpn-studio-run analyse` JSON export into **Result producer JSON**, then choose
+**Inspect producer result**. Its original filtration thresholds, Betti counts
+and producer-declared units remain explicit. The source SHA256 identifies the
+imported bytes; metadata admission does not verify the producer's scientific
+claims or attestations. Malformed, unsupported, oversized or inexact integer
+sources leave the previous imported result and saved workspace intact.
+
+Each panel declares its series, histogram, spectrum or matrix form. Charts use
+those source coordinates without deriving bins, spectra, timestamps or unit
+conversions. Choose a chart marker or a raw row's **Select** button to link the
+same coordinate and object across panels. Raw tables show at most 20 rows per
+page; **Previous** and **Next** retain access to every original sample. Charts
+display at most 1000 original points per panel, including the selected point and
+endpoints. Display reduction and rounded labels never replace the raw values.
+
+Missing, NaN and refused samples remain written as distinct states and break
+connecting lines. Partial outputs carry an explicit notice. An absent interval
+reads **Not estimated**. A supplied interval retains its original lower/upper
+bounds, estimator method and reported level; no zero error bar or generic
+uncertainty estimate is supplied.
+
+**Export raw CSV** downloads every raw sample with source coordinate/object,
+units, dtype, state and interval metadata. **Export SVG** downloads the displayed
+charts and the complete raw source metadata. Both retain the evidence caption,
+claim boundary and source SHA256, including when chart points are reduced.
+Exports are local downloads and leave saved workspace state unchanged. The
+inspector accepts at most 16 panels and 65,536 samples in a producer import of
+at most 2 MiB UTF-8; these are product bounds rather than measured host capacity.
+
+The original browser dispatcher checks actual shipped WASM values against their
+saved output identity, imports an actual CLI export with nonuniform thresholds,
+reads CSV/SVG downloads and refuses malformed imports without another worker:
+
+```bash
+PYTHONPATH=src:oscillatools/src:. python tools/studio_browser_journey.py \
+  --scenario result_value_inspector --base-url http://127.0.0.1:4173/ \
+  --workspace-source-url http://127.0.0.1:4174/ \
+  --output studio-result-value-inspector.json
+```
+
+Prepare the built preview and distinct root source host as described above.
+Successful current-source evidence supplies `STUDIO_RESULT_COVERAGE` to the
+existing native converter and affected owner coverage cohort. It requires all
+11 original Results, result-projection and workspace owners, preserving exact
+source hashes, maps and native zero counters. Raw browser observations remain
+separate from the subsequently measured coverage percentage.
 
 ## Provider and device profiles
 

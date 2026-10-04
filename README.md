@@ -136,7 +136,7 @@ claims only when the evidence exists.
 | Notebook files | 109 |
 | Example files | 38 |
 | Optional extras | 43 |
-| Python test files | 1502 |
+| Python test files | 1503 |
 | Public documentation pages | 381 |
 | GitHub Actions workflows | 44 |
 
@@ -215,7 +215,10 @@ opens the committed classical Kuramoto sample, edits an immutable parameter
 revision, inspects its numerical plan and explicitly runs the shipped Rust/WASM
 worker. Disposed attempts can be saved, exported and independently imported for
 exact float64 replay. The workflow uses unscaled model-time and carries a
-classical-model claim boundary.
+classical-model claim boundary. The [result inspector](docs/studio_workbench.md#source-result-values-and-exports)
+links the original run values and imported analysis thresholds to raw tables,
+source-specific uncertainty and CSV/SVG exports. Display reduction retains the
+complete raw source and its digest.
 
 ## Differentiable Programming Route
 

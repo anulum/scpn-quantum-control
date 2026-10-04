@@ -45,6 +45,7 @@ import pytest
         "owned_kernel_worker",
         "operator_policy_decisions",
         "operator_review_dossiers",
+        "result_value_inspector",
     ],
 )
 def test_runner_rejects_external_or_ambiguous_preview(

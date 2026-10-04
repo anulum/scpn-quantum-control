@@ -13,7 +13,7 @@
     "python_model_source_modules": 780,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1502
+    "test_files": 1503
   },
   "documentation": {
     "examples": [
@@ -10098,6 +10098,7 @@
       "tests/test_studio_reference_validation.py",
       "tests/test_studio_replay_quality_gate.py",
       "tests/test_studio_resource_browser_journey.py",
+      "tests/test_studio_result_browser.py",
       "tests/test_studio_scorecard_bundle.py",
       "tests/test_studio_scorecard_bundle_quality_gate.py",
       "tests/test_studio_simulation_quality_gate.py",

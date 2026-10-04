@@ -178,7 +178,9 @@ class AnalyseActionHandler(ActionHandler):
         Returns
         -------
         ExecutionResult
-            A succeeded result carrying the witness summary.
+            A succeeded result carrying the original witness summary and read-only
+            inspection metadata. Filtration coordinates retain radians; missing
+            uncertainty is explicit. No state or source evidence is mutated.
 
         """
         analyse_spec: dict[str, Any] = dict(plan.parameters)
@@ -196,6 +198,48 @@ class AnalyseActionHandler(ActionHandler):
             "betti1_curve": [int(count) for count in record.betti1_curve],
             "reference_scale": record.reference_scale,
             "witness_passed": record.passed,
+        }
+        # Projection of the original witness only: thresholds are filtration
+        # coordinates in radians, not timestamps or a generating-model claim.
+        outputs["inspection"] = {
+            "version": 1,
+            "title": "Phase-cloud synchronisation witness",
+            "caption": (
+                "Original finite-cloud witness; actual Python/NumPy computation; "
+                f"declared request backend {plan.backend}. No uncertainty estimated."
+            ),
+            "claimBoundary": plan.claim_boundary,
+            "partial": False,
+            "panels": [
+                {
+                    "id": f"betti{dimension}",
+                    "title": f"Betti H{dimension}",
+                    "kind": "series",
+                    "coordinateLabel": "Filtration threshold",
+                    "coordinateUnit": "rad",
+                    "xLabel": "Filtration threshold",
+                    "xUnit": "rad",
+                    "yLabel": "",
+                    "yUnit": "",
+                    "valueLabel": f"Betti H{dimension}",
+                    "valueUnit": "1",
+                    "valueDtype": "int64",
+                    "samples": [
+                        {
+                            "coordinate": float(threshold),
+                            "objectId": f"H{dimension}",
+                            "columnId": None,
+                            "x": float(threshold),
+                            "y": None,
+                            "value": int(count),
+                            "status": "finite",
+                            "interval": None,
+                        }
+                        for threshold, count in zip(record.thresholds, curve, strict=True)
+                    ],
+                }
+                for dimension, curve in enumerate((record.betti0_curve, record.betti1_curve))
+            ],
         }
         return ExecutionResult(status="succeeded", outputs=outputs)
 

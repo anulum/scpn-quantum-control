@@ -232,3 +232,21 @@ def test_normalise_analyse_accepts_bounded_cloud() -> None:
     assert len(analyse_spec["phases"]) == 4
     assert analyse_spec["expected_components"] == 1
     assert analyse_spec["reference_scale"] == 0.5
+
+
+def test_analyse_preserves_producer_coordinates_units_and_missing_uncertainty() -> None:
+    """Expose original filtration coordinates without inventing a time axis or interval."""
+    record = run_action(_request(thresholds=[0.0, 0.125, 2.0]), registry=_registry())
+    view = record.result.outputs["inspection"]
+    assert view["version"] == 1
+    assert view["claimBoundary"] == record.plan.claim_boundary
+    assert view["panels"][0]["xLabel"] == "Filtration threshold"
+    assert view["panels"][0]["xUnit"] == "rad"
+    assert view["panels"][0]["valueUnit"] == "1"
+    assert [sample["x"] for sample in view["panels"][0]["samples"]] == [0.0, 0.125, 2.0]
+    assert [sample["value"] for sample in view["panels"][0]["samples"]] == record.result.outputs[
+        "betti0_curve"
+    ]
+    assert all(
+        sample["interval"] is None for panel in view["panels"] for sample in panel["samples"]
+    )

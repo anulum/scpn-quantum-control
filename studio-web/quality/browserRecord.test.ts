@@ -12,7 +12,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { coverageObject, experimentBrowserOwners, qualifyBrowserRecord } from "./browserRecord";
+import { coverageObject, experimentBrowserOwners, qualifyBrowserRecord, resultBrowserOwners } from "./browserRecord";
 
 async function actualInput(): Promise<{ record: Record<string, unknown>; origin: string }> {
   const filename = process.env["STUDIO_WORKSPACE_COVERAGE"];
@@ -198,4 +198,27 @@ describe("browser coverage evidence qualification", () => {
       await expect(qualifyBrowserRecord(input.record, directory, input.origin)).rejects.toThrow("Browser owner coverage exclusions are refused");
     } finally { await rm(directory, { recursive: true }); }
   });
+});
+
+
+it("qualifies every actual result script only with its declared original result cohort", async () => {
+  const filename = process.env["STUDIO_RESULT_COVERAGE"];
+  if (!filename) throw new Error("Supply actual result_value_inspector source evidence");
+  const evidence = coverageObject(JSON.parse(await readFile(filename, "utf8")) as unknown);
+  if (evidence["scenario"] !== "result_value_inspector" || evidence["passed"] !== true || !Array.isArray(evidence["native_v8_coverage"]) || typeof evidence["source_url"] !== "string") throw new Error("Actual successful result source counters required");
+  const owners = new Set<string>();
+  for (const record of evidence["native_v8_coverage"]) {
+    const qualified = await qualifyBrowserRecord(record, process.cwd(), evidence["source_url"], false, false, false, true);
+    const native = coverageObject(coverageObject(record)["coverage"]);
+    if (typeof native["url"] !== "string") throw new Error("Actual source URL missing");
+    const pathname = new URL(native["url"]).pathname;
+    owners.add(pathname);
+    expect(qualified.coverage.functions.length).toBeGreaterThan(0);
+    if (pathname.startsWith("/src/features/results/")) {
+      for (const [workbench, parameters, experiments] of [[false, false, false], [true, false, false], [false, true, false], [false, false, true]] as const) {
+        await expect(qualifyBrowserRecord(record, process.cwd(), evidence["source_url"], workbench, parameters, experiments)).rejects.toThrow("Unowned browser coverage source");
+      }
+    }
+  }
+  expect(owners).toEqual(resultBrowserOwners);
 });

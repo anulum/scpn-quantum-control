@@ -419,6 +419,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "workbench_accessibility",
             "owned_kernel_worker",
             "local_experiment_journey",
+            "result_value_inspector",
         ),
         required=True,
     )
@@ -469,12 +470,12 @@ def main(argv: Sequence[str] | None = None) -> int:
 
                 run_workspace_journey(url, args.workspace_source_url, evidence)
         else:
-            if (
-                args.workspace_source_url is not None
-                and args.scenario != "local_experiment_journey"
+            if args.workspace_source_url is not None and args.scenario not in (
+                "local_experiment_journey",
+                "result_value_inspector",
             ):
                 raise ValueError(
-                    "--workspace-source-url is valid only for workspace_recovery/workbench_navigation/parameter_graph_editor/workbench_accessibility/local_experiment_journey"
+                    "--workspace-source-url is valid only for workspace_recovery/workbench_navigation/parameter_graph_editor/workbench_accessibility/local_experiment_journey/result_value_inspector"
                 )
             journey: Callable[[str], dict[str, object]]
             if args.scenario == "workspace_panel_refusal":
@@ -489,6 +490,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                 from tools.studio_owned_worker_journey import run_owned_worker_journey
 
                 journey = partial(run_owned_worker_journey, evidence=evidence)
+            elif args.scenario == "result_value_inspector":
+                from tools.studio_result_browser import run_result_journey
+
+                journey = partial(
+                    run_result_journey, source_url=args.workspace_source_url, evidence=evidence
+                )
             elif args.scenario == "local_experiment_journey":
                 from tools.studio_local_experiment_browser import run_local_experiment_journey
 

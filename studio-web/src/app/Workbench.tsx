@@ -82,7 +82,7 @@ export function Workbench({ children, rawCodecs, mode = "standalone" }: Workbenc
               {view === "workspace" && children(context)}
               {view === "build" && <BuildView focusInstrument={instrument === "compile-recompute"} />}
               {view === "operations" && <OperationsView />}
-              {view === "results" && <ResultsView focusInstrument={instrument === "program-ad-replay"} />}
+              {view === "results" && <ResultsView focusInstrument={instrument === "program-ad-replay"} plan={experiment.plan} outcome={experiment.outcome} />}
               {view === "experiments" && <ExperimentRunner workspace={workspace} rawCodecs={codecs} run={experiment} workspaceHref={href("workspace")} />}
               {view === "atlas" && <UnavailableView view={view} workspaceHref={href("workspace")} />}
             </Suspense>

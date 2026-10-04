@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { readBrowserCoverage } from "./browserCoverage";
-import { browserOwners, coverageObject, experimentBrowserOwners, panelBrowserOwner, parameterBrowserOwners, qualifyBrowserRecord, workbenchBrowserOwners } from "./browserRecord";
+import { browserOwners, coverageObject, experimentBrowserOwners, panelBrowserOwner, parameterBrowserOwners, qualifyBrowserRecord, resultBrowserOwners, workbenchBrowserOwners } from "./browserRecord";
 
 describe("original native counter conversion", () => {
   it("converts all actual experiment owners while retaining uncovered native ranges", async () => {
@@ -218,4 +218,34 @@ describe("original native counter conversion", () => {
       await expect(readBrowserCoverage(filename, process.cwd())).rejects.toThrow("Native coverage source origin missing");
     } finally { await rm(directory, { recursive: true }); }
   });
+});
+
+
+it("converts actual result source maps while preserving the original native zero counters", async () => {
+  const filename = process.env["STUDIO_RESULT_COVERAGE"];
+  if (!filename) throw new Error("Supply actual result_value_inspector source evidence");
+  const original = await readFile(filename, "utf8");
+  const maps = await readBrowserCoverage(filename, process.cwd());
+  expect(new Set(maps.flatMap(map => Object.keys(map)))).toEqual(new Set([...resultBrowserOwners].map(owner => resolve(process.cwd(), "." + owner))));
+  expect(maps.some(map => Object.values(map).some(file => Object.values(file.s).some(count => count === 0)))).toBe(true);
+  expect(await readFile(filename, "utf8")).toBe(original);
+});
+
+it.each([...resultBrowserOwners])("refuses actual result evidence missing production owner %s", async omitted => {
+  const filename = process.env["STUDIO_RESULT_COVERAGE"];
+  if (!filename) throw new Error("Supply actual result_value_inspector source evidence");
+  await readBrowserCoverage(filename, process.cwd());
+  const evidence = coverageObject(JSON.parse(await readFile(filename, "utf8")) as unknown);
+  if (!Array.isArray(evidence["native_v8_coverage"])) throw new Error("Actual result counters missing");
+  evidence["native_v8_coverage"] = evidence["native_v8_coverage"].filter(value => {
+    const native = coverageObject(coverageObject(value)["coverage"]);
+    if (typeof native["url"] !== "string") throw new Error("Actual source URL missing");
+    return new URL(native["url"]).pathname !== omitted;
+  });
+  const directory = await mkdtemp(join(tmpdir(), "studio-result-owner-refusal-"));
+  try {
+    const rejected = join(directory, "omitted-owner.json");
+    await writeFile(rejected, JSON.stringify(evidence), "utf8");
+    await expect(readBrowserCoverage(rejected, process.cwd())).rejects.toThrow("Native workspace coverage has missing production owners");
+  } finally { await rm(directory, { recursive: true }); }
 });

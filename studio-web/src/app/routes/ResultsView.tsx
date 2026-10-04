@@ -7,6 +7,8 @@
 // SCPN Quantum Control — lazy original evidence surfaces
 
 import { useEffect, useRef } from "react";
+import { ResultLoader } from "../../features/results/ResultLoader";
+import type { ResultLoaderProps } from "../../features/results/ResultLoader";
 import { EvidenceViewer } from "../../shared/evidence/EvidenceViewer";
 import { ProgramADReplayCard } from "../../panel/ProgramADReplayCard";
 import { SupportMatrixGrid } from "../../panel/SupportMatrixGrid";
@@ -17,7 +19,7 @@ import { programAdUnit } from "../../panel/programAd";
 import { gradientPlanExplanations, scorecard, supportMatrix } from "../../panel/data";
 
 /** Original evidence and replay owners retain their source identities and claim boundaries. */
-export default function ResultsView({ focusInstrument = false }: {
+export default function ResultsView({ focusInstrument = false, plan = null, outcome = null }: ResultLoaderProps & {
   /** Focus the original replay target only after this lazy module has mounted. */
   focusInstrument?: boolean;
 }) {
@@ -26,6 +28,7 @@ export default function ResultsView({ focusInstrument = false }: {
   return <article className="qsp-panel">
     <h3>Results</h3>
     <p>Inspect source-bound evidence or replay the committed browser fixture. These results are not attached to a requested revision by navigation.</p>
+    <ResultLoader plan={plan} outcome={outcome} />
     <div id="/results/program-ad-replay" tabIndex={-1} ref={target}>
       {programAdUnit.ok ? <ProgramADReplayCard unit={programAdUnit.value} /> : <Unverifiable surface="program_ad_replay_rational_20260714.json" reason={programAdUnit.reason} />}
     </div>
