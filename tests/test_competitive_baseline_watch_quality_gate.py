@@ -60,4 +60,5 @@ def test_ci_runs_and_aggregates_gate() -> None:
     block = workflow[start:end]
     assert all(path in block for path in quality_gates.COMPETITIVE_BASELINE_WATCH_QUALITY_RATCHET)
     assert all(path in block for path in quality_gates.COMPETITIVE_BASELINE_WATCH_COVERAGE_COHORT)
+    assert block.index("python -m pip install --no-deps -e .") < block.index("-m pytest")
     assert "competitive-baseline-watch-quality" in workflow[workflow.index("  ci-gate:") :]

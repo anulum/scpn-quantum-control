@@ -15,12 +15,15 @@ import sys
 from pathlib import Path
 
 import pytest
-from test_operator_review_dossier import review_inputs
 
-from scpn_quantum_control.canonical_encoding import canonical_digest
-from scpn_quantum_control.studio.executive_execute import ExecuteActionHandler
-from scpn_quantum_control.studio.operator_review_script import build_review_script
-from scpn_quantum_control.studio.workspace import write_json
+pytest.importorskip("scpn_studio_platform", reason="studio extra not installed")
+
+from test_operator_review_dossier import review_inputs  # noqa: E402
+
+from scpn_quantum_control.canonical_encoding import canonical_digest  # noqa: E402
+from scpn_quantum_control.studio.executive_execute import ExecuteActionHandler  # noqa: E402
+from scpn_quantum_control.studio.operator_review_script import build_review_script  # noqa: E402
+from scpn_quantum_control.studio.workspace import write_json  # noqa: E402
 
 
 @pytest.mark.parametrize(

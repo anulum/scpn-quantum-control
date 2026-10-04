@@ -16,8 +16,10 @@ from typing import Any, cast
 
 import pytest
 
-from scpn_quantum_control.studio.workspace import read_json
-from tools.export_operator_review_dossiers import (
+pytest.importorskip("scpn_studio_platform", reason="studio extra not installed")
+
+from scpn_quantum_control.studio.workspace import read_json  # noqa: E402
+from tools.export_operator_review_dossiers import (  # noqa: E402
     EXAMPLE_CASES,
     build_operator_review_example,
     main,

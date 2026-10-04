@@ -15,22 +15,30 @@ from typing import Any
 
 import pytest
 
-from scpn_quantum_control.canonical_encoding import canonical_digest
-from scpn_quantum_control.hardware.hal import (
+pytest.importorskip("scpn_studio_platform", reason="studio extra not installed")
+
+from scpn_quantum_control.canonical_encoding import canonical_digest  # noqa: E402
+from scpn_quantum_control.hardware.hal import (  # noqa: E402
     BackendCapabilities,
     BackendProfile,
     HardwareAbstractionLayer,
     QuantumWorkload,
 )
-from scpn_quantum_control.hardware.operator_policy_contracts import OperatorPolicy, PricingEstimate
-from scpn_quantum_control.hardware.provider_semantics import WorkloadSemantics
-from scpn_quantum_control.studio.executive import ExecutiveRequest
-from scpn_quantum_control.studio.executive_execute import ExecuteActionHandler
-from scpn_quantum_control.studio.operator_review_dossier import (
+from scpn_quantum_control.hardware.operator_policy_contracts import (  # noqa: E402
+    OperatorPolicy,
+    PricingEstimate,
+)
+from scpn_quantum_control.hardware.provider_semantics import WorkloadSemantics  # noqa: E402
+from scpn_quantum_control.studio.executive import ExecutiveRequest  # noqa: E402
+from scpn_quantum_control.studio.executive_execute import ExecuteActionHandler  # noqa: E402
+from scpn_quantum_control.studio.operator_review_dossier import (  # noqa: E402
     OperatorReviewDecision,
     OperatorReviewDossier,
 )
-from scpn_quantum_control.studio.workspace import ResolvedSettings, operator_request_from_settings
+from scpn_quantum_control.studio.workspace import (  # noqa: E402
+    ResolvedSettings,
+    operator_request_from_settings,
+)
 
 
 def review_inputs() -> tuple[ExecutiveRequest, dict[str, Any]]:

@@ -5,7 +5,6 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — CI documentation surface gate tests
-# SCPN Quantum Control -- CI documentation surface gate contract
 """Static contract for the CI documentation-surface gate."""
 
 from __future__ import annotations
@@ -678,6 +677,31 @@ def test_ci_optional_runtime_locks_and_preview_rules_are_explicit() -> None:
         assert {job for job, block in jobs.items() if install in block} == owners
         assert lock in copied_files, f"Docker reproduction image must include {lock}"
         assert Path(lock).is_file()
-    preview_commands = len(re.findall(r"ruff check --isolated\s+--preview\s+--select", workflow))
+    preview_commands = len(
+        re.findall(r"ruff\s+check\s+--isolated\s+--preview\s+--select", workflow)
+    )
     explicit_preview_configs = workflow.count("lint.explicit-preview-rules = true")
     assert preview_commands == explicit_preview_configs
+
+
+def test_ci_jobs_install_what_their_cohorts_execute() -> None:
+    """Jobs install the project and the Studio platform before the tests that need them.
+
+    The competitive benchmark records the version of the installed distribution,
+    so every job that runs it installs the project first. The Studio browser
+    cohort calls the native command line, which imports the Studio platform, so
+    that job installs the platform once, before the cohort.
+    """
+    workflow = read_ci_workflow_source()
+    sections = re.split(r"^  ([a-z0-9_-]+):\n", workflow, flags=re.MULTILINE)
+    jobs = dict(zip(sections[1::2], sections[2::2], strict=False))
+    editable = "python -m pip install --no-deps -e ."
+    for job in ("test", "competitive-baseline-watch-quality"):
+        block = jobs[job]
+        assert block.index(editable) < block.index("pytest")
+    studio = jobs["studio-web"]
+    platform = (
+        "python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt"
+    )
+    assert studio.count(platform) == 1
+    assert studio.index(platform) < studio.index("tests/test_studio_result_browser.py")
