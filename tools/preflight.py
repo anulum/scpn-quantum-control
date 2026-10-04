@@ -1034,6 +1034,27 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
         ],
     ),
     (
+        "web-source-ceiling",
+        [
+            _PY,
+            "tools/audit_web_source_ceiling.py",
+            "--changed-against",
+            "origin/main",
+        ],
+    ),
+    (
+        "mypy-strict-web-source-ceiling",
+        [
+            _PY,
+            "-m",
+            "mypy",
+            "--strict",
+            "--explicit-package-bases",
+            "tools/audit_web_source_ceiling.py",
+            "tests/test_audit_web_source_ceiling.py",
+        ],
+    ),
+    (
         "mypy-strict-git-location-isolation",
         [
             _PY,

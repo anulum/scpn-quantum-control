@@ -1,0 +1,32 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Commercial license available
+// © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+// © Code 2020–2026 Miroslav Šotek. All rights reserved.
+// ORCID: 0009-0009-3560-0851
+// Contact: www.anulum.li | protoscience@anulum.li
+// SCPN Quantum Control Studio — lint and format configuration
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "formatter": {
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double"
+    }
+  },
+  "linter": {
+    "rules": {
+      "recommended": true,
+      "complexity": {
+        // Wire records are read by their literal field names, e.g. record["plan_sha256"].
+        "useLiteralKeys": "off"
+      }
+    }
+  },
+  "assist": {
+    "enabled": false
+  }
+}

@@ -259,6 +259,38 @@ upgrade record the new measurement with `--rebaseline`, which keeps the previous
 totals in the file's history. The gate checks that documentation is present and
 well formed; it does not judge whether a description is accurate.
 
+## Web Source Ceiling
+
+The TypeScript and stylesheet sources of `studio-web` are linted and
+format-checked with Biome, pinned as an exact development dependency in
+`studio-web/package.json` and configured in `studio-web/biome.jsonc`. The
+sources were never formatted by a tool, so the gate does not demand one mass
+rewrite: `python tools/audit_web_source_ceiling.py` compares every tracked
+`.ts`, `.tsx` and `.css` file with `tools/web_source_ceiling.json`, which
+records the lint finding count per file and the files that are not formatted.
+The ceiling only falls:
+
+- a source that is not in the ceiling must have no lint finding and be
+  formatted;
+- a recorded file may not gain findings, and a formatted file may not lose its
+  layout;
+- when a file's findings fall, or a file becomes clean, formatted or is
+  removed, lower the ceiling in the same change with `--lower` (it refuses
+  while any debt grew);
+- with `--changed-against <revision>` every web source that differs from that
+  revision must have no finding and be formatted. CI compares with the
+  previous head and the pre-push check compares with `origin/main`, so a web
+  source that is touched is cleaned and formatted completely in the same
+  change: `pnpm exec biome format --write <file>` and
+  `pnpm exec biome lint <file>` in `studio-web`.
+
+The gate uses the Biome executable that `pnpm install --frozen-lockfile` puts
+into the workspace and refuses any release other than the pinned one. After a
+Biome upgrade record the new measurement with `--rebaseline`, which keeps the
+previous totals in the file's history. A parse error is a failure of the gate,
+not a counted finding. The gate reports what Biome reports under the recorded
+configuration; it does not judge accessibility or behaviour beyond those rules.
+
 ## Git Location Isolation In Tests
 
 Git exports `GIT_DIR`, `GIT_INDEX_FILE` and related variables to its hooks, and

@@ -9,7 +9,13 @@
   {
    "kind": ".css",
    "root": "studio-web",
-   "missing": "no stylesheet lint"
+   "gates": [
+    {
+     "workflow": "ci-studio.yml",
+     "job": "studio-web",
+     "command": "tools/audit_web_source_ceiling.py"
+    }
+   ]
   },
   {
    "kind": ".go",
@@ -370,9 +376,13 @@
      "workflow": "ci-studio.yml",
      "job": "studio-web",
      "command": "pnpm typecheck"
+    },
+    {
+     "workflow": "ci-studio.yml",
+     "job": "studio-web",
+     "command": "tools/audit_web_source_ceiling.py"
     }
-   ],
-   "missing": "no lint and no format gate"
+   ]
   },
   {
    "kind": ".tsx",
@@ -382,9 +392,13 @@
      "workflow": "ci-studio.yml",
      "job": "studio-web",
      "command": "pnpm typecheck"
+    },
+    {
+     "workflow": "ci-studio.yml",
+     "job": "studio-web",
+     "command": "tools/audit_web_source_ceiling.py"
     }
-   ],
-   "missing": "no lint and no format gate"
+   ]
   },
   {
    "kind": "Dockerfile",
@@ -421,6 +435,7 @@
   ".in": "requirement input",
   ".jpg": "figure",
   ".json": "data and configuration",
+  ".jsonc": "configuration",
   ".license": "licence sidecar",
   ".lock": "dependency lock",
   ".log": "recorded log",
