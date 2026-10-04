@@ -194,14 +194,20 @@ def test_parameter_journey_retains_actual_runtime_faults(
         owned_fault_host(
             parameter_bundle, page_error=fault == "page", external_request=fault == "external"
         ) as preview,
-        pytest.raises(AssertionError),
+        pytest.raises(
+            AssertionError,
+            match="owned page failure" if fault == "page" else "owned-refused-request",
+        ),
     ):
         run_parameter_journey(preview, parameter_source, observed)
-    completed = observed["observations"]
-    assert (
-        isinstance(completed, list)
-        and completed[-1] == "unicode-source-key-linked-graph-and-native-marker-resolution"
-    )
+    assert observed["observations"] == [
+        "built-original-wasm-and-workspace-link",
+        "signed-directed-graph-form-and-exact-undo",
+        "invalid-values-domain-unit-refusal-and-explicit-conversion",
+        "symmetric-edit-mask-native-save-and-python-digest-parity",
+        "reload-mask-and-second-native-save-preserve-all-prior-results",
+        "unicode-source-key-linked-graph-and-native-marker-resolution",
+    ]
     if fault == "page":
         errors = observed["page_errors"]
         assert isinstance(errors, list) and any("owned page failure" in error for error in errors)
