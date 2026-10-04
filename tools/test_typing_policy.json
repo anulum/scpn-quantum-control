@@ -13,6 +13,7 @@
     {
       "activation_criterion": "Every listed repository-policy test passes mypy --strict together in the pinned CI environment.",
       "files": [
+        "tests/_git_location_isolation.py",
         "tests/test_audit_coverage_debt.py",
         "tests/test_audit_coverage_policy.py",
         "tests/test_audit_license_readiness.py",
@@ -37,6 +38,7 @@
         "tests/test_config.py",
         "tests/test_e2e_contract_boundary_audit.py",
         "tests/test_enforce_main_branch_policy.py",
+        "tests/test_git_location_isolation.py",
         "tests/test_ibm_public_artifact_anonymizer.py",
         "tests/test_kuramoto_relocation_shims.py",
         "tests/test_module_size_policy.py",

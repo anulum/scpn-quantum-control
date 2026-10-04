@@ -14,6 +14,8 @@ Provides:
   - Hypothesis strategies for quantum states, coupling matrices, frequencies
   - AerSimulator runner (sim_runner)
   - Reproducible RNG
+  - Git location isolation: inherited repository-location variables are
+    dropped before collection (see ``_git_location_isolation``)
 """
 
 from __future__ import annotations
@@ -24,6 +26,7 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import pytest
+from _git_location_isolation import drop_inherited_git_location
 from _internal_corpus_markers import is_performance_gate, requires_internal_paper0_corpus
 from hypothesis import strategies as st
 
@@ -40,11 +43,27 @@ if TYPE_CHECKING:
     from qiskit.quantum_info import SparsePauliOp
 
 # ---------------------------------------------------------------------------
+# Git location isolation
+# ---------------------------------------------------------------------------
+
+#: Repository-local Git variables removed before collection, with their former values.
+INHERITED_GIT_LOCATION: dict[str, str] = drop_inherited_git_location()
+
+
+def pytest_report_header() -> str | None:
+    """Name the inherited Git location variables the session dropped, if any."""
+    if not INHERITED_GIT_LOCATION:
+        return None
+    return "git location isolation: dropped " + ", ".join(INHERITED_GIT_LOCATION)
+
+
+# ---------------------------------------------------------------------------
 # Markers
 # ---------------------------------------------------------------------------
 
 
 def pytest_configure(config: pytest.Config) -> None:
+    """Register the custom markers the suite uses."""
     config.addinivalue_line("markers", "slow: marks tests as slow")
     config.addinivalue_line(
         "markers",
@@ -114,11 +133,13 @@ def dt(request: pytest.FixtureRequest) -> float:
 
 @pytest.fixture
 def knm_4q() -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    """Paper-27 coupling matrix and natural frequencies for four oscillators."""
     return build_knm_paper27(L=4), OMEGA_N_16[:4]
 
 
 @pytest.fixture
 def knm_8q() -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    """Paper-27 coupling matrix and natural frequencies for eight oscillators."""
     return build_knm_paper27(L=8), OMEGA_N_16[:8]
 
 
@@ -177,6 +198,7 @@ def coupling_variant_4q(
 def hamiltonian_4q(
     knm_4q: tuple[NDArray[np.float64], NDArray[np.float64]],
 ) -> SparsePauliOp:
+    """Four-qubit XY Hamiltonian built from the paper-27 couplings."""
     K, omega = knm_4q
     return knm_to_hamiltonian(K, omega)
 
@@ -185,6 +207,7 @@ def hamiltonian_4q(
 def hamiltonian(
     knm: tuple[NDArray[np.float64], NDArray[np.float64]],
 ) -> SparsePauliOp:
+    """XY Hamiltonian for the parametrized system size — follows ``knm``."""
     K, omega = knm
     return knm_to_hamiltonian(K, omega)
 
@@ -221,6 +244,7 @@ def computational_basis_state(n_qubits: int, index: int = 0) -> NDArray[np.compl
 
 @pytest.fixture
 def sim_runner(tmp_path: Path) -> HardwareRunner:
+    """Return a connected simulator-backed runner writing results under ``tmp_path``."""
     runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "results"))
     runner.connect()
     return runner
@@ -250,6 +274,7 @@ def classical_reference() -> dict[str, Any]:
 
 @pytest.fixture
 def rng() -> np.random.Generator:
+    """Reproducible NumPy random generator seeded with 42."""
     return np.random.default_rng(42)
 
 

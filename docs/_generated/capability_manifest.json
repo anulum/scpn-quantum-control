@@ -13,7 +13,7 @@
     "python_model_source_modules": 780,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1498
+    "test_files": 1500
   },
   "documentation": {
     "examples": [
@@ -8763,6 +8763,7 @@
       "tests/_differentiable_api_test_helpers.py",
       "tests/_differentiable_external_comparison_edges.py",
       "tests/_differentiable_programming_benchmark_edge_helpers.py",
+      "tests/_git_location_isolation.py",
       "tests/_internal_corpus_markers.py",
       "tests/_mlir_native_compilation_test_helpers.py",
       "tests/_phase_jax_bridge_test_helpers.py",
@@ -9256,6 +9257,7 @@
       "tests/test_generalised_parameter_shift_quality_gate.py",
       "tests/test_geometric_control_product.py",
       "tests/test_geometric_control_product_quality_gate.py",
+      "tests/test_git_location_isolation.py",
       "tests/test_github_actions_history_audit.py",
       "tests/test_governed_route_matrix.py",
       "tests/test_governed_route_matrix_quality_gate.py",

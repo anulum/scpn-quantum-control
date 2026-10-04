@@ -1030,6 +1030,17 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
         ],
     ),
     (
+        "mypy-strict-git-location-isolation",
+        [
+            _PY,
+            "-m",
+            "mypy",
+            "--strict",
+            "tests/_git_location_isolation.py",
+            "tests/test_git_location_isolation.py",
+        ],
+    ),
+    (
         "ci-workflow-modularity",
         [_PY, "tools/audit_ci_workflow_modularity.py"],
     ),

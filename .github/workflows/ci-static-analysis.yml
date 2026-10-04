@@ -881,3 +881,29 @@ jobs:
           fi
           python -m coverage report --rcfile=/dev/null --precision=2 --show-missing \
             --fail-under=100 --include='*/audit_test_documentation_ceiling.py'
+
+  git-location-isolation:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: src:oscillatools/src
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - run: pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Keep inherited Git locations out of the test session
+        env:
+          COVERAGE_FILE: .coverage.git-location-isolation
+        run: |
+          python -m mypy --strict \
+            tests/_git_location_isolation.py tests/test_git_location_isolation.py
+          python -m ruff check \
+            tests/_git_location_isolation.py tests/test_git_location_isolation.py tests/conftest.py
+          python -m ruff format --check \
+            tests/_git_location_isolation.py tests/test_git_location_isolation.py tests/conftest.py
+          python -m coverage run --rcfile=/dev/null --branch \
+            -m pytest -q tests/test_git_location_isolation.py
+          python -m coverage report --rcfile=/dev/null --precision=2 --show-missing \
+            --fail-under=100 --include='*/_git_location_isolation.py'

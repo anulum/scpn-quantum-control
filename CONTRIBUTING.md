@@ -252,6 +252,23 @@ upgrade record the new measurement with `--rebaseline`, which keeps the previous
 totals in the file's history. The gate checks that documentation is present and
 well formed; it does not judge whether a description is accurate.
 
+## Git Location Isolation In Tests
+
+Git exports `GIT_DIR`, `GIT_INDEX_FILE` and related variables to its hooks, and
+a caller may export them to address a repository from outside its work tree. A
+test that builds a temporary repository would then run `git init` and
+`git commit` against the inherited repository instead of its own. The shared
+configuration in `tests/conftest.py` therefore drops every variable that
+`git rev-parse --local-env-vars` lists, once, before any test module is
+collected, and the session header names what was dropped.
+
+- A test that needs such a variable sets it itself, for its own child process.
+- A test that runs Git belongs under `tests/`, where this configuration
+  applies; a run with `--noconftest` has no isolation.
+- Do not export these variables around a test run or any Git command that
+  writes. `python -m pytest tests/test_git_location_isolation.py` proves the
+  isolation with real Git and a nested session.
+
 ## Commit Messages
 
 Use conventional subjects:
