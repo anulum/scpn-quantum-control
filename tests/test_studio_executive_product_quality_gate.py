@@ -149,3 +149,34 @@ def test_operator_policy_is_in_original_native_and_real_browser_cohorts() -> Non
     assert "--coverage.include='src/features/operators/policy/*.{ts,tsx}'" in workflow
     assert "build_operator_policy_quality_gates" in workflow
     assert workflow.count("tests/test_workspace_operator_policy.py") == 3
+
+
+def test_operator_dossier_preserves_original_exact_native_and_browser_gates() -> None:
+    """Review source stays in the existing native and genuine runtime coverage owners."""
+    from pathlib import Path
+
+    gates = dict(quality_gates.build_operator_dossier_quality_gates("/python"))
+    owners = gates["studio-operator-dossier-strict"]
+    for path in (
+        "src/scpn_quantum_control/studio/executive_execute.py",
+        "src/scpn_quantum_control/studio/operator_review_dossier.py",
+        "src/scpn_quantum_control/studio/operator_review_script.py",
+        "tools/export_operator_review_dossiers.py",
+        "tests/test_operator_review_dossier.py",
+        "tools/studio_operator_dossier_browser.py",
+        "tools/tests/test_studio_operator_dossier_browser.py",
+    ):
+        assert path in owners
+    for name, command in gates.items():
+        assert command[0] == "/python"
+        if name.endswith("exact"):
+            assert "--fail-under=100" in command
+        if name.endswith("native-coverage"):
+            assert "--branch" in command and "--rcfile=/dev/null" in command
+    workflow = (
+        Path(__file__).resolve().parents[1] / ".github/workflows/ci-studio.yml"
+    ).read_text()
+    assert workflow.count("--scenario operator_review_dossiers") == 1
+    assert "tools/tests/test_studio_operator_dossier_browser.py" in workflow
+    assert "build_operator_dossier_quality_gates" in workflow
+    assert "src/features/operators/dossiers" in workflow

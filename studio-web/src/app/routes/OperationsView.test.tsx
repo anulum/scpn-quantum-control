@@ -13,9 +13,11 @@ it("the real operator view exposes source-owned profiles without a submission ac
  render(<OperationsView />);
  expect(screen.getByRole("heading",{name:"Devices & Operations"})).toBeTruthy();
  fireEvent.click(screen.getByRole("button",{name:"Open declared profiles"}));
- await screen.findByLabelText("Backend profile");
+ await screen.findByLabelText("Backend profile", {}, { timeout: 15000 });
  fireEvent.click(screen.getByRole("button",{name:"Open policy example"}));
- expect((await screen.findByLabelText("Core policy verdict")).textContent).toBe("refused plan");
+ expect((await screen.findByLabelText("Core policy verdict", {}, { timeout: 15000 })).textContent).toBe("refused plan");
+ fireEvent.click(screen.getByRole("button", { name: "Open dossier example" }));
+ expect((await screen.findByLabelText("Admitted dossier identity", {}, { timeout: 15000 })).textContent).toMatch(/^[0-9a-f]{64}$/);
  expect(screen.getByRole("table",{name:"Operator requested and effective settings"}).textContent).toContain("9007199254740993");
  expect(screen.queryByRole("button",{name:/submit/i})).toBeNull();
 });

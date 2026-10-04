@@ -492,6 +492,82 @@ python tools/studio_browser_journey.py --scenario operator_policy_decisions \
   --base-url http://127.0.0.1:4173/ --output /path/to/policy-journey.json
 ```
 
+## Operator review dossiers
+
+Devices & Operations includes an **Operator review dossier** inspector. Import
+a native `studio.operator-review-export.v1` export to inspect the original
+execute plan, backend profile, exact compiled payload digest and byte count,
+target, shots, requested/effective settings, policy verdict, dated estimate,
+calibration reference and exclusive expiry. Integer settings retain their exact
+precision. Unknown calibration or price stays explicitly unknown.
+
+The native `ExecuteActionHandler.prepare_review` method takes the original
+`ExecutiveRequest`, `BackendProfile`, `QuantumWorkload`, compiled bytes,
+`ResolvedSettings`, `OperatorPolicyDecision`, calibration metadata or `None`,
+and explicit UTC-second creation and expiry. It reuses the original execute
+plan and no-submit projection, validates their source couplings and seals an
+immutable `OperatorReviewDossier`. Payload bytes must match the original plan
+digest; provider, target and shots must match the original policy request and
+workload. Expiry cannot extend supplied policy, price or calibration validity.
+When the native profile declares `max_shots`, the dossier retains that exact
+positive integer and binds it into the profile and execution identities.
+Hashes bind supplied metadata; they do not authenticate a provider, certify a
+compilation or establish physical calibration accuracy.
+
+`dossier.export_bundle()` retains the original inner dossier text and its
+native generated Python verifier. The browser checks exact versions, source
+identities and references and downloads those original bytes. It neither
+generates executable code nor reassesses provider policy. A refused import
+preserves the last admitted source and its exports. Editing a draft immediately
+disables human review until that draft is admitted.
+
+**Approve human review** and **Deny human review** create a separate in-memory
+human record referencing the original dossier and execution identity. The
+native equivalent is `dossier.record_review(choice, reviewer_ref=...,
+recorded_at=...)`. Review grants no provider submission authority. Changing
+payload, provider, target, shots, source plan/workload/profile, semantic settings
+or their provenance, dated policy/price, calibration or expiry invalidates the
+prior record. A display-only theme, notation, rounding or layout change
+preserves execution identity and the original human source reference.
+
+For a matching execution identity, pending, approved, denied, expired,
+source-refused and future states remain distinct. Approval is unavailable
+before source creation, after exclusive expiry or for a refused source verdict.
+The current clock is checked again at the click and when the review hash
+finishes; the view also updates expiry while it stays open. Human review export
+contains the original reviewed export and a separate sealed review record.
+These controls make no provider calls or browser storage writes and expose no
+credential input.
+
+The synthetic exporter provides reproducible offline examples:
+
+```bash
+python tools/export_operator_review_dossiers.py --output /path/to/new-review.json
+python tools/export_operator_review_dossiers.py --check --output data/studio/operator_review_dossier.json
+```
+
+The destination directory must exist; generation refuses an overwrite. The
+default example is frozen at `2026-10-04T00:00:00Z`; its source dates stay visible
+after it expires. `--as-of` supplies exact UTC seconds for a fresh synthetic
+conformance input. It does not query live pricing, accounts or calibration.
+The inner dossier and compiled payload are each bounded to one MiB; the browser
+accepts at most eight MiB of expanded UTF-8 export text.
+
+**Export native verifier** downloads `verify_operator_review.py`. Running it
+prints the original dossier. Supplying `--payload /path/to/compiled.bin` also
+checks the exact original byte count and SHA-256, refusing missing, changed,
+empty or oversized files. Both modes remain offline and never submit a job.
+This verifier is distinct from the legacy provider submission script scaffold.
+
+The shared real-browser scenario exercises native input changes, immutable
+downloads, refused drafts, actual wall-clock expiry, storage/network custody and
+the existing built WASM recompute:
+
+```bash
+python tools/studio_browser_journey.py --scenario operator_review_dossiers \
+  --base-url http://127.0.0.1:4173/ --output /path/to/review-journey.json
+```
+
 ## Settings and policy provenance
 
 The workspace inspector shows the original requested and effective values,

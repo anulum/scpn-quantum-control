@@ -31,7 +31,7 @@ approval, nothing here contacts a provider or fabricates counts.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any, Final
+from typing import TYPE_CHECKING, Any, Final
 
 from .executive import (
     ActionHandler,
@@ -41,8 +41,15 @@ from .executive import (
     GeneratedScript,
     VerbContract,
     build_generated_script,
+    resolve_verb_contract,
 )
 from .verbs import QPU_RESULT_PACK_SCHEMA
+
+if TYPE_CHECKING:
+    from ..hardware.hal import BackendProfile, QuantumWorkload
+    from ..hardware.operator_policy_contracts import OperatorPolicyDecision
+    from ..studio_workspace.contracts import ResolvedSettings
+    from .operator_review_dossier import OperatorReviewDossier
 
 EXECUTE_VERB: Final[str] = "execute"
 _DEFAULT_BACKEND: Final[str] = "qiskit-runtime"
@@ -108,6 +115,76 @@ class ExecuteActionHandler(ActionHandler):
     def verb(self) -> str:
         """The Studio verb owned by this handler."""
         return EXECUTE_VERB
+
+    def prepare_review(
+        self,
+        request: ExecutiveRequest,
+        *,
+        profile: BackendProfile,
+        workload: QuantumWorkload,
+        compiled_payload: bytes,
+        settings: ResolvedSettings,
+        policy_decision: OperatorPolicyDecision,
+        calibration: Mapping[str, object] | None,
+        created_at: str,
+        expires_at: str,
+    ) -> OperatorReviewDossier:
+        """Seal exact source inputs for human review without requesting a run.
+
+        Parameters
+        ----------
+        request
+            Original deployment preview; its approval flag grants no review authority.
+        profile, workload
+            Actual native route and original logical source with target semantics.
+        compiled_payload
+            Exact compiler-owned bytes, at most one MiB; no compilation is invented.
+        settings, policy_decision
+            Original resolved provenance and dated native policy verdict.
+        calibration
+            Dated target-bound calibration reference, or explicit unknown None.
+        created_at, expires_at
+            Exact UTC seconds; expiry cannot extend supplied evidence validity.
+
+        Returns
+        -------
+        OperatorReviewDossier
+            Immutable no-submit source and a usable standalone verification script.
+
+        Raises
+        ------
+        ValueError
+            If source identity, field shape, target, resources or dates disagree.
+            Nothing is submitted or persisted on success or refusal.
+
+        """
+        from .operator_review_dossier import OperatorReviewDossier
+
+        supported = {
+            "provider",
+            "endpoint",
+            "circuit_digest",
+            "circuit_ref",
+            "shots",
+            "calibration_ref",
+        }
+        if request.verb != EXECUTE_VERB or set(request.parameters) - supported:
+            raise ValueError("review requires an exact execute deployment without extra fields")
+        if any(isinstance(v, str) and v != v.strip() for v in request.parameters.values()):
+            raise ValueError("review preserves exact deployment text without trimming")
+        plan = self.plan(request, resolve_verb_contract(EXECUTE_VERB))
+        return OperatorReviewDossier(
+            plan,
+            self.execute(plan),
+            profile=profile,
+            workload=workload,
+            compiled_payload=compiled_payload,
+            settings=settings,
+            policy_decision=policy_decision,
+            calibration=calibration,
+            created_at=created_at,
+            expires_at=expires_at,
+        )
 
     def plan(self, request: ExecutiveRequest, contract: VerbContract) -> ExecutionPlan:
         """Validate the deployment spec and resolve the gated plan.

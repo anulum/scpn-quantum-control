@@ -44,6 +44,7 @@ import pytest
         "parameter_graph_editor",
         "owned_kernel_worker",
         "operator_policy_decisions",
+        "operator_review_dossiers",
     ],
 )
 def test_runner_rejects_external_or_ambiguous_preview(

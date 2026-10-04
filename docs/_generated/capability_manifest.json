@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 851,
     "public_documentation_pages": 381,
-    "python_model_classes": 1496,
-    "python_model_source_modules": 777,
+    "python_model_classes": 1498,
+    "python_model_source_modules": 779,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1491
+    "test_files": 1494
   },
   "documentation": {
     "examples": [
@@ -758,7 +758,7 @@
       {
         "package": "studio",
         "path": "src/scpn_quantum_control/studio",
-        "python_modules": 34
+        "python_modules": 36
       },
       {
         "package": "studio_workspace",
@@ -3911,6 +3911,14 @@
       {
         "name": "OperatorRequest",
         "path": "src/scpn_quantum_control/hardware/operator_policy_contracts.py"
+      },
+      {
+        "name": "OperatorReviewDecision",
+        "path": "src/scpn_quantum_control/studio/operator_review_dossier.py"
+      },
+      {
+        "name": "OperatorReviewDossier",
+        "path": "src/scpn_quantum_control/studio/operator_review_dossier.py"
       },
       {
         "name": "OptimizationResult",
@@ -7499,6 +7507,8 @@
       "src/scpn_quantum_control/studio/kuramoto_reference.py",
       "src/scpn_quantum_control/studio/kuramoto_scenario_artifact.py",
       "src/scpn_quantum_control/studio/manifest.py",
+      "src/scpn_quantum_control/studio/operator_review_dossier.py",
+      "src/scpn_quantum_control/studio/operator_review_script.py",
       "src/scpn_quantum_control/studio/program_ad_replay_artifact.py",
       "src/scpn_quantum_control/studio/program_authoring.py",
       "src/scpn_quantum_control/studio/program_authoring_contracts.py",
@@ -9193,6 +9203,7 @@
       "tests/test_experiments_edge_cases.py",
       "tests/test_experiments_helpers.py",
       "tests/test_export_operator_policy_decisions.py",
+      "tests/test_export_operator_review_dossiers.py",
       "tests/test_export_s10_analog_native_readiness.py",
       "tests/test_export_s11_quantum_sensing_readiness.py",
       "tests/test_export_s7_logical_dla_roadmap.py",
@@ -9523,6 +9534,8 @@
       "tests/test_openpulse_control_quality_gate.py",
       "tests/test_operator_policy_contracts.py",
       "tests/test_operator_policy_decisions.py",
+      "tests/test_operator_review_dossier.py",
+      "tests/test_operator_review_script.py",
       "tests/test_optional_torch_export_contracts.py",
       "tests/test_orchestrator_adapter.py",
       "tests/test_orchestrator_adapter_errors.py",

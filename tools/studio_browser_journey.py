@@ -415,6 +415,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "compiler_trace_inspector",
             "operator_backend_profiles",
             "operator_policy_decisions",
+            "operator_review_dossiers",
             "workbench_accessibility",
             "owned_kernel_worker",
         ),
@@ -498,6 +499,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 from tools.studio_operator_policy_browser import run_operator_policy_journey
 
                 journey = partial(run_operator_policy_journey, evidence=evidence)
+            elif args.scenario == "operator_review_dossiers":
+                from tools.studio_operator_dossier_browser import run_operator_dossier_journey
+
+                journey = partial(run_operator_dossier_journey, evidence=evidence)
             elif args.scenario == "compiler_trace_inspector":
                 from tools.studio_compiler_trace_browser import run_compiler_trace_journey
 

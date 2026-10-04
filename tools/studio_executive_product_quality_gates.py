@@ -390,6 +390,110 @@ def build_operator_policy_quality_gates(python: str) -> list[Gate]:
     ]
 
 
+def build_operator_dossier_quality_gates(python: str) -> list[Gate]:
+    """Build full native dossier provenance gates within the existing Studio job.
+
+    Parameters
+    ----------
+    python
+        Existing locked interpreter; caller-configured temporary storage owns output.
+
+    Returns
+    -------
+    list
+        Native strict types, complete documentation and exact statement/branch gates.
+        Browser runtime coverage is produced by the shared real-browser journey.
+
+    """
+    production = [
+        "src/scpn_quantum_control/studio/executive_execute.py",
+        "src/scpn_quantum_control/studio/operator_review_dossier.py",
+        "src/scpn_quantum_control/studio/operator_review_script.py",
+        "tools/export_operator_review_dossiers.py",
+    ]
+    tests = [
+        "tests/test_studio_executive_execute.py",
+        "tests/test_operator_review_dossier.py",
+        "tests/test_operator_review_script.py",
+        "tests/test_export_operator_review_dossiers.py",
+    ]
+    owners = [
+        *production,
+        *tests,
+        "tools/studio_operator_dossier_browser.py",
+        "tools/tests/test_studio_operator_dossier_browser.py",
+        "tools/studio_executive_product_quality_gates.py",
+        "tests/test_studio_executive_product_quality_gate.py",
+    ]
+    data_file = str(Path(gettempdir()) / "scpn-qc-studio-operator-dossier.coverage")
+    include = ",".join(
+        "*/" + path.removeprefix("src/scpn_quantum_control/") for path in production
+    )
+    return [
+        (
+            "studio-operator-dossier-strict",
+            [
+                python,
+                "-m",
+                "mypy",
+                "--strict",
+                "--explicit-package-bases",
+                *owners,
+            ],
+        ),
+        (
+            "studio-operator-dossier-native-docs",
+            [
+                python,
+                "-m",
+                "ruff",
+                "check",
+                "--isolated",
+                "--preview",
+                "--select",
+                "D,D413,D417,D420",
+                "--config",
+                "lint.explicit-preview-rules = true",
+                "--config",
+                'lint.pydocstyle.convention = "numpy"',
+                *owners,
+            ],
+        ),
+        (
+            "studio-operator-dossier-native-coverage",
+            [
+                python,
+                "-m",
+                "coverage",
+                "run",
+                f"--rcfile={devnull}",
+                f"--data-file={data_file}",
+                "--branch",
+                f"--include={include}",
+                "-m",
+                "pytest",
+                "-q",
+                *tests,
+            ],
+        ),
+        (
+            "studio-operator-dossier-native-exact",
+            [
+                python,
+                "-m",
+                "coverage",
+                "report",
+                f"--rcfile={devnull}",
+                f"--data-file={data_file}",
+                "--precision=2",
+                "--show-missing",
+                "--fail-under=100",
+                f"--include={include}",
+            ],
+        ),
+    ]
+
+
 __all__ = [
     "STUDIO_EXECUTIVE_PRODUCT_COVERAGE_COHORT",
     "STUDIO_EXECUTIVE_PRODUCT_COVERAGE_DATA_FILE",
@@ -399,4 +503,5 @@ __all__ = [
     "build_program_authoring_quality_gates",
     "build_backend_profiles_quality_gates",
     "build_operator_policy_quality_gates",
+    "build_operator_dossier_quality_gates",
 ]

@@ -50,8 +50,13 @@ export interface OperatorDecisionSnapshot {
 
 /** Refusal never carries a replacement admitted snapshot. */
 export type OperatorDecisionResult =
-  { readonly ok: true; readonly value: OperatorDecisionSnapshot } |
-  { readonly ok: false; readonly message: string };
+  {
+    /** Whether exact native policy metadata was admitted. */ readonly ok: true;
+    /** Original immutable source and dated verdict. */ readonly value: OperatorDecisionSnapshot;
+  } | {
+    /** Whether original metadata admission refused. */ readonly ok: false;
+    /** Observable refusal preserving the prior source. */ readonly message: string;
+  };
 
 function require(condition: boolean): void { if (!condition) throw new Error("Policy metadata refused"); }
 function object(value: unknown, keys: readonly string[]): Record<string, unknown> {

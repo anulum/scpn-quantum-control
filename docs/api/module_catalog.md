@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **777 modules** across **41 package families**
-- **4216 documented public module-level symbols**
+- **779 modules** across **41 package families**
+- **4219 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -5344,6 +5344,22 @@ The QUANTUM studio's capability manifest (schema A) on the platform contract.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/manifest.py) · Public symbols: **3**
 
 **Functions:** `declared_surface()`, `build_manifest()`, `build_catalogue()`
+
+### `scpn_quantum_control.studio.operator_review_dossier`
+
+Seal source-owned deployment evidence and separate human review decisions.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/operator_review_dossier.py) · Public symbols: **2**
+
+**Classes:** `OperatorReviewDecision`, `OperatorReviewDossier`
+
+### `scpn_quantum_control.studio.operator_review_script`
+
+Export usable payload identity verification without a provider SDK or submission.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/operator_review_script.py) · Public symbols: **1**
+
+**Functions:** `build_review_script()`
 
 ### `scpn_quantum_control.studio.program_ad_replay_artifact`
 

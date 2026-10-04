@@ -336,8 +336,8 @@ jobs:
           python - <<'PY_PROGRAM'
           import subprocess
           import sys
-          from tools.studio_executive_product_quality_gates import build_backend_profiles_quality_gates, build_program_authoring_quality_gates, build_operator_policy_quality_gates
-          for name, command in [*build_program_authoring_quality_gates(sys.executable), *build_backend_profiles_quality_gates(sys.executable), *build_operator_policy_quality_gates(sys.executable)]:
+          from tools.studio_executive_product_quality_gates import build_backend_profiles_quality_gates, build_program_authoring_quality_gates, build_operator_policy_quality_gates, build_operator_dossier_quality_gates
+          for name, command in [*build_program_authoring_quality_gates(sys.executable), *build_backend_profiles_quality_gates(sys.executable), *build_operator_policy_quality_gates(sys.executable), *build_operator_dossier_quality_gates(sys.executable)]:
               print(name, flush=True)
               subprocess.run(command, check=True)
           PY_PROGRAM
@@ -550,6 +550,21 @@ jobs:
             --include="*/tools/studio_operator_policy_browser.py" --precision=2 --show-missing --fail-under=100
           python -m coverage combine --rcfile=/dev/null --append --keep \
             --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" "$RUNNER_TEMP/studio-policy-browser.coverage"
+          python -m coverage run --rcfile=/dev/null --branch --concurrency=greenlet \
+            --data-file="$RUNNER_TEMP/studio-dossier-browser.coverage" \
+            --include="*/tools/studio_operator_dossier_browser.py,*/tools/studio_browser_journey.py" \
+            tools/studio_browser_journey.py --scenario operator_review_dossiers \
+            --base-url http://127.0.0.1:4173/ --output "$RUNNER_TEMP/studio-dossier-journey.json"
+          STUDIO_PREVIEW_DIR="$RUNNER_TEMP/studio-browser-preview" \
+            python -m coverage run --rcfile=/dev/null --append --branch --concurrency=greenlet \
+            --data-file="$RUNNER_TEMP/studio-dossier-browser.coverage" \
+            --include="*/tools/studio_operator_dossier_browser.py" \
+            -m pytest --noconftest -q tools/tests/test_studio_operator_dossier_browser.py
+          python -m coverage report --rcfile=/dev/null \
+            --data-file="$RUNNER_TEMP/studio-dossier-browser.coverage" \
+            --include="*/tools/studio_operator_dossier_browser.py" --precision=2 --show-missing --fail-under=100
+          python -m coverage combine --rcfile=/dev/null --append --keep \
+            --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" "$RUNNER_TEMP/studio-dossier-browser.coverage"
       - name: Exercise original panel refusal over isolated damaged input files
         working-directory: .
         env:
@@ -681,6 +696,17 @@ jobs:
           --coverage
           --coverage.include='src/features/operators/profiles/*.{ts,tsx}'
           --coverage.reportsDirectory=coverage/profiles
+          --coverage.thresholds.statements=100
+          --coverage.thresholds.branches=100
+          --coverage.thresholds.functions=100
+          --coverage.thresholds.lines=100
+      - name: Enforce native operator review browser owner exact coverage
+        run: >-
+          pnpm exec vitest run src/features/operators/dossiers
+          --coverage
+          --coverage.include='src/features/operators/dossiers/*.{ts,tsx}'
+          --coverage.exclude='**/*.test.{ts,tsx}'
+          --coverage.reportsDirectory=coverage/dossiers
           --coverage.thresholds.statements=100
           --coverage.thresholds.branches=100
           --coverage.thresholds.functions=100
@@ -833,6 +859,8 @@ jobs:
             ${{ runner.temp }}/studio-profiles-browser.coverage
             ${{ runner.temp }}/studio-profiles-journey.json
             ${{ runner.temp }}/studio-policy-journey.json
+            ${{ runner.temp }}/studio-dossier-journey.json
+            ${{ runner.temp }}/studio-dossier-browser.coverage
             ${{ runner.temp }}/studio-policy-browser.coverage
             ${{ runner.temp }}/studio-policy-ui-coverage
             ${{ runner.temp }}/studio-workbench-source-qualification.json
