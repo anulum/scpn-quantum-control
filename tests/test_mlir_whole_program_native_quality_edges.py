@@ -82,6 +82,17 @@ def native_kernel() -> NativeWholeProgramADKernel:
     )
 
 
+def _detached(result: WholeProgramADResult, **changes: Any) -> WholeProgramADResult:
+    """Return an edited copy of a captured result that no longer claims its tape.
+
+    A result produced by the runtime is bound to the tape it captured, and an
+    edited copy that kept the binding is refused as tampering. The lowering
+    and compiler boundaries exercised here take plain records, so the copy
+    drops the binding together with the adjoint that belonged to it.
+    """
+    return replace(result, adjoint_result=None, captured_state=None, **changes)
+
+
 def _replace_raises(record: Any, match: str, **changes: Any) -> None:
     """Require a frozen public record replacement to fail with its contract error."""
     with pytest.raises(ValueError, match=match):
@@ -95,14 +106,13 @@ def test_mlir_lowering_covers_optional_payload_and_metadata_paths(
     with pytest.raises(ValueError, match="requires a WholeProgramADResult"):
         compile_whole_program_ad_trace_to_mlir(cast(Any, object()))
 
-    minimal = replace(
+    minimal = _detached(
         scalar_result,
         trace_events=(),
         bytecode_instructions=(),
         source_ir_features=(),
         semantics_report=None,
         program_ir=None,
-        adjoint_result=None,
     )
     module = compile_whole_program_ad_trace_to_mlir(
         minimal,
@@ -303,7 +313,7 @@ def test_public_compilers_and_lowering_analysis_reject_invalid_inputs(
             compiler(cast(Callable[[Any], object], 0), [1.0])
     with pytest.raises(ValueError, match="requires a WholeProgramADResult"):
         analyse_whole_program_ad_native_lowering(cast(Any, object()))
-    empty_ir = replace(scalar_result, ir_nodes=(), adjoint_result=None, program_ir=None)
+    empty_ir = _detached(scalar_result, ir_nodes=(), program_ir=None)
     with pytest.raises(ValueError, match="requires captured IR nodes"):
         analyse_whole_program_ad_native_lowering(empty_ir)
     loop_node = WholeProgramIRNode(
@@ -313,12 +323,7 @@ def test_public_compilers_and_lowering_analysis_reject_invalid_inputs(
         value=0.0,
         tangent=np.zeros(2, dtype=np.float64),
     )
-    loop_result = replace(
-        scalar_result,
-        ir_nodes=(loop_node,),
-        adjoint_result=None,
-        program_ir=None,
-    )
+    loop_result = _detached(scalar_result, ir_nodes=(loop_node,), program_ir=None)
     assert native_impl._whole_program_has_unsupported_native_control_flow(loop_result)
     assert analyse_whole_program_ad_native_lowering(loop_result).effect_kinds == ()
 
@@ -382,12 +387,7 @@ def test_cache_payload_and_helper_boundaries_are_deterministic(
             tangent=np.zeros(2, dtype=np.float64),
         ),
     )
-    helper_result = replace(
-        scalar_result,
-        ir_nodes=helper_nodes,
-        adjoint_result=None,
-        program_ir=None,
-    )
+    helper_result = _detached(scalar_result, ir_nodes=helper_nodes, program_ir=None)
     helper_ir = native_impl._compile_whole_program_native_helper_definitions(helper_result)
     assert "" in helper_ir
     assert (
@@ -486,12 +486,11 @@ def test_private_compile_and_annotation_defenses_fail_closed(
     scalar_result: WholeProgramADResult,
 ) -> None:
     """Exercise defensive native compiler and MLIR terminator checks."""
-    empty = replace(
+    empty = _detached(
         scalar_result,
         gradient=np.array([], dtype=np.float64),
         parameter_names=(),
         trainable=(),
-        adjoint_result=None,
     )
     with pytest.raises(ValueError, match="requires parameters"):
         native_impl._compile_whole_program_ad_native_llvm_ir(empty, "empty")
@@ -502,12 +501,7 @@ def test_private_compile_and_annotation_defenses_fail_closed(
         value=0.0,
         tangent=np.zeros(2, dtype=np.float64),
     )
-    unsupported = replace(
-        scalar_result,
-        ir_nodes=(unsupported_node,),
-        adjoint_result=None,
-        program_ir=None,
-    )
+    unsupported = _detached(scalar_result, ir_nodes=(unsupported_node,), program_ir=None)
     with pytest.raises(ValueError, match="failed closed"):
         native_impl._compile_whole_program_ad_native_llvm_ir(unsupported, "unsupported")
 
