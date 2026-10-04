@@ -13,6 +13,7 @@ import type { RawCodec } from "../../shared/contracts";
 import type { WorkspaceArchivePreview } from "../../shared/storage/workspaceArchive";
 import type { StoredWorkspace } from "../../shared/storage/workspaceStore";
 import { noWorkspaceProducers, useWorkspace } from "./useWorkspace";
+import type { WorkspaceController } from "./useWorkspace";
 
 /** Trusted producer registry from the host; imported data cannot install verifiers. */
 export interface WorkspacePanelProps {
@@ -25,22 +26,34 @@ export interface WorkspacePanelProps {
 /** Original panel's local workspace editor, atomic save and portable archive recovery. */
 export function WorkspacePanel({ rawCodecs = noWorkspaceProducers, onSavedWorkspace }: WorkspacePanelProps) {
   const workspace = useWorkspace(rawCodecs);
+  return <WorkspaceEditor workspace={workspace} rawCodecs={rawCodecs} {...(onSavedWorkspace === undefined ? {} : { onSavedWorkspace })} />;
+}
+
+/** Original editor supplied with its single existing controller by the workbench. */
+export interface WorkspaceEditorProps extends WorkspacePanelProps {
+  /** Existing connection/controller; this presentation never opens a second store. */ readonly workspace: WorkspaceController;
+}
+
+/** Download the original admitted portable archive with its unchanged identity and exact text. */
+export function downloadWorkspaceArchive(portable: WorkspaceArchivePreview): void {
+  const blob = new Blob([portable.json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  try {
+    anchor.href = url;
+    anchor.download = `workspace-${portable.projectId}-${portable.archiveDigest}.json`;
+    anchor.click();
+  } finally { URL.revokeObjectURL(url); }
+}
+
+/** Preserve all original editing/import/export controls around the supplied original store owner. */
+export function WorkspaceEditor({ workspace, rawCodecs = noWorkspaceProducers, onSavedWorkspace }: WorkspaceEditorProps) {
   useEffect(() => { onSavedWorkspace?.(workspace.saved); }, [onSavedWorkspace, workspace.saved]);
   const [title, setTitle] = useState("Untitled workspace");
-  const exportArchive = (portable: WorkspaceArchivePreview) => {
-    const blob = new Blob([portable.json], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    try {
-      anchor.href = url;
-      anchor.download = `workspace-${portable.projectId}-${portable.archiveDigest}.json`;
-      anchor.click();
-    } finally { URL.revokeObjectURL(url); }
-  };
   const preview = workspace.preview;
   const saved = workspace.saved;
-  const exportPreview = preview === null ? undefined : () => exportArchive(preview);
-  const exportSaved = saved === null ? undefined : () => exportArchive(saved.preview);
+  const exportPreview = preview === null ? undefined : () => downloadWorkspaceArchive(preview);
+  const exportSaved = saved === null ? undefined : () => downloadWorkspaceArchive(saved.preview);
   return (
     <section id="/workspace" className="qsp-workspace" aria-label="Local workspace">
       <h3>Local workspace</h3>

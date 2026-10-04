@@ -136,7 +136,7 @@ claims only when the evidence exists.
 | Notebook files | 109 |
 | Example files | 38 |
 | Optional extras | 43 |
-| Python test files | 1497 |
+| Python test files | 1498 |
 | Public documentation pages | 381 |
 | GitHub Actions workflows | 44 |
 
@@ -209,6 +209,13 @@ Market-facing applications include quantum-control prototyping, power-grid and
 plasma synchronisation studies, EEG/MEG rhythm modelling under non-clinical
 claim limits, quantum-hardware campaign governance, gradient-informed VQE/QNN
 research, and reproducible benchmark publication.
+
+Quantum Studio's [local experiment workflow](docs/studio_workbench.md#local-experiment-and-portable-replay)
+opens the committed classical Kuramoto sample, edits an immutable parameter
+revision, inspects its numerical plan and explicitly runs the shipped Rust/WASM
+worker. Disposed attempts can be saved, exported and independently imported for
+exact float64 replay. The workflow uses unscaled model-time and carries a
+classical-model claim boundary.
 
 ## Differentiable Programming Route
 

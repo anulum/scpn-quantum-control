@@ -117,11 +117,13 @@ def _navigation(
     page.reload(wait_until="networkidle")
     expect(inspector.get_by_text("r/α", exact=True)).to_be_visible()
     nav.get_by_role("link", name="Experiments", exact=True).click()
-    expect(page.get_by_role("heading", name="Experiments unavailable")).to_be_visible()
+    expect(page.get_by_role("heading", name="Local experiment", exact=True)).to_be_visible()
+    expect(page.get_by_role("button", name="Open Kuramoto sample", exact=True)).to_be_enabled()
+    expect(page.get_by_label("Current experiment result", exact=True)).to_have_count(0)
     page.go_back()
     expect(page.get_by_role("heading", name="Atlas unavailable")).to_be_visible()
     page.go_forward()
-    expect(page.get_by_role("heading", name="Experiments unavailable")).to_be_visible()
+    expect(page.get_by_role("heading", name="Local experiment", exact=True)).to_be_visible()
     nav.get_by_role("link", name="Workspace", exact=True).click()
     expect(editor).to_have_value(cast(str, saved["archive"]))
     assert "revision=r%2F%CE%B1" in page.url
@@ -294,8 +296,22 @@ def run_workbench_journey(
                         )
                         assert not errors, errors
                         assert not rejected, rejected
-                        assert not page.workers, "Workbench leaked an owned worker"
+                        active_workers = tuple(page.workers)
+                        entry["workers_before_final_navigation"] = [
+                            worker.url for worker in active_workers
+                        ]
+                        if active_workers:
+                            # Returning to Workspace mounts original automatic playback.
+                            # Exercise its real route cleanup before asserting native worker closure.
+                            page.get_by_role("navigation", name="Workbench views").get_by_role(
+                                "link", name="Atlas", exact=True
+                            ).click()
+                            expect(
+                                page.get_by_role("heading", name="Atlas unavailable")
+                            ).to_be_visible()
+                        entry["worker_urls"] = [worker.url for worker in page.workers]
                         entry["workers"] = len(page.workers)
+                        assert not page.workers, "Workbench leaked an owned worker"
                     finally:
                         capture_source()
                 finally:

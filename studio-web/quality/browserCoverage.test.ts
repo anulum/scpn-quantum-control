@@ -13,9 +13,39 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { readBrowserCoverage } from "./browserCoverage";
-import { browserOwners, coverageObject, panelBrowserOwner, parameterBrowserOwners, qualifyBrowserRecord, workbenchBrowserOwners } from "./browserRecord";
+import { browserOwners, coverageObject, experimentBrowserOwners, panelBrowserOwner, parameterBrowserOwners, qualifyBrowserRecord, workbenchBrowserOwners } from "./browserRecord";
 
 describe("original native counter conversion", () => {
+  it("converts all actual experiment owners while retaining uncovered native ranges", async () => {
+    const filename = process.env["STUDIO_EXPERIMENT_COVERAGE"];
+    if (!filename) throw new Error("Supply actual local_experiment_journey evidence");
+    const evidence = coverageObject(JSON.parse(await readFile(filename, "utf8")) as unknown);
+    if (!Array.isArray(evidence["native_v8_coverage"])) throw new Error("Actual native counters missing");
+    const untouched = JSON.stringify(evidence["native_v8_coverage"]);
+    const maps = await readBrowserCoverage(filename, process.cwd());
+    expect(new Set(maps.flatMap(map => Object.keys(map)))).toEqual(new Set([...experimentBrowserOwners].map(owner => resolve(process.cwd(), "." + owner))));
+    expect(maps.some(map => Object.values(map).some(file => Object.values(file.s).some(count => count === 0)))).toBe(true);
+    const after = coverageObject(JSON.parse(await readFile(filename, "utf8")) as unknown);
+    expect(JSON.stringify(after["native_v8_coverage"])).toBe(untouched);
+  });
+  it.each([...experimentBrowserOwners])("requires actual experiment owner %s", async omitted => {
+    const filename = process.env["STUDIO_EXPERIMENT_COVERAGE"];
+    if (!filename) throw new Error("Supply actual local_experiment_journey evidence");
+    await readBrowserCoverage(filename, process.cwd());
+    const evidence = coverageObject(JSON.parse(await readFile(filename, "utf8")) as unknown);
+    if (!Array.isArray(evidence["native_v8_coverage"])) throw new Error("Actual native counters missing");
+    evidence["native_v8_coverage"] = evidence["native_v8_coverage"].filter(value => {
+      const native = coverageObject(coverageObject(value)["coverage"]);
+      if (typeof native["url"] !== "string") throw new Error("Actual source URL missing");
+      return new URL(native["url"]).pathname !== omitted;
+    });
+    const directory = await mkdtemp(join(tmpdir(), "studio-experiment-owner-refusal-"));
+    try {
+      const rejected = join(directory, "omitted-owner.json");
+      await writeFile(rejected, JSON.stringify(evidence), "utf8");
+      await expect(readBrowserCoverage(rejected, process.cwd())).rejects.toThrow("Native workspace coverage has missing production owners");
+    } finally { await rm(directory, { recursive: true }); }
+  });
   it("admits all eight original owners from the actual linked parameter journey", async () => {
     const filename = process.env["STUDIO_PARAMETER_COVERAGE"];
     if (!filename) throw new Error("Supply actual parameter_graph_editor evidence");

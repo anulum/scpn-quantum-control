@@ -10,15 +10,19 @@
 The ``simulate`` verb evolves a bounded ``K_nm``/``omega`` oscillator network on
 a local dense-statevector simulator. The handler wraps the single public
 :meth:`~scpn_quantum_control.phase.QuantumKuramotoSolver.run` entry point:
-Trotterised time evolution of the XY spin Hamiltonian from ``t = 0`` to
-``t_max`` in ``dt`` steps, measuring the Kuramoto synchronisation order parameter
+Numerical evolution of the XY spin Hamiltonian from ``t = 0`` to
+``t_max`` on the solver's declared output grid, measuring the synchronisation order parameter
 ``R(t)`` along the trajectory. It returns the trajectory summary
 (``studio.quantum-evolution.v1``) and writes a standalone reproduction script.
 
-The claim boundary is a *simulator estimate*: the reported order parameter is a
-dense-statevector Trotter approximation at the stated step and Trotter
-resolution, not a continuous-time exact solution, a physical claim, or QPU
-execution.
+The qualified Qiskit route applies an undecomposed ``PauliEvolutionGate`` as an
+exact operator to the dense statevector. The retained Trotter arguments do not
+make that route a product-formula approximation; explicit gate decomposition is
+a separate numerical qualification. Results remain floating-point simulator
+estimates sampled on the declared grid, without physical or QPU evidence.
+The ``python`` and ``qiskit`` requests use that local route. A declared ``rust``
+plan cannot execute through this handler: it refuses instead of reporting the
+Python route as a Rust trajectory.
 """
 
 from __future__ import annotations
@@ -48,11 +52,12 @@ _MAX_TIME_STEPS: Final[int] = 256
 _REPRODUCTION_TOLERANCE: Final[float] = 1e-9
 
 SIMULATE_CLAIM_BOUNDARY: Final[str] = (
-    "dense-statevector Trotter evolution of a bounded symmetric zero-diagonal "
-    "XY-Kuramoto network on a local simulator; the reported synchronisation "
-    "order parameter is a simulator estimate at the stated step/Trotter "
-    "resolution, not a continuous-time exact solution, a physical claim, or QPU "
-    "execution"
+    "dense-statevector evolution of a bounded symmetric zero-diagonal "
+    "XY-Kuramoto network; the qualified local Qiskit route uses the exact operator "
+    "action of an undecomposed PauliEvolutionGate. The sampled synchronisation "
+    "order parameter is a floating-point simulator estimate. Retained Trotter "
+    "arguments do not establish product-formula error or physical/QPU execution; "
+    "python/qiskit local execution only; Rust full trajectories are unavailable"
 )
 
 
@@ -166,7 +171,7 @@ class SimulateActionHandler(ActionHandler):
         steps = (
             f"validate the {len(simulate_spec['K_nm'])}-node K_nm/omega network",
             "build the XY spin Hamiltonian for the coupled oscillators",
-            "Trotter-evolve the dense statevector from t=0 to t_max in dt steps",
+            "apply the undecomposed evolution operator on the declared sampling grid",
             "measure the Kuramoto order parameter R(t) along the trajectory",
             "write a standalone reproduction script",
         )
@@ -193,7 +198,18 @@ class SimulateActionHandler(ActionHandler):
         ExecutionResult
             A succeeded result carrying the order-parameter trajectory summary.
 
+        Raises
+        ------
+        ValueError
+            A Rust trajectory was requested, but this handler has no full Rust
+            execution route. Refusal precedes numerical arrays or solver construction.
+
         """
+        if plan.backend == "rust":
+            raise ValueError(
+                "Rust full quantum trajectory execution is unavailable in this handler; "
+                "explicitly request python or qiskit"
+            )
         simulate_spec: dict[str, Any] = dict(plan.parameters)
         k_nm = np.asarray(simulate_spec["K_nm"], dtype=np.float64)
         omega = np.asarray(simulate_spec["omega"], dtype=np.float64)
@@ -274,10 +290,10 @@ def _render_script(
         '"""Standalone reproduction of a SCPN-QUANTUM-CONTROL studio simulate action.\n'
         "\n"
         f"Action id: {action_id}\n"
-        "Rebuilds the bounded K_nm/omega network, Trotter-evolves the dense\n"
-        "statevector on the local simulator, and checks the Kuramoto order\n"
-        "parameter summary the studio sealed. Values are simulator estimates at\n"
-        "the stated step/Trotter resolution, agreeing to a numerical tolerance.\n"
+        "Rebuilds the bounded K_nm/omega network and applies the undecomposed\n"
+        "PauliEvolutionGate as an exact operator on the qualified local Qiskit\n"
+        "route. Checks the sampled floating-point synchronisation summary\n"
+        "against the sealed simulator estimates at the declared tolerance.\n"
         '"""\n\n'
         "import numpy as np\n\n"
         "from scpn_quantum_control.phase import QuantumKuramotoSolver\n\n"

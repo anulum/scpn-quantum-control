@@ -6,11 +6,13 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // SCPN Quantum Control — persistent five-view workbench shell
 
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef } from "react";
 import type { ReactNode } from "react";
-import { WorkspacePanel } from "../features/workspace/WorkspacePanel";
+import { WorkspaceEditor } from "../features/workspace/WorkspacePanel";
 import type { WorkspacePanelProps } from "../features/workspace/WorkspacePanel";
-import type { StoredWorkspace } from "../shared/storage/workspaceStore";
+import { useWorkspace } from "../features/workspace/useWorkspace";
+import { localExperimentCodecs } from "../features/experiments/kuramotoArtifacts";
+import { useExperimentRun } from "../features/experiments/useExperimentRun";
 import { emptyWorkbenchContext, formatWorkbenchRoute } from "./routing";
 import type { WorkbenchContext, WorkbenchView } from "./routing";
 import { useWorkbenchRoute } from "./useWorkbenchRoute";
@@ -22,6 +24,7 @@ const OperationsView = lazy(() => import("./routes/OperationsView"));
 const BuildView = lazy(() => import("./routes/BuildView"));
 const ResultsView = lazy(() => import("./routes/ResultsView"));
 const UnavailableView = lazy(() => import("./routes/UnavailableView"));
+const ExperimentRunner = lazy(() => import("../features/experiments/ExperimentRunner"));
 const views: ReadonlyArray<readonly [WorkbenchView, string]> = [
   ["workspace", "Workspace"], ["build", "Build"], ["experiments", "Experiments"], ["results", "Results"], ["atlas", "Atlas"],
 ];
@@ -43,7 +46,10 @@ export function Workbench({ children, rawCodecs, mode = "standalone" }: Workbenc
   const context = location.ok ? location.route : emptyWorkbenchContext;
   const view = location.ok ? location.route.view : null;
   const instrument = location.ok ? location.route.instrument : null;
-  const [saved, setSaved] = useState<StoredWorkspace | null>(null);
+  // Product-owned source formats retain their qualified verifiers; host formats remain additive.
+  const codecs = useMemo(() => new Map([...(rawCodecs ?? new Map()), ...localExperimentCodecs]), [rawCodecs]);
+  const workspace = useWorkspace(codecs);
+  const experiment = useExperimentRun(workspace.draft, view === "experiments");
   const content = useRef<HTMLDivElement>(null);
   const href = (target: WorkbenchView) => formatWorkbenchRoute({ ...context, view: target, instrument: null });
   const routeKey = location.ok ? formatWorkbenchRoute(location.route) : window.location.hash;
@@ -68,7 +74,7 @@ export function Workbench({ children, rawCodecs, mode = "standalone" }: Workbenc
         <nav aria-label="Workbench context destinations"><a href={href("operations")} aria-current={view === "operations" ? "page" : undefined}>Devices &amp; Operations</a></nav>
         <nav aria-label="Breadcrumbs"><a href={href("workspace")}>Quantum Studio</a><span aria-hidden="true"> / </span><span aria-current="page">{title}</span>{instrument !== null && <span> / {instrument}</span>}</nav>
       </header>
-      <WorkbenchInspector context={context} saved={saved} />
+      <WorkbenchInspector context={context} saved={workspace.saved} />
       <div className="qsp-workbench-content" ref={content} role="region" aria-label="Workbench view" tabIndex={-1} id={`/${view ?? "unavailable"}-view`}>
         {location.ok ? (
           <RouteBoundary key={routeKey} workspaceHref={href("workspace")}>
@@ -77,13 +83,14 @@ export function Workbench({ children, rawCodecs, mode = "standalone" }: Workbenc
               {view === "build" && <BuildView focusInstrument={instrument === "compile-recompute"} />}
               {view === "operations" && <OperationsView />}
               {view === "results" && <ResultsView focusInstrument={instrument === "program-ad-replay"} />}
-              {(view === "experiments" || view === "atlas") && <UnavailableView view={view} workspaceHref={href("workspace")} />}
+              {view === "experiments" && <ExperimentRunner workspace={workspace} rawCodecs={codecs} run={experiment} workspaceHref={href("workspace")} />}
+              {view === "atlas" && <UnavailableView view={view} workspaceHref={href("workspace")} />}
             </Suspense>
           </RouteBoundary>
         ) : <div role="alert"><h3>Route unavailable</h3><p>{location.reason}</p><a href={href("workspace")}>Return to Workspace</a></div>}
       </div>
       <div hidden={view !== "workspace"}>
-        <WorkspacePanel {...(rawCodecs === undefined ? {} : { rawCodecs })} onSavedWorkspace={setSaved} />
+        <WorkspaceEditor workspace={workspace} rawCodecs={codecs} />
       </div>
     </section>
   );

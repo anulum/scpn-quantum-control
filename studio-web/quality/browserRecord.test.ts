@@ -12,7 +12,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { coverageObject, qualifyBrowserRecord } from "./browserRecord";
+import { coverageObject, experimentBrowserOwners, qualifyBrowserRecord } from "./browserRecord";
 
 async function actualInput(): Promise<{ record: Record<string, unknown>; origin: string }> {
   const filename = process.env["STUDIO_WORKSPACE_COVERAGE"];
@@ -29,6 +29,27 @@ async function actualInput(): Promise<{ record: Record<string, unknown>; origin:
 }
 
 describe("browser coverage evidence qualification", () => {
+  it("admits the actual ten experiment owners only under their explicit source cohort", async () => {
+    const filename = process.env["STUDIO_EXPERIMENT_COVERAGE"];
+    if (!filename) throw new Error("Supply actual local_experiment_journey evidence");
+    const evidence = coverageObject(JSON.parse(await readFile(filename, "utf8")) as unknown);
+    if (evidence["scenario"] !== "local_experiment_journey" || evidence["passed"] !== true || !Array.isArray(evidence["native_v8_coverage"]) || typeof evidence["source_url"] !== "string") throw new Error("Actual successful experiment source counters required");
+    const owners = new Set<string>();
+    for (const record of evidence["native_v8_coverage"]) {
+      const qualified = await qualifyBrowserRecord(record, process.cwd(), evidence["source_url"], false, false, true);
+      const native = coverageObject(coverageObject(record)["coverage"]);
+      if (typeof native["url"] !== "string") throw new Error("Actual experiment source URL missing");
+      const pathname = new URL(native["url"]).pathname;
+      owners.add(pathname);
+      expect(qualified.coverage.functions.length).toBeGreaterThan(0);
+      if (pathname.startsWith("/src/features/experiments/")) {
+        for (const [workbench, parameters] of [[false, false], [true, false], [false, true]] as const) {
+          await expect(qualifyBrowserRecord(record, process.cwd(), evidence["source_url"], workbench, parameters)).rejects.toThrow("Unowned browser coverage source");
+        }
+      }
+    }
+    expect(owners).toEqual(experimentBrowserOwners);
+  });
   it("admits actual linked parameter scripts only with their explicit cohort", async () => {
     const filename = process.env["STUDIO_PARAMETER_COVERAGE"];
     if (!filename) throw new Error("Supply actual parameter_graph_editor evidence");

@@ -36,8 +36,9 @@ and local archive editor. Build opens the existing compile recomputation,
 Kuramoto Play and 3D Lab instruments, together with the program editor and compiler
 trace inspector. Results opens program-AD replay, evidence
 inspection, the support explorer, gradient explanations and scorecard.
-Experiments and Atlas show their unavailable workflows and a link back to
-Workspace. The mode banner distinguishes standalone and embedded layouts;
+Experiments opens the source-bound local experiment workflow described below.
+Atlas shows its unavailable workflow and a link back to Workspace. The mode
+banner distinguishes standalone and embedded layouts;
 federation hosts can pass `mode="embedded"` to the same exposed panel.
 Devices & Operations is a separate context destination for dated provider and
 device profiles. It retains the requested project, revision and snapshot context.
@@ -76,7 +77,7 @@ reload restores the last saved archive. Export remains the independent backup.
 View links and breadcrumbs are keyboard accessible, and navigating focuses the
 view or its instrument target. Navigation wraps to fit narrow host layouts.
 
-Build, Results and unavailable-view modules load on navigation. The compatibility
+Build, Experiments, Results and unavailable-view modules load on navigation. The compatibility
 Workspace overview still includes its original instrument dependencies at
 startup; lazy route modules do not imply that all numerical code has been
 removed from the initial bundle. Existing federation name, expose key and
@@ -169,6 +170,101 @@ facade and original storage/controller owners. Set
 the affected owner coverage cohort. The source qualifier verifies actual code,
 source maps and current owner hashes before merging counters through the
 existing Vitest provider. Stale, failed or incomplete evidence refuses.
+
+## Local experiment and portable replay
+
+Open **Experiments**, then **Open Kuramoto sample**. The committed classical
+mean-field sample becomes an unsaved workspace draft; opening it starts no
+worker. Select **Validate experiment archive**, then **Edit source parameters
+in Workspace**. The existing linked parameter editor validates typed values
+against their immutable specifications. **Save parameter revision** appends a
+child revision and retains the original input bytes and parent identity.
+
+Return to Experiments and choose **Prepare numerical plan**. Inspect its exact
+revision, plan fingerprint, shipped kernel digest, method, float64 precision,
+source shape, actual native limits, declared byte/work estimates and policy
+origin. The original source records matching requested/effective settings and
+the browser environment observed when it was created. These imported
+observations remain historical metadata. The deterministic source has no
+numerical seed. Phases use radians; `dt` uses unscaled model-time, and frequency
+and coupling use radians per model-time. No conversion to physical seconds is
+implied.
+
+**Run numeric byte budget** optionally supplies a canonical nonnegative decimal
+ceiling below the recorded source policy. Empty retains that policy; zero
+refuses before worker allocation. Changing the field disables execution until
+another plan is explicitly prepared. The declared plan includes the original
+numeric buffers, source validation, transfer copies and both retained and
+transferred kernel bytes. Browser capacity and computation duration are not
+measured by this admission. The visible operational timeout controls disposal,
+without guaranteeing that the browser scheduler will meet it.
+
+**Run experiment** explicitly starts the original disposable Rust/WASM worker.
+The worker validates source, revision, plan and build identity before admission.
+Success appears only after its genuine result and observed disposal. The table
+contains the original order-parameter samples, and the final-phase list retains
+oscillator order and radians. This ABI returns final phases and an order-
+parameter trajectory; it does not supply a complete phase history. The result
+is a classical Kuramoto calculation, with no quantum-spin, physical-device or
+provider execution claim.
+
+**Cancel experiment**, navigation away from Experiments, a selected source edit
+or unmount disposes the owned worker. Its original diagnostic events remain
+bound to the captured revision and plan. A failed, cancelled or stale attempt
+cannot acquire a success badge. A changed immutable revision cannot inherit an
+old result or save it as its own. Unconfirmed disposal blocks further runs and
+attempt saves in that mounted workbench.
+
+**Save experiment attempt** uses the existing browser archive transaction and
+requires an unchanged selected source plus disposed diagnostics. It appends a
+`local_run_record.v1`, the exact effective plan/input/policy, and original output
+bits for a successful run. The five original workspace document formats remain
+unchanged. Imported data cannot install verifiers or execute a recorded kernel;
+replay additionally requires its digest and native bounds to match the actually
+shipped module. Unsupported or altered producer content refuses admission.
+Unexpected operation faults show a fixed message while retaining the draft;
+deliberately authored refusals identify the rejected local operation.
+
+Use **Export saved experiment** for the committed browser archive, or **Export
+experiment attempt** for a disposed current-source attempt without changing
+browser storage. Persistence-unavailable browsers retain portable export and
+explicitly disable saved-state claims. Keep an independent exported backup.
+
+In a clean browser context, open Workspace, select the exported local JSON file,
+preview the complete archive and explicitly save it. In Experiments, **Prepare
+saved replay** re-admits the original completed record and recomputes its exact
+numerical plan. It starts no worker and makes no fresh success claim. **Run
+experiment** creates a new run and attempt identity, then compares every actual
+output binary64 bit with the saved original. An exact match is labelled
+**Original float64 replay verified**; a difference remains a failed attempt with
+the original numerical diagnostics retained.
+
+The original shared browser dispatcher exercises sample/edit/plan/run/save,
+zero-budget refusal, cancellation, a genuine new source revision, worker entry
+failure, altered archive bytes, missing WASM and fresh-context import/replay:
+
+```bash
+PYTHONPATH=src:oscillatools/src:. python tools/studio_browser_journey.py \
+  --scenario local_experiment_journey --base-url http://127.0.0.1:4173/ \
+  --workspace-source-url http://127.0.0.1:4174/ \
+  --output studio-local-experiment-journey.json
+```
+
+The built preview and optional source host follow the preparation described
+above. The source host must be a distinct root HTTP loopback origin. Its actual
+V8 record requires all ten original experiment, Workbench and workspace owners.
+Set `STUDIO_EXPERIMENT_COVERAGE` to successful current-source evidence alongside
+the required `STUDIO_WORKSPACE_COVERAGE`. The existing converter/provider
+preserves native zero counters and checks exact source maps and hashes before
+merging. Raw observations are not a measured coverage percentage.
+
+The separate Python `simulate` handler evolves the original undecomposed Qiskit
+operator through the supported local Python/Qiskit solver. Trotter parameters
+do not turn that execution into a decomposed circuit calculation. A declared
+Rust plan remains inspectable, but full quantum-trajectory execution on that
+backend is unavailable and refuses explicitly; it cannot silently execute
+through Python while claiming Rust. This handler and the browser's classical
+phase worker have distinct model and output contracts.
 
 ## Provider and device profiles
 

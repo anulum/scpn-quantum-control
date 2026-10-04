@@ -14,7 +14,7 @@ import v8 from "@vitest/coverage-v8";
 import { expect, it } from "vitest";
 import { createVitest } from "vitest/node";
 import type { Vitest } from "vitest/node";
-import { browserOwners, coverageObject, parameterBrowserOwners, workbenchBrowserOwners } from "./browserRecord";
+import { browserOwners, coverageObject, experimentBrowserOwners, parameterBrowserOwners, workbenchBrowserOwners } from "./browserRecord";
 import provider from "./workspaceProvider";
 
 it("refuses generation before real browser admission initializes the provider", async () => {
@@ -73,11 +73,13 @@ it("keeps ordinary workspace evidence sufficient when no damaged-source cohort i
   const panel = process.env["STUDIO_PANEL_REFUSAL_COVERAGE"];
   const workbench = process.env["STUDIO_WORKBENCH_COVERAGE"];
   const parameters = process.env["STUDIO_PARAMETER_COVERAGE"];
+  const experiments = process.env["STUDIO_EXPERIMENT_COVERAGE"];
   let context: Vitest | null = null;
   try {
     delete process.env["STUDIO_PANEL_REFUSAL_COVERAGE"];
     delete process.env["STUDIO_WORKBENCH_COVERAGE"];
     delete process.env["STUDIO_PARAMETER_COVERAGE"];
+    delete process.env["STUDIO_EXPERIMENT_COVERAGE"];
     context = await createVitest("test", { config: false, root: process.cwd(), watch: false, coverage: { enabled: true, provider: "v8", reportsDirectory: directory } });
     const instance = await provider.getProvider();
     await instance.initialize(context);
@@ -93,6 +95,27 @@ it("keeps ordinary workspace evidence sufficient when no damaged-source cohort i
     else process.env["STUDIO_WORKBENCH_COVERAGE"] = workbench;
     if (parameters === undefined) delete process.env["STUDIO_PARAMETER_COVERAGE"];
     else process.env["STUDIO_PARAMETER_COVERAGE"] = parameters;
+    if (experiments === undefined) delete process.env["STUDIO_EXPERIMENT_COVERAGE"];
+    else process.env["STUDIO_EXPERIMENT_COVERAGE"] = experiments;
+    try { await context?.close(); }
+    finally { await rm(directory, { recursive: true }); }
+  }
+});
+
+it("merges all ten genuine experiment owners through the unchanged public provider", async () => {
+  if (!process.env["STUDIO_WORKSPACE_COVERAGE"] || !process.env["STUDIO_EXPERIMENT_COVERAGE"]) throw new Error("Supply actual workspace and experiment evidence");
+  const directory = await mkdtemp(join(tmpdir(), "studio-provider-experiments-"));
+  let context: Vitest | null = null;
+  try {
+    context = await createVitest("test", { config: false, root: process.cwd(), watch: false, coverage: { enabled: true, provider: "v8", reportsDirectory: directory } });
+    const instance = await provider.getProvider();
+    await instance.initialize(context);
+    await instance.clean(true);
+    const actual = coverageObject(await instance.generateCoverage({ allTestsRun: false }));
+    const files = actual["files"];
+    if (typeof files !== "function") throw new Error("Original provider omitted its coverage map API");
+    expect(files.call(actual)).toEqual(expect.arrayContaining([...experimentBrowserOwners].map(owner => resolve(process.cwd(), "." + owner))));
+  } finally {
     try { await context?.close(); }
     finally { await rm(directory, { recursive: true }); }
   }

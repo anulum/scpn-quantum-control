@@ -13,7 +13,7 @@
     "python_model_source_modules": 780,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1497
+    "test_files": 1498
   },
   "documentation": {
     "examples": [
@@ -10079,6 +10079,7 @@
       "tests/test_studio_kuramoto_reference.py",
       "tests/test_studio_kuramoto_scenario_artifact.py",
       "tests/test_studio_lazy_import.py",
+      "tests/test_studio_local_experiment_browser.py",
       "tests/test_studio_manifest.py",
       "tests/test_studio_owned_worker_journey.py",
       "tests/test_studio_program_ad_quality_gate.py",

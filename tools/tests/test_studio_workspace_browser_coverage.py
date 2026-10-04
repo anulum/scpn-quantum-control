@@ -86,6 +86,105 @@ def test_capture_actual_workspace_owners(native_browser: Browser) -> None:
         context.close()
 
 
+def test_capture_actual_experiment_owners(native_browser: Browser) -> None:
+    """Collect the ten original owners after real Workbench experiment navigation.
+
+    Parameters
+    ----------
+    native_browser
+        Real Chromium process whose page imports the production experiment controls.
+
+    """
+    supplied = os.environ.get("STUDIO_WORKSPACE_SOURCE_URL")
+    if supplied is None:
+        raise RuntimeError("Supply the owned source host")
+    context = native_browser.new_context(service_workers="block")
+    try:
+        page = context.new_page()
+        session = start_native_coverage(page)
+        page.goto(
+            loopback_url(supplied) + "browser-tests/workbench.html", wait_until="networkidle"
+        )
+        page.get_by_role("navigation", name="Workbench views").get_by_role(
+            "link", name="Experiments", exact=True
+        ).click()
+        expect(page.get_by_role("heading", name="Local experiment", exact=True)).to_be_visible()
+        records = take_native_coverage(session, include_experiments=True)
+        actual: set[str] = set()
+        for record in records:
+            native = record["coverage"]
+            assert isinstance(native, dict)
+            url = native.get("url")
+            assert isinstance(url, str)
+            actual.add(urlsplit(url).path)
+        assert actual == {
+            "/src/shared/storage/workspaceStore.ts",
+            "/src/shared/storage/workspaceArchive.ts",
+            "/src/features/workspace/WorkspacePanel.tsx",
+            "/src/features/workspace/useWorkspace.ts",
+            "/src/app/Workbench.tsx",
+            "/src/features/experiments/kuramotoArtifacts.ts",
+            "/src/features/experiments/experimentArchive.ts",
+            "/src/features/experiments/experimentPlan.ts",
+            "/src/features/experiments/useExperimentRun.ts",
+            "/src/features/experiments/ExperimentRunner.tsx",
+        }
+    finally:
+        context.close()
+
+
+def test_experiment_capture_refuses_interrupted_original_owner(native_browser: Browser) -> None:
+    """Preserve actual collected scripts when an original experiment import is unavailable.
+
+    Parameters
+    ----------
+    native_browser
+        Real Chromium process with one deliberately aborted source-module request.
+
+    """
+    supplied = os.environ.get("STUDIO_WORKSPACE_SOURCE_URL")
+    if supplied is None:
+        raise RuntimeError("Supply the owned source host")
+    context = native_browser.new_context(service_workers="block")
+    try:
+        page = context.new_page()
+        interrupted: list[str] = []
+
+        def unavailable_experiment(route: Route) -> None:
+            """Abort the real request and retain its actual source URL."""
+            if (
+                urlsplit(route.request.url).path
+                == "/src/features/experiments/ExperimentRunner.tsx"
+            ):
+                interrupted.append(route.request.url)
+                route.abort()
+            else:
+                route.continue_()
+
+        page.route("**/*", unavailable_experiment)
+        session = start_native_coverage(page)
+        page.goto(
+            loopback_url(supplied) + "browser-tests/workbench.html", wait_until="networkidle"
+        )
+        page.get_by_role("navigation", name="Workbench views").get_by_role(
+            "link", name="Experiments", exact=True
+        ).click()
+        expect(page.get_by_role("alert")).to_contain_text("unavailable")
+        records: list[dict[str, object]] = []
+        with pytest.raises(AssertionError, match="Missing current-page native owners"):
+            take_native_coverage(session, records, include_experiments=True)
+        assert len(interrupted) == 1
+        assert all(
+            isinstance(record["coverage"], dict)
+            and not str(record["coverage"].get("url", "")).endswith("/ExperimentRunner.tsx")
+            for record in records
+        )
+        with pytest.raises(Error):
+            session.send("Profiler.takePreciseCoverage")
+    finally:
+        context.close()
+
+
 @pytest.mark.parametrize(("include_panel", "include_workbench"), [(True, False), (False, True)])
 def test_capture_actual_workbench_navigation_owners(
     native_browser: Browser, include_panel: bool, include_workbench: bool

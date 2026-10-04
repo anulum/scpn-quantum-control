@@ -106,11 +106,33 @@ def test_simulate_plan_defaults_backend_read_only() -> None:
     assert len(plan.steps) == 5
 
 
+def test_simulate_claim_describes_actual_undecomposed_operator_evolution() -> None:
+    """Qualify public plan and replay prose against the current solver route."""
+    plan = preview_action(_request(), registry=_registry())
+    assert "undecomposed" in plan.claim_boundary
+    assert "exact operator" in plan.claim_boundary
+    assert "Trotter approximation" not in plan.claim_boundary
+    record = run_action(_request(), registry=_registry())
+    assert record.result.status == "succeeded", record.result.error
+    assert record.script is not None
+    assert "undecomposed" in record.script.source
+    assert "exact operator" in record.script.source
+
+
 @pytest.mark.parametrize("backend", ["rust", "qiskit"])
 def test_simulate_accepts_declared_backends(backend: str) -> None:
     """Accept every backend declared by the simulate verb contract."""
     plan = preview_action(_request(backend=backend), registry=_registry())
     assert plan.backend == backend
+
+
+def test_simulate_refuses_unimplemented_rust_execution_without_substitution() -> None:
+    """Refuse a declared backend with no full trajectory handler implementation."""
+    record = run_action(_request(backend="rust"), registry=_registry())
+    assert record.result.status == "failed"
+    assert record.result.error is not None
+    assert "Rust full quantum trajectory execution is unavailable" in record.result.error
+    assert record.script is None
 
 
 def test_simulate_rejects_undeclared_backend() -> None:
