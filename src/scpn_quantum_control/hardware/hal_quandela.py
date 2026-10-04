@@ -14,6 +14,7 @@ import json
 from collections.abc import Callable, Mapping, Sequence
 from datetime import UTC, datetime
 from importlib import import_module
+from math import isfinite
 from typing import Any
 
 from ._count_integrity import (
@@ -21,7 +22,16 @@ from ._count_integrity import (
     strict_provider_job_id,
     strict_shot_conservation,
 )
-from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
+from .hal import (
+    BackendProfile,
+    QuantumJobRef,
+    QuantumJobResult,
+    QuantumWorkload,
+    _resolve_stored_job,
+    _validate_workload_for_profile,
+)
+from .provider_modalities import ModalitySemantics, PhotonicObservation, PhotonicSample
+from .provider_semantics import modality_submission_semantics
 
 QUANDELA_PERCEVAL_SCHEMA = "scpn.quandela.perceval.v1"
 QUANDELA_EXECUTION_MODE = "quandela_perceval"
@@ -34,26 +44,102 @@ def quandela_perceval_workload(
     n_modes: int,
     shots: int,
     metadata: Mapping[str, object] | None = None,
+    capture_semantics: bool = False,
+    requested_target: str | None = None,
 ) -> QuantumWorkload:
-    """Encode a Perceval photonic plan as a Quandela HAL workload."""
-    decoded = (
-        _json_mapping(payload, field_name="Quandela payload")
-        if isinstance(payload, str)
-        else dict(payload)
-    )
+    """Encode original photonic mode order and an optional native request companion.
+
+    Parameters
+    ----------
+    payload
+        Photonic plan mapping or JSON object with mode count, nonnegative input
+        occupations, supported components and optional postselection. Captured
+        JSON strings retain exact bytes; mappings retain original component order.
+    workload_id
+        Stable caller identity for the original plan.
+    n_modes
+        Positive native mode count stored in the legacy n_qubits field. Modes
+        and photon occupations do not imply a binary gate-model register.
+    shots
+        Positive integral requested number of observations.
+    metadata
+        Scalar caller annotations separate from provider settings.
+    capture_semantics
+        Retain original source digest and ordered native mode identities.
+        Default false preserves legacy plan construction.
+    requested_target
+        Optional exact declared processor selector, requiring native capture.
+
+    Returns
+    -------
+    QuantumWorkload
+        Original photonic plan and optional independent versioned companion.
+
+    Raises
+    ------
+    ValueError
+        If native plan structure, values, mode count or target admission fails.
+
+    """
+    decoded = _json_mapping(payload, field_name="Quandela payload")
     _validate_perceval_payload(decoded, n_modes)
+    if not capture_semantics and requested_target is not None:
+        raise ValueError("target pin requires native semantics capture")
+    program = (
+        payload
+        if isinstance(payload, str) and capture_semantics
+        else json.dumps(decoded, sort_keys=not capture_semantics, separators=(",", ":"))
+    )
+    semantics = (
+        ModalitySemantics(
+            program_sha256=hashlib.sha256(program.encode()).hexdigest(),
+            modality="photonic",
+            native_axes=tuple(range(n_modes)),
+            requested_target=requested_target,
+        )
+        if capture_semantics
+        else None
+    )
     return QuantumWorkload(
         workload_id=workload_id,
         ir_format="perceval",
-        program=json.dumps(decoded, sort_keys=True, separators=(",", ":")),
+        program=program,
         n_qubits=n_modes,
         shots=shots,
         metadata=dict(metadata or {}),
+        semantics=semantics,
     )
 
 
 class QuandelaPercevalHALAdapter:
-    """Quandela/Perceval adapter implementing the provider-neutral HAL protocol."""
+    """Sample declared photonic plans through an explicit native-compatible processor.
+
+    Parameters
+    ----------
+    profile
+        Quandela route declaring supported IR and resource limits.
+    processor
+        Optional prepared opaque processor. Native capture requires its exact
+        original source digest and records caller-precompiled provenance.
+    processor_factory
+        Optional builder receiving each separately admitted original plan.
+    sampler_factory
+        Optional sampler construction for the selected processor. Its samples
+        operation receives the exact requested count.
+    target
+        Declared adapter selector. Absence means injected; a present malformed
+        name refuses. This selector does not attest an SDK or physical device.
+    prepared_program_sha256
+        Exact original plan digest for captured execution with a prepared processor.
+
+    Raises
+    ------
+    ValueError
+        If profile or explicit target selector is invalid.
+
+    """
+
+    supports_provider_semantics = True
 
     def __init__(
         self,
@@ -63,6 +149,7 @@ class QuandelaPercevalHALAdapter:
         processor_factory: Callable[[dict[str, object]], Any] | None = None,
         sampler_factory: Callable[[Any], Any] | None = None,
         target: str | None = None,
+        prepared_program_sha256: str | None = None,
     ) -> None:
         if profile.backend_id != "quandela_cloud":
             raise ValueError("QuandelaPercevalHALAdapter requires the quandela_cloud profile")
@@ -71,23 +158,83 @@ class QuandelaPercevalHALAdapter:
         self._processor = processor
         self._processor_factory = processor_factory
         self._sampler_factory = sampler_factory
-        self._target = strict_provider_job_id(target or "injected", field_name="Quandela target")
+        self._target = strict_provider_job_id(
+            target if target is not None else "injected", field_name="Quandela target"
+        )
+        self._prepared_program_sha256 = prepared_program_sha256
         self._jobs: dict[str, QuantumJobRef] = {}
         self._results: dict[str, QuantumJobResult] = {}
 
     def submit(
         self, workload: QuantumWorkload, *, approval_id: str | None = None
     ) -> QuantumJobRef:
-        """Submit a workload to the backend and return its job reference."""
+        """Admit native source and target before building and sampling the processor.
+
+        Parameters
+        ----------
+        workload
+            Original supported photonic plan with optional source-bound companion.
+        approval_id
+            Required caller authorization for sampling.
+
+        Returns
+        -------
+        QuantumJobRef
+            Completed synchronous job preserving exact source, sample settings
+            and selector provenance. Native occupations may exceed one photon;
+            they are retained as typed photonic samples and original labels.
+
+        Raises
+        ------
+        PermissionError
+            If caller approval is absent.
+        ValueError
+            If profile, source, IR, target, prepared digest or sampling data differs.
+        TypeError
+            If selected processor or sampler lacks its sampling operation.
+        RuntimeError
+            If no calibrated builder exists or the provider has no count channel.
+
+        """
         if not approval_id:
             raise PermissionError("approval_id is required for Quandela submission")
         if workload.ir_format != "perceval":
             raise ValueError("Quandela direct adapter requires perceval workloads")
+        _validate_workload_for_profile(self.profile, workload)
         plan = _decode_payload(workload)
         _validate_perceval_payload(plan, workload.n_qubits)
+        submission = modality_submission_semantics(
+            workload.semantics,
+            program=workload.program,
+            ir_format=workload.ir_format,
+            native_axes=tuple(range(workload.n_qubits)),
+            modality="photonic",
+            target_name=self._target,
+            shots=workload.shots,
+            caller_precompiled=self._processor is not None,
+        )
+        if (
+            submission is not None
+            and self._processor is not None
+            and self._prepared_program_sha256 != submission.request.program_sha256
+        ):
+            raise ValueError(
+                "prepared Quandela processor requires its exact original program digest"
+            )
         processor = self._processor_for(plan)
         raw_result = self._sample(processor, workload.shots)
-        counts = _normalise_counts(_extract_counts(raw_result))
+        raw_counts = _extract_counts(raw_result)
+        observation = None
+        if submission is not None:
+            assert isinstance(submission.request, ModalitySemantics)
+            observation = PhotonicObservation(
+                request=submission.request,
+                samples=_photonic_samples(raw_counts),
+                shots=workload.shots,
+            )
+        counts = (
+            dict(observation.counts) if observation is not None else _normalise_counts(raw_counts)
+        )
         observed_shots = strict_shot_conservation(counts, expected_shots=workload.shots)
         provider_job_id = _provider_job_id(raw_result)
         hal_job_id = _hal_job_id(self.backend_id, workload.workload_id, provider_job_id)
@@ -96,6 +243,7 @@ class QuandelaPercevalHALAdapter:
             backend_id=self.backend_id,
             workload_id=workload.workload_id,
             status="completed",
+            submission=submission,
             metadata={
                 "approval_id": approval_id,
                 "provider_job_id": provider_job_id,
@@ -111,6 +259,7 @@ class QuandelaPercevalHALAdapter:
             status="completed",
             counts=counts,
             shots=observed_shots,
+            provider_observation=observation,
             metadata={
                 "approval_id": approval_id,
                 "execution_mode": QUANDELA_EXECUTION_MODE,
@@ -123,24 +272,86 @@ class QuandelaPercevalHALAdapter:
         return job
 
     def status(self, job: QuantumJobRef) -> str:
-        """Return the current status for a submitted backend job."""
+        """Read stored synchronous lifecycle after durable identity admission.
+
+        Parameters
+        ----------
+        job
+            Original or recovered handle for the same backend and workload.
+
+        Returns
+        -------
+        str
+            Stored completed or cancellation-request lifecycle annotation.
+
+        Raises
+        ------
+        KeyError
+            If original submission is unavailable.
+        ValueError
+            If durable handle identity differs.
+
+        """
         return self._job(job).status
 
     def result(self, job: QuantumJobRef) -> QuantumJobResult:
-        """Return the completed result for a submitted backend job."""
-        result = self._results.get(job.job_id)
+        """Return retained native photonic data against the original stored request.
+
+        Parameters
+        ----------
+        job
+            Handle matching the original stored backend and workload.
+
+        Returns
+        -------
+        QuantumJobResult
+            Immutable compatibility count view and optional typed photonic
+            occupation samples with exact original state labels. Repeated
+            retrieval returns the same result without sampling again.
+
+        Raises
+        ------
+        KeyError
+            If the original submission or retained result is unavailable.
+        ValueError
+            If durable handle identity differs.
+
+        """
+        stored = self._job(job)
+        result = self._results.get(stored.job_id)
         if result is None:
             raise KeyError(f"unknown job_id: {job.job_id}")
         return result
 
     def cancel(self, job: QuantumJobRef) -> QuantumJobRef:
-        """Request cancellation for a submitted backend job."""
+        """Retain a legacy cancellation annotation without discarding sampled data.
+
+        Parameters
+        ----------
+        job
+            Handle matching the original stored backend and workload.
+
+        Returns
+        -------
+        QuantumJobRef
+            Cancellation annotation retaining original source and companion.
+            Sampling is synchronous; this does not attest physical cancellation.
+
+        Raises
+        ------
+        KeyError
+            If original submission is unavailable.
+        ValueError
+            If durable handle identity differs.
+
+        """
         stored = self._job(job)
         cancelled = QuantumJobRef(
             job_id=stored.job_id,
             backend_id=stored.backend_id,
             workload_id=stored.workload_id,
             status="cancelled",
+            submission=stored.submission,
             metadata=stored.metadata,
         )
         self._jobs[job.job_id] = cancelled
@@ -150,10 +361,8 @@ class QuandelaPercevalHALAdapter:
         if self._processor is not None:
             return self._processor
         if self._processor_factory is not None:
-            self._processor = self._processor_factory(plan)
-            return self._processor
-        self._processor = _default_processor_factory(plan)
-        return self._processor
+            return self._processor_factory(plan)
+        return _default_processor_factory(plan)
 
     def _sample(self, processor: Any, shots: int) -> object:
         if self._sampler_factory is not None:
@@ -171,10 +380,7 @@ class QuandelaPercevalHALAdapter:
         raise TypeError("Quandela processor object does not provide samples()")
 
     def _job(self, job: QuantumJobRef) -> QuantumJobRef:
-        stored = self._jobs.get(job.job_id)
-        if stored is None:
-            raise KeyError(f"unknown job_id: {job.job_id}")
-        return stored
+        return _resolve_stored_job(job, self._jobs)
 
 
 def _default_processor_factory(plan: dict[str, object]) -> Any:
@@ -322,17 +528,46 @@ def _normalise_counts(raw: object) -> dict[str, int]:
     return counts
 
 
+def _photonic_samples(raw: object) -> tuple[PhotonicSample, ...]:
+    """Snapshot iterable native Fock occupations and exact unchanged state labels."""
+    if not isinstance(raw, Mapping):
+        raise ValueError("native photonic output must contain an occupation count mapping")
+    samples: list[PhotonicSample] = []
+    for state, count in raw.items():
+        if isinstance(state, str):
+            raise ValueError(
+                "native photonic output requires iterable occupations, not guessed state labels"
+            )
+        try:
+            occupations = tuple(
+                strict_integer_value(value, field_name="photonic occupation") for value in state
+            )
+        except TypeError as exc:
+            raise ValueError("native photonic state must expose ordered occupations") from exc
+        samples.append(
+            PhotonicSample(
+                occupations=occupations,
+                occurrences=strict_integer_value(count, field_name="photonic occurrence"),
+                native_label=str(state),
+            )
+        )
+    return tuple(samples)
+
+
 def _coerce_int(value: object, *, field_name: str) -> int:
     return strict_integer_value(value, field_name=field_name)
 
 
 def _coerce_float(value: object, *, field_name: str) -> float:
-    if isinstance(value, bool):
+    if isinstance(value, bool) or not isinstance(value, int | float | str):
         raise ValueError(f"{field_name} must be numeric")
     try:
-        return float(value)  # type: ignore[arg-type]
-    except (TypeError, ValueError) as exc:
+        result = float(value)
+    except (ValueError, OverflowError) as exc:
         raise ValueError(f"{field_name} must be numeric") from exc
+    if not isfinite(result):
+        raise ValueError(f"{field_name} must be finite")
+    return result
 
 
 def _utc_now() -> str:

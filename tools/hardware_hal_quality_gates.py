@@ -10,6 +10,8 @@
 from __future__ import annotations
 
 from os import devnull
+from pathlib import Path
+from tempfile import gettempdir
 
 Gate = tuple[str, list[str]]
 HARDWARE_HAL_SOURCE = "src/scpn_quantum_control/hardware/hal.py"
@@ -82,111 +84,190 @@ PROVIDER_CERTIFICATION_SOURCE = "src/scpn_quantum_control/hardware/provider_cert
 """Fail-closed certification of the publicly claimed provider matrix."""
 PROVIDER_CERTIFICATION_TEST = "tests/test_hardware_hal_provider_certification.py"
 """Live-matrix certification plus refusal tests for every criterion."""
-HARDWARE_HAL_COVERAGE_COHORT = [
+PROVIDER_SEMANTICS_SOURCES = [
+    "src/scpn_quantum_control/hardware/_count_integrity.py",
+    "src/scpn_quantum_control/hardware/provider_semantics.py",
+    "src/scpn_quantum_control/hardware/provider_measurement.py",
+    "src/scpn_quantum_control/hardware/provider_modalities.py",
+    "src/scpn_quantum_control/hardware/hal_qiskit.py",
+    "src/scpn_quantum_control/hardware/hal_braket.py",
+    "src/scpn_quantum_control/hardware/hal_iqm.py",
+    "src/scpn_quantum_control/hardware/hal_quandela.py",
+    "src/scpn_quantum_control/hardware/hal_dwave.py",
+    "src/scpn_quantum_control/hardware/hal_pasqal.py",
+    "src/scpn_quantum_control/hardware/hal_quera_bloqade.py",
+]
+"""Native source, measurement, modality and original adapter owners under exact acceptance."""
+PROVIDER_SEMANTICS_TESTS = [
+    "tests/test_count_integrity.py",
+    "tests/test_provider_semantics.py",
+    "tests/test_provider_measurement.py",
+    "tests/test_provider_modalities.py",
+    "tests/test_provider_measurement_semantics.py",
     "tests/test_hardware_hal.py",
-    "tests/test_hardware_hal_contract_guards.py",
     "tests/test_hardware_hal_count_integrity_contract.py",
-    "tests/test_hardware_hal_provider_id_contract.py",
-    "tests/test_hardware_hal_status_normalisation_contract.py",
-    ASYNC_HARDWARE_RUNNER_TEST,
-    HARDWARE_CIRCUIT_CUTTING_TEST,
-    HARDWARE_CIRCUIT_EXPORT_TEST,
-    HARDWARE_FAST_CLASSICAL_TEST,
-    IQM_BACKEND_TEST,
-    *HARDWARE_AGGREGATOR_TESTS,
-    PROVIDER_CAPABILITY_CORE_TEST,
-    PROVIDER_SUBMISSION_GATE_TEST,
-    *PROVIDER_ROUTE_INVENTORY_TESTS,
-    PROVIDER_CAPABILITY_CLOUD_ADAPTERS_TEST,
-    PROVIDER_CAPABILITY_GATE_ADAPTERS_TEST,
-    PROVIDER_CAPABILITY_SPECIALIZED_ADAPTERS_TEST,
-    PROVIDER_CERTIFICATION_TEST,
+    "tests/test_hardware_hal_qiskit_adapters.py",
+    "tests/test_hardware_hal_braket_adapters.py",
+    "tests/test_hardware_hal_iqm_adapters.py",
+    "tests/test_hardware_hal_quandela_adapters.py",
+    "tests/test_hardware_hal_dwave_adapters.py",
+    "tests/test_hardware_hal_pasqal_adapters.py",
+    "tests/test_hardware_hal_quera_bloqade_adapters.py",
+    "tests/test_hal_semantic_binding.py",
 ]
-"""Offline and fake-adapter tests that own exact HAL coverage."""
-HARDWARE_HAL_TYPING_RATCHET = [
-    HARDWARE_HAL_SOURCE,
-    ASYNC_HARDWARE_RUNNER_SOURCE,
-    ASYNC_HARDWARE_RUNNER_TEST,
-    HARDWARE_CIRCUIT_CUTTING_SOURCE,
-    HARDWARE_CIRCUIT_CUTTING_TEST,
-    HARDWARE_CIRCUIT_EXPORT_SOURCE,
-    HARDWARE_CIRCUIT_EXPORT_TEST,
-    HARDWARE_FAST_CLASSICAL_SOURCE,
-    HARDWARE_FAST_CLASSICAL_TEST,
-    IQM_BACKEND_SOURCE,
-    IQM_BACKEND_TEST,
-    HARDWARE_AGGREGATOR_SOURCE,
-    *HARDWARE_AGGREGATOR_TESTS,
-    PROVIDER_CAPABILITY_CORE_SOURCE,
-    PROVIDER_CAPABILITY_CORE_TEST,
-    PROVIDER_SUBMISSION_GATE_SOURCE,
-    PROVIDER_SUBMISSION_GATE_TEST,
-    PROVIDER_ROUTE_CONFIGURATION_SOURCE,
-    *PROVIDER_ROUTE_INVENTORY_TESTS,
-    PROVIDER_CAPABILITY_CLOUD_ADAPTERS_SOURCE,
-    PROVIDER_CAPABILITY_CLOUD_ADAPTERS_TEST,
-    PROVIDER_CAPABILITY_GATE_ADAPTERS_SOURCE,
-    PROVIDER_CAPABILITY_GATE_ADAPTERS_TEST,
-    PROVIDER_CAPABILITY_SPECIALIZED_ADAPTERS_SOURCE,
-    PROVIDER_CAPABILITY_SPECIALIZED_ADAPTERS_TEST,
-    PROVIDER_CERTIFICATION_SOURCE,
-    PROVIDER_CERTIFICATION_TEST,
-    "tools/hardware_hal_quality_gates.py",
-    "tests/test_hardware_hal_quality_gate.py",
-]
-"""Strict-typing cohort for production and gate contracts."""
-HARDWARE_HAL_DOCSTRING_RATCHET = [
-    HARDWARE_HAL_SOURCE,
-    ASYNC_HARDWARE_RUNNER_SOURCE,
-    HARDWARE_CIRCUIT_CUTTING_SOURCE,
-    HARDWARE_CIRCUIT_EXPORT_SOURCE,
-    HARDWARE_FAST_CLASSICAL_SOURCE,
-    IQM_BACKEND_SOURCE,
-    HARDWARE_AGGREGATOR_SOURCE,
-    PROVIDER_CAPABILITY_CORE_SOURCE,
-    PROVIDER_SUBMISSION_GATE_SOURCE,
-    PROVIDER_ROUTE_CONFIGURATION_SOURCE,
-    PROVIDER_CAPABILITY_CLOUD_ADAPTERS_SOURCE,
-    PROVIDER_CAPABILITY_GATE_ADAPTERS_SOURCE,
-    PROVIDER_CAPABILITY_SPECIALIZED_ADAPTERS_SOURCE,
-    PROVIDER_CERTIFICATION_SOURCE,
-    "tests/test_hardware_hal.py",
-    ASYNC_HARDWARE_RUNNER_TEST,
-    HARDWARE_CIRCUIT_CUTTING_TEST,
-    HARDWARE_CIRCUIT_EXPORT_TEST,
-    HARDWARE_FAST_CLASSICAL_TEST,
-    IQM_BACKEND_TEST,
-    *HARDWARE_AGGREGATOR_TESTS,
-    PROVIDER_CAPABILITY_CORE_TEST,
-    PROVIDER_SUBMISSION_GATE_TEST,
-    *PROVIDER_ROUTE_INVENTORY_TESTS,
-    PROVIDER_CAPABILITY_CLOUD_ADAPTERS_TEST,
-    PROVIDER_CAPABILITY_GATE_ADAPTERS_TEST,
-    PROVIDER_CAPABILITY_SPECIALIZED_ADAPTERS_TEST,
-    PROVIDER_CERTIFICATION_TEST,
-    "tools/hardware_hal_quality_gates.py",
-    "tests/test_hardware_hal_quality_gate.py",
-]
-"""Complete HAL and gate-contract docstring cohort."""
-HARDWARE_HAL_COVERAGE_DATA_FILE = "/tmp/scpn-qc-hardware-hal-quality.coverage"  # nosec B108
-"""Isolated coverage database for the hardware HAL owner."""
-HARDWARE_HAL_COVERAGE_INCLUDE = (
-    "*/hardware/hal.py,*/hardware/async_runner.py,*/hardware/circuit_cutting.py,"
-    "*/hardware/circuit_export.py,*/hardware/fast_classical.py,"
-    "*/hardware/iqm_backend.py,*/hardware/aggregators.py,"
-    "*/hardware/provider_capability_core.py,"
-    "*/hardware/provider_submission_gate.py,"
-    "*/hardware/provider_route_configuration.py,"
-    "*/hardware/provider_capability_cloud_adapters.py,"
-    "*/hardware/provider_capability_gate_adapters.py,"
-    "*/hardware/provider_capability_specialized_adapters.py,"
-    "*/hardware/provider_certification.py"
+"""Direct native owner tests, public SDK boundaries and retained metadata-only compatibility."""
+HARDWARE_HAL_COVERAGE_COHORT = list(
+    dict.fromkeys(
+        [
+            "tests/test_hardware_hal.py",
+            "tests/test_hardware_hal_contract_guards.py",
+            "tests/test_hardware_hal_count_integrity_contract.py",
+            "tests/test_hardware_hal_provider_id_contract.py",
+            "tests/test_hardware_hal_status_normalisation_contract.py",
+            ASYNC_HARDWARE_RUNNER_TEST,
+            HARDWARE_CIRCUIT_CUTTING_TEST,
+            HARDWARE_CIRCUIT_EXPORT_TEST,
+            HARDWARE_FAST_CLASSICAL_TEST,
+            IQM_BACKEND_TEST,
+            *HARDWARE_AGGREGATOR_TESTS,
+            PROVIDER_CAPABILITY_CORE_TEST,
+            PROVIDER_SUBMISSION_GATE_TEST,
+            *PROVIDER_ROUTE_INVENTORY_TESTS,
+            PROVIDER_CAPABILITY_CLOUD_ADAPTERS_TEST,
+            PROVIDER_CAPABILITY_GATE_ADAPTERS_TEST,
+            PROVIDER_CAPABILITY_SPECIALIZED_ADAPTERS_TEST,
+            PROVIDER_CERTIFICATION_TEST,
+            *PROVIDER_SEMANTICS_TESTS,
+            "tests/test_hardware_hal_quality_gate.py",
+        ]
+    )
 )
-"""Provider-neutral, route-matrix, and asynchronous sources under exact coverage."""
+"""Offline and fake-adapter tests that own exact HAL coverage."""
+HARDWARE_HAL_TYPING_RATCHET = list(
+    dict.fromkeys(
+        [
+            HARDWARE_HAL_SOURCE,
+            ASYNC_HARDWARE_RUNNER_SOURCE,
+            ASYNC_HARDWARE_RUNNER_TEST,
+            HARDWARE_CIRCUIT_CUTTING_SOURCE,
+            HARDWARE_CIRCUIT_CUTTING_TEST,
+            HARDWARE_CIRCUIT_EXPORT_SOURCE,
+            HARDWARE_CIRCUIT_EXPORT_TEST,
+            HARDWARE_FAST_CLASSICAL_SOURCE,
+            HARDWARE_FAST_CLASSICAL_TEST,
+            IQM_BACKEND_SOURCE,
+            IQM_BACKEND_TEST,
+            HARDWARE_AGGREGATOR_SOURCE,
+            *HARDWARE_AGGREGATOR_TESTS,
+            PROVIDER_CAPABILITY_CORE_SOURCE,
+            PROVIDER_CAPABILITY_CORE_TEST,
+            PROVIDER_SUBMISSION_GATE_SOURCE,
+            PROVIDER_SUBMISSION_GATE_TEST,
+            PROVIDER_ROUTE_CONFIGURATION_SOURCE,
+            *PROVIDER_ROUTE_INVENTORY_TESTS,
+            PROVIDER_CAPABILITY_CLOUD_ADAPTERS_SOURCE,
+            PROVIDER_CAPABILITY_CLOUD_ADAPTERS_TEST,
+            PROVIDER_CAPABILITY_GATE_ADAPTERS_SOURCE,
+            PROVIDER_CAPABILITY_GATE_ADAPTERS_TEST,
+            PROVIDER_CAPABILITY_SPECIALIZED_ADAPTERS_SOURCE,
+            PROVIDER_CAPABILITY_SPECIALIZED_ADAPTERS_TEST,
+            PROVIDER_CERTIFICATION_SOURCE,
+            PROVIDER_CERTIFICATION_TEST,
+            "tools/hardware_hal_quality_gates.py",
+            "tests/test_hardware_hal_quality_gate.py",
+            *PROVIDER_SEMANTICS_SOURCES,
+            *PROVIDER_SEMANTICS_TESTS,
+        ]
+    )
+)
+"""Strict-typing cohort for production and gate contracts."""
+HARDWARE_HAL_DOCSTRING_RATCHET = list(
+    dict.fromkeys(
+        [
+            HARDWARE_HAL_SOURCE,
+            ASYNC_HARDWARE_RUNNER_SOURCE,
+            HARDWARE_CIRCUIT_CUTTING_SOURCE,
+            HARDWARE_CIRCUIT_EXPORT_SOURCE,
+            HARDWARE_FAST_CLASSICAL_SOURCE,
+            IQM_BACKEND_SOURCE,
+            HARDWARE_AGGREGATOR_SOURCE,
+            PROVIDER_CAPABILITY_CORE_SOURCE,
+            PROVIDER_SUBMISSION_GATE_SOURCE,
+            PROVIDER_ROUTE_CONFIGURATION_SOURCE,
+            PROVIDER_CAPABILITY_CLOUD_ADAPTERS_SOURCE,
+            PROVIDER_CAPABILITY_GATE_ADAPTERS_SOURCE,
+            PROVIDER_CAPABILITY_SPECIALIZED_ADAPTERS_SOURCE,
+            PROVIDER_CERTIFICATION_SOURCE,
+            "tests/test_hardware_hal.py",
+            ASYNC_HARDWARE_RUNNER_TEST,
+            HARDWARE_CIRCUIT_CUTTING_TEST,
+            HARDWARE_CIRCUIT_EXPORT_TEST,
+            HARDWARE_FAST_CLASSICAL_TEST,
+            IQM_BACKEND_TEST,
+            *HARDWARE_AGGREGATOR_TESTS,
+            PROVIDER_CAPABILITY_CORE_TEST,
+            PROVIDER_SUBMISSION_GATE_TEST,
+            *PROVIDER_ROUTE_INVENTORY_TESTS,
+            PROVIDER_CAPABILITY_CLOUD_ADAPTERS_TEST,
+            PROVIDER_CAPABILITY_GATE_ADAPTERS_TEST,
+            PROVIDER_CAPABILITY_SPECIALIZED_ADAPTERS_TEST,
+            PROVIDER_CERTIFICATION_TEST,
+            "tools/hardware_hal_quality_gates.py",
+            "tests/test_hardware_hal_quality_gate.py",
+            *PROVIDER_SEMANTICS_SOURCES,
+            *PROVIDER_SEMANTICS_TESTS,
+        ]
+    )
+)
+"""Complete HAL and gate-contract docstring cohort."""
+HARDWARE_HAL_COVERAGE_DATA_FILE = str(Path(gettempdir()) / "scpn-qc-hardware-hal-quality.coverage")
+"""Isolated database inside the caller's configured child temporary directory."""
+HARDWARE_HAL_COVERAGE_SOURCES = [
+    HARDWARE_HAL_SOURCE,
+    ASYNC_HARDWARE_RUNNER_SOURCE,
+    HARDWARE_CIRCUIT_CUTTING_SOURCE,
+    HARDWARE_CIRCUIT_EXPORT_SOURCE,
+    HARDWARE_FAST_CLASSICAL_SOURCE,
+    IQM_BACKEND_SOURCE,
+    HARDWARE_AGGREGATOR_SOURCE,
+    PROVIDER_CAPABILITY_CORE_SOURCE,
+    PROVIDER_SUBMISSION_GATE_SOURCE,
+    PROVIDER_ROUTE_CONFIGURATION_SOURCE,
+    PROVIDER_CAPABILITY_CLOUD_ADAPTERS_SOURCE,
+    PROVIDER_CAPABILITY_GATE_ADAPTERS_SOURCE,
+    PROVIDER_CAPABILITY_SPECIALIZED_ADAPTERS_SOURCE,
+    PROVIDER_CERTIFICATION_SOURCE,
+    *PROVIDER_SEMANTICS_SOURCES,
+    "tools/hardware_hal_quality_gates.py",
+]
+"""Every existing and native companion owner, including the gate builder itself."""
+HARDWARE_HAL_COVERAGE_INCLUDE = ",".join(
+    "*/" + path.removeprefix("src/scpn_quantum_control/") for path in HARDWARE_HAL_COVERAGE_SOURCES
+)
+"""Exact source-file projection preserving every existing coverage owner."""
+HARDWARE_HAL_COVERAGE_MODULES = ",".join(
+    path.removeprefix("src/").removesuffix(".py").replace("/", ".")
+    for path in HARDWARE_HAL_COVERAGE_SOURCES
+)
+"""Exact native measurement scope; declared-file completeness has its own refusal gate."""
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:
-    """Build strict typing and NumPy-docstring gates."""
+    """Build complete native documentation and strict typing commands.
+
+    Parameters
+    ----------
+    python
+        Caller-selected Python executable in the established environment.
+
+    Returns
+    -------
+    list[Gate]
+        Named argument vectors covering every registered production and test
+        owner. Native documentation ignores repository-wide test waivers;
+        callers retain each tool's actual nonzero failure status.
+
+    """
     return [
         (
             "mypy-strict-hardware-hal-quality",
@@ -218,7 +299,22 @@ def build_static_quality_gates(python: str) -> list[Gate]:
 
 
 def build_coverage_gates(python: str) -> list[Gate]:
-    """Build focused execution and exact source coverage gates."""
+    """Build focused native execution and complete statement/branch coverage commands.
+
+    Parameters
+    ----------
+    python
+        Caller-selected Python executable in the established environment.
+
+    Returns
+    -------
+    list[Gate]
+        Ordered execution, enrollment and report vectors sharing one isolated
+        database. Enrollment refuses unmeasured declared owners; the report
+        retains every existing source and the exact 100 percent threshold.
+        Caller-configured temporary storage owns all database writes.
+
+    """
     return [
         (
             "hardware-hal focused coverage",
@@ -230,10 +326,22 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--rcfile={devnull}",
                 f"--data-file={HARDWARE_HAL_COVERAGE_DATA_FILE}",
                 "--branch",
+                f"--source={HARDWARE_HAL_COVERAGE_MODULES}",
                 "-m",
                 "pytest",
                 "-q",
+                "--no-cov",
                 *HARDWARE_HAL_COVERAGE_COHORT,
+            ],
+        ),
+        (
+            "hardware-hal complete coverage enrollment",
+            [
+                python,
+                "-c",
+                "import sys; from tools.hardware_hal_quality_gates import "
+                "validate_coverage_sources; validate_coverage_sources(sys.argv[1])",
+                HARDWARE_HAL_COVERAGE_DATA_FILE,
             ],
         ),
         (
@@ -245,12 +353,44 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 "report",
                 f"--rcfile={devnull}",
                 f"--data-file={HARDWARE_HAL_COVERAGE_DATA_FILE}",
+                "--show-missing",
                 "--precision=2",
                 "--fail-under=100",
                 f"--include={HARDWARE_HAL_COVERAGE_INCLUDE}",
             ],
         ),
     ]
+
+
+def validate_coverage_sources(data_file: str) -> None:
+    """Refuse a coverage database that omitted any declared HAL source owner.
+
+    Parameters
+    ----------
+    data_file
+        Actual isolated database produced by the native coverage execution gate.
+
+    Raises
+    ------
+    ValueError
+        If a declared owner is absent, including a missing database. A native
+        percentage alone cannot approve a module that was never measured.
+    coverage.exceptions.DataError
+        If the existing database cannot be read by the native coverage runtime.
+
+    """
+    from coverage import CoverageData
+
+    data = CoverageData(basename=data_file)
+    data.read()
+    measured = {Path(filename).resolve() for filename in data.measured_files()}
+    missing = [
+        source
+        for source in HARDWARE_HAL_COVERAGE_SOURCES
+        if Path(source).resolve() not in measured
+    ]
+    if missing:
+        raise ValueError("HAL coverage did not measure declared owners: " + ", ".join(missing))
 
 
 __all__ = [
@@ -261,6 +401,8 @@ __all__ = [
     "HARDWARE_HAL_COVERAGE_COHORT",
     "HARDWARE_HAL_COVERAGE_DATA_FILE",
     "HARDWARE_HAL_COVERAGE_INCLUDE",
+    "HARDWARE_HAL_COVERAGE_MODULES",
+    "HARDWARE_HAL_COVERAGE_SOURCES",
     "HARDWARE_HAL_DOCSTRING_RATCHET",
     "HARDWARE_CIRCUIT_CUTTING_SOURCE",
     "HARDWARE_CIRCUIT_CUTTING_TEST",
@@ -272,6 +414,8 @@ __all__ = [
     "HARDWARE_HAL_TYPING_RATCHET",
     "IQM_BACKEND_SOURCE",
     "IQM_BACKEND_TEST",
+    "PROVIDER_SEMANTICS_SOURCES",
+    "PROVIDER_SEMANTICS_TESTS",
     "PROVIDER_CAPABILITY_CORE_SOURCE",
     "PROVIDER_CAPABILITY_CORE_TEST",
     "PROVIDER_ROUTE_CONFIGURATION_SOURCE",
@@ -286,4 +430,5 @@ __all__ = [
     "PROVIDER_CERTIFICATION_TEST",
     "build_coverage_gates",
     "build_static_quality_gates",
+    "validate_coverage_sources",
 ]

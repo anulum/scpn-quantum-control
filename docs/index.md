@@ -155,7 +155,7 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | IBM hardware evidence | Legacy ibm_fez artifact rows + 342-circuit ibm_kingston Phase 1 DLA-parity raw-count dataset |
 | DLA parity asymmetry (hardware) | $+10.8\,\%$ mean for depths $\ge 4$, peak $+17.5\,\%$ at depth 6, reproduced from `data/phase1_dla_parity/` |
 | Test suite | CI-gated suite, 90% line gate; branch telemetry required and currently observational |
-| Python modules | 748 Python source modules + 1 Rust crate (177 PyO3 bindings) + Julia tier (`accel/julia/*.jl`) |
+| Python modules | 774 Python source modules + 1 Rust crate (177 PyO3 bindings) + Julia tier (`accel/julia/*.jl`) |
 
 ## Package map
 
@@ -251,7 +251,7 @@ for name, w in results.items():
 - [Kuramoto Variants](kuramoto_variants.md) — higher-order, monitored, and PT-symmetric trajectory APIs
 - [Classical Baselines](classical_baselines.md) — SciPy ODE, QuTiP Lindblad, and MPS TEBD provenance surfaces
 - [TN/MPS Baseline Design](tn_mps_baseline_design.md) — CPU-first N=30-40 tensor-network baseline plan
-- [Hardware Guide](hardware_guide.md) — IBM Quantum setup
+- [Hardware Guide](hardware_guide.md) — native HAL workloads, provider readout and IBM Quantum setup
 - [Bridges](bridges_api.md) — cross-repo integrations
 - [Tutorials](tutorials.md) — 4-level learning path, 14 tutorials
 - [Notebooks](notebooks.md) — curated learning sequence

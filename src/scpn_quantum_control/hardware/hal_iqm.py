@@ -11,12 +11,13 @@
 from __future__ import annotations
 
 import hashlib
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from datetime import UTC, datetime
 from importlib import import_module
 from typing import Any
 
 from qiskit import QuantumCircuit, transpile
+from qiskit.circuit import Parameter
 
 from ._count_integrity import (
     strict_binary_bitstring_key,
@@ -25,8 +26,18 @@ from ._count_integrity import (
     strict_provider_job_id,
     strict_shot_conservation,
 )
-from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
-from .hal_qiskit import qiskit_circuit_to_workload
+from .hal import (
+    BackendProfile,
+    QuantumJobRef,
+    QuantumJobResult,
+    QuantumWorkload,
+    _resolve_stored_job,
+    _validate_workload_for_profile,
+)
+from .hal_qiskit import _circuit_to_qpy_b64, qiskit_circuit_to_workload
+from .iqm_backend import IQMTargetCompilationError
+from .provider_measurement import bind_qiskit_workload, qiskit_submission_semantics
+from .provider_semantics import GateModelObservation
 
 IQM_EXECUTION_MODE = "iqm_qiskit"
 
@@ -37,18 +48,83 @@ def iqm_qiskit_workload(
     workload_id: str,
     shots: int,
     metadata: dict[str, object] | None = None,
+    capture_semantics: bool = False,
+    requested_target: str | None = None,
+    parameter_bindings: Mapping[Parameter, float] | None = None,
 ) -> QuantumWorkload:
-    """Encode a Qiskit circuit as a HAL workload for IQM execution."""
+    """Encode unchanged native QPY and an optional IQM sampling contract.
+
+    Parameters
+    ----------
+    circuit
+        Original Qiskit circuit, retaining native shared parameter UUIDs in QPY.
+    workload_id
+        Stable caller identity for the original encoded source.
+    shots
+        Positive integral requested sample total.
+    metadata
+        Scalar annotations separate from source and execution settings.
+    capture_semantics
+        Capture static measurement map, register order, original parameter
+        uses and source digest. Default false preserves legacy construction.
+    requested_target
+        Optional exact native backend name, requiring capture.
+    parameter_bindings
+        Finite real values keyed by actual original native Parameters, requiring
+        capture. Submission requires every free parameter and binds a copy.
+
+    Returns
+    -------
+    QuantumWorkload
+        Original QPY and optional separate versioned sampling companion.
+
+    Raises
+    ------
+    TypeError
+        If the source is not a native Qiskit circuit.
+    ValueError
+        If capture, static-subset, source or binding admission fails.
+
+    """
     return qiskit_circuit_to_workload(
         circuit,
         workload_id=workload_id,
         shots=shots,
         metadata=metadata,
+        capture_semantics=capture_semantics,
+        requested_target=requested_target,
+        parameter_bindings=parameter_bindings,
     )
 
 
 class IQMHALAdapter:
-    """IQM Qiskit adapter implementing the provider-neutral HAL protocol."""
+    """Execute original QPY through an explicitly configured IQM-compatible client.
+
+    Parameters
+    ----------
+    profile
+        IQM Cloud route with declared resource and IR admission.
+    backend
+        Optional injected native-compatible backend. Absence uses the explicit
+        server URL; decoded source and bindings qualify before loading a client.
+    server_url
+        Required configured IQM endpoint when no backend is injected.
+    quantum_computer
+        Optional configured native computer selector, recorded separately from
+        the actual backend name used for target admission.
+    import_module
+        Lazy SDK importer; this adapter never installs an optional dependency.
+    timeout_s
+        Positive provider result-retrieval timeout in seconds, default 600.
+    optimisation_level
+        Qiskit target-compilation level, one of 0, 1, 2 or 3.
+    compile_circuit
+        Compile for the selected native target when true. False retains an
+        explicit caller-precompiled boundary without claiming target compilation.
+
+    """
+
+    supports_provider_semantics = True
 
     def __init__(
         self,
@@ -88,21 +164,66 @@ class IQMHALAdapter:
     def submit(
         self, workload: QuantumWorkload, *, approval_id: str | None = None
     ) -> QuantumJobRef:
-        """Submit a workload to the backend and return its job reference."""
+        """Admit original source and bindings before client construction or execution.
+
+        Parameters
+        ----------
+        workload
+            Original QPY and optional static native request. Metadata cannot
+            replace source, target, shot settings or adapter-owned fields.
+        approval_id
+            Required caller authorization stored with the submitted job.
+
+        Returns
+        -------
+        QuantumJobRef
+            Submitted handle preserving original payload, shared identities,
+            requested/effective shots and actual target. Captured compilation
+            has a digest; caller-precompiled mode is labelled separately.
+
+        Raises
+        ------
+        PermissionError
+            If approval is absent.
+        ValueError
+            If profile, source, IR, bindings or selected target disagree.
+        IQMTargetCompilationError
+            If target compilation fails; the original cause remains available
+            and no target-free retry or provider run follows.
+        ImportError
+            If lazy optional IQM SDK loading fails.
+
+        """
         if not approval_id:
             raise PermissionError("approval_id is required for IQM submission")
+        _validate_workload_for_profile(self.profile, workload)
         if workload.ir_format != "qiskit_qpy":
             raise ValueError("IQM direct adapter requires qiskit_qpy workloads")
+        original = _workload_to_qiskit_circuit(workload)
+        bound = bind_qiskit_workload(workload, original)
         backend = self._backend_client()
-        circuit = self._compile(_workload_to_qiskit_circuit(workload), backend)
+        backend_name = _backend_name(backend)
+        qiskit_submission_semantics(workload, original, target_name=backend_name)
+        circuit = self._compile(bound, backend)
+        submission = qiskit_submission_semantics(
+            workload,
+            original,
+            target_name=backend_name,
+            compiled_program=(
+                _circuit_to_qpy_b64(circuit)
+                if self._compile_circuit and workload.semantics is not None
+                else None
+            ),
+            compilation="targeted" if self._compile_circuit else "caller_precompiled",
+        )
         provider_job = backend.run([circuit], shots=workload.shots)
         provider_job_id = _job_id(provider_job)
-        backend_name = _backend_name(backend)
         job = QuantumJobRef(
             job_id=_hal_job_id(self.backend_id, workload.workload_id, provider_job_id),
             backend_id=self.backend_id,
             workload_id=workload.workload_id,
             status="submitted",
+            submission=submission,
             metadata={
                 "approval_id": approval_id,
                 "provider_job_id": provider_job_id,
@@ -120,7 +241,26 @@ class IQMHALAdapter:
         return job
 
     def status(self, job: QuantumJobRef) -> str:
-        """Return the current status for a submitted backend job."""
+        """Read native provider lifecycle after checking stored submission identity.
+
+        Parameters
+        ----------
+        job
+            Original or recovered handle for the same backend and workload.
+
+        Returns
+        -------
+        str
+            Canonical provider lifecycle or unknown when no state is exposed.
+
+        Raises
+        ------
+        KeyError
+            If the submission or retained provider job is unavailable.
+        ValueError
+            If durable identity differs from the stored submission.
+
+        """
         provider_job = self._provider_job(job)
         status = getattr(provider_job, "status", None)
         if callable(status):
@@ -128,24 +268,59 @@ class IQMHALAdapter:
         return _normalise_status(getattr(provider_job, "_status", "unknown"))
 
     def result(self, job: QuantumJobRef) -> QuantumJobResult:
-        """Return the completed result for a submitted backend job."""
+        """Retain native count labels against the original stored sampling request.
+
+        Parameters
+        ----------
+        job
+            Original or recovered handle with unchanged durable identity.
+
+        Returns
+        -------
+        QuantumJobResult
+            Immutable counts and optional native gate-model observation using
+            stored source, measurement order and exact shot settings. Repeated
+            successful retrieval returns the same retained result.
+
+        Raises
+        ------
+        KeyError
+            If submission or retained transport is unavailable.
+        ValueError
+            If identity, count labels or native shot conservation disagree.
+        TypeError
+            If the provider lacks result retrieval or returns an invalid channel.
+        RuntimeError
+            If a single-circuit result has no usable count map or several maps.
+
+        """
+        stored = self._job(job)
         cached = self._results.get(job.job_id)
         if cached is not None:
             return cached
-        stored = self._job(job)
         provider_job = self._provider_job(job)
         result_method = getattr(provider_job, "result", None)
         if not callable(result_method):
             raise TypeError("IQM provider job does not provide result()")
         provider_result = result_method(timeout=self.timeout_s)
-        counts = _extract_counts(provider_result)
         expected_shots = strict_integer_value(stored.metadata.get("shots", 0), field_name="shots")
+        observation: GateModelObservation | None = None
+        if stored.submission is not None:
+            observation = GateModelObservation(
+                request=stored.submission.require_gate_request(),
+                raw_counts=_raw_counts(provider_result),
+                shots=expected_shots,
+            )
+            counts = dict(observation.counts)
+        else:
+            counts = _extract_counts(provider_result)
         observed_shots = strict_shot_conservation(counts, expected_shots=expected_shots)
         result = QuantumJobResult(
             job=stored,
             status="completed",
             counts=counts,
             shots=observed_shots,
+            provider_observation=observation,
             metadata={
                 "approval_id": stored.metadata.get("approval_id"),
                 "provider_job_id": stored.metadata.get("provider_job_id"),
@@ -158,7 +333,28 @@ class IQMHALAdapter:
         return result
 
     def cancel(self, job: QuantumJobRef) -> QuantumJobRef:
-        """Request cancellation for a submitted backend job."""
+        """Request provider cancellation while retaining the original native contract.
+
+        Parameters
+        ----------
+        job
+            Handle with the exact backend and workload identity of the stored job.
+
+        Returns
+        -------
+        QuantumJobRef
+            Cancellation-request handle retaining original metadata and optional
+            submission companion. This legacy lifecycle annotation does not
+            attest that the physical provider cancelled the work.
+
+        Raises
+        ------
+        KeyError
+            If the original submission or retained provider job is unavailable.
+        ValueError
+            If identity differs or the provider has no cancellation operation.
+
+        """
         stored = self._job(job)
         provider_job = self._provider_job(job)
         cancel = getattr(provider_job, "cancel", None)
@@ -171,6 +367,7 @@ class IQMHALAdapter:
             workload_id=stored.workload_id,
             status="cancelled",
             metadata=stored.metadata,
+            submission=stored.submission,
         )
         self._jobs[job.job_id] = cancelled
         return cancelled
@@ -201,14 +398,13 @@ class IQMHALAdapter:
             return circuit
         try:
             return transpile(circuit, backend=backend, optimization_level=self.optimisation_level)
-        except Exception:
-            return transpile(circuit, optimization_level=self.optimisation_level)
+        except Exception as exc:
+            raise IQMTargetCompilationError(
+                "circuit cannot be compiled for the selected IQM target"
+            ) from exc
 
     def _job(self, job: QuantumJobRef) -> QuantumJobRef:
-        stored = self._jobs.get(job.job_id)
-        if stored is None:
-            raise KeyError(f"unknown job_id: {job.job_id}")
-        return stored
+        return _resolve_stored_job(job, self._jobs)
 
     def _provider_job(self, job: QuantumJobRef) -> Any:
         self._job(job)
@@ -222,6 +418,10 @@ def _workload_to_qiskit_circuit(workload: QuantumWorkload) -> QuantumCircuit:
 
 
 def _extract_counts(result: Any) -> dict[str, int]:
+    return _normalise_counts(_raw_counts(result))
+
+
+def _raw_counts(result: Any) -> dict[Any, Any]:
     get_counts = getattr(result, "get_counts", None)
     if callable(get_counts):
         try:
@@ -232,13 +432,15 @@ def _extract_counts(result: Any) -> dict[str, int]:
             if len(raw) != 1:
                 raise RuntimeError("IQM single-circuit execution returned multiple count maps")
             raw = raw[0]
-        return _normalise_counts(raw)
+        if not isinstance(raw, dict):
+            raise TypeError("IQM counts must be a mapping")
+        return raw
     results = getattr(result, "results", None)
     if isinstance(results, list) and len(results) == 1:
         data = getattr(results[0], "data", None)
         counts = getattr(data, "counts", None)
         if isinstance(counts, dict):
-            return _normalise_counts(counts)
+            return counts
     raise RuntimeError("Could not extract IQM counts from backend result")
 
 
@@ -259,7 +461,7 @@ def _backend_name(backend: Any) -> str:
     name = getattr(backend, "name", None)
     if callable(name):
         return strict_provider_job_id(name(), field_name="IQM backend name")
-    if name:
+    if name is not None:
         return strict_provider_job_id(name, field_name="IQM backend name")
     return strict_provider_job_id(type(backend).__name__, field_name="IQM backend name")
 

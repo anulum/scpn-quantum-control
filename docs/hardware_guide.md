@@ -2,9 +2,9 @@
 
 The `hardware` package provides the full stack from circuit compilation
 to QPU execution, noise modelling, classical reference computation, and
-multi-backend support. 17 modules (April 2026: added `qubit_mapper.py`
-for DynQ topology-agnostic placement) covering IBM superconducting,
-trapped ion, PennyLane, Cirq, GPU acceleration, and circuit cutting.
+multi-backend support, including gate-model, photonic, analog and annealing
+adapters. The [generated module catalog](api/module_catalog.md) records the
+current source inventory.
 
 ## Why this page exists
 
@@ -23,6 +23,100 @@ reproducibility boundaries before running local or provider workloads.
 V2, frontier, queued-job, placeholder, and aggregate-only IBM outputs are
 not promoted unless the hardware ledger names raw counts, private retrieval map,
 analysis code, and review status.
+
+## Native workload and result semantics
+
+HAL workload builders accept `capture_semantics=True` to attach a source-bound
+request. The resulting `QuantumJobRef.submission` records the original encoded
+program, requested/effective sample count and selected target.
+`QuantumJobResult.provider_observation` carries the matching native output.
+The existing raw payload and legacy `counts` view keep their established format;
+the new companion uses schema `provider_semantics.v1`.
+
+Gate-model requests use `WorkloadSemantics` from
+`hardware.provider_semantics`. Qiskit QPY preserves native parameter UUIDs,
+shared instruction uses and global-phase parameters. Supply one complete finite
+`parameter_bindings` mapping to the QPY builder for execution; binding leaves
+the stored original source unchanged. The QASM 3 builder accepts an already
+bound circuit. Braket preserves shared native symbols and their supplied
+bindings in its OpenQASM source. The native SDK owns binding and compilation.
+
+The supported measurement contract is static final readout with explicit
+qubit-to-classical-bit assignments. Partial, permuted and multiple-register
+Qiskit measurements retain their declared order and marginals. Dynamic control,
+reset, operations after measurement and unsupported instructions are refused
+before backend execution. A changed or incompatible selected target cannot
+reuse an admitted compiled payload or trigger an untargeted compilation retry.
+
+For example, this local Aer run prepares `q2=1`, `q0=0` and measures them into
+`c0`, `c1`. Qiskit places `c1` on the left of its count string:
+
+```python
+from qiskit import QuantumCircuit
+from qiskit_aer import AerSimulator
+from scpn_quantum_control.hardware.hal import HardwareAbstractionLayer
+from scpn_quantum_control.hardware.hal_qiskit import (
+    QiskitAerHALAdapter, qiskit_circuit_to_workload,
+)
+
+circuit = QuantumCircuit(3, 2)
+circuit.x(2)
+circuit.measure(2, 0)
+circuit.measure(0, 1)
+hal = HardwareAbstractionLayer.with_builtin_profiles()
+hal.register_backend(QiskitAerHALAdapter(
+    hal.profile("local_qiskit_aer"),
+    backend=AerSimulator(max_parallel_threads=1, seed_simulator=7),
+))
+workload = qiskit_circuit_to_workload(
+    circuit, workload_id="partial_readout", shots=32, capture_semantics=True,
+)
+job = hal.submit("local_qiskit_aer", workload)
+result = hal.result(job)
+assert result.counts == {"01": 32}
+assert job.submission.request.measurement_map == ((2, 0), (0, 1))
+assert result.provider_observation.measurement_map == ((2, 0), (0, 1))
+```
+
+Braket native readout for the same ordered wires uses `"10"`: its first
+classical output is on the left. `GateModelObservation.raw_counts` retains the
+provider labels separately from the validated count view. A Qiskit Runtime
+result must contain exactly one PUB for the submitted circuit. Native register
+`BitArray` buffers are retained as immutable bytes with their bit width, shape
+and register name; padding, sample count and registration must agree. Multiple
+PUBs or broadcast parameter axes cannot masquerade as a single observation.
+
+Other modalities use `ModalitySemantics` and output types from
+`hardware.provider_modalities`:
+
+| Modality | Workload builder | Native observation |
+|---|---|---|
+| Photonic | `quandela_perceval_workload` | `PhotonicObservation` retains ordered mode occupations, including occupations above one, original native labels and exact occurrences. |
+| Analog | `pasqal_pulser_workload`, `quera_bloqade_workload` | `AnalogObservation` retains native site order and the original count or per-shot readout channel, including repeated samples. Readout polarity and atom-loss interpretation remain unknown. |
+| Annealing | `dwave_bqm_workload` | `AnnealingObservation` retains native variable order, BINARY/SPIN samples, occurrences and available energies. Structured records also retain their exact dtype, shape and bytes. Missing energies remain unknown. |
+
+These native axes represent modes, sites or variables. The historical workload
+width field does not turn them into gate-model qubits. In particular, the legacy
+binary count projection of a SPIN sample does not replace its native `-1`/`+1`
+values. Incompatible output channels, widths, types or occurrence totals refuse
+without replacing earlier retained results.
+
+Use `requested_target` with semantics capture to require an exact selected
+target. An explicitly empty selector is invalid. Submission provenance
+distinguishes a native SDK target from an adapter selector, and target-compiled
+data from native-provider or caller-precompiled input. A selector or opaque
+prepared-sequence digest does not establish physical placement or calibrated
+device compilation. Cloud routes retain their existing explicit approval gate.
+Adapters that do not declare support refuse a semantics companion before
+submission; omitting capture keeps the established legacy route.
+
+Local Aer, Runtime on a local Aer backend and Braket Local runs exercise installed
+gate-model software. IQM-compatible Aer execution does not qualify the IQM SDK
+or an IQM device. Controlled photonic, analog and annealing I/O fixtures verify
+the adapter boundary; installed vendor SDK and physical-device qualification
+require their own evidence. No hardware result or performance claim follows
+from native semantics capture alone.
+
 
 ## Architecture
 

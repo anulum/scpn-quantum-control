@@ -15,6 +15,7 @@ import json
 from collections.abc import Callable, Mapping, Sequence
 from datetime import UTC, datetime
 from importlib import import_module
+from math import isfinite
 from typing import Any, cast
 
 from ._count_integrity import (
@@ -23,7 +24,16 @@ from ._count_integrity import (
     strict_provider_job_id,
     strict_shot_conservation,
 )
-from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
+from .hal import (
+    BackendProfile,
+    QuantumJobRef,
+    QuantumJobResult,
+    QuantumWorkload,
+    _resolve_stored_job,
+    _validate_workload_for_profile,
+)
+from .provider_modalities import AnalogObservation, ModalitySemantics
+from .provider_semantics import modality_submission_semantics
 
 BLOQADE_AHS_SCHEMA = "bloqade_ahs_plan_v1"
 QUERA_BLOQADE_EXECUTION_MODE = "quera_bloqade"
@@ -36,25 +46,104 @@ def bloqade_ahs_workload(
     n_qubits: int,
     shots: int,
     metadata: Mapping[str, object] | None = None,
+    capture_semantics: bool = False,
+    requested_target: str | None = None,
 ) -> QuantumWorkload:
-    """Encode a Bloqade analogue Hamiltonian plan as a HAL workload."""
+    """Encode original ordered sites and an optional analog request companion.
+
+    Parameters
+    ----------
+    payload
+        AHS plan mapping or JSON object with ordered atom indices, positions,
+        finite amplitude/phase schedules and positive duration. Captured JSON
+        strings retain their exact original bytes; mappings retain site order.
+    workload_id
+        Stable caller identity for this original plan.
+    n_qubits
+        Legacy field containing the declared native site count. It does not
+        infer gate-model qubits or readout polarity.
+    shots
+        Positive integral number of native samples.
+    metadata
+        Scalar caller annotations separate from execution settings.
+    capture_semantics
+        Retain an independent source digest and original native site order.
+        Default false preserves the legacy workload codec.
+    requested_target
+        Optional exact declared routine selector, requiring native capture.
+
+    Returns
+    -------
+    QuantumWorkload
+        Original Bloqade plan and optional versioned analog companion.
+
+    Raises
+    ------
+    ValueError
+        If plan structure, native values, site count or target admission fails.
+
+    """
     if isinstance(payload, str):
         decoded = _json_mapping(payload, field_name="Bloqade payload")
     else:
         decoded = dict(payload)
     _validate_bloqade_payload(decoded, n_qubits)
+    if not capture_semantics and requested_target is not None:
+        raise ValueError("target pin requires native semantics capture")
+    program = (
+        payload
+        if isinstance(payload, str) and capture_semantics
+        else json.dumps(decoded, sort_keys=not capture_semantics, separators=(",", ":"))
+    )
+    axes = _site_order(decoded)
+    semantics = (
+        ModalitySemantics(
+            program_sha256=hashlib.sha256(program.encode()).hexdigest(),
+            modality="analog",
+            native_axes=axes,
+            requested_target=requested_target,
+        )
+        if capture_semantics
+        else None
+    )
     return QuantumWorkload(
         workload_id=workload_id,
         ir_format="bloqade",
-        program=json.dumps(decoded, sort_keys=True, separators=(",", ":")),
+        program=program,
         n_qubits=n_qubits,
         shots=shots,
         metadata=dict(metadata or {}),
+        semantics=semantics,
     )
 
 
 class QuEraBloqadeHALAdapter:
-    """Bloqade routine adapter implementing the provider-neutral HAL protocol."""
+    """Execute declared Bloqade plans through an explicit native-compatible routine.
+
+    Parameters
+    ----------
+    profile
+        QuEra route declaring supported IR and resource limits.
+    routine
+        Optional already prepared routine. Captured submission requires its
+        exact original plan digest; opaque routines have caller provenance.
+    routine_name
+        Declared route selector, default injected only when absent. This name
+        is an adapter selector and does not attest an SDK or physical device.
+    routine_factory
+        Optional builder called separately with each admitted original workload.
+        Explicit callable objects are retained irrespective of truth value.
+    prepared_program_sha256
+        Exact source digest for a captured plan using an injected routine.
+
+    Raises
+    ------
+    ValueError
+        If profile, route configuration or explicit selector is invalid.
+
+    """
+
+    supports_provider_semantics = True
 
     def __init__(
         self,
@@ -63,6 +152,7 @@ class QuEraBloqadeHALAdapter:
         routine: Any | None = None,
         routine_name: str | None = None,
         routine_factory: Callable[[QuantumWorkload], Any] | None = None,
+        prepared_program_sha256: str | None = None,
     ) -> None:
         if profile.backend_id != "quera_bloqade":
             raise ValueError("QuEraBloqadeHALAdapter requires the quera_bloqade profile")
@@ -72,9 +162,11 @@ class QuEraBloqadeHALAdapter:
         self.backend_id = profile.backend_id
         self._routine = routine
         self._routine_name = strict_provider_job_id(
-            routine_name or "injected", field_name="QuEra routine name"
+            routine_name if routine_name is not None else "injected",
+            field_name="QuEra routine name",
         )
         self._routine_factory = routine_factory
+        self._prepared_program_sha256 = prepared_program_sha256
         self._jobs: dict[str, QuantumJobRef] = {}
         self._batches: dict[str, Any] = {}
         self._results: dict[str, QuantumJobResult] = {}
@@ -82,12 +174,54 @@ class QuEraBloqadeHALAdapter:
     def submit(
         self, workload: QuantumWorkload, *, approval_id: str | None = None
     ) -> QuantumJobRef:
-        """Submit a workload to the backend and return its job reference."""
+        """Admit original source, ordered sites and target before building a routine.
+
+        Parameters
+        ----------
+        workload
+            Original supported AHS plan with optional native analog companion.
+        approval_id
+            Required caller authorization for submission.
+
+        Returns
+        -------
+        QuantumJobRef
+            Stored job retaining source, exact sampling settings and selector
+            provenance. No gate measurement map or physical calibration is inferred.
+
+        Raises
+        ------
+        PermissionError
+            If caller approval is absent.
+        ValueError
+            If profile, source, IR, native axes, target or prepared digest disagrees.
+        RuntimeError
+            If automatic construction lacks a calibrated provider builder.
+
+        """
         if not approval_id:
             raise PermissionError("approval_id is required for QuEra Bloqade submission")
         if workload.ir_format != "bloqade":
             raise ValueError("QuEra Bloqade direct adapter requires bloqade workloads")
-        _validate_bloqade_payload(_decode_payload(workload), workload.n_qubits)
+        _validate_workload_for_profile(self.profile, workload)
+        plan = _decode_payload(workload)
+        _validate_bloqade_payload(plan, workload.n_qubits)
+        submission = modality_submission_semantics(
+            workload.semantics,
+            program=workload.program,
+            ir_format=workload.ir_format,
+            native_axes=_site_order(plan),
+            modality="analog",
+            target_name=self._routine_name,
+            shots=workload.shots,
+            caller_precompiled=self._routine is not None,
+        )
+        if (
+            submission is not None
+            and self._routine is not None
+            and self._prepared_program_sha256 != submission.request.program_sha256
+        ):
+            raise ValueError("prepared Bloqade routine requires its exact original program digest")
         routine = self._routine_for(workload)
         batch = routine.run(shots=workload.shots, name=workload.workload_id)
         provider_job_id = _provider_job_id(batch)
@@ -97,6 +231,7 @@ class QuEraBloqadeHALAdapter:
             backend_id=self.backend_id,
             workload_id=workload.workload_id,
             status="submitted",
+            submission=submission,
             metadata={
                 "approval_id": approval_id,
                 "provider_job_id": provider_job_id,
@@ -112,7 +247,26 @@ class QuEraBloqadeHALAdapter:
         return job
 
     def status(self, job: QuantumJobRef) -> str:
-        """Return the current status for a submitted backend job."""
+        """Retrieve provider lifecycle after checking the original stored identity.
+
+        Parameters
+        ----------
+        job
+            Original or recovered handle for the same backend and workload.
+
+        Returns
+        -------
+        str
+            Canonical native lifecycle, optionally obtained after provider fetch.
+
+        Raises
+        ------
+        KeyError
+            If the stored submission or batch is unavailable.
+        ValueError
+            If durable handle identity disagrees.
+
+        """
         batch = self._batch(job)
         if callable(getattr(batch, "fetch", None)):
             batch = batch.fetch()
@@ -120,26 +274,71 @@ class QuEraBloqadeHALAdapter:
         return _normalise_status(getattr(batch, "status", "completed"))
 
     def result(self, job: QuantumJobRef) -> QuantumJobResult:
-        """Return the completed result for a submitted backend job."""
-        cached = self._results.get(job.job_id)
+        """Retain unchanged native readouts and exact sampling conservation.
+
+        Parameters
+        ----------
+        job
+            Handle matching the original stored backend and workload.
+
+        Returns
+        -------
+        QuantumJobResult
+            Immutable compatibility histogram and optional analog observation
+            retaining native site order, counts or ordered per-shot samples.
+            Atom-loss interpretation and readout polarity remain unknown.
+            Repeated successful retrieval returns the same stored result.
+
+        Raises
+        ------
+        KeyError
+            If original submission or retained batch is unavailable.
+        ValueError
+            If identity, channel, native values, sample width or shot total fails.
+
+        """
+        stored = self._job(job)
+        cached = self._results.get(stored.job_id)
         if cached is not None:
             return cached
-        stored = self._job(job)
         batch = self._batch(job)
         if callable(getattr(batch, "fetch", None)):
             batch = batch.fetch()
             self._batches[job.job_id] = batch
-        counts = _normalise_counts(_extract_bitstrings(batch))
+        raw_readout = _extract_bitstrings(batch)
+        counts = _normalise_counts(raw_readout)
         expected_shots = strict_integer_value(
             stored.metadata.get("shots"),
             field_name="Bloqade expected shots",
         )
         observed_shots = strict_shot_conservation(counts, expected_shots=expected_shots)
+        observation = None
+        if stored.submission is not None:
+            request = stored.submission.request
+            if not isinstance(request, ModalitySemantics):
+                raise ValueError("native Bloqade result requires analog plan semantics")
+            if isinstance(raw_readout, Mapping):
+                if any(not isinstance(key, str) for key in raw_readout):
+                    raise ValueError("native analog count channel requires unchanged string keys")
+                observation = AnalogObservation(
+                    request=request,
+                    shots=observed_shots,
+                    raw_counts=cast(Mapping[str, int], raw_readout),
+                )
+            else:
+                observation = AnalogObservation(
+                    request=request,
+                    shots=observed_shots,
+                    raw_samples=tuple(
+                        value if isinstance(value, str) else tuple(value) for value in raw_readout
+                    ),
+                )
         result = QuantumJobResult(
             job=stored,
             status="completed",
             counts=counts,
             shots=observed_shots,
+            provider_observation=observation,
             metadata={
                 "approval_id": stored.metadata.get("approval_id"),
                 "execution_mode": QUERA_BLOQADE_EXECUTION_MODE,
@@ -151,7 +350,28 @@ class QuEraBloqadeHALAdapter:
         return result
 
     def cancel(self, job: QuantumJobRef) -> QuantumJobRef:
-        """Request cancellation for a submitted backend job."""
+        """Request cancellation while retaining source and completed raw evidence.
+
+        Parameters
+        ----------
+        job
+            Handle matching the original stored backend and workload.
+
+        Returns
+        -------
+        QuantumJobRef
+            Legacy cancellation annotation preserving the native submission.
+            Missing provider cancel remains supported; this annotation does not
+            attest physical provider cancellation.
+
+        Raises
+        ------
+        KeyError
+            If original submission or batch is unavailable.
+        ValueError
+            If durable handle identity differs.
+
+        """
         stored = self._job(job)
         batch = self._batch(job)
         cancel = getattr(batch, "cancel", None)
@@ -162,6 +382,7 @@ class QuEraBloqadeHALAdapter:
             backend_id=stored.backend_id,
             workload_id=stored.workload_id,
             status="cancelled",
+            submission=stored.submission,
             metadata=stored.metadata,
         )
         self._jobs[job.job_id] = cancelled
@@ -170,15 +391,15 @@ class QuEraBloqadeHALAdapter:
     def _routine_for(self, workload: QuantumWorkload) -> Any:
         if self._routine is not None:
             return self._routine
-        factory = self._routine_factory or _default_routine_factory
-        self._routine = factory(workload)
-        return self._routine
+        factory = (
+            self._routine_factory
+            if self._routine_factory is not None
+            else _default_routine_factory
+        )
+        return factory(workload)
 
     def _job(self, job: QuantumJobRef) -> QuantumJobRef:
-        stored = self._jobs.get(job.job_id)
-        if stored is None:
-            raise KeyError(f"unknown job_id: {job.job_id}")
-        return stored
+        return _resolve_stored_job(job, self._jobs)
 
     def _batch(self, job: QuantumJobRef) -> Any:
         self._job(job)
@@ -198,6 +419,14 @@ def _default_routine_factory(workload: QuantumWorkload) -> Any:
 
 def _decode_payload(workload: QuantumWorkload) -> dict[str, object]:
     return _json_mapping(workload.program, field_name="Bloqade workload")
+
+
+def _site_order(plan: Mapping[str, object]) -> tuple[str | int, ...]:
+    """Read original native site indices in the validated plan's array order."""
+    atoms = cast(Sequence[Mapping[str, object]], plan["atoms"])
+    return tuple(
+        strict_integer_value(atom["index"], field_name="Bloqade site index") for atom in atoms
+    )
 
 
 def _json_mapping(source: str, *, field_name: str) -> dict[str, object]:
@@ -283,7 +512,7 @@ def _normalise_counts(source: Sequence[Any] | Mapping[Any, object]) -> dict[str,
 
 def _normalise_bitstring(value: Any) -> str:
     if isinstance(value, (str, Sequence)):
-        bits = [int(bit) for bit in value]
+        bits = [strict_integer_value(bit, field_name="Bloqade bit") for bit in value]
     else:
         raise ValueError("Bloqade bitstrings must be strings or bit sequences")
     if not bits:
@@ -333,12 +562,15 @@ def _coerce_int(value: object, *, field_name: str) -> int:
 
 
 def _coerce_float(value: object, *, field_name: str) -> float:
-    if isinstance(value, int | float):
-        return float(value)
+    if isinstance(value, bool) or not isinstance(value, int | float | str):
+        raise ValueError(f"{field_name} must be numeric")
     try:
-        return float(str(value))
-    except (TypeError, ValueError) as exc:
+        result = float(value)
+    except (ValueError, OverflowError) as exc:
         raise ValueError(f"{field_name} must be numeric") from exc
+    if not isfinite(result):
+        raise ValueError(f"{field_name} must be finite")
+    return result
 
 
 def _utc_now() -> str:

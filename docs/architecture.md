@@ -38,6 +38,22 @@ Studio workspace readers depend on this lower layer. The original
 No HAL producer imports Studio to bind metadata; encoding domains and byte
 corpora retain their established semantics.
 
+## Native provider semantics ownership
+
+The original HAL and seven native adapter owners consume immutable request and
+submission contracts from `hardware.provider_semantics`. Native Qiskit Runtime
+PUB extraction lives in `hardware.provider_measurement`; photonic, analog and
+annealing records live in `hardware.provider_modalities`. Dependency direction
+runs from adapters into these contract/extraction leaves, with no Studio or
+numerical-engine back-edge. SDKs retain binding, compilation and numerical
+execution ownership. Legacy raw codecs remain separate from the optional
+`provider_semantics.v1` companion.
+
+The [native HAL guide](hardware_guide.md#native-workload-and-result-semantics)
+describes source/target custody, shared parameters, explicit final readout and
+native outputs. Adapter selectors, local software execution, transport fixtures
+and physical-device evidence retain distinct provenance.
+
 ## Scientific problem inputs and parameter schemas
 
 `KuramotoProblem` remains the original symmetric coupling/frequency owner.
@@ -712,7 +728,7 @@ auto-generated block is the source of truth if the two ever drift.
 
 | Metric | Count |
 |--------|-------|
-| Python modules | 752 (excluding package initialisers) |
+| Python modules | 774 (excluding package initialisers) |
 | Rust crate | 1 (PyO3 0.29, **177 bindings**, 120 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
 | Julia tier | 1 (now in the `oscillatools` distribution: `oscillatools/accel/julia/order_parameter.jl`; juliacall-bridged, opt-in via `oscillatools[julia]`) |
 | Tests | CI-gated suite (90% line gate; branch telemetry required and currently observational) |
@@ -737,7 +753,7 @@ graph TD
     control["control/ (14)\nQuantum control"]
     qsnn["qsnn/ (7)\nQuantum SNN"]
     identity["identity/ (6)\nIdentity analysis"]
-    hardware["hardware/ (79)\nBackends + registry + async + provenance"]
+    hardware["hardware/ (83)\nBackends + registry + async + provenance"]
     mitigation["mitigation/ (14)\nError mitigation"]
     qec["qec/ (13)\nError correction"]
     gauge["gauge/ (6)\nGauge theory"]

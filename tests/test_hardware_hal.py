@@ -13,6 +13,7 @@ from __future__ import annotations
 import hashlib
 from dataclasses import replace
 from types import SimpleNamespace
+from typing import NoReturn, cast
 
 import pytest
 
@@ -811,6 +812,103 @@ def test_hal_protocol_runtime_check() -> None:
     hal.register_backend(backend)
     with pytest.raises(ValueError, match="already registered"):
         hal.register_backend(backend)
+
+
+@pytest.mark.parametrize("capacity", [0, -1, True, 1.5])
+def test_explicit_native_shot_capacity_requires_an_exact_positive_integer(
+    capacity: object,
+) -> None:
+    """A malformed capacity cannot enter the public backend capability declaration."""
+    capabilities = (
+        HardwareAbstractionLayer.with_builtin_profiles().profile("local_qiskit_aer").capabilities
+    )
+    with pytest.raises(ValueError, match="max_shots.*positive integer"):
+        replace(capabilities, max_shots=cast(int, capacity))
+
+
+def test_hal_refuses_native_semantics_before_an_unqualified_adapter_submit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The HAL gate preserves earlier actual native evidence and makes zero submissions."""
+    from qiskit import QuantumCircuit
+    from qiskit_aer import AerSimulator
+
+    from scpn_quantum_control.hardware.hal_qiskit import (
+        QiskitAerHALAdapter,
+        qiskit_circuit_to_workload,
+    )
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    adapter = QiskitAerHALAdapter(
+        hal.profile("local_qiskit_aer"), backend=AerSimulator(max_parallel_threads=1)
+    )
+    hal.register_backend(adapter)
+    circuit = QuantumCircuit(1, 1)
+    circuit.x(0)
+    circuit.measure(0, 0)
+    workload = qiskit_circuit_to_workload(
+        circuit, workload_id="admitted", shots=4, capture_semantics=True
+    )
+    original = hal.submit(adapter.backend_id, workload)
+    evidence = hal.result(original)
+    calls: list[QuantumWorkload] = []
+
+    def forbidden_submit(request: QuantumWorkload, *, approval_id: str | None = None) -> NoReturn:
+        """Observe a crossing independently of the HAL declaration check."""
+        calls.append(request)
+        raise AssertionError("unqualified adapter received native semantics")
+
+    monkeypatch.setattr(adapter, "supports_provider_semantics", False)
+    monkeypatch.setattr(adapter, "submit", forbidden_submit)
+    with pytest.raises(ValueError, match="no native provider semantics admission"):
+        hal.submit(adapter.backend_id, replace(workload, workload_id="rejected"))
+    assert calls == []
+    assert hal.result(original) is evidence
+    assert evidence.counts == {"1": 4}
+
+
+@pytest.mark.parametrize("mismatch", ["counts", "shots", "missing_submission", "request"])
+def test_public_result_refuses_a_companion_for_different_stored_evidence(mismatch: str) -> None:
+    """Native observations must bind the original submission and exact returned values."""
+    from qiskit import QuantumCircuit
+    from qiskit_aer import AerSimulator
+
+    from scpn_quantum_control.hardware.hal_qiskit import (
+        QiskitAerHALAdapter,
+        qiskit_circuit_to_workload,
+    )
+    from scpn_quantum_control.hardware.provider_semantics import GateModelObservation
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    hal.register_backend(
+        QiskitAerHALAdapter(
+            hal.profile("local_qiskit_aer"), backend=AerSimulator(max_parallel_threads=1)
+        )
+    )
+    circuit = QuantumCircuit(1, 1)
+    circuit.x(0)
+    circuit.measure(0, 0)
+    workload = qiskit_circuit_to_workload(
+        circuit, workload_id="observation_custody", shots=4, capture_semantics=True
+    )
+    job = hal.submit("local_qiskit_aer", workload)
+    evidence = hal.result(job)
+    observation = evidence.provider_observation
+    assert isinstance(observation, GateModelObservation)
+    if mismatch == "counts":
+        observation = replace(observation, raw_counts={"0": 4})
+    elif mismatch == "shots":
+        observation = replace(observation, raw_counts={"1": 3}, shots=3)
+    elif mismatch == "request":
+        observation = replace(
+            observation, request=replace(observation.request, requested_target="foreign")
+        )
+    elif mismatch == "missing_submission":
+        job = replace(job, submission=None)
+    with pytest.raises(ValueError, match="provider observation differs"):
+        replace(evidence, job=job, provider_observation=observation)
+    assert hal.result(evidence.job) is evidence
+    assert evidence.counts == {"1": 4}
 
 
 def test_hal_rejects_workload_that_backend_cannot_accept() -> None:

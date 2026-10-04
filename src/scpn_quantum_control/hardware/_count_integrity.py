@@ -46,7 +46,7 @@ def _strict_int(value: object, *, field_name: str) -> int:
             decimal_value = Decimal(text)
         except InvalidOperation as exc:
             raise ValueError(f"{field_name} must be an integer") from exc
-        if decimal_value != decimal_value.to_integral_value():
+        if not decimal_value.is_finite() or decimal_value != decimal_value.to_integral_value():
             raise ValueError(f"{field_name} must be an integer")
         return int(decimal_value)
     raise ValueError(f"{field_name} must be an integer")

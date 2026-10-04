@@ -7,8 +7,8 @@
 |---|---:|
 | Package version | 1.2.0 |
 | Public API exports | 851 |
-| Python source modules | 771 |
-| Public Python classes | 1480 |
+| Python source modules | 774 |
+| Public Python classes | 1491 |
 | Domain package families | 40 |
 | API documentation pages | 14 |
 | Rust PyO3 function bindings | 177 |
@@ -16,7 +16,7 @@
 | Notebook files | 109 |
 | Example files | 38 |
 | Optional extras | 43 |
-| Python test files | 1483 |
+| Python test files | 1487 |
 | Public documentation pages | 381 |
 | GitHub Actions workflows | 44 |
 

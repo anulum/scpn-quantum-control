@@ -10,6 +10,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Callable, Mapping
 from dataclasses import replace
 from datetime import UTC, datetime
@@ -28,8 +29,10 @@ from .hal import (
     QuantumJobResult,
     QuantumWorkload,
     _resolve_stored_job,
+    _validate_workload_for_profile,
 )
 from .provider_capability_core import ProviderCapabilitySnapshot
+from .provider_semantics import GateModelObservation, SubmissionSemantics, WorkloadSemantics
 from .provider_submission_gate import require_submit_time_capability
 
 
@@ -39,25 +42,91 @@ def braket_circuit_to_workload(
     workload_id: str,
     shots: int,
     metadata: Mapping[str, object] | None = None,
+    capture_semantics: bool = False,
+    requested_target: str | None = None,
+    parameter_bindings: Mapping[str, float] | None = None,
 ) -> QuantumWorkload:
-    """Encode a Braket circuit as an OpenQASM 3 HAL workload."""
+    """Encode the original native circuit and optional static sampling contract.
+
+    Parameters
+    ----------
+    circuit
+        Native Braket ``Circuit``. Shared free symbols retain their original
+        OpenQASM names; this function does not bind or execute the circuit.
+    workload_id
+        Stable caller identity for the unchanged source payload.
+    shots
+        Positive integral number of samples, conserved by result decoding.
+    metadata
+        Caller annotations separate from source and execution settings.
+    capture_semantics
+        Capture static final measurement order, shared symbol uses and the
+        SHA-256 of the original OpenQASM. Default false preserves legacy output.
+    requested_target
+        Optional exact native device name. Requires capture and must equal
+        the selected device's name before its ``run`` method is called.
+    parameter_bindings
+        Finite real values keyed by original native free-symbol names.
+        Requires capture; submission requires every original free symbol.
+
+    Returns
+    -------
+    QuantumWorkload
+        Original OpenQASM with a separate versioned companion when requested.
+        Native measured-qubit order uses the leftmost count bit first; no
+        logical qubit permutation or count reversal is performed here.
+
+    Raises
+    ------
+    TypeError
+        If the source is not a native Braket circuit.
+    ValueError
+        If settings require capture, bindings are invalid, or a gate follows
+        final measurement in the admitted static sampling subset.
+
+    """
     from braket.circuits import Circuit
 
     if not isinstance(circuit, Circuit):
         raise TypeError("circuit must be a braket.circuits.Circuit")
+    if not capture_semantics and (requested_target is not None or parameter_bindings is not None):
+        raise ValueError("target or parameter bindings require native semantics capture")
     program = circuit.to_ir(ir_type="OPENQASM").source
+    semantics = (
+        _braket_workload_semantics(
+            circuit,
+            program,
+            requested_target=requested_target,
+            parameter_bindings=parameter_bindings,
+        )
+        if capture_semantics
+        else None
+    )
     return QuantumWorkload(
         workload_id=workload_id,
         ir_format="openqasm3",
         program=program,
-        n_qubits=len(circuit.qubits),
+        n_qubits=semantics.n_qubits if semantics is not None else len(circuit.qubits),
         shots=shots,
         metadata=dict(metadata or {}),
+        semantics=semantics,
     )
 
 
 class BraketLocalHALAdapter:
-    """Local Amazon Braket simulator adapter implementing the HAL protocol."""
+    """Execute native Braket workloads on the selected local simulator.
+
+    Parameters
+    ----------
+    profile
+        Built-in statevector or density-matrix Braket profile.
+    device
+        Optional native-compatible transport. An injected object is retained
+        regardless of its truth value; absence selects the profile's simulator.
+
+    """
+
+    supports_provider_semantics = True
 
     def __init__(self, profile: BackendProfile, *, device: Any | None = None) -> None:
         if profile.backend_id not in {"local_braket_sv", "local_braket_dm"}:
@@ -71,19 +140,51 @@ class BraketLocalHALAdapter:
     def submit(
         self, workload: QuantumWorkload, *, approval_id: str | None = None
     ) -> QuantumJobRef:
-        """Submit a workload to the backend and return its job reference."""
+        """Validate and execute one native workload without implicit target changes.
+
+        Parameters
+        ----------
+        workload
+            Original OpenQASM and optional captured static measurement contract.
+        approval_id
+            Unused for local simulator execution.
+
+        Returns
+        -------
+        QuantumJobRef
+            Completed handle with stored submission settings and raw count
+            observation when capture was requested.
+
+        Raises
+        ------
+        ValueError
+            If source, profile, target, bindings or provider counts are invalid.
+
+        """
         del approval_id
+        _validate_workload_for_profile(self.profile, workload)
         circuit = _workload_to_braket_circuit(workload)
-        device = self._device or _default_local_device(self.profile.backend_id)
+        device = (
+            self._device
+            if self._device is not None
+            else _default_local_device(self.profile.backend_id)
+        )
+        circuit, submission = _prepare_braket_submission(workload, circuit, _device_name(device))
         task = device.run(circuit, shots=workload.shots)
         task_result = task.result()
-        counts = _extract_braket_counts(task_result, n_qubits=workload.n_qubits)
+        observation = _braket_observation(task_result, submission, workload.shots)
+        counts = (
+            dict(observation.counts)
+            if observation is not None
+            else _extract_braket_counts(task_result, n_qubits=workload.n_qubits)
+        )
         task_id = _task_id(task)
         job = QuantumJobRef(
             job_id=task_id,
             backend_id=self.backend_id,
             workload_id=workload.workload_id,
             status="completed",
+            submission=submission,
             metadata={
                 "provider_task_id": task_id,
                 "execution_mode": "braket_local",
@@ -98,6 +199,7 @@ class BraketLocalHALAdapter:
             status="completed",
             counts=counts,
             shots=observed_shots,
+            provider_observation=observation,
             metadata={
                 "execution_mode": "braket_local",
                 "ir_format": workload.ir_format,
@@ -110,21 +212,97 @@ class BraketLocalHALAdapter:
         return job
 
     def status(self, job: QuantumJobRef) -> str:
-        """Return the current status for a submitted backend job."""
+        """Return the terminal state of a retained local submission.
+
+        Parameters
+        ----------
+        job
+            Handle matching the stored job, backend and workload identity.
+
+        Returns
+        -------
+        str
+            Completed lifecycle state.
+
+        Raises
+        ------
+        KeyError
+            If the job is unknown.
+        ValueError
+            If backend or workload identity differs.
+
+        """
         return _resolve_stored_job(job, self._jobs).status
 
     def result(self, job: QuantumJobRef) -> QuantumJobResult:
-        """Return the completed result for a submitted backend job."""
+        """Return immutable captured output or the legacy count result.
+
+        Parameters
+        ----------
+        job
+            Handle matching the original stored submission identity.
+
+        Returns
+        -------
+        QuantumJobResult
+            Previously validated result; repeated calls retain the same object.
+
+        Raises
+        ------
+        KeyError
+            If the job is unknown.
+        ValueError
+            If backend or workload identity differs.
+
+        """
         stored = _resolve_stored_job(job, self._jobs)
         return self._results[stored.job_id]
 
     def cancel(self, job: QuantumJobRef) -> QuantumJobRef:
-        """Preserve terminal local evidence when cancellation arrives late."""
+        """Preserve terminal local evidence when cancellation arrives late.
+
+        Parameters
+        ----------
+        job
+            Handle matching the original stored submission identity.
+
+        Returns
+        -------
+        QuantumJobRef
+            Stored completed handle without changing source or raw evidence.
+
+        Raises
+        ------
+        KeyError
+            If the job is unknown.
+        ValueError
+            If backend or workload identity differs.
+
+        """
         return _resolve_stored_job(job, self._jobs)
 
 
 class BraketAwsHALAdapter:
-    """AWS Braket cloud adapter with an optional submit-time metadata gate."""
+    """Submit native Braket circuits through an explicitly configured AWS device.
+
+    Parameters
+    ----------
+    profile
+        AWS Braket gate-model route whose resource and IR limits are enforced.
+    device
+        Optional injected native-compatible device, retained even when falsey.
+    device_arn
+        Explicit ARN required when a device is not injected.
+    device_factory
+        Optional constructor receiving the exact configured ARN.
+    capability_probe
+        Optional no-submit metadata probe paired with a calibration age limit.
+    max_calibration_age_seconds
+        Finite nonnegative age limit in seconds, paired with the probe.
+
+    """
+
+    supports_provider_semantics = True
 
     def __init__(
         self,
@@ -160,11 +338,35 @@ class BraketAwsHALAdapter:
     def submit(
         self, workload: QuantumWorkload, *, approval_id: str | None = None
     ) -> QuantumJobRef:
-        """Submit a workload to the backend and return its job reference."""
+        """Submit once after approval and native source/target admission.
+
+        Parameters
+        ----------
+        workload
+            Original OpenQASM and optional static gate-model companion.
+        approval_id
+            Required caller authorization recorded with the submitted job.
+
+        Returns
+        -------
+        QuantumJobRef
+            Submitted handle retaining the original payload, requested and
+            effective shots, native target and compiled payload digest.
+
+        Raises
+        ------
+        PermissionError
+            If approval is absent.
+        ValueError
+            If source, target, bindings, resource limits or metadata disagree.
+
+        """
         if not approval_id:
             raise PermissionError("approval_id is required for AWS Braket submission")
+        _validate_workload_for_profile(self.profile, workload)
         circuit = _workload_to_braket_circuit(workload)
-        device = self._device or self._load_device()
+        device = self._device if self._device is not None else self._load_device()
+        circuit, submission = _prepare_braket_submission(workload, circuit, _device_name(device))
         calibration_metadata: dict[str, object] = {}
         if self._capability_probe is not None:
             assert self._max_calibration_age_seconds is not None
@@ -188,6 +390,7 @@ class BraketAwsHALAdapter:
             backend_id=self.backend_id,
             workload_id=workload.workload_id,
             status="submitted",
+            submission=submission,
             metadata={
                 "approval_id": approval_id,
                 "provider_task_id": task_id,
@@ -204,7 +407,26 @@ class BraketAwsHALAdapter:
         return job
 
     def status(self, job: QuantumJobRef) -> str:
-        """Return the current status for a submitted backend job."""
+        """Read provider lifecycle after checking stored submission identity.
+
+        Parameters
+        ----------
+        job
+            Original or recovered handle with unchanged durable identity.
+
+        Returns
+        -------
+        str
+            Canonical provider state, or completed when a result is retained.
+
+        Raises
+        ------
+        KeyError
+            If the job is unknown.
+        ValueError
+            If backend or workload identity differs.
+
+        """
         job = _resolve_stored_job(job, self._jobs)
         if job.job_id in self._results:
             return "completed"
@@ -241,14 +463,21 @@ class BraketAwsHALAdapter:
             return cached
         task = self._task(job)
         n_qubits = strict_integer_value(job.metadata.get("n_qubits", 0), field_name="n_qubits")
-        counts = _extract_braket_counts(task.result(), n_qubits=n_qubits)
         expected_shots = strict_integer_value(job.metadata.get("shots", 0), field_name="shots")
+        native_result = task.result()
+        observation = _braket_observation(native_result, job.submission, expected_shots)
+        counts = (
+            dict(observation.counts)
+            if observation is not None
+            else _extract_braket_counts(native_result, n_qubits=n_qubits)
+        )
         observed_shots = strict_shot_conservation(counts, expected_shots=expected_shots)
         result = QuantumJobResult(
             job=job,
             status="completed",
             counts=counts,
             shots=observed_shots,
+            provider_observation=observation,
             metadata={
                 "approval_id": job.metadata.get("approval_id"),
                 "execution_mode": "braket_aws",
@@ -322,6 +551,114 @@ def _workload_to_braket_circuit(workload: QuantumWorkload) -> Any:
         return Circuit.from_ir(workload.program)
     except Exception as exc:
         raise ValueError("OpenQASM 3 workload could not be decoded by Braket") from exc
+
+
+def _braket_workload_semantics(
+    circuit: Any,
+    program: str,
+    *,
+    requested_target: str | None = None,
+    parameter_bindings: Mapping[str, float] | None = None,
+) -> WorkloadSemantics:
+    """Read native Braket measurement order and shared OpenQASM symbol uses."""
+    from braket.circuits import FreeParameterExpression
+
+    measurement: list[tuple[int, int]] = []
+    uses: dict[str, list[tuple[int, int]]] = {}
+    measured = False
+    for index, instruction in enumerate(circuit.instructions):
+        if instruction.operator.name == "Measure":
+            measured = True
+            for qubit in instruction.target:
+                measurement.append((int(qubit), len(measurement)))
+        elif measured:
+            raise ValueError("native Braket gate follows final measurement")
+        for argument, expression in enumerate(getattr(instruction.operator, "parameters", ())):
+            if isinstance(expression, FreeParameterExpression):
+                for symbol in expression.expression.free_symbols:
+                    uses.setdefault(str(symbol), []).append((index, argument))
+    if not measurement:
+        measurement = [(int(qubit), index) for index, qubit in enumerate(sorted(circuit.qubits))]
+    parameters = tuple((name, "braket:" + name, tuple(uses[name])) for name in sorted(uses))
+    values: list[tuple[str, float]] = []
+    for name, value in sorted((parameter_bindings or {}).items()):
+        if name not in uses:
+            raise ValueError("Braket bindings must name original native parameters")
+        values.append(("braket:" + name, value))
+    width = max(int(qubit) for qubit in circuit.qubits) + 1
+    return WorkloadSemantics(
+        program_sha256=hashlib.sha256(program.encode()).hexdigest(),
+        n_qubits=width,
+        n_clbits=len(measurement),
+        measurement_map=tuple(measurement),
+        classical_registers=(("b", tuple(range(len(measurement)))),),
+        parameters=parameters,
+        parameter_values=tuple(values),
+        requested_target=requested_target,
+        count_bit_order="classical_lsb_left",
+    )
+
+
+def _prepare_braket_submission(
+    workload: QuantumWorkload,
+    circuit: Any,
+    target_name: str,
+) -> tuple[Any, SubmissionSemantics | None]:
+    """Bind the unchanged native source and explicit symbols before device run."""
+    request = workload.semantics
+    if request is None:
+        if circuit.parameters:
+            raise ValueError(
+                "Braket sampled execution requires explicit native parameter bindings"
+            )
+        return circuit, None
+    if not isinstance(request, WorkloadSemantics):
+        raise ValueError("Braket circuit submission requires native gate-model semantics")
+    values = {
+        name: dict(request.parameter_values)[identity]
+        for name, identity, _ in request.parameters
+        if identity in dict(request.parameter_values)
+    }
+    observed = _braket_workload_semantics(
+        circuit,
+        workload.program,
+        requested_target=request.requested_target,
+        parameter_bindings=values,
+    )
+    if observed != request or len(values) != len(request.parameters):
+        raise ValueError("native Braket request wiring or parameter bindings differ")
+    bound = circuit.make_bound_circuit(values, strict=True) if values else circuit
+    submission = SubmissionSemantics(
+        request=request,
+        original_program=workload.program,
+        ir_format=workload.ir_format,
+        requested_shots=workload.shots,
+        effective_shots=workload.shots,
+        target_name=target_name,
+        compilation="native_provider",
+        compiled_program_sha256=hashlib.sha256(
+            bound.to_ir(ir_type="OPENQASM").source.encode()
+        ).hexdigest(),
+    )
+    return bound, submission
+
+
+def _braket_observation(
+    result: Any,
+    submission: SubmissionSemantics | None,
+    shots: int,
+) -> GateModelObservation | None:
+    """Retain native count keys and verify actual measured-qubit output order."""
+    if submission is None:
+        return None
+    request = submission.require_gate_request()
+    measured = getattr(result, "measured_qubits", None)
+    if measured != [qubit for qubit, _ in request.measurement_map]:
+        raise ValueError("native Braket measured-qubit order differs from stored request")
+    counts = getattr(result, "measurement_counts", None)
+    if not isinstance(counts, Mapping):
+        raise ValueError("native Braket observation requires measurement_counts")
+    return GateModelObservation(request=request, raw_counts=counts, shots=shots)
 
 
 def _default_local_device(backend_id: str) -> Any:

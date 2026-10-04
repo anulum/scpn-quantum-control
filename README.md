@@ -126,8 +126,8 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 1.2.0 |
 | Public API exports | 851 |
-| Python source modules | 771 |
-| Public Python classes | 1480 |
+| Python source modules | 774 |
+| Public Python classes | 1491 |
 | Domain package families | 40 |
 | API documentation pages | 14 |
 | Rust PyO3 function bindings | 177 |
@@ -135,7 +135,7 @@ claims only when the evidence exists.
 | Notebook files | 109 |
 | Example files | 38 |
 | Optional extras | 43 |
-| Python test files | 1483 |
+| Python test files | 1487 |
 | Public documentation pages | 381 |
 | GitHub Actions workflows | 44 |
 
@@ -508,6 +508,12 @@ information scrambles*, and *whether the system thermalises*.
 > clinical causation claim. See
 > [SCPN Foundations](https://anulum.github.io/scpn-quantum-control/theory/).
 
+The provider HAL can preserve original source, exact target, shared parameters
+and explicit final measurements through optional native semantics capture.
+Typed photonic, analog and annealing observations retain native axes and values
+alongside the established count view. See the [native HAL guide](docs/hardware_guide.md#native-workload-and-result-semantics)
+for a runnable local example and the SDK/device evidence boundaries.
+
 ## Key Results
 
 ### Hardware Evidence
@@ -681,7 +687,7 @@ graph TD
     end
 
     subgraph "Hardware & QEC"
-        hw["hardware/ (63)\nIBM runner, backends\nGPU offload, cutting"]
+        hw["hardware/ (83)\nIBM runner, backends\nGPU offload, cutting"]
         mit["mitigation/ (12)\nZNE, PEC, DD\nZ2 post-selection"]
         qec["qec/ (13)\nToric code, surface code\nrep code, error budget"]
     end
@@ -710,7 +716,7 @@ graph TD
 | Subpackage | Modules | Purpose |
 |------------|:-------:|---------|
 | `analysis` | 61 | Synchronisation probes: witnesses, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
-| `hardware` | 63 | IBM Quantum runner, plugin backends registry, AsyncHardwareRunner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ), provenance |
+| `hardware` | 83 | IBM Quantum runner, plugin backends registry, AsyncHardwareRunner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ), provenance |
 | `phase` | 29 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad |
 | `applications` | 17 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS, QRC+ESN baseline, honesty kits |
 | `bridge` | 13 | K_nm → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
@@ -827,7 +833,7 @@ simulation. No IBM credentials are needed.
 ```
 scpn_quantum_control/
 ├── analysis/       59 modules — synchronisation probes
-├── hardware/       63 modules — IBM runner, backends, GPU, cutting, provenance
+├── hardware/       83 modules — IBM runner, backends, GPU, cutting, provenance
 ├── phase/          76 modules — time evolution + variational + Lindblad
 ├── bridge/         14 modules — K_nm → quantum objects + cross-repo
 ├── applications/   17 modules — physical benchmarks + honesty kits
@@ -923,7 +929,7 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [TN/MPS Crossover Admission Contract](docs/tn_mps_crossover_admission.md) — TN/MPS crossover admission N=30-40 row schema and claim boundary
 - [Josephson K_nm Magnitude Study](docs/josephson_knm_magnitude_study.md) — N=14 rho=0.990 topology candidate plus N=20/30/40 measured-magnitude gates
 - [p_h1 Open-Claim Guard](docs/p_h1_open_guard.md) — public wording guard that keeps the 0.72 threshold open until reproduced
-- [Hardware Guide](docs/hardware_guide.md) — IBM Quantum setup
+- [Hardware Guide](docs/hardware_guide.md) — native HAL workloads, provider readout and IBM Quantum setup
 - [Notebooks](docs/notebooks.md) — 109 tracked notebooks
 - [Complete Notebook Catalog](docs/notebook_catalog.md) — all notebooks with categories, cell counts, and claim posture
 - [Bridges](docs/bridges_api.md) — cross-repo integrations

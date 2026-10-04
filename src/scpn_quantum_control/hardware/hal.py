@@ -24,6 +24,14 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Protocol, runtime_checkable
 
+from .provider_modalities import (
+    AnalogObservation,
+    AnnealingObservation,
+    ModalitySemantics,
+    PhotonicObservation,
+)
+from .provider_semantics import GateModelObservation, SubmissionSemantics, WorkloadSemantics
+
 _TOKEN_RE = re.compile(r"^[A-Za-z0-9_.:/-]+$")
 _SUBMISSION_METADATA_KEYS = frozenset(
     {
@@ -68,7 +76,35 @@ def _freeze_metadata(metadata: Mapping[str, object]) -> Mapping[str, object]:
 
 @dataclass(frozen=True)
 class BackendCapabilities:
-    """Provider route capabilities used for fail-fast workload validation."""
+    """Declared route capabilities used for fail-fast workload admission.
+
+    Parameters
+    ----------
+    supports_shots
+        Whether the route admits sampled requests.
+    supports_counts
+        Whether a legacy count summary is available; this does not identify
+        the native photonic, analog or annealing output domain.
+    supports_statevector
+        Whether the route declares statevector output support.
+    supports_mid_circuit_measurement
+        Whether the route declares intermediate measurement support.
+    supports_analog
+        Whether the route declares analog programme support.
+    supports_pulse
+        Whether the route declares pulse programme support.
+    max_qubits
+        Optional positive declared width capacity.
+    supports_cancellation
+        Whether cancellation can be requested from the adapter.
+    supports_cost_estimate
+        Whether the route supplies a cost estimate.
+    max_shots
+        Optional positive integral per-workload sample limit, never a boolean.
+        This keyword-only extension is a declaration, not observed provider
+        capacity; configured live capability gates remain independent.
+
+    """
 
     supports_shots: bool
     supports_counts: bool
@@ -79,11 +115,14 @@ class BackendCapabilities:
     max_qubits: int | None = None
     supports_cancellation: bool = True
     supports_cost_estimate: bool = False
+    max_shots: int | None = field(default=None, kw_only=True)
 
     def __post_init__(self) -> None:
-        """Validate an optional positive qubit capacity."""
+        """Validate declared width and the optional exact integral shot limit."""
         if self.max_qubits is not None and self.max_qubits <= 0:
             raise ValueError("max_qubits must be positive when provided")
+        if self.max_shots is not None and (type(self.max_shots) is not int or self.max_shots <= 0):
+            raise ValueError("max_shots must be a positive integer when provided")
 
 
 @dataclass(frozen=True)
@@ -169,7 +208,9 @@ class QuantumWorkload:
     program
         Non-empty encoded programme.
     n_qubits
-        Positive logical qubit count as an integer, never a boolean or float.
+        Positive integral logical width, never a boolean or float. For a typed
+        non-gate companion this is the native mode, site or variable count,
+        without inferring an equivalent number of qubits.
     shots
         Positive requested sample count as an integer, never a boolean or float.
     metadata
@@ -178,6 +219,11 @@ class QuantumWorkload:
         backend_name, quantum_computer, ir_format, n_qubits, shots, target,
         workload_id and broker. Use typed workload fields and adapter arguments
         for these settings, not annotations.
+    semantics
+        Optional keyword-only versioned native sampling or modality contract.
+        It must bind the exact original programme digest and width. Native
+        source, measurement map, shared parameters and target pins remain
+        separate from the existing semantic-source projection.
 
     Raises
     ------
@@ -192,6 +238,7 @@ class QuantumWorkload:
     n_qubits: int
     shots: int = 1024
     metadata: Mapping[str, object] = field(default_factory=dict)
+    semantics: WorkloadSemantics | ModalitySemantics | None = field(default=None, kw_only=True)
 
     def __post_init__(self) -> None:
         """Validate workload identity, program, resources, and metadata."""
@@ -214,6 +261,8 @@ class QuantumWorkload:
                 f"workload metadata contains reserved submission keys: {sorted(reserved)}"
             )
         object.__setattr__(self, "metadata", metadata)
+        if self.semantics is not None:
+            self.semantics.require_source(self.program, self.n_qubits)
 
     def to_semantic_source(self) -> dict[str, object]:
         """Project the exact submitted request without duplicating programme bytes.
@@ -240,13 +289,34 @@ class QuantumWorkload:
 
 @dataclass(frozen=True)
 class QuantumJobRef:
-    """Stable handle returned by a backend adapter after submission."""
+    """Stable handle retaining the exact admitted native submission.
+
+    Parameters
+    ----------
+    job_id
+        Original provider or local durable job identifier.
+    backend_id
+        Exact registered backend identity.
+    workload_id
+        Exact original workload identity.
+    status
+        Observed lifecycle annotation; recovered annotations do not replace
+        adapter-retained submission settings.
+    metadata
+        Detached immutable scalar annotations.
+    submission
+        Optional keyword-only native source and target contract, preserving
+        requested/effective shots and compilation provenance. It does not
+        imply physical execution or replace the existing handle projection.
+
+    """
 
     job_id: str
     backend_id: str
     workload_id: str
     status: str
     metadata: Mapping[str, object] = field(default_factory=dict)
+    submission: SubmissionSemantics | None = field(default=None, kw_only=True)
 
     def __post_init__(self) -> None:
         """Validate job identity and freeze metadata custody."""
@@ -277,12 +347,36 @@ class QuantumJobRef:
 
 @dataclass(frozen=True)
 class QuantumJobResult:
-    """Provider-neutral result payload for shot-count workloads.
+    """Retain a legacy count summary and optional typed native observation.
 
-    Shot totals and count values must be nonnegative integers, not booleans or
-    floats. A zero shot total retains the existing unknown-total convention;
-    positive totals must equal the count sum, including for empty counts. Invalid values
-    raise ValueError before the result is accepted.
+    Parameters
+    ----------
+    job
+        Retained submission handle whose native request must match the observation.
+    status
+        Observed result lifecycle annotation.
+    counts
+        Detached immutable legacy label-to-integral-count summary. For non-gate
+        outputs this is a compatibility view, without inferring qubit readout
+        from photonic occupations, analog sites or annealing variables.
+    shots
+        Nonnegative integral observed sample total, never a boolean or float.
+        Positive totals equal the count sum. Zero retains the existing legacy
+        unknown-total convention; captured native observations conserve shots.
+    metadata
+        Detached immutable scalar result annotations.
+    provider_observation
+        Optional keyword-only gate, photonic, analog or annealing evidence.
+        Preserves native register bytes, occupations, ordered site samples,
+        spin/binary domains or structured annealing records as applicable.
+        Its request, shots and compatibility counts must match the stored
+        submission and returned result. No hardware attestation is inferred.
+
+    Raises
+    ------
+    ValueError
+        If identity, count conservation or the native observation disagrees.
+
     """
 
     job: QuantumJobRef
@@ -290,6 +384,13 @@ class QuantumJobResult:
     counts: Mapping[str, int] = field(default_factory=dict)
     shots: int = 0
     metadata: Mapping[str, object] = field(default_factory=dict)
+    provider_observation: (
+        GateModelObservation
+        | PhotonicObservation
+        | AnalogObservation
+        | AnnealingObservation
+        | None
+    ) = field(default=None, kw_only=True)
 
     def __post_init__(self) -> None:
         """Validate result counts and freeze result custody."""
@@ -307,6 +408,13 @@ class QuantumJobResult:
             raise ValueError("counts must sum to shots")
         object.__setattr__(self, "counts", MappingProxyType(frozen_counts))
         object.__setattr__(self, "metadata", _freeze_metadata(self.metadata))
+        if self.provider_observation is not None and (
+            self.provider_observation.shots != self.shots
+            or self.provider_observation.counts != self.counts
+            or self.job.submission is None
+            or self.provider_observation.request != self.job.submission.request
+        ):
+            raise ValueError("provider observation differs from returned counts or shots")
 
     def to_semantic_source(self) -> dict[str, object]:
         """Return detached native count evidence for semantic qualification.
@@ -511,6 +619,11 @@ class HardwareAbstractionLayer:
             raise PermissionError(f"backend is not registered: {backend_id}")
         if profile.submit_requires_approval and not approval_id:
             raise PermissionError(f"submission approval required for backend: {backend_id}")
+        if (
+            workload.semantics is not None
+            and getattr(backend, "supports_provider_semantics", False) is not True
+        ):
+            raise ValueError(f"backend has no native provider semantics admission: {backend_id}")
         job = backend.submit(workload, approval_id=approval_id)
         if job.backend_id != backend_id:
             raise ValueError("submit returned a different backend_id")
@@ -614,6 +727,11 @@ def _validate_workload_for_profile(profile: BackendProfile, workload: QuantumWor
         )
     if workload.shots and not profile.capabilities.supports_shots:
         raise ValueError(f"backend does not support shot workloads: {profile.backend_id}")
+    max_shots = profile.capabilities.max_shots
+    if max_shots is not None and workload.shots > max_shots:
+        raise ValueError(
+            f"workload shots exceed {profile.backend_id} limit: {workload.shots} > {max_shots}"
+        )
 
 
 def _profile(

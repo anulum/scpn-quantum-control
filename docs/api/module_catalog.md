@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **771 modules** across **41 package families**
-- **4189 documented public module-level symbols**
+- **774 modules** across **41 package families**
+- **4206 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -3351,6 +3351,22 @@ Fail-closed certification of the publicly claimed HAL provider matrix.
 
 **Functions:** `resolve_source_root()`, `documented_backend_ids()`, `focused_adapter_test_path()`, `certify_provider_matrix()`, `render_report_table()`, `main()`
 
+### `scpn_quantum_control.hardware.provider_measurement`
+
+Read native circuit wiring without compiling or simulating another answer.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/provider_measurement.py) · Public symbols: **5**
+
+**Functions:** `qiskit_workload_semantics()`, `bind_qiskit_workload()`, `qiskit_submission_semantics()`, `require_runtime_sample_buffers()`, `native_runtime_gate_observation()`
+
+### `scpn_quantum_control.hardware.provider_modalities`
+
+Preserve occupations, site readouts and spin samples in their native domains.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/provider_modalities.py) · Public symbols: **7**
+
+**Classes:** `ModalitySemantics`, `PhotonicSample`, `PhotonicObservation`, `AnalogObservation`, `AnnealingSample`, `NativeAnnealingRecord`, `AnnealingObservation`
+
 ### `scpn_quantum_control.hardware.provider_route_configuration`
 
 Locate credential configuration boundaries without reading credentials.
@@ -3358,6 +3374,16 @@ Locate credential configuration boundaries without reading credentials.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/provider_route_configuration.py) · Public symbols: **1**
 
 **Functions:** `provider_route_credential_refs()`
+
+### `scpn_quantum_control.hardware.provider_semantics`
+
+Preserve native provider semantics separately from legacy raw HAL records.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/provider_semantics.py) · Public symbols: **5**
+
+**Classes:** `WorkloadSemantics`, `SubmissionSemantics`, `NativeRegisterSamples`, `GateModelObservation`
+
+**Functions:** `modality_submission_semantics()`
 
 ### `scpn_quantum_control.hardware.provider_smoke`
 

@@ -27,6 +27,13 @@ from scpn_quantum_control.hardware._count_integrity import (
 )
 
 
+@pytest.mark.parametrize("native_count", ["Infinity", "-Infinity", "sNaN"])
+def test_nonfinite_native_integer_text_is_a_value_refusal(native_count: str) -> None:
+    """Malformed provider counts must refuse without leaking a Decimal conversion error."""
+    with pytest.raises(ValueError, match="integer"):
+        strict_non_negative_count(native_count)
+
+
 class TestStrictInteger:
     """Integer coercion accepts genuine integers and rejects ambiguity."""
 

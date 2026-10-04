@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 851,
     "public_documentation_pages": 381,
-    "python_model_classes": 1480,
-    "python_model_source_modules": 771,
+    "python_model_classes": 1491,
+    "python_model_source_modules": 774,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1483
+    "test_files": 1487
   },
   "documentation": {
     "examples": [
@@ -698,7 +698,7 @@
       {
         "package": "hardware",
         "path": "src/scpn_quantum_control/hardware",
-        "python_modules": 80
+        "python_modules": 83
       },
       {
         "package": "identity",
@@ -945,6 +945,10 @@
         "path": "src/scpn_quantum_control/hardware/analog_native_readiness.py"
       },
       {
+        "name": "AnalogObservation",
+        "path": "src/scpn_quantum_control/hardware/provider_modalities.py"
+      },
+      {
         "name": "AnalogPlatformProfile",
         "path": "src/scpn_quantum_control/analog_mapping/contracts.py"
       },
@@ -971,6 +975,14 @@
       {
         "name": "AnisotropyScanResult",
         "path": "src/scpn_quantum_control/analysis/xxz_phase_diagram.py"
+      },
+      {
+        "name": "AnnealingObservation",
+        "path": "src/scpn_quantum_control/hardware/provider_modalities.py"
+      },
+      {
+        "name": "AnnealingSample",
+        "path": "src/scpn_quantum_control/hardware/provider_modalities.py"
       },
       {
         "name": "AnsatzBenchmarkResult",
@@ -2669,6 +2681,10 @@
         "path": "src/scpn_quantum_control/mitigation/symmetry_decay.py"
       },
       {
+        "name": "GateModelObservation",
+        "path": "src/scpn_quantum_control/hardware/provider_semantics.py"
+      },
+      {
         "name": "GaugeLatticeCrosscheck",
         "path": "src/scpn_quantum_control/gauge/lattice_crosscheck.py"
       },
@@ -3641,6 +3657,10 @@
         "path": "src/scpn_quantum_control/semantic_operations.py"
       },
       {
+        "name": "ModalitySemantics",
+        "path": "src/scpn_quantum_control/hardware/provider_modalities.py"
+      },
+      {
         "name": "ModelDescriptor",
         "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/model.py"
       },
@@ -3715,6 +3735,14 @@
       {
         "name": "NVFieldCalibration",
         "path": "src/scpn_quantum_control/sensing/nv_magnetometry_20T.py"
+      },
+      {
+        "name": "NativeAnnealingRecord",
+        "path": "src/scpn_quantum_control/hardware/provider_modalities.py"
+      },
+      {
+        "name": "NativeRegisterSamples",
+        "path": "src/scpn_quantum_control/hardware/provider_semantics.py"
       },
       {
         "name": "NativeSourceBinding",
@@ -4787,6 +4815,14 @@
       {
         "name": "PhiResult",
         "path": "src/scpn_quantum_control/analysis/quantum_phi.py"
+      },
+      {
+        "name": "PhotonicObservation",
+        "path": "src/scpn_quantum_control/hardware/provider_modalities.py"
+      },
+      {
+        "name": "PhotonicSample",
+        "path": "src/scpn_quantum_control/hardware/provider_modalities.py"
       },
       {
         "name": "PhysicalSystem",
@@ -6121,6 +6157,10 @@
         "path": "src/scpn_quantum_control/benchmarks/decisive_advantage_protocol.py"
       },
       {
+        "name": "SubmissionSemantics",
+        "path": "src/scpn_quantum_control/hardware/provider_semantics.py"
+      },
+      {
         "name": "SurfaceCode",
         "path": "src/scpn_quantum_control/qec/control_qec.py"
       },
@@ -6689,6 +6729,10 @@
         "path": "src/scpn_quantum_control/analysis/witness_discovery.py"
       },
       {
+        "name": "WorkloadSemantics",
+        "path": "src/scpn_quantum_control/hardware/provider_semantics.py"
+      },
+      {
         "name": "WorkspaceAdmission",
         "path": "src/scpn_quantum_control/studio_workspace/graph.py"
       },
@@ -7144,7 +7188,10 @@
       "src/scpn_quantum_control/hardware/provider_capability_normalization.py",
       "src/scpn_quantum_control/hardware/provider_capability_specialized_adapters.py",
       "src/scpn_quantum_control/hardware/provider_certification.py",
+      "src/scpn_quantum_control/hardware/provider_measurement.py",
+      "src/scpn_quantum_control/hardware/provider_modalities.py",
       "src/scpn_quantum_control/hardware/provider_route_configuration.py",
+      "src/scpn_quantum_control/hardware/provider_semantics.py",
       "src/scpn_quantum_control/hardware/provider_smoke.py",
       "src/scpn_quantum_control/hardware/provider_submission_gate.py",
       "src/scpn_quantum_control/hardware/pulse_feasibility.py",
@@ -9734,8 +9781,12 @@
       "tests/test_provider_capability_specialized_adapters.py",
       "tests/test_provider_gradient_audit_quality_gate.py",
       "tests/test_provider_isolated_smoke_workflow.py",
+      "tests/test_provider_measurement.py",
+      "tests/test_provider_measurement_semantics.py",
+      "tests/test_provider_modalities.py",
       "tests/test_provider_route_catalogue.py",
       "tests/test_provider_route_configuration.py",
+      "tests/test_provider_semantics.py",
       "tests/test_provider_submission_gate.py",
       "tests/test_psi_field.py",
       "tests/test_psi_lattice_quality_gate.py",

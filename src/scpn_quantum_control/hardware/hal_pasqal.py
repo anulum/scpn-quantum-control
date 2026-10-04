@@ -14,7 +14,8 @@ import json
 from collections.abc import Callable, Mapping, Sequence
 from datetime import UTC, datetime
 from importlib import import_module
-from typing import Any
+from math import isfinite
+from typing import Any, NoReturn
 
 from ._count_integrity import (
     strict_binary_bitstring_key,
@@ -23,7 +24,16 @@ from ._count_integrity import (
     strict_provider_job_id,
     strict_shot_conservation,
 )
-from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
+from .hal import (
+    BackendProfile,
+    QuantumJobRef,
+    QuantumJobResult,
+    QuantumWorkload,
+    _resolve_stored_job,
+    _validate_workload_for_profile,
+)
+from .provider_modalities import AnalogObservation, ModalitySemantics
+from .provider_semantics import modality_submission_semantics
 
 PASQAL_PULSER_SCHEMA = "pulser_sequence_plan_v1"
 PASQAL_PULSER_EXECUTION_MODE = "pasqal_pulser"
@@ -36,26 +46,98 @@ def pulser_sequence_workload(
     n_qubits: int,
     shots: int,
     metadata: Mapping[str, object] | None = None,
+    capture_semantics: bool = False,
+    requested_target: str | None = None,
 ) -> QuantumWorkload:
-    """Encode a Pulser sequence plan as a HAL workload for Pasqal."""
-    decoded = (
-        _json_mapping(payload, field_name="Pulser payload")
-        if isinstance(payload, str)
-        else dict(payload)
-    )
+    """Encode original Pulser sites and an optional native analog request companion.
+
+    Parameters
+    ----------
+    payload
+        Plan mapping or JSON object containing an ordered site register, finite
+        coordinates and schedules, a positive duration and declared channel.
+        Captured JSON strings retain exact original bytes and site insertion order.
+    workload_id
+        Stable caller identity for the original plan.
+    n_qubits
+        Legacy field containing declared native site count. Native analog sites
+        do not imply gate-model qubits or a particular readout polarity.
+    shots
+        Positive integral requested sample count.
+    metadata
+        Scalar caller annotations separate from execution settings.
+    capture_semantics
+        Retain a separate original source digest and native register order.
+        Default false preserves the existing workload codec.
+    requested_target
+        Optional exact declared client selector, requiring native capture.
+
+    Returns
+    -------
+    QuantumWorkload
+        Original Pulser plan and optional versioned analog companion.
+
+    Raises
+    ------
+    ValueError
+        If plan structure, native values, site count or target admission fails.
+
+    """
+    decoded = _json_mapping(payload, field_name="Pulser payload")
     _validate_pulser_payload(decoded, n_qubits)
+    if not capture_semantics and requested_target is not None:
+        raise ValueError("target pin requires native semantics capture")
+    program = (
+        payload
+        if isinstance(payload, str) and capture_semantics
+        else json.dumps(decoded, sort_keys=not capture_semantics, separators=(",", ":"))
+    )
+    semantics = (
+        ModalitySemantics(
+            program_sha256=hashlib.sha256(program.encode()).hexdigest(),
+            modality="analog",
+            native_axes=_site_order(decoded),
+            requested_target=requested_target,
+        )
+        if capture_semantics
+        else None
+    )
     return QuantumWorkload(
         workload_id=workload_id,
         ir_format="pulser",
-        program=json.dumps(decoded, sort_keys=True, separators=(",", ":")),
+        program=program,
         n_qubits=n_qubits,
         shots=shots,
         metadata=dict(metadata or {}),
+        semantics=semantics,
     )
 
 
 class PasqalPulserHALAdapter:
-    """Pasqal/Pulser client adapter implementing the provider-neutral HAL protocol."""
+    """Submit original native analog plans through an explicitly configured client.
+
+    Parameters
+    ----------
+    profile
+        Pasqal route declaring supported IR and resource limits.
+    client
+        Optional injected native-compatible client. Each submission receives
+        its current original decoded sequence and exact requested shots.
+    client_factory
+        Optional lazy construction from the first admitted original sequence.
+        The retained client receives subsequent current sequences directly.
+    target
+        Declared adapter selector. Absence means injected; present malformed
+        selectors refuse. This name does not attest an SDK or physical target.
+
+    Raises
+    ------
+    ValueError
+        If profile or explicit selector is invalid.
+
+    """
+
+    supports_provider_semantics = True
 
     def __init__(
         self,
@@ -71,7 +153,9 @@ class PasqalPulserHALAdapter:
         self.backend_id = profile.backend_id
         self._client = client
         self._client_factory = client_factory
-        self._target = strict_provider_job_id(target or "injected", field_name="Pasqal target")
+        self._target = strict_provider_job_id(
+            target if target is not None else "injected", field_name="Pasqal target"
+        )
         self._jobs: dict[str, QuantumJobRef] = {}
         self._provider_jobs: dict[str, Any] = {}
         self._results: dict[str, QuantumJobResult] = {}
@@ -79,13 +163,48 @@ class PasqalPulserHALAdapter:
     def submit(
         self, workload: QuantumWorkload, *, approval_id: str | None = None
     ) -> QuantumJobRef:
-        """Submit a workload to the backend and return its job reference."""
+        """Admit source, native site order and target before client construction.
+
+        Parameters
+        ----------
+        workload
+            Original supported Pulser plan and optional source-bound companion.
+        approval_id
+            Required caller authorization for submission.
+
+        Returns
+        -------
+        QuantumJobRef
+            Stored handle preserving original source, exact sampling settings
+            and declared selector provenance. Native compilation remains owned
+            by the configured client, with no fabricated compiled-program digest.
+
+        Raises
+        ------
+        PermissionError
+            If caller approval is absent.
+        ValueError
+            If profile, source, IR, native axes or selected target disagrees.
+        RuntimeError
+            If no calibrated client builder is available.
+
+        """
         if not approval_id:
             raise PermissionError("approval_id is required for Pasqal submission")
         if workload.ir_format != "pulser":
             raise ValueError("Pasqal direct adapter requires pulser workloads")
+        _validate_workload_for_profile(self.profile, workload)
         sequence = _decode_payload(workload)
         _validate_pulser_payload(sequence, workload.n_qubits)
+        submission = modality_submission_semantics(
+            workload.semantics,
+            program=workload.program,
+            ir_format=workload.ir_format,
+            native_axes=_site_order(sequence),
+            modality="analog",
+            target_name=self._target,
+            shots=workload.shots,
+        )
         client = self._client_for(sequence)
         provider_job = client.submit(
             sequence=sequence,
@@ -99,6 +218,7 @@ class PasqalPulserHALAdapter:
             backend_id=self.backend_id,
             workload_id=workload.workload_id,
             status="submitted",
+            submission=submission,
             metadata={
                 "approval_id": approval_id,
                 "provider_job_id": provider_job_id,
@@ -115,7 +235,26 @@ class PasqalPulserHALAdapter:
         return job
 
     def status(self, job: QuantumJobRef) -> str:
-        """Return the current status for a submitted backend job."""
+        """Read native lifecycle after checking original stored submission identity.
+
+        Parameters
+        ----------
+        job
+            Original or recovered handle for the same backend and workload.
+
+        Returns
+        -------
+        str
+            Canonical native provider lifecycle, or unknown when absent.
+
+        Raises
+        ------
+        KeyError
+            If original submission or retained provider job is unavailable.
+        ValueError
+            If durable identity differs.
+
+        """
         provider_job = self._provider_job(job)
         status = getattr(provider_job, "status", None)
         if callable(status):
@@ -123,26 +262,62 @@ class PasqalPulserHALAdapter:
         return _normalise_status(status)
 
     def result(self, job: QuantumJobRef) -> QuantumJobResult:
-        """Return the completed result for a submitted backend job."""
-        cached = self._results.get(job.job_id)
+        """Retain native counts against original site order and exact requested shots.
+
+        Parameters
+        ----------
+        job
+            Handle matching the original stored backend and workload.
+
+        Returns
+        -------
+        QuantumJobResult
+            Immutable compatibility histogram and optional analog observation
+            retaining original count labels and native register order. Readout
+            polarity and atom-loss interpretation remain unknown. Repeated
+            successful retrieval returns the same result without rereading.
+
+        Raises
+        ------
+        KeyError
+            If original submission or retained provider job is unavailable.
+        ValueError
+            If identity, native labels, values, width or shot conservation fails.
+        TypeError
+            If the retained provider job lacks result retrieval.
+        RuntimeError
+            If the provider has no supported count channel.
+
+        """
+        stored = self._job(job)
+        cached = self._results.get(stored.job_id)
         if cached is not None:
             return cached
-        stored = self._job(job)
         provider_job = self._provider_job(job)
         result_method = getattr(provider_job, "result", None)
         if not callable(result_method):
             raise TypeError("Pasqal provider job does not provide result()")
-        counts = _normalise_counts(_extract_counts(result_method()))
+        raw_counts = _extract_counts(result_method())
+        counts = _normalise_counts(raw_counts)
         expected_shots = strict_integer_value(
             stored.metadata.get("shots"),
             field_name="Pasqal expected shots",
         )
         observed_shots = strict_shot_conservation(counts, expected_shots=expected_shots)
+        observation = None
+        if stored.submission is not None:
+            request = stored.submission.request
+            if not isinstance(request, ModalitySemantics):
+                raise ValueError("native Pasqal result requires analog plan semantics")
+            observation = AnalogObservation(
+                request=request, shots=observed_shots, raw_counts=raw_counts
+            )
         result = QuantumJobResult(
             job=stored,
             status="completed",
             counts=counts,
             shots=observed_shots,
+            provider_observation=observation,
             metadata={
                 "approval_id": stored.metadata.get("approval_id"),
                 "provider_job_id": stored.metadata.get("provider_job_id"),
@@ -155,7 +330,27 @@ class PasqalPulserHALAdapter:
         return result
 
     def cancel(self, job: QuantumJobRef) -> QuantumJobRef:
-        """Request cancellation for a submitted backend job."""
+        """Request cancellation while preserving native source and completed raw data.
+
+        Parameters
+        ----------
+        job
+            Handle matching the original stored backend and workload.
+
+        Returns
+        -------
+        QuantumJobRef
+            Legacy cancellation-request annotation with original metadata and
+            companion. It does not attest physical provider cancellation.
+
+        Raises
+        ------
+        KeyError
+            If original submission or retained provider job is unavailable.
+        ValueError
+            If durable identity differs or cancellation is unsupported.
+
+        """
         stored = self._job(job)
         provider_job = self._provider_job(job)
         cancel = getattr(provider_job, "cancel", None)
@@ -167,6 +362,7 @@ class PasqalPulserHALAdapter:
             backend_id=stored.backend_id,
             workload_id=stored.workload_id,
             status="cancelled",
+            submission=stored.submission,
             metadata=stored.metadata,
         )
         self._jobs[job.job_id] = cancelled
@@ -178,21 +374,17 @@ class PasqalPulserHALAdapter:
         if self._client_factory is not None:
             self._client = self._client_factory(sequence)
             return self._client
-        self._client = _default_client_factory(sequence)
-        return self._client
+        _default_client_factory(sequence)
 
     def _job(self, job: QuantumJobRef) -> QuantumJobRef:
-        stored = self._jobs.get(job.job_id)
-        if stored is None:
-            raise KeyError(f"unknown job_id: {job.job_id}")
-        return stored
+        return _resolve_stored_job(job, self._jobs)
 
     def _provider_job(self, job: QuantumJobRef) -> Any:
         self._job(job)
         return self._provider_jobs[job.job_id]
 
 
-def _default_client_factory(sequence: dict[str, object]) -> Any:
+def _default_client_factory(sequence: dict[str, object]) -> NoReturn:
     del sequence
     try:
         import_module("pulser")
@@ -209,6 +401,14 @@ def _default_client_factory(sequence: dict[str, object]) -> Any:
 
 def _decode_payload(workload: QuantumWorkload) -> dict[str, object]:
     return _json_mapping(workload.program, field_name="Pulser workload")
+
+
+def _site_order(plan: Mapping[str, object]) -> tuple[str | int, ...]:
+    """Read original native register insertion order without sorting site identities."""
+    register = plan["register"]
+    if not isinstance(register, Mapping):
+        raise ValueError("native Pulser register must be a site mapping")
+    return tuple(register)
 
 
 def _json_mapping(source: Mapping[str, object] | str, *, field_name: str) -> dict[str, object]:
@@ -286,7 +486,7 @@ def _validate_edge_terms(value: object, *, field_name: str) -> None:
         _coerce_float(term.get("coefficient"), field_name=f"{field_name} coefficient")
 
 
-def _extract_counts(result: object) -> object:
+def _extract_counts(result: object) -> Mapping[Any, Any]:
     if isinstance(result, Mapping):
         for key in ("counter", "counts", "samples"):
             value = result.get(key)
@@ -349,12 +549,15 @@ def _coerce_int(value: object, *, field_name: str) -> int:
 
 
 def _coerce_float(value: object, *, field_name: str) -> float:
-    if isinstance(value, bool):
+    if isinstance(value, bool) or not isinstance(value, int | float | str):
         raise ValueError(f"{field_name} must be numeric")
     try:
-        return float(value)  # type: ignore[arg-type]
-    except (TypeError, ValueError) as exc:
+        result = float(value)
+    except (ValueError, OverflowError) as exc:
         raise ValueError(f"{field_name} must be numeric") from exc
+    if not isfinite(result):
+        raise ValueError(f"{field_name} must be finite")
+    return result
 
 
 def _utc_now() -> str:
