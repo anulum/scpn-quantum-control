@@ -20,6 +20,8 @@ when it has no suffix and its first line names ``sh``, ``bash``, ``dash`` or
 Findings depend on the ShellCheck release. The release is pinned in
 ``requirements-ci-shell-lint.txt`` and the gate refuses to run with another
 one instead of reporting a result that the pinned release might not give.
+The gate uses the ShellCheck installed next to the running interpreter, which
+is where that requirement file puts it, and falls back to the one on ``PATH``.
 
 The gate reports what ShellCheck reports. It does not format scripts and it
 does not run them.
@@ -58,6 +60,25 @@ def _run(repo: Path, arguments: Sequence[str]) -> subprocess.CompletedProcess[st
         )
     except OSError as error:
         raise ValueError(f"cannot run {arguments[0]}: {error}") from error
+
+
+def environment_executable(interpreter: Path) -> str:
+    """Return the ShellCheck that belongs to an interpreter's environment.
+
+    Parameters
+    ----------
+    interpreter
+        Path of a Python executable.
+
+    Returns
+    -------
+    str
+        The ``shellcheck`` file beside ``interpreter`` when there is one,
+        otherwise the bare name ``"shellcheck"`` to be resolved on ``PATH``.
+
+    """
+    candidate = interpreter.parent / "shellcheck"
+    return str(candidate) if candidate.is_file() else "shellcheck"
 
 
 def pinned_release(repo: Path) -> str:
@@ -204,7 +225,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo", type=Path, default=Path(__file__).resolve().parents[1])
-    parser.add_argument("--shellcheck", default="shellcheck", help="ShellCheck executable")
+    parser.add_argument(
+        "--shellcheck",
+        default=environment_executable(Path(sys.executable)),
+        help="ShellCheck executable (default: the one beside this interpreter, else on PATH)",
+    )
     args = parser.parse_args(argv)
     repo: Path = args.repo
     try:

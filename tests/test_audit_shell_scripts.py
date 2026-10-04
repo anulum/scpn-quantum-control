@@ -11,14 +11,17 @@ from __future__ import annotations
 
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
 from tools import audit_shell_scripts as gate
 
+LINTER = gate.environment_executable(Path(sys.executable))
+
 pytestmark = pytest.mark.skipif(
-    shutil.which("shellcheck") is None, reason="ShellCheck executable unavailable"
+    shutil.which(LINTER) is None, reason="ShellCheck executable unavailable"
 )
 
 CLEAN = "#!/bin/sh\nprintf '%s\\n' \"$1\"\n"
@@ -52,8 +55,8 @@ def _run(repository: Path, *arguments: str) -> int:
 
 @pytest.fixture
 def installed(tmp_path: Path) -> str:
-    """Return the release of the ShellCheck executable on ``PATH``."""
-    return gate.installed_release(tmp_path, "shellcheck")
+    """Return the release of the ShellCheck executable the gate uses by default."""
+    return gate.installed_release(tmp_path, LINTER)
 
 
 @pytest.fixture
@@ -155,6 +158,20 @@ def test_repository_without_scripts_passes(
     assert "0 scripts" in capsys.readouterr().out
 
 
+def test_environment_linter_is_preferred_over_the_path(tmp_path: Path) -> None:
+    """The linter beside the interpreter is used; without one the name is left to ``PATH``."""
+    with_linter = tmp_path / "with" / "bin"
+    without_linter = tmp_path / "without" / "bin"
+    with_linter.mkdir(parents=True)
+    without_linter.mkdir(parents=True)
+    (with_linter / "shellcheck").write_text("", encoding="utf-8")
+    (without_linter / "shellcheck").mkdir()
+
+    assert gate.environment_executable(with_linter / "python") == str(with_linter / "shellcheck")
+    assert gate.environment_executable(without_linter / "python") == "shellcheck"
+    assert gate.environment_executable(tmp_path / "absent" / "python") == "shellcheck"
+
+
 def test_other_release_is_refused(
     repository: Path, installed: str, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -207,7 +224,7 @@ def test_unreadable_script_is_an_error_not_a_pass(
     (repository / "scripts" / "run.sh").unlink()
 
     assert _run(repository) == 1
-    assert "shell script lint failed: shellcheck failed: scripts/run.sh" in capsys.readouterr().err
+    assert f"shell script lint failed: {LINTER} failed: scripts/run.sh" in capsys.readouterr().err
 
 
 def test_directory_without_a_repository_fails(

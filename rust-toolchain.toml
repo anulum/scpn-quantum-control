@@ -16,8 +16,9 @@
 #
 # The pinned release is the one the hosted lint and format job last passed
 # with. The build tooling records the resolved `rustc` into release
-# manifests, so changing this line changes that evidence: bump it in a
-# change of its own, with a hosted run on the new release.
+# manifests, so changing this line changes that evidence. Keep the pin at the
+# newest stable release the repository passes with, and bump it in a change
+# of its own, with a hosted run on the new release.
 # `tools/audit_local_environment_parity.py` reports what a workstation has
 # installed.
 #

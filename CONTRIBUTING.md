@@ -85,7 +85,7 @@ interpreter and tool pins, `requirements-ci-py312-linux.txt` for distributions,
 machine says something different. It is a report, not a gate: a workstation
 legitimately differs from a runner on the optional tiers.
 
-Three pieces are not in the base lock and have to be provisioned:
+Four pieces are not in the base lock and have to be provisioned:
 
 ```bash
 # the native engine, with the arguments CI builds it with
@@ -100,6 +100,9 @@ corepack prepare pnpm@11.9.0
 python -m venv .venv-julia
 .venv-julia/bin/python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
 .venv-julia/bin/python -m pip install --no-deps --require-hashes -r requirements-ci-julia-tier.txt
+
+# the shell linter, in the project environment as the CI job installs it
+python -m pip install --no-deps --require-hashes -r requirements-ci-shell-lint.txt
 ```
 
 Two axes cannot be closed on a workstation and the report says so rather than
@@ -303,15 +306,17 @@ script and fails on any finding, down to style level. A script is a tracked
 
 Findings depend on the ShellCheck release. It is pinned in
 `requirements-ci-shell-lint.txt`, and the gate refuses to run with another
-release. Install the pinned one with
+release. Install the pinned one into the project environment with
 `python -m pip install --no-deps --require-hashes -r requirements-ci-shell-lint.txt`;
-to change the pin, edit `requirements-ci-shell-lint.in` and regenerate the lock
-with the command recorded at the top of the `.txt` file.
+the gate uses the ShellCheck beside the interpreter that runs it and falls back
+to the one on `PATH`. To change the pin, edit `requirements-ci-shell-lint.in`
+and regenerate the lock with the command recorded at the top of the `.txt`
+file; keep it at the newest release, like every other pin.
 
 Silence a finding only where it is wrong, with a `# shellcheck` directive on
-the line above and a comment that says why. The gate runs in CI; the pre-push
-check does not run it, because it needs the pinned release. Script formatting
-is not enforced yet; the source surface inventory keeps the shell rows open for
+the line above and a comment that says why. The gate runs in CI and in the
+pre-push check, with the same pinned release. Script formatting is not enforced
+yet; the source surface inventory keeps the shell rows open for
 that reason.
 
 ## Commit Messages

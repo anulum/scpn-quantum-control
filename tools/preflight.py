@@ -1062,6 +1062,10 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
         ],
     ),
     (
+        "shell-script-lint",
+        [_PY, "tools/audit_shell_scripts.py"],
+    ),
+    (
         "mypy-strict-shell-script-lint",
         [
             _PY,
