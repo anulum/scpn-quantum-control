@@ -117,8 +117,8 @@ def build_operator_policy_example(case: str = "unknown_price") -> dict[str, obje
         "seed": 9007199254740993,
         "theme": "dark",
     }
-    # This is a candidate awaiting core admission, not a claim that F08 admitted
-    # an over-ceiling layer. The original structural contract preserves its values.
+    # The structural candidate retains literal values for core admission;
+    # it does not certify settings-layer acceptance of an over-ceiling request.
     settings = ResolvedSettings(
         {
             "requested": values,

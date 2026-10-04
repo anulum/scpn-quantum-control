@@ -2497,9 +2497,9 @@
       "source": "src/scpn_quantum_control/studio/__init__.py",
       "scope": "__getattr__",
       "call_sha256": "223d1f2e0fb56e59f1a3659d5815ff792e697d9376f0c7c4d031000a54801fb5",
-      "source_sha256": "264505d5d5e44bfb4da89d0982ba9677e1e192ed2d9c33f1946794e3a4652a80",
+      "source_sha256": "e0e2e67675d1ef554724c5f4486dfe081287e7c17ba3ed702529d222f4e08a9b",
       "role": "first-party-lazy",
-      "reason": "The literal export groups feed the reviewed name-to-module comprehension and package-relative __getattr__ resolver; defining modules are expanded as lazy dependencies.",
+      "reason": "Complete source reviewed after adding two literal operator-policy exports from the original workspace owner. The name-to-module comprehension and package-relative __getattr__ resolver AST are unchanged; original ordered star-import API is unchanged. Defining modules remain expanded as lazy dependencies.",
       "count": 1
     },
     {
@@ -2551,9 +2551,9 @@
       "source": "src/scpn_quantum_control/studio_workspace/__init__.py",
       "scope": "__getattr__",
       "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
-      "source_sha256": "172b16196c2962afddce3558dbe8c9c73db34f70fec6d7a05ea3ccb03bc90fcd",
+      "source_sha256": "8cbb3d4f56672551effec965f13385d7ab57d8c6fab5b62546347cd2813520ba",
       "role": "first-party-lazy",
-      "reason": "Independently reviewed complete30-binding literal public-export table preserves the frozen original module/attribute pairs. The public resolver imports only target[0], caches only successful access, propagates real import/attribute errors and supports retry; no scientific logic is moved. Actual public identity/star/dir/unknown/cold/failure contracts are retained in final Studio/workspace source qualification.",
+      "reason": "Complete32-binding literal public-export table reviewed: all original30 module/attribute pairs and ordered star-import API are unchanged. The two added operator-policy names resolve to the source-owned workspace bridge. Resolver AST is unchanged: imports only target[0], caches successful access, propagates import/attribute errors and permits retry. Original public identity/cold/failure contracts remain exercised.",
       "count": 1
     }
   ]
