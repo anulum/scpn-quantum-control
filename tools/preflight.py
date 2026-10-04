@@ -1041,6 +1041,27 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
         ],
     ),
     (
+        "source-surface-inventory",
+        [
+            _PY,
+            "tools/audit_source_surface_inventory.py",
+            "--changed-against",
+            "origin/main",
+        ],
+    ),
+    (
+        "mypy-strict-source-surface-inventory",
+        [
+            _PY,
+            "-m",
+            "mypy",
+            "--strict",
+            "--explicit-package-bases",
+            "tools/audit_source_surface_inventory.py",
+            "tests/test_audit_source_surface_inventory.py",
+        ],
+    ),
+    (
         "ci-workflow-modularity",
         [_PY, "tools/audit_ci_workflow_modularity.py"],
     ),

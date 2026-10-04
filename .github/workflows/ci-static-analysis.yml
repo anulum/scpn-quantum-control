@@ -907,3 +907,38 @@ jobs:
             -m pytest -q tests/test_git_location_isolation.py
           python -m coverage report --rcfile=/dev/null --precision=2 --show-missing \
             --fail-under=100 --include='*/_git_location_isolation.py'
+
+  source-surface-inventory:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: src:oscillatools/src
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - run: pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Hold the source surface inventory
+        env:
+          COVERAGE_FILE: .coverage.source-surface-inventory
+          BASE_REVISION: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          python -m mypy --strict --explicit-package-bases \
+            tools/audit_source_surface_inventory.py tests/test_audit_source_surface_inventory.py
+          python -m ruff check \
+            tools/audit_source_surface_inventory.py tests/test_audit_source_surface_inventory.py
+          python -m ruff format --check \
+            tools/audit_source_surface_inventory.py tests/test_audit_source_surface_inventory.py
+          python -m coverage run --rcfile=/dev/null --branch \
+            -m pytest -q tests/test_audit_source_surface_inventory.py
+          if [ -n "$BASE_REVISION" ] && [ "$BASE_REVISION" != "0000000000000000000000000000000000000000" ]; then
+            git fetch --no-tags --depth=1 origin "$BASE_REVISION"
+            python -m coverage run --rcfile=/dev/null --branch --append \
+              tools/audit_source_surface_inventory.py --changed-against "$BASE_REVISION"
+          else
+            python -m coverage run --rcfile=/dev/null --branch --append \
+              tools/audit_source_surface_inventory.py
+          fi
+          python -m coverage report --rcfile=/dev/null --precision=2 --show-missing \
+            --fail-under=100 --include='*/audit_source_surface_inventory.py'

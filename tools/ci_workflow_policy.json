@@ -20,7 +20,8 @@
         "julia-lint",
         "split-boundary-guard",
         "test-documentation-ceiling",
-        "git-location-isolation"
+        "git-location-isolation",
+        "source-surface-inventory"
       ]
     },
     {
@@ -401,6 +402,7 @@
     "split-boundary-guard",
     "test-documentation-ceiling",
     "git-location-isolation",
+    "source-surface-inventory",
     "native-wheels",
     "kuramoto-model-quality",
     "kuramoto-solver-quality",

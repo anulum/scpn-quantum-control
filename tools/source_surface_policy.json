@@ -1,0 +1,381 @@
+{
+ "schema": "source_surface_inventory_v1",
+ "surfaces": [
+  {
+   "kind": ".css",
+   "root": "docs",
+   "missing": "no stylesheet lint"
+  },
+  {
+   "kind": ".css",
+   "root": "studio-web",
+   "missing": "no stylesheet lint"
+  },
+  {
+   "kind": ".go",
+   "root": "data",
+   "evidence": "benchmark source recorded with the results it produced"
+  },
+  {
+   "kind": ".h",
+   "root": "src",
+   "gates": [
+    {
+     "workflow": "ci-native-integration.yml",
+     "job": "hls-cosimulation-evidence-quality",
+     "command": "pytest -q tests/test_hls_cosimulation_evidence.py tests/test_run_hls_cosimulation_evidence.py tests/test_ultrascale_hls.py tests/test_ultrascale_hls_branch.py"
+    }
+   ]
+  },
+  {
+   "kind": ".html",
+   "root": "studio-web",
+   "missing": "no markup lint; the pages are exercised by the browser journeys only"
+  },
+  {
+   "kind": ".ipynb",
+   "root": "notebooks",
+   "gates": [
+    {
+     "workflow": "notebooks.yml",
+     "job": "execute",
+     "command": "pytest --nbmake --nbmake-timeout=600 --nbmake-kernel=python3"
+    }
+   ]
+  },
+  {
+   "kind": ".jl",
+   "root": "data",
+   "evidence": "benchmark source recorded with the results it produced"
+  },
+  {
+   "kind": ".jl",
+   "root": "oscillatools",
+   "gates": [
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "julia-lint",
+     "command": "python tools/audit_julia_documentation.py"
+    }
+   ]
+  },
+  {
+   "kind": ".js",
+   "root": "docs",
+   "missing": "no script lint"
+  },
+  {
+   "kind": ".py",
+   "root": ".",
+   "gates": [
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "lint",
+     "command": "ruff check src/ tests/ examples/ figures/ tools/ scripts/ notebooks/ run_hardware.py"
+    },
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "lint",
+     "command": "ruff format --check src/ tests/ examples/ figures/ tools/ scripts/ notebooks/ run_hardware.py"
+    }
+   ]
+  },
+  {
+   "kind": ".py",
+   "root": "data",
+   "evidence": "runner scripts recorded with the benchmark results they produced"
+  },
+  {
+   "kind": ".py",
+   "root": "examples",
+   "gates": [
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "lint",
+     "command": "ruff check src/ tests/ examples/ figures/ tools/ scripts/ notebooks/ run_hardware.py"
+    },
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "lint",
+     "command": "ruff format --check src/ tests/ examples/ figures/ tools/ scripts/ notebooks/ run_hardware.py"
+    }
+   ]
+  },
+  {
+   "kind": ".py",
+   "root": "experimental_workers",
+   "missing": "outside the lint, format and type-check path lists"
+  },
+  {
+   "kind": ".py",
+   "root": "figures",
+   "gates": [
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "lint",
+     "command": "ruff check src/ tests/ examples/ figures/ tools/ scripts/ notebooks/ run_hardware.py"
+    },
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "lint",
+     "command": "ruff format --check src/ tests/ examples/ figures/ tools/ scripts/ notebooks/ run_hardware.py"
+    }
+   ]
+  },
+  {
+   "kind": ".py",
+   "root": "notebooks",
+   "gates": [
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "lint",
+     "command": "ruff check src/ tests/ examples/ figures/ tools/ scripts/ notebooks/ run_hardware.py"
+    },
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "lint",
+     "command": "ruff format --check src/ tests/ examples/ figures/ tools/ scripts/ notebooks/ run_hardware.py"
+    }
+   ]
+  },
+  {
+   "kind": ".py",
+   "root": "oscillatools",
+   "gates": [
+    {
+     "workflow": "oscillatools-ci.yml",
+     "job": "lint",
+     "command": "ruff check src tests tools examples"
+    },
+    {
+     "workflow": "oscillatools-ci.yml",
+     "job": "lint",
+     "command": "ruff format --check src tests tools examples"
+    },
+    {
+     "workflow": "oscillatools-ci.yml",
+     "job": "type-check",
+     "command": "mypy --strict src/oscillatools/ tools examples"
+    }
+   ]
+  },
+  {
+   "kind": ".py",
+   "root": "scpn_quantum_engine",
+   "missing": "outside the lint, format and type-check path lists"
+  },
+  {
+   "kind": ".py",
+   "root": "scripts",
+   "gates": [
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "lint",
+     "command": "ruff check src/ tests/ examples/ figures/ tools/ scripts/ notebooks/ run_hardware.py"
+    },
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "lint",
+     "command": "ruff format --check src/ tests/ examples/ figures/ tools/ scripts/ notebooks/ run_hardware.py"
+    },
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "lint",
+     "command": "audit_documentation_scopes.py"
+    }
+   ]
+  },
+  {
+   "kind": ".py",
+   "root": "src",
+   "gates": [
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "lint",
+     "command": "ruff check src/ tests/ examples/ figures/ tools/ scripts/ notebooks/ run_hardware.py"
+    },
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "lint",
+     "command": "ruff format --check src/ tests/ examples/ figures/ tools/ scripts/ notebooks/ run_hardware.py"
+    },
+    {
+     "workflow": "ci-runtime-package.yml",
+     "job": "type-check",
+     "command": "mypy --strict src/scpn_quantum_control/"
+    }
+   ]
+  },
+  {
+   "kind": ".py",
+   "root": "tests",
+   "gates": [
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "lint",
+     "command": "ruff check src/ tests/ examples/ figures/ tools/ scripts/ notebooks/ run_hardware.py"
+    },
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "lint",
+     "command": "ruff format --check src/ tests/ examples/ figures/ tools/ scripts/ notebooks/ run_hardware.py"
+    },
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "lint",
+     "command": "audit_test_typing_policy.py"
+    },
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "test-documentation-ceiling",
+     "command": "tools/audit_test_documentation_ceiling.py"
+    }
+   ]
+  },
+  {
+   "kind": ".py",
+   "root": "tools",
+   "gates": [
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "lint",
+     "command": "ruff check src/ tests/ examples/ figures/ tools/ scripts/ notebooks/ run_hardware.py"
+    },
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "lint",
+     "command": "ruff format --check src/ tests/ examples/ figures/ tools/ scripts/ notebooks/ run_hardware.py"
+    },
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "lint",
+     "command": "audit_documentation_scopes.py"
+    }
+   ]
+  },
+  {
+   "kind": ".pyi",
+   "root": "src",
+   "gates": [
+    {
+     "workflow": "ci-runtime-package.yml",
+     "job": "type-check",
+     "command": "python tools/check_rust_pyi_exports.py"
+    }
+   ]
+  },
+  {
+   "kind": ".rs",
+   "root": "scpn_quantum_engine",
+   "gates": [
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "rust-lint",
+     "command": "cargo fmt --manifest-path scpn_quantum_engine/Cargo.toml --all -- --check"
+    },
+    {
+     "workflow": "ci-static-analysis.yml",
+     "job": "rust-lint",
+     "command": "cargo clippy --manifest-path \"$manifest\" --all-targets --locked"
+    }
+   ]
+  },
+  {
+   "kind": ".sh",
+   "root": "notebooks",
+   "missing": "no shell lint runs over these scripts"
+  },
+  {
+   "kind": ".sh",
+   "root": "scripts",
+   "missing": "no shell lint runs over these scripts"
+  },
+  {
+   "kind": ".sh",
+   "root": "tools",
+   "missing": "no shell lint runs over these scripts"
+  },
+  {
+   "kind": ".tmpl",
+   "root": "src",
+   "gates": [
+    {
+     "workflow": "ci-native-integration.yml",
+     "job": "hls-cosimulation-evidence-quality",
+     "command": "pytest -q tests/test_hls_cosimulation_evidence.py tests/test_run_hls_cosimulation_evidence.py tests/test_ultrascale_hls.py tests/test_ultrascale_hls_branch.py"
+    }
+   ]
+  },
+  {
+   "kind": ".ts",
+   "root": "studio-web",
+   "gates": [
+    {
+     "workflow": "ci-studio.yml",
+     "job": "studio-web",
+     "command": "pnpm typecheck"
+    }
+   ],
+   "missing": "no lint and no format gate"
+  },
+  {
+   "kind": ".tsx",
+   "root": "studio-web",
+   "gates": [
+    {
+     "workflow": "ci-studio.yml",
+     "job": "studio-web",
+     "command": "pnpm typecheck"
+    }
+   ],
+   "missing": "no lint and no format gate"
+  },
+  {
+   "kind": "Dockerfile",
+   "root": ".",
+   "gates": [
+    {
+     "workflow": "docker.yml",
+     "job": "docker-test",
+     "command": "docker build -t scpn-quantum-control:test ."
+    }
+   ]
+  },
+  {
+   "kind": "pre-push",
+   "root": ".githooks",
+   "missing": "no shell lint runs over these scripts"
+  }
+ ],
+ "outside": {
+  ".bin": "recorded binary input",
+  ".cff": "citation metadata",
+  ".coveragerc": "configuration",
+  ".csv": "data",
+  ".dockerignore": "configuration",
+  ".editorconfig": "configuration",
+  ".gitattributes": "configuration",
+  ".gitignore": "configuration",
+  ".in": "requirement input",
+  ".jpg": "figure",
+  ".json": "data and configuration",
+  ".license": "licence sidecar",
+  ".lock": "dependency lock",
+  ".log": "recorded log",
+  ".md": "document",
+  ".pdf": "document",
+  ".png": "figure",
+  ".qpy": "recorded circuit",
+  ".sha256": "checksum",
+  ".svg": "figure",
+  ".tex": "manuscript source",
+  ".toml": "configuration",
+  ".txt": "text",
+  ".typed": "typing marker",
+  ".yaml": "configuration",
+  ".yml": "configuration",
+  "CODEOWNERS": "repository ownership",
+  "LICENSE": "licence",
+  "Makefile": "developer task shortcuts"
+ }
+}

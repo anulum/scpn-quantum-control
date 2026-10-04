@@ -269,6 +269,31 @@ collected, and the session header names what was dropped.
   writes. `python -m pytest tests/test_git_location_isolation.py` proves the
   isolation with real Git and a nested session.
 
+## Source Surface Inventory
+
+Lint, type and documentation gates name the paths they read, so a file in a new
+language or a new top-level directory is read by none of them.
+`python tools/audit_source_surface_inventory.py` classifies every tracked file
+by kind (its suffix, or its name when it has none) and top-level directory and
+compares the result with `tools/source_surface_policy.json`:
+
+- a file of an unknown kind, or a known source kind in a directory without a
+  row, fails the gate. Add the row together with the gate that reads it;
+- a *gated* row names a workflow, a job and a command of that job. The gate
+  checks that the command is still written in one of the job's `run` steps;
+- an *open* row records what is not enforced yet. With
+  `--changed-against <revision>` no row may be open that was not open at that
+  revision, so existing debt stays listed and new debt is refused. CI compares
+  with the previous head and the pre-push check with `origin/main`;
+- an *evidence* row is allowed under `data` only, for sources recorded with
+  the results they produced;
+- kinds that carry no source (documents, data, configuration) are listed once
+  under `outside`. A row or an outside kind that no tracked file uses must be
+  removed.
+
+The gate proves that a recorded command exists. It does not prove that the job
+passes or that the command reads every file of the row.
+
 ## Commit Messages
 
 Use conventional subjects:
