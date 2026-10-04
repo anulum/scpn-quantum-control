@@ -5,7 +5,7 @@ module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
 - **780 modules** across **41 package families**
-- **4220 documented public module-level symbols**
+- **4222 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -5495,9 +5495,9 @@ Committed-artefact emission for a browser-verifiable XY-compile recompute unit.
 
 Preserve the established workspace API through the shared contracts codec.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio_workspace/canonical.py) · Public symbols: **0**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio_workspace/canonical.py) · Public symbols: **2**
 
-No public module-level class or function is declared.
+**Functions:** `canonical_bytes()`, `canonical_digest()`
 
 ### `scpn_quantum_control.studio_workspace.contracts`
 
