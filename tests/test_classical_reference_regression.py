@@ -15,11 +15,13 @@ indicates a code change broke numerical accuracy.
 from __future__ import annotations
 
 import functools
+import re
 from typing import Any
 
 import numpy as np
 import pytest
 
+from scpn_quantum_control.dense_budget import GIB, DenseAllocationError
 from scpn_quantum_control.hardware.classical import (
     classical_exact_diag,
     classical_exact_evolution,
@@ -28,6 +30,27 @@ from scpn_quantum_control.hardware.classical import (
 # The 12-qubit export retains three complex128 matrices (0.75 GiB),
 # plus input conversion buffers; this request still obeys observed host/container caps.
 REFERENCE_EVOLUTION_MAX_DENSE_GIB = 1.0
+
+
+def _reference_evolution(n: int, dt: float) -> dict[str, Any]:
+    """Evolve the reference system to t=0.1, or skip when the host cannot hold it.
+
+    The declared cap admits every reference size, but admission also respects
+    the memory the host has free at that moment. At the end of a long session
+    a runner had 0.98 GB free where the 12-qubit reference needs 0.81 GB of
+    declared buffers, and the correct refusal failed the regression test. A
+    refusal for a request within the declared cap is therefore a skip that
+    quotes the refusal; any other refusal still fails.
+    """
+    try:
+        return classical_exact_evolution(
+            n, t_max=0.1, dt=dt, max_dense_gib=REFERENCE_EVOLUTION_MAX_DENSE_GIB
+        )
+    except DenseAllocationError as refused:
+        required = re.search(r"required_bytes=(\d+)", str(refused))
+        if required is None or int(required[1]) > REFERENCE_EVOLUTION_MAX_DENSE_GIB * GIB:
+            raise
+        pytest.skip(f"memory admission refused the {n}-qubit reference within its cap: {refused}")
 
 
 @functools.cache
@@ -64,12 +87,7 @@ class TestEvolutionRegression:
     )
     def test_evolution_R_dt01(self, n: int, expected_R: float) -> None:
         """R at t=dt=0.1 (single step) must match reference to 10 digits."""
-        result = classical_exact_evolution(
-            n,
-            t_max=0.1,
-            dt=0.1,
-            max_dense_gib=REFERENCE_EVOLUTION_MAX_DENSE_GIB,
-        )
+        result = _reference_evolution(n, 0.1)
         assert result["R"][-1] == pytest.approx(expected_R, abs=1e-10)
 
     @pytest.mark.parametrize(
@@ -85,19 +103,9 @@ class TestEvolutionRegression:
     def test_evolution_R_dt01_multi_step(self, n: int, expected_R: float) -> None:
         """Multi-step evolution with same total time should give same final R."""
         # dt=0.1, t_max=0.1 -> 1 step
-        result_1 = classical_exact_evolution(
-            n,
-            t_max=0.1,
-            dt=0.1,
-            max_dense_gib=REFERENCE_EVOLUTION_MAX_DENSE_GIB,
-        )
+        result_1 = _reference_evolution(n, 0.1)
         # dt=0.05, t_max=0.1 -> 2 steps (U_dt different but total unitary same)
-        result_2 = classical_exact_evolution(
-            n,
-            t_max=0.1,
-            dt=0.05,
-            max_dense_gib=REFERENCE_EVOLUTION_MAX_DENSE_GIB,
-        )
+        result_2 = _reference_evolution(n, 0.05)
         # Both should give same final R since exp(-iH*0.1) = exp(-iH*0.05)^2
         np.testing.assert_allclose(result_1["R"][-1], result_2["R"][-1], atol=1e-10)
 
@@ -270,12 +278,7 @@ class TestRustParity:
         theta_rust = np.array(eng.kuramoto_euler(theta0, omega, K, 0.01, 10))
         R_rust = eng.order_parameter(theta_rust)
 
-        result = classical_exact_evolution(
-            n,
-            t_max=0.1,
-            dt=0.1,
-            max_dense_gib=REFERENCE_EVOLUTION_MAX_DENSE_GIB,
-        )
+        result = _reference_evolution(n, 0.1)
         R_exact = result["R"][-1]
 
         # Both should show non-trivial dynamics
