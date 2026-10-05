@@ -1,10 +1,10 @@
 {
  "schema": "web_source_ceiling_v1",
  "release": "2.5.15",
- "measured_commit": "f50f8122e9eeed0f9cfb2ebefe4f59e34824e1ec",
- "total_lint_findings": 683,
- "total_lint_files": 99,
- "total_unformatted_files": 169,
+ "measured_commit": "660c9c94908ad202a5f691cd7f3b84e8234c9834",
+ "total_lint_findings": 680,
+ "total_lint_files": 98,
+ "total_unformatted_files": 168,
  "lint": {
   "docs/js/goatcounter.js": 3,
   "studio-web/browser-tests/federation.native.tsx": 1,
@@ -101,7 +101,6 @@
   "studio-web/src/shared/storage/workspaceArchive.test.ts": 2,
   "studio-web/src/shared/storage/workspaceArchive.ts": 2,
   "studio-web/src/tokens.css": 3,
-  "studio-web/src/workers/kernelClient.test.ts": 3,
   "studio-web/src/workers/kernelProtocol.ts": 10,
   "studio-web/src/workers/kernelWorker.test.ts": 2,
   "studio-web/test-support/kernelWorker.ts": 1
@@ -268,7 +267,6 @@
   "studio-web/src/shared/storage/workspaceStore.test.ts",
   "studio-web/src/shared/storage/workspaceStore.ts",
   "studio-web/src/tokens.css",
-  "studio-web/src/workers/kernelClient.test.ts",
   "studio-web/src/workers/kernelClient.ts",
   "studio-web/src/workers/kernelProtocol.test.ts",
   "studio-web/src/workers/kernelProtocol.ts",
