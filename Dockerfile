@@ -83,6 +83,13 @@ COPY oscillatools/.zenodo.json oscillatools/.zenodo.json
 # Cross-language documentation contract tests inspect the pinned TypeDoc
 # command and version without installing the Studio frontend in this image.
 COPY studio-web/package.json studio-web/package.json
+# The shared contract ownership check requires every declared consumer of a
+# contract to exist as a file: the TypeScript contract modules, the program
+# compiler pair and the WebAssembly kernel crate. None of them is built or
+# run in this image.
+COPY studio-web/src/shared/contracts/ studio-web/src/shared/contracts/
+COPY studio-web/src/features/programs/programCompiler.ts studio-web/src/features/programs/programCompiler.test.ts studio-web/src/features/programs/
+COPY scpn_quantum_engine/studio_wasm_kernel/ scpn_quantum_engine/studio_wasm_kernel/
 
 ENV PYTHONPATH=/app/src:/app/oscillatools/src:/app
 ENV XDG_CACHE_HOME=/home/sqc/.cache
