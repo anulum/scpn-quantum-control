@@ -230,16 +230,25 @@ targets one after another in the same exported tree, and every later target
 was counted together with the earlier ones. The gate now removes the cache
 before each target, and the row above is the module's own measurement.
 
-The first weekly run that really tested mutants (2026-10-05, hosted) reported
-more survivors than the local measurements: 60 for `analysis/koopman.py`
-against 50, and, after subtracting the accumulated counts, 102 against 85 and
-43 against 40 for the two other targets. The numbers of mutants agree. The
-cause is not known. It is not the native engine (the local figures are the
-same with the engine hidden) and not a different version of the main
-packages. The gate therefore writes the mutant identifiers per status to a
-report (`--report`), which the weekly job uploads, so the two runs can be
-compared mutant by mutant. Until the difference is explained the weekly job
-fails on it.
+The first weekly runs that really tested mutants (2026-10-05, hosted)
+reported more survivors than the local measurements, with equal numbers of
+mutants: 60 against 50, 102 against 85 and 43 against 40. The gate writes the
+mutant identifiers per status to a report (`--report`), which the weekly job
+uploads, and the comparison of a hosted with a local report gave the cause:
+the hosted job had no native engine. The mutants that survived only there
+are in the branches that call the engine (for example the dense Hamiltonian
+built by `build_xy_hamiltonian_dense`) and in the Python code whose result
+the tests compare with the engine's; the one mutant that survived only
+locally turns `require_rust` on, which only an environment without the
+engine can notice. The weekly job now builds and installs the engine before
+it runs the gate, so the recorded ceilings are those of an environment with
+the engine.
+
+An earlier version of this page said the engine was not the cause, because a
+local measurement "with the engine hidden" gave unchanged figures. That
+measurement did not hide the engine: pytest puts the repository root first
+on the import path, and the guard package there finds the installed
+extension again.
 
 Run it locally with the pinned tool installed
 (`python -m pip install --require-hashes -r requirements-ci-mutation.txt`):
