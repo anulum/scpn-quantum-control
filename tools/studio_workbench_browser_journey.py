@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import ipaddress
 from collections.abc import Callable
+from contextlib import ExitStack
 from importlib.metadata import version
 from typing import TYPE_CHECKING, cast
 from urllib.parse import urlsplit
@@ -303,12 +304,19 @@ def run_workbench_journey(
                         if active_workers:
                             # Returning to Workspace mounts original automatic playback.
                             # Exercise its real route cleanup before asserting native worker closure.
-                            page.get_by_role("navigation", name="Workbench views").get_by_role(
-                                "link", name="Atlas", exact=True
-                            ).click()
-                            expect(
-                                page.get_by_role("heading", name="Atlas unavailable")
-                            ).to_be_visible()
+                            # The route change ends each worker asynchronously; the heading
+                            # can be visible before the browser reports the worker closed, so
+                            # every worker seen before the navigation is awaited until it
+                            # closes. A worker that never closes ends the wait with a timeout.
+                            with ExitStack() as closed:
+                                for worker in active_workers:
+                                    closed.enter_context(worker.expect_event("close"))
+                                page.get_by_role("navigation", name="Workbench views").get_by_role(
+                                    "link", name="Atlas", exact=True
+                                ).click()
+                                expect(
+                                    page.get_by_role("heading", name="Atlas unavailable")
+                                ).to_be_visible()
                         entry["worker_urls"] = [worker.url for worker in page.workers]
                         entry["workers"] = len(page.workers)
                         assert not page.workers, "Workbench leaked an owned worker"
