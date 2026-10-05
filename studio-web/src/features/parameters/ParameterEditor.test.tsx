@@ -304,3 +304,21 @@ it("keeps an empty source vector visible and retains an integer scalar above 2^5
   expect(screen.getByLabelText("Selected element trainable")).toHaveProperty("disabled", true);
   expect(screen.getByLabelText("Selected value")).toHaveProperty("value", "9007199254740993");
 });
+
+it("leaves every coupling edge unselected while another parameter owns the selection", () => {
+  const original = source();
+  const [couplingSpec] = original.specs;
+  const frequencySpec = take(parseParameterSpec({ ...couplingSpec, body: { ...couplingSpec?.body, key: "omega", shape: [2n] } }));
+  const revision = take(parseExperimentRevision({ ...original.revision, body: { ...original.revision.body, parameters: {
+    K_nm: { dtype: "float64", shape: [3n, 3n], values: [0, -2, 0, 5, 0, 3, -4, 0, 0].map(binary64) },
+    omega: { dtype: "float64", shape: [2n], values: [1, 2].map(binary64) },
+  } } }));
+  render(<ParameterEditor source={{ revision, specs: [...original.specs, frequencySpec], units: { ...original.units, omega: "rad/s" } }} />);
+  const edge = screen.getByRole("button", { name: "Edge 0 → 1: 5 rad/s" });
+  fireEvent.click(edge);
+  expect(edge.getAttribute("aria-pressed")).toBe("true");
+  fireEvent.click(screen.getByRole("button", { name: "omega[1] = 2" }));
+  expect(screen.getByLabelText("Selected value")).toHaveProperty("value", "2");
+  expect(edge.getAttribute("aria-pressed")).toBe("false");
+  expect(screen.getAllByRole("button", { pressed: true }).map(button => button.textContent)).toEqual(["omega[1] = 2"]);
+});
