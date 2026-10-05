@@ -419,6 +419,27 @@ in CI and in the pre-push check.
   comments and says why.
 - Tool output that is not source belongs in `.gitignore`.
 
+## Tracked File Size Ceiling
+
+`python tools/audit_tracked_file_size_ceiling.py` sizes every file in the Git
+index and holds the large ones to `tools/tracked_file_size_ceiling.json`. A file
+is large from one mebibyte. Each large file has a row with its ceiling in whole
+mebibytes, and the row is the smallest ceiling that holds the file.
+
+The gate fails on a large file without a row, on a file that grew past its
+ceiling, on a ceiling that is higher than the file needs and on a row whose file
+is gone or fell under the threshold. `--lower` rewrites the last two kinds. It
+never adds a row and never raises one.
+
+A file committed once stays in the history. Keep datasets, checkpoints, weights
+and other large data on the project's storage and commit a manifest with the
+digest, the provenance, the licence and where to get the data. When a large file
+does belong in the repository, add or raise its row by hand in the same change,
+so the reviewer sees it.
+
+Sizes are those of the staged blobs, so stage the file before running the gate.
+The gate runs in CI and in the pre-push check.
+
 ## Commit Messages
 
 Use conventional subjects:

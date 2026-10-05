@@ -1,0 +1,23 @@
+{
+ "schema": "tracked_file_size_ceiling_v1",
+ "threshold_bytes": 1048576,
+ "total_files": 15,
+ "total_mebibytes": 45,
+ "files": {
+  "data/iqm_layout_transfer_per_size/fake_counts_2026-07-26.json": 2,
+  "data/iqm_layout_transfer_per_size/iqm_layout_transfer_per_size_circuits_2026-07-26.qpy": 3,
+  "data/iqm_layout_transfer_per_size/live_2026-07-26/iqm_layout_transfer_per_size_circuits_2026-07-26.qpy": 3,
+  "data/iqm_layout_transfer_per_size/live_2026-07-26/live_counts_2026-07-26.json": 2,
+  "data/max_width_kuramoto_xy/max_width_raw_counts_ibm_fez_20260716T233555Z.json": 8,
+  "data/phase3_entanglement_tomography/phase3_large_system_raw_counts_20260520T195245Z_ibm_fez_n8.json": 2,
+  "data/phase3_entanglement_tomography/phase3_large_system_raw_counts_20260520T195312Z_ibm_marrakesh_n8.json": 2,
+  "data/phase3_entanglement_tomography/phase3_large_system_raw_counts_20260520T201657Z_ibm_marrakesh_n8.json": 2,
+  "data/phase3_entanglement_tomography/phase3_large_system_raw_counts_20260520T201817Z_ibm_kingston_n8.json": 2,
+  "data/scpn_fim_hamiltonian/fim_ibm_live_readiness_2026-05-05.csv": 2,
+  "data/scpn_fim_hamiltonian/fim_ibm_live_readiness_2026-05-05.json": 2,
+  "data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_live_readiness_2026-05-05.csv": 5,
+  "data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_live_readiness_2026-05-05.json": 5,
+  "docs/assets/anulum_logo.png": 2,
+  "tests/fixtures/public_export_identity_snapshot.json": 3
+ }
+}

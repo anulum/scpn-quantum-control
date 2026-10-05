@@ -251,7 +251,8 @@
         "semantic-record-contract-quality",
         "qualification-projection-quality",
         "advisory-workflow-steps",
-        "mutation-survivor-gate-tests"
+        "mutation-survivor-gate-tests",
+        "tracked-file-size-ceiling"
       ]
     },
     {
@@ -546,6 +547,7 @@
     "qualification-projection-quality",
     "advisory-workflow-steps",
     "mutation-survivor-gate-tests",
+    "tracked-file-size-ceiling",
     "whole-program-ad-product-quality",
     "neural-operator-cost-model-quality",
     "neural-operator-baseline-product-quality",

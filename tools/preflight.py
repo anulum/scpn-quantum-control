@@ -1103,6 +1103,22 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
         ],
     ),
     (
+        "tracked-file-size-ceiling",
+        [_PY, "tools/audit_tracked_file_size_ceiling.py"],
+    ),
+    (
+        "mypy-strict-tracked-file-size-ceiling",
+        [
+            _PY,
+            "-m",
+            "mypy",
+            "--strict",
+            "--explicit-package-bases",
+            "tools/audit_tracked_file_size_ceiling.py",
+            "tests/test_audit_tracked_file_size_ceiling.py",
+        ],
+    ),
+    (
         "mypy-strict-source-surface-inventory",
         [
             _PY,
