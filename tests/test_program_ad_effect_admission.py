@@ -18,16 +18,18 @@ import textwrap
 from collections.abc import Callable, Iterator
 from pathlib import Path
 from types import FrameType, FunctionType, ModuleType
-from typing import TypedDict, Unpack, cast
+from typing import Any, TypedDict, Unpack, cast
 
 import numpy as np
 import pytest
 from numpy.typing import NDArray
 
 from scpn_quantum_control import TraceADArray, TraceADScalar, whole_program_value_and_grad
-from scpn_quantum_control.differentiable import program_adjoint_replay_gradient
+from scpn_quantum_control.differentiable import program_adjoint_replay_gradient, vmap
 from scpn_quantum_control.execution_reservations import active_reserved_bytes
 from scpn_quantum_control.program_ad_effect_admission import find_objective_effects
+
+_UNTYPED_VMAP = cast(Callable[..., Any], vmap)
 
 
 class _NumpyOutput(TypedDict):
@@ -41,6 +43,12 @@ def _find(objective: Callable[..., object]) -> tuple[str, ...]:
     findings = find_objective_effects(objective, tree)
     assert all(getattr(finding.node, "lineno", 0) > 0 for finding in findings)
     return tuple(finding.semantic for finding in findings)
+
+
+def _details(objective: Callable[..., object]) -> tuple[str, ...]:
+    """Return the detail of every finding, in source order."""
+    tree = ast.parse(textwrap.dedent(inspect.getsource(objective)))
+    return tuple(finding.detail for finding in find_objective_effects(objective, tree))
 
 
 def test_supported_numpy_stencil_keeps_its_independent_derivative() -> None:
@@ -2165,3 +2173,129 @@ def test_mixed_native_container_copy_preserves_each_branch_derivative(
     np.testing.assert_array_equal(program_adjoint_replay_gradient(result), [3.0])
     np.testing.assert_array_equal(inputs, [value])
     assert active_reserved_bytes() == baseline
+
+
+def test_batching_transform_over_a_source_visible_helper_keeps_its_derivative() -> None:
+    """The package's own ``vmap`` over an inspected helper is admitted and differentiates exactly.
+
+    The helper is inspected like a directly called helper. A type alias used
+    in ``cast`` is type metadata and is not captured program state.
+    """
+    alias = NDArray[np.float64]
+
+    def row_loss(row: TraceADArray) -> object:
+        return row[0] ** 2 + np.sin(row[1])
+
+    def objective(values: TraceADArray) -> object:
+        rows = values.reshape((2, 2))
+        return np.sum(cast(alias, vmap(row_loss)(rows)))
+
+    def bound_first(values: TraceADArray) -> object:
+        mapped = vmap(row_loss)
+        return np.sum(cast(Any, mapped(values.reshape((2, 2)))))
+
+    inputs = [0.5, 0.25, -1.2, 0.75]
+    expected = [1.0, math.cos(0.25), -2.4, math.cos(0.75)]
+    baseline = active_reserved_bytes()
+    for candidate in (objective, bound_first):
+        assert _find(candidate) == ()
+        result = whole_program_value_and_grad(candidate, inputs, trace=False)
+        assert result.value == pytest.approx(
+            0.25 + math.sin(0.25) + 1.44 + math.sin(0.75), abs=1e-14
+        )
+        np.testing.assert_allclose(result.gradient, expected, rtol=0.0, atol=1e-14)
+    assert active_reserved_bytes() == baseline
+
+
+def test_batching_transform_keeps_the_refusals_of_the_mapped_helper() -> None:
+    """A mapped helper that writes captured storage is refused at the mapping call."""
+    state = np.array([2.0])
+
+    def write(row: TraceADArray) -> object:
+        cast(list[float], state)[0] = 5.0
+        return row[0]
+
+    def objective(values: TraceADArray) -> object:
+        return np.sum(cast(Any, vmap(write)(values.reshape((2, 1)))))
+
+    assert "captured_mutation" in _find(objective)
+    np.testing.assert_array_equal(state, [2.0])
+
+
+@pytest.mark.parametrize("form", ["axes", "native", "two_functions", "starred"])
+def test_batching_transform_contract_covers_one_function_over_the_leading_axis(
+    form: str,
+) -> None:
+    """Axis options, a native callable and several functions, written out or starred, are refused.
+
+    Parameters
+    ----------
+    form
+        The call shape outside the effect contract of the transform.
+
+    """
+    helpers: tuple[Callable[..., object], ...] = (np.sin, np.cos)
+
+    def row_loss(row: TraceADArray) -> object:
+        return row[0]
+
+    if form == "axes":
+
+        def objective(values: TraceADArray) -> object:
+            return np.sum(cast(Any, vmap(row_loss, in_axes=0)(values.reshape((2, 1)))))
+
+    elif form == "native":
+
+        def objective(values: TraceADArray) -> object:
+            return np.sum(cast(Any, vmap(np.sin)(values)))
+
+    elif form == "two_functions":
+
+        def objective(values: TraceADArray) -> object:
+            return np.sum(_UNTYPED_VMAP(row_loss, row_loss)(values.reshape((2, 1))))
+
+    else:
+
+        def objective(values: TraceADArray) -> object:
+            return np.sum(_UNTYPED_VMAP(*helpers)(values))
+
+    assert set(_find(objective)) == {"external_callback"}
+    assert (
+        "batching transform effect contract covers one source-visible function "
+        "mapped over the leading axis"
+    ) in _details(objective)
+
+
+@pytest.mark.parametrize("form", ["keyword", "two_batches", "starred"])
+def test_mapped_helper_is_called_with_one_positional_batch(form: str) -> None:
+    """A mapped helper called with a keyword, two batches or a batch of unknown arity is refused.
+
+    Parameters
+    ----------
+    form
+        The call shape outside the effect contract of the mapped helper.
+
+    """
+
+    def row_loss(row: TraceADArray) -> object:
+        return row[0]
+
+    if form == "keyword":
+
+        def objective(values: TraceADArray) -> object:
+            return np.sum(cast(Any, vmap(row_loss)(row=values.reshape((2, 1)))))
+
+    elif form == "two_batches":
+
+        def objective(values: TraceADArray) -> object:
+            return np.sum(
+                cast(Any, vmap(row_loss)(values.reshape((2, 1)), values.reshape((2, 1))))
+            )
+
+    else:
+
+        def objective(values: TraceADArray) -> object:
+            return np.sum(cast(Any, vmap(row_loss)(*values.reshape((1, 2, 1)))))
+
+    assert _find(objective) == ("external_callback",)
+    assert _details(objective) == ("mapped callback is called with one positional batch only",)

@@ -382,11 +382,19 @@ def test_unified_differentiable_benchmark_report_is_non_performance_evidence() -
 
 
 def test_unified_differentiable_dispatcher_and_root_exports() -> None:
-    """Dispatcher and package-root exports must preserve public identity."""
+    """Dispatcher and package-root exports must preserve public identity.
+
+    The frontend report is static. A pure objective is reported ready; an
+    objective that counts its own calls writes captured storage, which the
+    frontend refuses, and the counter proves that neither report ran it.
+    """
     values = np.array([2.0, -1.0], dtype=float)
     calls = {"count": 0}
 
     def frontend_objective(inputs: FloatArray) -> object:
+        return np.sin(inputs[0]) + inputs[1]
+
+    def counting_objective(inputs: FloatArray) -> object:
         calls["count"] += 1
         return np.sin(inputs[0]) + inputs[1]
 
@@ -410,6 +418,8 @@ def test_unified_differentiable_dispatcher_and_root_exports() -> None:
     dashboard = differentiable_api("dashboard_status")
     frontend_direct = differentiable_frontend_report(frontend_objective)
     frontend_dispatched = differentiable_api("frontend_report", objective=frontend_objective)
+    frontend_refused = differentiable_frontend_report(counting_objective)
+    refused_dispatched = differentiable_api("frontend_report", objective=counting_objective)
 
     assert gradient.gradient is not None
     np.testing.assert_allclose(gradient.gradient, np.array([4.0, 3.0]), atol=1e-5)
@@ -442,6 +452,14 @@ def test_unified_differentiable_dispatcher_and_root_exports() -> None:
     assert len(str(frontend_direct.payload["frontend_digest"])) == 64
     assert frontend_dispatched.supported is True
     assert frontend_dispatched.payload["bytecode_instruction_count"] > 0
+    for refused in (frontend_refused, refused_dispatched):
+        assert refused.supported is False
+        assert refused.payload["frontend_ready"] is False
+        assert [
+            (diagnostic["semantic"], diagnostic["detail"], diagnostic["line_number"])
+            for diagnostic in refused.payload["unsupported_semantic_diagnostics"]
+        ] == [("captured_mutation", "captured mutation through an alias is unsupported", 2)]
+    assert calls == {"count": 0}
     assert scpn.DifferentiableDashboardStatus is DifferentiableDashboardStatus
     assert scpn.DifferentiableDashboardCapabilityRow is DifferentiableDashboardCapabilityRow
     assert scpn.DifferentiableDashboardCapabilityState is DifferentiableDashboardCapabilityState

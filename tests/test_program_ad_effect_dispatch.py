@@ -124,3 +124,123 @@ def test_frozen_identity_allocator_is_admitted_with_exact_value_and_derivative(
     assert result.value == pytest.approx(np.cos(angle) ** 2, abs=1e-14)
     np.testing.assert_allclose(result.gradient, [-np.sin(2.0 * angle)], rtol=0.0, atol=1e-14)
     assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize(
+    ("method", "value", "gradient"),
+    [
+        ("squeeze", 13.0, [6.0, -4.0]),
+        ("swapaxes", 13.0, [6.0, -4.0]),
+        ("take", 17.0, [6.0, -8.0]),
+        ("repeat", 26.0, [12.0, -8.0]),
+        ("expand_dims", 13.0, [6.0, -4.0]),
+    ],
+)
+def test_array_read_methods_keep_their_exact_derivative(
+    method: str, value: float, gradient: list[float]
+) -> None:
+    """Shape and gather methods of the traced array are admitted like their function forms.
+
+    Parameters
+    ----------
+    method
+        Array method the objective calls on its traced input.
+    value
+        Sum of squares of the method's result at ``(3, -2)``.
+    gradient
+        Exact gradient of that sum.
+
+    """
+    if method == "squeeze":
+
+        def objective(values: Any) -> object:
+            return np.sum(values.reshape((1, 2)).squeeze() ** 2)
+
+    elif method == "swapaxes":
+
+        def objective(values: Any) -> object:
+            return np.sum(values.reshape((1, 2)).swapaxes(0, 1) ** 2)
+
+    elif method == "take":
+
+        def objective(values: Any) -> object:
+            return np.sum(values.take([1, 1, 0]) ** 2)
+
+    elif method == "repeat":
+
+        def objective(values: Any) -> object:
+            return np.sum(values.repeat(2) ** 2)
+
+    else:
+
+        def objective(values: Any) -> object:
+            return np.sum(values.expand_dims(0) ** 2)
+
+    baseline = active_reserved_bytes()
+    result = whole_program_value_and_grad(objective, [3.0, -2.0], trace=False)
+    assert result.value == value
+    np.testing.assert_array_equal(result.gradient, gradient)
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("method", ["take", "argmax", "argmin"])
+def test_array_method_output_slots_refuse_caller_owned_storage(method: str) -> None:
+    """A gather or selection method cannot write its result into a captured array.
+
+    Parameters
+    ----------
+    method
+        Array method with an explicitly positioned output operand.
+
+    """
+    state = np.array([7.0])
+    original = state.copy()
+    if method == "take":
+
+        def objective(values: Any) -> object:
+            values.take([0], None, state)
+            return values[0]
+
+    elif method == "argmax":
+
+        def objective(values: Any) -> object:
+            values.argmax(None, state)
+            return values[0]
+
+    else:
+
+        def objective(values: Any) -> object:
+            values.argmin(None, state)
+            return values[0]
+
+    baseline = active_reserved_bytes()
+    with pytest.raises(ValueError, match="captured_mutation.*line="):
+        whole_program_value_and_grad(objective, [3.0, -2.0], trace=False)
+    np.testing.assert_array_equal(state, original)
+    assert active_reserved_bytes() == baseline
+
+
+@pytest.mark.parametrize("method", ["argmax", "argmin"])
+def test_selection_methods_reach_the_registered_integer_selection_refusal(method: str) -> None:
+    """The method form of an index selection is refused by the primitive registry, by name.
+
+    Parameters
+    ----------
+    method
+        Index selection called as a method of the traced array.
+
+    """
+    if method == "argmax":
+
+        def objective(values: Any) -> object:
+            return values.reshape((2, 2)).argmax(axis=1)[0]
+
+    else:
+
+        def objective(values: Any) -> object:
+            return values.reshape((2, 2)).argmin(axis=1)[0]
+
+    with pytest.raises(
+        ValueError, match="registered nondifferentiable integer selection primitives"
+    ):
+        whole_program_value_and_grad(objective, [1.0, 2.0, 3.0, 4.0], trace=False)

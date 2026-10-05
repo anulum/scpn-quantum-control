@@ -23,7 +23,14 @@ import sys
 import typing
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from types import BuiltinFunctionType, CodeType, FunctionType, GetSetDescriptorType, ModuleType
+from types import (
+    BuiltinFunctionType,
+    CodeType,
+    FunctionType,
+    GenericAlias,
+    GetSetDescriptorType,
+    ModuleType,
+)
 
 import numpy as np
 from numpy.typing import NDArray
@@ -51,6 +58,15 @@ _NUMPY_CALLABLES = tuple(
     if callable(value)
 )
 _NUMPY_CALLABLE_IDS = frozenset(id(value) for value in _NUMPY_CALLABLES)
+_NO_BATCHING_TRANSFORM = object()
+
+
+def _batching_transform() -> object:
+    """Return the package's own ``vmap``, or a value nothing equals before it is loaded."""
+    module = sys.modules.get(f"{__package__}.differentiable_vmap")
+    return getattr(module, "vmap", _NO_BATCHING_TRANSFORM)
+
+
 _PASSIVE_CLASS_FIELDS = frozenset(
     {
         "__module__",
@@ -296,6 +312,14 @@ class _Fingerprint:
                 self.memory.reference(len(self.code_references) + 1)
                 self.code_references.append(function.__code__)
                 self.add(str(id(function.__code__)).encode("ascii"))
+        elif value is _batching_transform():
+            # The package's own transform is bound by identity and code, like a
+            # native callable; its module state is not captured program state.
+            transform = typing.cast(FunctionType, value)
+            self.add(b"batching-transform")
+            self.memory.reference(len(self.code_references) + 1)
+            self.code_references.append(transform.__code__)
+            self.add(str(id(transform.__code__)).encode("ascii"))
         elif kind is list or kind is tuple:
             items = typing.cast(list[object] | tuple[object, ...], value)
             if len(items) > _MAX_NODES:
@@ -345,7 +369,11 @@ class _Fingerprint:
                     self.add(name.encode("ascii"))
                     self.visit(item, depth + 1, module_names)
         elif (
-            kind is np.ufunc or kind is type or kind is type(Callable) or kind is type(typing.Any)
+            kind is np.ufunc
+            or kind is type
+            or kind is type(Callable)
+            or kind is type(typing.Any)
+            or kind is GenericAlias
         ):
             self.add(b"intrinsic")
         else:

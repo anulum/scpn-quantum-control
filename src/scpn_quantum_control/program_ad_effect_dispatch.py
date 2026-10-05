@@ -198,9 +198,8 @@ _NUMPY_OUTPUT_POSITIONS = {
 }
 
 _ARRAY_OUTPUT_POSITIONS = {
-    "max": 1,
-    "min": 1,
-    **{name: 2 for name in ("cumsum", "cumprod", "mean", "prod", "std", "sum", "var")},
+    **{name: 1 for name in ("argmax", "argmin", "max", "min")},
+    **{name: 2 for name in ("cumsum", "cumprod", "mean", "prod", "std", "sum", "take", "var")},
 }
 
 _UFUNC_AT_METHODS = tuple((value, value.at) for value in _PURE if type(value) is np.ufunc)
@@ -258,6 +257,13 @@ _READ_METHODS = frozenset(
         "flatten",
         "item",
         "get",
+        "argmax",
+        "argmin",
+        "expand_dims",
+        "repeat",
+        "squeeze",
+        "swapaxes",
+        "take",
     }
 )
 

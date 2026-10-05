@@ -15,13 +15,17 @@ from __future__ import annotations
 
 import ast
 from collections.abc import Callable
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from types import BuiltinMethodType, FunctionType, ModuleType
 from typing import cast
 
 import numpy as np
 
-from .program_ad_captured_state import _NUMPY_CALLABLE_IDS, _is_passive_local_class
+from .program_ad_captured_state import (
+    _NUMPY_CALLABLE_IDS,
+    _batching_transform,
+    _is_passive_local_class,
+)
 from .program_ad_effect_analysis import (
     ProgramADEffectFinding,
     _Analysis,
@@ -49,6 +53,13 @@ from .program_ad_effect_values import (
     _Value,
     _value_signature,
 )
+
+
+@dataclass(frozen=True, slots=True)
+class _MappedHelper:
+    """A source-visible function wrapped by the package's own batching transform."""
+
+    function: FunctionType
 
 
 def find_objective_effects(
@@ -1103,6 +1114,39 @@ class _Visitor(ast.NodeVisitor):
                         "dynamic_integer",
                         "active integer shape or index conversion is unsupported",
                     )
+            return
+        if type(callee.value) is _MappedHelper:
+            arguments, variadic = self.positional_values(node.args)
+            if node.keywords or variadic is not None or len(arguments) != 1:
+                self.add(
+                    node,
+                    "external_callback",
+                    "mapped callback is called with one positional batch only",
+                )
+                return
+            # A row is a view of the batch, so the helper is inspected with the
+            # batch's own activity and storage provenance.
+            mapped = self.analysis.helper(callee.value.function, node, self, arguments[0])
+            self.expression_values[node] = _Value(
+                active=mapped.active or arguments[0].active, local=True
+            )
+            return
+        if callee.value is _batching_transform():
+            arguments, variadic = self.positional_values(node.args)
+            if (
+                node.keywords
+                or variadic is not None
+                or len(arguments) != 1
+                or type(arguments[0].value) is not FunctionType
+            ):
+                self.add(
+                    node,
+                    "external_callback",
+                    "batching transform effect contract covers one source-visible "
+                    "function mapped over the leading axis",
+                )
+                return
+            self.expression_values[node] = _Value(_MappedHelper(arguments[0].value), local=True)
             return
         if type(callee.value) is BuiltinMethodType:
             method = callee.value
