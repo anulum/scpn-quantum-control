@@ -2037,7 +2037,7 @@
     {
       "source": "src/scpn_quantum_control/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "30f0720000e8de05ea71c51b210e0b7bdbb7704878e2164054c8731aef97ef1e",
       "role": "first-party-lazy",
       "reason": "Complete literal table retains all 851 existing module/attribute bindings. The unchanged resolver imports only target[0] and caches successful access. Module assignment now defers public-object resolution until the owning module finishes loading, avoiding partial-initialisation re-entry without changing export identity. When the import system publishes a child module under a name that also has an object export, the deferred branch now also drops a stale cached entry, so the next access goes through the same resolver. Actual cold/public API and failure/restoration fixtures qualify this complete source; no new dynamic call or target is admitted.",
@@ -2046,7 +2046,7 @@
     {
       "source": "src/scpn_quantum_control/accel/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "b3d6d16a776ea0d32b87e6f7b68b78318fe58797f231fe98615a9aff2e223f39",
       "role": "external",
       "reason": "Literal compatibility table dispatches only to original oscillatools exports; eager target forwarding and legacy warning remain.",
@@ -2055,7 +2055,7 @@
     {
       "source": "src/scpn_quantum_control/analog_mapping/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "b8d178656f839e33887ee41c6e9719c5005f6bdc4989e0a5bb657064210b551f",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2064,7 +2064,7 @@
     {
       "source": "src/scpn_quantum_control/analysis/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "46d2d81962a034a470782d402daf1d1dcc4c5a1f479cc0205dee8abd2ffe79c2",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2073,7 +2073,7 @@
     {
       "source": "src/scpn_quantum_control/applications/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "7a9520f8fd2225dfbc42dd6f5a289c1f2378193ed985a58cdcfcfe0e77839611",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2082,7 +2082,7 @@
     {
       "source": "src/scpn_quantum_control/benchmark_harness/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "247f6ad3902040fd330a025011fc42756c2e349eb99106dc82f486abf4eedcb3",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2091,7 +2091,7 @@
     {
       "source": "src/scpn_quantum_control/benchmarks/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "d3864c6330e0318745c3e6d86aac4d6b157a3bb50286f0d15ec2708f3dfc727e",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2100,7 +2100,7 @@
     {
       "source": "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
       "scope": "_installed_version",
-      "call_sha256": "b549e1e61bc678ee20fc3cc627751e68618f3fcf20737d6d29d3c3d10175f5c7",
+      "call_sha256": "c0b0fcd67f7efc2c869b33547a90f3ea5fda2fc2d433c74d32ddb46e72abca69",
       "source_sha256": "c3f4c78252d903a0ce4087ea63df4c92781f4736a539325f45292b4390ecb5cb",
       "role": "external",
       "reason": "The sole caller obtains dependency names from the literal packages_by_backend table; fallback imports external toolchain and framework modules.",
@@ -2109,7 +2109,7 @@
     {
       "source": "src/scpn_quantum_control/benchmarks/kuramoto_external_competitors.py",
       "scope": "_python_module_present",
-      "call_sha256": "536f70b4366e3acfdc62bac94a672cf40085693bf4790d1eaf35d573afd61ec7",
+      "call_sha256": "86983db37d336fc0e0c74bf747bf48b7fa06f674cbecfd6bbb1ec96df5435a87",
       "source_sha256": "199cb2e62a7c727a71069f2b38340fb53023b8c09981158e592da8a63cdaba23",
       "role": "external",
       "reason": "The probe callers pass the literal external names jitcdde and scipy.",
@@ -2118,7 +2118,7 @@
     {
       "source": "src/scpn_quantum_control/benchmarks/kyma/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "2ff48fbd3cdfec98710803fd86b578061679ef9e72751d530339b18318cc7534",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2127,7 +2127,7 @@
     {
       "source": "src/scpn_quantum_control/benchmarks/kyma_v2/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "c6c15a247ca2e29fc22b28d9c4b7ae9427e7093efc732627c1a84ea109ee0708",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2136,7 +2136,7 @@
     {
       "source": "src/scpn_quantum_control/benchmarks/kyma_v3/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "23ee3a4e1ca419cd257a41aa7b6c84bb45f7475823bd6028972e718260470a40",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2145,7 +2145,7 @@
     {
       "source": "src/scpn_quantum_control/bridge/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "0cf9dea01b52205ada9f0f3c7e33a9d6e2397d54b505cca3ee58100209f5c152",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2154,7 +2154,7 @@
     {
       "source": "src/scpn_quantum_control/chimera_control/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "f1b366874ee4a2c140458052c370ff0cce62ea09a675c5260804613197a3fe20",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2163,7 +2163,7 @@
     {
       "source": "src/scpn_quantum_control/codegen/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "27131e20360c3165f40b0ad23c4b3ade33d216809a39ac50c7f3a9dbe0e97221",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2172,7 +2172,7 @@
     {
       "source": "src/scpn_quantum_control/codesign/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "09213dc9d8b884511151ccfe723cd82697bf52db0dde6b4be6648a9db7fdb14c",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2181,7 +2181,7 @@
     {
       "source": "src/scpn_quantum_control/compiler/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "27aa761d7c507545610080e28db751b175abe36cb365b2631b354d3bb486f139",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2190,7 +2190,7 @@
     {
       "source": "src/scpn_quantum_control/control/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "48fdac82e8442132c1051fb4bff3791da085143d934eb8b0de5f5ccfa92261c4",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2199,7 +2199,7 @@
     {
       "source": "src/scpn_quantum_control/cosimulation/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "40cb50d7dd38ab9db79a7e6a2794d6b97bafc4be77ba4b490421bc5a3d9b64ce",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2208,7 +2208,7 @@
     {
       "source": "src/scpn_quantum_control/crypto/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "21da5d3cbb548f98d011691d856761e99ef93d1f5c4c7ad2a4e850e1261a880b",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2217,7 +2217,7 @@
     {
       "source": "src/scpn_quantum_control/deployment/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "4b273d1a7b5eaafc7a6031e443ee25a03be83f116abe621284a121fff3947839",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2226,7 +2226,7 @@
     {
       "source": "src/scpn_quantum_control/dla_parity/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "82a8ae30f880f979bcbbe970608829190d64a279c802b4b12091b5b1db23c4a6",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2235,7 +2235,7 @@
     {
       "source": "src/scpn_quantum_control/dla_parity/baselines.py",
       "scope": "_have",
-      "call_sha256": "49d2ec7e97e36aee52aa9e5c1d1c94904dae23c316efd3cc32a384153bf297f2",
+      "call_sha256": "f37ed148be3a4bdea03a4894d4b1c3625f871c1b8e77e2ad6460bf376f9ec3da",
       "source_sha256": "9683c2fb8fc3360d63c8da6744826f0a9e0bfde89fa39237a3ca1f36b983acde",
       "role": "external",
       "reason": "The probe caller passes the literal external name qutip.",
@@ -2244,7 +2244,7 @@
     {
       "source": "src/scpn_quantum_control/dla_topology_control/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "32eba90f6d6403edb55e7076159be6c70399013f3a805328305628715d975ffa",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2253,7 +2253,7 @@
     {
       "source": "src/scpn_quantum_control/entropy/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "bf3152ae153e1f8823417ad271b4128748141be0e855275764fa76320b6de6ef",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2262,7 +2262,7 @@
     {
       "source": "src/scpn_quantum_control/experimental/llm_qpu/contracts/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "dc4ccddfb0ed253e0cc1f86bf12832a915e3d918f84922a42d06a48450c343dc",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2271,7 +2271,7 @@
     {
       "source": "src/scpn_quantum_control/experimental/llm_qpu/runtime/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "e76b3d2d577d9477c270fc0dd0339aec56bad9bc754f84e9e46a96e0aecf5a48",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2280,7 +2280,7 @@
     {
       "source": "src/scpn_quantum_control/fep/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "e8c000e2905e2ac5f4adb5102304ab5b3e506fa7234d20613d5faa83f39edf5c",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2289,7 +2289,7 @@
     {
       "source": "src/scpn_quantum_control/forecasting/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "e7ae715f836a0892acbb8eb3e9572f76d57b42bb8e515cf7828e803a6d14a73f",
       "role": "mixed-descriptor",
       "reason": "Literal table retains original first-party forecasting and sibling oscillatools.neural_operator origin pairs; all first-party targets stay visible and external targets remain separately inventoried. Dispatch imports only target[0] and caches genuine successful objects.",
@@ -2298,7 +2298,7 @@
     {
       "source": "src/scpn_quantum_control/gauge/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "ddd6128262cdac8b6c2abf09dbade40d877eddbd4004e0f0b39a8600db31b721",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2307,7 +2307,7 @@
     {
       "source": "src/scpn_quantum_control/hardware/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "837a0f3023848f4e238ad8e8058db818aad20cca33e2ee265c919ac3ab910ae7",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2316,7 +2316,7 @@
     {
       "source": "src/scpn_quantum_control/hardware/analog_kuramoto.py",
       "scope": "_module_available",
-      "call_sha256": "2ab1adff6267c85b732f3308d4106bee774c57f206731b204e1a33040d34056b",
+      "call_sha256": "1dd7cf258621f579b33344cd7817ad110f91fe34c3caeaca5210a44673cf39a7",
       "source_sha256": "1979d1e7990a5d03afab8f83bdc819733786000d70b1291b10194ae3b2c75a1e",
       "role": "external",
       "reason": "The probe callers pass pulser, bloqade and qiskit.pulse from the reviewed adapter selection.",
@@ -2325,7 +2325,7 @@
     {
       "source": "src/scpn_quantum_control/hardware/iqm_backend.py",
       "scope": "IQMQuantumBackend._resolve_fake_backend",
-      "call_sha256": "6fa5f9bd5c56333f47ece7f222a405fbef7bfd8b290e881e3ecd10e70f92aabc",
+      "call_sha256": "a405c782a2a39b0a0a2547d11b67a61dceb221c493b43a6b8dd433c0aa152f1d",
       "source_sha256": "64e0212aa3d961f1111d840c2d8c4a97e6fc12b5503bcf957b8729a9b4cbe02e",
       "role": "external",
       "reason": "The constructor binds the importer to self._import_module; fake-backend module names come from the literal external IQM SDK table.",
@@ -2334,7 +2334,7 @@
     {
       "source": "src/scpn_quantum_control/hardware/plugin_registry.py",
       "scope": "PluginRegistry.get_runner",
-      "call_sha256": "24b710c987baf04540429a7d18625d60f37472b187c06026027fd8fcd7e4b56f",
+      "call_sha256": "d78c0ba207ccee5a5fcd7bb9b258a9034136e152928f658ef38b2d7b286e9d98",
       "source_sha256": "16c00e3f3af960b2b7f81c10063dedd024246d96068afd706b4e5b006e362dea",
       "role": "first-party-lazy",
       "reason": "The only loader-table writer is the constructor literal mapping; both resolvers import its module_path. Each first-party defining module is expanded as a lazy dependency.",
@@ -2343,7 +2343,7 @@
     {
       "source": "src/scpn_quantum_control/hardware/plugin_registry.py",
       "scope": "PluginRegistry.is_available",
-      "call_sha256": "24b710c987baf04540429a7d18625d60f37472b187c06026027fd8fcd7e4b56f",
+      "call_sha256": "d78c0ba207ccee5a5fcd7bb9b258a9034136e152928f658ef38b2d7b286e9d98",
       "source_sha256": "16c00e3f3af960b2b7f81c10063dedd024246d96068afd706b4e5b006e362dea",
       "role": "first-party-lazy",
       "reason": "The only loader-table writer is the constructor literal mapping; both resolvers import its module_path. Each first-party defining module is expanded as a lazy dependency.",
@@ -2352,7 +2352,7 @@
     {
       "source": "src/scpn_quantum_control/hardware/provider_certification.py",
       "scope": "_check_adapter_import",
-      "call_sha256": "1e570ce42b42142436b933828eb51eede89fa925b6cf042db28f46edb54039ed",
+      "call_sha256": "1118759989ac108de7f15b96e4cd566e559206147cb5be739ab50f81c5bd1a41",
       "source_sha256": "b1f36d6ca9b68883cfdaff8709bc878a01ba70f9f9c600da410b4a47299acec6",
       "role": "mixed-descriptor",
       "reason": "Adapter module paths include literal first-party backend declarations and type(backend).__module__ for external runtime adapters; existing literal string dependencies remain counted.",
@@ -2361,7 +2361,7 @@
     {
       "source": "src/scpn_quantum_control/hardware/provider_smoke.py",
       "scope": "_module_available",
-      "call_sha256": "ca487f0cf60ba58f70f48bff428a624feb63c97b5a0f2383b90553a4b3f30c98",
+      "call_sha256": "090bcfa35fd1e6939d03b7e58662f31f2f2c97be0109d80cbd77f71a3fcf40b6",
       "source_sha256": "543a174695ceb4b339d692142923a97eca6cb6e805bb4348f0d977da2d221e19",
       "role": "mixed-probe",
       "reason": "The SDK probe mapping includes the first-party package root for python and external SDK names; descriptor.sdk_package supplies the fallback. The declared root probe is an explicit dynamic dependency.",
@@ -2370,7 +2370,7 @@
     {
       "source": "src/scpn_quantum_control/identity/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "52312f71702389ff1827cb0b9f73f3674cc18ef86e715c82a54d682b76efaf82",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2379,7 +2379,7 @@
     {
       "source": "src/scpn_quantum_control/l16/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "f90b048490209cd935c22a6e5405422398b7e90b7cbeb0424ba80eb984c84a70",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2388,7 +2388,7 @@
     {
       "source": "src/scpn_quantum_control/mitigation/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "0db0f6b674daf9f9bf99c72afd6979813bd2d8778f3a52557c72d41d6854f5a0",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2397,7 +2397,7 @@
     {
       "source": "src/scpn_quantum_control/ml_examples/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "99e173f818150f2bfd620275c9b97e393cf96ae2ab955efbac715577f369e013",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2406,7 +2406,7 @@
     {
       "source": "src/scpn_quantum_control/ml_examples/qnn_convergence.py",
       "scope": "run_qnn_framework_rows",
-      "call_sha256": "2432f0ec3369c1a0b03e37db4b35afb6a1ec56262b5166f1d20b59097d16be91",
+      "call_sha256": "82fe3b3559c3036efe9fd828d3cdf007bafdcc777acf815740025bc60d0ca5ff",
       "source_sha256": "ee0353cf81ab00982224abb3a790f567b9689304f3ce30bdc64287d9b6e85b59",
       "role": "external",
       "reason": "Validated framework names select literal dependency strings jax, torch or tensorflow from the framework-runner table.",
@@ -2415,7 +2415,7 @@
     {
       "source": "src/scpn_quantum_control/pgbo/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "906a70ab32cb4b6646442c36925cc3958622ff35dc7dd638612336d4cc28f677",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2424,7 +2424,7 @@
     {
       "source": "src/scpn_quantum_control/phase/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "cce90723ca60ca49a00e01ecbd1896fce3be82ba27216e1a817ef1b425852270",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2433,7 +2433,7 @@
     {
       "source": "src/scpn_quantum_control/psi_field/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "0b71c229803d195c7ae9140ae6adf744aeddb7bfcb43682a95f9ed51648d1096",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2442,7 +2442,7 @@
     {
       "source": "src/scpn_quantum_control/qec/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "e328879fd99ab7f9b07d75df570c0fcd617bfa3327151c6d8c0b7ff0ed656a31",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2451,7 +2451,7 @@
     {
       "source": "src/scpn_quantum_control/qsnn/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "bcf7f532119034b48fea9d373d0859103964dfd05bd51d357963b9ac94d8ce30",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2460,7 +2460,7 @@
     {
       "source": "src/scpn_quantum_control/qualification_status_projection.py",
       "scope": "_runtime_status",
-      "call_sha256": "536f70b4366e3acfdc62bac94a672cf40085693bf4790d1eaf35d573afd61ec7",
+      "call_sha256": "86983db37d336fc0e0c74bf747bf48b7fa06f674cbecfd6bbb1ec96df5435a87",
       "source_sha256": "41744b9dd42026555a4bf24026979b9f8acaf1c9a2494bca296e4759f6a18fd1",
       "role": "mixed-probe",
       "reason": "Receipt module identifiers and installed distribution ownership are validated, but first-party names remain permitted; this data-driven probe is not classified as external-only.",
@@ -2469,7 +2469,7 @@
     {
       "source": "src/scpn_quantum_control/sensing/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "dafaf132269227c545243c53a8095483394fb2f722dc417364d67ec2e0ba2c59",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2478,7 +2478,7 @@
     {
       "source": "src/scpn_quantum_control/ssgf/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "91ddc8f6237b3241182e74e5392c406340f3362d122ad3da2bfee84e86284470",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2487,7 +2487,7 @@
     {
       "source": "src/scpn_quantum_control/stable_core_preflight.py",
       "scope": "_dependency_available",
-      "call_sha256": "53a92599ebb917734de90eb4c10c21aac5b85696dc62adb8e77d15b95c845e18",
+      "call_sha256": "8a43c55c018acccff2fef3ac0a32e241f91cb4ddb6d8183b75163122c0fb49f2",
       "source_sha256": "562121003d62be7539e552d513d591340c3554bb16db01662d46e37331c4df62",
       "role": "external",
       "reason": "The dependency probe caller obtains qiskit_ibm_runtime, qutip, pennylane and pulser from the literal backend dependency table.",
@@ -2496,7 +2496,7 @@
     {
       "source": "src/scpn_quantum_control/studio/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "223d1f2e0fb56e59f1a3659d5815ff792e697d9376f0c7c4d031000a54801fb5",
+      "call_sha256": "3851c9be2a5152f315306405a1926330977ba739eaa88eaef59dd635c595a3dc",
       "source_sha256": "e0e2e67675d1ef554724c5f4486dfe081287e7c17ba3ed702529d222f4e08a9b",
       "role": "first-party-lazy",
       "reason": "Complete source reviewed after adding two literal operator-policy exports from the original workspace owner. The name-to-module comprehension and package-relative __getattr__ resolver AST are unchanged; original ordered star-import API is unchanged. Defining modules remain expanded as lazy dependencies.",
@@ -2505,7 +2505,7 @@
     {
       "source": "src/scpn_quantum_control/surrogates/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "3fa9fb85af898f546b654873190b5d97420685a01287eaabd3f8c6a1dfb04433",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2514,7 +2514,7 @@
     {
       "source": "src/scpn_quantum_control/tcbo/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "b8ee605752a37731fa00c193ac030a0e9f04c99286abbe112b6c65315283cf2d",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2523,7 +2523,7 @@
     {
       "source": "src/scpn_quantum_control/thermodynamics/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "9dee33ac2e23c437183fe4ae0f2b466c225854bf07a562c63ec9cb726f48b56c",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2532,7 +2532,7 @@
     {
       "source": "src/scpn_quantum_control/topology_control/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "9f44dd0e481e52f784e77ec3df9ac24b8a8761f1dc01d6aa03ff52cbfa901269",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2541,7 +2541,7 @@
     {
       "source": "src/scpn_quantum_control/topology_kernel_product/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "02fd827b5489f0c59dbbaa7b182749b6720dad77c5e30abb195884b9f863d991",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
@@ -2550,7 +2550,7 @@
     {
       "source": "src/scpn_quantum_control/studio_workspace/__init__.py",
       "scope": "__getattr__",
-      "call_sha256": "5870766f475734bf590ef24ca1b646116a133a464c535eb736282ef6db1fefa2",
+      "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
       "source_sha256": "8cbb3d4f56672551effec965f13385d7ab57d8c6fab5b62546347cd2813520ba",
       "role": "first-party-lazy",
       "reason": "Complete32-binding literal public-export table reviewed: all original30 module/attribute pairs and ordered star-import API are unchanged. The two added operator-policy names resolve to the source-owned workspace bridge. Resolver AST is unchanged: imports only target[0], caches successful access, propagates import/attribute errors and permits retry. Original public identity/cold/failure contracts remain exercised.",

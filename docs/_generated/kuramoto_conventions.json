@@ -600,11 +600,11 @@
   ],
   "definition_path": "src/scpn_quantum_control/kuramoto_model_conventions.py",
   "definition_sha256": "e5edb172fb8b37deffcfc48105141697b6bc936179e29f3f8342eb1cd35f4690",
-  "identity": "3ac1cd042ba5e1d95ad070323de32d34ad25bb31e515c8a77f6b8d08cabbefc3",
+  "identity": "3624d653598802c71513abc6c538a985b341cfdbecf570e88b7e67d5bec9c5fb",
   "schema": "kuramoto_conventions.v1",
   "source_owners": {
     "oscillatools.accel.daido_mean_field.daido_mean_field_force": {
-      "declaration_sha256": "3dfcb649ec33696b2baabe9e6548655f1d83555a5c52d6624db369055628fc60",
+      "declaration_sha256": "d5f2b7687e1d39362bcc06f3f47891f27d77324efc237f89152ff8cd656211dc",
       "direct_test_paths": [
         "oscillatools/tests/test_daido_mean_field.py"
       ],
@@ -647,7 +647,7 @@
       "summary": "Daido m-th-harmonic mean-field force with multi-language dispatch."
     },
     "oscillatools.accel.daido_mean_field.daido_mean_field_jacobian": {
-      "declaration_sha256": "e4e76e183be92733acff1c622f2989f991d13109624286723a14fe5a66e63359",
+      "declaration_sha256": "c8ba54bb6da7441d1be8b19e8ad3e48d16b90ce410ee64eff467e45c64c9c1c9",
       "direct_test_paths": [
         "oscillatools/tests/test_daido_mean_field.py"
       ],
@@ -690,7 +690,7 @@
       "summary": "Daido m-th-harmonic mean-field stability Jacobian with multi-language dispatch."
     },
     "oscillatools.accel.diff_kuramoto_delayed.delayed_terminal_value_and_grad": {
-      "declaration_sha256": "dc14a5029c951cb34c6ed27f78c9a8e658a62babe36721647c51e1647e5d8170",
+      "declaration_sha256": "be72b466193bda7cce7c9e7471f50b65afa163db760874595834a66ad1df6b85",
       "direct_test_paths": [
         "oscillatools/tests/test_diff_kuramoto_delayed.py"
       ],
@@ -704,7 +704,7 @@
       "summary": "Differentiate a terminal objective through the time-delayed Kuramoto integrator."
     },
     "oscillatools.accel.diff_kuramoto_euler.kuramoto_euler_vjp": {
-      "declaration_sha256": "38f1bbf8512add628d761d337e017c6f27b616179f23995fd2e3034c45f0b8ad",
+      "declaration_sha256": "b3f7a16e9b34b60ecdd3e48fbbc8d9a03c208ccaed89f565454f2671bb01193e",
       "direct_test_paths": [
         "oscillatools/tests/test_diff_kuramoto_euler.py"
       ],
@@ -747,7 +747,7 @@
       "summary": "Reverse-mode adjoint of the networked-Kuramoto Euler integrator."
     },
     "oscillatools.accel.diff_kuramoto_noisy.noisy_terminal_value_and_grad": {
-      "declaration_sha256": "c209b1fc122f2d9312ed81c5780c7437a74ddc161e520d4e14742192a2f4a250",
+      "declaration_sha256": "ffe47a8212fbdf2a3a959ae2cfccb51b3ba4425616e70e650626a0cdba422a5c",
       "direct_test_paths": [
         "oscillatools/tests/test_diff_kuramoto_noisy.py"
       ],
@@ -761,7 +761,7 @@
       "summary": "Differentiate a terminal objective through the noisy Kuramoto integrator (fixed noise)."
     },
     "oscillatools.accel.diff_kuramoto_rk4.kuramoto_rk4_vjp": {
-      "declaration_sha256": "3877ce372c59d11adb859dabcc5fac685550a701b28bb6116a5364b8363d1e6c",
+      "declaration_sha256": "e886bd2cc064119aabaaf438257db21b3c8d531ad42df69084ed32923f2bd995",
       "direct_test_paths": [
         "oscillatools/tests/test_diff_kuramoto_rk4.py"
       ],
@@ -804,7 +804,7 @@
       "summary": "Reverse-mode adjoint of the networked-Kuramoto RK4 integrator."
     },
     "oscillatools.accel.jax_kuramoto_delayed.jax_kuramoto_delayed_gradient": {
-      "declaration_sha256": "0a2bb0b785f36aaca05aec54d4ac441cb1c2d2b00c42c12d0ddd60ef80e7bf8b",
+      "declaration_sha256": "6c7d09184c5796ba16bc48e0924f07f509102c614bcf21aaad158e33bbe7670b",
       "direct_test_paths": [
         "oscillatools/tests/test_jax_kuramoto_delayed.py"
       ],
@@ -818,7 +818,7 @@
       "summary": "Reverse-mode (autodiff) gradient of the delayed solve on the JAX accelerator tier."
     },
     "oscillatools.accel.jax_kuramoto_delayed.jax_kuramoto_delayed_trajectory": {
-      "declaration_sha256": "91ed2a8e9fb254cc668d7c3769a3638eaaa67e23cf22036c7079f8a0b28f2623",
+      "declaration_sha256": "2ea400c26cb6e9d00eecc7dd4d1959a568cd1daee66b09fd87de0265f03ec17c",
       "direct_test_paths": [
         "oscillatools/tests/test_jax_kuramoto_delayed.py"
       ],
@@ -832,7 +832,7 @@
       "summary": "Forward delayed networked-Kuramoto method-of-steps trajectory on the JAX accelerator tier."
     },
     "oscillatools.accel.kuramoto_adaptive.adaptive_vector_field": {
-      "declaration_sha256": "3c7dac1db036b9bde23a81b3a4c434aa723f1d5b7e5e61ddbba71c3423eb841e",
+      "declaration_sha256": "ca0a1e87fde4aee0457dae45df5fc91d76c8c0e5946222e78cb1155c04d101ed",
       "direct_test_paths": [
         "oscillatools/tests/test_kuramoto_adaptive.py"
       ],
@@ -846,7 +846,7 @@
       "summary": "Return the joint vector field ``(θ̇, K̇)`` of the adaptive Kuramoto model."
     },
     "oscillatools.accel.kuramoto_adaptive.integrate_adaptive_kuramoto": {
-      "declaration_sha256": "31e08a65f7c061ea64e62af560cb07c0bb08e05f1df2bd094ee7eaa16f7450ea",
+      "declaration_sha256": "2edc9544ceecebfffc8db3a1aa9a7cb87c497885ce084ff4b32ee043d51f95f2",
       "direct_test_paths": [
         "oscillatools/tests/test_kuramoto_adaptive.py"
       ],
@@ -860,7 +860,7 @@
       "summary": "Integrate the adaptive Kuramoto model by a functional RK4 on the joint ``(θ, K)`` state."
     },
     "oscillatools.accel.kuramoto_delayed.delayed_mean_field_force": {
-      "declaration_sha256": "5060889556ac93a16e4a9c9809801ef96bd6d2f4d6cd13ad7ac28412f92963b8",
+      "declaration_sha256": "da7f15f360af7b3d12ed6dd0946243f4043c820690fab3764e033b8cb8ff410c",
       "direct_test_paths": [
         "oscillatools/tests/test_kuramoto_delayed.py"
       ],
@@ -874,7 +874,7 @@
       "summary": "Return the delayed mean-field Kuramoto force ``F_j = (K/N) Σ_k sin(θ_k(t-τ) − θ_j(t))``."
     },
     "oscillatools.accel.kuramoto_delayed.delayed_networked_force": {
-      "declaration_sha256": "0b742fdcfd71f4e06074a73a1824f8e2fde60591175249bc3627659e8c3535dc",
+      "declaration_sha256": "8b4e7d9dc804c8e67f4bdbef93496cdfd02a532efbe4557d18e8c18b04bb78bf",
       "direct_test_paths": [
         "oscillatools/tests/test_kuramoto_delayed.py"
       ],
@@ -888,7 +888,7 @@
       "summary": "Return the delayed networked Kuramoto force ``F_j = Σ_k K_{jk} sin(θ_k(t-τ) − θ_j(t))``."
     },
     "oscillatools.accel.kuramoto_delayed.integrate_delayed_kuramoto": {
-      "declaration_sha256": "19dc2f44165853f690472d6e00e2468b0abeca6553479d35dbee3a0eee31724d",
+      "declaration_sha256": "b2d8cccb3c6ed8e1a8b003452afc263795f5658ba99370b8b6ce4bfad14d9b46",
       "direct_test_paths": [
         "oscillatools/tests/test_kuramoto_delayed.py"
       ],
@@ -902,7 +902,7 @@
       "summary": "Integrate the time-delayed Kuramoto model by a delay-aware method-of-steps RK4."
     },
     "oscillatools.accel.kuramoto_higher_order_watanabe_strogatz.integrate_higher_order_watanabe_strogatz": {
-      "declaration_sha256": "68bc765c41cf5de9b9ae5caff4fd0ee6f26bfa6502325736bff928c5ace5e3c2",
+      "declaration_sha256": "f98c419ffb2bb457488e855c5e0af98820f5125882a770cf9d0605517b3cabfd",
       "direct_test_paths": [
         "oscillatools/tests/test_kuramoto_higher_order_watanabe_strogatz.py"
       ],
@@ -916,7 +916,7 @@
       "summary": "Integrate the ``p``-th harmonic identical-oscillator flow by the Watanabe–Strogatz reduction."
     },
     "oscillatools.accel.kuramoto_hyperedge.hyperedge_force": {
-      "declaration_sha256": "43448079af0e1b5c7c0a6edd764cd7e6bd4f79cd4795dd62653f2b3e57a019d1",
+      "declaration_sha256": "112fa76bb96b903d7e9c7590b895ec0ce54bc20b0d69b14088bdd843e7f00482",
       "direct_test_paths": [
         "oscillatools/tests/test_kuramoto_hyperedge.py"
       ],
@@ -930,7 +930,7 @@
       "summary": "Return the structural hypergraph force ``F_i = Σ_{e∋i} K_e sin(Σ_{k∈e} θ_k − |e| θ_i)``."
     },
     "oscillatools.accel.kuramoto_hyperedge.hyperedge_jacobian": {
-      "declaration_sha256": "29d05b1c3d23f5907a192a36464f97cef096f4fc8731809fc303f3128806c26f",
+      "declaration_sha256": "81ccb0f9d4c0fe49d1f530dc1199ce8c87774b69a765eef44e9674c221b93425",
       "direct_test_paths": [
         "oscillatools/tests/test_kuramoto_hyperedge.py"
       ],
@@ -944,7 +944,7 @@
       "summary": "Return the ``(N, N)`` Jacobian of the structural hypergraph force."
     },
     "oscillatools.accel.kuramoto_inertial.inertial_jacobian": {
-      "declaration_sha256": "6f61d0e35d02e38f05110305074acf4df4e2f2d5ae7a18f328d541447d6b6ed3",
+      "declaration_sha256": "f62331ee8ed4a888e71f82e85649c6d22a94def4082b5f63d8e08d0446de3780",
       "direct_test_paths": [
         "oscillatools/tests/test_kuramoto_inertial.py"
       ],
@@ -958,7 +958,7 @@
       "summary": "Return the ``2N × 2N`` Jacobian of the inertial Kuramoto phase-space vector field."
     },
     "oscillatools.accel.kuramoto_inertial.inertial_vector_field": {
-      "declaration_sha256": "971daeadd2f489b3a2c54d0cccd11106872877df551ab3a55372ced27c3dc88d",
+      "declaration_sha256": "cbc3e727905306a8ad7947f9ece6855b92d5770a1614752325ea98e5104471d0",
       "direct_test_paths": [
         "oscillatools/tests/test_kuramoto_inertial.py"
       ],
@@ -972,7 +972,7 @@
       "summary": "Return the ``(θ, θ̇)`` phase-space vector field of the inertial Kuramoto model."
     },
     "oscillatools.accel.kuramoto_inertial.integrate_inertial": {
-      "declaration_sha256": "ae9a13b3331ef85aa2074d77cccc98a7b885b923b6b181d3cbed78d8a7a61906",
+      "declaration_sha256": "a9048a262d42388d2e73db2d78c1b7fed1f5ca04072f25c01473ed9cd95d2ef1",
       "direct_test_paths": [
         "oscillatools/tests/test_kuramoto_inertial.py"
       ],
@@ -986,7 +986,7 @@
       "summary": "Integrate the inertial Kuramoto model by a fixed-step RK4 over the ``(θ, v)`` state."
     },
     "oscillatools.accel.kuramoto_mean_field.mean_field_force": {
-      "declaration_sha256": "88cd036731d7aac58d1dc9ddb48deefb79137218d72407e122f5989270f92c85",
+      "declaration_sha256": "a102d58315ccb06521542d4bb556c7ddb7c95476d46717e3178184690e9cfd29",
       "direct_test_paths": [
         "oscillatools/tests/test_kuramoto_mean_field.py"
       ],
@@ -1029,7 +1029,7 @@
       "summary": "Kuramoto mean-field coupling force with multi-language dispatch."
     },
     "oscillatools.accel.kuramoto_mean_field.mean_field_jacobian": {
-      "declaration_sha256": "cb13587cc6e6f7d7b44b99bbdd420ed73c921d17ae0cdb93c502da9a4406668d",
+      "declaration_sha256": "ee35f35421d8a54d140e4daa75e433ae68accf8d321ae666585a1d9449c84e9a",
       "direct_test_paths": [
         "oscillatools/tests/test_kuramoto_mean_field.py"
       ],
@@ -1072,7 +1072,7 @@
       "summary": "Kuramoto synchronisation stability Jacobian with multi-language dispatch."
     },
     "oscillatools.accel.kuramoto_noisy.integrate_noisy_kuramoto": {
-      "declaration_sha256": "76c2481a676b46168a3a7328cb357e857910a35753222c4f2b8d86ebda5b6426",
+      "declaration_sha256": "48438f81544dbaa6bd22d92e23ccb8ceb031af9c6c166211db448d4ec9845706",
       "direct_test_paths": [
         "oscillatools/tests/test_kuramoto_noisy.py"
       ],
@@ -1086,7 +1086,7 @@
       "summary": "Integrate the noisy Kuramoto model by a seeded Euler–Maruyama scheme."
     },
     "oscillatools.accel.kuramoto_ott_antonsen.ott_antonsen_field": {
-      "declaration_sha256": "b6880786b01e94d1f85550d4ea77686e74812711bad7687d2b51b0f59dde7c01",
+      "declaration_sha256": "aada4d348b068b6f2fc5e6e53cb1205cfae4fc96c20ec5910b1e961073c5d3fb",
       "direct_test_paths": [
         "oscillatools/tests/test_kuramoto_ott_antonsen.py"
       ],
@@ -1100,7 +1100,7 @@
       "summary": "Ott–Antonsen vector field ``ż = (iω₀ − Δ + K/2) z − (K/2) |z|² z``."
     },
     "oscillatools.accel.kuramoto_ott_antonsen.ott_antonsen_order_parameter": {
-      "declaration_sha256": "7f4b8fde59b90b865645ef0dc185d3d8a999f89dd5314683b07adba5d85336ed",
+      "declaration_sha256": "64da939a6d729c9087cd5e93402bc8555aa8fab31275b6fc48984544493eae0c",
       "direct_test_paths": [
         "oscillatools/tests/test_kuramoto_ott_antonsen.py"
       ],
@@ -1114,7 +1114,7 @@
       "summary": "Modulus trajectory ``r(t) = |z(t)|`` of the reduced flow."
     },
     "oscillatools.accel.kuramoto_ott_antonsen.ott_antonsen_terminal_order_parameter_value_and_grad": {
-      "declaration_sha256": "96ba764e2d8c04be1a4bc415b9027fc59f41b2497ae3d3cd128889b08f248aa4",
+      "declaration_sha256": "5ab77026e402d013948455aa8c085ef49bf4060b95e6481c619a3782917dc136",
       "direct_test_paths": [
         "oscillatools/tests/test_kuramoto_ott_antonsen.py"
       ],
@@ -1128,7 +1128,7 @@
       "summary": "Terminal order parameter ``r(T) = |z(T)|`` and its gradient ``(∂r/∂K, ∂r/∂Δ)``."
     },
     "oscillatools.accel.kuramoto_ott_antonsen.ott_antonsen_trajectory": {
-      "declaration_sha256": "95e30c562bea0af18dd035db6bbc207301181a5db9a279e050a852bcf604c5f6",
+      "declaration_sha256": "f58c0d69cc873dea94f3fb8af4f3ec68e74114a2410d2c429f0d3c56b782562d",
       "direct_test_paths": [
         "oscillatools/tests/test_kuramoto_ott_antonsen.py"
       ],
@@ -1142,7 +1142,7 @@
       "summary": "Integrate the reduced order-parameter flow with RK4."
     },
     "oscillatools.accel.kuramoto_simplex_mean_field.simplex_mean_field_force": {
-      "declaration_sha256": "b6741d449a288b726de673b0e6514f4c9d81c88dfc026337f130d2b8be156d0a",
+      "declaration_sha256": "4cb47ca4fbf2292ded9e887001f97edeeaa11cfe04ca50fb2a83158234238c53",
       "direct_test_paths": [
         "oscillatools/tests/test_kuramoto_simplex_mean_field.py"
       ],
@@ -1156,7 +1156,7 @@
       "summary": "Return the all-to-all ``p``-simplex mean-field force ``F_i = K r^p sin(p ψ − p θ_i)``."
     },
     "oscillatools.accel.kuramoto_simplex_mean_field.simplex_mean_field_jacobian": {
-      "declaration_sha256": "6c37aa9143cfd080e26df3ced63e95d6aededc329c060431ef585e54aa4877fb",
+      "declaration_sha256": "11dd1df86e7f49755272532f2b41ac5caeb0b815fcc2abbd80933468c34c8bcf",
       "direct_test_paths": [
         "oscillatools/tests/test_kuramoto_simplex_mean_field.py"
       ],
@@ -1170,7 +1170,7 @@
       "summary": "Return the ``(N, N)`` stability Jacobian of the ``p``-simplex mean-field force."
     },
     "oscillatools.accel.kuramoto_system.KuramotoSystem.mean_field": {
-      "declaration_sha256": "f34f446bbc479cf952c1edc7c07f31ea8ea1619dc99bb2ba2a73df0a06cfd89a",
+      "declaration_sha256": "dc855a02c966d5d4b979bc75a40adc6a71fd1b12824f4379b16ba5632cce94f9",
       "direct_test_paths": [
         "oscillatools/tests/test_kuramoto_system.py"
       ],
@@ -1184,7 +1184,7 @@
       "summary": "Build an all-to-all mean-field system from raw arrays."
     },
     "oscillatools.accel.kuramoto_system.KuramotoSystem.networked": {
-      "declaration_sha256": "750435272411b1666c9116dac70aaf1a863392a58383608dbbdb58434edb7e84",
+      "declaration_sha256": "626387ec83930e0940e1d878fab7f289af6ed761810918eb7e32be07033a90d9",
       "direct_test_paths": [
         "oscillatools/tests/test_kuramoto_system.py"
       ],
@@ -1198,7 +1198,7 @@
       "summary": "Build a networked/graph system from raw arrays."
     },
     "oscillatools.accel.kuramoto_watanabe_strogatz.integrate_watanabe_strogatz": {
-      "declaration_sha256": "09f0726ac1884098789c05ce88139f55a06b4800f8e4f9788e36585b6e3d8d53",
+      "declaration_sha256": "3d68b06f222bad9a3aec0a6b09c5d3653d6afeafcc27855002559eb746b4f9c4",
       "direct_test_paths": [
         "oscillatools/tests/test_kuramoto_watanabe_strogatz.py"
       ],
@@ -1212,7 +1212,7 @@
       "summary": "Integrate the identical-oscillator mean-field Kuramoto flow by the WS reduction."
     },
     "oscillatools.accel.kuramoto_watanabe_strogatz.watanabe_strogatz_order_parameter": {
-      "declaration_sha256": "e44532ff3de59373d610b78de73bb7b09288c1a4824d195d41645a803706adfd",
+      "declaration_sha256": "6eb48ee5fc4c5c7c6908a122d22b668fcf0c9cfb41332bcf0e8687fdd4dc68b4",
       "direct_test_paths": [
         "oscillatools/tests/test_kuramoto_watanabe_strogatz.py"
       ],
@@ -1226,7 +1226,7 @@
       "summary": "Return the Kuramoto order parameter ``Z = N^{-1}\\sum_j w_j`` of a Möbius state."
     },
     "oscillatools.accel.multiplex_kuramoto.integrate_multiplex": {
-      "declaration_sha256": "1ef06d70fef2ec231f96a26503ca1c4582ec02637b6b398fd9452e73d6bcd1d0",
+      "declaration_sha256": "866ad8ac44bafe97c5f55b019c5e41dafa2118951084bf326b7e2b16e5a7bd66",
       "direct_test_paths": [
         "oscillatools/tests/test_multiplex_kuramoto.py"
       ],
@@ -1240,7 +1240,7 @@
       "summary": "Integrate the multiplex Kuramoto network with classic RK4."
     },
     "oscillatools.accel.multiplex_kuramoto.layer_order_parameters": {
-      "declaration_sha256": "1734c62f80a296f0806d2f2df0027f39f1e199beb44abc174f2d527a96e55185",
+      "declaration_sha256": "1bb00fb3eaeb70a537b21a7d498325c30ae0b04c405b44ff54e7ca91d9cb90dc",
       "direct_test_paths": [
         "oscillatools/tests/test_multiplex_kuramoto.py"
       ],
@@ -1254,7 +1254,7 @@
       "summary": "Compute the per-layer Kuramoto order-parameter magnitudes ``r_α = |⟨e^{iθ^α}⟩|`` (shape ``(L,)``)."
     },
     "oscillatools.accel.multiplex_kuramoto.multiplex_field": {
-      "declaration_sha256": "749714c5fe3b73d64617d480edb7f18bc08a69f0d57a494b5ed9679c2810d838",
+      "declaration_sha256": "54cbbcfe5a84449d9e80ee4074297343fc7166325d2be381f01905789fe69541",
       "direct_test_paths": [
         "oscillatools/tests/test_multiplex_kuramoto.py"
       ],
@@ -1268,7 +1268,7 @@
       "summary": "Evaluate the multiplex Kuramoto vector field ``θ̇`` (shape ``(L, N)``)."
     },
     "oscillatools.accel.multiplex_kuramoto.multiplex_jacobian": {
-      "declaration_sha256": "e3d38f75d3898b2c1736b925e4b6c637abe96b60b934785e69331b345c9a0fc7",
+      "declaration_sha256": "cbcb9e57db86cd0855052625d99e9f813b8f3b11da1d087e15b634618d2a72f2",
       "direct_test_paths": [
         "oscillatools/tests/test_multiplex_kuramoto.py"
       ],
@@ -1282,7 +1282,7 @@
       "summary": "Compute the ``(LN, LN)`` Jacobian of the multiplex field (row-major ``(layer, node)`` order)."
     },
     "oscillatools.accel.networked_kuramoto.networked_kuramoto_force": {
-      "declaration_sha256": "a2923eede4dc52c9dfaf1658d96f4b0856323c36721ead7b7e5d6df83f2853e5",
+      "declaration_sha256": "008b4481d23e994e70d458eab3e5cc15c7838520fce165cee533327d5db55ad4",
       "direct_test_paths": [
         "oscillatools/tests/test_networked_kuramoto.py"
       ],
@@ -1325,7 +1325,7 @@
       "summary": "Networked Kuramoto coupling force with multi-language dispatch."
     },
     "oscillatools.accel.networked_kuramoto.networked_kuramoto_jacobian": {
-      "declaration_sha256": "d3dd42770d3cee8e4596ceb22f054b92eabd6b80fed56061c06847cd700980dd",
+      "declaration_sha256": "1b01729f11d58ff2708da9a7f2fb8fb26f62970a1efd3bf140d762590504dee3",
       "direct_test_paths": [
         "oscillatools/tests/test_networked_kuramoto.py"
       ],
@@ -1368,7 +1368,7 @@
       "summary": "Networked Kuramoto stability Jacobian with multi-language dispatch."
     },
     "oscillatools.accel.order_parameter_observables.order_parameter": {
-      "declaration_sha256": "6d1b4588503fcc81d75bdd7deeb925da99b33211947e5134b848bffe3c58e814",
+      "declaration_sha256": "83559610285d4341cf4fbdbdee00967128b8905aa22ff1da641feb34a8323962",
       "direct_test_paths": [],
       "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
       "line": 194,
@@ -1423,7 +1423,7 @@
       "summary": "Kuramoto order parameter with multi-language dispatch."
     },
     "oscillatools.accel.sakaguchi_kuramoto.sakaguchi_force": {
-      "declaration_sha256": "9dbed36aa3a06bf7ca0c7eec01a6937ba60a1218c83c326f72af3715264113ca",
+      "declaration_sha256": "53b559b93657704c8622763298452d330c45fc56c901d558b4932604b9b9365f",
       "direct_test_paths": [
         "oscillatools/tests/test_sakaguchi_kuramoto.py"
       ],
@@ -1466,7 +1466,7 @@
       "summary": "Kuramoto–Sakaguchi frustrated coupling force with multi-language dispatch."
     },
     "oscillatools.accel.sakaguchi_kuramoto.sakaguchi_jacobian": {
-      "declaration_sha256": "9c078997f902293296b3d049d4bde5758791b6d0b2cb84f95ac72e026bd5da59",
+      "declaration_sha256": "a7eb3c2cd93e2a248532403d50d9477fb05cb3cde55d8cf4e610ac822834bb7a",
       "direct_test_paths": [
         "oscillatools/tests/test_sakaguchi_kuramoto.py"
       ],
@@ -1509,7 +1509,7 @@
       "summary": "Kuramoto–Sakaguchi stability Jacobian with multi-language dispatch."
     },
     "oscillatools.accel.sakaguchi_mean_field.sakaguchi_mean_field_force": {
-      "declaration_sha256": "1a4c629383d410906f1709e6b871701add0f781dbd4fc4238468065af2062920",
+      "declaration_sha256": "1a2c55de84a94bc25da0bfeaad750ae265634878ceb969c1a3a0e4e96eedeed8",
       "direct_test_paths": [
         "oscillatools/tests/test_sakaguchi_mean_field.py"
       ],
@@ -1552,7 +1552,7 @@
       "summary": "Sakaguchi–Kuramoto mean-field force with multi-language dispatch."
     },
     "oscillatools.accel.sakaguchi_mean_field.sakaguchi_mean_field_jacobian": {
-      "declaration_sha256": "02f9a36f5d0fc6edad9385a563aa9b4084c77b1bbe0093462fa08406a5fc85fb",
+      "declaration_sha256": "d40afe226b05a28b001ce58d4974103911d7c276f21d63eef3fbc83f633fcd56",
       "direct_test_paths": [
         "oscillatools/tests/test_sakaguchi_mean_field.py"
       ],
@@ -1595,7 +1595,7 @@
       "summary": "Sakaguchi–Kuramoto mean-field stability Jacobian with multi-language dispatch."
     },
     "oscillatools.accel.sparse_kuramoto.sparse_kuramoto_euler_trajectory": {
-      "declaration_sha256": "017f865789b339002114b14ac0c6577042fe75be17a50b64576198b993ba6954",
+      "declaration_sha256": "4ed40c16422f3238737f8b1860aa384a7ffeb537a5e26cfcba8302470042c21a",
       "direct_test_paths": [
         "oscillatools/tests/test_sparse_kuramoto.py"
       ],
@@ -1609,7 +1609,7 @@
       "summary": "Integrate sparse networked Kuramoto dynamics with explicit Euler steps."
     },
     "oscillatools.accel.sparse_kuramoto.sparse_kuramoto_rk4_trajectory": {
-      "declaration_sha256": "255be060cfa345b743f56b92b88413c5718facef53c381c39a75b9cb7b79012a",
+      "declaration_sha256": "01984f30b6c17cb11add867fe815991c6484282a4eafff55495240a316d5a42d",
       "direct_test_paths": [
         "oscillatools/tests/test_sparse_kuramoto.py"
       ],
@@ -1623,7 +1623,7 @@
       "summary": "Integrate sparse networked Kuramoto dynamics with fourth-order RK4 steps."
     },
     "oscillatools.accel.sparse_kuramoto.sparse_networked_kuramoto_force": {
-      "declaration_sha256": "f3104f17a40c96818e5fff5d0932b7e4dd0969dec41f12f12af40b144136e8d1",
+      "declaration_sha256": "6cb701349f03754634cc4a96e81d976726bf7d23ddad4e63e6dc8e7b1da68acf",
       "direct_test_paths": [
         "oscillatools/tests/test_sparse_kuramoto.py"
       ],
@@ -1637,7 +1637,7 @@
       "summary": "Evaluate the networked Kuramoto force from sparse coupling edges."
     },
     "oscillatools.accel.triadic_mean_field.triadic_mean_field_force": {
-      "declaration_sha256": "d7dac4b68cd1f7d19fbe3b3766120ddef161d3bf8ed8e93ec19143593af5222d",
+      "declaration_sha256": "7010b667da6d8f9235aed1a2b8e0d21a6a2c9678a3ff815c36c135a565855470",
       "direct_test_paths": [
         "oscillatools/tests/test_triadic_mean_field.py"
       ],
@@ -1680,7 +1680,7 @@
       "summary": "Triadic (2-simplex) Kuramoto mean-field force with multi-language dispatch."
     },
     "oscillatools.accel.triadic_mean_field.triadic_mean_field_jacobian": {
-      "declaration_sha256": "9189237eea044f16789aa285677e32b286f6dc17286c70c72146d26d37eb703e",
+      "declaration_sha256": "ffe387bd05ffd62b504a167b7e6de23f60bb331ae804b0605dad9a15556f4573",
       "direct_test_paths": [
         "oscillatools/tests/test_triadic_mean_field.py"
       ],
@@ -1723,7 +1723,7 @@
       "summary": "Triadic (2-simplex) Kuramoto mean-field stability Jacobian with multi-language dispatch."
     },
     "scpn_quantum_control.bridge.knm_hamiltonian.knm_to_hamiltonian": {
-      "declaration_sha256": "231154c1d58fe3ef4280af03933999fb97dd9006824f6eb17600e1035494f095",
+      "declaration_sha256": "594eb4e2904f159730f0038aecae871616fb73140a807bb633b7101b3aa822af",
       "direct_test_paths": [
         "tests/test_knm_hamiltonian.py"
       ],
@@ -1737,7 +1737,7 @@
       "summary": "Convert Knm coupling matrix + natural frequencies to SparsePauliOp."
     },
     "scpn_quantum_control.kuramoto_core.compile_trotter_circuit": {
-      "declaration_sha256": "ac10f98b8ef5984a66f5da9edac753b9f56c75a952d899b9d4d5a6f37d85d673",
+      "declaration_sha256": "0657a7b8b50401d64799c61a1ad1b65c0eee323d553e2154e3caf6a3c3ec07bd",
       "direct_test_paths": [
         "tests/test_kuramoto_core.py"
       ],
@@ -1751,7 +1751,7 @@
       "summary": "Compile a Trotterised gate-model evolution circuit."
     },
     "scpn_quantum_control.phase.xy_kuramoto.QuantumKuramotoSolver.evolve": {
-      "declaration_sha256": "b4f6fcc7f0eb4ad613330be30a5bf86ef08df22f895ebde18bcc88c3e6f0caaa",
+      "declaration_sha256": "0614f0248c978631c5e1211135e8463f1fc8a5150f9e4539ecd75d0af9fd2147",
       "direct_test_paths": [
         "tests/test_xy_kuramoto.py"
       ],
@@ -1765,7 +1765,7 @@
       "summary": "Build Trotterized evolution circuit U(t) = exp(-iHt)."
     },
     "scpn_quantum_control.phase.xy_kuramoto.QuantumKuramotoSolver.measure_order_parameter": {
-      "declaration_sha256": "464902bc1c9c8d0c226b35f8e8fde485666ffcb464221e6bc490d2635941d6e2",
+      "declaration_sha256": "458e363516bf3a690d3d2ddc0237c10450a11faae5b6a0f8069cb3e2fab493fb",
       "direct_test_paths": [
         "tests/test_xy_kuramoto.py"
       ],

@@ -46,7 +46,12 @@ class ImportVisibility:
 
 
 def _digest(node: ast.AST) -> str:
-    return hashlib.sha256(ast.dump(node, include_attributes=False).encode()).hexdigest()
+    """Return the digest of ``node`` as unparsed source text.
+
+    ``ast.dump`` writes a different text for the same node under Python 3.11,
+    3.12 and 3.13, so a digest of it binds a review to one interpreter.
+    """
+    return hashlib.sha256(ast.unparse(node).encode()).hexdigest()
 
 
 def _last_name(node: ast.AST) -> str | None:

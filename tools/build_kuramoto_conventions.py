@@ -148,9 +148,9 @@ def qualify_kuramoto_source_owner(repo: Path, qualified: str) -> dict[str, objec
         "path": relative.as_posix(),
         "line": declaration.lineno,
         "source_sha256": hashlib.sha256(payload).hexdigest(),
-        "declaration_sha256": hashlib.sha256(
-            ast.dump(declaration, include_attributes=False).encode()
-        ).hexdigest(),
+        # ``ast.dump`` differs between Python 3.11, 3.12 and 3.13 for the same
+        # declaration; the unparsed text does not.
+        "declaration_sha256": hashlib.sha256(ast.unparse(declaration).encode()).hexdigest(),
         "signature": ast.unparse(declaration.args)
         if isinstance(declaration, (ast.FunctionDef, ast.AsyncFunctionDef))
         else "class",
