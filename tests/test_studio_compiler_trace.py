@@ -231,6 +231,7 @@ def test_real_cli_exports_trace_and_reproduction_script(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     """The public CLI and generated script reproduce the same complete native artifact."""
+    pytest.importorskip("scpn_studio_platform", reason="studio extra not installed")
     from scpn_quantum_control.studio.executive_cli import run
 
     params = json.dumps(
@@ -279,6 +280,7 @@ def test_cli_refuses_unsupported_trace_requests_without_writing_script(
     changes: dict[str, object], tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     """Malformed trace settings preserve source and create no runnable artifact."""
+    pytest.importorskip("scpn_studio_platform", reason="studio extra not installed")
     from scpn_quantum_control.studio.executive_cli import run
 
     params = json.dumps({"program_source": SOURCE, **changes})
@@ -504,6 +506,7 @@ def test_real_cli_unsupported_lowering_creates_no_script(
     statement: str, tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     """Public CLI returns an explicit static qualification refusal with no output writes."""
+    pytest.importorskip("scpn_studio_platform", reason="studio extra not installed")
     from scpn_quantum_control.studio.executive_cli import run
 
     source = SOURCE.split("ry(0.41)")[0] + statement + "\n"

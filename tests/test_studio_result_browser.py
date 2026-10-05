@@ -78,6 +78,7 @@ else:
 
 def test_original_cli_stationary_cloud_has_actual_nonuniform_thresholds() -> None:
     """Read the actual native CLI export and the independent constant-cloud oracle."""
+    pytest.importorskip("scpn_studio_platform", reason="studio extra not installed")
     record = json.loads(analyse_export())
     assert record["request"]["verb"] == "analyse"
     assert record["result"]["status"] == "succeeded"
