@@ -20,7 +20,11 @@ survivor or timeout count rose above its ceiling, and when a count fell below
 it without the ceiling being lowered. A run that tests nothing therefore
 fails instead of looking clean. A mutant that the tests noticed slowly is
 reported as suspicious and counts as noticed: that label depends on how busy
-the machine was, so it is not held to a ceiling.
+the machine was, so it is not held to a ceiling. A timeout depends on the
+machine as well: the tool's limit is ten times the duration of the unmutated
+tests at the start of the run. A timed-out mutant is therefore applied again
+and its tests run once under a fixed limit; it is then counted as survived,
+noticed, or, if it exceeds that limit too, timed out.
 
 mutmut rewrites the target module on disk while it works. The gate never does
 that in the working tree: it exports the committed tree of ``HEAD`` into a
@@ -59,6 +63,7 @@ DISTRIBUTION: Final[str] = "mutmut"
 SCHEMA: Final[str] = "mutation_survivor_ceiling_v1"
 CEILINGS: Final[tuple[str, ...]] = ("survived", "timeout")
 STATUSES: Final[tuple[str, ...]] = ("killed", *CEILINGS, "suspicious", "skipped", "untested")
+RETEST_LIMIT_SECONDS: Final[float] = 300.0
 _PIN: Final[re.Pattern[str]] = re.compile(r"^mutmut==(\d+\.\d+\.\d+)", re.MULTILINE)
 _DIGEST: Final[re.Pattern[str]] = re.compile(r"[0-9a-f]{64}")
 
@@ -291,7 +296,9 @@ def export_head(repo: Path, destination: Path) -> None:
         tar.extractall(destination, filter="data")
 
 
-def measure(tree: Path, target: Target, interpreter: Path) -> dict[str, int]:
+def measure(
+    tree: Path, target: Target, interpreter: Path, retest_limit: float = RETEST_LIMIT_SECONDS
+) -> dict[str, int]:
     """Run one mutation target in an exported tree and count its mutants by status.
 
     Parameters
@@ -303,17 +310,20 @@ def measure(tree: Path, target: Target, interpreter: Path) -> dict[str, int]:
         Module and runner to use.
     interpreter
         Python executable that has the pinned mutmut and the test dependencies.
+    retest_limit
+        Seconds the tests of a timed-out mutant may take when it is tested again.
 
     Returns
     -------
     dict[str, int]
-        Number of mutants per status, for every status the tool knows.
+        Number of mutants per status, for every status the tool knows, after
+        the timed-out mutants were tested again.
 
     Raises
     ------
     ValueError
         If the module or the runner is missing, the runner is not executable,
-        or the tool reports a fatal error.
+        the tool reports a fatal error, or a timed-out mutant cannot be applied.
 
     """
     if not (tree / target.module).is_file():
@@ -332,6 +342,7 @@ def measure(tree: Path, target: Target, interpreter: Path) -> dict[str, int]:
         }
     )
     tool = [str(interpreter), "-m", DISTRIBUTION]
+    command = f"./{target.runner}"
     completed = _run(
         tree,
         [
@@ -342,7 +353,7 @@ def measure(tree: Path, target: Target, interpreter: Path) -> dict[str, int]:
             "--tests-dir",
             "tests/",
             "--runner",
-            f"./{target.runner}",
+            command,
             "--no-progress",
             "--CI",
         ],
@@ -352,12 +363,38 @@ def measure(tree: Path, target: Target, interpreter: Path) -> dict[str, int]:
         output = (completed.stdout + completed.stderr).decode("utf-8", "replace")
         detail = " ".join(output.split())[-400:]
         raise ValueError(f"mutmut could not run {target.name}: {detail}")
-    counts: dict[str, int] = {}
+    listed: dict[str, list[str]] = {}
     for status in STATUSES:
         listing = _run(tree, [*tool, "result-ids", status], environment)
         if listing.returncode != 0:
             raise ValueError(f"mutmut could not list the {status} mutants of {target.name}")
-        counts[status] = len(listing.stdout.split())
+        listed[status] = listing.stdout.decode("ascii", "replace").split()
+    counts = {status: len(ids) for status, ids in listed.items()}
+    module = tree / target.module
+    original = module.read_bytes()
+    for mutant in listed["timeout"]:
+        # The tool calls a mutant timed out when its tests ran ten times longer
+        # than the unmutated tests did at the start of the run, so a busy
+        # machine turns noticed and surviving mutants into timeouts. Each one
+        # is applied again and its tests run once under a fixed limit.
+        applied = _run(tree, [*tool, "apply", mutant], environment)
+        try:
+            if applied.returncode != 0 or module.read_bytes() == original:
+                raise ValueError(f"mutmut could not apply mutant {mutant} of {target.name}")
+            finished = subprocess.run(  # noqa: S603 - the target's recorded runner, no shell
+                [command],
+                capture_output=True,
+                cwd=tree,
+                env=environment,
+                timeout=retest_limit,
+                check=False,
+            )
+        except subprocess.TimeoutExpired:
+            continue
+        finally:
+            module.write_bytes(original)
+        counts["timeout"] -= 1
+        counts["survived" if finished.returncode == 0 else "killed"] += 1
     return counts
 
 
@@ -470,6 +507,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         type=Path,
         help="directory for the exported tree (default: the temporary directory)",
     )
+    parser.add_argument(
+        "--retest-limit",
+        type=float,
+        default=RETEST_LIMIT_SECONDS,
+        metavar="SECONDS",
+        help="time the tests of a timed-out mutant may take when it is tested again",
+    )
     update = parser.add_mutually_exclusive_group()
     update.add_argument(
         "--lower", action="store_true", help="reduce the ceilings to the measurement"
@@ -510,7 +554,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     updated.append(target)
                     continue
                 digest = hashlib.sha256((tree / target.module).read_bytes()).hexdigest()
-                counts = measure(tree, target, Path(sys.executable))
+                counts = measure(tree, target, Path(sys.executable), args.retest_limit)
                 summary = ", ".join(f"{counts[status]} {status}" for status in STATUSES)
                 print(f"{target.name}: {sum(counts.values())} mutants: {summary}")
                 if args.rebaseline:

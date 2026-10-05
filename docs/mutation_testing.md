@@ -189,7 +189,13 @@ ceilings for survived and timed-out mutants, together with the mutmut release
   changed, because mutants are then not comparable; the previous record is
   kept in the file's history;
 - counts a mutant that the tests noticed slowly ("suspicious") as noticed:
-  that label depends on how busy the machine was.
+  that label depends on how busy the machine was;
+- tests a timed-out mutant again: mutmut's limit is ten times the duration of
+  the unmutated tests at the start of the run, so a busy machine turns
+  ordinary mutants into timeouts (a second local run under load reported two).
+  The gate applies each of them again, runs the target's tests once under a
+  fixed limit (`--retest-limit`, 300 seconds by default) and counts the mutant
+  as survived, noticed or, beyond that limit, timed out.
 
 The gate counts survivors and does not classify them. A recorded survivor is
 either an equivalent mutant or a gap in the tests; the sections above name the
@@ -201,6 +207,9 @@ the committed tree, 11.5 minutes):
 | Target | Mutants | Killed | Survived | Timed out | Suspicious |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | `analysis/koopman.py` | 148 | 97 | 50 | 0 | 1 |
+
+The gate's own run on the committed tree on the same day reported 98 noticed
+(none of them slowly), 50 survived and no timeout, in under six minutes.
 
 `bridge/knm_hamiltonian.py` and `analysis/otoc.py` have runner scripts and
 April baselines but no recorded ceiling yet; they are not gated until they are

@@ -29,6 +29,22 @@ SOURCE = "def area(width, height):\n    return width * height\n"
 STRONG_TEST = "from calc import area\n\n\ndef test_area():\n    assert area(2, 3) == 6\n"
 WEAK_TEST = "from calc import area\n\n\ndef test_area():\n    assert area(1, 1) == 1\n"
 DIGEST = hashlib.sha256(SOURCE.encode()).hexdigest()
+_RUNNER_SCRIPT = """#!/bin/sh
+# Runs the target's tests. With CALC_SLOW set, a mutated module makes the
+# runner hang instead: once (until a marker exists) or always.
+if ! cmp -s src/calc.py tests/calc_original.txt; then
+  case "${CALC_SLOW:-}" in
+    always) exec sleep 60 ;;
+    once)
+      if [ ! -e .slow-marker ]; then
+        : > .slow-marker
+        exec sleep 60
+      fi
+      ;;
+  esac
+fi
+exec "$VENV_PY" -m pytest -x -q -p no:cacheprovider tests/test_calc.py
+"""
 
 
 def _git(repo: Path, *arguments: str) -> str:
@@ -89,7 +105,8 @@ def _repository(
             "import sys\nfrom pathlib import Path\n\n"
             "sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))\n"
         ),
-        RUNNER: '#!/bin/sh\nexec "$VENV_PY" -m pytest -x -q -p no:cacheprovider tests/test_calc.py\n',
+        RUNNER: _RUNNER_SCRIPT,
+        "tests/calc_original.txt": SOURCE,
         str(gate.PIN_FILE): f"mutmut=={pinned} \\\n    --hash=sha256:{'0' * 64}\n",
     }
     for name, text in files.items():
@@ -209,6 +226,33 @@ def test_changed_source_and_changed_mutant_count_need_a_rebaseline(
     ]
 
 
+def test_transient_timeout_is_retested_and_a_persistent_one_is_counted(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A mutant that timed out once is tested again alone; one that always hangs is a timeout.
+
+    The fixture's runner hangs on a mutated module when ``CALC_SLOW`` is set:
+    once, as a busy machine would make it, or always, as a mutant that loops
+    forever would. The working tree of the repository stays untouched and the
+    module in the exported tree is restored after each retest.
+    """
+    monkeypatch.setenv("CALC_SLOW", "once")
+    transient = _repository(tmp_path / "transient")
+    assert _main(transient, tmp_path) == 0
+    assert capsys.readouterr().out.splitlines()[0] == (
+        "calc: 1 mutants: 1 killed, 0 survived, 0 timeout, 0 suspicious, 0 skipped, 0 untested"
+    )
+
+    monkeypatch.setenv("CALC_SLOW", "always")
+    persistent = _repository(tmp_path / "persistent")
+    assert _main(persistent, tmp_path, "--retest-limit", "2") == 1
+    captured = capsys.readouterr()
+    assert captured.err.splitlines() == ["calc: timeout mutants grew: 0 -> 1"]
+    assert captured.out.splitlines()[0] == (
+        "calc: 1 mutants: 0 killed, 0 survived, 1 timeout, 0 suspicious, 0 skipped, 0 untested"
+    )
+
+
 def test_runner_without_execute_permission_fails_the_gate(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -304,10 +348,11 @@ def test_measure_refuses_a_missing_module_and_incomplete_runs_are_reported(
         gate.lowered(target, counts, DIGEST)
 
 
-def test_listing_failure_after_a_completed_run_is_a_tool_failure(tmp_path: Path) -> None:
-    """A tool that runs but cannot list its mutants stops the measurement.
+def test_listing_or_apply_failure_after_a_completed_run_is_a_tool_failure(tmp_path: Path) -> None:
+    """A tool that runs but cannot list or apply its mutants stops the measurement.
 
-    The stand-in interpreter accepts the run and fails every listing.
+    The first stand-in interpreter accepts the run and fails every listing; the
+    second lists one timed-out mutant and cannot apply it.
     """
     tree = tmp_path / "tree"
     (tree / "src").mkdir(parents=True)
@@ -323,6 +368,15 @@ def test_listing_failure_after_a_completed_run_is_a_tool_failure(tmp_path: Path)
 
     with pytest.raises(ValueError, match="mutmut could not list the killed mutants of calc"):
         gate.measure(tree, target, stand_in)
+
+    stand_in.write_text(
+        '#!/bin/sh\ncase "$3" in\n  run) exit 0 ;;\n'
+        '  result-ids) [ "$4" = timeout ] && echo 7; exit 0 ;;\n  *) exit 1 ;;\nesac\n',
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="mutmut could not apply mutant 7 of calc"):
+        gate.measure(tree, target, stand_in)
+    assert (tree / MODULE).read_text(encoding="utf-8") == SOURCE
 
 
 def test_export_needs_an_empty_directory_and_a_repository(tmp_path: Path) -> None:
