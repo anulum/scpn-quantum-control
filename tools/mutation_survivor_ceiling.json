@@ -10,6 +10,24 @@
    "mutants": 148,
    "survived": 50,
    "timeout": 0
+  },
+  {
+   "name": "knm",
+   "module": "src/scpn_quantum_control/bridge/knm_hamiltonian.py",
+   "runner": "tools/mutmut_runner_knm.sh",
+   "source_sha256": "08f6fa8419a63799e813b6d227f91dd6e5751330ee1991214b04e5e3864fab52",
+   "mutants": 298,
+   "survived": 85,
+   "timeout": 0
+  },
+  {
+   "name": "otoc",
+   "module": "src/scpn_quantum_control/analysis/otoc.py",
+   "runner": "tools/mutmut_runner_otoc.sh",
+   "source_sha256": "8dbbd738182d73e372063599ff231669ce9cd00e93263ed071ab39457eb96b27",
+   "mutants": 432,
+   "survived": 125,
+   "timeout": 0
   }
  ],
  "history": []

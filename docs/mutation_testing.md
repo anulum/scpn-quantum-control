@@ -211,9 +211,18 @@ the committed tree, 11.5 minutes):
 The gate's own run on the committed tree on the same day reported 98 noticed
 (none of them slowly), 50 survived and no timeout, in under six minutes.
 
-`bridge/knm_hamiltonian.py` and `analysis/otoc.py` have runner scripts and
-April baselines but no recorded ceiling yet; they are not gated until they are
-measured and added to the file.
+The two other targets were measured the same day with the gate's own
+functions, on an export of the committed tree, and are held to their ceilings
+as well:
+
+| Target | Mutants | Noticed | Survived | Timed out | Duration |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `bridge/knm_hamiltonian.py` | 298 | 213 | 85 | 0 | 14.6 min |
+| `analysis/otoc.py` | 432 | 307 | 125 | 0 | 5.7 min |
+
+Their counts differ from the April baselines above: the pinned release
+generates more mutants for the same modules, so the two series are not
+comparable.
 
 Run it locally with the pinned tool installed
 (`python -m pip install --require-hashes -r requirements-ci-mutation.txt`):
