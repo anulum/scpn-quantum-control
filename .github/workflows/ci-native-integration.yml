@@ -624,18 +624,25 @@ jobs:
         run: |
           python -m pip install --require-hashes -r ${{ matrix.requirements-file }}
           python -m pip install --no-deps -e .
-      # The runner's rustc is a shim that downloads the toolchain pinned in
-      # rust-toolchain.toml on first use. Without this step the download
-      # happens inside the first test that asks for the compiler version, and
-      # one failed download fails the whole job.
+      # The runner's rustc is a shim that installs the toolchain pinned in
+      # rust-toolchain.toml on first use. Without this step that happens
+      # inside the first test that asks for the compiler version. Some
+      # runners start with a partial installation of the pinned release;
+      # rustup then fails with "detected conflict: 'bin/cargo-clippy'" on
+      # every attempt, so the partial installation is removed before the
+      # next one.
       - name: Resolve the pinned Rust toolchain
         run: |
+          channel="$(sed -n 's/^channel = "\(.*\)"$/\1/p' rust-toolchain.toml)"
           for attempt in 1 2 3; do
             if rustc --version; then
               exit 0
             fi
-            echo "toolchain download attempt ${attempt} failed"
-            sleep 15
+            echo "toolchain attempt ${attempt} failed; removing the installation of ${channel}"
+            if ! rustup toolchain uninstall "${channel}"; then
+              rm -rf "${RUSTUP_HOME:-${HOME}/.rustup}/toolchains/${channel}-"*
+            fi
+            sleep 5
           done
           exit 1
       - name: Install Studio recompute dependency
