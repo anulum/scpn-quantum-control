@@ -143,7 +143,6 @@ jobs:
           src/scpn_quantum_control/studio/executive_cli.py
           tests/test_studio_executive_compile.py
           tests/test_studio_executive_cli.py
-          tests/test_studio_compiler_trace.py
           tools/xy_compile_recompute_artifact_quality_gates.py
           tests/test_xy_compile_recompute_artifact_quality_gate.py
       - run: >-
@@ -163,7 +162,6 @@ jobs:
           tests/test_studio_xy_compile_recompute_artifact.py
           tests/test_studio_executive_compile.py
           tests/test_studio_executive_cli.py
-          tests/test_studio_compiler_trace.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-xy-compile-recompute-artifact-quality.coverage

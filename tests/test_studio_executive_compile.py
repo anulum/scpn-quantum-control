@@ -311,3 +311,101 @@ def test_forged_source_plan_digest_is_refused_before_emission() -> None:
     altered = replace(plan, parameters={"program_source": source, "source_sha256": "0" * 64})
     with pytest.raises(ValueError, match="differs from its sealed"):
         CompileActionHandler().execute(altered)
+
+
+_TRACE_SOURCE = 'OPENQASM 2.0;\ninclude "qelib1.inc";\nqreg q[1];\nh q[0];\n'
+
+
+def test_compiler_trace_request_emits_native_pass_evidence_and_a_script(
+    capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """A trace request qualifies the native pass, executes nothing and reproduces itself.
+
+    The generated script recomputes the trace and compares its digest with the
+    one the action recorded, in this interpreter, so the comparison does not
+    depend on the platform that produced a stored fixture.
+    """
+    record = run_action(
+        ExecutiveRequest(
+            verb=COMPILE_VERB,
+            action_id="native-trace",
+            parameters={
+                "program_source": _TRACE_SOURCE,
+                "compiler_trace": True,
+                "optimisation_level": 1,
+            },
+        ),
+        registry=_registry(),
+    )
+    outputs = record.result.outputs
+    trace = outputs["compiler_trace"]
+
+    assert record.result.status == "succeeded"
+    assert record.plan.parameters["optimisation_level"] == 1
+    assert "native static operator qualification" in record.plan.claim_boundary
+    assert outputs["execution_status"] == "emitted_not_executed"
+    assert outputs["source_sha256"] == trace["body"]["source_sha256"]
+    assert trace["schema"] == "studio.compiler-trace.v1"
+    assert trace["body"]["backend_snapshot"]["settings"]["optimisation_level"] == 1
+    assert "program" not in outputs
+
+    assert record.script is not None
+    script = tmp_path / record.script.filename
+    script.write_text(record.script.source, encoding="utf-8")
+    monkeypatch.setattr(sys, "argv", [str(script)])
+    with pytest.raises(SystemExit) as exit_info:
+        runpy.run_path(str(script), run_name="__main__")
+    assert exit_info.value.code == 0
+    assert f'"sha256":"{trace["sha256"]}"' in capsys.readouterr().out.replace(" ", "")
+
+
+def test_compiler_trace_defaults_to_the_second_optimisation_level() -> None:
+    """A trace request without a level is planned at level two."""
+    plan = preview_action(
+        ExecutiveRequest(
+            verb=COMPILE_VERB,
+            action_id="default-level",
+            parameters={"program_source": _TRACE_SOURCE, "compiler_trace": True},
+        ),
+        registry=_registry(),
+    )
+
+    assert plan.parameters["compiler_trace"] is True
+    assert plan.parameters["optimisation_level"] == 2
+
+
+@pytest.mark.parametrize(
+    "parameters,message",
+    [
+        ({"compiler_trace": False}, "compiler_trace must be true"),
+        ({"compiler_trace": 1}, "compiler_trace must be true"),
+        ({"compiler_trace": "true"}, "compiler_trace must be true"),
+        ({"optimisation_level": 1}, "optimisation_level requires compiler_trace"),
+        ({"compiler_trace": True, "optimisation_level": 4}, "between 0 and 3"),
+        ({"compiler_trace": True, "optimisation_level": -1}, "between 0 and 3"),
+        ({"compiler_trace": True, "optimisation_level": True}, "between 0 and 3"),
+        ({"compiler_trace": True, "optimisation_level": 1.0}, "between 0 and 3"),
+    ],
+)
+def test_compiler_trace_preview_refuses_unsupported_settings(
+    parameters: dict[str, Any], message: str
+) -> None:
+    """A trace flag that is not true, a level without a trace and a level out of range are refused.
+
+    Parameters
+    ----------
+    parameters
+        Trace settings added to a supported source request.
+    message
+        Pattern the refusal must match.
+
+    """
+    with pytest.raises(ValueError, match=message):
+        preview_action(
+            ExecutiveRequest(
+                verb=COMPILE_VERB,
+                action_id="refused-trace",
+                parameters={"program_source": _TRACE_SOURCE, **parameters},
+            ),
+            registry=_registry(),
+        )
