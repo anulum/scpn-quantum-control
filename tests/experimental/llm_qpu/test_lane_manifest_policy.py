@@ -276,7 +276,7 @@ def test_standalone_worker_runs_without_parent_import_and_refuses_compute(
         (b"not json", "invalid JSON"),
         (b"[]", "unsupported operation"),
         (b'{"op":"describe","submit":true}', "unsupported operation"),
-        (b" " * 65_537, "request too large"),
+        pytest.param(b" " * 65_537, "request too large", id="65537-spaces"),
     ],
 )
 def test_standalone_worker_refuses_malformed_or_oversized_requests(

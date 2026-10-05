@@ -79,9 +79,15 @@ def test_external_include_is_refused_before_filesystem_lookup() -> None:
         (HEADER + "qreg q[1];creg c[65];", "circuit_budget"),
         (HEADER + "qreg q[1000000000];", "circuit_budget"),
         (HEADER + "qreg q[ 1000000000 ];", "circuit_budget"),
-        (HEADER + "qreg q[" + "9" * 5000 + "];", "circuit_budget"),
-        (HEADER + "qreg q[1];" + "x q[0];" * 4097, "circuit_budget"),
-        ("//" + "x" * (1024 * 1024), "source_budget"),
+        pytest.param(
+            HEADER + "qreg q[" + "9" * 5000 + "];",
+            "circuit_budget",
+            id="5000-digit-register-width",
+        ),
+        pytest.param(
+            HEADER + "qreg q[1];" + "x q[0];" * 4097, "circuit_budget", id="4097-operations"
+        ),
+        pytest.param("//" + "x" * (1024 * 1024), "source_budget", id="mebibyte-comment"),
     ],
 )
 def test_source_budgets_refuse_large_native_allocations(source: str, code: str) -> None:

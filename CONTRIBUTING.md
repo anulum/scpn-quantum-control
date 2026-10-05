@@ -336,6 +336,23 @@ collected, and the session header names what was dropped.
   writes. `python -m pytest tests/test_git_location_isolation.py` proves the
   isolation with real Git and a nested session.
 
+## Test Identifier Length
+
+pytest builds the identifier of a parametrised case from the value itself when
+the value is a string, a byte string or a number, and a verbose run prints the
+identifier on one line. Two cases that passed a mebibyte of source text had
+mebibyte-long identifiers; the hosted runner needed 17 to 22 minutes to pass
+each such line on, so the general test jobs spent more than half an hour on
+them and the container workflow ran into its time limit.
+
+The shared configuration in `tests/conftest.py` therefore stops collection
+when a test identifier is longer than 2,000 characters and names the case.
+
+- Give a case with a long value a short identifier:
+  `pytest.param("x" * 1_048_577, "source_budget", id="one-character-past-a-mebibyte")`.
+- `python -m pytest tests/test_test_identifier_limits.py` proves the limit
+  with a nested session under the shared configuration.
+
 ## Source Surface Inventory
 
 Lint, type and documentation gates name the paths they read, so a file in a new

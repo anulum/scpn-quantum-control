@@ -157,7 +157,11 @@ def test_invalid_object_key_scalar() -> None:
         canonical_bytes("example.v1", {"\udfff": None})
 
 
-@pytest.mark.parametrize("value", [10**4096, -(10**4096), 1 << 14000])
+@pytest.mark.parametrize(
+    "value",
+    [10**4096, -(10**4096), 1 << 14000],
+    ids=["ten-to-the-4096", "minus-ten-to-the-4096", "two-to-the-14000"],
+)
 def test_oversized_integer_refused(value: int) -> None:
     """Refuse integers outside the shared scalar resource budget."""
     with pytest.raises(ValueError, match="integer scalar too large"):

@@ -13,7 +13,7 @@
     "python_model_source_modules": 780,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1507
+    "test_files": 1509
   },
   "documentation": {
     "examples": [
@@ -8773,6 +8773,7 @@
       "tests/_phase_torch_bridge_test_helpers.py",
       "tests/_program_ad_rust_bridge_test_fixtures.py",
       "tests/_qualification_receipt_vectors.py",
+      "tests/_test_identifier_limits.py",
       "tests/_whole_program_trace_array_helpers.py",
       "tests/conftest.py",
       "tests/experimental/llm_qpu/artifact_custody/test_artifact_store.py",
@@ -10165,6 +10166,7 @@
       "tests/test_tcbo_weighted_complex_validation.py",
       "tests/test_tensor_jump.py",
       "tests/test_tensor_jump_contracts.py",
+      "tests/test_test_identifier_limits.py",
       "tests/test_tested_tree_is_the_working_tree.py",
       "tests/test_theory_hook_promotion.py",
       "tests/test_theory_hook_promotion_quality_gate.py",

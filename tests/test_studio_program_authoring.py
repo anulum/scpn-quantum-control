@@ -251,9 +251,9 @@ def test_native_export_refuses_unsupported_circuits_without_mutation(kind: str) 
         ("", "invalid_source"),
         (" \n", "invalid_source"),
         ("\ud800", "invalid_source"),
-        ("x" * 1_048_577, "source_budget"),
-        (";" * 65_537, "source_budget"),
-        (HEADER + "x q[0];" * 4097, "circuit_budget"),
+        pytest.param("x" * 1_048_577, "source_budget", id="one-character-past-a-mebibyte"),
+        pytest.param(";" * 65_537, "source_budget", id="65537-statement-separators"),
+        pytest.param(HEADER + "x q[0];" * 4097, "circuit_budget", id="4097-operations"),
     ],
 )
 def test_original_source_transport_and_operation_limits(source: str, code: str) -> None:

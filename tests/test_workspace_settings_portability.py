@@ -86,7 +86,7 @@ def test_portable_values_reenter_current_policy_without_importing_authority() ->
         '{"schema":"quantum_workspace_settings.v1","values":[]}',
         '{"schema":"quantum_workspace_settings.v1","values":{"token":"secret"}}',
         '{"schema":"quantum_workspace_settings.v1","schema":"x","values":{}}',
-        " " * 65537,
+        pytest.param(" " * 65537, id="65537-spaces"),
     ],
 )
 def test_portable_refusal_before_any_application(wire: str) -> None:

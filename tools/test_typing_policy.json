@@ -14,6 +14,7 @@
       "activation_criterion": "Every listed repository-policy test passes mypy --strict together in the pinned CI environment.",
       "files": [
         "tests/_git_location_isolation.py",
+        "tests/_test_identifier_limits.py",
         "tests/test_audit_advisory_workflow_steps.py",
         "tests/test_audit_coverage_debt.py",
         "tests/test_audit_coverage_policy.py",
@@ -59,6 +60,7 @@
         "tests/test_stable_core_release_gate.py",
         "tests/test_studio_contract_quality_gate.py",
         "tests/test_synchronisation_benchmark_compare.py",
+        "tests/test_test_identifier_limits.py",
         "tests/test_wheel_contents.py",
         "tests/test_workspace_cross_language_conformance.py",
         "tests/test_zenodo_metadata.py"

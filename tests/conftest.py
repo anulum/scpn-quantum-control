@@ -16,6 +16,8 @@ Provides:
   - Reproducible RNG
   - Git location isolation: inherited repository-location variables are
     dropped before collection (see ``_git_location_isolation``)
+  - Identifier limit: collection stops on an overlong test identifier
+    (see ``_test_identifier_limits``)
 """
 
 from __future__ import annotations
@@ -28,6 +30,7 @@ import numpy as np
 import pytest
 from _git_location_isolation import drop_inherited_git_location
 from _internal_corpus_markers import is_performance_gate, requires_internal_paper0_corpus
+from _test_identifier_limits import refuse_overlong_identifiers
 from hypothesis import strategies as st
 
 from scpn_quantum_control.bridge.knm_hamiltonian import (
@@ -76,7 +79,8 @@ def pytest_configure(config: pytest.Config) -> None:
 
 
 def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
-    """Mark tests that require ignored local manuscript extraction artefacts."""
+    """Refuse overlong identifiers and mark tests that need ignored local artefacts."""
+    refuse_overlong_identifiers(items)
     internal_marker = pytest.mark.internal_corpus
     performance_marker = pytest.mark.performance
     for item in items:
