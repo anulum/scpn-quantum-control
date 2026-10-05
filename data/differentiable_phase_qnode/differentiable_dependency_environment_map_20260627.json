@@ -144,7 +144,7 @@
         "clap==4.6.7",
         "criterion==0.5.1",
         "scpn-quantum-engine==0.2.0",
-        "pyo3==0.29.2",
+        "pyo3==0.29.3",
         "ndarray==0.16.1",
         "numpy==0.29.0",
         "nalgebra==0.35.0",
@@ -160,7 +160,7 @@
         "scpn_quantum_engine/Cargo.lock"
       ],
       "evidence_sha256": [
-        "3076d330fbd3968a74cc827167f7ecc1c4c415ad22b808a88d09ebad2d9d1897"
+        "92b001058523a078d37d6cfc13ee2c216ba5acd36866cb7bc87d5b1073508463"
       ],
       "evidence_status": "locked",
       "blockers": [],
