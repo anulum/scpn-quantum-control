@@ -19,6 +19,7 @@
         "tests/test_audit_coverage_policy.py",
         "tests/test_audit_license_readiness.py",
         "tests/test_audit_mock_stub_usage.py",
+        "tests/test_audit_mutation_survivors.py",
         "tests/test_audit_release_readiness.py",
         "tests/test_audit_shell_scripts.py",
         "tests/test_audit_source_surface_inventory.py",

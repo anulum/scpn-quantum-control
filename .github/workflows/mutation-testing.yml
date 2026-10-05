@@ -6,11 +6,11 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Mutation testing (mutmut) weekly
 #
-# Runs the full `mutmut run` on the targets listed in
-# `pyproject.toml [tool.mutmut]`. Non-blocking until three
-# consecutive weekly runs complete without a surprise semantic
-# survivor. Outcome categories explained in
-# `docs/mutation_testing.md`.
+# Runs every recorded mutation target with the pinned mutmut release and
+# compares the outcome with `tools/mutation_survivor_ceiling.json`. The job
+# fails when the tool cannot run, when a mutant is left untested, and when
+# survivors or timeouts rise above their ceiling. Outcome categories and the
+# way to lower or re-record the ceiling are in `docs/mutation_testing.md`.
 name: Mutation Testing
 
 on:
@@ -24,7 +24,6 @@ permissions:
 jobs:
   mutmut:
     runs-on: ubuntu-latest
-    continue-on-error: true
     timeout-minutes: 180
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
@@ -32,23 +31,17 @@ jobs:
         with:
           python-version: "3.12"
           cache: 'pip'
-      - name: Install project + mutmut
+      - name: Install the locked environment and the pinned mutation tool
         run: |
-          pip install --no-deps -e oscillatools/
-          pip install -e ".[dev]"
-          pip install 'mutmut<3'
-      - name: Point the runner script at the CI python
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e oscillatools/
+          python -m pip install --no-deps -e .
+          python -m pip install --require-hashes -r requirements-ci-mutation.txt
+      - name: Hold the mutation survivor ceiling
+        shell: bash
         run: |
-          echo "VENV_PY=$(which python)" >> "$GITHUB_ENV"
-      - name: Run mutmut baseline
-        run: |
-          # The config lives in `pyproject.toml [tool.mutmut]`; invoke
-          # the runner script directly so mutmut gets a single-word
-          # command (see docs/mutation_testing.md for the 2.5 quirk).
-          mutmut run --paths-to-mutate src/scpn_quantum_control/analysis/koopman.py \
-                     --tests-dir tests/ \
-                     --runner=./tools/mutmut_runner.sh || true
-          mutmut results | tee mutmut-results.txt
+          python tools/audit_mutation_survivors.py --workspace "$RUNNER_TEMP" 2>&1 \
+            | tee mutation-survivors.txt
       - name: Summarise
         if: always()
         run: |
@@ -56,15 +49,18 @@ jobs:
             echo "## Mutation testing — weekly run"
             echo
             echo '```'
-            head -80 mutmut-results.txt || true
+            if [ -f mutation-survivors.txt ]; then
+              head -80 mutation-survivors.txt
+            else
+              echo "no result file: the gate did not start"
+            fi
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
-      - name: Upload mutmut cache and results
+      - name: Upload the gate output
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
-          name: mutmut-results
-          path: |
-            .mutmut-cache
-            mutmut-results.txt
+          name: mutation-survivors
+          path: mutation-survivors.txt
           retention-days: 365
+          if-no-files-found: warn

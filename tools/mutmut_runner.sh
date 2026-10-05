@@ -13,7 +13,8 @@
 # baseline; extend as target files grow. See docs/mutation_testing.md.
 set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-VENV_PY="${VENV_PY:-$REPO_ROOT/.venv-linux/bin/python}"
-# The CI job overrides VENV_PY to point at the workflow-managed
-# interpreter; local runs use the repo's `.venv-linux/`.
+VENV_PY="${VENV_PY:-$(command -v python)}"
+# The mutation gate sets VENV_PY to the interpreter that runs it; a direct
+# call falls back to the python on PATH.
+cd "$REPO_ROOT"
 exec "$VENV_PY" -m pytest -x -q tests/test_koopman.py

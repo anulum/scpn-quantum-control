@@ -1,0 +1,16 @@
+{
+ "schema": "mutation_survivor_ceiling_v1",
+ "release": "2.5.1",
+ "targets": [
+  {
+   "name": "koopman",
+   "module": "src/scpn_quantum_control/analysis/koopman.py",
+   "runner": "tools/mutmut_runner.sh",
+   "source_sha256": "6ba6148e0bf982ca8724a7cfc58604c35f5f30e4996dfcd1f6c5aa41c97387b7",
+   "mutants": 148,
+   "survived": 50,
+   "timeout": 0
+  }
+ ],
+ "history": []
+}

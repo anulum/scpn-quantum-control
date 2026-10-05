@@ -85,7 +85,7 @@ interpreter and tool pins, `requirements-ci-py312-linux.txt` for distributions,
 machine says something different. It is a report, not a gate: a workstation
 legitimately differs from a runner on the optional tiers.
 
-Five pieces are not in the base lock and have to be provisioned:
+Six pieces are not in the base lock and have to be provisioned:
 
 ```bash
 # the native engine, with the arguments CI builds it with
@@ -106,6 +106,9 @@ python -m pip install --no-deps --require-hashes -r requirements-ci-shell-lint.t
 
 # the licence-information linter; its shared dependencies follow the base lock
 python -m pip install --require-hashes -r requirements-ci-licence-lint.txt
+
+# the mutation testing tool; its shared dependencies follow the base lock
+python -m pip install --require-hashes -r requirements-ci-mutation.txt
 ```
 
 Two axes cannot be closed on a workstation and the report says so rather than

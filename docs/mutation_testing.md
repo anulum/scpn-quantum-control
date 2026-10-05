@@ -156,16 +156,63 @@ Semantically meaningful kills:
 
 ## CI integration
 
-`.github/workflows/mutation-testing.yml` runs `mutmut run` weekly
-on Monday 04:00 UTC (before the commit-trailer audit at 05:00 and
-the link-check at 05:30). Results land as a workflow artifact and
-drive a succinct job summary. The workflow is non-blocking
-(`continue-on-error: true`) until three consecutive weekly runs
-complete without a surprise semantic survivor — then it promotes
-to a blocking gate.
+`.github/workflows/mutation-testing.yml` runs weekly on Monday 04:00 UTC
+(before the commit-trailer audit at 05:00 and the link-check at 05:30) and on
+manual dispatch. It runs `python tools/audit_mutation_survivors.py`, which is
+blocking: the job fails when the tool cannot run, when any mutant is left
+untested, when the number of generated mutants differs from the record, and
+when survivors or timeouts rise above their ceiling.
 
-Manual dispatch is always available for on-demand runs during
-test-hardening work.
+### What the weekly job did before 2026-10-05
+
+All 24 weekly runs from 2026-04-20 to 2026-09-28 reported success. The run of
+2026-09-28 tested no mutant: the runner script was committed without its
+execute permission, mutmut stopped with `PermissionError`, and the workflow
+discarded that failure (`|| true` under a job-level `continue-on-error`). The
+result files of the three most recent runs are empty, and the oldest and the
+newest run took 40 and 46 seconds, where one real pass over the first target
+takes minutes. The baselines above are local measurements from April; no
+weekly measurement is known.
+
+### The survivor ceiling
+
+`tools/mutation_survivor_ceiling.json` records, per target, the module, the
+runner, the SHA-256 of the module, the number of generated mutants and the
+ceilings for survived and timed-out mutants, together with the mutmut release
+(pinned in `requirements-ci-mutation.txt`). The gate:
+
+- exports the committed tree of `HEAD` into a directory of its own and runs
+  mutmut there, because mutmut rewrites the target module while it works;
+- fails on a survivor or timeout count above its ceiling, and asks for
+  `--lower` when a count fell, so the ceiling stays a measurement;
+- asks for `--rebaseline` when the module's source or the mutmut release
+  changed, because mutants are then not comparable; the previous record is
+  kept in the file's history;
+- counts a mutant that the tests noticed slowly ("suspicious") as noticed:
+  that label depends on how busy the machine was.
+
+The gate counts survivors and does not classify them. A recorded survivor is
+either an equivalent mutant or a gap in the tests; the sections above name the
+known classes.
+
+Measurement recorded on 2026-10-05 with mutmut 2.5.1 (local, on an export of
+the committed tree, 11.5 minutes):
+
+| Target | Mutants | Killed | Survived | Timed out | Suspicious |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `analysis/koopman.py` | 148 | 97 | 50 | 0 | 1 |
+
+`bridge/knm_hamiltonian.py` and `analysis/otoc.py` have runner scripts and
+April baselines but no recorded ceiling yet; they are not gated until they are
+measured and added to the file.
+
+Run it locally with the pinned tool installed
+(`python -m pip install --require-hashes -r requirements-ci-mutation.txt`):
+
+```bash
+python tools/audit_mutation_survivors.py            # all targets
+python tools/audit_mutation_survivors.py --target koopman --lower
+```
 
 ## How to interpret the output
 

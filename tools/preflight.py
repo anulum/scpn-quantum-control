@@ -1075,6 +1075,18 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
         ],
     ),
     (
+        "mypy-strict-mutation-survivor-gate",
+        [
+            _PY,
+            "-m",
+            "mypy",
+            "--strict",
+            "--explicit-package-bases",
+            "tools/audit_mutation_survivors.py",
+            "tests/test_audit_mutation_survivors.py",
+        ],
+    ),
+    (
         "advisory-workflow-steps",
         [_PY, "tools/audit_advisory_workflow_steps.py"],
     ),

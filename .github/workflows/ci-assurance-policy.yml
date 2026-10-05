@@ -497,3 +497,35 @@ jobs:
             tools/audit_advisory_workflow_steps.py
           python -m coverage report --rcfile=/dev/null --precision=2 --show-missing \
             --fail-under=100 --include='*/audit_advisory_workflow_steps.py'
+  mutation-survivor-gate-tests:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - run: |
+          pip install --require-hashes -r requirements-ci-py312-linux.txt
+          pip install --require-hashes -r requirements-ci-mutation.txt
+      - name: Test the mutation survivor gate with the pinned tool
+        env:
+          COVERAGE_FILE: .coverage.mutation-survivor-gate
+        run: |
+          python -m mypy --strict --explicit-package-bases \
+            tools/audit_mutation_survivors.py tests/test_audit_mutation_survivors.py
+          python -m ruff check \
+            tools/audit_mutation_survivors.py tests/test_audit_mutation_survivors.py
+          python -m ruff format --check \
+            tools/audit_mutation_survivors.py tests/test_audit_mutation_survivors.py
+          python -m ruff check --isolated --preview --select D,D413,D417,D420 \
+            --config 'lint.explicit-preview-rules = true' --config 'lint.pydocstyle.convention = "numpy"' \
+            tools/audit_mutation_survivors.py tests/test_audit_mutation_survivors.py
+          python -m coverage run --rcfile=/dev/null --branch \
+            -m pytest -q tests/test_audit_mutation_survivors.py
+          python -m coverage run --rcfile=/dev/null --branch --append \
+            tools/audit_mutation_survivors.py --help > /dev/null
+          python -m coverage report --rcfile=/dev/null --precision=2 --show-missing \
+            --fail-under=100 --include='*/audit_mutation_survivors.py'

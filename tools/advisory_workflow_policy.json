@@ -42,31 +42,6 @@
    "undecided": "No promotion condition is written in the workflow. Needed: whether a manually dispatched run should report failure, since nothing depends on this job."
   },
   {
-   "workflow": "mutation-testing.yml",
-   "job": "mutmut",
-   "kind": "job-continue-on-error",
-   "reason": "Weekly mutation run of one module; staged as non-blocking in the workflow header.",
-   "promotion": "Three consecutive weekly runs complete without a surprise semantic survivor, as the workflow header states."
-  },
-  {
-   "workflow": "mutation-testing.yml",
-   "job": "mutmut",
-   "step": "Run mutmut baseline",
-   "kind": "shell-tolerance",
-   "count": 1,
-   "reason": "The mutation tool exits non-zero when any mutant survives; the results are printed and uploaded by the following commands.",
-   "promotion": "Removed when the job is promoted, under the job's condition: three consecutive weekly runs without a surprise semantic survivor."
-  },
-  {
-   "workflow": "mutation-testing.yml",
-   "job": "mutmut",
-   "step": "Summarise",
-   "kind": "shell-tolerance",
-   "count": 1,
-   "reason": "The summary prints the head of the results file, which is absent when the run stopped early.",
-   "permanent": "The step only writes the job summary and runs with if: always(); it decides nothing."
-  },
-  {
    "workflow": "rust-benches.yml",
    "job": "criterion",
    "kind": "job-continue-on-error",

@@ -250,7 +250,8 @@
         "competitive-baseline-watch-quality",
         "semantic-record-contract-quality",
         "qualification-projection-quality",
-        "advisory-workflow-steps"
+        "advisory-workflow-steps",
+        "mutation-survivor-gate-tests"
       ]
     },
     {
@@ -544,6 +545,7 @@
     "semantic-record-contract-quality",
     "qualification-projection-quality",
     "advisory-workflow-steps",
+    "mutation-survivor-gate-tests",
     "whole-program-ad-product-quality",
     "neural-operator-cost-model-quality",
     "neural-operator-baseline-product-quality",
