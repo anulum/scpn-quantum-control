@@ -63,6 +63,9 @@ COPY requirements-ci-minimal-install-py312-linux.txt requirements-ci-quimb-py312
 COPY requirements-ci-jax-py312-linux.txt requirements-ci-torch-cpu-py312-linux.txt ./
 # Reproduction audits inspect these workflow inputs without installing them.
 COPY requirements-ci-julia-tier.txt requirements-integration-sc-neurocore.txt requirements-publish.txt rust-toolchain.toml ./
+# The workflow environment audit reads the lock of every tool a job installs;
+# the shell-lint, licence-lint and mutation tools are not installed here.
+COPY requirements-ci-shell-lint.txt requirements-ci-licence-lint.txt requirements-ci-mutation.txt ./
 COPY src/ src/
 COPY experimental_workers/ experimental_workers/
 COPY oscillatools/src/ oscillatools/src/
@@ -70,6 +73,9 @@ COPY oscillatools/src/ oscillatools/src/
 # Hatchling metadata pair, including the README declared by its pyproject.
 COPY oscillatools/pyproject.toml oscillatools/pyproject.toml
 COPY oscillatools/README.md oscillatools/README.md
+# The Kuramoto convention matrix names the sibling's own tests; without them
+# the generated convention page drifts. The image runs only `tests/`.
+COPY oscillatools/tests/ oscillatools/tests/
 # The archive-metadata test checks both Zenodo records against the Zenodo
 # relation-type vocabulary.
 COPY .zenodo.json ./
@@ -92,6 +98,12 @@ RUN pip install --no-cache-dir --require-hashes -r requirements-ci-py312-linux.t
 COPY --from=native-builder /wheels/ dist/
 RUN pip install --no-cache-dir --no-deps dist/*.whl \
     && python -c "import scpn_quantum_engine as engine; assert hasattr(engine, 'MlDsaSigningKey')"
+
+# Tests that record the installed distribution version need the package's
+# metadata, as the hosted test jobs provide it. The sources under /app/src
+# remain the imported copy.
+RUN pip install --no-cache-dir --no-deps -e . \
+    && python -c "from importlib.metadata import version; version('scpn-quantum-control')"
 
 COPY tests/ tests/
 COPY tools/ tools/
