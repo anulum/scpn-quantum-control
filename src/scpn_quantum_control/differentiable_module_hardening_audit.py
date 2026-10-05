@@ -312,6 +312,51 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("effect-IR record validation", "effect-IR parser contracts"),
         ),
         _record(
+            "src/scpn_quantum_control/program_ad_effect_admission.py",
+            ("tests/test_program_ad_effect_admission.py",),
+            ("objective effect findings before execution", "captured write and callback refusal"),
+        ),
+        _record(
+            "src/scpn_quantum_control/program_ad_effect_analysis.py",
+            ("tests/test_program_ad_effect_analysis.py",),
+            ("helper source and namespace binding", "argument origin tracking"),
+        ),
+        _record(
+            "src/scpn_quantum_control/program_ad_effect_call_binding.py",
+            ("tests/test_program_ad_effect_call_binding.py",),
+            ("native container call signature refusal"),
+        ),
+        _record(
+            "src/scpn_quantum_control/program_ad_effect_dispatch.py",
+            ("tests/test_program_ad_effect_dispatch.py",),
+            ("frozen native call identities", "output position classification"),
+        ),
+        _record(
+            "src/scpn_quantum_control/program_ad_effect_source_binding.py",
+            ("tests/test_program_ad_effect_source_binding.py",),
+            ("parsed source identity refusal"),
+        ),
+        _record(
+            "src/scpn_quantum_control/program_ad_effect_values.py",
+            ("tests/test_program_ad_effect_values.py",),
+            ("abstract storage provenance", "shared container state"),
+        ),
+        _record(
+            "src/scpn_quantum_control/program_ad_captured_state.py",
+            ("tests/test_program_ad_captured_state.py",),
+            ("captured state fingerprint refusal", "changed capture refusal"),
+        ),
+        _record(
+            "src/scpn_quantum_control/program_ad_captured_memory.py",
+            ("tests/test_program_ad_captured_memory.py",),
+            ("capture traversal storage admission"),
+        ),
+        _record(
+            "src/scpn_quantum_control/program_ad_tape_binding.py",
+            ("tests/test_program_ad_tape_binding.py",),
+            ("runtime tape content digest", "edited result refusal"),
+        ),
+        _record(
             "src/scpn_quantum_control/program_ad_registry.py",
             ("tests/test_program_ad_registry.py",),
             ("primitive registry contracts", "dispatch coverage reports"),
@@ -598,6 +643,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             "src/scpn_quantum_control/whole_program_trace_runtime.py",
             ("tests/test_whole_program_trace_runtime.py",),
             ("runtime SSA/effect metadata", "source-line trace capture"),
+        ),
+        _record(
+            "src/scpn_quantum_control/whole_program_trace_scatter.py",
+            ("tests/test_whole_program_trace_scatter.py",),
+            ("bounded scatter-add validation", "in-place ufunc refusal"),
         ),
         _record(
             "src/scpn_quantum_control/whole_program_trace_metadata.py",
