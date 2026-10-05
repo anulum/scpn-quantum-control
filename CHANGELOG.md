@@ -4,6 +4,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+### Security
+
+- The Studio web workspace resolves `undici` 7.29.1 (GHSA-w293-vg96-wgc3,
+  GHSA-pmjh-fq2x-6v4x, GHSA-2jfj-6hjv-fm6j, GHSA-r53p-7pc4-xj5r,
+  GHSA-2gqq-gqf2-x968, GHSA-8436-99hf-9mmv), `brace-expansion` 5.0.12
+  (GHSA-q2hr-2g5m-vwhr) and `markdown-it` 14.3.1 (GHSA-253c-mchw-3w2r). All
+  three are development dependencies of the test, build and documentation tools;
+  none is part of the built portal.
+
 ### Added
 
 - Native browser workspace transactions, exact archive previews, immutable

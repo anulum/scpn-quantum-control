@@ -15,8 +15,12 @@ overrides:
   'adm-zip@<0.6.1': '0.6.1'
   # Dependabot alert #91; patched in postcss 8.5.23.
   'postcss@<=8.5.22': '8.5.23'
-  # Dependabot alerts #82-86; patched in undici 7.29.0.
-  'undici@<7.29.0': '7.29.0'
-  # GHSA-rgw5-rvv9-x895, reached only through the typedoc docs generator;
-  # patched in brace-expansion 5.0.9.
-  'brace-expansion@<5.0.9': '5.0.9'
+  # Dependabot alerts #150-153, #156 and #157 (GHSA-w293-vg96-wgc3 and five
+  # others); patched in undici 7.29.1, which also covers alerts #82-86.
+  'undici@<7.29.1': '7.29.1'
+  # GHSA-rgw5-rvv9-x895 and GHSA-q2hr-2g5m-vwhr, reached only through the
+  # typedoc docs generator; patched in brace-expansion 5.0.12.
+  'brace-expansion@<5.0.12': '5.0.12'
+  # GHSA-253c-mchw-3w2r, reached only through the typedoc docs generator;
+  # patched in markdown-it 14.3.1.
+  'markdown-it@<14.3.1': '14.3.1'
