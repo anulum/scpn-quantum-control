@@ -9,13 +9,15 @@
 
 from __future__ import annotations
 
+import copy
 import json
 import math
+import re
 import runpy
 from collections.abc import Callable
 from dataclasses import FrozenInstanceError, fields, replace
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 
 import pytest
 from qiskit import QuantumCircuit, qasm2
@@ -36,6 +38,61 @@ from scpn_quantum_control.studio.compiler_trace import (
 from scpn_quantum_control.studio_workspace.canonical import canonical_digest
 
 SOURCE = 'OPENQASM 2.0;\ninclude "qelib1.inc";\nqreg q[2];\ncreg c[2];\nry(0.41) q[0];\ncx q[0],q[1];\nmeasure q[1] -> c[0];\nmeasure q[0] -> c[1];\n'
+
+
+_MEASURED = ("global_phase_delta", "operator_error")
+_MEASUREMENT_NOISE = 1e-14
+
+
+def _measurements(document: dict[str, Any]) -> list[tuple[float, ...]]:
+    """Return the measured phase delta and operator error of every pass."""
+    return [tuple(row["record"][name] for name in _MEASURED) for row in document["body"]["passes"]]
+
+
+def _measurement_digests(document: dict[str, Any]) -> list[str]:
+    """Return the digests that bind a measured value, in document order."""
+    digests = [row["native_record_sha256"] for row in document["body"]["passes"]]
+    emitted = document["body"].get("emitted_ir")
+    if emitted is not None:
+        digests.append(emitted["metadata"]["pass_sha256"])
+    return [*digests, document["sha256"]]
+
+
+def _without_measurement(document: dict[str, Any]) -> dict[str, Any]:
+    """Return a copy without the measured values and the digests that bind them."""
+    stripped = copy.deepcopy(document)
+    del stripped["sha256"]
+    for row in stripped["body"]["passes"]:
+        del row["native_record_sha256"]
+        for name in _MEASURED:
+            del row["record"][name]
+    emitted = stripped["body"].get("emitted_ir")
+    if emitted is not None:
+        del emitted["metadata"]["pass_sha256"]
+    return stripped
+
+
+def _assert_reproduced(produced: dict[str, Any], committed: dict[str, Any]) -> None:
+    """Require the committed trace, up to the last bits of its measured values.
+
+    The phase delta and the operator error are measured through the reference
+    linear algebra, whose last bits differ between platforms; the record
+    digest, the lowering's pass digest and the document digest bind them. A
+    bit-equal measurement requires equal documents. Any other measurement must
+    agree within the measurement noise, and everything except the measured
+    values and exactly those digests must still be equal.
+    """
+    measured, expected = _measurements(produced), _measurements(committed)
+    if measured == expected:
+        assert produced == committed
+        return
+    assert len(measured) == len(expected)
+    for values, references in zip(measured, expected, strict=True):
+        for value, reference in zip(values, references, strict=True):
+            assert abs(value - reference) <= _MEASUREMENT_NOISE
+    assert _without_measurement(produced) == _without_measurement(committed)
+    for digest in _measurement_digests(produced):
+        assert re.fullmatch(r"[0-9a-f]{64}", digest) is not None
 
 
 def mapped_circuits() -> tuple[QuantumCircuit, QuantumCircuit, CircuitPassRecord]:
@@ -370,24 +427,26 @@ def test_browser_fixtures_reproduce_through_the_original_native_producers() -> N
             )
         )
         parameters.append(row["parameters"])
-    assert (
+    _assert_reproduced(
         project_compiler_passes(
             records, backend_snapshot=compiler_backend_snapshot(), pass_parameters=parameters
-        ).to_dict()
-        == original
+        ).to_dict(),
+        original,
     )
     cases = json.loads((data / "compiler_trace_cases.json").read_text())
-    assert build_compiler_trace(cases["lowering"]["body"]["source"]).to_dict() == cases["lowering"]
+    _assert_reproduced(
+        build_compiler_trace(cases["lowering"]["body"]["source"]).to_dict(), cases["lowering"]
+    )
     original_crlf = cases["crlf"]["body"]["source"]
     circuit = qasm2.loads(original_crlf)
     crlf_record = qualify_circuit_pass(
         circuit, circuit, source=original_crlf, pass_name="crlf", allow_global_phase=False
     )
-    assert (
+    _assert_reproduced(
         project_compiler_passes(
             [crlf_record], backend_snapshot=compiler_backend_snapshot()
-        ).to_dict()
-        == cases["crlf"]
+        ).to_dict(),
+        cases["crlf"],
     )
     for name, circuit in [
         ("empty", QuantumCircuit(1)),
@@ -399,12 +458,43 @@ def test_browser_fixtures_reproduce_through_the_original_native_producers() -> N
         if name == "negative_zero":
             circuit.rx(-0.0, 0)
         record = qualify_circuit_pass(circuit, circuit, pass_name=name, allow_global_phase=False)
-        assert (
+        _assert_reproduced(
             project_compiler_passes(
                 [record], backend_snapshot=compiler_backend_snapshot()
-            ).to_dict()
-            == cases[name]
+            ).to_dict(),
+            cases[name],
         )
+
+
+def test_fixture_reproduction_admits_only_measurement_noise_and_its_digests() -> None:
+    """Another platform's last bits are admitted; any other difference still fails."""
+    data = Path(__file__).resolve().parents[1] / "data/studio"
+    committed = json.loads((data / "compiler_trace_cases.json").read_text())["lowering"]
+    measured = committed["body"]["passes"][0]["record"]
+    assert measured["global_phase_delta"] != 0.0
+
+    elsewhere = copy.deepcopy(committed)
+    record = elsewhere["body"]["passes"][0]["record"]
+    record["global_phase_delta"] = math.nextafter(measured["global_phase_delta"], 0.0)
+    record["operator_error"] = math.nextafter(measured["operator_error"], 1.0)
+    elsewhere["body"]["passes"][0]["native_record_sha256"] = "a" * 64
+    elsewhere["body"]["emitted_ir"]["metadata"]["pass_sha256"] = "a" * 64
+    elsewhere["sha256"] = "b" * 64
+    _assert_reproduced(elsewhere, committed)
+
+    stale_digest = copy.deepcopy(committed)
+    stale_digest["sha256"] = "b" * 64
+    beyond_noise = copy.deepcopy(elsewhere)
+    beyond_noise["body"]["passes"][0]["record"]["global_phase_delta"] = 1e-13
+    other_content = copy.deepcopy(elsewhere)
+    other_content["body"]["emitted_ir"]["sha256"] = "c" * 64
+    malformed_digest = copy.deepcopy(elsewhere)
+    malformed_digest["sha256"] = "unbound"
+    missing_pass = copy.deepcopy(elsewhere)
+    missing_pass["body"]["passes"] = []
+    for changed in (stale_digest, beyond_noise, other_content, malformed_digest, missing_pass):
+        with pytest.raises(AssertionError):
+            _assert_reproduced(changed, committed)
 
 
 @pytest.mark.parametrize(
