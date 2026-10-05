@@ -462,7 +462,7 @@ jobs:
           for name in ("src", "browser-tests", "test-support"):
               shutil.copytree(original / "studio-web" / name, web / name)
           for source in (original / "studio-web").iterdir():
-              if source.is_file() and source.suffix in {".ts", ".json"}:
+              if source.is_file() and source.suffix in {".ts", ".json", ".html"}:
                   shutil.copy2(source, web / source.name)
           (web / "node_modules").symlink_to(original / "studio-web/node_modules", target_is_directory=True)
           shutil.copytree(original / "studio-web/dist/wasm", web / "src/wasm")
