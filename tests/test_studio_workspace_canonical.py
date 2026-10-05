@@ -7,6 +7,7 @@
 # scpn-quantum-control — workspace canonical conformance tests
 """Exercise the public codec against explicit cross-language byte oracles."""
 
+import io
 import json
 import math
 import pickle
@@ -23,6 +24,37 @@ from scpn_quantum_control.studio_workspace.canonical import (
 )
 
 _CORPUS = json.loads((Path(__file__).parent / "data/studio_workspace/canonical.json").read_text())
+_CODEC_MODULE = "scpn_quantum_control.studio_workspace.canonical"
+
+
+class _CodecUnpickler(pickle.Unpickler):
+    """Resolve a pickle stream only to the two historical codec functions."""
+
+    def find_class(self, module: str, name: str) -> object:
+        """Return a historical codec function, or refuse any other global.
+
+        Parameters
+        ----------
+        module
+            Defining module the stream names.
+        name
+            Global the stream names in that module.
+
+        Returns
+        -------
+        object
+            ``canonical_bytes`` or ``canonical_digest`` of the workspace codec.
+
+        Raises
+        ------
+        pickle.UnpicklingError
+            If the stream names anything else.
+
+        """
+        codecs = {"canonical_bytes": canonical_bytes, "canonical_digest": canonical_digest}
+        if module != _CODEC_MODULE or name not in codecs:
+            raise pickle.UnpicklingError(f"unexpected pickle global {module}.{name}")
+        return codecs[name]
 
 
 @pytest.mark.parametrize("encoder", [canonical_bytes, canonical_digest])
@@ -37,9 +69,13 @@ def test_historical_codec_pickle_restores_an_executable_public_function(
         Historical public encoder or digest function persisted by consumers.
 
     """
-    restored = cast(Callable[[str, object], bytes | str], pickle.loads(pickle.dumps(encoder)))
+    stream = pickle.dumps(encoder)
+    assert _CODEC_MODULE.encode() in stream
+    restored = cast(
+        Callable[[str, object], bytes | str], _CodecUnpickler(io.BytesIO(stream)).load()
+    )
     assert restored is encoder
-    assert restored.__module__ == "scpn_quantum_control.studio_workspace.canonical"
+    assert restored.__module__ == _CODEC_MODULE
     body = {"float": -0.0, "integer": 1, "array": [None, True, "😀"]}
     assert restored("workspace.v1", body) == encoder("workspace.v1", body)
     with pytest.raises(ValueError, match="non-finite"):
@@ -135,3 +171,9 @@ def test_integer_capacity_boundary() -> None:
         canonical_bytes("example.v1", int(decimal))
         == ('example.v1\n["integer","' + decimal + '"]').encode()
     )
+
+
+def test_codec_unpickler_refuses_any_other_global() -> None:
+    """A stream that names another global is refused before it is resolved."""
+    with pytest.raises(pickle.UnpicklingError, match="unexpected pickle global builtins.len"):
+        _CodecUnpickler(io.BytesIO(pickle.dumps(len))).load()
