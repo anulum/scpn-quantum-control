@@ -15,6 +15,7 @@ from typing import cast
 
 import numpy as np
 import pytest
+from _whole_program_trace_array_helpers import parameter_trace_array
 from numpy.typing import NDArray
 
 from scpn_quantum_control import (
@@ -41,18 +42,11 @@ def _differentiate(
     return whole_program_value_and_grad(public_objective, values, trace=False)
 
 
-def _capture_trace_array(values: FloatArray | None = None) -> TraceADArray:
-    """Capture the production trace array injected by the public AD API."""
-    captured: list[TraceADArray] = []
-    parameters = np.arange(1.0, 25.0, dtype=np.float64) if values is None else values
-
-    def objective(trace_values: TraceADArray) -> TraceADScalar:
-        captured.append(trace_values)
-        return cast(TraceADScalar, trace_values[0])
-
-    _differentiate(objective, parameters)
-    assert len(captured) == 1
-    return captured[0]
+def _trace_array(values: FloatArray | None = None) -> TraceADArray:
+    """Return the parameter trace array the public AD entry point builds."""
+    return parameter_trace_array(
+        np.arange(1.0, 25.0, dtype=np.float64) if values is None else values
+    )
 
 
 def _dispatch(
@@ -83,7 +77,7 @@ def _primals(value: object) -> tuple[float, ...]:
 
 def test_atleast_promotions_cover_every_supported_input_rank() -> None:
     """At-least transforms should match NumPy's scalar-through-ranked shapes."""
-    values = _capture_trace_array()
+    values = _trace_array()
     scalar = TraceADArray((cast(TraceADScalar, values[0]),), (), values.context)
     vector = values[:2]
     matrix = cast(TraceADArray, values[:4]).reshape((2, 2))
@@ -102,7 +96,7 @@ def test_atleast_promotions_cover_every_supported_input_rank() -> None:
 
 def test_atleast_multiple_operands_and_low_rank_transpose_preserve_values() -> None:
     """Multi-operand promotion and low-rank transpose should preserve trace values."""
-    values = _capture_trace_array(np.array([1.0, 2.0, 3.0], dtype=np.float64))
+    values = _trace_array(np.array([1.0, 2.0, 3.0], dtype=np.float64))
     scalar = TraceADArray((cast(TraceADScalar, values[0]),), (), values.context)
     promoted = cast(
         list[TraceADArray],
@@ -117,7 +111,7 @@ def test_atleast_multiple_operands_and_low_rank_transpose_preserve_values() -> N
 
 def test_like_constructors_validate_keyword_and_dtype_contracts() -> None:
     """Like constructors should accept real dtypes and reject shape or complex drift."""
-    values = _capture_trace_array(np.array([1.0, 2.0], dtype=np.float64))
+    values = _trace_array(np.array([1.0, 2.0], dtype=np.float64))
 
     created = cast(
         TraceADArray,
@@ -138,7 +132,7 @@ def test_like_constructors_validate_keyword_and_dtype_contracts() -> None:
 
 def test_basic_indexing_rejects_out_of_bounds_and_dynamic_selectors() -> None:
     """Basic indexing should fail closed for invalid bounds and dynamic selectors."""
-    values = _capture_trace_array(np.array([1.0, 2.0, 3.0], dtype=np.float64))
+    values = _trace_array(np.array([1.0, 2.0, 3.0], dtype=np.float64))
 
     with pytest.raises(ValueError, match="in-bounds indices"):
         _ = values[9]
@@ -159,7 +153,7 @@ def test_basic_indexing_rejects_out_of_bounds_and_dynamic_selectors() -> None:
 
 def test_singleton_axis_sort_and_squeeze_contracts() -> None:
     """Singleton axes should sort and squeeze without introducing boundaries."""
-    values = _capture_trace_array(np.array([2.0, 1.0], dtype=np.float64))
+    values = _trace_array(np.array([2.0, 1.0], dtype=np.float64))
     column = values.reshape((2, 1))
 
     sorted_column = cast(
@@ -181,7 +175,7 @@ def test_singleton_axis_sort_and_squeeze_contracts() -> None:
 @pytest.mark.parametrize("function", [np.concatenate, np.stack, np.hstack, np.vstack])
 def test_assembly_operations_reject_empty_sequences(function: ArrayFunction) -> None:
     """Assembly primitives should reject empty operand sequences consistently."""
-    values = _capture_trace_array(np.array([1.0, 2.0], dtype=np.float64))
+    values = _trace_array(np.array([1.0, 2.0], dtype=np.float64))
 
     with pytest.raises(ValueError, match="requires at least one array"):
         _dispatch(values, function, ((),))
@@ -189,7 +183,7 @@ def test_assembly_operations_reject_empty_sequences(function: ArrayFunction) -> 
 
 def test_block_rejects_empty_nested_sequences_and_shape_mismatches() -> None:
     """Block should fail closed for empty nodes and incompatible nested layouts."""
-    values = _capture_trace_array(np.arange(1.0, 7.0, dtype=np.float64))
+    values = _trace_array(np.arange(1.0, 7.0, dtype=np.float64))
     left = cast(TraceADArray, values[:4]).reshape((2, 2))
     right = cast(TraceADArray, values[4:]).reshape((1, 2))
 
@@ -200,7 +194,7 @@ def test_block_rejects_empty_nested_sequences_and_shape_mismatches() -> None:
 
 def test_split_variants_reject_incompatible_rank_axis_and_sections() -> None:
     """Split variants should diagnose scalar ranks, axes, and invalid sections."""
-    values = _capture_trace_array(np.arange(1.0, 9.0, dtype=np.float64))
+    values = _trace_array(np.arange(1.0, 9.0, dtype=np.float64))
     scalar = TraceADArray((cast(TraceADScalar, values[0]),), (), values.context)
     vector = values[:4]
     matrix = cast(TraceADArray, values[:4]).reshape((2, 2))
@@ -219,7 +213,7 @@ def test_split_variants_reject_incompatible_rank_axis_and_sections() -> None:
 
 def test_diagonal_rejects_dynamic_or_duplicate_axes() -> None:
     """Diagonal should require ranked input, static offsets, and distinct axes."""
-    values = _capture_trace_array(np.arange(1.0, 9.0, dtype=np.float64))
+    values = _trace_array(np.arange(1.0, 9.0, dtype=np.float64))
     matrix = cast(TraceADArray, values[:4]).reshape((2, 2))
 
     cases: tuple[tuple[object, object, object, str], ...] = (
@@ -238,7 +232,7 @@ def test_diagonal_rejects_dynamic_or_duplicate_axes() -> None:
 
 def test_concatenate_stack_and_append_reject_invalid_layouts() -> None:
     """Assembly calls should reject dynamic axes and incompatible operand shapes."""
-    values = _capture_trace_array(np.arange(1.0, 7.0, dtype=np.float64))
+    values = _trace_array(np.arange(1.0, 7.0, dtype=np.float64))
     vector = values[:2]
     matrix = cast(TraceADArray, values[:4]).reshape((2, 2))
 
@@ -257,7 +251,7 @@ def test_concatenate_stack_and_append_reject_invalid_layouts() -> None:
 
 def test_concatenate_axis_none_and_stack_conveniences_match_numpy_layouts() -> None:
     """Flattened concatenation and convenience stacks should preserve exact layouts."""
-    values = _capture_trace_array(np.arange(1.0, 7.0, dtype=np.float64))
+    values = _trace_array(np.arange(1.0, 7.0, dtype=np.float64))
     left = values[:2]
     right = values[2:4]
 
@@ -274,7 +268,7 @@ def test_concatenate_axis_none_and_stack_conveniences_match_numpy_layouts() -> N
 
 def test_positional_shape_protocol_variants_match_numpy_layouts() -> None:
     """Positional protocol forms should share the registered structural semantics."""
-    values = _capture_trace_array(np.arange(1.0, 7.0, dtype=np.float64))
+    values = _trace_array(np.arange(1.0, 7.0, dtype=np.float64))
     matrix = values.reshape((2, 3))
 
     reshaped = _dispatch(values, np.reshape, (values, 6))

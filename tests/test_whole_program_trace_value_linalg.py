@@ -15,6 +15,7 @@ from typing import cast
 
 import numpy as np
 import pytest
+from _whole_program_trace_array_helpers import parameter_trace_array
 from numpy.typing import NDArray
 
 from scpn_quantum_control import (
@@ -41,38 +42,14 @@ def _differentiate(
     return whole_program_value_and_grad(public_objective, values, trace=False)
 
 
-def _capture_trace_array(values: FloatArray) -> TraceADArray:
-    """Capture the production trace array injected by the public AD API."""
-    captured: list[TraceADArray] = []
-
-    def objective(trace_values: TraceADArray) -> TraceADScalar:
-        captured.append(trace_values)
-        return cast(TraceADScalar, trace_values[0])
-
-    _differentiate(objective, values)
-    assert len(captured) == 1
-    return captured[0]
+def _trace_array(values: FloatArray) -> TraceADArray:
+    """Return the parameter trace array the public AD entry point builds."""
+    return parameter_trace_array(values)
 
 
-def _capture_empty_trace_array() -> TraceADArray:
-    """Capture the valid zero-parameter trace context through the public API."""
-    captured: list[TraceADArray] = []
-
-    def objective(trace_values: TraceADArray) -> TraceADScalar:
-        captured.append(trace_values)
-        return cast(
-            TraceADScalar,
-            trace_values.__array_function__(
-                np.dot,
-                (TraceADArray,),
-                (trace_values, trace_values),
-                {},
-            ),
-        )
-
-    _differentiate(objective, np.array([], dtype=np.float64))
-    assert len(captured) == 1
-    return captured[0]
+def _empty_trace_array() -> TraceADArray:
+    """Return the trace array of a valid zero-parameter trace."""
+    return parameter_trace_array(np.array([], dtype=np.float64))
 
 
 def _constant_array(
@@ -116,19 +93,19 @@ def _primals(value: object) -> tuple[float, ...]:
 
 def test_scalar_inner_broadcasts_and_empty_vdot_returns_zero() -> None:
     """Inner should multiply scalar arrays and vdot should define the empty identity."""
-    values = _capture_trace_array(np.array([2.0, 3.0], dtype=np.float64))
+    values = _trace_array(np.array([2.0, 3.0], dtype=np.float64))
     scalar = TraceADArray((cast(TraceADScalar, values[0]),), (), values.context)
 
     assert _primals(_dispatch(values, np.inner, (scalar, values))) == (4.0, 6.0)
     assert _primals(_dispatch(values, np.inner, (values, scalar))) == (4.0, 6.0)
 
-    empty = _capture_empty_trace_array()
+    empty = _empty_trace_array()
     assert _primals(_dispatch(empty, np.vdot, (empty, empty))) == (0.0,)
 
 
 def test_empty_square_det_inv_and_matrix_power_have_numpy_identities() -> None:
     """Empty square matrices should preserve NumPy determinant and power identities."""
-    empty = _capture_empty_trace_array()
+    empty = _empty_trace_array()
     matrix = TraceADArray((), (0, 0), empty.context)
 
     determinant = cast(TraceADScalar, _dispatch(empty, np.linalg.det, (matrix,)))
@@ -146,7 +123,7 @@ def test_empty_square_det_inv_and_matrix_power_have_numpy_identities() -> None:
 
 def test_zero_parameter_solve_and_multi_dot_preserve_empty_tangents() -> None:
     """Constant linalg calls should produce correctly shaped zero-width tangents."""
-    empty = _capture_empty_trace_array()
+    empty = _empty_trace_array()
     matrix = _constant_array(empty, (2.0, 0.0, 0.0, 4.0), (2, 2))
     vector = _constant_array(empty, (2.0, 8.0), (2,))
     rhs_matrix = _constant_array(empty, (2.0, 4.0, 8.0, 12.0), (2, 2))
@@ -238,7 +215,7 @@ def test_factorisations_fail_closed_on_nonfinite_numeric_results(
     message: str,
 ) -> None:
     """Factorisations should reject overflowed outputs from finite inputs."""
-    trace_values = _capture_trace_array(np.array(values, dtype=np.float64))
+    trace_values = _trace_array(np.array(values, dtype=np.float64))
     matrix = trace_values.reshape((2, 2))
 
     with (
@@ -250,7 +227,7 @@ def test_factorisations_fail_closed_on_nonfinite_numeric_results(
 
 def test_solve_matrix_power_and_multi_dot_reject_nonfinite_outputs() -> None:
     """Linalg primitives should fail closed when finite operands overflow."""
-    values = _capture_trace_array(np.array([1.0e-308, 0.0, 0.0, 1.0e-308], dtype=np.float64))
+    values = _trace_array(np.array([1.0e-308, 0.0, 0.0, 1.0e-308], dtype=np.float64))
     matrix = values.reshape((2, 2))
     rhs = np.array([2.0, 2.0], dtype=np.float64)
 
@@ -260,7 +237,7 @@ def test_solve_matrix_power_and_multi_dot_reject_nonfinite_outputs() -> None:
     ):
         _dispatch(values, np.linalg.solve, (matrix, rhs))
 
-    large = _capture_trace_array(np.array([1.0e200, 0.0, 0.0, 1.0e200], dtype=np.float64))
+    large = _trace_array(np.array([1.0e200, 0.0, 0.0, 1.0e200], dtype=np.float64))
     large_matrix = large.reshape((2, 2))
     with np.errstate(over="ignore", invalid="ignore"):
         with pytest.raises(ValueError, match="finite outputs"):
@@ -271,7 +248,7 @@ def test_solve_matrix_power_and_multi_dot_reject_nonfinite_outputs() -> None:
 
 def test_linalg_registry_rejects_invalid_shapes_before_execution() -> None:
     """The public registry should own linalg shape validation consistently."""
-    values = _capture_trace_array(np.arange(1.0, 7.0, dtype=np.float64))
+    values = _trace_array(np.arange(1.0, 7.0, dtype=np.float64))
     matrix = cast(TraceADArray, values[:4]).reshape((2, 2))
 
     invalid_cases: tuple[tuple[ArrayFunction, tuple[object, ...], str], ...] = (
@@ -301,7 +278,7 @@ def test_linalg_registry_rejects_invalid_shapes_before_execution() -> None:
 
 def test_multi_dot_registry_rejects_nonsequences_rank_and_alignment() -> None:
     """Multi-dot should fail closed at its static signature boundary."""
-    values = _capture_trace_array(np.arange(1.0, 9.0, dtype=np.float64))
+    values = _trace_array(np.arange(1.0, 9.0, dtype=np.float64))
     matrix = cast(TraceADArray, values[:4]).reshape((2, 2))
     ranked = values.reshape((2, 2, 2))
 
@@ -319,7 +296,7 @@ def test_multi_dot_registry_rejects_nonsequences_rank_and_alignment() -> None:
 
 def test_direct_matmul_and_einsum_shortcuts_cover_ranked_products() -> None:
     """Direct protocol matmul and einsum shortcuts should preserve ranked products."""
-    values = _capture_trace_array(np.arange(1.0, 9.0, dtype=np.float64))
+    values = _trace_array(np.arange(1.0, 9.0, dtype=np.float64))
     vector = cast(TraceADArray, values[:2])
     matrix = cast(TraceADArray, values[2:6]).reshape((2, 2))
 
@@ -336,7 +313,7 @@ def test_direct_matmul_and_einsum_shortcuts_cover_ranked_products() -> None:
 
 def test_positional_spectral_uplo_forms_match_keyword_contracts() -> None:
     """Positional UPLO forms should execute symmetric spectral contracts."""
-    values = _capture_trace_array(np.array([2.0, 0.0, 3.0], dtype=np.float64))
+    values = _trace_array(np.array([2.0, 0.0, 3.0], dtype=np.float64))
     diagonal_left = cast(TraceADScalar, values[0])
     off_diagonal = cast(TraceADScalar, values[1])
     diagonal_right = cast(TraceADScalar, values[2])
@@ -362,7 +339,7 @@ def test_positional_spectral_uplo_forms_match_keyword_contracts() -> None:
 
 def test_norm_scalar_axis_and_invalid_public_options() -> None:
     """Norm should support scalar axis reductions and reject unsupported options."""
-    values = _capture_trace_array(np.array([3.0, 4.0, 5.0, 6.0], dtype=np.float64))
+    values = _trace_array(np.array([3.0, 4.0, 5.0, 6.0], dtype=np.float64))
     matrix = values.reshape((2, 2))
 
     scalar_norm = cast(
@@ -381,6 +358,6 @@ def test_norm_scalar_axis_and_invalid_public_options() -> None:
         with pytest.raises(ValueError, match=message):
             _dispatch(values, np.linalg.norm, args, kwargs)
 
-    empty = _capture_empty_trace_array()
+    empty = _empty_trace_array()
     with pytest.raises(ValueError, match="requires at least one element"):
         _dispatch(empty, np.linalg.norm, (empty,))

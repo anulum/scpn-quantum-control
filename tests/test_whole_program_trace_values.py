@@ -19,6 +19,7 @@ from typing import Any, cast
 
 import numpy as np
 import pytest
+from _whole_program_trace_array_helpers import reserved_growth
 from numpy.typing import NDArray
 
 from scpn_quantum_control import (
@@ -47,7 +48,13 @@ ArrayFunctionFailure = tuple[
 
 
 _MALFORMED_ARRAY_FUNCTION_CASES: tuple[ArrayFunctionFailure, ...] = (
-    ("sum-arity", np.sum, lambda _array: (), lambda _array: {}, r"np\.sum supports"),
+    (
+        "sum-arity",
+        np.sum,
+        lambda _array: (),
+        lambda _array: {},
+        r"np\.sum supports",
+    ),
     (
         "cumsum-keyword",
         np.cumsum,
@@ -237,7 +244,13 @@ _MALFORMED_ARRAY_FUNCTION_CASES: tuple[ArrayFunctionFailure, ...] = (
         lambda _array: {"keepdims": True},
         r"np\.min supports",
     ),
-    ("dot-arity", np.dot, lambda array: (array,), lambda _array: {}, r"np\.dot supports"),
+    (
+        "dot-arity",
+        np.dot,
+        lambda array: (array,),
+        lambda _array: {},
+        r"np\.dot supports",
+    ),
     (
         "vdot-keyword",
         np.vdot,
@@ -915,20 +928,17 @@ def _expect_array_function_failure(
 
 def test_trace_values_are_crosswired_at_the_package_root() -> None:
     """The package root should expose the value classes used by the public AD API."""
-    observed: dict[str, object] = {}
 
-    def record_trace_values(values: Any) -> object:
-        observed["type"] = type(values)
-        observed["scalar_type"] = type(values[0])
-        return values[0] * values[0]
+    def root_classes_only(values: Any) -> object:
+        injected = type(values) is TraceADArray and type(values[0]) is TraceADScalar
+        return (1.0 if injected else 0.0) * values[0] * values[0]
 
     result = whole_program_value_and_grad(
-        record_trace_values,
+        root_classes_only,
         np.array([2.0], dtype=np.float64),
         trace=False,
     )
 
-    assert observed == {"type": TraceADArray, "scalar_type": TraceADScalar}
     assert result.value == pytest.approx(4.0)
     np.testing.assert_allclose(result.gradient, np.array([4.0], dtype=np.float64))
 
@@ -1160,25 +1170,22 @@ def test_public_pad_refuses_large_layout_before_shape_materialisation_and_recove
     assert active_reserved_bytes() == baseline
 
 
-def test_public_padding_storage_remains_owned_until_objective_returns() -> None:
+def test_padding_storage_remains_owned_while_the_trace_scope_lives() -> None:
     """Padding object/tangent charges survive the temporary numeric layout scope."""
-    observations: list[int] = []
 
-    def observe_storage() -> None:
-        observations.append(active_reserved_bytes())
+    def padded(values: Any) -> Any:
+        return np.pad(values, 3, constant_values=7.0)
 
     def objective(values: Any) -> object:
-        observe_storage()
-        padded = np.pad(values, 3, constant_values=7.0)
-        observe_storage()
-        return np.sum(padded)
+        return np.sum(padded(values))
 
     baseline = active_reserved_bytes()
+    growth = reserved_growth(np.array([2.0, 3.0]), padded)
+    assert growth >= 6 * 2 * np.dtype(np.float64).itemsize
+    assert active_reserved_bytes() == baseline
     result = whole_program_value_and_grad(objective, np.array([2.0, 3.0]), trace=False)
     assert result.value == 47.0
     np.testing.assert_array_equal(result.gradient, np.ones(2))
-    assert len(observations) == 2
-    assert observations[1] - observations[0] >= 6 * 2 * np.dtype(np.float64).itemsize
     assert active_reserved_bytes() == baseline
 
 
@@ -1207,27 +1214,24 @@ def test_public_padding_failure_releases_retained_objects_and_tangents() -> None
 
 
 @pytest.mark.parametrize("selector", [1, (1,)])
-def test_public_insertion_storage_remains_owned_until_objective_returns(
+def test_insertion_storage_remains_owned_while_the_trace_scope_lives(
     selector: int | tuple[int, ...],
 ) -> None:
     """Inserted constants retain their scalar and tangent charge after layout exits."""
-    observations: list[int] = []
 
-    def observe_storage() -> None:
-        observations.append(active_reserved_bytes())
+    def inserted(values: Any) -> Any:
+        return np.insert(values, selector, (7.0, 8.0, 9.0))
 
     def objective(values: Any) -> object:
-        observe_storage()
-        inserted = np.insert(values, selector, (7.0, 8.0, 9.0))
-        observe_storage()
-        return np.sum(inserted)
+        return np.sum(inserted(values))
 
     baseline = active_reserved_bytes()
+    growth = reserved_growth(np.array([2.0, 3.0]), inserted)
+    assert growth >= 3 * 2 * np.dtype(np.float64).itemsize
+    assert active_reserved_bytes() == baseline
     result = whole_program_value_and_grad(objective, np.array([2.0, 3.0]), trace=False)
     assert result.value == 29.0
     np.testing.assert_array_equal(result.gradient, np.ones(2))
-    assert len(observations) == 2
-    assert observations[1] - observations[0] >= 3 * 2 * np.dtype(np.float64).itemsize
     assert active_reserved_bytes() == baseline
 
 
@@ -1307,31 +1311,28 @@ def test_public_take_shape_admission_refuses_large_selection_and_recovers(
 
 
 @pytest.mark.parametrize("along_axis", [False, True])
-def test_public_take_storage_stays_owned_after_numeric_selection(along_axis: bool) -> None:
-    """Selection container charges survive until the objective result is formed."""
-    observations: list[int] = []
+def test_take_storage_stays_owned_after_numeric_selection(along_axis: bool) -> None:
+    """Selection container charges survive while the selected values live."""
     indices = np.array([1, 0, 1, 1], dtype=np.int64)
     row_indices = indices.reshape((1, 4))
 
-    def observe_storage() -> None:
-        observations.append(active_reserved_bytes())
-
-    def objective(values: Any) -> object:
-        observe_storage()
-        selected = (
+    def selected(values: Any) -> Any:
+        return (
             np.take_along_axis(values.reshape((1, 2)), row_indices, axis=1)
             if along_axis
             else np.take(values, indices)
         )
-        observe_storage()
-        return np.sum(selected)
+
+    def objective(values: Any) -> object:
+        return np.sum(selected(values))
 
     baseline = active_reserved_bytes()
+    growth = reserved_growth(np.array([2.0, 3.0]), selected)
+    assert growth >= 4 * np.dtype(np.uintp).itemsize
+    assert active_reserved_bytes() == baseline
     result = whole_program_value_and_grad(objective, np.array([2.0, 3.0]), trace=False)
     assert result.value == 11.0
     np.testing.assert_array_equal(result.gradient, np.array([1.0, 3.0]))
-    assert len(observations) == 2
-    assert observations[1] - observations[0] >= 4 * np.dtype(np.uintp).itemsize
     assert active_reserved_bytes() == baseline
 
 
@@ -1401,9 +1402,8 @@ def test_public_take_empty_result_preserves_zero_gradient(along_axis: bool) -> N
 
 
 @pytest.mark.parametrize("selector_kind", ["scalar", "slice", "boolean"])
-def test_public_delete_retains_storage_and_preserves_gradient(selector_kind: str) -> None:
+def test_delete_retains_storage_and_preserves_gradient(selector_kind: str) -> None:
     """Deletion output containers remain charged after numeric layout finishes."""
-    observations: list[int] = []
     selector = (
         1
         if selector_kind == "scalar"
@@ -1412,24 +1412,22 @@ def test_public_delete_retains_storage_and_preserves_gradient(selector_kind: str
         else np.array([False, True, False, True])
     )
 
-    def observe_storage() -> None:
-        observations.append(active_reserved_bytes())
+    def remaining(values: Any) -> Any:
+        return np.delete(values, selector)
 
     def objective(values: Any) -> object:
-        observe_storage()
-        selected = np.delete(values, selector)
-        observe_storage()
-        return np.sum(selected)
+        return np.sum(remaining(values))
 
     baseline = active_reserved_bytes()
+    growth = reserved_growth(np.array([2.0, 3.0, 4.0, 5.0]), remaining)
+    assert growth >= 2 * np.dtype(np.uintp).itemsize
+    assert active_reserved_bytes() == baseline
     result = whole_program_value_and_grad(objective, np.array([2.0, 3.0, 4.0, 5.0]), trace=False)
     assert result.value == (11.0 if selector_kind == "scalar" else 6.0)
     np.testing.assert_array_equal(
         result.gradient,
         [1.0, 0.0, 1.0, 1.0] if selector_kind == "scalar" else [1.0, 0.0, 1.0, 0.0],
     )
-    assert len(observations) == 2
-    assert observations[1] - observations[0] >= 2 * np.dtype(np.uintp).itemsize
     assert active_reserved_bytes() == baseline
 
 
@@ -1649,27 +1647,21 @@ def test_public_compact_cumsum_failure_after_output_releases_retained_charge_and
 ):
     """Objective failure after a real compact output disposes its retained storage."""
     failing = True
-    observations: list[int] = []
-
-    def observe_storage() -> None:
-        observations.append(active_reserved_bytes())
 
     def fail_if_armed() -> None:
         if failing:
             raise RuntimeError("after compact output")
 
     def objective(values: Any) -> object:
-        observe_storage()
         output = np.cumsum(values)
-        observe_storage()
         fail_if_armed()
         return np.sum(output)
 
     baseline = active_reserved_bytes()
+    assert reserved_growth(np.array([1.0, 2.0, 3.0]), np.cumsum) > 0
+    assert active_reserved_bytes() == baseline
     with pytest.raises(RuntimeError, match="after compact output"):
         whole_program_value_and_grad(objective, [1.0, 2.0, 3.0], trace=False)
-    assert len(observations) == 2
-    assert observations[1] > observations[0]
     assert active_reserved_bytes() == baseline
     failing = False
     result = whole_program_value_and_grad(objective, [1.0, 2.0, 3.0], trace=False)

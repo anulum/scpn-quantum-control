@@ -13,7 +13,7 @@
     "python_model_source_modules": 780,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1506
+    "test_files": 1507
   },
   "documentation": {
     "examples": [
@@ -8772,6 +8772,7 @@
       "tests/_phase_torch_bridge_test_helpers.py",
       "tests/_program_ad_rust_bridge_test_fixtures.py",
       "tests/_qualification_receipt_vectors.py",
+      "tests/_whole_program_trace_array_helpers.py",
       "tests/conftest.py",
       "tests/experimental/llm_qpu/artifact_custody/test_artifact_store.py",
       "tests/experimental/llm_qpu/artifact_custody/test_lineage_cache.py",

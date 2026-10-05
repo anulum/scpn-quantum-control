@@ -55,6 +55,7 @@ WHOLE_PROGRAM_TRACE_VALUE_QUALITY_RATCHET = [
     "tests/test_whole_program_trace_value_signal.py",
     "tests/test_whole_program_trace_value_linalg.py",
     "tests/test_whole_program_trace_value_shapes.py",
+    "tests/_whole_program_trace_array_helpers.py",
     PROGRAM_AD_LINALG_SPECTRAL_TEST,
     "tests/test_program_ad_linalg_memory.py",
     PROGRAM_AD_LINALG_EXACT_CONTRACTS_TEST,

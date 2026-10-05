@@ -15,6 +15,7 @@ from typing import cast
 
 import numpy as np
 import pytest
+from _whole_program_trace_array_helpers import parameter_trace_array
 from numpy.typing import NDArray
 
 from scpn_quantum_control import (
@@ -42,17 +43,11 @@ def _differentiate(
     return whole_program_value_and_grad(public_objective, parameters, trace=False)
 
 
-def _capture_trace_array(values: FloatArray | None = None) -> TraceADArray:
-    """Capture the production trace array injected by the public AD API."""
-    captured: list[TraceADArray] = []
-
-    def objective(trace_values: TraceADArray) -> TraceADScalar:
-        captured.append(trace_values)
-        return cast(TraceADScalar, trace_values[0] * trace_values[0])
-
-    _differentiate(objective, values)
-    assert len(captured) == 1
-    return captured[0]
+def _trace_array(values: FloatArray | None = None) -> TraceADArray:
+    """Return the parameter trace array the public AD entry point builds."""
+    return parameter_trace_array(
+        np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64) if values is None else values
+    )
 
 
 def _dispatch(
@@ -80,7 +75,7 @@ def _primals(value: object) -> tuple[float, ...]:
 
 def test_where_accepts_static_boolean_conditions_and_scalar_predicate_arrays() -> None:
     """Where should support static booleans and broadcast scalar predicate arrays."""
-    values = _capture_trace_array()
+    values = _trace_array()
     scalar_array = TraceADArray(
         (cast(TraceADScalar, values[0]),),
         (),
@@ -123,7 +118,7 @@ def test_where_accepts_static_boolean_conditions_and_scalar_predicate_arrays() -
 
 def test_clip_rejects_inverted_bounds_before_selection() -> None:
     """Clip should reject lower bounds that exceed their upper bounds."""
-    values = _capture_trace_array()
+    values = _trace_array()
 
     with pytest.raises(ValueError, match="lower bound must not exceed upper bound"):
         _dispatch(values, np.clip, (values, 2.0, 1.0))
@@ -131,8 +126,8 @@ def test_clip_rejects_inverted_bounds_before_selection() -> None:
 
 def test_where_rejects_invalid_and_cross_trace_predicate_arrays() -> None:
     """Where should reject non-boolean, shape-mismatched, and foreign predicates."""
-    values = _capture_trace_array()
-    foreign = _capture_trace_array(np.array([5.0, 6.0, 7.0, 8.0], dtype=np.float64))
+    values = _trace_array()
+    foreign = _trace_array(np.array([5.0, 6.0, 7.0, 8.0], dtype=np.float64))
 
     with pytest.raises(ValueError, match="selection condition must be boolean"):
         _dispatch(values, np.where, (np.array([1, 0, 1, 0]), values, -values))
@@ -146,7 +141,7 @@ def test_where_rejects_invalid_and_cross_trace_predicate_arrays() -> None:
 
 def test_choose_supports_raise_wrap_and_clip_modes() -> None:
     """Choose should apply each documented static selector mode deterministically."""
-    values = _capture_trace_array()
+    values = _trace_array()
     choices = (values[:2], values[2:])
 
     assert _primals(_dispatch(values, np.choose, ((0, 1), choices))) == (1.0, 4.0)
@@ -162,7 +157,7 @@ def test_choose_supports_raise_wrap_and_clip_modes() -> None:
 
 def test_choose_rejects_dynamic_or_invalid_choices_and_selectors() -> None:
     """Choose should fail closed on dynamic choices and non-static selectors."""
-    values = _capture_trace_array()
+    values = _trace_array()
     choices = (values[:2], values[2:])
     object_selector = np.empty(1, dtype=object)
     object_selector[0] = values[0]
@@ -184,7 +179,7 @@ def test_choose_rejects_dynamic_or_invalid_choices_and_selectors() -> None:
 
 def test_compress_and_extract_support_static_boolean_conditions() -> None:
     """Compress and extract should retain selected trace values and aliases."""
-    values = _capture_trace_array()
+    values = _trace_array()
     matrix = values.reshape((2, 2))
 
     assert _primals(_dispatch(values, np.compress, ((True, False, True, False), values))) == (
@@ -200,7 +195,7 @@ def test_compress_and_extract_support_static_boolean_conditions() -> None:
 
 def test_compress_and_extract_reject_dynamic_or_malformed_conditions() -> None:
     """Compress and extract should reject dynamic and malformed conditions."""
-    values = _capture_trace_array()
+    values = _trace_array()
     object_condition = np.empty(1, dtype=object)
     object_condition[0] = values[0]
 
@@ -219,7 +214,7 @@ def test_compress_and_extract_reject_dynamic_or_malformed_conditions() -> None:
 
 def test_select_empty_conditions_return_scalar_and_array_defaults() -> None:
     """Select should return its traced default when no condition rows exist."""
-    values = _capture_trace_array()
+    values = _trace_array()
     scalar_default = TraceADArray(
         (cast(TraceADScalar, values[0]),),
         (),
@@ -232,7 +227,7 @@ def test_select_empty_conditions_return_scalar_and_array_defaults() -> None:
 
 def test_select_and_piecewise_reject_non_sequence_contracts() -> None:
     """Select and piecewise should require static condition and branch sequences."""
-    values = _capture_trace_array()
+    values = _trace_array()
 
     for conditions in (values, np.array([True, False]), object()):
         with pytest.raises(ValueError, match="select requires a static condition sequence"):
@@ -248,7 +243,7 @@ def test_select_and_piecewise_reject_non_sequence_contracts() -> None:
 
 def test_take_supports_scalar_results_and_rejects_invalid_indices() -> None:
     """Take should return traced scalars and reject dynamic or out-of-bounds indices."""
-    values = _capture_trace_array()
+    values = _trace_array()
 
     assert _primals(_dispatch(values, np.take, (values, 2))) == (3.0,)
     for indices in (values, values[0], (0.5, 1.5)):
@@ -260,7 +255,7 @@ def test_take_supports_scalar_results_and_rejects_invalid_indices() -> None:
 
 def test_take_along_axis_rejects_dynamic_and_incompatible_indices() -> None:
     """Take-along-axis should require static compatible integer index arrays."""
-    values = _capture_trace_array()
+    values = _trace_array()
     matrix = values.reshape((2, 2))
 
     for indices in (values, values[0]):
@@ -274,7 +269,7 @@ def test_take_along_axis_rejects_dynamic_and_incompatible_indices() -> None:
 
 def test_basic_indexing_rejects_dynamic_and_non_integer_selectors() -> None:
     """Basic indexing should reject traced, boolean-scalar, and non-integer selectors."""
-    values = _capture_trace_array()
+    values = _trace_array()
     object_indices = np.empty(1, dtype=object)
     object_indices[0] = values[0]
 
@@ -328,7 +323,7 @@ def test_sort_and_order_statistics_cover_singleton_and_scalar_reductions() -> No
 
 def test_sort_rejects_tied_values_at_nondifferentiable_boundaries() -> None:
     """Sort should reject equal values globally and along an explicit axis."""
-    values = _capture_trace_array(np.array([1.0, 1.0, 2.0, 3.0], dtype=np.float64))
+    values = _trace_array(np.array([1.0, 1.0, 2.0, 3.0], dtype=np.float64))
 
     with pytest.raises(ValueError, match="strictly ordered values"):
         _dispatch(values, np.sort, (values,), {"axis": None})

@@ -15,6 +15,7 @@ from typing import cast
 
 import numpy as np
 import pytest
+from _whole_program_trace_array_helpers import parameter_trace_array
 from numpy.typing import NDArray
 
 from scpn_quantum_control import (
@@ -56,33 +57,14 @@ def _dispatch(
     )
 
 
-def _capture_trace_array(values: FloatArray) -> TraceADArray:
-    """Capture the production trace array injected by the public AD API."""
-    captured: list[TraceADArray] = []
-
-    def objective(trace_values: TraceADArray) -> TraceADScalar:
-        captured.append(trace_values)
-        return cast(TraceADScalar, trace_values[0] * trace_values[0])
-
-    _differentiate(objective, values)
-    assert len(captured) == 1
-    return captured[0]
+def _trace_array(values: FloatArray) -> TraceADArray:
+    """Return the parameter trace array the public AD entry point builds."""
+    return parameter_trace_array(values)
 
 
-def _capture_empty_trace_array() -> TraceADArray:
-    """Capture a valid zero-parameter trace through the public AD API."""
-    captured: list[TraceADArray] = []
-
-    def objective(trace_values: TraceADArray) -> TraceADScalar:
-        captured.append(trace_values)
-        return cast(
-            TraceADScalar,
-            _dispatch(trace_values, np.dot, (trace_values, trace_values)),
-        )
-
-    _differentiate(objective, np.array([], dtype=np.float64))
-    assert len(captured) == 1
-    return captured[0]
+def _empty_trace_array() -> TraceADArray:
+    """Return the trace array of a valid zero-parameter trace."""
+    return parameter_trace_array(np.array([], dtype=np.float64))
 
 
 def _constant_array(template: TraceADArray, values: Sequence[float]) -> TraceADArray:
@@ -126,7 +108,7 @@ def test_trapezoid_supports_full_static_coordinate_arrays() -> None:
 
 def test_trapezoid_rejects_invalid_grids_and_widths() -> None:
     """Trapezoid should reject short axes, dynamic grids, and inconsistent widths."""
-    values = _capture_trace_array(np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64))
+    values = _trace_array(np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64))
 
     with pytest.raises(ValueError, match="requires at least two samples"):
         _dispatch(values, np.trapezoid, (values[:1],))
@@ -172,7 +154,7 @@ def test_interp_scalar_samples_use_compact_derivative_rules() -> None:
 
 def test_interp_accepts_static_left_and_right_boundaries() -> None:
     """Interpolation should normalize finite static boundary values."""
-    values = _capture_trace_array(np.array([0.5], dtype=np.float64))
+    values = _trace_array(np.array([0.5], dtype=np.float64))
 
     interpolated = cast(
         TraceADScalar,
@@ -189,7 +171,7 @@ def test_interp_accepts_static_left_and_right_boundaries() -> None:
 
 def test_interp_rejects_malformed_values_samples_and_boundaries() -> None:
     """Interpolation should reject malformed ordinates, samples, and dynamic boundaries."""
-    values = _capture_trace_array(np.array([0.25, 0.75, 1.25, 1.75], dtype=np.float64))
+    values = _trace_array(np.array([0.25, 0.75, 1.25, 1.75], dtype=np.float64))
     grid = (0.0, 1.0, 2.0)
 
     with pytest.raises(ValueError, match="fp values must match xp grid"):
@@ -231,7 +213,7 @@ def test_convolve_and_correlate_match_full_mode_calculus() -> None:
 
 def test_zero_parameter_signal_rules_preserve_empty_tangents_and_finiteness() -> None:
     """Constant signal rules should preserve zero-width tangents and reject overflow."""
-    empty = _capture_empty_trace_array()
+    empty = _empty_trace_array()
     left = _constant_array(empty, (1.0, 2.0))
     right = _constant_array(empty, (3.0, 4.0))
 
@@ -253,7 +235,7 @@ def test_zero_parameter_signal_rules_preserve_empty_tangents_and_finiteness() ->
 @pytest.mark.parametrize("function", [np.convolve, np.correlate])
 def test_signal_operations_reject_invalid_operands(function: ArrayFunction) -> None:
     """Signal operations should reject scalar, ranked, empty, and non-finite operands."""
-    values = _capture_trace_array(np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64))
+    values = _trace_array(np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64))
     operation = function.__name__
 
     for operand in (values[0], values.reshape((2, 2)), np.array([[1.0, 2.0]])):
@@ -270,7 +252,7 @@ def test_signal_operations_reject_invalid_operands(function: ArrayFunction) -> N
 
 def test_diff_zero_and_exhausted_orders_preserve_static_shapes() -> None:
     """Diff should copy order zero and return a typed empty array beyond axis length."""
-    values = _capture_trace_array(np.array([1.0, 2.0, 4.0], dtype=np.float64))
+    values = _trace_array(np.array([1.0, 2.0, 4.0], dtype=np.float64))
 
     unchanged = cast(TraceADArray, _dispatch(values, np.diff, (values, 0)))
     exhausted = cast(TraceADArray, _dispatch(values, np.diff, (values, 3)))
@@ -286,7 +268,7 @@ def test_diff_zero_and_exhausted_orders_preserve_static_shapes() -> None:
 
 def test_empty_cumulative_operations_fail_closed() -> None:
     """Cumulative sums and products should reject empty traced arrays explicitly."""
-    empty = _capture_empty_trace_array()
+    empty = _empty_trace_array()
 
     with pytest.raises(ValueError, match="cumulative scan requires at least one element"):
         _dispatch(empty, np.cumsum, (empty,))

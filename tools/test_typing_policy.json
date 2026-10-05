@@ -217,6 +217,7 @@
         "tests/_phase_jax_qnode_test_helpers.py",
         "tests/_phase_pennylane_bridge_test_helpers.py",
         "tests/_phase_torch_bridge_test_helpers.py",
+        "tests/_whole_program_trace_array_helpers.py",
         "tests/conftest.py",
         "tests/test_adapt_vqe.py",
         "tests/test_adaptive_fim_evidence.py",

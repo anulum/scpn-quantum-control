@@ -655,6 +655,7 @@ jobs:
           tests/test_whole_program_trace_value_signal.py
           tests/test_whole_program_trace_value_linalg.py
           tests/test_whole_program_trace_value_shapes.py
+          tests/_whole_program_trace_array_helpers.py
           tests/test_program_ad_linalg_spectral.py
           tests/test_program_ad_linalg_memory.py
           tests/test_program_ad_linalg_exact_contracts.py
@@ -697,6 +698,7 @@ jobs:
           tests/test_whole_program_trace_value_signal.py
           tests/test_whole_program_trace_value_linalg.py
           tests/test_whole_program_trace_value_shapes.py
+          tests/_whole_program_trace_array_helpers.py
           tests/test_program_ad_linalg_spectral.py
           tests/test_program_ad_linalg_memory.py
           tests/test_program_ad_linalg_exact_contracts.py

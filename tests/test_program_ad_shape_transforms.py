@@ -1107,9 +1107,9 @@ def test_program_ad_squeeze_expand_dims_preserve_exact_adjoint() -> None:
         expanded = np.expand_dims(squeezed[1], axis=(0, 1))
         first_row = squeezed[0]
         method_expanded = (
-            first_row.expand_dims(axis=1)
-            if hasattr(first_row, "expand_dims")
-            else np.expand_dims(first_row, axis=1)
+            np.expand_dims(first_row, axis=1)
+            if type(first_row) is np.ndarray
+            else first_row.expand_dims(axis=1)
         )
         return (
             np.sum(squeezed * np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]))
