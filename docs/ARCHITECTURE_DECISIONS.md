@@ -227,3 +227,31 @@ host-relative and overridable.
 **Trade-offs.** Guards add a small estimate step and a configuration surface
 (environment variables), and the budget defaults must be generous enough not to
 reject legitimate work while still catching pathological `n`.
+
+---
+
+## ADR-0007 — One repository until a reviewed split
+
+**Status:** Active.
+
+**Context.** The package is planned to split into focused repositories, and two
+distributions (`oscillatools`, the Rust engine) are already built from their own
+directories. Without a recorded boundary, "where does this belong" is answered
+by habit.
+
+**Decision.** Everything stays in this repository until a split is released.
+Ownership of every unit and every tracked path is data in
+`data/split_preparation/split_domain_map.json`; imports against the declared
+dependency direction are frozen in `data/split_preparation/boundary_baseline.json`
+and checked on every push. The full record, with contents, exclusions, risks,
+commands and non-claims, is [Repository boundary](adr/0001-repository-boundary.md).
+
+**Rationale.** A split that is prepared as checked data can be reviewed and
+released in one step; a split by gradual drift cannot.
+
+**Alternatives considered.** (a) Split now — rejected: the exception baseline
+still lists imports that cross the declared direction. (b) Keep one repository with no recorded
+ownership — rejected: new cross-domain imports would accumulate unseen.
+
+**Trade-offs.** One long hosted gate for every change, and sibling
+distributions that share this repository's history and tags.
