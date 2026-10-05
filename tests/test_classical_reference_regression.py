@@ -116,6 +116,8 @@ class TestEvolutionRegression:
 
 
 class TestDiagRegression:
+    """Pin ground energies and spectral gaps of the exact diagonalisation."""
+
     @pytest.mark.parametrize(
         "n,expected_E0",
         [
@@ -170,6 +172,8 @@ class TestDiagRegression:
 
 
 class TestTrajectoryRegression:
+    """Pin the stored 16-qubit trajectory of the classical reference."""
+
     def test_16q_8step_trajectory(self, classical_reference: dict[str, Any]) -> None:
         """Pin the 16-qubit 8-step trajectory from UpCloud computation.
 
@@ -261,6 +265,8 @@ class TestTrajectoryRegression:
 
 
 class TestRustParity:
+    """Compare the native Kuramoto integrator with the exact evolution."""
+
     def test_rust_kuramoto_euler_direction(self) -> None:
         """Rust kuramoto_euler evolves in the same direction as exact evolution."""
         try:
@@ -292,6 +298,8 @@ class TestRustParity:
 
 
 class TestClassicalPipeline:
+    """Run diagonalisation and evolution together as one pipeline."""
+
     def test_pipeline_diag_and_evolution_consistent(self) -> None:
         """Pipeline: exact_diag E_0 < 0 and evolution R ∈ [0,1] — wired together."""
         import time

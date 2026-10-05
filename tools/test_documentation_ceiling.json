@@ -6,8 +6,8 @@
   "tests",
   "oscillatools/tests"
  ],
- "total_findings": 7377,
- "total_files": 593,
+ "total_findings": 7373,
+ "total_files": 592,
  "files": {
   "oscillatools/tests/conftest.py": 1,
   "oscillatools/tests/kuramoto_delay_sensitivity_witness.py": 1,
@@ -188,7 +188,6 @@
   "tests/test_classical.py": 13,
   "tests/test_classical_baselines.py": 13,
   "tests/test_classical_irreproducibility.py": 6,
-  "tests/test_classical_reference_regression.py": 4,
   "tests/test_commutator_bounds.py": 17,
   "tests/test_compare_eeg_plv_cohorts.py": 3,
   "tests/test_confinement.py": 18,
