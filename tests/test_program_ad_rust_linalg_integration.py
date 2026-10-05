@@ -222,14 +222,12 @@ def _diagonally_dominant(n: int, seed: int) -> Any:
     return (np.eye(n) * (n + 3.0) + rng.random((n, n))).ravel()
 
 
-def _objective_det_nxn(values: Any) -> Any:
-    n = int(round(float(np.sqrt(values.size))))
-    return np.linalg.det(np.reshape(values, (n, n)))
+def _objective_det_4x4(values: Any) -> Any:
+    return np.linalg.det(np.reshape(values, (4, 4)))
 
 
-def _objective_inv_nxn_sum(values: Any) -> Any:
-    n = int(round(float(np.sqrt(values.size))))
-    return np.sum(np.linalg.inv(np.reshape(values, (n, n))))
+def _objective_inv_5x5_sum(values: Any) -> Any:
+    return np.sum(np.linalg.inv(np.reshape(values, (5, 5))))
 
 
 def test_bridge_replays_general_linalg_det_4x4_with_real_engine() -> None:
@@ -238,12 +236,12 @@ def test_bridge_replays_general_linalg_det_4x4_with_real_engine() -> None:
     from scpn_quantum_control import program_adjoint_value_and_grad
 
     sample = _diagonally_dominant(4, seed=11)
-    result = whole_program_value_and_grad(_objective_det_nxn, sample)
+    result = whole_program_value_and_grad(_objective_det_4x4, sample)
     assert result.program_ir is not None
     rust = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, sample)
     if not rust.supported:
         pytest.skip(f"installed engine lacks general linalg:det: {rust.blocked_reasons}")
-    _, reference = program_adjoint_value_and_grad(_objective_det_nxn, sample)
+    _, reference = program_adjoint_value_and_grad(_objective_det_4x4, sample)
     np.testing.assert_allclose(np.asarray(rust.gradient), reference, rtol=1.0e-9, atol=1.0e-9)
 
 
@@ -253,10 +251,10 @@ def test_bridge_replays_general_linalg_inverse_5x5_with_real_engine() -> None:
     from scpn_quantum_control import program_adjoint_value_and_grad
 
     sample = _diagonally_dominant(5, seed=23)
-    result = whole_program_value_and_grad(_objective_inv_nxn_sum, sample)
+    result = whole_program_value_and_grad(_objective_inv_5x5_sum, sample)
     assert result.program_ir is not None
     rust = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, sample)
     if not rust.supported:
         pytest.skip(f"installed engine lacks general linalg:inv: {rust.blocked_reasons}")
-    _, reference = program_adjoint_value_and_grad(_objective_inv_nxn_sum, sample)
+    _, reference = program_adjoint_value_and_grad(_objective_inv_5x5_sum, sample)
     np.testing.assert_allclose(np.asarray(rust.gradient), reference, rtol=1.0e-9, atol=1.0e-9)
