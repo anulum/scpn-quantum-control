@@ -69,6 +69,7 @@ jobs:
       RUSTDOCFLAGS: "-D warnings"
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: ./.github/actions/pinned-rust-toolchain
       - run: cargo doc --manifest-path scpn_quantum_engine/Cargo.toml --no-deps
       - run: cargo doc --manifest-path scpn_quantum_engine/program_ad_replay/Cargo.toml --no-deps
       - run: cargo doc --manifest-path scpn_quantum_engine/studio_program_ad_wasm/Cargo.toml --no-deps

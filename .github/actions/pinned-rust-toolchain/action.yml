@@ -1,0 +1,47 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — complete installation of the pinned Rust toolchain
+#
+# A job that needs Rust runs this action directly after the checkout, before
+# any other step.
+#
+# The runner's cargo and rustc are rustup shims that install the toolchain of
+# rust-toolchain.toml on first use. pip asks `rustc --version` for its
+# user-agent string whenever it opens a network session and gives the command
+# half a second. In this repository that call starts the installation of the
+# pinned toolchain, and pip kills it half a second later. Depending on how far
+# rustup got, nothing is left, or a partial toolchain is left. A partial
+# toolchain makes every later rustup call report "recovering from a partially
+# installed toolchain" and, on the hosted runners, fail with
+# "detected conflict: 'bin/cargo-clippy'". That turned a different Rust job
+# red from run to run.
+#
+# Installing the toolchain completely before the first pip call removes the
+# cause: the version call then answers at once. If an installation fails, the
+# toolchain is removed before the next attempt.
+name: Install the pinned Rust toolchain
+description: >-
+  Install the toolchain declared in rust-toolchain.toml completely, before a
+  later step can start and interrupt its installation.
+runs:
+  using: composite
+  steps:
+    - name: Install the pinned Rust toolchain
+      shell: bash
+      run: |
+        channel="$(sed -n 's/^channel = "\(.*\)"$/\1/p' rust-toolchain.toml)"
+        for attempt in 1 2 3; do
+          if rustup toolchain install && rustc --version; then
+            exit 0
+          fi
+          echo "toolchain installation attempt ${attempt} failed; removing the installation of ${channel}"
+          if ! rustup toolchain uninstall "${channel}"; then
+            rm -rf "${RUSTUP_HOME:-${HOME}/.rustup}/toolchains/${channel}-"*
+          fi
+          sleep 5
+        done
+        exit 1

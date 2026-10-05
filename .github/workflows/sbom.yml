@@ -88,6 +88,7 @@ jobs:
         working-directory: scpn_quantum_engine
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: ./.github/actions/pinned-rust-toolchain
       # Ubuntu runners come with a recent stable rustc + cargo in
       # PATH (`rustup show` resolves to 1.80+). No separate toolchain
       # install needed for the SBOM step.
