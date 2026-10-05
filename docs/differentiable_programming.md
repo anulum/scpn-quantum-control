@@ -245,6 +245,35 @@ still require the existing trace contracts. Async objectives retain their
 existing async/await/iteration refusals. A ready frontend report alone does not
 prove native lowering, replay validity, or general Python support.
 
+Admission also accepts these forms, each decided before the objective runs:
+
+- the package's own `vmap` over one source-visible function, called with one
+  positional batch; the mapped function is inspected like a helper called
+  directly;
+- a traced array's own `__array_function__` or `__array_ufunc__` called with a
+  native NumPy identity. The array never calls that identity: it traces a
+  supported function and refuses any other by name;
+- a native exception built without keyword operands, for example
+  `RuntimeError("stopped")` raised in a helper. Its payload reaches the caller,
+  so a traced value in it is refused with `exception payload must not carry a
+  traced value`. A `raise` statement in the objective itself keeps its
+  `exception_control_flow` refusal;
+- `type(value)` with one operand, which reads a class; the three-operand form
+  creates a class and is refused;
+- `slice(...)` and `object()`, and the step functions `np.sign` and
+  `np.heaviside`, which then reach the runtime and are refused there by their
+  own derivative-losing contract.
+
+A captured `slice`, `Ellipsis` or parametrised alias such as
+`Callable[[object], object]` is bound into the captured-state fingerprint as a
+value. Replacing a bound of a captured slice invalidates the derivative like
+any other captured change.
+
+An objective still cannot hand a traced value to its caller through captured
+storage or an observer callback. Code that needs a trace array outside an
+objective, or a measurement between two traced operations, works on the trace
+context below this gate, as the repository's own tests do.
+
 ### Native container call signatures
 
 Supported calls on objective-owned native lists and dictionaries must match

@@ -37,6 +37,7 @@ from .program_ad_effect_dispatch import (
     _ARRAY_ALLOCATOR,
     _ARRAY_OUTPUT_POSITIONS,
     _MULTI_VIEW_IDS,
+    _NATIVE_EXCEPTION_IDS,
     _NUMPY_OUTPUT_POSITIONS,
     _PURE_IDS,
     _RANDOM_MODULES,
@@ -1115,6 +1116,27 @@ class _Visitor(ast.NodeVisitor):
                         "active integer shape or index conversion is unsupported",
                     )
             return
+        if id(callee.value) in _NATIVE_EXCEPTION_IDS and not node.keywords:
+            # A native exception is built without foreign code; its payload
+            # reaches the caller, so a traced value may not travel in it.
+            arguments, variadic = self.positional_values(node.args)
+            if any(argument.active for argument in arguments) or (
+                variadic is not None and variadic.active
+            ):
+                self.add(
+                    node,
+                    "external_callback",
+                    "exception payload must not carry a traced value",
+                )
+            return
+        if (
+            callee.value is type
+            and len(node.args) == 1
+            and not node.keywords
+            and not isinstance(node.args[0], ast.Starred)
+        ):
+            # One operand reads a class; three operands would create one.
+            return
         if type(callee.value) is _MappedHelper:
             arguments, variadic = self.positional_values(node.args)
             if node.keywords or variadic is not None or len(arguments) != 1:
@@ -1203,6 +1225,18 @@ class _Visitor(ast.NodeVisitor):
                 and node.args
                 and id(self.value(node.args[0]).value) in _PURE_IDS
             ):
+                return
+            if (
+                node.func.attr == "__array_function__"
+                and receiver.active
+                and receiver.local
+                and not receiver.captured
+                and node.args
+                and id(self.value(node.args[0]).value) in _NUMPY_CALLABLE_IDS
+            ):
+                # The traced array's own dispatch receives a native identity and
+                # never calls it: it traces a supported function and refuses any
+                # other by name.
                 return
         if _is_passive_local_class(callee.value) and not node.args and not node.keywords:
             self.expression_values[node] = _Value(callee.value, local=True)

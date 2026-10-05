@@ -47,6 +47,7 @@ _MAX_NODES = _CAPTURED_STATE_MAX_NODES
 _MAX_BYTES = 8 * 1024**2
 _MAX_DEPTH = 64
 _CAPTURED_STATE_DIGEST_BYTES = hashlib.sha256().digest_size + sys.getsizeof(b"")
+_CALLABLE_ALIAS = type(Callable[[], object])
 _NUMPY_SCALARS = frozenset(
     type(np.array(0, dtype=dtype)[()])
     for dtype in "?" + np.typecodes["AllFloat"] + np.typecodes["AllInteger"]
@@ -238,6 +239,8 @@ class _Fingerprint:
         kind = type(value)
         if value is None:
             self.add(b"none")
+        elif value is Ellipsis:
+            self.add(b"ellipsis")
         elif kind is bool:
             self.add(b"true" if value else b"false")
         elif kind is int:
@@ -328,6 +331,12 @@ class _Fingerprint:
             self.add(str(len(items)).encode("ascii"))
             for item in items:
                 self.visit(item, depth + 1, module_names)
+        elif kind is slice:
+            # A slice is immutable; its three bounds are fingerprinted as values.
+            bounds = typing.cast(slice, value)
+            self.add(b"slice")
+            for bound in (bounds.start, bounds.stop, bounds.step):
+                self.visit(bound, depth + 1, module_names)
         elif kind is dict:
             mapping = typing.cast(dict[object, object], value)
             if len(mapping) > _MAX_NODES:
@@ -374,6 +383,7 @@ class _Fingerprint:
             or kind is type(Callable)
             or kind is type(typing.Any)
             or kind is GenericAlias
+            or kind is _CALLABLE_ALIAS
         ):
             self.add(b"intrinsic")
         else:

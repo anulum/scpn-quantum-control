@@ -26,7 +26,9 @@ _PURE = (
     list,
     max,
     min,
+    object,
     range,
+    slice,
     sum,
     tuple,
     zip,
@@ -83,6 +85,7 @@ _PURE = (
             "flipud",
             "full_like",
             "gradient",
+            "heaviside",
             "hsplit",
             "hstack",
             "inner",
@@ -116,6 +119,7 @@ _PURE = (
             "roll",
             "rot90",
             "select",
+            "sign",
             "sin",
             "sort",
             "split",
@@ -167,6 +171,24 @@ _PURE = (
 )
 
 _PURE_IDS = frozenset(id(value) for value in _PURE)
+
+_NATIVE_EXCEPTION_IDS = frozenset(
+    id(value)
+    for value in (
+        ArithmeticError,
+        AssertionError,
+        FloatingPointError,
+        IndexError,
+        KeyError,
+        LookupError,
+        NotImplementedError,
+        OverflowError,
+        RuntimeError,
+        TypeError,
+        ValueError,
+        ZeroDivisionError,
+    )
+)
 
 _ARRAY_ALLOCATOR = np.array
 

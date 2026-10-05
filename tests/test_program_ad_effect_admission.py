@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import ast
 import builtins
+import gc
 import inspect
 import math
 import sys
@@ -2299,3 +2300,166 @@ def test_mapped_helper_is_called_with_one_positional_batch(form: str) -> None:
 
     assert _find(objective) == ("external_callback",)
     assert _details(objective) == ("mapped callback is called with one positional batch only",)
+
+
+def test_direct_array_function_dispatch_is_decided_by_the_traced_array() -> None:
+    """The traced array's own dispatch traces a supported function and refuses another by name.
+
+    The objective hands a native identity to the array's dispatch, which never
+    calls it. A callable that is not a native identity is refused before the
+    objective runs.
+    """
+
+    def supported(values: TraceADArray) -> object:
+        return values.__array_function__(np.sum, (TraceADArray,), (values**2,), {})
+
+    def unsupported(values: TraceADArray) -> object:
+        return values.__array_function__(np.all, (TraceADArray,), (values,), {})
+
+    def foreign(values: TraceADArray) -> object:
+        return values.__array_function__(print, (TraceADArray,), (values,), {})
+
+    assert _find(supported) == ()
+    result = whole_program_value_and_grad(supported, [3.0, -2.0], trace=False)
+    assert result.value == 13.0
+    np.testing.assert_array_equal(result.gradient, [6.0, -4.0])
+
+    assert _find(unsupported) == ()
+    with pytest.raises(ValueError, match="unsupported whole-program AD NumPy function all"):
+        whole_program_value_and_grad(unsupported, [3.0, -2.0], trace=False)
+
+    assert _find(foreign) == ("external_callback",)
+
+
+def test_helper_raising_a_native_exception_releases_the_trace_and_recovers() -> None:
+    """A native exception with a passive payload is admitted; a traced payload is refused.
+
+    The payload of an exception reaches the caller, so a traced value in it
+    would leave the objective. A keyword operand keeps the general refusal.
+    """
+    armed = True
+    details: dict[str, Any] = {}
+
+    def stop_if_armed() -> None:
+        if armed:
+            raise RuntimeError("stopped after the product", 7)
+
+    def objective(values: TraceADArray) -> object:
+        product = values[0] * values[1]
+        stop_if_armed()
+        return product
+
+    def traced_payload(values: TraceADArray) -> object:
+        raise ValueError("received", values[0])
+
+    def traced_expansion(values: TraceADArray) -> object:
+        raise ValueError(*values)
+
+    def keyword_payload(values: TraceADArray) -> object:
+        raise ImportError("missing", name="backend")
+
+    def keyword_native(values: TraceADArray) -> object:
+        raise cast(Any, RuntimeError)(reason="unsupported")
+
+    def keyword_bound(values: TraceADArray) -> object:
+        raise RuntimeError(**details)
+
+    baseline = active_reserved_bytes()
+    assert _find(objective) == ()
+    with pytest.raises(RuntimeError, match="stopped after the product"):
+        whole_program_value_and_grad(objective, [3.0, -2.0], trace=False)
+    assert active_reserved_bytes() == baseline
+    armed = False
+    result = whole_program_value_and_grad(objective, [3.0, -2.0], trace=False)
+    assert result.value == -6.0
+    np.testing.assert_array_equal(result.gradient, [-2.0, 3.0])
+    assert active_reserved_bytes() == baseline
+
+    for candidate in (traced_payload, traced_expansion):
+        assert _details(candidate) == ("exception payload must not carry a traced value",)
+    for candidate in (keyword_payload, keyword_native, keyword_bound):
+        assert _details(candidate) == (
+            "external callback identity has no source-visible effect contract",
+        )
+
+
+def test_reading_a_class_is_admitted_and_creating_one_is_refused() -> None:
+    """``type`` with one operand reads a class; any other call form keeps the refusal."""
+    operands = (TraceADArray,)
+
+    def reads(values: TraceADArray) -> object:
+        injected = type(values) is TraceADArray
+        return (1.0 if injected else 0.0) * values[0]
+
+    def creates(values: TraceADArray) -> object:
+        type("Row", (), {})
+        return values[0]
+
+    def expands(values: TraceADArray) -> object:
+        type(*operands)
+        return values[0]
+
+    def keyword(values: TraceADArray) -> object:
+        cast(Any, type)(values, flag=True)
+        return values[0]
+
+    assert _find(reads) == ()
+    result = whole_program_value_and_grad(reads, [3.0, -2.0], trace=False)
+    assert result.value == 3.0
+    np.testing.assert_array_equal(result.gradient, [1.0, 0.0])
+    for candidate in (creates, expands):
+        assert _find(candidate) == ("external_callback",)
+    assert "external_callback" in _find(keyword)
+
+
+def test_native_selectors_and_blocked_step_functions_reach_the_runtime() -> None:
+    """A local slice or opaque marker is pure; a step function is refused by its own contract."""
+
+    def selects(values: TraceADArray) -> object:
+        marker = object()
+        window = slice(0, None, 2)
+        return np.sum(cast(Any, values[window])) if marker is not None else values[0]
+
+    def signed_steps(values: TraceADArray) -> object:
+        return np.sum(np.sign(values))
+
+    def unit_steps(values: TraceADArray) -> object:
+        return np.sum(np.heaviside(values, 0.5))
+
+    assert _find(selects) == ()
+    result = whole_program_value_and_grad(selects, [3.0, -2.0, 5.0], trace=False)
+    assert result.value == 8.0
+    np.testing.assert_array_equal(result.gradient, [1.0, 0.0, 1.0])
+    for candidate, name in ((signed_steps, "sign"), (unit_steps, "heaviside")):
+        assert _find(candidate) == ()
+        with pytest.raises(ValueError, match=f"program AD {name} is derivative-losing"):
+            whole_program_value_and_grad(candidate, [3.0, -2.0], trace=False)
+
+
+def test_captured_selector_bounds_and_callable_alias_are_bound_as_values() -> None:
+    """A captured slice, ellipsis and callable alias are fingerprinted, not refused.
+
+    Replacing a bound of the captured selector invalidates the derivative;
+    restoring the original selector restores it.
+    """
+    reduction = Callable[[object], object]
+    original = slice(1, None, 2)
+    selector: list[object] = [Ellipsis, original]
+
+    def objective(values: TraceADArray) -> object:
+        columns = values.reshape((2, 2))[selector[0], selector[1]]
+        return cast(reduction, np.sum)(columns)
+
+    baseline = active_reserved_bytes()
+    result = whole_program_value_and_grad(objective, [1.0, 2.0, 3.0, 4.0], trace=False)
+    assert result.value == 6.0
+    np.testing.assert_array_equal(result.gradient, [0.0, 1.0, 0.0, 1.0])
+    np.testing.assert_array_equal(program_adjoint_replay_gradient(result), [0.0, 1.0, 0.0, 1.0])
+    selector[1] = slice(0, None, 2)
+    with pytest.raises(ValueError, match="captured program state changed"):
+        program_adjoint_replay_gradient(result)
+    selector[1] = original
+    np.testing.assert_array_equal(program_adjoint_replay_gradient(result), [0.0, 1.0, 0.0, 1.0])
+    del result
+    gc.collect()
+    assert active_reserved_bytes() == baseline
