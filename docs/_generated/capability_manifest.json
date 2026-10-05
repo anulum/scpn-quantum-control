@@ -13,7 +13,7 @@
     "python_model_source_modules": 780,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1509
+    "test_files": 1510
   },
   "documentation": {
     "examples": [
@@ -9445,6 +9445,7 @@
       "tests/test_layout_relaxation_experiment.py",
       "tests/test_layout_relaxation_experiment_quality_gate.py",
       "tests/test_lazy_package_exports.py",
+      "tests/test_lazy_package_exports_in_process.py",
       "tests/test_lindblad.py",
       "tests/test_lindblad_branches.py",
       "tests/test_lindblad_engine.py",

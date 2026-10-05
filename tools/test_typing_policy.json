@@ -1503,6 +1503,7 @@
       "files": [
         "tests/test_import_cost_budget.py",
         "tests/test_lazy_package_exports.py",
+        "tests/test_lazy_package_exports_in_process.py",
         "tests/test_public_export_identity.py",
         "tests/test_studio_workspace_lazy.py"
       ],

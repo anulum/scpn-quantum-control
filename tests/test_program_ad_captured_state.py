@@ -201,6 +201,22 @@ def test_result_replacement_cannot_discard_its_live_state_binding(replacement: s
         program_adjoint_replay_gradient(result)
 
 
+def test_result_refuses_a_state_binding_of_another_type() -> None:
+    """A result accepts the private captured state binding or none, nothing shaped like it."""
+
+    def objective(values: TraceADArray) -> object:
+        return values[0] * 2.0
+
+    result = whole_program_value_and_grad(objective, [3.0], trace=False)
+    baseline = active_reserved_bytes()
+    with pytest.raises(
+        ValueError, match="captured_state must be a captured program state binding or None"
+    ):
+        replace(result, captured_state=object())  # type: ignore[arg-type]
+    assert active_reserved_bytes() == baseline
+    np.testing.assert_array_equal(program_adjoint_replay_gradient(result), [2.0])
+
+
 @pytest.mark.parametrize("copying", ["shallow", "deep", "replace"])
 def test_copied_result_keeps_live_binding_and_recovers_after_restoration(copying: str) -> None:
     """Ordinary copies preserve their live callable rather than cloning captures.
