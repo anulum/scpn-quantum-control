@@ -4,7 +4,7 @@ The primary navigation stays intentionally compact. This catalog keeps every
 public guide, evidence note, contract, campaign protocol, and reference page
 discoverable without crowding the main learning path.
 
-Current inventory: **381 public pages**; **162** are in the
+Current inventory: **382 public pages**; **163** are in the
 primary navigation and the remainder are indexed here.
 
 Labels marked `catalog` are intentionally outside the primary navigation; they
@@ -27,6 +27,12 @@ are still built, link-checked, searchable, and public.
 | [Public API stability programme](public_api_stability.md) | catalog | Fail-closed **public-vs-internal** stability catalogue for adopters. Declares a **narrow durable SemVer-intent surface** (stable_core + curated CLI entry points) and classifies workbench / private paths so bulk package exports are **not** s |
 | [Stable Core API](stable_core_api.md) | primary nav | The stable core API defines the first durable contracts for production workflows: |
 | [Stable Facades API](stable_facades_api.md) | primary nav | Stable facades are the first-path API surfaces for users who want to build a workflow without depending on low-level module layout. Prefer these symbols in tutorials, notebooks, and inter-repository contracts. |
+
+## Adr
+
+| Page | Surface | Purpose |
+|---|---|---|
+| [Repository boundary](adr/0001-repository-boundary.md) | primary nav | **Status:** Active. Recorded 2026-10-05. |
 
 ## Api
 
