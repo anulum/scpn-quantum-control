@@ -936,6 +936,14 @@ def test_forward_capture_copy_obeys_execution_memory_cap(storage: str) -> None:
 def test_utf8_capture_uses_encoded_byte_size_under_sufficient_cap(text: str) -> None:
     """String admission retains a sufficient budget for the exact UTF-8 payload.
 
+    The cap of 2.25 MiB lies between two measured totals for the mixed-width
+    text. Charging the exact 655,360 encoded bytes needs about 2.10 MB in all
+    (2,099,958 bytes under Python 3.11, slightly less under 3.12; the total
+    also grows with the size of this module, whose source is charged).
+    Charging four bytes for each of the 262,144 characters would need 393,216
+    bytes more, about 2.49 MB, and exceed the cap. A cap of exactly 2 MiB left
+    a few kilobytes of margin and failed under Python 3.11.
+
     Parameters
     ----------
     text
@@ -949,7 +957,7 @@ def test_utf8_capture_uses_encoded_byte_size_under_sufficient_cap(text: str) -> 
 
     baseline = active_reserved_bytes()
     result = whole_program_value_and_grad(
-        objective, [3.0], trace=False, max_execution_gib=2.0 / 1024
+        objective, [3.0], trace=False, max_execution_gib=2.25 / 1024
     )
     assert result.value == 6.0
     np.testing.assert_array_equal(result.gradient, [2.0])
