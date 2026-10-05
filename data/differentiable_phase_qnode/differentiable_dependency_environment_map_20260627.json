@@ -122,11 +122,11 @@
         "data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.json"
       ],
       "evidence_sha256": [
-        "41ff3cc542473fd98d3d984358408207074cf105080b9a2a2cb527416930a1a1",
+        "141c512cad007b3033225be4b08a8dc3dc7a545417880f97861b5f460754f342",
         "b912c0e4c4370cf77e7d9181fa0927a60c9de505329e2987c8aa4de6327907fb",
         "284449e2b3778706e010bc3a77319f7f33f4811b8f941ab34d1fc4f71db711e2",
         "71dde916385e5cab71ddd87c03d53c439d35da17ed05908eb05e6d097120aa4f",
-        "4738eddce893d0d09f6b81970728eda9017a39fbe62300f7a83feb7e076ec485"
+        "95ebffb8eb001ec9f94273fa09d5894abbccbd02e48ab43dbe0e28f398109cd3"
       ],
       "evidence_status": "locked",
       "blockers": [],
@@ -329,7 +329,7 @@
         "src/scpn_quantum_control/phase/torch_maturity.py"
       ],
       "evidence_sha256": [
-        "41ff3cc542473fd98d3d984358408207074cf105080b9a2a2cb527416930a1a1",
+        "141c512cad007b3033225be4b08a8dc3dc7a545417880f97861b5f460754f342",
         "bbc9d36825b9965fabaac9fe152c67549fc305507037d05fb0094dc767a55b2e",
         "b103d89b86a5a8bd9ebe2946622be84165d40b2cc6603a4d5241bb7eb1845136"
       ],
@@ -392,7 +392,7 @@
       ],
       "evidence_sha256": [
         "143adfb150d6dc203fabcd2e6202d4fdd2dc8170e3200ce880399bc4114b6024",
-        "bd0fe8c822b94c9c14b957f0f5cf78a43c07f55f138d1f9bf0e5be28534463c4"
+        "83e6016fd489881f0f9197402c755775075eb03bad66b928fac736b88cf0bee6"
       ],
       "evidence_status": "hard_gap",
       "blockers": [
@@ -413,7 +413,7 @@
       ],
       "evidence_sha256": [
         "143adfb150d6dc203fabcd2e6202d4fdd2dc8170e3200ce880399bc4114b6024",
-        "bd0fe8c822b94c9c14b957f0f5cf78a43c07f55f138d1f9bf0e5be28534463c4"
+        "83e6016fd489881f0f9197402c755775075eb03bad66b928fac736b88cf0bee6"
       ],
       "evidence_status": "hard_gap",
       "blockers": [
@@ -434,7 +434,7 @@
       ],
       "evidence_sha256": [
         "bbc9d36825b9965fabaac9fe152c67549fc305507037d05fb0094dc767a55b2e",
-        "bd0fe8c822b94c9c14b957f0f5cf78a43c07f55f138d1f9bf0e5be28534463c4"
+        "83e6016fd489881f0f9197402c755775075eb03bad66b928fac736b88cf0bee6"
       ],
       "evidence_status": "hard_gap",
       "blockers": [
