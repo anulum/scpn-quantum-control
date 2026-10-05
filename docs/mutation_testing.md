@@ -218,11 +218,28 @@ as well:
 | Target | Mutants | Noticed | Survived | Timed out | Duration |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | `bridge/knm_hamiltonian.py` | 298 | 213 | 85 | 0 | 14.6 min |
-| `analysis/otoc.py` | 432 | 307 | 125 | 0 | 5.7 min |
+| `analysis/otoc.py` | 134 | 94 | 40 | 0 | 7.6 min |
 
 Their counts differ from the April baselines above: the pinned release
 generates more mutants for the same modules, so the two series are not
 comparable.
+
+The first figures recorded for `analysis/otoc.py` (432 mutants, 125 survived)
+were wrong: mutmut keeps one result cache per directory, the gate ran its
+targets one after another in the same exported tree, and every later target
+was counted together with the earlier ones. The gate now removes the cache
+before each target, and the row above is the module's own measurement.
+
+The first weekly run that really tested mutants (2026-10-05, hosted) reported
+more survivors than the local measurements: 60 for `analysis/koopman.py`
+against 50, and, after subtracting the accumulated counts, 102 against 85 and
+43 against 40 for the two other targets. The numbers of mutants agree. The
+cause is not known. It is not the native engine (the local figures are the
+same with the engine hidden) and not a different version of the main
+packages. The gate therefore writes the mutant identifiers per status to a
+report (`--report`), which the weekly job uploads, so the two runs can be
+compared mutant by mutant. Until the difference is explained the weekly job
+fails on it.
 
 Run it locally with the pinned tool installed
 (`python -m pip install --require-hashes -r requirements-ci-mutation.txt`):

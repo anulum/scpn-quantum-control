@@ -40,7 +40,8 @@ jobs:
       - name: Hold the mutation survivor ceiling
         shell: bash
         run: |
-          python tools/audit_mutation_survivors.py --workspace "$RUNNER_TEMP" 2>&1 \
+          python tools/audit_mutation_survivors.py --workspace "$RUNNER_TEMP" \
+            --report mutation-report.json 2>&1 \
             | tee mutation-survivors.txt
       - name: Summarise
         if: always()
@@ -61,6 +62,8 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: mutation-survivors
-          path: mutation-survivors.txt
+          path: |
+            mutation-survivors.txt
+            mutation-report.json
           retention-days: 365
           if-no-files-found: warn

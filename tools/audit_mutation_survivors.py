@@ -64,6 +64,8 @@ SCHEMA: Final[str] = "mutation_survivor_ceiling_v1"
 CEILINGS: Final[tuple[str, ...]] = ("survived", "timeout")
 STATUSES: Final[tuple[str, ...]] = ("killed", *CEILINGS, "suspicious", "skipped", "untested")
 RETEST_LIMIT_SECONDS: Final[float] = 300.0
+CACHE_FILE: Final[str] = ".mutmut-cache"
+REPORT_SCHEMA: Final[str] = "mutation_survivor_report_v1"
 _PIN: Final[re.Pattern[str]] = re.compile(r"^mutmut==(\d+\.\d+\.\d+)", re.MULTILINE)
 _DIGEST: Final[re.Pattern[str]] = re.compile(r"[0-9a-f]{64}")
 
@@ -296,10 +298,10 @@ def export_head(repo: Path, destination: Path) -> None:
         tar.extractall(destination, filter="data")
 
 
-def measure(
+def measure_statuses(
     tree: Path, target: Target, interpreter: Path, retest_limit: float = RETEST_LIMIT_SECONDS
-) -> dict[str, int]:
-    """Run one mutation target in an exported tree and count its mutants by status.
+) -> dict[str, list[str]]:
+    """Run one mutation target in an exported tree and list its mutants by status.
 
     Parameters
     ----------
@@ -315,9 +317,10 @@ def measure(
 
     Returns
     -------
-    dict[str, int]
-        Number of mutants per status, for every status the tool knows, after
-        the timed-out mutants were tested again.
+    dict[str, list[str]]
+        The tool's mutant identifiers per status, for every status the tool
+        knows, after the timed-out mutants were tested again. The identifiers
+        are the tool's own numbering for this module and release.
 
     Raises
     ------
@@ -341,6 +344,9 @@ def measure(
             "PYTHONDONTWRITEBYTECODE": "1",
         }
     )
+    # mutmut keeps one result cache per directory and lists every mutant in it,
+    # so the cache of an earlier target would be counted with this one.
+    (tree / CACHE_FILE).unlink(missing_ok=True)
     tool = [str(interpreter), "-m", DISTRIBUTION]
     command = f"./{target.runner}"
     completed = _run(
@@ -369,10 +375,9 @@ def measure(
         if listing.returncode != 0:
             raise ValueError(f"mutmut could not list the {status} mutants of {target.name}")
         listed[status] = listing.stdout.decode("ascii", "replace").split()
-    counts = {status: len(ids) for status, ids in listed.items()}
     module = tree / target.module
     original = module.read_bytes()
-    for mutant in listed["timeout"]:
+    for mutant in tuple(listed["timeout"]):
         # The tool calls a mutant timed out when its tests ran ten times longer
         # than the unmutated tests did at the start of the run, so a busy
         # machine turns noticed and surviving mutants into timeouts. Each one
@@ -393,9 +398,9 @@ def measure(
             continue
         finally:
             module.write_bytes(original)
-        counts["timeout"] -= 1
-        counts["survived" if finished.returncode == 0 else "killed"] += 1
-    return counts
+        listed["timeout"].remove(mutant)
+        listed["survived" if finished.returncode == 0 else "killed"].append(mutant)
+    return listed
 
 
 def compare(target: Target, counts: dict[str, int], digest: str) -> list[str]:
@@ -514,6 +519,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         metavar="SECONDS",
         help="time the tests of a timed-out mutant may take when it is tested again",
     )
+    parser.add_argument(
+        "--report",
+        type=Path,
+        help="write the mutant identifiers per target and status to this JSON file",
+    )
     update = parser.add_mutually_exclusive_group()
     update.add_argument(
         "--lower", action="store_true", help="reduce the ceilings to the measurement"
@@ -546,6 +556,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         if unknown:
             raise ValueError(f"unknown mutation target: {', '.join(unknown)}")
         updated: list[Target] = []
+        report: dict[str, dict[str, list[str]]] = {}
         with tempfile.TemporaryDirectory(dir=args.workspace, prefix="mutation-tree-") as scratch:
             tree = Path(scratch)
             export_head(repo, tree)
@@ -554,7 +565,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                     updated.append(target)
                     continue
                 digest = hashlib.sha256((tree / target.module).read_bytes()).hexdigest()
-                counts = measure(tree, target, Path(sys.executable), args.retest_limit)
+                statuses = measure_statuses(tree, target, Path(sys.executable), args.retest_limit)
+                report[target.name] = statuses
+                counts = {status: len(identifiers) for status, identifiers in statuses.items()}
                 summary = ", ".join(f"{counts[status]} {status}" for status in STATUSES)
                 print(f"{target.name}: {sum(counts.values())} mutants: {summary}")
                 if args.rebaseline:
@@ -563,6 +576,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                     updated.append(lowered(target, counts, digest))
                 else:
                     errors.extend(compare(target, counts, digest))
+        if args.report is not None:
+            document = {"schema": REPORT_SCHEMA, "release": release, "targets": report}
+            args.report.write_text(json.dumps(document, indent=1) + "\n", encoding="utf-8")
         if args.lower or args.rebaseline:
             history = ceiling.history
             if args.rebaseline:

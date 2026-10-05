@@ -25,8 +25,8 @@
    "module": "src/scpn_quantum_control/analysis/otoc.py",
    "runner": "tools/mutmut_runner_otoc.sh",
    "source_sha256": "8dbbd738182d73e372063599ff231669ce9cd00e93263ed071ab39457eb96b27",
-   "mutants": 432,
-   "survived": 125,
+   "mutants": 134,
+   "survived": 40,
    "timeout": 0
   }
  ],

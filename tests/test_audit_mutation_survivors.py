@@ -324,6 +324,74 @@ def test_unselected_targets_keep_their_record_when_one_target_is_updated(
     ]
 
 
+def test_each_target_is_counted_without_the_mutants_of_an_earlier_one(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """A second target reports its own mutants, not those the tool cached for the first."""
+    repo = _repository(tmp_path / "repo")
+    source = "def perimeter(width, height):\n    return 2 * (width + height)\n"
+    runner = "tools/run_shape_tests.sh"
+    files = {
+        "src/shape.py": source,
+        "tests/test_shape.py": (
+            "from shape import perimeter\n\n\n"
+            "def test_perimeter():\n    assert perimeter(2, 3) == 10\n"
+        ),
+        runner: '#!/bin/sh\nexec "$VENV_PY" -m pytest -x -q -p no:cacheprovider tests/test_shape.py\n',
+    }
+    for name, text in files.items():
+        (repo / name).write_text(text, encoding="utf-8")
+    (repo / runner).chmod(0o755)
+    policy = repo / gate.DEFAULT_POLICY
+    body = json.loads(policy.read_text(encoding="utf-8"))
+    body["targets"].append(
+        {
+            "name": "shape",
+            "module": "src/shape.py",
+            "runner": runner,
+            "source_sha256": hashlib.sha256(source.encode()).hexdigest(),
+            "mutants": 3,
+            "survived": 0,
+            "timeout": 0,
+        }
+    )
+    policy.write_text(json.dumps(body), encoding="utf-8")
+    _git(repo, "add", "--all")
+    _git(repo, "commit", "--quiet", "--message", "second target")
+
+    report = tmp_path / "report.json"
+
+    assert _main(repo, tmp_path, "--report", str(report)) == 0
+    assert capsys.readouterr().out.splitlines() == [
+        "calc: 1 mutants: 1 killed, 0 survived, 0 timeout, 0 suspicious, 0 skipped, 0 untested",
+        "shape: 3 mutants: 3 killed, 0 survived, 0 timeout, 0 suspicious, 0 skipped, 0 untested",
+        "Mutation survivors: 2 targets; 0 problems",
+    ]
+    written = json.loads(report.read_text(encoding="utf-8"))
+    assert written["schema"] == gate.REPORT_SCHEMA
+    assert written["release"] == gate.installed_release()
+    assert list(written["targets"]) == ["calc", "shape"]
+    assert written["targets"]["calc"]["killed"] == ["1"]
+    assert sorted(written["targets"]["shape"]["killed"]) == ["1", "2", "3"]
+    for statuses in written["targets"].values():
+        assert set(statuses) == set(gate.STATUSES)
+        assert all(statuses[status] == [] for status in gate.STATUSES if status != "killed")
+
+
+def test_report_names_the_survivor_when_the_gate_fails(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """A failing gate still writes which mutant survived."""
+    repo = _repository(tmp_path / "repo", WEAK_TEST)
+    report = tmp_path / "report.json"
+
+    assert _main(repo, tmp_path, "--report", str(report)) == 1
+    capsys.readouterr()
+    statuses = json.loads(report.read_text(encoding="utf-8"))["targets"]["calc"]
+    assert statuses["survived"] == ["1"]
+    assert statuses["killed"] == []
+
+
 def test_measure_refuses_a_missing_module_and_incomplete_runs_are_reported(
     tmp_path: Path,
 ) -> None:
@@ -331,7 +399,7 @@ def test_measure_refuses_a_missing_module_and_incomplete_runs_are_reported(
     target = gate.Target("calc", MODULE, RUNNER, DIGEST, 4, 1, 0)
 
     with pytest.raises(ValueError, match="mutation target module is missing: src/calc.py"):
-        gate.measure(tmp_path, target, Path(sys.executable))
+        gate.measure_statuses(tmp_path, target, Path(sys.executable))
 
     counts = {
         "killed": 1,
@@ -367,7 +435,7 @@ def test_listing_or_apply_failure_after_a_completed_run_is_a_tool_failure(tmp_pa
     target = gate.Target("calc", MODULE, RUNNER, DIGEST, 1, 0, 0)
 
     with pytest.raises(ValueError, match="mutmut could not list the killed mutants of calc"):
-        gate.measure(tree, target, stand_in)
+        gate.measure_statuses(tree, target, stand_in)
 
     stand_in.write_text(
         '#!/bin/sh\ncase "$3" in\n  run) exit 0 ;;\n'
@@ -375,7 +443,7 @@ def test_listing_or_apply_failure_after_a_completed_run_is_a_tool_failure(tmp_pa
         encoding="utf-8",
     )
     with pytest.raises(ValueError, match="mutmut could not apply mutant 7 of calc"):
-        gate.measure(tree, target, stand_in)
+        gate.measure_statuses(tree, target, stand_in)
     assert (tree / MODULE).read_text(encoding="utf-8") == SOURCE
 
 
