@@ -13,6 +13,9 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   three are development dependencies of the test, build and documentation tools;
   none is part of the built portal.
 
+- The Studio web workspace resolves `source-map-js` 1.2.2
+  (GHSA-68fv-2mgg-jv7q), a development dependency of the build and test tools.
+
 ### Added
 
 - Native browser workspace transactions, exact archive previews, immutable
