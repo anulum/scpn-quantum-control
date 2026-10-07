@@ -10,9 +10,14 @@
 from __future__ import annotations
 
 import math
+from contextlib import ExitStack
 from importlib.metadata import version
 from pathlib import Path
+from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
+
+if TYPE_CHECKING:
+    from playwright.sync_api import Page, Worker
 
 _OBSERVE_WORKERS = """(() => {
   window.__ownedKernel = { started: 0, disposed: 0, active: 0, commands: [], events: [] };
@@ -54,6 +59,70 @@ _OBSERVE_WORKERS = """(() => {
     }
   };
 })();"""
+
+
+def wait_for_worker_disposal(page: Page, *, observe_termination: bool = True) -> None:
+    """Require Chromium closure of workers observed while awaiting disposal.
+
+    Parameters
+    ----------
+    page
+        Actual Studio page whose workers are being disposed. Workers created
+        during the wait also require a native close event.
+    observe_termination
+        Also await the installed observer's termination-request counter. A zero
+        counter alone does not prove native closure.
+
+    Raises
+    ------
+    AssertionError
+        A native worker does not close before the page's existing timeout,
+        the observer does not confirm termination, or a worker remains.
+
+    """
+    from playwright.sync_api import TimeoutError
+
+    pending: set[Worker] = set()
+
+    def record_closure(worker: Worker) -> None:
+        """Remove a worker after Chromium emits its native close event.
+
+        Parameters
+        ----------
+        worker
+            Natively closed Studio worker.
+
+        """
+        pending.discard(worker)
+
+    def observe_worker(worker: Worker) -> None:
+        """Track native closure without creating a synchronous wait in a callback.
+
+        Parameters
+        ----------
+        worker
+            Existing or newly created native Studio worker.
+
+        """
+        pending.add(worker)
+        worker.once("close", record_closure)
+
+    page.on("worker", observe_worker)
+    try:
+        for worker in page.workers:
+            observe_worker(worker)
+        if observe_termination:
+            page.wait_for_function("window.__ownedKernel.active === 0")
+        with ExitStack() as closed:
+            for worker in tuple(pending):
+                closed.enter_context(worker.expect_event("close"))
+    except TimeoutError as error:
+        raise AssertionError("Studio native worker disposal was not confirmed") from error
+    finally:
+        page.remove_listener("worker", observe_worker)
+        for worker in tuple(pending):
+            worker.remove_listener("close", record_closure)
+    assert not page.workers, "Studio native worker disposal left an owned worker"
 
 
 def run_owned_worker_journey(
@@ -152,8 +221,7 @@ def run_owned_worker_journey(
                                 "verified against the committed ground truth", exact=False
                             )
                         ).to_be_visible()
-                        page.wait_for_function("window.__ownedKernel.active === 0")
-                        assert not page.workers
+                        wait_for_worker_disposal(page)
                         oscillators = play.get_by_label("Oscillators N:", exact=False)
                         oscillators.press("Home")
                         oscillators.press("ArrowRight")
@@ -264,8 +332,7 @@ def run_owned_worker_journey(
                                     "operational deadline reached"
                                 )
                                 expect(chart).to_have_count(0)
-                            page.wait_for_function("window.__ownedKernel.active === 0")
-                            assert not page.workers
+                            wait_for_worker_disposal(page)
                             hold_next = False
                             for held_route in held:
                                 held_route.abort()
@@ -287,7 +354,7 @@ def run_owned_worker_journey(
                                     "verified against the committed ground truth", exact=False
                                 )
                             ).to_be_visible()
-                            page.wait_for_function("window.__ownedKernel.active === 0")
+                            wait_for_worker_disposal(page)
                         assert not page.workers
                     assert not errors, errors
                     assert not rejected, rejected

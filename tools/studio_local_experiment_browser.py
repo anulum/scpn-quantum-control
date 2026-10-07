@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, cast
 from urllib.parse import urlsplit
 
-from tools.studio_owned_worker_journey import _OBSERVE_WORKERS
+from tools.studio_owned_worker_journey import _OBSERVE_WORKERS, wait_for_worker_disposal
 
 if TYPE_CHECKING:
     from playwright.sync_api import Page
@@ -85,19 +85,6 @@ def _navigate(page: Page, view: str) -> None:
     ).to_be_visible()
 
 
-def _disposed(page: Page) -> None:
-    """Require actual native disposal and absence of a leaked browser worker.
-
-    Parameters
-    ----------
-    page
-        Actual page with the original native Worker observer installed.
-
-    """
-    page.wait_for_function("window.__ownedKernel.active === 0")
-    assert not page.workers
-
-
 def _execute(page: Page) -> dict[str, object]:
     """Explicitly run the original worker and retain its genuine native event.
 
@@ -119,7 +106,7 @@ def _execute(page: Page) -> dict[str, object]:
     expect(
         experiment.get_by_role("status").filter(has_text="Experiment succeeded")
     ).to_be_visible()
-    _disposed(page)
+    wait_for_worker_disposal(page)
     trace = page.evaluate("window.__ownedKernel")
     return cast(
         "dict[str, object]",
@@ -488,7 +475,7 @@ def run_local_experiment_journey(
                         expect(
                             experiment.get_by_role("status", name="Experiment lifecycle")
                         ).to_contain_text("cancelled")
-                        _disposed(page)
+                        wait_for_worker_disposal(page)
                         expect(
                             experiment.get_by_label("Current experiment result", exact=True)
                         ).to_have_count(0)
@@ -513,7 +500,7 @@ def run_local_experiment_journey(
                         experiment.get_by_role("button", name="Run experiment", exact=True).click()
                         page.wait_for_function("window.__ownedKernel.active === 1")
                         _navigate(page, "Workspace")
-                        _disposed(page)
+                        wait_for_worker_disposal(page)
                         editor = page.get_by_label("Linked parameter editor", exact=True)
                         editor.get_by_role("button", name="coupling[scalar]", exact=False).click()
                         editor.get_by_label("Selected value").fill("1.6")
@@ -562,7 +549,7 @@ def run_local_experiment_journey(
                         expect(
                             experiment.get_by_role("status", name="Experiment lifecycle")
                         ).to_contain_text("failed")
-                        _disposed(page)
+                        wait_for_worker_disposal(page)
                         expect(
                             experiment.get_by_label("Current experiment result", exact=True)
                         ).to_have_count(0)
@@ -587,7 +574,7 @@ def run_local_experiment_journey(
                         )
                     assert not errors, errors
                     assert not rejected, rejected
-                    _disposed(page)
+                    wait_for_worker_disposal(page)
                     trace = page.evaluate("window.__ownedKernel")
                     assert trace["started"] == trace["disposed"]
                     if profiler is not None:

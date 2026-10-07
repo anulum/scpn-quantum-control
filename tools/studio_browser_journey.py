@@ -87,6 +87,8 @@ def run_catalogue_journey(base_url: str) -> dict[str, object]:
     """
     from playwright.sync_api import Error, Route, expect, sync_playwright
 
+    from tools.studio_owned_worker_journey import wait_for_worker_disposal
+
     url = loopback_url(base_url)
     origin = urlsplit(url).netloc
     observations: list[dict[str, object]] = []
@@ -166,7 +168,7 @@ def run_catalogue_journey(base_url: str) -> dict[str, object]:
                     expect(catalogue.locator("li")).to_have_count(9)
                     assert not rejected, rejected
                     assert not errors, errors
-                    assert not page.workers, "Catalogue must not leave an owned worker"
+                    wait_for_worker_disposal(page, observe_termination=False)
                     observations.append(
                         {
                             "missing_kernel": missing_kernel,

@@ -53,6 +53,26 @@ def test_local_experiment_journey_all_original_cases() -> None:
     assert "missing-native-kernel-refuses-without-draft-or-worker" in outcomes
 
 
+def test_experiment_journey_waits_for_delayed_native_worker_closure() -> None:
+    """Preserve original experiments, cancellation and replay while native closure lags."""
+    with owned_fault_host(preview_directory(), worker_termination_delay_ms=1000) as origin:
+        result = run_local_experiment_journey(origin)
+    observations = result["observations"]
+    assert isinstance(observations, list)
+    assert {f"test_local_experiment_journey_0{index}" for index in range(1, 5)} <= {
+        row["outcome"] for row in observations
+    }
+
+
+def test_experiment_journey_refuses_native_worker_leak_after_observer_disposal() -> None:
+    """Reject an actual leaked worker even when the page has reported termination."""
+    with (
+        owned_fault_host(preview_directory(), worker_termination_delay_ms=None) as origin,
+        pytest.raises(AssertionError),
+    ):
+        run_local_experiment_journey(origin)
+
+
 @pytest.mark.parametrize("fault", ["page", "external"])
 def test_experiment_runtime_refuses_real_host_fault(fault: str) -> None:
     """Retain actual native partial evidence while refusing a genuine runtime fault.

@@ -1082,7 +1082,13 @@ qualify owned execution and visibly refuses. `instantiateKuramoto` and
 
 The shared real-browser runner observes the deployed worker, the independent
 two-oscillator reference, native transfer ownership, refusal, cancellation,
-timeout and route/project disposal:
+timeout and route/project disposal.
+
+Disposal checks await Chromium's native worker close events as well as the
+page's termination-request counter. Delayed native closure is awaited within
+the existing browser timeout; a worker that never closes fails the journey.
+Catalogue navigation and local-experiment cancellation and replay use the same
+native closure check.
 
 ```bash
 PYTHONPATH=. python tools/studio_browser_journey.py --scenario owned_kernel_worker \

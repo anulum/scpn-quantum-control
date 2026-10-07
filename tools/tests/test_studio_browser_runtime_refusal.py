@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -33,6 +34,7 @@ def owned_fault_host(
     page_error: bool = False,
     external_request: bool = False,
     corrupt_kernel: bool = False,
+    worker_termination_delay_ms: int | None = 0,
 ) -> Iterator[str]:
     """Own a HTTP fixture serving real built bytes and explicit transport failures.
 
@@ -50,6 +52,9 @@ def owned_fault_host(
         Attempt an HTTP fetch outside the journey's owned authority.
     corrupt_kernel
         Truncate the third actual program-AD response while its predecessor waits.
+    worker_termination_delay_ms
+        Delay the genuine native Worker termination by this many milliseconds.
+        Zero preserves the host; ``None`` withholds termination entirely.
 
     Yields
     ------
@@ -100,6 +105,18 @@ def owned_fault_host(
                     if corrupt_kernel and kernels == 3:
                         content = b"owned transport returned a truncated real kernel"
             if content_type.startswith("text/html"):
+                if worker_termination_delay_ms != 0:
+                    delay = json.dumps(worker_termination_delay_ms)
+                    content += f"""<script>
+const parent = Object.getPrototypeOf(Worker.prototype);
+const nativePrototype = typeof parent.terminate === 'function' ? parent : Worker.prototype;
+const terminate = nativePrototype.terminate;
+nativePrototype.terminate = function() {{
+  const worker = this;
+  const delay = {delay};
+  if (delay !== null) setTimeout(() => terminate.call(worker), delay);
+}};
+</script>""".encode()
                 if page_error:
                     content += b'<script>setTimeout(()=>{throw new Error("owned page failure")},0);</script>'
                 if external_request:
@@ -194,6 +211,41 @@ def test_evidence_failure_releases_held_real_kernel_request(preview_directory: P
         pytest.raises(AssertionError),
     ):
         run_evidence_journey(origin)
+
+
+def test_catalogue_journey_waits_for_delayed_native_worker_closure(
+    preview_directory: Path,
+) -> None:
+    """Keep catalogue routing and recovery valid while native worker closure lags.
+
+    Parameters
+    ----------
+    preview_directory
+        Genuine original Studio build and WASM kernels.
+
+    """
+    with owned_fault_host(preview_directory, worker_termination_delay_ms=1000) as origin:
+        result = run_catalogue_journey(origin)
+    observations = result["observations"]
+    assert isinstance(observations, list)
+    assert [row["missing_kernel"] for row in observations] == [False, True, False]
+    assert all(row["workers"] == 0 for row in observations)
+
+
+def test_catalogue_journey_refuses_native_worker_leak(preview_directory: Path) -> None:
+    """A route change cannot certify disposal of a genuinely leaked browser worker.
+
+    Parameters
+    ----------
+    preview_directory
+        Genuine original Studio build and WASM kernels.
+
+    """
+    with (
+        owned_fault_host(preview_directory, worker_termination_delay_ms=None) as origin,
+        pytest.raises(AssertionError),
+    ):
+        run_catalogue_journey(origin)
 
 
 @pytest.mark.parametrize(

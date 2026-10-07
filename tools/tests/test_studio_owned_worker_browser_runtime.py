@@ -175,3 +175,25 @@ def test_owned_journey_refuses_native_disposal_failure() -> None:
     with refused_termination_host(preview_directory()) as origin, pytest.raises(AssertionError):
         run_owned_worker_journey(origin, evidence=observed)
     assert "real-two-node-original-WASM" in str(observed["observations"])
+
+
+def test_owned_journey_waits_for_delayed_native_worker_closure() -> None:
+    """Complete all genuine kernel boundaries despite asynchronous native closure."""
+    with owned_fault_host(preview_directory(), worker_termination_delay_ms=1000) as origin:
+        result = run_owned_worker_journey(origin)
+    observations = result["observations"]
+    assert isinstance(observations, list)
+    outcomes = {row["outcome"] for row in observations}
+    assert {
+        boundary + "-disposed-no-stale-worker"
+        for boundary in ("cancel", "replacement", "route", "project", "timeout")
+    } <= outcomes
+
+
+def test_owned_journey_refuses_native_worker_leak_after_observer_disposal() -> None:
+    """A completed JavaScript disposal counter cannot certify a leaked native worker."""
+    with (
+        owned_fault_host(preview_directory(), worker_termination_delay_ms=None) as origin,
+        pytest.raises(AssertionError),
+    ):
+        run_owned_worker_journey(origin)
