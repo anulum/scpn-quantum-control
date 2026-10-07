@@ -9,21 +9,42 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 const faults = vi.hoisted(() => ({ data: false, replay: false }));
-vi.mock("../../panel/data", async original => {
+vi.mock("../../panel/data", async (original) => {
   const source = await original<typeof import("../../panel/data")>();
   return {
     ...source,
-    get supportMatrix() { return faults.data ? { ok: false, reason: "Matrix source unavailable" } : source.supportMatrix; },
-    get gradientPlanExplanations() { return faults.data ? { ok: false, reason: "Gradient source unavailable" } : source.gradientPlanExplanations; },
-    get scorecard() { return faults.data ? { ok: false, reason: "Scorecard source unavailable" } : source.scorecard; },
+    get supportMatrix() {
+      return faults.data
+        ? { ok: false, reason: "Matrix source unavailable" }
+        : source.supportMatrix;
+    },
+    get gradientPlanExplanations() {
+      return faults.data
+        ? { ok: false, reason: "Gradient source unavailable" }
+        : source.gradientPlanExplanations;
+    },
+    get scorecard() {
+      return faults.data ? { ok: false, reason: "Scorecard source unavailable" } : source.scorecard;
+    },
   };
 });
-vi.mock("../../panel/programAd", async original => {
+vi.mock("../../panel/programAd", async (original) => {
   const source = await original<typeof import("../../panel/programAd")>();
-  return { ...source, get programAdUnit() { return faults.replay ? { ok: false, reason: "Replay source unavailable" } : source.programAdUnit; } };
+  return {
+    ...source,
+    get programAdUnit() {
+      return faults.replay
+        ? { ok: false, reason: "Replay source unavailable" }
+        : source.programAdUnit;
+    },
+  };
 });
 import ResultsView from "./ResultsView";
-afterEach(() => { cleanup(); faults.data = false; faults.replay = false; });
+afterEach(() => {
+  cleanup();
+  faults.data = false;
+  faults.replay = false;
+});
 
 it("renders actual original evidence and preserves the viewer's input refusal", () => {
   render(<ResultsView focusInstrument />);
@@ -41,14 +62,25 @@ it("renders every missing source explicitly while retaining the original evidenc
   faults.replay = true;
   render(<ResultsView />);
   expect(screen.getAllByRole("alert")).toHaveLength(4);
-  for (const reason of ["Matrix source unavailable", "Gradient source unavailable", "Scorecard source unavailable", "Replay source unavailable"]) expect(screen.getAllByRole("alert").some(alert => alert.textContent?.includes(reason))).toBe(true);
+  for (const reason of [
+    "Matrix source unavailable",
+    "Gradient source unavailable",
+    "Scorecard source unavailable",
+    "Replay source unavailable",
+  ])
+    expect(screen.getAllByRole("alert").some((alert) => alert.textContent?.includes(reason))).toBe(
+      true,
+    );
   expect(screen.getByLabelText("Evidence JSON")).toBeTruthy();
   expect(screen.queryByText("Baseline scorecard")).toBeNull();
 });
-
 
 it("reaches the original producer result inspector from the production Results route", () => {
   render(<ResultsView />);
   expect(screen.getByLabelText("Result producer JSON")).toBeTruthy();
   expect(screen.getByRole("button", { name: "Inspect producer result" })).toBeTruthy();
+  expect(
+    screen.getByRole("heading", { name: "Compare immutable revisions and runs" }),
+  ).toBeTruthy();
+  expect(screen.getByLabelText("Baseline archive JSON")).toBeTruthy();
 });

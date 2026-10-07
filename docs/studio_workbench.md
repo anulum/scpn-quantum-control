@@ -323,6 +323,57 @@ existing native converter and affected owner coverage cohort. It requires all
 source hashes, maps and native zero counters. Raw browser observations remain
 separate from the subsequently measured coverage percentage.
 
+## Immutable revision and run comparison
+
+Open **Results** and use **Compare immutable revisions and runs**. The baseline
+and candidate initially contain the current workspace's exact archive text.
+You can also choose an original archive file or paste its portable JSON into
+either side. Select **Read baseline archive** and **Read candidate archive**
+before choosing their immutable revision and recorded run. **Revision metadata
+only** shows the source semantics without claiming a completed result.
+
+Select **Compare selected immutable sources**. The panel shows original program,
+parameters, units, requested/effective settings, origins and evidence-reference
+differences before numerical values. An archived run retains its own revision,
+plan and raw output identities. Comparison grants no execution or provider
+authority and never saves, rebinds or rewrites either source.
+
+Numerical differences require matching estimand, units, model and original
+dataset, backend, precision, shot protocol, calibration and uncertainty meaning.
+Changed or unsupported declarations remain visible and block subtraction;
+missing, failed or cancelled results remain explicitly unavailable. No unit
+conversion, scientific equivalence or uncertainty estimate is inferred.
+
+For supported original local runs, alignment uses the exact source object and
+requested `i × dt` coordinate. The original WASM output does not report measured
+timestamps. No interpolation or nearest-time matching occurs. Baseline-only
+and candidate-only observations remain in the raw table, whose pagination
+preserves every original value. A matched finite difference is candidate minus
+baseline; an overflowing difference stays unavailable. No aggregate ranking is
+derived from these values.
+
+Returning to Workspace, reloading the saved archive or reopening Results retains
+the original revisions and raw members. A refused import retains the previous
+admitted comparison and saved workspace. Use **Use current workspace as baseline**
+or **Use current workspace as candidate** to replace only a comparison input,
+then read it again. Browser storage remains a cache; export an independent backup
+through the original Workspace or Experiments controls.
+
+The original shared browser runner exercises genuine original WASM runs,
+incompatible declarations, all unmatched samples, source preservation and native
+worker disposal against the actual build and an optional distinct source host:
+
+```bash
+PYTHONPATH=. python tools/studio_browser_journey.py \
+  --scenario immutable_run_comparison --base-url http://127.0.0.1:4173/ \
+  --workspace-source-url http://127.0.0.1:4174/ \
+  --output <owned-new-evidence-path>/comparison-journey.json
+```
+
+Serve the original production bundle and exact source copy with both shipped
+WASM files as described in the workbench browser setup. The server owner closes
+both hosts; the runner closes every browser context on success and failure.
+
 ## Provider and device profiles
 
 Open Devices & Operations, then Open declared profiles to inspect the committed

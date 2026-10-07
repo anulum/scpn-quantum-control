@@ -46,12 +46,24 @@ import pytest
         "operator_policy_decisions",
         "operator_review_dossiers",
         "result_value_inspector",
+        "immutable_run_comparison",
     ],
 )
 def test_runner_rejects_external_or_ambiguous_preview(
     url: str, tmp_path: Path, scenario: str
 ) -> None:
-    """Invalid preview addresses yield failed evidence without browser execution."""
+    """Invalid preview addresses yield failed evidence without browser execution.
+
+    Parameters
+    ----------
+    url
+        Explicit unsupported preview authority.
+    tmp_path
+        Task-owned destination retaining the original failed CLI evidence.
+    scenario
+        Registered original shared browser scenario under test.
+
+    """
     output = tmp_path / "refused.json"
     completed = subprocess.run(
         [

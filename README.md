@@ -137,7 +137,7 @@ claims only when the evidence exists.
 | Notebook files | 109 |
 | Example files | 38 |
 | Optional extras | 43 |
-| Python test files | 1511 |
+| Python test files | 1512 |
 | Public documentation pages | 382 |
 | GitHub Actions workflows | 44 |
 
@@ -220,6 +220,10 @@ classical-model claim boundary. The [result inspector](docs/studio_workbench.md#
 links the original run values and imported analysis thresholds to raw tables,
 source-specific uncertainty and CSV/SVG exports. Display reduction retains the
 complete raw source and its digest.
+The [immutable comparison](docs/studio_workbench.md#immutable-revision-and-run-comparison)
+shows original semantic differences before aligning recorded runs by exact object
+and requested time. Incompatible meanings block arithmetic, and every unmatched
+observation remains available without changing saved revisions or results.
 
 ## Differentiable Programming Route
 

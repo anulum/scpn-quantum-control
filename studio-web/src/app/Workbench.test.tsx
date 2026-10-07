@@ -9,9 +9,30 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import QuantumStudioPanel, { QuantumStudioPanel as NamedPanel } from "../QuantumStudioPanel";
+import { StrictMode } from "react";
 
-beforeEach(() => { window.history.replaceState(null, "", "/"); });
-afterEach(() => { cleanup(); window.history.replaceState(null, "", "/"); });
+beforeEach(() => {
+  window.history.replaceState(null, "", "/");
+});
+it("preserves native route focus through the production StrictMode lifecycle and source input edits", async () => {
+  render(
+    <StrictMode>
+      <QuantumStudioPanel />
+    </StrictMode>,
+  );
+  await waitFor(() =>
+    expect(document.activeElement).toBe(screen.getByRole("region", { name: "Workbench view" })),
+  );
+  const title = screen.getByLabelText("New project title");
+  title.focus();
+  fireEvent.change(title, { target: { value: "Retained keyboard input" } });
+  expect(document.activeElement).toBe(title);
+  expect(title).toHaveProperty("value", "Retained keyboard input");
+});
+afterEach(() => {
+  cleanup();
+  window.history.replaceState(null, "", "/");
+});
 
 async function visit(hash: string) {
   act(() => {
@@ -31,22 +52,38 @@ it("test_workbench_navigation_01: original named/default consumer retains every 
   expect(screen.getByRole("region", { name: "Inspect evidence JSON" })).toBeTruthy();
   expect(screen.getByText("Differentiate support explorer")).toBeTruthy();
   expect(screen.getByText("Baseline scorecard")).toBeTruthy();
-  await waitFor(() => expect(screen.getByRole("region", { name: "Local workspace" }).textContent).toContain("IndexedDB unavailable"));
+  await waitFor(() =>
+    expect(screen.getByRole("region", { name: "Local workspace" }).textContent).toContain(
+      "IndexedDB unavailable",
+    ),
+  );
 });
 
 it("test_workbench_navigation_02: fresh deep link and history events retain exact opaque identity", async () => {
-  window.history.replaceState(null, "", "#/experiments?project=project%20%CE%B1&revision=r%2F1&snapshot=s%2B2");
+  window.history.replaceState(
+    null,
+    "",
+    "#/experiments?project=project%20%CE%B1&revision=r%2F1&snapshot=s%2B2",
+  );
   render(<QuantumStudioPanel />);
   const inspector = screen.getByRole("complementary", { name: "Workbench inspector" });
   expect(within(inspector).getByText("project α", { exact: true })).toBeTruthy();
   expect(within(inspector).getByText("r/1", { exact: true })).toBeTruthy();
   expect(within(inspector).getByText("s+2", { exact: true })).toBeTruthy();
-  const atlas = screen.getByRole("navigation", { name: "Workbench views" }).querySelector('a[href^="#/atlas"]');
-  expect(atlas?.getAttribute("href")).toBe("#/atlas?project=project+%CE%B1&revision=r%2F1&snapshot=s%2B2");
+  const atlas = screen
+    .getByRole("navigation", { name: "Workbench views" })
+    .querySelector('a[href^="#/atlas"]');
+  expect(atlas?.getAttribute("href")).toBe(
+    "#/atlas?project=project+%CE%B1&revision=r%2F1&snapshot=s%2B2",
+  );
   await visit("#/atlas?project=project%20%CE%B1&revision=r%2F1&snapshot=s%2B2");
   await screen.findByRole("heading", { name: "Atlas unavailable" });
   act(() => {
-    window.history.replaceState(null, "", "#/experiments?project=project%20%CE%B1&revision=r%2F1&snapshot=s%2B2");
+    window.history.replaceState(
+      null,
+      "",
+      "#/experiments?project=project%20%CE%B1&revision=r%2F1&snapshot=s%2B2",
+    );
     window.dispatchEvent(new PopStateEvent("popstate"));
   });
   await screen.findByRole("heading", { name: "Local experiment" });
@@ -65,7 +102,11 @@ it("test_workbench_navigation_03: embedded mode exposes keyboard targets and cur
   expect(document.activeElement).toBe(content);
   expect(content.tabIndex).toBe(-1);
   expect(screen.getByRole("navigation", { name: "Breadcrumbs" }).textContent).toContain("Atlas");
-  expect(screen.getByRole("navigation", { name: "Workbench views" }).querySelector('[aria-current="page"]')?.textContent).toBe("Atlas");
+  expect(
+    screen
+      .getByRole("navigation", { name: "Workbench views" })
+      .querySelector('[aria-current="page"]')?.textContent,
+  ).toBe("Atlas");
 });
 
 it("test_workbench_navigation_04: rejected route retains the original live editor and its bytes", async () => {
@@ -94,17 +135,28 @@ it("test_workbench_navigation_05: feature view is absent until navigation and re
 });
 
 it("operator profiles are reachable from the production shell without replacing the original workspace draft", async () => {
- render(<QuantumStudioPanel />);
- const editor=screen.getByLabelText("Workspace archive JSON") as HTMLTextAreaElement;
- fireEvent.change(editor,{target:{value:'{"unsaved":"profile-navigation α"}'}});
- const navigation=screen.getByRole("navigation",{name:"Workbench context destinations"});
- expect(within(navigation).getByRole("link",{name:"Devices & Operations"}).getAttribute("href")).toBe("#/operations");
- await visit("#/operations");
- await screen.findByRole("heading",{name:"Devices & Operations"});
- expect(within(navigation).getByRole("link",{name:"Devices & Operations"}).getAttribute("aria-current")).toBe("page");
- await act(async () => { fireEvent.click(screen.getByRole("button",{name:"Open declared profiles"})); });
- await screen.findByLabelText("Backend profile");
- expect(screen.getByRole("navigation",{name:"Workbench views"}).querySelectorAll("a")).toHaveLength(5);
- await visit("#/workspace");expect(screen.getByLabelText("Workspace archive JSON")).toBe(editor);
- expect(editor.value).toBe('{"unsaved":"profile-navigation α"}');
+  render(<QuantumStudioPanel />);
+  const editor = screen.getByLabelText("Workspace archive JSON") as HTMLTextAreaElement;
+  fireEvent.change(editor, { target: { value: '{"unsaved":"profile-navigation α"}' } });
+  const navigation = screen.getByRole("navigation", { name: "Workbench context destinations" });
+  expect(
+    within(navigation).getByRole("link", { name: "Devices & Operations" }).getAttribute("href"),
+  ).toBe("#/operations");
+  await visit("#/operations");
+  await screen.findByRole("heading", { name: "Devices & Operations" });
+  expect(
+    within(navigation)
+      .getByRole("link", { name: "Devices & Operations" })
+      .getAttribute("aria-current"),
+  ).toBe("page");
+  await act(async () => {
+    fireEvent.click(screen.getByRole("button", { name: "Open declared profiles" }));
+  });
+  await screen.findByLabelText("Backend profile");
+  expect(
+    screen.getByRole("navigation", { name: "Workbench views" }).querySelectorAll("a"),
+  ).toHaveLength(5);
+  await visit("#/workspace");
+  expect(screen.getByLabelText("Workspace archive JSON")).toBe(editor);
+  expect(editor.value).toBe('{"unsaved":"profile-navigation α"}');
 });
