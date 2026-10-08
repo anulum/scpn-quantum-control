@@ -203,7 +203,7 @@ def installed_hamiltonian_wheels(tmp_path_factory: pytest.TempPathFactory) -> tu
         + "\n",
         encoding="utf-8",
     )
-    subprocess.run(
+    installed = subprocess.run(
         [
             str(python),
             "-I",
@@ -216,12 +216,13 @@ def installed_hamiltonian_wheels(tmp_path_factory: pytest.TempPathFactory) -> tu
             *map(str, sorted(wheels.glob("*.whl"))),
             str(engines[0]),
         ],
-        check=True,
+        check=False,
         cwd=directory,
         env=environment,
         capture_output=True,
         text=True,
     )
+    assert installed.returncode == 0, installed.stdout + installed.stderr
     return python, directory
 
 

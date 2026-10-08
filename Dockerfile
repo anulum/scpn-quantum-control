@@ -13,8 +13,8 @@
 # therefore deliberately ships tests/, docs/, paper/, notebooks/, data/,
 # and CI fixtures. The final image installs a compiled scpn_quantum_engine
 # wheel produced in a separate, digest-pinned builder stage so native custody
-# and parity tests exercise real extension behaviour without shipping a Rust
-# toolchain in the test image.
+# and parity tests exercise real extension behaviour. The pinned Rust toolchain
+# and cached WASM dependencies also support actual build-tool acceptance tests.
 # Do NOT slim this into a runtime image — slimming would defeat its only
 # job (reproducing the full test run). For a production deployment, install
 # the published wheel (`pip install scpn-quantum-control`) into your own
@@ -32,6 +32,15 @@ RUN maturin build \
     --interpreter python3.12 \
     --out /wheels
 
+FROM rust:1.99.0-slim-bookworm@sha256:2c3a22f0a5533ea2dd5a16627bc841228151faa2d4de2644ac9987e4a2f1f2fa AS wasm-builder
+
+WORKDIR /build/studio_wasm_kernel
+COPY rust-toolchain.toml /build/rust-toolchain.toml
+COPY scpn_quantum_engine/studio_wasm_kernel/ ./
+RUN rustup component add rustfmt clippy \
+    && rustup target add wasm32-unknown-unknown \
+    && cargo build --release --locked --target wasm32-unknown-unknown
+
 FROM python:3.12-slim@sha256:3d5ed973e45820f5ba5e46bd065bd88b3a504ff0724d85980dcd05eab361fcf4
 
 LABEL org.opencontainers.image.title="scpn-quantum-control"
@@ -43,8 +52,15 @@ RUN useradd --create-home sqc
 WORKDIR /app
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends git \
+    && apt-get install -y --no-install-recommends git gcc libc6-dev \
     && rm -rf /var/lib/apt/lists/*
+
+COPY --from=wasm-builder /usr/local/rustup /opt/rustup
+COPY --from=wasm-builder /usr/local/cargo /home/sqc/.cargo
+ENV RUSTUP_HOME=/opt/rustup
+ENV CARGO_HOME=/home/sqc/.cargo
+ENV PATH=/home/sqc/.cargo/bin:$PATH
+RUN chown -R sqc:sqc /home/sqc/.cargo
 
 COPY .pre-commit-config.yaml pyproject.toml mkdocs.yml requirements.txt requirements-dev.txt README.md LICENSE ROADMAP.md ./
 # The changelog, public-claim, and rendered-docs-header guards read these
@@ -85,8 +101,8 @@ COPY oscillatools/.zenodo.json oscillatools/.zenodo.json
 COPY studio-web/package.json studio-web/package.json
 # The shared contract ownership check requires every declared consumer of a
 # contract to exist as a file: the TypeScript contract modules, the program
-# compiler pair and the WebAssembly kernel crate. None of them is built or
-# run in this image.
+# compiler pair and the WebAssembly kernel crate. The original kernel inputs
+# also support the build-tool acceptance tests.
 COPY studio-web/src/shared/contracts/ studio-web/src/shared/contracts/
 COPY studio-web/src/features/programs/programCompiler.ts studio-web/src/features/programs/programCompiler.test.ts studio-web/src/features/programs/
 COPY scpn_quantum_engine/studio_wasm_kernel/ scpn_quantum_engine/studio_wasm_kernel/

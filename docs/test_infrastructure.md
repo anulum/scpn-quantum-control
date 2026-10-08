@@ -742,9 +742,9 @@ pushed to a registry. It deliberately ships `tests/`, `docs/`, `paper/`,
 `notebooks/`, `data/`, and CI fixtures. A digest-pinned Maturin builder stage
 compiles the locked `scpn_quantum_engine` crate and the final image installs
 that wheel, so native lifecycle, custody, and parity tests exercise the real
-extension. The Rust toolchain remains confined to the builder stage and is not
-present in the final test image. It is intentionally not slimmed — slimming
-would defeat its only purpose. For a production deployment, install the published wheel
+extension. The reproduction image also carries the pinned Rust toolchain and
+cached WASM dependencies so build-tool tests compile the original kernel
+offline. It is intentionally not slimmed — slimming would defeat its only purpose. For a production deployment, install the published wheel
 (`pip install scpn-quantum-control`) into your own base image rather than
 reusing this one.
 
