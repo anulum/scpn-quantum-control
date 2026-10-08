@@ -7,13 +7,13 @@
 # SCPN Quantum Control — native provider lifecycle tests
 """Qualify native request bytes and observable lifecycle/result custody."""
 
-import io
 from pathlib import Path
 from uuid import uuid4
 
 import pytest
-from qiskit import QuantumCircuit, qpy
+from qiskit import QuantumCircuit
 
+from scpn_quantum_control.hardware.hal_qiskit import _reviewed_qpy_load_circuits
 from scpn_quantum_control.hardware.provider_job_journal import (
     ProviderJobJournal,
     SubmissionUnknownError,
@@ -77,7 +77,7 @@ def test_native_qpy_payload_preserves_source_and_measurement() -> None:
     circuit.x(1)
     circuit.measure_all()
     payload = native_batch_payload([circuit])
-    restored = qpy.load(io.BytesIO(payload))
+    restored = _reviewed_qpy_load_circuits(payload)
     assert restored == [circuit]
     assert native_batch_payload(restored) == payload
 
