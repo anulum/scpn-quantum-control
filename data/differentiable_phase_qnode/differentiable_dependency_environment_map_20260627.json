@@ -122,7 +122,7 @@
         "data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.json"
       ],
       "evidence_sha256": [
-        "141c512cad007b3033225be4b08a8dc3dc7a545417880f97861b5f460754f342",
+        "8dbfc9b730c36e8e316af469167cad7a172dcf6a070ec1c2b8732f6dadd13aab",
         "b912c0e4c4370cf77e7d9181fa0927a60c9de505329e2987c8aa4de6327907fb",
         "284449e2b3778706e010bc3a77319f7f33f4811b8f941ab34d1fc4f71db711e2",
         "71dde916385e5cab71ddd87c03d53c439d35da17ed05908eb05e6d097120aa4f",
@@ -329,7 +329,7 @@
         "src/scpn_quantum_control/phase/torch_maturity.py"
       ],
       "evidence_sha256": [
-        "141c512cad007b3033225be4b08a8dc3dc7a545417880f97861b5f460754f342",
+        "8dbfc9b730c36e8e316af469167cad7a172dcf6a070ec1c2b8732f6dadd13aab",
         "bbc9d36825b9965fabaac9fe152c67549fc305507037d05fb0094dc767a55b2e",
         "b103d89b86a5a8bd9ebe2946622be84165d40b2cc6603a4d5241bb7eb1845136"
       ],
