@@ -628,7 +628,6 @@ jobs:
           python -m pip install --require-hashes -r ${{ matrix.requirements-file }}
           python -m pip install --no-deps -e .
       - name: Install Studio recompute dependency
-        if: matrix.python-version != '3.11'
         run: |
           python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt
       - name: Download the ABI-matched Rust engine wheel
@@ -643,6 +642,10 @@ jobs:
         run: >-
           cargo test --manifest-path scpn_quantum_engine/Cargo.toml
           --locked --test 'program_ad*'
+      - name: Prime the real Studio WASM build for offline regression
+        run: >-
+          cargo build --release --locked --target wasm32-unknown-unknown
+          --manifest-path scpn_quantum_engine/studio_wasm_kernel/Cargo.toml
       - name: Run tests
         run: pytest tests/ -v --tb=short -x -m "not slow and not hardware and not internal_corpus and not performance and not framework_imports"
       - name: Audit test quality
