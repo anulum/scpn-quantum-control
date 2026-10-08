@@ -8,6 +8,7 @@
 """Lock the Phase-QNode PennyLane bridge gate into framework-parity CI."""
 
 from pathlib import Path
+from tempfile import gettempdir
 
 from tools import phase_pennylane_bridge_quality_gates as quality_gates
 
@@ -32,7 +33,10 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     cohort = quality_gates.PHASE_PENNYLANE_BRIDGE_COVERAGE_COHORT
     assert "--branch" in run
     assert run[-len(cohort) :] == cohort
-    assert quality_gates.PHASE_PENNYLANE_BRIDGE_COVERAGE_DATA_FILE.startswith("/tmp/")
+    assert (
+        Path(quality_gates.PHASE_PENNYLANE_BRIDGE_COVERAGE_DATA_FILE)
+        == Path(gettempdir()) / "scpn-qc-phase-pennylane-bridge.coverage"
+    )
     assert "--fail-under=100" in report
     assert f"--include={quality_gates.PHASE_PENNYLANE_BRIDGE_COVERAGE_INCLUDE}" in report
 
@@ -42,7 +46,7 @@ def test_framework_parity_ci_mirrors_the_helper_contract() -> None:
     workflow = Path(".github/workflows/ci-framework-parity.yml").read_text(encoding="utf-8")
     for path in quality_gates.PHASE_PENNYLANE_BRIDGE_COVERAGE_COHORT:
         assert path in workflow
-    assert quality_gates.PHASE_PENNYLANE_BRIDGE_COVERAGE_DATA_FILE in workflow
+    assert f"/tmp/{Path(quality_gates.PHASE_PENNYLANE_BRIDGE_COVERAGE_DATA_FILE).name}" in workflow
     assert quality_gates.PHASE_PENNYLANE_BRIDGE_COVERAGE_INCLUDE in workflow
     assert "Run Phase-QNode PennyLane bridge focused coverage" in workflow
     assert "Enforce Phase-QNode PennyLane bridge exact coverage" in workflow

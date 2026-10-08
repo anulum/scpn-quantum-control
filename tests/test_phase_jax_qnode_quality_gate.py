@@ -12,6 +12,7 @@ from __future__ import annotations
 import importlib.util
 import sys
 from pathlib import Path
+from tempfile import gettempdir
 from types import ModuleType
 
 from tools import phase_jax_qnode_quality_gates as _quality_gates
@@ -106,7 +107,7 @@ def test_default_local_gate_has_exact_owner_coverage() -> None:
     assert "--precision=2" in report_cmd
     assert "--fail-under=100" in report_cmd
     assert "--include=*/jax_bridge.py,*/jax_maturity.py,*/jax_qnode_transforms.py" in report_cmd
-    assert data_file.startswith("/tmp/")
+    assert Path(data_file) == Path(gettempdir()) / "scpn-qc-phase-jax-qnode.coverage"
     assert f"--data-file={data_file}" in report_cmd
 
 

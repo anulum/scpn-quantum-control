@@ -7,6 +7,9 @@
 # SCPN Quantum Control — Phase-QNode Torch quality-gate tests
 """Lock the Phase-QNode Torch facade gate into preflight and CI."""
 
+from pathlib import Path
+from tempfile import gettempdir
+
 from tools import phase_torch_bridge_quality_gates as quality_gates
 from tools import preflight
 from tools.ci_workflow_inventory import read_ci_workflow_source
@@ -32,7 +35,10 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     cohort = quality_gates.PHASE_TORCH_BRIDGE_COVERAGE_COHORT
     assert "--branch" in run
     assert run[-len(cohort) :] == cohort
-    assert quality_gates.PHASE_TORCH_BRIDGE_COVERAGE_DATA_FILE.startswith("/tmp/")
+    assert (
+        Path(quality_gates.PHASE_TORCH_BRIDGE_COVERAGE_DATA_FILE)
+        == Path(gettempdir()) / "scpn-qc-phase-torch-bridge.coverage"
+    )
     assert "--fail-under=100" in report
     assert f"--include={quality_gates.PHASE_TORCH_BRIDGE_COVERAGE_INCLUDE}" in report
 
@@ -53,6 +59,6 @@ def test_ci_runs_torch_gate_inside_differentiable_parity() -> None:
         assert path in workflow
     for path in quality_gates.PHASE_TORCH_BRIDGE_COVERAGE_COHORT:
         assert path in workflow
-    assert quality_gates.PHASE_TORCH_BRIDGE_COVERAGE_DATA_FILE in workflow
+    assert f"/tmp/{Path(quality_gates.PHASE_TORCH_BRIDGE_COVERAGE_DATA_FILE).name}" in workflow
     assert quality_gates.PHASE_TORCH_BRIDGE_COVERAGE_INCLUDE in workflow
     assert "differentiable-parity" in workflow[workflow.index("  ci-gate:") :]

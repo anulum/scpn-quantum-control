@@ -14,6 +14,7 @@ import os
 import subprocess
 import sys
 from importlib import import_module
+from importlib.metadata import distributions, version
 from pathlib import Path
 from threading import Event
 from time import monotonic
@@ -181,7 +182,7 @@ def installed_hamiltonian_wheels(tmp_path_factory: pytest.TempPathFactory) -> tu
     assert len(engines) == 1, "the native CI job must supply one current ABI-matched wheel"
     venv = directory / "environment"
     subprocess.run(
-        [sys.executable, "-m", "venv", "--system-site-packages", str(venv)],
+        [sys.executable, "-m", "venv", str(venv)],
         check=True,
         cwd=directory,
         env=environment,
@@ -189,6 +190,19 @@ def installed_hamiltonian_wheels(tmp_path_factory: pytest.TempPathFactory) -> tu
         text=True,
     )
     python = venv / "bin" / "python"
+    constraints = directory / "installed-dependency-constraints.txt"
+    constraints.write_text(
+        "\n".join(
+            sorted(
+                f"{distribution.metadata['Name']}=={distribution.version}"
+                for distribution in distributions()
+                if distribution.metadata["Name"]
+                not in {"scpn-quantum-control", "scpn-quantum-engine", "oscillatools"}
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     subprocess.run(
         [
             str(python),
@@ -196,9 +210,9 @@ def installed_hamiltonian_wheels(tmp_path_factory: pytest.TempPathFactory) -> tu
             "-m",
             "pip",
             "install",
-            "--no-index",
-            "--no-deps",
-            "--force-reinstall",
+            "--constraint",
+            str(constraints),
+            f"packaging=={version('packaging')}",
             *map(str, sorted(wheels.glob("*.whl"))),
             str(engines[0]),
         ],
