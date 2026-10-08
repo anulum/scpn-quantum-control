@@ -55,9 +55,62 @@ def _target_valid(target: str) -> bool:
     return bool(TARGET_RE.match(target)) and target.startswith(TARGET_PREFIX)
 
 
-def build_api_contract(review: dict[str, Any] | None = None) -> dict[str, Any]:
-    """Build the future ``quantum_kuramoto`` API contract payload."""
-    payload = _load_review() if review is None else review
+def _input_reference(path: Path | None, payload: dict[str, Any]) -> tuple[str | None, str | None]:
+    """Bind a review input to its actual bytes when a file is declared.
+
+    Parameters
+    ----------
+    path
+        Actual review input, or ``None`` for unbound in-memory input.
+    payload
+        Review object used to construct the contract.
+
+    Returns
+    -------
+    tuple[str | None, str | None]
+        Repository-relative or external reference and its exact byte digest.
+
+    Raises
+    ------
+    ValueError
+        If the declared source differs from the supplied review.
+
+    """
+    if path is None:
+        return None, None
+    raw = path.read_bytes()
+    if json.loads(raw) != json.loads(json.dumps(payload)):
+        raise ValueError("declared review source differs from the supplied input")
+    reference = str(path.relative_to(REPO_ROOT)) if path.is_relative_to(REPO_ROOT) else str(path)
+    return reference, hashlib.sha256(raw).hexdigest()
+
+
+def build_api_contract(
+    review: dict[str, Any] | None = None, *, source_review: Path | None = None
+) -> dict[str, Any]:
+    """Build the future API contract with accurate review provenance.
+
+    Parameters
+    ----------
+    review
+        Supplied review object, or ``None`` to read the archived default input.
+    source_review
+        Actual file for a supplied review. In-memory inputs may remain unbound.
+
+    Returns
+    -------
+    dict[str, Any]
+        Import-qualified export rows and the actual input reference/digest.
+
+    Raises
+    ------
+    ValueError
+        If the schema is invalid or a declared input file does not match.
+
+    """
+    payload = _load_review(source_review or BOUNDARY_REVIEW_PATH) if review is None else review
+    input_path = source_review or (BOUNDARY_REVIEW_PATH if review is None else None)
+    source_ref, source_digest = _input_reference(input_path, payload)
     if payload.get("schema") != "s6_quantum_kuramoto_boundary_review_v1":
         raise ValueError("unexpected boundary-review schema")
     proposed = payload.get("proposed_public_api")
@@ -116,7 +169,8 @@ def build_api_contract(review: dict[str, Any] | None = None) -> dict[str, Any]:
     return {
         "schema": "s6_quantum_kuramoto_api_contract_v1",
         "date": DATE,
-        "source_review": str(BOUNDARY_REVIEW_PATH.relative_to(REPO_ROOT)),
+        "source_review": source_ref,
+        "source_review_sha256": source_digest,
         "contract_passed": not errors,
         "package_skeleton_allowed": False,
         "reason": "API targets are being contracted before any separate package skeleton is created",
@@ -207,12 +261,12 @@ def main() -> int:
     """Write the quantum Kuramoto API-contract artefacts."""
     args = parse_args()
     review = _load_review(args.review_path)
-    payload = build_api_contract(review)
+    payload = build_api_contract(review, source_review=args.review_path)
     json_path = args.out_dir / f"quantum_kuramoto_api_contract_{DATE}.json"
     sha_json = _write_json(json_path, payload)
     sha_md = _write_text(args.doc_path, _markdown(payload))
-    print(f"wrote {json_path.relative_to(REPO_ROOT)} sha256={sha_json}")
-    print(f"wrote {args.doc_path.relative_to(REPO_ROOT)} sha256={sha_md}")
+    print(f"wrote {json_path} sha256={sha_json}")
+    print(f"wrote {args.doc_path} sha256={sha_md}")
     return 0
 
 

@@ -4,7 +4,7 @@ The primary navigation stays intentionally compact. This catalog keeps every
 public guide, evidence note, contract, campaign protocol, and reference page
 discoverable without crowding the main learning path.
 
-Current inventory: **382 public pages**; **163** are in the
+Current inventory: **383 public pages**; **163** are in the
 primary navigation and the remainder are indexed here.
 
 Labels marked `catalog` are intentionally outside the primary navigation; they
@@ -351,6 +351,7 @@ are still built, link-checked, searchable, and public.
 | [Quantum/Classical Co-Simulation of K_nm Networks](quantum_classical_cosimulation.md) | primary nav | scpn_quantum_control.cosimulation simulates a large Kuramoto-XY coupling network by evolving a small, strongly-coupled core as an exact quantum statevector while the weakly-coupled remainder runs as a classical Kuramoto bath. A network of N |
 | [Quantum Gradients](quantum_gradients.md) | primary nav | Quantum gradients are the first differentiable-programming surface that most quantum-ML users look for. The current public route starts with parameter-shift gradients and expands toward backend-aware gradient planning, stochastic finite-sho |
 | [Bounded Quantum Graph Neural Network](quantum_graph_neural_network.md) | primary nav | scpn_quantum_control.phase.qgnn is a local quantum graph neural network that maps a K_nm coupling graph to a registered Phase-QNode circuit output. A classical message-passing stack turns the graph (nodes carry natural frequencies and weigh |
+| [Quantum Kuramoto audit usage](quantum_kuramoto_audit_usage.md) | catalog | Generate an import audit, boundary review and API contract from explicitly selected inputs. Each review and contract records the actual input path and SHA-256. The date in the output filename identifies the original report format; it does n |
 | [Quantum Reservoir Computing and Classical Surrogates](quantum_reservoir.md) | primary nav | This page defines the bounded quantum reservoir computing (QRC), matched classical baseline, and differentiable classical-surrogate surfaces. |
 | [Quantum Sensing Readiness](quantum_sensing.md) | catalog | This is the S11 no-submit readiness surface for DLA-driven quantum sensing via the synchronisation order parameter. It records QFI and classical Fisher proxy rows without hardware submission or sensing advantage promotion. |
 | [Quantum Thermodynamics Readiness](quantum_thermo.md) | catalog | This is the S9 no-submit readiness surface for thermodynamic signatures of synchronisation transitions. It records calibrated observables and protocol prerequisites with no hardware submission and no thermodynamic peak claim. |

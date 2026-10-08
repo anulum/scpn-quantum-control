@@ -79,9 +79,62 @@ def _load_audit(path: Path = AUDIT_PATH) -> dict[str, Any]:
     return payload
 
 
-def build_boundary_review(audit: dict[str, Any] | None = None) -> dict[str, Any]:
-    """Build the manual boundary-review payload."""
-    payload = _load_audit() if audit is None else audit
+def _input_reference(path: Path | None, payload: dict[str, Any]) -> tuple[str | None, str | None]:
+    """Bind a supplied audit to its actual bytes when a file is declared.
+
+    Parameters
+    ----------
+    path
+        Actual audit input, or ``None`` for unbound in-memory input.
+    payload
+        Audit object used to construct the review.
+
+    Returns
+    -------
+    tuple[str | None, str | None]
+        Repository-relative or external reference and its exact byte digest.
+
+    Raises
+    ------
+    ValueError
+        If the declared source differs from the supplied audit.
+
+    """
+    if path is None:
+        return None, None
+    raw = path.read_bytes()
+    if json.loads(raw) != json.loads(json.dumps(payload)):
+        raise ValueError("declared audit source differs from the supplied input")
+    reference = str(path.relative_to(REPO_ROOT)) if path.is_relative_to(REPO_ROOT) else str(path)
+    return reference, hashlib.sha256(raw).hexdigest()
+
+
+def build_boundary_review(
+    audit: dict[str, Any] | None = None, *, source_audit: Path | None = None
+) -> dict[str, Any]:
+    """Build a boundary review bound to the actual audit input.
+
+    Parameters
+    ----------
+    audit
+        Supplied audit object, or ``None`` to read the archived default input.
+    source_audit
+        Actual file for a supplied audit. Omitted in-memory inputs remain unbound.
+
+    Returns
+    -------
+    dict[str, Any]
+        Reviewed API rows with accurate source reference and byte digest.
+
+    Raises
+    ------
+    ValueError
+        If required rows are missing or a declared source does not match.
+
+    """
+    payload = _load_audit(source_audit or AUDIT_PATH) if audit is None else audit
+    input_path = source_audit or (AUDIT_PATH if audit is None else None)
+    source_ref, source_digest = _input_reference(input_path, payload)
     rows = payload.get("rows")
     if not isinstance(rows, list):
         raise ValueError("S6 split audit must contain rows")
@@ -106,7 +159,8 @@ def build_boundary_review(audit: dict[str, Any] | None = None) -> dict[str, Any]
     return {
         "schema": "s6_quantum_kuramoto_boundary_review_v1",
         "date": DATE,
-        "source_audit": str(AUDIT_PATH.relative_to(REPO_ROOT)),
+        "source_audit": source_ref,
+        "source_audit_sha256": source_digest,
         "package_skeleton_allowed": False,
         "reason": "manual boundary review still requires refactors for config/provenance/analysis-dependent rows",
         "proposed_public_api": api_surface,
@@ -180,12 +234,12 @@ def main() -> int:
     """Write the quantum Kuramoto boundary-review artefact."""
     args = parse_args()
     audit = _load_audit(args.audit_path)
-    payload = build_boundary_review(audit)
+    payload = build_boundary_review(audit, source_audit=args.audit_path)
     json_path = args.out_dir / f"quantum_kuramoto_boundary_review_{DATE}.json"
     sha_json = _write_json(json_path, payload)
     sha_md = _write_text(args.doc_path, _markdown(payload))
-    print(f"wrote {json_path.relative_to(REPO_ROOT)} sha256={sha_json}")
-    print(f"wrote {args.doc_path.relative_to(REPO_ROOT)} sha256={sha_md}")
+    print(f"wrote {json_path} sha256={sha_json}")
+    print(f"wrote {args.doc_path} sha256={sha_md}")
     return 0
 
 

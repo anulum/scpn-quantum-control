@@ -13,8 +13,10 @@ from __future__ import annotations
 import argparse
 import ast
 import hashlib
+import importlib
 import json
-from dataclasses import asdict, dataclass
+from collections.abc import Mapping
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Literal
 
@@ -31,6 +33,10 @@ DOC_PATH = (
     / f"quantum_kuramoto_split_audit_{DATE}.md"
 )
 CANDIDATE_PACKAGES = ("phase", "bridge", "hardware", "accel")
+CANDIDATE_ROOT_MODULES = ("_rust_accel",)
+COMPATIBILITY_ALIASES = {
+    "scpn_quantum_control.accel.rust_import": "oscillatools.accel.rust_import",
+}
 SCPN_MARKERS = (
     "ssgf",
     "snn",
@@ -57,7 +63,28 @@ SplitStatus = Literal["reusable", "needs_review", "scpn_specific"]
 
 @dataclass(frozen=True, slots=True)
 class SplitAuditRow:
-    """One candidate module row for the split audit."""
+    """One source-backed candidate module observation.
+
+    Attributes
+    ----------
+    module
+        Requested import address or declared static source address.
+    path
+        Repository-relative source or explicit external provider reference.
+    status
+        Conservative reuse classification.
+    reasons
+        Source observations supporting the classification.
+    internal_imports
+        Resolved first-party import addresses.
+    external_import_roots
+        External dependency roots, including relative provider imports.
+    canonical_module
+        Actual alias provider or declared static package context.
+    source_sha256
+        Digest of the inspected physical source bytes.
+
+    """
 
     module: str
     path: str
@@ -65,25 +92,52 @@ class SplitAuditRow:
     reasons: tuple[str, ...]
     internal_imports: tuple[str, ...]
     external_import_roots: tuple[str, ...]
+    canonical_module: str | None = None
+    source_sha256: str | None = None
 
 
-def _module_name(path: Path) -> str:
-    rel = path.relative_to(REPO_ROOT / "src").with_suffix("")
-    return ".".join(rel.parts)
+def _candidate_files(source_root: Path) -> list[Path]:
+    """List candidate source files and the required root foundation.
 
+    Parameters
+    ----------
+    source_root
+        Physical package root under inspection.
 
-def _candidate_files() -> list[Path]:
+    Returns
+    -------
+    list[Path]
+        Existing package sources excluding cache directories, followed by the
+        required foundation paths whose absence will fail the source audit.
+
+    """
     files: list[Path] = []
     for package in CANDIDATE_PACKAGES:
-        root = SRC_ROOT / package
+        root = source_root / package
         if root.is_dir():
             files.extend(
                 path for path in sorted(root.rglob("*.py")) if "__pycache__" not in path.parts
             )
+    files.extend(source_root / f"{name}.py" for name in CANDIDATE_ROOT_MODULES)
     return files
 
 
-def _imports(path: Path) -> tuple[tuple[str, ...], tuple[str, ...]]:
+def _imports(path: Path, *, module_name: str) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    """Inspect import statements in a physical source or an alias provider.
+
+    Parameters
+    ----------
+    path
+        Existing Python source file to inspect.
+    module_name
+        Canonical provider address for a source outside the parent package.
+
+    Returns
+    -------
+    tuple[tuple[str, ...], tuple[str, ...]]
+        Sorted internal addresses and external import roots.
+
+    """
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     internal: set[str] = set()
     external: set[str] = set()
@@ -98,29 +152,82 @@ def _imports(path: Path) -> tuple[tuple[str, ...], tuple[str, ...]]:
         elif isinstance(node, ast.ImportFrom):
             module = node.module or ""
             if node.level:
-                base = _resolve_relative_module(path, node.level, module)
-                if base:
+                base = _resolve_relative_module(path, node.level, module, module_name=module_name)
+                if base.startswith("scpn_quantum_control"):
                     internal.add(base)
+                else:
+                    external.add(base.split(".")[0])
             elif module.startswith("scpn_quantum_control"):
                 internal.add(module)
-            elif module:
+            else:
                 external.add(module.split(".")[0])
     return tuple(sorted(internal)), tuple(sorted(external))
 
 
-def _resolve_relative_module(path: Path, level: int, module: str) -> str | None:
-    package_parts = _module_name(path).split(".")[:-1]
+def _resolve_relative_module(path: Path, level: int, module: str, *, module_name: str) -> str:
+    """Resolve a relative import in its actual owning package.
+
+    Parameters
+    ----------
+    path
+        Existing source file under inspection.
+    level
+        Number of relative import dots.
+    module
+        Relative module suffix, which may be empty.
+    module_name
+        Canonical address of an external compatibility provider.
+
+    Returns
+    -------
+    str
+        Resolved address in the declared owning package.
+
+    Raises
+    ------
+    ValueError
+        If the relative import leaves its declared package.
+
+    """
+    address_parts = module_name.split(".")
+    package_parts = (
+        address_parts
+        if path.name == "__init__.py" and address_parts[-1] != "__init__"
+        else address_parts[:-1]
+    )
     if level > len(package_parts):
-        return None
+        raise ValueError(f"relative import leaves declared package: {module_name}")
     base = package_parts[: len(package_parts) - level + 1]
     if module:
         base.extend(module.split("."))
-    return ".".join(base) if base else None
+    return ".".join(base)
 
 
-def _status(path: Path, internal_imports: tuple[str, ...]) -> tuple[SplitStatus, tuple[str, ...]]:
+def _status(
+    path: Path,
+    internal_imports: tuple[str, ...],
+    *,
+    module_name: str,
+) -> tuple[SplitStatus, tuple[str, ...]]:
+    """Classify inspected source without treating an alias as a physical file.
+
+    Parameters
+    ----------
+    path
+        Actual source file containing the implementation.
+    internal_imports
+        Resolved imports from the source inspection.
+    module_name
+        Canonical provider address when inspecting an external alias.
+
+    Returns
+    -------
+    tuple[SplitStatus, tuple[str, ...]]
+        Scientific reuse posture and the observations supporting it.
+
+    """
     text = path.read_text(encoding="utf-8")
-    module = _module_name(path)
+    module = module_name
     reasons: list[str] = []
     lower_module = module.lower()
     if any(marker.lower() in lower_module for marker in SCPN_MARKERS):
@@ -153,27 +260,123 @@ def _status(path: Path, internal_imports: tuple[str, ...]) -> tuple[SplitStatus,
     return "reusable", tuple(reasons or ["no_scpn_specific_marker_detected"])
 
 
-def build_split_audit() -> dict[str, object]:
-    """Build the S6 split audit payload."""
+def audit_module_source(module: str, path: Path) -> SplitAuditRow:
+    """Audit a physical source in its declared canonical package context.
+
+    Parameters
+    ----------
+    module
+        Canonical dotted address used to resolve source imports.
+    path
+        Existing Python source, including an offline source snapshot.
+
+    Returns
+    -------
+    SplitAuditRow
+        Static import classification, physical provenance and exact byte digest.
+        This source audit does not assert runtime importability.
+
+    Raises
+    ------
+    ValueError
+        If an import leaves the declared package.
+    SyntaxError
+        If the source cannot be parsed as Python.
+
+    """
+    path = path.resolve()
+    internal, external = _imports(path, module_name=module)
+    status, reasons = _status(path, internal, module_name=module)
+    reference = (
+        str(path.relative_to(REPO_ROOT))
+        if path.is_relative_to(REPO_ROOT)
+        else f"external:{module}"
+    )
+    return SplitAuditRow(
+        module=module,
+        path=reference,
+        status=status,
+        reasons=reasons,
+        internal_imports=internal,
+        external_import_roots=external,
+        canonical_module=module,
+        source_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
+    )
+
+
+def _compatibility_alias_row(requested: str, canonical: str) -> SplitAuditRow:
+    """Inspect the real implementation behind an existing module alias.
+
+    Parameters
+    ----------
+    requested
+        Existing compatibility import address retained by the parent package.
+    canonical
+        Reviewed owning address the import must resolve to.
+
+    Returns
+    -------
+    SplitAuditRow
+        Alias row with canonical identity, actual source digest and import audit.
+
+    Raises
+    ------
+    ImportError
+        If the existing compatibility surface cannot be imported.
+    ValueError
+        If the alias resolves to another owner or has no physical source.
+
+    """
+    provider = importlib.import_module(requested)
+    source_file = getattr(provider, "__file__", None)
+    if provider.__name__ != canonical or not isinstance(source_file, str):
+        raise ValueError("compatibility alias has no verified canonical source")
+    row = audit_module_source(canonical, Path(source_file))
+    return replace(
+        row,
+        module=requested,
+        reasons=(*row.reasons, "verified_compatibility_alias"),
+    )
+
+
+def build_split_audit(
+    *, source_root: Path = SRC_ROOT, compatibility_aliases: Mapping[str, str] | None = None
+) -> dict[str, object]:
+    """Build the split audit from physical sources and verified public aliases.
+
+    Parameters
+    ----------
+    source_root
+        Physical package root or offline source snapshot. The root accelerator
+        foundation must exist; optional package directories may be absent.
+    compatibility_aliases
+        Requested addresses and their reviewed providers; defaults to the
+        existing accelerator compatibility contract.
+
+    Returns
+    -------
+    dict[str, object]
+        Import classifications with source-backed compatibility provenance.
+
+    """
     rows: list[SplitAuditRow] = []
-    for path in _candidate_files():
-        internal, external = _imports(path)
-        status, reasons = _status(path, internal)
-        rows.append(
-            SplitAuditRow(
-                module=_module_name(path),
-                path=str(path.relative_to(REPO_ROOT)),
-                status=status,
-                reasons=reasons,
-                internal_imports=internal,
-                external_import_roots=external,
-            )
-        )
+    for path in _candidate_files(source_root):
+        relative = path.relative_to(source_root).with_suffix("")
+        module = ".".join(("scpn_quantum_control", *relative.parts))
+        rows.append(audit_module_source(module, path))
+    rows.extend(
+        _compatibility_alias_row(requested, canonical)
+        for requested, canonical in (
+            COMPATIBILITY_ALIASES if compatibility_aliases is None else compatibility_aliases
+        ).items()
+    )
     counts = {status: sum(1 for row in rows if row.status == status) for status in _STATUSES}
     return {
         "schema": "s6_quantum_kuramoto_split_audit_v1",
         "date": DATE,
+        "source_root": str(source_root.resolve()),
         "candidate_packages": list(CANDIDATE_PACKAGES),
+        "candidate_root_modules": list(CANDIDATE_ROOT_MODULES),
         "statuses": counts,
         "acceptance_boundary": {
             "safe_to_publish_package_now": False,
@@ -241,20 +444,49 @@ def _write_text(path: Path, text: str) -> str:
 def parse_args() -> argparse.Namespace:
     """Parse the quantum-Kuramoto split audit CLI arguments."""
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--source-root", type=Path, default=SRC_ROOT)
     parser.add_argument("--out-dir", type=Path, default=OUT_DIR)
     parser.add_argument("--doc-path", type=Path, default=DOC_PATH)
     return parser.parse_args()
 
 
+def write_split_audit(
+    payload: dict[str, object], *, json_path: Path, doc_path: Path
+) -> tuple[str, str]:
+    """Export an audit object as validated Markdown and digest-linked JSON.
+
+    Parameters
+    ----------
+    payload
+        Current or previously stored split audit object.
+    json_path
+        Destination JSON file.
+    doc_path
+        Destination Markdown report.
+
+    Returns
+    -------
+    tuple[str, str]
+        SHA256 digests of the actual JSON and Markdown bytes.
+
+    Raises
+    ------
+    TypeError
+        If status counts or module rows cannot be rendered.
+
+    """
+    document = _markdown(payload)
+    return _write_json(json_path, payload), _write_text(doc_path, document)
+
+
 def main() -> int:
     """Run the quantum-Kuramoto split audit and write public artefacts."""
     args = parse_args()
-    payload = build_split_audit()
+    payload = build_split_audit(source_root=args.source_root)
     json_path = args.out_dir / f"quantum_kuramoto_split_audit_{DATE}.json"
-    sha_json = _write_json(json_path, payload)
-    sha_md = _write_text(args.doc_path, _markdown(payload))
-    print(f"wrote {json_path.relative_to(REPO_ROOT)} sha256={sha_json}")
-    print(f"wrote {args.doc_path.relative_to(REPO_ROOT)} sha256={sha_md}")
+    sha_json, sha_md = write_split_audit(payload, json_path=json_path, doc_path=args.doc_path)
+    print(f"wrote {json_path} sha256={sha_json}")
+    print(f"wrote {args.doc_path} sha256={sha_md}")
     return 0
 
 
