@@ -165,8 +165,13 @@ def workflow_runtime_identity(
         sources[f"handler:{type(handler).__module__}.{type(handler).__qualname__}"] = (
             _source_digest(path, stamps)
         )
-    for name in ("scpn_quantum_engine", "scpn_studio_platform", "oscillatools", "numpy", "qiskit"):
-        spec = find_spec(name)
+    for name, spec in (
+        ("scpn_quantum_engine", find_spec("scpn_quantum_engine")),
+        ("scpn_studio_platform", find_spec("scpn_studio_platform")),
+        ("oscillatools", find_spec("oscillatools")),
+        ("numpy", find_spec("numpy")),
+        ("qiskit", find_spec("qiskit")),
+    ):
         if spec is None or spec.origin is None:
             continue
         origin = Path(spec.origin)
@@ -206,16 +211,20 @@ class _ObservedHandler(ActionHandler):
 
     @property
     def verb(self) -> str:
+        """Return the original trusted verb without substituting a graph label."""
         return self.original.verb
 
     def plan(self, request: ExecutiveRequest, contract: VerbContract) -> ExecutionPlan:
+        """Delegate the request and contract to the original trusted planner."""
         return self.original.plan(request, contract)
 
     def execute(self, plan: ExecutionPlan) -> ExecutionResult:
+        """Retain and return the original handler's actual execution result."""
         self.observed = self.original.execute(plan)
         return self.observed
 
     def generate_script(self, plan: ExecutionPlan, result: ExecutionResult) -> GeneratedScript:
+        """Delegate script generation using the original plan and result."""
         return self.original.generate_script(plan, result)
 
 

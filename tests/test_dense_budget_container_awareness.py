@@ -21,7 +21,9 @@ admission in memory-limited containers; these fixtures do not prove that run.
 from __future__ import annotations
 
 import os
+import sys
 from pathlib import Path
+from types import FrameType
 
 import pytest
 
@@ -53,6 +55,7 @@ def flat_controller_snapshot(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) ->
     monkeypatch
         Select the documented unavailable-proc fallback. Process discovery
         itself is exercised by the dedicated cgroup path tests.
+
     """
     monkeypatch.setattr(dense_budget, "DEFAULT_PROC_ROOT", tmp_path / "absent-proc")
 
@@ -378,7 +381,7 @@ class TestEffectiveAvailability:
         assert available_memory_bytes(tmp_path) == 16 * MIB
 
     def test_an_unrestricted_host_is_unchanged(self, tmp_path: Path) -> None:
-        """With no cgroup limit the answer is the host figure, exactly.
+        """With no cgroup limit the answer equals its own real host sample.
 
         Parameters
         ----------
@@ -386,7 +389,22 @@ class TestEffectiveAvailability:
             Empty injected cgroup root.
 
         """
-        assert available_memory_bytes(tmp_path) == host_available_memory_bytes()
+        observed: list[int | None] = []
+
+        def record_host_return(frame: FrameType, event: str, value: object) -> None:
+            """Observe the actual host sampler without replacing its implementation."""
+            if event == "return" and frame.f_code is host_available_memory_bytes.__code__:
+                if value is not None and not isinstance(value, int):
+                    raise TypeError("host memory sampler returned an invalid value")
+                observed.append(value)
+
+        prior_profile = sys.getprofile()
+        sys.setprofile(record_host_return)
+        try:
+            available = available_memory_bytes(tmp_path)
+        finally:
+            sys.setprofile(prior_profile)
+        assert observed == [available]
 
     def test_a_limit_larger_than_the_host_does_not_inflate_it(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch

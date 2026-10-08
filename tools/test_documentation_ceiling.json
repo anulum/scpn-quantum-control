@@ -1,13 +1,13 @@
 {
  "schema": "test_documentation_ceiling_v1",
  "ruff_version": "ruff 0.16.4",
- "measured_commit": "2e2980be08ffb3145517ab5b1a3f030c066c5481",
+ "measured_commit": "f381611dcbe1738c68bccf7aa58ac0fb5625d410",
  "scopes": [
   "tests",
   "oscillatools/tests"
  ],
- "total_findings": 7363,
- "total_files": 589,
+ "total_findings": 7362,
+ "total_files": 588,
  "files": {
   "oscillatools/tests/conftest.py": 1,
   "oscillatools/tests/kuramoto_delay_sensitivity_witness.py": 1,
@@ -213,7 +213,6 @@
   "tests/test_cutting_runner.py": 12,
   "tests/test_dd.py": 11,
   "tests/test_dense_budget.py": 6,
-  "tests/test_dense_budget_container_awareness.py": 1,
   "tests/test_dependency_hygiene.py": 6,
   "tests/test_dependency_security_closure.py": 3,
   "tests/test_determinism.py": 4,

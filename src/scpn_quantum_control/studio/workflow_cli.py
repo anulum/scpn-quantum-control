@@ -44,6 +44,7 @@ class _JournalStore:
         self.prior = path.read_bytes() if path.exists() else None
 
     def save(self, journal: WorkflowJournal) -> None:
+        """Atomically save the bounded journal if its prior bytes still match."""
         text = write_json(journal.to_dict()) + "\n"
         encoded = text.encode("utf-8")
         if len(encoded) > MAX_JOURNAL_BYTES:
