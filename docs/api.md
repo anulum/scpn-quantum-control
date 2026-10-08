@@ -2948,6 +2948,43 @@ Fans out `sampler.run(...)` calls across one or more
 `asyncio.Semaphore`; round-robin across runners. Legacy sync
 `HardwareRunner` remains unchanged.
 
+For an already-approved connected runner, use a durable journal when the batch
+must survive a process restart. This explicit helper preserves the original
+circuits and requested shots:
+
+```python
+from pathlib import Path
+from uuid import uuid4
+from qiskit import QuantumCircuit
+from scpn_quantum_control.hardware.async_runner import AsyncHardwareRunner
+from scpn_quantum_control.hardware.runner import HardwareRunner, JobResult
+from scpn_quantum_control.hardware.provider_job_journal import ProviderJobJournal
+
+attempt_id = str(uuid4())
+
+async def run_durable_batch(
+    runner: HardwareRunner, circuits: list[QuantumCircuit], journal_root: Path,
+    attempt_id: str,
+) -> list[JobResult]:
+    """Run an approved batch under the caller-retained attempt UUID."""
+    journal = ProviderJobJournal(journal_root)
+    async_runner = AsyncHardwareRunner(runner)
+    handle = await async_runner.submit_one_async(
+        circuits, shots=4096, journal=journal, attempt_id=attempt_id,
+    )
+    return await async_runner.wait_for_job_async(handle)
+```
+
+Keep the attempt UUID and operator-owned journal directory. A cold caller can
+use `recover_job(journal, attempt_id)` to retrieve the bound original handle.
+If dispatch lost its response, supply an operator-identified existing
+`provider_job_id`; recovery verifies its native payload, target and shots.
+`observe_job_async` is read-only, while `cancel_job_async` records intent and
+checks the native status. Neither performs another submission. A cancellation
+acknowledgement does not establish cancellation or a zero debit. Native and
+partial evidence remains available; see the
+[recoverable batch contract](hardware_guide.md#recoverable-asynchronous-batches).
+
 ### `provenance.capture_provenance`
 
 ```python

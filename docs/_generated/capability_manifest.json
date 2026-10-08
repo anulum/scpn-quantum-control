@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 851,
     "public_documentation_pages": 382,
-    "python_model_classes": 1507,
-    "python_model_source_modules": 785,
+    "python_model_classes": 1509,
+    "python_model_source_modules": 787,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1519
+    "test_files": 1522
   },
   "documentation": {
     "examples": [
@@ -700,7 +700,7 @@
       {
         "package": "hardware",
         "path": "src/scpn_quantum_control/hardware",
-        "python_modules": 85
+        "python_modules": 87
       },
       {
         "package": "identity",
@@ -5159,6 +5159,10 @@
         "path": "src/scpn_quantum_control/experimental/llm_qpu/runtime/provider_recovery.py"
       },
       {
+        "name": "ProviderJobJournal",
+        "path": "src/scpn_quantum_control/hardware/provider_job_journal.py"
+      },
+      {
         "name": "ProviderOptionalDependencyRow",
         "path": "src/scpn_quantum_control/hardware/provider_smoke.py"
       },
@@ -6189,6 +6193,10 @@
       {
         "name": "SubmissionSemantics",
         "path": "src/scpn_quantum_control/hardware/provider_semantics.py"
+      },
+      {
+        "name": "SubmissionUnknownError",
+        "path": "src/scpn_quantum_control/hardware/provider_job_journal.py"
       },
       {
         "name": "SurfaceCode",
@@ -7256,6 +7264,8 @@
       "src/scpn_quantum_control/hardware/provider_capability_normalization.py",
       "src/scpn_quantum_control/hardware/provider_capability_specialized_adapters.py",
       "src/scpn_quantum_control/hardware/provider_certification.py",
+      "src/scpn_quantum_control/hardware/provider_job_journal.py",
+      "src/scpn_quantum_control/hardware/provider_job_lifecycle.py",
       "src/scpn_quantum_control/hardware/provider_measurement.py",
       "src/scpn_quantum_control/hardware/provider_modalities.py",
       "src/scpn_quantum_control/hardware/provider_route_configuration.py",
@@ -9877,6 +9887,9 @@
       "tests/test_provider_capability_specialized_adapters.py",
       "tests/test_provider_gradient_audit_quality_gate.py",
       "tests/test_provider_isolated_smoke_workflow.py",
+      "tests/test_provider_job_journal.py",
+      "tests/test_provider_job_lifecycle.py",
+      "tests/test_provider_job_recovery.py",
       "tests/test_provider_measurement.py",
       "tests/test_provider_measurement_semantics.py",
       "tests/test_provider_modalities.py",

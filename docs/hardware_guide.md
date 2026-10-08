@@ -24,6 +24,39 @@ V2, frontier, queued-job, placeholder, and aggregate-only IBM outputs are
 not promoted unless the hardware ledger names raw counts, private retrieval map,
 analysis code, and review status.
 
+## Recoverable asynchronous batches
+
+`AsyncHardwareRunner.submit_one_async` accepts an optional
+`ProviderJobJournal` and canonical UUID `attempt_id`. Supply both together.
+The journal records the exact compiled native QPY batch, backend name, requested
+shots and experiment before dispatch. A batch is bounded to256 circuits and
+sixteen mebibytes of encoded QPY. Existing calls without these arguments retain
+the original memory-only behaviour.
+
+An attempted dispatch changes the durable state to `submission_unknown` before
+crossing the provider boundary. A lost response or process exit cannot turn that
+state into a new submission. `recover_job` retrieves an existing stored handle;
+when no handle was returned, an operator must supply the original provider job
+ID. Recovery compares the provider's native inputs, target and shots with the
+stored request. A mismatch leaves the original attempt unchanged. This is
+read-only reconciliation, not another submission or renewed spending authority.
+
+`wait_for_job_async` retains the original SDK result before decoding counts,
+then records a completed batch only after every publication and sample total
+matches. Repeated reads of a completed attempt use detached journal results.
+`observe_job_async` reads status without submitting. `cancel_job_async` first
+records cancellation intent; acknowledgement alone remains
+`cancellation_requested` until the provider confirms cancellation. A concurrent
+completed result remains available. Partial results and previous observations
+stay in ordered history. Billing stays `unknown`: completion, cancellation and
+an empty response do not establish the provider's actual debit.
+
+The journal uses local SQLite transactions with full synchronisation and an
+explicit schema version. Keep its directory under the operator's own custody.
+Unknown journal versions refuse rather than migrate automatically. Local SDK
+sampling and transport fault tests qualify this lifecycle contract; they do not
+prove a physical provider session, execution or billing record.
+
 ## Native workload and result semantics
 
 HAL workload builders accept `capture_semantics=True` to attach a source-bound

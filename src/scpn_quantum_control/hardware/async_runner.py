@@ -10,71 +10,20 @@
 # client. The compute happens inside Qiskit and IBM's cloud; the role
 # here is orchestration. See docs/language_policy.md §"Current-state
 # audit" and feedback_rustify_all.md (memory) carve-out.
-"""Concurrent IBM job submission via asyncio.
+"""Original asynchronous sampling with optional durable request custody.
 
-Closes audit item C13. The synchronous :class:`HardwareRunner` submits
-one circuit batch at a time; Phase 2 campaigns fan out across multiple
-IBM instances and would benefit from parallel submission. This module
-provides :class:`AsyncHardwareRunner`, a thin async wrapper that keeps
-the legacy sync path untouched while exposing:
+The legacy ansatz wrapper shares one in-flight submission and retains original
+provider IDs and detached results in memory. Explicit ``submit_one_async``
+journals bind exact compiled native QPY, target, requested shots and attempt UUID
+before any provider effect. Recovery retrieves and verifies existing jobs; it
+never blindly retries an ambiguous dispatch. Status observation, result
+retrieval and cancellation remain separate operations. Cancellation intent is
+not confirmation, and billing is unknown without provider accounting evidence.
 
-* :meth:`submit_one_async` — wrap a single ``sampler.run(...)`` call in
-  a coroutine that returns a job handle without blocking the event
-  loop.
-* :meth:`submit_batch_async` — fan out many sub-batches across
-  (optionally) several :class:`HardwareRunner` instances using
-  ``asyncio.gather``. Concurrency is bounded by a semaphore so that an
-  unbounded-fan-out does not overwhelm IBM's rate limits.
-* :meth:`wait_for_job_async` — poll a submitted job via
-  ``asyncio.to_thread`` so ``job.result()`` does not block the loop.
-
-The implementation is deliberately pure-async plus ``to_thread`` — no
-``aiohttp`` or custom reactor. IBM's Python client is thread-safe
-synchronously, so wrapping it with ``to_thread`` is the correct way to
-concurrency without rewriting the library. Cancellation propagates via
-the standard ``asyncio.CancelledError`` mechanics.
-
-Submission happens **once per job**. The wrapper returned by
-:meth:`AsyncHardwareRunner.submit_circuit_batch` holds a single in-flight
-submission task, so sequential awaits, concurrent ``gather`` and a cancelled
-awaiter all share one crossing of the provider boundary. A submission that
-raises is recorded as ambiguous — the provider may already hold the work — and
-is re-raised on every later await instead of being resubmitted; recovery is an
-explicit caller decision, readable through ``submission_state`` and
-``submission_error``.
-
-The device and the shot count are reported, never substituted quietly. A named
-backend that cannot be resolved raises :class:`BackendSubstitutionError` instead
-of running elsewhere; passing ``allow_backend_substitution=True`` accepts a
-different device and records the swap. Execution opt-ins require actual booleans,
-not truthy strings or integers. Positive integer shot requests are passed unchanged
-to the provider; this adapter does not invent a universal shot limit or reduce a
-request to make it fit. Provider rejection is not permission to retry with fewer
-shots. Queued and completed submission receipts return ``requested_backend``,
-``backend_name``, ``backend_substituted``, ``requested_shots``,
-``effective_shots`` and ``shots_capped``.
-
-Tests exercise the class with a mock Sampler / Service, so CI does not
-need an IBM token. Real hardware usage is the same API surface.
-
-Usage
------
-
-.. code-block:: python
-
-    import asyncio
-    from scpn_quantum_control.hardware.async_runner import AsyncHardwareRunner
-
-    async def main():
-        runners = [HardwareRunner(...) for _ in range(3)]
-        async_runner = AsyncHardwareRunner(runners, max_concurrent=3)
-        results = await async_runner.submit_batch_async(
-            circuits_per_instance=[c_a, c_b, c_c],
-            shots=4096,
-            name="dla_parity",
-        )
-
-    asyncio.run(main())
+The original SDK owns transpilation and sampling. Local simulation, device
+substitution and mitigation retain their existing explicit opt-ins and recorded
+requested/effective settings. No numerical kernel or physical-device evidence
+is inferred from orchestration or local SDK tests.
 """
 
 from __future__ import annotations
@@ -88,6 +37,7 @@ from numbers import Integral
 from typing import Any
 
 from ..dense_budget import DenseAllocationError
+from .provider_job_journal import ProviderJobJournal
 from .runner import HardwareRunner, JobResult, _require_local_statevector_simulator
 
 
@@ -134,6 +84,24 @@ class AsyncJobHandle:
     Wraps the IBM job object together with the owning runner so callers
     can retrieve the result or cancel the job without needing to know
     which underlying :class:`HardwareRunner` submitted it.
+
+    Parameters
+    ----------
+    job_id
+        Original native provider handle.
+    runner
+        Connected original owner of the exact selected backend.
+    experiment
+        Original caller label for the batch.
+    submitted_at
+        Local UNIX timestamp in seconds, used only for elapsed-time reporting.
+    _job
+        Retained native job, or None for a recovered cached completion.
+    journal
+        Optional durable request and observation owner.
+    attempt_id
+        Canonical UUID matching that journal's immutable original request.
+
     """
 
     job_id: str
@@ -141,6 +109,8 @@ class AsyncJobHandle:
     experiment: str
     submitted_at: float = field(default_factory=time.time)
     _job: Any = None
+    journal: ProviderJobJournal | None = None
+    attempt_id: str | None = None
 
 
 class AsyncHardwareRunner:
@@ -729,6 +699,8 @@ class AsyncHardwareRunner:
         shots: int = 4096,
         name: str = "async_experiment",
         runner: HardwareRunner | None = None,
+        journal: ProviderJobJournal | None = None,
+        attempt_id: str | None = None,
     ) -> AsyncJobHandle:
         """Submit a single sub-batch and return its :class:`AsyncJobHandle`.
 
@@ -736,10 +708,63 @@ class AsyncHardwareRunner:
         ``asyncio.to_thread`` so the event loop stays responsive.
         ``shots`` must be a positive integer and is forwarded unchanged;
         malformed counts raise ValueError before runner selection/transpilation.
+
+        Parameters
+        ----------
+        circuits
+            Original native batch, transpiled by the selected runner.
+        shots
+            Requested positive integral samples per circuit.
+        name
+            Original experiment label.
+        runner
+            Explicit connected runner, or the next runner in the existing pool.
+        journal
+            Optional durable owner. Requires attempt_id; its immutable request
+            is committed before dispatch and is never silently overwritten.
+        attempt_id
+            Canonical UUID for one effect, required together with journal.
+
+        Returns
+        -------
+        AsyncJobHandle
+            Original provider handle, durably bound when a journal is supplied.
+
+        Raises
+        ------
+        ValueError
+            If settings, the journal pair or immutable request disagree.
+        SubmissionUnknownError
+            If a previous dispatch exists and requires observation/reconciliation.
+
         """
         shots = _require_shots(shots)
+        if (journal is None) != (attempt_id is None):
+            raise ValueError("durable submission requires both journal and attempt_id")
         chosen = runner or self._next_runner()
         async with self._semaphore:
+            if journal is not None and attempt_id is not None:
+                from .provider_job_lifecycle import submit_durable_batch
+
+                dispatch = asyncio.create_task(
+                    asyncio.to_thread(
+                        submit_durable_batch, chosen, circuits, shots, name, journal, attempt_id
+                    )
+                )
+                try:
+                    job = await asyncio.shield(dispatch)
+                except asyncio.CancelledError:
+                    # Thread effects cannot be cancelled; retain capacity until settled.
+                    await dispatch
+                    raise
+                return AsyncJobHandle(
+                    job_id=job.job_id(),
+                    runner=chosen,
+                    experiment=name,
+                    _job=job,
+                    journal=journal,
+                    attempt_id=attempt_id,
+                )
             return await asyncio.to_thread(
                 self._submit_blocking,
                 chosen,
@@ -785,7 +810,42 @@ class AsyncHardwareRunner:
         The blocking ``job.result(timeout=...)`` runs inside
         ``asyncio.to_thread`` so callers can ``gather`` on many
         in-flight jobs at once.
+
+        Parameters
+        ----------
+        handle
+            Original native or durably recovered job. Completed durable results
+            are read from detached stored evidence without a provider call.
+        timeout_s
+            Finite nonnegative wait bound in seconds. Cloud jobs use their native
+            result timeout; local SDK primitives use their native final-state
+            observation before retrieving the original result.
+
+        Returns
+        -------
+        list[JobResult]
+            Original decoded publications. Durable reads preserve the first
+            completed receipt and retain native SDK bytes before decoding.
+
+        Raises
+        ------
+        RuntimeError
+            If an unfinished handle has no original native job.
+        ValueError
+            If durable identity, publication count or sample totals disagree.
+
         """
+        if handle.journal is not None and handle.attempt_id is not None:
+            snapshot = handle.journal.snapshot(handle.attempt_id)
+            if (
+                snapshot["provider_job_id"] != handle.job_id
+                or snapshot["target"] != handle.runner.backend_name
+            ):
+                raise ValueError("durable result handle differs from original request")
+            if snapshot["state"] == "completed":
+                from .provider_job_lifecycle import restore_job_results
+
+                return restore_job_results(snapshot)
         if handle._job is None:
             raise RuntimeError("AsyncJobHandle has no underlying job object")
 
@@ -794,7 +854,15 @@ class AsyncHardwareRunner:
         from .runner import _extract_counts
 
         def _collect() -> list[JobResult]:
-            result = handle._job.result(timeout=timeout_s)
+            if handle.journal is not None and handle._job.job_id() != handle.job_id:
+                raise ValueError("native result handle differs from original provider job")
+            from .provider_job_lifecycle import native_job_result
+
+            result = native_job_result(handle._job, timeout_s)
+            if handle.journal is not None and handle.attempt_id is not None:
+                from .provider_job_lifecycle import retain_native_result
+
+                retain_native_result(handle.journal, handle.attempt_id, result)
             wall = time.time() - handle.submitted_at
             out: list[JobResult] = []
             for i, pub_result in enumerate(result):
@@ -810,9 +878,121 @@ class AsyncHardwareRunner:
                         metadata={},
                     ),
                 )
+            if handle.journal is not None and handle.attempt_id is not None:
+                from .provider_job_lifecycle import store_job_results
+
+                store_job_results(handle.journal, handle.attempt_id, out)
+                from .provider_job_lifecycle import restore_job_results
+
+                return restore_job_results(handle.journal.snapshot(handle.attempt_id))
             return out
 
         return await asyncio.to_thread(_collect)
+
+    def recover_job(
+        self,
+        journal: ProviderJobJournal,
+        attempt_id: str,
+        *,
+        runner: HardwareRunner | None = None,
+        provider_job_id: str | None = None,
+    ) -> AsyncJobHandle:
+        """Recover an existing native job after verifying its immutable request.
+
+        Parameters
+        ----------
+        journal
+            Reopened durable journal.
+        attempt_id
+            Canonical identity of the original attempt.
+        runner
+            Original route with provider retrieval configured.
+        provider_job_id
+            Owner-identified existing handle for an uncertain dispatch.
+
+        Returns
+        -------
+        AsyncJobHandle
+            Bound original handle. Completed cached results need no provider call.
+
+        Raises
+        ------
+        SubmissionUnknownError
+            If no original provider handle is known.
+        ValueError
+            If the observed payload, shots or target disagrees.
+
+        """
+        from .provider_job_journal import SubmissionUnknownError
+        from .provider_job_lifecycle import retrieve_durable_job
+
+        row = journal.snapshot(attempt_id)
+        if row["provider_job_id"] is None and provider_job_id is None:
+            raise SubmissionUnknownError("unknown dispatch requires an existing provider handle")
+        chosen = runner or self._next_runner()
+        if chosen.backend_name != row["target"]:
+            raise ValueError("recovery runner target differs")
+        if provider_job_id is not None and row["provider_job_id"] not in (None, provider_job_id):
+            raise ValueError("recovery handle differs from original provider job")
+        job = None
+        if row["state"] != "completed":
+            job = retrieve_durable_job(chosen, journal, attempt_id, provider_job_id)
+            row = journal.snapshot(attempt_id)
+        return AsyncJobHandle(
+            job_id=str(row["provider_job_id"]),
+            runner=chosen,
+            experiment=str(row["experiment"]),
+            _job=job,
+            journal=journal,
+            attempt_id=attempt_id,
+        )
+
+    async def observe_job_async(self, handle: AsyncJobHandle) -> dict[str, object]:
+        """Read one native status observation for a durably bound original job.
+
+        Parameters
+        ----------
+        handle
+            Durable original or recovered handle.
+
+        Returns
+        -------
+        dict[str, object]
+            Detached state and history; billing remains explicitly unknown.
+
+        """
+        from .provider_job_lifecycle import observe_durable_job
+
+        if handle.journal is None or handle.attempt_id is None:
+            raise ValueError("observation requires a durable handle")
+        snapshot = handle.journal.snapshot(handle.attempt_id)
+        if snapshot["state"] in {"completed", "cancelled", "failed"}:
+            return snapshot
+        return await asyncio.to_thread(
+            observe_durable_job, handle._job, handle.journal, handle.attempt_id
+        )
+
+    async def cancel_job_async(self, handle: AsyncJobHandle) -> dict[str, object]:
+        """Request cancellation of an original job without inferring confirmation.
+
+        Parameters
+        ----------
+        handle
+            Durably bound original or recovered job.
+
+        Returns
+        -------
+        dict[str, object]
+            Observed cancellation state, with original result and billing custody.
+
+        """
+        from .provider_job_lifecycle import cancel_durable_job
+
+        if handle.journal is None or handle.attempt_id is None:
+            raise ValueError("cancellation requires a durable handle")
+        return await asyncio.to_thread(
+            cancel_durable_job, handle._job, handle.journal, handle.attempt_id
+        )
 
     async def wait_all_async(
         self,

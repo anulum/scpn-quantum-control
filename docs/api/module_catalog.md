@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **785 modules** across **41 package families**
-- **4241 documented public module-level symbols**
+- **787 modules** across **41 package families**
+- **4252 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2787,7 +2787,7 @@ No-submit S10 analog-native Kuramoto readiness model.
 
 ### `scpn_quantum_control.hardware.async_runner`
 
-Concurrent IBM job submission via asyncio.
+Original asynchronous sampling with optional durable request custody.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/async_runner.py) · Public symbols: **3**
 
@@ -3368,6 +3368,22 @@ Fail-closed certification of the publicly claimed HAL provider matrix.
 **Classes:** `CertificationCriterion`, `ProviderCertificationRecord`, `ProviderCertificationReport`
 
 **Functions:** `resolve_source_root()`, `documented_backend_ids()`, `focused_adapter_test_path()`, `certify_provider_matrix()`, `render_report_table()`, `main()`
+
+### `scpn_quantum_control.hardware.provider_job_journal`
+
+Persist immutable native requests before effects and retain observation history.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/provider_job_journal.py) · Public symbols: **2**
+
+**Classes:** `SubmissionUnknownError`, `ProviderJobJournal`
+
+### `scpn_quantum_control.hardware.provider_job_lifecycle`
+
+Bind durable attempts to original IBM jobs without replacing native execution.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/provider_job_lifecycle.py) · Public symbols: **9**
+
+**Functions:** `native_batch_payload()`, `submit_durable_batch()`, `retrieve_durable_job()`, `observe_durable_job()`, `cancel_durable_job()`, `store_job_results()`, `retain_native_result()`, `native_job_result()`, `restore_job_results()`
 
 ### `scpn_quantum_control.hardware.provider_measurement`
 

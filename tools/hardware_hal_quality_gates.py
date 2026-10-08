@@ -20,6 +20,17 @@ ASYNC_HARDWARE_RUNNER_SOURCE = "src/scpn_quantum_control/hardware/async_runner.p
 """Bounded asynchronous orchestration over hardware runners."""
 ASYNC_HARDWARE_RUNNER_TEST = "tests/test_async_runner.py"
 """Offline fake-adapter orchestration and provenance tests."""
+PROVIDER_JOB_SOURCES = [
+    "src/scpn_quantum_control/hardware/provider_job_journal.py",
+    "src/scpn_quantum_control/hardware/provider_job_lifecycle.py",
+]
+"""Durable request storage and original native job lifecycle."""
+PROVIDER_JOB_TESTS = [
+    "tests/test_provider_job_journal.py",
+    "tests/test_provider_job_lifecycle.py",
+    "tests/test_provider_job_recovery.py",
+]
+"""Actual storage, native SDK, restart and asynchronous facade contracts."""
 HARDWARE_CIRCUIT_CUTTING_SOURCE = "src/scpn_quantum_control/hardware/circuit_cutting.py"
 """Bounded circuit-partition and reconstruction-overhead planner."""
 HARDWARE_CIRCUIT_CUTTING_TEST = "tests/test_circuit_cutting.py"
@@ -135,6 +146,7 @@ HARDWARE_HAL_COVERAGE_COHORT = list(
             "tests/test_hardware_hal_provider_id_contract.py",
             "tests/test_hardware_hal_status_normalisation_contract.py",
             ASYNC_HARDWARE_RUNNER_TEST,
+            *PROVIDER_JOB_TESTS,
             HARDWARE_CIRCUIT_CUTTING_TEST,
             HARDWARE_CIRCUIT_EXPORT_TEST,
             HARDWARE_FAST_CLASSICAL_TEST,
@@ -159,7 +171,9 @@ HARDWARE_HAL_TYPING_RATCHET = list(
         [
             HARDWARE_HAL_SOURCE,
             ASYNC_HARDWARE_RUNNER_SOURCE,
+            *PROVIDER_JOB_SOURCES,
             ASYNC_HARDWARE_RUNNER_TEST,
+            *PROVIDER_JOB_TESTS,
             HARDWARE_CIRCUIT_CUTTING_SOURCE,
             HARDWARE_CIRCUIT_CUTTING_TEST,
             HARDWARE_CIRCUIT_EXPORT_SOURCE,
@@ -199,6 +213,7 @@ HARDWARE_HAL_DOCSTRING_RATCHET = list(
         [
             HARDWARE_HAL_SOURCE,
             ASYNC_HARDWARE_RUNNER_SOURCE,
+            *PROVIDER_JOB_SOURCES,
             HARDWARE_CIRCUIT_CUTTING_SOURCE,
             HARDWARE_CIRCUIT_EXPORT_SOURCE,
             HARDWARE_FAST_CLASSICAL_SOURCE,
@@ -213,6 +228,7 @@ HARDWARE_HAL_DOCSTRING_RATCHET = list(
             PROVIDER_CERTIFICATION_SOURCE,
             "tests/test_hardware_hal.py",
             ASYNC_HARDWARE_RUNNER_TEST,
+            *PROVIDER_JOB_TESTS,
             HARDWARE_CIRCUIT_CUTTING_TEST,
             HARDWARE_CIRCUIT_EXPORT_TEST,
             HARDWARE_FAST_CLASSICAL_TEST,
@@ -240,6 +256,7 @@ HARDWARE_HAL_COVERAGE_DATA_FILE = str(Path(gettempdir()) / "scpn-qc-hardware-hal
 HARDWARE_HAL_COVERAGE_SOURCES = [
     HARDWARE_HAL_SOURCE,
     ASYNC_HARDWARE_RUNNER_SOURCE,
+    *PROVIDER_JOB_SOURCES,
     HARDWARE_CIRCUIT_CUTTING_SOURCE,
     HARDWARE_CIRCUIT_EXPORT_SOURCE,
     HARDWARE_FAST_CLASSICAL_SOURCE,
