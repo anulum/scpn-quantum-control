@@ -21,6 +21,7 @@ from time import monotonic
 
 import numpy as np
 import pytest
+from packaging.utils import canonicalize_name
 
 from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
 from scpn_quantum_control.dense_budget import DenseAllocationError
@@ -191,16 +192,11 @@ def installed_hamiltonian_wheels(tmp_path_factory: pytest.TempPathFactory) -> tu
     )
     python = venv / "bin" / "python"
     constraints = directory / "installed-dependency-constraints.txt"
+    installed_names = {
+        canonicalize_name(distribution.metadata["Name"]) for distribution in distributions()
+    } - {"scpn-quantum-control", "scpn-quantum-engine", "oscillatools"}
     constraints.write_text(
-        "\n".join(
-            sorted(
-                f"{distribution.metadata['Name']}=={distribution.version}"
-                for distribution in distributions()
-                if distribution.metadata["Name"]
-                not in {"scpn-quantum-control", "scpn-quantum-engine", "oscillatools"}
-            )
-        )
-        + "\n",
+        "\n".join(f"{name}=={version(name)}" for name in sorted(installed_names)) + "\n",
         encoding="utf-8",
     )
     installed = subprocess.run(
