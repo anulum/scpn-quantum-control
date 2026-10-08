@@ -36,28 +36,28 @@
       "size_bytes": 29139
     },
     {
-      "line_count": 3042,
+      "line_count": 3036,
       "path": "requirements-ci-py311-linux.txt",
-      "pinned_package_count": 158,
+      "pinned_package_count": 157,
       "role": "Python 3.11 Linux CI lockfile",
-      "sha256": "b912c0e4c4370cf77e7d9181fa0927a60c9de505329e2987c8aa4de6327907fb",
-      "size_bytes": 224801
+      "sha256": "be5af40e821303d20529b2173f5e4e59d4973982176f1516465b62bde17f071f",
+      "size_bytes": 224638
     },
     {
-      "line_count": 2997,
+      "line_count": 2991,
       "path": "requirements-ci-py312-linux.txt",
-      "pinned_package_count": 158,
+      "pinned_package_count": 157,
       "role": "Python 3.12 Linux CI lockfile",
-      "sha256": "284449e2b3778706e010bc3a77319f7f33f4811b8f941ab34d1fc4f71db711e2",
-      "size_bytes": 220976
+      "sha256": "c368a5db8e40060a48ec8a5a743f2adc1e4979c02a5548289e33c93c5294172e",
+      "size_bytes": 220813
     },
     {
-      "line_count": 3038,
+      "line_count": 3032,
       "path": "requirements-ci-py313-linux.txt",
-      "pinned_package_count": 158,
+      "pinned_package_count": 157,
       "role": "Python 3.13 Linux CI lockfile",
-      "sha256": "71dde916385e5cab71ddd87c03d53c439d35da17ed05908eb05e6d097120aa4f",
-      "size_bytes": 224726
+      "sha256": "72b878ca33b9fd344f7b795bc72821cde4963736b7987b6495138aeb015a2fc4",
+      "size_bytes": 224563
     },
     {
       "line_count": 54,

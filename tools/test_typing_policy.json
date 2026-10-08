@@ -885,7 +885,6 @@
         "tests/test_async_runner.py",
         "tests/test_audit_ci_build_environment.py",
         "tests/test_audit_coverage_gaps.py",
-        "tests/test_audit_dependency_security_waiver.py",
         "tests/test_audit_descriptive_production_naming.py",
         "tests/test_audit_documentation_scopes.py",
         "tests/test_audit_julia_documentation.py",

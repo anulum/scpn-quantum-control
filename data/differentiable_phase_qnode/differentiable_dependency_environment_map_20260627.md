@@ -21,7 +21,7 @@ SCPN Quantum Control — Differentiable Dependency and Environment Evidence Map
 |---|---|---|---|---|
 | `runtime_baseline` | `locked` | requirements.txt | 11 | none |
 | `development_verification` | `locked` | requirements-dev.txt | 31 | none |
-| `ci_python_matrix` | `locked` | requirements-ci-cross-platform-smoke.txt<br>requirements-ci-py311-linux.txt<br>requirements-ci-py312-linux.txt<br>requirements-ci-py313-linux.txt | 491 | none |
+| `ci_python_matrix` | `locked` | requirements-ci-cross-platform-smoke.txt<br>requirements-ci-py311-linux.txt<br>requirements-ci-py312-linux.txt<br>requirements-ci-py313-linux.txt | 488 | none |
 | `framework_overlay_cpu` | `locked` | data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/framework_overlay_freeze.txt | 54 | none |
 | `enzyme_runner_py39` | `hard_gap` | data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/enzyme_py39_freeze.txt | 10 | Enzyme/JAX runner lockfiles exist, but native Enzyme/LLVM/MLIR toolchain execution remains explicit hard-gap evidence until configured runner artefacts pass. |
 

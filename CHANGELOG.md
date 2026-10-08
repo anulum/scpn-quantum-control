@@ -6,6 +6,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ### Security
 
+- Hash-locked CI environments use Braket simulator 1.39.7 and schemas 1.32.1,
+  removing the transitive setuptools 81.0.0 pin. The complete dependency audit
+  runs without advisory exceptions.
+
 - The Studio web workspace resolves `undici` 7.29.1 (GHSA-w293-vg96-wgc3,
   GHSA-pmjh-fq2x-6v4x, GHSA-2jfj-6hjv-fm6j, GHSA-r53p-7pc4-xj5r,
   GHSA-2gqq-gqf2-x968, GHSA-8436-99hf-9mmv), `brace-expansion` 5.0.12

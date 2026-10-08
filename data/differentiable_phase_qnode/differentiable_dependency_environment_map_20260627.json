@@ -58,7 +58,7 @@
         "requirements-ci-py312-linux.txt",
         "requirements-ci-py313-linux.txt"
       ],
-      "pinned_package_count": 491,
+      "pinned_package_count": 488,
       "checksum_count": 4,
       "evidence_status": "locked",
       "blockers": [],
@@ -123,10 +123,10 @@
       ],
       "evidence_sha256": [
         "8dbfc9b730c36e8e316af469167cad7a172dcf6a070ec1c2b8732f6dadd13aab",
-        "b912c0e4c4370cf77e7d9181fa0927a60c9de505329e2987c8aa4de6327907fb",
-        "284449e2b3778706e010bc3a77319f7f33f4811b8f941ab34d1fc4f71db711e2",
-        "71dde916385e5cab71ddd87c03d53c439d35da17ed05908eb05e6d097120aa4f",
-        "a1a0343d619ec6f0fb393ff75e48111f5e352bec5b293fd878fa1fae376a918b"
+        "be5af40e821303d20529b2173f5e4e59d4973982176f1516465b62bde17f071f",
+        "c368a5db8e40060a48ec8a5a743f2adc1e4979c02a5548289e33c93c5294172e",
+        "72b878ca33b9fd344f7b795bc72821cde4963736b7987b6495138aeb015a2fc4",
+        "26019974a9eeaa45ca6a3168cc1c928b7c06d3bebb78cd4b643ac48e27ce8c4c"
       ],
       "evidence_status": "locked",
       "blockers": [],
