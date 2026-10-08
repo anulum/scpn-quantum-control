@@ -891,16 +891,14 @@ jobs:
           STUDIO_PARAMETER_COVERAGE: ${{ runner.temp }}/studio-parameter-journey.json
           STUDIO_WORKFLOW_COVERAGE: ${{ runner.temp }}/studio-workflow-journey.json
         run: >-
-          pnpm exec vitest run src/features/workflows
-          src/features/parameters
+          pnpm exec vitest run src/features/workflows src/features/parameters
           src/app/Workbench.test.tsx src/features/experiments/experimentArchive.test.ts src/features/experiments/useExperimentRun.test.tsx
           src/features/workspace/WorkspacePanel.test.tsx src/features/parameters/parameterRevision.test.ts
           src/features/workspace/useWorkspace.test.tsx
           src/shared/storage/workspaceArchive.test.ts
           src/shared/storage/workspaceStore.test.ts
           --coverage.enabled=true
-          --coverage.include='src/features/workflows/*.{ts,tsx}'
-          --coverage.include='src/features/parameters/*.{ts,tsx}'
+          --coverage.include='src/features/workflows/*.{ts,tsx}' --coverage.include='src/features/parameters/*.{ts,tsx}'
           --coverage.include=src/app/Workbench.tsx --coverage.include=src/features/experiments/experimentArchive.ts
           --coverage.include=src/features/workspace/WorkspacePanel.tsx --coverage.include=src/features/parameters/parameterRevision.ts
           --coverage.include=src/features/workspace/useWorkspace.ts
