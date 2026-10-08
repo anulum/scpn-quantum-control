@@ -47,6 +47,7 @@ import pytest
         "operator_review_dossiers",
         "result_value_inspector",
         "immutable_run_comparison",
+        "experiment_workflow_runner",
     ],
 )
 def test_runner_rejects_external_or_ambiguous_preview(

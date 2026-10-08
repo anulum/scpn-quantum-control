@@ -86,6 +86,91 @@ def test_capture_actual_workspace_owners(native_browser: Browser) -> None:
         context.close()
 
 
+def test_capture_actual_workflow_owners(native_browser: Browser) -> None:
+    """Capture all original graph, editor, execution and storage scripts on Experiments.
+
+    Parameters
+    ----------
+    native_browser
+        Real Chromium process using the actual production workflow facade.
+
+    """
+    supplied = os.environ.get("STUDIO_WORKSPACE_SOURCE_URL")
+    if supplied is None:
+        raise RuntimeError("Supply the owned source host")
+    context = native_browser.new_context(service_workers="block")
+    try:
+        page = context.new_page()
+        session = start_native_coverage(page)
+        page.goto(loopback_url(supplied) + "#/experiments", wait_until="networkidle")
+        expect(
+            page.get_by_role("region", name="Reproducible workflows", exact=True)
+        ).to_be_visible()
+        records = take_native_coverage(session, include_workflows=True)
+        actual = {
+            urlsplit(str(record["coverage"]["url"])).path
+            for record in records
+            if isinstance(record["coverage"], dict)
+        }
+        assert actual == {
+            "/src/shared/storage/workspaceStore.ts",
+            "/src/shared/storage/workspaceArchive.ts",
+            "/src/features/workspace/WorkspacePanel.tsx",
+            "/src/features/workspace/useWorkspace.ts",
+            "/src/app/Workbench.tsx",
+            "/src/features/workflows/workflowModel.ts",
+            "/src/features/workflows/workflowSweep.ts",
+            "/src/features/workflows/workflowJournal.ts",
+            "/src/features/workflows/workflowArchive.ts",
+            "/src/features/workflows/workflowExecution.ts",
+            "/src/features/workflows/useWorkflowRun.ts",
+            "/src/features/workflows/WorkflowEditor.tsx",
+            "/src/features/workflows/WorkflowRunner.tsx",
+        }
+    finally:
+        context.close()
+
+
+def test_workflow_capture_refuses_interrupted_original_owner(native_browser: Browser) -> None:
+    """Retain collected counters and stop profiling after a real workflow module fails.
+
+    Parameters
+    ----------
+    native_browser
+        Real Chromium process with one unavailable original workflow source request.
+
+    """
+    supplied = os.environ.get("STUDIO_WORKSPACE_SOURCE_URL")
+    if supplied is None:
+        raise RuntimeError("Supply the owned source host")
+    context = native_browser.new_context(service_workers="block")
+    try:
+        page = context.new_page()
+        interrupted: list[str] = []
+
+        def unavailable_workflow(route: Route) -> None:
+            """Retain and interrupt the actual original workflow execution module request."""
+            interrupted.append(route.request.url)
+            route.abort()
+
+        page.route("**/src/features/workflows/workflowExecution.ts", unavailable_workflow)
+        session = start_native_coverage(page)
+        page.goto(loopback_url(supplied) + "#/experiments", wait_until="networkidle")
+        records: list[dict[str, object]] = []
+        with pytest.raises(AssertionError, match="Missing current-page native owners"):
+            take_native_coverage(session, records, include_workflows=True)
+        assert len(interrupted) == 1
+        assert all(
+            isinstance(record["coverage"], dict)
+            and not str(record["coverage"].get("url", "")).endswith("/workflowExecution.ts")
+            for record in records
+        )
+        with pytest.raises(Error):
+            session.send("Profiler.takePreciseCoverage")
+    finally:
+        context.close()
+
+
 def test_capture_actual_experiment_owners(native_browser: Browser) -> None:
     """Collect the ten original owners after real Workbench experiment navigation.
 

@@ -12,6 +12,7 @@ from __future__ import annotations
 from os import devnull
 from pathlib import Path
 from tempfile import gettempdir
+from time import time_ns
 
 Gate = tuple[str, list[str]]
 STUDIO_EXECUTIVE_PRODUCT_QUALITY_RATCHET = [
@@ -494,6 +495,111 @@ def build_operator_dossier_quality_gates(python: str) -> list[Gate]:
     ]
 
 
+def build_workflow_quality_gates(python: str) -> list[Gate]:
+    """Build whole workflow native type, documentation and exact coverage gates.
+
+    Parameters
+    ----------
+    python
+        Existing locked interpreter; caller-owned temporary storage holds coverage.
+
+    Returns
+    -------
+    list
+        Original graph, sweep, journal, executive loop and CLI owner commands.
+
+    """
+    modules = ("contracts", "sweep", "journal", "execution", "cli")
+    production = [f"src/scpn_quantum_control/studio/workflow_{name}.py" for name in modules]
+    tests = [
+        *[f"tests/test_studio_workflow_{name}.py" for name in modules],
+        "tests/test_studio_workflow_runtime_identity.py",
+    ]
+    owners = [
+        *production,
+        *tests,
+        "examples/studio_workflow.py",
+        "tools/studio_workflow_browser.py",
+        "tests/test_studio_workflow_browser.py",
+        "tools/tests/test_studio_workflow_browser_runtime.py",
+        "tools/studio_workspace_browser_coverage.py",
+        "tools/tests/test_studio_workspace_browser_coverage.py",
+        "tools/build_studio_wasm_bundle.py",
+        "tests/test_build_studio_wasm_bundle.py",
+    ]
+    data_file = str(Path(gettempdir()) / f"scpn-qc-studio-workflow-{time_ns()}.coverage")
+    config = "tools/studio_workflow.coveragerc"
+    include = ",".join("*/studio/workflow_" + name + ".py" for name in modules)
+    return [
+        (
+            "studio-workflow-strict",
+            [python, "-m", "mypy", "--strict", "--explicit-package-bases", *owners],
+        ),
+        (
+            "studio-workflow-native-docs",
+            [
+                python,
+                "-m",
+                "ruff",
+                "check",
+                "--isolated",
+                "--preview",
+                "--select",
+                "D,D413,D417,D420",
+                "--config",
+                "lint.explicit-preview-rules = true",
+                "--config",
+                'lint.pydocstyle.convention = "numpy"',
+                *owners,
+            ],
+        ),
+        (
+            "studio-workflow-native-coverage",
+            [
+                python,
+                "-m",
+                "coverage",
+                "run",
+                f"--rcfile={config}",
+                f"--data-file={data_file}",
+                "--branch",
+                f"--include={include}",
+                "-m",
+                "pytest",
+                "-q",
+                *tests,
+            ],
+        ),
+        (
+            "studio-workflow-native-combine",
+            [
+                python,
+                "-m",
+                "coverage",
+                "combine",
+                "--keep",
+                f"--rcfile={config}",
+                f"--data-file={data_file}",
+            ],
+        ),
+        (
+            "studio-workflow-native-exact",
+            [
+                python,
+                "-m",
+                "coverage",
+                "report",
+                f"--rcfile={config}",
+                f"--data-file={data_file}",
+                "--precision=2",
+                "--show-missing",
+                "--fail-under=100",
+                f"--include={include}",
+            ],
+        ),
+    ]
+
+
 __all__ = [
     "STUDIO_EXECUTIVE_PRODUCT_COVERAGE_COHORT",
     "STUDIO_EXECUTIVE_PRODUCT_COVERAGE_DATA_FILE",
@@ -504,4 +610,5 @@ __all__ = [
     "build_backend_profiles_quality_gates",
     "build_operator_policy_quality_gates",
     "build_operator_dossier_quality_gates",
+    "build_workflow_quality_gates",
 ]

@@ -48,6 +48,7 @@ def take_native_coverage(
     include_parameters: bool = False,
     include_experiments: bool = False,
     include_results: bool = False,
+    include_workflows: bool = False,
 ) -> list[dict[str, object]]:
     """Retain actual executed scripts and counters for source mapping.
 
@@ -67,6 +68,8 @@ def take_native_coverage(
         Require the original Workbench and complete source-bound experiment owners.
     include_results
         Require original Results routing and all read-only source result owners.
+    include_workflows
+        Require the original Workbench and all eight source-bound workflow owners.
 
     Returns
     -------
@@ -136,6 +139,20 @@ def take_native_coverage(
                 "/src/features/results/resultExport.ts",
                 "/src/features/results/ResultInspector.tsx",
                 "/src/features/results/ResultLoader.tsx",
+            }
+        )
+    if include_workflows:
+        owners.update(
+            {
+                "/src/app/Workbench.tsx",
+                "/src/features/workflows/workflowModel.ts",
+                "/src/features/workflows/workflowSweep.ts",
+                "/src/features/workflows/workflowJournal.ts",
+                "/src/features/workflows/workflowArchive.ts",
+                "/src/features/workflows/workflowExecution.ts",
+                "/src/features/workflows/useWorkflowRun.ts",
+                "/src/features/workflows/WorkflowEditor.tsx",
+                "/src/features/workflows/WorkflowRunner.tsx",
             }
         )
     root = Path(__file__).resolve().parents[1] / "studio-web"

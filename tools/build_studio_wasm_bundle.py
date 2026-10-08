@@ -26,6 +26,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -106,7 +107,8 @@ def build_wasm_kernel(
     Returns
     -------
     Path
-        The built ``.wasm`` artefact.
+        The actual built ``.wasm`` artefact under Cargo's selected target directory.
+        A relative ``CARGO_TARGET_DIR`` resolves against the crate directory.
 
     Raises
     ------
@@ -119,7 +121,14 @@ def build_wasm_kernel(
         cwd=crate_dir,
         check=True,
     )
-    artefact = crate_dir / "target" / WASM_TARGET / "release" / wasm_name
+    target = (
+        Path(os.environ["CARGO_TARGET_DIR"])
+        if "CARGO_TARGET_DIR" in os.environ
+        else Path("target")
+    )
+    if not target.is_absolute():
+        target = crate_dir / target
+    artefact = target / WASM_TARGET / "release" / wasm_name
     if not artefact.exists():
         raise ValueError(f"wasm build produced no artefact at {artefact.as_posix()}")
     return artefact

@@ -184,9 +184,18 @@ export async function admitWorkspaceArchive(
       if (document.schema !== entry.schema) throw new Error("member document schema mismatch");
       documents.set(entry.sha256, document);
     } else {
-      const content = new Uint8Array(entry.content.length / 2);
-      for (let index = 0; index < content.length; index++)
-        content[index] = parseInt(entry.content.slice(2 * index, 2 * index + 2), 16);
+      const nativeDecoder = (
+        Uint8Array as Uint8ArrayConstructor & {
+          fromHex?: (hex: string) => Uint8Array<ArrayBuffer>;
+        }
+      ).fromHex;
+      const content =
+        typeof nativeDecoder === "function"
+          ? nativeDecoder(entry.content)
+          : new Uint8Array(entry.content.length / 2);
+      if (typeof nativeDecoder !== "function")
+        for (let index = 0; index < content.length; index++)
+          content[index] = parseInt(entry.content.slice(2 * index, 2 * index + 2), 16);
       raw.set(entry.sha256, { schema: entry.schema, content });
       // Verify even unreferenced raw members; no orphan executable/unverified data slips in.
       const codec = originalCodecs.get(entry.schema);

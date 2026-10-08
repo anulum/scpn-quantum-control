@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -18,6 +19,37 @@ from pathlib import Path
 import pytest
 
 from tools import build_studio_wasm_bundle as bundle_tool
+
+
+@pytest.mark.parametrize("relative", [False, True])
+def test_build_wasm_kernel_returns_the_actual_redirected_original_cargo_output(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, relative: bool
+) -> None:
+    """Build the actual original crate and bind the returned path to Cargo's real output.
+
+    Parameters
+    ----------
+    monkeypatch
+        Explicit task-owned target directory and offline single-job environment.
+    tmp_path
+        Owned Samsung test allocation for actual native build output.
+    relative
+        Cargo resolves a relative target against the original crate working directory.
+
+    """
+    target = tmp_path / "native-target"
+    configured = os.path.relpath(target, bundle_tool.KERNEL_CRATE_DIR) if relative else str(target)
+    monkeypatch.setenv("CARGO_TARGET_DIR", configured)
+    monkeypatch.setenv("CARGO_NET_OFFLINE", "true")
+    monkeypatch.setenv("CARGO_BUILD_JOBS", "1")
+    actual = bundle_tool.build_wasm_kernel()
+    expected = target / bundle_tool.WASM_TARGET / "release" / bundle_tool.KERNEL_WASM_NAME
+    assert actual.resolve() == expected.resolve()
+    assert actual.read_bytes().startswith(b"\0asm\x01\0\0\0")
+    assert (
+        bundle_tool.sha256_file(actual)
+        == "sha256:" + hashlib.sha256(expected.read_bytes()).hexdigest()
+    )
 
 
 def _fake_bundle(tmp_path: Path) -> Path:
@@ -64,6 +96,7 @@ def test_build_wasm_kernel_invokes_cargo_with_the_locked_wasm_target(
     tmp_path: Path,
 ) -> None:
     """The build shells out to cargo with --locked and the wasm32 target."""
+    monkeypatch.delenv("CARGO_TARGET_DIR", raising=False)
     recorded: dict[str, object] = {}
     artefact_dir = tmp_path / "target" / bundle_tool.WASM_TARGET / "release"
     artefact_dir.mkdir(parents=True)
@@ -94,6 +127,7 @@ def test_build_wasm_kernel_fails_closed_on_missing_artefact(
     tmp_path: Path,
 ) -> None:
     """A cargo run that yields no artefact raises instead of continuing."""
+    monkeypatch.delenv("CARGO_TARGET_DIR", raising=False)
     monkeypatch.setattr(subprocess, "run", lambda *a, **k: None)
     with pytest.raises(ValueError, match="no artefact"):
         bundle_tool.build_wasm_kernel(tmp_path)

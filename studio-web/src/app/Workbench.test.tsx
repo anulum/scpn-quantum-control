@@ -23,6 +23,8 @@ it("preserves native route focus through the production StrictMode lifecycle and
   await waitFor(() =>
     expect(document.activeElement).toBe(screen.getByRole("region", { name: "Workbench view" })),
   );
+  fireEvent.click(screen.getByRole("button", { name: "Skip to current view" }));
+  expect(document.activeElement).toBe(screen.getByRole("region", { name: "Workbench view" }));
   const title = screen.getByLabelText("New project title");
   title.focus();
   fireEvent.change(title, { target: { value: "Retained keyboard input" } });

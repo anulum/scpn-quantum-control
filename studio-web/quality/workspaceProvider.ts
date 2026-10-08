@@ -18,27 +18,36 @@ const provider: CoverageProviderModule = {
   ...v8,
   async getProvider() {
     // The locked factory constructs this exported SDK class; its map remains SDK-owned.
-    const delegate = await v8.getProvider() as V8CoverageProvider;
+    const delegate = (await v8.getProvider()) as V8CoverageProvider;
     const initialize = delegate.initialize.bind(delegate);
     const generateCoverage = delegate.generateCoverage.bind(delegate);
     let browser: CoverageMapData[] | undefined;
-    delegate.initialize = async context => {
+    delegate.initialize = async (context) => {
       const filename = process.env["STUDIO_WORKSPACE_COVERAGE"];
-      if (!filename) throw new Error("STUDIO_WORKSPACE_COVERAGE must name the actual browser journey evidence");
+      if (!filename)
+        throw new Error("STUDIO_WORKSPACE_COVERAGE must name the actual browser journey evidence");
       browser = await readBrowserCoverage(filename, context.config.root);
       const panelFilename = process.env["STUDIO_PANEL_REFUSAL_COVERAGE"];
-      if (panelFilename) browser.push(...await readBrowserCoverage(panelFilename, context.config.root));
+      if (panelFilename)
+        browser.push(...(await readBrowserCoverage(panelFilename, context.config.root)));
       const workbenchFilename = process.env["STUDIO_WORKBENCH_COVERAGE"];
-      if (workbenchFilename) browser.push(...await readBrowserCoverage(workbenchFilename, context.config.root));
+      if (workbenchFilename)
+        browser.push(...(await readBrowserCoverage(workbenchFilename, context.config.root)));
       const parameterFilename = process.env["STUDIO_PARAMETER_COVERAGE"];
-      if (parameterFilename) browser.push(...await readBrowserCoverage(parameterFilename, context.config.root));
+      if (parameterFilename)
+        browser.push(...(await readBrowserCoverage(parameterFilename, context.config.root)));
       const experimentFilename = process.env["STUDIO_EXPERIMENT_COVERAGE"];
-      if (experimentFilename) browser.push(...await readBrowserCoverage(experimentFilename, context.config.root));
+      if (experimentFilename)
+        browser.push(...(await readBrowserCoverage(experimentFilename, context.config.root)));
       const resultFilename = process.env["STUDIO_RESULT_COVERAGE"];
-      if (resultFilename) browser.push(...await readBrowserCoverage(resultFilename, context.config.root));
+      if (resultFilename)
+        browser.push(...(await readBrowserCoverage(resultFilename, context.config.root)));
+      const workflowFilename = process.env["STUDIO_WORKFLOW_COVERAGE"];
+      if (workflowFilename)
+        browser.push(...(await readBrowserCoverage(workflowFilename, context.config.root)));
       await initialize(context);
     };
-    delegate.generateCoverage = async context => {
+    delegate.generateCoverage = async (context) => {
       if (browser === undefined) throw new Error("Native browser coverage was not initialized");
       const node = await generateCoverage(context);
       for (const map of browser) node.merge(map);

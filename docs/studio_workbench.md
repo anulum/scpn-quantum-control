@@ -171,6 +171,98 @@ the affected owner coverage cohort. The source qualifier verifies actual code,
 source maps and current owner hashes before merging counters through the
 existing Vitest provider. Stale, failed or incomplete evidence refuses.
 
+## Reproducible experiment graphs and sweeps
+
+**Reproducible workflows** in Experiments composes a typed acyclic graph over the
+original action owners. **Compose local workflow** creates `validate`, `simulate`
+and `analyse` stages for the admitted classical Kuramoto revision. The dependency
+view and **Workflow JSON** describe the same graph. **Preview workflow graph**
+rejects cycles, unknown stage references and incompatible port schemas, dtypes,
+shapes or units before saving. A type declaration does not establish scientific
+model equivalence.
+
+Without an admitted baseline, composition and persistence stay unavailable.
+Embedded graph editors may omit those host actions while keeping JSON and
+dependency previews available. Leaving the workflow view aborts its pending
+graph save through the original workspace transaction signal.
+
+Save the baseline workspace before **Save workflow graph**. Every retained graph
+binds its original immutable baseline. Graph composition and saves retain the
+selected source when an earlier operation finishes late. Repeated save activations
+share one pending transaction. Parameter overrides append immutable child revisions
+through the existing parameter editor's validation rules. They preserve
+source units and float64 values. The browser runs the shipped classical Rust/WASM
+through its original disposable worker; it does not execute quantum executive
+stages or substitute another backend.
+
+The graph's `sweep.axes` identifies each stage, parameter and explicit value list.
+For example, two `simulate.coupling` values and three `simulate.dt` values produce
+six cells. Coordinates keep declared axis order, with the final axis varying
+fastest. Seeds participate in cell identity; the deterministic classical source
+uses no random seed. A seed becomes an action parameter only through an explicit
+`seed_binding`. The source bounds are 256 cells and 4096 evaluations. Set
+`evaluation_budget` explicitly: the three-stage six-cell graph requires 18
+reservations. Budget exhaustion retains a partial journal.
+
+**Run or resume workflow** saves each reservation before its original action,
+then checkpoints the actual terminal outcome. Failed parents block their children.
+Restart reuses only completed attempts whose graph, source, runtime, inputs,
+current plan and dependencies match. Old failed or interrupted attempts remain in
+history, and retries consume another evaluation. A changed source or runtime
+refuses reuse while preserving prior data.
+
+The progress display counts stages settled during the current traversal. Reused
+stages count only after their saved output and current source plan are checked;
+they do not create a new execution or consume another evaluation. Cancellation
+remains available between these checks during a restart.
+
+**Cancel workflow** waits for the original worker's disposal before retaining an
+explicit cancellation checkpoint. Unconfirmed disposal blocks another worker.
+If a host ownership callback or archive admission fails after computation, the
+partial journal retains the native evidence. An archive admission refusal records
+`archive_admitted: false`; those events have no admitted run reference and cannot
+complete a dependent stage or serve as a replay source.
+Leaving Experiments or changing the selected source cancels source ownership;
+a late completion cannot write into the new selection. IndexedDB remains an
+evictable local cache. Export the workspace for a portable backup; graph JSON
+alone does not contain its source archive or raw result members.
+
+Quantum executive graphs use the local `scpn-studio-workflow` command and the
+existing nine verb handlers. The compiler example emits six cells of original
+source and trace evidence without executing quantum gates:
+
+```bash
+python examples/studio_workflow.py > compile-workflow.json
+scpn-studio-workflow compile-workflow.json --journal compile-journal.json
+scpn-studio-workflow compile-workflow.json --journal compile-journal.json --resume
+```
+
+In a source checkout, `python -m scpn_quantum_control.studio.workflow_cli` supplies
+the same command. Existing journals require `--resume`; the source file cannot be
+its own journal. Checkpoints use an exact prior-byte guard, a per-target lock and
+an atomic same-directory replacement. SIGINT requests cooperative cancellation at
+an original synchronous action boundary. Current handler approval requirements
+also apply to cached attempts. The `execute` handler still produces a no-submit
+dossier; running its generated operator script remains a separate approved act.
+A workflow journal records producer evidence without attesting a physical device
+or a complete transitive software environment.
+
+The shared browser acceptance scenario exercises graph refusal, all six actual
+cells, restart, failed-parent blocking and cancellation with original worker
+closure on a built host and a distinct source host:
+
+```bash
+PYTHONPATH=src:oscillatools/src:. python tools/studio_browser_journey.py \
+  --scenario experiment_workflow_runner --base-url http://127.0.0.1:4173/ \
+  --workspace-source-url http://127.0.0.1:4174/ \
+  --output studio-workflow-journey.json
+```
+
+Prepare those owned hosts and both WASM assets as described under navigation
+verification. The runner closes its browser contexts; the server owner stops
+both servers. No hosted availability or quantum equivalence follows from this
+local classical journey.
+
 ## Local experiment and portable replay
 
 Open **Experiments**, then **Open Kuramoto sample**. The committed classical

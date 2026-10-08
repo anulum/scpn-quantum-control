@@ -406,3 +406,24 @@ it("accounts for actual document bytes before admission under a reduced caller b
     "expanded archive limit exceeded",
   );
 });
+
+it("retains original archive admission and producer identities when native hex decoding is unavailable", async () => {
+  const original = await conformanceArchive(corpusText, false);
+  const expected = await admitWorkspaceArchive(original.json, conformanceCodecs);
+  const descriptor = Object.getOwnPropertyDescriptor(Uint8Array, "fromHex");
+  Object.defineProperty(Uint8Array, "fromHex", { value: undefined, configurable: true });
+  try {
+    const restored = await admitWorkspaceArchive(original.json, conformanceCodecs);
+    expect(restored).toEqual(expected);
+    const changed = readJson(original.json) as { members: { kind: string; content: string }[] };
+    const raw = changed.members.find((member) => member.kind === "raw");
+    if (raw === undefined) throw new Error("Original raw member required");
+    raw.content = "0F";
+    await expect(admitWorkspaceArchive(writeJson(changed), conformanceCodecs)).rejects.toThrow(
+      "hex bytes",
+    );
+  } finally {
+    if (descriptor === undefined) Reflect.deleteProperty(Uint8Array, "fromHex");
+    else Object.defineProperty(Uint8Array, "fromHex", descriptor);
+  }
+});

@@ -423,6 +423,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "local_experiment_journey",
             "result_value_inspector",
             "immutable_run_comparison",
+            "experiment_workflow_runner",
         ),
         required=True,
     )
@@ -477,9 +478,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "local_experiment_journey",
                 "result_value_inspector",
                 "immutable_run_comparison",
+                "experiment_workflow_runner",
             ):
                 raise ValueError(
-                    "--workspace-source-url is valid only for workspace_recovery/workbench_navigation/parameter_graph_editor/workbench_accessibility/local_experiment_journey/result_value_inspector/immutable_run_comparison"
+                    "--workspace-source-url is valid only for workspace_recovery/workbench_navigation/parameter_graph_editor/workbench_accessibility/local_experiment_journey/result_value_inspector/immutable_run_comparison/experiment_workflow_runner"
                 )
             journey: Callable[[str], dict[str, object]]
             if args.scenario == "workspace_panel_refusal":
@@ -499,6 +501,12 @@ def main(argv: Sequence[str] | None = None) -> int:
 
                 journey = partial(
                     run_result_journey, source_url=args.workspace_source_url, evidence=evidence
+                )
+            elif args.scenario == "experiment_workflow_runner":
+                from tools.studio_workflow_browser import run_workflow_journey
+
+                journey = partial(
+                    run_workflow_journey, source_url=args.workspace_source_url, evidence=evidence
                 )
             elif args.scenario == "immutable_run_comparison":
                 from tools.studio_comparison_browser import run_comparison_journey

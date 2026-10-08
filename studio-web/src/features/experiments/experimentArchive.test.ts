@@ -161,6 +161,21 @@ it("refuses mismatched successful result identities and shapes from a genuinely 
   });
   const outcome = await worker.result;
   if (!outcome.ok) throw new Error("genuine native result required");
+  const saved = await appendExperimentAttempt(
+    plan,
+    runId,
+    attemptId,
+    events,
+    outcome,
+    localExperimentCodecs,
+  );
+  const admitted = await admitWorkspaceArchive(saved.json, localExperimentCodecs);
+  expect(admitted.documents[saved.runRecordHash]).toMatchObject({
+    schema: "local_run_record.v1",
+    body: { run_id: runId, attempt_id: attemptId },
+  });
+  expect(saved.documentHashes).toContain(saved.runRecordHash);
+  expect(Object.isFrozen(saved)).toBe(true);
   for (const altered of [
     { ...outcome, runId: crypto.randomUUID() },
     { ...outcome, revisionHash: "a".repeat(64) },

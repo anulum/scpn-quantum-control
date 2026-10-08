@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **780 modules** across **41 package families**
-- **4222 documented public module-level symbols**
+- **785 modules** across **41 package families**
+- **4241 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -5472,6 +5472,52 @@ The SCPN-QUANTUM-CONTROL studio's verbs, on the locked platform contract.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/verbs.py) · Public symbols: **2**
 
 **Functions:** `evidence_schemas()`, `verb_substrates()`
+
+### `scpn_quantum_control.studio.workflow_cli`
+
+Run original executive workflows with atomic lossless journal saves.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/workflow_cli.py) · Public symbols: **2**
+
+**Functions:** `run()`, `main()`
+
+### `scpn_quantum_control.studio.workflow_contracts`
+
+Admit a bounded stage graph without executing a verb or granting approval.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/workflow_contracts.py) · Public symbols: **9**
+
+**Classes:** `WorkflowPortType`, `WorkflowInput`, `WorkflowOutput`, `WorkflowStage`, `WorkflowSweep`, `WorkflowDefinition`
+
+**Functions:** `topological_order()`, `parse_workflow()`, `validate_port_value()`
+
+### `scpn_quantum_control.studio.workflow_execution`
+
+Run bounded graphs through the original executive spine and checkpoint every attempt.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/workflow_execution.py) · Public symbols: **2**
+
+**Functions:** `workflow_runtime_identity()`, `run_workflow()`
+
+### `scpn_quantum_control.studio.workflow_journal`
+
+Preserve bounded original attempts without claiming a cached value executed.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/workflow_journal.py) · Public symbols: **4**
+
+**Classes:** `WorkflowAttempt`, `WorkflowJournal`
+
+**Functions:** `parse_workflow_journal()`, `create_workflow_journal()`
+
+### `scpn_quantum_control.studio.workflow_sweep`
+
+Plan deterministic source coordinates without sampling or running a model.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/workflow_sweep.py) · Public symbols: **2**
+
+**Classes:** `WorkflowCell`
+
+**Functions:** `build_workflow_cells()`
 
 ### `scpn_quantum_control.studio.workspace`
 

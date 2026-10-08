@@ -513,6 +513,11 @@ export async function readLocalExperiment(
   });
 }
 
+/** Original admitted archive with the exact document produced by this attempt. */
+export interface ExperimentAttemptArchive extends WorkspaceArchivePreview {
+  /** Canonical identity of this admitted local_run_record.v1 document. */ readonly runRecordHash: string;
+}
+
 /** Append one genuinely disposed attempt to its unchanged selected revision through original admission. */
 export async function appendExperimentAttempt(
   plan: ExperimentPlan,
@@ -521,7 +526,7 @@ export async function appendExperimentAttempt(
   events: readonly KernelWorkerEvent[],
   outcome: OwnedKernelOutcome,
   rawCodecs: ReadonlyMap<string, RawCodec>,
-): Promise<WorkspaceArchivePreview> {
+): Promise<ExperimentAttemptArchive> {
   if (!outcome.disposed || events.length === 0)
     throw new ExperimentRefusal("disposed original attempt diagnostics required");
   const source = await readLocalExperiment(plan.sourceJson, rawCodecs);
@@ -620,7 +625,7 @@ export async function appendExperimentAttempt(
       },
     }),
   );
-  return previewWorkspaceArchive(
+  const preview = await previewWorkspaceArchive(
     writeJson({
       schema: original.preview.schema,
       manifest,
@@ -629,4 +634,5 @@ export async function appendExperimentAttempt(
     }),
     rawCodecs,
   );
+  return Object.freeze({ ...preview, runRecordHash: recordMember.sha256 });
 }

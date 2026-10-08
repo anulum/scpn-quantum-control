@@ -14,47 +14,79 @@ import { canonicalBytes, canonicalDigest } from "./canonical";
 function materialise(raw: unknown): unknown {
   const descriptor = raw as Record<string, unknown>;
   switch (descriptor["kind"]) {
-    case "null": return null;
-    case "integer": return BigInt(String(descriptor["decimal"]));
+    case "null":
+      return null;
+    case "integer":
+      return BigInt(String(descriptor["decimal"]));
     case "float64": {
-      const bytes = Uint8Array.from(String(descriptor["bits"]).match(/../g) ?? [], x => parseInt(x, 16));
+      const bytes = Uint8Array.from(String(descriptor["bits"]).match(/../g) ?? [], (x) =>
+        parseInt(x, 16),
+      );
       return new DataView(bytes.buffer).getFloat64(0, false);
     }
-    case "array": return (descriptor["items"] as unknown[]).map(materialise);
-    case "object": return Object.fromEntries((descriptor["entries"] as [string, unknown][]).map(([key, value]) => [key, materialise(value)]));
-    case "string_codepoints": return String.fromCodePoint(...(descriptor["hex"] as string[]).map(x => parseInt(x, 16)));
-    default: return descriptor["value"];
+    case "array":
+      return (descriptor["items"] as unknown[]).map(materialise);
+    case "object":
+      return Object.fromEntries(
+        (descriptor["entries"] as [string, unknown][]).map(([key, value]) => [
+          key,
+          materialise(value),
+        ]),
+      );
+    case "string_codepoints":
+      return String.fromCodePoint(...(descriptor["hex"] as string[]).map((x) => parseInt(x, 16)));
+    default:
+      return descriptor["value"];
   }
 }
 
 describe("workspace canonical public codec", () => {
-  it.each(corpus.cases)("matches the explicit $id oracle", async raw => {
+  it.each(corpus.cases)("matches the explicit $id oracle", async (raw) => {
     const value = materialise(raw.input_descriptor);
     if ("expected" in raw) expect(() => canonicalBytes(raw.schema, value)).toThrow();
     else {
       const bytes = canonicalBytes(raw.schema, value);
-      expect(Array.from(bytes, x => x.toString(16).padStart(2, "0")).join("")).toBe(raw.expected_canonical_utf8_hex);
+      expect(Array.from(bytes, (x) => x.toString(16).padStart(2, "0")).join("")).toBe(
+        raw.expected_canonical_utf8_hex,
+      );
       expect(await canonicalDigest(raw.schema, value)).toBe(raw.expected_sha256);
     }
   });
   it("allows repeated aliases but refuses cycles and excessive depth", () => {
     const shared: unknown[] = [1n];
-    expect(canonicalBytes("test.v1", [shared, shared])).toEqual(canonicalBytes("test.v1", [[1n], [1n]]));
+    expect(canonicalBytes("test.v1", [shared, shared])).toEqual(
+      canonicalBytes("test.v1", [[1n], [1n]]),
+    );
     shared.push(shared);
     expect(() => canonicalBytes("test.v1", shared)).toThrow(/cycle/);
     let nested: unknown = 1n;
     for (let index = 0; index < 65; index++) nested = [nested];
     expect(() => canonicalBytes("test.v1", nested)).toThrow(/depth/);
   });
-  it.each([undefined, NaN, Infinity, -Infinity, Symbol("x"), () => 1, new Date(), new Map(), { x: undefined }])("refuses unsupported value %s", value => {
+  it.each([
+    undefined,
+    NaN,
+    Infinity,
+    -Infinity,
+    Symbol("x"),
+    () => 1,
+    new Date(),
+    new Map(),
+    { x: undefined },
+  ])("refuses unsupported value %s", (value) => {
     expect(() => canonicalBytes("test.v1", value)).toThrow();
   });
-  it.each(["", "line\nbreak", "line\rreturn", "\ud800"])("refuses invalid domain %s", schema => {
+  it.each(["", "line\nbreak", "line\rreturn", "\ud800"])("refuses invalid domain %s", (schema) => {
     expect(() => canonicalBytes(schema, null)).toThrow();
   });
   it("refuses accessors, symbol keys, sparse arrays and invalid Unicode keys", () => {
     let invoked = false;
-    const accessor = { get x() { invoked = true; return 1; } };
+    const accessor = {
+      get x() {
+        invoked = true;
+        return 1;
+      },
+    };
     for (const value of [accessor, { [Symbol("key")]: 1 }, new Array(2), { "\udfff": null }]) {
       expect(() => canonicalBytes("test.v1", value)).toThrow();
     }
@@ -68,21 +100,30 @@ describe("workspace canonical public codec", () => {
 
 it("bounds integer scalars without rounding their admitted digits", () => {
   const decimal = "9".repeat(4096);
-  expect(new TextDecoder().decode(canonicalBytes("example.v1", BigInt(decimal)))).toBe('example.v1\n["integer","' + decimal + '"]');
+  expect(new TextDecoder().decode(canonicalBytes("example.v1", BigInt(decimal)))).toBe(
+    `example.v1\n["integer","${decimal}"]`,
+  );
   expect(() => canonicalBytes("example.v1", 10n ** 4096n)).toThrow("integer scalar too large");
 });
 it("rejects custom array prototypes before a serializer can invoke their methods", () => {
   class Decorated extends Array<unknown> {}
-  expect(() => canonicalBytes("example.v1", new Decorated(1, 2))).toThrow("unsupported array prototype");
+  expect(() => canonicalBytes("example.v1", new Decorated(1, 2))).toThrow(
+    "unsupported array prototype",
+  );
 });
 
-
 it("orders prefix-sharing member names by their full UTF-8 bytes", () => {
-  expect(new TextDecoder().decode(canonicalBytes("test.v1", { aa: 2n, a: 1n }))).toBe('test.v1\n["object",[["a",["integer","1"]],["aa",["integer","2"]]]]');
+  expect(new TextDecoder().decode(canonicalBytes("test.v1", { aa: 2n, a: 1n }))).toBe(
+    'test.v1\n["object",[["a",["integer","1"]],["aa",["integer","2"]]]]',
+  );
 });
 
 it("accepts a scalar at the depth budget and refuses another container", () => {
-  const nested = (leaf: unknown) => { let value = leaf; for (let index = 0; index < 64; index++) value = [value]; return value; };
+  const nested = (leaf: unknown) => {
+    let value = leaf;
+    for (let index = 0; index < 64; index++) value = [value];
+    return value;
+  };
   expect(() => canonicalBytes("test.v1", nested(0n))).not.toThrow();
   expect(() => canonicalBytes("test.v1", nested(null))).not.toThrow();
   expect(() => canonicalBytes("test.v1", nested({}))).toThrow("depth exceeded");
@@ -92,7 +133,45 @@ it("accepts a scalar at the depth budget and refuses another container", () => {
 it("refuses an accessor array element without invoking its getter", () => {
   let reads = 0;
   const values = [1n];
-  Object.defineProperty(values, "0", { get() { reads++; return 1n; }, enumerable: true });
+  Object.defineProperty(values, "0", {
+    get() {
+      reads++;
+      return 1n;
+    },
+    enumerable: true,
+  });
   expect(() => canonicalBytes("test.v1", values)).toThrow("array data element required");
   expect(reads).toBe(0);
+});
+
+it("rejects every isolated UTF-16 surrogate while preserving scalar pairs and their spelling", () => {
+  for (let code = 0xd800; code <= 0xdfff; code++) {
+    expect(() => canonicalBytes("test.v1", String.fromCharCode(code))).toThrow(
+      "invalid Unicode scalar",
+    );
+  }
+  for (const code of [0x10000, 0x1f600, 0x20000, 0x10ffff]) {
+    const scalar = String.fromCodePoint(code);
+    expect(new TextDecoder().decode(canonicalBytes("test.v1", scalar))).toBe(
+      `test.v1\n${JSON.stringify(scalar)}`,
+    );
+    for (const invalid of [
+      String.fromCharCode(0xd800) + scalar,
+      scalar + String.fromCharCode(0xdfff),
+    ]) {
+      expect(() => canonicalBytes("test.v1", invalid)).toThrow("invalid Unicode scalar");
+    }
+  }
+  expect(canonicalBytes("test.v1", "é")).not.toEqual(canonicalBytes("test.v1", "e\u0301"));
+});
+
+it("refuses a caller proxy whose listed property has no data descriptor", () => {
+  const source = new Proxy(
+    {},
+    {
+      ownKeys: () => ["vanished"],
+      getOwnPropertyDescriptor: () => undefined,
+    },
+  );
+  expect(() => canonicalBytes("example.v1", source)).toThrow("data member required");
 });

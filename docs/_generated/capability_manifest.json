@@ -2,18 +2,18 @@
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
     "domain_package_families": 40,
-    "example_files": 38,
+    "example_files": 39,
     "github_workflows": 44,
     "model_documentation_pages": 14,
     "notebook_files": 109,
     "optional_extras": 43,
     "public_api_exports": 851,
     "public_documentation_pages": 382,
-    "python_model_classes": 1498,
-    "python_model_source_modules": 780,
+    "python_model_classes": 1507,
+    "python_model_source_modules": 785,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1512
+    "test_files": 1519
   },
   "documentation": {
     "examples": [
@@ -54,7 +54,8 @@
       "examples/34_gauge_lattice_crosscheck.py",
       "examples/35_quantum_ssgf_descent.py",
       "examples/README.md",
-      "examples/kuramoto_solver_outcomes.py"
+      "examples/kuramoto_solver_outcomes.py",
+      "examples/studio_workflow.py"
     ],
     "notebooks": [
       "notebooks/01_kuramoto_xy_dynamics.ipynb",
@@ -759,7 +760,7 @@
       {
         "package": "studio",
         "path": "src/scpn_quantum_control/studio",
-        "python_modules": 36
+        "python_modules": 41
       },
       {
         "package": "studio_workspace",
@@ -6758,6 +6759,42 @@
         "path": "src/scpn_quantum_control/analysis/witness_discovery.py"
       },
       {
+        "name": "WorkflowAttempt",
+        "path": "src/scpn_quantum_control/studio/workflow_journal.py"
+      },
+      {
+        "name": "WorkflowCell",
+        "path": "src/scpn_quantum_control/studio/workflow_sweep.py"
+      },
+      {
+        "name": "WorkflowDefinition",
+        "path": "src/scpn_quantum_control/studio/workflow_contracts.py"
+      },
+      {
+        "name": "WorkflowInput",
+        "path": "src/scpn_quantum_control/studio/workflow_contracts.py"
+      },
+      {
+        "name": "WorkflowJournal",
+        "path": "src/scpn_quantum_control/studio/workflow_journal.py"
+      },
+      {
+        "name": "WorkflowOutput",
+        "path": "src/scpn_quantum_control/studio/workflow_contracts.py"
+      },
+      {
+        "name": "WorkflowPortType",
+        "path": "src/scpn_quantum_control/studio/workflow_contracts.py"
+      },
+      {
+        "name": "WorkflowStage",
+        "path": "src/scpn_quantum_control/studio/workflow_contracts.py"
+      },
+      {
+        "name": "WorkflowSweep",
+        "path": "src/scpn_quantum_control/studio/workflow_contracts.py"
+      },
+      {
         "name": "WorkloadSemantics",
         "path": "src/scpn_quantum_control/hardware/provider_semantics.py"
       },
@@ -7523,6 +7560,11 @@
       "src/scpn_quantum_control/studio/scorecard_bundle.py",
       "src/scpn_quantum_control/studio/support_matrix_bundle.py",
       "src/scpn_quantum_control/studio/verbs.py",
+      "src/scpn_quantum_control/studio/workflow_cli.py",
+      "src/scpn_quantum_control/studio/workflow_contracts.py",
+      "src/scpn_quantum_control/studio/workflow_execution.py",
+      "src/scpn_quantum_control/studio/workflow_journal.py",
+      "src/scpn_quantum_control/studio/workflow_sweep.py",
       "src/scpn_quantum_control/studio/workspace.py",
       "src/scpn_quantum_control/studio/xy_compile_recompute_artifact.py",
       "src/scpn_quantum_control/studio_executive_product.py",
@@ -10112,6 +10154,13 @@
       "tests/test_studio_scorecard_bundle_quality_gate.py",
       "tests/test_studio_simulation_quality_gate.py",
       "tests/test_studio_support_matrix_bundle.py",
+      "tests/test_studio_workflow_browser.py",
+      "tests/test_studio_workflow_cli.py",
+      "tests/test_studio_workflow_contracts.py",
+      "tests/test_studio_workflow_execution.py",
+      "tests/test_studio_workflow_journal.py",
+      "tests/test_studio_workflow_runtime_identity.py",
+      "tests/test_studio_workflow_sweep.py",
       "tests/test_studio_workspace.py",
       "tests/test_studio_workspace_browser_journey.py",
       "tests/test_studio_workspace_canonical.py",

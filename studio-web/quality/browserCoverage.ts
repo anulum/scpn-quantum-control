@@ -11,28 +11,90 @@ import { convert } from "ast-v8-to-istanbul";
 import type { CoverageMapData } from "istanbul-lib-coverage";
 import { parseAstAsync } from "vitest/node";
 
-import { browserOwners, coverageObject, experimentBrowserOwners, panelBrowserOwner, parameterBrowserOwners, qualifyBrowserRecord, resultBrowserOwners, workbenchBrowserOwners } from "./browserRecord";
+import {
+  browserOwners,
+  coverageObject,
+  experimentBrowserOwners,
+  panelBrowserOwner,
+  parameterBrowserOwners,
+  qualifyBrowserRecord,
+  resultBrowserOwners,
+  workbenchBrowserOwners,
+  workflowBrowserOwners,
+} from "./browserRecord";
 
 /** Convert a successful real browser journey, retaining all original native zero counters. */
-export async function readBrowserCoverage(filename: string, root: string): Promise<CoverageMapData[]> {
+export async function readBrowserCoverage(
+  filename: string,
+  root: string,
+): Promise<CoverageMapData[]> {
   const evidence = coverageObject(JSON.parse(await readFile(filename, "utf8")) as unknown);
   const workbench = evidence["scenario"] === "workbench_navigation";
   const parameters = evidence["scenario"] === "parameter_graph_editor";
   const experiments = evidence["scenario"] === "local_experiment_journey";
   const results = evidence["scenario"] === "result_value_inspector";
-  if ((evidence["scenario"] !== "workspace_recovery" && evidence["scenario"] !== "workspace_panel_refusal" && !workbench && !parameters && !experiments && !results) || evidence["passed"] !== true || evidence["coverage_percentage"] !== "not_calculated" || !Array.isArray(evidence["native_v8_coverage"]) || evidence["native_v8_coverage"].length === 0) throw new Error("Successful native workspace journey evidence required");
-  if (typeof evidence["source_url"] !== "string") throw new Error("Native coverage source origin missing");
+  const workflows = evidence["scenario"] === "experiment_workflow_runner";
+  if (
+    (evidence["scenario"] !== "workspace_recovery" &&
+      evidence["scenario"] !== "workspace_panel_refusal" &&
+      !workbench &&
+      !parameters &&
+      !experiments &&
+      !results &&
+      !workflows) ||
+    evidence["passed"] !== true ||
+    evidence["coverage_percentage"] !== "not_calculated" ||
+    !Array.isArray(evidence["native_v8_coverage"]) ||
+    evidence["native_v8_coverage"].length === 0
+  )
+    throw new Error("Successful native workspace journey evidence required");
+  if (typeof evidence["source_url"] !== "string")
+    throw new Error("Native coverage source origin missing");
   const covered = new Set<string>();
   const maps: CoverageMapData[] = [];
   for (const record of evidence["native_v8_coverage"]) {
-    const qualified = await qualifyBrowserRecord(record, root, evidence["source_url"], workbench, parameters, experiments, results);
-    const converted = await convert({ code: qualified.code, ast: await parseAstAsync(qualified.code), wrapperLength: 0, coverage: qualified.coverage, sourceMap: qualified.sourceMap });
+    const qualified = await qualifyBrowserRecord(
+      record,
+      root,
+      evidence["source_url"],
+      workbench,
+      parameters,
+      experiments,
+      results,
+      workflows,
+    );
+    const converted = await convert({
+      code: qualified.code,
+      ast: await parseAstAsync(qualified.code),
+      wrapperLength: 0,
+      coverage: qualified.coverage,
+      sourceMap: qualified.sourceMap,
+    });
     const entries = Object.entries(converted);
-    if (entries.length !== 1 || entries[0]?.[0] !== qualified.owner || entries[0][1].path !== qualified.owner || Object.keys(entries[0][1].statementMap).length === 0) throw new Error("Converted counters escaped or omitted the original owner");
+    if (
+      entries.length !== 1 ||
+      entries[0]?.[0] !== qualified.owner ||
+      entries[0][1].path !== qualified.owner ||
+      Object.keys(entries[0][1].statementMap).length === 0
+    )
+      throw new Error("Converted counters escaped or omitted the original owner");
     covered.add(qualified.owner.slice(root.length).replaceAll("\\", "/"));
     maps.push(converted);
   }
-  const required = results ? resultBrowserOwners : experiments ? experimentBrowserOwners : parameters ? parameterBrowserOwners : workbench ? workbenchBrowserOwners : evidence["scenario"] === "workspace_panel_refusal" ? new Set([...browserOwners, panelBrowserOwner]) : browserOwners;
-  if ([...required].some(owner => !covered.has(owner))) throw new Error("Native workspace coverage has missing production owners");
+  const required = workflows
+    ? workflowBrowserOwners
+    : results
+      ? resultBrowserOwners
+      : experiments
+        ? experimentBrowserOwners
+        : parameters
+          ? parameterBrowserOwners
+          : workbench
+            ? workbenchBrowserOwners
+            : evidence["scenario"] === "workspace_panel_refusal"
+              ? new Set([...browserOwners, panelBrowserOwner])
+              : browserOwners;
+  if ([...required].some((owner) => !covered.has(owner)))
+    throw new Error("Native workspace coverage has missing production owners");
   return maps;
 }

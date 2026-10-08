@@ -180,3 +180,81 @@ def test_operator_dossier_preserves_original_exact_native_and_browser_gates() ->
     assert "tools/tests/test_studio_operator_dossier_browser.py" in workflow
     assert "build_operator_dossier_quality_gates" in workflow
     assert "src/features/operators/dossiers" in workflow
+
+
+def test_workflow_native_and_browser_owners_keep_exact_original_gates() -> None:
+    """Require every current workflow owner in the original coherent Studio category."""
+    from pathlib import Path
+
+    gates = dict(quality_gates.build_workflow_quality_gates("/python"))
+    for name in ("contracts", "sweep", "journal", "execution", "cli"):
+        for path in (
+            f"src/scpn_quantum_control/studio/workflow_{name}.py",
+            f"tests/test_studio_workflow_{name}.py",
+        ):
+            assert path in gates["studio-workflow-strict"]
+            assert path in gates["studio-workflow-native-docs"]
+        assert f"tests/test_studio_workflow_{name}.py" in gates["studio-workflow-native-coverage"]
+        assert any(
+            f"*/studio/workflow_{name}.py" in field
+            for field in gates["studio-workflow-native-exact"]
+        )
+    for owner in (
+        "tests/test_studio_workflow_runtime_identity.py",
+        "examples/studio_workflow.py",
+        "tools/studio_workflow_browser.py",
+        "tests/test_studio_workflow_browser.py",
+        "tools/tests/test_studio_workflow_browser_runtime.py",
+        "tools/studio_workspace_browser_coverage.py",
+        "tools/tests/test_studio_workspace_browser_coverage.py",
+        "tools/build_studio_wasm_bundle.py",
+        "tests/test_build_studio_wasm_bundle.py",
+    ):
+        assert owner in gates["studio-workflow-strict"]
+        assert owner in gates["studio-workflow-native-docs"]
+    assert "--branch" in gates["studio-workflow-native-coverage"]
+    assert "--rcfile=tools/studio_workflow.coveragerc" in gates["studio-workflow-native-coverage"]
+    assert "--keep" in gates["studio-workflow-native-combine"]
+    assert "--rcfile=tools/studio_workflow.coveragerc" in gates["studio-workflow-native-exact"]
+    data_files = {
+        field
+        for name in (
+            "studio-workflow-native-coverage",
+            "studio-workflow-native-combine",
+            "studio-workflow-native-exact",
+        )
+        for field in gates[name]
+        if field.startswith("--data-file=")
+    }
+    assert len(data_files) == 1
+    config = (Path(__file__).resolve().parents[1] / "tools/studio_workflow.coveragerc").read_text()
+    assert "patch = subprocess" in config and "parallel = true" in config
+    assert "src/scpn_quantum_control/studio" in config
+    assert "*/workflow-runtime-source/scpn_quantum_control/studio" in config
+    assert "--fail-under=100" in gates["studio-workflow-native-exact"]
+    workflow = (
+        Path(__file__).resolve().parents[1] / ".github/workflows/ci-studio.yml"
+    ).read_text()
+    assert workflow.count("build_workflow_quality_gates(sys.executable)") == 1
+    assert "--coverage.include='src/features/workflows/*.{ts,tsx}'" in workflow
+    assert workflow.count("--scenario experiment_workflow_runner") == 1
+    workflow_ui = workflow.split("- name: Enforce workflow browser owner exact coverage", 1)[
+        1
+    ].split("- name:", 1)[0]
+    assert "STUDIO_WORKSPACE_COVERAGE:" in workflow_ui
+    assert "STUDIO_WORKFLOW_COVERAGE:" in workflow_ui
+    assert "--coverage.provider=v8" not in workflow_ui
+    for owner in (
+        "src/app/Workbench.test.tsx",
+        "src/features/workspace/WorkspacePanel.test.tsx",
+        "src/features/workspace/useWorkspace.test.tsx",
+        "src/shared/storage/workspaceArchive.test.ts",
+        "src/shared/storage/workspaceStore.test.ts",
+        "src/features/experiments/experimentArchive.test.ts",
+        "src/features/experiments/useExperimentRun.test.tsx",
+        "src/features/parameters/parameterRevision.test.ts",
+    ):
+        assert owner in workflow_ui
+    assert "tools/tests/test_studio_workflow_browser_runtime.py" in workflow
+    assert "*/tools/studio_workflow_browser.py" in workflow
+    assert len(workflow.splitlines()) <= 1000

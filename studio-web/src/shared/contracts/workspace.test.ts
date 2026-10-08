@@ -11,43 +11,62 @@ import { describe, expect, it } from "vitest";
 import structuralText from "../../../../tests/data/studio_workspace/structural.json?raw";
 import corpusText from "../../../../tests/data/studio_workspace/documents.json?raw";
 import { readJson, writeJson } from "./jsonTransport";
-import { documentDigest, documentToWire, parseDocument, parseDocumentJson,
-  parseExperimentRevision, parseLocalRunRecord, parseParameterSpec,
-  parseResolvedSettings, parseWorkspaceManifest, validateParameterBinding } from "./index";
+import {
+  documentDigest,
+  documentToWire,
+  parseDocument,
+  parseDocumentJson,
+  parseExperimentRevision,
+  parseLocalRunRecord,
+  parseParameterSpec,
+  parseResolvedSettings,
+  parseWorkspaceManifest,
+  validateParameterBinding,
+} from "./index";
 import type { ParseResult, WorkspaceDocument } from "./workspace";
 
 const corpus = readJson(corpusText) as {
-  fixtures: Record<string, { schema: string; body: Record<string, unknown>; extensions: Record<string, unknown> }>;
+  fixtures: Record<
+    string,
+    { schema: string; body: Record<string, unknown>; extensions: Record<string, unknown> }
+  >;
   cases: { id: string; fixture?: string; expectation: string }[];
 };
-function fixture(name: string) {
+function fixture(name: string | undefined) {
+  if (name === undefined) throw new Error("fixture name required");
   const payload = corpus.fixtures[name];
-  if (!payload) throw new Error("fixture missing: " + name);
+  if (!payload) throw new Error(`fixture missing: ${name}`);
   return structuredClone(payload);
 }
 function accepted<T>(result: ParseResult<T>): T {
-  if (!result.ok) throw new Error(result.path + ": " + result.message);
+  if (!result.ok) throw new Error(`${result.path}: ${result.message}`);
   return result.value;
 }
 
 describe("workspace document public contracts", () => {
-  it.each(corpus.cases.filter(row => row.fixture !== undefined))("honours the $id structural boundary", async row => {
-    const payload = fixture(row.fixture!);
-    const before = writeJson(payload);
-    const parsed = parseDocument(payload);
-    if (row.expectation === "reject") expect(parsed.ok).toBe(false);
-    else {
-      const document = accepted(parsed);
-      expect(documentToWire(document)).toEqual(payload);
-      const restored = accepted(parseDocumentJson(writeJson(documentToWire(document))));
-      expect(await documentDigest(restored)).toBe(await documentDigest(document));
-    }
-    expect(writeJson(payload)).toBe(before);
-  });
+  it.each(corpus.cases.filter((row) => row.fixture !== undefined))(
+    "honours the $id structural boundary",
+    async (row) => {
+      const payload = fixture(row.fixture);
+      const before = writeJson(payload);
+      const parsed = parseDocument(payload);
+      if (row.expectation === "reject") expect(parsed.ok).toBe(false);
+      else {
+        const document = accepted(parsed);
+        expect(documentToWire(document)).toEqual(payload);
+        const restored = accepted(parseDocumentJson(writeJson(documentToWire(document))));
+        expect(await documentDigest(restored)).toBe(await documentDigest(document));
+      }
+      expect(writeJson(payload)).toBe(before);
+    },
+  );
   it("exposes every named parser and refuses a different document kind", () => {
     const pairs: [string, (raw: unknown) => ParseResult<WorkspaceDocument>][] = [
-      ["workspace", parseWorkspaceManifest], ["revision_root", parseExperimentRevision],
-      ["parameter", parseParameterSpec], ["settings", parseResolvedSettings], ["run", parseLocalRunRecord],
+      ["workspace", parseWorkspaceManifest],
+      ["revision_root", parseExperimentRevision],
+      ["parameter", parseParameterSpec],
+      ["settings", parseResolvedSettings],
+      ["run", parseLocalRunRecord],
     ];
     for (const [name, parse] of pairs) {
       expect(parse(fixture(name)).ok).toBe(true);
@@ -66,39 +85,73 @@ describe("workspace document public contracts", () => {
     expect(Object.isFrozen(document.body)).toBe(true);
     expect(Object.isFrozen(document.extensions)).toBe(true);
     expect(document.extensions["later"]).toBeUndefined();
-    expect(() => { (document.body as Record<string, unknown>)["project_id"] = "changed"; }).toThrow();
+    expect(() => {
+      (document.body as Record<string, unknown>)["project_id"] = "changed";
+    }).toThrow();
   });
   it("binds explicit units, exact scalar values and bounded domains", () => {
     const payload = fixture("parameter");
-    payload.body["domain"] = { kind: "closed_interval", lower: "0000000000000000", upper: "3ff0000000000000" };
+    payload.body["domain"] = {
+      kind: "closed_interval",
+      lower: "0000000000000000",
+      upper: "3ff0000000000000",
+    };
     const spec = accepted(parseParameterSpec(payload));
-    const values = { dtype: "float64", shape: [2n], values: ["8000000000000000", "3ff0000000000000"] };
+    const values = {
+      dtype: "float64",
+      shape: [2n],
+      values: ["8000000000000000", "3ff0000000000000"],
+    };
     expect(validateParameterBinding(spec, values, "rad").ok).toBe(true);
     expect(validateParameterBinding(spec, values, "Hz").ok).toBe(false);
     expect(validateParameterBinding(spec, { ...values, shape: [1n] }, "rad").ok).toBe(false);
-    expect(validateParameterBinding(spec, { ...values, values: ["4000000000000000", "3ff0000000000000"] }, "rad").ok).toBe(false);
+    expect(
+      validateParameterBinding(
+        spec,
+        { ...values, values: ["4000000000000000", "3ff0000000000000"] },
+        "rad",
+      ).ok,
+    ).toBe(false);
     payload.body["dtype"] = "int64";
     payload.body["shape"] = [1n];
     payload.body["unit"] = "1";
     payload.body["domain"] = { kind: "enumerated", values: ["9007199254740993"] };
     const integer = accepted(parseParameterSpec(payload));
-    expect(validateParameterBinding(integer, { dtype: "int64", shape: [1n], values: ["9007199254740993"] }, "1").ok).toBe(true);
-    expect(validateParameterBinding(integer, { dtype: "int64", shape: [1n], values: ["1"] }, "1").ok).toBe(false);
+    expect(
+      validateParameterBinding(
+        integer,
+        { dtype: "int64", shape: [1n], values: ["9007199254740993"] },
+        "1",
+      ).ok,
+    ).toBe(true);
+    expect(
+      validateParameterBinding(integer, { dtype: "int64", shape: [1n], values: ["1"] }, "1").ok,
+    ).toBe(false);
   });
   it("refuses malformed text and unknown envelopes without a success-shaped value", () => {
     expect(parseDocumentJson('{"schema":')).toMatchObject({ ok: false, code: "invalid_document" });
-    for (const value of [null, [], {}, { schema: 1 }, { schema: "quantum_workspace.v2", body: {}, extensions: {} }]) {
+    for (const value of [
+      null,
+      [],
+      {},
+      { schema: 1 },
+      { schema: "quantum_workspace.v2", body: {}, extensions: {} },
+    ]) {
       expect(parseDocument(value).ok).toBe(false);
     }
   });
 });
 
-const structural = readJson(structuralText) as { cases: { id: string; fixture: string; path: string[]; value: unknown; accept: boolean }[] };
-it.each(structural.cases)("shares structural admission for $id", async row => {
+const structural = readJson(structuralText) as {
+  cases: { id: string; fixture: string; path: string[]; value: unknown; accept: boolean }[];
+};
+it.each(structural.cases)("shares structural admission for $id", async (row) => {
   const payload = fixture(row.fixture);
   let target = payload as Record<string, unknown>;
   for (const key of row.path.slice(0, -1)) target = target[key] as Record<string, unknown>;
-  target[row.path.at(-1)!] = row.value;
+  const field = row.path.at(-1);
+  if (field === undefined) throw new Error("fixture field path required");
+  target[field] = row.value;
   const result = parseDocument(payload);
   expect(result.ok).toBe(row.accept);
   if (result.ok) {
@@ -129,32 +182,80 @@ it("preserves parent identity when an exported child is edited", async () => {
   expect([writeJson(documentToWire(parent)), await documentDigest(child)]).toEqual(before);
 });
 
-
 it("retains a draft reference and refuses timestamps before creation", () => {
   const payload = fixture("workspace");
   payload.body["draft_ref"] = (payload.body["revision_refs"] as unknown[])[0];
   const document = accepted(parseWorkspaceManifest(payload));
   expect(document.body["draft_ref"]).toEqual(payload.body["draft_ref"]);
   payload.body["updated_at"] = "2000-01-01T00:00:00Z";
-  expect(parseWorkspaceManifest(payload)).toMatchObject({ ok: false, message: "precedes creation" });
+  expect(parseWorkspaceManifest(payload)).toMatchObject({
+    ok: false,
+    message: "precedes creation",
+  });
 });
 
 it("revalidates caller-supplied documents before exporting or binding", () => {
   const invalid = fixture("parameter");
   delete invalid.body["unit"];
-  expect(() => documentToWire(invalid as unknown as WorkspaceDocument)).toThrow("missing or unknown field");
+  expect(() => documentToWire(invalid as unknown as WorkspaceDocument)).toThrow(
+    "missing or unknown field",
+  );
+  expect(() => documentDigest(invalid as unknown as WorkspaceDocument)).toThrow(
+    "missing or unknown field",
+  );
   const values = fixture("revision_root").body["parameters"] as Record<string, unknown>;
-  expect(validateParameterBinding(invalid as unknown as Parameters<typeof validateParameterBinding>[0], values["theta"], "rad")).toMatchObject({ ok: false, code: "invalid_document" });
+  expect(
+    validateParameterBinding(
+      invalid as unknown as Parameters<typeof validateParameterBinding>[0],
+      values["theta"],
+      "rad",
+    ),
+  ).toMatchObject({ ok: false, code: "invalid_document" });
 });
 
 it("refuses a hostile caller object without exposing its arbitrary thrown value", () => {
-  const payload = new Proxy(fixture("workspace"), { ownKeys() { throw "untrusted document inspection"; } });
-  expect(parseDocument(payload)).toEqual({ ok: false, code: "invalid_document", path: "$", message: "Document refused" });
+  const payload = new Proxy(fixture("workspace"), {
+    ownKeys() {
+      throw "untrusted document inspection";
+    },
+  });
+  expect(parseDocument(payload)).toEqual({
+    ok: false,
+    code: "invalid_document",
+    path: "$",
+    message: "Document refused",
+  });
 });
 
 it("refuses duplicate revision identities in a manifest", () => {
   const payload = fixture("workspace");
   const refs = payload.body["revision_refs"] as unknown[];
   refs.push(structuredClone(refs[0]));
-  expect(parseWorkspaceManifest(payload)).toMatchObject({ ok: false, message: "duplicate reference" });
+  expect(parseWorkspaceManifest(payload)).toMatchObject({
+    ok: false,
+    message: "duplicate reference",
+  });
+});
+
+it("reuses only parser-owned recursive snapshots and still validates altered exports", async () => {
+  const payload = fixture("revision_root");
+  payload.extensions["nested"] = { values: [1n, -0, { note: "original" }] };
+  const document = accepted(parseExperimentRevision(payload));
+  const firstHash = await documentDigest(document);
+  expect(accepted(parseDocument(document))).toBe(document);
+  expect(accepted(parseExperimentRevision(document))).toBe(document);
+  expect(Object.isFrozen((document.extensions["nested"] as { values: unknown[] }).values)).toBe(
+    true,
+  );
+  const exported = documentToWire(document);
+  const rebuilt = accepted(parseDocumentJson(writeJson(exported)));
+  expect(rebuilt).not.toBe(document);
+  expect(await documentDigest(rebuilt)).toBe(firstHash);
+  (exported["body"] as Record<string, unknown>)["project_id"] = "altered";
+  expect(parseDocument(Object.freeze(exported))).toMatchObject({
+    ok: false,
+    code: "invalid_document",
+  });
+  expect(await documentDigest(document)).toBe(firstHash);
+  expect(parseWorkspaceManifest(document)).toMatchObject({ ok: false, code: "schema_mismatch" });
 });

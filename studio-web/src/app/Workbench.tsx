@@ -13,6 +13,7 @@ import type { WorkspacePanelProps } from "../features/workspace/WorkspacePanel";
 import { useWorkspace } from "../features/workspace/useWorkspace";
 import { localExperimentCodecs } from "../features/experiments/kuramotoArtifacts";
 import { useExperimentRun } from "../features/experiments/useExperimentRun";
+import { useWorkflowRun } from "../features/workflows/useWorkflowRun";
 import { emptyWorkbenchContext, formatWorkbenchRoute } from "./routing";
 import type { WorkbenchContext, WorkbenchView } from "./routing";
 import { useWorkbenchRoute } from "./useWorkbenchRoute";
@@ -25,6 +26,7 @@ const BuildView = lazy(() => import("./routes/BuildView"));
 const ResultsView = lazy(() => import("./routes/ResultsView"));
 const UnavailableView = lazy(() => import("./routes/UnavailableView"));
 const ExperimentRunner = lazy(() => import("../features/experiments/ExperimentRunner"));
+const WorkflowRunner = lazy(() => import("../features/workflows/WorkflowRunner"));
 const views: ReadonlyArray<readonly [WorkbenchView, string]> = [
   ["workspace", "Workspace"],
   ["build", "Build"],
@@ -56,7 +58,13 @@ export function Workbench({ children, rawCodecs, mode = "standalone" }: Workbenc
     [rawCodecs],
   );
   const workspace = useWorkspace(codecs);
-  const experiment = useExperimentRun(workspace.draft, view === "experiments");
+  const workflow = useWorkflowRun(workspace.draft, view === "experiments");
+  const workflowOwnsWorker =
+    workflow.status === "running" || workflow.status === "cancelling" || workflow.blocked;
+  const experiment = useExperimentRun(
+    workspace.draft,
+    view === "experiments" && !workflowOwnsWorker,
+  );
   const content = useRef<HTMLElement>(null);
   const href = (target: WorkbenchView) =>
     formatWorkbenchRoute({ ...context, view: target, instrument: null });
@@ -140,12 +148,24 @@ export function Workbench({ children, rawCodecs, mode = "standalone" }: Workbenc
                 />
               )}
               {view === "experiments" && (
-                <ExperimentRunner
-                  workspace={workspace}
-                  rawCodecs={codecs}
-                  run={experiment}
-                  workspaceHref={href("workspace")}
-                />
+                <>
+                  <ExperimentRunner
+                    workspace={workspace}
+                    rawCodecs={codecs}
+                    run={experiment}
+                    workspaceHref={href("workspace")}
+                  />
+                  <WorkflowRunner
+                    workspace={workspace}
+                    rawCodecs={codecs}
+                    run={workflow}
+                    experimentBlocked={
+                      experiment.status === "running" ||
+                      experiment.status === "cancelling" ||
+                      experiment.disposalBlocked
+                    }
+                  />
+                </>
               )}
               {view === "atlas" && (
                 <UnavailableView view={view} workspaceHref={href("workspace")} />

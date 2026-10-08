@@ -14,15 +14,20 @@ export const maxJsonBytes = 128 * 1024 * 1024;
 function boundedText(text: string): void {
   if (text.length > maxJsonBytes) throw new Error("$: JSON byte limit exceeded");
   scalarString(text);
-  if (new TextEncoder().encode(text).length > maxJsonBytes) throw new Error("$: JSON byte limit exceeded");
+  if (new TextEncoder().encode(text).length > maxJsonBytes)
+    throw new Error("$: JSON byte limit exceeded");
 }
 
 /** Read exact integer and float tokens, refusing duplicate keys and invalid syntax. */
 export function readJson(text: string): unknown {
   boundedText(text);
   let position = 0;
-  const fail = (reason: string): never => { throw new Error(`$ at ${position}: ${reason}`); };
-  const whitespace = () => { while (/[ \t\r\n]/.test(text[position] ?? "")) position++; };
+  const fail = (reason: string): never => {
+    throw new Error(`$ at ${position}: ${reason}`);
+  };
+  const whitespace = () => {
+    while (/[ \t\r\n]/.test(text[position] ?? "")) position++;
+  };
   const expect = (character: string) => {
     whitespace();
     if (text[position] !== character) fail(`expected ${character}`);
@@ -32,23 +37,29 @@ export function readJson(text: string): unknown {
     whitespace();
     if (text[position] !== '"') fail("string required");
     const start = position++;
-    let escaped = false;
-    while (position < text.length) {
-      const character = text[position++];
-      if (escaped) escaped = false;
-      else if (character === "\\") escaped = true;
-      else if (character === '"') {
-        // JSON.parse sees only a string literal, never numeric tokens or object keys.
-        const decoded: unknown = JSON.parse(text.slice(start, position));
-        return scalarString(decoded as string);
+    const delimiters = /["\\]/g;
+    while (true) {
+      delimiters.lastIndex = position;
+      const delimiter = delimiters.exec(text);
+      if (delimiter === null) {
+        position = text.length;
+        return fail("unterminated string");
       }
+      position = delimiter.index + 1;
+      if (delimiter[0] === "\\") {
+        position = Math.min(position + 1, text.length);
+        continue;
+      }
+      // JSON.parse sees only a string literal, never numeric tokens or object keys.
+      const decoded: unknown = JSON.parse(text.slice(start, position));
+      return scalarString(decoded as string);
     }
-    return fail("unterminated string");
   };
   const value = (depth: number): unknown => {
     whitespace();
     const first = text[position];
-    if (depth > maxDepth || (depth === maxDepth && (first === "[" || first === "{"))) fail("depth exceeded");
+    if (depth > maxDepth || (depth === maxDepth && (first === "[" || first === "{")))
+      fail("depth exceeded");
     if (first === '"') return string();
     if (first === "[") {
       position++;
@@ -83,8 +94,15 @@ export function readJson(text: string): unknown {
       expect("}");
       return record;
     }
-    for (const [token, result] of [["true", true], ["false", false], ["null", null]] as const) {
-      if (text.startsWith(token, position)) { position += token.length; return result; }
+    for (const [token, result] of [
+      ["true", true],
+      ["false", false],
+      ["null", null],
+    ] as const) {
+      if (text.startsWith(token, position)) {
+        position += token.length;
+        return result;
+      }
     }
     const match = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/.exec(text.slice(position));
     if (!match) return fail("value required");
@@ -110,11 +128,18 @@ function encode(value: unknown): string {
   if (typeof value === "number") {
     if (Object.is(value, -0)) return "-0.0";
     const decimal = value.toString();
-    return /[.eE]/.test(decimal) ? decimal : decimal + ".0";
+    return /[.eE]/.test(decimal) ? decimal : `${decimal}.0`;
   }
-  if (value === null || typeof value === "boolean" || typeof value === "string") return JSON.stringify(value);
-  if (Array.isArray(value)) return "[" + value.map(encode).join(",") + "]";
-  return "{" + dataEntries(value as object).map(([key, item]) => JSON.stringify(key) + ":" + encode(item)).join(",") + "}";
+  if (value === null || typeof value === "boolean" || typeof value === "string")
+    return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(encode).join(",")}]`;
+  return (
+    "{" +
+    dataEntries(value as object)
+      .map(([key, item]) => `${JSON.stringify(key)}:${encode(item)}`)
+      .join(",") +
+    "}"
+  );
 }
 
 /** Serialize admitted values with float markers, retaining negative zero and bigint precision. */
