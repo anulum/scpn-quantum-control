@@ -139,6 +139,7 @@ COPY .github/dependabot.yml .github/dependabot.yml
 COPY scpn_quantum_engine/Cargo.toml scpn_quantum_engine/Cargo.toml
 COPY scpn_quantum_engine/Cargo.lock scpn_quantum_engine/Cargo.lock
 COPY scpn_quantum_engine/src/ scpn_quantum_engine/src/
+COPY scpn_quantum_engine/benches/ scpn_quantum_engine/benches/
 COPY scpn_quantum_engine/program_ad_replay/src/ scpn_quantum_engine/program_ad_replay/src/
 COPY scpn_quantum_engine/program_ad_replay/Cargo.toml scpn_quantum_engine/program_ad_replay/Cargo.toml
 COPY scpn_quantum_engine/tests/ scpn_quantum_engine/tests/
