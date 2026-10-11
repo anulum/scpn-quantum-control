@@ -777,17 +777,41 @@ def digest_bound_paths(repo: Path, inventory: Inventory) -> dict[str, Any]:
 
 
 def measure_import_cost(repo: Path) -> dict[str, Any]:
-    """Import the package in a fresh interpreter and count the package modules it loads."""
+    """Count package modules loaded by an uninstrumented fresh interpreter.
+
+    Parameters
+    ----------
+    repo
+        Repository whose source package is imported by the child interpreter.
+
+    Returns
+    -------
+    dict[str, Any]
+        Measured interpreter version and module count, or the failed import's error tail.
+
+    """
     script = (
         "import json, sys\n"
         f"import {PACKAGE}\n"
         f"print(json.dumps(sorted(m for m in sys.modules if m == '{PACKAGE}' "
         f"or m.startswith('{PACKAGE}.'))))\n"
     )
+    # Coverage startup imports source packages before the measurement and can
+    # initialise NumPy twice. An import inventory must reflect the package alone.
+    startup_variables = {
+        "COVERAGE_PROCESS_CONFIG",
+        "COVERAGE_PROCESS_START",
+        "COV_CORE_SOURCE",
+        "COV_CORE_CONFIG",
+        "COV_CORE_DATAFILE",
+        "COV_CORE_BRANCH",
+    }
+    environment = {key: value for key, value in os.environ.items() if key not in startup_variables}
+    environment["PYTHONPATH"] = str(repo / "src")
     completed = subprocess.run(
         [sys.executable, "-c", script],
         cwd=repo,
-        env={**os.environ, "PYTHONPATH": str(repo / "src")},
+        env=environment,
         capture_output=True,
         text=True,
         check=False,
