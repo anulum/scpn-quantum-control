@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1870" viewBox="0 0 1600 1870" role="img" aria-labelledby="title description">
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<!-- Commercial license available -->
+<!-- © Concepts 1996–2026 Miroslav Šotek. All rights reserved. -->
+<!-- © Code 2020–2026 Miroslav Šotek. All rights reserved. -->
+<!-- ORCID: 0009-0009-3560-0851 -->
+<!-- Contact: www.anulum.li | protoscience@anulum.li -->
+<!-- SCPN Quantum Control — Group and project map -->
+<title id="title">SCPN Quantum Computing Systems group map</title>
+<desc id="description">Permanent integrated workbench, two existing numerical packages, sixteen planned component destinations and eight supporting tools. Three tools have implementations under development; five are at design stage. Four wider ecosystem interfaces sit outside that count. Lines group responsibilities for navigation, not dependencies or extraction order. Current workbench metadata 1.2.0; planned architecture milestone 10.0.0 is not a release. Status snapshot 11 October 2026.</desc>
+<style>text{font-family:DejaVu Sans,sans-serif;fill:#15253b}.muted{fill:#42556f}.white{fill:#ffffff}.name{font-weight:700}.small{font-size:16px}</style>
+<rect width="1600" height="1870" fill="#f5f8fc"/>
+<text x="60" y="68" font-size="42" class="name">SCPN Quantum Computing Systems</text>
+<text x="60" y="105" font-size="23" class="muted">Permanent workbench · focused components · reviewable evidence</text>
+<rect x="60" y="137" width="1480" height="152" rx="18" fill="#132940" stroke="none"/>
+<text x="90" y="182" font-size="30" class="white name">SCPN-QUANTUM-CONTROL</text>
+<text x="90" y="215" font-size="23" class="white">Model → simulate → compile → optimise → run → analyse → inspect in Quantum Studio</text>
+<text x="90" y="251" font-size="18" class="white">Existing public workbench · source metadata 1.2.0, beta · development continues before and after the split</text>
+<rect x="1240" y="157" width="274" height="38" rx="18" fill="#2f526f" stroke="none"/>
+<text x="1257" y="183" font-size="18" class="white">10.0.0 transition: planned</text>
+<path d="M800 289 L800 325" fill="none" stroke="#c0cddd" stroke-width="2"/>
+<path d="M430 325 L1170 325" fill="none" stroke="#c0cddd" stroke-width="2"/>
+<path d="M430 325 L430 341" fill="none" stroke="#c0cddd" stroke-width="2"/>
+<path d="M1170 325 L1170 341" fill="none" stroke="#c0cddd" stroke-width="2"/>
+<rect x="60" y="341" width="720" height="108" rx="18" fill="#ffffff" stroke="#d1dce8"/>
+<text x="84" y="378" font-size="24" class="name">oscillatools</text>
+<text x="84" y="407" font-size="18" class="">Classical coupled-oscillator dynamics and sensitivities</text>
+<text x="84" y="433" font-size="16" class="muted">Existing Python package · metadata 0.1.0, beta</text>
+<rect x="820" y="341" width="720" height="108" rx="18" fill="#ffffff" stroke="#d1dce8"/>
+<text x="844" y="378" font-size="24" class="name">scpn-quantum-engine</text>
+<text x="844" y="407" font-size="18" class="">Optional Rust/PyO3 numerical execution</text>
+<text x="844" y="433" font-size="16" class="muted">Existing native package · metadata 0.2.0</text>
+<text x="60" y="484" font-size="29" class="name">16 focused components</text>
+<text x="520" y="484" font-size="18" class="muted">All are planned extraction destinations; none is a separate release today.</text>
+<rect x="60" y="507" width="720" height="244" rx="18" fill="#ffffff" stroke="#d1dce8"/>
+<rect x="60" y="507" width="720" height="45" rx="14" fill="#167486" stroke="none"/>
+<rect x="60" y="533" width="720" height="19" rx="0" fill="#167486" stroke="none"/>
+<text x="83" y="537" font-size="22" class="white name">Contracts and numerical execution</text>
+<text x="84" y="582" font-size="19" class="name">SCPN-QC-CONTRACTS</text>
+<text x="84" y="604" font-size="17" class="muted">Versioned shared interfaces and evidence contracts</text>
+<text x="84" y="626" font-size="19" class="name">SCPN-QC-CORE</text>
+<text x="84" y="648" font-size="17" class="muted">Configuration, resource budgets and generic foundations</text>
+<text x="84" y="670" font-size="19" class="name">SCPN-QC-AD</text>
+<text x="84" y="692" font-size="17" class="muted">Automatic differentiation, transforms and optimisation</text>
+<text x="84" y="714" font-size="19" class="name">SCPN-QC-SIM</text>
+<text x="84" y="736" font-size="17" class="muted">Classical, quantum and open-system simulation</text>
+<rect x="820" y="507" width="720" height="244" rx="18" fill="#ffffff" stroke="#d1dce8"/>
+<rect x="820" y="507" width="720" height="45" rx="14" fill="#53519a" stroke="none"/>
+<rect x="820" y="533" width="720" height="19" rx="0" fill="#53519a" stroke="none"/>
+<text x="843" y="537" font-size="22" class="white name">Compilation and execution interfaces</text>
+<text x="844" y="582" font-size="19" class="name">SCPN-QC-COMPILER</text>
+<text x="844" y="604" font-size="17" class="muted">Frontends, interchange, intermediate forms and codegen</text>
+<text x="844" y="626" font-size="19" class="name">SCPN-QC-QNODE</text>
+<text x="844" y="648" font-size="17" class="muted">Tapes, gradients and quantum-framework bridges</text>
+<text x="844" y="670" font-size="19" class="name">SCPN-QC-HAL</text>
+<text x="844" y="692" font-size="17" class="muted">Provider-neutral workloads, capabilities and adapters</text>
+<text x="844" y="714" font-size="19" class="name">SCPN-QC-MITIGATION</text>
+<text x="844" y="736" font-size="17" class="muted">Error-mitigation implementations and method taxonomy</text>
+<rect x="60" y="772" width="720" height="244" rx="18" fill="#ffffff" stroke="#d1dce8"/>
+<rect x="60" y="772" width="720" height="45" rx="14" fill="#856122" stroke="none"/>
+<rect x="60" y="798" width="720" height="19" rx="0" fill="#856122" stroke="none"/>
+<text x="83" y="802" font-size="22" class="white name">Control, learning and interpretation</text>
+<text x="84" y="847" font-size="19" class="name">SCPN-QC-QEC</text>
+<text x="84" y="869" font-size="17" class="muted">Error-correction analysis and resource reports</text>
+<text x="84" y="891" font-size="19" class="name">SCPN-QC-CONTROL</text>
+<text x="84" y="913" font-size="17" class="muted">Feedback, co-design and topology-aware control</text>
+<text x="84" y="935" font-size="19" class="name">SCPN-QC-ANALYSIS</text>
+<text x="84" y="957" font-size="17" class="muted">Observables, witnesses and result interpretation</text>
+<text x="84" y="979" font-size="19" class="name">SCPN-QC-LEARN</text>
+<text x="84" y="1001" font-size="17" class="muted">Forecasting, neural models, kernels and surrogates</text>
+<rect x="820" y="772" width="720" height="244" rx="18" fill="#ffffff" stroke="#d1dce8"/>
+<rect x="820" y="772" width="720" height="45" rx="14" fill="#237a58" stroke="none"/>
+<rect x="820" y="798" width="720" height="19" rx="0" fill="#237a58" stroke="none"/>
+<text x="843" y="802" font-size="22" class="white name">Applications, benchmarks and workspace</text>
+<text x="844" y="847" font-size="19" class="name">SCPN-QC-APPS</text>
+<text x="844" y="869" font-size="17" class="muted">Application adapters, randomness, crypto and sensing</text>
+<text x="844" y="891" font-size="19" class="name">SCPN-QC-BENCH</text>
+<text x="844" y="913" font-size="17" class="muted">Domain workloads, comparisons and retained run evidence</text>
+<text x="844" y="935" font-size="19" class="name">SCPN-QC-STUDIO</text>
+<text x="844" y="957" font-size="17" class="muted">Quantum workflows, inspectors and evidence presentation</text>
+<text x="844" y="979" font-size="19" class="name">SCPN-QC-RESEARCH</text>
+<text x="844" y="1001" font-size="17" class="muted">Experimental SCPN theory and paper-specific research</text>
+<path d="M800 1016 L800 1050" fill="none" stroke="#c0cddd" stroke-width="2"/>
+<path d="M430 1050 L1170 1050" fill="none" stroke="#c0cddd" stroke-width="2"/>
+<text x="60" y="1091" font-size="29" class="name">8 supporting tools</text>
+<text x="375" y="1091" font-size="18" class="muted">Sibling instruments, not workbench extractions. No complete released tool is claimed.</text>
+<rect x="60" y="1115" width="720" height="358" rx="18" fill="#ffffff" stroke="#d1dce8"/>
+<text x="84" y="1151" font-size="20" class="name">QPU-RESULT-PACK</text>
+<text x="84" y="1178" font-size="18" class="">Raw results, provenance and pinned derivations</text>
+<text x="84" y="1203" font-size="15" class="muted">Implementation under development · release acceptance pending</text>
+<path d="M84 1215 L756 1215" fill="none" stroke="#e2e8f0" stroke-width="2"/>
+<text x="84" y="1234" font-size="20" class="name">TRANSPILE-WITNESS</text>
+<text x="84" y="1261" font-size="18" class="">Compilation semantics, layout, phase and replay</text>
+<text x="84" y="1286" font-size="15" class="muted">Source library under development · release acceptance pending</text>
+<path d="M84 1298 L756 1298" fill="none" stroke="#e2e8f0" stroke-width="2"/>
+<text x="84" y="1317" font-size="20" class="name">NOISE-MODEL-WITNESS</text>
+<text x="84" y="1344" font-size="18" class="">Noise predictions, replay distances and uncertainty</text>
+<text x="84" y="1369" font-size="15" class="muted">Design stage · release acceptance pending</text>
+<path d="M84 1381 L756 1381" fill="none" stroke="#e2e8f0" stroke-width="2"/>
+<text x="84" y="1400" font-size="20" class="name">MITIGATION-WITNESS</text>
+<text x="84" y="1427" font-size="18" class="">Declared mitigation panels and uncertainty</text>
+<text x="84" y="1452" font-size="15" class="muted">Library implementation under development · release acceptance pending</text>
+<rect x="820" y="1115" width="720" height="358" rx="18" fill="#ffffff" stroke="#d1dce8"/>
+<text x="844" y="1151" font-size="20" class="name">VENDOR-CLAIM-RECOMPUTER</text>
+<text x="844" y="1178" font-size="18" class="">Released-data QV, EPLG and logical-error claims</text>
+<text x="844" y="1203" font-size="15" class="muted">Design stage · release acceptance pending</text>
+<path d="M844 1215 L1516 1215" fill="none" stroke="#e2e8f0" stroke-width="2"/>
+<text x="844" y="1234" font-size="20" class="name">DECODER-WITNESS</text>
+<text x="844" y="1261" font-size="18" class="">Released shot data and real decoder comparisons</text>
+<text x="844" y="1286" font-size="15" class="muted">Design stage · release acceptance pending</text>
+<path d="M844 1298 L1516 1298" fill="none" stroke="#e2e8f0" stroke-width="2"/>
+<text x="844" y="1317" font-size="20" class="name">GRADIENT-WITNESS</text>
+<text x="844" y="1344" font-size="18" class="">Analytic, shift, finite-shot and framework references</text>
+<text x="844" y="1369" font-size="15" class="muted">Design stage · release acceptance pending</text>
+<path d="M844 1381 L1516 1381" fill="none" stroke="#e2e8f0" stroke-width="2"/>
+<text x="844" y="1400" font-size="20" class="name">CONFORMANCE-WITNESS</text>
+<text x="844" y="1427" font-size="18" class="">OpenQASM, adapter and provenance criteria</text>
+<text x="844" y="1452" font-size="15" class="muted">Design stage · release acceptance pending</text>
+<text x="60" y="1517" font-size="29" class="name">Shared ecosystem interfaces</text>
+<text x="575" y="1517" font-size="18" class="muted">Outside the 16-plus-eight count</text>
+<rect x="60" y="1540" width="340" height="111" rx="18" fill="#e8eef6" stroke="none"/>
+<text x="77" y="1572" font-size="15" class="name">EVIDENCE-MANIFEST-TOOLKIT</text>
+<text x="77" y="1601" font-size="16" class="">Evidence contracts</text>
+<text x="77" y="1627" font-size="15" class="muted">Architecture-stage scaffold</text>
+<rect x="440" y="1540" width="340" height="111" rx="18" fill="#e8eef6" stroke="none"/>
+<text x="457" y="1572" font-size="15" class="name">EXPERIMENT-LEDGER</text>
+<text x="457" y="1601" font-size="16" class="">Preregistered experiment records</text>
+<text x="457" y="1627" font-size="15" class="muted">Planned shared project</text>
+<rect x="820" y="1540" width="340" height="111" rx="18" fill="#e8eef6" stroke="none"/>
+<text x="837" y="1572" font-size="15" class="name">RANDOMNESS-WITNESS</text>
+<text x="837" y="1601" font-size="16" class="">Randomness source qualification</text>
+<text x="837" y="1627" font-size="15" class="muted">Planned shared project</text>
+<rect x="1200" y="1540" width="340" height="111" rx="18" fill="#e8eef6" stroke="none"/>
+<text x="1217" y="1572" font-size="15" class="name">SCPN-STUDIO</text>
+<text x="1217" y="1601" font-size="16" class="">Federation and shared platform</text>
+<text x="1217" y="1627" font-size="15" class="muted">Existing integration project</text>
+<rect x="60" y="1680" width="1480" height="119" rx="18" fill="#132940" stroke="none"/>
+<text x="86" y="1715" font-size="24" class="white name">A continuing workbench, with versioned public interfaces</text>
+<text x="86" y="1747" font-size="19" class="white">Existing installations keep their documented contracts until announced releases and migration guidance.</text>
+<text x="86" y="1776" font-size="18" class="white">Current in-repository code: AGPL-3.0-or-later / commercial route. Future licences need explicit release decisions.</text>
+<text x="60" y="1830" font-size="17" class="muted">Navigation map, not a dependency graph. Status: 11 October 2026. Software observations are not hardware qualification.</text>
+<text x="60" y="1856" font-size="16" class="muted">© 1996–2026 Miroslav Šotek · www.anulum.li · Full functions and status: docs/ecosystem.md</text>
+</svg>

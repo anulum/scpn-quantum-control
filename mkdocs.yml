@@ -55,6 +55,7 @@ theme:
 
 nav:
   - Home: index.md
+  - Quantum Ecosystem: ecosystem.md
   - Onboarding: onboarding.md
   - Solutions and Market Value: solutions_and_market_value.md
   - Installation: installation.md

@@ -1,8 +1,8 @@
 {
  "schema": "tracked_file_size_ceiling_v1",
  "threshold_bytes": 1048576,
- "total_files": 15,
- "total_mebibytes": 45,
+ "total_files": 17,
+ "total_mebibytes": 49,
  "files": {
   "data/iqm_layout_transfer_per_size/fake_counts_2026-07-26.json": 2,
   "data/iqm_layout_transfer_per_size/iqm_layout_transfer_per_size_circuits_2026-07-26.qpy": 3,
@@ -18,6 +18,8 @@
   "data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_live_readiness_2026-05-05.csv": 5,
   "data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_live_readiness_2026-05-05.json": 5,
   "docs/assets/anulum_logo.png": 2,
+  "docs/assets/scpn_quantum_group_map.jpg": 2,
+  "docs/assets/scpn_quantum_group_map.png": 2,
   "tests/fixtures/public_export_identity_snapshot.json": 3
  }
 }

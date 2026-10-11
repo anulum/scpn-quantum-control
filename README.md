@@ -67,6 +67,32 @@ engineering teams that need a consistent pathway from model specification to
 observable contracts, and research teams that need explicit failure modes rather
 than implied coverage.
 
+## Quantum Computing Systems ecosystem
+
+SCPN-QUANTUM-CONTROL remains the permanent public development workbench.
+The planned **10.0.0 architecture transition** names **16 focused components
+and eight supporting tools**, 24 responsibilities in total. The components
+are planned extractions; the tools are under development or at the design
+stage. This map does not announce independent releases or require migration.
+The current workbench remains at source version **1.2.0**, beta.
+
+![SCPN Quantum Computing Systems: permanent workbench, planned components and supporting tools.](docs/assets/scpn_quantum_group_map.svg)
+
+| Functional group | Planned components |
+|---|---|
+| Contracts and numerical execution | CONTRACTS, CORE, AD, SIM |
+| Compilation and execution interfaces | COMPILER, QNODE, HAL, MITIGATION |
+| Control, learning and interpretation | QEC, CONTROL, ANALYSIS, LEARN |
+| Applications, benchmarks and workspace | APPS, BENCH, STUDIO, RESEARCH |
+
+Read the [ecosystem map](docs/ecosystem.md) for the full component and tool
+functions, present status, compatibility and licensing boundaries. The
+[architecture map](docs/architecture_map.md) describes callable capabilities,
+inputs, outputs and backends.
+[Full-size SVG](docs/assets/scpn_quantum_group_map.svg) ·
+[PNG](docs/assets/scpn_quantum_group_map.png) ·
+[JPG](docs/assets/scpn_quantum_group_map.jpg)
+
 ## What you can do first
 
 | Need | First path | Output |
@@ -137,8 +163,8 @@ claims only when the evidence exists.
 | Notebook files | 109 |
 | Example files | 39 |
 | Optional extras | 43 |
-| Python test files | 1521 |
-| Public documentation pages | 383 |
+| Python test files | 1522 |
+| Public documentation pages | 384 |
 | GitHub Actions workflows | 44 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.

@@ -4,7 +4,7 @@ The primary navigation stays intentionally compact. This catalog keeps every
 public guide, evidence note, contract, campaign protocol, and reference page
 discoverable without crowding the main learning path.
 
-Current inventory: **383 public pages**; **163** are in the
+Current inventory: **384 public pages**; **164** are in the
 primary navigation and the remainder are indexed here.
 
 Labels marked `catalog` are intentionally outside the primary navigation; they
@@ -280,6 +280,7 @@ are still built, link-checked, searchable, and public.
 | [DynQ: Dynamic Topology-Agnostic Qubit Mapping](dynq_qubit_mapping.md) | catalog | Quality-weighted community detection for intelligent qubit placement on NISQ hardware. Replaces Qiskit's default SABRE-based layout heuristic with a physics-aware global partitioning strategy. |
 | [E2E contract boundaries](e2e_contract_boundaries.md) | primary nav | This page records the current end-to-end and contract-test boundary coverage used for release-safety review. The audit is intentionally conservative: a boundary is marked covered only when a pytest module name maps to that boundary, and st |
 | [End-to-End Testing](e2e_testing.md) | catalog | tests/test_e2e_new_modules.py |
+| [Quantum Group and Project Map](ecosystem.md) | primary nav | **SCPN-QUANTUM-CONTROL remains the permanent public development workbench** for **SCPN Quantum Computing Systems**. It brings coupled-oscillator models, classical and quantum simulation, compilation, differentiable computation, provider int |
 | [ENAQT Optimal-Noise Scan](enaqt_optimal_noise.md) | primary nav | This module provides a bounded local simulator for environment-assisted quantum transport (ENAQT). It scans a finite set of local dephasing rates and maximises the population irreversibly transferred into a target sink by a fixed time. The |
 | [Entangled initial-state coherence study](entanglement_initial_state_study.md) | primary nav | This is a bounded four-qubit simulation study of how four pure initial-state families evolve under one frozen Kuramoto-XY Hamiltonian. It does **not** show that entanglement lowers a synchronisation threshold. The model is closed and unitar |
 | [Quantum Random-Number Generation](entropy_qrng.md) | primary nav | The scpn_quantum_control.entropy package provides a streaming quantum random-number generator with the NIST SP 800-22 Revision 1a statistical test suite and the FIPS 140-2 Annex C power-up tests. Entropy originates from Qiskit Aer measureme |

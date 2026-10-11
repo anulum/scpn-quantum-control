@@ -13,6 +13,18 @@ claim.**
 > hardware, broad quantum advantage) is marked as such. Where a surface is under active
 > refactor it is labelled *volatile*. Counts and bindings drift; re-verify before public reuse.
 
+## Group and project overview
+
+![SCPN Quantum Computing Systems: the existing workbench, sixteen planned components, eight supporting tools and shared ecosystem interfaces.](assets/scpn_quantum_group_map.svg)
+
+The [ecosystem map](ecosystem.md) describes each project and its current status.
+The 10.0.0 transition is planned; the sixteen components are not separate
+releases. Connecting lines group responsibilities rather than runtime dependencies.
+
+[Full-size SVG](assets/scpn_quantum_group_map.svg) ·
+[PNG](assets/scpn_quantum_group_map.png) ·
+[JPG](assets/scpn_quantum_group_map.jpg)
+
 ---
 
 ## 1. System in one paragraph

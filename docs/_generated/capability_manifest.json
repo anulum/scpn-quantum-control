@@ -8,12 +8,12 @@
     "notebook_files": 109,
     "optional_extras": 43,
     "public_api_exports": 851,
-    "public_documentation_pages": 383,
+    "public_documentation_pages": 384,
     "python_model_classes": 1509,
     "python_model_source_modules": 787,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1521
+    "test_files": 1522
   },
   "documentation": {
     "examples": [
@@ -371,6 +371,7 @@
       "docs/dynq_qubit_mapping.md",
       "docs/e2e_contract_boundaries.md",
       "docs/e2e_testing.md",
+      "docs/ecosystem.md",
       "docs/enaqt_optimal_noise.md",
       "docs/entanglement_initial_state_study.md",
       "docs/entropy_qrng.md",
@@ -9316,6 +9317,7 @@
       "tests/test_gauge_topology_contracts.py",
       "tests/test_general_unitary_quality_gate.py",
       "tests/test_generalised_parameter_shift_quality_gate.py",
+      "tests/test_generate_iqm_garnet_paper_assets.py",
       "tests/test_geometric_control_product.py",
       "tests/test_geometric_control_product_quality_gate.py",
       "tests/test_git_location_isolation.py",

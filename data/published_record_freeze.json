@@ -38,6 +38,12 @@
     "paper/submissions/submission_006_s1_feedback_control/figures/s1_feedback_control/s1_feedback_delta_heatmap_2026-05-20.png": "47ce5bbe7f3431b1a926ed068e488be06b5dfd18c1d0c4646a3f6d5c5dee6d50",
     "paper/submissions/submission_006_s1_feedback_control/figures/s1_feedback_control/s1_feedback_multibackend_delta_heatmap_2026-05-20.png": "0011d50b80a890f7329553514331e7bb6771ccdb027e3d0dfaa369d5f3bcf1c2",
     "paper/submissions/submission_006_s1_feedback_control/s1_feedback_control.tex": "700f936909a317023e794b96c8a7aab82293f1abb5af428b9f0924e24c345443",
-    "paper/submissions/submission_006_s1_feedback_control/s1_feedback_control_short_paper.md": "e67819c870db595b3bb58a5452209984e8b69719fc8a7a2357307578a3b510f2"
+    "paper/submissions/submission_006_s1_feedback_control/s1_feedback_control_short_paper.md": "e67819c870db595b3bb58a5452209984e8b69719fc8a7a2357307578a3b510f2",
+    "paper/submissions/submission_007_iqm_garnet_preregistered_campaigns/figures/figure_sources.json": "3ba18f52df8d0d69cc5b0d738f696c57821b6df4a83743ae77b86ea6bc4f8610",
+    "paper/submissions/submission_007_iqm_garnet_preregistered_campaigns/figures/garnet_depth_contrast_twelve_epochs.png": "8e1db59e62083f008502ca427dcc499a69a1d6fb261b3ce18a6925ec0e3bfd7e",
+    "paper/submissions/submission_007_iqm_garnet_preregistered_campaigns/figures/garnet_layout_transfer_by_chain_length.png": "53e117a5fa139d4891916b3eaeb0c32ffd45f9e520c490340bf285a1502eb252",
+    "paper/submissions/submission_007_iqm_garnet_preregistered_campaigns/figures/garnet_parity_asymmetry_ten_windows.png": "03af8171fdc513a7cd2dc742f786c98b611ab8b32675c6363f2c3da975827791",
+    "paper/submissions/submission_007_iqm_garnet_preregistered_campaigns/figures/heron_garnet_parity_leakage_by_depth.png": "ae3ea3b56176dd14dbdf73db6a03c22e37a9431c29ec0eef9c7224669ae3e0e6",
+    "paper/submissions/submission_007_iqm_garnet_preregistered_campaigns/iqm_garnet_preregistered_campaigns.tex": "8075f882aad5ea6fa720056791edd1a101b4d71b3c424272241255c00cf76cfe"
   }
 }
