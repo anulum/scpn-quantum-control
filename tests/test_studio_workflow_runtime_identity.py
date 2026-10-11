@@ -66,6 +66,51 @@ def original_runtime_copy(tmp_path_factory: pytest.TempPathFactory) -> Path:
     return target
 
 
+def test_actual_workflow_resume_keeps_identity_after_native_engine_loading(
+    tmp_path: Path,
+) -> None:
+    """Resume original compiler records across lazy loading of an installed engine.
+
+    Parameters
+    ----------
+    tmp_path
+        Owned original graph input for a fresh real workflow runtime process.
+
+    """
+    source = tmp_path / "workflow.json"
+    source.write_text(json.dumps(definition().to_dict()))
+    script = """
+from pathlib import Path
+import sys
+from scpn_quantum_control._rust_accel import optional_rust_engine
+from scpn_quantum_control.studio.executive_cli import build_default_registry
+from scpn_quantum_control.studio.workflow_contracts import parse_workflow
+from scpn_quantum_control.studio.workflow_execution import run_workflow, workflow_runtime_identity
+from scpn_quantum_control.studio_workspace.json_transport import read_json
+
+definition = parse_workflow(read_json(Path(sys.argv[1]).read_text()))
+registry = build_default_registry()
+before = workflow_runtime_identity(registry, definition)
+optional_rust_engine()
+assert workflow_runtime_identity(registry, definition) == before, (
+    "loading the installed engine changed the original runtime identity"
+)
+journal = run_workflow(definition, registry=registry)
+assert journal.state == "complete" and journal.evaluations == 12
+resumed = run_workflow(definition, registry=registry, journal=journal)
+assert resumed.to_dict() == journal.to_dict()
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", script, str(source)],
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=60,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == ""
+
+
 def test_actual_source_snapshot_refuses_an_oversized_package_before_hashing(
     original_runtime_copy: Path, tmp_path: Path
 ) -> None:

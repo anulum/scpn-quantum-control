@@ -244,6 +244,9 @@ an atomic same-directory replacement. SIGINT requests cooperative cancellation a
 an original synchronous action boundary. Current handler approval requirements
 also apply to cached attempts. The `execute` handler still produces a no-submit
 dossier; running its generated operator script remains a separate approved act.
+The Python runtime snapshot resolves the optional Rust engine before hashing
+its loaded extension. Importing that installed engine does not change the
+identity used for resume; changed source or extension bytes still refuse reuse.
 A workflow journal records producer evidence without attesting a physical device
 or a complete transitive software environment.
 

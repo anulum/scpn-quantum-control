@@ -22,6 +22,7 @@ from importlib.metadata import PackageNotFoundError, version
 from importlib.util import find_spec
 from pathlib import Path
 
+from .._rust_accel import optional_rust_engine
 from ..studio_workspace.canonical import canonical_bytes, canonical_digest
 from ..studio_workspace.json_transport import read_json, write_json
 from .executive import (
@@ -119,6 +120,9 @@ def workflow_runtime_identity(
 ) -> str:
     """Hash actual package/handler sources and declared installed runtime versions.
 
+    Admit the other source inventories before resolving the optional engine.
+    Its loaded extension bytes identify fresh and already imported runtimes.
+
     Parameters
     ----------
     registry
@@ -166,12 +170,15 @@ def workflow_runtime_identity(
             _source_digest(path, stamps)
         )
     for name, spec in (
-        ("scpn_quantum_engine", find_spec("scpn_quantum_engine")),
         ("scpn_studio_platform", find_spec("scpn_studio_platform")),
         ("oscillatools", find_spec("oscillatools")),
         ("numpy", find_spec("numpy")),
         ("qiskit", find_spec("qiskit")),
+        ("scpn_quantum_engine", None),
     ):
+        if name == "scpn_quantum_engine":
+            engine = optional_rust_engine()
+            spec = None if engine is None else engine.__spec__
         if spec is None or spec.origin is None:
             continue
         origin = Path(spec.origin)
