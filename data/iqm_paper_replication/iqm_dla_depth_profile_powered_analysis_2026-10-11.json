@@ -1,0 +1,442 @@
+{
+  "schema": "scpn.iqm-dla-depth-profile-powered-analysis.v1",
+  "campaign": "iqm_dla_depth_profile_powered_epoch_prereg_2026-09-04",
+  "status": "complete_frozen_primary",
+  "design": {
+    "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_design_2026-09-04.json",
+    "sha256": "df7f9df1b914dd7cf432be35e94a57b6c19c8c48065f9d673f0525bb1e8d25f5"
+  },
+  "custody": {
+    "count_sha256": {
+      "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_01_hardware_counts_2026-09-23.json": "b820d91b87113857a78015598ce045cc04f0d2a077a72146e440a4f9f4b0d239",
+      "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_02_hardware_counts_2026-09-24.json": "0738f03d2652a6e3e6ff5fe58a5f8d278da91977e3558bf19d128e164699e05b",
+      "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_03_hardware_counts_2026-09-25.json": "73f521c181e4f67acf6ec47283237172e30d41f3e8a21b908bf8a486fd84a183",
+      "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_04_hardware_counts_2026-09-26.json": "43168c8967d99c69e9cbc86510bf915fd4706a4a9b0a8f8347be5cca7cc0d66a",
+      "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_05_hardware_counts_2026-09-27.json": "0f21709636106e27707869c2aa4a421a106cca15e99f6f76b0317ff3b555ad64",
+      "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_06_hardware_counts_2026-09-29.json": "e1f5558f26305abf3aaa40d49f6d580c9918a85553cae397e523829e0385ca88",
+      "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_07_hardware_counts_2026-10-01.json": "b213aec4822bf3ce9cd4fdafd034da516ce83b495d0100f6b4577f7029d7f437",
+      "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_08_hardware_counts_2026-10-02.json": "73ec12060d7d489eef6feb530da621b4a4065bffa5d4199f01482f0c1e7eef7f",
+      "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_09_hardware_counts_2026-10-03.json": "36e4d1b56ee45620ae607204b684893ec0cc252dbed172d46a9de4b37f588c47",
+      "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_10_hardware_counts_2026-10-04.json": "a50757aa3bbcc42b9ed021f59a0d3016d731da2eacfa43895189681a078f7130",
+      "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_11_hardware_counts_2026-10-05.json": "542a9e7e873a468446285ee0ec12c76231c03d816de5d9c23c5d1c139af5ab79",
+      "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_12_hardware_counts_2026-10-06.json": "282d26dd0f1358ca7b2beefe2dc044b21e605d63f68b88cb0202197d8fdbf4f3"
+    },
+    "calibration_sha256": {
+      "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_01_calibration_2026-09-23.json": "bbc395888f2657ae46c39a74a049b8aba88e6568493778a8ed2d5946d7a7439d",
+      "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_02_calibration_2026-09-24.json": "f5c9b3ed617b2baa7da42c36ee3564c98802d104bc587af7747539fccd09b78f",
+      "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_03_calibration_2026-09-25.json": "1be3928f74766dd7274c116e41e2ad27170c10c7c1235cf97d7dadf0103486ee",
+      "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_04_calibration_2026-09-26.json": "79e21bf0272181e1e02bf4baa93211351d1178be5fe5940789dcae952f936303",
+      "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_05_calibration_2026-09-27.json": "5205e1f69412991115bb1751abf495f0db5fa3ea832ae5e54a3a1c1a82075ec9",
+      "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_06_calibration_2026-09-29.json": "f047ad31cc827978f117828efcd785eb10e0da2d7cc4831368ac5ec1542094bb",
+      "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_07_calibration_2026-10-01.json": "a81135e3d194daf8ed795da2e1aaeaeb13a9c3a0704c7e177ec63718149e16a7",
+      "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_08_calibration_2026-10-02.json": "a8ca87fded0418844d87545fdf692bab939d1089b5c382622f705531c74a054d",
+      "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_09_calibration_2026-10-03.json": "0bae07300547c65eaf6f57eea4ca55494c7433656a65bf05cce6d1cbc7e6b0b7",
+      "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_10_calibration_2026-10-04.json": "c229b586361e8940d396e0c520527a8b48332fe6360c352cb5ffc8a428cfba69",
+      "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_11_calibration_2026-10-05.json": "0e9737dbbe0c3327110f2c77be134f3d6a0a071dc027fee6cc4b7855bf0de09a",
+      "data/iqm_paper_replication/iqm_dla_depth_profile_powered_epoch_12_calibration_2026-10-06.json": "13f250c10882d004ccd152e9814690a1727127f06b4bc251f46d0bcf217f1ee3"
+    }
+  },
+  "per_epoch": [
+    {
+      "epoch": 1,
+      "date": "2026-09-23",
+      "calibration_set_id": "ad7e2bf0-48ac-493d-aa9a-51d24d0345d3",
+      "job_ids": [
+        "01a0cfbc-c583-7480-b7e7-0cb5d02c42cf",
+        "01a0cfbc-c711-7720-92d9-c581bad01e5c"
+      ],
+      "depths": {
+        "8": {
+          "difference_even_minus_odd": 0.0109049479167,
+          "leak_even": 0.376627604167,
+          "leak_odd": 0.36572265625,
+          "shots_even": 12288,
+          "shots_odd": 12288,
+          "shot_noise_se": 0.0061631257005
+        },
+        "12": {
+          "difference_even_minus_odd": 0.0231119791667,
+          "leak_even": 0.424723307292,
+          "leak_odd": 0.401611328125,
+          "shots_even": 12288,
+          "shots_odd": 12288,
+          "shot_noise_se": 0.00628022048454
+        }
+      },
+      "contrast_delta8_minus_delta12": -0.01220703125,
+      "contrast_shot_noise_se": 0.00879916403613,
+      "contrast_variance": 7.74252877346e-05
+    },
+    {
+      "epoch": 2,
+      "date": "2026-09-24",
+      "calibration_set_id": "7c39177a-a124-4974-85e6-466d9c1daddf",
+      "job_ids": [
+        "01a0d203-4e04-71b7-b5e4-c6ab6c51f37c",
+        "01a0d203-4fd7-71ac-ae2c-4a942807afd5"
+      ],
+      "depths": {
+        "8": {
+          "difference_even_minus_odd": 0.0161946614583,
+          "leak_even": 0.333984375,
+          "leak_odd": 0.317789713542,
+          "shots_even": 12288,
+          "shots_odd": 12288,
+          "shot_noise_se": 0.00597873717084
+        },
+        "12": {
+          "difference_even_minus_odd": -0.00138346354167,
+          "leak_even": 0.397216796875,
+          "leak_odd": 0.398600260417,
+          "shots_even": 12288,
+          "shots_odd": 12288,
+          "shot_noise_se": 0.00624448784252
+        }
+      },
+      "contrast_delta8_minus_delta12": 0.017578125,
+      "contrast_shot_noise_se": 0.00864516781637,
+      "contrast_variance": 7.47389265733e-05
+    },
+    {
+      "epoch": 3,
+      "date": "2026-09-25",
+      "calibration_set_id": "af33e1ea-0ad5-4521-8c27-09343f0bc390",
+      "job_ids": [
+        "01a0d916-2e1a-75c1-ba5c-da18f5e4b615",
+        "01a0d916-2f53-742b-be4c-6714faa9dd4f"
+      ],
+      "depths": {
+        "8": {
+          "difference_even_minus_odd": 0.00944010416667,
+          "leak_even": 0.426676432292,
+          "leak_odd": 0.417236328125,
+          "shots_even": 12288,
+          "shots_odd": 12288,
+          "shot_noise_se": 0.00630040759209
+        },
+        "12": {
+          "difference_even_minus_odd": 0.00455729166667,
+          "leak_even": 0.456217447917,
+          "leak_odd": 0.45166015625,
+          "shots_even": 12288,
+          "shots_odd": 12288,
+          "shot_noise_se": 0.00635168804739
+        }
+      },
+      "contrast_delta8_minus_delta12": 0.0048828125,
+      "contrast_shot_noise_se": 0.00894645610719,
+      "contrast_variance": 8.00390768779e-05
+    },
+    {
+      "epoch": 4,
+      "date": "2026-09-26",
+      "calibration_set_id": "d10715c4-4242-4af7-be1e-29f3fabf7e1a",
+      "job_ids": [
+        "01a0dec6-b2b3-7270-96d6-8a8d46493f1b",
+        "01a0dec6-b3f0-71ff-92d8-15d1f198e0a5"
+      ],
+      "depths": {
+        "8": {
+          "difference_even_minus_odd": 0.000813802083333,
+          "leak_even": 0.363118489583,
+          "leak_odd": 0.3623046875,
+          "shots_even": 12288,
+          "shots_odd": 12288,
+          "shot_noise_se": 0.00613370616513
+        },
+        "12": {
+          "difference_even_minus_odd": 0.0144856770833,
+          "leak_even": 0.406087239583,
+          "leak_odd": 0.3916015625,
+          "shots_even": 12288,
+          "shots_odd": 12288,
+          "shot_noise_se": 0.00624628908178
+        }
+      },
+      "contrast_delta8_minus_delta12": -0.013671875,
+      "contrast_shot_noise_se": 0.00875434055845,
+      "contrast_variance": 7.66384786133e-05
+    },
+    {
+      "epoch": 5,
+      "date": "2026-09-27",
+      "calibration_set_id": "e1084b22-ca16-4f83-98af-500a91ef5e5c",
+      "job_ids": [
+        "01a0e410-5e40-77da-88de-452430967f60",
+        "01a0e410-5f79-71de-ae5a-5f8cc27e32aa"
+      ],
+      "depths": {
+        "8": {
+          "difference_even_minus_odd": 0.0262858072917,
+          "leak_even": 0.367431640625,
+          "leak_odd": 0.341145833333,
+          "shots_even": 12288,
+          "shots_odd": 12288,
+          "shot_noise_se": 0.00609969650981
+        },
+        "12": {
+          "difference_even_minus_odd": 0.0232747395833,
+          "leak_even": 0.419677734375,
+          "leak_odd": 0.396402994792,
+          "shots_even": 12288,
+          "shots_odd": 12288,
+          "shot_noise_se": 0.0062683064851
+        }
+      },
+      "contrast_delta8_minus_delta12": 0.00301106770833,
+      "contrast_shot_noise_se": 0.00874631143414,
+      "contrast_variance": 7.6497963703e-05
+    },
+    {
+      "epoch": 6,
+      "date": "2026-09-29",
+      "calibration_set_id": "a1a74f13-3d45-4be2-afe8-3aa35e23da14",
+      "job_ids": [
+        "01a0ef34-e362-70ef-b73e-b0a023051ca9",
+        "01a0ef34-e611-745e-9652-b5cdf36c9c61"
+      ],
+      "depths": {
+        "8": {
+          "difference_even_minus_odd": 0.0382486979167,
+          "leak_even": 0.371175130208,
+          "leak_odd": 0.332926432292,
+          "shots_even": 12288,
+          "shots_odd": 12288,
+          "shot_noise_se": 0.00608834279261
+        },
+        "12": {
+          "difference_even_minus_odd": -0.024169921875,
+          "leak_even": 0.378499348958,
+          "leak_odd": 0.402669270833,
+          "shots_even": 12288,
+          "shots_odd": 12288,
+          "shot_noise_se": 0.00622236285964
+        }
+      },
+      "contrast_delta8_minus_delta12": 0.0624186197917,
+      "contrast_shot_noise_se": 0.0087054992687,
+      "contrast_variance": 7.57857175173e-05
+    },
+    {
+      "epoch": 7,
+      "date": "2026-10-01",
+      "calibration_set_id": "36cf327c-ecbe-470b-a719-aa864c078268",
+      "job_ids": [
+        "01a0f933-9f69-7650-8aa5-7cf775df4286",
+        "01a0f933-a1de-77e2-bc96-72da896ea7d7"
+      ],
+      "depths": {
+        "8": {
+          "difference_even_minus_odd": -0.00325520833333,
+          "leak_even": 0.382242838542,
+          "leak_odd": 0.385498046875,
+          "shots_even": 12288,
+          "shots_odd": 12288,
+          "shot_noise_se": 0.00620440762385
+        },
+        "12": {
+          "difference_even_minus_odd": -0.01220703125,
+          "leak_even": 0.421468098958,
+          "leak_odd": 0.433675130208,
+          "shots_even": 12288,
+          "shots_odd": 12288,
+          "shot_noise_se": 0.00631111881655
+        }
+      },
+      "contrast_delta8_minus_delta12": 0.00895182291667,
+      "contrast_shot_noise_se": 0.00885013529159,
+      "contrast_variance": 7.83248946795e-05
+    },
+    {
+      "epoch": 8,
+      "date": "2026-10-02",
+      "calibration_set_id": "a4b99350-ad83-4838-947d-078b0a2dffe3",
+      "job_ids": [
+        "01a0fbf5-baa8-7465-af79-96fba35ca889",
+        "01a0fbf5-bc08-7570-a8c2-3dd6ba717ea9"
+      ],
+      "depths": {
+        "8": {
+          "difference_even_minus_odd": 0.0436197916667,
+          "leak_even": 0.44140625,
+          "leak_odd": 0.397786458333,
+          "shots_even": 12288,
+          "shots_odd": 12288,
+          "shot_noise_se": 0.00628971214528
+        },
+        "12": {
+          "difference_even_minus_odd": -0.0214029947917,
+          "leak_even": 0.43603515625,
+          "leak_odd": 0.457438151042,
+          "shots_even": 12288,
+          "shots_odd": 12288,
+          "shot_noise_se": 0.00634111313589
+        }
+      },
+      "contrast_delta8_minus_delta12": 0.0650227864583,
+      "contrast_shot_noise_se": 0.00893141616278,
+      "contrast_variance": 7.97701946727e-05
+    },
+    {
+      "epoch": 9,
+      "date": "2026-10-03",
+      "calibration_set_id": "0660d260-dd41-43c9-950f-b0f9009fd452",
+      "job_ids": [
+        "01a101dc-eada-7758-9577-a573f7bc0ba0",
+        "01a101dc-ec11-75a7-afae-67178b25c5f9"
+      ],
+      "depths": {
+        "8": {
+          "difference_even_minus_odd": 0.02734375,
+          "leak_even": 0.351725260417,
+          "leak_odd": 0.324381510417,
+          "shots_even": 12288,
+          "shots_odd": 12288,
+          "shot_noise_se": 0.00603249628017
+        },
+        "12": {
+          "difference_even_minus_odd": 0.041748046875,
+          "leak_even": 0.412760416667,
+          "leak_odd": 0.371012369792,
+          "shots_even": 12288,
+          "shots_odd": 12288,
+          "shot_noise_se": 0.00622227866775
+        }
+      },
+      "contrast_delta8_minus_delta12": -0.014404296875,
+      "contrast_shot_noise_se": 0.00866647351518,
+      "contrast_variance": 7.51077631894e-05
+    },
+    {
+      "epoch": 10,
+      "date": "2026-10-04",
+      "calibration_set_id": "e431ada3-f5ef-4a60-95f7-513eeeb15ac7",
+      "job_ids": [
+        "01a10729-ba87-764e-ab27-edb2234344a1",
+        "01a10729-bd8d-7617-ac7f-04868e03f01e"
+      ],
+      "depths": {
+        "8": {
+          "difference_even_minus_odd": 0.029296875,
+          "leak_even": 0.384440104167,
+          "leak_odd": 0.355143229167,
+          "shots_even": 12288,
+          "shots_odd": 12288,
+          "shot_noise_se": 0.00615594877131
+        },
+        "12": {
+          "difference_even_minus_odd": -0.001708984375,
+          "leak_even": 0.420979817708,
+          "leak_odd": 0.422688802083,
+          "shots_even": 12288,
+          "shots_odd": 12288,
+          "shot_noise_se": 0.00630043962811
+        }
+      },
+      "contrast_delta8_minus_delta12": 0.031005859375,
+      "contrast_shot_noise_se": 0.00880858926176,
+      "contrast_variance": 7.75912447824e-05
+    },
+    {
+      "epoch": 11,
+      "date": "2026-10-05",
+      "calibration_set_id": "ff6836ae-8df9-4d0f-92d3-09c1617d9ccc",
+      "job_ids": [
+        "01a10da8-ca46-71bf-b285-7a6d3cdba21b",
+        "01a10da8-cbf2-7615-bda0-276d7cad7901"
+      ],
+      "depths": {
+        "8": {
+          "difference_even_minus_odd": 0.0253092447917,
+          "leak_even": 0.378336588542,
+          "leak_odd": 0.35302734375,
+          "shots_even": 12288,
+          "shots_odd": 12288,
+          "shot_noise_se": 0.00614228171981
+        },
+        "12": {
+          "difference_even_minus_odd": 0.0113118489583,
+          "leak_even": 0.421875,
+          "leak_odd": 0.410563151042,
+          "shots_even": 12288,
+          "shots_odd": 12288,
+          "shot_noise_se": 0.00628827818882
+        }
+      },
+      "contrast_delta8_minus_delta12": 0.0139973958333,
+      "contrast_shot_noise_se": 0.00879033943062,
+      "contrast_variance": 7.72700673055e-05
+    },
+    {
+      "epoch": 12,
+      "date": "2026-10-06",
+      "calibration_set_id": "6dd7fae6-4011-43d7-ad45-beed980d3a3f",
+      "job_ids": [
+        "01a11091-86f0-75c0-822a-abdae6534b1a",
+        "01a11091-890d-755f-ac29-362338553e22"
+      ],
+      "depths": {
+        "8": {
+          "difference_even_minus_odd": 0.0452473958333,
+          "leak_even": 0.386474609375,
+          "leak_odd": 0.341227213542,
+          "shots_even": 12288,
+          "shots_odd": 12288,
+          "shot_noise_se": 0.00613105029064
+        },
+        "12": {
+          "difference_even_minus_odd": 0.00406901041667,
+          "leak_even": 0.41845703125,
+          "leak_odd": 0.414388020833,
+          "shots_even": 12288,
+          "shots_odd": 12288,
+          "shot_noise_se": 0.00628907921369
+        }
+      },
+      "contrast_delta8_minus_delta12": 0.0411783854167,
+      "contrast_shot_noise_se": 0.00878306865636,
+      "contrast_variance": 7.71422950223e-05
+    }
+  ],
+  "primary_depth_ordering": {
+    "mean": 0.0173021787504,
+    "tau_dl": 0.026084891484,
+    "cochran_q": 107.994431536,
+    "degrees_of_freedom": 11,
+    "hksj_scale": 1.00123177313,
+    "safeguarded_scale": 1.00123177313,
+    "standard_error": 0.00795060724266,
+    "t_statistic": 2.17620846085,
+    "one_sided_p": 0.0261045735841,
+    "contrast": "(delta_8 - delta_12) > 0",
+    "alpha": 0.05,
+    "epochs": 12,
+    "rejects_null": true
+  },
+  "secondary_per_depth_random_effects": {
+    "8": {
+      "mean": 0.0224594055223,
+      "tau_dl": 0.014565606924,
+      "cochran_q": 72.8703098033,
+      "degrees_of_freedom": 11,
+      "hksj_scale": 1.01013766761,
+      "safeguarded_scale": 1.01013766761,
+      "standard_error": 0.00458651913913,
+      "t_statistic": 4.89683021939,
+      "one_sided_p": 0.000237002382627
+    },
+    "12": {
+      "mean": 0.0051490027077,
+      "tau_dl": 0.0182554648427,
+      "cochran_q": 103.948262004,
+      "degrees_of_freedom": 11,
+      "hksj_scale": 0.994130368686,
+      "safeguarded_scale": 1.0,
+      "standard_error": 0.00557305470289,
+      "t_statistic": 0.923910311706,
+      "one_sided_p": 0.187677802222
+    }
+  },
+  "decision_boundary": "window-variability counts and calibration epochs are design-only and excluded; no interim endpoint analysis or result-dependent epoch extension is permitted",
+  "interpretation_boundary": "device-noise depth ordering on IQM Garnet primary layout only; a distinct calibration_set_id is an operational epoch marker, not proof of complete physical independence"
+}
