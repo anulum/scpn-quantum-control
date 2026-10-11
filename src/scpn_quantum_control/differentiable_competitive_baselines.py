@@ -46,12 +46,12 @@ CompetitiveBaselineSourceKind = Literal[
 DIFFERENTIABLE_COMPETITIVE_BASELINE_SCHEMA = (
     "scpn_qc_differentiable_competitive_baseline_refresh_v1"
 )
-DIFFERENTIABLE_COMPETITIVE_BASELINE_ARTIFACT_ID = "diff-competitive-baseline-refresh-20260825"
+DIFFERENTIABLE_COMPETITIVE_BASELINE_ARTIFACT_ID = "diff-competitive-baseline-refresh-20261011"
 DEFAULT_COMPETITIVE_BASELINE_REFRESH_PATH = (
     REPO_ROOT
     / "data"
     / "differentiable_phase_qnode"
-    / "differentiable_competitive_baseline_refresh_20260825.json"
+    / "differentiable_competitive_baseline_refresh_20261011.json"
 )
 MAX_BASELINE_AGE_DAYS = 45
 REQUIRED_BASELINE_IDS: tuple[CompetitiveBaselineId, ...] = (
@@ -351,9 +351,21 @@ class CompetitiveBaselinePromotionGate:
 
 def run_competitive_baseline_refresh(
     *,
-    generated_on: date = date(2026, 8, 25),
+    generated_on: date = date(2026, 10, 11),
 ) -> CompetitiveBaselineRefresh:
-    """Build the deterministic competitive-baseline refresh bundle."""
+    """Build the deterministic competitive-baseline refresh bundle.
+
+    Parameters
+    ----------
+    generated_on : datetime.date, optional
+        Explicit review date; the default tracks the committed refresh.
+
+    Returns
+    -------
+    CompetitiveBaselineRefresh
+        Complete source rows with the unchanged freshness bound.
+
+    """
     rows = tuple(_default_baseline_rows(generated_on=generated_on))
     return CompetitiveBaselineRefresh(
         schema=DIFFERENTIABLE_COMPETITIVE_BASELINE_SCHEMA,
@@ -557,7 +569,7 @@ def _default_baseline_rows(*, generated_on: date) -> tuple[CompetitiveBaselineRo
         CompetitiveBaselineRow(
             baseline_id="jax",
             display_name="JAX",
-            upstream_version="PyPI jax 0.11.1; official docs checked 2026-08-25",
+            upstream_version="PyPI jax 0.11.2; official docs checked 2026-10-11",
             source_url="https://docs.jax.dev/",
             source_kind="official_docs",
             checked_on=generated_on,
@@ -568,20 +580,20 @@ def _default_baseline_rows(*, generated_on: date) -> tuple[CompetitiveBaselineRo
                 "grad/value_and_grad",
                 "jacfwd/jacrev/hessian",
                 "jvp/vjp",
-                "jit/vmap/pmap",
+                "jit/vmap/pmap/shard_map",
                 "PyTrees/sharding/export",
             ),
             hardening_implications=(
                 "Keep JAX rows behind_baseline until transform breadth and isolated evidence exist.",
-                "Refresh PyTree, sharding, and export blockers before any promotion wording.",
+                "Track shard_map migration and PyTree/export blockers before promotion.",
             ),
             claim_boundary=boundary,
         ),
         CompetitiveBaselineRow(
             baseline_id="pytorch",
             display_name="PyTorch",
-            upstream_version="PyPI torch 2.13.0; official stable docs checked 2026-08-25",
-            source_url="https://docs.pytorch.org/",
+            upstream_version="PyPI torch 2.14.1; official stable docs checked 2026-10-11",
+            source_url="https://docs.pytorch.org/docs/2.14/index.html",
             source_kind="official_docs",
             checked_on=generated_on,
             refresh_due_on=due,
@@ -603,7 +615,7 @@ def _default_baseline_rows(*, generated_on: date) -> tuple[CompetitiveBaselineRo
         CompetitiveBaselineRow(
             baseline_id="tensorflow",
             display_name="TensorFlow",
-            upstream_version="PyPI tensorflow 2.21.0; official docs checked 2026-08-25",
+            upstream_version="PyPI tensorflow 2.21.0; official docs checked 2026-10-11",
             source_url="https://www.tensorflow.org/guide/autodiff",
             source_kind="official_docs",
             checked_on=generated_on,
@@ -625,7 +637,7 @@ def _default_baseline_rows(*, generated_on: date) -> tuple[CompetitiveBaselineRo
         CompetitiveBaselineRow(
             baseline_id="pennylane",
             display_name="PennyLane",
-            upstream_version="PyPI pennylane 0.45.1; official docs checked 2026-08-25",
+            upstream_version="PyPI pennylane 0.45.1; official docs checked 2026-10-11",
             source_url="https://docs.pennylane.ai/",
             source_kind="official_docs",
             checked_on=generated_on,
@@ -649,7 +661,7 @@ def _default_baseline_rows(*, generated_on: date) -> tuple[CompetitiveBaselineRo
             display_name="Qiskit Algorithms",
             upstream_version=(
                 "PyPI qiskit-algorithms 0.4.0; official docs and discontinued-support "
-                "notice checked 2026-08-25"
+                "notice checked 2026-10-11"
             ),
             source_url="https://qiskit-community.github.io/qiskit-algorithms/",
             source_kind="official_docs",
@@ -677,8 +689,8 @@ def _default_baseline_rows(*, generated_on: date) -> tuple[CompetitiveBaselineRo
         CompetitiveBaselineRow(
             baseline_id="catalyst",
             display_name="PennyLane Catalyst",
-            upstream_version="PyPI pennylane-catalyst 0.15.0; official docs checked 2026-08-25",
-            source_url="https://docs.pennylane.ai/projects/catalyst/",
+            upstream_version="PyPI pennylane-catalyst 0.15.0; official docs checked 2026-10-11",
+            source_url="https://docs.pennylane.ai/projects/catalyst/en/stable/",
             source_kind="official_docs",
             checked_on=generated_on,
             refresh_due_on=due,
@@ -699,7 +711,7 @@ def _default_baseline_rows(*, generated_on: date) -> tuple[CompetitiveBaselineRo
         CompetitiveBaselineRow(
             baseline_id="enzyme_mlir",
             display_name="Enzyme/MLIR",
-            upstream_version="GitHub EnzymeAD/Enzyme v0.0.291; official docs checked 2026-08-25",
+            upstream_version="GitHub EnzymeAD/Enzyme v0.0.302; official docs checked 2026-10-11",
             source_url="https://enzyme.mit.edu/",
             source_kind="official_project_docs",
             checked_on=generated_on,
@@ -722,8 +734,8 @@ def _default_baseline_rows(*, generated_on: date) -> tuple[CompetitiveBaselineRo
             baseline_id="julia_ad",
             display_name="Julia AD ecosystem",
             upstream_version=(
-                "ChainRulesCore.jl v1.26.1; Zygote.jl v0.7.12; "
-                "Reactant.jl v0.2.282; PyPI juliacall 0.9.35"
+                "ChainRulesCore.jl v1.26.1; Zygote.jl v0.7.13; "
+                "Reactant.jl v0.2.291; PyPI juliacall 0.9.36"
             ),
             source_url="https://juliadiff.org/ChainRulesCore.jl/stable/",
             source_kind="official_project_docs",
@@ -746,7 +758,7 @@ def _default_baseline_rows(*, generated_on: date) -> tuple[CompetitiveBaselineRo
         CompetitiveBaselineRow(
             baseline_id="emerging_ad",
             display_name="Emerging AD systems",
-            upstream_version="PyPI tinygrad 0.14.0; MLIR EmitC docs checked 2026-08-25",
+            upstream_version="PyPI tinygrad 0.14.0; MLIR EmitC docs checked 2026-10-11",
             source_url="https://mlir.llvm.org/docs/Dialects/EmitC/",
             source_kind="official_repository",
             checked_on=generated_on,

@@ -46,16 +46,16 @@
       "size_bytes": 9720
     },
     {
-      "path": "data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260825.json",
+      "path": "data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20261011.json",
       "role": "Differentiable competitive-baseline freshness artefact",
-      "sha256": "e366ca9949f4ebcf7b9ad4f3a7760edb020726f567d6e484326ad63f0798c990",
-      "size_bytes": 10154
+      "sha256": "4d11c8d672f7acd5ae4b223d721e26965475e2c3293ec5b6deb67d2895ed750f",
+      "size_bytes": 10189
     },
     {
-      "path": "data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260825.md",
+      "path": "data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20261011.md",
       "role": "Differentiable competitive-baseline freshness reviewer summary",
-      "sha256": "989ec778ebafd8ff75479a0152aabd01ebe744ef98822a23e0728b862f2470a1",
-      "size_bytes": 3035
+      "sha256": "1b3e45159f9c368443bb3f31686cb8f41b0745b4759fab99617e8f2507ad1292",
+      "size_bytes": 3064
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.json",
@@ -84,7 +84,7 @@
     {
       "path": "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json",
       "role": "Differentiable dependency and environment evidence map artefact",
-      "sha256": "85dd3e4120f05266921df249be9beb4826de2125c78868ccfc6d969014bcd524",
+      "sha256": "2b28667d46c763a7e419d283777c0d8cf4e5fdb3a4724db3ed4b3732c691606f",
       "size_bytes": 20492
     },
     {
@@ -156,13 +156,13 @@
     {
       "path": "data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.json",
       "role": "Exact environment-lock manifest",
-      "sha256": "26019974a9eeaa45ca6a3168cc1c928b7c06d3bebb78cd4b643ac48e27ce8c4c",
+      "sha256": "8a863dbb265f480f3696c01df36f517545860ec2108f310891c0c419e3b6645c",
       "size_bytes": 3241
     },
     {
       "path": "data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.md",
       "role": "Environment-lock reviewer summary",
-      "sha256": "3f592d7cc95c9accf77d5dfdbc2a623ebc58336579280e114933ab6032ed0935",
+      "sha256": "57f48120842cd04585f1add7cd966db26907f55e313eb7467f5e69ebd9aa7fd0",
       "size_bytes": 2388
     },
     {
