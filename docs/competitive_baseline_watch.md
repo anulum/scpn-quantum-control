@@ -7,6 +7,10 @@ probes toward the governed route matrix and scorecard acceptance engine.
 
 Module: `scpn_quantum_control.competitive_baseline_watch`
 
+The deterministic `as_of` date comes from the reviewed inventory's
+`generated_on` date. Refreshing that inventory also advances the snapshot
+classification date; continuous re-verification and promotion stay blocked.
+
 ## Rules
 
 | Field | Honesty rule |

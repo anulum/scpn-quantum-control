@@ -72,6 +72,9 @@ def test_inventory_composes_competitive_baselines() -> None:
         assert watch.upstream_version == base.upstream_version
         assert watch.source_url == base.source_url
         assert watch.display_name == base.display_name
+        assert watch.as_of == refresh.generated_on.isoformat()
+        assert watch.checked_on == base.checked_on.isoformat()
+        assert watch.refresh_due_on == base.refresh_due_on.isoformat()
 
 
 def test_build_registry_and_integrity() -> None:
