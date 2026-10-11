@@ -113,9 +113,10 @@ def wait_for_worker_disposal(page: Page, *, observe_termination: bool = True) ->
             observe_worker(worker)
         if observe_termination:
             page.wait_for_function("window.__ownedKernel.active === 0")
-        with ExitStack() as closed:
-            for worker in tuple(pending):
-                closed.enter_context(worker.expect_event("close"))
+        while pending:
+            with ExitStack() as closed:
+                for worker in tuple(pending):
+                    closed.enter_context(worker.expect_event("close"))
     except TimeoutError as error:
         raise AssertionError("Studio native worker disposal was not confirmed") from error
     finally:
