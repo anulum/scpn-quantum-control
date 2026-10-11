@@ -4,9 +4,9 @@
 <!-- © Code 2020–2026 Miroslav Šotek. All rights reserved. -->
 <!-- ORCID: 0009-0009-3560-0851 -->
 <!-- Contact: www.anulum.li | protoscience@anulum.li -->
-<!-- SCPN Quantum Control — IQM Garnet dual preregistered campaign manuscript -->
+<!-- SCPN Quantum Control — IQM Garnet preregistered campaigns manuscript -->
 
-# Two Preregistered Experiments on a Square-Lattice Superconducting Processor: Layout-Optimiser Transfer Fails Its Frozen Rule While Parity-Sector Noise Asymmetry Replicates at Power
+# The Calibration Epoch as the Unit of Evidence: Preregistered Parity-Leakage and Layout-Transfer Experiments on IQM Garnet
 
 **Status: DRAFT — not submitted. Publication requires the owner's direct go.**
 
@@ -25,82 +25,26 @@ recorded calibration set.
 
 ## Abstract
 
-We report two preregistered experiments executed back-to-back on the IQM
-Garnet 20-qubit square-lattice processor, both with decision rules frozen and
-committed before any hardware data existed, and both published regardless of
-outcome direction.
-
-**Experiment 1 (layout transfer).** We asked whether the fidelity gains of a
-calibration-aware Kuramoto-XY layout optimiser, developed and benchmarked on
-IBM heavy-hex topologies, transfer to a square lattice. Three placements of
-identical two-edge-colour XY-Trotter chains (n = 8, 12, 16) were compared: a
-calibration-aware optimised chain, the transpiler's automatic placement, and a
-calibration-blind topological baseline. The frozen primary rule — the
-optimised arm must win at all three sizes and the pooled bootstrap 90 %
-confidence interval must exclude zero — **failed**: the optimised arm won at
-n = 8 and n = 16 but lost to the automatic transpiler at n = 12, despite a
-positive pooled advantage of +0.035 (CI90 [+0.026, +0.043]) in
-readout-corrected order-parameter error. We therefore make no transfer claim
-and report the preregistered bounded result: the calibration-aware advantage
-on this device is real in aggregate but not uniform across sizes, while
-placement per se matters unambiguously (the topological baseline is worse than
-automatic placement at every size; pooled +0.099, CI90 [+0.090, +0.108]).
-A separately preregistered, four-repetition powered follow-up confirms that
-all three per-size differences are nonzero, but also confirms the n = 12
-reversal: default-minus-optimised corrected error is +0.0187 at n = 8,
-−0.0873 at n = 12, and +0.0496 at n = 16 (all Holm-adjusted p ≤ 0.0012),
-with decisive cross-size heterogeneity (Q = 292.43, p = 3.16 × 10⁻⁶⁴).
-
-**Experiment 2 (parity-sector noise asymmetry).** A published IBM Heron r2
-result found that hardware parity-sector leakage in number-conserving
-XY-Trotter circuits is asymmetric between even and odd excitation-number
-sectors (+10.8 % ± 1.1 relative). An exact statevector baseline pins the
-noiseless leakage of these circuits at zero, so any such asymmetry is a
-statement about device noise; the open question was whether the asymmetry is
-backend-universal or backend-specific. Our earlier 12,288-shot Garnet pilot
-was underpowered and mixed-sign. Here, a preregistered 32,768-shot design
-(90 % power at +0.044 relative asymmetry, the weakest IBM per-depth reference)
-on the pinned layout [2, 7, 12, 13] **rejects the null**: pooled even-sector
-leakage 0.4194 exceeds odd-sector leakage 0.3928 (relative asymmetry +0.068,
-z = 4.25, one-sided p = 1.1 × 10⁻⁵). The IBM-direction asymmetry replicates on
-a second superconducting architecture at preregistered power. The depth
-profile, however, differs sharply from IBM's: +0.230 at depth 4, +0.083 at
-depth 6, and −0.049 (sign reversed) at depth 10, versus IBM's flat ≈ +0.044
-profile — the asymmetry on Garnet decays with circuit depth. This depth
-structure was not preregistered as an endpoint and is reported as
-secondary, hypothesis-generating evidence. A separately preregistered
-depth-profile follow-up (depths 8 and 12, executed under the same
-calibration set) fails to establish the decay ordering at its committed
-power (one-sided p = 0.064, a bounded null), while its joint profile
-suggests sector equilibration compresses the asymmetry at depth. A third
-preregistered campaign, powered at the observed effect size, then found
-the depth-10 negative sign **does not replicate** — the fresh-window
-depth-10 asymmetry is positive and the two windows differ significantly
-(p ≈ 0.006) — leaving every depth positive in fresh windows and shifting
-the open question from a zero crossing to the window-to-window
-variability of the asymmetry (Section 5).
-
-**Two further preregistered campaigns address that variability.** A fourth
-campaign measured it directly over ten execution windows: at depth 10 the
-even-minus-odd leakage difference is heterogeneous beyond shot noise (Cochran
-Q = 19.01 on 9 degrees of freedom, p = 0.025; between-window τ = 0.0115
-against a shot-noise standard error of 0.0109), and the heterogeneity is
-stronger when windows that share a provider calibration set are pooled into
-six calibration epochs (p = 0.0083). More shots inside one calibration window
-therefore cannot settle the depth ordering. A fifth campaign, with the
-calibration epoch as its independent unit and its sample size fixed from the
-earlier epochs, then tested the depth-8 versus depth-12 ordering over twelve
-new calibration epochs (688,128 shots). Its frozen one-sided random-effects
-test **rejects the null**: the mean depth contrast is +0.0173 (standard error
-0.0080, t = 2.18 on 11 degrees of freedom, p = 0.026). The between-epoch
-spread was larger than the design assumed (τ = 0.0261 against 0.0150), the
-one-sided 95 % lower bound is +0.0030, and the contrast is negative in three
-of the twelve epochs; the ordering holds for the mean over calibration epochs,
-not for every epoch (Sections 6 and 7).
-
-All five campaigns are fully reproducible from the public repository:
-committed circuit files, calibration snapshots, raw counts, job identifiers,
-and frozen analysis scripts with fixed seeds.
+We report five preregistered experiments on the IQM Garnet 20-qubit
+square-lattice processor, each with its decision rule committed before any
+hardware data existed and each reported regardless of outcome. First, the
+even-over-odd parity-sector leakage asymmetry previously measured on IBM Heron
+r2 replicates on Garnet at preregistered power (relative asymmetry +0.068,
+one-sided p = 1.1 × 10⁻⁵). Because the noiseless parity leakage of these
+number-conserving XY-Trotter circuits is exactly zero, this is a statement
+about device noise. Second, the asymmetry is not stable: over ten execution
+windows it varies beyond shot noise at fixed depth (Cochran Q = 19.01 on 9
+degrees of freedom, p = 0.025), more strongly when windows are pooled by
+provider calibration set (p = 0.0083), and an isolated sign reversal at depth
+10 does not replicate. Third, a confirmatory campaign that takes the
+calibration epoch as its independent unit — twelve epochs, 688,128 shots —
+finds the asymmetry larger at depth 8 than at depth 12 (mean contrast +0.0173,
+one-sided p = 0.026); the lower bound is +0.0030 and three of twelve epochs
+have the opposite sign. Fourth, a calibration-aware layout optimiser developed
+on heavy-hex devices fails its frozen transfer rule: it is better than
+automatic placement at chain lengths 8 and 16 and worse at 12, and a powered
+follow-up confirms the reversal. All preregistrations, calibration snapshots,
+job identifiers, raw counts and analysis scripts are public.
 
 ## 1. Motivation and prior state
 
@@ -154,9 +98,9 @@ transpiled depth envelope (May reference depth 159 + 25 %). A zero-spend
 server-side `garnet:mock` submission validated the full submit–retrieve loop
 before each first real block.
 
-**Spend discipline.** Blocks were submitted incrementally with owner
-approval per block and dashboard credit checks between blocks (the first
-block of each experiment carried a preregistered abort threshold). The
+**Spend discipline.** Blocks were submitted incrementally, with dashboard
+credit checks between blocks (the first block of each experiment carried a
+preregistered abort threshold). The
 entire dual campaign consumed roughly 13 of 30 monthly credits.
 
 ## 3. Experiment 1 — layout-optimiser transfer to the square lattice
@@ -318,6 +262,19 @@ decaying and sign-reversing on Garnet), which may well reflect a different
 underlying mechanism. "Replication" here therefore binds only to the pooled
 directional effect, not to a claim that the two devices exhibit the same
 noise structure.
+
+Put side by side, the two devices differ first in scale. On `ibm_kingston`
+(the Phase 2 reference: 30 repetitions per sector and depth) the parity
+leakage of this circuit family rises from 0.08 at depth 2 to 0.28–0.29 at
+depth 20, and the even-minus-odd difference stays between +0.005 and +0.010
+from depth 4 to depth 20. On Garnet the leakage is already 0.31–0.38 at depth
+4 and reaches 0.48–0.50, the value of a fully mixed parity, at depth 12; the
+difference is +0.071 at depth 4 in the July window and shrinks as the leakage
+saturates. Garnet thus reaches within twelve Trotter steps a regime that Heron
+r2 has not reached at twenty. The devices share the sign of the asymmetry and
+differ in its size and in its dependence on depth. The comparison is
+descriptive: different days, different numbers of repetitions, and not a
+preregistered endpoint.
 
 The initial secondary profile was qualitatively different from IBM's:
 IBM's reference asymmetry was approximately flat in depth (≈ +0.044 to
@@ -515,7 +472,40 @@ leakage of these circuits is exactly zero, so nothing here is a statement
 about coherent dynamics. No causal mechanism, no transfer to another backend,
 no advantage claim.
 
-## 8. Reproducibility
+## 8. Outlook: other devices and processor classes
+
+Everything reported here and in our earlier work was measured on two families
+of superconducting processors: heavy-hex IBM Heron r2 and square-lattice IQM
+Garnet. The pooled even-over-odd sign of the parity-sector leakage asymmetry
+is common to both; its depth dependence is not, and on Garnet it moves between
+calibration epochs by more than the shot noise. Two devices cannot tell
+whether these are properties of superconducting hardware in general, of
+particular two-qubit-gate implementations, or of these two machines.
+
+The measurement is small enough to be repeated on any current gate-model
+processor: four qubits, number-conserving XY-Trotter circuits of depth 4 to
+12, two initial states, and a few thousand shots per arm. Because the
+noiseless parity leakage of these circuits is exactly zero, the observable is
+a noise diagnostic that needs no classical reference beyond the counts
+themselves. Processor classes whose dominant error channels, connectivity and
+recalibration cadence differ from those of transmon devices — trapped ions,
+neutral atoms, spin qubits, and superconducting architectures with other
+couplers or lattices — are the informative comparison. We make no prediction
+for them: an asymmetry of the same sign, of the opposite sign, or a bounded
+null on another class would each constrain the explanation.
+
+The protocol is published so that it can be run without us: the
+preregistration texts, circuit builders, admission checks, submission journals
+and frozen analysis scripts are in the public repository (Section 9). The one
+design lesson we would carry over is the unit of analysis: on Garnet the
+calibration epoch, not the shot, is the independent observation, and the
+equivalent recalibration event of another platform should be identified before
+the sample size is fixed. The confirmatory design used here costs twelve
+epochs of 57,344 shots. We welcome replications by device operators and
+independent groups, and would run the same preregistered protocol on other
+hardware where access is available.
+
+## 9. Reproducibility
 
 Everything needed to reproduce all five campaigns is committed to the public
 repository (github.com/anulum/scpn-quantum-control):
@@ -534,7 +524,7 @@ repository (github.com/anulum/scpn-quantum-control):
 - the harness modules with 100 % test coverage, hermetic against synthetic
   lattices.
 
-## 9. Claim boundaries
+## 10. Claim boundaries
 
 No quantum-advantage claim (all circuits are classically simulable at these
 sizes — that is what makes the exact references possible). No

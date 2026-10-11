@@ -1,0 +1,30 @@
+{
+  "layout_first": {
+    "path": "data/iqm_layout_transfer/iqm_layout_transfer_primary_analysis_2026-07-21.json",
+    "sha256": "a03c6d8fbddbbac845db95e77f7032cc3625bd3867c34ffda843b5c1ed41f98c"
+  },
+  "layout_per_size": {
+    "path": "data/iqm_layout_transfer_per_size/live_2026-07-26/live_analysis_2026-07-26.json",
+    "sha256": "564ea0899a68e20a2ef9dd1e7a644942621e08152ac03896ffbc200e9d38b120"
+  },
+  "heron": {
+    "path": "data/phase2_dla_parity/phase2_reduced_ag_summary_2026-05-05.json",
+    "sha256": "a9d2fdeb333efdd701c3a7e722002e518fdedd8b2c76be330056706cbde3c980"
+  },
+  "garnet_joint": {
+    "path": "data/iqm_paper_replication/iqm_dla_depth_profile_primary_analysis_2026-07-22.json",
+    "sha256": "16af324438f1f8029afd73eceb8befdf32e19b6346f68738350ea4757d7a3296"
+  },
+  "windows": {
+    "path": "data/iqm_paper_replication/iqm_dla_window_variability_analysis_through_observation_window_10_2026-09-04.json",
+    "sha256": "ea17cc5a8e2a686424a032c63de126e78a749ae9b42e731f4c7efd70be3840e5"
+  },
+  "window_epochs": {
+    "path": "data/iqm_paper_replication/iqm_dla_window_variability_calibration_epoch_sensitivity_through_observation_window_10_2026-09-04.json",
+    "sha256": "4d5e1c774ed89b915d55c3aa14c2afd783b1cf887a87ee177bdf8152e9174d5f"
+  },
+  "epochs": {
+    "path": "data/iqm_paper_replication/iqm_dla_depth_profile_powered_analysis_2026-10-11.json",
+    "sha256": "640134f4546af25ac8c1c30cf18230e83c1acbecc71cddd7a448cb134de348ad"
+  }
+}
