@@ -17,7 +17,11 @@ All quantum-hardware results in this work were obtained on IQM Garnet through
 **IQM Resonance**; we thank IQM for extended Resonance access. The two core
 experiments ran on 20 qubits of the square-lattice device on 2026-07-21
 (calibration set `246a4930-54e3-4cd9-a2d1-fcc0919675f5`); explicitly identified
-follow-ups used fresh windows and their own recorded calibration sets.
+follow-ups used fresh windows and their own recorded calibration sets. The
+window-variability campaign (Section 6) ran in ten windows between 2026-07-22
+and 2026-09-04, and the depth-ordering confirmation (Section 7) in twelve
+calibration epochs between 2026-09-23 and 2026-10-06, each under its own
+recorded calibration set.
 
 ## Abstract
 
@@ -76,9 +80,27 @@ depth-10 asymmetry is positive and the two windows differ significantly
 the open question from a zero crossing to the window-to-window
 variability of the asymmetry (Section 5).
 
-Both experiments are fully reproducible from the public repository: committed
-circuit files, calibration snapshots, raw counts, job identifiers, and frozen
-analysis scripts with fixed seeds.
+**Two further preregistered campaigns address that variability.** A fourth
+campaign measured it directly over ten execution windows: at depth 10 the
+even-minus-odd leakage difference is heterogeneous beyond shot noise (Cochran
+Q = 19.01 on 9 degrees of freedom, p = 0.025; between-window τ = 0.0115
+against a shot-noise standard error of 0.0109), and the heterogeneity is
+stronger when windows that share a provider calibration set are pooled into
+six calibration epochs (p = 0.0083). More shots inside one calibration window
+therefore cannot settle the depth ordering. A fifth campaign, with the
+calibration epoch as its independent unit and its sample size fixed from the
+earlier epochs, then tested the depth-8 versus depth-12 ordering over twelve
+new calibration epochs (688,128 shots). Its frozen one-sided random-effects
+test **rejects the null**: the mean depth contrast is +0.0173 (standard error
+0.0080, t = 2.18 on 11 degrees of freedom, p = 0.026). The between-epoch
+spread was larger than the design assumed (τ = 0.0261 against 0.0150), the
+one-sided 95 % lower bound is +0.0030, and the contrast is negative in three
+of the twelve epochs; the ordering holds for the mean over calibration epochs,
+not for every epoch (Sections 6 and 7).
+
+All five campaigns are fully reproducible from the public repository:
+committed circuit files, calibration snapshots, raw counts, job identifiers,
+and frozen analysis scripts with fixed seeds.
 
 ## 1. Motivation and prior state
 
@@ -358,9 +380,144 @@ positive, every depth in the joint profile carries a positive sign, and
 the surviving open question is the size of the window-to-window
 variability of the asymmetry at fixed depth, not a zero crossing.
 
-## 6. Reproducibility
+## 6. Window-to-window variability of the asymmetry (preregistered, executed)
 
-Everything needed to reproduce both experiments is committed to the public
+Section 5 left one question: how large is the window-to-window variability of
+the parity-sector asymmetry at a fixed depth. A fourth campaign was
+preregistered to measure it directly
+(`docs/campaigns/iqm_dla_window_variability_prereg_2026-07-22.md`). One
+nominal window is a complete 36-circuit execution on the pinned layout [2, 7,
+12, 13] at depths 4, 8, 10 and 12, submitted as one main job and one readout
+job, with 4,096 shots per state and depth; the window is the unit of custody
+and of the frozen analysis. Ten windows were executed between 2026-07-22 and
+2026-09-04.
+
+**Frozen primary (depth 10, window level).** The even-minus-odd leakage
+difference is heterogeneous across the ten windows beyond shot noise: Cochran
+Q = 19.01 on 9 degrees of freedom, p = 0.025, with a between-window standard
+deviation τ = 0.0115 against a mean shot-noise standard error of 0.0109 and a
+weighted mean difference of +0.0179. The preregistered rule "drift exceeds
+shot noise" is met.
+
+**Secondary, by depth (Holm-adjusted).** Homogeneity is rejected at depth 8
+(adjusted p = 4.4 × 10⁻⁴) and not at depth 4 (0.053) or depth 12 (0.40). The
+between-window τ is 0.0107, 0.0176, 0.0115 and 0.0022 at depths 4, 8, 10 and
+12. The depth-4 difference is positive in nine of ten windows (Clopper–Pearson
+95 % interval 0.55 to 1.00).
+
+**Calibration epochs (amendment, sensitivity analysis).** While the campaign
+ran we found that several nominal windows carried the same provider
+calibration set: windows 2–3 and windows 7–10. Windows under one calibration
+set are technical replicates, not independent observations. An amendment
+(`docs/campaigns/iqm_dla_window_variability_epoch_amendment_2026-09-04.md`),
+committed before windows 8 to 10 were counted for inference, adds an epoch-pooled analysis and requires both results to be reported together. Pooled to
+six calibration epochs, the depth-10 heterogeneity is stronger, not weaker: Q
+= 15.55 on 5 degrees of freedom, p = 0.0083, τ = 0.0129 against a shot-noise
+standard error of 0.0085. Homogeneity is rejected at depth 4 (adjusted p =
+0.012) and depth 8 (5.6 × 10⁻⁵), not at depth 12 (0.64; τ estimated at zero).
+
+**What this establishes.** On this device and layout the parity-sector
+asymmetry at depths 4, 8 and 10 varies between calibration epochs by an amount
+comparable to or larger than the shot noise of a 4,096-shot arm. Adding shots
+inside one calibration window therefore narrows the wrong interval: the
+reported uncertainty of a single-window asymmetry understates how far the next
+window will be. This is why the depth-ordering question of Section 5 (one-sided p = 0.064 inside one calibration set) could not be settled by more
+shots, and it fixes the design of the confirmatory campaign that follows: the
+calibration epoch is the independent unit.
+
+**Boundary.** A changed calibration-set identifier marks an operational epoch;
+it does not prove physical independence, and slow drift can cross calibration
+boundaries. No cause of the variability is claimed; the calibration covariates
+were preregistered as descriptive only.
+
+## 7. Depth-ordering confirmation across calibration epochs (preregistered, executed)
+
+**Design.** Frozen before any of its data existed
+(`docs/campaigns/iqm_dla_depth_profile_powered_epoch_prereg_2026-09-04.md`).
+The six calibration
+epochs of Section 6 gave the depth contrast C = (leak_even,8 − leak_odd,8) −
+(leak_even,12 − leak_odd,12) a mean of 0.0164 and a between-epoch τ of 0.0150.
+Those values were used to choose the sample size and for nothing else: their
+counts and their six calibration sets are excluded from the confirmatory
+endpoint. The campaign consists of twelve distinct, previously unused
+calibration epochs. Each epoch runs the complete matrix in one pass: twelve
+repetitions of each of the four state-by-depth cells at 1,024 shots (12,288
+shots per cell), plus four readout states at 2,048 shots — 48 main circuits in
+one provider job and 4 readout circuits in a second, 57,344 shots per epoch
+and 688,128 in total. An epoch is admitted only if its calibration set differs
+from all earlier ones and from the six design epochs, every earlier epoch has
+a complete paired calibration and count record, and the three edges of the
+layout exist in the snapshot. No circuit, layout, depth, repetition or shot
+count may change in response to a result; there is no optional stopping and no
+replacement of an admitted epoch.
+
+**Analysis (frozen).** A DerSimonian–Laird random-effects model of the twelve
+epoch contrasts with binomial within-epoch variances; one-sided test of H0:
+mean(C) ≤ 0 with the Hartung–Knapp–Sidik–Jonkman statistic on 11 degrees of
+freedom, its scale floored at one so that a small observed residual cannot
+narrow the interval. The null is rejected only if the estimated mean is
+positive and p < 0.05. Projected power at the design mean is 0.92. Raw parity
+leakage is primary; no readout correction is applied to the endpoint.
+
+**Execution.** Twelve epochs between 2026-09-23 and 2026-10-06 on IQM Garnet,
+twelve distinct calibration sets, 24 provider jobs, 624 circuits. Every epoch
+passed the admission gate on its own day; the provider's payload digests equal
+the digests written to the submission journal before each call; the frozen
+validator accepted the counts of every epoch. The endpoint analysis was run
+once, after the twelfth epoch was validated, with the analysis script
+unchanged since its freeze on 2026-09-04 (`data/iqm_paper_replication/iqm_dla_depth_profile_powered_analysis_2026-10-11.json`).
+
+**Result.** The null is rejected. The mean depth contrast is +0.0173 (standard
+error 0.0080; t = 2.176 on 11 degrees of freedom, one-sided p = 0.026), with
+between-epoch τ = 0.0261 (Cochran Q = 108.0 on 11 degrees of freedom). The
+one-sided 95 % lower bound of the mean, from the same standard error and t
+distribution, is +0.0030. The contrast is positive in nine of twelve epochs
+and negative in three (epochs 1, 4 and 9). On this device and layout the even-odd leakage asymmetry is, on average over calibration epochs, larger at depth
+8 than at depth 12: the ordering that Section 5 could not establish inside one
+calibration set is established across twelve.
+
+The between-epoch τ is larger than the 0.0150 assumed when the sample size was
+chosen, so the campaign had less power than the planned 0.92; the rejection
+stands on the preregistered test as run, and the lower bound is close to zero.
+The result is a statement about the mean over epochs: single epochs differ by
+far more than their shot noise (per-epoch shot-noise standard error of the
+contrast about 0.0088), and in three of twelve the sign is reversed.
+
+**Secondary (preregistered).** Random-effects summaries of the asymmetry at
+each depth separately: +0.0225 at depth 8 (standard error 0.0046, one-sided p
+= 0.00024, τ = 0.0146) and +0.0051 at depth 12 (standard error 0.0056, p =
+0.19, τ = 0.0183). The six design epochs, which are not part of the endpoint,
+had contrasts −0.0159, +0.0010, +0.0127, +0.0466, +0.0361 and +0.0202. The
+four readout states of every epoch are committed with the counts and are not
+used in the endpoint.
+
+| epoch | date | calibration set | jobs (main, readout) | Δ₈ | Δ₁₂ | contrast |
+|---|---|---|---|---|---|---|
+| 1 | 2026-09-23 | `ad7e2bf0-48ac-493d-aa9a-51d24d0345d3` | `01a0cfbc-c583…`, `01a0cfbc-c711…` | +0.0109 | +0.0231 | -0.0122 |
+| 2 | 2026-09-24 | `7c39177a-a124-4974-85e6-466d9c1daddf` | `01a0d203-4e04…`, `01a0d203-4fd7…` | +0.0162 | -0.0014 | +0.0176 |
+| 3 | 2026-09-25 | `af33e1ea-0ad5-4521-8c27-09343f0bc390` | `01a0d916-2e1a…`, `01a0d916-2f53…` | +0.0094 | +0.0046 | +0.0049 |
+| 4 | 2026-09-26 | `d10715c4-4242-4af7-be1e-29f3fabf7e1a` | `01a0dec6-b2b3…`, `01a0dec6-b3f0…` | +0.0008 | +0.0145 | -0.0137 |
+| 5 | 2026-09-27 | `e1084b22-ca16-4f83-98af-500a91ef5e5c` | `01a0e410-5e40…`, `01a0e410-5f79…` | +0.0263 | +0.0233 | +0.0030 |
+| 6 | 2026-09-29 | `a1a74f13-3d45-4be2-afe8-3aa35e23da14` | `01a0ef34-e362…`, `01a0ef34-e611…` | +0.0382 | -0.0242 | +0.0624 |
+| 7 | 2026-10-01 | `36cf327c-ecbe-470b-a719-aa864c078268` | `01a0f933-9f69…`, `01a0f933-a1de…` | -0.0033 | -0.0122 | +0.0090 |
+| 8 | 2026-10-02 | `a4b99350-ad83-4838-947d-078b0a2dffe3` | `01a0fbf5-baa8…`, `01a0fbf5-bc08…` | +0.0436 | -0.0214 | +0.0650 |
+| 9 | 2026-10-03 | `0660d260-dd41-43c9-950f-b0f9009fd452` | `01a101dc-eada…`, `01a101dc-ec11…` | +0.0273 | +0.0417 | -0.0144 |
+| 10 | 2026-10-04 | `e431ada3-f5ef-4a60-95f7-513eeeb15ac7` | `01a10729-ba87…`, `01a10729-bd8d…` | +0.0293 | -0.0017 | +0.0310 |
+| 11 | 2026-10-05 | `ff6836ae-8df9-4d0f-92d3-09c1617d9ccc` | `01a10da8-ca46…`, `01a10da8-cbf2…` | +0.0253 | +0.0113 | +0.0140 |
+| 12 | 2026-10-06 | `6dd7fae6-4011-43d7-ad45-beed980d3a3f` | `01a11091-86f0…`, `01a11091-890d…` | +0.0452 | +0.0041 | +0.0412 |
+
+Δ is the even-minus-odd leakage difference at the given depth, pooled over the
+twelve repetitions of the epoch; the contrast is Δ₈ − Δ₁₂.
+
+**Boundary.** A statement about device noise on IQM Garnet, this layout, these
+two depths, this circuit family and this access period. Noiseless parity
+leakage of these circuits is exactly zero, so nothing here is a statement
+about coherent dynamics. No causal mechanism, no transfer to another backend,
+no advantage claim.
+
+## 8. Reproducibility
+
+Everything needed to reproduce all five campaigns is committed to the public
 repository (github.com/anulum/scpn-quantum-control):
 
 - preregistrations with frozen decision rules (and the amendment history);
@@ -369,12 +526,15 @@ repository (github.com/anulum/scpn-quantum-control):
 - submission records with raw IQM job identifiers (publishable; the access
   token is never committed);
 - raw measurement counts for every reported hardware circuit;
+- for the twelve-epoch campaign, the per-epoch submission journals with the
+  digest of every circuit payload written before the provider call, and the
+  admission check each epoch passed before it was submitted;
 - frozen analysis scripts (fixed bootstrap seeds) whose committed artefacts
   contain every number quoted here;
 - the harness modules with 100 % test coverage, hermetic against synthetic
   lattices.
 
-## 7. Claim boundaries
+## 9. Claim boundaries
 
 No quantum-advantage claim (all circuits are classically simulable at these
 sizes — that is what makes the exact references possible). No
@@ -386,7 +546,12 @@ are statements about IQM Garnet on 2026-07-21 under calibration set
 `246a4930-54e3-4cd9-a2d1-fcc0919675f5`; the per-size study is separately
 bounded to its
 2026-07-26 window under calibration set
-`c2097be4-1e23-49bc-adaa-8e8c01df6223`.
+`c2097be4-1e23-49bc-adaa-8e8c01df6223`. The window-variability and
+depth-ordering results are statements about the pinned layout
+[2, 7, 12, 13] over the windows and calibration epochs listed in Sections 6
+and 7; a distinct calibration set marks an operational epoch and does not
+prove physical independence, and the depth ordering is established for the
+mean over twelve epochs, not for an individual epoch.
 
 ## Acknowledgements
 
