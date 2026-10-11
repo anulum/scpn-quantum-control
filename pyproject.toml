@@ -421,6 +421,12 @@ runner = "python -m pytest -x -q tests/test_koopman.py"
 
 [tool.coverage.run]
 source = ["src/scpn_quantum_control"]
+# Runtime admission tests execute byte-verified copies of these original owners.
+# Keep the canonical source tree and collect the same modules in their child processes.
+source_pkgs = [
+    "scpn_quantum_control.studio.workflow_execution",
+    "scpn_quantum_control.studio.workflow_cli",
+]
 # Collect branch arcs in every coverage.py invocation. CI preserves the
 # historical 90% LINE gate through tools/audit_coverage_policy.py and keeps the
 # first whole-suite branch rate in observation mode until remote evidence can
@@ -473,6 +479,12 @@ omit = [
     # topological optimizer and hardware-topology tests. Live QPU branches
     # remain in hardware-marked campaigns.
     "*/scpn_quantum_control/analysis/quantum_persistent_homology.py",
+]
+
+[tool.coverage.paths]
+studio_workflow = [
+    "src/scpn_quantum_control/studio",
+    "*/workflow-runtime-source/scpn_quantum_control/studio",
 ]
 
 [tool.coverage.report]

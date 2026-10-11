@@ -353,6 +353,18 @@ when a test identifier is longer than 2,000 characters and names the case.
 - `python -m pytest tests/test_test_identifier_limits.py` proves the limit
   with a nested session under the shared configuration.
 
+## Workflow Runtime Coverage
+
+Workflow source-admission tests use isolated copies whose original package
+bytes are checked against the canonical source before execution. Aggregate
+coverage retains the canonical package directory and additionally collects
+`workflow_execution` and `workflow_cli` by module name in child processes.
+Its path mapping combines those measurements from the specific
+`workflow-runtime-source` fixture with their original Studio owners, as the
+dedicated workflow cohort already does. Other copied modules are outside this
+additional collection scope. Source verification, coverage thresholds and
+the coverage-debt gate remain unchanged.
+
 ## Source Surface Inventory
 
 Lint, type and documentation gates name the paths they read, so a file in a new
