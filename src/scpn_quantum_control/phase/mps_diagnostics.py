@@ -122,7 +122,7 @@ class MPSRunDiagnostics:
 
     @property
     def memory_budget_bytes(self) -> int:
-        """Return the admitted component ceiling in bytes."""
+        """The admitted component ceiling in bytes."""
         return self.allocation.budget_bytes
 
     def to_dict(self) -> dict[str, object]:
