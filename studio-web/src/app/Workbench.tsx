@@ -4,9 +4,9 @@
 // © Code 2020–2026 Miroslav Šotek. All rights reserved.
 // ORCID: 0009-0009-3560-0851
 // Contact: www.anulum.li | protoscience@anulum.li
-// SCPN Quantum Control — persistent five-view workbench shell
+// SCPN Quantum Control — persistent workbench shell over the registered modules
 
-import { lazy, Suspense, useEffect, useMemo, useRef } from "react";
+import { Suspense, useEffect, useMemo, useRef } from "react";
 import type { ReactNode } from "react";
 import { WorkspaceEditor } from "../features/workspace/WorkspacePanel";
 import type { WorkspacePanelProps } from "../features/workspace/WorkspacePanel";
@@ -14,6 +14,7 @@ import { useWorkspace } from "../features/workspace/useWorkspace";
 import { localExperimentCodecs } from "../features/experiments/kuramotoArtifacts";
 import { useExperimentRun } from "../features/experiments/useExperimentRun";
 import { useWorkflowRun } from "../features/workflows/useWorkflowRun";
+import { workbenchRegistry } from "./moduleRegistry";
 import { emptyWorkbenchContext, formatWorkbenchRoute } from "./routing";
 import type { WorkbenchContext, WorkbenchView } from "./routing";
 import { useWorkbenchRoute } from "./useWorkbenchRoute";
@@ -21,19 +22,8 @@ import { RouteBoundary } from "./RouteBoundary";
 import { WorkbenchInspector } from "./WorkbenchInspector";
 import { WorkbenchHelp } from "./WorkbenchHelp";
 
-const OperationsView = lazy(() => import("./routes/OperationsView"));
-const BuildView = lazy(() => import("./routes/BuildView"));
-const ResultsView = lazy(() => import("./routes/ResultsView"));
-const UnavailableView = lazy(() => import("./routes/UnavailableView"));
-const ExperimentRunner = lazy(() => import("../features/experiments/ExperimentRunner"));
-const WorkflowRunner = lazy(() => import("../features/workflows/WorkflowRunner"));
-const views: ReadonlyArray<readonly [WorkbenchView, string]> = [
-  ["workspace", "Workspace"],
-  ["build", "Build"],
-  ["experiments", "Experiments"],
-  ["results", "Results"],
-  ["atlas", "Atlas"],
-];
+const primaryStages = workbenchRegistry.stages.filter((stage) => stage.group === "primary");
+const contextStages = workbenchRegistry.stages.filter((stage) => stage.group === "context");
 
 /** Additive layout mode for standalone pages and the existing federation host. */
 export type WorkbenchMode = "standalone" | "embedded";
@@ -69,9 +59,8 @@ export function Workbench({ children, rawCodecs, mode = "standalone" }: Workbenc
   const href = (target: WorkbenchView) =>
     formatWorkbenchRoute({ ...context, view: target, instrument: null });
   const routeKey = location.ok ? formatWorkbenchRoute(location.route) : window.location.hash;
-  const title =
-    views.find(([candidate]) => candidate === view)?.[1] ??
-    (view === "operations" ? "Devices & Operations" : "Unavailable route");
+  const stage = view === null ? undefined : workbenchRegistry.stage(view);
+  const title = stage?.label ?? "Unavailable route";
   const focusedRoute = useRef<string | null>(null);
   useEffect(() => {
     if (focusedRoute.current !== routeKey) {
@@ -104,16 +93,18 @@ export function Workbench({ children, rawCodecs, mode = "standalone" }: Workbenc
         </p>
         <WorkbenchHelp routeKey={routeKey} />
         <nav aria-label="Workbench views">
-          {views.map(([target, label]) => (
-            <a key={target} href={href(target)} aria-current={view === target ? "page" : undefined}>
+          {primaryStages.map(({ id, label }) => (
+            <a key={id} href={href(id)} aria-current={view === id ? "page" : undefined}>
               {label}
             </a>
           ))}
         </nav>
         <nav aria-label="Workbench context destinations">
-          <a href={href("operations")} aria-current={view === "operations" ? "page" : undefined}>
-            Devices &amp; Operations
-          </a>
+          {contextStages.map(({ id, label }) => (
+            <a key={id} href={href(id)} aria-current={view === id ? "page" : undefined}>
+              {label}
+            </a>
+          ))}
         </nav>
         <nav aria-label="Breadcrumbs">
           <a href={href("workspace")}>Quantum Studio</a>
@@ -133,42 +124,16 @@ export function Workbench({ children, rawCodecs, mode = "standalone" }: Workbenc
         {location.ok ? (
           <RouteBoundary key={routeKey} workspaceHref={href("workspace")}>
             <Suspense fallback={<p role="status">Loading {title} view…</p>}>
-              {view === "workspace" && children(context)}
-              {view === "build" && (
-                <BuildView focusInstrument={instrument === "compile-recompute"} />
-              )}
-              {view === "operations" && <OperationsView />}
-              {view === "results" && (
-                <ResultsView
-                  focusInstrument={instrument === "program-ad-replay"}
-                  plan={experiment.plan}
-                  outcome={experiment.outcome}
-                  sourceJson={workspace.draft}
-                  rawCodecs={codecs}
-                />
-              )}
-              {view === "experiments" && (
-                <>
-                  <ExperimentRunner
-                    workspace={workspace}
-                    rawCodecs={codecs}
-                    run={experiment}
-                    workspaceHref={href("workspace")}
-                  />
-                  <WorkflowRunner
-                    workspace={workspace}
-                    rawCodecs={codecs}
-                    run={workflow}
-                    experimentBlocked={
-                      experiment.status === "running" ||
-                      experiment.status === "cancelling" ||
-                      experiment.disposalBlocked
-                    }
-                  />
-                </>
-              )}
-              {view === "atlas" && (
-                <UnavailableView view={view} workspaceHref={href("workspace")} />
+              {stage?.render(
+                {
+                  overview: () => children(context),
+                  workspace,
+                  codecs,
+                  experiment,
+                  workflow,
+                  workspaceHref: href("workspace"),
+                },
+                instrument,
               )}
             </Suspense>
           </RouteBoundary>

@@ -22,6 +22,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ### Added
 
+- The Studio workbench is a shell over a registry of modules. A module
+  declares its stages, deep-link instruments and the manifest verbs and
+  evidence schemas it requires; the address table is derived from the
+  registered stages and stays closed at build time. Addresses, labels and
+  behaviour of the six existing destinations are unchanged. Adding a
+  destination is one registry entry and the module's own files.
+
 - Native browser workspace transactions, exact archive previews, immutable
   revision references and separate preview/saved portable exports. Unknown
   source verifiers, unsafe imports, stale heads and storage failures refuse

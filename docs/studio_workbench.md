@@ -171,6 +171,43 @@ the affected owner coverage cohort. The source qualifier verifies actual code,
 source maps and current owner hashes before merging counters through the
 existing Vitest provider. Stale, failed or incomplete evidence refuses.
 
+## Modules
+
+The workbench is a shell and a list of modules. The shell owns the layout,
+the address parser, the trust display and every decision about what may run.
+A module adds destinations to the shell and renders inside the work area from
+the services the shell hands it; it reaches nothing else.
+
+Modules are compiled into the application and listed in one place,
+`studio-web/src/app/moduleRegistry.tsx`. Nothing is loaded at run time from an
+address, an archive or a user, so every line that runs has been reviewed and
+the bundle keeps one recorded digest.
+
+A module declares:
+
+- an identifier and the version of its contract with the shell;
+- the manifest verbs and evidence schemas it requires — the registry reports
+  every requirement the installed package does not declare, by name;
+- its stages: identifier, label, navigation group (the primary stages of the
+  work, or a context destination), deep-link instruments and a render function.
+
+The address table is derived from the registered stages and is closed when
+the application is built: `#/<stage>` and `#/<stage>/<instrument>` for
+registered names, and nothing else. An unregistered path is refused exactly
+as before. Identifiers are lower-case words of at most forty characters; a
+repeated module, stage or instrument identifier fails the build of the
+registry, so one address can never name two destinations.
+
+To add a destination, add one entry to the registry and the module's own
+files. The shell, the address parser and the other modules are not edited.
+Removing the entry removes the destination and its addresses and leaves the
+rest unchanged.
+
+The stages of this build are Workspace, Build, Experiments, Results, Atlas and
+Devices & Operations, with the same addresses and labels as before the shell
+became modular. The contract today covers stages and requirements; explorer
+nodes, inspector sections, commands and job kinds are not module slots yet.
+
 ## Reproducible experiment graphs and sweeps
 
 **Reproducible workflows** in Experiments composes a typed acyclic graph over the
