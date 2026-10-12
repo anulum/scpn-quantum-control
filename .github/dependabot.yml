@@ -34,3 +34,23 @@ updates:
     schedule:
       interval: weekly
       day: monday
+  - package-ecosystem: cargo
+    directory: "/scpn_quantum_engine/fuzz"
+    schedule:
+      interval: weekly
+      day: monday
+  - package-ecosystem: cargo
+    directory: "/scpn_quantum_engine/program_ad_replay"
+    schedule:
+      interval: weekly
+      day: monday
+  - package-ecosystem: cargo
+    directory: "/scpn_quantum_engine/studio_program_ad_wasm"
+    schedule:
+      interval: weekly
+      day: monday
+  - package-ecosystem: cargo
+    directory: "/scpn_quantum_engine/studio_wasm_kernel"
+    schedule:
+      interval: weekly
+      day: monday

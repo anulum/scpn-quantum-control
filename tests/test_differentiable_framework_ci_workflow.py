@@ -77,7 +77,7 @@ def test_differentiable_framework_workflow_declares_optional_gpu_lane() -> None:
     text = WORKFLOW.read_text(encoding="utf-8")
 
     assert "optional-gpu-contract" in text
-    assert "continue-on-error: true" in text
+    assert "continue-on-error" not in text
     assert "workflow_dispatch" in text
     assert "tests/test_gpu_batch_vqe.py" in text
     assert "tests/test_gpu_batch_vqe_contracts.py" in text

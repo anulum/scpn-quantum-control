@@ -32,7 +32,6 @@ jobs:
           --json databaseId,conclusion,status,workflowName,headSha,headBranch,createdAt,event
           > actions-history.json
       - name: Classify workflow history
-        continue-on-error: true
         run: >-
           python tools/audit_github_actions_history.py
           --input actions-history.json

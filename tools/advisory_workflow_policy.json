@@ -2,19 +2,11 @@
  "schema": "advisory_workflow_steps_v1",
  "sites": [
   {
-   "workflow": "actions-history-audit.yml",
-   "job": "classify-history",
-   "step": "Classify workflow history",
-   "kind": "step-continue-on-error",
-   "reason": "The weekly audit uploads the collected history and the classification as an artefact; the upload step runs after this one.",
-   "undecided": "The upload step already runs with if: always(), so the classification could fail the job without losing the artefact. Nobody has decided whether a classified failure should fail this weekly job."
-  },
-  {
    "workflow": "ci-native-integration.yml",
    "job": "integration-optional",
    "kind": "job-continue-on-error",
    "reason": "Cross-repository integration tests against the pinned sibling package; the job runs on the main branch only and is listed as optional in the workflow policy.",
-   "undecided": "No promotion condition is written in the workflow. Needed: either a condition under which the sibling integration blocks the main branch, or the statement that it stays informative."
+   "promotion": "Stays informative while the sibling package is developed inside this repository. It becomes blocking on the main branch when that package is extracted to its own repository and consumed as a pinned release."
   },
   {
    "workflow": "ci-studio.yml",
@@ -33,13 +25,6 @@
    "count": 2,
    "reason": "An exit trap stops the local server the step started and waits for it.",
    "permanent": "The tolerated commands are the cleanup in the trap; the refusal checks of the step run without tolerance and decide its result."
-  },
-  {
-   "workflow": "differentiable-frameworks.yml",
-   "job": "optional-gpu-contract",
-   "kind": "job-continue-on-error",
-   "reason": "Optional accelerator contract tests that run only on manual dispatch and write functional, non-isolated evidence.",
-   "undecided": "No promotion condition is written in the workflow. Needed: whether a manually dispatched run should report failure, since nothing depends on this job."
   },
   {
    "workflow": "rust-benches.yml",
