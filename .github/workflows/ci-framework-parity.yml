@@ -226,7 +226,7 @@ jobs:
       - name: Assert non-provider benchmark boundary
         run: grep -R "No provider or QPU execution" differentiable-benchmark-evidence
       - name: Upload functional_non_isolated differentiable evidence
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: differentiable-functional-non-isolated-evidence
           path: differentiable-benchmark-evidence/
@@ -274,7 +274,7 @@ jobs:
           grep '"classification": "functional_non_isolated"' \
             differentiable-isolated-benchmark-evidence/diff-qnode-external-comparison.json
       - name: Upload isolated differentiable benchmark evidence
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: differentiable-isolated-benchmark-evidence
           path: differentiable-isolated-benchmark-evidence/
