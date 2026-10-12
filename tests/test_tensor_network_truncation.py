@@ -281,6 +281,23 @@ def test_dmrg_invalid_cutoff_refuses(cutoff: float) -> None:
         dmrg_ground_state(np.zeros((2, 2)), np.zeros(2), cutoff=cutoff)
 
 
+@pytest.mark.parametrize("consent", [1, 0, "yes", None])
+def test_long_range_consent_must_be_an_explicit_boolean(consent: object) -> None:
+    """Refuse truthy or falsy stand-ins for the long-range truncation consent.
+
+    Parameters
+    ----------
+    consent
+        A value that is not a boolean and must not be read as one.
+
+    """
+    coupling = np.zeros((2, 2))
+    with pytest.raises(ValueError, match="explicit boolean"):
+        dmrg_ground_state(coupling, np.zeros(2), allow_long_range_truncation=cast("bool", consent))
+    with pytest.raises(ValueError, match="explicit boolean"):
+        tebd_evolution(coupling, np.zeros(2), allow_long_range_truncation=cast("bool", consent))
+
+
 @pytest.mark.parametrize("coupling", [np.zeros(2), np.zeros((2, 3))])
 def test_public_solver_shape_errors_preserve_model(coupling: np.ndarray) -> None:
     """Both public solvers reject non-square couplings before any runtime work.

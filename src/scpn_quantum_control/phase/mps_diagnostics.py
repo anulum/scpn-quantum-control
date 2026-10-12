@@ -138,7 +138,11 @@ class MPSRunDiagnostics:
 
 
 class DiscardedWeightLog(dict[str, float]):
-    """Observe Quimb's ``split_opts.info['error']`` SVD reports.
+    """Collect the ``error`` reports of Quimb's truncated SVD.
+
+    The log is handed to the decomposition as its ``info`` target by the
+    reporting split method of the evolution module; Quimb's gate application
+    does not forward ``TEBD.split_opts["info"]`` to the decomposition.
 
     The pinned Quimb runtime reports the norm of discarded singular values.
     Squaring and summing those local norms does not produce a universal global

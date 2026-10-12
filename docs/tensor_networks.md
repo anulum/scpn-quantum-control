@@ -165,6 +165,18 @@ this quantity is **not a global state, observable or fidelity error bound**.
 The Trotter estimate remains separate. DMRG explicitly reports unavailable
 discarded weights where its solver does not supply them.
 
+The local reports come from Quimb's own truncated SVD, reached through a
+registered split method, because Quimb's gate application does not forward a
+report requested in the TEBD split options. The event count is the number of
+splits that reported, truncating or not. Order two uses Quimb's second-order
+step. Order four composes five of those steps with the Suzuki weights
+`p, p, 1 - 4p, p, p`, `p = 1 / (4 - 4**(1/3))`; the fourth-order step of Quimb
+1.13.0 converges at second order on the four-site reference of the test
+suite. The order-four Trotter figure is the same heuristic Quimb uses, the
+mean local Hamiltonian norm times the fifth power of the step, summed over
+the steps. A two-site DMRG problem is one two-site block, so it runs right
+sweeps only; the recorded strategy names this.
+
 The byte ceiling admits declared tensor copies, local SVD buffers, model inputs
 and observation records. It is a component model, not a reservation or a total
 RSS guarantee. An insufficient ceiling refuses before solver construction.

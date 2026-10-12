@@ -2233,7 +2233,12 @@ actual Quimb splits. It is not a universal global state, observable or fidelity
 error bound. Quimb's Trotter error estimate remains a separate quantity; neither
 is substituted for convergence against an independent reference.
 
-DMRG reports its final compressed observations and right/left sweep strategy.
+Order four composes Quimb's second-order steps with the Suzuki weights; its
+Trotter figure is the mean local Hamiltonian norm times the fifth power of the
+step, summed over the steps.
+
+DMRG reports its final compressed observations and right/left sweep strategy;
+a two-site problem runs right sweeps over its single block.
 Its discarded weight is explicitly unavailable when the solver does not supply
 those local reports. The legacy entropy baseline labels its bond estimate as a
 half-chain entropy lower bound: this is not the exact Schmidt rank, a guarantee

@@ -16,7 +16,9 @@ Reference: Gray, JOSS 3(29), 819 (2018).
 
 from __future__ import annotations
 
+from contextvars import ContextVar
 from math import isfinite
+from sys import float_info
 from typing import Any
 
 import numpy as np
@@ -41,10 +43,90 @@ except Exception:
     quimb = None
     qtn = None
 
+_REPORTING_SPLIT_METHOD = "scpn_quantum_control_svd_reporting_discarded_norm"
+_SUZUKI_FOURTH_ORDER_WEIGHT = 1.0 / (4.0 - 4.0 ** (1.0 / 3.0))
+_SUZUKI_FOURTH_ORDER_WEIGHTS = (
+    _SUZUKI_FOURTH_ORDER_WEIGHT,
+    _SUZUKI_FOURTH_ORDER_WEIGHT,
+    1.0 - 4.0 * _SUZUKI_FOURTH_ORDER_WEIGHT,
+    _SUZUKI_FOURTH_ORDER_WEIGHT,
+    _SUZUKI_FOURTH_ORDER_WEIGHT,
+)
+_active_discarded_log: ContextVar[DiscardedWeightLog | None] = ContextVar(
+    "scpn_quantum_control_mps_discarded_log", default=None
+)
+_reporting_split_registered = False
+
 
 def is_quimb_available() -> bool:
     """Check if quimb is installed."""
     return _QUIMB_AVAILABLE
+
+
+def _reporting_split_method() -> str:
+    """Register the reporting SVD split with Quimb once and return its name.
+
+    Quimb's gate application keeps the ``info`` keyword for its own use and
+    does not hand it to the decomposition, so a report requested through
+    ``TEBD.split_opts["info"]`` is never written. The registered method calls
+    Quimb's own truncated SVD with the same arguments and adds only the report
+    target of the active run. The factors it returns are those of Quimb's
+    ``"svd"`` method.
+
+    Returns
+    -------
+    str
+        Method name accepted by ``TEBD.split_opts["method"]``.
+
+    """
+    global _reporting_split_registered
+    if not _reporting_split_registered:
+        from quimb.tensor import decomp
+
+        def split(
+            x: Any,
+            cutoff: float = -1.0,
+            cutoff_mode: Any = decomp.cutoff_mode_rsum2,
+            max_bond: int = -1,
+            absorb: Any = decomp.get_Usq_sqVH,
+            renorm: int = 0,
+        ) -> Any:
+            """Run Quimb's truncated SVD and report its discarded norm.
+
+            Parameters
+            ----------
+            x
+                Matrix handed over by Quimb's split dispatch.
+            cutoff
+                Singular-value cutoff of the dispatch.
+            cutoff_mode
+                Cutoff mode code of the dispatch.
+            max_bond
+                Maximum number of retained singular values.
+            absorb
+                Absorption code of the dispatch.
+            renorm
+                Renormalization code of the dispatch.
+
+            Returns
+            -------
+            Any
+                The factors returned by Quimb's truncated SVD.
+
+            """
+            return decomp.svd_truncated(
+                x,
+                cutoff=cutoff,
+                cutoff_mode=cutoff_mode,
+                max_bond=max_bond,
+                absorb=absorb,
+                renorm=renorm,
+                info=_active_discarded_log.get(),
+            )
+
+        decomp.register_split_driver(_REPORTING_SPLIT_METHOD)(split)
+        _reporting_split_registered = True
+    return _REPORTING_SPLIT_METHOD
 
 
 def _long_range_coupling_l1(K: NDArray[np.float64], *, tol: float = 1e-15) -> float:
@@ -181,10 +263,14 @@ def dmrg_ground_state(
     dmrg = qtn.DMRG2(H_mpo, bond_dims=bond_dim, cutoffs=cutoff)
     converged = False
     last_energy = 0.0
+    # Two sites form one two-site block: a right sweep optimizes the whole
+    # system, and the pinned runtime's left sweep fails on that single block.
+    single_block = n == 2
     for _sweep in range(max_sweeps):
-        dmrg.sweep_right()
-        e_left = dmrg.sweep_left()
-        current_energy = float(np.real(e_left))
+        e_sweep = dmrg.sweep_right()
+        if not single_block:
+            e_sweep = dmrg.sweep_left()
+        current_energy = float(np.real(e_sweep))
         energy_change = abs(current_energy - last_energy)
         last_energy = current_energy
         if energy_change < 1e-10:
@@ -204,7 +290,11 @@ def dmrg_ground_state(
         "omitted_coupling_l1": omitted_l1,
         "diagnostics": MPSRunDiagnostics(
             allocation=allocation,
-            contraction_strategy="two-site DMRG right/left sweeps",
+            contraction_strategy=(
+                "two-site DMRG right sweeps over the single two-site block"
+                if single_block
+                else "two-site DMRG right/left sweeps"
+            ),
             observations=(_observe_mps(mps, n, 0.0),),
             discarded_weight=None,
             discarded_weight_scope="DMRG2 does not report local discarded weights here",
@@ -248,7 +338,9 @@ def tebd_evolution(
     cutoff
         SVD truncation cutoff.
     order
-        Trotter order, either two or four.
+        Trotter order, either two or four. Order two uses the runtime's own
+        second-order step. Order four composes five of those steps with the
+        Suzuki weights ``p, p, 1 - 4p, p, p`` for ``p = 1 / (4 - 4**(1/3))``.
     allow_long_range_truncation
         Explicitly allow the nearest-neighbour TEBD local Hamiltonian to
         omit non-adjacent K[i, j] couplings. Defaults to False so full
@@ -258,6 +350,8 @@ def tebd_evolution(
         retain the legacy product state prepared from ``omega``. The dense
         input is admitted by the active allocation budget and must be exactly
         representable under ``bond_dim`` and ``cutoff``; truncation refuses.
+        With a zero cutoff, singular values that are exactly zero are not
+        stored, so a product state starts at bond dimension one.
     max_memory_bytes
         Optional byte ceiling for declared tensor, local SVD and observation
         buffers. The active allocation policy remains an upper ceiling.
@@ -356,7 +450,20 @@ def tebd_evolution(
             raise ValueError("initial_state must contain only finite amplitudes.")
         if abs(float(np.linalg.norm(dense)) - 1.0) > 1e-10:
             raise ValueError("initial_state must be normalized.")
-        psi = qtn.MatrixProductState.from_dense(dense, dims=2, max_bond=bond_dim, cutoff=cutoff)
+        if cutoff > 0:
+            psi = qtn.MatrixProductState.from_dense(
+                dense, dims=2, max_bond=bond_dim, cutoff=cutoff
+            )
+        else:
+            # A zero cutoff keeps every singular value up to the bond limit,
+            # including exact zeros. Those are not stored.
+            psi = qtn.MatrixProductState.from_dense(
+                dense,
+                dims=2,
+                max_bond=bond_dim,
+                cutoff=float_info.min,
+                cutoff_mode="abs",
+            )
         represented = np.asarray(psi.to_dense()).reshape(-1)
         if float(np.linalg.norm(represented - dense)) > 1e-10:
             raise ValueError(
@@ -366,8 +473,8 @@ def tebd_evolution(
     tebd = qtn.TEBD(psi, H_local, dt=dt)
     tebd.split_opts["max_bond"] = bond_dim
     tebd.split_opts["cutoff"] = cutoff
+    tebd.split_opts["method"] = _reporting_split_method()
     discarded = DiscardedWeightLog()
-    tebd.split_opts["info"] = discarded
 
     times = np.linspace(0, t_max, n_steps + 1)
     R_history = np.zeros(len(times))
@@ -376,10 +483,26 @@ def tebd_evolution(
     R_history[0] = _order_parameter_mps(tebd.pt, n)
     observations = [_observe_mps(tebd.pt, n, 0.0)]
 
-    for step in range(1, n_steps + 1):
-        tebd.update_to(times[step], order=order)
-        R_history[step] = _order_parameter_mps(tebd.pt, n)
-        observations.append(_observe_mps(tebd.pt, n, float(times[step])))
+    active_log = _active_discarded_log.set(discarded)
+    try:
+        for step in range(1, n_steps + 1):
+            if order == 2:
+                tebd.update_to(times[step], order=2)
+            else:
+                # The pinned runtime's own fourth-order step converges at
+                # second order, so its second-order steps are composed here.
+                step_dt = float(times[step] - times[step - 1])
+                for weight in _SUZUKI_FOURTH_ORDER_WEIGHTS:
+                    tebd.step(order=2, dt=weight * step_dt)
+            R_history[step] = _order_parameter_mps(tebd.pt, n)
+            observations.append(_observe_mps(tebd.pt, n, float(times[step])))
+    finally:
+        _active_discarded_log.reset(active_log)
+    if order == 2:
+        trotter_error_estimate = float(tebd.err)
+    else:
+        grid_dt = t_max / n_steps if n_steps else 0.0
+        trotter_error_estimate = float(n_steps * H_local.mean_norm() * grid_dt**5)
 
     bond_dims = [tebd.pt.bond_size(i, i + 1) for i in range(n - 1)]
 
@@ -400,7 +523,7 @@ def tebd_evolution(
                 "not a global state, observable or fidelity error bound"
             ),
             truncation_events=discarded.events,
-            trotter_error_estimate=float(tebd.err),
+            trotter_error_estimate=trotter_error_estimate,
             cutoff=cutoff,
             trotter_order=order,
             time_step=dt,

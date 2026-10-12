@@ -73,6 +73,27 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ### Fixed
 
+- `tebd_evolution(order=4)` converges at fourth order. The fourth-order step
+  of Quimb 1.13.0 converges at second order on the four-site reference (the
+  error falls by 4.0 per halving of the step); order four now composes five
+  of Quimb's second-order steps with the Suzuki weights, and the error falls
+  by 16.0 per halving. Order two is unchanged.
+
+- `dmrg_ground_state` solves two-site systems. Quimb 1.13.0 raises
+  `UnboundLocalError` in the left sweep of a single two-site block; that block
+  is the whole system, so only right sweeps run there and the recorded
+  strategy says so.
+
+- TEBD diagnostics report the discarded weight of real truncations. The
+  report requested through Quimb's split options never reached the
+  decomposition, so the recorded weight and event count were always zero. A
+  registered split method now calls Quimb's own truncated SVD with the report
+  target; the returned factors are identical to those of Quimb's `svd` method.
+
+- A dense initial state prepared with a zero cutoff no longer stores singular
+  values that are exactly zero, so a product state starts at bond dimension
+  one.
+
 - The Zenodo archive metadata in `.zenodo.json` and `oscillatools/.zenodo.json`
   now uses relation types that Zenodo accepts: `isVariantFormOf` for the PyPI
   distribution and `references` for scpn-fusion-core, in place of
