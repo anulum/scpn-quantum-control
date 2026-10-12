@@ -59,6 +59,7 @@ scpn-quantum-program-ad-replay = { path = "program_ad_replay", features = ["pyo3
 
 [[bin]]
 name = "ibm_runtime_latency_runner"
+path = "src/bin/ibm_runtime_latency_runner.rs"
 required-features = ["latency-runner"]
 
 [dev-dependencies]
