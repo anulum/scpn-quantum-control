@@ -892,7 +892,7 @@ jobs:
           STUDIO_WORKFLOW_COVERAGE: ${{ runner.temp }}/studio-workflow-journey.json
         run: >-
           pnpm exec vitest run src/features/workflows src/features/parameters
-          src/app/Workbench.test.tsx src/features/experiments/experimentArchive.test.ts src/features/experiments/useExperimentRun.test.tsx
+          src/app/Workbench.test.tsx src/app/Workbench.modules.test.tsx src/features/experiments/experimentArchive.test.ts src/features/experiments/useExperimentRun.test.tsx
           src/features/workspace/WorkspacePanel.test.tsx src/features/parameters/parameterRevision.test.ts
           src/features/workspace/useWorkspace.test.tsx
           src/shared/storage/workspaceArchive.test.ts
