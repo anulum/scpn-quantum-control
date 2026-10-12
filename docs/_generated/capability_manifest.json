@@ -13,7 +13,7 @@
     "python_model_source_modules": 787,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1522
+    "test_files": 1523
   },
   "documentation": {
     "examples": [
@@ -9897,6 +9897,7 @@
       "tests/test_provider_modalities.py",
       "tests/test_provider_route_catalogue.py",
       "tests/test_provider_route_configuration.py",
+      "tests/test_provider_sdk_conformance.py",
       "tests/test_provider_semantics.py",
       "tests/test_provider_submission_gate.py",
       "tests/test_psi_field.py",

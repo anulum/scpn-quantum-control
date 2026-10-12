@@ -96,7 +96,10 @@ def _qiskit_native_parameter_layout_and_runtime_codec() -> None:
     from qiskit_ibm_runtime import RuntimeDecoder, RuntimeEncoder
 
     circuit, theta, workload = _parameterised_source()
-    decoded = qpy.load(io.BytesIO(base64.b64decode(workload.program)))[0]
+    encoded = io.BytesIO()
+    qpy.dump(circuit, encoded)
+    assert base64.b64decode(workload.program) == encoded.getvalue()
+    decoded = json.loads(json.dumps(circuit, cls=RuntimeEncoder), cls=RuntimeDecoder)
     assert decoded == circuit
     assert tuple(decoded.parameters) == (theta,)
     assert decoded.data[0].operation.params[0] == theta
@@ -479,7 +482,9 @@ def _iqm_native_circuit_request_codec() -> None:
     assert decoded.instructions[2].args == {"angle": math.pi, "phase": 0.0}
     assert decoded.instructions[3].locus == ("QB2", "QB1")
     assert decoded.instructions[3].args == {"key": "m"}
-    assert qpy.load(io.BytesIO(base64.b64decode(workload.program)))[0] == circuit
+    encoded = io.BytesIO()
+    qpy.dump(circuit, encoded)
+    assert base64.b64decode(workload.program) == encoded.getvalue()
     with pytest.raises(ValueError):
         models.PostJobsRequest(circuits=[native], shots=0)
     assert native.instructions[3].locus == ("QB2", "QB1")
@@ -522,10 +527,17 @@ def _dwave_native_bqm_and_sampleset_codec() -> None:
         num_occurrences=[7, 9],
         sort_labels=False,
     )
-    wire = {"type": "bqm", "answer": {"format": "bq", "data": samples.to_serializable()}}
+    assert tuple(samples.variables) == ("right", "left")
+    serialized = samples.to_serializable()
+    assert serialized["variable_labels"] == ["right", "left"]
+    wire = {"type": "bqm", "answer": {"format": "bq", "data": serialized}}
     decoded = coders.decode_bq(json.loads(json.dumps(wire)))["sampleset"]
-    assert tuple(decoded.variables) == ("right", "left")
-    assert np.array_equal(decoded.record.sample, [[1, -1], [-1, 1]])
+    # The native decoder sorts labels and moves their sample columns together.
+    assert tuple(decoded.variables) == ("left", "right")
+    assert np.array_equal(decoded.record.sample, [[-1, 1], [1, -1]])
+    assert np.array_equal(
+        decoded.samples(sorted_by=None)[:, ["right", "left"]], [[1, -1], [-1, 1]]
+    )
     assert np.array_equal(decoded.record.energy, [2.75, -3.25])
     assert np.array_equal(decoded.record.num_occurrences, [7, 9])
     assert int(decoded.record.num_occurrences.sum()) == workload.shots == 16
@@ -574,7 +586,7 @@ def _pasqal_native_sequence_codec() -> None:
     plan = {
         "schema": "pulser_sequence_plan_v1",
         "duration": 1.0,
-        "register": {"site-b": [0.0, 0.0], "site-a": [5.0, 0.0]},
+        "register": {"1": [0.0, 0.0], "0": [5.0, 0.0]},
         "rydberg_channel": "rydberg_global",
         "rabi_envelope": [
             {"time": 0.0, "amplitude": 1.0, "phase": 0.1},
@@ -588,15 +600,15 @@ def _pasqal_native_sequence_codec() -> None:
         plan, workload_id="pasqal-native-codec", n_qubits=2, shots=16, capture_semantics=True
     )
     native = pulser.Sequence(
-        pulser.Register({"site-b": (0.0, 0.0), "site-a": (5.0, 0.0)}), devices.MockDevice
+        pulser.Register({"1": (0.0, 0.0), "0": (5.0, 0.0)}), devices.MockDevice
     )
     native.declare_channel("drive", "rydberg_global")
-    native.add(pulser.Pulse.ConstantPulse(1000, 1.0, 0.25, 0.1), "drive")
+    native.add(pulser.Pulse.ConstantPulse(1000, 1.0, 0.0, 0.1), "drive")
     native.measure("ground-rydberg")
     source = native.to_abstract_repr()
     decoded = pulser.Sequence.from_abstract_repr(source)
-    assert decoded.register.qubit_ids == ("site-b", "site-a")
-    assert np.array_equal(decoded.register.qubits["site-a"], [5.0, 0.0])
+    assert decoded.register.qubit_ids == ("1", "0")
+    assert np.array_equal(decoded.register.qubits["0"], [5.0, 0.0])
     assert decoded.get_duration() == 1000
     assert decoded.get_measurement_basis() == "ground-rydberg"
     assert json.loads(decoded.to_abstract_repr()) == json.loads(source)
@@ -604,8 +616,8 @@ def _pasqal_native_sequence_codec() -> None:
     assert json.loads(workload.program) == plan
 
 
-def _quera_native_analog_routine_codec() -> None:
-    """Retain Bloqade's native site geometry and waveforms in its genuine routine serializer."""
+def _quera_native_analog_task_codec() -> None:
+    """Retain Bloqade's native geometry, waveforms and shots in its local task serializer."""
     analog = import_module("bloqade.analog")
     from scpn_quantum_control.hardware.hal_quera_bloqade import bloqade_ahs_workload
 
@@ -627,9 +639,20 @@ def _quera_native_analog_routine_codec() -> None:
         amplitude=analog.constant(duration=2.0, value=1.0),
         phase=analog.constant(duration=2.0, value=0.0),
     )
-    encoded = analog.dumps(native)
+    batch = native.bloqade.python().run(shots=workload.shots, multiprocessing=False, nsteps=10000)
+    assert len(batch.tasks) == 1
+    task = batch.tasks[0]
+    assert task.shots == 16
+    assert len(task.result().shot_outputs) == 16
+    assert task.emulator_ir.duration == 2.0
+    assert [tuple(map(float, site)) for site in task.emulator_ir.register.geometry.sites] == [
+        (0.0, 0.0),
+        (5.0, 0.0),
+    ]
+    encoded = analog.dumps(task)
     decoded = analog.loads(encoded)
-    assert decoded.circuit == native.circuit
+    assert decoded.shots == 16
+    assert decoded.emulator_ir == task.emulator_ir
     assert json.loads(analog.dumps(decoded)) == json.loads(encoded)
     assert workload.shots == 16
     assert json.loads(workload.program) == plan
@@ -762,7 +785,7 @@ def test_native_sdk_cohort_roundtrip(
         "dwave": _dwave_native_bqm_and_sampleset_codec,
         "quandela": _quandela_native_circuit_and_occupation_codec,
         "pasqal": _pasqal_native_sequence_codec,
-        "quera": _quera_native_analog_routine_codec,
+        "quera": _quera_native_analog_task_codec,
         "strangeworks": _strangeworks_native_job_codec,
     }
     qualifiers[cohort]()

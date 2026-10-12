@@ -168,6 +168,10 @@ and analog fixtures retain their native modes, variable domains or ordered
 sites instead of treating them as binary gate-model registers. Local simulator
 paths also check known two-qubit results and exact sample totals. Cloud-only
 codec checks construct no authenticated client and submit no job.
+The Bloqade fixture executes a two-site, sixteen-shot local Python task and
+round-trips the SDK's supported task codec, including geometry, waveforms,
+duration and shot records. D-Wave's native result decoder sorts variable
+labels; the fixture checks that sample columns move with their labels.
 
 For example, run the IBM reference codec check from the source checkout in a
 dedicated environment:
