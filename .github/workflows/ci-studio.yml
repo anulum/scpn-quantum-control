@@ -837,6 +837,7 @@ jobs:
         run: >-
           pnpm exec vitest run
           src/panel/programAd.test.ts
+          src/panel/nativeProgramExecution.test.ts
           src/panel/ProgramADReplayCard.test.tsx
           src/panel/useUnitBoundRun.test.tsx
           --coverage

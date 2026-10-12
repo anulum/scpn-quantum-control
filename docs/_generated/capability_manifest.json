@@ -13,7 +13,7 @@
     "python_model_source_modules": 787,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1523
+    "test_files": 1524
   },
   "documentation": {
     "examples": [
@@ -9575,6 +9575,7 @@
       "tests/test_multiplatform_export_workflow.py",
       "tests/test_multiscale_qec.py",
       "tests/test_native_decomposition_readiness.py",
+      "tests/test_native_program_execution.py",
       "tests/test_native_replay_admission.py",
       "tests/test_native_semantic_binding.py",
       "tests/test_native_whole_program_ad_execution_evidence.py",

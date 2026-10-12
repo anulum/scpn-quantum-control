@@ -477,6 +477,7 @@
         "tests/test_multicircuit_qec_readiness.py",
         "tests/test_multiplatform_export_workflow.py",
         "tests/test_multiscale_qec.py",
+        "tests/test_native_program_execution.py",
         "tests/test_native_whole_program_ad_execution_evidence.py",
         "tests/test_native_whole_program_linalg_factorisation.py",
         "tests/test_negative_inputs.py",

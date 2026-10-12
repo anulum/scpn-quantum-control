@@ -198,6 +198,16 @@ jobs:
           --precision=2 --show-missing
           --fail-under=100
           --include=*/program_ad_captured_state.py,*/program_ad_captured_memory.py,*/program_ad_tape_binding.py,*/program_ad_effect_admission.py,*/program_ad_effect_analysis.py,*/program_ad_effect_source_binding.py,*/program_ad_effect_call_binding.py,*/program_ad_effect_dispatch.py,*/program_ad_effect_values.py,*/whole_program_trace_scatter.py,*/program_ad_adjoint_quality_gates.py
+      - name: Qualify executed native and cross-IR contracts
+        env:
+          OPENBLAS_NUM_THREADS: "1"
+          OMP_NUM_THREADS: "1"
+        run: |
+          python -m mypy --strict tests/test_native_program_execution.py
+          python -m ruff check tests/test_native_program_execution.py
+          python -m ruff format --check tests/test_native_program_execution.py
+          python -m ruff check --isolated --preview --select D,D413,D417,D420 tests/test_native_program_execution.py
+          python -m pytest --noconftest --no-cov -q tests/test_native_program_execution.py
   scientific-problem-quality:
     runs-on: ubuntu-latest
     env:

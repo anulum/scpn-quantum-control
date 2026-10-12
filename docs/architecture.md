@@ -388,6 +388,69 @@ no comparison benchmark artifact is invalidated. Focused native Rust tests, a
 release WASM build, real-WASM browser/component tests, and exact Python plus
 TypeScript owner coverage are the applicable cross-language evidence.
 
+## Executed whole-program differentiation routes
+
+The compiler facade distinguishes four execution contracts:
+
+| Route | Public entry point | Executed boundary |
+| --- | --- | --- |
+| Python interpreter | `compile_whole_program_ad_trace_to_executable` | Captured Program AD replay and reverse adjoints. |
+| Native LLVM | `compile_whole_program_ad_trace_to_native_llvm_jit` | Verified LLVM IR compiled by llvmlite MCJIT, then called through native function pointers. |
+| Native Rust | `value_and_grad_program_ad_effect_ir_with_rust` | The installed PyO3 extension executes its admitted effect-IR subset. |
+| Browser WASM | `instantiateProgramAd` in `studio-web/src/panel/programAd.ts` | A compiled Rust WASM module executes the bounded replay ABI. |
+
+`compile_whole_program_ad_trace_to_mlir` emits textual interchange. Emitting or
+parsing that text does not establish machine-code execution. Missing LLVM is
+an explicit native compilation error; missing Rust produces an unavailable
+result; absent or invalid WASM bytes fail instantiation. These routes do not
+silently qualify QIR, CUDA-Q, provider execution or physical hardware.
+
+For example, the existing public LLVM factory can compile a finite polynomial:
+
+```python
+import numpy as np
+from scpn_quantum_control.compiler import compile_whole_program_ad_trace_to_native_llvm_jit
+from scpn_quantum_control.differentiable import Parameter
+
+
+def polynomial(values):
+    return values[0] * values[0] + 2.0 * values[1]
+
+
+kernel = compile_whole_program_ad_trace_to_native_llvm_jit(
+    polynomial,
+    np.array([3.0, 5.0], dtype=np.float64),
+    (Parameter("x"), Parameter("y")),
+)
+value, gradient = kernel.value_and_grad([-2.0, 1.0])  # 6.0, [-4.0, 2.0]
+```
+
+Parameter order is fixed at compilation. The Python factories accept finite
+parameter vectors and normalise native buffers to contiguous float64; compiled
+shape and branch-signature changes require recompilation. Gradients retain
+that parameter order. The LLVM kernel owns its engine so a retained callable
+survives compile-cache eviction. Invalid dimensions, nonfinite inputs and
+nonfinite execution outputs refuse a result without changing caller buffers.
+
+The dedicated execution tests compare interpreter and actual LLVM scalar and
+row-major 2×2 matrix-product results with hand-derived values and gradients.
+They also exercise derivative ABI, strided input, engine lifetime, refusal and
+recovery. The existing compiler CI job builds the actual Rust wheel before
+running cross-IR conformance. Studio tests instantiate the actual Rust WASM
+binary, check little-endian input/output arity, malformed envelopes, output
+sentinels on refusal and repeated allocation/free cycles.
+
+The shared browser fixture remains the bounded rational program
+`f(x, y) = x*x + 2*y`, with `[3, 5] → (19, [6, 2])`. Additional raw-ABI samples
+exercise that program; they do not change its committed artifact hash or expand
+the Studio unit's scientific claim. Matrix execution is qualified through the
+interpreter and LLVM paths here; the rational browser unit does not qualify a
+general matrix compiler. Native Rust also executes the admitted matrix capture
+using NumPy function calls (`np.reshape`, `np.sum`); method-form captures that
+carry non-view alias metadata remain explicitly unsupported by that replay
+contract. The original native/Rust/WASM owner coverage and broader
+admitted-subset tests remain required independently.
+
 ## Module responsibility policy
 
 Module boundaries in this codebase are governed by **single responsibility, not line
