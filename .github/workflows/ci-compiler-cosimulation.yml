@@ -206,7 +206,10 @@ jobs:
           python -m mypy --strict tests/test_native_program_execution.py
           python -m ruff check tests/test_native_program_execution.py
           python -m ruff format --check tests/test_native_program_execution.py
-          python -m ruff check --isolated --preview --select D,D413,D417,D420 tests/test_native_program_execution.py
+          python -m ruff check --isolated --preview --select D,D413,D417,D420 \
+            --config 'lint.explicit-preview-rules = true' \
+            --config 'lint.pydocstyle.convention = "numpy"' \
+            tests/test_native_program_execution.py
           python -m pytest --noconftest --no-cov -q tests/test_native_program_execution.py
   scientific-problem-quality:
     runs-on: ubuntu-latest
