@@ -6,6 +6,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ### Security
 
+- The Rust engine lock resolves `quinn-proto` 0.11.19 (RUSTSEC-2026-0338,
+  RUSTSEC-2026-0339, RUSTSEC-2026-0340, RUSTSEC-2026-0341, RUSTSEC-2026-0342).
+  The crate is a transitive entry of the lock and is not part of the engine's
+  default dependency tree.
+
 - Hash-locked CI environments use Braket simulator 1.39.7 and schemas 1.32.1,
   removing the transitive setuptools 81.0.0 pin. The complete dependency audit
   runs without advisory exceptions.
