@@ -5,8 +5,8 @@
    "workflow": "ci-native-integration.yml",
    "job": "integration-optional",
    "kind": "job-continue-on-error",
-   "reason": "Cross-repository integration tests against the pinned sibling package; the job runs on the main branch only and is listed as optional in the workflow policy.",
-   "promotion": "Stays informative while the sibling package is developed inside this repository. It becomes blocking on the main branch when that package is extracted to its own repository and consumed as a pinned release."
+   "reason": "Integration tests of the optional bridge to sc-neurocore, a package maintained by another group and installed here at one hash-pinned release; the job runs on the main branch only and is listed as optional in the workflow policy.",
+   "promotion": "Stays informative while the bridge is an optional integration that the group and project map does not list as a supported interface. It becomes blocking on the main branch when the map names the bridge as supported."
   },
   {
    "workflow": "ci-studio.yml",
