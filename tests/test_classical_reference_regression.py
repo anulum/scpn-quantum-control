@@ -41,13 +41,18 @@ def _reference_evolution(n: int, dt: float) -> dict[str, Any]:
     declared buffers, and the correct refusal failed the regression test. A
     refusal for a request within the declared cap is therefore a skip that
     quotes the refusal; any other refusal still fails.
+
+    The refusal can also come from the execution reservation of the dense
+    build inside the evolution: with 0.93 GB free, the 0.13 GB build on top of
+    the 0.81 GB already reserved by the same evolution was refused. That
+    refusal reports the sum as ``total_bytes``; the same rule applies to it.
     """
     try:
         return classical_exact_evolution(
             n, t_max=0.1, dt=dt, max_dense_gib=REFERENCE_EVOLUTION_MAX_DENSE_GIB
         )
     except DenseAllocationError as refused:
-        required = re.search(r"required_bytes=(\d+)", str(refused))
+        required = re.search(r"(?:required|total)_bytes=(\d+)", str(refused))
         if required is None or int(required[1]) > REFERENCE_EVOLUTION_MAX_DENSE_GIB * GIB:
             raise
         pytest.skip(f"memory admission refused the {n}-qubit reference within its cap: {refused}")
