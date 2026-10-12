@@ -664,6 +664,7 @@
     "kuramoto_variants.py",
     "lindblad.py",
     "lindblad_engine.py",
+    "mps_diagnostics.py",
     "mps_evolution.py",
     "open_system_objectives.py",
     "pulse_shaping.py",
