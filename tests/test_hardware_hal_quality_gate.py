@@ -8,6 +8,7 @@
 """Lock the hardware HAL gate into preflight and CI."""
 
 import ast
+import re
 import shlex
 import subprocess
 import sys
@@ -200,6 +201,122 @@ def test_native_owner_enrollment_matches_each_existing_ci_command() -> None:
             arg.replace("${TMPDIR}", gettempdir()) for arg in shlex.split(steps[titles[name]])
         ]
         assert actual == command
+
+
+def test_provider_sdk_locks_have_complete_blocking_advisory_audits() -> None:
+    """Every SDK lock keeps a blocking audit with only named, expiring vendor dispositions."""
+    workflow = yaml.safe_load(Path(".github/workflows/ci-control-provider.yml").read_text())
+    job = workflow["jobs"]["provider-sdk-lock-audit"]
+    cohorts = job["strategy"]["matrix"]["cohort"]
+    expected = {
+        "ibm",
+        "braket",
+        "azure",
+        "qbraid",
+        "strangeworks",
+        "cirq",
+        "dwave",
+        "iqm",
+        "oqc",
+        "pasqal",
+        "quandela",
+        "quantinuum",
+        "quera",
+        "rigetti",
+        "pennylane",
+    }
+    assert len(cohorts) == len(expected)
+    assert set(cohorts) == expected
+    assert {f"requirements-ci-sdk-{name}-py312-linux.txt" for name in cohorts} == {
+        path.name for path in Path(".").glob("requirements-ci-sdk-*-py312-linux.txt")
+    }
+    assert not job.get("continue-on-error", False)
+    assert all(not step.get("continue-on-error", False) for step in job["steps"])
+    steps = {step.get("name"): step.get("run", "") for step in job["steps"]}
+    assert steps["Install the pinned audit tool"] == (
+        "python -m pip install --require-hashes -r requirements-ci-py312-linux.txt"
+    )
+    audit = steps["Audit the complete provider SDK lock"]
+    command = audit[audit.index("pip-audit --strict") :].replace("\\\n", " ")
+    assert " ".join(command.split()) == (
+        'pip-audit --strict --no-deps --disable-pip --desc on "${advisory_args[@]}" '
+        "-r requirements-ci-sdk-${{ matrix.cohort }}-py312-linux.txt"
+    )
+    assert re.findall(r"advisory_args\+=\(--ignore-vuln (CVE-[0-9-]+)\)", audit) == [
+        "CVE-2025-69872",
+        "CVE-2026-85394",
+        "CVE-2024-23342",
+    ]
+    assert audit.count("Review-by 2026-10-26.") == 3
+    assert 'if ! [[ "$(date -u +%F)" < "2026-10-26" ]]; then' in audit
+    assert "exit 1" in audit
+    assert "|| true" not in audit
+    assert "--ignore-vuln" not in audit[audit.index("esac") :]
+    native = workflow["jobs"]["provider-sdk-conformance"]
+    assert native["strategy"]["matrix"]["cohort"] == cohorts
+    assert native["env"]["SCPN_PROVIDER_SDK_COHORT"] == "${{ matrix.cohort }}"
+    native_steps = {step.get("name"): step.get("run", "") for step in native["steps"]}
+    assert " ".join(native_steps["Install the complete isolated SDK cohort"].split()) == (
+        "python -m pip install --require-hashes "
+        "-r requirements-ci-sdk-${{ matrix.cohort }}-py312-linux.txt"
+    )
+    assert native_steps["Check installed dependency compatibility"] == "python -m pip check"
+    runtime = next(
+        step
+        for step in native["steps"]
+        if step.get("name") == "Execute the required native SDK codec and public workload path"
+    )
+    assert runtime["shell"] == "bash"
+    assert " ".join(runtime["run"].split()) == (
+        "python -m pytest -q "
+        "tests/test_provider_sdk_conformance.py::test_native_sdk_cohort_roundtrip "
+        '| tee "${RUNNER_TEMP}/provider-sdk-conformance.txt"'
+    )
+    assert not native.get("continue-on-error", False)
+    assert all(not step.get("continue-on-error", False) for step in native["steps"])
+    minimal = workflow["jobs"]["provider-sdk-minimal-install"]
+    assert minimal["env"]["SCPN_PROVIDER_SDK_COHORT"] == "minimal"
+    assert minimal["env"]["PYTHONPATH"] == ""
+    minimal_steps = {step.get("name"): step.get("run", "") for step in minimal["steps"]}
+    wheel_build = minimal_steps["Build and install the actual base wheels without extras"]
+    assert "python -m build --wheel --no-isolation" in wheel_build
+    assert "python -m pip install --no-deps --require-hashes" in wheel_build
+    assert "-e " not in wheel_build
+    assert minimal_steps["Check installed base dependency compatibility"] == "python -m pip check"
+    assert (
+        "test_native_sdk_cohort_roundtrip"
+        in minimal_steps["Execute installed base HAL and actual optional SDK refusal"]
+    )
+    assert not minimal.get("continue-on-error", False)
+
+
+@pytest.mark.parametrize("cohort", ["dwave", "strangeworks"])
+def test_provider_advisory_disposition_expires_before_audit_execution(cohort: str) -> None:
+    """The actual CI shell refuses an expired vendor exception before invoking the auditor."""
+    workflow = yaml.safe_load(Path(".github/workflows/ci-control-provider.yml").read_text())
+    job = workflow["jobs"]["provider-sdk-lock-audit"]
+    script = next(
+        step["run"]
+        for step in job["steps"]
+        if step.get("name") == "Audit the complete provider SDK lock"
+    )
+    script = script.replace("${{ matrix.cohort }}", cohort)
+    script = script.replace("$(date -u +%F)", "2026-10-26")
+    syntax = subprocess.run(
+        ["bash", "-n"], input=script, capture_output=True, text=True, timeout=10, check=False
+    )
+    assert syntax.returncode == 0, syntax.stderr
+    expired = subprocess.run(
+        ["bash", "-e", "-o", "pipefail"],
+        input=script,
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+    assert expired.returncode == 1
+    assert "refusing an expired exception" in expired.stdout
+    assert expired.stderr == ""
 
 
 @pytest.mark.parametrize(

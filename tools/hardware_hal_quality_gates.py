@@ -161,6 +161,7 @@ HARDWARE_HAL_COVERAGE_COHORT = list(
             PROVIDER_CERTIFICATION_TEST,
             *PROVIDER_SEMANTICS_TESTS,
             "tests/test_hardware_hal_quality_gate.py",
+            "tests/test_provider_sdk_conformance.py",
             *OPERATOR_POLICY_TESTS,
         ]
     )
@@ -200,6 +201,7 @@ HARDWARE_HAL_TYPING_RATCHET = list(
             PROVIDER_CERTIFICATION_TEST,
             "tools/hardware_hal_quality_gates.py",
             "tests/test_hardware_hal_quality_gate.py",
+            "tests/test_provider_sdk_conformance.py",
             *OPERATOR_POLICY_TESTS,
             *OPERATOR_POLICY_SOURCES,
             *PROVIDER_SEMANTICS_SOURCES,
@@ -243,6 +245,7 @@ HARDWARE_HAL_DOCSTRING_RATCHET = list(
             PROVIDER_CERTIFICATION_TEST,
             "tools/hardware_hal_quality_gates.py",
             "tests/test_hardware_hal_quality_gate.py",
+            "tests/test_provider_sdk_conformance.py",
             *OPERATOR_POLICY_TESTS,
             *OPERATOR_POLICY_SOURCES,
             *PROVIDER_SEMANTICS_SOURCES,

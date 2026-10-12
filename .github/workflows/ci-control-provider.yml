@@ -568,6 +568,7 @@ jobs:
           tests/test_hardware_hal_provider_certification.py
           tools/hardware_hal_quality_gates.py
           tests/test_hardware_hal_quality_gate.py
+          tests/test_provider_sdk_conformance.py
           tests/test_operator_policy_contracts.py
           tests/test_operator_policy_decisions.py
           src/scpn_quantum_control/hardware/operator_policy_contracts.py
@@ -646,6 +647,7 @@ jobs:
           tests/test_hardware_hal_provider_certification.py
           tools/hardware_hal_quality_gates.py
           tests/test_hardware_hal_quality_gate.py
+          tests/test_provider_sdk_conformance.py
           tests/test_operator_policy_contracts.py
           tests/test_operator_policy_decisions.py
           src/scpn_quantum_control/hardware/operator_policy_contracts.py
@@ -728,6 +730,7 @@ jobs:
           tests/test_hardware_hal_quera_bloqade_adapters.py
           tests/test_hal_semantic_binding.py
           tests/test_hardware_hal_quality_gate.py
+          tests/test_provider_sdk_conformance.py
           tests/test_operator_policy_contracts.py
           tests/test_operator_policy_decisions.py
       - name: Verify hardware HAL coverage owner enrollment
@@ -752,3 +755,171 @@ jobs:
           --precision=2
           --fail-under=100
           '--include=*/hardware/hal.py,*/hardware/async_runner.py,*/hardware/provider_job_journal.py,*/hardware/provider_job_lifecycle.py,*/hardware/circuit_cutting.py,*/hardware/circuit_export.py,*/hardware/fast_classical.py,*/hardware/iqm_backend.py,*/hardware/aggregators.py,*/hardware/provider_capability_core.py,*/hardware/provider_submission_gate.py,*/hardware/provider_route_configuration.py,*/hardware/provider_capability_cloud_adapters.py,*/hardware/provider_capability_gate_adapters.py,*/hardware/provider_capability_specialized_adapters.py,*/hardware/provider_certification.py,*/hardware/operator_policy_contracts.py,*/hardware/operator_policy.py,*/hardware/_count_integrity.py,*/hardware/provider_semantics.py,*/hardware/provider_measurement.py,*/hardware/provider_modalities.py,*/hardware/hal_qiskit.py,*/hardware/hal_braket.py,*/hardware/hal_iqm.py,*/hardware/hal_quandela.py,*/hardware/hal_dwave.py,*/hardware/hal_pasqal.py,*/hardware/hal_quera_bloqade.py,*/tools/hardware_hal_quality_gates.py'
+
+  provider-sdk-lock-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        cohort:
+          - ibm
+          - braket
+          - azure
+          - qbraid
+          - strangeworks
+          - cirq
+          - dwave
+          - iqm
+          - oqc
+          - pasqal
+          - quandela
+          - quantinuum
+          - quera
+          - rigetti
+          - pennylane
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install the pinned audit tool
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Audit the complete provider SDK lock
+        shell: bash
+        run: |
+          advisory_args=()
+          case "${{ matrix.cohort }}" in
+            dwave)
+              # diskcache CVE-2025-69872: no fixed release; codec fixtures never read an untrusted persistent cache. Review-by 2026-10-26.
+              advisory_args+=(--ignore-vuln CVE-2025-69872)
+              ;;
+            strangeworks)
+              # python-jose CVE-2026-85394: no fixed release; this codec cohort never authenticates or verifies external JWTs. Review-by 2026-10-26.
+              advisory_args+=(--ignore-vuln CVE-2026-85394)
+              # ecdsa CVE-2024-23342: no fixed release; this codec cohort never signs, generates keys or performs ECDH. Review-by 2026-10-26.
+              advisory_args+=(--ignore-vuln CVE-2024-23342)
+              ;;
+          esac
+          if (( ${#advisory_args[@]} )); then
+            if ! [[ "$(date -u +%F)" < "2026-10-26" ]]; then
+              echo "The named provider advisory dispositions require review; refusing an expired exception."
+              exit 1
+            fi
+          fi
+          pip-audit --strict --no-deps --disable-pip --desc on \
+            "${advisory_args[@]}" \
+            -r requirements-ci-sdk-${{ matrix.cohort }}-py312-linux.txt
+
+  provider-sdk-conformance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        cohort:
+          - ibm
+          - braket
+          - azure
+          - qbraid
+          - strangeworks
+          - cirq
+          - dwave
+          - iqm
+          - oqc
+          - pasqal
+          - quandela
+          - quantinuum
+          - quera
+          - rigetti
+          - pennylane
+    env:
+      SCPN_PROVIDER_SDK_COHORT: ${{ matrix.cohort }}
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install the locked common codec test environment
+        run: >-
+          python -m pip install --require-hashes
+          -r requirements-ci-minimal-install-py312-linux.txt
+      - name: Install the complete isolated SDK cohort
+        run: >-
+          python -m pip install --require-hashes
+          -r requirements-ci-sdk-${{ matrix.cohort }}-py312-linux.txt
+      - name: Check installed dependency compatibility
+        run: python -m pip check
+      - name: Execute the required native SDK codec and public workload path
+        shell: bash
+        run: >-
+          python -m pytest -q
+          tests/test_provider_sdk_conformance.py::test_native_sdk_cohort_roundtrip
+          | tee "${RUNNER_TEMP}/provider-sdk-conformance.txt"
+      - name: Retain native codec diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: provider-sdk-${{ matrix.cohort }}
+          path: ${{ runner.temp }}/provider-sdk-conformance.txt
+          if-no-files-found: warn
+
+  provider-sdk-minimal-install:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      SCPN_PROVIDER_SDK_COHORT: minimal
+      PYTHONPATH: ''
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install the locked base build and test environment
+        run: >-
+          python -m pip install --require-hashes
+          -r requirements-ci-minimal-install-py312-linux.txt
+      - name: Build and install the actual base wheels without extras
+        shell: bash
+        run: |
+          python -m build --wheel --no-isolation --outdir "${RUNNER_TEMP}/provider-minimal-wheels" oscillatools
+          python -m build --wheel --no-isolation --outdir "${RUNNER_TEMP}/provider-minimal-wheels" .
+          python - <<'PY'
+          import os
+          from hashlib import sha256
+          from pathlib import Path
+
+          directory = Path(os.environ["RUNNER_TEMP"]) / "provider-minimal-wheels"
+          wheels = sorted(directory.glob("*.whl"))
+          if len(wheels) != 2:
+              raise SystemExit(f"expected two base wheels, found {len(wheels)}")
+          requirements = Path("/tmp/scpn-qc-provider-minimal-local-wheels.txt")
+          requirements.write_text("\n".join(
+              f"{wheel.resolve().as_uri()} --hash=sha256:{sha256(wheel.read_bytes()).hexdigest()}"
+              for wheel in wheels
+          ) + "\n", encoding="utf-8")
+          PY
+          python -m pip install --no-deps --require-hashes -r /tmp/scpn-qc-provider-minimal-local-wheels.txt
+      - name: Check installed base dependency compatibility
+        run: python -m pip check
+      - name: Execute installed base HAL and actual optional SDK refusal
+        shell: bash
+        run: >-
+          python -m pytest -q
+          tests/test_provider_sdk_conformance.py::test_native_sdk_cohort_roundtrip
+          | tee "${RUNNER_TEMP}/provider-sdk-minimal-install.txt"
+      - name: Retain minimal-install diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: provider-sdk-minimal-install
+          path: ${{ runner.temp }}/provider-sdk-minimal-install.txt
+          if-no-files-found: warn

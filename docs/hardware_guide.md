@@ -150,6 +150,66 @@ the adapter boundary; installed vendor SDK and physical-device qualification
 require their own evidence. No hardware result or performance claim follows
 from native semantics capture alone.
 
+## Provider SDK reference environments
+
+Provider SDK compatibility is checked separately from import availability and
+physical-device evidence. Each Python 3.12 reference environment has an input
+file and a complete hash-pinned dependency lock named
+`requirements-ci-sdk-<family>-py312-linux.in` and `.txt`. The reference families
+are `ibm`, `braket`, `azure`, `qbraid`, `strangeworks`, `cirq`, `dwave`, `iqm`,
+`oqc`, `pasqal`, `quandela`, `quantinuum`, `quera`, `rigetti` and `pennylane`.
+These locks describe CI reference environments; the supported installation
+ranges remain in `pyproject.toml`.
+
+The required native codec matrix exercises vendor serialisation and decoding
+through the public workload builders. Gate-model fixtures retain original
+parameters, qubit/classical-bit order and shot requests. Photonic, annealing
+and analog fixtures retain their native modes, variable domains or ordered
+sites instead of treating them as binary gate-model registers. Local simulator
+paths also check known two-qubit results and exact sample totals. Cloud-only
+codec checks construct no authenticated client and submit no job.
+
+For example, run the IBM reference codec check from the source checkout in a
+dedicated environment:
+
+```bash
+python -m pip install --require-hashes -r requirements-ci-minimal-install-py312-linux.txt
+python -m pip install --require-hashes -r requirements-ci-sdk-ibm-py312-linux.txt
+python -m pip check
+SCPN_PROVIDER_SDK_COHORT=ibm PYTHONPATH=src:oscillatools/src \
+  python -m pytest -q tests/test_provider_sdk_conformance.py::test_native_sdk_cohort_roundtrip
+```
+
+Select another family explicitly with `SCPN_PROVIDER_SDK_COHORT`. An absent
+required SDK fails its cohort. The default test selection covers IBM and
+Braket; it does not qualify unselected optional SDKs. A separate minimal-install
+job builds and installs the actual base wheels without extras, exercises local
+HAL sampling, and verifies that unavailable optional routes remain explicit
+and fail `scpn-provider-smoke --require-all`.
+
+The SDK reference runner is Ubuntu 24.04. Quantinuum's native `pyqir` wheels
+require glibc 2.34 or newer. The IQM base-client model codec is distinct from its
+optional Qiskit extension: the currently admitted IQM extension requires Qiskit
+below 2.2, while this package requires 2.2 or newer. Passing the base-client
+request codec does not qualify IQM target compilation or execution in the main
+package environment.
+
+Complete dependency-lock audits remain blocking. Azure's reference lock uses
+SDK 3.12 with patched `cryptography`; SDK 3.13 constrains that dependency to an
+affected older version. SDK compatibility tests and advisory audits provide
+different evidence. A successful native codec does not resolve a dependency
+advisory, establish cloud authentication or prove physical hardware operation.
+
+Three currently unpatched upstream advisories have narrowly scoped codec-CI
+dispositions through 25 October 2026: D-Wave's `diskcache` dependency
+(CVE-2025-69872), and Strangeworks' `python-jose` (CVE-2026-85394) and `ecdsa`
+(CVE-2024-23342) dependencies. These fixtures read no untrusted persistent cache,
+authenticate no cloud client, verify no external JWT and perform no signing,
+key generation or ECDH. The audit excludes only those named advisories in their
+respective cohorts and refuses the exceptions from 26 October onward. These
+are unresolved vendor risks, not repaired vulnerabilities or qualification of
+the affected operations. Every other finding and audit failure still blocks.
+
 
 ## Operator admission before transport
 
