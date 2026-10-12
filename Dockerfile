@@ -74,6 +74,8 @@ COPY requirements-ci-studio-browser.txt ./
 # the minimal-install and Quimb hash closures.
 COPY requirements-ci-minimal-install-py312-linux.in requirements-ci-quimb-py312-linux.in ./
 COPY requirements-ci-minimal-install-py312-linux.txt requirements-ci-quimb-py312-linux.txt ./
+# The SDK cohort completeness guard inspects all reference inputs and locks.
+COPY requirements-ci-sdk-*.in requirements-ci-sdk-*.txt ./
 # Optional-runtime contract tests inspect these locks without installing the
 # heavyweight runtimes in the reproduction image.
 COPY requirements-ci-jax-py312-linux.txt requirements-ci-torch-cpu-py312-linux.txt ./
