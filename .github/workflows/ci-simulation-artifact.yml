@@ -122,6 +122,22 @@ jobs:
           --data-file=/tmp/scpn-qc-tn-mps-crossover-admission-quality.coverage
           --precision=2 --show-missing --fail-under=100
           --include=*/benchmarks/tn_mps_crossover_admission.py
+      - name: Install the pinned tensor-network execution runtime
+        run: >-
+          python -m pip install --require-hashes
+          -r requirements-ci-quimb-py312-linux.txt
+      - name: Verify actual tensor-network availability
+        run: python -c "import quimb; assert quimb.__version__ == '1.13.0'"
+      - name: Fetch the immutable functional cost baseline
+        run: git fetch --no-tags --depth=1 origin 8c0a8fce8bebf03fe54c268b09ece6467f200289
+      - name: Execute tensor-network truncation and crossover contracts
+        env:
+          OPENBLAS_NUM_THREADS: "1"
+          OMP_NUM_THREADS: "1"
+          MKL_NUM_THREADS: "1"
+        run: >-
+          python -m pytest -q -s
+          tests/test_tensor_network_truncation.py
   xy-compile-recompute-artifact-quality:
     runs-on: ubuntu-latest
     env:

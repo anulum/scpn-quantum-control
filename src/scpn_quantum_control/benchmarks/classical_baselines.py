@@ -26,6 +26,7 @@ import numpy as np
 from numpy.typing import NDArray
 from scipy.integrate import solve_ivp
 
+from scpn_quantum_control.dense_budget import require_dense_allocation
 from scpn_quantum_control.phase import mps_evolution
 
 
@@ -141,13 +142,50 @@ def qutip_lindblad_baseline(
 ) -> ClassicalBaselineRun:
     """Run an optional QuTiP Lindblad density-matrix baseline.
 
-    If QuTiP is not installed, the returned result is marked unavailable
-    instead of fabricating a numerical value.
+    Parameters
+    ----------
+    K
+        Finite Pauli-normalized coupling matrix, shape ``(n, n)``.
+    omega
+        Finite on-site frequencies, shape ``(n,)``.
+    gamma
+        Nonnegative amplitude-damping rate in inverse model time units.
+    t_max
+        Nonnegative final model time.
+    dt
+        Positive spacing of retained observations.
+
+    Returns
+    -------
+    ClassicalBaselineRun
+        Real solver trajectory or explicit unavailable status on an admitted
+        problem when QuTiP is absent; no tensor-network fallback is selected.
+
+    Raises
+    ------
+    ValueError
+        Model dimensions, rates or the time grid are invalid.
+    MemoryError
+        Declared dense Hamiltonian/Liouvillian buffers exceed allocation policy.
+
+    Notes
+    -----
+    This owner constructs a dense Hamiltonian. With collapse operators the
+    conservative admission also covers dense Liouvillian intermediates; the
+    zero-collapse pure-state route admits Hamiltonian workspace instead.
+
     """
     K_arr, omega_arr = _validate_inputs(K, omega)
     _validate_time_grid(t_max, dt)
     if gamma < 0.0 or not np.isfinite(gamma):
         raise ValueError(f"gamma must be finite and non-negative, got {gamma}")
+
+    require_dense_allocation(
+        int(K_arr.shape[0]),
+        rank=4 if gamma > 0 else 2,
+        object_count=4,
+        label="QuTiP baseline dense workspace",
+    )
 
     qutip_spec = importlib_util.find_spec("qutip")
     if qutip_spec is None:
@@ -193,8 +231,41 @@ def mps_tebd_baseline(
     dt: float = 0.1,
     bond_dim: int = 32,
     cutoff: float = 1e-10,
+    max_memory_bytes: int | None = None,
 ) -> ClassicalBaselineRun:
-    """Run an optional quimb TEBD tensor-network baseline."""
+    """Run the real Quimb baseline and retain its approximation diagnostics.
+
+    Parameters
+    ----------
+    K
+        Finite coupling matrix, shape ``(n, n)``.
+    omega
+        Finite frequencies, shape ``(n,)``.
+    t_max
+        Final model time.
+    dt
+        Positive Trotter step spacing.
+    bond_dim
+        Positive maximum MPS bond dimension.
+    cutoff
+        Finite positive local truncation threshold.
+    max_memory_bytes
+        Optional declared component ceiling passed to the original MPS owner.
+
+    Returns
+    -------
+    ClassicalBaselineRun
+        Actual Quimb trajectory and serializable MPS diagnostic metadata,
+        or explicit unavailable status when Quimb is absent.
+
+    Raises
+    ------
+    ValueError
+        The model, time grid or truncation parameters are invalid.
+    MemoryError
+        The MPS owner's declared component admission refuses the request.
+
+    """
     K_arr, omega_arr = _validate_inputs(K, omega)
     _validate_time_grid(t_max, dt)
     if bond_dim < 1:
@@ -213,6 +284,7 @@ def mps_tebd_baseline(
         bond_dim=bond_dim,
         cutoff=cutoff,
         allow_long_range_truncation=True,
+        max_memory_bytes=max_memory_bytes,
     )
     elapsed_ms = (time.perf_counter() - start) * 1000.0
     return ClassicalBaselineRun(
@@ -229,6 +301,7 @@ def mps_tebd_baseline(
             "bond_dims_final": list(result["bond_dims_final"]),
             "coupling_scope": result["coupling_scope"],
             "omitted_coupling_l1": result["omitted_coupling_l1"],
+            "mps_diagnostics": result["diagnostics"].to_dict(),
         },
     )
 
@@ -252,8 +325,13 @@ def run_documented_classical_baselines(
 def _validate_inputs(
     K: NDArray[np.float64], omega: NDArray[np.float64]
 ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
-    K_arr = np.asarray(K, dtype=float)
-    omega_arr = np.asarray(omega, dtype=float)
+    """Validate finite square-model arrays without choosing a backend."""
+    K_raw = np.asarray(K)
+    omega_raw = np.asarray(omega)
+    if K_raw.dtype.kind not in "fiu" or omega_raw.dtype.kind not in "fiu":
+        raise ValueError("K and omega must be real numeric arrays")
+    K_arr = np.asarray(K_raw, dtype=float)
+    omega_arr = np.asarray(omega_raw, dtype=float)
     if K_arr.ndim != 2 or K_arr.shape[0] != K_arr.shape[1]:
         raise ValueError(f"K must be a square matrix, got shape {K_arr.shape}")
     if omega_arr.shape != (K_arr.shape[0],):
@@ -266,6 +344,7 @@ def _validate_inputs(
 
 
 def _validate_time_grid(t_max: float, dt: float) -> None:
+    """Reject non-finite or negative time metadata."""
     if t_max < 0.0 or not np.isfinite(t_max):
         raise ValueError(f"t_max must be finite and non-negative, got {t_max}")
     if dt <= 0.0 or not np.isfinite(dt):
@@ -273,15 +352,18 @@ def _validate_time_grid(t_max: float, dt: float) -> None:
 
 
 def _times(t_max: float, dt: float) -> NDArray[np.float64]:
+    """Return the existing documented baseline observation grid."""
     n_steps = max(1, round(t_max / dt))
     return np.linspace(0.0, float(t_max), n_steps + 1, dtype=np.float64)
 
 
 def _phase_order_parameter(theta: NDArray[np.float64]) -> float:
+    """Measure the mean phasor magnitude of the classical phase vector."""
     return float(abs(np.mean(np.exp(1j * theta))))
 
 
 def _unavailable(name: str, backend: str, n_oscillators: int, reason: str) -> ClassicalBaselineRun:
+    """Return explicit absence without inventing a numerical trajectory."""
     return ClassicalBaselineRun(
         name=name,
         backend=backend,
@@ -293,12 +375,14 @@ def _unavailable(name: str, backend: str, n_oscillators: int, reason: str) -> Cl
 
 
 def _qutip_single(qutip: Any, n: int, site: int, op: Any) -> Any:
+    """Place one Pauli operator in the original little-endian site convention."""
     ops = [qutip.qeye(2)] * n
     ops[site] = op
     return qutip.tensor(list(reversed(ops)))
 
 
 def _qutip_pair(qutip: Any, n: int, first: int, second: int, op1: Any, op2: Any) -> Any:
+    """Place two operators in the original little-endian site convention."""
     ops = [qutip.qeye(2)] * n
     ops[first] = op1
     ops[second] = op2
@@ -306,6 +390,7 @@ def _qutip_pair(qutip: Any, n: int, first: int, second: int, op1: Any, op2: Any)
 
 
 def _qutip_xy_hamiltonian(qutip: Any, K: NDArray[np.float64], omega: NDArray[np.float64]) -> Any:
+    """Construct the existing Pauli-normalized dense XY Hamiltonian."""
     n = K.shape[0]
     hamiltonian = qutip.Qobj(np.zeros((2**n, 2**n), dtype=complex), dims=[[2] * n, [2] * n])
     sx = qutip.sigmax()
@@ -328,6 +413,7 @@ def _qutip_xy_hamiltonian(qutip: Any, K: NDArray[np.float64], omega: NDArray[np.
 
 
 def _qutip_order_parameter(qutip: Any, state: Any, n: int) -> float:
+    """Measure the mean local X/Y phasor in the QuTiP state."""
     z = 0.0 + 0.0j
     for site in range(n):
         ex = qutip.expect(_qutip_single(qutip, n, site, qutip.sigmax()), state)
@@ -337,6 +423,7 @@ def _qutip_order_parameter(qutip: Any, state: Any, n: int) -> float:
 
 
 def _qutip_trace_or_norm(state: Any) -> float:
+    """Return density trace or pure-state squared norm as appropriate."""
     if getattr(state, "isoper", False):
         return float(np.real(state.tr()))
     return float(np.real(state.norm() ** 2))

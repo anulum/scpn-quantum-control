@@ -199,7 +199,11 @@ Each row is a test class; columns are the 20 modules. ✓ = directly tested.
 optional dependencies (quimb, JAX, Mitiq) and are tested in their
 respective unit test files (`test_mps_evolution.py`, `test_batch3_modules.py`,
 `test_mitiq_integration.py`). The e2e tests avoid optional dependencies
-to ensure they run on the CI matrix without extras.
+to ensure they run on the CI matrix without extras. The required pinned Quimb
+quality and simulation cohorts additionally execute
+`test_tensor_network_truncation.py`: public solver refusal/recovery, actual Aer
+MPS parity, bond/time refinement and tensor storage versus observable accuracy.
+Base-profile optional skips do not qualify those native runtime contracts.
 
 ---
 

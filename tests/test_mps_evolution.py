@@ -91,6 +91,7 @@ class TestDMRG:
             "n_oscillators",
             "coupling_scope",
             "omitted_coupling_l1",
+            "diagnostics",
         }
 
     def test_dmrg_accepts_zero_onsite_fields(self) -> None:
@@ -154,6 +155,7 @@ class TestTEBD:
             "mps_final",
             "coupling_scope",
             "omitted_coupling_l1",
+            "diagnostics",
         }
 
     def test_tebd_bond_dims(self) -> None:

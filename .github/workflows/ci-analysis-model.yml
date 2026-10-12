@@ -362,6 +362,14 @@ jobs:
         run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/phase/mps_evolution.py
+          tests/test_mps_evolution.py
+          src/scpn_quantum_control/phase/mps_diagnostics.py
+          src/scpn_quantum_control/benchmarks/mps_baseline.py
+          src/scpn_quantum_control/benchmarks/classical_baselines.py
+          tests/test_classical_baselines.py
+          tests/test_mps_diagnostics.py
+          tests/test_tensor_network_truncation.py
+          tests/test_mps_baseline.py
           src/scpn_quantum_control/phase/contraction_optimiser.py
           tests/test_contraction_optimiser.py
           tools/mps_evolution_quality_gates.py
@@ -373,18 +381,34 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/phase/mps_evolution.py
           tests/test_mps_evolution.py
+          src/scpn_quantum_control/phase/mps_diagnostics.py
+          src/scpn_quantum_control/benchmarks/mps_baseline.py
+          src/scpn_quantum_control/benchmarks/classical_baselines.py
+          tests/test_classical_baselines.py
+          tests/test_mps_diagnostics.py
+          tests/test_tensor_network_truncation.py
+          tests/test_mps_baseline.py
           src/scpn_quantum_control/phase/contraction_optimiser.py
           tests/test_contraction_optimiser.py
           tools/mps_evolution_quality_gates.py
           tests/test_mps_evolution_quality_gate.py
+      - name: Fetch the immutable functional cost baseline
+        run: git fetch --no-tags --depth=1 origin 8c0a8fce8bebf03fe54c268b09ece6467f200289
       - name: Run real-quimb connected focused coverage
+        env:
+          OPENBLAS_NUM_THREADS: "1"
+          OMP_NUM_THREADS: "1"
+          MKL_NUM_THREADS: "1"
         run: >-
           python -m coverage run
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-mps-evolution-quality.coverage
           --branch
-          -m pytest -q
+          -m pytest -q -s
           tests/test_mps_evolution.py
+          tests/test_mps_diagnostics.py
+          tests/test_tensor_network_truncation.py
+          tests/test_mps_baseline.py
           tests/test_backend_selector.py
           tests/test_classical_baselines.py
           tests/test_contraction_optimiser.py
@@ -395,7 +419,7 @@ jobs:
           --data-file=/tmp/scpn-qc-mps-evolution-quality.coverage
           --precision=2 --show-missing
           --fail-under=100
-          --include=*/phase/mps_evolution.py,*/phase/contraction_optimiser.py
+          --include=*/phase/mps_evolution.py,*/phase/mps_diagnostics.py,*/phase/contraction_optimiser.py,*/benchmarks/mps_baseline.py
   knm-key-quality:
     runs-on: ubuntu-latest
     env:

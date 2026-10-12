@@ -525,8 +525,8 @@ Returns dict with columns: n, gpu_time_s, qpu_time_s, memory_gb, gpu_faster.
 ### 4. `mps_baseline` — Tensor Network Comparison
 
 Matrix Product State (MPS) resource estimation for the Kuramoto-XY
-system. MPS provides the classical baseline: if MPS at affordable bond
-dimension matches the quantum simulation, there is no quantum advantage.
+system. These are entropy-based storage heuristics, separate from actual solver
+convergence, measured execution cost and hardware-advantage evidence.
 
 #### MPS Theory
 
@@ -535,23 +535,25 @@ Bond dimension chi controls MPS expressibility:
 - chi = 2^(n/2): exact representation (full Hilbert space)
 - chi ~ poly(n): efficient classical simulation
 
-The required chi is set by the half-chain entanglement entropy S:
+Half-chain entropy gives a necessary lower bound on chi:
 
 ```
 chi >= 2^S
 ```
 
-For the Kuramoto-XY system at different coupling regimes:
+Illustrative entropy-scaling assumptions used by this heuristic (not a
+validated phase classification for arbitrary coupling matrices):
 - Below BKT (weak coupling): S ~ log(n), chi ~ poly(n) — MPS efficient
 - At BKT critical point: S ~ (c/3) log(n) with c=1, chi ~ n^(1/3) — MPS efficient
 - Above BKT (strong coupling): S ~ n/2 (volume law), chi ~ 2^(n/2) — MPS fails
 
-The quantum advantage boundary is where MPS fails: when the half-chain
-entropy implies chi > chi_max (limited by available RAM).
+Exact representation depends on Schmidt ranks at every cut. A lower bound
+above a cap can rule that cap out; a lower bound below it cannot certify
+representation accuracy, tractability or quantum advantage.
 
 #### `required_bond_dimension(entropy)`
 
-Minimum chi from entanglement entropy: `chi = ceil(2^S)`.
+Entropy lower bound: `chi = ceil(2^S)`, not the exact required Schmidt rank.
 
 #### `mps_memory(n, chi)`
 
@@ -560,7 +562,7 @@ Memory for MPS: `n × 2 × chi^2 × 16 bytes` (n tensors of shape
 
 #### `quantum_advantage_n(chi_max=1024, entropy_per_qubit=0.5)`
 
-Estimates system size where MPS fails under volume-law entanglement:
+Evaluates the legacy cap-crossing heuristic under an assumed entropy slope:
 
 ```
 S = entropy_per_qubit × n/2
@@ -582,11 +584,12 @@ K = build_knm_paper27(L=8)
 omega = OMEGA_N_16[:8]
 result = mps_baseline_comparison(K, omega)
 print(f"Entropy S = {result.half_chain_entropy:.3f}")
-print(f"Required chi = {result.required_bond_dim}")
+print(f"Entropy lower-bound chi = {result.required_bond_dim}")
 print(f"MPS memory: {result.mps_memory_bytes / 1e6:.1f} MB")
 print(f"Exact memory: {result.exact_memory_bytes / 1e6:.1f} MB")
 print(f"Compression: {result.compression_ratio:.1f}x")
-print(f"MPS tractable: {result.mps_tractable}")
+print(f"Entropy lower bound fits cap: {result.mps_tractable}")
+print(result.qualification_scope)
 ```
 
 #### `MPSBaselineResult`
@@ -595,12 +598,18 @@ print(f"MPS tractable: {result.mps_tractable}")
 |-------|------|-------------|
 | `n_qubits` | int | System size |
 | `half_chain_entropy` | float | S(n/2) from exact ground state |
-| `required_bond_dim` | int | chi = ceil(2^S) |
-| `mps_memory_bytes` | int | MPS storage requirement |
+| `required_bond_dim` | int | Half-chain entropy lower bound, ceil(2^S) |
+| `mps_memory_bytes` | int | Uniform-bond tensor component estimate |
 | `exact_memory_bytes` | int | Full statevector storage |
 | `compression_ratio` | float | exact/MPS memory ratio |
-| `quantum_advantage_threshold` | int | n where MPS at chi_max fails |
-| `mps_tractable` | bool | chi_required <= chi_max |
+| `quantum_advantage_threshold` | int | Legacy assumed-volume-law cap heuristic |
+| `mps_tractable` | bool | Entropy lower bound is within chi_max; not certification |
+| `bond_dimension_basis` | str | Explicit entropy lower-bound interpretation |
+| `qualification_scope` | str | Storage heuristic; observable convergence not established |
+
+For actual compressed solver admission, bond growth, local discarded weights,
+observable refinement and explicit dense export, use the
+[MPS diagnostic API](differentiable_api.md#tensor-network-approximation-diagnostics).
 
 ---
 

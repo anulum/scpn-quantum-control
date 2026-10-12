@@ -7,12 +7,12 @@ Two modules for tensor-network-based simulation of the Kuramoto-XY system:
 2. **Contraction optimiser** (`phase/contraction_optimiser.py`) — optimal
    einsum paths via cotengra
 
-These extend the package beyond exact diagonalisation limits to $n = 32$–64
-qubits (system-size-dependent on bond dimension and entanglement).
+Compressed states can extend beyond dense diagonalisation limits when their
+bond growth and declared memory components remain admitted. A qubit count alone
+does not qualify their accuracy, storage advantage or execution cost.
 
 **Caveat:** Both modules require optional dependencies (`quimb`, `cotengra`).
-Install via `pip install scpn-quantum-control[quimb]` or
-`pip install scpn-quantum-control[cotengra]`.
+Install the tensor runtime with `pip install scpn-quantum-control[tensor]`.
 
 The N=30-40 TN/MPS baseline design is tracked in
 [`TN/MPS Baseline Design`](tn_mps_baseline_design.md) and regenerated with
@@ -43,9 +43,9 @@ states (e.g., volume-law after long time evolution) require large $\chi$.
 
 #### DMRG
 
-Density Matrix Renormalisation Group finds the ground state by variationally
-optimising the MPS tensors site-by-site. Converges to the true ground state
-for 1D systems with moderate entanglement.
+Density Matrix Renormalisation Group searches variationally by optimizing MPS
+tensors site-by-site. Energy convergence and bond refinement are diagnostics;
+they do not guarantee the global ground state or its fidelity.
 
 #### TEBD
 
@@ -86,6 +86,7 @@ from scpn_quantum_control.phase.mps_evolution import (
     is_quimb_available,
     dmrg_ground_state,
     tebd_evolution,
+    export_mps_state,
 )
 ```
 
@@ -98,6 +99,9 @@ result = dmrg_ground_state(
     bond_dim: int = 64,     # maximum bond dimension
     cutoff: float = 1e-10,  # SVD truncation cutoff
     max_sweeps: int = 20,   # DMRG sweep limit
+    allow_long_range_truncation: bool = False,
+    *,
+    max_memory_bytes: int | None = None,  # can only lower active policy
 ) -> dict
 ```
 
@@ -109,6 +113,7 @@ result = dmrg_ground_state(
     "mps": quimb.MatrixProductState,  # ground state MPS
     "converged": bool,       # True if energy converged
     "bond_dims": list[int],  # bond dimensions along the chain
+    "diagnostics": MPSRunDiagnostics,  # compressed observations and admission
 }
 ```
 
@@ -123,8 +128,10 @@ result = tebd_evolution(
     bond_dim: int = 64,     # maximum bond dimension
     cutoff: float = 1e-10,  # SVD truncation
     order: int = 2,         # Trotter order (2 or 4)
+    allow_long_range_truncation: bool = False,
     *,
     initial_state: np.ndarray | None = None,  # normalized dense pure state
+    max_memory_bytes: int | None = None,
 ) -> dict
 ```
 
@@ -136,6 +143,7 @@ result = tebd_evolution(
     "R": np.ndarray,              # order parameter R(t)
     "bond_dims_final": list[int], # bond dimensions at final time
     "mps_final": quimb.MatrixProductState,  # final MPS
+    "diagnostics": MPSRunDiagnostics,      # bonds, local losses and observables
 }
 ```
 
@@ -146,6 +154,30 @@ is_quimb_available() -> bool
 ```
 
 Returns `True` if quimb is installed.
+
+#### Approximation and export admission
+
+`result["diagnostics"].to_dict()` records the actual runtime version, cutoff,
+time step/order, contraction strategy and requested-time observations. Each
+observation retains actual bond dimensions, tensor bytes, norm and normalized
+local Pauli-Z values. TEBD sums squared local discarded singular-value norms;
+this quantity is **not a global state, observable or fidelity error bound**.
+The Trotter estimate remains separate. DMRG explicitly reports unavailable
+discarded weights where its solver does not supply them.
+
+The byte ceiling admits declared tensor copies, local SVD buffers, model inputs
+and observation records. It is a component model, not a reservation or a total
+RSS guarantee. An insufficient ceiling refuses before solver construction.
+Explicit dense preparation must also fit the remaining ceiling. Dense result
+export is never automatic: call `export_mps_state(mps, max_memory_bytes=...)`
+to request and admit its two dense buffers separately.
+
+The required runtime tests compare product and Bell preparations, increasing
+bond caps, entanglement growth and timestep refinement against independent
+small-system references and a matched actual Aer MPS candidate. Exact small
+states can require more tensor storage than dense amplitudes; a low cap can
+save storage while losing accuracy. This is not a universal speed comparison.
+See the [diagnostic API](differentiable_api.md#tensor-network-approximation-diagnostics).
 
 ### Tutorial
 
@@ -164,16 +196,27 @@ np.fill_diagonal(K, 0.0)
 omega = np.linspace(0.8, 1.2, n)
 
 # Ground state
-gs = dmrg_ground_state(K, omega, bond_dim=64, max_sweeps=20)
+gs = dmrg_ground_state(
+    K, omega, bond_dim=64, max_sweeps=20,
+    allow_long_range_truncation=True, max_memory_bytes=64 * 1024**2,
+)
 print(f"DMRG energy: {gs['energy']:.6f}")
 print(f"Converged: {gs['converged']}")
 print(f"Bond dimensions: {gs['bond_dims']}")
 
 # Time evolution
-dyn = tebd_evolution(K, omega, t_max=2.0, dt=0.05, bond_dim=64, order=2)
+dyn = tebd_evolution(
+    K, omega, t_max=2.0, dt=0.05, bond_dim=64, order=2,
+    allow_long_range_truncation=True, max_memory_bytes=64 * 1024**2,
+)
 print(f"R(0) = {dyn['R'][0]:.3f}")
 print(f"R(T) = {dyn['R'][-1]:.3f}")
+print(dyn["diagnostics"].to_dict())
 ```
+
+This example explicitly runs the nearest-neighbour truncation of the supplied
+long-range matrix; the returned omitted coupling mass identifies that model
+change. The chosen 64 MiB is a caller ceiling, not an observed host allowance.
 
 ### Bond Dimension Selection
 

@@ -41,7 +41,10 @@ def test_coverage_gate_is_isolated_connected_and_exact() -> None:
     )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/phase/mps_evolution.py,*/phase/contraction_optimiser.py" in report
+    assert (
+        "--include=*/phase/mps_evolution.py,*/phase/mps_diagnostics.py,"
+        "*/phase/contraction_optimiser.py,*/benchmarks/mps_baseline.py"
+    ) in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:

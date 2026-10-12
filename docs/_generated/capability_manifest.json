@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 851,
     "public_documentation_pages": 384,
-    "python_model_classes": 1509,
-    "python_model_source_modules": 787,
+    "python_model_classes": 1514,
+    "python_model_source_modules": 788,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1524
+    "test_files": 1526
   },
   "documentation": {
     "examples": [
@@ -732,7 +732,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 119
+        "python_modules": 120
       },
       {
         "package": "psi_field",
@@ -2141,6 +2141,10 @@
         "path": "src/scpn_quantum_control/hermetic_reproduction_kit.py"
       },
       {
+        "name": "DiscardedWeightLog",
+        "path": "src/scpn_quantum_control/phase/mps_diagnostics.py"
+      },
+      {
         "name": "DisruptionBenchmark",
         "path": "src/scpn_quantum_control/control/q_disruption_iter.py"
       },
@@ -3465,8 +3469,24 @@
         "path": "src/scpn_quantum_control/compiler/mlir_records.py"
       },
       {
+        "name": "MPSAllocationError",
+        "path": "src/scpn_quantum_control/phase/mps_diagnostics.py"
+      },
+      {
+        "name": "MPSAllocationEstimate",
+        "path": "src/scpn_quantum_control/phase/mps_diagnostics.py"
+      },
+      {
         "name": "MPSBaselineResult",
         "path": "src/scpn_quantum_control/benchmarks/mps_baseline.py"
+      },
+      {
+        "name": "MPSObservation",
+        "path": "src/scpn_quantum_control/phase/mps_diagnostics.py"
+      },
+      {
+        "name": "MPSRunDiagnostics",
+        "path": "src/scpn_quantum_control/phase/mps_diagnostics.py"
       },
       {
         "name": "MWPMDecoder",
@@ -7372,6 +7392,7 @@
       "src/scpn_quantum_control/phase/lindblad.py",
       "src/scpn_quantum_control/phase/lindblad_engine.py",
       "src/scpn_quantum_control/phase/model_training_evidence.py",
+      "src/scpn_quantum_control/phase/mps_diagnostics.py",
       "src/scpn_quantum_control/phase/mps_evolution.py",
       "src/scpn_quantum_control/phase/natural_gradient.py",
       "src/scpn_quantum_control/phase/nqs_ansatz.py",
@@ -9562,6 +9583,7 @@
       "tests/test_module_size_policy.py",
       "tests/test_monte_carlo_xy.py",
       "tests/test_mps_baseline.py",
+      "tests/test_mps_diagnostics.py",
       "tests/test_mps_evolution.py",
       "tests/test_mps_evolution_quality_gate.py",
       "tests/test_multi_hal_federation_product.py",
@@ -10235,6 +10257,7 @@
       "tests/test_tcbo_weighted_complex_validation.py",
       "tests/test_tensor_jump.py",
       "tests/test_tensor_jump_contracts.py",
+      "tests/test_tensor_network_truncation.py",
       "tests/test_test_identifier_limits.py",
       "tests/test_tested_tree_is_the_working_tree.py",
       "tests/test_theory_hook_promotion.py",

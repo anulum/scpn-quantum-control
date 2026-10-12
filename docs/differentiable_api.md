@@ -2200,3 +2200,55 @@ growth. Insufficient parent allowance and cancellation refuse with reservation
 release and subsequent recovery. See [captured traversal workspace admission](differentiable_programming.md#captured-traversal-workspace-admission)
 for the declared frame estimates, passive-class metadata contract and remaining
 allocator, lifetime and concurrency boundaries.
+
+## Tensor-network approximation diagnostics
+
+The optional Quimb backend retains the spin-half Hamiltonian convention
+`H = -sum(K[i,j] * (X_i X_j + Y_i Y_j) / 4) - sum(omega[i] * Z_i / 2)`.
+Its nearest-neighbour model refuses omitted long-range couplings unless the
+caller explicitly accepts that model truncation.
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase.mps_evolution import tebd_evolution, export_mps_state
+
+result = tebd_evolution(
+    np.array([[0.0, 1.0], [1.0, 0.0]]),
+    np.array([0.2, -0.1]),
+    t_max=0.2,
+    dt=0.05,
+    bond_dim=2,
+    max_memory_bytes=1024 * 1024,
+)
+metadata = result["diagnostics"].to_dict()
+amplitudes = export_mps_state(result["mps_final"], max_memory_bytes=128)
+```
+
+TEBD diagnostics report the requested bond cap, actual bonds at each requested
+time, stored tensor bytes, state norm and normalized local Pauli-Z observables.
+The contraction strategy is a canonical nearest-neighbour sweep. The reported
+discarded weight sums squared **local** discarded singular-value norms from the
+actual Quimb splits. It is not a universal global state, observable or fidelity
+error bound. Quimb's Trotter error estimate remains a separate quantity; neither
+is substituted for convergence against an independent reference.
+
+DMRG reports its final compressed observations and right/left sweep strategy.
+Its discarded weight is explicitly unavailable when the solver does not supply
+those local reports. The legacy entropy baseline labels its bond estimate as a
+half-chain entropy lower bound: this is not the exact Schmidt rank, a guarantee
+that every cut fits a cap, or evidence of quantum advantage.
+
+`max_memory_bytes` can lower the active allocation ceiling. The declared
+component estimate includes tensor copies, local SVD buffers, model inputs and
+retained observations. It covers those components rather than certifying total
+process RSS or reserving host memory. An insufficient cap raises `MemoryError`
+before constructing the MPS solver; it never selects a dense fallback.
+
+Results remain compressed. Dense export is a separate explicit operation with
+its own admission check for two statevector buffers. A caller-supplied dense
+initial state also has a separate budget check and must be representable under
+the requested bond and cutoff. Invalid input or unavailable Quimb refuses
+explicitly. Small-system bond/time refinement and a matched actual Aer MPS
+baseline qualify approximation behaviour; the N=30–40 benchmark campaign and
+its admission schema retain their separate resource and evidence requirements.

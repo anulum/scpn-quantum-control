@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **787 modules** across **41 package families**
-- **4252 documented public module-level symbols**
+- **788 modules** across **41 package families**
+- **4260 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -1381,7 +1381,7 @@ RESEARCH: the preregistered layout-relaxation seed-sweep experiment.
 
 ### `scpn_quantum_control.benchmarks.mps_baseline`
 
-MPS tensor network baseline for quantum advantage comparison.
+Entropy-based MPS storage heuristics, distinct from solver qualification.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/benchmarks/mps_baseline.py) · Public symbols: **6**
 
@@ -4171,13 +4171,23 @@ Registered medium-scale local differentiable-model training evidence.
 
 **Functions:** `run_differentiable_model_training_evidence_suite()`, `run_registered_differentiable_training_suite_audit()`
 
+### `scpn_quantum_control.phase.mps_diagnostics`
+
+Declared tensor buffers and local SVD losses, without dense state export.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase/mps_diagnostics.py) · Public symbols: **7**
+
+**Classes:** `MPSAllocationError`, `MPSAllocationEstimate`, `MPSObservation`, `MPSRunDiagnostics`, `DiscardedWeightLog`
+
+**Functions:** `require_mps_allocation()`, `validate_mps_model()`
+
 ### `scpn_quantum_control.phase.mps_evolution`
 
 Matrix Product State backend for large-N Kuramoto-XY.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase/mps_evolution.py) · Public symbols: **3**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase/mps_evolution.py) · Public symbols: **4**
 
-**Functions:** `is_quimb_available()`, `dmrg_ground_state()`, `tebd_evolution()`
+**Functions:** `is_quimb_available()`, `dmrg_ground_state()`, `tebd_evolution()`, `export_mps_state()`
 
 ### `scpn_quantum_control.phase.natural_gradient`
 

@@ -232,8 +232,8 @@ match with full ED, level spacing bounded, memory estimates)
 
 ### `phase/mps_evolution.py` — MPS/DMRG via quimb
 
-Matrix Product State backend for systems beyond ED limits (n=32-64).
-DMRG for ground state, TEBD for time evolution.
+Matrix Product State backend with DMRG ground-state search and TEBD evolution.
+Reachable sizes depend on admitted memory components and observed bond growth.
 
 Currently nearest-neighbour couplings only (quimb `SpinHam1D` /
 `LocalHam1D` limitation). Full-K inputs with non-adjacent couplings are
@@ -254,7 +254,11 @@ dyn = tebd_evolution(K, omega, t_max=1.0, dt=0.05, bond_dim=64)
 print(f"R(0) = {dyn['R'][0]:.3f}, R(T) = {dyn['R'][-1]:.3f}")
 ```
 
-**Tests:** 10 (DMRG energy, bond dims, TEBD R bounded, output keys)
+Dedicated real-runtime tests cover product/Bell states, bond and timestep
+convergence, actual Aer parity, memory refusal and explicit dense export.
+`phase/mps_diagnostics.py` records component estimates, actual tensor storage
+and local discarded weights without declaring a universal global error bound.
+See [tensor-network diagnostics](tensor_networks.md#approximation-and-export-admission).
 
 ---
 

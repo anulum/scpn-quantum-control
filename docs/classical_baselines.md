@@ -62,7 +62,11 @@ small open-system cross-checks where density-matrix scaling is acceptable.
 
 The function does not fabricate a result when QuTiP is missing. It returns a
 `ClassicalBaselineRun` with `available=False` and an unavailable reason of
-`qutip missing`.
+`qutip missing` for an admitted problem. Dense workspace is checked before
+optional imports: the pure-state route admits Hamiltonian buffers, while a
+nonzero damping rate also admits conservative dense Liouvillian intermediates.
+Unsafe requests raise `MemoryError` before construction; this wrapper does not
+silently switch them to an MPS route.
 
 ## MPS TEBD
 
@@ -70,6 +74,11 @@ The function does not fabricate a result when QuTiP is missing. It returns a
 Hamiltonian path uses nearest-neighbour terms, matching the existing MPS module
 contract. Use it to document whether a tensor-network baseline is available and
 what bond dimensions the run reached.
+The wrapper forwards `max_memory_bytes` and preserves the actual solver's
+serializable `mps_diagnostics` in its metadata: local discarded weights,
+requested cutoff, time step/order, runtime version, bond/storage history and
+local observables. Those local losses do not become a global fidelity bound.
+See [tensor-network admission](tensor_networks.md#approximation-and-export-admission).
 Its `SpinHam1D(S=1/2)` operators carry spin‑½ normalization. Same-input
 comparison with a Pauli-normalised XY solver is not Hamiltonian parity;
 align both Hamiltonians and the initial states before comparing results.

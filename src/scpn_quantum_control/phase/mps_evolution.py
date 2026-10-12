@@ -16,10 +16,20 @@ Reference: Gray, JOSS 3(29), 819 (2018).
 
 from __future__ import annotations
 
+from math import isfinite
 from typing import Any
 
 import numpy as np
 from numpy.typing import NDArray
+
+from .mps_diagnostics import (
+    DiscardedWeightLog,
+    MPSAllocationError,
+    MPSObservation,
+    MPSRunDiagnostics,
+    require_mps_allocation,
+    validate_mps_model,
+)
 
 try:
     import quimb
@@ -105,6 +115,8 @@ def dmrg_ground_state(
     cutoff: float = 1e-10,
     max_sweeps: int = 20,
     allow_long_range_truncation: bool = False,
+    *,
+    max_memory_bytes: int | None = None,
 ) -> dict[str, Any]:
     """Find ground state via DMRG.
 
@@ -124,6 +136,9 @@ def dmrg_ground_state(
         Explicitly allow the quimb SpinHam1D nearest-neighbour MPO to
         omit non-adjacent K[i, j] couplings. Defaults to False so full
         K_nm inputs cannot be truncated silently.
+    max_memory_bytes : int | None
+        Optional byte ceiling for declared compressed solver buffers. It can
+        only lower the active allocation policy; this is not an RSS guarantee.
 
     Returns
     -------
@@ -131,11 +146,31 @@ def dmrg_ground_state(
         Ground-state energy, MPS, convergence, bond dimensions, oscillator
         count, and the explicit coupling-scope diagnostics.
 
+    Raises
+    ------
+    ValueError
+        The model, cutoff, sweep count or coupling-scope consent is invalid.
+    MemoryError
+        Declared compressed buffers exceed the admitted memory ceiling.
+    ImportError
+        Quimb is unavailable; no dense substitute is executed.
+
     """
+    if K.ndim != 2 or K.shape[0] != K.shape[1]:
+        raise ValueError("K must be square with at least two sites")
+    allocation = require_mps_allocation(
+        int(K.shape[0]), bond_dim, max_memory_bytes=max_memory_bytes
+    )
+    n = validate_mps_model(K, omega)
+    if isinstance(max_sweeps, bool) or not isinstance(max_sweeps, int) or max_sweeps < 1:
+        raise ValueError("max_sweeps must be a positive integer")
+    if isinstance(cutoff, bool) or not isfinite(cutoff) or cutoff < 0:
+        raise ValueError("cutoff must be finite and nonnegative")
+    if not isinstance(allow_long_range_truncation, bool):
+        raise ValueError("allow_long_range_truncation must be an explicit boolean")
     if not _QUIMB_AVAILABLE:
         raise ImportError("quimb not installed: pip install quimb")
 
-    n = K.shape[0]
     coupling_scope, omitted_l1 = _nearest_neighbour_scope(K, allow_long_range_truncation)
     H_mpo = _build_mpo_hamiltonian(
         K,
@@ -150,10 +185,11 @@ def dmrg_ground_state(
         dmrg.sweep_right()
         e_left = dmrg.sweep_left()
         current_energy = float(np.real(e_left))
-        if abs(current_energy - last_energy) < 1e-10:
+        energy_change = abs(current_energy - last_energy)
+        last_energy = current_energy
+        if energy_change < 1e-10:
             converged = True
             break
-        last_energy = current_energy
 
     mps = dmrg.state
     bond_dims_out = [mps.bond_size(i, i + 1) for i in range(n - 1)]
@@ -166,6 +202,19 @@ def dmrg_ground_state(
         "n_oscillators": n,
         "coupling_scope": coupling_scope,
         "omitted_coupling_l1": omitted_l1,
+        "diagnostics": MPSRunDiagnostics(
+            allocation=allocation,
+            contraction_strategy="two-site DMRG right/left sweeps",
+            observations=(_observe_mps(mps, n, 0.0),),
+            discarded_weight=None,
+            discarded_weight_scope="DMRG2 does not report local discarded weights here",
+            truncation_events=0,
+            trotter_error_estimate=None,
+            cutoff=cutoff,
+            trotter_order=None,
+            time_step=None,
+            backend_version=str(quimb.__version__),
+        ),
     }
 
 
@@ -180,6 +229,7 @@ def tebd_evolution(
     allow_long_range_truncation: bool = False,
     *,
     initial_state: NDArray[np.complex128] | None = None,
+    max_memory_bytes: int | None = None,
 ) -> dict[str, Any]:
     """Time evolution via TEBD (Time-Evolving Block Decimation).
 
@@ -208,12 +258,24 @@ def tebd_evolution(
         retain the legacy product state prepared from ``omega``. The dense
         input is admitted by the active allocation budget and must be exactly
         representable under ``bond_dim`` and ``cutoff``; truncation refuses.
+    max_memory_bytes
+        Optional byte ceiling for declared tensor, local SVD and observation
+        buffers. The active allocation policy remains an upper ceiling.
 
     Returns
     -------
     dict[str, Any]
         Times, order-parameter history, final bond dimensions and MPS, and the
         explicit coupling-scope diagnostics.
+
+    Raises
+    ------
+    ValueError
+        The model, time grid, cutoff, order, consent or preparation is invalid.
+    MemoryError
+        Declared compressed buffers or explicit dense preparation exceed policy.
+    ImportError
+        Quimb is unavailable; no dense substitute is executed.
 
     Notes
     -----
@@ -222,10 +284,31 @@ def tebd_evolution(
     Hamiltonian for every adjacent bond.
 
     """
+    if K.ndim != 2 or K.shape[0] != K.shape[1]:
+        raise ValueError("K must be square with at least two sites")
+    if isinstance(t_max, bool) or not isfinite(t_max) or t_max < 0:
+        raise ValueError("t_max must be finite and nonnegative")
+    if isinstance(dt, bool) or not isfinite(dt) or dt <= 0:
+        raise ValueError("dt must be finite and positive")
+    if not isfinite(t_max / dt):
+        raise ValueError("The requested time grid is not finite")
+    if isinstance(order, bool) or not isinstance(order, int) or order not in (2, 4):
+        raise ValueError("order must be two or four")
+    if isinstance(cutoff, bool) or not isfinite(cutoff) or cutoff < 0:
+        raise ValueError("cutoff must be finite and nonnegative")
+    if not isinstance(allow_long_range_truncation, bool):
+        raise ValueError("allow_long_range_truncation must be an explicit boolean")
+    n_steps = 0 if t_max == 0 else max(1, int(t_max / dt))
+    allocation = require_mps_allocation(
+        int(K.shape[0]),
+        bond_dim,
+        observations=n_steps + 1,
+        max_memory_bytes=max_memory_bytes,
+    )
+    n = validate_mps_model(K, omega)
     if not _QUIMB_AVAILABLE:
         raise ImportError("quimb not installed: pip install quimb")
 
-    n = K.shape[0]
     coupling_scope, omitted_l1 = _nearest_neighbour_scope(K, allow_long_range_truncation)
 
     # Build nearest-neighbour Hamiltonian for TEBD
@@ -255,11 +338,15 @@ def tebd_evolution(
     else:
         from ..dense_budget import require_dense_allocation
 
+        remaining_bytes = allocation.budget_bytes - allocation.workspace_bytes
+        if remaining_bytes <= 0:
+            raise MPSAllocationError("MPS dense preparation exceeds the remaining memory cap")
         require_dense_allocation(
             n,
             dtype=np.complex128,
             rank=1,
             object_count=2,
+            max_gib=remaining_bytes / 1024**3,
             label="TEBD dense initial state",
         )
         dense = np.asarray(initial_state, dtype=np.complex128)
@@ -279,17 +366,20 @@ def tebd_evolution(
     tebd = qtn.TEBD(psi, H_local, dt=dt)
     tebd.split_opts["max_bond"] = bond_dim
     tebd.split_opts["cutoff"] = cutoff
+    discarded = DiscardedWeightLog()
+    tebd.split_opts["info"] = discarded
 
-    n_steps = max(1, int(t_max / dt))
     times = np.linspace(0, t_max, n_steps + 1)
     R_history = np.zeros(len(times))
 
     # Measure initial R
     R_history[0] = _order_parameter_mps(tebd.pt, n)
+    observations = [_observe_mps(tebd.pt, n, 0.0)]
 
     for step in range(1, n_steps + 1):
         tebd.update_to(times[step], order=order)
         R_history[step] = _order_parameter_mps(tebd.pt, n)
+        observations.append(_observe_mps(tebd.pt, n, float(times[step])))
 
     bond_dims = [tebd.pt.bond_size(i, i + 1) for i in range(n - 1)]
 
@@ -300,7 +390,93 @@ def tebd_evolution(
         "mps_final": tebd.pt,
         "coupling_scope": coupling_scope,
         "omitted_coupling_l1": omitted_l1,
+        "diagnostics": MPSRunDiagnostics(
+            allocation=allocation,
+            contraction_strategy="canonical nearest-neighbour TEBD sweeps",
+            observations=tuple(observations),
+            discarded_weight=discarded.weight,
+            discarded_weight_scope=(
+                "Sum of squared local TEBD discarded singular-value norms; "
+                "not a global state, observable or fidelity error bound"
+            ),
+            truncation_events=discarded.events,
+            trotter_error_estimate=float(tebd.err),
+            cutoff=cutoff,
+            trotter_order=order,
+            time_step=dt,
+            backend_version=str(quimb.__version__),
+        ),
     }
+
+
+def _observe_mps(mps: Any, n: int, time: float) -> MPSObservation:
+    """Measure norm, tensor storage and normalized local Z without dense export."""
+    import quimb as qu
+
+    z = qu.pauli("Z").toarray()
+    local_z = tuple(
+        float(
+            np.real(
+                mps.compute_local_expectation_canonical(
+                    {(site,): z},
+                    normalized=True,
+                )
+            )
+        )
+        for site in range(n)
+    )
+    return MPSObservation(
+        time=time,
+        bond_dims=tuple(int(mps.bond_size(site, site + 1)) for site in range(n - 1)),
+        stored_bytes=sum(int(tensor.data.nbytes) for tensor in mps.tensors),
+        norm=float(np.real(mps.norm())),
+        local_z=local_z,
+    )
+
+
+def export_mps_state(mps: Any, *, max_memory_bytes: int | None = None) -> NDArray[np.complex128]:
+    """Explicitly export an MPS only after admitting its dense output buffers.
+
+    Parameters
+    ----------
+    mps
+        Actual Quimb matrix-product state; its site order is retained.
+    max_memory_bytes
+        Optional positive byte ceiling that only lowers the active policy.
+
+    Returns
+    -------
+    NDArray[np.complex128]
+        Flat dense amplitudes in MPS site order, never a silent fallback.
+
+    Raises
+    ------
+    ValueError
+        The explicit caller ceiling is invalid.
+    MemoryError
+        Two declared dense state buffers exceed allocation policy.
+
+    """
+    from ..dense_budget import dense_budget_bytes, require_dense_allocation
+
+    budget = dense_budget_bytes()
+    if max_memory_bytes is not None:
+        if (
+            isinstance(max_memory_bytes, bool)
+            or not isinstance(max_memory_bytes, int)
+            or max_memory_bytes < 1
+        ):
+            raise ValueError("max_memory_bytes must be a positive integer")
+        budget = min(budget, max_memory_bytes)
+    require_dense_allocation(
+        int(mps.L),
+        dtype=np.complex128,
+        rank=1,
+        object_count=2,
+        max_gib=budget / 1024**3,
+        label="MPS explicit dense state export",
+    )
+    return np.asarray(mps.to_dense(), dtype=np.complex128).reshape(-1)
 
 
 def _order_parameter_mps(mps: Any, n: int) -> float:
