@@ -81,6 +81,8 @@ export interface ModuleRegistry<Services> {
   readonly paths: ReadonlyMap<string, StageDestination>;
   /** Find a stage by identifier. */
   readonly stage: (id: string) => StudioStage<Services> | undefined;
+  /** Find the module that registered a stage. */
+  readonly owner: (stage: string) => StudioModule<Services> | undefined;
   /** List what the registered modules require and the manifest does not declare. */
   readonly missing: (declared: ModuleRequirements) => readonly MissingRequirement[];
 }
@@ -130,11 +132,15 @@ export function createModuleRegistry<Services>(
     }
   }
   const byIdentifier = new Map(stages.map((stage) => [stage.id, stage]));
+  const owners = new Map(
+    modules.flatMap((module) => module.stages.map((stage) => [stage.id, module] as const)),
+  );
   return Object.freeze({
     modules: Object.freeze([...modules]),
     stages: Object.freeze(stages),
     paths,
     stage: (id: string) => byIdentifier.get(id),
+    owner: (stage: string) => owners.get(stage),
     missing: (declared: ModuleRequirements) => {
       const verbs = new Set(declared.verbs);
       const schemas = new Set(declared.schemas);

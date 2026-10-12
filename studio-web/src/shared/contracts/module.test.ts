@@ -53,6 +53,9 @@ describe("createModuleRegistry", () => {
     expect(registry.stage("gamma")?.render({ word: "w" }, "two")).toBe("gamma:w:two");
     expect(registry.stage("alpha")?.render({ word: "w" }, null)).toBe("alpha:w:landing");
     expect(registry.stage("absent")).toBeUndefined();
+    expect(registry.owner("alpha")).toBe(first);
+    expect(registry.owner("gamma")).toBe(second);
+    expect(registry.owner("absent")).toBeUndefined();
   });
 
   it("adds a module without touching the others and removes it the same way", () => {

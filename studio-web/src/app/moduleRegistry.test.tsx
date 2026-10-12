@@ -9,7 +9,8 @@
 import { describe, expect, it } from "vitest";
 import { createModuleRegistry } from "../shared/contracts/module";
 import type { StudioModule } from "../shared/contracts/module";
-import { workbenchModules, workbenchRegistry } from "./moduleRegistry";
+import { studioManifest } from "../panel/data";
+import { declaredBy, workbenchModules, workbenchRegistry } from "./moduleRegistry";
 import type { WorkbenchServices } from "./moduleRegistry";
 import { parseWorkbenchRoute } from "./routing";
 
@@ -45,8 +46,20 @@ describe("workbenchRegistry", () => {
     expect(workbenchRegistry.stage("workspace")?.render(services, null)).toBe("host overview");
   });
 
-  it("requires nothing of the manifest today", () => {
-    expect(workbenchRegistry.missing({ verbs: [], schemas: [] })).toEqual([]);
+  it("requires the compile verb for Build and nothing else", () => {
+    expect(workbenchRegistry.missing({ verbs: [], schemas: [] })).toEqual([
+      { module: "build", kind: "verb", name: "compile" },
+    ]);
+  });
+
+  it("is satisfied by the committed manifest and by nothing a refused manifest declares", () => {
+    const declared = declaredBy(studioManifest);
+    expect(declared.verbs).toContain("compile");
+    expect(declared.schemas.length).toBeGreaterThan(0);
+    expect(workbenchRegistry.missing(declared)).toEqual([]);
+    const refused = declaredBy({ ok: false, reason: "guard failed" });
+    expect(refused).toEqual({ verbs: [], schemas: [] });
+    expect(workbenchRegistry.missing(refused)).toHaveLength(1);
   });
 
   it("gains a destination from one registry entry and loses none of its own", () => {
@@ -69,7 +82,7 @@ describe("workbenchRegistry", () => {
       ...workbenchRegistry.paths,
     ]);
     expect(extended.paths.get("/fixture/probe")).toEqual({ view: "fixture", instrument: "probe" });
-    expect(extended.missing({ verbs: [], schemas: [] })).toEqual([
+    expect(extended.missing({ verbs: ["compile"], schemas: [] })).toEqual([
       { module: "fixture", kind: "verb", name: "mitigate" },
     ]);
     // The build itself does not contain the fixture: its address stays refused.

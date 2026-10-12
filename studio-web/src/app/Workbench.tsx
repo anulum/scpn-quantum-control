@@ -14,7 +14,9 @@ import { useWorkspace } from "../features/workspace/useWorkspace";
 import { localExperimentCodecs } from "../features/experiments/kuramotoArtifacts";
 import { useExperimentRun } from "../features/experiments/useExperimentRun";
 import { useWorkflowRun } from "../features/workflows/useWorkflowRun";
-import { workbenchRegistry } from "./moduleRegistry";
+import { studioManifest } from "../panel/data";
+import type { ModuleRequirements } from "../shared/contracts/module";
+import { declaredBy, workbenchRegistry } from "./moduleRegistry";
 import { emptyWorkbenchContext, formatWorkbenchRoute } from "./routing";
 import type { WorkbenchContext, WorkbenchView } from "./routing";
 import { useWorkbenchRoute } from "./useWorkbenchRoute";
@@ -24,6 +26,7 @@ import { WorkbenchHelp } from "./WorkbenchHelp";
 
 const primaryStages = workbenchRegistry.stages.filter((stage) => stage.group === "primary");
 const contextStages = workbenchRegistry.stages.filter((stage) => stage.group === "context");
+const committedDeclarations = declaredBy(studioManifest);
 
 /** Additive layout mode for standalone pages and the existing federation host. */
 export type WorkbenchMode = "standalone" | "embedded";
@@ -34,10 +37,17 @@ export interface WorkbenchProps extends Pick<WorkspacePanelProps, "rawCodecs"> {
   readonly children: (context: WorkbenchContext) => ReactNode;
   /** Host layout boundary; omitted means standalone. */
   readonly mode?: WorkbenchMode;
+  /** Verbs and schemas the installation declares; omitted means the committed manifest. */
+  readonly declared?: ModuleRequirements;
 }
 
 /** Hash navigation and feature isolation around one continuously mounted original editor. */
-export function Workbench({ children, rawCodecs, mode = "standalone" }: WorkbenchProps) {
+export function Workbench({
+  children,
+  rawCodecs,
+  mode = "standalone",
+  declared = committedDeclarations,
+}: WorkbenchProps) {
   const location = useWorkbenchRoute();
   const context = location.ok ? location.route : emptyWorkbenchContext;
   const view = location.ok ? location.route.view : null;
@@ -61,6 +71,11 @@ export function Workbench({ children, rawCodecs, mode = "standalone" }: Workbenc
   const routeKey = location.ok ? formatWorkbenchRoute(location.route) : window.location.hash;
   const stage = view === null ? undefined : workbenchRegistry.stage(view);
   const title = stage?.label ?? "Unavailable route";
+  // A module whose requirements the installation does not declare stays visible and says why.
+  const owner = view === null ? undefined : workbenchRegistry.owner(view);
+  const lacking = workbenchRegistry
+    .missing(declared)
+    .filter((requirement) => requirement.module === owner?.id);
   const focusedRoute = useRef<string | null>(null);
   useEffect(() => {
     if (focusedRoute.current !== routeKey) {
@@ -124,16 +139,31 @@ export function Workbench({ children, rawCodecs, mode = "standalone" }: Workbenc
         {location.ok ? (
           <RouteBoundary key={routeKey} workspaceHref={href("workspace")}>
             <Suspense fallback={<p role="status">Loading {title} view…</p>}>
-              {stage?.render(
-                {
-                  overview: () => children(context),
-                  workspace,
-                  codecs,
-                  experiment,
-                  workflow,
-                  workspaceHref: href("workspace"),
-                },
-                instrument,
+              {lacking.length > 0 ? (
+                <article className="qsp-panel">
+                  <h3>{title} unavailable</h3>
+                  <p>This installation does not declare what the view needs:</p>
+                  <ul>
+                    {lacking.map(({ kind, name }) => (
+                      <li key={`${kind}:${name}`}>
+                        {kind} <code>{name}</code>
+                      </li>
+                    ))}
+                  </ul>
+                  <a href={href("workspace")}>Open Workspace</a>
+                </article>
+              ) : (
+                stage?.render(
+                  {
+                    overview: () => children(context),
+                    workspace,
+                    codecs,
+                    experiment,
+                    workflow,
+                    workspaceHref: href("workspace"),
+                  },
+                  instrument,
+                )
               )}
             </Suspense>
           </RouteBoundary>

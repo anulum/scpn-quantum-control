@@ -203,6 +203,19 @@ files. The shell, the address parser and the other modules are not edited.
 Removing the entry removes the destination and its addresses and leaves the
 rest unchanged.
 
+A stage whose module requires something the installation does not declare
+stays in the navigation and says why: the work area names each missing verb
+or schema instead of rendering the stage. Nothing is hidden and nothing is
+emulated. The declarations are read from the committed Studio manifest; a
+manifest that fails its guard declares nothing, so every module with a
+requirement is then unavailable. Today Build requires the `compile` verb and
+the other modules require nothing.
+
+Features do not import the shell, and the imports between features are held
+at the eleven pairs that exist today (for example the comparison reads
+experiments and results). A test reads every feature source: a new pair fails
+it, and a pair that disappears must be removed from its record.
+
 The stages of this build are Workspace, Build, Experiments, Results, Atlas and
 Devices & Operations, with the same addresses and labels as before the shell
 became modular. The contract today covers stages and requirements; explorer

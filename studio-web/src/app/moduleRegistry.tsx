@@ -11,9 +11,10 @@ import type { ReactNode } from "react";
 import type { ExperimentRunController } from "../features/experiments/useExperimentRun";
 import type { WorkflowRunController } from "../features/workflows/useWorkflowRun";
 import type { WorkspaceController } from "../features/workspace/useWorkspace";
+import type { Loaded, StudioManifestView } from "../panel/data";
 import type { RawCodec } from "../shared/contracts";
 import { createModuleRegistry } from "../shared/contracts/module";
-import type { StudioModule } from "../shared/contracts/module";
+import type { ModuleRequirements, StudioModule } from "../shared/contracts/module";
 
 const OperationsView = lazy(() => import("./routes/OperationsView"));
 const BuildView = lazy(() => import("./routes/BuildView"));
@@ -64,7 +65,8 @@ export const workbenchModules: readonly StudioModule<WorkbenchServices>[] = [
   {
     id: "build",
     version: "1",
-    requires: none,
+    // Compile recomputation, program authoring and the compiler trace all read compile evidence.
+    requires: { verbs: ["compile"], schemas: [] },
     stages: [
       {
         id: "build",
@@ -166,3 +168,20 @@ export const workbenchModules: readonly StudioModule<WorkbenchServices>[] = [
 
 /** The validated registry the shell and the address parser read. */
 export const workbenchRegistry = createModuleRegistry(workbenchModules);
+
+/**
+ * Read what an installed manifest declares, for comparison with module requirements.
+ *
+ * A manifest that failed its guard declares nothing: every module that
+ * requires a verb or a schema is then unavailable, never assumed present.
+ *
+ * @param manifest - The loaded Studio manifest, verified or refused.
+ * @returns The declared verb names and evidence schema identifiers.
+ */
+export function declaredBy(manifest: Loaded<StudioManifestView>): ModuleRequirements {
+  if (!manifest.ok) return { verbs: [], schemas: [] };
+  return {
+    verbs: manifest.value.verbs.map((entry) => entry.verb),
+    schemas: manifest.value.evidenceTypes,
+  };
+}

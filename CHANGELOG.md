@@ -27,7 +27,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   evidence schemas it requires; the address table is derived from the
   registered stages and stays closed at build time. Addresses, labels and
   behaviour of the six existing destinations are unchanged. Adding a
-  destination is one registry entry and the module's own files.
+  destination is one registry entry and the module's own files. A stage whose
+  module requires a verb or schema the installed manifest does not declare
+  stays visible and names what is missing. Features may not import the shell,
+  and imports between features are held at the pairs that exist today.
 
 - Native browser workspace transactions, exact archive previews, immutable
   revision references and separate preview/saved portable exports. Unknown
