@@ -76,7 +76,10 @@
         "topology-kernel-schema-quality",
         "feedback-loop-quality",
         "analog-platform-catalogue-quality",
-        "hardware-hal-quality"
+        "hardware-hal-quality",
+        "provider-sdk-lock-audit",
+        "provider-sdk-conformance",
+        "provider-sdk-minimal-install"
       ]
     },
     {
@@ -436,6 +439,9 @@
     "feedback-loop-quality",
     "analog-platform-catalogue-quality",
     "hardware-hal-quality",
+    "provider-sdk-lock-audit",
+    "provider-sdk-conformance",
+    "provider-sdk-minimal-install",
     "dla-topology-parity-quality",
     "topology-kernel-evidence-quality",
     "ml-dsa-seal-quality",
