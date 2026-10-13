@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **789 modules** across **41 package families**
-- **4264 documented public module-level symbols**
+- **790 modules** across **41 package families**
+- **4268 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2217,11 +2217,19 @@ DLA-parity dataset loader.
 
 Run the DLA-parity statistical reproducer as an ordinary programme.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/dla_parity/programme.py) · Public symbols: **4**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/dla_parity/programme.py) · Public symbols: **3**
 
 **Classes:** `ProgrammeRefusal`
 
-**Functions:** `run_request()`, `serialise()`, `main()`
+**Functions:** `run_request()`, `main()`
+
+### `scpn_quantum_control.dla_parity.programme_contract`
+
+The protocol of the DLA-parity ordinary programme: names, limits and checks.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/dla_parity/programme_contract.py) · Public symbols: **5**
+
+**Functions:** `is_number()`, `is_count()`, `parse_json_object()`, `serialise()`, `validate_output_document()`
 
 ### `scpn_quantum_control.dla_parity.reproduce`
 

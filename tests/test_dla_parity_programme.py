@@ -20,6 +20,7 @@ import dataclasses
 import hashlib
 import importlib
 import json
+import os
 import runpy
 import subprocess
 import sys
@@ -215,6 +216,197 @@ def test_a_selected_experiment_record_of_another_sector_is_accounted_as_excluded
     assert [c["name"] for c in document["identity_checks"] if not c["passed"]][0].startswith(
         "depth="
     )
+
+
+def test_an_optional_published_reference_is_compared_when_the_summary_carries_it(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Add both optional references, one wrong, and require the claim that the reproducer makes."""
+    reference = reproduce_statistics(load_dla_parity_dataset())
+
+    def change(runs: list[JsonObject], summary: JsonObject, request: JsonObject) -> None:
+        summary["mean_asymmetry_relative"] = 999.0
+        summary["peak_asymmetry_relative"] = reference.peak_asymmetry_relative
+
+    request = _workspace(tmp_path, change)
+    status, document, _ = _run(request, capsys)
+    by_name = {claim["name"]: claim for claim in document["claims"]}
+    assert status == 1
+    assert len(document["claims"]) == 59
+    assert by_name["mean_asymmetry_relative"]["passed"] is False
+    assert by_name["mean_asymmetry_relative"]["published"] == 999.0
+    assert by_name["mean_asymmetry_relative"]["recomputed"] == reference.mean_asymmetry_relative
+    assert by_name["peak_asymmetry_relative"]["passed"] is True
+    assert document["comparison_coverage"]["emitted_scalars_without_published_reference"] == [
+        "result.peak_asymmetry_depth",
+        "result.n_circuits_used",
+    ]
+    # The existing reproducer rejects the same summary: the worker does not weaken it.
+    with pytest.raises(AssertionError, match="mean_asymmetry_relative"):
+        reproduce_statistics(
+            load_dla_parity_dataset(), published_summary=tmp_path / "summary.json"
+        )
+
+
+def test_a_summary_without_the_optional_references_names_them_as_uncompared(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Require the committed summary, which has neither reference, to list both as uncompared."""
+    _, document, _ = _run(_workspace(tmp_path), capsys)
+    assert document["comparison_coverage"]["emitted_scalars_without_published_reference"] == [
+        "result.mean_asymmetry_relative",
+        "result.peak_asymmetry_relative",
+        "result.peak_asymmetry_depth",
+        "result.n_circuits_used",
+    ]
+    assert len(document["claims"]) == 57
+
+
+def test_a_number_too_large_for_the_protocol_is_refused_in_a_fresh_interpreter(
+    tmp_path: Path,
+) -> None:
+    """Give a tolerance of ten to the four hundredth and require a refusal document, not a traceback."""
+    request = _workspace(tmp_path)
+    text = request.read_text("utf-8").replace(
+        '"welch_p_rel": 1e-06', '"welch_p_rel": 1' + "0" * 400
+    )
+    assert "0" * 400 in text
+    request.write_text(text, encoding="utf-8")
+    completed = subprocess.run(
+        [sys.executable, "-m", "scpn_quantum_control.dla_parity.programme", str(request)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 2
+    assert completed.stderr == ""
+    assert json.loads(completed.stdout)["refusal"]["category"] == "malformed_request"
+
+
+@pytest.mark.parametrize(
+    ("name", "old", "new", "category"),
+    [
+        ("request.json", '{"schema":', '{"schema": "other", "schema":', "malformed_request"),
+        ("run1.json", '"backend":', '"backend": "other", "backend":', "malformed_input"),
+        ("run2.json", '"wall_time_s":', '"wall_time_s": NaN, "ignored":', "malformed_input"),
+        ("summary.json", '"fisher_combined":', '"fisher_combined": {}, "fisher_combined":', None),
+    ],
+)
+def test_a_repeated_member_or_a_non_finite_literal_is_refused(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    name: str,
+    old: str,
+    new: str,
+    category: str | None,
+) -> None:
+    """Edit the text of one input so that a member repeats or is NaN, pin it, and require a refusal."""
+    request = _workspace(tmp_path)
+    text = (tmp_path / name).read_text("utf-8")
+    assert text.count(old) >= 1
+    edited = text.replace(old, new, 1).encode("utf-8")
+    if name == "request.json":
+        request.write_bytes(edited)
+    else:
+        _replace(request, name, edited)
+    status, document, _ = _run(request, capsys)
+    assert status == 2
+    assert document["refusal"]["category"] == (category or "malformed_published_summary")
+
+
+def test_a_document_nested_beyond_the_reader_is_refused(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Pin a raw run of one hundred thousand nested lists and require a refusal."""
+    request = _workspace(tmp_path)
+    _replace(request, "run0.json", b"[" * 100_000 + b"]" * 100_000)
+    status, document, _ = _run(request, capsys)
+    assert (status, document["refusal"]["category"]) == (2, "malformed_input")
+
+
+def test_a_request_that_is_too_large_or_not_a_regular_file_is_refused(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Pad a request beyond its limit, then name a directory, and require a refusal each time."""
+    request = _workspace(tmp_path)
+    request.write_bytes(request.read_bytes() + b" " * programme.MAX_REQUEST_BYTES)
+    assert programme.main([str(request)]) == 2
+    assert json.loads(capsys.readouterr().out)["refusal"]["category"] == "input_too_large"
+    assert programme.main([str(tmp_path)]) == 2
+    assert json.loads(capsys.readouterr().out)["refusal"]["category"] == "missing_input"
+
+
+@pytest.mark.skipif(os.geteuid() == 0, reason="the superuser reads a file whatever its mode")
+def test_an_input_that_exists_and_cannot_be_opened_is_refused(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Remove every permission from a pinned input and require a refusal."""
+    request = _workspace(tmp_path)
+    (tmp_path / "run3.json").chmod(0)
+    status, document, _ = _run(request, capsys)
+    assert (status, document["refusal"]["category"]) == (2, "missing_input")
+
+
+def _fractional_qubits(runs: list[JsonObject], summary: JsonObject, request: JsonObject) -> None:
+    _selected(runs)[0]["meta"]["n_qubits"] = 4.5
+
+
+def _fractional_shots(runs: list[JsonObject], summary: JsonObject, request: JsonObject) -> None:
+    _selected(runs)[0]["meta"]["shots"] += 0.5
+
+
+def _boolean_depth(runs: list[JsonObject], summary: JsonObject, request: JsonObject) -> None:
+    _selected(runs)[0]["meta"]["depth"] = True
+
+
+def _textual_shots(runs: list[JsonObject], summary: JsonObject, request: JsonObject) -> None:
+    _selected(runs)[0]["meta"]["shots"] = "2000"
+
+
+def _boolean_count(runs: list[JsonObject], summary: JsonObject, request: JsonObject) -> None:
+    counts = _selected(runs)[0]["counts"]
+    counts[next(iter(counts))] = True
+
+
+def _fractional_count(runs: list[JsonObject], summary: JsonObject, request: JsonObject) -> None:
+    counts = _selected(runs)[0]["counts"]
+    counts[next(iter(counts))] = 12.0
+
+
+def _circuit_not_an_object(
+    runs: list[JsonObject], summary: JsonObject, request: JsonObject
+) -> None:
+    runs[0]["circuits"][0] = "circuit"
+
+
+def _meta_not_an_object(runs: list[JsonObject], summary: JsonObject, request: JsonObject) -> None:
+    runs[0]["circuits"][0]["meta"] = []
+
+
+def _unknown_sector(runs: list[JsonObject], summary: JsonObject, request: JsonObject) -> None:
+    _selected(runs)[0]["meta"]["sector"] = "both"
+
+
+def _numeric_job_identifier(
+    runs: list[JsonObject], summary: JsonObject, request: JsonObject
+) -> None:
+    runs[1]["job_ids"] = [17]
+
+
+def _textual_wall_time(runs: list[JsonObject], summary: JsonObject, request: JsonObject) -> None:
+    runs[1]["wall_time_s"] = "fast"
+
+
+def _declared_circuit_count_differs(
+    runs: list[JsonObject], summary: JsonObject, request: JsonObject
+) -> None:
+    runs[1]["n_circuits"] += 1
+
+
+def _optional_reference_not_a_number(
+    runs: list[JsonObject], summary: JsonObject, request: JsonObject
+) -> None:
+    summary["peak_asymmetry_relative"] = "0.17"
 
 
 def _drop_published_depth(
@@ -414,6 +606,19 @@ def _pin_other_digest(runs: list[JsonObject], summary: JsonObject, request: Json
     ("change", "category"),
     [
         (_drop_published_depth, "incomplete_depth_set"),
+        (_fractional_qubits, "malformed_input"),
+        (_fractional_shots, "malformed_input"),
+        (_boolean_depth, "malformed_input"),
+        (_textual_shots, "malformed_input"),
+        (_boolean_count, "malformed_input"),
+        (_fractional_count, "malformed_input"),
+        (_circuit_not_an_object, "malformed_input"),
+        (_meta_not_an_object, "malformed_input"),
+        (_unknown_sector, "malformed_input"),
+        (_numeric_job_identifier, "malformed_input"),
+        (_textual_wall_time, "malformed_input"),
+        (_declared_circuit_count_differs, "malformed_input"),
+        (_optional_reference_not_a_number, "malformed_published_summary"),
         (_add_published_depth, "incomplete_depth_set"),
         (_repeat_published_depth, "malformed_published_summary"),
         (_published_row_not_an_object, "malformed_published_summary"),
@@ -560,10 +765,8 @@ def test_a_request_that_cannot_be_read_or_is_not_named_is_refused(
     assert json.loads(capsys.readouterr().out)["refusal"]["category"] == "malformed_request"
 
 
-def test_the_serialiser_is_deterministic_and_writes_no_non_finite_number() -> None:
-    """Require sorted compact output, a refusal to write infinity, and the text of a refusal."""
-    assert programme.serialise({"b": 1, "a": [0.1, 2]}) == '{"a":[0.1,2],"b":1}\n'
-    with pytest.raises(ValueError, match="Out of range float values"):
-        programme.serialise({"value": float("inf")})
+def test_a_refusal_carries_its_category_in_its_text() -> None:
+    """Require the text of a refusal to start with its category."""
     refusal = programme.ProgrammeRefusal("digest_mismatch", "an input differs from its pin")
     assert str(refusal) == "digest_mismatch: an input differs from its pin"
+    assert refusal.category in programme.REFUSAL_CATEGORIES

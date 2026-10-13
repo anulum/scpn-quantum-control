@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "scpn_quantum_control.dla_parity.programme_output.v1",
   "title": "Output document of the DLA-parity ordinary programme",
-  "description": "Exactly one such document is written to standard output as one line: keys sorted, separators ',' and ':', no non-finite number. Exit status 0 for completed, 1 for mismatch, 2 for refused.",
+  "description": "Exactly one such document is written to standard output as one line: keys sorted, separators ',' and ':', no non-finite number. Exit status 0 for completed, 1 for mismatch, 2 for refused. The schema fixes the shape; that the records, counts, claims and outcome agree with each other is checked by scpn_quantum_control.dla_parity.programme_contract.validate_output_document.",
   "oneOf": [
     {
       "type": "object",
@@ -174,13 +174,23 @@
                     ]
                   }
                 }
-              }
+              },
+              "minItems": 1
             },
             "counts": {
               "type": "object",
+              "minProperties": 1,
+              "propertyNames": {
+                "enum": [
+                  "selected",
+                  "excluded_qubit_count",
+                  "excluded_experiment",
+                  "excluded_sector"
+                ]
+              },
               "additionalProperties": {
                 "type": "integer",
-                "minimum": 0
+                "minimum": 1
               }
             }
           }
@@ -341,7 +351,8 @@
                 "type": "boolean"
               }
             }
-          }
+          },
+          "minItems": 8
         },
         "identity_checks": {
           "type": "array",
@@ -370,10 +381,67 @@
                 "type": "boolean"
               }
             }
-          }
+          },
+          "minItems": 5
         },
         "comparison_coverage": {
-          "type": "object"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "combined_p_arithmetic",
+            "emitted_scalars_without_published_reference",
+            "published_fields_without_comparison",
+            "scaled_rule",
+            "selected_domain"
+          ],
+          "properties": {
+            "published_fields_without_comparison": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "field",
+                  "why"
+                ],
+                "properties": {
+                  "field": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "why": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            },
+            "emitted_scalars_without_published_reference": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "enum": [
+                  "result.mean_asymmetry_relative",
+                  "result.peak_asymmetry_relative",
+                  "result.peak_asymmetry_depth",
+                  "result.n_circuits_used"
+                ]
+              }
+            },
+            "combined_p_arithmetic": {
+              "type": "string",
+              "minLength": 1
+            },
+            "scaled_rule": {
+              "type": "string",
+              "minLength": 1
+            },
+            "selected_domain": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
         }
       }
     },

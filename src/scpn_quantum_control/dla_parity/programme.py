@@ -9,9 +9,9 @@
 
 The worker takes one request document that names every input by path, byte
 length and SHA-256. It reads each input once, verifies it before parsing,
-checks the records the statistics rest on, runs the existing numerical
-functions of :mod:`.reproduce` unchanged, and writes exactly one JSON document
-to standard output::
+checks the records the statistics rest on before any conversion, runs the
+existing numerical functions of :mod:`.reproduce` unchanged, and writes exactly
+one JSON document to standard output::
 
     python -m scpn_quantum_control.dla_parity.programme request.json
 
@@ -19,7 +19,7 @@ Three outcomes exist. ``completed`` (exit status 0): every scalar is emitted
 and every comparison holds. ``mismatch`` (1): every scalar is emitted and at
 least one comparison fails; all comparisons are listed, not only the first.
 ``refused`` (2): an input or a precondition is not acceptable; the document
-carries one category from :data:`REFUSAL_CATEGORIES` and no scalar.
+carries one category of the protocol and no scalar.
 
 The numbers are those of :func:`.reproduce.compute_depth_summaries` and its
 companions. The worker adds no estimator and repairs no value: the combined
@@ -27,16 +27,19 @@ p-value is emitted as the existing arithmetic gives it (one minus the
 distribution function), and the document says so.
 
 What is compared is stated, not implied. ``claims`` holds the comparisons of
-the existing programme under its two rules. ``identity_checks`` holds exact
-integer comparisons that the worker adds and the existing programme does not
-make. ``comparison_coverage`` names every published field and every emitted
-scalar that has no comparison at all.
+the existing programme under its two rules, including the two optional
+references of the published summary when it carries them. ``identity_checks``
+holds exact integer comparisons that the worker adds and the existing programme
+does not make. ``comparison_coverage`` names every published field and every
+emitted scalar that has no comparison in this run.
+
+Names, limits, the JSON reader and the checks of an output document live in
+:mod:`.programme_contract`.
 """
 
 from __future__ import annotations
 
 import hashlib
-import json
 import math
 import sys
 from dataclasses import asdict, fields
@@ -44,6 +47,21 @@ from pathlib import Path
 from typing import Any, Final
 
 from .dataset import _parse_run
+from .programme_contract import (
+    MAX_CIRCUITS,
+    MAX_INPUT_BYTES,
+    MAX_REQUEST_BYTES,
+    OPTIONAL_CLAIMS,
+    OUTPUT_SCHEMA,
+    RAW_RUN_FILES,
+    REFUSAL_CATEGORIES,
+    REQUEST_SCHEMA,
+    is_count,
+    is_number,
+    parse_json_object,
+    serialise,
+    validate_output_document,
+)
 from .reproduce import (
     FisherResult,
     ReproductionTolerance,
@@ -54,32 +72,21 @@ from .reproduce import (
 )
 from .schema import DlaParityDataset, DlaParityRun, StatisticalSummary
 
-REQUEST_SCHEMA: Final = "scpn_quantum_control.dla_parity.programme_request.v1"
-OUTPUT_SCHEMA: Final = "scpn_quantum_control.dla_parity.programme_output.v1"
-MAX_INPUT_BYTES: Final = 16 * 1024 * 1024
-MAX_CIRCUITS: Final = 100_000
-RAW_RUN_FILES: Final = 4
+__all__ = [
+    "MAX_CIRCUITS",
+    "MAX_INPUT_BYTES",
+    "MAX_REQUEST_BYTES",
+    "OUTPUT_SCHEMA",
+    "REFUSAL_CATEGORIES",
+    "REQUEST_SCHEMA",
+    "ProgrammeRefusal",
+    "main",
+    "run_request",
+    "serialise",
+]
+
 SELECTED_EXPERIMENT_PREFIX: Final = "A_dla_parity_n4"
 SELECTED_QUBITS: Final = 4
-
-REFUSAL_CATEGORIES: Final = (
-    "malformed_request",
-    "missing_input",
-    "input_too_large",
-    "digest_mismatch",
-    "malformed_input",
-    "too_many_circuits",
-    "malformed_bitstring",
-    "empty_shots",
-    "inconsistent_counts",
-    "inconsistent_sector",
-    "empty_selection",
-    "insufficient_replicates",
-    "invalid_p_value",
-    "non_finite_output",
-    "malformed_published_summary",
-    "incomplete_depth_set",
-)
 
 _PER_DEPTH_CLAIMS: Final = (
     ("leakage_even", "mean_even", "leakage_even", "leakage_mean_abs", False),
@@ -96,6 +103,10 @@ _PER_DEPTH_CLAIMS: Final = (
     ("welch_t", "welch_t", "welch_t", "welch_t_rel", True),
     ("welch_p", "welch_p", "welch_p", "welch_p_rel", True),
 )
+_OPTIONAL_TOLERANCES: Final = {
+    "mean_asymmetry_relative": "mean_asymmetry_abs",
+    "peak_asymmetry_relative": "peak_asymmetry_abs",
+}
 _PUBLISHED_DEPTH_KEYS: Final = frozenset(
     {
         "asymmetry_absolute",
@@ -118,6 +129,8 @@ _PUBLISHED_FISHER_KEYS: Final = frozenset(
     {"chi2", "combined_p", "df", "n_depths_significant_at_0.05", "n_depths_tested"}
 )
 _TOLERANCE_NAMES: Final = tuple(item.name for item in fields(ReproductionTolerance))
+_RUN_TEXT: Final = ("experiment", "timestamp_utc", "backend")
+_META_COUNTS: Final = ("n_qubits", "depth", "rep", "shots")
 
 
 class ProgrammeRefusal(Exception):
@@ -126,7 +139,7 @@ class ProgrammeRefusal(Exception):
     Parameters
     ----------
     category : str
-        One of :data:`REFUSAL_CATEGORIES`.
+        One of the refusal categories of the protocol.
     detail : str
         What was found, without any content of the refused input.
 
@@ -138,14 +151,26 @@ class ProgrammeRefusal(Exception):
         self.detail = detail
 
 
-def _is_number(value: object) -> bool:
-    """Tell whether a JSON value is a finite number and not a boolean."""
-    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+def _read_bounded(path: Path, limit: int, label: str) -> bytes:
+    """Read a regular file of at most ``limit`` bytes.
 
+    Raises
+    ------
+    ProgrammeRefusal
+        The path is not a regular file or cannot be read, or the file is
+        larger than the limit.
 
-def _is_count(value: object) -> bool:
-    """Tell whether a JSON value is a non-negative integer and not a boolean."""
-    return isinstance(value, int) and not isinstance(value, bool) and value >= 0
+    """
+    if not path.is_file():
+        raise ProgrammeRefusal("missing_input", f"{label} is not a readable regular file")
+    try:
+        with path.open("rb") as handle:
+            content = handle.read(limit + 1)
+    except OSError as exc:
+        raise ProgrammeRefusal("missing_input", f"{label} cannot be read") from exc
+    if len(content) > limit:
+        raise ProgrammeRefusal("input_too_large", f"{label} exceeds its size limit")
+    return content
 
 
 def _read_pinned(base: Path, pin: object, label: str) -> bytes:
@@ -177,7 +202,7 @@ def _read_pinned(base: Path, pin: object, label: str) -> bytes:
         or set(pin) != {"path", "bytes", "sha256"}
         or not isinstance(pin["path"], str)
         or not pin["path"]
-        or not _is_count(pin["bytes"])
+        or not is_count(pin["bytes"])
         or not isinstance(pin["sha256"], str)
         or len(pin["sha256"]) != 64
         or any(character not in "0123456789abcdef" for character in pin["sha256"])
@@ -185,28 +210,18 @@ def _read_pinned(base: Path, pin: object, label: str) -> bytes:
         raise ProgrammeRefusal("malformed_request", f"{label} needs path, bytes and sha256")
     if pin["bytes"] > MAX_INPUT_BYTES:
         raise ProgrammeRefusal("input_too_large", f"{label} is declared above the input limit")
-    path = base / pin["path"]
-    try:
-        with path.open("rb") as handle:
-            content = handle.read(MAX_INPUT_BYTES + 1)
-    except OSError as exc:
-        raise ProgrammeRefusal("missing_input", f"{label} cannot be read") from exc
-    if len(content) > MAX_INPUT_BYTES:
-        raise ProgrammeRefusal("input_too_large", f"{label} exceeds the input limit")
+    content = _read_bounded(base / pin["path"], MAX_INPUT_BYTES, label)
     if len(content) != pin["bytes"] or hashlib.sha256(content).hexdigest() != pin["sha256"]:
         raise ProgrammeRefusal("digest_mismatch", f"{label} differs from its pin")
     return content
 
 
 def _parse_object(content: bytes, category: str, label: str) -> dict[str, Any]:
-    """Parse verified bytes as one JSON object, refusing anything else."""
+    """Parse verified bytes as one unambiguous JSON object, refusing anything else."""
     try:
-        loaded = json.loads(content.decode("utf-8"))
-    except (UnicodeDecodeError, ValueError) as exc:
-        raise ProgrammeRefusal(category, f"{label} is not a JSON document") from exc
-    if not isinstance(loaded, dict):
-        raise ProgrammeRefusal(category, f"{label} is not a JSON object")
-    return loaded
+        return parse_json_object(content)
+    except ValueError as exc:
+        raise ProgrammeRefusal(category, f"{label} is not one unambiguous JSON object") from exc
 
 
 def _tolerance(raw: object) -> ReproductionTolerance:
@@ -214,12 +229,56 @@ def _tolerance(raw: object) -> ReproductionTolerance:
     if (
         not isinstance(raw, dict)
         or set(raw) != set(_TOLERANCE_NAMES)
-        or not all(_is_number(value) and value >= 0 for value in raw.values())
+        or not all(is_number(value) and value >= 0 for value in raw.values())
     ):
         raise ProgrammeRefusal(
             "malformed_request", "tolerance needs its eight non-negative numbers"
         )
     return ReproductionTolerance(**{name: float(raw[name]) for name in _TOLERANCE_NAMES})
+
+
+def _check_raw_run(raw: dict[str, Any], label: str) -> None:
+    """Check the types of a raw run before the loader converts anything.
+
+    The loader of the package converts metadata with ``int`` and ``float``, so
+    a fractional qubit count or a boolean depth would be changed without a
+    trace. Here every value the statistics or the selection depend on must
+    already have its type. Members the programme does not use are left alone.
+
+    Raises
+    ------
+    ProgrammeRefusal
+        A run-level or circuit-level value is missing or has the wrong type.
+
+    """
+    circuits = raw.get("circuits")
+    job_ids = raw.get("job_ids")
+    if (
+        not all(isinstance(raw.get(key), str) for key in _RUN_TEXT)
+        or not isinstance(job_ids, list)
+        or not all(isinstance(job, str) for job in job_ids)
+        or not is_number(raw.get("wall_time_s"))
+        or not is_number(raw.get("t_step"))
+        or not is_count(raw.get("n_circuits"))
+        or not isinstance(circuits, list)
+    ):
+        raise ProgrammeRefusal("malformed_input", f"{label} has a malformed run record")
+    for index, circuit in enumerate(circuits):
+        meta = circuit.get("meta") if isinstance(circuit, dict) else None
+        counts = circuit.get("counts") if isinstance(circuit, dict) else None
+        if (
+            not isinstance(meta, dict)
+            or not isinstance(counts, dict)
+            or not all(is_count(meta.get(key)) for key in _META_COUNTS)
+            or not isinstance(meta.get("experiment"), str)
+            or not isinstance(meta.get("initial"), str)
+            or meta.get("sector") not in ("even", "odd", "baseline")
+            or not is_number(meta.get("t_step"))
+            or not all(
+                isinstance(count, int) and not isinstance(count, bool) for count in counts.values()
+            )
+        ):
+            raise ProgrammeRefusal("malformed_input", f"{label} circuit {index} is malformed")
 
 
 def _selection(runs: tuple[DlaParityRun, ...]) -> list[tuple[int, int, str, str]]:
@@ -278,14 +337,24 @@ def _check_selected(
             raise ProgrammeRefusal("inconsistent_sector", f"{where} contradicts its initial state")
 
 
-def _published(raw: dict[str, Any]) -> tuple[dict[int, dict[str, Any]], dict[str, Any]]:
-    """Validate the published summary and index its rows by depth.
+def _published(
+    raw: dict[str, Any],
+) -> tuple[dict[int, dict[str, Any]], dict[str, Any], dict[str, float]]:
+    """Validate the published summary; index its rows and read its optional references.
+
+    Returns
+    -------
+    tuple
+        Rows by depth, the Fisher block, and the optional top-level references
+        that the summary carries (none, one or both of the mean and the peak
+        relative asymmetry).
 
     Raises
     ------
     ProgrammeRefusal
         The depth rows or the Fisher block are missing, malformed, hold a
-        missing or an extra field, a non-finite number, or repeat a depth.
+        missing or an extra field or a value that is not a number, repeat a
+        depth, or an optional reference is present and not a number.
 
     """
     rows, fisher = raw.get("depth_summaries"), raw.get("fisher_combined")
@@ -298,9 +367,9 @@ def _published(raw: dict[str, Any]) -> tuple[dict[int, dict[str, Any]], dict[str
         if (
             not isinstance(row, dict)
             or set(row) != _PUBLISHED_DEPTH_KEYS
-            or not all(_is_count(row[key]) for key in ("depth", "n_reps_even", "n_reps_odd"))
+            or not all(is_count(row[key]) for key in ("depth", "n_reps_even", "n_reps_odd"))
             or not all(
-                _is_number(row[key]) for key in _PUBLISHED_DEPTH_KEYS - {"ci95_even", "ci95_odd"}
+                is_number(row[key]) for key in _PUBLISHED_DEPTH_KEYS - {"ci95_even", "ci95_odd"}
             )
             or row["depth"] in by_depth
         ):
@@ -310,28 +379,38 @@ def _published(raw: dict[str, Any]) -> tuple[dict[int, dict[str, Any]], dict[str
         by_depth[int(row["depth"])] = row
     if (
         set(fisher) != _PUBLISHED_FISHER_KEYS
-        or not all(_is_number(fisher[key]) for key in ("chi2", "combined_p"))
+        or not all(is_number(fisher[key]) for key in ("chi2", "combined_p"))
         or not all(
-            _is_count(fisher[key])
+            is_count(fisher[key])
             for key in ("df", "n_depths_significant_at_0.05", "n_depths_tested")
         )
     ):
         raise ProgrammeRefusal("malformed_published_summary", "the Fisher block is malformed")
-    return by_depth, fisher
+    optional: dict[str, float] = {}
+    for name in OPTIONAL_CLAIMS:
+        if name in raw:
+            if not is_number(raw[name]):
+                raise ProgrammeRefusal("malformed_published_summary", f"{name} is not a number")
+            optional[name] = float(raw[name])
+    return by_depth, fisher, optional
 
 
 def _claims(
     summaries: tuple[StatisticalSummary, ...],
     fisher: FisherResult,
+    recomputed_optional: dict[str, float],
     published: dict[int, dict[str, Any]],
     published_fisher: dict[str, Any],
+    published_optional: dict[str, float],
     tolerance: ReproductionTolerance,
 ) -> list[dict[str, object]]:
     """Make every comparison of the existing programme and keep all outcomes.
 
     The existing check stops at the first failure. Here each claim is made on
     its own with the same function, so the difference and the rule are the
-    programme's, and a failure does not hide the claims after it.
+    programme's, and a failure does not hide the claims after it. The two
+    optional references are compared exactly when the summary carries them, as
+    the existing programme does.
     """
     claims: list[dict[str, object]] = []
 
@@ -369,6 +448,15 @@ def _claims(
                 scaled,
             )
     claim("fisher.chi2", float(published_fisher["chi2"]), fisher.chi2, "fisher_chi2_rel", True)
+    for name in OPTIONAL_CLAIMS:
+        if name in published_optional:
+            claim(
+                name,
+                published_optional[name],
+                recomputed_optional[name],
+                _OPTIONAL_TOLERANCES[name],
+                False,
+            )
     return claims
 
 
@@ -411,27 +499,41 @@ def _identity_checks(
     ]
 
 
-_COVERAGE: Final[dict[str, object]] = {
-    "published_fields_without_comparison": [
-        {"field": "depth_summaries[].degrees_of_freedom", "why": "not an output of the programme"},
-        {"field": "depth_summaries[].ci95_even", "why": "not an output of the programme"},
-        {"field": "depth_summaries[].ci95_odd", "why": "not an output of the programme"},
-        {"field": "depth_summaries[].asymmetry_absolute", "why": "not an output of the programme"},
-        {
-            "field": "fisher_combined.combined_p",
-            "why": "the existing programme makes no claim on it; emitted as fisher.combined_p",
-        },
-    ],
-    "emitted_scalars_without_published_reference": [
-        "result.peak_asymmetry_relative",
-        "result.peak_asymmetry_depth",
-        "result.mean_asymmetry_relative",
-        "result.n_circuits_used",
-    ],
-    "combined_p_arithmetic": "1.0 - chi2.cdf(chi2, degrees_of_freedom); a value of 0.0 is a loss of precision of this arithmetic, not a tail probability",
-    "scaled_rule": "abs(published - recomputed) / max(abs(published), abs(recomputed), 1.0); absolute for values below one",
-    "selected_domain": "four qubits, experiment beginning A_dla_parity_n4, sector even or odd",
-}
+def _coverage(published_optional: dict[str, float]) -> dict[str, object]:
+    """Name what has no comparison in this run, given the references the summary carries."""
+    unreferenced = [f"result.{name}" for name in OPTIONAL_CLAIMS if name not in published_optional]
+    return {
+        "published_fields_without_comparison": [
+            {
+                "field": "depth_summaries[].degrees_of_freedom",
+                "why": "not an output of the programme",
+            },
+            {"field": "depth_summaries[].ci95_even", "why": "not an output of the programme"},
+            {"field": "depth_summaries[].ci95_odd", "why": "not an output of the programme"},
+            {
+                "field": "depth_summaries[].asymmetry_absolute",
+                "why": "not an output of the programme",
+            },
+            {
+                "field": "fisher_combined.combined_p",
+                "why": "the existing programme makes no claim on it; emitted as fisher.combined_p",
+            },
+        ],
+        "emitted_scalars_without_published_reference": [
+            *unreferenced,
+            "result.peak_asymmetry_depth",
+            "result.n_circuits_used",
+        ],
+        "combined_p_arithmetic": (
+            "1.0 - chi2.cdf(chi2, degrees_of_freedom); a value of 0.0 is a loss of precision "
+            "of this arithmetic, not a tail probability"
+        ),
+        "scaled_rule": (
+            "abs(published - recomputed) / max(abs(published), abs(recomputed), 1.0); "
+            "absolute for values below one"
+        ),
+        "selected_domain": "four qubits, experiment beginning A_dla_parity_n4, sector even or odd",
+    }
 
 
 def run_request(request_path: Path) -> dict[str, object]:
@@ -446,7 +548,8 @@ def run_request(request_path: Path) -> dict[str, object]:
     Returns
     -------
     dict
-        The output document of a ``completed`` or ``mismatch`` outcome.
+        The output document of a ``completed`` or ``mismatch`` outcome, checked
+        by :func:`.programme_contract.validate_output_document`.
 
     Raises
     ------
@@ -454,10 +557,7 @@ def run_request(request_path: Path) -> dict[str, object]:
         An input or a precondition is not acceptable.
 
     """
-    try:
-        request_bytes = request_path.read_bytes()
-    except OSError as exc:
-        raise ProgrammeRefusal("missing_input", "the request cannot be read") from exc
+    request_bytes = _read_bounded(request_path, MAX_REQUEST_BYTES, "the request")
     request = _parse_object(request_bytes, "malformed_request", "the request")
     if (
         set(request) != {"schema", "raw_run_files", "published_summary", "tolerance"}
@@ -476,17 +576,17 @@ def run_request(request_path: Path) -> dict[str, object]:
 
     parsed: list[DlaParityRun] = []
     for index, content in enumerate(raw_bytes):
-        raw = _parse_object(content, "malformed_input", f"raw run file {index}")
+        label = f"raw run file {index}"
+        raw = _parse_object(content, "malformed_input", label)
+        _check_raw_run(raw, label)
         try:
-            parsed.append(_parse_run(raw, f"raw run file {index}"))
-        except (ValueError, TypeError, KeyError) as exc:
-            raise ProgrammeRefusal(
-                "malformed_input", f"raw run file {index} breaks the record schema"
-            ) from exc
+            parsed.append(_parse_run(raw, label))
+        except ValueError as exc:
+            raise ProgrammeRefusal("malformed_input", f"{label} breaks the record schema") from exc
     runs = tuple(parsed)
     if sum(len(run.circuits) for run in runs) > MAX_CIRCUITS:
         raise ProgrammeRefusal("too_many_circuits", "the inputs exceed the circuit limit")
-    published, published_fisher = _published(
+    published, published_fisher, published_optional = _published(
         _parse_object(summary_bytes, "malformed_published_summary", "the published summary")
     )
 
@@ -512,10 +612,18 @@ def run_request(request_path: Path) -> dict[str, object]:
     if {summary.depth for summary in summaries} != set(published):
         raise ProgrammeRefusal("incomplete_depth_set", "computed and published depths differ")
 
-    claims = _claims(summaries, fisher, published, published_fisher, tolerance)
+    claims = _claims(
+        summaries,
+        fisher,
+        {"mean_asymmetry_relative": mean, "peak_asymmetry_relative": peak},
+        published,
+        published_fisher,
+        published_optional,
+        tolerance,
+    )
     identity_checks = _identity_checks(summaries, fisher, published, published_fisher)
     agreed = all(bool(item["passed"]) for item in [*claims, *identity_checks])
-    return {
+    document: dict[str, object] = {
         "schema": OUTPUT_SCHEMA,
         "outcome": "completed" if agreed else "mismatch",
         "inputs": {
@@ -547,29 +655,10 @@ def run_request(request_path: Path) -> dict[str, object]:
         },
         "claims": claims,
         "identity_checks": identity_checks,
-        "comparison_coverage": _COVERAGE,
+        "comparison_coverage": _coverage(published_optional),
     }
-
-
-def serialise(document: dict[str, object]) -> str:
-    """Write an output document as one deterministic line of JSON.
-
-    Keys are sorted, separators are fixed, non-ASCII characters are escaped
-    and a non-finite number is refused rather than written. A binary64 value
-    is written in its shortest form that reads back to the same value.
-
-    Parameters
-    ----------
-    document : dict
-        Output document.
-
-    Returns
-    -------
-    str
-        The line, ending in a newline.
-
-    """
-    return json.dumps(document, sort_keys=True, separators=(",", ":"), allow_nan=False) + "\n"
+    validate_output_document(document)
+    return document
 
 
 def main(argv: list[str] | None = None) -> int:

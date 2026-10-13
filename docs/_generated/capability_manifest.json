@@ -10,10 +10,10 @@
     "public_api_exports": 851,
     "public_documentation_pages": 384,
     "python_model_classes": 1515,
-    "python_model_source_modules": 789,
+    "python_model_source_modules": 790,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1527
+    "test_files": 1528
   },
   "documentation": {
     "examples": [
@@ -667,7 +667,7 @@
       {
         "package": "dla_parity",
         "path": "src/scpn_quantum_control/dla_parity",
-        "python_modules": 5
+        "python_modules": 6
       },
       {
         "package": "dla_topology_control",
@@ -7159,6 +7159,7 @@
       "src/scpn_quantum_control/dla_parity/baselines.py",
       "src/scpn_quantum_control/dla_parity/dataset.py",
       "src/scpn_quantum_control/dla_parity/programme.py",
+      "src/scpn_quantum_control/dla_parity/programme_contract.py",
       "src/scpn_quantum_control/dla_parity/reproduce.py",
       "src/scpn_quantum_control/dla_parity/schema.py",
       "src/scpn_quantum_control/dla_topology_control/evidence.py",
@@ -9222,6 +9223,7 @@
       "tests/test_dla_parity_exact_baseline.py",
       "tests/test_dla_parity_init.py",
       "tests/test_dla_parity_programme.py",
+      "tests/test_dla_parity_programme_contract.py",
       "tests/test_dla_parity_reproduce.py",
       "tests/test_dla_parity_schema.py",
       "tests/test_dla_parity_theorem.py",
