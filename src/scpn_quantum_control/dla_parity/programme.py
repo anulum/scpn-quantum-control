@@ -52,6 +52,7 @@ from __future__ import annotations
 
 import contextlib
 import hashlib
+import io
 import math
 import os
 import sys
@@ -663,10 +664,14 @@ EXECUTION_FAILURE: Final = 3
 def _emit(text: str) -> None:
     """Write one document to standard output and make sure it left the process.
 
-    A console or pipe stream of the interpreter is written through its raw,
-    unbuffered layer, so that a failure is raised here and nothing stays in a
-    buffer for the interpreter to flush after the exit status is decided. Any
-    other stream is written and flushed.
+    Standard output of an interpreter is a text stream over a binary one. In
+    the default mode the binary stream is buffered and has a raw layer; with
+    ``-u`` the binary stream is the raw layer itself. In both forms the bytes
+    are written to the raw layer in a loop, so that a failure is raised here,
+    a write that makes no progress is a failure, and nothing stays in a buffer
+    for the interpreter to flush after the exit status is decided. A binary
+    stream without a raw layer is written and flushed whole. A stream that is
+    text only is written and flushed.
 
     Parameters
     ----------
@@ -680,13 +685,19 @@ def _emit(text: str) -> None:
 
     """
     stream = sys.stdout
-    raw = getattr(getattr(stream, "buffer", None), "raw", None)
-    if raw is None:
+    binary = getattr(stream, "buffer", None)
+    if binary is None:
         stream.write(text)
         stream.flush()
         return
     stream.flush()
-    view = memoryview(text.encode("utf-8"))
+    data = text.encode("utf-8")
+    raw = getattr(binary, "raw", binary)
+    if not isinstance(raw, io.RawIOBase):
+        binary.write(data)
+        binary.flush()
+        return
+    view = memoryview(data)
     while view:
         written = raw.write(view)
         if not written:

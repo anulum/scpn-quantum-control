@@ -825,11 +825,7 @@ def test_an_output_pipe_that_accepts_no_bytes_gives_the_execution_failure_status
 ) -> None:
     """Fill a non-blocking pipe, give it to the worker as standard output and require status 3 instead of a wait or a loop."""
     request = _workspace(tmp_path)
-    reader, writer = os.pipe()
-    os.set_blocking(writer, False)
-    with pytest.raises(BlockingIOError):
-        while True:
-            os.write(writer, b"x" * 65536)
+    reader, writer = _filled_pipe()
     stream = _stream(writer)
     monkeypatch.setattr(sys, "stdout", stream)
     status = programme.main([str(request)])
@@ -880,3 +876,92 @@ def test_the_delivered_process_status_is_three_when_the_document_cannot_be_writt
     assert lines[-1] == "status=3"
     assert lines[0].startswith("execution failure: ") and len(lines) == 2
     assert str(tmp_path) not in completed.stderr
+
+
+def _filled_pipe() -> tuple[int, int]:
+    """Return a pipe whose non-blocking writing end accepts no further byte."""
+    reader, writer = os.pipe()
+    os.set_blocking(writer, False)
+    with pytest.raises(BlockingIOError):
+        while True:
+            os.write(writer, b"x" * 65536)
+    return reader, writer
+
+
+@pytest.mark.skipif(os.name != "posix", reason="needs a non-blocking pipe")
+def test_an_unbuffered_stream_that_accepts_no_bytes_gives_the_execution_failure_status(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capfd: pytest.CaptureFixture[str]
+) -> None:
+    """Give the worker the stream form of an unbuffered interpreter on a filled pipe and require status 3, not a silent loss."""
+    request = _workspace(tmp_path)
+    reader, writer = _filled_pipe()
+    stream = io.TextIOWrapper(io.FileIO(writer, "w"), encoding="utf-8", write_through=True)
+    monkeypatch.setattr(sys, "stdout", stream)
+    status = programme.main([str(request)])
+    os.close(reader)
+    stream.detach().close()
+    assert status == 3
+    assert capfd.readouterr().err == "execution failure: BlockingIOError\n"
+
+
+def test_an_unbuffered_stream_on_a_file_receives_the_whole_document(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Give the worker the stream form of an unbuffered interpreter on a file and require the same bytes as the buffered form writes."""
+    request = _workspace(tmp_path)
+    documents = []
+    for name, buffered in (("plain.json", False), ("buffered.json", True)):
+        raw = io.FileIO(str(tmp_path / name), "w")
+        stream = io.TextIOWrapper(io.BufferedWriter(raw) if buffered else raw, encoding="utf-8")
+        monkeypatch.setattr(sys, "stdout", stream)
+        assert programme.main([str(request)]) == 0
+        documents.append((tmp_path / name).read_bytes())
+        stream.close()
+    assert documents[0] == documents[1]
+    assert json.loads(documents[0])["outcome"] == "completed"
+
+
+def test_a_binary_stream_without_a_raw_layer_receives_the_whole_document(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Give the worker a text stream over an in-memory binary stream and require one whole document in it on return."""
+    request = _workspace(tmp_path)
+    memory = io.BytesIO()
+    monkeypatch.setattr(sys, "stdout", io.TextIOWrapper(memory, encoding="utf-8"))
+    assert programme.main([str(request)]) == 0
+    assert json.loads(memory.getvalue())["outcome"] == "completed"
+    assert memory.getvalue().count(b"\n") == 1
+
+
+@pytest.mark.skipif(os.name != "posix", reason="needs a non-blocking pipe")
+@pytest.mark.parametrize("mode", [[], ["-u"]], ids=["buffered", "unbuffered"])
+def test_a_process_on_a_filled_pipe_ends_with_status_three_and_restores_on_a_free_one(
+    tmp_path: Path, mode: list[str]
+) -> None:
+    """Run the worker without a request, buffered and unbuffered, on a filled non-blocking pipe and then on a free pipe; require 3 with no byte delivered, then 2 with the refusal document."""
+    reader, writer = _filled_pipe()
+    command = [sys.executable, *mode, "-m", "scpn_quantum_control.dla_parity.programme"]
+    blocked = subprocess.run(command, stdout=writer, stderr=subprocess.PIPE, check=False)
+    os.close(writer)
+    drained = b""
+    while chunk := os.read(reader, 1 << 20):
+        drained += chunk
+    os.close(reader)
+    assert blocked.returncode == 3
+    assert blocked.stderr == b"execution failure: BlockingIOError\n"
+    assert set(drained) == {ord("x")}
+    restored = subprocess.run(command, capture_output=True, check=False)
+    assert restored.returncode == 2 and restored.stderr == b""
+    assert json.loads(restored.stdout)["refusal"]["category"] == "malformed_request"
+
+
+def test_a_text_only_stream_receives_the_whole_document(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Give the worker a text stream that has no binary layer, as a host that calls the entry point in process may, and require one whole document."""
+    request = _workspace(tmp_path)
+    text = io.StringIO()
+    monkeypatch.setattr(sys, "stdout", text)
+    assert programme.main([str(request)]) == 0
+    assert json.loads(text.getvalue())["outcome"] == "completed"
+    assert text.getvalue().count("\n") == 1
