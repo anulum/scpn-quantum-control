@@ -48,6 +48,7 @@ from typing import Any, Final
 
 from .dataset import _parse_run
 from .programme_contract import (
+    COVERAGE_TEXT,
     MAX_CIRCUITS,
     MAX_INPUT_BYTES,
     MAX_REQUEST_BYTES,
@@ -56,6 +57,8 @@ from .programme_contract import (
     RAW_RUN_FILES,
     REFUSAL_CATEGORIES,
     REQUEST_SCHEMA,
+    UNCOMPARED_PUBLISHED_FIELDS,
+    UNREFERENCED_ALWAYS,
     is_count,
     is_number,
     parse_json_object,
@@ -504,35 +507,10 @@ def _coverage(published_optional: dict[str, float]) -> dict[str, object]:
     unreferenced = [f"result.{name}" for name in OPTIONAL_CLAIMS if name not in published_optional]
     return {
         "published_fields_without_comparison": [
-            {
-                "field": "depth_summaries[].degrees_of_freedom",
-                "why": "not an output of the programme",
-            },
-            {"field": "depth_summaries[].ci95_even", "why": "not an output of the programme"},
-            {"field": "depth_summaries[].ci95_odd", "why": "not an output of the programme"},
-            {
-                "field": "depth_summaries[].asymmetry_absolute",
-                "why": "not an output of the programme",
-            },
-            {
-                "field": "fisher_combined.combined_p",
-                "why": "the existing programme makes no claim on it; emitted as fisher.combined_p",
-            },
+            dict(entry) for entry in UNCOMPARED_PUBLISHED_FIELDS
         ],
-        "emitted_scalars_without_published_reference": [
-            *unreferenced,
-            "result.peak_asymmetry_depth",
-            "result.n_circuits_used",
-        ],
-        "combined_p_arithmetic": (
-            "1.0 - chi2.cdf(chi2, degrees_of_freedom); a value of 0.0 is a loss of precision "
-            "of this arithmetic, not a tail probability"
-        ),
-        "scaled_rule": (
-            "abs(published - recomputed) / max(abs(published), abs(recomputed), 1.0); "
-            "absolute for values below one"
-        ),
-        "selected_domain": "four qubits, experiment beginning A_dla_parity_n4, sector even or odd",
+        "emitted_scalars_without_published_reference": [*unreferenced, *UNREFERENCED_ALWAYS],
+        **COVERAGE_TEXT,
     }
 
 
@@ -629,8 +607,12 @@ def run_request(request_path: Path) -> dict[str, object]:
         "inputs": {
             "request_sha256": hashlib.sha256(request_bytes).hexdigest(),
             "raw_run_files": [
-                {"bytes": len(content), "sha256": hashlib.sha256(content).hexdigest()}
-                for content in raw_bytes
+                {
+                    "bytes": len(content),
+                    "sha256": hashlib.sha256(content).hexdigest(),
+                    "circuits": len(run.circuits),
+                }
+                for content, run in zip(raw_bytes, runs, strict=True)
             ],
             "published_summary": {
                 "bytes": len(summary_bytes),
@@ -657,7 +639,7 @@ def run_request(request_path: Path) -> dict[str, object]:
         "identity_checks": identity_checks,
         "comparison_coverage": _coverage(published_optional),
     }
-    validate_output_document(document)
+    validate_output_document(document, request_bytes)
     return document
 
 

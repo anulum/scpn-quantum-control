@@ -52,10 +52,15 @@
                 "additionalProperties": false,
                 "required": [
                   "bytes",
+                  "circuits",
                   "sha256"
                 ],
                 "properties": {
                   "bytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "circuits": {
                     "type": "integer",
                     "minimum": 0
                   },
@@ -396,50 +401,61 @@
           ],
           "properties": {
             "published_fields_without_comparison": {
-              "type": "array",
-              "minItems": 1,
-              "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "field",
-                  "why"
-                ],
-                "properties": {
-                  "field": {
-                    "type": "string",
-                    "minLength": 1
-                  },
-                  "why": {
-                    "type": "string",
-                    "minLength": 1
-                  }
+              "const": [
+                {
+                  "field": "depth_summaries[].degrees_of_freedom",
+                  "why": "not an output of the programme"
+                },
+                {
+                  "field": "depth_summaries[].ci95_even",
+                  "why": "not an output of the programme"
+                },
+                {
+                  "field": "depth_summaries[].ci95_odd",
+                  "why": "not an output of the programme"
+                },
+                {
+                  "field": "depth_summaries[].asymmetry_absolute",
+                  "why": "not an output of the programme"
+                },
+                {
+                  "field": "fisher_combined.combined_p",
+                  "why": "the existing programme makes no claim on it; emitted as fisher.combined_p"
                 }
-              }
+              ]
             },
             "emitted_scalars_without_published_reference": {
-              "type": "array",
-              "uniqueItems": true,
-              "items": {
-                "enum": [
+              "enum": [
+                [
                   "result.mean_asymmetry_relative",
                   "result.peak_asymmetry_relative",
                   "result.peak_asymmetry_depth",
                   "result.n_circuits_used"
+                ],
+                [
+                  "result.mean_asymmetry_relative",
+                  "result.peak_asymmetry_depth",
+                  "result.n_circuits_used"
+                ],
+                [
+                  "result.peak_asymmetry_relative",
+                  "result.peak_asymmetry_depth",
+                  "result.n_circuits_used"
+                ],
+                [
+                  "result.peak_asymmetry_depth",
+                  "result.n_circuits_used"
                 ]
-              }
+              ]
             },
             "combined_p_arithmetic": {
-              "type": "string",
-              "minLength": 1
+              "const": "1.0 - chi2.cdf(chi2, degrees_of_freedom); a value of 0.0 is a loss of precision of this arithmetic, not a tail probability"
             },
             "scaled_rule": {
-              "type": "string",
-              "minLength": 1
+              "const": "abs(published - recomputed) / max(abs(published), abs(recomputed), 1.0); absolute for values below one"
             },
             "selected_domain": {
-              "type": "string",
-              "minLength": 1
+              "const": "four qubits, experiment beginning A_dla_parity_n4, sector even or odd"
             }
           }
         }

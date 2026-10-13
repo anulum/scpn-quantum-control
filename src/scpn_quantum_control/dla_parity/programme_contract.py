@@ -22,6 +22,7 @@ document it received.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 from typing import Any, Final
@@ -67,6 +68,31 @@ PER_DEPTH_CLAIMS: Final = (
     "welch_p",
 )
 OPTIONAL_CLAIMS: Final = ("mean_asymmetry_relative", "peak_asymmetry_relative")
+UNCOMPARED_PUBLISHED_FIELDS: Final = (
+    {"field": "depth_summaries[].degrees_of_freedom", "why": "not an output of the programme"},
+    {"field": "depth_summaries[].ci95_even", "why": "not an output of the programme"},
+    {"field": "depth_summaries[].ci95_odd", "why": "not an output of the programme"},
+    {"field": "depth_summaries[].asymmetry_absolute", "why": "not an output of the programme"},
+    {
+        "field": "fisher_combined.combined_p",
+        "why": "the existing programme makes no claim on it; emitted as fisher.combined_p",
+    },
+)
+"""Published fields that no run compares, with the reason; always the complete list."""
+UNREFERENCED_ALWAYS: Final = ("result.peak_asymmetry_depth", "result.n_circuits_used")
+"""Emitted scalars for which the published summary has no reference in any run."""
+COVERAGE_TEXT: Final = {
+    "combined_p_arithmetic": (
+        "1.0 - chi2.cdf(chi2, degrees_of_freedom); a value of 0.0 is a loss of precision "
+        "of this arithmetic, not a tail probability"
+    ),
+    "scaled_rule": (
+        "abs(published - recomputed) / max(abs(published), abs(recomputed), 1.0); "
+        "absolute for values below one"
+    ),
+    "selected_domain": "four qubits, experiment beginning A_dla_parity_n4, sector even or odd",
+}
+"""The fixed statements of the coverage block."""
 CLAIM_BINDINGS: Final = {
     "leakage_even": ("leakage_even", "leakage_mean_abs", "absolute"),
     "leakage_odd": ("leakage_odd", "leakage_mean_abs", "absolute"),
@@ -201,13 +227,20 @@ def _require(condition: bool, message: str) -> None:
         raise ValueError(f"output document: {message}")
 
 
-def validate_output_document(document: dict[str, Any]) -> None:
+def validate_output_document(document: dict[str, Any], request: bytes | None = None) -> None:
     """Check the invariants of an output document that a schema cannot express.
 
     Parameters
     ----------
     document : dict
         A parsed output document.
+    request : bytes, optional
+        The request the document answers, exactly as it was given to the
+        worker. When supplied, the document must carry the digest of these
+        bytes, the lengths and digests of the inputs the request pins, in
+        order, and the tolerances the request sets. Without it the document is
+        checked against itself only: a consumer that wants to know that the
+        document answers *its* request supplies the request.
 
     Raises
     ------
@@ -221,7 +254,10 @@ def validate_output_document(document: dict[str, Any]) -> None:
         a claim or an identity check does not carry the emitted scalar, its
         own rule and the tolerance of the document, or states another
         difference than its two values give under its rule;
-        the coverage block is incomplete or names a scalar that has a claim;
+        the records are not every circuit of every run the inputs declare;
+        the coverage block is incomplete, is not the complete fixed statement
+        or names a scalar that has a claim; with a request, the document does
+        not answer it;
         or the outcome contradicts the comparisons.
 
     """
@@ -246,6 +282,12 @@ def validate_output_document(document: dict[str, Any]) -> None:
     positions = [(record["run"], record["circuit"]) for record in records]
     reasons = [record["reason"] for record in records]
     _require(positions == sorted(set(positions)), "records are not ordered and unique")
+    declared = [entry["circuits"] for entry in document["inputs"]["raw_run_files"]]
+    _require(
+        positions
+        == [(run, circuit) for run, total in enumerate(declared) for circuit in range(total)],
+        "records are not every circuit of every run",
+    )
     _require(set(reasons) <= set(SELECTION_REASONS), "unknown selection reason")
     _require(
         counts == {reason: reasons.count(reason) for reason in sorted(set(reasons))},
@@ -265,6 +307,17 @@ def validate_output_document(document: dict[str, Any]) -> None:
     coverage = document["comparison_coverage"]
     _require(set(coverage) == COVERAGE_KEYS, "incomplete comparison coverage")
     unreferenced = coverage["emitted_scalars_without_published_reference"]
+    _require(
+        coverage["published_fields_without_comparison"] == list(UNCOMPARED_PUBLISHED_FIELDS)
+        and all(coverage[key] == text for key, text in COVERAGE_TEXT.items()),
+        "comparison coverage is not the complete fixed statement",
+    )
+    _require(
+        unreferenced
+        == [f"result.{name}" for name in OPTIONAL_CLAIMS if f"result.{name}" in unreferenced]
+        + list(UNREFERENCED_ALWAYS),
+        "unreferenced scalars are not the complete ordered list",
+    )
     optional = [name for name in OPTIONAL_CLAIMS if f"result.{name}" not in unreferenced]
     expected_claims = [f"depth={d}.{label}" for d in depths for label in PER_DEPTH_CLAIMS]
     expected_claims += ["fisher.chi2", *optional]
@@ -330,4 +383,30 @@ def validate_output_document(document: dict[str, Any]) -> None:
     agreed = all(item["passed"] for item in [*claims, *checks])
     _require(
         outcome == ("completed" if agreed else "mismatch"), "outcome contradicts the comparisons"
+    )
+    if request is not None:
+        _bound_to_request(document, request)
+
+
+def _bound_to_request(document: dict[str, Any], request: bytes) -> None:
+    """Require a result document to answer exactly the given request."""
+    inputs = document["inputs"]
+    try:
+        asked = parse_json_object(request)
+        pins = [*asked["raw_run_files"], asked["published_summary"]]
+        pinned = [(pin["bytes"], pin["sha256"]) for pin in pins]
+        tolerance = {name: float(value) for name, value in asked["tolerance"].items()}
+    except (ValueError, KeyError, TypeError, AttributeError, OverflowError) as exc:
+        raise ValueError("output document: the request is not a request of this protocol") from exc
+    answered = [*inputs["raw_run_files"], inputs["published_summary"]]
+    _require(
+        inputs["request_sha256"] == hashlib.sha256(request).hexdigest(),
+        "the document answers another request",
+    )
+    _require(
+        [(entry["bytes"], entry["sha256"]) for entry in answered] == pinned,
+        "the document read other inputs than the request pins",
+    )
+    _require(
+        document["tolerance"] == tolerance, "the document used other tolerances than the request"
     )

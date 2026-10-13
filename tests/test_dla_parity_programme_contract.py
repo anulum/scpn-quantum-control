@@ -51,8 +51,8 @@ def _pin(path: Path) -> JsonObject:
 
 
 @pytest.fixture(scope="module")
-def committed(tmp_path_factory: pytest.TempPathFactory) -> JsonObject:
-    """Return the document the worker writes for the committed inputs."""
+def answered(tmp_path_factory: pytest.TempPathFactory) -> tuple[JsonObject, bytes]:
+    """Return the document the worker writes for the committed inputs, and its request."""
     request = tmp_path_factory.mktemp("contract") / "request.json"
     request.write_text(
         json.dumps(
@@ -67,7 +67,13 @@ def committed(tmp_path_factory: pytest.TempPathFactory) -> JsonObject:
     )
     document: JsonObject = programme.run_request(request)
     reread: JsonObject = json.loads(programme_contract.serialise(document))
-    return reread
+    return reread, request.read_bytes()
+
+
+@pytest.fixture(scope="module")
+def committed(answered: tuple[JsonObject, bytes]) -> JsonObject:
+    """Return the document the worker writes for the committed inputs."""
+    return answered[0]
 
 
 def _schema_refuses(document: JsonObject) -> bool:
@@ -104,6 +110,40 @@ def _extra_member(d: JsonObject) -> None:
 
 def _record_dropped(d: JsonObject) -> None:
     del d["selection"]["records"][5]
+
+
+def _excluded_record_removed_with_its_count(d: JsonObject) -> None:
+    records = d["selection"]["records"]
+    index = next(i for i, record in enumerate(records) if record["reason"] != "selected")
+    d["selection"]["counts"][records[index]["reason"]] -= 1
+    del records[index]
+
+
+def _last_record_removed_with_its_count(d: JsonObject) -> None:
+    d["selection"]["counts"][d["selection"]["records"][-1]["reason"]] -= 1
+    del d["selection"]["records"][-1]
+
+
+def _declared_run_size_changed(d: JsonObject) -> None:
+    d["inputs"]["raw_run_files"][0]["circuits"] += 1
+
+
+def _uncompared_fields_truncated(d: JsonObject) -> None:
+    del d["comparison_coverage"]["published_fields_without_comparison"][1:]
+
+
+def _coverage_statement_reworded(d: JsonObject) -> None:
+    d["comparison_coverage"]["combined_p_arithmetic"] = "exact tail probability"
+
+
+def _unreferenced_scalar_hidden(d: JsonObject) -> None:
+    d["comparison_coverage"]["emitted_scalars_without_published_reference"].remove(
+        "result.peak_asymmetry_depth"
+    )
+
+
+def _unreferenced_scalars_reordered(d: JsonObject) -> None:
+    d["comparison_coverage"]["emitted_scalars_without_published_reference"].reverse()
 
 
 def _record_repeated(d: JsonObject) -> None:
@@ -224,7 +264,18 @@ def _refusal_with_a_scalar(d: JsonObject) -> None:
         (_other_schema, "unknown schema identifier", True),
         (_unknown_outcome, "unknown outcome", True),
         (_extra_member, "missing or extra top-level member", True),
-        (_record_dropped, "selection counts do not account", False),
+        (_record_dropped, "records are not every circuit of every run", False),
+        (
+            _excluded_record_removed_with_its_count,
+            "records are not every circuit of every run",
+            False,
+        ),
+        (_last_record_removed_with_its_count, "records are not every circuit of every run", False),
+        (_declared_run_size_changed, "records are not every circuit of every run", False),
+        (_uncompared_fields_truncated, "not the complete fixed statement", True),
+        (_coverage_statement_reworded, "not the complete fixed statement", True),
+        (_unreferenced_scalar_hidden, "not the complete ordered list", True),
+        (_unreferenced_scalars_reordered, "not the complete ordered list", True),
         (_record_repeated, "records are not ordered and unique", False),
         (_records_reordered, "records are not ordered and unique", False),
         (_unknown_reason, "unknown selection reason", True),
@@ -339,3 +390,45 @@ def test_the_reader_and_the_serialiser_round_trip_a_document() -> None:
     }
     with pytest.raises(ValueError, match="Out of range float values"):
         programme_contract.serialise({"value": float("inf")})
+
+
+def test_a_document_is_bound_to_the_request_it_answers(answered: tuple[JsonObject, bytes]) -> None:
+    """Supply the request and require its digest, its pins and its tolerances in the document."""
+    document, request = answered
+    programme_contract.validate_output_document(document, request)
+
+    other = request.replace(b'"welch_p_rel": 1e-06', b'"welch_p_rel": 1e-05')
+    assert other != request
+    with pytest.raises(ValueError, match="answers another request"):
+        programme_contract.validate_output_document(document, other)
+
+    reread = copy.deepcopy(document)
+    reread["inputs"]["raw_run_files"][2]["sha256"] = "0" * 64
+    programme_contract.validate_output_document(reread)
+    with pytest.raises(ValueError, match="read other inputs than the request pins"):
+        programme_contract.validate_output_document(reread, request)
+
+    loosened = copy.deepcopy(document)
+    loosened["tolerance"]["welch_p_rel"] = 0.5
+    for claim in loosened["claims"]:
+        if claim["tolerance_name"] == "welch_p_rel":
+            claim["tolerance"] = 0.5
+    programme_contract.validate_output_document(loosened)
+    with pytest.raises(ValueError, match="used other tolerances than the request"):
+        programme_contract.validate_output_document(loosened, request)
+
+
+@pytest.mark.parametrize(
+    "request_bytes",
+    [
+        b"[]",
+        b'{"raw_run_files": 3}',
+        b'{"raw_run_files": [], "published_summary": 1, "tolerance": {}}',
+    ],
+)
+def test_a_request_of_another_shape_cannot_bind_a_document(
+    committed: JsonObject, request_bytes: bytes
+) -> None:
+    """Require bytes that are not a request of the protocol to be refused as such."""
+    with pytest.raises(ValueError, match="not a request of this protocol"):
+        programme_contract.validate_output_document(committed, request_bytes)
