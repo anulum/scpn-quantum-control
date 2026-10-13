@@ -21,6 +21,17 @@ least one comparison fails; all comparisons are listed, not only the first.
 ``refused`` (2): an input or a precondition is not acceptable; the document
 carries one category of the protocol and no scalar.
 
+A fourth exit status, 3, is not an outcome and has no document: the worker
+could not finish or could not deliver its document (an unexpected error, memory
+exhausted after start-up, standard output closed, full or without a reader).
+Statuses 0, 1 and 2 are returned only after the whole document was written and
+flushed. A failure before the entry point is reached (the interpreter or an
+import cannot start), a signal, and a kill by the system end the process with
+whatever status the system gives; no status of this programme describes them.
+A caller therefore accepts an outcome only from a normal end with status 0, 1
+or 2 *and* exactly one whole document that the validator accepts for its
+request and whose outcome matches the status.
+
 The numbers are those of :func:`.reproduce.compute_depth_summaries` and its
 companions. The worker adds no estimator and repairs no value: the combined
 p-value is emitted as the existing arithmetic gives it (one minus the
@@ -39,8 +50,10 @@ Names, limits, the JSON reader and the checks of an output document live in
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import math
+import os
 import sys
 from dataclasses import asdict, fields
 from pathlib import Path
@@ -643,6 +656,62 @@ def run_request(request_path: Path) -> dict[str, object]:
     return document
 
 
+EXECUTION_FAILURE: Final = 3
+"""Exit status of a run that could not finish or could not deliver its document."""
+
+
+def _emit(text: str) -> None:
+    """Write one document to standard output and make sure it left the process.
+
+    A console or pipe stream of the interpreter is written through its raw,
+    unbuffered layer, so that a failure is raised here and nothing stays in a
+    buffer for the interpreter to flush after the exit status is decided. Any
+    other stream is written and flushed.
+
+    Parameters
+    ----------
+    text : str
+        The serialised document.
+
+    Raises
+    ------
+    OSError
+        When the stream refuses the bytes or accepts none of them.
+
+    """
+    stream = sys.stdout
+    raw = getattr(getattr(stream, "buffer", None), "raw", None)
+    if raw is None:
+        stream.write(text)
+        stream.flush()
+        return
+    stream.flush()
+    view = memoryview(text.encode("utf-8"))
+    while view:
+        written = raw.write(view)
+        if not written:
+            raise BlockingIOError("standard output accepted no bytes")
+        view = view[written:]
+
+
+def _report_failure(failure: Exception) -> None:
+    """Name the kind of an execution failure on standard error, and nothing else.
+
+    The line carries the class name only: no message, path or input byte. It is
+    written without building a document and is abandoned when the error stream
+    is itself unusable.
+
+    Parameters
+    ----------
+    failure : Exception
+        The failure that ended the run.
+
+    """
+    line = b"execution failure: " + type(failure).__name__.encode("ascii", "replace")[:80]
+    with contextlib.suppress(OSError):
+        os.write(2, line + b"\n")
+
+
 def main(argv: list[str] | None = None) -> int:
     """Run one request and write one document to standard output.
 
@@ -654,22 +723,28 @@ def main(argv: list[str] | None = None) -> int:
     Returns
     -------
     int
-        0 for ``completed``, 1 for ``mismatch``, 2 for ``refused``.
+        0 for ``completed``, 1 for ``mismatch``, 2 for ``refused``, each only
+        after the whole document was written; 3 when the run failed or the
+        document could not be delivered. Cancellation is not caught.
 
     """
     arguments = sys.argv[1:] if argv is None else argv
     try:
-        if len(arguments) != 1:
-            raise ProgrammeRefusal("malformed_request", "exactly one request path is expected")
-        document = run_request(Path(arguments[0]))
-    except ProgrammeRefusal as refusal:
-        document = {
-            "schema": OUTPUT_SCHEMA,
-            "outcome": "refused",
-            "refusal": {"category": refusal.category, "detail": refusal.detail},
-        }
-    sys.stdout.write(serialise(document))
-    return {"completed": 0, "mismatch": 1, "refused": 2}[str(document["outcome"])]
+        try:
+            if len(arguments) != 1:
+                raise ProgrammeRefusal("malformed_request", "exactly one request path is expected")
+            document = run_request(Path(arguments[0]))
+        except ProgrammeRefusal as refusal:
+            document = {
+                "schema": OUTPUT_SCHEMA,
+                "outcome": "refused",
+                "refusal": {"category": refusal.category, "detail": refusal.detail},
+            }
+        _emit(serialise(document))
+        return {"completed": 0, "mismatch": 1, "refused": 2}[str(document["outcome"])]
+    except Exception as failure:
+        _report_failure(failure)
+        return EXECUTION_FAILURE
 
 
 if __name__ == "__main__":

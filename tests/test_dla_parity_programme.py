@@ -19,6 +19,7 @@ import copy
 import dataclasses
 import hashlib
 import importlib
+import io
 import json
 import os
 import runpy
@@ -770,3 +771,112 @@ def test_a_refusal_carries_its_category_in_its_text() -> None:
     refusal = programme.ProgrammeRefusal("digest_mismatch", "an input differs from its pin")
     assert str(refusal) == "digest_mismatch: an input differs from its pin"
     assert refusal.category in programme.REFUSAL_CATEGORIES
+
+
+def _stream(target: int | str) -> io.TextIOWrapper:
+    """Open a real buffered text stream, as the interpreter builds standard output."""
+    return io.TextIOWrapper(io.BufferedWriter(io.FileIO(target, "w")), encoding="utf-8")
+
+
+def test_a_document_reaches_an_interpreter_stream_through_its_raw_layer(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Give the worker a real buffered text stream on a file and require the whole document in the file on return."""
+    request = _workspace(tmp_path)
+    target = tmp_path / "out.json"
+    stream = _stream(str(target))
+    monkeypatch.setattr(sys, "stdout", stream)
+    status = programme.main([str(request)])
+    written = target.read_bytes()
+    stream.close()
+    assert status == 0
+    assert written.endswith(b"\n") and written.count(b"\n") == 1
+    assert json.loads(written)["outcome"] == "completed"
+    assert target.read_bytes() == written
+
+
+@pytest.mark.skipif(not Path("/dev/full").exists(), reason="needs the full device of Linux")
+def test_a_full_output_device_gives_the_execution_failure_status(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capfd: pytest.CaptureFixture[str]
+) -> None:
+    """Connect standard output to the full device and require status 3 and one bounded line that names the error class only."""
+    request = _workspace(tmp_path)
+    stream = _stream("/dev/full")
+    monkeypatch.setattr(sys, "stdout", stream)
+    status = programme.main([str(request)])
+    stream.close()
+    assert status == programme.EXECUTION_FAILURE == 3
+    assert capfd.readouterr().err == "execution failure: OSError\n"
+
+
+def test_an_absent_output_stream_gives_the_execution_failure_status(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capfd: pytest.CaptureFixture[str]
+) -> None:
+    """Remove standard output, as an interpreter started with it closed has it, and require status 3."""
+    request = _workspace(tmp_path)
+    monkeypatch.setattr(sys, "stdout", None)
+    assert programme.main([str(request)]) == 3
+    assert capfd.readouterr().err == "execution failure: AttributeError\n"
+
+
+@pytest.mark.skipif(os.name != "posix", reason="needs a non-blocking pipe")
+def test_an_output_pipe_that_accepts_no_bytes_gives_the_execution_failure_status(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capfd: pytest.CaptureFixture[str]
+) -> None:
+    """Fill a non-blocking pipe, give it to the worker as standard output and require status 3 instead of a wait or a loop."""
+    request = _workspace(tmp_path)
+    reader, writer = os.pipe()
+    os.set_blocking(writer, False)
+    with pytest.raises(BlockingIOError):
+        while True:
+            os.write(writer, b"x" * 65536)
+    stream = _stream(writer)
+    monkeypatch.setattr(sys, "stdout", stream)
+    status = programme.main([str(request)])
+    os.close(reader)
+    stream.detach().detach().close()
+    assert status == 3
+    assert capfd.readouterr().err == "execution failure: BlockingIOError\n"
+
+
+def test_a_failure_is_not_reported_when_the_error_stream_is_unusable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Close the error descriptor for the length of one failing run and require status 3 without a second error."""
+    request = _workspace(tmp_path)
+    monkeypatch.setattr(sys, "stdout", None)
+    saved = os.dup(2)
+    os.close(2)
+    try:
+        status = programme.main([str(request)])
+    finally:
+        os.dup2(saved, 2)
+        os.close(saved)
+    assert status == 3
+
+
+@pytest.mark.skipif(os.name != "posix", reason="needs a POSIX shell and the full device")
+@pytest.mark.parametrize(
+    "redirection", [">/dev/full", ">&-", "| true"], ids=["full", "closed", "no-reader"]
+)
+def test_the_delivered_process_status_is_three_when_the_document_cannot_be_written(
+    tmp_path: Path, redirection: str
+) -> None:
+    """Run the worker as a process whose standard output is full, closed or without a reader, and require the delivered status 3, never 1 or 120."""
+    request = _workspace(tmp_path)
+    script = f'"$0" -m scpn_quantum_control.dla_parity.programme "$1" {redirection}; echo "status=$?" >&2'
+    if redirection == "| true":
+        script = (
+            '{ sleep 0.3; "$0" -m scpn_quantum_control.dla_parity.programme "$1"; '
+            'echo "status=$?" >&2; } | true'
+        )
+    completed = subprocess.run(
+        ["sh", "-c", script, sys.executable, str(request)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    lines = completed.stderr.splitlines()
+    assert lines[-1] == "status=3"
+    assert lines[0].startswith("execution failure: ") and len(lines) == 2
+    assert str(tmp_path) not in completed.stderr
