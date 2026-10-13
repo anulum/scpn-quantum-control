@@ -128,6 +128,19 @@ def _declared_run_size_changed(d: JsonObject) -> None:
     d["inputs"]["raw_run_files"][0]["circuits"] += 1
 
 
+def _record_moved_between_runs(d: JsonObject) -> None:
+    d["inputs"]["raw_run_files"][0]["circuits"] -= 1
+    d["inputs"]["raw_run_files"][1]["circuits"] += 1
+
+
+def _declared_run_size_enormous(d: JsonObject) -> None:
+    d["inputs"]["raw_run_files"][0]["circuits"] = 10**15
+
+
+def _declared_run_size_not_a_count(d: JsonObject) -> None:
+    d["inputs"]["raw_run_files"][0]["circuits"] = True
+
+
 def _uncompared_fields_truncated(d: JsonObject) -> None:
     del d["comparison_coverage"]["published_fields_without_comparison"][1:]
 
@@ -264,14 +277,21 @@ def _refusal_with_a_scalar(d: JsonObject) -> None:
         (_other_schema, "unknown schema identifier", True),
         (_unknown_outcome, "unknown outcome", True),
         (_extra_member, "missing or extra top-level member", True),
-        (_record_dropped, "records are not every circuit of every run", False),
+        (_record_dropped, "declared run sizes do not bound the records", False),
         (
             _excluded_record_removed_with_its_count,
-            "records are not every circuit of every run",
+            "declared run sizes do not bound the records",
             False,
         ),
-        (_last_record_removed_with_its_count, "records are not every circuit of every run", False),
-        (_declared_run_size_changed, "records are not every circuit of every run", False),
+        (
+            _last_record_removed_with_its_count,
+            "declared run sizes do not bound the records",
+            False,
+        ),
+        (_declared_run_size_changed, "declared run sizes do not bound the records", False),
+        (_declared_run_size_enormous, "declared run sizes do not bound the records", False),
+        (_declared_run_size_not_a_count, "declared run sizes do not bound the records", True),
+        (_record_moved_between_runs, "records are not every circuit of every run", False),
         (_uncompared_fields_truncated, "not the complete fixed statement", True),
         (_coverage_statement_reworded, "not the complete fixed statement", True),
         (_unreferenced_scalar_hidden, "not the complete ordered list", True),

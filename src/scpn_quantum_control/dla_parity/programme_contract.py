@@ -284,6 +284,11 @@ def validate_output_document(document: dict[str, Any], request: bytes | None = N
     _require(positions == sorted(set(positions)), "records are not ordered and unique")
     declared = [entry["circuits"] for entry in document["inputs"]["raw_run_files"]]
     _require(
+        all(is_count(total) for total in declared)
+        and sum(declared) == len(records) <= MAX_CIRCUITS,
+        "declared run sizes do not bound the records",
+    )
+    _require(
         positions
         == [(run, circuit) for run, total in enumerate(declared) for circuit in range(total)],
         "records are not every circuit of every run",
