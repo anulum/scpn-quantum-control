@@ -67,6 +67,19 @@ PER_DEPTH_CLAIMS: Final = (
     "welch_p",
 )
 OPTIONAL_CLAIMS: Final = ("mean_asymmetry_relative", "peak_asymmetry_relative")
+CLAIM_BINDINGS: Final = {
+    "leakage_even": ("leakage_even", "leakage_mean_abs", "absolute"),
+    "leakage_odd": ("leakage_odd", "leakage_mean_abs", "absolute"),
+    "sem_even": ("leakage_even_sem", "leakage_sem_abs", "absolute"),
+    "sem_odd": ("leakage_odd_sem", "leakage_sem_abs", "absolute"),
+    "asymmetry_relative": ("asymmetry_relative", "asymmetry_relative_abs", "absolute"),
+    "welch_t": ("welch_t", "welch_t_rel", "scaled_by_max_abs_or_one"),
+    "welch_p": ("welch_p", "welch_p_rel", "scaled_by_max_abs_or_one"),
+    "fisher.chi2": ("chi2", "fisher_chi2_rel", "scaled_by_max_abs_or_one"),
+    "mean_asymmetry_relative": ("mean_asymmetry_relative", "mean_asymmetry_abs", "absolute"),
+    "peak_asymmetry_relative": ("peak_asymmetry_relative", "peak_asymmetry_abs", "absolute"),
+}
+"""For each claim: the emitted scalar it compares, its tolerance and its rule."""
 COVERAGE_KEYS: Final = frozenset(
     {
         "published_fields_without_comparison",
@@ -205,6 +218,9 @@ def validate_output_document(document: dict[str, Any]) -> None:
         the replicate counts and the circuits used disagree; the depths are
         not ascending and unique; the claims or the identity checks are not
         exactly the population for the depths and optional references present;
+        a claim or an identity check does not carry the emitted scalar, its
+        own rule and the tolerance of the document, or states another
+        difference than its two values give under its rule;
         the coverage block is incomplete or names a scalar that has a claim;
         or the outcome contradicts the comparisons.
 
@@ -270,15 +286,46 @@ def validate_output_document(document: dict[str, Any]) -> None:
         [check["name"] for check in checks] == expected_checks,
         "identity checks are not the complete population",
     )
+    by_depth = {summary["depth"]: summary for summary in summaries}
     for claim in claims:
+        name = claim["name"]
+        depth_text, _, label = name.partition(".") if name.startswith("depth=") else ("", "", name)
+        field, tolerance_name, rule = CLAIM_BINDINGS[label]
+        if depth_text:
+            emitted = by_depth[int(depth_text.removeprefix("depth="))][field]
+        else:
+            emitted = document["fisher" if label == "fisher.chi2" else "result"][field]
+        published, recomputed = claim["published"], claim["recomputed"]
+        difference = abs(published - recomputed)
+        if rule != "absolute":
+            difference /= max(abs(published), abs(recomputed), 1.0)
+        _require(recomputed == emitted, f"claim {name} does not carry the emitted scalar")
         _require(
-            claim["passed"] is (claim["difference"] <= claim["tolerance"]),
-            f"claim {claim['name']} contradicts its difference",
+            claim["rule"] == rule
+            and claim["tolerance_name"] == tolerance_name
+            and claim["tolerance"] == document["tolerance"][tolerance_name],
+            f"claim {name} does not carry its rule and tolerance",
         )
+        _require(claim["difference"] == difference, f"claim {name} misstates its difference")
+        _require(
+            claim["passed"] is (difference <= claim["tolerance"]),
+            f"claim {name} contradicts its difference",
+        )
+    fisher = document["fisher"]
     for check in checks:
+        name = check["name"]
+        if name.startswith("depth="):
+            depth_text, _, field = name.partition(".")
+            emitted = by_depth[int(depth_text.removeprefix("depth="))][field]
+        else:
+            emitted = fisher[name.removeprefix("fisher.")]
+        _require(
+            check["recomputed"] == emitted,
+            f"identity check {name} does not carry the emitted count",
+        )
         _require(
             check["passed"] is (check["published"] == check["recomputed"]),
-            f"identity check {check['name']} contradicts its values",
+            f"identity check {name} contradicts its values",
         )
     agreed = all(item["passed"] for item in [*claims, *checks])
     _require(

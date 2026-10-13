@@ -160,7 +160,53 @@ def _claim_passed_against_its_difference(d: JsonObject) -> None:
 
 
 def _identity_check_passed_against_its_values(d: JsonObject) -> None:
+    d["identity_checks"][0]["published"] += 1
+
+
+def _claim_failed_against_its_difference(d: JsonObject) -> None:
+    d["claims"][3]["passed"] = False
+
+
+def _published_changed_with_the_verdict_kept(d: JsonObject) -> None:
+    d["claims"][0]["published"] += 0.1
+
+
+def _recomputed_changed_in_the_claim_only(d: JsonObject) -> None:
+    d["claims"][0]["recomputed"] += 0.1
+
+
+def _scalar_changed_in_the_summary_only(d: JsonObject) -> None:
+    d["depth_summaries"][0]["welch_t"] += 0.1
+
+
+def _fisher_scalar_changed_only(d: JsonObject) -> None:
+    d["fisher"]["chi2"] += 1.0
+
+
+def _rule_swapped(d: JsonObject) -> None:
+    d["claims"][5]["rule"] = "absolute"
+
+
+def _tolerance_widened_in_the_claim(d: JsonObject) -> None:
+    d["claims"][0]["tolerance"] = 1.0
+
+
+def _tolerance_widened_in_the_document(d: JsonObject) -> None:
+    d["tolerance"]["leakage_mean_abs"] = 1.0
+
+
+def _tolerance_name_swapped(d: JsonObject) -> None:
+    d["claims"][0]["tolerance_name"] = "leakage_sem_abs"
+
+
+def _replicate_count_changed_in_the_check_only(d: JsonObject) -> None:
+    d["identity_checks"][0]["published"] += 1
     d["identity_checks"][0]["recomputed"] += 1
+
+
+def _fisher_count_changed_in_the_check_only(d: JsonObject) -> None:
+    d["identity_checks"][-1]["published"] += 1
+    d["identity_checks"][-1]["recomputed"] += 1
 
 
 def _outcome_against_comparisons(d: JsonObject) -> None:
@@ -191,7 +237,18 @@ def _refusal_with_a_scalar(d: JsonObject) -> None:
         (_claim_dropped, "claims are not the complete population", False),
         (_claim_for_an_unreferenced_scalar, "claims are not the complete population", False),
         (_identity_check_dropped, "identity checks are not the complete population", False),
-        (_claim_passed_against_its_difference, "contradicts its difference", False),
+        (_claim_passed_against_its_difference, "misstates its difference", False),
+        (_claim_failed_against_its_difference, "contradicts its difference", False),
+        (_published_changed_with_the_verdict_kept, "misstates its difference", False),
+        (_recomputed_changed_in_the_claim_only, "does not carry the emitted scalar", False),
+        (_scalar_changed_in_the_summary_only, "does not carry the emitted scalar", False),
+        (_fisher_scalar_changed_only, "does not carry the emitted scalar", False),
+        (_rule_swapped, "does not carry its rule and tolerance", False),
+        (_tolerance_widened_in_the_claim, "does not carry its rule and tolerance", False),
+        (_tolerance_widened_in_the_document, "does not carry its rule and tolerance", False),
+        (_tolerance_name_swapped, "does not carry its rule and tolerance", False),
+        (_replicate_count_changed_in_the_check_only, "does not carry the emitted count", False),
+        (_fisher_count_changed_in_the_check_only, "does not carry the emitted count", False),
         (_identity_check_passed_against_its_values, "contradicts its values", False),
         (_outcome_against_comparisons, "outcome contradicts the comparisons", False),
         (_refusal_with_a_scalar, "a refusal carries a scalar", True),
