@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **788 modules** across **41 package families**
-- **4260 documented public module-level symbols**
+- **789 modules** across **41 package families**
+- **4264 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2212,6 +2212,16 @@ DLA-parity dataset loader.
 **Classes:** `DatasetIntegrityError`
 
 **Functions:** `load_dla_parity_dataset()`
+
+### `scpn_quantum_control.dla_parity.programme`
+
+Run the DLA-parity statistical reproducer as an ordinary programme.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/dla_parity/programme.py) · Public symbols: **4**
+
+**Classes:** `ProgrammeRefusal`
+
+**Functions:** `run_request()`, `serialise()`, `main()`
 
 ### `scpn_quantum_control.dla_parity.reproduce`
 

@@ -1,0 +1,431 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scpn_quantum_control.dla_parity.programme_output.v1",
+  "title": "Output document of the DLA-parity ordinary programme",
+  "description": "Exactly one such document is written to standard output as one line: keys sorted, separators ',' and ':', no non-finite number. Exit status 0 for completed, 1 for mismatch, 2 for refused.",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "claims",
+        "comparison_coverage",
+        "depth_summaries",
+        "fisher",
+        "identity_checks",
+        "inputs",
+        "outcome",
+        "result",
+        "schema",
+        "selection",
+        "tolerance"
+      ],
+      "properties": {
+        "schema": {
+          "const": "scpn_quantum_control.dla_parity.programme_output.v1"
+        },
+        "outcome": {
+          "enum": [
+            "completed",
+            "mismatch"
+          ]
+        },
+        "inputs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "published_summary",
+            "raw_run_files",
+            "request_sha256"
+          ],
+          "properties": {
+            "request_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "raw_run_files": {
+              "type": "array",
+              "minItems": 4,
+              "maxItems": 4,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "bytes",
+                  "sha256"
+                ],
+                "properties": {
+                  "bytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  }
+                }
+              }
+            },
+            "published_summary": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "bytes",
+                "sha256"
+              ],
+              "properties": {
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              }
+            }
+          }
+        },
+        "tolerance": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "asymmetry_relative_abs",
+            "fisher_chi2_rel",
+            "leakage_mean_abs",
+            "leakage_sem_abs",
+            "mean_asymmetry_abs",
+            "peak_asymmetry_abs",
+            "welch_p_rel",
+            "welch_t_rel"
+          ],
+          "properties": {
+            "leakage_mean_abs": {
+              "type": "number",
+              "minimum": 0
+            },
+            "leakage_sem_abs": {
+              "type": "number",
+              "minimum": 0
+            },
+            "asymmetry_relative_abs": {
+              "type": "number",
+              "minimum": 0
+            },
+            "welch_t_rel": {
+              "type": "number",
+              "minimum": 0
+            },
+            "welch_p_rel": {
+              "type": "number",
+              "minimum": 0
+            },
+            "fisher_chi2_rel": {
+              "type": "number",
+              "minimum": 0
+            },
+            "mean_asymmetry_abs": {
+              "type": "number",
+              "minimum": 0
+            },
+            "peak_asymmetry_abs": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "selection": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "counts",
+            "records"
+          ],
+          "properties": {
+            "records": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "circuit",
+                  "experiment",
+                  "reason",
+                  "run"
+                ],
+                "properties": {
+                  "run": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "circuit": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "experiment": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "enum": [
+                      "selected",
+                      "excluded_qubit_count",
+                      "excluded_experiment",
+                      "excluded_sector"
+                    ]
+                  }
+                }
+              }
+            },
+            "counts": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "depth_summaries": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "asymmetry_relative",
+              "depth",
+              "leakage_even",
+              "leakage_even_sem",
+              "leakage_odd",
+              "leakage_odd_sem",
+              "n_reps_even",
+              "n_reps_odd",
+              "welch_p",
+              "welch_t"
+            ],
+            "properties": {
+              "depth": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "leakage_even": {
+                "type": "number"
+              },
+              "leakage_even_sem": {
+                "type": "number"
+              },
+              "leakage_odd": {
+                "type": "number"
+              },
+              "leakage_odd_sem": {
+                "type": "number"
+              },
+              "asymmetry_relative": {
+                "type": "number"
+              },
+              "welch_t": {
+                "type": "number"
+              },
+              "welch_p": {
+                "type": "number"
+              },
+              "n_reps_even": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "n_reps_odd": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "fisher": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "chi2",
+            "combined_p",
+            "degrees_of_freedom",
+            "n_depths_significant_at_0_05",
+            "n_depths_tested"
+          ],
+          "properties": {
+            "chi2": {
+              "type": "number"
+            },
+            "degrees_of_freedom": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "combined_p": {
+              "type": "number"
+            },
+            "n_depths_significant_at_0_05": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "n_depths_tested": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mean_asymmetry_relative",
+            "n_circuits_used",
+            "peak_asymmetry_depth",
+            "peak_asymmetry_relative"
+          ],
+          "properties": {
+            "peak_asymmetry_relative": {
+              "type": "number"
+            },
+            "peak_asymmetry_depth": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "mean_asymmetry_relative": {
+              "type": "number"
+            },
+            "n_circuits_used": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "difference",
+              "name",
+              "passed",
+              "published",
+              "recomputed",
+              "rule",
+              "tolerance",
+              "tolerance_name"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "published": {
+                "type": "number"
+              },
+              "recomputed": {
+                "type": "number"
+              },
+              "difference": {
+                "type": "number"
+              },
+              "rule": {
+                "enum": [
+                  "absolute",
+                  "scaled_by_max_abs_or_one"
+                ]
+              },
+              "tolerance_name": {
+                "type": "string"
+              },
+              "tolerance": {
+                "type": "number"
+              },
+              "passed": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "identity_checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "passed",
+              "published",
+              "recomputed"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "published": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "recomputed": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "passed": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "comparison_coverage": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "outcome",
+        "refusal",
+        "schema"
+      ],
+      "properties": {
+        "schema": {
+          "const": "scpn_quantum_control.dla_parity.programme_output.v1"
+        },
+        "outcome": {
+          "const": "refused"
+        },
+        "refusal": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "category",
+            "detail"
+          ],
+          "properties": {
+            "category": {
+              "enum": [
+                "malformed_request",
+                "missing_input",
+                "input_too_large",
+                "digest_mismatch",
+                "malformed_input",
+                "too_many_circuits",
+                "malformed_bitstring",
+                "empty_shots",
+                "inconsistent_counts",
+                "inconsistent_sector",
+                "empty_selection",
+                "insufficient_replicates",
+                "invalid_p_value",
+                "non_finite_output",
+                "malformed_published_summary",
+                "incomplete_depth_set"
+              ]
+            },
+            "detail": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

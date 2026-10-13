@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 851,
     "public_documentation_pages": 384,
-    "python_model_classes": 1514,
-    "python_model_source_modules": 788,
+    "python_model_classes": 1515,
+    "python_model_source_modules": 789,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1526
+    "test_files": 1527
   },
   "documentation": {
     "examples": [
@@ -667,7 +667,7 @@
       {
         "package": "dla_parity",
         "path": "src/scpn_quantum_control/dla_parity",
-        "python_modules": 4
+        "python_modules": 5
       },
       {
         "package": "dla_topology_control",
@@ -5089,6 +5089,10 @@
         "path": "src/scpn_quantum_control/studio/program_authoring_contracts.py"
       },
       {
+        "name": "ProgrammeRefusal",
+        "path": "src/scpn_quantum_control/dla_parity/programme.py"
+      },
+      {
         "name": "ProjectedGradientConfig",
         "path": "src/scpn_quantum_control/dla_topology_control/optimizer.py"
       },
@@ -7154,6 +7158,7 @@
       "src/scpn_quantum_control/differentiable_vmap.py",
       "src/scpn_quantum_control/dla_parity/baselines.py",
       "src/scpn_quantum_control/dla_parity/dataset.py",
+      "src/scpn_quantum_control/dla_parity/programme.py",
       "src/scpn_quantum_control/dla_parity/reproduce.py",
       "src/scpn_quantum_control/dla_parity/schema.py",
       "src/scpn_quantum_control/dla_topology_control/evidence.py",
@@ -9216,6 +9221,7 @@
       "tests/test_dla_parity_dataset.py",
       "tests/test_dla_parity_exact_baseline.py",
       "tests/test_dla_parity_init.py",
+      "tests/test_dla_parity_programme.py",
       "tests/test_dla_parity_reproduce.py",
       "tests/test_dla_parity_schema.py",
       "tests/test_dla_parity_theorem.py",
