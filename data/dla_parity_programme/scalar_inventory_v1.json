@@ -1,0 +1,419 @@
+{
+  "schema": "scpn_quantum_control.dla_parity.programme_inventory.v1",
+  "task": "CORE-QPU-DR01 delivery D1",
+  "status": "inventory of the existing programme; no behaviour changed; nothing here is a qualification",
+  "programme": {
+    "distribution": "scpn-quantum-control",
+    "module": "scpn_quantum_control.dla_parity.reproduce",
+    "callable": "reproduce_statistics",
+    "source_revision": "17c39b9fd82e0410dd330c33b096c2d7101fea31",
+    "sources": [
+      {
+        "path": "src/scpn_quantum_control/dla_parity/reproduce.py",
+        "bytes": 13588,
+        "sha256": "55e76ae7eeccefaf15f594d6ba974aabe470286f5ed4443f70d8818dad691ed2"
+      },
+      {
+        "path": "src/scpn_quantum_control/dla_parity/dataset.py",
+        "bytes": 8262,
+        "sha256": "b3cb3e9191b411cc8f8220c591ab31f5ad2b66788fd22b864c410e576f4e77eb"
+      },
+      {
+        "path": "src/scpn_quantum_control/dla_parity/schema.py",
+        "bytes": 4477,
+        "sha256": "09b7ab0290035ae9ae235337dbea78f5eaeb0a2fd6a9b4e793bd3585da6cc56a"
+      }
+    ]
+  },
+  "ordered_inputs": {
+    "raw_run_files": [
+      {
+        "path": "data/phase1_dla_parity/phase1_bench_2026-04-10T183728Z.json",
+        "bytes": 45413,
+        "sha256": "dbf4e1878deedc0400b6b645d1d276ca0a18d3c2b18248429aab605c983a18e7",
+        "order": 0,
+        "digest_in_loader": "dbf4e1878deedc0400b6b645d1d276ca0a18d3c2b18248429aab605c983a18e7"
+      },
+      {
+        "path": "data/phase1_dla_parity/phase1_5_reinforce_2026-04-10T184909Z.json",
+        "bytes": 88263,
+        "sha256": "cb07cf43c2144d60879628e9f782bec9d171150711d0998904bce8d0fe8f498d",
+        "order": 1,
+        "digest_in_loader": "cb07cf43c2144d60879628e9f782bec9d171150711d0998904bce8d0fe8f498d"
+      },
+      {
+        "path": "data/phase1_dla_parity/phase2_exhaust_2026-04-10T185634Z.json",
+        "bytes": 167645,
+        "sha256": "43f2ff09f8929e772f544ed71e4d5498471dace6d68c2e0b32e675bb5b28a752",
+        "order": 2,
+        "digest_in_loader": "43f2ff09f8929e772f544ed71e4d5498471dace6d68c2e0b32e675bb5b28a752"
+      },
+      {
+        "path": "data/phase1_dla_parity/phase2_5_final_burn_2026-04-10T190136Z.json",
+        "bytes": 87873,
+        "sha256": "69dfff29666e900f238574437933c71fb1e8ac3b380e94518412a741e44eb038",
+        "order": 3,
+        "digest_in_loader": "69dfff29666e900f238574437933c71fb1e8ac3b380e94518412a741e44eb038"
+      }
+    ],
+    "published_summary": {
+      "path": "figures/phase1/phase1_dla_parity_summary.json",
+      "bytes": 5801,
+      "sha256": "cbbce49dcf80b5e691220c229f201b79b5b43399eb9548cc9738e3715f5970f9"
+    },
+    "tolerance": [
+      {
+        "name": "leakage_mean_abs",
+        "default": 1e-09
+      },
+      {
+        "name": "leakage_sem_abs",
+        "default": 1e-09
+      },
+      {
+        "name": "asymmetry_relative_abs",
+        "default": 1e-09
+      },
+      {
+        "name": "welch_t_rel",
+        "default": 1e-06
+      },
+      {
+        "name": "welch_p_rel",
+        "default": 1e-06
+      },
+      {
+        "name": "fisher_chi2_rel",
+        "default": 1e-06
+      },
+      {
+        "name": "mean_asymmetry_abs",
+        "default": 1e-09
+      },
+      {
+        "name": "peak_asymmetry_abs",
+        "default": 1e-09
+      }
+    ],
+    "seed": "none: the programme draws no random numbers"
+  },
+  "admissible_domain_as_implemented": {
+    "circuit_selection": "n_qubits == 4 and experiment starts with 'A_dla_parity_n4' and sector in ('even', 'odd')",
+    "grouping": "by meta.depth, then by meta.sector",
+    "per_circuit_scalar": "parity leakage = shots whose bitstring popcount parity differs from the popcount parity of meta.initial, divided by all shots",
+    "required_record_keys": {
+      "run": [
+        "backend",
+        "circuits",
+        "experiment",
+        "job_ids",
+        "n_circuits",
+        "t_step",
+        "timestamp_utc",
+        "wall_time_s"
+      ],
+      "circuit_meta": [
+        "depth",
+        "experiment",
+        "initial",
+        "n_qubits",
+        "rep",
+        "sector",
+        "shots",
+        "t_step"
+      ]
+    },
+    "integrity_check": "optional (verify_integrity, default False); SHA-256 of each run file against the digests in the loader"
+  },
+  "scalar_inventory": {
+    "per_depth": {
+      "type": "StatisticalSummary",
+      "fields": [
+        {
+          "name": "depth",
+          "type": "int",
+          "unit": "Trotter depth, count"
+        },
+        {
+          "name": "leakage_even",
+          "type": "float",
+          "unit": "fraction of shots, dimensionless, 0..1"
+        },
+        {
+          "name": "leakage_even_sem",
+          "type": "float",
+          "unit": "fraction of shots, standard error of the mean, ddof=1"
+        },
+        {
+          "name": "leakage_odd",
+          "type": "float",
+          "unit": "fraction of shots, dimensionless, 0..1"
+        },
+        {
+          "name": "leakage_odd_sem",
+          "type": "float",
+          "unit": "fraction of shots, standard error of the mean, ddof=1"
+        },
+        {
+          "name": "asymmetry_relative",
+          "type": "float",
+          "unit": "dimensionless ratio (mean_even - mean_odd) / mean_odd"
+        },
+        {
+          "name": "welch_t",
+          "type": "float",
+          "unit": "Welch t statistic, dimensionless"
+        },
+        {
+          "name": "welch_p",
+          "type": "float",
+          "unit": "two-sided p-value, 0..1"
+        },
+        {
+          "name": "n_reps_even",
+          "type": "int",
+          "unit": "count of circuits"
+        },
+        {
+          "name": "n_reps_odd",
+          "type": "int",
+          "unit": "count of circuits"
+        }
+      ]
+    },
+    "fisher": {
+      "type": "FisherResult",
+      "fields": [
+        {
+          "name": "chi2",
+          "type": "float",
+          "unit": "Fisher statistic -2*sum(ln p), dimensionless"
+        },
+        {
+          "name": "degrees_of_freedom",
+          "type": "int",
+          "unit": "count, 2 * number of p-values used"
+        },
+        {
+          "name": "combined_p",
+          "type": "float",
+          "unit": "p-value, 0..1"
+        },
+        {
+          "name": "n_depths_significant_at_0_05",
+          "type": "int",
+          "unit": "count of used p-values below 0.05"
+        },
+        {
+          "name": "n_depths_tested",
+          "type": "int",
+          "unit": "count of depth summaries, used or not"
+        }
+      ]
+    },
+    "result": [
+      {
+        "name": "peak_asymmetry_relative",
+        "unit": "dimensionless; largest per-depth asymmetry_relative"
+      },
+      {
+        "name": "peak_asymmetry_depth",
+        "unit": "Trotter depth at which the peak occurs; first depth in ascending order on a tie; -1 when there is no summary"
+      },
+      {
+        "name": "mean_asymmetry_relative",
+        "unit": "dimensionless; unweighted mean of per-depth asymmetry_relative"
+      },
+      {
+        "name": "n_circuits_used",
+        "unit": "count; sum of n_reps_even + n_reps_odd over depths"
+      },
+      {
+        "name": "published_source",
+        "unit": "text; path of the published summary as resolved"
+      },
+      {
+        "name": "tolerance",
+        "unit": "the eight tolerance values in force"
+      },
+      {
+        "name": "claims_checked",
+        "unit": "ordered tuples (name, published, recomputed, difference)"
+      }
+    ],
+    "precision": "IEEE-754 binary64 throughout; no rounding is applied by the programme"
+  },
+  "comparison_rules_as_implemented": {
+    "absolute": "difference = abs(published - recomputed); passes when difference <= tolerance",
+    "scaled": "difference = abs(published - recomputed) / max(abs(published), abs(recomputed), 1.0); passes when difference <= tolerance",
+    "nan": "both NaN passes with difference 0.0; exactly one NaN fails with difference infinity",
+    "failure_signal": "AssertionError raised at the first failing claim; later claims are not evaluated",
+    "per_depth_claims": [
+      {
+        "claim": "depth=<d>.leakage_even",
+        "published_key": "mean_even",
+        "tolerance": "leakage_mean_abs",
+        "tolerance_value": 1e-09,
+        "rule": "absolute"
+      },
+      {
+        "claim": "depth=<d>.leakage_odd",
+        "published_key": "mean_odd",
+        "tolerance": "leakage_mean_abs",
+        "tolerance_value": 1e-09,
+        "rule": "absolute"
+      },
+      {
+        "claim": "depth=<d>.sem_even",
+        "published_key": "sem_even",
+        "tolerance": "leakage_sem_abs",
+        "tolerance_value": 1e-09,
+        "rule": "absolute"
+      },
+      {
+        "claim": "depth=<d>.sem_odd",
+        "published_key": "sem_odd",
+        "tolerance": "leakage_sem_abs",
+        "tolerance_value": 1e-09,
+        "rule": "absolute"
+      },
+      {
+        "claim": "depth=<d>.asymmetry_relative",
+        "published_key": "asymmetry_relative",
+        "tolerance": "asymmetry_relative_abs",
+        "tolerance_value": 1e-09,
+        "rule": "absolute"
+      },
+      {
+        "claim": "depth=<d>.welch_t",
+        "published_key": "welch_t",
+        "tolerance": "welch_t_rel",
+        "tolerance_value": 1e-06,
+        "rule": "scaled"
+      },
+      {
+        "claim": "depth=<d>.welch_p",
+        "published_key": "welch_p",
+        "tolerance": "welch_p_rel",
+        "tolerance_value": 1e-06,
+        "rule": "scaled"
+      }
+    ],
+    "other_claims": [
+      {
+        "claim": "fisher.chi2",
+        "published_key": "fisher_combined.chi2",
+        "tolerance": "fisher_chi2_rel",
+        "tolerance_value": 1e-06,
+        "rule": "scaled"
+      },
+      {
+        "claim": "mean_asymmetry_relative",
+        "published_key": "mean_asymmetry_relative",
+        "tolerance": "mean_asymmetry_abs",
+        "tolerance_value": 1e-09,
+        "rule": "absolute",
+        "condition": "only when the published summary has the key"
+      },
+      {
+        "claim": "peak_asymmetry_relative",
+        "published_key": "peak_asymmetry_relative",
+        "tolerance": "peak_asymmetry_abs",
+        "tolerance_value": 1e-09,
+        "rule": "absolute",
+        "condition": "only when the published summary has the key"
+      }
+    ]
+  },
+  "observed_on_the_committed_data": {
+    "integrity_check_passed": true,
+    "runs": [
+      {
+        "name": "bench",
+        "n_circuits": 42,
+        "backend": "ibm_kingston"
+      },
+      {
+        "name": "reinforce",
+        "n_circuits": 72,
+        "backend": "ibm_kingston"
+      },
+      {
+        "name": "exhaust",
+        "n_circuits": 138,
+        "backend": "ibm_kingston"
+      },
+      {
+        "name": "final_burn",
+        "n_circuits": 90,
+        "backend": "ibm_kingston"
+      }
+    ],
+    "circuits_total": 342,
+    "circuits_selected": 282,
+    "depths": [
+      2,
+      4,
+      6,
+      8,
+      10,
+      14,
+      20,
+      30
+    ],
+    "replicates_per_depth": [
+      {
+        "depth": 2,
+        "even": 12,
+        "odd": 12
+      },
+      {
+        "depth": 4,
+        "even": 21,
+        "odd": 21
+      },
+      {
+        "depth": 6,
+        "even": 21,
+        "odd": 21
+      },
+      {
+        "depth": 8,
+        "even": 21,
+        "odd": 21
+      },
+      {
+        "depth": 10,
+        "even": 21,
+        "odd": 21
+      },
+      {
+        "depth": 14,
+        "even": 21,
+        "odd": 21
+      },
+      {
+        "depth": 20,
+        "even": 12,
+        "odd": 12
+      },
+      {
+        "depth": 30,
+        "even": 12,
+        "odd": 12
+      }
+    ],
+    "claims_checked": 57,
+    "largest_difference": 0.0,
+    "fisher": {
+      "chi2": 123.40011440581384,
+      "degrees_of_freedom": 16,
+      "combined_p": 0.0,
+      "n_depths_significant_at_0_05": 7,
+      "n_depths_tested": 8
+    },
+    "peak_asymmetry_relative": 0.17477782479898452,
+    "peak_asymmetry_depth": 6,
+    "mean_asymmetry_relative": 0.09245549006585718
+  }
+}
