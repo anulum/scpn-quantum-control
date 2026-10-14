@@ -38,7 +38,9 @@ export function SettingsRecord({
   digest,
   document,
 }: {
-  /** Original document digest. */ readonly digest: string /** Parsed source-owned settings. */;
+  /** Original document digest. */
+  readonly digest: string;
+  /** Parsed source-owned settings. */
   readonly document: ResolvedSettings;
 }) {
   const requested = document.body["requested"] as Readonly<Record<string, unknown>>;
