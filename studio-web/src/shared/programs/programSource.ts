@@ -93,61 +93,61 @@ export type ProgramCompileResult =
 /** Listed native arities for form construction and wire validation only. */
 export const PROGRAM_GATE_SHAPES = Object.freeze({
   /** Hadamard: no parameters, one qubit. */
-  h: [0, 1],
+  h: Object.freeze([0, 1] as const),
   /** Pauli X: no parameters, one qubit. */
-  x: [0, 1],
+  x: Object.freeze([0, 1] as const),
   /** Pauli Y: no parameters, one qubit. */
-  y: [0, 1],
+  y: Object.freeze([0, 1] as const),
   /** Pauli Z: no parameters, one qubit. */
-  z: [0, 1],
+  z: Object.freeze([0, 1] as const),
   /** S phase: no parameters, one qubit. */
-  s: [0, 1],
+  s: Object.freeze([0, 1] as const),
   /** Inverse S phase: no parameters, one qubit. */
-  sdg: [0, 1],
+  sdg: Object.freeze([0, 1] as const),
   /** T phase: no parameters, one qubit. */
-  t: [0, 1],
+  t: Object.freeze([0, 1] as const),
   /** Inverse T phase: no parameters, one qubit. */
-  tdg: [0, 1],
+  tdg: Object.freeze([0, 1] as const),
   /** Identity: no parameters, one qubit. */
-  id: [0, 1],
+  id: Object.freeze([0, 1] as const),
   /** Square root of X: no parameters, one qubit. */
-  sx: [0, 1],
+  sx: Object.freeze([0, 1] as const),
   /** Inverse square root of X: no parameters, one qubit. */
-  sxdg: [0, 1],
+  sxdg: Object.freeze([0, 1] as const),
   /** X rotation: one angle, one qubit. */
-  rx: [1, 1],
+  rx: Object.freeze([1, 1] as const),
   /** Y rotation: one angle, one qubit. */
-  ry: [1, 1],
+  ry: Object.freeze([1, 1] as const),
   /** Z rotation: one angle, one qubit. */
-  rz: [1, 1],
+  rz: Object.freeze([1, 1] as const),
   /** Phase rotation: one angle, one qubit. */
-  p: [1, 1],
+  p: Object.freeze([1, 1] as const),
   /** U1 phase rotation: one angle, one qubit. */
-  u1: [1, 1],
+  u1: Object.freeze([1, 1] as const),
   /** U2 rotation: two angles, one qubit. */
-  u2: [2, 1],
+  u2: Object.freeze([2, 1] as const),
   /** General U rotation: three angles, one qubit. */
-  u: [3, 1],
+  u: Object.freeze([3, 1] as const),
   /** U3 rotation: three angles, one qubit. */
-  u3: [3, 1],
+  u3: Object.freeze([3, 1] as const),
   /** Controlled X: no parameters, two qubits. */
-  cx: [0, 2],
+  cx: Object.freeze([0, 2] as const),
   /** Controlled Z: no parameters, two qubits. */
-  cz: [0, 2],
+  cz: Object.freeze([0, 2] as const),
   /** Swap: no parameters, two qubits. */
-  swap: [0, 2],
+  swap: Object.freeze([0, 2] as const),
   /** XX rotation: one angle, two qubits. */
-  rxx: [1, 2],
+  rxx: Object.freeze([1, 2] as const),
   /** YY rotation: one angle, two qubits. */
-  ryy: [1, 2],
+  ryy: Object.freeze([1, 2] as const),
   /** ZZ rotation: one angle, two qubits. */
-  rzz: [1, 2],
+  rzz: Object.freeze([1, 2] as const),
   /** Measurement: no gate parameters, one source qubit. */
-  measure: [0, 1],
+  measure: Object.freeze([0, 1] as const),
   /** Reset: no parameters, one qubit. */
-  reset: [0, 1],
+  reset: Object.freeze([0, 1] as const),
   /** Barrier: no parameters, variadic qubit operands. */
-  barrier: [0, 0],
+  barrier: Object.freeze([0, 0] as const),
 } as const satisfies Readonly<Record<string, readonly [number, number]>>);
 
 /** Operation names in the immutable native arity table. */
