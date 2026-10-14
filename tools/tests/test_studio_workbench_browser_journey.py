@@ -171,8 +171,9 @@ def workbench_source() -> str:
     return supplied
 
 
+@pytest.mark.parametrize("worker_termination_delay_ms", [0, 1000])
 def test_workbench_real_public_navigation_and_federation(
-    workbench_bundle: Path, workbench_source: str
+    workbench_bundle: Path, workbench_source: str, worker_termination_delay_ms: int
 ) -> None:
     """Use the original API with independent built/source hosts and native counters.
 
@@ -182,15 +183,20 @@ def test_workbench_real_public_navigation_and_federation(
         Genuine compiled portal and original Rust WASM kernels.
     workbench_source : str
         Original-source Vite origin for native owner capture.
+    worker_termination_delay_ms : int
+        Delay genuine native worker termination to require route cleanup to await closure.
 
     """
-    with owned_fault_host(workbench_bundle) as preview:
+    with owned_fault_host(
+        workbench_bundle, worker_termination_delay_ms=worker_termination_delay_ms
+    ) as preview:
         evidence = run_workbench_journey(preview, workbench_source)
     cases = evidence["observations"]
     assert isinstance(cases, list)
     assert [case["case"] for case in cases] == ["standalone", "embedded", "chunk-error", "source"]
     assert all(case["workers"] == 0 for case in cases)
     assert cases[0]["real_wasm"] is True and cases[1]["real_wasm"] is True
+    assert all(case["final_route"].startswith("/atlas") for case in cases)
     assert cases[2]["draft_retained"] is True and cases[2]["real_chunk_status"] == 503
     assert cases[3]["history_and_reload"] is True
     native = evidence["native_v8_coverage"]

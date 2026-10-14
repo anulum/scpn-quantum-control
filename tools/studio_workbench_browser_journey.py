@@ -12,7 +12,6 @@ from __future__ import annotations
 import ipaddress
 import os
 from collections.abc import Callable
-from contextlib import ExitStack
 from importlib.metadata import version
 from typing import TYPE_CHECKING, cast
 from urllib.parse import urlsplit
@@ -193,6 +192,7 @@ def run_workbench_journey(
         raise ValueError("Workbench requires a distinct owned root source server")
     from playwright.sync_api import Error, Request, Route, expect, sync_playwright
 
+    from tools.studio_owned_worker_journey import wait_for_worker_disposal
     from tools.studio_workspace_browser_coverage import start_native_coverage, take_native_coverage
 
     observed = {} if observations is None else observations
@@ -328,22 +328,17 @@ def run_workbench_journey(
                         entry["workers_before_final_navigation"] = [
                             worker.url for worker in active_workers
                         ]
-                        if active_workers:
-                            # Returning to Workspace mounts original automatic playback.
-                            # Exercise its real route cleanup before asserting native worker closure.
-                            # The route change ends each worker asynchronously; the heading
-                            # can be visible before the browser reports the worker closed, so
-                            # every worker seen before the navigation is awaited until it
-                            # closes. A worker that never closes ends the wait with a timeout.
-                            with ExitStack() as closed:
-                                for worker in active_workers:
-                                    closed.enter_context(worker.expect_event("close"))
-                                page.get_by_role("navigation", name="Workbench views").get_by_role(
-                                    "link", name="Atlas", exact=True
-                                ).click()
-                                expect(
-                                    page.get_by_role("heading", name="Atlas unavailable")
-                                ).to_be_visible()
+                        # Workspace may still be preparing automatic playback at the snapshot.
+                        # Always unmount its owner, then await native closure, including workers
+                        # created while disposal is being observed.
+                        page.get_by_role("navigation", name="Workbench views").get_by_role(
+                            "link", name="Atlas", exact=True
+                        ).click()
+                        expect(
+                            page.get_by_role("heading", name="Atlas unavailable")
+                        ).to_be_visible()
+                        wait_for_worker_disposal(page, observe_termination=False)
+                        entry["final_route"] = urlsplit(page.url).fragment
                         entry["worker_urls"] = [worker.url for worker in page.workers]
                         entry["workers"] = len(page.workers)
                         assert not page.workers, "Workbench leaked an owned worker"
