@@ -10,9 +10,11 @@
 from __future__ import annotations
 
 import os
+import socket
 from pathlib import Path
 
 import pytest
+from playwright.sync_api import Error
 
 from tools.studio_result_browser import run_result_journey
 from tools.tests.test_studio_browser_runtime_refusal import owned_fault_host
@@ -75,3 +77,19 @@ def test_result_runtime_preserves_actual_fault_evidence(fault: str) -> None:
     ):
         run_result_journey(origin, evidence=observed)
     assert observed["observations"]
+
+
+def test_result_transport_failure_retains_original_error_and_diagnostic_refusal() -> None:
+    """Retain the public journey's real navigation failure when diagnostics also refuse."""
+    observed: dict[str, object] = {}
+    with socket.socket() as reserved:
+        reserved.bind(("127.0.0.1", 0))
+        origin = f"http://127.0.0.1:{reserved.getsockname()[1]}/"
+        with pytest.raises(Error, match="Page.goto.*ERR_CONNECTION_REFUSED"):
+            run_result_journey(origin, evidence=observed)
+    assert observed["observations"] == []
+    assert "Page.goto" in str(observed["original_error"])
+    assert "ERR_CONNECTION_REFUSED" in str(observed["original_traceback"])
+    assert "Page.evaluate" in str(observed["diagnostic_capture_error"])
+    assert observed["failed_context"] == origin
+    assert observed["actual_original_cli_source_sha256"]

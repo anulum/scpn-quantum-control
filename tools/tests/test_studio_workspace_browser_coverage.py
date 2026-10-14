@@ -384,6 +384,34 @@ def test_missing_owners_stops_real_profiler(native_browser: Browser) -> None:
         context.close()
 
 
+def test_external_profiler_without_capture_listener_stops_on_missing_owners(
+    native_browser: Browser,
+) -> None:
+    """Stop a genuine caller-started profiler whose session has no capture listener.
+
+    Parameters
+    ----------
+    native_browser : Browser
+        Real Chromium process owning the caller's empty page and profiler.
+
+    """
+    context = native_browser.new_context(service_workers="block")
+    try:
+        page = context.new_page()
+        session = context.new_cdp_session(page)
+        session.send("Profiler.enable")
+        session.send("Profiler.startPreciseCoverage", {"callCount": True, "detailed": True})
+        records: list[dict[str, object]] = []
+        with pytest.raises(AssertionError, match="Missing current-page native owners"):
+            take_native_coverage(session, records)
+        assert records == []
+        assert not page.is_closed()
+        with pytest.raises(Error):
+            session.send("Profiler.takePreciseCoverage")
+    finally:
+        context.close()
+
+
 def test_missing_compiled_entry_stops_real_profiler(native_browser: Browser) -> None:
     """Require a real compiled entry and retain partial counters after its request fails.
 

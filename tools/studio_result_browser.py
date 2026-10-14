@@ -372,14 +372,24 @@ def run_result_journey(
                     assert not rejected, rejected
                     if profiler is not None:
                         take_native_coverage(profiler, records, include_results=True)
-                except (Error, AssertionError):
-                    receipt["failed_native_workers"] = page.evaluate("window.__ownedKernel")
-                    receipt["failed_page_url"] = page.url
-                    receipt["failed_page_labels"] = page.locator("label").all_text_contents()
-                    receipt["failed_page_textareas"] = page.locator("textarea").evaluate_all(
-                        "elements => elements.map(element => ({id: element.id, "
-                        "label: element.labels?.[0]?.textContent, value: element.value}))"
-                    )
+                except (Error, AssertionError) as cause:
+                    receipt["original_error"] = f"{type(cause).__name__}: {cause}"
+                    from traceback import format_exception
+
+                    receipt["original_traceback"] = "".join(format_exception(cause))
+                    receipt["failed_context"] = target
+                    try:
+                        receipt["failed_native_workers"] = page.evaluate("window.__ownedKernel")
+                        receipt["failed_page_url"] = page.url
+                        receipt["failed_page_labels"] = page.locator("label").all_text_contents()
+                        receipt["failed_page_textareas"] = page.locator("textarea").evaluate_all(
+                            "elements => elements.map(element => ({id: element.id, "
+                            "label: element.labels?.[0]?.textContent, value: element.value}))"
+                        )
+                    except Exception as capture_error:
+                        receipt["diagnostic_capture_error"] = (
+                            f"{type(capture_error).__name__}: {capture_error}"
+                        )
                     raise
                 finally:
                     context.close()

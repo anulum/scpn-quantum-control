@@ -68,6 +68,7 @@ def workflow_source_fault_host(preview: Path, source: str) -> Iterator[str]:
     with owned_fault_host(
         preview, source=source, page_error=True, external_request=True
     ) as upstream:
+        continued_assets: list[bytes] = []
 
         class Handler(BaseHTTPRequestHandler):
             """Forward the original fault fixture over this owned authority."""
@@ -77,6 +78,8 @@ def workflow_source_fault_host(preview: Path, source: str) -> Iterator[str]:
                 with urlopen(upstream.rstrip("/") + self.path, timeout=10) as response:
                     content = response.read()
                     content_type = response.headers.get("Content-Type", "application/octet-stream")
+                if self.path == "/favicon.svg?kernelWorker-owned-asset":
+                    continued_assets.append(content)
                 if content_type.startswith("text/html"):
                     original = b'<script>fetch("http://127.0.0.2:54321/owned-refused-request").catch(()=>{});</script>'
                     replacement = b"""<script>
@@ -85,6 +88,7 @@ document.addEventListener('click', event => {
       event.target.textContent === 'Run or resume workflow' &&
       document.querySelector('[aria-label="Workflow JSON"]')?.value.includes('cancel-original-workflow')) {
     fetch('http://127.0.0.2:54321/kernelWorker-refused-request').catch(()=>{});
+    fetch('/favicon.svg?kernelWorker-owned-asset').catch(()=>{});
   }
 });
 </script>"""
@@ -119,6 +123,7 @@ document.addEventListener('click', event => {
             server.shutdown()
             server.server_close()
             thread.join(timeout=5)
+            assert continued_assets == [(preview / "favicon.svg").read_bytes()]
 
 
 def test_actual_workflow_missing_preview_retains_original_transport_refusal(
