@@ -58,7 +58,16 @@ jobs:
             sleep $((attempt * 10))
           done
           cargo install cargo-audit --locked --version 0.22.1
-      - name: Audit Rust dependency advisories
-        run: cargo audit --deny warnings
+      - name: Audit every tracked Rust dependency lock
+        run: |
+          set -euo pipefail
+          git ls-files -z -- 'Cargo.lock' '**/Cargo.lock' |
+            while IFS= read -r -d '' lockfile; do
+              cargo audit --deny warnings --file "$lockfile"
+            done
+      - name: Check the TLS latency client
+        run: cargo check --locked --features latency-runner --bin ibm_runtime_latency_runner
+      - name: Check the fuzz dependency consumers
+        run: cargo check --locked --manifest-path fuzz/Cargo.toml --bins
       - name: Run Rust engine tests
         run: cargo test --locked
