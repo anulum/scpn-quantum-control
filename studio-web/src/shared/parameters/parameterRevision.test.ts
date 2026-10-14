@@ -18,7 +18,11 @@ import {
   writeJson,
 } from "../contracts";
 import { createWorkspaceArchive, previewWorkspaceArchive } from "../storage/workspaceArchive";
-import { createParameterDraft, parameterDraftReducer } from "./parameterDraft";
+import {
+  createParameterDraft,
+  parameterDraftReducer,
+  validateParameterSnapshot,
+} from "./parameterDraft";
 import {
   appendParameterRevision,
   createParameterRevision,
@@ -90,6 +94,71 @@ it("persists the exact trainable subset across child creation and source reload"
     true,
     false,
   ]);
+});
+
+it.each([
+  ["omitted", undefined],
+  ["undefined", undefined],
+  ["null", null],
+  ["false", false],
+  ["true", true],
+  ["number", 1],
+  ["string", "theta"],
+  ["array", []],
+  ["empty map", {}],
+  ["null member", { theta: null }],
+  ["undefined member", { theta: undefined }],
+  ["boolean member", { theta: false }],
+  ["object member", { theta: {} }],
+  ["wrong shape", { theta: [false] }],
+  ["nonboolean element", { theta: [false, 1] }],
+  ["extra key", { theta: [false, true], extra: [] }],
+])("refuses %s save masks and preserves a restored valid subset", async (kind, masks) => {
+  const prior = await conformanceArchive(corpusText, false);
+  const source = await parameterSourceFromArchive(prior.json, conformanceCodecs);
+  if (!source) throw new Error("Missing original revision");
+  const sourceBefore = writeJson(source.revision);
+  const initial = createParameterDraft(source);
+  expect(initial.snapshot.trainableMasks["theta"]).toEqual([true, true]);
+  const state = parameterDraftReducer(initial, {
+    type: "mask",
+    key: "theta",
+    index: 0,
+    enabled: false,
+  });
+  const candidate = { ...state.snapshot };
+  if (kind === "omitted") Reflect.deleteProperty(candidate, "trainableMasks");
+  else Reflect.set(candidate, "trainableMasks", masks);
+  expect(() => validateParameterSnapshot(source, candidate)).toThrow(/Trainable mask/);
+  await expect(createParameterRevision(source, candidate)).rejects.toThrow(/Trainable mask/);
+  await expect(
+    appendParameterRevision(
+      prior.json,
+      source,
+      candidate,
+      conformanceCodecs,
+      "2026-10-01T12:00:00Z",
+    ),
+  ).rejects.toThrow(/Trainable mask/);
+  expect(writeJson(source.revision)).toBe(sourceBefore);
+  expect(state.snapshot.trainableMasks["theta"]).toEqual([false, true]);
+  expect((await previewWorkspaceArchive(prior.json, conformanceCodecs)).archiveDigest).toBe(
+    prior.archiveDigest,
+  );
+  expect(validateParameterSnapshot(source, state.snapshot).trainableMasks["theta"]).toEqual([
+    false,
+    true,
+  ]);
+  const child = await appendParameterRevision(
+    prior.json,
+    source,
+    state.snapshot,
+    conformanceCodecs,
+    "2026-10-01T12:00:00Z",
+  );
+  const restored = await parameterSourceFromArchive(child.archive.json, conformanceCodecs);
+  if (!restored) throw new Error("Saved child missing");
+  expect(createParameterDraft(restored).snapshot.trainableMasks["theta"]).toEqual([false, true]);
 });
 
 it("refuses a changed source unit before adding any revision or rewriting original results", async () => {

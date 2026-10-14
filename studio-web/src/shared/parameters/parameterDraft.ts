@@ -420,6 +420,14 @@ export function validateParameterSnapshot(
 ): ParameterSnapshot {
   const admitted = createParameterDraft(source);
   if (
+    typeof snapshot.trainableMasks !== "object" ||
+    snapshot.trainableMasks === null ||
+    Array.isArray(snapshot.trainableMasks)
+  )
+    throw new Error("Trainable masks must be a complete object map");
+  if (dataEntries(snapshot.trainableMasks).some(([, mask]) => !Array.isArray(mask)))
+    throw new Error("Trainable masks must be arrays");
+  if (
     Object.keys(snapshot.parameters).length !== Object.keys(admitted.snapshot.parameters).length ||
     Object.keys(admitted.snapshot.parameters).some(
       (key) => !Object.hasOwn(snapshot.parameters, key),
