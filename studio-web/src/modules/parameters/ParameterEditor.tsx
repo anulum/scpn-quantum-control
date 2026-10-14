@@ -132,11 +132,12 @@ function ParameterDraftEditor({
     selected !== null &&
     (text !== parameterElementText(selected, selection.index) || unit !== selectedUnit);
   const save = async (saveRevision: NonNullable<ParameterEditorProps["onSave"]>) => {
+    if (cancellation.current !== null) return;
+    const controller = new AbortController();
+    cancellation.current = controller;
     setSaving(true);
     setMessage("");
     try {
-      const controller = new AbortController();
-      cancellation.current = controller;
       const hash = await saveRevision(draft.snapshot, controller.signal);
       if (!/^[0-9a-f]{64}$/.test(hash) || hash.length !== 64)
         throw new Error("Committed revision identity required");
@@ -150,6 +151,7 @@ function ParameterDraftEditor({
           "Parameter revision save refused; previous saved workspace retained. Review the workspace refusal and retry.",
         );
     } finally {
+      cancellation.current = null;
       if (mounted.current) setSaving(false);
     }
   };

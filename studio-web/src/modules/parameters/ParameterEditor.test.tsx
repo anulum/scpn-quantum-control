@@ -314,11 +314,14 @@ it("shows malformed source refusal and recovers with valid source without attemp
 });
 
 it("refuses a failed save and keeps the edited matrix for explicit retry", async () => {
+  const original = source();
+  let attempts = 0;
   render(
     <ParameterEditor
-      source={source()}
-      onSave={async () => {
-        throw new Error("test transport/store interruption");
+      source={original}
+      onSave={async (snapshot) => {
+        if (++attempts === 1) throw new Error("test transport/store interruption");
+        return documentDigest(await createParameterRevision(original, snapshot));
       }}
     />,
   );
@@ -337,7 +340,77 @@ it("refuses a failed save and keeps the edited matrix for explicit retry", async
     "disabled",
     false,
   );
+  fireEvent.click(screen.getByRole("button", { name: "Save parameter revision" }));
+  await waitFor(() => expect(screen.getByText(/Parameter revision saved/)).toBeTruthy());
+  expect(attempts).toBe(2);
+  expect(screen.getByRole("button", { name: "K_nm[0,1] = -7" })).toBeTruthy();
 });
+
+it.each(["completion", "unmount", "source replacement"])(
+  "owns only one save for same-batch clicks through %s and permits a subsequent save",
+  async (lifetime) => {
+    const original = source();
+    const before = writeJson(original.revision);
+    const requests: { signal: AbortSignal; complete: () => void }[] = [];
+    const editor = (input: ParameterDraftSource) => (
+      <ParameterEditor
+        source={input}
+        onSave={async (snapshot, signal) => {
+          await new Promise<void>((complete) => requests.push({ signal, complete }));
+          if (signal.aborted) throw new Error("Disposed save refused before child creation");
+          return documentDigest(await createParameterRevision(input, snapshot));
+        }}
+      />
+    );
+    let view = render(editor(original));
+    const activateTwice = async () => {
+      const button = screen.getByRole("button", { name: "Save parameter revision" });
+      await waitFor(() => expect(button).toHaveProperty("disabled", false));
+      act(() => {
+        fireEvent.click(button);
+        fireEvent.click(button);
+      });
+    };
+    await activateTwice();
+    expect(requests).toHaveLength(1);
+    const first = requests[0];
+    if (!first) throw new Error("Original public save was not called");
+    expect(first.signal.aborted).toBe(false);
+    if (lifetime === "completion") {
+      await act(async () => first.complete());
+      await waitFor(() => expect(screen.getByText(/Parameter revision saved/)).toBeTruthy());
+      expect(first.signal.aborted).toBe(false);
+    } else {
+      const replacement = {
+        ...original,
+        revision: { ...original.revision, extensions: { replaced_source: lifetime } },
+      };
+      if (lifetime === "unmount") {
+        view.unmount();
+        view = render(editor(replacement));
+      } else view.rerender(editor(replacement));
+      expect(first.signal.aborted).toBe(true);
+    }
+    await activateTwice();
+    expect(requests).toHaveLength(2);
+    const second = requests[1];
+    if (!second) throw new Error("Subsequent public save was not called");
+    expect(second.signal.aborted).toBe(false);
+    if (lifetime !== "completion") {
+      await act(async () => first.complete());
+      expect(screen.getByRole("button", { name: "Save parameter revision" })).toHaveProperty(
+        "disabled",
+        true,
+      );
+      expect(screen.queryByText(/Parameter revision saved|revision save refused/)).toBeNull();
+      expect(second.signal.aborted).toBe(false);
+    }
+    await act(async () => second.complete());
+    await waitFor(() => expect(screen.getByText(/Parameter revision saved/)).toBeTruthy());
+    expect(second.signal.aborted).toBe(false);
+    expect(writeJson(original.revision)).toBe(before);
+  },
+);
 
 it("retains the draft when WebCrypto is unavailable and retries the actual restored provider", async () => {
   const descriptor = Object.getOwnPropertyDescriptor(globalThis, "crypto");
