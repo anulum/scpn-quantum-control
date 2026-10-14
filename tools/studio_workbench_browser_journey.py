@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import ipaddress
+import os
 from collections.abc import Callable
 from contextlib import ExitStack
 from importlib.metadata import version
@@ -31,13 +32,13 @@ def _navigation(
 
     Parameters
     ----------
-    page
+    page : Page
         Isolated native page already displaying the original workbench.
-    kernels
+    kernels : bool
         Require both original built WASM instruments when true.
-    chunk_error
+    chunk_error : bool
         Recover from an actual refused Build chunk when true.
-    before_reload
+    before_reload : Callable[[], None] | None
         Capture the complete original document before full navigation discards scripts.
 
     Returns
@@ -157,11 +158,11 @@ def run_workbench_journey(
 
     Parameters
     ----------
-    base_url
+    base_url : str
         Owned built preview with actual Rust WASM and independent acceptance host.
-    source_url
+    source_url : str
         Distinct owned root Vite server for the unchanged public source facade.
-    observations
+    observations : dict[str, object] | None
         Caller-owned partial diagnostics retained when a later case fails.
 
     Returns
@@ -205,7 +206,10 @@ def run_workbench_journey(
         playwright=version("playwright"),
     )
     with sync_playwright() as runtime:
-        browser = runtime.chromium.launch()
+        browser = runtime.chromium.launch(
+            executable_path=os.environ.get("STUDIO_NATIVE_BROWSER_EXECUTABLE"),
+            chromium_sandbox=True,
+        )
         observed["browser"] = browser.version
         try:
             for case in ("standalone", "embedded", "chunk-error", "source"):
@@ -227,11 +231,13 @@ def run_workbench_journey(
 
                 def bound(
                     route: Route,
+                    _request: Request,
                     *,
                     authority: str = owned,
                     refused: list[str] = rejected,
                     fail_chunk: bool = case == "chunk-error",
                 ) -> None:
+                    """Handle the actual SDK route using its captured loopback and chunk policy."""
                     target = urlsplit(route.request.url)
                     if target.scheme != "http" or target.netloc != authority:
                         refused.append(route.request.url)
@@ -242,9 +248,29 @@ def run_workbench_journey(
                         route.continue_()
 
                 def record_error(error: Error, *, captured: list[str] = errors) -> None:
+                    """Retain an original page failure in the captured case record.
+
+                    Parameters
+                    ----------
+                    error : Error
+                        Actual page failure from the native browser.
+                    captured : list[str]
+                        Case-owned failure destination.
+
+                    """
                     captured.append(str(error))
 
                 def record_request(request: Request, *, captured: list[str] = requests) -> None:
+                    """Retain the actual request URL for this isolated navigation case.
+
+                    Parameters
+                    ----------
+                    request : Request
+                        Original native browser request.
+                    captured : list[str]
+                        Case-owned request destination.
+
+                    """
                     captured.append(request.url)
 
                 try:
@@ -256,6 +282,7 @@ def run_workbench_journey(
                     profiler = start_native_coverage(page) if case == "source" else None
 
                     def capture_source() -> None:
+                        """Capture the actual original source counters once before navigation."""
                         nonlocal profiler
                         if profiler is not None:
                             session = profiler

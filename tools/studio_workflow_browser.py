@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import os
 from contextlib import suppress
 from importlib.metadata import version
 from pathlib import Path
@@ -24,18 +25,54 @@ if TYPE_CHECKING:
 
 
 def _navigate(page: Page, view: str) -> None:
+    """Activate an original workbench view through its visible navigation link.
+
+    Parameters
+    ----------
+    page : Page
+        Actual owned workbench page.
+    view : str
+        Exact original view label.
+
+    """
     page.get_by_role("navigation", name="Workbench views").get_by_role(
         "link", name=view, exact=True
     ).click()
 
 
 def _archive(page: Page) -> dict[str, object]:
+    """Read the current original archive without changing its editor.
+
+    Parameters
+    ----------
+    page : Page
+        Actual owned page displaying the Workspace editor.
+
+    Returns
+    -------
+    dict[str, object]
+        Original losslessly decoded archive.
+
+    """
     return cast(
         dict[str, object], read_json(page.get_by_label("Workspace archive JSON").input_value())
     )
 
 
 def _selected_journal(archive: dict[str, object]) -> dict[str, object]:
+    """Read the journal body of the archive's explicitly selected workflow.
+
+    Parameters
+    ----------
+    archive : dict[str, object]
+        Original archive containing its admitted workflow extension.
+
+    Returns
+    -------
+    dict[str, object]
+        Original selected journal body.
+
+    """
     manifest = cast(dict[str, object], archive["manifest"])
     extension = cast(
         dict[str, object], cast(dict[str, object], manifest["extensions"])["experiment_workflows"]
@@ -46,6 +83,18 @@ def _selected_journal(archive: dict[str, object]) -> dict[str, object]:
 
 
 def _graph(page: Page, definition: dict[str, object], *, save: bool = True) -> None:
+    """Preview an original graph and optionally commit it through its public UI.
+
+    Parameters
+    ----------
+    page : Page
+        Actual workbench page with workflow controls.
+    definition : dict[str, object]
+        Exact graph definition supplied to the original editor.
+    save : bool
+        Require original admission and explicit save when true.
+
+    """
     from playwright.sync_api import expect
 
     panel = page.get_by_role("region", name="Reproducible workflows", exact=True)
@@ -59,6 +108,25 @@ def _graph(page: Page, definition: dict[str, object], *, save: bool = True) -> N
 
 
 def _wait_for_entries(page: Page, statuses: list[str], state: str) -> None:
+    """Await each original stage's progress and inspect its journal entry.
+
+    Parameters
+    ----------
+    page : Page
+        Actual owned workflow page with the original progress and journal controls.
+    statuses : list[str]
+        Ordered statuses required for every original stage attempt.
+    state : str
+        Required terminal journal state after all listed attempts settle.
+
+    Raises
+    ------
+    AssertionError
+        An original entry, journal state or final run control fails its assertion.
+    TimeoutError
+        A real stage does not settle before its existing individual deadline.
+
+    """
     from playwright.sync_api import expect
 
     panel = page.get_by_role("region", name="Reproducible workflows", exact=True)
@@ -87,11 +155,11 @@ def run_workflow_journey(
 
     Parameters
     ----------
-    base_url
+    base_url : str
         Owned literal loopback root serving the current built original frontend.
-    source_url
+    source_url : str | None
         Optional distinct owned loopback root serving the current original source.
-    evidence
+    evidence : dict[str, object] | None
         Original caller-owned observation destination, retaining failures.
 
     Returns
@@ -116,7 +184,7 @@ def run_workflow_journey(
         urlsplit(source).path != "/" or urlsplit(source).netloc == urlsplit(url).netloc
     ):
         raise ValueError("Workflow source requires a distinct owned root source host")
-    from playwright.sync_api import Error, Route, expect, sync_playwright
+    from playwright.sync_api import Error, Request, Route, expect, sync_playwright
 
     from tools.studio_workspace_browser_coverage import start_native_coverage, take_native_coverage
 
@@ -129,7 +197,10 @@ def run_workflow_journey(
             source_url=source, native_v8_coverage=records, coverage_percentage="not_calculated"
         )
     with sync_playwright() as runtime:
-        browser = runtime.chromium.launch()
+        browser = runtime.chromium.launch(
+            executable_path=os.environ.get("STUDIO_NATIVE_BROWSER_EXECUTABLE"),
+            chromium_sandbox=True,
+        )
         receipt.update(playwright=version("playwright"), browser=browser.version)
         try:
             for target in (url,) if source is None else (url, source):
@@ -138,15 +209,32 @@ def run_workflow_journey(
                 context.add_init_script(_OBSERVE_WORKERS)
                 errors: list[str] = []
                 refused: list[str] = []
+                held: list[Route] = []
+                held_entries: list[str] = []
                 authority = urlsplit(target).netloc
                 profiler = None
 
                 def bound_request(
                     route: Route,
+                    _sdk_request: Request,
                     *,
                     current_authority: str = authority,
                     rejected: list[str] = refused,
                 ) -> None:
+                    """Bound actual transport to this context's captured loopback origin.
+
+                    Parameters
+                    ----------
+                    route : Route
+                        Actual intercepted SDK route.
+                    _sdk_request : Request
+                        Original second SDK callback argument.
+                    current_authority : str
+                        Exact captured loopback authority.
+                    rejected : list[str]
+                        Destination for refused request URLs.
+
+                    """
                     request = urlsplit(route.request.url)
                     if request.scheme != "http" or request.netloc != current_authority:
                         rejected.append(route.request.url)
@@ -155,6 +243,16 @@ def run_workflow_journey(
                         route.continue_()
 
                 def page_error(error: Error, *, observed: list[str] = errors) -> None:
+                    """Retain actual browser failures in this context's evidence.
+
+                    Parameters
+                    ----------
+                    error : Error
+                        Original browser failure.
+                    observed : list[str]
+                        Context-owned failure destination.
+
+                    """
                     observed.append(str(error))
 
                 try:
@@ -249,11 +347,30 @@ def run_workflow_journey(
                         transfer.value.save_as(exported)
                         assert read_json(exported.read_text(encoding="utf-8")) == graph
                     before_failure = page.evaluate("window.__ownedKernel.started")
+                    refused_kernel_requests: list[str] = []
 
-                    def refuse_kernel(route: Route) -> None:
+                    def refuse_kernel(
+                        route: Route,
+                        request: Request,
+                        *,
+                        rejected: list[str] = refused_kernel_requests,
+                    ) -> None:
+                        """Refuse the actual kernel request and retain its intercepted URL.
+
+                        Parameters
+                        ----------
+                        route : Route
+                            Actual kernel transport route.
+                        request : Request
+                            Actual request, including any built asset hash.
+                        rejected : list[str]
+                            Context-owned record of refused kernel URLs.
+
+                        """
+                        rejected.append(request.url)
                         route.fulfill(status=503, body="Original owned kernel transport refused")
 
-                    kernel_route = "**/scpn_quantum_studio_wasm_kernel.wasm*"
+                    kernel_route = "**/scpn_quantum_studio_wasm_kernel*.wasm*"
                     context.route(kernel_route, refuse_kernel)
                     try:
                         panel.get_by_role(
@@ -265,6 +382,7 @@ def run_workflow_journey(
                                 exact=True,
                             )
                         ).to_be_visible()
+                        assert refused_kernel_requests
                         assert page.evaluate("window.__ownedKernel.started") == before_failure
                     finally:
                         context.unroute(kernel_route, refuse_kernel)
@@ -299,14 +417,14 @@ def run_workflow_journey(
                             "input_shape": {"oscillators": 12, "steps": 4},
                             "exported_graph_matches": True,
                             "kernel_transport_refusal_allocated_no_worker": True,
+                            "kernel_transport_refused_requests": refused_kernel_requests,
                         }
                     )
                     if profiler is not None:
                         session = profiler
                         profiler = None
                         take_native_coverage(session, records, include_workflows=True)
-                        session.detach()
-                        profiler = start_native_coverage(page)
+                        profiler = start_native_coverage(page, session=session)
                     page.reload(wait_until="networkidle")
                     _navigate(page, "Experiments")
                     panel = page.get_by_role("region", name="Reproducible workflows", exact=True)
@@ -371,20 +489,26 @@ def run_workflow_journey(
                         axes=[], evaluation_budget=3
                     )
                     _graph(page, cancellation)
-                    held: list[Route] = []
 
                     def hold_original_worker(
                         route: Route,
+                        _sdk_request: Request,
                         *,
                         current_authority: str = authority,
                         rejected: list[str] = refused,
+                        entries: list[str] = held_entries,
                     ) -> None:
-                        """Load the real worker with a held startup fetch before original execution."""
+                        """Hold the actual worker entry's startup fetch, preserving its dependencies."""
                         request = urlsplit(route.request.url)
                         if request.scheme != "http" or request.netloc != current_authority:
                             rejected.append(route.request.url)
                             route.abort()
+                        elif Path(request.path).name != "kernelWorker.ts" and not Path(
+                            request.path
+                        ).name.startswith("kernelWorker-"):
+                            route.continue_()
                         else:
+                            entries.append(route.request.url)
                             response = route.fetch()
                             route.fulfill(
                                 response=response,
@@ -392,28 +516,39 @@ def run_workflow_journey(
                                 + response.text(),
                             )
 
-                    def hold_startup(route: Route, *, retained: list[Route] = held) -> None:
+                    def hold_startup(
+                        route: Route, _sdk_request: Request, *, retained: list[Route] = held
+                    ) -> None:
                         """Retain an actual worker fetch until its owning worker is disposed."""
                         retained.append(route)
 
                     context.route("**/workflow-worker-startup-barrier", hold_startup)
                     page.route("**/*kernelWorker*", hold_original_worker)
                     before_cancel = page.evaluate("window.__ownedKernel.started")
-                    with page.expect_worker() as created:
-                        panel.get_by_role(
-                            "button", name="Run or resume workflow", exact=True
-                        ).click()
                     closed: list[bool] = []
 
                     def record_closed(_worker: Worker, *, observed: list[bool] = closed) -> None:
                         """Record Chromium's actual worker-close event before any cancel assertion."""
                         observed.append(True)
 
-                    created.value.once("close", record_closed)
+                    with context.expect_event(
+                        "request",
+                        predicate=lambda request: (
+                            urlsplit(request.url).path == "/workflow-worker-startup-barrier"
+                        ),
+                    ) as startup:
+                        with page.expect_worker() as created:
+                            panel.get_by_role(
+                                "button", name="Run or resume workflow", exact=True
+                            ).click()
+                        created.value.once("close", record_closed)
                     panel.get_by_role("button", name="Cancel workflow", exact=True).click()
                     _wait_for_entries(page, ["complete", "cancelled"], "cancelled")
                     wait_for_worker_disposal(page)
                     assert closed == [True]
+                    assert len(held_entries) == 1
+                    assert len(held) == 1
+                    assert startup.value.url == held[0].request.url
                     assert page.evaluate("window.__ownedKernel.started") - before_cancel == 1
                     page.unroute("**/*kernelWorker*", hold_original_worker)
                     context.unroute("**/workflow-worker-startup-barrier", hold_startup)
@@ -442,6 +577,8 @@ def run_workflow_journey(
                             "native_close_observed": closed == [True],
                             "worker_fault": "original script startup fetch held",
                             "worker_url": created.value.url,
+                            "held_worker_entries": held_entries,
+                            "held_startup_request": startup.value.url,
                         }
                     )
                     assert not errors and not refused
@@ -451,6 +588,12 @@ def run_workflow_journey(
                         view_profiler = start_native_coverage(view_page)
                         try:
                             view_page.goto(target + "#/workspace", wait_until="networkidle")
+                            expect(
+                                view_page.locator(".qsp-play")
+                                .get_by_role("status")
+                                .filter(has_text="verified against the committed ground truth")
+                            ).to_be_visible()
+                            wait_for_worker_disposal(view_page)
                             receipt["native_view_refusals"] = view_page.evaluate(
                                 "async () => (await import('/browser-tests/workflowRunner.native.tsx')).runNativeWorkflowViewRefusals()"
                             )
@@ -469,6 +612,8 @@ def run_workflow_journey(
                     receipt["failed_context"] = target
                     receipt["page_errors"] = errors
                     receipt["refused_requests"] = refused
+                    receipt["held_worker_entries"] = held_entries
+                    receipt["held_startup_requests"] = [route.request.url for route in held]
                     if profiler is not None:
                         session, profiler = profiler, None
                         try:

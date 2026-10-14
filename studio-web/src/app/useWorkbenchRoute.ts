@@ -9,6 +9,9 @@
 import { useSyncExternalStore } from "react";
 import { parseWorkbenchRoute } from "./routing";
 import type { WorkbenchLocation } from "./routing";
+import { workbenchRegistry } from "./moduleRegistry";
+import type { ModuleRegistry } from "../shared/contracts/module";
+import type { WorkbenchServices, WorkspaceViewServices } from "../shared/contracts/workbench";
 
 function subscribe(changed: () => void): () => void {
   window.addEventListener("hashchange", changed);
@@ -19,9 +22,13 @@ function subscribe(changed: () => void): () => void {
   };
 }
 
-function currentHash(): string { return window.location.hash; }
+function currentHash(): string {
+  return window.location.hash;
+}
 
 /** Observe actual hash/history changes and release both listeners at panel disposal. */
-export function useWorkbenchRoute(): WorkbenchLocation {
-  return parseWorkbenchRoute(useSyncExternalStore(subscribe, currentHash));
+export function useWorkbenchRoute(
+  registry: ModuleRegistry<WorkbenchServices, WorkspaceViewServices> = workbenchRegistry,
+): WorkbenchLocation<string> {
+  return parseWorkbenchRoute(useSyncExternalStore(subscribe, currentHash), registry);
 }

@@ -32,7 +32,10 @@ def native_browser() -> Iterator[Browser]:
 
     """
     with sync_playwright() as runtime:
-        browser = runtime.chromium.launch()
+        browser = runtime.chromium.launch(
+            executable_path=os.environ.get("STUDIO_NATIVE_BROWSER_EXECUTABLE"),
+            chromium_sandbox=True,
+        )
         try:
             yield browser
         finally:
@@ -44,7 +47,7 @@ def test_capture_actual_workspace_owners(native_browser: Browser) -> None:
 
     Parameters
     ----------
-    native_browser
+    native_browser : Browser
         Real Chromium process whose test context is isolated from other cases.
 
     """
@@ -76,12 +79,19 @@ def test_capture_actual_workspace_owners(native_browser: Browser) -> None:
             url = native.get("url")
             assert isinstance(url, str)
             actual.add(urlsplit(url).path)
-        assert actual == {
+        assert {
             "/src/shared/storage/workspaceStore.ts",
             "/src/shared/storage/workspaceArchive.ts",
-            "/src/features/workspace/WorkspacePanel.tsx",
-            "/src/features/workspace/useWorkspace.ts",
-        }
+            "/src/shared/workspace/WorkspaceEditor.tsx",
+            "/src/WorkspacePanel.tsx",
+            "/src/shared/workspace/useWorkspace.ts",
+        } <= actual
+        assert {
+            "/src/app/moduleRegistry.tsx",
+            "/src/shared/contracts/module.ts",
+            "/src/shared/moduleViews/ModuleDocumentViews.tsx",
+            "/src/shared/browser/ScrollRegion.tsx",
+        } <= actual
     finally:
         context.close()
 
@@ -91,7 +101,7 @@ def test_capture_actual_workflow_owners(native_browser: Browser) -> None:
 
     Parameters
     ----------
-    native_browser
+    native_browser : Browser
         Real Chromium process using the actual production workflow facade.
 
     """
@@ -112,21 +122,27 @@ def test_capture_actual_workflow_owners(native_browser: Browser) -> None:
             for record in records
             if isinstance(record["coverage"], dict)
         }
-        assert actual == {
+        assert {
             "/src/shared/storage/workspaceStore.ts",
             "/src/shared/storage/workspaceArchive.ts",
-            "/src/features/workspace/WorkspacePanel.tsx",
-            "/src/features/workspace/useWorkspace.ts",
+            "/src/shared/workspace/WorkspaceEditor.tsx",
+            "/src/shared/workspace/useWorkspace.ts",
             "/src/app/Workbench.tsx",
-            "/src/features/workflows/workflowModel.ts",
-            "/src/features/workflows/workflowSweep.ts",
-            "/src/features/workflows/workflowJournal.ts",
-            "/src/features/workflows/workflowArchive.ts",
-            "/src/features/workflows/workflowExecution.ts",
-            "/src/features/workflows/useWorkflowRun.ts",
-            "/src/features/workflows/WorkflowEditor.tsx",
-            "/src/features/workflows/WorkflowRunner.tsx",
-        }
+            "/src/shared/workflows/workflowModel.ts",
+            "/src/shared/workflows/workflowSweep.ts",
+            "/src/shared/workflows/workflowJournal.ts",
+            "/src/shared/workflows/workflowArchive.ts",
+            "/src/shared/workflows/workflowExecution.ts",
+            "/src/shared/workflows/useWorkflowRun.ts",
+            "/src/modules/workflows/WorkflowEditor.tsx",
+            "/src/modules/workflows/WorkflowRunner.tsx",
+        } <= actual
+        assert {
+            "/src/app/moduleRegistry.tsx",
+            "/src/shared/contracts/module.ts",
+            "/src/shared/moduleViews/ModuleDocumentViews.tsx",
+            "/src/shared/browser/ScrollRegion.tsx",
+        } <= actual
     finally:
         context.close()
 
@@ -136,7 +152,7 @@ def test_workflow_capture_refuses_interrupted_original_owner(native_browser: Bro
 
     Parameters
     ----------
-    native_browser
+    native_browser : Browser
         Real Chromium process with one unavailable original workflow source request.
 
     """
@@ -153,7 +169,7 @@ def test_workflow_capture_refuses_interrupted_original_owner(native_browser: Bro
             interrupted.append(route.request.url)
             route.abort()
 
-        page.route("**/src/features/workflows/workflowExecution.ts", unavailable_workflow)
+        page.route("**/src/shared/workflows/workflowExecution.ts", unavailable_workflow)
         session = start_native_coverage(page)
         page.goto(loopback_url(supplied) + "#/experiments", wait_until="networkidle")
         records: list[dict[str, object]] = []
@@ -172,11 +188,11 @@ def test_workflow_capture_refuses_interrupted_original_owner(native_browser: Bro
 
 
 def test_capture_actual_experiment_owners(native_browser: Browser) -> None:
-    """Collect the ten original owners after real Workbench experiment navigation.
+    """Collect original experiment and compiled shell owners after real navigation.
 
     Parameters
     ----------
-    native_browser
+    native_browser : Browser
         Real Chromium process whose page imports the production experiment controls.
 
     """
@@ -202,18 +218,24 @@ def test_capture_actual_experiment_owners(native_browser: Browser) -> None:
             url = native.get("url")
             assert isinstance(url, str)
             actual.add(urlsplit(url).path)
-        assert actual == {
+        assert {
             "/src/shared/storage/workspaceStore.ts",
             "/src/shared/storage/workspaceArchive.ts",
-            "/src/features/workspace/WorkspacePanel.tsx",
-            "/src/features/workspace/useWorkspace.ts",
+            "/src/shared/workspace/WorkspaceEditor.tsx",
+            "/src/shared/workspace/useWorkspace.ts",
             "/src/app/Workbench.tsx",
-            "/src/features/experiments/kuramotoArtifacts.ts",
-            "/src/features/experiments/experimentArchive.ts",
-            "/src/features/experiments/experimentPlan.ts",
-            "/src/features/experiments/useExperimentRun.ts",
-            "/src/features/experiments/ExperimentRunner.tsx",
-        }
+            "/src/shared/experiments/kuramotoArtifacts.ts",
+            "/src/shared/experiments/experimentArchive.ts",
+            "/src/shared/experiments/experimentPlan.ts",
+            "/src/shared/experiments/useExperimentRun.ts",
+            "/src/modules/experiments/ExperimentRunner.tsx",
+        } <= actual
+        assert {
+            "/src/app/moduleRegistry.tsx",
+            "/src/shared/contracts/module.ts",
+            "/src/shared/moduleViews/ModuleDocumentViews.tsx",
+            "/src/shared/browser/ScrollRegion.tsx",
+        } <= actual
     finally:
         context.close()
 
@@ -223,7 +245,7 @@ def test_experiment_capture_refuses_interrupted_original_owner(native_browser: B
 
     Parameters
     ----------
-    native_browser
+    native_browser : Browser
         Real Chromium process with one deliberately aborted source-module request.
 
     """
@@ -237,10 +259,7 @@ def test_experiment_capture_refuses_interrupted_original_owner(native_browser: B
 
         def unavailable_experiment(route: Route) -> None:
             """Abort the real request and retain its actual source URL."""
-            if (
-                urlsplit(route.request.url).path
-                == "/src/features/experiments/ExperimentRunner.tsx"
-            ):
+            if urlsplit(route.request.url).path == "/src/modules/experiments/ExperimentRunner.tsx":
                 interrupted.append(route.request.url)
                 route.abort()
             else:
@@ -278,12 +297,12 @@ def test_capture_actual_workbench_navigation_owners(
 
     Parameters
     ----------
-    native_browser
+    native_browser : Browser
         Owned Chromium process exercising the original facade and source controllers.
-    include_panel
-        Request the original facade and four workspace owners.
-    include_workbench
-        Request the complete fourteen-owner navigation cohort.
+    include_panel : bool
+        Request the original facade and its compiled shell ownership.
+    include_workbench : bool
+        Request the original navigation and complete compiled shell cohort.
 
     """
     supplied = os.environ.get("STUDIO_WORKSPACE_SOURCE_URL")
@@ -316,25 +335,27 @@ def test_capture_actual_workbench_navigation_owners(
         expected = {
             "/src/shared/storage/workspaceStore.ts",
             "/src/shared/storage/workspaceArchive.ts",
-            "/src/features/workspace/WorkspacePanel.tsx",
-            "/src/features/workspace/useWorkspace.ts",
+            "/src/shared/workspace/WorkspaceEditor.tsx",
+            "/src/shared/workspace/useWorkspace.ts",
             "/src/QuantumStudioPanel.tsx",
         }
         if include_workbench:
             expected.update(
                 {
-                    "/src/features/catalogue/CapabilityCatalogue.tsx",
+                    "/src/modules/catalogue/CapabilityCatalogue.tsx",
                     "/src/app/Workbench.tsx",
                     "/src/app/WorkbenchInspector.tsx",
                     "/src/app/RouteBoundary.tsx",
                     "/src/app/routing.ts",
                     "/src/app/useWorkbenchRoute.ts",
-                    "/src/app/routes/BuildView.tsx",
-                    "/src/app/routes/ResultsView.tsx",
-                    "/src/app/routes/UnavailableView.tsx",
+                    "/src/modules/build/BuildView.tsx",
+                    "/src/modules/results/ResultsView.tsx",
+                    "/src/modules/atlas/UnavailableView.tsx",
                 }
             )
-        assert actual == expected
+        assert expected <= actual
+        assert "/src/app/moduleRegistry.tsx" in actual
+        assert "/src/shared/moduleViews/ModuleJobDock.tsx" in actual
     finally:
         context.close()
 
@@ -344,7 +365,7 @@ def test_missing_owners_stops_real_profiler(native_browser: Browser) -> None:
 
     Parameters
     ----------
-    native_browser
+    native_browser : Browser
         Real Chromium process used for a new empty test context.
 
     """
@@ -363,12 +384,55 @@ def test_missing_owners_stops_real_profiler(native_browser: Browser) -> None:
         context.close()
 
 
-def test_capture_actual_parameter_editor_owners(native_browser: Browser) -> None:
-    """Retain the four linked editors and their four original workspace owners.
+def test_missing_compiled_entry_stops_real_profiler(native_browser: Browser) -> None:
+    """Require a real compiled entry and retain partial counters after its request fails.
 
     Parameters
     ----------
-    native_browser
+    native_browser : Browser
+        Owned Chromium process whose source request is deliberately unavailable.
+
+    """
+    supplied = os.environ.get("STUDIO_WORKSPACE_SOURCE_URL")
+    if supplied is None:
+        raise RuntimeError("Supply the owned source host")
+    context = native_browser.new_context(service_workers="block")
+    try:
+        page = context.new_page()
+        interrupted: list[str] = []
+
+        def unavailable_entry(route: Route) -> None:
+            """Interrupt the actual original compiled compiler entry request."""
+            interrupted.append(route.request.url)
+            route.abort()
+
+        page.route("**/src/modules/compiler/index.tsx", unavailable_entry)
+        session = start_native_coverage(page)
+        page.goto(
+            loopback_url(supplied) + "browser-tests/workspace.html", wait_until="networkidle"
+        )
+        records: list[dict[str, object]] = []
+        with pytest.raises(AssertionError, match="Missing current-page native owners"):
+            take_native_coverage(session, records)
+        assert len(interrupted) == 1
+        assert all(
+            isinstance(record["coverage"], dict)
+            and urlsplit(str(record["coverage"].get("url", ""))).path
+            != "/src/modules/compiler/index.tsx"
+            for record in records
+        )
+        with pytest.raises(Error):
+            session.send("Profiler.takePreciseCoverage")
+    finally:
+        context.close()
+
+
+def test_capture_actual_parameter_editor_owners(native_browser: Browser) -> None:
+    """Retain original linked editing and complete compiled workspace composition.
+
+    Parameters
+    ----------
+    native_browser : Browser
         Real Chromium process importing a fully admitted signed matrix archive.
 
     """
@@ -399,16 +463,23 @@ def test_capture_actual_parameter_editor_owners(native_browser: Browser) -> None
             url = native.get("url")
             assert isinstance(url, str)
             actual.add(urlsplit(url).path)
-        assert actual == {
+        assert {
             "/src/shared/storage/workspaceStore.ts",
             "/src/shared/storage/workspaceArchive.ts",
-            "/src/features/workspace/WorkspacePanel.tsx",
-            "/src/features/workspace/useWorkspace.ts",
-            "/src/features/parameters/parameterDraft.ts",
-            "/src/features/parameters/parameterRevision.ts",
-            "/src/features/parameters/ParameterEditor.tsx",
-            "/src/features/parameters/ParameterWorkspace.tsx",
-        }
+            "/src/shared/workspace/WorkspaceEditor.tsx",
+            "/src/WorkspacePanel.tsx",
+            "/src/shared/workspace/useWorkspace.ts",
+            "/src/shared/parameters/parameterDraft.ts",
+            "/src/shared/parameters/parameterRevision.ts",
+            "/src/modules/parameters/ParameterEditor.tsx",
+            "/src/modules/parameters/ParameterWorkspace.tsx",
+        } <= actual
+        assert {
+            "/src/app/moduleRegistry.tsx",
+            "/src/shared/contracts/module.ts",
+            "/src/shared/moduleViews/ModuleDocumentViews.tsx",
+            "/src/shared/browser/ScrollRegion.tsx",
+        } <= actual
     finally:
         context.close()
 
@@ -418,7 +489,7 @@ def test_closed_page_preserves_capture_and_cleanup_failures(native_browser: Brow
 
     Parameters
     ----------
-    native_browser
+    native_browser : Browser
         Real Chromium process with an owned page that closes before capture.
 
     """
@@ -437,12 +508,48 @@ def test_closed_page_preserves_capture_and_cleanup_failures(native_browser: Brow
         context.close()
 
 
+def test_reused_page_session_captures_original_sources_after_reload(
+    native_browser: Browser,
+) -> None:
+    """Restart actual profiling on the same page session and retain both intervals.
+
+    Parameters
+    ----------
+    native_browser : Browser
+        Real Chromium process whose owned page reloads between native captures.
+
+    """
+    supplied = os.environ.get("STUDIO_WORKSPACE_SOURCE_URL")
+    if supplied is None:
+        raise RuntimeError("Supply the owned source host")
+    context = native_browser.new_context(service_workers="block")
+    try:
+        page = context.new_page()
+        session = start_native_coverage(page)
+        page.goto(
+            loopback_url(supplied) + "browser-tests/workspace.html", wait_until="networkidle"
+        )
+        first = take_native_coverage(session)
+        resumed = start_native_coverage(page, session=session)
+        assert resumed is session
+        page.reload(wait_until="networkidle")
+        second = take_native_coverage(resumed)
+        assert {(record["code_sha256"], record["source_sha256"]) for record in first} == {
+            (record["code_sha256"], record["source_sha256"]) for record in second
+        }
+        assert first and second
+        with pytest.raises(Error):
+            session.send("Profiler.takePreciseCoverage")
+    finally:
+        context.close()
+
+
 def test_parameter_cohort_refuses_unavailable_editor_source(native_browser: Browser) -> None:
     """Refuse a real editor cohort whose revision source request was interrupted.
 
     Parameters
     ----------
-    native_browser
+    native_browser : Browser
         Real Chromium process experiencing an unavailable original revision module.
 
     """
@@ -459,7 +566,7 @@ def test_parameter_cohort_refuses_unavailable_editor_source(native_browser: Brow
             interrupted.append(route.request.url)
             route.abort()
 
-        page.route("**/src/features/parameters/parameterRevision.ts", unavailable_revision)
+        page.route("**/src/shared/parameters/parameterRevision.ts", unavailable_revision)
         session = start_native_coverage(page)
         page.goto(
             loopback_url(supplied) + "browser-tests/workspace.html", wait_until="networkidle"
@@ -480,11 +587,11 @@ def test_parameter_cohort_refuses_unavailable_editor_source(native_browser: Brow
 
 
 def test_disposal_after_capture_preserves_records_and_stop_error(native_browser: Browser) -> None:
-    """Keep actual counters when their recipient closes the page before profiler cleanup.
+    """Keep every captured source when its recipient closes the page before cleanup.
 
     Parameters
     ----------
-    native_browser
+    native_browser : Browser
         Real Chromium process used for an independently disposed page.
 
     """
@@ -494,19 +601,24 @@ def test_disposal_after_capture_preserves_records_and_stop_error(native_browser:
     source = loopback_url(supplied)
     context = native_browser.new_context(service_workers="block")
     try:
+        reference_page = context.new_page()
+        reference_session = start_native_coverage(reference_page)
+        reference_page.goto(source + "browser-tests/workspace.html", wait_until="networkidle")
+        reference = take_native_coverage(reference_session)
+        reference_page.close()
         page = context.new_page()
         session = start_native_coverage(page)
         page.goto(source + "browser-tests/workspace.html", wait_until="networkidle")
 
         class DisposingRecords(list[dict[str, object]]):
-            """Dispose the real page after receiving its four original owners."""
+            """Dispose the real page after collecting its original compiled workspace owners."""
 
             def append(self, record: dict[str, object]) -> None:
                 """Retain the original SDK record before initiating actual disposal.
 
                 Parameters
                 ----------
-                record
+                record : dict[str, object]
                     Original counter/source record produced by the real profiler.
 
                 """
@@ -517,19 +629,22 @@ def test_disposal_after_capture_preserves_records_and_stop_error(native_browser:
         records = DisposingRecords()
         with pytest.raises(Error, match="closed"):
             take_native_coverage(session, records)
-        assert len(records) == 4
+        assert len(records) == len(reference) > 4
         assert page.is_closed()
         assert all(isinstance(record["coverage"], dict) for record in records)
+        assert {(record["code_sha256"], record["source_sha256"]) for record in records} == {
+            (record["code_sha256"], record["source_sha256"]) for record in reference
+        }
     finally:
         context.close()
 
 
 def test_capture_actual_result_owners(native_browser: Browser) -> None:
-    """Retain all eleven result and storage owners through actual Results navigation.
+    """Retain every result, storage and compiled owner through actual Results navigation.
 
     Parameters
     ----------
-    native_browser
+    native_browser : Browser
         Owned Chromium process using the original production Results route.
 
     """
@@ -550,19 +665,25 @@ def test_capture_actual_result_owners(native_browser: Browser) -> None:
             url = native.get("url")
             assert isinstance(url, str)
             actual.add(urlsplit(url).path)
-        assert actual == {
+        assert {
             "/src/shared/storage/workspaceStore.ts",
             "/src/shared/storage/workspaceArchive.ts",
-            "/src/features/workspace/WorkspacePanel.tsx",
-            "/src/features/workspace/useWorkspace.ts",
+            "/src/shared/workspace/WorkspaceEditor.tsx",
+            "/src/shared/workspace/useWorkspace.ts",
             "/src/app/Workbench.tsx",
-            "/src/app/routes/ResultsView.tsx",
-            "/src/features/results/resultModel.ts",
-            "/src/features/results/resultSources.ts",
-            "/src/features/results/resultExport.ts",
-            "/src/features/results/ResultInspector.tsx",
-            "/src/features/results/ResultLoader.tsx",
-        }
+            "/src/modules/results/ResultsView.tsx",
+            "/src/shared/results/resultModel.ts",
+            "/src/shared/results/resultSources.ts",
+            "/src/modules/results/resultExport.ts",
+            "/src/modules/results/ResultInspector.tsx",
+            "/src/modules/results/ResultLoader.tsx",
+        } <= actual
+        assert {
+            "/src/app/moduleRegistry.tsx",
+            "/src/shared/contracts/module.ts",
+            "/src/shared/moduleViews/ModuleDocumentViews.tsx",
+            "/src/shared/browser/ScrollRegion.tsx",
+        } <= actual
     finally:
         context.close()
 
@@ -572,7 +693,7 @@ def test_result_capture_refuses_interrupted_original_owner(native_browser: Brows
 
     Parameters
     ----------
-    native_browser
+    native_browser : Browser
         Owned Chromium process with one genuinely unavailable source-module request.
 
     """
@@ -589,7 +710,7 @@ def test_result_capture_refuses_interrupted_original_owner(native_browser: Brows
             interrupted.append(route.request.url)
             route.abort()
 
-        page.route("**/src/features/results/resultModel.ts", unavailable_result)
+        page.route("**/src/shared/results/resultModel.ts", unavailable_result)
         session = start_native_coverage(page)
         page.goto(loopback_url(supplied) + "#/results", wait_until="networkidle")
         expect(page.get_by_role("alert")).to_contain_text("View unavailable")

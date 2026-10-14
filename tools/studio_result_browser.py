@@ -14,6 +14,7 @@ import csv
 import hashlib
 import io
 import json
+import os
 from importlib.metadata import version
 from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
@@ -71,7 +72,7 @@ def _saved_archive(page: Page) -> str:
 
     Parameters
     ----------
-    page
+    page : Page
         Owned actual Workbench page whose workspace controller remains mounted.
 
     Returns
@@ -90,9 +91,9 @@ def _exports(page: Page, inspector: Locator) -> tuple[list[dict[str, str]], dict
 
     Parameters
     ----------
-    page
+    page : Page
         Owned native page with the real result controls mounted.
-    inspector
+    inspector : Locator
         Admitted original result inspector, independent of another source result.
 
     Returns
@@ -125,11 +126,11 @@ def run_result_journey(
 
     Parameters
     ----------
-    base_url
+    base_url : str
         Owned literal loopback preview of the actual production build.
-    source_url
+    source_url : str | None
         Optional distinct owned root Vite host for original-source native counters.
-    evidence
+    evidence : dict[str, object] | None
         Original shared-dispatcher destination retaining completed observations.
 
     Returns
@@ -153,7 +154,7 @@ def run_result_journey(
         urlsplit(source).path != "/" or urlsplit(source).netloc == urlsplit(url).netloc
     ):
         raise ValueError("Result source coverage requires a distinct owned root source host")
-    from playwright.sync_api import Error, Route, expect, sync_playwright
+    from playwright.sync_api import Error, Request, Route, expect, sync_playwright
 
     from tools.studio_workspace_browser_coverage import start_native_coverage, take_native_coverage
 
@@ -169,7 +170,10 @@ def run_result_journey(
     source_sha = hashlib.sha256(original.encode("utf-8")).hexdigest()
     receipt["actual_original_cli_source_sha256"] = source_sha
     with sync_playwright() as runtime:
-        browser = runtime.chromium.launch()
+        browser = runtime.chromium.launch(
+            executable_path=os.environ.get("STUDIO_NATIVE_BROWSER_EXECUTABLE"),
+            chromium_sandbox=True,
+        )
         receipt.update(playwright=version("playwright"), browser=browser.version)
         try:
             for target in (url,) if source is None else (url, source):
@@ -186,17 +190,23 @@ def run_result_journey(
                 )
 
                 def bound_request(
-                    route: Route, *, authority: str = origin, refused: list[str] = rejected
+                    route: Route,
+                    _sdk_request: Request,
+                    *,
+                    authority: str = origin,
+                    refused: list[str] = rejected,
                 ) -> None:
                     """Retain and refuse real external transport attempts.
 
                     Parameters
                     ----------
-                    route
+                    route : Route
                         Actual native intercepted request.
-                    authority
+                    _sdk_request : Request
+                        Original SDK request passed beside its route.
+                    authority : str
                         This context's owned loopback authority.
-                    refused
+                    refused : list[str]
                         Original destination for this context's actual refused requests.
 
                     """
@@ -212,9 +222,9 @@ def run_result_journey(
 
                     Parameters
                     ----------
-                    error
+                    error : Error
                         Native uncaught browser exception.
-                    observed
+                    observed : list[str]
                         Original destination for this context's native page errors.
 
                     """

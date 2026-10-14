@@ -167,7 +167,7 @@ it("keeps ordinary workspace evidence sufficient when no damaged-source cohort i
   }
 });
 
-it("merges all ten genuine experiment owners through the unchanged public provider", async () => {
+it("merges every genuine experiment owner through the unchanged public provider", async () => {
   if (!process.env["STUDIO_WORKSPACE_COVERAGE"] || !process.env["STUDIO_EXPERIMENT_COVERAGE"])
     throw new Error("Supply actual workspace and experiment evidence");
   const directory = await mkdtemp(join(tmpdir(), "studio-provider-experiments-"));
@@ -233,7 +233,7 @@ it("merges every actual workbench owner through the original public provider", a
   }
 });
 
-it("merges all eight actual parameter owners through the original public provider", async () => {
+it("merges every actual parameter owner through the original public provider", async () => {
   if (!process.env["STUDIO_WORKSPACE_COVERAGE"] || !process.env["STUDIO_PARAMETER_COVERAGE"])
     throw new Error("Supply actual workspace and parameter evidence");
   const directory = await mkdtemp(join(tmpdir(), "studio-provider-parameters-"));
@@ -299,7 +299,7 @@ it("merges every genuine result owner through the original public V8 provider", 
   }
 });
 
-it("merges all thirteen actual workflow owners through the original public V8 provider", async () => {
+it("merges every actual workflow owner through the original public V8 provider", async () => {
   if (!process.env["STUDIO_WORKSPACE_COVERAGE"] || !process.env["STUDIO_WORKFLOW_COVERAGE"])
     throw new Error("Supply actual workspace and workflow source evidence");
   const directory = await mkdtemp(join(tmpdir(), "studio-provider-workflows-"));

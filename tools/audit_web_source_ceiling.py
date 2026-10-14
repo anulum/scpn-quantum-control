@@ -11,7 +11,7 @@ The web workspace is type-checked, tested and built, but no gate linted its
 TypeScript, stylesheets and pages or checked their layout, and nothing read
 the script and stylesheet of the documentation site. The sources were never
 formatted by a tool, so a plain "everything must pass" gate would demand one
-mass rewrite. This gate measures every tracked web source with the pinned
+mass rewrite. This gate measures live tracked and newly added web sources with the pinned
 Biome release and compares each file with a recorded ceiling instead.
 
 Three things fail it. A source that is absent from the ceiling and has a lint
@@ -111,7 +111,7 @@ def load_ceiling(path: Path) -> Ceiling:
 
     Parameters
     ----------
-    path
+    path : Path
         JSON file with schema ``web_source_ceiling_v1``.
 
     Returns
@@ -171,9 +171,9 @@ def write_ceiling(path: Path, ceiling: Ceiling) -> None:
 
     Parameters
     ----------
-    path
+    path : Path
         Destination file.
-    ceiling
+    ceiling : Ceiling
         Counts, unformatted files and provenance to record.
 
     """
@@ -277,16 +277,30 @@ def installed_release(repo: Path, executable: Path) -> str:
 
 
 def tracked_sources(repo: Path) -> list[str]:
-    """Return the tracked web sources in sorted order, relative to ``repo``.
+    """Return Git-visible live web sources, including additions before staging.
+
+    Parameters
+    ----------
+    repo : Path
+        Repository whose tracked and non-ignored new worktree files are measured.
+
+    Returns
+    -------
+    list[str]
+        Sorted source paths relative to the repository, excluding worktree deletions.
 
     Raises
     ------
     ValueError
-        If Git cannot list the tracked files.
+        If Git cannot list worktree sources or deletions.
 
     """
-    names = _git(repo, ["ls-files", "-z", "--", *SOURCE_ROOTS]).split("\0")
-    return sorted(name for name in names if name and _in_scope(name))
+    names = _git(
+        repo,
+        ["ls-files", "--cached", "--others", "--exclude-standard", "-z", "--", *SOURCE_ROOTS],
+    ).split("\0")
+    deleted = set(_git(repo, ["ls-files", "--deleted", "-z", "--", *SOURCE_ROOTS]).split("\0"))
+    return sorted({name for name in names if name and name not in deleted and _in_scope(name)})
 
 
 def _diagnostics(
@@ -336,9 +350,9 @@ def measure(repo: Path, executable: Path) -> Measurement:
 
     Parameters
     ----------
-    repo
+    repo : Path
         Repository root.
-    executable
+    executable : Path
         Biome executable of the pinned release.
 
     Returns
@@ -375,9 +389,9 @@ def changed_sources(repo: Path, revision: str) -> list[str]:
 
     Parameters
     ----------
-    repo
+    repo : Path
         Repository root.
-    revision
+    revision : str
         Commit to compare with; it must resolve in the repository.
 
     Returns
@@ -400,11 +414,11 @@ def compare(measured: Measurement, ceiling: Ceiling, release: str) -> list[str]:
 
     Parameters
     ----------
-    measured
+    measured : Measurement
         Lint counts and unformatted sources of the working tree.
-    ceiling
+    ceiling : Ceiling
         Recorded ceiling.
-    release
+    release : str
         Release of the running Biome executable.
 
     Returns
@@ -445,9 +459,9 @@ def check_changed(measured: Measurement, changed: Sequence[str]) -> list[str]:
 
     Parameters
     ----------
-    measured
+    measured : Measurement
         Lint counts and unformatted sources of the working tree.
-    changed
+    changed : Sequence[str]
         Web sources that differ from the comparison revision.
 
     Returns
@@ -473,11 +487,11 @@ def lower(measured: Measurement, ceiling: Ceiling, commit: str) -> Ceiling:
 
     Parameters
     ----------
-    measured
+    measured : Measurement
         Lint counts and unformatted sources of the working tree.
-    ceiling
+    ceiling : Ceiling
         Recorded ceiling, measured with the running Biome release.
-    commit
+    commit : str
         Commit the new figures describe.
 
     Returns
@@ -508,13 +522,13 @@ def rebaseline(measured: Measurement, ceiling: Ceiling, release: str, commit: st
 
     Parameters
     ----------
-    measured
+    measured : Measurement
         Lint counts and unformatted sources under the running release.
-    ceiling
+    ceiling : Ceiling
         Ceiling recorded with the previous release.
-    release
+    release : str
         Release of the running Biome executable.
-    commit
+    commit : str
         Commit the new figures describe.
 
     Returns
@@ -547,7 +561,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     Parameters
     ----------
-    argv
+    argv : Sequence[str] | None
         Command-line arguments; ``None`` reads the process arguments.
 
     Returns

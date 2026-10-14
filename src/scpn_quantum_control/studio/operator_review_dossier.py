@@ -252,13 +252,13 @@ class OperatorReviewDecision:
 
     Parameters
     ----------
-    dossier_sha256, execution_sha256
+    dossier_sha256, execution_sha256 : str
         Original admitted dossier and complete semantic execution identities.
-    choice
+    choice : ReviewChoice
         Human review choice, approved or denied; never provider authority.
-    reviewer_ref
+    reviewer_ref : str
         Bounded human record label without a credential or key claim.
-    recorded_at
+    recorded_at : str
         Exact UTC-second time of this review record.
 
     """
@@ -303,15 +303,23 @@ class OperatorReviewDossier:
 
     Parameters
     ----------
-    plan, deployment
-        Existing original execute plan and its no-submit projection.
-    profile, workload, compiled_payload
-        Native route, logical source and exact original compiled byte artifact.
-    settings, policy_decision
-        Complete immutable settings and original dated native verdict.
-    calibration
+    plan : ExecutionPlan
+        Original execute plan retained without execution.
+    deployment : ExecutionResult
+        Original no-submit projection of the plan.
+    profile : BackendProfile
+        Native backend route and capability metadata.
+    workload : QuantumWorkload
+        Original logical source request.
+    compiled_payload : bytes
+        Exact original compiled byte artifact.
+    settings : ResolvedSettings
+        Complete immutable source settings.
+    policy_decision : OperatorPolicyDecision
+        Original dated native policy verdict.
+    calibration : Mapping[str, object] | None
         Original dated target calibration reference, or explicit unknown None.
-    created_at, expires_at
+    created_at, expires_at : str
         Exact UTC-second review interval within supplied evidence validity.
 
     """
@@ -401,9 +409,9 @@ class OperatorReviewDossier:
 
         Parameters
         ----------
-        review
+        review : OperatorReviewDecision | None
             Earlier immutable human decision, or no decision.
-        now
+        now : str
             Explicit current UTC-second time; no source clock is substituted.
 
         Returns
@@ -417,6 +425,8 @@ class OperatorReviewDossier:
         body = self.to_dict()["body"]
         if review is not None and review.execution_sha256 != self.execution_sha256:
             return "invalidated"
+        if review is not None and utc_second(review.recorded_at) < utc_second(body["created_at"]):
+            return "refused"
         if current < utc_second(body["created_at"]) or (
             review is not None and utc_second(review.recorded_at) > current
         ):
@@ -438,11 +448,11 @@ class OperatorReviewDossier:
 
         Parameters
         ----------
-        choice
+        choice : ReviewChoice
             Approved or denied human review choice.
-        reviewer_ref
+        reviewer_ref : str
             Opaque human record label; no credentials are accepted.
-        recorded_at
+        recorded_at : str
             Exact current UTC seconds, retained on the separate immutable record.
 
         Returns

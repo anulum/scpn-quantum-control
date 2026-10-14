@@ -10,21 +10,102 @@
 from __future__ import annotations
 
 import hashlib
+import json
+import os
+import subprocess
+from collections.abc import Callable
 from pathlib import Path
 from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
+from weakref import WeakKeyDictionary
 
 if TYPE_CHECKING:
     from playwright.sync_api import CDPSession, Page
 
 
-def start_native_coverage(page: Page) -> CDPSession:
+_native_script_sources: WeakKeyDictionary[CDPSession, dict[str, str]] = WeakKeyDictionary()
+_native_script_listeners: WeakKeyDictionary[CDPSession, Callable[[dict[str, object]], None]] = (
+    WeakKeyDictionary()
+)
+
+
+def _source_cohorts(root: Path) -> dict[str, set[str]]:
+    """Read exact compiled-owner cohorts from the same TypeScript owner as qualification.
+
+    Parameters
+    ----------
+    root : Path
+        Original installed web workspace, whose registry is read without executing modules.
+
+    Returns
+    -------
+    dict[str, set[str]]
+        Validated source paths by the fixed native capture cohort.
+
+    Raises
+    ------
+    ValueError
+        The metadata is not the expected source-path protocol.
+    subprocess.SubprocessError
+        The bounded original Node metadata reader fails.
+
+    """
+    command = [
+        "node",
+        "--experimental-strip-types",
+        "--input-type=module",
+        "-e",
+        'import {readBrowserCohorts} from "./quality/browserCohorts.ts"; '
+        "process.stdout.write(JSON.stringify(await readBrowserCohorts(process.cwd())));",
+    ]
+    completed = subprocess.run(
+        command,
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=30,
+        env=os.environ | {"NODE_OPTIONS": "--max-old-space-size=768"},
+    )
+    value = json.loads(completed.stdout)
+    names = {
+        "compiled",
+        "workspace",
+        "panel",
+        "parameters",
+        "workbench",
+        "experiments",
+        "results",
+        "workflows",
+    }
+    if not isinstance(value, dict) or set(value) != names:
+        raise ValueError("Compiled browser source cohort protocol required")
+    cohorts: dict[str, set[str]] = {}
+    for name, paths in value.items():
+        if not isinstance(paths, list) or any(
+            not isinstance(path, str)
+            or not path.startswith("/src/")
+            or not path.endswith((".ts", ".tsx"))
+            or ".." in path.split("/")
+            or "?" in path
+            or "#" in path
+            for path in paths
+        ):
+            raise ValueError("Original browser source paths required")
+        cohorts[name] = set(paths)
+    return cohorts
+
+
+def start_native_coverage(page: Page, *, session: CDPSession | None = None) -> CDPSession:
     """Collect actual native V8 counters without replacing storage behavior.
 
     Parameters
     ----------
-    page
+    page : Page
         Owned native browser case page.
+    session : CDPSession | None
+        Existing session for this page after its previous interval stopped. Reuse
+        the same page session between intervals instead of detaching it.
 
     Returns
     -------
@@ -32,7 +113,40 @@ def start_native_coverage(page: Page) -> CDPSession:
         Page-scoped native profiler session.
 
     """
-    session = page.context.new_cdp_session(page)
+    if session is None:
+        session = page.context.new_cdp_session(page)
+    else:
+        session.send("Debugger.disable")
+    sources: dict[str, str] = {}
+    _native_script_sources[session] = sources
+
+    def retain_source(event: dict[str, object]) -> None:
+        """Keep actual debugger text while its parsed source script remains readable.
+
+        Parameters
+        ----------
+        event : dict[str, object]
+            Native debugger notification containing the script identity and URL.
+
+        Raises
+        ------
+        ValueError
+            The debugger returns a source value other than text.
+
+        """
+        identifier, url = event.get("scriptId"), event.get("url")
+        if not isinstance(identifier, str) or not isinstance(url, str):
+            return
+        path = urlsplit(url).path
+        if not path.startswith("/src/") or not path.endswith((".ts", ".tsx")):
+            return
+        code = session.send("Debugger.getScriptSource", {"scriptId": identifier})["scriptSource"]
+        if not isinstance(code, str):
+            raise ValueError("Actual parsed debugger source text required")
+        sources[identifier] = code
+
+    session.on("Debugger.scriptParsed", retain_source)
+    _native_script_listeners[session] = retain_source
     session.send("Debugger.enable")
     session.send("Profiler.enable")
     session.send("Profiler.startPreciseCoverage", {"callCount": True, "detailed": True})
@@ -54,22 +168,22 @@ def take_native_coverage(
 
     Parameters
     ----------
-    session
+    session : CDPSession
         Running page-scoped native profiler.
-    records
+    records : list[dict[str, object]] | None
         Caller-owned destination preserving collected scripts if capture fails.
-    include_panel
+    include_panel : bool
         Also require the original panel during a real damaged-source journey.
-    include_workbench
-        Require the original facade, catalogue and all eight navigation owners.
-    include_parameters
+    include_workbench : bool
+        Require original navigation and all compiled generic shell owners.
+    include_parameters : bool
         Require the linked parameter editor, binding, draft and revision owners.
-    include_experiments
+    include_experiments : bool
         Require the original Workbench and complete source-bound experiment owners.
-    include_results
+    include_results : bool
         Require original Results routing and all read-only source result owners.
-    include_workflows
-        Require the original Workbench and all eight source-bound workflow owners.
+    include_workflows : bool
+        Require the original workflow owners and compiled graph job composition.
 
     Returns
     -------
@@ -86,87 +200,43 @@ def take_native_coverage(
         The original capture or profiler-stop exception when only one operation fails.
 
     """
-    owners = {
-        "/src/shared/storage/workspaceStore.ts",
-        "/src/shared/storage/workspaceArchive.ts",
-        "/src/features/workspace/WorkspacePanel.tsx",
-        "/src/features/workspace/useWorkspace.ts",
-    }
-    if include_panel:
-        owners.add("/src/QuantumStudioPanel.tsx")
-    if include_workbench:
-        owners.update(
-            {
-                "/src/QuantumStudioPanel.tsx",
-                "/src/features/catalogue/CapabilityCatalogue.tsx",
-                "/src/app/Workbench.tsx",
-                "/src/app/WorkbenchInspector.tsx",
-                "/src/app/RouteBoundary.tsx",
-                "/src/app/routing.ts",
-                "/src/app/useWorkbenchRoute.ts",
-                "/src/app/routes/BuildView.tsx",
-                "/src/app/routes/ResultsView.tsx",
-                "/src/app/routes/UnavailableView.tsx",
-            }
-        )
-    if include_parameters:
-        owners.update(
-            {
-                "/src/features/parameters/parameterDraft.ts",
-                "/src/features/parameters/parameterRevision.ts",
-                "/src/features/parameters/ParameterEditor.tsx",
-                "/src/features/parameters/ParameterWorkspace.tsx",
-            }
-        )
-    if include_experiments:
-        owners.update(
-            {
-                "/src/app/Workbench.tsx",
-                "/src/features/experiments/kuramotoArtifacts.ts",
-                "/src/features/experiments/experimentArchive.ts",
-                "/src/features/experiments/experimentPlan.ts",
-                "/src/features/experiments/useExperimentRun.ts",
-                "/src/features/experiments/ExperimentRunner.tsx",
-            }
-        )
-    if include_results:
-        owners.update(
-            {
-                "/src/app/Workbench.tsx",
-                "/src/app/routes/ResultsView.tsx",
-                "/src/features/results/resultModel.ts",
-                "/src/features/results/resultSources.ts",
-                "/src/features/results/resultExport.ts",
-                "/src/features/results/ResultInspector.tsx",
-                "/src/features/results/ResultLoader.tsx",
-            }
-        )
-    if include_workflows:
-        owners.update(
-            {
-                "/src/app/Workbench.tsx",
-                "/src/features/workflows/workflowModel.ts",
-                "/src/features/workflows/workflowSweep.ts",
-                "/src/features/workflows/workflowJournal.ts",
-                "/src/features/workflows/workflowArchive.ts",
-                "/src/features/workflows/workflowExecution.ts",
-                "/src/features/workflows/useWorkflowRun.ts",
-                "/src/features/workflows/WorkflowEditor.tsx",
-                "/src/features/workflows/WorkflowRunner.tsx",
-            }
-        )
     root = Path(__file__).resolve().parents[1] / "studio-web"
+    owners: set[str] = set()
     records = [] if records is None else records
     captured: set[str] = set()
     capture_error: Exception | None = None
     try:
+        cohorts = _source_cohorts(root)
+        owners.update(cohorts["workspace"])
+        if (
+            include_panel
+            or include_workbench
+            or include_experiments
+            or include_results
+            or include_workflows
+        ):
+            owners.discard("/src/WorkspacePanel.tsx")
+        for enabled, name in [
+            (include_panel, "panel"),
+            (include_workbench, "workbench"),
+            (include_parameters, "parameters"),
+            (include_experiments, "experiments"),
+            (include_results, "results"),
+            (include_workflows, "workflows"),
+        ]:
+            if enabled:
+                owners.update(cohorts[name])
         result = session.send("Profiler.takePreciseCoverage")
         for entry in result["result"]:
             if urlsplit(entry["url"]).path not in owners:
                 continue
-            code = session.send("Debugger.getScriptSource", {"scriptId": entry["scriptId"]})[
-                "scriptSource"
-            ]
+            # Reload may discard a context after its real native counters were recorded.
+            # The cache contains only text obtained from this exact debugger session.
+            code = _native_script_sources.get(session, {}).get(entry["scriptId"])
+            if code is None:
+                code = session.send("Debugger.getScriptSource", {"scriptId": entry["scriptId"]})[
+                    "scriptSource"
+                ]
             source = root / urlsplit(entry["url"]).path.lstrip("/")
             records.append(
                 {
@@ -190,5 +260,10 @@ def take_native_coverage(
                 f"Native coverage capture failed ({type(capture_error).__name__}: {capture_error}); "
                 f"profiler stop also failed ({type(stop_error).__name__}: {stop_error})"
             ) from capture_error
+        finally:
+            _native_script_sources.pop(session, None)
+            listener = _native_script_listeners.pop(session, None)
+            if listener is not None:
+                session.remove_listener("Debugger.scriptParsed", listener)
     assert captured == owners, f"Missing current-page native owners: {sorted(owners - captured)}"
     return records

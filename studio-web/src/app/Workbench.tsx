@@ -6,26 +6,32 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // SCPN Quantum Control — persistent workbench shell over the registered modules
 
-import { Suspense, useEffect, useMemo, useRef } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { WorkspaceEditor } from "../features/workspace/WorkspacePanel";
-import type { WorkspacePanelProps } from "../features/workspace/WorkspacePanel";
-import { useWorkspace } from "../features/workspace/useWorkspace";
-import { localExperimentCodecs } from "../features/experiments/kuramotoArtifacts";
-import { useExperimentRun } from "../features/experiments/useExperimentRun";
-import { useWorkflowRun } from "../features/workflows/useWorkflowRun";
-import { studioManifest } from "../panel/data";
-import type { ModuleRequirements } from "../shared/contracts/module";
+import { WorkspaceEditor } from "../shared/workspace/WorkspaceEditor";
+import type { WorkspacePanelProps } from "../shared/workspace/WorkspaceEditor";
+import { useWorkspace } from "../shared/workspace/useWorkspace";
+import { localExperimentCodecs } from "../shared/experiments/kuramotoArtifacts";
+import { useExperimentRun } from "../shared/experiments/useExperimentRun";
+import { useWorkflowRun } from "../shared/workflows/useWorkflowRun";
+import { studioManifest } from "../shared/browser/data";
+import type { ModuleRegistry, ModuleRequirements } from "../shared/contracts/module";
 import { declaredBy, workbenchRegistry } from "./moduleRegistry";
-import { emptyWorkbenchContext, formatWorkbenchRoute } from "./routing";
-import type { WorkbenchContext, WorkbenchView } from "./routing";
+import type { WorkbenchServices } from "./moduleRegistry";
+import type { WorkspaceViewServices } from "../shared/contracts/workbench";
+import { ModuleDocumentViews } from "../shared/moduleViews/ModuleDocumentViews";
+import { ModuleStageEditors } from "../shared/moduleViews/ModuleStageEditors";
+import { ModuleExplorerView } from "../shared/moduleViews/ModuleExplorerView";
+import { ModuleCommandSearch } from "../shared/moduleViews/ModuleCommandSearch";
+import { ModuleJobDock } from "../shared/moduleViews/ModuleJobDock";
+import { useWorkspaceDocuments } from "../shared/workspace/useWorkspaceDocuments";
+import { emptyWorkbenchContext, formatWorkbenchContext, formatWorkbenchRoute } from "./routing";
+import type { WorkbenchContext } from "./routing";
 import { useWorkbenchRoute } from "./useWorkbenchRoute";
 import { RouteBoundary } from "./RouteBoundary";
 import { WorkbenchInspector } from "./WorkbenchInspector";
 import { WorkbenchHelp } from "./WorkbenchHelp";
 
-const primaryStages = workbenchRegistry.stages.filter((stage) => stage.group === "primary");
-const contextStages = workbenchRegistry.stages.filter((stage) => stage.group === "context");
 const committedDeclarations = declaredBy(studioManifest);
 
 /** Additive layout mode for standalone pages and the existing federation host. */
@@ -34,11 +40,13 @@ export type WorkbenchMode = "standalone" | "embedded";
 /** Preserve the original overview and source-owned workspace producer registry. */
 export interface WorkbenchProps extends Pick<WorkspacePanelProps, "rawCodecs"> {
   /** Compatibility overview rendered synchronously only on the Workspace route. */
-  readonly children: (context: WorkbenchContext) => ReactNode;
+  readonly children: (context: WorkbenchContext, editors: ReactNode) => ReactNode;
   /** Host layout boundary; omitted means standalone. */
   readonly mode?: WorkbenchMode;
   /** Verbs and schemas the installation declares; omitted means the committed manifest. */
   readonly declared?: ModuleRequirements;
+  /** Explicitly compiled host modules; document data cannot supply a registry. */
+  readonly registry?: ModuleRegistry<WorkbenchServices, WorkspaceViewServices>;
 }
 
 /** Hash navigation and feature isolation around one continuously mounted original editor. */
@@ -47,8 +55,11 @@ export function Workbench({
   rawCodecs,
   mode = "standalone",
   declared = committedDeclarations,
+  registry = workbenchRegistry,
 }: WorkbenchProps) {
-  const location = useWorkbenchRoute();
+  const location = useWorkbenchRoute(registry);
+  const primaryStages = registry.stages.filter((stage) => stage.group === "primary");
+  const contextStages = registry.stages.filter((stage) => stage.group === "context");
   const context = location.ok ? location.route : emptyWorkbenchContext;
   const view = location.ok ? location.route.view : null;
   const instrument = location.ok ? location.route.instrument : null;
@@ -58,6 +69,8 @@ export function Workbench({
     [rawCodecs],
   );
   const workspace = useWorkspace(codecs);
+  const currentWorkspace = useRef(workspace);
+  currentWorkspace.current = workspace;
   const workflow = useWorkflowRun(workspace.draft, view === "experiments");
   const workflowOwnsWorker =
     workflow.status === "running" || workflow.status === "cancelling" || workflow.blocked;
@@ -66,16 +79,59 @@ export function Workbench({
     view === "experiments" && !workflowOwnsWorker,
   );
   const content = useRef<HTMLElement>(null);
-  const href = (target: WorkbenchView) =>
-    formatWorkbenchRoute({ ...context, view: target, instrument: null });
+  const href = (target: string) => {
+    if (registry.stage(target) === undefined) throw new Error("Unregistered workbench stage");
+    return formatWorkbenchRoute({ ...context, view: target, instrument: null });
+  };
   const routeKey = location.ok ? formatWorkbenchRoute(location.route) : window.location.hash;
-  const stage = view === null ? undefined : workbenchRegistry.stage(view);
+  const admittedSources = useWorkspaceDocuments(
+    workspace.preview ?? workspace.saved?.preview ?? null,
+    codecs,
+  );
+  const [selectedSource, selectSource] = useState<string | null>(null);
+  const [jobRequest, requestJob] = useState<{
+    readonly sequence: number;
+    readonly job: string;
+  } | null>(null);
+  const selectedDocument =
+    admittedSources.documents.find((source) => source.sha256 === selectedSource) ?? null;
+  const services: WorkbenchServices = {
+    documents: admittedSources.documents,
+    renderEditors: (stage) => (
+      <ModuleStageEditors
+        registry={registry}
+        stage={stage}
+        services={services}
+        declared={declared}
+      />
+    ),
+    overview: (editors) => children(context, editors),
+    contextSuffix: formatWorkbenchContext(context),
+    get workspace() {
+      return currentWorkspace.current;
+    },
+    codecs,
+    experiment,
+    workflow,
+    workspaceHref: href("workspace"),
+  };
+  const revisionPreview =
+    workspace.preview ??
+    (workspace.saved?.preview.json === workspace.draft ? workspace.saved.preview : null);
+  const stage = view === null ? undefined : registry.stage(view);
   const title = stage?.label ?? "Unavailable route";
   // A module whose requirements the installation does not declare stays visible and says why.
-  const owner = view === null ? undefined : workbenchRegistry.owner(view);
-  const lacking = workbenchRegistry
+  const owner = view === null ? undefined : registry.owner(view);
+  const lacking = registry
     .missing(declared)
     .filter((requirement) => requirement.module === owner?.id);
+  const selectionRoute = useRef(routeKey);
+  useEffect(() => {
+    if (selectionRoute.current !== routeKey) {
+      selectionRoute.current = routeKey;
+      selectSource(null);
+    }
+  }, [routeKey]);
   const focusedRoute = useRef<string | null>(null);
   useEffect(() => {
     if (focusedRoute.current !== routeKey) {
@@ -128,7 +184,49 @@ export function Workbench({
           {instrument !== null && <span> / {instrument}</span>}
         </nav>
       </header>
+      <ModuleCommandSearch
+        registry={registry}
+        declared={declared}
+        dispatch={(action) => {
+          if (action.kind === "job") {
+            requestJob((previous) => ({
+              sequence: (previous?.sequence ?? 0) + 1,
+              job: action.job,
+            }));
+            return;
+          }
+          if (registry.stage(action.stage) === undefined) return;
+          window.history.pushState(
+            null,
+            "",
+            formatWorkbenchRoute({ ...context, view: action.stage, instrument: action.instrument }),
+          );
+          window.dispatchEvent(new HashChangeEvent("hashchange"));
+        }}
+      />
+      <ModuleExplorerView
+        registry={registry}
+        services={services}
+        declared={declared}
+        documents={admittedSources.documents}
+        selected={selectedSource}
+        select={(source) => selectSource(source.sha256)}
+      />
+      <p role="status" aria-label="Workspace source admission">
+        {admittedSources.message}
+      </p>
       <WorkbenchInspector context={context} saved={workspace.saved} />
+      {selectedDocument !== null && (
+        <aside aria-label="Selected source inspectors">
+          <ModuleDocumentViews
+            registry={registry}
+            slot="inspectors"
+            document={selectedDocument}
+            services={{ workspace, codecs }}
+            declared={declared}
+          />
+        </aside>
+      )}
       <section
         className="qsp-workbench-content"
         ref={content}
@@ -139,7 +237,23 @@ export function Workbench({
         {location.ok ? (
           <RouteBoundary key={routeKey} workspaceHref={href("workspace")}>
             <Suspense fallback={<p role="status">Loading {title} view…</p>}>
-              {lacking.length > 0 ? (
+              {selectedDocument !== null ? (
+                <>
+                  <nav aria-label="Document tabs">
+                    <button type="button" onClick={() => selectSource(null)}>
+                      Return to {title}
+                    </button>
+                    <span aria-current="page">{selectedDocument.schema}</span>
+                  </nav>
+                  <ModuleDocumentViews
+                    registry={registry}
+                    slot="editors"
+                    document={selectedDocument}
+                    services={{ workspace, codecs }}
+                    declared={declared}
+                  />
+                </>
+              ) : lacking.length > 0 ? (
                 <article className="qsp-panel">
                   <h3>{title} unavailable</h3>
                   <p>This installation does not declare what the view needs:</p>
@@ -153,17 +267,7 @@ export function Workbench({
                   <a href={href("workspace")}>Open Workspace</a>
                 </article>
               ) : (
-                stage?.render(
-                  {
-                    overview: () => children(context),
-                    workspace,
-                    codecs,
-                    experiment,
-                    workflow,
-                    workspaceHref: href("workspace"),
-                  },
-                  instrument,
-                )
+                stage?.render(services, instrument)
               )}
             </Suspense>
           </RouteBoundary>
@@ -175,8 +279,56 @@ export function Workbench({
           </div>
         )}
       </section>
+      <ModuleJobDock
+        registry={registry}
+        services={services}
+        declared={declared}
+        document={
+          selectedDocument ??
+          admittedSources.documents.find(
+            (source) => source.schema === "quantum_workspace_archive.v1",
+          ) ??
+          null
+        }
+        activeStage={view}
+        request={jobRequest}
+      />
       <div hidden={view !== "workspace"}>
-        <WorkspaceEditor workspace={workspace} rawCodecs={codecs} />
+        <WorkspaceEditor
+          workspace={workspace}
+          rawCodecs={codecs}
+          previewViews={
+            workspace.preview === null ? undefined : (
+              <ModuleDocumentViews
+                registry={registry}
+                slot="settings"
+                declared={declared}
+                services={services}
+                document={{
+                  schema: workspace.preview.schema,
+                  sha256: workspace.preview.archiveDigest,
+                  content: workspace.preview.json,
+                }}
+              />
+            )
+          }
+          revisionViews={
+            revisionPreview === null ||
+            selectedSource === revisionPreview.archiveDigest ? undefined : (
+              <ModuleDocumentViews
+                registry={registry}
+                slot="editors"
+                declared={declared}
+                services={services}
+                document={{
+                  schema: revisionPreview.schema,
+                  sha256: revisionPreview.archiveDigest,
+                  content: revisionPreview.json,
+                }}
+              />
+            )
+          }
+        />
       </div>
     </section>
   );

@@ -9,24 +9,43 @@
 
 import { describe, expect, it } from "vitest";
 import { projectEvidenceBundle, projectProgramAdEvidence } from "./index";
-import { programAdUnit } from "../../panel/programAd";
+import { programAdUnit } from "../browser/programAd";
 
 function bundle() {
-  return { schema: "studio.evidence-replay.v1", prov: {
-    entity: { id: "synthetic-negative-metadata", digest: "sha256:" + "a".repeat(64) },
-    activity: { regenerated_by: "synthetic metadata fixture", started: "2026-09-29T00:00:00Z" },
-    agent: { operator: "synthetic-conformance" },
-  }, evidence_kind: "falsified", claim_boundary: { status: "refuted", admission: "rejected", validity_domain: { note: "Synthetic projection fixture; no scientific result" } },
-  freshness: "traceable-unchecked", substrate: "numerical-model",
-  numeric_provenance: { parity: [{ exactness: "bit-exact" }] }, attestation: { signature: "unverified-test-metadata" } };
+  return {
+    schema: "studio.evidence-replay.v1",
+    prov: {
+      entity: { id: "synthetic-negative-metadata", digest: `sha256:${"a".repeat(64)}` },
+      activity: { regenerated_by: "synthetic metadata fixture", started: "2026-09-29T00:00:00Z" },
+      agent: { operator: "synthetic-conformance" },
+    },
+    evidence_kind: "falsified",
+    claim_boundary: {
+      status: "refuted",
+      admission: "rejected",
+      validity_domain: { note: "Synthetic projection fixture; no scientific result" },
+    },
+    freshness: "traceable-unchecked",
+    substrate: "numerical-model",
+    numeric_provenance: { parity: [{ exactness: "bit-exact" }] },
+    attestation: { signature: "unverified-test-metadata" },
+  };
 }
 describe("source-owned evidence projection", () => {
   it("preserves native schema-B axes without upgrading an attested negative claim", () => {
     const source = bundle();
     const view = projectEvidenceBundle(source);
-    expect(view).toMatchObject({ source: source.prov.entity.id, digest: source.prov.entity.digest,
-      kind: "falsified", claim: "refuted", admission: "rejected", freshness: "traceable-unchecked",
-      seal: "present-unverified", exactness: '[{"exactness":"bit-exact"}]', issues: [] });
+    expect(view).toMatchObject({
+      source: source.prov.entity.id,
+      digest: source.prov.entity.digest,
+      kind: "falsified",
+      claim: "refuted",
+      admission: "rejected",
+      freshness: "traceable-unchecked",
+      seal: "present-unverified",
+      exactness: '[{"exactness":"bit-exact"}]',
+      issues: [],
+    });
     const identity = view.snapshotIdentity;
     source.attestation.signature = "changed";
     expect(view.snapshotIdentity).toBe(identity);
@@ -34,9 +53,16 @@ describe("source-owned evidence projection", () => {
     expect(Object.isFrozen(view)).toBe(true);
     expect(Object.isFrozen(view.issues)).toBe(true);
   });
-  it.each([null, [], 1, {}, { schema: " " }, { schema: "studio.unknown.v2", attestation: [] },
+  it.each([
+    null,
+    [],
+    1,
+    {},
+    { schema: " " },
+    { schema: "studio.unknown.v2", attestation: [] },
     { schema: "studio.hardware-result-pack.v1", numeric_provenance: { parity: [{}] } },
-    { numeric_provenance: { parity: [] }, attestation: {} }])("makes partial and unsupported fields visible: %j", source => {
+    { numeric_provenance: { parity: [] }, attestation: {} },
+  ])("makes partial and unsupported fields visible: %j", (source) => {
     const view = projectEvidenceBundle(source);
     expect(view.issues.length).toBeGreaterThan(0);
     expect(view.claim).toBeNull();
@@ -44,7 +70,13 @@ describe("source-owned evidence projection", () => {
   });
   it("does not invoke imported accessors or stringify unsupported values", () => {
     let invoked = false;
-    const source = Object.defineProperty({}, "schema", { enumerable: true, get: () => { invoked = true; return "studio.evidence-replay.v1"; } });
+    const source = Object.defineProperty({}, "schema", {
+      enumerable: true,
+      get: () => {
+        invoked = true;
+        return "studio.evidence-replay.v1";
+      },
+    });
     expect(projectEvidenceBundle(source).identifiable).toBe(false);
     expect(invoked).toBe(false);
     expect(projectEvidenceBundle({ extension: Infinity }).identifiable).toBe(false);

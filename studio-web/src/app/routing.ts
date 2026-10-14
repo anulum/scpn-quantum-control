@@ -6,10 +6,12 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // SCPN Quantum Control — bounded workbench hash routing
 
-import { workbenchRegistry } from "./moduleRegistry";
+import { type workbenchModules, workbenchRegistry } from "./moduleRegistry";
+import type { ModuleRegistry } from "../shared/contracts/module";
+import type { WorkbenchServices, WorkspaceViewServices } from "../shared/contracts/workbench";
 
 /** Identifier of a registered stage; navigation confers no execution authority. */
-export type WorkbenchView = string;
+export type WorkbenchView = (typeof workbenchModules)[number]["stages"][number]["id"];
 
 /** Opaque requested identity, independent of admitted storage or scientific provenance. */
 export interface WorkbenchContext {
@@ -22,20 +24,20 @@ export interface WorkbenchContext {
 }
 
 /** Admitted view and compatibility instrument address with exact requested context. */
-export interface WorkbenchRoute extends WorkbenchContext {
+export interface WorkbenchRoute<View extends string = WorkbenchView> extends WorkbenchContext {
   /** One primary view or the operator context destination. */
-  readonly view: WorkbenchView;
+  readonly view: View;
   /** Registered instrument of the stage as a deep link, or the stage's landing page. */
   readonly instrument: string | null;
 }
 
 /** Malformed/unsupported URLs stay observable and never update stored state. */
-export type WorkbenchLocation =
+export type WorkbenchLocation<View extends string = WorkbenchView> =
   | {
       /** Exact supported route admitted. */
       readonly ok: true;
       /** Validated view and requested opaque context. */
-      readonly route: WorkbenchRoute;
+      readonly route: WorkbenchRoute<View>;
     }
   | {
       /** Unsupported or malformed URL refused without state changes. */
@@ -52,7 +54,11 @@ export const emptyWorkbenchContext: WorkbenchContext = Object.freeze({
 });
 
 // The address table is closed at build time: only paths of registered stages are routable.
-const paths = workbenchRegistry.paths;
+
+/** Narrow a stage name against the actual registry compiled into this application. */
+export function isWorkbenchView(value: string): value is WorkbenchView {
+  return workbenchRegistry.stage(value) !== undefined;
+}
 
 /** Encode validated context in a stable order without normalising opaque identifiers. */
 export function formatWorkbenchContext(context: WorkbenchContext): string {
@@ -66,7 +72,7 @@ export function formatWorkbenchContext(context: WorkbenchContext): string {
 }
 
 /** Encode an admitted route; use parseWorkbenchRoute before accepting external input. */
-export function formatWorkbenchRoute(route: WorkbenchRoute): string {
+export function formatWorkbenchRoute(route: WorkbenchRoute<string>): string {
   const instrument = route.instrument === null ? "" : `/${route.instrument}`;
   return `#/${route.view}${instrument}${formatWorkbenchContext(route)}`;
 }
@@ -82,7 +88,17 @@ function hasForbiddenCharacter(text: string): boolean {
 }
 
 /** Parse fixed paths and bounded Unicode context; refusal has no storage side effects. */
-export function parseWorkbenchRoute(hash: string): WorkbenchLocation {
+export function parseWorkbenchRoute(hash: string): WorkbenchLocation;
+/** Parse addresses from an explicitly supplied compiled host registry. */
+export function parseWorkbenchRoute(
+  hash: string,
+  registry: ModuleRegistry<WorkbenchServices, WorkspaceViewServices>,
+): WorkbenchLocation<string>;
+export function parseWorkbenchRoute(
+  hash: string,
+  registry: ModuleRegistry<WorkbenchServices, WorkspaceViewServices> = workbenchRegistry,
+): WorkbenchLocation<string> {
+  const paths = registry.paths;
   if (hash === "" || hash === "#" || hash === "#/")
     return { ok: true, route: { view: "workspace", instrument: null, ...emptyWorkbenchContext } };
   if (hash.length > 4096 || !hash.startsWith("#/") || hash.slice(1).includes("#"))
@@ -96,7 +112,8 @@ export function parseWorkbenchRoute(hash: string): WorkbenchLocation {
   const queryStart = hash.indexOf("?");
   const path = queryStart === -1 ? hash.slice(1) : hash.slice(1, queryStart);
   const destination = paths.get(path);
-  if (destination === undefined) return { ok: false, reason: "Unsupported workbench path" };
+  if (destination === undefined || registry.stage(destination.view) === undefined)
+    return { ok: false, reason: "Unsupported workbench path" };
   const query = new URLSearchParams(queryStart === -1 ? "" : hash.slice(queryStart + 1));
   const context = { ...emptyWorkbenchContext };
   const seen = new Set<string>();

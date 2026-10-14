@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import os
 from contextlib import ExitStack
 from importlib.metadata import version
 from pathlib import Path
@@ -25,7 +26,7 @@ def run_panel_refusal_journey(source_url: str) -> dict[str, object]:
 
     Parameters
     ----------
-    source_url
+    source_url : str
         Owned loopback Vite server containing isolated damaged input files.
 
     Returns
@@ -52,7 +53,10 @@ def run_panel_refusal_journey(source_url: str) -> dict[str, object]:
     rejected: list[str] = []
     records: list[dict[str, object]] = []
     with sync_playwright() as runtime:
-        browser = runtime.chromium.launch()
+        browser = runtime.chromium.launch(
+            executable_path=os.environ.get("STUDIO_NATIVE_BROWSER_EXECUTABLE"),
+            chromium_sandbox=True,
+        )
         try:
             context = browser.new_context(service_workers="block")
             try:
@@ -91,19 +95,27 @@ def _observe_context(
 
     Parameters
     ----------
-    context
+    context : BrowserContext
         Isolated owned browser context.
-    origins
+    origins : set[str]
         Exact allowed loopback authorities.
-    errors
+    errors : list[str]
         Destination for observed browser failures.
-    rejected
+    rejected : list[str]
         Destination for refused request addresses.
 
     """
     from playwright.sync_api import Route
 
     def request(route: Route) -> None:
+        """Permit actual requests only to this context's recorded loopback origins.
+
+        Parameters
+        ----------
+        route : Route
+            Original intercepted native browser request route.
+
+        """
         parsed = urlsplit(route.request.url)
         if parsed.scheme == "http" and parsed.netloc in origins:
             route.continue_()
@@ -122,11 +134,11 @@ def run_workspace_journey(
 
     Parameters
     ----------
-    base_url
+    base_url : str
         Owned loopback preview with the built real WASM bundle.
-    source_url
+    source_url : str
         Separately owned loopback Vite server for actual public source API cases.
-    observations
+    observations : dict[str, object] | None
         Caller-owned partial evidence retained if a later assertion fails.
 
     Returns
@@ -173,7 +185,10 @@ def run_workspace_journey(
         coverage_percentage="not_calculated",
     )
     with sync_playwright() as runtime:
-        browser = runtime.chromium.launch()
+        browser = runtime.chromium.launch(
+            executable_path=os.environ.get("STUDIO_NATIVE_BROWSER_EXECUTABLE"),
+            chromium_sandbox=True,
+        )
         observed.update(browser=browser.version, playwright=version("playwright"))
         try:
             with ExitStack() as contexts:

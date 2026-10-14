@@ -90,7 +90,7 @@ def test_compiler_trace_is_qualified_by_the_existing_studio_cohort() -> None:
     workflow = (repo / ".github/workflows/ci-studio.yml").read_text()
     assert workflow.count("--scenario compiler_trace_inspector") == 1
     assert "tools/tests/test_studio_compiler_trace_browser.py" in workflow
-    assert "--coverage.include='src/features/compiler/*.{ts,tsx}'" in workflow
+    assert "--coverage.include='src/modules/compiler/*.{ts,tsx}'" in workflow
     assert "build_program_authoring_quality_gates" in workflow
 
 
@@ -119,7 +119,7 @@ def test_backend_profiles_have_native_and_actual_browser_gates() -> None:
     ).read_text()
     assert workflow.count("--scenario operator_backend_profiles") == 1
     assert "tools/tests/test_studio_backend_profiles_browser.py" in workflow
-    assert "--coverage.include='src/features/operators/profiles/*.{ts,tsx}'" in workflow
+    assert "--coverage.include='src/modules/operators/profiles/*.{ts,tsx}'" in workflow
     assert "build_backend_profiles_quality_gates" in workflow
 
 
@@ -146,7 +146,7 @@ def test_operator_policy_is_in_original_native_and_real_browser_cohorts() -> Non
     ).read_text()
     assert workflow.count("--scenario operator_policy_decisions") == 1
     assert "tools/tests/test_studio_operator_policy_browser.py" in workflow
-    assert "--coverage.include='src/features/operators/policy/*.{ts,tsx}'" in workflow
+    assert "--coverage.include='src/modules/operators/policy/*.{ts,tsx}'" in workflow
     assert "build_operator_policy_quality_gates" in workflow
     assert workflow.count("tests/test_workspace_operator_policy.py") == 3
 
@@ -179,7 +179,7 @@ def test_operator_dossier_preserves_original_exact_native_and_browser_gates() ->
     assert workflow.count("--scenario operator_review_dossiers") == 1
     assert "tools/tests/test_studio_operator_dossier_browser.py" in workflow
     assert "build_operator_dossier_quality_gates" in workflow
-    assert "src/features/operators/dossiers" in workflow
+    assert "src/modules/operators/dossiers" in workflow
 
 
 def test_workflow_native_and_browser_owners_keep_exact_original_gates() -> None:
@@ -236,7 +236,7 @@ def test_workflow_native_and_browser_owners_keep_exact_original_gates() -> None:
         Path(__file__).resolve().parents[1] / ".github/workflows/ci-studio.yml"
     ).read_text()
     assert workflow.count("build_workflow_quality_gates(sys.executable)") == 1
-    assert "--coverage.include='src/features/workflows/*.{ts,tsx}'" in workflow
+    assert "--coverage.include='src/modules/workflows/*.{ts,tsx}'" in workflow
     assert workflow.count("--scenario experiment_workflow_runner") == 1
     workflow_ui = workflow.split("- name: Enforce workflow browser owner exact coverage", 1)[
         1
@@ -246,13 +246,13 @@ def test_workflow_native_and_browser_owners_keep_exact_original_gates() -> None:
     assert "--coverage.provider=v8" not in workflow_ui
     for owner in (
         "src/app/Workbench.test.tsx",
-        "src/features/workspace/WorkspacePanel.test.tsx",
-        "src/features/workspace/useWorkspace.test.tsx",
+        "src/WorkspacePanel.test.tsx",
+        "src/shared/workspace/useWorkspace.test.tsx",
         "src/shared/storage/workspaceArchive.test.ts",
         "src/shared/storage/workspaceStore.test.ts",
-        "src/features/experiments/experimentArchive.test.ts",
-        "src/features/experiments/useExperimentRun.test.tsx",
-        "src/features/parameters/parameterRevision.test.ts",
+        "src/shared/experiments/experimentArchive.test.ts",
+        "src/shared/experiments/useExperimentRun.test.tsx",
+        "src/shared/parameters/parameterRevision.test.ts",
     ):
         assert owner in workflow_ui
     assert "tools/tests/test_studio_workflow_browser_runtime.py" in workflow

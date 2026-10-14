@@ -186,9 +186,9 @@ def update_settings(inputs: dict[str, Any], **changes: object) -> None:
 
     Parameters
     ----------
-    inputs
+    inputs : dict[str, Any]
         Synthetic native input fixture owned by this test.
-    changes
+    changes : object
         Literal requested and effective values for a new candidate.
 
     """
@@ -205,7 +205,7 @@ def reassess(inputs: dict[str, Any]) -> None:
 
     Parameters
     ----------
-    inputs
+    inputs : dict[str, Any]
         Current native workload, settings, route and original estimate/policy.
 
     """
@@ -250,7 +250,7 @@ def test_operator_review_dossiers_01(field: str) -> None:
 
     Parameters
     ----------
-    field
+    field : str
         One independent execution source or provenance change.
 
     """
@@ -347,6 +347,31 @@ def test_operator_review_dossiers_05() -> None:
     assert original.sha256 == review.dossier_sha256
 
 
+def test_review_time_refuses_pre_source_and_invalid_utc_then_restores_eligibility() -> None:
+    """Exercise original public review boundaries without changing source or authority."""
+    request, inputs = review_inputs()
+    dossier = ExecuteActionHandler().prepare_review(request, **inputs)
+    source = dossier.export_bundle()
+    valid = dossier.record_review(
+        "approved", reviewer_ref="local-human", recorded_at="2026-10-04T12:00:00Z"
+    )
+    before_source = replace(valid, recorded_at="2026-10-03T23:59:59Z")
+    assert dossier.review_status(before_source, now="2026-10-04T12:00:00Z") == "refused"
+    for invalid in ("not-a-date", "2026-02-30T00:00:00Z"):
+        with pytest.raises(ValueError):
+            replace(valid, recorded_at=invalid)
+        with pytest.raises(ValueError):
+            dossier.review_status(valid, now=invalid)
+    assert dossier.review_status(valid, now="2026-10-04T12:00:00Z") == "approved"
+    assert dossier.review_status(None, now="2026-10-04T12:00:00Z") == "pending"
+    assert dossier.review_status(valid, now="2026-10-05T00:00:00Z") == "expired"
+    assert (
+        dossier.review_status(replace(valid, choice="denied"), now="2026-10-05T00:00:00Z")
+        == "denied"
+    )
+    assert dossier.export_bundle() == source
+
+
 def test_operator_review_dossiers_02() -> None:
     """Deny and exclusive expiry remain distinct from approval or source refusal."""
     request, inputs = review_inputs()
@@ -423,7 +448,7 @@ def test_native_review_refusal_preserves_previous_source(fault: str) -> None:
 
     Parameters
     ----------
-    fault
+    fault : str
         One real source identity, resource, date or provenance conflict.
 
     """
@@ -559,7 +584,7 @@ def test_review_record_rejects_malformed_identity(field: str, value: str) -> Non
 
     Parameters
     ----------
-    field, value
+    field, value : str
         One malformed field in an otherwise independent review receipt.
 
     """
@@ -581,7 +606,7 @@ def test_human_review_is_not_visible_before_recorded_time(choice: Any) -> None:
 
     Parameters
     ----------
-    choice
+    choice : Any
         Either human review choice, independently of provider admission.
 
     """
@@ -619,7 +644,7 @@ def test_source_review_refuses_malformed_native_reason_sequences(
 
     Parameters
     ----------
-    reasons, substitutions
+    reasons, substitutions : Any
         Invalid mutable, unbounded, repeated or unowned native refusal identities.
 
     """

@@ -6,16 +6,27 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // SCPN Quantum Control — tests of the modules compiled into the workbench
 
-import { describe, expect, it } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
+import { Workbench } from "./Workbench";
+afterEach(() => {
+  cleanup();
+  window.history.replaceState(null, "", "/");
+});
 import { createModuleRegistry } from "../shared/contracts/module";
 import type { StudioModule } from "../shared/contracts/module";
-import { studioManifest } from "../panel/data";
+import { studioManifest } from "../shared/browser/data";
 import { declaredBy, workbenchModules, workbenchRegistry } from "./moduleRegistry";
 import type { WorkbenchServices } from "./moduleRegistry";
+import type { WorkspaceViewServices } from "../shared/contracts/workbench";
 import { parseWorkbenchRoute } from "./routing";
+import type { WorkbenchView } from "./routing";
 
 describe("workbenchRegistry", () => {
   it("admits exactly the addresses the workbench had before it was modular", () => {
+    expectTypeOf<WorkbenchView>().toEqualTypeOf<
+      "workspace" | "build" | "experiments" | "results" | "atlas" | "operations"
+    >();
     expect(
       [...workbenchRegistry.paths].map(([path, { view, instrument }]) => [path, view, instrument]),
     ).toEqual([
@@ -41,14 +52,26 @@ describe("workbenchRegistry", () => {
     ]);
   });
 
-  it("renders the host overview on the Workspace stage through the services alone", () => {
-    const services = { overview: () => "host overview" } as unknown as WorkbenchServices;
-    expect(workbenchRegistry.stage("workspace")?.render(services, null)).toBe("host overview");
+  it("renders the host overview on the Workspace stage through the real shell services", async () => {
+    window.history.replaceState(null, "", "#/workspace");
+    render(
+      <Workbench>
+        {(_context, editors) => (
+          <section aria-label="Host overview">host overview{editors}</section>
+        )}
+      </Workbench>,
+    );
+    expect(screen.getByRole("region", { name: "Host overview" }).textContent).toContain(
+      "host overview",
+    );
+    expect(await screen.findByRole("region", { name: "Capability catalogue" })).toBeTruthy();
   });
 
-  it("requires the compile verb for Build and nothing else", () => {
+  it("requires compile independently for the Build stage and its source editor modules", () => {
     expect(workbenchRegistry.missing({ verbs: [], schemas: [] })).toEqual([
       { module: "build", kind: "verb", name: "compile" },
+      { module: "programs", kind: "verb", name: "compile" },
+      { module: "compiler", kind: "verb", name: "compile" },
     ]);
   });
 
@@ -59,11 +82,15 @@ describe("workbenchRegistry", () => {
     expect(workbenchRegistry.missing(declared)).toEqual([]);
     const refused = declaredBy({ ok: false, reason: "guard failed" });
     expect(refused).toEqual({ verbs: [], schemas: [] });
-    expect(workbenchRegistry.missing(refused)).toHaveLength(1);
+    expect(workbenchRegistry.missing(refused)).toEqual([
+      { module: "build", kind: "verb", name: "compile" },
+      { module: "programs", kind: "verb", name: "compile" },
+      { module: "compiler", kind: "verb", name: "compile" },
+    ]);
   });
 
   it("gains a destination from one registry entry and loses none of its own", () => {
-    const fixture: StudioModule<WorkbenchServices> = {
+    const fixture: StudioModule<WorkbenchServices, WorkspaceViewServices> = {
       id: "fixture",
       version: "1",
       requires: { verbs: ["mitigate"], schemas: [] },

@@ -17,6 +17,20 @@ export function scalarString(value: string, path = "$"): string {
   return value;
 }
 
+/**
+ * Identify C0 and DEL characters without interpreting source text as a pattern.
+ * @param value Original string, with no normalization or replacement.
+ * @param includeC1 Also reject the C1 control range required by operator metadata.
+ * @returns Whether any of the selected control characters occurs in the source.
+ */
+export function containsControlCharacters(value: string, includeC1 = false): boolean {
+  for (const character of value) {
+    const code = character.charCodeAt(0);
+    if (code <= 31 || code === 127 || (includeC1 && code >= 128 && code <= 159)) return true;
+  }
+  return false;
+}
+
 /** Inspect plain data members without invoking getters or prototype methods. */
 export function dataEntries(value: object, path = "$"): [string, unknown][] {
   const prototype: unknown = Object.getPrototypeOf(value);

@@ -15,9 +15,11 @@ import { describe, expect, it } from "vitest";
 import { readBrowserCoverage } from "./browserCoverage";
 import {
   browserOwners,
+  workspaceRuntimeBrowserOwners,
   coverageObject,
   experimentBrowserOwners,
   panelBrowserOwner,
+  panelBrowserOwners,
   parameterBrowserOwners,
   qualifyBrowserRecord,
   resultBrowserOwners,
@@ -109,7 +111,7 @@ describe("original native counter conversion", () => {
       await rm(directory, { recursive: true });
     }
   });
-  it("admits all eight original owners from the actual linked parameter journey", async () => {
+  it("admits original parameter and compiled composition owners from the actual linked parameter journey", async () => {
     const filename = process.env["STUDIO_PARAMETER_COVERAGE"];
     if (!filename) throw new Error("Supply actual parameter_graph_editor evidence");
     const maps = await readBrowserCoverage(filename, process.cwd());
@@ -143,27 +145,27 @@ describe("original native counter conversion", () => {
       }
     },
   );
-  it("admits all fourteen owners from the actual workbench navigation journey", async () => {
+  it("admits every original navigation and compiled shell owner from the actual workbench journey", async () => {
     const filename = process.env["STUDIO_WORKBENCH_COVERAGE"];
     if (!filename) throw new Error("Run actual workbench_navigation and supply its evidence path");
     const maps = await readBrowserCoverage(filename, process.cwd());
     const actual = new Set(maps.flatMap((map) => Object.keys(map)));
+    for (const owner of [
+      ...workspaceRuntimeBrowserOwners,
+      panelBrowserOwner,
+      "/src/modules/catalogue/CapabilityCatalogue.tsx",
+      "/src/app/Workbench.tsx",
+      "/src/app/WorkbenchInspector.tsx",
+      "/src/app/RouteBoundary.tsx",
+      "/src/app/routing.ts",
+      "/src/app/useWorkbenchRoute.ts",
+      "/src/modules/build/BuildView.tsx",
+      "/src/modules/results/ResultsView.tsx",
+      "/src/modules/atlas/UnavailableView.tsx",
+    ])
+      expect(actual.has(resolve(process.cwd(), `.${owner}`))).toBe(true);
     expect(actual).toEqual(
-      new Set(
-        [
-          ...browserOwners,
-          panelBrowserOwner,
-          "/src/features/catalogue/CapabilityCatalogue.tsx",
-          "/src/app/Workbench.tsx",
-          "/src/app/WorkbenchInspector.tsx",
-          "/src/app/RouteBoundary.tsx",
-          "/src/app/routing.ts",
-          "/src/app/useWorkbenchRoute.ts",
-          "/src/app/routes/BuildView.tsx",
-          "/src/app/routes/ResultsView.tsx",
-          "/src/app/routes/UnavailableView.tsx",
-        ].map((owner) => resolve(process.cwd(), `.${owner}`)),
-      ),
+      new Set([...workbenchBrowserOwners].map((owner) => resolve(process.cwd(), `.${owner}`))),
     );
   });
   it.each([...workbenchBrowserOwners])(
@@ -236,9 +238,7 @@ describe("original native counter conversion", () => {
       );
     const maps = await readBrowserCoverage(filename, process.cwd());
     expect(new Set(maps.flatMap((map) => Object.keys(map)))).toEqual(
-      new Set(
-        [...browserOwners, panelBrowserOwner].map((owner) => resolve(process.cwd(), `.${owner}`)),
-      ),
+      new Set([...panelBrowserOwners].map((owner) => resolve(process.cwd(), `.${owner}`))),
     );
   });
   it.each([panelBrowserOwner, "/src/shared/storage/workspaceStore.ts"])(

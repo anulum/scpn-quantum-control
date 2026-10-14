@@ -33,8 +33,8 @@ STUDIO_PROGRAM_AD_COVERAGE_INCLUDE = "*/program_ad_replay_artifact.py,*/executiv
 """Exact source-owner patterns enforced against the isolated coverage data."""
 
 STUDIO_PROGRAM_AD_BROWSER_TESTS = [
-    "src/panel/programAd.test.ts",
-    "src/panel/ProgramADReplayCard.test.tsx",
+    "src/shared/browser/programAd.test.ts",
+    "src/shared/browser/ProgramADReplayCard.test.tsx",
 ]
 """Studio-web tests that execute the real Program-AD WASM kernel."""
 
@@ -50,7 +50,7 @@ def build_static_quality_gates(python: str) -> list[Gate]:
 
     Parameters
     ----------
-    python
+    python : str
         Absolute Python interpreter path admitted by the preflight runner.
 
     Returns
@@ -97,7 +97,7 @@ def build_python_coverage_gates(python: str) -> list[Gate]:
 
     Parameters
     ----------
-    python
+    python : str
         Absolute Python interpreter path admitted by the preflight runner.
 
     Returns
@@ -145,9 +145,9 @@ def build_runtime_gates(cargo: str, pnpm: str) -> list[Gate]:
 
     Parameters
     ----------
-    cargo
+    cargo : str
         Absolute Cargo executable path admitted by the preflight runner.
-    pnpm
+    pnpm : str
         Absolute pnpm executable path admitted by the preflight runner.
 
     Returns
@@ -187,7 +187,7 @@ def build_browser_test_gate(pnpm: str) -> Gate:
 
     Parameters
     ----------
-    pnpm
+    pnpm : str
         Absolute pnpm executable path admitted by the preflight runner.
 
     Returns
@@ -207,7 +207,7 @@ def build_browser_coverage_gate(pnpm: str) -> Gate:
 
     Parameters
     ----------
-    pnpm
+    pnpm : str
         Absolute pnpm executable path admitted by the preflight runner.
 
     Returns
@@ -228,8 +228,8 @@ def build_browser_coverage_gate(pnpm: str) -> Gate:
             *STUDIO_PROGRAM_AD_BROWSER_TESTS,
             "--coverage",
             "--coverage.reporter=text",
-            "--coverage.include=src/panel/programAd.ts",
-            "--coverage.include=src/panel/ProgramADReplayCard.tsx",
+            "--coverage.include=src/shared/browser/programAd.ts",
+            "--coverage.include=src/shared/browser/ProgramADReplayCard.tsx",
             "--coverage.thresholds.statements=100",
             "--coverage.thresholds.branches=100",
             "--coverage.thresholds.functions=100",

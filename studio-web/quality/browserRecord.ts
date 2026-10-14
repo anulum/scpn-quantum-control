@@ -12,77 +12,36 @@ import type { Profiler } from "node:inspector";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
-/** Production source owners whose browser counters may augment Node coverage. */
-export const browserOwners = new Set([
+import { readBrowserCohorts } from "./browserCohorts";
+
+const cohorts = await readBrowserCohorts(process.cwd());
+
+/** Original continuously mounted storage and workspace presentation owners. */
+export const workspaceRuntimeBrowserOwners = new Set([
   "/src/shared/storage/workspaceStore.ts",
   "/src/shared/storage/workspaceArchive.ts",
-  "/src/features/workspace/WorkspacePanel.tsx",
-  "/src/features/workspace/useWorkspace.ts",
+  "/src/shared/workspace/WorkspaceEditor.tsx",
+  "/src/shared/workspace/useWorkspace.ts",
 ]);
 
-/** Additional original facade required by the damaged-source browser scenario. */
+/** Local compiled entry owners discovered from the actual build-time registry. */
+export const compiledBrowserOwners = new Set(cohorts.compiled);
+/** Standalone workspace and its actual compiled document composition. */
+export const browserOwners = new Set(cohorts.workspace);
+/** Original facade and generic shell used by the damaged-source journey. */
+export const panelBrowserOwners = new Set(cohorts.panel);
+/** Original source identity of the production panel facade. */
 export const panelBrowserOwner = "/src/QuantumStudioPanel.tsx";
-
-/** Complete linked parameter cohort sharing the original archive and store owners. */
-export const parameterBrowserOwners = new Set([
-  ...browserOwners,
-  "/src/features/parameters/parameterDraft.ts",
-  "/src/features/parameters/parameterRevision.ts",
-  "/src/features/parameters/ParameterEditor.tsx",
-  "/src/features/parameters/ParameterWorkspace.tsx",
-]);
-
-/** Complete native workbench cohort, including the original storage/controller owners. */
-export const workbenchBrowserOwners = new Set([
-  ...browserOwners,
-  panelBrowserOwner,
-  "/src/features/catalogue/CapabilityCatalogue.tsx",
-  "/src/app/Workbench.tsx",
-  "/src/app/WorkbenchInspector.tsx",
-  "/src/app/RouteBoundary.tsx",
-  "/src/app/routing.ts",
-  "/src/app/useWorkbenchRoute.ts",
-  "/src/app/routes/BuildView.tsx",
-  "/src/app/routes/ResultsView.tsx",
-  "/src/app/routes/UnavailableView.tsx",
-]);
-
-/** Exact experiment cohort, including its single original archive and Workbench owners. */
-export const experimentBrowserOwners = new Set([
-  ...browserOwners,
-  "/src/app/Workbench.tsx",
-  "/src/features/experiments/kuramotoArtifacts.ts",
-  "/src/features/experiments/experimentArchive.ts",
-  "/src/features/experiments/experimentPlan.ts",
-  "/src/features/experiments/useExperimentRun.ts",
-  "/src/features/experiments/ExperimentRunner.tsx",
-]);
-
-/** Exact results cohort retaining original workspace storage and route ownership. */
-export const resultBrowserOwners = new Set([
-  ...browserOwners,
-  "/src/app/Workbench.tsx",
-  "/src/app/routes/ResultsView.tsx",
-  "/src/features/results/resultModel.ts",
-  "/src/features/results/resultSources.ts",
-  "/src/features/results/resultExport.ts",
-  "/src/features/results/ResultInspector.tsx",
-  "/src/features/results/ResultLoader.tsx",
-]);
-
-/** Exact workflow cohort retaining its original Workbench and workspace owners. */
-export const workflowBrowserOwners = new Set([
-  ...browserOwners,
-  "/src/app/Workbench.tsx",
-  "/src/features/workflows/workflowModel.ts",
-  "/src/features/workflows/workflowSweep.ts",
-  "/src/features/workflows/workflowJournal.ts",
-  "/src/features/workflows/workflowArchive.ts",
-  "/src/features/workflows/workflowExecution.ts",
-  "/src/features/workflows/useWorkflowRun.ts",
-  "/src/features/workflows/WorkflowEditor.tsx",
-  "/src/features/workflows/WorkflowRunner.tsx",
-]);
+/** Complete linked parameter and compiled document cohort. */
+export const parameterBrowserOwners = new Set(cohorts.parameters);
+/** Complete navigation and generic contribution-slot cohort. */
+export const workbenchBrowserOwners = new Set(cohorts.workbench);
+/** Original experiment and registered numerical job cohort. */
+export const experimentBrowserOwners = new Set(cohorts.experiments);
+/** Original results and shared typed chart projection cohort. */
+export const resultBrowserOwners = new Set(cohorts.results);
+/** Original workflow and registered graph job cohort. */
+export const workflowBrowserOwners = new Set(cohorts.workflows);
 
 /** Validated actual script, original source identity and qualified single-source map. */
 export interface QualifiedBrowserRecord {
@@ -174,6 +133,7 @@ export async function qualifyBrowserRecord(
   includeExperiments = false,
   includeResults = false,
   includeWorkflows = false,
+  includePanel = false,
 ): Promise<QualifiedBrowserRecord> {
   const record = coverageObject(value);
   const native = coverageObject(record["coverage"]);
@@ -200,7 +160,9 @@ export async function qualifyBrowserRecord(
           ? parameterBrowserOwners.has(url.pathname)
           : includeWorkbench
             ? workbenchBrowserOwners.has(url.pathname)
-            : browserOwners.has(url.pathname) || url.pathname === panelBrowserOwner;
+            : includePanel
+              ? panelBrowserOwners.has(url.pathname)
+              : browserOwners.has(url.pathname) || url.pathname === panelBrowserOwner;
   if (
     url.origin !== ownedOrigin.origin ||
     url.username ||

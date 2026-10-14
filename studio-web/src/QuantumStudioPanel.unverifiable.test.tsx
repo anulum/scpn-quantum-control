@@ -9,7 +9,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("./panel/data", () => ({
+vi.mock("./shared/browser/data", () => ({
   studioManifest: { ok: false, reason: "forced manifest guard failure" },
   supportMatrix: { ok: false, reason: "forced matrix guard failure" },
   gradientPlanExplanations: {
@@ -19,7 +19,7 @@ vi.mock("./panel/data", () => ({
   scorecard: { ok: false, reason: "forced scorecard guard failure" },
 }));
 
-vi.mock("./panel/recompute", () => ({
+vi.mock("./shared/browser/recompute", () => ({
   recomputeUnit: { ok: false, reason: "forced recompute guard failure" },
 }));
 

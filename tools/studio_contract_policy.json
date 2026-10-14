@@ -140,23 +140,23 @@
         {
           "id": "wasm",
           "source": [
-            "studio-web/src/features/programs/programCompiler.ts",
+            "studio-web/src/modules/programs/programCompiler.ts",
             "scpn_quantum_engine/studio_wasm_kernel/src/program_source_abi.rs"
           ],
           "tests": [
-            "studio-web/src/features/programs/programCompiler.test.ts"
+            "studio-web/src/modules/programs/programCompiler.test.ts"
           ],
           "command": [
             "node",
             "node_modules/vitest/vitest.mjs",
             "run",
-            "src/features/programs/programCompiler.test.ts",
+            "src/modules/programs/programCompiler.test.ts",
             "-t",
             "shared native source"
           ],
           "cwd": "studio-web",
           "native_docs": [
-            "studio-web/src/features/programs/programCompiler.ts",
+            "studio-web/src/modules/programs/programCompiler.ts",
             "scpn_quantum_engine/studio_wasm_kernel/src/program_source_abi.rs"
           ]
         }

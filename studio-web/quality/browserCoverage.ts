@@ -15,7 +15,7 @@ import {
   browserOwners,
   coverageObject,
   experimentBrowserOwners,
-  panelBrowserOwner,
+  panelBrowserOwners,
   parameterBrowserOwners,
   qualifyBrowserRecord,
   resultBrowserOwners,
@@ -62,6 +62,7 @@ export async function readBrowserCoverage(
       experiments,
       results,
       workflows,
+      evidence["scenario"] === "workspace_panel_refusal",
     );
     const converted = await convert({
       code: qualified.code,
@@ -92,7 +93,7 @@ export async function readBrowserCoverage(
           : workbench
             ? workbenchBrowserOwners
             : evidence["scenario"] === "workspace_panel_refusal"
-              ? new Set([...browserOwners, panelBrowserOwner])
+              ? panelBrowserOwners
               : browserOwners;
   if ([...required].some((owner) => !covered.has(owner)))
     throw new Error("Native workspace coverage has missing production owners");

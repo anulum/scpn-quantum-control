@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import ipaddress
 import json
+import os
 import re
 from importlib.metadata import version
 from pathlib import Path
@@ -26,9 +27,9 @@ def _edit(editor: Locator, value: str) -> None:
 
     Parameters
     ----------
-    editor
+    editor : Locator
         Original production editor region in the native browser.
-    value
+    value : str
         Decimal text to validate against the original source specification.
 
     """
@@ -43,11 +44,11 @@ def run_parameter_journey(
 
     Parameters
     ----------
-    base_url
+    base_url : str
         Owned built Studio preview containing the genuine Rust WASM kernel.
-    source_url
+    source_url : str
         Distinct owned root Vite origin with the unchanged production source.
-    observations
+    observations : dict[str, object] | None
         Caller-owned partial evidence retained when a later assertion fails.
 
     Returns
@@ -102,13 +103,24 @@ def run_parameter_journey(
         Path(__file__).resolve().parents[1] / "tests/data/studio_workspace/documents.json"
     ).read_text(encoding="utf-8")
     with sync_playwright() as runtime:
-        browser = runtime.chromium.launch()
+        browser = runtime.chromium.launch(
+            executable_path=os.environ.get("STUDIO_NATIVE_BROWSER_EXECUTABLE"),
+            chromium_sandbox=True,
+        )
         observed["browser"] = browser.version
         try:
             with browser.new_context(service_workers="block") as context:
                 context.set_default_timeout(15_000)
 
                 def request(route: Route) -> None:
+                    """Admit actual requests only to the captured owned loopback origins.
+
+                    Parameters
+                    ----------
+                    route : Route
+                        Original intercepted browser request route.
+
+                    """
                     target = urlsplit(route.request.url)
                     if target.scheme == "http" and target.netloc in origins:
                         route.continue_()
@@ -247,9 +259,9 @@ def run_parameter_journey(
                     completed.append("symmetric-edit-mask-native-save-and-python-digest-parity")
                 finally:
                     take_native_coverage(profiler, records, include_parameters=True)
-                page.reload(wait_until="networkidle")
                 profiler = start_native_coverage(page)
                 try:
+                    page.reload(wait_until="networkidle")
                     expect(page.get_by_label("Workspace archive JSON")).to_have_value(saved_json)
                     editor = page.get_by_role("region", name="Linked parameter editor")
                     editor.get_by_role("button", name="K_nm[1,0] = -8", exact=True).click()

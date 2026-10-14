@@ -62,9 +62,9 @@ def _workflow_step_paths(workflow: str, step_name: str) -> list[str]:
 
     Parameters
     ----------
-    workflow
+    workflow : str
         Complete CI workflow text.
-    step_name
+    step_name : str
         Exact GitHub Actions step name delimiting the command block.
 
     Returns
@@ -223,5 +223,5 @@ def test_local_studio_program_ad_runtime_gates_match_ci() -> None:
     assert "--coverage.thresholds.functions=100" in browser_coverage
     assert "--coverage.thresholds.lines=100" in browser_coverage
     assert "Enforce Program-AD browser owner exact coverage" in workflow
-    assert "--coverage.include=src/panel/programAd.ts" in workflow
-    assert "--coverage.include=src/panel/ProgramADReplayCard.tsx" in workflow
+    assert "--coverage.include=src/shared/browser/programAd.ts" in workflow
+    assert "--coverage.include=src/shared/browser/ProgramADReplayCard.tsx" in workflow

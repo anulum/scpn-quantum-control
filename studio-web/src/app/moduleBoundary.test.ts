@@ -6,78 +6,54 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // SCPN Quantum Control — the import boundaries between workbench features
 
-import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join, relative, resolve, sep } from "node:path";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join, resolve } from "node:path";
 import { expect, it } from "vitest";
+import { inspectModuleBoundaries } from "../../quality/moduleBoundary";
 
-const root = resolve("src");
-const features = join(root, "features");
-
-/**
- * Feature-to-feature imports that exist today, as "importer -> imported".
- *
- * The list only falls: a new edge fails the test, and an edge that is gone
- * must be removed here, so the record stays a measurement and not an allowance.
- */
-const recorded = [
-  "compare -> experiments",
-  "compare -> results",
-  "compiler -> programs",
-  "experiments -> workspace",
-  "results -> experiments",
-  "workflows -> experiments",
-  "workflows -> parameters",
-  "workflows -> results",
-  "workflows -> workspace",
-  "workspace -> parameters",
-  "workspace -> settings",
-];
-
-function sources(directory: string): string[] {
-  return readdirSync(directory).flatMap((name) => {
-    const path = join(directory, name);
-    if (statSync(path).isDirectory()) return sources(path);
-    return /\.tsx?$/u.test(name) && !/\.test\.tsx?$/u.test(name) ? [path] : [];
-  });
-}
-
-function imports(path: string): string[] {
-  const text = readFileSync(path, "utf8");
-  const found = [...text.matchAll(/(?:from|import)\s*\(?\s*"(\.[^"]*)"/gu)];
-  return found.map((match) => resolve(path, "..", match[1] as string));
-}
-
-function feature(path: string): string | null {
-  const parts = relative(features, path).split(sep);
-  return parts[0] === ".." || parts.length < 2 ? null : (parts[0] as string);
-}
-
-const files = sources(features);
-
-it("reads every feature source and finds their relative imports", () => {
-  expect(files.length).toBeGreaterThan(30);
-  expect(files.flatMap(imports).length).toBeGreaterThan(100);
-  expect(feature(join(features, "results", "resultModel.ts"))).toBe("results");
-  expect(feature(join(root, "app", "routing.ts"))).toBeNull();
-  expect(feature(join(features, "loose.ts"))).toBeNull();
+it("admits the actual module and shared source tree without recorded cross-module exceptions", () => {
+  expect(inspectModuleBoundaries(resolve("src"))).toEqual([]);
 });
 
-it("lets no feature import the shell", () => {
-  const offenders = files.filter((file) =>
-    imports(file).some((target) => target.startsWith(join(root, "app") + sep)),
-  );
-  expect(offenders.map((file) => relative(root, file))).toEqual([]);
-});
-
-it("holds feature-to-feature imports at the recorded edges", () => {
-  const edges = new Set<string>();
-  for (const file of files) {
-    const importer = feature(file);
-    for (const target of imports(file)) {
-      const imported = feature(target);
-      if (importer !== null && imported !== null && importer !== imported)
-        edges.add(`${importer} -> ${imported}`);
+it("refuses static, type, re-export and lazy cross-module edges and shared-barrel bypasses", () => {
+  const root = mkdtempSync(join(tmpdir(), "studio-module-boundary-"));
+  const sources = {
+    "modules/first/source.ts": `
+      import type { Document } from '../second/source';
+      export { read } from '../second/source';
+      const lazy = import('../second/source');
+      const computed = import(target);
+      import { shell } from '../../app/shell';
+      import { core } from '../../panel/core';
+    `,
+    "modules/second/source.ts": "export const read = 1; export type Document = string;",
+    "shared/barrel.ts":
+      "export { read } from '../modules/second/source'; import { shell } from '../app/shell';",
+    "modules/first/local.ts":
+      "import './source'; import { value } from '../../shared/value'; import React from 'react'; import data from '../../../manifest.json?raw';",
+    "shared/value.ts": "export const value = 1;",
+  };
+  try {
+    for (const [path, source] of Object.entries(sources)) {
+      const file = join(root, path);
+      mkdirSync(dirname(file), { recursive: true });
+      writeFileSync(file, source);
     }
+    const findings = inspectModuleBoundaries(root);
+    expect(findings.map(({ reason }) => reason)).toEqual([
+      "Module imports another module",
+      "Module imports another module",
+      "Module imports another module",
+      "Computed executable module import",
+      "Module or shared owner imports the shell",
+      "Module imports executable code outside its own and shared folders",
+      "Shared owner imports a module",
+      "Module or shared owner imports the shell",
+    ]);
+    expect(findings.some(({ file }) => file.endsWith("local.ts"))).toBe(false);
+    expect(findings.map(({ target }) => target)).toContain("target");
+  } finally {
+    rmSync(root, { recursive: true });
   }
-  expect([...edges].sort()).toEqual(recorded);
 });

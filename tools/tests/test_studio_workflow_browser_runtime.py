@@ -7,13 +7,17 @@
 # SCPN Quantum Control — actual workflow browser runtime
 """Run original browser controls and native workers against the current built source."""
 
+import json
 import os
+import subprocess
+from collections import Counter
 from collections.abc import Iterator
 from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from threading import Thread
 from typing import cast
+from urllib.parse import urlsplit
 from urllib.request import urlopen
 
 import pytest
@@ -50,9 +54,9 @@ def workflow_source_fault_host(preview: Path, source: str) -> Iterator[str]:
 
     Parameters
     ----------
-    preview
+    preview : Path
         Current built bundle retained unchanged by the underlying owned host.
-    source
+    source : str
         Current owned Vite origin containing the original source and real WASM.
 
     Yields
@@ -99,9 +103,9 @@ document.addEventListener('click', event => {
 
                 Parameters
                 ----------
-                format
+                format : str
                     Native HTTP request log format.
-                args
+                args : object
                     Native HTTP log arguments.
 
                 """
@@ -124,7 +128,7 @@ def test_actual_workflow_missing_preview_retains_original_transport_refusal(
 
     Parameters
     ----------
-    tmp_path
+    tmp_path : Path
         Caller-owned Samsung empty preview.
 
     """
@@ -142,7 +146,7 @@ def test_actual_workflow_missing_source_retains_completed_production_cases(tmp_p
 
     Parameters
     ----------
-    tmp_path
+    tmp_path : Path
         Caller-owned Samsung empty source preview.
 
     """
@@ -193,7 +197,39 @@ def test_actual_workflow_source_faults_keep_real_counters_and_original_history()
         "http://127.0.0.2:54321/owned-refused-request",
         "http://127.0.0.2:54321/kernelWorker-refused-request",
     ]
-    assert len(cast(list[object], evidence["native_v8_coverage"])) == 26
+    web = Path(__file__).resolve().parents[2] / "studio-web"
+    metadata = subprocess.run(
+        [
+            "node",
+            "--experimental-strip-types",
+            "--input-type=module",
+            "-e",
+            'import {readBrowserCohorts} from "./quality/browserCohorts.ts"; '
+            "process.stdout.write(JSON.stringify(await readBrowserCohorts(process.cwd())));",
+        ],
+        cwd=web,
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=30,
+        env=os.environ | {"NODE_OPTIONS": "--max-old-space-size=768"},
+    )
+    cohorts = json.loads(metadata.stdout)
+    assert isinstance(cohorts, dict) and isinstance(cohorts.get("workflows"), list)
+    expected: set[str] = set()
+    for owner in cohorts["workflows"]:
+        assert isinstance(owner, str) and owner.startswith("/src/")
+        expected.add(owner)
+    counters = evidence["native_v8_coverage"]
+    assert isinstance(counters, list)
+    captured: Counter[str] = Counter()
+    for record in counters:
+        assert isinstance(record, dict) and isinstance(record.get("coverage"), dict)
+        target = record["coverage"].get("url")
+        assert isinstance(target, str)
+        captured[urlsplit(target).path] += 1
+    assert set(captured) == expected
+    assert all(count >= 2 for count in captured.values())
     assert "native_coverage_error" not in evidence
     assert "diagnostic_capture_error" not in evidence
     assert cast(dict[str, object], evidence["failed_native_worker_counts"])["active"] == 0

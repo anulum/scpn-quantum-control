@@ -729,20 +729,20 @@ jobs:
           STUDIO_RESULT_COVERAGE: ${{ runner.temp }}/studio-result-journey.json
           STUDIO_WORKFLOW_COVERAGE: ${{ runner.temp }}/studio-workflow-journey.json
         run: >-
-          pnpm exec vitest run src/app src/shared/storage src/features/workspace src/features/catalogue src/features/parameters src/features/experiments src/features/results src/features/compare src/features/workflows
+          pnpm exec vitest run src/app src/shared src/modules src/WorkspacePanel.test.tsx
           src/QuantumStudioPanel.test.tsx src/QuantumStudioPanel.unverifiable.test.tsx quality
           --coverage --coverage.reporter=text
-          --coverage.include='src/app/**/*.{ts,tsx}'
-          --coverage.include='src/features/catalogue/*.{ts,tsx}'
-          --coverage.include='src/features/parameters/*.{ts,tsx}'
-          --coverage.include='src/features/experiments/*.{ts,tsx}'
-          --coverage.include='src/features/results/*.{ts,tsx}'
-          --coverage.include='src/features/compare/*.{ts,tsx}'
-          --coverage.include='src/features/workflows/*.{ts,tsx}'
+          --coverage.include='src/app/**/*.{ts,tsx}' --coverage.include='src/shared/moduleViews/*.{ts,tsx}' --coverage.include='src/shared/workspace/*.{ts,tsx}' --coverage.include='src/modules/**/*.{ts,tsx}' --coverage.include=src/WorkspacePanel.tsx
+          --coverage.include='src/modules/catalogue/*.{ts,tsx}'
+          --coverage.include='src/modules/parameters/*.{ts,tsx}' --coverage.include='src/shared/parameters/*.{ts,tsx}'
+          --coverage.include='src/modules/experiments/*.{ts,tsx}' --coverage.include='src/shared/experiments/*.{ts,tsx}'
+          --coverage.include='src/modules/results/*.{ts,tsx}' --coverage.include='src/shared/results/*.{ts,tsx}'
+          --coverage.include='src/modules/compare/*.{ts,tsx}'
+          --coverage.include='src/modules/workflows/*.{ts,tsx}' --coverage.include='src/shared/workflows/*.{ts,tsx}'
           --coverage.include='src/shared/storage/*.{ts,tsx}'
-          --coverage.include='src/features/workspace/*.{ts,tsx}'
+          --coverage.include='src/shared/workspace/*.{ts,tsx}'
           --coverage.include=src/QuantumStudioPanel.tsx
-          --coverage.include='quality/*.ts'
+          --coverage.include='quality/*.ts' --coverage.include=src/shared/storage/workspaceDownload.ts --coverage.include=src/shared/wasmAssets.ts --coverage.include=src/shared/browser/ScrollRegion.tsx
           --coverage.exclude='**/*.test.{ts,tsx}'
           --coverage.thresholds.statements=100
           --coverage.thresholds.branches=100
@@ -750,9 +750,9 @@ jobs:
           --coverage.thresholds.lines=100
       - name: Enforce source result inspector owner exact coverage
         run: >-
-          pnpm exec vitest run src/features/results src/app/routes/ResultsView.test.tsx
+          pnpm exec vitest run src/modules/results src/modules/results/ResultsView.test.tsx src/shared/results
           --coverage --coverage.reporter=text
-          --coverage.include='src/features/results/*.{ts,tsx}'
+          --coverage.include='src/modules/results/*.{ts,tsx}' --coverage.include='src/shared/results/*.{ts,tsx}'
           --coverage.exclude='**/*.test.{ts,tsx}'
           --coverage.thresholds.statements=100
           --coverage.thresholds.branches=100
@@ -760,9 +760,9 @@ jobs:
           --coverage.thresholds.lines=100
       - name: Enforce immutable comparison owner exact coverage
         run: >-
-          pnpm exec vitest run src/features/compare
+          pnpm exec vitest run src/modules/compare
           --coverage --coverage.reporter=text
-          --coverage.include='src/features/compare/*.{ts,tsx}'
+          --coverage.include='src/modules/compare/*.{ts,tsx}'
           --coverage.exclude='**/*.test.{ts,tsx}'
           --coverage.thresholds.statements=100
           --coverage.thresholds.branches=100
@@ -770,9 +770,9 @@ jobs:
           --coverage.thresholds.lines=100
       - name: Enforce linked parameter editor owner exact coverage
         run: >-
-          pnpm exec vitest run src/features/parameters
+          pnpm exec vitest run src/modules/parameters src/shared/parameters
           --coverage --coverage.reporter=text
-          --coverage.include='src/features/parameters/*.{ts,tsx}'
+          --coverage.include='src/modules/parameters/*.{ts,tsx}' --coverage.include='src/shared/parameters/*.{ts,tsx}'
           --coverage.exclude='**/*.test.{ts,tsx}'
           --coverage.thresholds.statements=100
           --coverage.thresholds.branches=100
@@ -780,9 +780,9 @@ jobs:
           --coverage.thresholds.lines=100
       - name: Enforce compiler trace inspector exact coverage
         run: >-
-          pnpm exec vitest run src/features/compiler src/app/routes/BuildView.test.tsx
+          pnpm exec vitest run src/modules/compiler src/modules/build/BuildView.test.tsx
           --coverage
-          --coverage.include='src/features/compiler/*.{ts,tsx}'
+          --coverage.include='src/modules/compiler/*.{ts,tsx}'
           --coverage.reportsDirectory=coverage/compiler
           --coverage.thresholds.statements=100
           --coverage.thresholds.branches=100
@@ -790,9 +790,9 @@ jobs:
           --coverage.thresholds.lines=100
       - name: Enforce offline backend profiles exact coverage
         run: >-
-          pnpm exec vitest run src/features/operators/profiles/*.test.ts src/features/operators/profiles/*.test.tsx
+          pnpm exec vitest run src/modules/operators/profiles/*.test.ts src/modules/operators/profiles/*.test.tsx
           --coverage
-          --coverage.include='src/features/operators/profiles/*.{ts,tsx}'
+          --coverage.include='src/modules/operators/profiles/*.{ts,tsx}'
           --coverage.reportsDirectory=coverage/profiles
           --coverage.thresholds.statements=100
           --coverage.thresholds.branches=100
@@ -800,9 +800,9 @@ jobs:
           --coverage.thresholds.lines=100
       - name: Enforce native operator review browser owner exact coverage
         run: >-
-          pnpm exec vitest run src/features/operators/dossiers
+          pnpm exec vitest run src/modules/operators/dossiers
           --coverage
-          --coverage.include='src/features/operators/dossiers/*.{ts,tsx}'
+          --coverage.include='src/modules/operators/dossiers/*.{ts,tsx}'
           --coverage.exclude='**/*.test.{ts,tsx}'
           --coverage.reportsDirectory=coverage/dossiers
           --coverage.thresholds.statements=100
@@ -811,9 +811,9 @@ jobs:
           --coverage.thresholds.lines=100
       - name: Enforce supported program editor and binding exact coverage
         run: >-
-          pnpm exec vitest run src/features/programs src/app/routes/BuildView.test.tsx
+          pnpm exec vitest run src/modules/programs src/modules/build/BuildView.test.tsx src/shared/programs
           --coverage --coverage.reporter=text
-          --coverage.include='src/features/programs/*.{ts,tsx}'
+          --coverage.include='src/modules/programs/*.{ts,tsx}' --coverage.include='src/shared/programs/*.{ts,tsx}'
           --coverage.exclude='**/*.test.{ts,tsx}'
           --coverage.thresholds.statements=100
           --coverage.thresholds.branches=100
@@ -822,13 +822,13 @@ jobs:
       - name: Enforce native accessibility component owner exact coverage
         run: >-
           pnpm exec vitest run src/app/WorkbenchHelp.test.tsx
-          src/app/Workbench.accessibility.test.tsx src/panel/SimulationDataTable.test.tsx
-          src/panel/SupportMatrixGrid.test.tsx src/features/parameters/CouplingTable.test.tsx
+          src/app/Workbench.accessibility.test.tsx src/shared/browser/SimulationDataTable.test.tsx
+          src/shared/browser/SupportMatrixGrid.test.tsx src/modules/parameters/CouplingTable.test.tsx
           --coverage --coverage.reporter=text
           --coverage.include=src/app/WorkbenchHelp.tsx
-          --coverage.include=src/panel/SimulationDataTable.tsx
-          --coverage.include=src/panel/SupportMatrixGrid.tsx
-          --coverage.include=src/features/parameters/CouplingTable.tsx
+          --coverage.include=src/shared/browser/SimulationDataTable.tsx --coverage.include=src/shared/browser/ScrollRegion.tsx
+          --coverage.include=src/shared/browser/SupportMatrixGrid.tsx
+          --coverage.include=src/modules/parameters/CouplingTable.tsx
           --coverage.thresholds.statements=100
           --coverage.thresholds.branches=100
           --coverage.thresholds.functions=100
@@ -836,23 +836,23 @@ jobs:
       - name: Enforce Program-AD browser owner exact coverage
         run: >-
           pnpm exec vitest run
-          src/panel/programAd.test.ts src/panel/nativeProgramExecution.test.ts
-          src/panel/ProgramADReplayCard.test.tsx
-          src/panel/useUnitBoundRun.test.tsx
+          src/shared/browser/programAd.test.ts src/shared/browser/nativeProgramExecution.test.ts
+          src/shared/browser/ProgramADReplayCard.test.tsx
+          src/shared/browser/useUnitBoundRun.test.tsx
           --coverage
           --coverage.reporter=text
-          --coverage.include=src/panel/programAd.ts
-          --coverage.include=src/panel/ProgramADReplayCard.tsx
-          --coverage.include=src/panel/useUnitBoundRun.ts
+          --coverage.include=src/shared/browser/programAd.ts --coverage.include=src/shared/wasmAssets.ts
+          --coverage.include=src/shared/browser/ProgramADReplayCard.tsx
+          --coverage.include=src/shared/browser/useUnitBoundRun.ts
           --coverage.thresholds.statements=100
           --coverage.thresholds.branches=100
           --coverage.thresholds.functions=100
           --coverage.thresholds.lines=100
       - name: Enforce catalogue owner coverage
         run: >-
-          pnpm exec vitest run src/features/catalogue
+          pnpm exec vitest run src/modules/catalogue
           --coverage --coverage.reporter=text
-          --coverage.include='src/features/catalogue/*.{ts,tsx}'
+          --coverage.include='src/modules/catalogue/*.{ts,tsx}'
           --coverage.thresholds.statements=100
           --coverage.thresholds.branches=100
           --coverage.thresholds.functions=100
@@ -878,9 +878,9 @@ jobs:
         run: python -m tools.studio_contract_quality_gates --run
       - name: Enforce operator policy browser owner exact coverage
         run: >-
-          pnpm exec vitest run src/features/operators/policy src/app/routes/OperationsView.test.tsx
+          pnpm exec vitest run src/modules/operators/policy src/modules/operators/OperationsView.test.tsx
           --coverage.enabled=true --coverage.provider=v8
-          --coverage.include='src/features/operators/policy/*.{ts,tsx}'
+          --coverage.include='src/modules/operators/policy/*.{ts,tsx}'
           --coverage.exclude='**/*.test.*'
           --coverage.thresholds.statements=100 --coverage.thresholds.branches=100
           --coverage.thresholds.functions=100 --coverage.thresholds.lines=100
@@ -891,17 +891,17 @@ jobs:
           STUDIO_PARAMETER_COVERAGE: ${{ runner.temp }}/studio-parameter-journey.json
           STUDIO_WORKFLOW_COVERAGE: ${{ runner.temp }}/studio-workflow-journey.json
         run: >-
-          pnpm exec vitest run src/features/workflows src/features/parameters
-          src/app/Workbench.test.tsx src/app/Workbench.modules.test.tsx src/features/experiments/experimentArchive.test.ts src/features/experiments/useExperimentRun.test.tsx
-          src/features/workspace/WorkspacePanel.test.tsx src/features/parameters/parameterRevision.test.ts
-          src/features/workspace/useWorkspace.test.tsx
+          pnpm exec vitest run src/modules/workflows src/modules/parameters src/shared/parameters src/shared/workflows
+          src/app/Workbench.test.tsx src/app/Workbench.modules.test.tsx src/shared/experiments/experimentArchive.test.ts src/shared/experiments/useExperimentRun.test.tsx
+          src/WorkspacePanel.test.tsx src/shared/parameters/parameterRevision.test.ts
+          src/shared/workspace/useWorkspace.test.tsx
           src/shared/storage/workspaceArchive.test.ts
           src/shared/storage/workspaceStore.test.ts
           --coverage.enabled=true
-          --coverage.include='src/features/workflows/*.{ts,tsx}' --coverage.include='src/features/parameters/*.{ts,tsx}'
-          --coverage.include=src/app/Workbench.tsx --coverage.include=src/features/experiments/experimentArchive.ts
-          --coverage.include=src/features/workspace/WorkspacePanel.tsx --coverage.include=src/features/parameters/parameterRevision.ts
-          --coverage.include=src/features/workspace/useWorkspace.ts
+          --coverage.include='src/modules/workflows/*.{ts,tsx}' --coverage.include='src/modules/parameters/*.{ts,tsx}' --coverage.include='src/shared/parameters/*.{ts,tsx}' --coverage.include='src/shared/workflows/*.{ts,tsx}'
+          --coverage.include=src/app/Workbench.tsx --coverage.include=src/shared/experiments/experimentArchive.ts
+          --coverage.include=src/WorkspacePanel.tsx --coverage.include=src/shared/parameters/parameterRevision.ts
+          --coverage.include=src/shared/workspace/useWorkspace.ts
           --coverage.include=src/shared/storage/workspaceArchive.ts
           --coverage.include=src/shared/storage/workspaceStore.ts
           --coverage.exclude='**/*.test.*'
@@ -919,18 +919,18 @@ jobs:
           --coverage.thresholds.lines=100
       - name: Enforce settings inspector owner exact coverage
         run: >-
-          pnpm exec vitest run src/shared/contracts/settings.test.ts
-          src/features/settings/SettingsInspector.test.tsx
+          pnpm exec vitest run src/shared/contracts/settings.test.ts src/app/Workbench.moduleContributions.test.tsx
+          src/modules/settings/SettingsInspector.test.tsx
           --coverage --coverage.reporter=text
           --coverage.include=src/shared/contracts/settings.ts
-          --coverage.include=src/features/settings/SettingsInspector.tsx
+          --coverage.include=src/modules/settings/SettingsInspector.tsx --coverage.include=src/modules/settings/SettingsRecord.tsx --coverage.include=src/modules/settings/SettingsDocumentInspector.tsx
           --coverage.thresholds.statements=100
           --coverage.thresholds.branches=100
           --coverage.thresholds.functions=100
           --coverage.thresholds.lines=100
       - name: Enforce shared evidence owner coverage
         run: >-
-          pnpm exec vitest run src/shared/evidence src/panel/ProgramADReplayCard.test.tsx
+          pnpm exec vitest run src/shared/evidence src/shared/browser/ProgramADReplayCard.test.tsx
           --coverage --coverage.reporter=text
           --coverage.include='src/shared/evidence/*.{ts,tsx}'
           --coverage.thresholds.statements=100
@@ -946,14 +946,14 @@ jobs:
           python -m pytest -q tests/test_resource_budget_gate.py
       - name: Enforce resource admission owner coverage
         run: >-
-          pnpm exec vitest run src/shared/resources src/panel/KuramotoPlayPanel.test.tsx src/panel/Lab3DPanel.test.tsx src/panel/kuramoto.test.ts src/workers src/panel/useOwnedKuramoto.test.tsx --maxWorkers=2
+          pnpm exec vitest run src/shared/resources src/shared/browser/KuramotoPlayPanel.test.tsx src/shared/browser/Lab3DPanel.test.tsx src/shared/browser/kuramoto.test.ts src/workers src/shared/browser/useOwnedKuramoto.test.tsx --maxWorkers=2 src/shared/workers
           --coverage --coverage.reporter=text
           --coverage.include='src/shared/resources/*.{ts,tsx}'
-          --coverage.include=src/panel/KuramotoPlayPanel.tsx
-          --coverage.include=src/panel/Lab3DPanel.tsx
-          --coverage.include=src/panel/kuramoto.ts
-          --coverage.include=src/panel/useOwnedKuramoto.ts
-          --coverage.include='src/workers/*.ts'
+          --coverage.include=src/shared/browser/KuramotoPlayPanel.tsx
+          --coverage.include=src/shared/browser/Lab3DPanel.tsx
+          --coverage.include=src/shared/browser/kuramoto.ts
+          --coverage.include=src/shared/browser/useOwnedKuramoto.ts
+          --coverage.include='src/workers/*.ts' --coverage.include='src/shared/workers/*.ts'
           --coverage.thresholds.perFile=true
           --coverage.thresholds.statements=100
           --coverage.thresholds.branches=100

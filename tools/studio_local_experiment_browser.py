@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from importlib.metadata import version
 from pathlib import Path
 from typing import TYPE_CHECKING, cast
@@ -27,7 +28,7 @@ def _plan_identity(page: Page) -> dict[str, str]:
 
     Parameters
     ----------
-    page
+    page : Page
         Actual original Workbench page.
 
     Returns
@@ -48,7 +49,7 @@ def _archive(page: Page) -> str:
 
     Parameters
     ----------
-    page
+    page : Page
         Page whose original workspace view is currently open.
 
     Returns
@@ -65,9 +66,9 @@ def _navigate(page: Page, view: str) -> None:
 
     Parameters
     ----------
-    page
+    page : Page
         Actual Workbench browser page.
-    view
+    view : str
         Original Workspace or Experiments view label.
 
     """
@@ -90,7 +91,7 @@ def _execute(page: Page) -> dict[str, object]:
 
     Parameters
     ----------
-    page
+    page : Page
         Current Workbench page with an admitted source plan.
 
     Returns
@@ -114,6 +115,36 @@ def _execute(page: Page) -> dict[str, object]:
     )
 
 
+def _execute_registered_saved(page: Page) -> dict[str, object]:
+    """Run the compiled job against the original committed browser workspace.
+
+    Parameters
+    ----------
+    page : Page
+        Original Workbench with a saved archive and its prepared numerical plan.
+
+    Returns
+    -------
+    dict[str, object]
+        Actual original worker result after confirmed disposal.
+
+    """
+    from playwright.sync_api import expect
+
+    before = page.evaluate("window.__ownedKernel.started")
+    dock = page.get_by_role("region", name="Registered job dock", exact=True)
+    dock.get_by_role("button", name="Run prepared local experiment", exact=True).click()
+    expect(page.get_by_role("status", name="Registered job lifecycle")).to_contain_text("settled:")
+    wait_for_worker_disposal(page)
+    trace = page.evaluate("window.__ownedKernel")
+    assert trace["started"] == before + 1
+    assert trace["started"] == trace["disposed"]
+    return cast(
+        "dict[str, object]",
+        next(row for row in reversed(trace["events"]) if row["kind"] == "result"),
+    )
+
+
 def run_local_experiment_journey(
     base_url: str, *, source_url: str | None = None, evidence: dict[str, object] | None = None
 ) -> dict[str, object]:
@@ -121,11 +152,11 @@ def run_local_experiment_journey(
 
     Parameters
     ----------
-    base_url
+    base_url : str
         Owned literal loopback preview of the current production build.
-    source_url
+    source_url : str | None
         Optional distinct owned root Vite host for original-source native counters.
-    evidence
+    evidence : dict[str, object] | None
         Optional original dispatcher receipt retaining partial observations.
 
     Returns
@@ -149,7 +180,7 @@ def run_local_experiment_journey(
         urlsplit(source).path != "/" or urlsplit(source).netloc == urlsplit(url).netloc
     ):
         raise ValueError("Experiment source coverage requires a distinct owned root source host")
-    from playwright.sync_api import Error, Route, expect, sync_playwright
+    from playwright.sync_api import Error, Request, Route, expect, sync_playwright
 
     from tools.studio_workspace_browser_coverage import start_native_coverage, take_native_coverage
 
@@ -162,7 +193,10 @@ def run_local_experiment_journey(
             source_url=source, native_v8_coverage=records, coverage_percentage="not_calculated"
         )
     with sync_playwright() as runtime:
-        browser = runtime.chromium.launch()
+        browser = runtime.chromium.launch(
+            executable_path=os.environ.get("STUDIO_NATIVE_BROWSER_EXECUTABLE"),
+            chromium_sandbox=True,
+        )
         receipt.update(playwright=version("playwright"), browser=browser.version)
         try:
             exported = ""
@@ -196,6 +230,7 @@ def run_local_experiment_journey(
 
                 def route_request(
                     route: Route,
+                    _sdk_request: Request,
                     *,
                     unavailable: bool = boundary == "missing-kernel",
                     invalid_sample: bool = boundary == "source-invalid-sample",
@@ -409,6 +444,14 @@ def run_local_experiment_journey(
                             experiment.get_by_role("button", name="Run experiment", exact=True)
                         ).to_be_enabled()
                         original_plan = _plan_identity(page)
+                        registered_result = _execute_registered_saved(page)
+                        observations.append(
+                            {
+                                "outcome": "registered-job-on-original-saved-browser-source",
+                                "source_plan": original_plan,
+                                "native_result": registered_result,
+                            }
+                        )
                         original_result = _execute(page)
                         with page.expect_download() as portable_download:
                             experiment.get_by_role(

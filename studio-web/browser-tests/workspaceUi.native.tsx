@@ -7,7 +7,7 @@
 // SCPN Quantum Control — real component native storage acceptance host
 
 import { createRoot } from "react-dom/client";
-import { WorkspacePanel } from "../src/features/workspace/WorkspacePanel";
+import { WorkspacePanel } from "../src/WorkspacePanel";
 import { conformanceCodecs } from "./workspaceFixture";
 
 const container = document.createElement("main");

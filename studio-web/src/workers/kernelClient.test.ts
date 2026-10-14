@@ -12,11 +12,11 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, it, vi } from "vitest";
 import { BuiltKernelWorker } from "../../test-support/kernelWorker";
-import { createOwnedKuramotoRun } from "../panel/kuramoto";
-import type { OwnedKuramotoHandle, OwnedKuramotoOptions } from "../panel/kuramoto";
+import { createOwnedKuramotoRun } from "../shared/browser/kuramoto";
+import type { OwnedKuramotoHandle, OwnedKuramotoOptions } from "../shared/browser/kuramoto";
 import type { KernelWorkerPort } from "./kernelClient";
-import { readWorkerEvent } from "./kernelProtocol";
-import type { KernelWorkerEvent } from "./kernelProtocol";
+import { readWorkerEvent } from "../shared/workers/kernelProtocol";
+import type { KernelWorkerEvent } from "../shared/workers/kernelProtocol";
 
 const wasm = new Uint8Array(
   readFileSync(

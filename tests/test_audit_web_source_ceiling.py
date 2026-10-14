@@ -71,11 +71,11 @@ def _workspace(root: Path, sources: dict[str, str], pin: str | None = None) -> P
 
     Parameters
     ----------
-    root
+    root : Path
         Empty directory that becomes the repository.
-    sources
+    sources : dict[str, str]
         Web sources by path relative to the workspace.
-    pin
+    pin : str | None
         Release written into the manifest; the installed release when omitted.
 
     Returns
@@ -181,6 +181,35 @@ def test_measure_of_a_workspace_without_sources_is_empty(tmp_path: Path) -> None
     assert gate.measure(repo, tmp_path / "absent") == gate.Measurement({}, ())
 
 
+def test_unstaged_module_move_measures_new_owners_and_refuses_new_debt(tmp_path: Path) -> None:
+    """Measure a real unstaged move and refuse dirty additions before lowering the ceiling."""
+    repo = _workspace(tmp_path, {"src/routes/old.ts": ONE_FINDING})
+    ceiling = _record(repo)
+    before = ceiling.read_bytes()
+    old = repo / gate.WEB_ROOT / "src/routes/old.ts"
+    new = repo / gate.WEB_ROOT / "src/modules/example/admitted.ts"
+    new.parent.mkdir(parents=True)
+    old.rename(new)
+    new.write_text(CLEAN, encoding="utf-8")
+    debt = new.with_name("debt.ts")
+    debt.write_text(ONE_FINDING, encoding="utf-8")
+
+    assert gate.tracked_sources(repo) == [
+        "studio-web/src/modules/example/admitted.ts",
+        "studio-web/src/modules/example/debt.ts",
+    ]
+    assert gate.main(["--repo", str(repo), "--lower"]) == 1
+    assert ceiling.read_bytes() == before
+    assert _git(repo, "diff", "--cached", "--name-only") == ""
+
+    debt.write_text(CLEAN, encoding="utf-8")
+    assert gate.main(["--repo", str(repo), "--lower"]) == 0
+    assert gate.load_ceiling(ceiling).total == 0
+    assert gate.main(["--repo", str(repo)]) == 0
+    assert not old.exists()
+    assert _git(repo, "diff", "--cached", "--name-only") == ""
+
+
 def test_parse_error_fails_the_gate_instead_of_being_counted(tmp_path: Path) -> None:
     """A source Biome cannot parse stops the measurement with the diagnostic's category."""
     repo = _workspace(tmp_path, {"src/broken.ts": BROKEN})
@@ -216,11 +245,11 @@ def test_unusable_reports_are_refused(tmp_path: Path, output: str, message: str)
 
     Parameters
     ----------
-    tmp_path
+    tmp_path : Path
         Directory that becomes the repository.
-    output
+    output : str
         Shell command of the stand-in executable that prints the report.
-    message
+    message : str
         Pattern the refusal must match.
 
     """
@@ -286,11 +315,11 @@ def test_pinned_release_requires_one_exact_release(
 
     Parameters
     ----------
-    tmp_path
+    tmp_path : Path
         Directory that holds the workspace manifest.
-    manifest
+    manifest : str | None
         Manifest text, or ``None`` for no manifest at all.
-    message
+    message : str
         Pattern the refusal must match.
 
     """
@@ -458,11 +487,11 @@ def test_invalid_ceilings_are_refused(
 
     Parameters
     ----------
-    tmp_path
+    tmp_path : Path
         Directory that receives the document.
-    changes
+    changes : dict[str, Any]
         Fields replaced in an otherwise valid document.
-    message
+    message : str
         Pattern the refusal must match.
 
     """

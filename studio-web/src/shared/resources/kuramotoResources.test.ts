@@ -10,19 +10,36 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
-import { bindKuramoto, readBounds } from "../../panel/kuramoto";
-import type { KuramotoExports, KuramotoRequest } from "../../panel/kuramoto";
-import { admitKuramotoResources, admitOwnedKuramotoResources, browserResourcePolicy, smallerKuramotoRequest } from "./kuramotoResources";
+import { bindKuramoto, readBounds } from "../browser/kuramoto";
+import type { KuramotoExports, KuramotoRequest } from "../browser/kuramoto";
+import {
+  admitKuramotoResources,
+  admitOwnedKuramotoResources,
+  browserResourcePolicy,
+  smallerKuramotoRequest,
+} from "./kuramotoResources";
 import type { ResourcePolicy } from "./admission";
 
 let exports: KuramotoExports;
 beforeAll(async () => {
-  const bytes = readFileSync(resolve("..", "scpn_quantum_engine/studio_wasm_kernel/target/wasm32-unknown-unknown/release/scpn_quantum_studio_wasm_kernel.wasm"));
+  const bytes = readFileSync(
+    resolve(
+      "..",
+      "scpn_quantum_engine/studio_wasm_kernel/target/wasm32-unknown-unknown/release/scpn_quantum_studio_wasm_kernel.wasm",
+    ),
+  );
   const loaded = await WebAssembly.instantiate(bytes, {});
   exports = loaded.instance.exports as unknown as KuramotoExports;
 });
 function request(): KuramotoRequest {
-  return { mode: "mean-field", omega: [0, 0.2], theta0: [0, 0.3], steps: 10, dt: 0.05, coupling: 1 };
+  return {
+    mode: "mean-field",
+    omega: [0, 0.2],
+    theta0: [0, 0.3],
+    steps: 10,
+    dt: 0.05,
+    coupling: 1,
+  };
 }
 function policy(change: Partial<ResourcePolicy> = {}): ResourcePolicy {
   return { ...browserResourcePolicy(readBounds(exports)), ...change };
@@ -30,25 +47,50 @@ function policy(change: Partial<ResourcePolicy> = {}): ResourcePolicy {
 
 describe("original Kuramoto entry with declared resource policy", () => {
   it("accounts for ABI, parser, RK4 and retained output from source-owned counts", () => {
-    const row = admitKuramotoResources({ n: 2, steps: 10, mode: "mean-field" }, readBounds(exports));
+    const row = admitKuramotoResources(
+      { n: 2, steps: 10, mode: "mean-field" },
+      readBounds(exports),
+    );
     // 4 caller scalars, two 64-byte ABI buffers, 4 parsed scalars,
     // 12 stage scalars and three 13-scalar output buffers.
-    expect(row.estimate.components.map(component => component.bytes)).toEqual([32n, 128n, 32n, 96n, 312n]);
+    expect(row.estimate.components.map((component) => component.bytes)).toEqual([
+      32n,
+      128n,
+      32n,
+      96n,
+      312n,
+    ]);
     expect(row.bytesRequired).toBe(600n);
     expect(row.estimate.workUnits).toBe(80n);
-    const networked = admitKuramotoResources({ n: 2, steps: 10, mode: "networked" }, readBounds(exports));
+    const networked = admitKuramotoResources(
+      { n: 2, steps: 10, mode: "networked" },
+      readBounds(exports),
+    );
     expect(networked.bytesRequired).toBe(728n);
     expect(networked.estimate.workUnits).toBe(160n);
-    expect(networked.estimate.components.every(component => component.dtype === "float64" || component.dtype === "uint8")).toBe(true);
+    expect(
+      networked.estimate.components.every(
+        (component) => component.dtype === "float64" || component.dtype === "uint8",
+      ),
+    ).toBe(true);
   });
 
   it("refuses before the real native allocator is called and recovers at exact boundary", () => {
     let allocations = 0;
-    const observed = { ...exports, scpn_alloc(length: number) { allocations++; return exports.scpn_alloc(length); } };
+    const observed = {
+      ...exports,
+      scpn_alloc(length: number) {
+        allocations++;
+        return exports.scpn_alloc(length);
+      },
+    };
     const denied = bindKuramoto(observed, policy({ memoryBytes: 599n }))(request());
     expect(denied.ok).toBe(false);
     expect(allocations).toBe(0);
-    const accepted = bindKuramoto(observed, policy({ memoryBytes: 600n, workUnits: 80n }))(request());
+    const accepted = bindKuramoto(
+      observed,
+      policy({ memoryBytes: 600n, workUnits: 80n }),
+    )(request());
     expect(accepted.ok).toBe(true);
     expect(allocations).toBe(2);
     if (accepted.ok) {
@@ -59,8 +101,19 @@ describe("original Kuramoto entry with declared resource policy", () => {
 
   it("retains refusal for unknown overhead, memory and workload before native entry", () => {
     let entered = 0;
-    const observed = { ...exports, scpn_alloc(length: number) { entered++; return exports.scpn_alloc(length); } };
-    for (const supplied of [policy({ overheadBytes: null }), policy({ memoryBytes: null }), policy({ workUnits: null }), policy({ workUnits: 79n })]) {
+    const observed = {
+      ...exports,
+      scpn_alloc(length: number) {
+        entered++;
+        return exports.scpn_alloc(length);
+      },
+    };
+    for (const supplied of [
+      policy({ overheadBytes: null }),
+      policy({ memoryBytes: null }),
+      policy({ workUnits: null }),
+      policy({ workUnits: 79n }),
+    ]) {
       expect(bindKuramoto(observed, supplied)(request()).ok).toBe(false);
     }
     expect(entered).toBe(0);
@@ -76,12 +129,12 @@ describe("original Kuramoto entry with declared resource policy", () => {
       { n: 2, steps: bounds.maxSteps + 1, mode: "mean-field" as const },
       { n: 2, steps: 0, mode: "mean-field" as const },
       { n: 2, steps: 1, mode: "unsupported" as "mean-field" },
-    ]) expect(() => admitKuramotoResources(input, bounds)).toThrow();
+    ])
+      expect(() => admitKuramotoResources(input, bounds)).toThrow();
     expect(() => browserResourcePolicy({ maxOscillators: 0, maxSteps: 1 })).toThrow();
     expect(() => browserResourcePolicy({ maxOscillators: 1, maxSteps: NaN })).toThrow();
   });
 });
-
 
 it("offers only a rechecked smaller same-method configuration", () => {
   const bounds = readBounds(exports);
@@ -96,29 +149,70 @@ it("offers only a rechecked smaller same-method configuration", () => {
     expect(admitKuramotoResources(smaller, bounds, limit).allowed).toBe(true);
   }
   expect(smallerKuramotoRequest(original, bounds, policy({ memoryBytes: 0n }))).toBeNull();
-  expect(smallerKuramotoRequest({ n: 1, steps: 1, mode: "mean-field" }, bounds, policy({ memoryBytes: 0n }))).toBeNull();
+  expect(
+    smallerKuramotoRequest(
+      { n: 1, steps: 1, mode: "mean-field" },
+      bounds,
+      policy({ memoryBytes: 0n }),
+    ),
+  ).toBeNull();
 });
-
 
 it("refuses a wall-clock request before real WASM allocation", () => {
   let entered = 0;
-  const observed = { ...exports, scpn_alloc(length: number) { entered++; return exports.scpn_alloc(length); } };
+  const observed = {
+    ...exports,
+    scpn_alloc(length: number) {
+      entered++;
+      return exports.scpn_alloc(length);
+    },
+  };
   const result = bindKuramoto(observed, policy(), 1n)(request());
   expect(result.ok).toBe(false);
   expect(entered).toBe(0);
 });
 
 it("accounts for native binary transfers, saved values, codec vectors and exact resource boundaries", () => {
-  const binaryBytes = readFileSync(resolve("..", "scpn_quantum_engine/studio_wasm_kernel/target/wasm32-unknown-unknown/release/scpn_quantum_studio_wasm_kernel.wasm")).byteLength;
+  const binaryBytes = readFileSync(
+    resolve(
+      "..",
+      "scpn_quantum_engine/studio_wasm_kernel/target/wasm32-unknown-unknown/release/scpn_quantum_studio_wasm_kernel.wasm",
+    ),
+  ).byteLength;
   const bounds = readBounds(exports);
   const input = { n: 2, steps: 10, mode: "mean-field" as const };
   const row = admitOwnedKuramotoResources(input, bounds, binaryBytes);
-  expect(row.estimate.components.map(component => component.bytes)).toEqual([32n, 128n, 32n, 96n, 312n, 96n, 64n, 2n * BigInt(binaryBytes)]);
+  expect(row.estimate.components.map((component) => component.bytes)).toEqual([
+    32n,
+    128n,
+    32n,
+    96n,
+    312n,
+    96n,
+    64n,
+    2n * BigInt(binaryBytes),
+  ]);
   expect(row.bytesRequired).toBe(760n + 2n * BigInt(binaryBytes));
   if (row.bytesRequired === null) throw new Error("actual source byte projection missing");
-  expect(admitOwnedKuramotoResources(input, bounds, binaryBytes, policy({ memoryBytes: row.bytesRequired })).allowed).toBe(true);
-  expect(admitOwnedKuramotoResources(input, bounds, binaryBytes, policy({ memoryBytes: row.bytesRequired - 1n })).allowed).toBe(false);
-  expect(admitOwnedKuramotoResources(input, bounds, binaryBytes, policy(), 1n).blockers).toContain("wall_clock_admission_unavailable");
+  expect(
+    admitOwnedKuramotoResources(
+      input,
+      bounds,
+      binaryBytes,
+      policy({ memoryBytes: row.bytesRequired }),
+    ).allowed,
+  ).toBe(true);
+  expect(
+    admitOwnedKuramotoResources(
+      input,
+      bounds,
+      binaryBytes,
+      policy({ memoryBytes: row.bytesRequired - 1n }),
+    ).allowed,
+  ).toBe(false);
+  expect(admitOwnedKuramotoResources(input, bounds, binaryBytes, policy(), 1n).blockers).toContain(
+    "wall_clock_admission_unavailable",
+  );
   const network = { n: 16, steps: 100, mode: "networked" as const };
   const budget = policy({ memoryBytes: 2n * BigInt(binaryBytes) + 2048n });
   const smaller = smallerKuramotoRequest(network, bounds, budget, binaryBytes);
@@ -126,6 +220,9 @@ it("accounts for native binary transfers, saved values, codec vectors and exact 
   if (!smaller) throw new Error("supported worker shape missing");
   expect(smaller.mode).toBe("networked");
   expect(admitOwnedKuramotoResources(smaller, bounds, binaryBytes, budget).allowed).toBe(true);
-  expect(smallerKuramotoRequest(network, bounds, policy({ memoryBytes: 0n }), binaryBytes)).toBeNull();
-  for (const invalid of [0, -1, 1.5, Number.NaN, 2 * 1024 * 1024 + 1]) expect(() => admitOwnedKuramotoResources(input, bounds, invalid)).toThrow("binary bytes");
+  expect(
+    smallerKuramotoRequest(network, bounds, policy({ memoryBytes: 0n }), binaryBytes),
+  ).toBeNull();
+  for (const invalid of [0, -1, 1.5, Number.NaN, 2 * 1024 * 1024 + 1])
+    expect(() => admitOwnedKuramotoResources(input, bounds, invalid)).toThrow("binary bytes");
 });

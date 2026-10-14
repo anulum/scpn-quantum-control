@@ -8,12 +8,12 @@
 
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
-import { fetchKuramoto } from "../src/panel/kuramoto";
-import { localExperimentCodecs } from "../src/features/experiments/kuramotoArtifacts";
-import { useWorkspace } from "../src/features/workspace/useWorkspace";
-import type { WorkspaceController } from "../src/features/workspace/useWorkspace";
-import { WorkflowRunner } from "../src/features/workflows/WorkflowRunner";
-import { useWorkflowRun } from "../src/features/workflows/useWorkflowRun";
+import { fetchKuramoto } from "../src/shared/browser/kuramoto";
+import { localExperimentCodecs } from "../src/shared/experiments/kuramotoArtifacts";
+import { useWorkspace } from "../src/shared/workspace/useWorkspace";
+import type { WorkspaceController } from "../src/shared/workspace/useWorkspace";
+import { WorkflowRunner } from "../src/modules/workflows/WorkflowRunner";
+import { useWorkflowRun } from "../src/shared/workflows/useWorkflowRun";
 
 async function tick(): Promise<void> {
   await new Promise<void>((resolve) => setTimeout(resolve, 0));

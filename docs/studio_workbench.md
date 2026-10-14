@@ -91,8 +91,9 @@ Close control; Escape or Close returns focus to the button that opened it.
 Navigation closes the helper and focuses the selected view.
 
 The layout supports light and dark system preferences, 200% zoom and reduced
-motion. Actions wrap within the view. Wide data regions have a keyboard focus
-target so their contents can be scrolled horizontally. Claim and verification
+motion. Actions wrap within the view. Wide data regions have an adjacent
+**Scroll ...** button. Tab to that button and press Enter or Space to focus the
+region, then use the arrow keys to scroll its contents. Claim and verification
 statuses remain written as text in either theme.
 
 Kuramoto Play and 3D Lab provide **Order parameter data** and **Phase trajectory
@@ -163,8 +164,8 @@ PYTHONPATH=. python tools/studio_browser_journey.py \
 ```
 
 The runner closes its browser contexts; the server owner stops both servers.
-The result includes native V8 records for all fourteen workbench, catalogue,
-facade and original storage/controller owners. Set
+The result includes native V8 records for the original navigation and storage
+owners, compiled module entries and generic shell contribution slots. Set
 `STUDIO_WORKBENCH_COVERAGE` to this successful JSON alongside the required
 `STUDIO_WORKSPACE_COVERAGE` and original panel-refusal evidence when running
 the affected owner coverage cohort. The source qualifier verifies actual code,
@@ -173,53 +174,68 @@ existing Vitest provider. Stale, failed or incomplete evidence refuses.
 
 ## Modules
 
-The workbench is a shell and a list of modules. The shell owns the layout,
-the address parser, the trust display and every decision about what may run.
-A module adds destinations to the shell and renders inside the work area from
-the services the shell hands it; it reaches nothing else.
+The workbench shell owns layout, address parsing, source selection and local job
+admission. Compiled modules contribute controls through the typed contract in
+`studio-web/src/shared/contracts/module.ts`. The application lists their entries
+in `studio-web/src/app/moduleRegistry.tsx`; an archive, URL or settings document
+cannot load executable code or change that registry.
 
-Modules are compiled into the application and listed in one place,
-`studio-web/src/app/moduleRegistry.tsx`. Nothing is loaded at run time from an
-address, an archive or a user, so every line that runs has been reviewed and
-the bundle keeps one recorded digest.
+Each module has an identifier, a contract version and the manifest verbs and
+evidence schemas it requires. It may contribute any of these slots:
 
-A module declares:
+- **Stages** declare their label, navigation group, deep-link instruments and
+  work-area renderer.
+- **Explorer nodes** identify admitted source documents by schema, digest and
+  original content. Nodes with no matching admitted document cannot be opened.
+- **Editors** render a registered stage control or an admitted document schema.
+- **Inspectors** render read-only source information for declared schemas.
+- **Commands** contribute searchable navigation or a registered local job request.
+- **Jobs** declare their runner and source-bound estimate and call an existing
+  execution owner.
+- **Settings** render admitted settings schemas without changing their source.
 
-- an identifier and the version of its contract with the shell;
-- the manifest verbs and evidence schemas it requires — the registry reports
-  every requirement the installed package does not declare, by name;
-- its stages: identifier, label, navigation group (the primary stages of the
-  work, or a context destination), deep-link instruments and a render function.
+Module presentation lives in `studio-web/src/modules/<module>/`. Shared archive
+contracts, numerical plans, worker protocols, storage and browser instruments
+live under `studio-web/src/shared/`. The import guard reads actual TypeScript
+syntax and rejects imports from a module into the shell or another module,
+including dynamic imports and re-exports. Shared code cannot import
+module presentation. Modules compose through shared services rather than reading
+each other's implementation.
 
-The address table is derived from the registered stages and is closed when
-the application is built: `#/<stage>` and `#/<stage>/<instrument>` for
-registered names, and nothing else. An unregistered path is refused exactly
-as before. Identifiers are lower-case words of at most forty characters; a
-repeated module, stage or instrument identifier fails the build of the
-registry, so one address can never name two destinations.
+Add a module folder and one registry entry to contribute a stage, command or
+inspector; the shell and other modules require no edits. Removing that entry
+removes its controls and addresses. Existing archive and document bytes remain
+owned by the original storage and admission code. A source with no registered
+editor or inspector remains readable in the generic source inspector, which
+retains its original content rather than rewriting it into a known schema.
 
-To add a destination, add one entry to the registry and the module's own
-files. The shell, the address parser and the other modules are not edited.
-Removing the entry removes the destination and its addresses and leaves the
-rest unchanged.
+The address table comes from registered stages: `#/<stage>` and
+`#/<stage>/<instrument>` for declared names. Unregistered paths are refused.
+Identifiers are lower-case words of at most forty characters. Duplicate module,
+stage, instrument or slot identifiers, and commands targeting an absent stage or
+job, prevent registry construction.
 
-A stage whose module requires something the installation does not declare
-stays in the navigation and says why: the work area names each missing verb
-or schema instead of rendering the stage. Nothing is hidden and nothing is
-emulated. The declarations are read from the committed Studio manifest; a
-manifest that fails its guard declares nothing, so every module with a
-requirement is then unavailable. Today Build requires the `compile` verb and
-the other modules require nothing.
+Unavailable modules stay visible and name their missing verbs and schemas.
+Their renderers and commands remain unavailable. A manifest that fails its guard
+declares no capabilities. Build, program authoring and compiler inspection each
+require `compile`; a declaration does not grant permission to execute a job.
 
-Features do not import the shell, and the imports between features are held
-at the eleven pairs that exist today (for example the comparison reads
-experiments and results). A test reads every feature source: a new pair fails
-it, and a pair that disappears must be removed from its record.
+Local jobs run through the original experiment or workflow controller. The job
+dock checks the current admitted archive, active stage, original prepared plan,
+resource policy and worker ownership before execution. A module-supplied
+`allowed` field cannot replace those checks. Cancellation, source changes and
+leaving the active stage retain the original disposal requirements. Workflow
+checkpoints saved by the running workflow remain part of its own source
+lifecycle. The workflow estimate reports graph stages and sweep cells;
+whole-graph memory is explicitly unknown, and the original runtime admits each
+numerical stage before allocation. The `local-service` runner is unavailable in
+this build; these commands do not submit remote provider jobs.
 
-The stages of this build are Workspace, Build, Experiments, Results, Atlas and
-Devices & Operations, with the same addresses and labels as before the shell
-became modular. The contract today covers stages and requirements; explorer
-nodes, inspector sections, commands and job kinds are not module slots yet.
+The default stages remain Workspace, Build, Experiments, Results, Atlas and
+Devices & Operations, with their original eight addresses. Atlas retains its
+unavailable-state explanation. The standalone workbench and the federation
+expose use the same registered controls and the original storage and numerical
+owners.
 
 ## Reproducible experiment graphs and sweeps
 
@@ -397,7 +413,8 @@ PYTHONPATH=src:oscillatools/src:. python tools/studio_browser_journey.py \
 
 The built preview and optional source host follow the preparation described
 above. The source host must be a distinct root HTTP loopback origin. Its actual
-V8 record requires all ten original experiment, Workbench and workspace owners.
+V8 record requires the original experiment, Workbench and workspace owners,
+including the registered job and compiled shell composition.
 Set `STUDIO_EXPERIMENT_COVERAGE` to successful current-source evidence alongside
 the required `STUDIO_WORKSPACE_COVERAGE`. The existing converter/provider
 preserves native zero counters and checks exact source maps and hashes before
@@ -431,7 +448,10 @@ sources leave the previous imported result and saved workspace intact.
 Each panel declares its series, histogram, spectrum or matrix form. Charts use
 those source coordinates without deriving bins, spectra, timestamps or unit
 conversions. Choose a chart marker or a raw row's **Select** button to link the
-same coordinate and object across panels. Raw tables show at most 20 rows per
+same coordinate and object across panels. Plot markers support **Enter** and
+**Space** as well as pointer selection. **Scroll … raw values** focuses
+the named raw table region for keyboard scrolling. The live SVG and SVG export
+use the same original geometry; source labels render as text rather than HTML. Raw tables show at most 20 rows per
 page; **Previous** and **Next** retain access to every original sample. Charts
 display at most 1000 original points per panel, including the selected point and
 endpoints. Display reduction and rounded labels never replace the raw values.
@@ -882,6 +902,9 @@ preserves execution identity and the original human source reference.
 For a matching execution identity, pending, approved, denied, expired,
 source-refused and future states remain distinct. Approval is unavailable
 before source creation, after exclusive expiry or for a refused source verdict.
+Review records require a calendar-valid UTC time in the original seconds format;
+records predating their source cannot substantiate approval. The browser refuses
+a non-finite current clock, and the native API rejects malformed UTC input.
 The current clock is checked again at the click and when the review hash
 finishes; the view also updates expiry while it stays open. Human review export
 contains the original reviewed export and a separate sealed review record.
@@ -1391,6 +1414,14 @@ Test-only producer registries never enter the production panel. Recorded V8
 counters are raw observations; they require original-source mapping and exact
 coverage evaluation before any percentage is claimed.
 
+Capture and qualification share the source cohorts in
+`studio-web/quality/browserCohorts.ts`. The compiled entry owners are derived
+from the actual registry imports and its module array, so adding a module folder
+and registry entry also adds its entry to the required native counters. Original
+scenario owners remain required. Results capture additionally requires the typed
+chart renderer, shared original geometry and native scroll component. Missing
+owners refuse capture and stop profiling; native zero ranges remain in the record.
+
 The native recovery journey also attempts path-escaping, oversized, corrupt-identity and future-major archives against a saved project, and checks that the exact prior archive and selection survive each refusal. Separate native cache fault cases remove an archive, corrupt its head and evict the cache; explicit restore uses the exported copy. Failed journeys retain completed observations, original failure diagnostics and already captured native script counters. These are acceptance assertions; authored checks alone do not establish runtime success.
 
 Browser coverage qualification retains the executed script and original owner SHA-256, verifies the inline source map against exact checkout text, and converts actual V8 ranges with the locked converter. The same Vitest V8 provider merges native counters before its unchanged global coverage gate. Set `STUDIO_WORKSPACE_COVERAGE` to the successful `workspace_recovery` JSON when running the combined coverage cohort. Failed, stale, incomplete or unowned evidence refuses; raw counters alone are not a coverage percentage. The owned source acceptance page mounts the real workspace component with an explicitly synthetic test-only producer registry, separately from the built Studio/WASM journey.
@@ -1421,6 +1452,13 @@ truncated kernel responses and HTTP 503 during native imports. Failed native
 journeys retain their captured counters and partial diagnostics. Closing the
 profiled page after delivery of its counters preserves those records and the
 actual profiler cleanup error.
+
+The collector retains each source script's actual debugger text as it is parsed.
+This keeps recorded native counters mappable when a reload discards their
+original document context. Capture still requires every owner in the compiled
+cohort, matching source hashes and the original source maps; retained text does
+not supply execution counts. The source listener is removed when capture ends,
+including after a capture or profiler cleanup failure.
 
 
 `previewWorkspaceArchive(text, codecs, expandedByteLimit)` accepts an optional

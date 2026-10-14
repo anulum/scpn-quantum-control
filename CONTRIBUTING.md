@@ -270,9 +270,15 @@ linted and format-checked with Biome, pinned as an exact development
 dependency in `studio-web/package.json` and configured in
 `studio-web/biome.jsonc`. The sources were never formatted by a tool, so the
 gate does not demand one mass rewrite: `python tools/audit_web_source_ceiling.py`
-compares every tracked `.ts`, `.tsx`, `.css`, `.js` and `.html` file under those roots
+compares every live tracked and non-ignored new `.ts`, `.tsx`, `.css`, `.js` and
+`.html` file under those roots
 with `tools/web_source_ceiling.json`, which records the lint finding count per
 file and the files that are not formatted.
+
+Source collection includes additions before staging and excludes files deleted
+from the worktree. During a module move, the new owner is checked immediately;
+the retired path does not require staging to leave the measurement.
+
 The ceiling only falls:
 
 - a source that is not in the ceiling must have no lint finding and be

@@ -397,7 +397,7 @@ The compiler facade distinguishes four execution contracts:
 | Python interpreter | `compile_whole_program_ad_trace_to_executable` | Captured Program AD replay and reverse adjoints. |
 | Native LLVM | `compile_whole_program_ad_trace_to_native_llvm_jit` | Verified LLVM IR compiled by llvmlite MCJIT, then called through native function pointers. |
 | Native Rust | `value_and_grad_program_ad_effect_ir_with_rust` | The installed PyO3 extension executes its admitted effect-IR subset. |
-| Browser WASM | `instantiateProgramAd` in `studio-web/src/panel/programAd.ts` | A compiled Rust WASM module executes the bounded replay ABI. |
+| Browser WASM | `instantiateProgramAd` in `studio-web/src/shared/browser/programAd.ts` | A compiled Rust WASM module executes the bounded replay ABI. |
 
 `compile_whole_program_ad_trace_to_mlir` emits textual interchange. Emitting or
 parsing that text does not establish machine-code execution. Missing LLVM is

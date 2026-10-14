@@ -40,9 +40,9 @@ def test_parameter_journey_refuses_unsafe_servers_before_browser_import(
 
     Parameters
     ----------
-    preview
+    preview : str
         Proposed built portal URL.
-    source
+    source : str
         Proposed independent source URL.
 
     """
@@ -113,9 +113,9 @@ def test_parameter_journey_real_signed_matrix_and_native_revision_recovery(
 
     Parameters
     ----------
-    parameter_bundle
+    parameter_bundle : Path
         Original compiled portal with the real shipped Rust WASM kernels.
-    parameter_source
+    parameter_source : str
         Independent source host exposing the original WorkspacePanel.
 
     """
@@ -136,7 +136,7 @@ def test_parameter_journey_real_signed_matrix_and_native_revision_recovery(
     assert observed["second_child_members"] == 14
     records = observed["native_v8_coverage"]
     identity = observed["python_child_digest"]
-    assert isinstance(records, list) and len(records) == 16
+    assert isinstance(records, list) and len(records) == 18
     owners: Counter[str] = Counter()
     for record in records:
         assert isinstance(record, dict)
@@ -147,12 +147,13 @@ def test_parameter_journey_real_signed_matrix_and_native_revision_recovery(
         {
             "/src/shared/storage/workspaceStore.ts": 2,
             "/src/shared/storage/workspaceArchive.ts": 2,
-            "/src/features/workspace/WorkspacePanel.tsx": 2,
-            "/src/features/workspace/useWorkspace.ts": 2,
-            "/src/features/parameters/parameterDraft.ts": 2,
-            "/src/features/parameters/parameterRevision.ts": 2,
-            "/src/features/parameters/ParameterEditor.tsx": 2,
-            "/src/features/parameters/ParameterWorkspace.tsx": 2,
+            "/src/WorkspacePanel.tsx": 2,
+            "/src/shared/workspace/WorkspaceEditor.tsx": 2,
+            "/src/shared/workspace/useWorkspace.ts": 2,
+            "/src/shared/parameters/parameterDraft.ts": 2,
+            "/src/shared/parameters/parameterRevision.ts": 2,
+            "/src/modules/parameters/ParameterEditor.tsx": 2,
+            "/src/modules/parameters/ParameterWorkspace.tsx": 2,
         }
     )
     assert isinstance(identity, str) and len(identity) == 64
@@ -181,11 +182,11 @@ def test_parameter_journey_retains_actual_runtime_faults(
 
     Parameters
     ----------
-    parameter_bundle
+    parameter_bundle : Path
         Actual built portal and unchanged original WASM kernels.
-    parameter_source
+    parameter_source : str
         Independent original-source host.
-    fault
+    fault : str
         Actual uncaught page error or external fetch injected by the transport host.
 
     """
