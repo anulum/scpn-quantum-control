@@ -297,28 +297,16 @@ jobs:
       - name: Enable the locked Chromium namespace sandbox
         working-directory: .
         run: |
-          # Ubuntu requires an executable-specific userns permission for Chromium.
-          python - <<'PY_SANDBOX'
-          import os
-          from pathlib import Path
-
-          from playwright.sync_api import sync_playwright
-
-          with sync_playwright() as runtime:
-              browser_path = Path(runtime.chromium.executable_path).resolve(strict=True)
-          executable = str(browser_path)
-          if any(character in executable for character in '\\"\r\n{}[]*?'):
-              raise ValueError("Chromium executable cannot contain AppArmor metacharacters")
-          studio_profile_path = Path(os.environ["RUNNER_TEMP"]) / "studio-chromium.apparmor"
-          studio_profile_path.write_text(
-              'abi <abi/4.0>,\ninclude <tunables/global>\n'
-              f'profile scpn-studio-chromium "{executable}" flags=(unconfined) {{\n'
-              '  userns,\n}\n'
-          )
-          with Path(os.environ["GITHUB_ENV"]).open("a") as environment:
-              environment.write(f"STUDIO_NATIVE_BROWSER_EXECUTABLE={executable}\n")
-          PY_SANDBOX
+          studio_chromium_executable=$(python -c 'from playwright.sync_api import sync_playwright; runtime = sync_playwright().start(); print(runtime.chromium.executable_path); runtime.stop()')
+          python -m tools.studio_browser_environment sandbox --executable "$studio_chromium_executable" \
+            --temporary "$RUNNER_TEMP" --github-env "$GITHUB_ENV"
           sudo apparmor_parser --replace "$RUNNER_TEMP/studio-chromium.apparmor"
+          python -m mypy --strict --explicit-package-bases tools/studio_browser_environment.py tools/tests/test_studio_browser_environment.py
+          python -m ruff check --isolated --preview --select D,D413,D417,D420 --config 'lint.explicit-preview-rules = true' --config 'lint.pydocstyle.convention = "numpy"' tools/studio_browser_environment.py tools/tests/test_studio_browser_environment.py
+          python -m coverage run --rcfile=/dev/null --branch --data-file="$RUNNER_TEMP/studio-browser-environment.coverage" \
+            -m pytest --noconftest -q tools/tests/test_studio_browser_environment.py
+          python -m coverage report --rcfile=/dev/null --data-file="$RUNNER_TEMP/studio-browser-environment.coverage" \
+            --include='*/tools/studio_browser_environment.py' --fail-under=100
       - name: Check workspace Python types and native API documentation
         working-directory: .
         env:
@@ -488,46 +476,7 @@ jobs:
       - name: Prepare the real preview and source workbench kernels
         working-directory: .
         run: |
-          python - <<'PY_SOURCE'
-          import hashlib
-          import json
-          import os
-          import shutil
-          from pathlib import Path
-
-          original = Path.cwd().resolve()
-          temporary = Path(os.environ["RUNNER_TEMP"])
-          preview = temporary / "studio-browser-preview"
-          shutil.copytree(original / "studio-web/dist", preview)
-          shutil.copytree(temporary / "studio-federation-host", preview / "acceptance-host")
-          isolated = temporary / "studio-workbench-source"
-          isolated.mkdir()
-          for name in ("docs", "data", "tests"):
-              (isolated / name).symlink_to(original / name, target_is_directory=True)
-          web = isolated / "studio-web"
-          web.mkdir()
-          for name in ("src", "browser-tests", "test-support"):
-              shutil.copytree(original / "studio-web" / name, web / name)
-          for source in (original / "studio-web").iterdir():
-              if source.is_file() and source.suffix in {".ts", ".json", ".html"}:
-                  shutil.copy2(source, web / source.name)
-          (web / "node_modules").symlink_to(original / "studio-web/node_modules", target_is_directory=True)
-          shutil.copytree(original / "studio-web/dist/wasm", web / "src/wasm")
-          source_hashes = {}
-          for source in (original / "studio-web/src").rglob("*"):
-              if source.is_file():
-                  relative = source.relative_to(original / "studio-web")
-                  assert source.read_bytes() == (web / relative).read_bytes()
-                  source_hashes[str(relative)] = hashlib.sha256(source.read_bytes()).hexdigest()
-          kernels = {}
-          for source in (original / "studio-web/dist/wasm").glob("*.wasm"):
-              assert source.read_bytes() == (web / "src/wasm" / source.name).read_bytes()
-              kernels[source.name] = hashlib.sha256(source.read_bytes()).hexdigest()
-          assert set(kernels) == {"scpn_quantum_studio_wasm_kernel.wasm", "scpn_quantum_studio_program_ad_wasm.wasm"}
-          (temporary / "studio-workbench-source-qualification.json").write_text(
-              json.dumps({"original_source_sha256": source_hashes, "kernel_sha256": kernels}, indent=2) + "\n"
-          )
-          PY_SOURCE
+          python -m tools.studio_browser_environment workbench --root "$GITHUB_WORKSPACE" --temporary "$RUNNER_TEMP"
       - name: Run the real catalogue browser journey
         working-directory: .
         env:
