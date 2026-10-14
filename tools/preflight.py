@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Project Configuration
-"""Local CI preflight — mirrors every CI gate so failures are caught before push.
+"""Local static and selected runtime checks, with explicit coverage modes.
 
 Gates (in order):
   1. repository lint, format, documentation, generated-surface, policy, and security audits
@@ -2562,7 +2562,12 @@ def main() -> int:
     if failed:
         print(f"BLOCKED: {', '.join(failed)} ({elapsed:.1f}s)")
         return 1
-    print(f"ALL CLEAR: ready to push ({elapsed:.1f}s)")
+    if skip_tests or no_coverage:
+        print(
+            f"ALL CLEAR: selected checks passed; exact runtime coverage not assessed ({elapsed:.1f}s)"
+        )
+    else:
+        print(f"ALL SELECTED CHECKS PASSED ({elapsed:.1f}s)")
     return 0
 
 

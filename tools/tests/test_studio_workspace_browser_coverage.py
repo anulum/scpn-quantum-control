@@ -9,7 +9,11 @@
 
 from __future__ import annotations
 
+import copy
+import hashlib
+import json
 import os
+import subprocess
 from collections.abc import Iterator
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -18,7 +22,183 @@ import pytest
 from playwright.sync_api import Browser, Error, Route, expect, sync_playwright
 
 from tools.studio_browser_journey import loopback_url
-from tools.studio_workspace_browser_coverage import start_native_coverage, take_native_coverage
+from tools.studio_workspace_browser_coverage import (
+    start_native_coverage,
+    take_native_coverage,
+    verify_native_coverage,
+)
+
+
+@pytest.fixture
+def captured_archive(tmp_path: Path) -> tuple[Path, Path, Path]:
+    """Bind an original browser capture and original compiled-owner snapshot.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Owned directory for copies whose corruption is explicitly under test.
+
+    Returns
+    -------
+    tuple[Path, Path, Path]
+        Copied actual journey, original Node cohort snapshot and source root.
+
+    """
+    supplied = os.environ.get("STUDIO_NATIVE_COVERAGE_ARTIFACT")
+    if supplied is None:
+        raise RuntimeError(
+            "Supply an original native journey with STUDIO_NATIVE_COVERAGE_ARTIFACT"
+        )
+    original = Path(supplied)
+    artifact = tmp_path / "native-journey.json"
+    artifact.write_bytes(original.read_bytes())
+    root = Path(__file__).resolve().parents[2] / "studio-web"
+    result = subprocess.run(
+        [
+            "node",
+            "--experimental-strip-types",
+            "--input-type=module",
+            "-e",
+            'import {readBrowserCohorts} from "./quality/browserCohorts.ts"; '
+            "process.stdout.write(JSON.stringify(await readBrowserCohorts(process.cwd())));",
+        ],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=30,
+        env=os.environ | {"NODE_OPTIONS": "--max-old-space-size=768"},
+    )
+    snapshot = tmp_path / "cohorts.json"
+    snapshot.write_text(result.stdout, encoding="utf-8")
+    return artifact, snapshot, root
+
+
+def test_archive_verification_preserves_original_native_counters(
+    captured_archive: tuple[Path, Path, Path],
+) -> None:
+    """Verify actual archived browser sources without changing a single counter.
+
+    Parameters
+    ----------
+    captured_archive : tuple[Path, Path, Path]
+        Genuine captured journey and original source cohort metadata.
+
+    """
+    artifact, snapshot, root = captured_archive
+    before = hashlib.sha256(artifact.read_bytes()).hexdigest()
+    counters = json.loads(artifact.read_text())["native_v8_coverage"]
+    verify_native_coverage(artifact, snapshot, root)
+    assert hashlib.sha256(artifact.read_bytes()).hexdigest() == before
+    assert json.loads(artifact.read_text())["native_v8_coverage"] == counters
+
+
+@pytest.mark.parametrize(
+    "damage",
+    ["root", "names", "list", "type", "prefix", "suffix", "traversal", "query", "fragment"],
+)
+def test_archive_refuses_corrupted_original_cohort_snapshot(
+    captured_archive: tuple[Path, Path, Path],
+    damage: str,
+) -> None:
+    """Reject declared corruption of a genuine compiled-owner snapshot.
+
+    Parameters
+    ----------
+    captured_archive : tuple[Path, Path, Path]
+        Actual capture and copy of the original Node metadata.
+    damage : str
+        Explicit metadata corruption, never a claimed Chromium observation.
+
+    """
+    artifact, snapshot, root = captured_archive
+    value = json.loads(snapshot.read_text())
+    if damage == "root":
+        value = []
+    elif damage == "names":
+        del value["compiled"]
+    elif damage == "list":
+        value["workspace"] = "invalid list"
+    else:
+        original_path = value["workspace"][0]
+        values = {
+            "type": None,
+            "prefix": original_path.removeprefix("/src/"),
+            "suffix": original_path + ".json",
+            "traversal": "/src/../" + original_path.removeprefix("/src/"),
+            "query": original_path + "?invalid.ts",
+            "fragment": original_path + "#invalid.ts",
+        }
+        value["workspace"][0] = values[damage]
+    snapshot.write_text(json.dumps(value), encoding="utf-8")
+    with pytest.raises(ValueError, match="cohort protocol|source paths"):
+        verify_native_coverage(artifact, snapshot, root)
+
+
+@pytest.mark.parametrize(
+    "damage",
+    [
+        "root",
+        "list",
+        "empty",
+        "record",
+        "coverage",
+        "scriptId",
+        "url",
+        "prefix",
+        "suffix",
+        "code",
+        "outside",
+        "code_digest",
+        "source_digest",
+    ],
+)
+def test_archive_refuses_corrupted_original_native_metadata(
+    captured_archive: tuple[Path, Path, Path],
+    damage: str,
+) -> None:
+    """Reject explicitly damaged copies through the real archive receiver.
+
+    Parameters
+    ----------
+    captured_archive : tuple[Path, Path, Path]
+        Genuine original capture whose unaltered copy qualifies first.
+    damage : str
+        Declared script/source metadata corruption, with no fabricated counters.
+
+    """
+    artifact, snapshot, root = captured_archive
+    verify_native_coverage(artifact, snapshot, root)
+    original = json.loads(artifact.read_text())
+    value = copy.deepcopy(original)
+    record = value["native_v8_coverage"][0]
+    if damage == "root":
+        value = []
+    elif damage == "list":
+        value["native_v8_coverage"] = {}
+    elif damage == "empty":
+        value["native_v8_coverage"] = []
+    elif damage == "record":
+        value["native_v8_coverage"][0] = None
+    elif damage == "coverage":
+        record["coverage"] = None
+    elif damage in {"scriptId", "url"}:
+        record["coverage"][damage] = None
+    elif damage in {"prefix", "suffix", "outside"}:
+        url = record["coverage"]["url"]
+        record["coverage"]["url"] = {
+            "prefix": url.replace("/src/", "/archive/"),
+            "suffix": url + ".json",
+            "outside": "http://127.0.0.1:4174/src/undeclared.ts",
+        }[damage]
+    elif damage == "code":
+        record["code"] = None
+    else:
+        record["code_sha256" if damage == "code_digest" else "source_sha256"] = "0" * 64
+    artifact.write_text(json.dumps(value), encoding="utf-8")
+    with pytest.raises(ValueError):
+        verify_native_coverage(artifact, snapshot, root)
+    assert json.loads(artifact.read_text()) == value
 
 
 @pytest.fixture
@@ -92,6 +272,40 @@ def test_capture_actual_workspace_owners(native_browser: Browser) -> None:
             "/src/shared/moduleViews/ModuleDocumentViews.tsx",
             "/src/shared/browser/ScrollRegion.tsx",
         } <= actual
+    finally:
+        context.close()
+
+
+def test_external_profiler_captures_original_workspace_sources(native_browser: Browser) -> None:
+    """Read actual debugger sources when the caller started its own native profiler.
+
+    Parameters
+    ----------
+    native_browser : Browser
+        Genuine Chromium using its original CDP session and source reader.
+
+    """
+    source = loopback_url(os.environ["STUDIO_WORKSPACE_SOURCE_URL"])
+    context = native_browser.new_context(service_workers="block")
+    try:
+        page = context.new_page()
+        session = context.new_cdp_session(page)
+        session.send("Debugger.enable")
+        session.send("Profiler.enable")
+        session.send("Profiler.startPreciseCoverage", {"callCount": True, "detailed": True})
+        page.goto(source + "browser-tests/workspace.html", wait_until="networkidle")
+        records = take_native_coverage(session)
+        owners = {
+            urlsplit(str(record["coverage"]["url"])).path
+            for record in records
+            if isinstance(record["coverage"], dict)
+        }
+        assert {
+            "/src/shared/storage/workspaceStore.ts",
+            "/src/shared/workspace/WorkspaceEditor.tsx",
+            "/src/app/moduleRegistry.tsx",
+        } <= owners
+        assert all(isinstance(record["code"], str) and record["code"] for record in records)
     finally:
         context.close()
 

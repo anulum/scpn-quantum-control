@@ -80,6 +80,14 @@ repos:
         language: python
         stages: [commit-msg]
 
+      - id: studio-native-coverage
+        name: native collector 100% coverage for current sources
+        entry: bash -c 'PYTHON=${SCPN_QC_PYTHON:-.venv/bin/python}; if [ ! -x "$PYTHON" ]; then PYTHON=python; fi; "$PYTHON" -c "from pathlib import Path; from tools.studio_native_coverage_gate import check_native_coverage; check_native_coverage(Path.cwd())"'
+        language: system
+        always_run: true
+        pass_filenames: false
+        stages: [pre-push]
+
       - id: preflight
         name: preflight (lint + docs + type-check)
         entry: bash -c 'PYTHON=${SCPN_QC_PYTHON:-.venv/bin/python}; if [ ! -x "$PYTHON" ]; then PYTHON=python; fi; "$PYTHON" tools/preflight.py --no-tests'

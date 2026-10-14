@@ -15,7 +15,7 @@ import os
 import subprocess
 from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 from urllib.parse import urlsplit
 from weakref import WeakKeyDictionary
 
@@ -67,7 +67,11 @@ def _source_cohorts(root: Path) -> dict[str, set[str]]:
         timeout=30,
         env=os.environ | {"NODE_OPTIONS": "--max-old-space-size=768"},
     )
-    value = json.loads(completed.stdout)
+    return _cohort_paths(json.loads(completed.stdout))
+
+
+def _cohort_paths(value: object) -> dict[str, set[str]]:
+    """Validate the original compiled-owner protocol from live or archived metadata."""
     names = {
         "compiled",
         "workspace",
@@ -94,6 +98,74 @@ def _source_cohorts(root: Path) -> dict[str, set[str]]:
             raise ValueError("Original browser source paths required")
         cohorts[name] = set(paths)
     return cohorts
+
+
+def _retain_source(
+    event: dict[str, object], sources: dict[str, str], read_source: Callable[[str], object]
+) -> None:
+    """Retain source text using identical live and archived script metadata rules."""
+    identifier, url = event.get("scriptId"), event.get("url")
+    if not isinstance(identifier, str) or not isinstance(url, str):
+        return
+    path = urlsplit(url).path
+    if not path.startswith("/src/") or not path.endswith((".ts", ".tsx")):
+        return
+    code = read_source(identifier)
+    if not isinstance(code, str):
+        raise ValueError("Actual parsed debugger source text required")
+    sources[identifier] = code
+
+
+def verify_native_coverage(artifact: Path, cohort_snapshot: Path, root: Path) -> None:
+    """Check archived native source metadata and hashes before counter conversion.
+
+    Parameters
+    ----------
+    artifact : Path
+        Original journey JSON containing native V8 records, including zero counters.
+    cohort_snapshot : Path
+        JSON emitted by the original TypeScript compiled-owner reader.
+    root : Path
+        Original web source root against which archived source hashes are checked.
+
+    Raises
+    ------
+    ValueError
+        Cohorts, script metadata, source text or source digests are invalid.
+
+    Notes
+    -----
+    This verifies retained source identity without executing scripts or recalculating
+    counters. Scenario admission, owner completeness and source-map qualification
+    remain the responsibility of the original TypeScript coverage converter.
+
+    """
+    cohorts = _cohort_paths(json.loads(cohort_snapshot.read_text(encoding="utf-8")))
+    owners = set().union(*cohorts.values())
+    evidence = json.loads(artifact.read_text(encoding="utf-8"))
+    if not isinstance(evidence, dict) or not isinstance(evidence.get("native_v8_coverage"), list):
+        raise ValueError("Native coverage record list required")
+    records = evidence["native_v8_coverage"]
+    if not records:
+        raise ValueError("Nonempty native coverage records required")
+    for record in records:
+        if not isinstance(record, dict) or not isinstance(record.get("coverage"), dict):
+            raise ValueError("Native script record required")
+        coverage = cast("dict[str, object]", record["coverage"])
+        sources: dict[str, str] = {}
+        archived_sources: dict[str, object] = {str(coverage.get("scriptId")): record.get("code")}
+        _retain_source(coverage, sources, archived_sources.get)
+        if not sources:
+            raise ValueError("Original source script metadata required")
+        code = next(iter(sources.values()))
+        path = urlsplit(cast("str", coverage["url"])).path
+        if path not in owners:
+            raise ValueError("Script is outside the compiled browser cohorts")
+        if record.get("code_sha256") != hashlib.sha256(code.encode("utf-8")).hexdigest():
+            raise ValueError("Archived debugger source digest differs")
+        source = root / path.lstrip("/")
+        if record.get("source_sha256") != hashlib.sha256(source.read_bytes()).hexdigest():
+            raise ValueError("Archived original source digest differs")
 
 
 def start_native_coverage(page: Page, *, session: CDPSession | None = None) -> CDPSession:
@@ -134,16 +206,13 @@ def start_native_coverage(page: Page, *, session: CDPSession | None = None) -> C
             The debugger returns a source value other than text.
 
         """
-        identifier, url = event.get("scriptId"), event.get("url")
-        if not isinstance(identifier, str) or not isinstance(url, str):
-            return
-        path = urlsplit(url).path
-        if not path.startswith("/src/") or not path.endswith((".ts", ".tsx")):
-            return
-        code = session.send("Debugger.getScriptSource", {"scriptId": identifier})["scriptSource"]
-        if not isinstance(code, str):
-            raise ValueError("Actual parsed debugger source text required")
-        sources[identifier] = code
+        _retain_source(
+            event,
+            sources,
+            lambda identifier: session.send("Debugger.getScriptSource", {"scriptId": identifier})[
+                "scriptSource"
+            ],
+        )
 
     session.on("Debugger.scriptParsed", retain_source)
     _native_script_listeners[session] = retain_source
