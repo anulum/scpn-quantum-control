@@ -680,46 +680,11 @@ jobs:
             --include="*/tools/studio_browser_journey.py,*/tools/studio_local_experiment_browser.py,*/tools/studio_result_browser.py,*/tools/studio_comparison_browser.py,*/tools/studio_workflow_browser.py,*/tools/studio_owned_worker_journey.py,*/tools/studio_resource_browser_journey.py,*/tools/studio_accessibility_browser.py,*/tools/studio_accessibility_checks.py,*/tools/studio_parameter_browser_journey.py,*/tools/studio_workbench_browser_journey.py,*/tools/studio_workspace_browser_journey.py,*/tools/studio_workspace_browser_coverage.py,*/tools/studio_workspace_browser_ui.py" \
             tools/studio_browser_journey.py --scenario workspace_panel_refusal \
             --base-url http://127.0.0.1:4175/ --output "$RUNNER_TEMP/studio-panel-refusal-journey.json"
+      - name: Qualify original native browser source metadata and publication gate
+        uses: ./.github/actions/studio-native-coverage
       - name: Enforce Python browser runner and workspace helper exact coverage
         working-directory: .
-        env:
-          STUDIO_NATIVE_COVERAGE_ARTIFACT: ${{ runner.temp }}/studio-workspace-journey.json
         run: |
-          node --experimental-strip-types --input-type=module -e \
-            'import {readBrowserCohorts} from "./studio-web/quality/browserCohorts.ts"; process.stdout.write(JSON.stringify(await readBrowserCohorts(process.cwd() + "/studio-web")));' \
-            > "$RUNNER_TEMP/studio-native-cohorts.json"
-          python -m coverage run --rcfile=/dev/null --append --branch --concurrency=greenlet \
-            --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" \
-            --include="*/tools/studio_workspace_browser_coverage.py" \
-            -m pytest --noconftest -q tools/tests/test_studio_workspace_browser_coverage.py -k archive
-          python - <<'PY_ARCHIVE'
-          import os
-          from pathlib import Path
-          from tools.studio_workspace_browser_coverage import verify_native_coverage
-          temporary = Path(os.environ["RUNNER_TEMP"])
-          for name in ("workspace", "panel-refusal", "workbench", "parameter", "experiment", "result", "workflow"):
-              verify_native_coverage(temporary / f"studio-{name}-journey.json", temporary / "studio-native-cohorts.json", Path("studio-web"))
-          PY_ARCHIVE
-          python -m mypy --strict --explicit-package-bases \
-            tools/studio_native_coverage_gate.py tools/tests/test_studio_native_coverage_gate.py
-          python -m ruff check tools/studio_native_coverage_gate.py tools/tests/test_studio_native_coverage_gate.py
-          python -m ruff check --isolated --preview --select D,D413,D417,D420 \
-            --config 'lint.explicit-preview-rules = true' --config 'lint.pydocstyle.convention = "numpy"' \
-            tools/studio_native_coverage_gate.py tools/tests/test_studio_native_coverage_gate.py
-          python - <<'PY_SEAL_NATIVE'
-          import os
-          from pathlib import Path
-          from tools.studio_native_coverage_gate import finish_native_qualification
-          temporary = Path(os.environ["RUNNER_TEMP"])
-          finish_native_qualification(Path.cwd(), temporary / "studio-native-qualification", temporary / "studio-workspace-browser.coverage")
-          PY_SEAL_NATIVE
-          STUDIO_NATIVE_GATE_RECEIPT="$RUNNER_TEMP/studio-native-qualification/native-coverage-receipt.json" \
-            python -m coverage run --rcfile=/dev/null --branch \
-              --data-file="$RUNNER_TEMP/studio-native-gate.coverage" \
-              --include="*/tools/studio_native_coverage_gate.py" \
-              -m pytest --noconftest -q tools/tests/test_studio_native_coverage_gate.py
-          python -m coverage report --rcfile=/dev/null --data-file="$RUNNER_TEMP/studio-native-gate.coverage" \
-            --include="*/tools/studio_native_coverage_gate.py" --precision=2 --show-missing --fail-under=100
           python -m coverage json --rcfile=/dev/null \
             --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" \
             --pretty-print -o "$RUNNER_TEMP/studio-workspace-browser-coverage.json"

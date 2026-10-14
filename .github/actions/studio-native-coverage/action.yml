@@ -1,0 +1,52 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — native browser source and coverage qualification
+name: Native browser coverage qualification
+description: Verify archived source metadata and source-bound exact collector coverage.
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      working-directory: ${{ github.workspace }}
+      env:
+        STUDIO_NATIVE_COVERAGE_ARTIFACT: ${{ runner.temp }}/studio-workspace-journey.json
+      run: |
+        node --experimental-strip-types --input-type=module -e \
+          'import {readBrowserCohorts} from "./studio-web/quality/browserCohorts.ts"; process.stdout.write(JSON.stringify(await readBrowserCohorts(process.cwd() + "/studio-web")));' \
+          > "$RUNNER_TEMP/studio-native-cohorts.json"
+        python -m coverage run --rcfile=/dev/null --append --branch --concurrency=greenlet \
+          --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" \
+          --include="*/tools/studio_workspace_browser_coverage.py" \
+          -m pytest --noconftest -q tools/tests/test_studio_workspace_browser_coverage.py -k archive
+        python - <<'PY_ARCHIVE'
+        import os
+        from pathlib import Path
+        from tools.studio_workspace_browser_coverage import verify_native_coverage
+        temporary = Path(os.environ["RUNNER_TEMP"])
+        for name in ("workspace", "panel-refusal", "workbench", "parameter", "experiment", "result", "workflow"):
+            verify_native_coverage(temporary / f"studio-{name}-journey.json", temporary / "studio-native-cohorts.json", Path("studio-web"))
+        PY_ARCHIVE
+        python -m mypy --strict --explicit-package-bases \
+          tools/studio_native_coverage_gate.py tools/tests/test_studio_native_coverage_gate.py
+        python -m ruff check tools/studio_native_coverage_gate.py tools/tests/test_studio_native_coverage_gate.py
+        python -m ruff check --isolated --preview --select D,D413,D417,D420 \
+          --config 'lint.explicit-preview-rules = true' --config 'lint.pydocstyle.convention = "numpy"' \
+          tools/studio_native_coverage_gate.py tools/tests/test_studio_native_coverage_gate.py
+        python - <<'PY_SEAL_NATIVE'
+        import os
+        from pathlib import Path
+        from tools.studio_native_coverage_gate import finish_native_qualification
+        temporary = Path(os.environ["RUNNER_TEMP"])
+        finish_native_qualification(Path.cwd(), temporary / "studio-native-qualification", temporary / "studio-workspace-browser.coverage")
+        PY_SEAL_NATIVE
+        STUDIO_NATIVE_GATE_RECEIPT="$RUNNER_TEMP/studio-native-qualification/native-coverage-receipt.json" \
+          python -m coverage run --rcfile=/dev/null --branch \
+            --data-file="$RUNNER_TEMP/studio-native-gate.coverage" \
+            --include="*/tools/studio_native_coverage_gate.py" \
+            -m pytest --noconftest -q tools/tests/test_studio_native_coverage_gate.py
+        python -m coverage report --rcfile=/dev/null --data-file="$RUNNER_TEMP/studio-native-gate.coverage" \
+          --include="*/tools/studio_native_coverage_gate.py" --precision=2 --show-missing --fail-under=100

@@ -26,6 +26,7 @@ _INPUTS = (
     "tools/preflight.py",
     ".pre-commit-config.yaml",
     ".github/workflows/ci-studio.yml",
+    ".github/actions/studio-native-coverage/action.yml",
     "requirements-ci-py312-linux.txt",
     "requirements-ci-studio-browser.txt",
     "studio-web/package.json",
