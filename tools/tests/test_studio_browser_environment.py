@@ -39,8 +39,11 @@ def workbench_inputs(tmp_path: Path) -> tuple[Path, Path]:
     temporary = tmp_path / "temporary"
     for name in ("docs", "data", "tests", "studio-web/node_modules"):
         (original / name).mkdir(parents=True)
-    for name in ("src/owners", "browser-tests", "test-support", "dist/wasm"):
+    for name in ("src/owners", "public", "browser-tests", "test-support", "dist/wasm"):
         (original / "studio-web" / name).mkdir(parents=True)
+    (original / "studio-web/public/favicon.svg").write_bytes(
+        (Path(__file__).resolve().parents[2] / "studio-web/public/favicon.svg").read_bytes()
+    )
     for name, body in {
         "src/owners/source.ts": "export const source = 7;\n",
         "src/owners/metadata.json": '{"schema_version":1}\n',
@@ -145,6 +148,7 @@ def test_workbench_preserves_original_sources_and_hashes(
     original, temporary = workbench_inputs
     result = environment.prepare_source_workbench(original, temporary)
     isolated = temporary / "studio-workbench-source"
+    assert "public/favicon.svg" in result["original_source_sha256"]
     for name in ("docs", "data", "tests", "studio-web/node_modules"):
         assert (isolated / name).resolve() == (original / name).resolve()
     for relative, digest in result["original_source_sha256"].items():

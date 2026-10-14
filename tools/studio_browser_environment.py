@@ -61,7 +61,7 @@ def configure_chromium_sandbox(executable: Path, temporary: Path, github_env: Pa
 
 
 def prepare_source_workbench(original: Path, temporary: Path) -> dict[str, dict[str, str]]:
-    """Copy the original preview, source owners and both built kernels with hashes.
+    """Copy the original preview, sources, public assets and both kernels with hashes.
 
     Parameters
     ----------
@@ -93,7 +93,7 @@ def prepare_source_workbench(original: Path, temporary: Path) -> dict[str, dict[
         (isolated / name).symlink_to(original / name, target_is_directory=True)
     web = isolated / "studio-web"
     web.mkdir()
-    for name in ("src", "browser-tests", "test-support"):
+    for name in ("src", "public", "browser-tests", "test-support"):
         shutil.copytree(original / "studio-web" / name, web / name)
     for source in (original / "studio-web").iterdir():
         if source.is_file() and source.suffix in {".ts", ".json", ".html"}:
@@ -103,11 +103,12 @@ def prepare_source_workbench(original: Path, temporary: Path) -> dict[str, dict[
     )
     shutil.copytree(original / "studio-web/dist/wasm", web / "src/wasm")
     source_hashes = {}
-    for source in (original / "studio-web/src").rglob("*"):
-        if source.is_file():
-            relative = source.relative_to(original / "studio-web")
-            assert source.read_bytes() == (web / relative).read_bytes()
-            source_hashes[str(relative)] = hashlib.sha256(source.read_bytes()).hexdigest()
+    for name in ("src", "public"):
+        for source in (original / "studio-web" / name).rglob("*"):
+            if source.is_file():
+                relative = source.relative_to(original / "studio-web")
+                assert source.read_bytes() == (web / relative).read_bytes()
+                source_hashes[str(relative)] = hashlib.sha256(source.read_bytes()).hexdigest()
     kernels = {}
     for source in (original / "studio-web/dist/wasm").glob("*.wasm"):
         assert source.read_bytes() == (web / "src/wasm" / source.name).read_bytes()
