@@ -194,6 +194,42 @@ describe("captureTrajectory divergence detection", () => {
   const n = 3;
   const request = meanFieldRequest(n, 5);
 
+  it.each([
+    { field: "orderParameter", chain: false, reason: "R(t) sample 0" },
+    { field: "orderParameter", chain: true, reason: "R(t) sample 0" },
+    { field: "thetaFinal", chain: false, reason: "final phase 0" },
+    { field: "thetaFinal", chain: true, reason: "final phase 0" },
+  ] as const)(
+    "refuses a changed zero sign in $field with chain=$chain",
+    ({ field, chain, reason }) => {
+      const stationary: KuramotoRequest = {
+        mode: "mean-field",
+        omega: field === "orderParameter" ? [0, 0, 0, 0] : [0, 0],
+        theta0: field === "orderParameter" ? [0, Math.PI, 0, -Math.PI] : [0, 0],
+        steps: 2,
+        dt: 0.02,
+        coupling: 0,
+      };
+      const original = simulate(stationary);
+      if (!original.ok) throw new Error(original.reason);
+      expect(Object.is(original.run[field][0], 0)).toBe(true);
+      expect(captureTrajectory(simulate, stationary).ok).toBe(true);
+      const alteredReplay: KernelSimulate = (input) => {
+        const actual = simulate(input);
+        if (!actual.ok || (input.steps === 1) !== chain) return actual;
+        const samples = actual.run[field].slice();
+        expect(Object.is(samples[0], 0)).toBe(true);
+        samples[0] = -0;
+        return { ok: true, run: { ...actual.run, [field]: samples } };
+      };
+      expect(captureTrajectory(alteredReplay, stationary)).toEqual({
+        ok: false,
+        reason: `chained capture diverged from the one-shot kernel run at ${reason}`,
+      });
+      expect(Object.is(original.run[field][0], 0)).toBe(true);
+    },
+  );
+
   it("fails closed when the one-shot R(t) disagrees with the chain", () => {
     const stub: KernelSimulate = (req) =>
       req.steps === 1

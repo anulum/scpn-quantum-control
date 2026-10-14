@@ -134,7 +134,7 @@ export function captureTrajectory(
     return { ok: false, reason: oneShot.reason };
   }
   for (let index = 0; index <= request.steps; index += 1) {
-    if (orderParameter[index] !== oneShot.run.orderParameter[index]) {
+    if (!Object.is(orderParameter[index], oneShot.run.orderParameter[index])) {
       return {
         ok: false,
         reason: `chained capture diverged from the one-shot kernel run at R(t) sample ${index}`,
@@ -143,7 +143,7 @@ export function captureTrajectory(
   }
   const lastRow = request.steps * n;
   for (let index = 0; index < n; index += 1) {
-    if (theta[lastRow + index] !== oneShot.run.thetaFinal[index]) {
+    if (!Object.is(theta[lastRow + index], oneShot.run.thetaFinal[index])) {
       return {
         ok: false,
         reason: `chained capture diverged from the one-shot kernel run at final phase ${index}`,
