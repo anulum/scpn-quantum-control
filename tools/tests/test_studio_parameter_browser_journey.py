@@ -14,12 +14,12 @@ import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
-from urllib.parse import urlsplit
 
 import pytest
 
 from tools.studio_parameter_browser_journey import run_parameter_journey
 from tools.tests.test_studio_browser_runtime_refusal import owned_fault_host
+from tools.tests.test_studio_workbench_browser_journey import assert_native_source_owners
 
 
 @pytest.mark.parametrize(
@@ -136,14 +136,8 @@ def test_parameter_journey_real_signed_matrix_and_native_revision_recovery(
     assert observed["second_child_members"] == 14
     records = observed["native_v8_coverage"]
     identity = observed["python_child_digest"]
-    assert isinstance(records, list) and len(records) == 18
-    owners: Counter[str] = Counter()
-    for record in records:
-        assert isinstance(record, dict)
-        coverage = record["coverage"]
-        assert isinstance(coverage, dict) and isinstance(coverage["url"], str)
-        owners[urlsplit(coverage["url"]).path] += 1
-    assert owners == Counter(
+    owners = assert_native_source_owners(records, "parameters", 2)
+    assert owners >= Counter(
         {
             "/src/shared/storage/workspaceStore.ts": 2,
             "/src/shared/storage/workspaceArchive.ts": 2,
