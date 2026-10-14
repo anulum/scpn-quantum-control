@@ -106,7 +106,7 @@ COPY studio-web/package.json studio-web/package.json
 # compiler pair and the WebAssembly kernel crate. The original kernel inputs
 # also support the build-tool acceptance tests.
 COPY studio-web/src/shared/contracts/ studio-web/src/shared/contracts/
-COPY studio-web/src/features/programs/programCompiler.ts studio-web/src/features/programs/programCompiler.test.ts studio-web/src/features/programs/
+COPY studio-web/src/modules/programs/programCompiler.ts studio-web/src/modules/programs/programCompiler.test.ts studio-web/src/modules/programs/
 COPY scpn_quantum_engine/studio_wasm_kernel/ scpn_quantum_engine/studio_wasm_kernel/
 
 ENV PYTHONPATH=/app/src:/app/oscillatools/src:/app
