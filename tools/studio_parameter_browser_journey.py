@@ -266,7 +266,12 @@ def run_parameter_journey(
                     editor = page.get_by_role("region", name="Linked parameter editor")
                     editor.get_by_role("button", name="K_nm[1,0] = -8", exact=True).click()
                     expect(editor.get_by_label("Selected element trainable")).not_to_be_checked()
+                    expect(editor.get_by_label("Selected value", exact=True)).to_have_value("-8")
+                    expect(editor.get_by_label("Input unit", exact=True)).to_have_value("rad/s")
                     _edit(editor, "-9")
+                    expect(
+                        editor.get_by_role("button", name="K_nm[1,0] = -9", exact=True)
+                    ).to_be_visible()
                     child_save = editor.get_by_role("button", name="Save parameter revision")
                     expect(child_save).to_be_enabled()
                     child_save.click()
