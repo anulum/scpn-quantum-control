@@ -27,6 +27,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ### Added
 
+- DLA-parity ordinary programme worker
+  (`python -m scpn_quantum_control.dla_parity.programme`): pinned request,
+  one deterministic output document under a shipped schema, sixteen refusal
+  categories; an output validator for the invariants a schema cannot express;
+  raw types checked before conversion; one unambiguous JSON reader. Numbers
+  of the reproducer unchanged.
+
 - The Studio workbench is a shell over a registry of modules. A module
   declares its stages, deep-link instruments and the manifest verbs and
   evidence schemas it requires; the address table is derived from the
