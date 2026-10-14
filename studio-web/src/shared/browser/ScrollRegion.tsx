@@ -21,13 +21,11 @@ export interface ScrollRegionProps {
 export function ScrollRegion({ name, action, className, children }: ScrollRegionProps) {
   const region = useRef<HTMLElement>(null);
   return (
-    <>
+    <section className={className} aria-label={name} ref={region} tabIndex={-1}>
       <button type="button" onClick={() => region.current?.focus()}>
         {action}
       </button>
-      <section className={className} aria-label={name} ref={region} tabIndex={-1}>
-        {children}
-      </section>
-    </>
+      {children}
+    </section>
   );
 }
