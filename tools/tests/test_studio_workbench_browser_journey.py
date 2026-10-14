@@ -106,9 +106,9 @@ def test_workbench_refuses_unsafe_origins_without_browser_extras(
 
     Parameters
     ----------
-    preview
+    preview : str
         Built preview address requiring literal loopback ownership.
-    source
+    source : str
         Independent root source address whose authority must be distinct.
 
     """
@@ -178,9 +178,9 @@ def test_workbench_real_public_navigation_and_federation(
 
     Parameters
     ----------
-    workbench_bundle
+    workbench_bundle : Path
         Genuine compiled portal and original Rust WASM kernels.
-    workbench_source
+    workbench_source : str
         Original-source Vite origin for native owner capture.
 
     """
@@ -205,11 +205,11 @@ def test_workbench_failure_retains_actual_runtime_diagnostics(
 
     Parameters
     ----------
-    workbench_bundle
+    workbench_bundle : Path
         Genuine built bytes served without altering the repository.
-    workbench_source
+    workbench_source : str
         Original-source server retained by the outer native cohort.
-    fault
+    fault : str
         Genuine uncaught page exception or an attempted outside-authority request.
 
     """
@@ -237,9 +237,9 @@ def test_workbench_source_failure_retains_counters_and_completed_cases(
 
     Parameters
     ----------
-    workbench_bundle
+    workbench_bundle : Path
         Original built portal/WASM and genuine independent host.
-    workbench_source
+    workbench_source : str
         Owned original source forwarded without changing its modules or mappings.
 
     """

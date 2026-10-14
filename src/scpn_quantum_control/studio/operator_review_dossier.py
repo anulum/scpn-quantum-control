@@ -279,7 +279,15 @@ class OperatorReviewDecision:
             raise ValueError("review choice must be approved or denied")
 
     def to_dict(self) -> dict[str, object]:
-        """Return a detached sealed review record with its original source reference."""
+        """Return a detached sealed review record with its original source reference.
+
+        Returns
+        -------
+        dict[str, object]
+            Sealed human review envelope retaining the original dossier and
+            execution identities, review choice, reviewer label and recorded time.
+
+        """
         wire: dict[str, object] = {
             "schema": REVIEW_SCHEMA,
             "body": {
@@ -361,7 +369,15 @@ class OperatorReviewDossier:
         object.__setattr__(self, "text", text)
 
     def to_dict(self) -> dict[str, Any]:
-        """Return fresh decoded source values, preserving original numeric types."""
+        """Return fresh decoded source values, preserving original numeric types.
+
+        Returns
+        -------
+        dict[str, Any]
+            Detached dossier envelope decoded from the sealed source text,
+            retaining its original fields, numeric values and digest identities.
+
+        """
         return cast(dict[str, Any], read_json(self.text))
 
     def export_bundle(self) -> dict[str, object]:
