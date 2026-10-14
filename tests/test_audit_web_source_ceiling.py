@@ -480,7 +480,7 @@ def test_written_ceiling_reads_back_unchanged(tmp_path: Path) -> None:
     Parameters
     ----------
     tmp_path : Path
-        Isolated temporary repository and workspace for this test.
+        Isolated temporary directory containing the ceiling JSON file.
 
     """
     ceiling = gate.Ceiling(
@@ -563,7 +563,7 @@ def test_ceiling_with_a_repeated_key_or_another_document_is_refused(tmp_path: Pa
     Parameters
     ----------
     tmp_path : Path
-        Isolated temporary repository and workspace for this test.
+        Isolated temporary directory containing the ceiling JSON file.
 
     """
     path = tmp_path / "ceiling.json"
