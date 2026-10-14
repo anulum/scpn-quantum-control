@@ -132,6 +132,12 @@ def test_measure_counts_findings_and_lists_unformatted_sources(tmp_path: Path) -
     The documentation site's script lies outside the web workspace; Biome
     reports it by its absolute path and the gate records it by its repository path.
     The page has no language attribute, which is one lint finding.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Isolated temporary repository and workspace for this test.
+
     """
     repo = _workspace(
         tmp_path,
@@ -175,14 +181,28 @@ def test_measure_counts_findings_and_lists_unformatted_sources(tmp_path: Path) -
 
 
 def test_measure_of_a_workspace_without_sources_is_empty(tmp_path: Path) -> None:
-    """A workspace with no tracked source yields an empty measurement without running Biome."""
+    """A workspace with no tracked source yields an empty measurement without running Biome.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Isolated temporary repository and workspace for this test.
+
+    """
     repo = _workspace(tmp_path, {"README.md": "no sources\n"})
 
     assert gate.measure(repo, tmp_path / "absent") == gate.Measurement({}, ())
 
 
 def test_unstaged_module_move_measures_new_owners_and_refuses_new_debt(tmp_path: Path) -> None:
-    """Measure a real unstaged move and refuse dirty additions before lowering the ceiling."""
+    """Measure a real unstaged move and refuse dirty additions before lowering the ceiling.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Isolated temporary repository and workspace for this test.
+
+    """
     repo = _workspace(tmp_path, {"src/routes/old.ts": ONE_FINDING})
     ceiling = _record(repo)
     before = ceiling.read_bytes()
@@ -211,7 +231,14 @@ def test_unstaged_module_move_measures_new_owners_and_refuses_new_debt(tmp_path:
 
 
 def test_parse_error_fails_the_gate_instead_of_being_counted(tmp_path: Path) -> None:
-    """A source Biome cannot parse stops the measurement with the diagnostic's category."""
+    """A source Biome cannot parse stops the measurement with the diagnostic's category.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Isolated temporary repository and workspace for this test.
+
+    """
     repo = _workspace(tmp_path, {"src/broken.ts": BROKEN})
 
     with pytest.raises(
@@ -261,7 +288,14 @@ def test_unusable_reports_are_refused(tmp_path: Path, output: str, message: str)
 
 
 def test_format_report_with_another_category_fails_the_gate(tmp_path: Path) -> None:
-    """A format run that reports anything but a format difference stops the measurement."""
+    """A format run that reports anything but a format difference stops the measurement.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Isolated temporary repository and workspace for this test.
+
+    """
     repo = _workspace(tmp_path, {"src/clean.ts": CLEAN})
     stand_in = _executable(
         tmp_path / "stand-in",
@@ -278,7 +312,14 @@ fi""",
 
 
 def test_executable_and_release_failures_are_reported(tmp_path: Path) -> None:
-    """A missing installation, a silent or failing executable and a file that cannot run are refused."""
+    """A missing installation, a silent or failing executable and a file that cannot run are refused.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Isolated temporary repository and workspace for this test.
+
+    """
     repo = _workspace(tmp_path / "repo", {"src/clean.ts": CLEAN})
     silent = _executable(tmp_path / "silent", "exit 0")
     failing = _executable(tmp_path / "failing", "echo 'Version: 9.9.9'; exit 2")
@@ -364,7 +405,14 @@ def test_compare_reports_every_departure_from_the_ceiling() -> None:
 
 
 def test_changed_sources_must_be_clean_and_formatted(tmp_path: Path) -> None:
-    """Sources that differ from a revision are listed and each remaining defect is reported."""
+    """Sources that differ from a revision are listed and each remaining defect is reported.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Isolated temporary repository and workspace for this test.
+
+    """
     repo = _workspace(
         tmp_path, {"src/kept.ts": ONE_FINDING, "src/edited.ts": CLEAN, "src/note.md": "x\n"}
     )
@@ -427,7 +475,14 @@ def test_rebaseline_needs_a_new_release_and_keeps_history() -> None:
 
 
 def test_written_ceiling_reads_back_unchanged(tmp_path: Path) -> None:
-    """A ceiling survives a write and a read, with sorted rows and totals in the file."""
+    """A ceiling survives a write and a read, with sorted rows and totals in the file.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Isolated temporary repository and workspace for this test.
+
+    """
     ceiling = gate.Ceiling(
         "2.5.15",
         "a" * 40,
@@ -503,7 +558,14 @@ def test_invalid_ceilings_are_refused(
 
 
 def test_ceiling_with_a_repeated_key_or_another_document_is_refused(tmp_path: Path) -> None:
-    """A repeated key and a document that is not an object are both refused."""
+    """A repeated key and a document that is not an object are both refused.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Isolated temporary repository and workspace for this test.
+
+    """
     path = tmp_path / "ceiling.json"
     path.write_text(
         '{"schema": "web_source_ceiling_v1", "lint": {"studio-web/a.ts": 1, "studio-web/a.ts": 2}}',
@@ -520,7 +582,16 @@ def test_ceiling_with_a_repeated_key_or_another_document_is_refused(tmp_path: Pa
 def test_main_passes_on_an_exact_ceiling_and_reports_departures(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    """The gate passes when the tree equals its ceiling and fails with one line per departure."""
+    """The gate passes when the tree equals its ceiling and fails with one line per departure.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Isolated temporary repository and workspace for this test.
+    capsys : pytest.CaptureFixture[str]
+        Captured gate output used to verify the public CLI response.
+
+    """
     repo = _workspace(tmp_path, {"src/one.ts": ONE_FINDING, "src/spaced.ts": UNFORMATTED})
     _record(repo)
 
@@ -549,7 +620,16 @@ def test_main_passes_on_an_exact_ceiling_and_reports_departures(
 def test_main_lowers_the_ceiling_to_a_smaller_measurement(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    """Cleaning a file makes the gate ask for a lower ceiling, and ``--lower`` writes it."""
+    """Cleaning a file makes the gate ask for a lower ceiling, and ``--lower`` writes it.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Isolated temporary repository and workspace for this test.
+    capsys : pytest.CaptureFixture[str]
+        Captured gate output used to verify the public CLI response.
+
+    """
     repo = _workspace(tmp_path, {"src/one.ts": ONE_FINDING, "src/spaced.ts": UNFORMATTED})
     path = _record(repo)
     web = repo / gate.WEB_ROOT / "src"
@@ -574,7 +654,16 @@ def test_main_lowers_the_ceiling_to_a_smaller_measurement(
 def test_main_rebaselines_only_after_a_release_change(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    """A ceiling from another release refuses comparison and lowering, and accepts a rebaseline."""
+    """A ceiling from another release refuses comparison and lowering, and accepts a rebaseline.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Isolated temporary repository and workspace for this test.
+    capsys : pytest.CaptureFixture[str]
+        Captured gate output used to verify the public CLI response.
+
+    """
     repo = _workspace(tmp_path, {"src/one.ts": ONE_FINDING})
     path = _record(repo, release="2.4.0")
 
@@ -603,7 +692,16 @@ def test_main_rebaselines_only_after_a_release_change(
 def test_main_refuses_another_installed_release_and_a_missing_ceiling(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    """An installation that is not the pinned release, and an absent ceiling, fail the gate."""
+    """An installation that is not the pinned release, and an absent ceiling, fail the gate.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Isolated temporary repository and workspace for this test.
+    capsys : pytest.CaptureFixture[str]
+        Captured gate output used to verify the public CLI response.
+
+    """
     repo = _workspace(tmp_path / "pinned", {"src/clean.ts": CLEAN}, pin="2.4.0")
     _record(repo)
 

@@ -64,7 +64,16 @@ _VERSION_LINE: Final[re.Pattern[str]] = re.compile(r"^Version: (\d+\.\d+\.\d+)$"
 
 @dataclass(frozen=True)
 class Measurement:
-    """Lint finding counts and unformatted files of the working tree."""
+    """Lint finding counts and unformatted files of the working tree.
+
+    Parameters
+    ----------
+    lint : dict[str, int]
+        Per-file lint finding counts.
+    unformatted : tuple[str, ...]
+        Repository paths of files requiring formatting.
+
+    """
 
     lint: dict[str, int]
     unformatted: tuple[str, ...]
@@ -72,7 +81,22 @@ class Measurement:
 
 @dataclass(frozen=True)
 class Ceiling:
-    """Recorded per-file lint counts, unformatted files and their provenance."""
+    """Recorded per-file lint counts, unformatted files and their provenance.
+
+    Parameters
+    ----------
+    release : str
+        Exact Biome release used for the recorded measurement.
+    measured_commit : str
+        Git revision supplying the measurement provenance.
+    lint : dict[str, int]
+        Recorded per-file lint finding ceilings.
+    unformatted : tuple[str, ...]
+        Recorded repository paths requiring formatting.
+    history : tuple[dict[str, object], ...]
+        Previous release measurements retained during rebaselining.
+
+    """
 
     release: str
     measured_commit: str
@@ -226,6 +250,16 @@ def _git(repo: Path, arguments: Sequence[str]) -> str:
 def pinned_release(repo: Path) -> str:
     """Return the Biome release the web workspace pins.
 
+    Parameters
+    ----------
+    repo : Path
+        Repository containing the web workspace.
+
+    Returns
+    -------
+    str
+        Exact release pinned by the web workspace manifest.
+
     Raises
     ------
     ValueError
@@ -246,6 +280,16 @@ def pinned_release(repo: Path) -> str:
 def workspace_executable(repo: Path) -> Path:
     """Return the Biome executable installed in the web workspace.
 
+    Parameters
+    ----------
+    repo : Path
+        Repository containing the web workspace.
+
+    Returns
+    -------
+    Path
+        Installed workspace Biome executable path.
+
     Raises
     ------
     ValueError
@@ -262,6 +306,18 @@ def workspace_executable(repo: Path) -> Path:
 
 def installed_release(repo: Path, executable: Path) -> str:
     """Return the release the installed Biome executable reports.
+
+    Parameters
+    ----------
+    repo : Path
+        Repository containing the web workspace.
+    executable : Path
+        Installed Biome executable whose release is queried.
+
+    Returns
+    -------
+    str
+        Release parsed from the installed executable output.
 
     Raises
     ------

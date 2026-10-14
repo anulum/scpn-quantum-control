@@ -394,7 +394,7 @@
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Operator-intercepted forward-AD TraceADScalar and TraceADArray value/protocol runtime over registry-gated NumPy dispatch.",
-      "dependency_boundary": "Depends one-way on parameter, registry, trace metadata/predicate/context, and focused array, assembly, cumulative, elementwise, interpolation, linalg, product, reduction, selection, shape, signal, and stencil primitive leaves; differentiable, vmap, and whole-program AD APIs consume the mutually recursive value classes, while six responsibility-specific test owners remain below the 1000-line threshold.",
+      "dependency_boundary": "Depends one-way on parameter, registry, trace metadata/predicate/context, and focused array, assembly, cumulative, elementwise, interpolation, linalg, product, reduction, selection, shape, signal, and stencil primitive leaves; differentiable, vmap, and whole-program AD APIs consume the mutually recursive value classes, while six test owners follow protocol, operator, selection, signal, linear-algebra, and shape responsibilities.",
       "reassess_when": "A non-value runtime lifecycle appears or class dispatch can be separated without cyclic imports."
     },
     {

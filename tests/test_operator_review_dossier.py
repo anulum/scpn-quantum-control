@@ -188,7 +188,7 @@ def update_settings(inputs: dict[str, Any], **changes: object) -> None:
     ----------
     inputs : dict[str, Any]
         Synthetic native input fixture owned by this test.
-    changes : object
+    **changes : object
         Literal requested and effective values for a new candidate.
 
     """

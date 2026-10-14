@@ -510,13 +510,15 @@ execution in `mlir_phase_qnode_runtime.py`. All 22 former facade definitions hav
 AST-equivalent leaf owner, every leaf has a one-way dependency on existing lower-level contracts,
 and focused boundary tests prevent a facade back-edge.
 
-Those four implementation leaves are 653, 291, 229, and 296 physical lines respectively, so the
-stable facade and every extracted owner remain below the 1,000-line GodFile threshold. Their
-permanent focused quality lane executes public compiler/runtime paths across 14 test owners and
+Those four implementation leaves are 653, 291, 229, and 296 physical lines respectively; these
+counts are non-gating telemetry. The stable facade and extracted owners follow the distinct
+assembly, compilation, audit, and runtime responsibilities described above. Their permanent focused
+quality lane executes public compiler/runtime paths across 14 test owners and
 requires exact coverage of all 414 statements and 138 branches in the four leaves. The same lane
 strict-types and NumPy-docstring-checks the four sources, the shared native-compilation test helper,
 and those 14 test owners. The larger 1,556-line transform-plan test owner is an already-registered,
-cohesive test file and shrank during this quality pass; it is not a new size-policy exception.
+cohesive test file and shrank during this quality pass; its custody follows the same responsibility
+policy.
 
 The Rust Program-AD replay surface is now a 98-line stable module owner that includes focused
 schema/parser, scalar-forward, numeric-state, numeric-dispatch, reverse-dispatch, reduction,
@@ -636,8 +638,8 @@ Its paired tests follow the same ownership boundary: the facade file retains onl
 while builder, support, execution, and differentiation integration behavior lives in separate
 module-named test surfaces.
 
-The vector-transform owner stays cohesive and below the extraction threshold: the 700-line
-`phase/qnode_vector_transforms.py` module owns one immutable result family, fail-closed planning,
+The vector-transform owner stays cohesive under one planning and execution lifecycle. Its
+700-line count is non-gating telemetry. The `phase/qnode_vector_transforms.py` module owns one immutable result family, fail-closed planning,
 one shared typed vector-Jacobian computation, directional contractions, component Hessians, manual
 `vmap(grad)`, and its readiness record. JVP/VJP no longer re-enter the public Jacobian planner after
 an equivalent outer decision; a public declared-capability matrix regression locks the
@@ -770,7 +772,8 @@ execution lifecycle. Dependencies remain one-way from the value runtime into
 the parameter/registry, trace metadata/predicate/context, and focused primitive
 rule leaves recorded in `tools/module_size_policy.json`. Tests are split by
 protocol, operator, selection, signal, linear-algebra, and shape responsibility;
-all six owners remain below the 1,000-line threshold.
+each owner follows one of these responsibility boundaries, with line counts retained only as
+non-gating telemetry.
 
 The remaining large paired tests deliberately follow those source ownership decisions:
 
