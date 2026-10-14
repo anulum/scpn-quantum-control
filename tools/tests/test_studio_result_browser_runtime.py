@@ -61,8 +61,8 @@ def test_result_runtime_preserves_actual_fault_evidence(fault: str) -> None:
 
     Parameters
     ----------
-    fault
-        Actual uncaught host error or refused external fetch.
+    fault : str
+        ``"page"`` emits an uncaught host error; ``"external"`` requests a refused origin.
 
     """
     observed: dict[str, object] = {}
