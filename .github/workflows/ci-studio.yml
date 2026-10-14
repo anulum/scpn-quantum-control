@@ -294,6 +294,31 @@ jobs:
             -m pytest --noconftest -q tests/test_studio_browser_journey.py tests/test_studio_local_experiment_browser.py tests/test_studio_result_browser.py tests/test_studio_comparison_browser.py tests/test_studio_owned_worker_journey.py tests/test_studio_resource_browser_journey.py tests/test_studio_workspace_browser_journey.py tests/test_studio_accessibility_browser_journey.py tests/test_studio_workflow_browser.py
           python -m ruff check tools/studio_browser_journey.py tools/studio_local_experiment_browser.py tools/studio_result_browser.py tools/studio_comparison_browser.py tools/studio_owned_worker_journey.py tools/studio_parameter_browser_journey.py tools/studio_workbench_browser_journey.py tools/studio_resource_browser_journey.py tools/studio_workspace_browser_journey.py tools/studio_workspace_browser_coverage.py tools/studio_workspace_browser_ui.py tools/tests/test_studio_workspace_browser_coverage.py tools/tests/test_studio_browser_runtime_refusal.py tools/tests/test_studio_owned_worker_browser_runtime.py tools/tests/test_studio_workbench_browser_journey.py tools/tests/test_studio_parameter_browser_journey.py tools/tests/test_studio_local_experiment_browser_runtime.py tools/tests/test_studio_result_browser_runtime.py tools/tests/test_studio_comparison_browser_runtime.py tools/studio_accessibility_browser.py tools/studio_accessibility_checks.py tests/test_studio_accessibility_browser_journey.py tools/tests/test_studio_accessibility_browser_runtime.py tools/tests/test_studio_accessibility_checks.py
           python -m ruff check --isolated --preview --select D,D413,D417,D420 --config 'lint.explicit-preview-rules = true' --config 'lint.pydocstyle.convention = "numpy"' tools/studio_browser_journey.py tools/studio_local_experiment_browser.py tools/studio_result_browser.py tools/studio_comparison_browser.py tools/studio_owned_worker_journey.py tools/studio_parameter_browser_journey.py tools/studio_workbench_browser_journey.py tools/studio_resource_browser_journey.py tools/studio_workspace_browser_journey.py tools/studio_workspace_browser_coverage.py tools/studio_workspace_browser_ui.py tools/studio_accessibility_browser.py tools/studio_accessibility_checks.py tests/test_studio_accessibility_browser_journey.py tools/tests/test_studio_accessibility_browser_runtime.py tools/tests/test_studio_accessibility_checks.py tools/tests/test_studio_owned_worker_browser_runtime.py tests/test_studio_local_experiment_browser.py tests/test_studio_result_browser.py tests/test_studio_comparison_browser.py tools/tests/test_studio_local_experiment_browser_runtime.py tools/tests/test_studio_result_browser_runtime.py tools/tests/test_studio_comparison_browser_runtime.py tools/tests/test_studio_workflow_browser_runtime.py
+      - name: Enable the locked Chromium namespace sandbox
+        working-directory: .
+        run: |
+          # Ubuntu requires an executable-specific userns permission for Chromium.
+          python - <<'PY_SANDBOX'
+          import os
+          from pathlib import Path
+
+          from playwright.sync_api import sync_playwright
+
+          with sync_playwright() as runtime:
+              browser_path = Path(runtime.chromium.executable_path).resolve(strict=True)
+          executable = str(browser_path)
+          if any(character in executable for character in '\\"\r\n{}[]*?'):
+              raise ValueError("Chromium executable cannot contain AppArmor metacharacters")
+          studio_profile_path = Path(os.environ["RUNNER_TEMP"]) / "studio-chromium.apparmor"
+          studio_profile_path.write_text(
+              'abi <abi/4.0>,\ninclude <tunables/global>\n'
+              f'profile scpn-studio-chromium "{executable}" flags=(unconfined) {{\n'
+              '  userns,\n}\n'
+          )
+          with Path(os.environ["GITHUB_ENV"]).open("a") as environment:
+              environment.write(f"STUDIO_NATIVE_BROWSER_EXECUTABLE={executable}\n")
+          PY_SANDBOX
+          sudo apparmor_parser --replace "$RUNNER_TEMP/studio-chromium.apparmor"
       - name: Check workspace Python types and native API documentation
         working-directory: .
         env:
