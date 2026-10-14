@@ -8,7 +8,7 @@
 
 import { webcrypto } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeAll, beforeEach, expect, it, vi } from "vitest";
 import { createOwnedKuramotoRun, instantiateKuramoto } from "../../shared/browser/kuramoto";
 import { BuiltKernelWorker } from "../../../test-support/kernelWorker";
@@ -30,6 +30,7 @@ import {
   parameterDraftReducer,
 } from "../../shared/parameters/parameterDraft";
 import { readComparisonArchive } from "./comparisonSources";
+import { Workbench } from "../../app/Workbench";
 
 let json = "";
 beforeAll(async () => {
@@ -87,6 +88,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  window.history.replaceState(null, "", "/");
 });
 
 /** Read both original sources through visible production controls. */
@@ -192,6 +194,30 @@ it("starts with no fabricated source or execution authority", () => {
     true,
   );
   expect(screen.queryByRole("table", { name: "Original matched and unmatched values" })).toBeNull();
+});
+
+it("loads the registered comparison from Results and retains the original workspace without starting another worker", async () => {
+  const started = BuiltKernelWorker.started;
+  window.history.replaceState(null, "", "#/workspace");
+  render(<Workbench rawCodecs={localExperimentCodecs}>{(_context, editors) => editors}</Workbench>);
+  fireEvent.change(screen.getByLabelText("Workspace archive JSON"), { target: { value: json } });
+  const navigation = screen.getByRole("navigation", { name: "Workbench views" });
+  fireEvent.click(screen.getByRole("button", { name: "Open Results" }));
+  await act(() => vi.dynamicImportSettled());
+  expect(
+    within(navigation).getByRole("link", { name: "Results" }).getAttribute("aria-current"),
+  ).toBe("page");
+  await screen.findByLabelText("Baseline archive JSON");
+  await admitBoth();
+  await compare();
+  expect(screen.getByText(/Matched: 27; baseline only: 0; candidate only: 0/)).toBeTruthy();
+  expect(screen.getByLabelText("Baseline archive JSON")).toHaveProperty("value", json);
+  expect(screen.getByLabelText("Candidate archive JSON")).toHaveProperty("value", json);
+  fireEvent.click(screen.getByRole("button", { name: "Open Workspace" }));
+  await screen.findByRole("region", { name: "Local workspace" });
+  expect(screen.getByLabelText("Workspace archive JSON")).toHaveProperty("value", json);
+  expect(BuiltKernelWorker.started).toBe(started);
+  expect(BuiltKernelWorker.activeCount).toBe(0);
 });
 
 it("selects an original parent and actual recorded run from a child archive without rebinding the saved draft", async () => {
