@@ -47,10 +47,12 @@ function OriginalWorkspace({
   source = "",
   nativeRequest,
   onRevisionAttempt,
+  onNativeRequest,
 }: {
   readonly source?: string;
   readonly nativeRequest?: Omit<WorkflowRunRequest, "save">;
   readonly onRevisionAttempt?: (prior: string, signal: AbortSignal) => void;
+  readonly onNativeRequest?: (operation: Promise<void>) => void;
 }) {
   const workspace = useWorkspace(localExperimentCodecs);
   const run = useWorkflowRun(workspace.draft, true);
@@ -77,7 +79,7 @@ function OriginalWorkspace({
         <button
           type="button"
           onClick={() => {
-            void run
+            const operation = run
               .run({
                 ...nativeRequest,
                 save: async (archive, prior, signal) => {
@@ -95,6 +97,7 @@ function OriginalWorkspace({
               .catch((cause: unknown) => {
                 setHostRefusal(cause instanceof Error ? cause.message : "Original host refused");
               });
+            onNativeRequest?.(operation);
           }}
         >
           Run through original native controller
@@ -279,6 +282,7 @@ it.each(["invalid-json", "future-workflow"] as const)(
 );
 
 it("shows a refused disposal receipt from a real native thread and blocks the next allocation", async () => {
+  let nativeRequest: Promise<void> | undefined;
   class RefusedReceiptWorker extends BuiltKernelWorker {
     override async terminate(): Promise<void> {
       await super.terminate();
@@ -306,6 +310,9 @@ it("shows a refused disposal receipt from a real native thread and blocks the ne
         rawCodecs: localExperimentCodecs,
         workerFactory: () => new RefusedReceiptWorker(),
       }}
+      onNativeRequest={(operation) => {
+        nativeRequest = operation;
+      }}
     />,
   );
   fireEvent.click(screen.getByRole("button", { name: "Load original workflow source" }));
@@ -314,6 +321,8 @@ it("shows a refused disposal receipt from a real native thread and blocks the ne
   );
   const started = BuiltKernelWorker.started;
   fireEvent.click(screen.getByRole("button", { name: "Run through original native controller" }));
+  expect(nativeRequest).toBeDefined();
+  await nativeRequest;
   await waitFor(() =>
     expect(screen.getByRole("alert").textContent).toContain("worker disposal is unconfirmed"),
   );

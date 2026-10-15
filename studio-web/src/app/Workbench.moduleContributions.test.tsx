@@ -9,7 +9,7 @@
 import { requirePresent } from "../../test-support/requirePresent";
 import { webcrypto } from "node:crypto";
 import type { ReactNode } from "react";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it } from "vitest";
 import settingsFixtureText from "../../../tests/data/studio_workspace/settings.json?raw";
 import { sourceNotesModule } from "../../test-fixtures/source-notes";
@@ -142,7 +142,14 @@ it("adds one compiled module entry and removes it while retaining exact admitted
     archive.json,
   );
   expect(screen.queryByRole("button", { name: "Open source notes" })).toBeNull();
-  fireEvent.click(screen.getByRole("button", { name: "Open Build" }));
+  await act(async () => {
+    fireEvent.click(screen.getByRole("button", { name: "Open Build" }));
+    await Promise.all([
+      import("../modules/build/BuildView"),
+      import("../modules/programs/ProgramEditor"),
+      import("../modules/compiler/CompilerTrace"),
+    ]);
+  });
   await screen.findByRole("heading", { name: "Program editor" });
   expect(window.location.hash).toBe("#/build");
 });

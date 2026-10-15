@@ -7,7 +7,7 @@
 // SCPN Quantum Control — real workbench command, source inspector and numerical job wiring
 
 import { webcrypto } from "node:crypto";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it } from "vitest";
 import { nativeKernelHttp } from "../../test-fixtures/native-kernel-http";
 import { stationaryPlan } from "../../test-fixtures/stationary-experiment-plan";
@@ -38,6 +38,25 @@ async function clickReady(name: string): Promise<void> {
 }
 
 it("dispatches two real jobs through command search and opens the registered settings inspector without changing source", async () => {
+  const nativeDisposals: Promise<void>[] = [];
+  class ObservedKernelWorker extends BuiltKernelWorker {
+    private acknowledgeDisposal: (() => void) | undefined;
+
+    constructor(...parameters: ConstructorParameters<typeof BuiltKernelWorker>) {
+      super(...parameters);
+      nativeDisposals.push(
+        new Promise<void>((resolve) => {
+          this.acknowledgeDisposal = resolve;
+        }),
+      );
+    }
+
+    override async terminate(): Promise<void> {
+      await super.terminate();
+      this.acknowledgeDisposal?.();
+    }
+  }
+  Object.defineProperty(globalThis, "Worker", { configurable: true, value: ObservedKernelWorker });
   const plan = await stationaryPlan();
   const transport = await nativeKernelHttp();
   const started = BuiltKernelWorker.started;
@@ -71,6 +90,10 @@ it("dispatches two real jobs through command search and opens the registered set
     for (let attempt = 1; attempt <= 2; attempt++) {
       fireEvent.click(commands.getByRole("button", { name: "Run prepared local experiment" }));
       await waitFor(() => expect(BuiltKernelWorker.started).toBe(started + attempt));
+      expect(nativeDisposals[attempt - 1]).toBeDefined();
+      await act(async () => {
+        await nativeDisposals[attempt - 1];
+      });
       await waitFor(() =>
         expect(
           screen.getByRole("status", { name: "Registered job lifecycle" }).textContent,

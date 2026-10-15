@@ -86,13 +86,19 @@ function useSource(json: string, active = true) {
 it("keeps the graph owner across its own original saves and retains a disposed actual result", async () => {
   const original = await source();
   const hook = renderHook(() => useSource(original.archive.json));
+  expect(hook.result.current.controller.ownsSource(original.archive.json)).toBe(false);
   let running: Promise<void>;
   act(() => {
     running = hook.result.current.controller.run({
       ...original,
       definition: graph(),
       rawCodecs: localExperimentCodecs,
-      save: (...args) => hook.result.current.save(...args),
+      save: (candidate, prior, signal) => {
+        expect(hook.result.current.controller.ownsSource(prior)).toBe(true);
+        expect(hook.result.current.controller.ownsSource(candidate.json)).toBe(true);
+        expect(hook.result.current.controller.ownsSource(`${candidate.json}\n`)).toBe(false);
+        return hook.result.current.save(candidate, prior, signal);
+      },
       workerFactory: () => new BuiltKernelWorker(),
     });
   });
@@ -115,6 +121,8 @@ it("keeps the graph owner across its own original saves and retains a disposed a
   expect(hook.result.current.controller.traversal).toBeGreaterThan(0);
   expect(hook.result.current.controller.terminal?.disposed).toBe(true);
   expect(hook.result.current.current).toBe(hook.result.current.controller.result?.archive.json);
+  expect(hook.result.current.controller.ownsSource(hook.result.current.current)).toBe(true);
+  expect(hook.result.current.controller.ownsSource(original.archive.json)).toBe(false);
 }, 10000);
 
 it("rejects an inactive view before any native allocation", async () => {
