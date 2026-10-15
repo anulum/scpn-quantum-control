@@ -89,6 +89,28 @@
    ]
   },
   {
+   "kind": ".mjs",
+   "root": "studio-web",
+   "gates": [
+    {
+     "workflow": "ci-studio.yml",
+     "job": "studio-web",
+     "command": "pnpm exec vitest run src/modules/workflows src/modules/parameters src/shared/parameters src/shared/workflows"
+    }
+   ]
+  },
+  {
+   "kind": ".mts",
+   "root": "studio-web",
+   "gates": [
+    {
+     "workflow": "ci-studio.yml",
+     "job": "studio-web",
+     "command": "pnpm typecheck"
+    }
+   ]
+  },
+  {
    "kind": ".py",
    "root": ".",
    "gates": [
