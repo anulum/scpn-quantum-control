@@ -888,6 +888,10 @@ jobs:
       - name: Enforce workspace browser contract owner coverage
         run: >-
           pnpm exec vitest run src/shared/contracts
+          src/shared/workers/kernelProtocol.test.ts
+          src/modules/operators/profiles/backendProfileModel.test.ts
+          src/modules/operators/policy/policyDecision.test.ts
+          src/modules/operators/dossiers/operatorDossierModel.test.ts
           --coverage --coverage.reporter=text
           --coverage.include='src/shared/contracts/*.ts'
           --coverage.thresholds.statements=100
@@ -898,6 +902,7 @@ jobs:
         run: >-
           pnpm exec vitest run src/shared/contracts/settings.test.ts src/app/Workbench.moduleContributions.test.tsx
           src/modules/settings/SettingsInspector.test.tsx
+          src/modules/settings/SettingsDocumentInspector.test.tsx
           --coverage --coverage.reporter=text
           --coverage.include=src/shared/contracts/settings.ts
           --coverage.include=src/modules/settings/SettingsInspector.tsx --coverage.include=src/modules/settings/SettingsRecord.tsx --coverage.include=src/modules/settings/SettingsDocumentInspector.tsx

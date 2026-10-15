@@ -335,3 +335,23 @@ it("refuses an invalid escaped Unicode scalar before digest admission", async ()
   requirePresent(wire.body.profiles[0]).body["route_id"] = "\ud800";
   expect((await parseBackendProfiles(JSON.stringify(wire))).ok).toBe(false);
 });
+
+it.each([
+  { marker: "~", admitted: true },
+  { marker: "\u007f", admitted: false },
+  { marker: "\u0080", admitted: false },
+  { marker: "\u009f", admitted: false },
+  { marker: "\u00a0", admitted: true },
+  { marker: "α😀", admitted: true },
+])("preserves the C1 route identity boundary for $marker", async ({ marker, admitted }) => {
+  const route = "source-" + marker + "-route";
+  const raw = await changed((wire) => {
+    requirePresent(wire.body.profiles[0]).body["route_id"] = route;
+  });
+  const result = await parseBackendProfiles(raw);
+  expect(result.ok).toBe(admitted);
+  if (result.ok) {
+    expect(result.value.text).toBe(raw);
+    expect(requirePresent(result.value.profiles[0]).route_id).toBe(route);
+  }
+});
