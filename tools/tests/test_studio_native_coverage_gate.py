@@ -349,12 +349,23 @@ def test_complete_native_recording_in_combined_browser_data_is_accepted(
         measured.save()
     combined_path = tmp_path / "combined-browser.coverage"
     combined = coverage.CoverageData(basename=str(combined_path))
+    recordings: list[coverage.CoverageData] = []
     for path in (original_data, foreign_path):
         raw = coverage.CoverageData(basename=str(path))
         raw.read()
+        recordings.append(raw)
         combined.update(raw)
     combined.write()
-    assert len(combined.measured_files()) == 2
+    assert recordings[1].measured_files() == {str(root / "tools/studio_browser_journey.py")}
+    assert combined.measured_files() == (
+        recordings[0].measured_files() | recordings[1].measured_files()
+    )
+    native_owner = next(
+        name
+        for name in recordings[0].measured_files()
+        if Path(name).name == "studio_workspace_browser_coverage.py"
+    )
+    assert combined.arcs(native_owner) == recordings[0].arcs(native_owner)
     value["data"] = str(combined_path)
     value["data_sha256"] = hashlib.sha256(combined_path.read_bytes()).hexdigest()
     candidate = tmp_path / "combined-receipt.json"
