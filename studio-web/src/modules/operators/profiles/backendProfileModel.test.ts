@@ -344,7 +344,7 @@ it.each([
   { marker: "\u00a0", admitted: true },
   { marker: "α😀", admitted: true },
 ])("preserves the C1 route identity boundary for $marker", async ({ marker, admitted }) => {
-  const route = "source-" + marker + "-route";
+  const route = `source-${marker}-route`;
   const raw = await changed((wire) => {
     requirePresent(wire.body.profiles[0]).body["route_id"] = route;
   });
