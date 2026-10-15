@@ -840,8 +840,16 @@ jobs:
           --coverage.thresholds.functions=100
           --coverage.thresholds.lines=100
       - name: Enforce catalogue owner coverage
+        env:
+          STUDIO_WORKSPACE_COVERAGE: ${{ runner.temp }}/studio-workspace-journey.json
+          STUDIO_PANEL_REFUSAL_COVERAGE: ${{ runner.temp }}/studio-panel-refusal-journey.json
+          STUDIO_WORKBENCH_COVERAGE: ${{ runner.temp }}/studio-workbench-journey.json
+          STUDIO_PARAMETER_COVERAGE: ${{ runner.temp }}/studio-parameter-journey.json
+          STUDIO_EXPERIMENT_COVERAGE: ${{ runner.temp }}/studio-experiment-journey.json
+          STUDIO_RESULT_COVERAGE: ${{ runner.temp }}/studio-result-journey.json
+          STUDIO_WORKFLOW_COVERAGE: ${{ runner.temp }}/studio-workflow-journey.json
         run: >-
-          pnpm exec vitest run src/modules/catalogue
+          pnpm exec vitest run src/modules/catalogue src/QuantumStudioPanel.test.tsx
           --coverage --coverage.reporter=text
           --coverage.include='src/modules/catalogue/*.{ts,tsx}'
           --coverage.thresholds.statements=100
