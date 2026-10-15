@@ -7,6 +7,8 @@
 # SCPN Quantum Control — Studio-executive quality-gate tests
 """Lock the Studio-executive product gate into preflight and CI."""
 
+import yaml
+
 from tools import preflight
 from tools import studio_executive_product_quality_gates as quality_gates
 from tools.ci_workflow_inventory import read_ci_workflow_source
@@ -241,8 +243,22 @@ def test_workflow_native_and_browser_owners_keep_exact_original_gates() -> None:
     workflow_ui = workflow.split("- name: Enforce workflow browser owner exact coverage", 1)[
         1
     ].split("- name:", 1)[0]
-    assert "STUDIO_WORKSPACE_COVERAGE:" in workflow_ui
-    assert "STUDIO_WORKFLOW_COVERAGE:" in workflow_ui
+    workflow_steps = yaml.safe_load(workflow)["jobs"]["studio-web"]["steps"]
+    workflow_owners = [
+        step
+        for step in workflow_steps
+        if step.get("name") == "Enforce workflow browser owner exact coverage"
+    ]
+    assert len(workflow_owners) == 1
+    assert workflow_owners[0]["env"] == {
+        "STUDIO_WORKSPACE_COVERAGE": "${{ runner.temp }}/studio-workspace-journey.json",
+        "STUDIO_PANEL_REFUSAL_COVERAGE": "${{ runner.temp }}/studio-panel-refusal-journey.json",
+        "STUDIO_WORKBENCH_COVERAGE": "${{ runner.temp }}/studio-workbench-journey.json",
+        "STUDIO_PARAMETER_COVERAGE": "${{ runner.temp }}/studio-parameter-journey.json",
+        "STUDIO_EXPERIMENT_COVERAGE": "${{ runner.temp }}/studio-experiment-journey.json",
+        "STUDIO_RESULT_COVERAGE": "${{ runner.temp }}/studio-result-journey.json",
+        "STUDIO_WORKFLOW_COVERAGE": "${{ runner.temp }}/studio-workflow-journey.json",
+    }
     assert "--coverage.provider=v8" not in workflow_ui
     for owner in (
         "src/app/Workbench.test.tsx",
