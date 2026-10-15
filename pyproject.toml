@@ -222,6 +222,7 @@ ignore = [
 "data/**" = ["D"]
 [tool.ruff.lint.isort]
 known-first-party = ["oscillatools", "scpn_quantum_control"]
+known-third-party = ["coverage"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"

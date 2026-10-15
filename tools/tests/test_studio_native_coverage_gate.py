@@ -16,9 +16,9 @@ import shutil
 import subprocess
 from pathlib import Path
 
+import coverage
 import pytest
 
-import coverage
 from tools.studio_browser_journey import loopback_url
 from tools.studio_native_coverage_gate import (
     begin_native_qualification,
