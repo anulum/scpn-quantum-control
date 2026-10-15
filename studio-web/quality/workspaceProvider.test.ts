@@ -266,6 +266,47 @@ it("merges every actual parameter owner through the original public provider", a
   }
 });
 
+it("keeps native coverage inside the actual Vitest include and exclude scope", async () => {
+  if (!process.env["STUDIO_WORKSPACE_COVERAGE"] || !process.env["STUDIO_PARAMETER_COVERAGE"])
+    throw new Error("Supply actual workspace and parameter evidence");
+  const directory = await mkdtemp(join(tmpdir(), "studio-provider-owner-scope-"));
+  let context: Vitest | null = null;
+  try {
+    context = await createVitest("test", {
+      config: false,
+      root: process.cwd(),
+      watch: false,
+      coverage: {
+        enabled: true,
+        provider: "v8",
+        reportsDirectory: directory,
+        include: ["src/modules/parameters/*.{ts,tsx}"],
+        exclude: [
+          "src/modules/parameters/CouplingTable.tsx",
+          "src/modules/parameters/Parameter*.tsx",
+          "**/*.test.{ts,tsx}",
+        ],
+      },
+    });
+    const instance = await provider.getProvider();
+    await instance.initialize(context);
+    await instance.clean(true);
+    const actual = coverageObject(await instance.generateCoverage({ allTestsRun: false }));
+    const files = actual["files"];
+    if (typeof files !== "function")
+      throw new Error("Original provider omitted its coverage map API");
+    expect(files.call(actual)).toEqual([
+      resolve(process.cwd(), "src/modules/parameters/index.tsx"),
+    ]);
+  } finally {
+    try {
+      await context?.close();
+    } finally {
+      await rm(directory, { recursive: true });
+    }
+  }
+});
+
 it("merges every genuine result owner through the original public V8 provider", async () => {
   if (!process.env["STUDIO_WORKSPACE_COVERAGE"] || !process.env["STUDIO_RESULT_COVERAGE"])
     throw new Error("Supply actual workspace and result evidence");

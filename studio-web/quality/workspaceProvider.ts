@@ -50,7 +50,9 @@ const provider: CoverageProviderModule = {
     delegate.generateCoverage = async (context) => {
       if (browser === undefined) throw new Error("Native browser coverage was not initialized");
       const node = await generateCoverage(context);
-      for (const map of browser) node.merge(map);
+      for (const map of browser)
+        for (const [owner, counters] of Object.entries(map))
+          if (delegate.isIncluded(owner)) node.merge({ [owner]: counters });
       return node;
     };
     return delegate;
