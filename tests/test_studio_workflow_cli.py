@@ -433,6 +433,76 @@ def test_actual_process_observes_signal_and_external_checkpoint_ownership(
             process.wait(timeout=15)
 
 
+def test_embedded_dispatcher_restores_ignored_sigint_after_checkpoint_cancellation(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Cancel the public dispatcher with a real signal after its atomic checkpoint.
+
+    Parameters
+    ----------
+    tmp_path
+        Owned source, checkpoint and actual native event allocation.
+    capsys
+        Original dispatcher output containing its retained cancellation journal.
+
+    """
+    source = source_file(tmp_path)
+    before = source.read_bytes()
+    target = tmp_path / "journal.json"
+    descriptor = watch_checkpoint(tmp_path, 0x00000080)
+    previous = signal.signal(signal.SIGINT, signal.SIG_IGN)
+    observer: subprocess.Popen[bytes] | None = None
+    observer_code = "\n".join(
+        [
+            "import os, runpy, signal, sys",
+            "helpers = runpy.run_path(sys.argv[1])",
+            "print('ready', flush=True)",
+            "helpers['await_checkpoint_events'](int(sys.argv[2]), 1, sys.argv[3])",
+            "os.kill(int(sys.argv[4]), signal.SIGINT)",
+        ]
+    )
+    try:
+        observer = subprocess.Popen(
+            [
+                sys.executable,
+                "-c",
+                observer_code,
+                str(Path(__file__).resolve()),
+                str(descriptor),
+                target.name,
+                str(os.getpid()),
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            pass_fds=(descriptor,),
+        )
+        assert observer.stdout is not None and observer.stderr is not None
+        assert select.select([observer.stdout], [], [], 20)[0]
+        assert observer.stdout.readline() == b"ready\n"
+        assert run([str(source), "--journal", str(target)]) == 130
+        observer.wait(timeout=20)
+        assert observer.returncode == 0, observer.stderr.read().decode()
+        assert signal.getsignal(signal.SIGINT) is signal.SIG_IGN
+        output = capsys.readouterr()
+        assert output.err == ""
+        journal = cast(dict[str, object], read_json(output.out))
+        assert cast(dict[str, object], journal["body"])["state"] == "cancelled"
+        assert canonical_bytes("embedded-cli-cancel.v1", read_json(target.read_text())) == (
+            canonical_bytes("embedded-cli-cancel.v1", journal)
+        )
+        assert source.read_bytes() == before and not list(tmp_path.glob("*.partial"))
+    finally:
+        if observer is not None:
+            if observer.poll() is None:
+                observer.terminate()
+                observer.wait(timeout=15)
+            for stream in (observer.stdout, observer.stderr):
+                if stream is not None:
+                    stream.close()
+        signal.signal(signal.SIGINT, previous)
+        os.close(descriptor)
+
+
 def test_resume_keeps_original_checkpoint_when_atomic_wire_exceeds_byte_bound(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
