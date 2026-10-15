@@ -627,6 +627,70 @@ def test_original_sampler_executes_local_durable_batch_without_transport_replace
     asyncio.run(execute())
 
 
+@pytest.mark.parametrize("late_observation", ["partial", "native", "both"])
+def test_completed_native_result_survives_late_observation(
+    tmp_path: Path, late_observation: str
+) -> None:
+    """Retain completed SDK counts and late evidence across cached and cold reads.
+
+    Parameters
+    ----------
+    tmp_path
+        Owned journal and real local Aer result directory.
+    late_observation
+        Later partial, raw native, or both observations of the original job.
+
+    """
+    from scpn_quantum_control.hardware.provider_job_lifecycle import (
+        retain_native_result,
+        store_job_results,
+    )
+
+    runner = connected_runner(tmp_path)
+    async_runner = AsyncHardwareRunner(runner)
+    journal = ProviderJobJournal(tmp_path / "journal")
+    identity = str(uuid4())
+
+    async def execute() -> None:
+        """Exercise the unchanged installed sampler, then read its durable receipt."""
+        handle = await async_runner.submit_one_async(
+            [measured_one()], shots=16, journal=journal, attempt_id=identity
+        )
+        original = await async_runner.wait_for_job_async(handle)
+        assert original[0].counts == {"1": 16}
+        before = journal.snapshot(identity)
+        events = before["events"]
+        assert isinstance(events, list)
+        encoded = next(
+            event["observation"]["native_runtime_json"]
+            for event in events
+            if "native_runtime_json" in event["observation"]
+        )
+        if late_observation in {"partial", "both"}:
+            with pytest.raises(ValueError, match="batch is incomplete"):
+                store_job_results(journal, identity, [])
+        if late_observation in {"native", "both"}:
+            retain_native_result(journal, identity, json.loads(encoded, cls=RuntimeDecoder))
+        retained = journal.snapshot(identity)
+        assert retained["state"] == "completed"
+        assert retained["payload"] == before["payload"]
+        assert retained["payload_sha256"] == before["payload_sha256"]
+        assert retained["provider_job_id"] == handle.job_id
+        assert retained["billing"] == "unknown"
+        late_events = retained["events"]
+        assert isinstance(late_events, list)
+        assert late_events[: len(events)] == events
+        assert len(late_events) == len(events) + (2 if late_observation == "both" else 1)
+        cached = await async_runner.wait_for_job_async(handle)
+        cold = async_runner.recover_job(ProviderJobJournal(tmp_path / "journal"), identity)
+        restored = await async_runner.wait_for_job_async(cold)
+        repeated = await async_runner.wait_for_job_async(cold)
+        assert cached == restored == repeated == original
+        assert journal.snapshot(identity) == retained
+
+    asyncio.run(execute())
+
+
 def test_native_sdk_wire_roundtrip_keeps_original_inputs_recoverable(
     tmp_path: Path,
     native_transport: dict[str, NativeJobTransport],

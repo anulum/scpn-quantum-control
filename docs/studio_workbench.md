@@ -940,6 +940,66 @@ python tools/studio_browser_journey.py --scenario operator_review_dossiers \
   --base-url http://127.0.0.1:4173/ --output /path/to/review-journey.json
 ```
 
+## Existing provider job observations
+
+Open **Devices & Operations → Existing provider job** and paste a native
+`studio.provider-observation.v1` export into **Provider observation JSON**.
+**Import existing job observation** admits its original attempt UUID, provider
+handle, target, requested shots, QPY payload digest and ordered evidence history.
+**Open recorded local sampler job** loads a captured local Aer simulation with
+16 deterministic samples, including a later incomplete observation.
+
+The view displays **Local state** and **Provider state** separately. An absent
+provider status remains unknown. `submission_unknown` requires explicit native
+reconciliation of an existing handle; refresh never retries submission.
+`cancellation_requested` records intent. Original completed counts can follow
+that intent, while both observations remain in the history. A later partial or
+raw SDK observation retains the original completed result and request identity.
+Billing remains unknown; content digests do not authenticate a provider or prove
+a debit. The original journal does not record event timestamps.
+
+Use the existing durable journal and attempt UUID to export a snapshot without
+opening a provider session:
+
+```bash
+PYTHONPATH=src:oscillatools/src:. python tools/export_provider_observations.py \
+  --journal /path/to/existing-journal \
+  --attempt-id 00000000-0000-4000-8000-000000000001 \
+  --output /path/to/new-observation.json
+```
+
+Supply the actual original attempt UUID. The command refuses an absent journal,
+an unknown identity or an existing output file. Each refresh export uses a new
+output path. The native API is
+`scpn_quantum_control.studio.provider_observations.export_provider_observation(journal, attempt_id)`.
+It preserves the original payload bytes as base64, raw SDK result text, partial
+results and all existing event sequences. The four MiB UTF-8 export ceiling is
+a product bound; larger original evidence remains intact in SQLite.
+
+To obtain a newer provider observation, explicitly use the original configured
+`AsyncHardwareRunner.recover_job` with the existing journal, attempt UUID and,
+for an uncertain dispatch, the owner-identified existing provider handle.
+Recovery verifies the original target, shots and native request before binding
+the handle. `observe_job_async` records native status;
+`wait_for_job_async` retrieves results with its explicit timeout. These existing
+retrieval APIs never submit a replacement job. Export the updated journal, paste
+the new snapshot and choose **Refresh existing job observation**.
+
+Refresh requires the same immutable request and provider identity and a complete
+prefix of the prior history. Stale snapshots and rewritten history refuse while
+preserving the prior admitted evidence. **Export admitted job observation**
+downloads the exact admitted native JSON, including after a refused draft.
+Import, refresh and download leave saved workspace state unchanged.
+
+The shared browser runner exposes this journey against an owned built preview
+containing the original WASM artifacts:
+
+```bash
+PYTHONPATH=src:oscillatools/src:. python tools/studio_browser_journey.py \
+  --scenario provider_observation_journal --base-url http://127.0.0.1:4173/ \
+  --output /path/to/new-provider-observation-journey.json
+```
+
 ## Settings and policy provenance
 
 The workspace inspector shows the original requested and effective values,

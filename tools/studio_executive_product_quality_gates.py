@@ -600,6 +600,105 @@ def build_workflow_quality_gates(python: str) -> list[Gate]:
     ]
 
 
+def build_provider_observation_quality_gates(python: str) -> list[Gate]:
+    """Build exact native job custody and read-only Studio observation gates.
+
+    Parameters
+    ----------
+    python
+        Existing locked interpreter; caller-owned temporary storage holds coverage.
+
+    Returns
+    -------
+    list
+        Strict source/test types and native documentation, genuine SDK recovery
+        and export execution, and exact changed-owner statement/branch coverage.
+        Built browser/WASM coverage belongs to the shared journey companion.
+
+    """
+    production = [
+        "src/scpn_quantum_control/hardware/provider_job_lifecycle.py",
+        "src/scpn_quantum_control/studio/provider_observations.py",
+        "tools/export_provider_observations.py",
+    ]
+    tests = [
+        "tests/test_provider_job_lifecycle.py",
+        "tests/test_provider_job_recovery.py",
+        "tests/test_studio_provider_observations.py",
+        "tests/test_export_provider_observations.py",
+    ]
+    owners = [
+        *production,
+        *tests,
+        "tools/studio_provider_observation_browser.py",
+        "tools/tests/test_studio_provider_observation_browser.py",
+        "tools/studio_executive_product_quality_gates.py",
+        "tests/test_studio_executive_product_quality_gate.py",
+    ]
+    data_file = str(
+        Path(gettempdir()) / f"scpn-qc-studio-provider-observation-{time_ns()}.coverage"
+    )
+    include = ",".join(
+        "*/" + path.removeprefix("src/scpn_quantum_control/") for path in production
+    )
+    return [
+        (
+            "studio-provider-observation-strict",
+            [python, "-m", "mypy", "--strict", "--explicit-package-bases", *owners],
+        ),
+        (
+            "studio-provider-observation-native-docs",
+            [
+                python,
+                "-m",
+                "ruff",
+                "check",
+                "--isolated",
+                "--preview",
+                "--select",
+                "D,D413,D417,D420",
+                "--config",
+                "lint.explicit-preview-rules = true",
+                "--config",
+                'lint.pydocstyle.convention = "numpy"',
+                *owners,
+            ],
+        ),
+        (
+            "studio-provider-observation-native-coverage",
+            [
+                python,
+                "-m",
+                "coverage",
+                "run",
+                f"--rcfile={devnull}",
+                f"--data-file={data_file}",
+                "--branch",
+                f"--include={include}",
+                "-m",
+                "pytest",
+                "-q",
+                *tests,
+            ],
+        ),
+        (
+            "studio-provider-observation-native-exact",
+            [
+                python,
+                "-m",
+                "coverage",
+                "report",
+                f"--rcfile={devnull}",
+                f"--data-file={data_file}",
+                "--precision=2",
+                "--show-missing",
+                "--fail-under=100",
+                f"--include={include}",
+            ],
+        ),
+    ]
+
+
 __all__ = [
     "STUDIO_EXECUTIVE_PRODUCT_COVERAGE_COHORT",
     "STUDIO_EXECUTIVE_PRODUCT_COVERAGE_DATA_FILE",
@@ -611,4 +710,5 @@ __all__ = [
     "build_operator_policy_quality_gates",
     "build_operator_dossier_quality_gates",
     "build_workflow_quality_gates",
+    "build_provider_observation_quality_gates",
 ]

@@ -10,10 +10,10 @@
     "public_api_exports": 851,
     "public_documentation_pages": 384,
     "python_model_classes": 1515,
-    "python_model_source_modules": 790,
+    "python_model_source_modules": 791,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1528
+    "test_files": 1530
   },
   "documentation": {
     "examples": [
@@ -762,7 +762,7 @@
       {
         "package": "studio",
         "path": "src/scpn_quantum_control/studio",
-        "python_modules": 41
+        "python_modules": 42
       },
       {
         "package": "studio_workspace",
@@ -7590,6 +7590,7 @@
       "src/scpn_quantum_control/studio/program_ad_replay_artifact.py",
       "src/scpn_quantum_control/studio/program_authoring.py",
       "src/scpn_quantum_control/studio/program_authoring_contracts.py",
+      "src/scpn_quantum_control/studio/provider_observations.py",
       "src/scpn_quantum_control/studio/qec_readiness_bundle.py",
       "src/scpn_quantum_control/studio/qpu_result_pack.py",
       "src/scpn_quantum_control/studio/readout_mitigation_bundle.py",
@@ -9299,6 +9300,7 @@
       "tests/test_experiments_helpers.py",
       "tests/test_export_operator_policy_decisions.py",
       "tests/test_export_operator_review_dossiers.py",
+      "tests/test_export_provider_observations.py",
       "tests/test_export_s10_analog_native_readiness.py",
       "tests/test_export_s11_quantum_sensing_readiness.py",
       "tests/test_export_s7_logical_dla_roadmap.py",
@@ -10187,6 +10189,7 @@
       "tests/test_studio_program_ad_quality_gate.py",
       "tests/test_studio_program_ad_replay_artifact.py",
       "tests/test_studio_program_authoring.py",
+      "tests/test_studio_provider_observations.py",
       "tests/test_studio_qec_readiness_bundle.py",
       "tests/test_studio_qec_readiness_bundle_quality_gate.py",
       "tests/test_studio_qpu_result_pack.py",

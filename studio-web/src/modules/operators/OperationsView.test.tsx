@@ -25,5 +25,8 @@ it("the real operator view exposes source-owned profiles without a submission ac
   expect(
     screen.getByRole("table", { name: "Operator requested and effective settings" }).textContent,
   ).toContain("9007199254740993");
+  fireEvent.click(screen.getByRole("button", { name: "Open recorded local sampler job" }));
+  expect((await screen.findByLabelText("Local job state")).textContent).toBe("completed");
+  expect(screen.getByLabelText("Provider payload digest").textContent).toMatch(/^[0-9a-f]{64}$/);
   expect(screen.queryByRole("button", { name: /submit/i })).toBeNull();
 });

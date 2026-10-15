@@ -1,0 +1,57 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — existing provider job browser qualification
+name: Studio provider observation qualification
+description: Exercise original job evidence through the shared real browser and exact UI owners.
+inputs:
+  preview-dir:
+    description: Actual current built bundle and genuine original WASM artifacts.
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Exercise and qualify existing provider job browser boundary
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      env:
+        STUDIO_PREVIEW_DIR: ${{ inputs.preview-dir }}
+      run: |
+        python -m http.server 4173 --bind 127.0.0.1 --directory "$STUDIO_PREVIEW_DIR" \
+          > "$RUNNER_TEMP/studio-provider-observation-preview.log" 2>&1 &
+        preview_pid=$!
+        trap 'kill "$preview_pid" 2>/dev/null || true; wait "$preview_pid" || true' EXIT
+        for ((attempt = 1; attempt <= 5; attempt++)); do
+          kill -0 "$preview_pid"
+          if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
+          sleep 1
+        done
+        kill -0 "$preview_pid"
+        curl --fail --silent http://127.0.0.1:4173/ > /dev/null
+        python -m coverage run --rcfile=/dev/null --branch --concurrency=greenlet \
+          --data-file="$RUNNER_TEMP/studio-provider-observation-browser.coverage" \
+          --include="*/tools/studio_provider_observation_browser.py,*/tools/studio_browser_journey.py" \
+          tools/studio_browser_journey.py --scenario provider_observation_journal \
+          --base-url http://127.0.0.1:4173/ --output "$RUNNER_TEMP/studio-provider-observation-journey.json"
+        python -m coverage run --rcfile=/dev/null --append --branch --concurrency=greenlet \
+          --data-file="$RUNNER_TEMP/studio-provider-observation-browser.coverage" \
+          --include="*/tools/studio_provider_observation_browser.py" \
+          -m pytest --noconftest -q tools/tests/test_studio_provider_observation_browser.py
+        python -m coverage report --rcfile=/dev/null \
+          --data-file="$RUNNER_TEMP/studio-provider-observation-browser.coverage" \
+          --include="*/tools/studio_provider_observation_browser.py" --precision=2 --show-missing --fail-under=100
+        python -m coverage combine --rcfile=/dev/null --append --keep \
+          --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" "$RUNNER_TEMP/studio-provider-observation-browser.coverage"
+    - name: Enforce exact provider observation UI owner coverage
+      shell: bash
+      working-directory: ${{ github.workspace }}/studio-web
+      run: >-
+        pnpm exec vitest run src/modules/operators/journal src/modules/operators/OperationsView.test.tsx
+        --coverage.enabled=true --coverage.include='src/modules/operators/journal/*.{ts,tsx}'
+        --coverage.include=src/modules/operators/OperationsView.tsx
+        --coverage.reportsDirectory="$RUNNER_TEMP/studio-provider-observation-ui-coverage"
+        --coverage.thresholds.perFile=true --coverage.thresholds.statements=100
+        --coverage.thresholds.branches=100 --coverage.thresholds.functions=100 --coverage.thresholds.lines=100

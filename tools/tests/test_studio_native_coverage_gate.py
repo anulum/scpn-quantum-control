@@ -148,6 +148,46 @@ def test_changed_source_binding_cannot_finish(
 
 
 @pytest.mark.parametrize(
+    "changed_input",
+    [
+        ".github/actions/studio-provider-observation/action.yml",
+        "data/studio/provider_observation_cases.json",
+    ],
+)
+def test_provider_observation_inputs_are_bound_before_execution(
+    tmp_path: Path, changed_input: str
+) -> None:
+    """Refuse changed original action/capture bytes before consuming any counter data.
+
+    Parameters
+    ----------
+    tmp_path
+        Owned complete copy of the actual selected source inputs, not invented counters.
+    changed_input
+        Original executable action or captured native observation corpus.
+
+    """
+    root = Path(__file__).resolve().parents[2]
+    reference = tmp_path / "reference"
+    begin_native_qualification(root, reference)
+    inputs = json.loads((reference / "source-before.json").read_text())
+    assert changed_input in inputs
+    assert inputs[changed_input] == hashlib.sha256((root / changed_input).read_bytes()).hexdigest()
+    copied = tmp_path / "original-inputs"
+    for relative in inputs:
+        target = copied / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(root / relative, target)
+    output = tmp_path / "qualification"
+    begin_native_qualification(copied, output)
+    changed = copied / changed_input
+    changed.write_bytes(changed.read_bytes() + b"\n")
+    with pytest.raises(ValueError, match="source inputs changed"):
+        finish_native_qualification(copied, output, tmp_path / "absent-counter-data")
+    assert not (output / "native-coverage-receipt.json").exists()
+
+
+@pytest.mark.parametrize(
     "damage",
     [
         "source",

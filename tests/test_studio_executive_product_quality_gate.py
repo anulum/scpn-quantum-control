@@ -274,3 +274,66 @@ def test_workflow_native_and_browser_owners_keep_exact_original_gates() -> None:
     assert "tools/tests/test_studio_workflow_browser_runtime.py" in workflow
     assert "*/tools/studio_workflow_browser.py" in workflow
     assert len(workflow.splitlines()) <= 1000
+
+
+def test_provider_observation_has_one_exact_native_ui_and_browser_cohort() -> None:
+    """Require changed result custody and every new journal owner at all exact gates."""
+    from pathlib import Path
+
+    gates = dict(quality_gates.build_provider_observation_quality_gates("/python"))
+    production = (
+        "src/scpn_quantum_control/hardware/provider_job_lifecycle.py",
+        "src/scpn_quantum_control/studio/provider_observations.py",
+        "tools/export_provider_observations.py",
+    )
+    tests = (
+        "tests/test_provider_job_lifecycle.py",
+        "tests/test_provider_job_recovery.py",
+        "tests/test_studio_provider_observations.py",
+        "tests/test_export_provider_observations.py",
+    )
+    for path in (
+        *production,
+        *tests,
+        "tools/studio_provider_observation_browser.py",
+        "tools/tests/test_studio_provider_observation_browser.py",
+    ):
+        assert path in gates["studio-provider-observation-strict"]
+        assert path in gates["studio-provider-observation-native-docs"]
+    run = gates["studio-provider-observation-native-coverage"]
+    exact = gates["studio-provider-observation-native-exact"]
+    assert all(path in run for path in tests)
+    assert "--branch" in run and "--rcfile=/dev/null" in run
+    assert "--fail-under=100" in exact
+    for path in production:
+        assert any(path.removeprefix("src/scpn_quantum_control/") in field for field in exact)
+    repo = Path(__file__).resolve().parents[1]
+    workflow = (repo / ".github/workflows/ci-studio.yml").read_text()
+    assert workflow.count("build_provider_observation_quality_gates(sys.executable)") == 1
+    import json
+
+    typing_policy = json.loads((repo / "tools/test_typing_policy.json").read_text())
+    enforced = {
+        path
+        for cohort in typing_policy["cohorts"]
+        if cohort["status"] == "enforced"
+        for path in cohort["files"]
+    }
+    assert {
+        "tests/test_studio_provider_observations.py",
+        "tests/test_export_provider_observations.py",
+    } <= enforced
+    assert workflow.count("uses: ./.github/actions/studio-provider-observation") == 1
+    action = (repo / ".github/actions/studio-provider-observation/action.yml").read_text()
+    assert "python -m http.server 4173 --bind 127.0.0.1" in action
+    assert 'kill -0 "$preview_pid"' in action
+    assert "trap 'kill" in action and " EXIT" in action
+    assert action.count("--scenario provider_observation_journal") == 1
+    assert "tools/tests/test_studio_provider_observation_browser.py" in action
+    assert "--concurrency=greenlet" in action and "--fail-under=100" in action
+    assert "src/modules/operators/journal" in action
+    assert "src/modules/operators/OperationsView.test.tsx" in action
+    for measure in ("statements", "branches", "functions", "lines"):
+        assert f"--coverage.thresholds.{measure}=100" in action
+    assert "--coverage.thresholds.perFile=true" in action
+    assert len(workflow.splitlines()) <= 1000

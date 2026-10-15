@@ -356,8 +356,8 @@ jobs:
           python - <<'PY_PROGRAM'
           import subprocess
           import sys
-          from tools.studio_executive_product_quality_gates import build_backend_profiles_quality_gates, build_program_authoring_quality_gates, build_operator_policy_quality_gates, build_operator_dossier_quality_gates
-          for name, command in [*build_program_authoring_quality_gates(sys.executable), *build_backend_profiles_quality_gates(sys.executable), *build_operator_policy_quality_gates(sys.executable), *build_operator_dossier_quality_gates(sys.executable)]:
+          from tools.studio_executive_product_quality_gates import build_backend_profiles_quality_gates, build_program_authoring_quality_gates, build_operator_policy_quality_gates, build_operator_dossier_quality_gates, build_provider_observation_quality_gates
+          for name, command in [*build_program_authoring_quality_gates(sys.executable), *build_backend_profiles_quality_gates(sys.executable), *build_operator_policy_quality_gates(sys.executable), *build_operator_dossier_quality_gates(sys.executable), *build_provider_observation_quality_gates(sys.executable)]:
               print(name, flush=True)
               subprocess.run(command, check=True)
           PY_PROGRAM
@@ -613,6 +613,10 @@ jobs:
             --include="*/tools/studio_operator_dossier_browser.py" --precision=2 --show-missing --fail-under=100
           python -m coverage combine --rcfile=/dev/null --append --keep \
             --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" "$RUNNER_TEMP/studio-dossier-browser.coverage"
+      - name: Qualify original provider observations through the shared browser and exact UI owners
+        uses: ./.github/actions/studio-provider-observation
+        with:
+          preview-dir: ${{ runner.temp }}/studio-browser-preview
       - name: Exercise original panel refusal over isolated damaged input files
         working-directory: .
         env:
@@ -970,6 +974,9 @@ jobs:
             ${{ runner.temp }}/studio-policy-journey.json
             ${{ runner.temp }}/studio-dossier-journey.json
             ${{ runner.temp }}/studio-dossier-browser.coverage
+            ${{ runner.temp }}/studio-provider-observation-journey.json
+            ${{ runner.temp }}/studio-provider-observation-browser.coverage
+            ${{ runner.temp }}/studio-provider-observation-ui-coverage
             ${{ runner.temp }}/studio-policy-browser.coverage
             ${{ runner.temp }}/studio-policy-ui-coverage
             ${{ runner.temp }}/studio-workbench-source-qualification.json

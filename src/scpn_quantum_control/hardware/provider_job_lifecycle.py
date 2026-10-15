@@ -331,7 +331,7 @@ def native_job_result(job: Any, timeout_s: object) -> Any:
 
 
 def restore_job_results(snapshot: dict[str, object]) -> list[JobResult]:
-    """Read detached original results from the committed terminal event.
+    """Read the first completed receipt while retaining late raw/partial evidence.
 
     Parameters
     ----------
@@ -341,7 +341,9 @@ def restore_job_results(snapshot: dict[str, object]) -> list[JobResult]:
     Returns
     -------
     list[JobResult]
-        Original result values without a provider or submission call.
+        Detached original result values without a provider or submission call.
+        Later observations can retain the completed lifecycle state without
+        carrying a decoded result receipt; they do not replace that receipt.
 
     Raises
     ------
@@ -350,7 +352,7 @@ def restore_job_results(snapshot: dict[str, object]) -> list[JobResult]:
 
     """
     events = cast(list[dict[str, Any]], snapshot["events"])
-    for event in reversed(events):
-        if event["state"] == "completed":
+    for event in events:
+        if event["state"] == "completed" and "results" in event["observation"]:
             return [JobResult(**row) for row in event["observation"]["results"]]
     raise ValueError("completed attempt has no retained results")

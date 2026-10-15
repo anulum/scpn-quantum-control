@@ -8,6 +8,7 @@
 import { BackendProfiles } from "./profiles/BackendProfiles";
 import { PolicyInspector } from "./policy/PolicyInspector";
 import { OperatorDossier } from "./dossiers/OperatorDossier";
+import { JobJournal } from "./journal/JobJournal";
 /** Reachable offline operator metadata; importing does not confer execution authority. */
 export default function OperationsView() {
   return (
@@ -16,6 +17,7 @@ export default function OperationsView() {
       <BackendProfiles />
       <PolicyInspector />
       <OperatorDossier />
+      <JobJournal />
     </article>
   );
 }

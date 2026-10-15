@@ -154,7 +154,7 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 1.2.0 |
 | Public API exports | 851 |
-| Python source modules | 790 |
+| Python source modules | 791 |
 | Public Python classes | 1515 |
 | Domain package families | 40 |
 | API documentation pages | 14 |
@@ -163,7 +163,7 @@ claims only when the evidence exists.
 | Notebook files | 109 |
 | Example files | 39 |
 | Optional extras | 43 |
-| Python test files | 1528 |
+| Python test files | 1530 |
 | Public documentation pages | 384 |
 | GitHub Actions workflows | 44 |
 

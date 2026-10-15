@@ -29,6 +29,8 @@ _INPUTS = (
     ".pre-commit-config.yaml",
     ".github/workflows/ci-studio.yml",
     ".github/actions/studio-native-coverage/action.yml",
+    ".github/actions/studio-provider-observation/action.yml",
+    "data/studio/provider_observation_cases.json",
     "requirements-ci-py312-linux.txt",
     "requirements-ci-studio-browser.txt",
     "studio-web/package.json",

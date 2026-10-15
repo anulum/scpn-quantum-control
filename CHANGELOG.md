@@ -27,6 +27,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ### Added
 
+- Studio Operators can inspect existing provider job observations, refresh the
+  same job's append-only history and export the admitted original JSON. Local
+  lifecycle, provider status, cancellation intent and unknown billing remain
+  separate; importing or refreshing evidence never submits a job.
+
 - DLA-parity ordinary programme worker
   (`python -m scpn_quantum_control.dla_parity.programme`): pinned request,
   one deterministic output document under a shipped schema, sixteen refusal
@@ -96,6 +101,9 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   `data/kyma_v3_symbolic_composition/kyma_v3_dynamics_ablation.json`.
 
 ### Fixed
+
+- Repeated native job recovery retains the first completed result receipt when
+  later raw or partial observations preserve the completed lifecycle state.
 
 - Saved Studio workflows resume across the module move without changing
   completed outputs or repeating completed evaluations. New workflow outputs
