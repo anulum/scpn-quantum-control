@@ -84,7 +84,7 @@
     {
       "path": "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json",
       "role": "Differentiable dependency and environment evidence map artefact",
-      "sha256": "49f547ae2f0ab9590f02b9bf8578b7ab4a1e006ca03c0ee4187e6a323d915c69",
+      "sha256": "44b1103cde7fb7cbfe5deeaceb93c7de11b68f008dc3f4320eb37d14e8befdd9",
       "size_bytes": 20492
     },
     {
@@ -156,13 +156,13 @@
     {
       "path": "data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.json",
       "role": "Exact environment-lock manifest",
-      "sha256": "8a863dbb265f480f3696c01df36f517545860ec2108f310891c0c419e3b6645c",
+      "sha256": "411a91976fca4079eb4421b8a812293cd5223d7fa6100ef7f20253a71f2d043f",
       "size_bytes": 3241
     },
     {
       "path": "data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.md",
       "role": "Environment-lock reviewer summary",
-      "sha256": "57f48120842cd04585f1add7cd966db26907f55e313eb7467f5e69ebd9aa7fd0",
+      "sha256": "f07dc7c69565625f4d36077c73b17217c28bc0f083cb9da74425a7cff94c5d0a",
       "size_bytes": 2388
     },
     {
