@@ -10,9 +10,11 @@
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import os
 import subprocess
+from contextlib import redirect_stdout
 from pathlib import Path
 
 import coverage
@@ -58,7 +60,7 @@ def _check_report(filename: Path) -> None:
         for name, value in report["files"].items()
         if name.replace("\\", "/").endswith(_OWNER)
     ]
-    if len(owners) != 1:
+    if len(owners) != 1 or len(report["files"]) != 1:
         raise ValueError("Exactly one native collector coverage owner required")
     owner = owners[0]
     summary = owner["summary"]
@@ -71,6 +73,29 @@ def _check_report(filename: Path) -> None:
         or owner["missing_branches"]
     ):
         raise ValueError("Native collector requires 100% statements and branches before push")
+
+
+def _check_data_report(root: Path, data: Path, report: Path) -> None:
+    """Reconstruct every owner fact from the original arcs and admitted source."""
+    original = coverage.CoverageData(basename=str(data))
+    original.read()
+    files = list(original.measured_files())
+    if len(files) != 1:
+        raise ValueError("Native raw data requires exactly one collector owner")
+    filename = files[0]
+    if not ("/" + filename.replace("\\", "/")).endswith("/" + _OWNER) or not original.has_arcs():
+        raise ValueError("Native raw data requires a branch-enabled collector owner")
+    measured = coverage.Coverage(data_file=None, config_file=False)
+    measured.get_data().add_arcs({str(root / _OWNER): original.arcs(filename) or []})
+    with redirect_stdout(io.StringIO()) as output:
+        measured.json_report(morfs=[str(root / _OWNER)], outfile="-")
+    reconstructed = json.loads(output.getvalue())
+    recorded = json.loads(report.read_text(encoding="utf-8"))
+    if (next(iter(recorded["files"].values())), recorded["totals"]) != (
+        next(iter(reconstructed["files"].values())),
+        reconstructed["totals"],
+    ):
+        raise ValueError("Native raw data does not support the reported collector facts")
 
 
 def begin_native_qualification(root: Path, output: Path) -> None:
@@ -126,6 +151,7 @@ def finish_native_qualification(root: Path, output: Path, data: Path) -> Path:
     report = output / "native-coverage.json"
     measured.json_report(outfile=str(report), include=[f"*/{_OWNER}"])
     _check_report(report)
+    _check_data_report(root.resolve(), data, report)
     receipt = output / "native-coverage-receipt.json"
     receipt.write_text(
         json.dumps(
@@ -187,3 +213,4 @@ def check_native_coverage(root: Path, receipt: Path | None = None) -> None:
         if hashlib.sha256(filename.read_bytes()).hexdigest() != value[f"{name}_sha256"]:
             raise ValueError("Native coverage evidence digest differs")
     _check_report(Path(value["report"]))
+    _check_data_report(root, Path(value["data"]), Path(value["report"]))

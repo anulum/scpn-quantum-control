@@ -12,15 +12,19 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
 
+import coverage
 from tools.studio_native_coverage_gate import (
     begin_native_qualification,
     check_native_coverage,
     finish_native_qualification,
 )
+from tools.studio_workspace_browser_coverage import verify_native_coverage
 
 
 @pytest.fixture
@@ -150,6 +154,8 @@ def test_changed_source_binding_cannot_finish(
         "data",
         "owner",
         "duplicate",
+        "extra_owner",
+        "totals",
         "statements",
         "branches",
         "missing_lines",
@@ -191,6 +197,10 @@ def test_damaged_qualification_cannot_authorize_push(
             report["files"] = {}
         elif damage == "duplicate":
             report["files"]["duplicate/" + name] = owner
+        elif damage == "extra_owner":
+            report["files"]["unrelated.py"] = owner
+        elif damage == "totals":
+            report["totals"]["num_statements"] = 0
         elif damage in {"statements", "branches"}:
             owner["summary"]["num_" + damage] = 0
         elif damage in {"missing_lines", "missing_branches"}:
@@ -207,3 +217,100 @@ def test_damaged_qualification_cannot_authorize_push(
     damaged.write_text(json.dumps(value))
     with pytest.raises(ValueError):
         check_native_coverage(root, damaged)
+
+
+@pytest.mark.parametrize("mode", ["foreign", "mixed", "lines", "partial"])
+def test_original_report_refuses_unrelated_or_incomplete_recorded_data(
+    qualified_proof: tuple[Path, Path], tmp_path: Path, mode: str
+) -> None:
+    """Reject actual mismatched measurements and accept the restored original pair.
+
+    Parameters
+    ----------
+    qualified_proof : tuple[Path, Path]
+        Genuine complete native report and its original recorded data.
+    tmp_path : Path
+        Owned directory for actual independent measurements and receipt copies.
+    mode : str
+        Other-owner, mixed-owner, statement-only or partial native measurement.
+
+    """
+    root, receipt = qualified_proof
+    original = receipt.read_bytes()
+    value = json.loads(original)
+    check_native_coverage(root, receipt)
+    snapshot = tmp_path / "cohorts.json"
+    if mode != "foreign":
+        result = subprocess.run(
+            [
+                "node",
+                "--experimental-strip-types",
+                "--input-type=module",
+                "-e",
+                'import {readBrowserCohorts} from "./quality/browserCohorts.ts"; '
+                "process.stdout.write(JSON.stringify(await readBrowserCohorts(process.cwd())));",
+            ],
+            cwd=root / "studio-web",
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=30,
+            env=os.environ | {"NODE_OPTIONS": "--max-old-space-size=768"},
+        )
+        snapshot.write_text(result.stdout, encoding="utf-8")
+    owners = []
+    if mode in {"foreign", "mixed"}:
+        owners.append(str(root / "tools/studio_native_coverage_gate.py"))
+    if mode != "foreign":
+        owners.append(str(root / "tools/studio_workspace_browser_coverage.py"))
+    data = tmp_path / "independent.coverage"
+    measured = coverage.Coverage(
+        data_file=str(data), config_file=False, branch=mode != "lines", include=owners
+    )
+    measured.start()
+    try:
+        if mode in {"foreign", "mixed"}:
+            begin_native_qualification(root, tmp_path / "independent-source-binding")
+        if mode != "foreign":
+            verify_native_coverage(
+                Path(os.environ["STUDIO_NATIVE_COVERAGE_ARTIFACT"]),
+                snapshot,
+                root / "studio-web",
+            )
+    finally:
+        measured.stop()
+        measured.save()
+    value["data"] = str(data)
+    value["data_sha256"] = hashlib.sha256(data.read_bytes()).hexdigest()
+    substituted = tmp_path / "substituted-receipt.json"
+    substituted.write_text(json.dumps(value), encoding="utf-8")
+    with pytest.raises(ValueError, match="Native raw data"):
+        check_native_coverage(root, substituted)
+    substituted.write_bytes(original)
+    check_native_coverage(root, substituted)
+    assert receipt.read_bytes() == original
+    assert hashlib.sha256(Path(value["report"]).read_bytes()).hexdigest() == value["report_sha256"]
+
+
+def test_original_recording_remains_valid_for_an_identical_source_checkout(
+    qualified_proof: tuple[Path, Path], tmp_path: Path
+) -> None:
+    """Keep genuine raw paths portable while comparing exact admitted source bytes.
+
+    Parameters
+    ----------
+    qualified_proof : tuple[Path, Path]
+        Original complete recording, source map and native report.
+    tmp_path : Path
+        Separate checkout containing only unchanged admitted source files.
+
+    """
+    root, receipt = qualified_proof
+    value = json.loads(receipt.read_text(encoding="utf-8"))
+    relocated = tmp_path / "same-source-checkout"
+    for name, digest in value["source_sha256"].items():
+        destination = relocated / name
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(root / name, destination)
+        assert hashlib.sha256(destination.read_bytes()).hexdigest() == digest
+    check_native_coverage(relocated, receipt)

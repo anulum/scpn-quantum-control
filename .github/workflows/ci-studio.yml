@@ -692,7 +692,7 @@ jobs:
             --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" \
             --precision=2 --show-missing --fail-under=100
       - name: Test with enforced coverage thresholds
-        env:
+        env: &studio_native_cohorts
           STUDIO_WORKSPACE_COVERAGE: ${{ runner.temp }}/studio-workspace-journey.json
           STUDIO_PANEL_REFUSAL_COVERAGE: ${{ runner.temp }}/studio-panel-refusal-journey.json
           STUDIO_WORKBENCH_COVERAGE: ${{ runner.temp }}/studio-workbench-journey.json
@@ -702,14 +702,7 @@ jobs:
           STUDIO_WORKFLOW_COVERAGE: ${{ runner.temp }}/studio-workflow-journey.json
         run: pnpm test:coverage
       - name: Enforce workbench, parameter, experiment, result, workspace and coverage adapter exact coverage
-        env:
-          STUDIO_WORKSPACE_COVERAGE: ${{ runner.temp }}/studio-workspace-journey.json
-          STUDIO_PANEL_REFUSAL_COVERAGE: ${{ runner.temp }}/studio-panel-refusal-journey.json
-          STUDIO_WORKBENCH_COVERAGE: ${{ runner.temp }}/studio-workbench-journey.json
-          STUDIO_PARAMETER_COVERAGE: ${{ runner.temp }}/studio-parameter-journey.json
-          STUDIO_EXPERIMENT_COVERAGE: ${{ runner.temp }}/studio-experiment-journey.json
-          STUDIO_RESULT_COVERAGE: ${{ runner.temp }}/studio-result-journey.json
-          STUDIO_WORKFLOW_COVERAGE: ${{ runner.temp }}/studio-workflow-journey.json
+        env: *studio_native_cohorts
         run: >-
           pnpm exec vitest run src/app src/shared src/modules src/WorkspacePanel.test.tsx
           src/QuantumStudioPanel.test.tsx src/QuantumStudioPanel.unverifiable.test.tsx quality
@@ -752,14 +745,7 @@ jobs:
           --coverage.thresholds.functions=100
           --coverage.thresholds.lines=100
       - name: Enforce linked parameter editor owner exact coverage
-        env:
-          STUDIO_WORKSPACE_COVERAGE: ${{ runner.temp }}/studio-workspace-journey.json
-          STUDIO_PANEL_REFUSAL_COVERAGE: ${{ runner.temp }}/studio-panel-refusal-journey.json
-          STUDIO_WORKBENCH_COVERAGE: ${{ runner.temp }}/studio-workbench-journey.json
-          STUDIO_PARAMETER_COVERAGE: ${{ runner.temp }}/studio-parameter-journey.json
-          STUDIO_EXPERIMENT_COVERAGE: ${{ runner.temp }}/studio-experiment-journey.json
-          STUDIO_RESULT_COVERAGE: ${{ runner.temp }}/studio-result-journey.json
-          STUDIO_WORKFLOW_COVERAGE: ${{ runner.temp }}/studio-workflow-journey.json
+        env: *studio_native_cohorts
         run: >-
           pnpm exec vitest run src/modules/parameters src/shared/parameters
           --coverage --coverage.reporter=text
@@ -840,14 +826,7 @@ jobs:
           --coverage.thresholds.functions=100
           --coverage.thresholds.lines=100
       - name: Enforce catalogue owner coverage
-        env:
-          STUDIO_WORKSPACE_COVERAGE: ${{ runner.temp }}/studio-workspace-journey.json
-          STUDIO_PANEL_REFUSAL_COVERAGE: ${{ runner.temp }}/studio-panel-refusal-journey.json
-          STUDIO_WORKBENCH_COVERAGE: ${{ runner.temp }}/studio-workbench-journey.json
-          STUDIO_PARAMETER_COVERAGE: ${{ runner.temp }}/studio-parameter-journey.json
-          STUDIO_EXPERIMENT_COVERAGE: ${{ runner.temp }}/studio-experiment-journey.json
-          STUDIO_RESULT_COVERAGE: ${{ runner.temp }}/studio-result-journey.json
-          STUDIO_WORKFLOW_COVERAGE: ${{ runner.temp }}/studio-workflow-journey.json
+        env: *studio_native_cohorts
         run: >-
           pnpm exec vitest run src/modules/catalogue src/QuantumStudioPanel.test.tsx
           --coverage --coverage.reporter=text
@@ -885,14 +864,7 @@ jobs:
           --coverage.thresholds.functions=100 --coverage.thresholds.lines=100
           --coverage.reportsDirectory="${{ runner.temp }}/studio-policy-ui-coverage"
       - name: Enforce workflow browser owner exact coverage
-        env:
-          STUDIO_WORKSPACE_COVERAGE: ${{ runner.temp }}/studio-workspace-journey.json
-          STUDIO_PANEL_REFUSAL_COVERAGE: ${{ runner.temp }}/studio-panel-refusal-journey.json
-          STUDIO_WORKBENCH_COVERAGE: ${{ runner.temp }}/studio-workbench-journey.json
-          STUDIO_PARAMETER_COVERAGE: ${{ runner.temp }}/studio-parameter-journey.json
-          STUDIO_EXPERIMENT_COVERAGE: ${{ runner.temp }}/studio-experiment-journey.json
-          STUDIO_RESULT_COVERAGE: ${{ runner.temp }}/studio-result-journey.json
-          STUDIO_WORKFLOW_COVERAGE: ${{ runner.temp }}/studio-workflow-journey.json
+        env: *studio_native_cohorts
         run: >-
           pnpm exec vitest run src/modules/workflows src/modules/parameters src/shared/parameters src/shared/workflows
           src/app/Workbench.test.tsx src/app/Workbench.modules.test.tsx src/shared/experiments/experimentArchive.test.ts src/shared/experiments/useExperimentRun.test.tsx
