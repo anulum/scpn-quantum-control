@@ -125,8 +125,14 @@ it.each(["missing selected graph", "aborted", "different admitted source"])(
         />,
       );
       await admitSource();
-      const services = requirePresent(observed.services);
-      let document = requirePresent(observed.document);
+      const { services, document: admittedDocument } = await waitFor(() => {
+        const services = requirePresent(observed.services);
+        const document = requirePresent(observed.document);
+        expect(document.content).toBe(plan.sourceJson);
+        expect(services.workspace.preview?.archiveDigest).toBe(document.sha256);
+        return { services, document };
+      });
+      let document = admittedDocument;
       if (cause === "different admitted source") {
         const admitted = await admitWorkspaceArchive(`${plan.sourceJson}\n`, localExperimentCodecs);
         document = {
