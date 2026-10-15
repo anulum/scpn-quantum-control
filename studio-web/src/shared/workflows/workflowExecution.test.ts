@@ -173,6 +173,14 @@ it("executes six actual native cells and preserves eighteen original stage outco
   expect(result.journal.state, writeJson(result.journal.entries)).toBe("complete");
   expect(result.journal.evaluations).toBe(18n);
   expect(result.journal.entries).toHaveLength(18);
+  for (const stage of ["validate", "analyse"]) {
+    const expected =
+      stage === "validate"
+        ? "studio-web/src/features/experiments/experimentPlan.ts#prepareExperimentPlan"
+        : "studio-web/src/features/results/resultSources.ts#inspectKuramotoResult";
+    for (const entry of result.journal.entries.filter((row) => row.stage_id === stage))
+      expect(producedOutput(entry)["producer_identity"]).toBe(expected);
+  }
   expect(result.disposalConfirmed).toBe(true);
   expect(BuiltKernelWorker.started - started).toBe(6);
   expect(fixture.progress.map((stage) => stage.settledStages)).toEqual(

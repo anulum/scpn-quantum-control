@@ -97,6 +97,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ### Fixed
 
+- Saved Studio workflows resume across the module move without changing
+  completed outputs or repeating completed evaluations. New workflow outputs
+  retain their original producer identifiers.
+
 - `tebd_evolution(order=4)` converges at fourth order. The fourth-order step
   of Quimb 1.13.0 converges at second order on the four-site reference (the
   error falls by 4.0 per halving of the step); order four now composes five

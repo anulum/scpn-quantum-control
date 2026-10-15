@@ -175,7 +175,8 @@ async function previewOutput(
   source: ParameterDraftSource,
 ): Promise<Record<string, unknown>> {
   return {
-    producer_identity: "studio-web/src/shared/experiments/experimentPlan.ts#prepareExperimentPlan",
+    producer_identity:
+      "studio-web/src/features/experiments/experimentPlan.ts#prepareExperimentPlan",
     preview_only: true,
     revision_hash: plan.revisionHash,
     plan_hash: plan.planHash,
@@ -511,7 +512,13 @@ export async function runLocalWorkflow(
         if (stage.verb === "validate") {
           const expected = await previewOutput(plan, selectedParameters as ParameterDraftSource);
           if (
-            (await canonicalDigest("studio.workflow-output.v1", expected)) !== prior.output_digest
+            (await canonicalDigest("studio.workflow-output.v1", expected)) !==
+              prior.output_digest &&
+            (await canonicalDigest("studio.workflow-output.v1", {
+              ...expected,
+              producer_identity:
+                "studio-web/src/shared/experiments/experimentPlan.ts#prepareExperimentPlan",
+            })) !== prior.output_digest
           )
             throw new WorkflowRefusal(
               "original cached preview differs from current source and plan",
@@ -526,13 +533,19 @@ export async function runLocalWorkflow(
             const { inspectKuramotoResult } = await import("../results/resultSources");
             const expected = {
               producer_identity:
-                "studio-web/src/shared/results/resultSources.ts#inspectKuramotoResult",
+                "studio-web/src/features/results/resultSources.ts#inspectKuramotoResult",
               run_ref: ref,
               projection: await inspectKuramotoResult(original.plan, original.outcome),
               recorded_source: true,
             };
             if (
-              (await canonicalDigest("studio.workflow-output.v1", expected)) !== prior.output_digest
+              (await canonicalDigest("studio.workflow-output.v1", expected)) !==
+                prior.output_digest &&
+              (await canonicalDigest("studio.workflow-output.v1", {
+                ...expected,
+                producer_identity:
+                  "studio-web/src/shared/results/resultSources.ts#inspectKuramotoResult",
+              })) !== prior.output_digest
             )
               throw new WorkflowRefusal("original cached projection differs");
           }
@@ -580,7 +593,7 @@ export async function runLocalWorkflow(
             const original = await savedRun(archive.json, values["run_ref"], options);
             output = {
               producer_identity:
-                "studio-web/src/shared/results/resultSources.ts#inspectKuramotoResult",
+                "studio-web/src/features/results/resultSources.ts#inspectKuramotoResult",
               run_ref: values["run_ref"],
               projection: await inspectKuramotoResult(original.plan, original.outcome),
               recorded_source: true,

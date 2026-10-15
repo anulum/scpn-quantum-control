@@ -1,0 +1,236 @@
+{
+  "schema": "studio.workflow-executor-fixtures.v1",
+  "purpose": "Authentic historical public executors create saved journals with the actual supplied native kernel and worker; current public executor must resume them without changing prior output or history. These are regression fixtures, never production imports.",
+  "builder": {
+    "vite": "8.1.3",
+    "rolldown": "1.1.4",
+    "target": "es2022",
+    "minify": false,
+    "codeSplitting": false,
+    "external": [
+      "@scpn/*",
+      "react",
+      "react/*"
+    ]
+  },
+  "dependency_lock_sha256": "6747d433a6c0dd1f07fb13a37b571a5a99aed13ed3e06293b339223dabac0970",
+  "worker_boundary": "Tests supply the existing real BuiltKernelWorker; the bundled default worker URL is not used. No wasm, saved simulation bytes or worker substitute is embedded.",
+  "fixtures": [
+    {
+      "file": "pre-f09.mjs",
+      "sha256": "ff3fb9ae6e77e3a2f76f7c3306b1ad4afa29723512653d297a6a95b5d64e8484",
+      "bytes": 178096,
+      "source_commit": "473bd27b693a0c8829cc1d3196ffa5badf7f1e4f",
+      "entry": "studio-web/src/features/workflows/workflowExecution.ts",
+      "entry_sha256": "92c796761f5f531f5f36daaf7a9276e97f3c99ba57de56507973e5317a153417",
+      "source_inputs": [
+        {
+          "path": "studio-web/src/shared/contracts/canonical.ts",
+          "sha256": "d8f86f9f5827ec8b1c5f80b177ad6555608dae2491d6880820eed711da4b41c3"
+        },
+        {
+          "path": "studio-web/src/shared/resources/admission.ts",
+          "sha256": "5d1f8d22076cc783f92e960ce837eb20d9f0b8a5da0146c940c3d5f13c41f354"
+        },
+        {
+          "path": "studio-web/src/shared/resources/kuramotoResources.ts",
+          "sha256": "c51dd60480967f96bc0060d9e39b4b6d6b76bc2265a84e063815bad1b49ba095"
+        },
+        {
+          "path": "studio-web/src/workers/kernelProtocol.ts",
+          "sha256": "639e458e834151e16d901c1698aef5eae44290263023020ad03c785693047d2a"
+        },
+        {
+          "path": "studio-web/src/workers/kernelClient.ts",
+          "sha256": "442d672c1794281b51224213cafd66278449ade168bfb79904cd01350d0b20c9"
+        },
+        {
+          "path": "data/studio/kuramoto_scenario_meanfield_20260708.json",
+          "sha256": "59066596be2235c45f4b7af11b2068f96cfe29937465d6ea0de4d09b828aa577"
+        },
+        {
+          "path": "studio-web/src/panel/kuramoto.ts",
+          "sha256": "5a64baba5c8283c7e5b13858a589e4d0deb6dc9f8ec723d021fa97cda5828739"
+        },
+        {
+          "path": "studio-web/src/shared/contracts/jsonTransport.ts",
+          "sha256": "0fa3698a29584fb3ae64d041c5dba941aa787db5fe476ffd0305e51fef7f2cac"
+        },
+        {
+          "path": "studio-web/src/shared/contracts/workspace.ts",
+          "sha256": "df97e5fb82edc5047fd96f6cf2c69c8269a0b816178a50c1de044226d0f64af1"
+        },
+        {
+          "path": "studio-web/src/shared/contracts/graph.ts",
+          "sha256": "bba6406ee57db3e6fd24e3eb9f782d86dbe3643b9d17dcd2671d3ea497a8f07e"
+        },
+        {
+          "path": "studio-web/src/shared/contracts/index.ts",
+          "sha256": "74ef559b49e7d21d0863b300c3493394e420b99bc7d243c530b7a1bc9da47e61"
+        },
+        {
+          "path": "studio-web/src/shared/storage/workspaceArchive.ts",
+          "sha256": "8a3b692ce32e5cf5030b01c35a110850bf0791a8d7ec60277a8d7bff3f1efea7"
+        },
+        {
+          "path": "studio-web/src/features/experiments/kuramotoArtifacts.ts",
+          "sha256": "6d7df46a52135de5cf53dab57fbbad63a605b4997f7ccd08f2ab4a98428ef4b7"
+        },
+        {
+          "path": "studio-web/src/features/experiments/experimentArchive.ts",
+          "sha256": "9aa37eb74a648956a1547267665b65000a353c9dbfe484b758c48bcf60980dd0"
+        },
+        {
+          "path": "studio-web/src/features/experiments/experimentPlan.ts",
+          "sha256": "49a6691f29e6149a3e185468dc227b40da95f1c4f9da646e6183ae47b3bef0c3"
+        },
+        {
+          "path": "studio-web/src/features/parameters/parameterDraft.ts",
+          "sha256": "de8c69de3a5e341ba693bace2e03b2f943e1eb6b05b738b19bd5c659235dcdc2"
+        },
+        {
+          "path": "studio-web/src/features/parameters/parameterRevision.ts",
+          "sha256": "657ca18fa148bd6726291804a62bf2c739778816d754a4f4d8eca801c2d65466"
+        },
+        {
+          "path": "studio-web/src/features/workflows/workflowModel.ts",
+          "sha256": "9a590e5513c6deb6661b7f5320c2085eaa795f42b5531bf9ee64e00e56fcd5b5"
+        },
+        {
+          "path": "studio-web/src/features/workflows/workflowSweep.ts",
+          "sha256": "1ede3bc0d8637544afb5b700076f2ceb4359696f23b2d1eb5c05999138e29b64"
+        },
+        {
+          "path": "studio-web/src/features/workflows/workflowJournal.ts",
+          "sha256": "9f1b383b187fa6cc1999adf223fcc352d63cdbefc02c0a9a9480a1951c1505c7"
+        },
+        {
+          "path": "studio-web/src/features/workflows/workflowArchive.ts",
+          "sha256": "023427ae128ac901b607248b19be64f253874234b2882e4dfe1c367cdcdab5b6"
+        },
+        {
+          "path": "studio-web/src/features/results/resultModel.ts",
+          "sha256": "af4d8f227812ffcd7da5ddff22573dfaf77ca216dd0b5909fb6cda37d01a9251"
+        },
+        {
+          "path": "studio-web/src/features/results/resultSources.ts",
+          "sha256": "1ff7399e85454db34c17be6ef61102671dc25e48b9034794e413040857b6fb43"
+        },
+        {
+          "path": "studio-web/src/features/workflows/workflowExecution.ts",
+          "sha256": "92c796761f5f531f5f36daaf7a9276e97f3c99ba57de56507973e5317a153417"
+        }
+      ]
+    },
+    {
+      "file": "relocated-f09.mjs",
+      "sha256": "f62c333119a91e1eee8229719481a680d10a8a62ac9167c6f7ad0ae723b0c064",
+      "bytes": 180397,
+      "source_commit": "a23c96cf6dcb9b08245d6a11d1c002e988b31597",
+      "entry": "studio-web/src/shared/workflows/workflowExecution.ts",
+      "entry_sha256": "61895327963a05d4ad21d65d2987633ebe1dfe8be47f16cc0e0ed4e16daace18",
+      "source_inputs": [
+        {
+          "path": "studio-web/src/shared/wasmAssets.ts",
+          "sha256": "5276abc8d422bf785dbbb8ef74dab0d955c2a59e0bf1967a8dfd4605402ed1c5"
+        },
+        {
+          "path": "studio-web/src/shared/contracts/canonical.ts",
+          "sha256": "bf3ac51ed86c6d001dbe48be5b506b8f404a6ba6e40e7ed5cf3ebbf6dcbd5f1e"
+        },
+        {
+          "path": "studio-web/src/shared/resources/admission.ts",
+          "sha256": "5d1f8d22076cc783f92e960ce837eb20d9f0b8a5da0146c940c3d5f13c41f354"
+        },
+        {
+          "path": "studio-web/src/shared/resources/kuramotoResources.ts",
+          "sha256": "b295a03ad50b91cf799acebebd6bef5a4462eed256b463d3e7ffd68b40c87604"
+        },
+        {
+          "path": "studio-web/src/shared/workers/kernelProtocol.ts",
+          "sha256": "82886e12eb5a4ec8a845a8b3de260733e62426edbb3e707b8fdcbd2665e7ac23"
+        },
+        {
+          "path": "studio-web/src/workers/kernelClient.ts",
+          "sha256": "9ab4c30a2283163ece4f239bb17e3df93881da19edb5fdd26ef6f4112f0c1f7e"
+        },
+        {
+          "path": "data/studio/kuramoto_scenario_meanfield_20260708.json",
+          "sha256": "59066596be2235c45f4b7af11b2068f96cfe29937465d6ea0de4d09b828aa577"
+        },
+        {
+          "path": "studio-web/src/shared/browser/kuramoto.ts",
+          "sha256": "56c760f80375d95d7568292f6173e953713fa5a30c97ea9b30f0a31a46c6ef99"
+        },
+        {
+          "path": "studio-web/src/shared/contracts/jsonTransport.ts",
+          "sha256": "0fa3698a29584fb3ae64d041c5dba941aa787db5fe476ffd0305e51fef7f2cac"
+        },
+        {
+          "path": "studio-web/src/shared/contracts/workspace.ts",
+          "sha256": "df97e5fb82edc5047fd96f6cf2c69c8269a0b816178a50c1de044226d0f64af1"
+        },
+        {
+          "path": "studio-web/src/shared/contracts/graph.ts",
+          "sha256": "bba6406ee57db3e6fd24e3eb9f782d86dbe3643b9d17dcd2671d3ea497a8f07e"
+        },
+        {
+          "path": "studio-web/src/shared/contracts/index.ts",
+          "sha256": "74ef559b49e7d21d0863b300c3493394e420b99bc7d243c530b7a1bc9da47e61"
+        },
+        {
+          "path": "studio-web/src/shared/storage/workspaceArchive.ts",
+          "sha256": "8a3b692ce32e5cf5030b01c35a110850bf0791a8d7ec60277a8d7bff3f1efea7"
+        },
+        {
+          "path": "studio-web/src/shared/experiments/kuramotoArtifacts.ts",
+          "sha256": "6d20a40f44b4a5df55d4c76f176508033e2ae2cd4e09c7525f8bd1406cbbdc8a"
+        },
+        {
+          "path": "studio-web/src/shared/experiments/experimentArchive.ts",
+          "sha256": "3084bb1a2b2a5ac5d4f876d293d1d64e235c0c30d3576ccdc3cee734cf7aa7b9"
+        },
+        {
+          "path": "studio-web/src/shared/experiments/experimentPlan.ts",
+          "sha256": "2dc8c08f7b5a63ceffa544fb39e3d06d544b6b11cac14581129e3fce7bc66f54"
+        },
+        {
+          "path": "studio-web/src/shared/parameters/parameterDraft.ts",
+          "sha256": "0e0b3d8321a737cef31b946d59d985fe3e3c87f7891bed84727b3f55cd6d1746"
+        },
+        {
+          "path": "studio-web/src/shared/parameters/parameterRevision.ts",
+          "sha256": "1e910907e6dfe6e6fd05d0271ad082d027af0207ab0e5890cfd10649f240bb85"
+        },
+        {
+          "path": "studio-web/src/shared/workflows/workflowModel.ts",
+          "sha256": "8379e835cc5849bfb78364291b37be84a828e1097e9b0ad3a375a19f93d72e21"
+        },
+        {
+          "path": "studio-web/src/shared/workflows/workflowSweep.ts",
+          "sha256": "f9db8346b9d26f43d7d9aec74dd0dd37e23513a88eb293d91ea9dd9e7c8d9f0b"
+        },
+        {
+          "path": "studio-web/src/shared/workflows/workflowJournal.ts",
+          "sha256": "b22a9c5a89c7869aebe9b4862e0c931addd0f6763e693d1ddecd1101e8db22a8"
+        },
+        {
+          "path": "studio-web/src/shared/workflows/workflowArchive.ts",
+          "sha256": "c6f2988c70aa122bc77c7dbc6dc5fa6b0c1c7f31631dee1f0844f70316cee1b8"
+        },
+        {
+          "path": "studio-web/src/shared/results/resultModel.ts",
+          "sha256": "0e1c90b162930d1b2efd8f71065c56fb6c7f07cbce3585b96373c1a93d01f95d"
+        },
+        {
+          "path": "studio-web/src/shared/results/resultSources.ts",
+          "sha256": "b1d61fdea6ccfa61dadeb25f992719c82cf9be90aa02bf1e0cdc2fcec6ff4756"
+        },
+        {
+          "path": "studio-web/src/shared/workflows/workflowExecution.ts",
+          "sha256": "61895327963a05d4ad21d65d2987633ebe1dfe8be47f16cc0e0ed4e16daace18"
+        }
+      ]
+    }
+  ]
+}
