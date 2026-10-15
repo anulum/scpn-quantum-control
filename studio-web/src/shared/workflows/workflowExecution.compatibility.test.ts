@@ -10,8 +10,8 @@ import { webcrypto } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { BuiltKernelWorker } from "../../../test-support/kernelWorker";
-import * as preF09 from "../../../test-support/workflow-history/pre-f09.mjs";
-import * as relocatedF09 from "../../../test-support/workflow-history/relocated-f09.mjs";
+import * as beforeRelocation from "../../../test-support/workflow-history/pre-f09.mjs";
+import * as afterRelocation from "../../../test-support/workflow-history/relocated-f09.mjs";
 import { instantiateKuramoto } from "../browser/kuramoto";
 import { canonicalBytes, canonicalDigest, readJson, writeJson } from "../contracts";
 import { createLocalExperiment, readLocalExperiment } from "../experiments/experimentArchive";
@@ -77,10 +77,15 @@ function graph(kind: "preview" | "projection") {
 }
 
 it.each([
-  { version: "pre-F09", executor: preF09, prefix: "features", kind: "preview" },
-  { version: "pre-F09", executor: preF09, prefix: "features", kind: "projection" },
-  { version: "relocated-F09", executor: relocatedF09, prefix: "shared", kind: "preview" },
-  { version: "relocated-F09", executor: relocatedF09, prefix: "shared", kind: "projection" },
+  { version: "before-relocation", executor: beforeRelocation, prefix: "features", kind: "preview" },
+  {
+    version: "before-relocation",
+    executor: beforeRelocation,
+    prefix: "features",
+    kind: "projection",
+  },
+  { version: "after-relocation", executor: afterRelocation, prefix: "shared", kind: "preview" },
+  { version: "after-relocation", executor: afterRelocation, prefix: "shared", kind: "projection" },
 ] as const)(
   "resumes authentic $version $kind history without rewriting or replacement execution",
   async ({ executor, prefix, kind }) => {
