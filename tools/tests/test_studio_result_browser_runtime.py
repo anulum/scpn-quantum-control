@@ -10,11 +10,12 @@
 from __future__ import annotations
 
 import os
+import shutil
 import socket
 from pathlib import Path
 
 import pytest
-from playwright.sync_api import Error
+from playwright.sync_api import Error, TimeoutError
 
 from tools.studio_result_browser import run_result_journey
 from tools.tests.test_studio_browser_runtime_refusal import owned_fault_host
@@ -79,8 +80,8 @@ def test_result_runtime_preserves_actual_fault_evidence(fault: str) -> None:
     assert observed["observations"]
 
 
-def test_result_transport_failure_retains_original_error_and_diagnostic_refusal() -> None:
-    """Retain the public journey's real navigation failure when diagnostics also refuse."""
+def test_result_transport_failure_retains_original_error_and_actual_diagnostics() -> None:
+    """Retain refused navigation independently of the native error page's diagnostics."""
     observed: dict[str, object] = {}
     with socket.socket() as reserved:
         reserved.bind(("127.0.0.1", 0))
@@ -90,6 +91,63 @@ def test_result_transport_failure_retains_original_error_and_diagnostic_refusal(
     assert observed["observations"] == []
     assert "Page.goto" in str(observed["original_error"])
     assert "ERR_CONNECTION_REFUSED" in str(observed["original_traceback"])
+    if "diagnostic_capture_error" in observed:
+        assert any(
+            operation in str(observed["diagnostic_capture_error"])
+            for operation in ("Page.evaluate", "Locator.all_text_contents", "Locator.evaluate_all")
+        )
+    else:
+        assert observed["failed_native_workers"] in (
+            None,
+            {"started": 0, "disposed": 0, "active": 0, "commands": [], "events": []},
+        )
+        assert isinstance(observed["failed_page_url"], str)
+        assert observed["failed_page_labels"] == []
+        assert observed["failed_page_textareas"] == []
+    assert observed["failed_context"] == origin
+    assert observed["actual_original_cli_source_sha256"]
+
+
+def test_result_control_failure_retains_original_error_when_diagnostics_refuse(
+    tmp_path: Path,
+) -> None:
+    """Preserve an actual missing-control timeout when a real diagnostic getter throws.
+
+    Parameters
+    ----------
+    tmp_path
+        Owned copy of the actual production bundle for explicit host interference.
+
+    """
+    original = preview_directory()
+    damaged = tmp_path / "result-diagnostic-fault"
+    shutil.copytree(original, damaged)
+    index = damaged / "index.html"
+    content = index.read_text(encoding="utf-8")
+    interference = """<script>
+Object.defineProperty(window, '__ownedKernel', {
+  get() { throw new Error('owned result diagnostic refusal'); }
+});
+new MutationObserver(() => {
+  for (const button of document.querySelectorAll('button')) {
+    if (button.textContent === 'Open Kuramoto sample') button.remove();
+  }
+}).observe(document.documentElement, {subtree:true, childList:true});
+</script>"""
+    assert content.count("</head>") == 1
+    index.write_text(content.replace("</head>", interference + "</head>"), encoding="utf-8")
+    observed: dict[str, object] = {}
+    with (
+        owned_fault_host(damaged) as origin,
+        pytest.raises(TimeoutError, match="Open Kuramoto sample"),
+    ):
+        run_result_journey(origin, evidence=observed)
+    assert original.joinpath("index.html").read_text(encoding="utf-8") == content
+    assert observed["observations"] == []
+    assert "Open Kuramoto sample" in str(observed["original_error"])
+    assert "Locator.click" in str(observed["original_traceback"])
+    assert "owned result diagnostic refusal" not in str(observed["original_error"])
     assert "Page.evaluate" in str(observed["diagnostic_capture_error"])
+    assert "owned result diagnostic refusal" in str(observed["diagnostic_capture_error"])
     assert observed["failed_context"] == origin
     assert observed["actual_original_cli_source_sha256"]
