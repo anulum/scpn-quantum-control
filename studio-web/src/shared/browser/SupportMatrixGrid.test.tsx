@@ -67,7 +67,12 @@ it("makes the original wide table a named keyboard focus target with textual cla
   const original = JSON.stringify(matrix);
   render(<SupportMatrixGrid matrix={matrix} />);
   const scrolling = screen.getByRole("region", { name: "Support matrix table scrolling" });
-  scrolling.focus();
+  const scrollAction = within(scrolling).getByRole("button", {
+    name: "Scroll Support matrix table scrolling",
+  });
+  scrollAction.focus();
+  expect(document.activeElement).toBe(scrollAction);
+  fireEvent.click(scrollAction);
   expect(document.activeElement).toBe(scrolling);
   const table = within(scrolling).getByRole("table");
   expect(within(table).getByText("passed · bounded-model · bounded-model · boundary")).toBeTruthy();
