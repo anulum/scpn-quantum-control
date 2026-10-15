@@ -19,6 +19,7 @@ from pathlib import Path
 import pytest
 
 import coverage
+from tools.studio_browser_journey import loopback_url
 from tools.studio_native_coverage_gate import (
     begin_native_qualification,
     check_native_coverage,
@@ -314,3 +315,50 @@ def test_original_recording_remains_valid_for_an_identical_source_checkout(
         shutil.copyfile(root / name, destination)
         assert hashlib.sha256(destination.read_bytes()).hexdigest() == digest
     check_native_coverage(relocated, receipt)
+
+
+def test_complete_native_recording_in_combined_browser_data_is_accepted(
+    qualified_proof: tuple[Path, Path], tmp_path: Path
+) -> None:
+    """Preserve the actual CI contract that combines native and other browser owners.
+
+    Parameters
+    ----------
+    qualified_proof : tuple[Path, Path]
+        Actual complete native recording and its unchanged original report.
+    tmp_path : Path
+        Owned directory for the genuine other-owner recording and combined data.
+
+    """
+    root, receipt = qualified_proof
+    value = json.loads(receipt.read_text(encoding="utf-8"))
+    original_data = Path(value["data"])
+    original_digest = hashlib.sha256(original_data.read_bytes()).hexdigest()
+    foreign_path = tmp_path / "other-browser-owner.coverage"
+    measured = coverage.Coverage(
+        data_file=str(foreign_path),
+        config_file=False,
+        branch=True,
+        include=[str(root / "tools/studio_browser_journey.py")],
+    )
+    measured.start()
+    try:
+        assert loopback_url("http://127.0.0.1:4198/") == "http://127.0.0.1:4198/"
+    finally:
+        measured.stop()
+        measured.save()
+    combined_path = tmp_path / "combined-browser.coverage"
+    combined = coverage.CoverageData(basename=str(combined_path))
+    for path in (original_data, foreign_path):
+        raw = coverage.CoverageData(basename=str(path))
+        raw.read()
+        combined.update(raw)
+    combined.write()
+    assert len(combined.measured_files()) == 2
+    value["data"] = str(combined_path)
+    value["data_sha256"] = hashlib.sha256(combined_path.read_bytes()).hexdigest()
+    candidate = tmp_path / "combined-receipt.json"
+    candidate.write_text(json.dumps(value), encoding="utf-8")
+    check_native_coverage(root, candidate)
+    assert hashlib.sha256(original_data.read_bytes()).hexdigest() == original_digest
+    assert hashlib.sha256(Path(value["report"]).read_bytes()).hexdigest() == value["report_sha256"]

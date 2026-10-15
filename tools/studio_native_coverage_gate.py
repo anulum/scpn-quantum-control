@@ -79,11 +79,15 @@ def _check_data_report(root: Path, data: Path, report: Path) -> None:
     """Reconstruct every owner fact from the original arcs and admitted source."""
     original = coverage.CoverageData(basename=str(data))
     original.read()
-    files = list(original.measured_files())
+    files = [
+        name
+        for name in original.measured_files()
+        if ("/" + name.replace("\\", "/")).endswith("/" + _OWNER)
+    ]
     if len(files) != 1:
         raise ValueError("Native raw data requires exactly one collector owner")
     filename = files[0]
-    if not ("/" + filename.replace("\\", "/")).endswith("/" + _OWNER) or not original.has_arcs():
+    if not original.has_arcs():
         raise ValueError("Native raw data requires a branch-enabled collector owner")
     measured = coverage.Coverage(data_file=None, config_file=False)
     measured.get_data().add_arcs({str(root / _OWNER): original.arcs(filename) or []})
