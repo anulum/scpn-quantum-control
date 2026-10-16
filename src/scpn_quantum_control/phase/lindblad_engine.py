@@ -17,6 +17,7 @@ full 16-layer SCPN framework without the O(2^2N) density matrix bottleneck.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Any
 
 import numpy as np
@@ -38,8 +39,63 @@ except ImportError:
     _HAS_RUST = False
 
 
+def _real_rate_or_tolerance(name: str, value: object, *, positive: bool) -> float:
+    """Admit a finite real scalar without boolean or string coercion.
+
+    Parameters
+    ----------
+    name
+        Original caller-facing setting name used in refusals.
+    value
+        Real scalar rate or integration tolerance.
+    positive
+        Whether zero is invalid as it is for an integration tolerance.
+
+    Returns
+    -------
+    float
+        Validated scalar without a clamp or unit conversion.
+
+    Raises
+    ------
+    ValueError
+        If type, shape, finiteness or the declared sign constraint is invalid.
+
+    """
+    raw = np.asarray(value)
+    if raw.shape != () or raw.dtype.kind not in "fiu":
+        raise ValueError(f"{name} must be a finite real scalar.")
+    scalar = float(raw)
+    if not np.isfinite(scalar) or scalar < 0.0 or (positive and scalar == 0.0):
+        raise ValueError(
+            f"{name} must be finite and {'positive' if positive else 'non-negative'}."
+        )
+    return scalar
+
+
 class LindbladSyncEngine:
-    """Solves the Lindblad master equation for open quantum system sync."""
+    """Evolve excitation-transfer channels in the Hamiltonian's little-endian basis.
+
+    Parameters
+    ----------
+    K
+        Finite coupling matrix; off-diagonal entries above the existing
+        threshold select directed excitation-transfer channels.
+    omega
+        Natural frequencies with one entry per qubit.
+    gamma
+        Finite non-negative transfer rate in inverse evolution-time units.
+        This is not a single-qubit amplitude-damping rate.
+    max_dense_gib
+        Optional density-workspace allowance in GiB.
+
+    Raises
+    ------
+    ValueError
+        If the rate is non-real, non-scalar, boolean, negative or non-finite,
+        or the delegated Hamiltonian input admission refuses the arrays.
+
+    """
 
     def __init__(
         self,
@@ -49,11 +105,13 @@ class LindbladSyncEngine:
         *,
         max_dense_gib: float | None = None,
     ) -> None:
+        """Admit the transfer rate before constructing Hamiltonian and jump operators."""
+        rate_value = _real_rate_or_tolerance("gamma", gamma, positive=False)
         self.n = len(omega)
         self.dim = 1 << self.n
         self.K = K
         self.omega = omega
-        self.gamma = gamma
+        self.gamma = rate_value
         self.max_dense_gib = max_dense_gib
 
         # Dense density-matrix components are built lazily by the density path.
@@ -181,6 +239,9 @@ class LindbladSyncEngine:
         seed: int = 42,
         observables: list[SparsePauliOp] | None = None,
         max_dense_gib: float | None = None,
+        *,
+        density_atol: float | None = None,
+        density_rtol: float | None = None,
     ) -> dict[str, Any]:
         """Evolve a local density matrix or seeded sparse-action trajectories.
 
@@ -209,6 +270,12 @@ class LindbladSyncEngine:
         max_dense_gib
             Optional GiB override for density input validation and lazy dense
             operator setup. This does not bound the trajectory ensemble history.
+        density_atol, density_rtol
+            Optional finite positive tolerances for the density integrator.
+            None preserves SciPy's original default. An explicit relative
+            tolerance below SciPy's float64 floor is refused rather than
+            silently raised. These controls are refused on the trajectory
+            route, whose error is governed by its jump grid and sampling.
 
         Returns
         -------
@@ -220,7 +287,8 @@ class LindbladSyncEngine:
         Raises
         ------
         ValueError
-            If the route is unknown or the explicit density input is invalid.
+            If the route, explicit density input or requested tolerance is
+            invalid, or density tolerances are supplied to trajectories.
         RuntimeError
             If density evolution is requested above ten qubits.
         DenseAllocationError
@@ -228,6 +296,16 @@ class LindbladSyncEngine:
 
         """
         if method == "density_matrix":
+            tolerances: dict[str, float] = {}
+            if density_atol is not None:
+                tolerances["atol"] = _real_rate_or_tolerance(
+                    "density_atol", density_atol, positive=True
+                )
+            if density_rtol is not None:
+                relative = _real_rate_or_tolerance("density_rtol", density_rtol, positive=True)
+                if relative < 100 * np.finfo(np.float64).eps:
+                    raise ValueError("density_rtol is below SciPy's float64 tolerance floor.")
+                tolerances["rtol"] = relative
             if self.n > 10:
                 raise RuntimeError("Density matrix path only supported for N <= 10.")
             require_dense_allocation(
@@ -249,8 +327,11 @@ class LindbladSyncEngine:
                 initial_state,
                 observables,
                 max_dense_gib=max_dense_gib,
+                tolerances=tolerances,
             )
         elif method == "trajectory":
+            if density_atol is not None or density_rtol is not None:
+                raise ValueError("density tolerances cannot control the trajectory route.")
             return self._evolve_trajectories(
                 t_max, n_steps, n_traj, initial_state, seed, observables
             )
@@ -265,7 +346,31 @@ class LindbladSyncEngine:
         observables: list[SparsePauliOp] | None,
         *,
         max_dense_gib: float | None,
+        tolerances: Mapping[str, float],
     ) -> dict[str, Any]:
+        """Integrate an admitted density input with explicit caller tolerances.
+
+        Parameters
+        ----------
+        t_max
+            Evolution horizon in inverse Hamiltonian units.
+        n_steps
+            Number of output intervals; not an adaptive integration step limit.
+        initial_rho
+            Validated original density matrix, or the all-zero basis projector.
+        observables
+            Optional original Pauli expectations to record.
+        max_dense_gib
+            Dense operator allowance already admitted by the public caller.
+        tolerances
+            Validated SciPy atol/rtol overrides; absent keys retain its defaults.
+
+        Returns
+        -------
+        dict
+            Original time, density and optional expectation histories.
+
+        """
         self._ensure_density_matrix_components(max_dense_gib)
         rho0: NDArray[np.complex128]
         if initial_rho is None:
@@ -281,6 +386,7 @@ class LindbladSyncEngine:
             rho0.flatten(),
             t_eval=times,
             method="RK45",
+            **tolerances,
         )
 
         states = [res.y[:, i].reshape((self.dim, self.dim)) for i in range(len(res.t))]

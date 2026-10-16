@@ -311,7 +311,11 @@ def mcwf_ensemble(
 
     R_array = np.array(all_R)
     return {
-        "times": np.linspace(0, t_max, _time_step_count(t_max, dt) + 1),
+        "times": (
+            np.array([0.0])
+            if t_max == 0.0
+            else np.linspace(0, t_max, _time_step_count(t_max, dt) + 1)
+        ),
         "R_mean": np.mean(R_array, axis=0),
         "R_std": np.std(R_array, axis=0),
         "R_trajectories": R_array,

@@ -134,14 +134,18 @@ At each time step $dt$:
 3. With probability $dp$, apply a quantum jump: $|\psi\rangle \to L_k|\psi\rangle / \|L_k|\psi\rangle\|$
 4. Otherwise, renormalise: $|\psi\rangle \to |\psi\rangle / \|\psi\|$
 
-Averaging $R(t)$ over many trajectories recovers the Lindblad result.
+Averaging linear trajectory observables recovers the corresponding Lindblad
+expectation in the converged sampling and time-step limit. The stored
+`R_mean` averages individual magnitudes; it is a different estimand from the
+magnitude evaluated on an averaged density matrix.
 
 **Advantage over Lindblad:** Memory scales as $O(2^n)$ (state vector)
 instead of $O(4^n)$ (density matrix). Each trajectory is independent →
 trivially parallelisable.
 
-**Disadvantage:** Statistical noise from finite trajectory count. Typically
-50–500 trajectories needed for smooth $R(t)$.
+**Disadvantage:** Finite-sample uncertainty and finite jump-step error are
+separate. Required trajectory counts depend on the observable, rates, horizon
+and precision; a smooth plotted curve is not a calibrated uncertainty bound.
 
 ### API Reference
 
@@ -165,7 +169,7 @@ result = mcwf_trajectory(
 
 ```python
 {
-    "times": np.ndarray,      # shape (n_steps,)
+    "times": np.ndarray,      # n_steps + 1 samples, or one at zero horizon
     "R": np.ndarray,          # order parameter at each step
     "psi_final": np.ndarray,  # final state vector, shape (2^n,)
     "n_jumps": int,            # total quantum jumps in this trajectory
@@ -193,11 +197,12 @@ result = mcwf_ensemble(
 
 ```python
 {
-    "times": np.ndarray,           # shape (n_steps,)
+    "times": np.ndarray,           # n_steps + 1 samples, or one at zero horizon
     "R_mean": np.ndarray,          # ensemble-averaged R(t)
-    "R_std": np.ndarray,           # standard deviation of R(t)
-    "R_trajectories": np.ndarray,  # shape (n_trajectories, n_steps)
+    "R_std": np.ndarray,           # population standard deviation, not standard error
+    "R_trajectories": np.ndarray,  # shape (n_trajectories, n_time_samples)
     "total_jumps": int,             # total jumps across all trajectories
+    "n_trajectories": int,          # original requested positive count
 }
 ```
 
@@ -225,10 +230,12 @@ hardware gradient, provider execution, or isolated performance evidence.
 
 ### Rust Acceleration
 
-The inner loop of `_order_param_vec` (computing $R$ from a state vector)
-uses the Rust function `order_param_from_statevector` when the engine is
-installed. Measured speedup: **851×** at $n=8$ (0.008 ms vs 6.47 ms).
-Falls back to NumPy automatically.
+The current MCWF order-parameter accumulation is implemented in Python in
+Kronecker qubit order. A Rust engine installation does not make this loop a
+native execution route. The separate `LindbladSyncEngine` can use compiled
+excitation-transfer operator construction; it has different jump operators
+from the amplitude/dephasing solver. Neither path establishes hardware noise
+fidelity.
 
 ### Tutorial
 
@@ -253,7 +260,7 @@ solver = LindbladKuramotoSolver(n, K, omega, gamma_amp=0.1)
 lindblad = solver.run(t_max=1.0, dt=0.05)
 print(f"Lindblad R(T) = {lindblad['R'][-1]:.3f}")
 
-# They should agree within statistical error
+# These R values are different nonlinear estimands; do not test them for equality.
 ```
 
 For a deterministic unitary reference, pass the same explicit density matrix
@@ -262,6 +269,10 @@ to `LindbladKuramotoSolver.run(initial_density_matrix=...)` and set `atol` and
 error. See the [analytic reference](lindblad.md#analytic-single-qubit-reference)
 for Hamiltonian sign, basis ordering and physical-input admission. This local
 reference check does not establish stochastic-channel or hardware agreement.
+For source-bound rates, ordered child seeds, sample variance and standard
+error, use the separate [MCWF sampling companion](open_system_mcwf_product.md#source-bound-sampling-evidence).
+Its interval and time-error fields stay unknown rather than borrowing a
+confidence claim from same-seed reproducibility.
 
 ### Scaling Comparison: Lindblad vs MCWF
 
@@ -278,9 +289,9 @@ reference check does not establish stochastic-channel or hardware agreement.
 
 | Criterion | Lindblad | MCWF | Ancilla circuit |
 |-----------|----------|------|-----------------|
-| Accuracy | Exact | Statistical ($1/\sqrt{N_\text{traj}}$) | Trotter error |
+| Error components | Adaptive integration tolerance | Sampling and jump-step error | Trotter error |
 | Memory | $O(4^n)$ | $O(2^n)$ | $O(n)$ qubits |
-| Max $n$ (32 GB) | ~12 | ~16 | ~20 (hardware limit) |
+| Capacity | Admit the full density workspace/history | Admit state and complete sample histories | Target-specific admission |
 | Hardware-executable | No | No | Yes (IBM, etc.) |
 | Parallelisable | No | Yes (per trajectory) | Yes (shots) |
 

@@ -27,6 +27,14 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ### Added
 
+- Source-bound MCWF sampling evidence records effective simulation rates,
+  ordered child seeds, original trajectories, sample variance and standard
+  error through the existing product facade. Single-trajectory uncertainty,
+  confidence intervals and time-error bounds stay explicitly unavailable.
+  Zero-horizon ensembles use one aligned time sample. Excitation-transfer
+  engines reject invalid rates and accept explicit density-only integration
+  tolerances without changing the defaults of existing calls.
+
 - Studio Results can import native complete-population method comparisons,
   inspect every retained repetition and its original interval/resource budget,
   and download the exact admitted source. Incompatible meanings, missing costs

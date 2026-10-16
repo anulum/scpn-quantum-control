@@ -60,6 +60,51 @@ repro = materialise_reproducibility_probe()
 assert repro.certificate["passed"] is True
 ```
 
+## Source-bound sampling evidence
+
+The original raw trajectory/ensemble mappings keep their existing keys.
+`materialise_mcwf_ensemble_evidence` returns a separate companion containing
+the validated source case, effective simulation rates, exact ordered child
+seeds, complete trajectory histories and their mean:
+
+```python
+from scpn_quantum_control.open_system_mcwf_product import (
+    materialise_mcwf_ensemble_evidence,
+)
+from scpn_quantum_control.phase.open_system_objectives import (
+    default_open_system_objective_cases,
+)
+
+case = default_open_system_objective_cases()[0]
+record = materialise_mcwf_ensemble_evidence(case).to_dict()
+print(record["effective_rates"])
+print(record["trajectory_seeds"])
+print(record["standard_error"])
+```
+
+The estimand is the **mean of individual trajectory synchronisation
+magnitudes R**. It differs from the magnitude evaluated on an ensemble density
+matrix. Sample variance uses the `n - 1` denominator; standard error is
+`sqrt(sample_variance / n)`. Both remain `None` for one trajectory. The original
+`R_std` uses the population denominator and is a spread, not a standard error.
+Same-seed replay establishes reproducibility, not accuracy or calibrated coverage.
+
+`mcwf_ensemble_sampling_evidence.v1` explicitly leaves its confidence interval
+and time-discretisation error unknown. Its source-case digest identifies the
+Python JSON snapshot; it is not a workspace or numerical-plan hash. The builder
+admits declared state/history/statistics storage before execution, preserves
+caller arrays and global NumPy RNG, and refuses any model domain other than
+`cp_markovian_simulation`. It grants no hardware, non-Markovian, adjoint or
+gradient-fidelity claim.
+
+At zero evolution time both original ensemble statistics and the time grid
+contain exactly one sample. The distinct `LindbladSyncEngine` models excitation
+transfer, not these single-qubit amplitude/dephasing channels. Its finite
+non-negative `gamma` is admitted before operator construction; optional
+`density_atol` and `density_rtol` control only density integration. Old calls
+retain SciPy defaults. Trajectories refuse those settings, and an explicit
+relative tolerance below SciPy's float64 floor is refused rather than clamped.
+
 ## Residuals (honest)
 
 - Fuller committed evidence breadth beyond the current objective suite

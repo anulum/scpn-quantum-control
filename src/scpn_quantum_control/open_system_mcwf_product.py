@@ -36,6 +36,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any, Final, Literal
 
+from .phase.mcwf_evidence import MCWFEnsembleEvidence, materialise_mcwf_ensemble_evidence
 from .phase.open_system_objectives import (
     OPEN_SYSTEM_OBJECTIVE_CLAIM_BOUNDARY,
     default_open_system_objective_cases,
@@ -1016,6 +1017,12 @@ def map_open_system_mcwf_public_surfaces() -> tuple[dict[str, object], ...]:
             "role": "ambient_objectives_trainability_evidence",
             "claim_boundary": OPEN_SYSTEM_OBJECTIVE_CLAIM_BOUNDARY,
         },
+        {
+            "surface_id": "mcwf_sampling_evidence",
+            "module_path": "scpn_quantum_control.phase.mcwf_evidence",
+            "role": "source_bound_sampling_evidence",
+            "claim_boundary": OPEN_SYSTEM_MCWF_CLAIM_BOUNDARY,
+        },
     )
 
 
@@ -1144,6 +1151,7 @@ def assert_open_system_mcwf_product_integrity(
 
 
 __all__ = [
+    "MCWFEnsembleEvidence",
     "BoundaryKind",
     "MaterialisedMcwfEnsembleProbe",
     "MaterialisedReproducibilityProbe",
@@ -1172,5 +1180,6 @@ __all__ = [
     "map_open_system_mcwf_public_surfaces",
     "materialise_demo_mcwf_ensemble_probe",
     "materialise_mcwf_ensemble_probe",
+    "materialise_mcwf_ensemble_evidence",
     "materialise_reproducibility_probe",
 ]

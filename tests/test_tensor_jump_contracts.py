@@ -211,3 +211,17 @@ class TestTensorJump:
             from scpn_quantum_control.phase.tensor_jump import mcwf_ensemble
 
             mcwf_ensemble(K, omega, n_trajectories=cast(int, invalid_count))
+
+
+@pytest.mark.parametrize("count", [1, 2, 7])
+def test_zero_horizon_ensemble_uses_one_common_sample(count: int) -> None:
+    """Keep the public zero-horizon grid aligned with every trajectory history."""
+    from scpn_quantum_control.phase.tensor_jump import mcwf_ensemble
+
+    result = mcwf_ensemble(
+        np.zeros((1, 1)), np.zeros(1), t_max=0.0, dt=0.1, n_trajectories=count, seed=7
+    )
+    np.testing.assert_array_equal(result["times"], np.array([0.0]))
+    assert result["R_mean"].shape == result["R_std"].shape == (1,)
+    assert result["R_trajectories"].shape == (count, 1)
+    assert result["total_jumps"] == 0

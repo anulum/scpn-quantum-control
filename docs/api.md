@@ -1952,10 +1952,16 @@ Generalized topology-informed ansatz. Places entangling gates only between physi
 ### `lindblad_engine.LindbladSyncEngine`
 
 ```python
-LindbladSyncEngine(K, omega, gamma=0.1)
-    .evolve(t_max, n_steps=100, method="trajectory", initial_state=None, n_traj=20, observables=None) -> dict
+engine = LindbladSyncEngine(K, omega, gamma=0.1, max_dense_gib=None)
+result = engine.evolve(
+    t_max, n_steps=100, method="trajectory", initial_state=None,
+    n_traj=20, seed=42, observables=None, max_dense_gib=None,
+    density_atol=None, density_rtol=None,
+)
 ```
-Open quantum system solver. Supports memory-efficient Monte Carlo Wavefunction (MCWF) trajectory path for N=16 simulation.
+Excitation-transfer density and statevector trajectory solver. Its finite
+non-negative `gamma` is a transfer rate; the amplitude/dephasing channels live
+in the separate `LindbladKuramotoSolver` and `tensor_jump` owners.
 Lower-level Lindblad Kuramoto solver inputs use the same strict numeric boundary
 as the gate-model XY path: coupling, frequency, and damping-rate values must be
 explicit real numeric values, not strings, booleans, objects, or complex values
@@ -1968,11 +1974,24 @@ values before dense setup and checks the active allowance even with cached
 operators. The density route retains its ten-qubit limit; this input/operator
 allowance does not bound trajectory ensemble histories.
 
+`density_atol` and `density_rtol` optionally set the density integrator's
+positive finite tolerances. Omitted values preserve the original SciPy
+defaults. A relative tolerance below SciPy's float64 floor is refused, and
+trajectory mode refuses both density controls instead of ignoring them.
+
 `lindblad.LindbladKuramotoSolver.run()` additionally accepts keyword-only
 `initial_density_matrix`, `atol` and `rtol`. Its `dt` sets output spacing and its
 execution reservation includes the density history. See the
 [Lindblad API and analytic reference](lindblad.md#analytic-single-qubit-reference)
 for basis ordering, defaults and a same-state comparison.
+
+The original product facade also exposes `materialise_mcwf_ensemble_evidence`
+over a validated, explicitly seeded `BoundedOpenSystemObjectiveCase`. This
+separate companion records effective amplitude/dephasing rates, ordered child
+seeds, complete R histories, sample variance and standard error. At zero
+horizon the ensemble has one aligned time sample; a single trajectory has no
+estimated sampling uncertainty. See [source-bound sampling evidence](open_system_mcwf_product.md#source-bound-sampling-evidence)
+for the estimand, source identity and explicit confidence/time-error limits.
 
 ### `xy_kuramoto.QuantumKuramotoSolver`
 

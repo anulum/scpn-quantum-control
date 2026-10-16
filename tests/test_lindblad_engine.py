@@ -13,7 +13,7 @@ import importlib
 import sys
 from collections.abc import Sequence
 from types import ModuleType
-from typing import NoReturn
+from typing import NoReturn, cast
 
 import numpy as np
 import pytest
@@ -22,7 +22,65 @@ from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.phase.lindblad_engine import LindbladSyncEngine
 
 
+@pytest.mark.parametrize(
+    "rate", [-0.1, -np.inf, np.inf, np.nan, True, "0.1", 0.1j, np.array([0.1])]
+)
+def test_transfer_engine_refuses_nonphysical_rate(rate: object) -> None:
+    """Refuse invalid transfer rates through the real constructor without input mutation."""
+    coupling = np.zeros((1, 1))
+    frequencies = np.zeros(1)
+    with pytest.raises(ValueError, match="gamma"):
+        LindbladSyncEngine(coupling, frequencies, gamma=cast(float, rate))
+    np.testing.assert_array_equal(coupling, np.zeros((1, 1)))
+    np.testing.assert_array_equal(frequencies, np.zeros(1))
+
+
+@pytest.mark.parametrize("value", [-0.1, 0.0, np.nan, np.inf, True, "1e-8", np.array([1e-8])])
+def test_density_tolerances_require_positive_finite_scalars(value: object) -> None:
+    """Refuse invalid explicit tolerances without changing valid engine state."""
+    engine = LindbladSyncEngine(np.zeros((1, 1)), np.zeros(1), gamma=0.0)
+    with pytest.raises(ValueError, match="density_atol"):
+        engine.evolve(0.1, method="density_matrix", density_atol=cast(float, value))
+    with pytest.raises(ValueError, match="density_rtol"):
+        engine.evolve(0.1, method="density_matrix", density_rtol=cast(float, value))
+    assert engine.H_dense is None
+
+
+def test_density_precision_request_cannot_be_silently_changed_or_ignored() -> None:
+    """Refuse relative-tolerance clamping and density settings on the other model route."""
+    engine = LindbladSyncEngine(np.zeros((1, 1)), np.zeros(1), gamma=0.0)
+    with pytest.raises(ValueError, match="floor"):
+        engine.evolve(0.1, method="density_matrix", density_rtol=1e-40)
+    with pytest.raises(ValueError, match="trajectory"):
+        engine.evolve(0.1, density_atol=1e-12)
+    with pytest.raises(ValueError, match="trajectory"):
+        engine.evolve(0.1, density_rtol=1e-12)
+    assert engine.H_dense is None
+
+
+def test_explicit_density_tolerances_resolve_a_coherent_analytic_state() -> None:
+    """Resolve the actual minus-omega-Z Hamiltonian against its independent phase solution."""
+    frequency, horizon = 0.7, 0.8
+    initial = np.full((2, 2), 0.5, dtype=np.complex128)
+    engine = LindbladSyncEngine(np.zeros((1, 1)), np.array([frequency]), gamma=0.0)
+    result = engine.evolve(
+        horizon,
+        8,
+        method="density_matrix",
+        initial_state=initial,
+        density_atol=1e-13,
+        density_rtol=1e-11,
+    )
+    phase = np.exp(1j * frequency * horizon)
+    expected_state = np.array([phase, phase.conjugate()]) / np.sqrt(2.0)
+    expected = np.outer(expected_state, expected_state.conj())
+    np.testing.assert_allclose(result["final_state"], expected, atol=1e-10, rtol=1e-8)
+    np.testing.assert_array_equal(initial, np.full((2, 2), 0.5, dtype=np.complex128))
+
+
 class TestLindbladSyncEngine:
+    """Exercise the original transfer model's density, trajectory and allocation paths."""
+
     def test_lindblad_evolution_preserves_trace(self) -> None:
         """Verify that the Lindbladian preserves trace of the density matrix."""
         K = np.array([[0.0, 1.0], [1.0, 0.0]])
@@ -36,6 +94,7 @@ class TestLindbladSyncEngine:
             assert abs(tr - 1.0) < 1e-6
 
     def test_dissipator_construction(self) -> None:
+        """Construct one transfer operator per admitted directed coupling edge."""
         K = np.array([[0.0, 1.0, 0.0], [1.0, 0.0, 1.0], [0.0, 1.0, 0.0]])
         omega = np.array([1.0, 1.0, 1.0])
         engine = LindbladSyncEngine(K, omega)
@@ -141,6 +200,7 @@ class TestLindbladSyncEngine:
     def test_density_matrix_rejects_dense_budget_before_hamiltonian_allocation(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """Refuse an insufficient density budget before its Hamiltonian is requested."""
         import scpn_quantum_control.phase.lindblad_engine as le_mod
 
         def fail_if_dense_hamiltonian_is_requested(*args: object, **kwargs: object) -> NoReturn:  # noqa: ARG001

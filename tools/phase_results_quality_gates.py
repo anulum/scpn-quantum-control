@@ -24,6 +24,7 @@ PHASE_RESULTS_COVERAGE_COHORT = [
     "tests/test_lindblad_trajectory.py",
     "tests/test_density_input.py",
     "tests/test_quantum_reference_evolution.py",
+    "tests/test_open_system_ensemble_conformance.py",
 ]
 PHASE_RESULTS_TYPING_RATCHET = [
     PHASE_RESULTS_SOURCE,
@@ -33,6 +34,8 @@ PHASE_RESULTS_TYPING_RATCHET = [
     "src/scpn_quantum_control/phase/density_input.py",
     "tests/test_density_input.py",
     "tests/test_quantum_reference_evolution.py",
+    "tests/test_lindblad_engine.py",
+    "tests/test_open_system_ensemble_conformance.py",
     "tests/test_xy_kuramoto.py",
     "tools/phase_results_quality_gates.py",
     "tests/test_phase_results_quality_gate.py",
@@ -45,6 +48,8 @@ PHASE_RESULTS_DOCSTRING_RATCHET = [
     "src/scpn_quantum_control/phase/density_input.py",
     "tests/test_density_input.py",
     "tests/test_quantum_reference_evolution.py",
+    "tests/test_lindblad_engine.py",
+    "tests/test_open_system_ensemble_conformance.py",
     "tests/test_phase_results.py",
     "tests/test_xy_kuramoto.py",
     "tools/phase_results_quality_gates.py",

@@ -737,20 +737,19 @@ labels = eng.magnetisation_labels(n)
 
 ---
 
-## `order_param_from_statevector` — 851× faster order parameter
+## `order_param_from_statevector` — standalone native order parameter
 
 Computes Kuramoto order parameter R from complex state vector via bitwise
-Pauli expectations. Critical inner loop in MCWF trajectories.
+Pauli expectations through an explicit native call.
 
 ```python
 R = eng.order_param_from_statevector(psi.real, psi.imag, n)
 ```
 
-**Wired into:** `phase/tensor_jump.py::_order_param_vec()` — called automatically.
-
-**Measured:** 0.008 ms (Rust) vs 6.47 ms (Python) at n=8 → **851× speedup**
-
-**Tests:** 5 (all-up state, bounded, matches Python exactly, n=8 performance <1ms, deterministic)
+The current `phase/tensor_jump.py` order-parameter loop runs in Python; it does
+not dispatch automatically to this binding. A standalone binding timing does
+not measure or qualify the MCWF route. For original trajectory provenance and
+sample uncertainty, use the [MCWF sampling companion](open_system_mcwf_product.md#source-bound-sampling-evidence).
 
 ---
 

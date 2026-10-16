@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **794 modules** across **41 package families**
-- **4280 documented public module-level symbols**
+- **795 modules** across **41 package families**
+- **4282 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -4194,6 +4194,16 @@ Lindblad Master Equation and Quantum Trajectory Solver.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase/lindblad_engine.py) · Public symbols: **1**
 
 **Classes:** `LindbladSyncEngine`
+
+### `scpn_quantum_control.phase.mcwf_evidence`
+
+Attach source and sampling uncertainty to the original MCWF ensemble.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase/mcwf_evidence.py) · Public symbols: **2**
+
+**Classes:** `MCWFEnsembleEvidence`
+
+**Functions:** `materialise_mcwf_ensemble_evidence()`
 
 ### `scpn_quantum_control.phase.model_training_evidence`
 

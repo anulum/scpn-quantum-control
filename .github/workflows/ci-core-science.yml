@@ -252,6 +252,8 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/open_system_mcwf_product.py
           src/scpn_quantum_control/phase/tensor_jump.py
+          src/scpn_quantum_control/phase/mcwf_evidence.py
+          tests/test_mcwf_evidence.py
           tests/test_open_system_mcwf_product.py
           tests/test_tensor_jump_contracts.py
           tools/open_system_completeness_quality_gates.py
@@ -262,6 +264,8 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/open_system_mcwf_product.py
           src/scpn_quantum_control/phase/tensor_jump.py
+          src/scpn_quantum_control/phase/mcwf_evidence.py
+          tests/test_mcwf_evidence.py
           tests/test_tensor_jump_contracts.py
           tools/open_system_completeness_quality_gates.py
           tests/test_open_system_completeness_quality_gate.py
@@ -275,6 +279,7 @@ jobs:
           tests/test_open_system_mcwf_product.py
           tests/test_tensor_jump.py
           tests/test_tensor_jump_contracts.py
+          tests/test_mcwf_evidence.py
       - name: Enforce open-system completeness exact coverage
         run: >-
           python -m coverage report
@@ -282,7 +287,7 @@ jobs:
           --data-file=.coverage.open-system-completeness-quality
           --precision=2 --show-missing
           --fail-under=100
-          --include=*/open_system_mcwf_product.py,*/phase/tensor_jump.py
+          --include=*/open_system_mcwf_product.py,*/phase/tensor_jump.py,*/phase/mcwf_evidence.py
   thermo-readiness-product-quality:
     runs-on: ubuntu-latest
     env:
