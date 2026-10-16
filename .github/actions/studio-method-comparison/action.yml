@@ -1,0 +1,87 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — complete native method-comparison qualification
+name: Studio complete method comparison
+description: Qualify original retained populations, native export and real built/source browser controls.
+inputs:
+  preview-dir:
+    description: Current built Studio and genuine original WASM.
+    required: true
+  source-dir:
+    description: Original qualified Vite source host with its exact source and kernels.
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Enforce complete native comparison types, docs and exact coverage
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run: |
+        python - <<'PY_NATIVE'
+        import os
+        import subprocess
+        import sys
+        from pathlib import Path
+        from tools.studio_method_comparison_quality_gates import build_method_comparison_quality_gates
+        for name, command in build_method_comparison_quality_gates(sys.executable, output_root=Path(os.environ["RUNNER_TEMP"])):
+            print(name, flush=True)
+            subprocess.run(command, check=True)
+        PY_NATIVE
+    - name: Exercise original comparison through the shared built and source browser
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      env:
+        STUDIO_PREVIEW_DIR: ${{ inputs.preview-dir }}
+        STUDIO_METHOD_SOURCE_DIR: ${{ inputs.source-dir }}
+        STUDIO_WORKSPACE_SOURCE_URL: http://127.0.0.1:4174/
+      run: |
+        python -m http.server 4173 --bind 127.0.0.1 --directory "$STUDIO_PREVIEW_DIR" \
+          > "$RUNNER_TEMP/studio-method-comparison-preview.log" 2>&1 &
+        preview_pid=$!
+        node studio-web/node_modules/vite/bin/vite.js "$STUDIO_METHOD_SOURCE_DIR" \
+          --host 127.0.0.1 --port 4174 --strictPort > "$RUNNER_TEMP/studio-method-comparison-source.log" 2>&1 &
+        source_pid=$!
+        trap 'kill "$preview_pid" "$source_pid" 2>/dev/null || true; wait "$preview_pid" || true; wait "$source_pid" || true' EXIT
+        for port in 4173 4174; do
+          for ((attempt = 1; attempt <= 5; attempt++)); do
+            kill -0 "$preview_pid" "$source_pid"
+            if curl --fail --silent "http://127.0.0.1:$port/" > /dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent "http://127.0.0.1:$port/" > /dev/null
+        done
+        python -m coverage run --rcfile=/dev/null --branch --concurrency=greenlet \
+          --data-file="$RUNNER_TEMP/studio-method-comparison-browser.coverage" \
+          --include="*/tools/studio_method_comparison_browser.py,*/tools/studio_browser_journey.py" \
+          tools/studio_browser_journey.py --scenario method_comparison_instrument \
+          --base-url http://127.0.0.1:4173/ --workspace-source-url "$STUDIO_WORKSPACE_SOURCE_URL" \
+          --output "$RUNNER_TEMP/studio-method-comparison-journey.json"
+        python -m coverage run --rcfile=/dev/null --append --branch --concurrency=greenlet \
+          --data-file="$RUNNER_TEMP/studio-method-comparison-browser.coverage" \
+          --include="*/tools/studio_method_comparison_browser.py" \
+          -m pytest --noconftest -q tools/tests/test_studio_method_comparison_browser.py \
+          --basetemp="$RUNNER_TEMP/studio-method-comparison-browser-pytest"
+        python -m coverage report --rcfile=/dev/null \
+          --data-file="$RUNNER_TEMP/studio-method-comparison-browser.coverage" \
+          --include="*/tools/studio_method_comparison_browser.py" --precision=2 --show-missing --fail-under=100
+        python -m coverage combine --rcfile=/dev/null --append --keep \
+          --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" "$RUNNER_TEMP/studio-method-comparison-browser.coverage"
+    - name: Enforce exact comparison UI owners with original native browser counters
+      shell: bash
+      working-directory: ${{ github.workspace }}/studio-web
+      env:
+        STUDIO_WORKSPACE_COVERAGE: ${{ runner.temp }}/studio-workspace-journey.json
+        STUDIO_METHOD_COMPARISON_COVERAGE: ${{ runner.temp }}/studio-method-comparison-journey.json
+      run: >-
+        pnpm exec vitest run src/modules/compare/MethodComparison.test.tsx
+        src/modules/compare/useMethodComparison.test.tsx src/modules/compare/methodComparisonArtifact.test.ts
+        --coverage.enabled=true --coverage.include=src/modules/compare/MethodComparison.tsx
+        --coverage.include=src/modules/compare/useMethodComparison.ts
+        --coverage.include=src/modules/compare/methodComparisonArtifact.ts
+        --coverage.reportsDirectory="$RUNNER_TEMP/studio-method-comparison-ui-coverage"
+        --coverage.thresholds.perFile=true --coverage.thresholds.statements=100
+        --coverage.thresholds.branches=100 --coverage.thresholds.functions=100 --coverage.thresholds.lines=100

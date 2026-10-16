@@ -31,6 +31,8 @@ _INPUTS = (
     ".github/actions/studio-native-coverage/action.yml",
     ".github/actions/studio-provider-observation/action.yml",
     "data/studio/provider_observation_cases.json",
+    ".github/actions/studio-method-comparison/action.yml",
+    "data/studio/method_comparison_cases.json",
     "requirements-ci-py312-linux.txt",
     "requirements-ci-studio-browser.txt",
     "studio-web/package.json",

@@ -12,7 +12,10 @@ import type { WorkbenchServices, WorkspaceViewServices } from "../../shared/cont
 const RunComparison = lazy(() =>
   import("./RunComparison").then((module) => ({ default: module.RunComparison })),
 );
-/** Original independently source-bound comparison controls contributed to Results. */
+const MethodComparison = lazy(() =>
+  import("./MethodComparison").then((module) => ({ default: module.MethodComparison })),
+);
+/** Independently source-bound run and complete method-population comparison controls. */
 export const compareModule: StudioModule<WorkbenchServices, WorkspaceViewServices, never> = {
   id: "compare",
   version: "1",
@@ -27,6 +30,13 @@ export const compareModule: StudioModule<WorkbenchServices, WorkspaceViewService
       render: (services: WorkbenchServices) => (
         <RunComparison sourceJson={services.workspace.draft} rawCodecs={services.codecs} />
       ),
+    },
+    {
+      kind: "stage",
+      id: "method-comparison",
+      label: "Method comparison and uncertainty",
+      stage: "results",
+      render: () => <MethodComparison />,
     },
   ],
 };

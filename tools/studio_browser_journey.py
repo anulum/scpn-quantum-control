@@ -9,6 +9,8 @@
 
 Install the hash-locked CI browser extra and Chromium on the runner. This
 command neither starts a provider nor permits navigation away from the preview.
+The catalogue and evidence journeys honour the selected existing browser executable
+and retain Chromium sandboxing.
 """
 
 from __future__ import annotations
@@ -16,6 +18,7 @@ from __future__ import annotations
 import argparse
 import ipaddress
 import json
+import os
 from collections.abc import Callable, Sequence
 from functools import partial
 from importlib.metadata import version
@@ -93,7 +96,10 @@ def run_catalogue_journey(base_url: str) -> dict[str, object]:
     origin = urlsplit(url).netloc
     observations: list[dict[str, object]] = []
     with sync_playwright() as runtime:
-        browser = runtime.chromium.launch()
+        browser = runtime.chromium.launch(
+            executable_path=os.environ.get("STUDIO_NATIVE_BROWSER_EXECUTABLE"),
+            chromium_sandbox=True,
+        )
         try:
             for missing_kernel in (False, True, False):
                 context = browser.new_context(service_workers="block")
@@ -233,7 +239,10 @@ def run_evidence_journey(
     changed["expected"]["gradient"][1] = 99.0
     observations: list[str] = []
     with sync_playwright() as runtime:
-        browser = runtime.chromium.launch()
+        browser = runtime.chromium.launch(
+            executable_path=os.environ.get("STUDIO_NATIVE_BROWSER_EXECUTABLE"),
+            chromium_sandbox=True,
+        )
         context = browser.new_context(service_workers="block", color_scheme=color_scheme)
         context.set_default_timeout(15_000)
         held: list[Route] = []
@@ -424,6 +433,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "local_experiment_journey",
             "result_value_inspector",
             "immutable_run_comparison",
+            "method_comparison_instrument",
             "experiment_workflow_runner",
         ),
         required=True,
@@ -479,10 +489,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "local_experiment_journey",
                 "result_value_inspector",
                 "immutable_run_comparison",
+                "method_comparison_instrument",
                 "experiment_workflow_runner",
             ):
                 raise ValueError(
-                    "--workspace-source-url is valid only for workspace_recovery/workbench_navigation/parameter_graph_editor/workbench_accessibility/local_experiment_journey/result_value_inspector/immutable_run_comparison/experiment_workflow_runner"
+                    "--workspace-source-url is valid only for workspace_recovery/workbench_navigation/parameter_graph_editor/workbench_accessibility/local_experiment_journey/result_value_inspector/immutable_run_comparison/method_comparison_instrument/experiment_workflow_runner"
                 )
             journey: Callable[[str], dict[str, object]]
             if args.scenario == "workspace_panel_refusal":
@@ -508,6 +519,14 @@ def main(argv: Sequence[str] | None = None) -> int:
 
                 journey = partial(
                     run_workflow_journey, source_url=args.workspace_source_url, evidence=evidence
+                )
+            elif args.scenario == "method_comparison_instrument":
+                from tools.studio_method_comparison_browser import run_method_comparison_journey
+
+                journey = partial(
+                    run_method_comparison_journey,
+                    source_url=args.workspace_source_url,
+                    evidence=evidence,
                 )
             elif args.scenario == "immutable_run_comparison":
                 from tools.studio_comparison_browser import run_comparison_journey

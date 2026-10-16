@@ -1,14 +1,11 @@
 # Benchmarks API Reference
 
-The `benchmarks` package measures the computational frontier: at what
-system size does quantum hardware outperform the best classical methods
-for simulating Kuramoto-XY dynamics? Seven modules answer this from
-different angles — documented classical baselines, exact diagonalisation,
-GPU statevector, MPS tensor networks, application-oriented metrics, and
-differentiable-programming conformance.
-
-7 modules, differentiable-programming conformance rows, TN/MPS baseline design,
-and 3 crossover estimates.
+The `benchmarks` package records classical reference runs, resource estimates,
+complete method populations and differentiable-programming conformance. Its
+documented methods include exact diagonalisation, GPU statevector, MPS tensor
+networks and application-oriented metrics. A performance or quantum-advantage
+claim requires evidence at matched workloads, observables and full budgets;
+neither a resource estimate nor a descriptive comparison establishes one.
 
 Rust kernel execution-mode evidence is tracked separately from benchmark timing.
 `tools/audit_rust_kernel_execution.py` writes static SIMD/threading inventory
@@ -887,6 +884,55 @@ assumed GPU memory envelope and MPS estimates become entanglement- and
 bond-cap dependent. This is a resource-boundary diagnostic only; no broad
 quantum-advantage claim follows without a committed classical baseline,
 observable tolerance, and hardware dataset for the specific workload.
+
+## Complete retained-population comparisons
+
+`benchmarks.method_comparison_contracts` declares immutable `ComparisonMeaning`,
+`ComparisonBudget` and `MethodRun` records. `ComparisonMeaning` binds the problem,
+observable, unit, model, precision, shot count/protocol, initial condition,
+calibration, noise and estimator. `ComparisonBudget` separates compilation,
+data movement and execution in milliseconds, peak memory, memory/wall ceilings
+and optional advisory wall time. Unknown components remain `None`; advisory
+elapsed time cannot substitute for a measured full cost.
+
+`benchmarks.method_comparison.summarise_method_comparison` retains one to 1000
+uniquely identified runs, including explicit failures and missing observations.
+It reports the mean and sample variance (n−1) from every observed value under
+`require-complete` (default) or explicit `available-case`. The latter discloses
+missing identities rather than imputing zeros. Matched declared and observed
+seed populations, meanings and interval protocols are required before differences
+against `baseline_method` are admitted. Missing/exceeded resource budgets and
+numeric overflow refuse comparison. Single-observation variance is unavailable.
+`selected_run_id` changes presentation only.
+
+The existing `ReproducibleKuramotoComparison.to_method_runs(problem_ref,
+repetition_id)` projects actual original solver results without running them
+again. It distinguishes the randomised classical phase initial state from the
+original quantum XY state and their different observables. It preserves elapsed
+time as advisory, leaves unmeasured full-cost components unknown, and keeps
+intentionally unexecuted quantum rows explicitly missing. These declarations
+therefore refuse a fair performance ranking.
+
+`studio.method_comparison_artifact.export_method_comparison` exports the native
+summary in a lossless `studio.method_comparison.v1` envelope. The original digest
+detects altered content; it does not authenticate the declared producer.
+`read_method_comparison_population` accepts a bounded original input document
+(`studio.method_comparison_input.v1`) with `runs` from `dataclasses.asdict`,
+`baseline_method`, `missing_data_policy` and nullable `selected_run_id`. Supplied
+summary fields are refused. The CLI writes only a new destination:
+
+```bash
+PYTHONPATH=src:oscillatools/src .venv/bin/python tools/export_method_comparison.py \
+  --input retained-input.json --output comparison.json
+PYTHONPATH=src:oscillatools/src .venv/bin/python examples/method_comparison.py
+```
+
+The runnable example declares synthetic scalar observations and synthetic costs;
+it makes no measured performance claim. Existing `analysis.sync_uncertainty`
+estimators own per-run analytic and bootstrap intervals. No interval for the
+repeated-run mean, significance test or new confidence definition is introduced.
+See [Studio method comparison](studio_workbench.md#method-comparison-and-uncertainty)
+for import, original export and the retained negative synthetic interval check.
 
 ## Dependencies
 

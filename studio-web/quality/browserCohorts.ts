@@ -143,6 +143,9 @@ export async function readBrowserCohorts(root: string): Promise<BrowserSourceCoh
     "/src/app/useWorkbenchRoute.ts",
     "/src/modules/build/BuildView.tsx",
     "/src/modules/results/ResultsView.tsx",
+    "/src/modules/compare/MethodComparison.tsx",
+    "/src/modules/compare/useMethodComparison.ts",
+    "/src/modules/compare/methodComparisonArtifact.ts",
     "/src/modules/atlas/UnavailableView.tsx",
   ]);
   return {

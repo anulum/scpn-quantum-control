@@ -152,6 +152,8 @@ def test_changed_source_binding_cannot_finish(
     [
         ".github/actions/studio-provider-observation/action.yml",
         "data/studio/provider_observation_cases.json",
+        ".github/actions/studio-method-comparison/action.yml",
+        "data/studio/method_comparison_cases.json",
     ],
 )
 def test_provider_observation_inputs_are_bound_before_execution(

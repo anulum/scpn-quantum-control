@@ -258,6 +258,7 @@ def test_workflow_native_and_browser_owners_keep_exact_original_gates() -> None:
         "STUDIO_EXPERIMENT_COVERAGE": "${{ runner.temp }}/studio-experiment-journey.json",
         "STUDIO_RESULT_COVERAGE": "${{ runner.temp }}/studio-result-journey.json",
         "STUDIO_WORKFLOW_COVERAGE": "${{ runner.temp }}/studio-workflow-journey.json",
+        "STUDIO_METHOD_COMPARISON_COVERAGE": "${{ runner.temp }}/studio-method-comparison-journey.json",
     }
     assert "--coverage.provider=v8" not in workflow_ui
     for owner in (

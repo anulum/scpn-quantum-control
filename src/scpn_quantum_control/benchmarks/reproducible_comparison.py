@@ -46,6 +46,7 @@ from scpn_quantum_control.hardware.classical import classical_exact_evolution
 from scpn_quantum_control.phase import QuantumKuramotoSolver
 
 from .classical_baselines import scipy_ode_baseline
+from .method_comparison_contracts import ComparisonBudget, ComparisonMeaning, MethodRun
 
 #: Maximum oscillator count for direct exact/statevector quantum comparison.
 MAX_STATEVECTOR_OSCILLATORS = 16
@@ -144,6 +145,67 @@ class ReproducibleKuramotoComparison:
     claim_boundary: str = CLAIM_BOUNDARY
     determinism: str = DETERMINISM
     metadata: dict[str, Any] = field(default_factory=dict)
+
+    def to_method_runs(self, *, problem_ref: str, repetition_id: str) -> tuple[MethodRun, ...]:
+        """Project original rows with explicit model and initial-state meanings.
+
+        Parameters
+        ----------
+        problem_ref : str
+            Producer-declared original coupling/frequency problem identity. The
+            legacy artifact does not authenticate caller-supplied matrices.
+        repetition_id : str
+            Original unique repetition identity; every method row is retained.
+
+        Returns
+        -------
+        tuple of MethodRun
+            Read-only method rows for native population comparison. The classical
+            phase ODE remains distinct from quantum XY expectations. Original
+            advisory wall times have unknown component allocation and cannot
+            authorise a full-cost comparison. No solver is rerun.
+
+        """
+        problem = (
+            f"{problem_ref};n={self.n_oscillators};"
+            f"T={float(self.t_max).hex()};dt={float(self.dt).hex()}"
+        )
+        return tuple(
+            MethodRun(
+                run_id=f"{repetition_id}/{row.method}",
+                method=row.method,
+                backend=row.backend,
+                seed=self.seed,
+                meaning=ComparisonMeaning(
+                    problem=problem,
+                    observable=(
+                        "abs(mean(exp(i theta)))"
+                        if row.method == "classical_ode"
+                        else "abs(mean(per-qubit X+iY expectation))"
+                    ),
+                    unit="1",
+                    model="classical phase Kuramoto"
+                    if row.method == "classical_ode"
+                    else "quantum XY",
+                    precision="float64",
+                    shots=None,
+                    shot_protocol="deterministic simulator; no shots",
+                    initial_condition=(
+                        self.initial_condition
+                        if row.method == "classical_ode"
+                        else "Ry(omega mod 2pi)|0> tensor product"
+                    ),
+                    calibration="not-applicable: local simulation",
+                    noise="none",
+                    estimator="exact scalar expectation; no sampling interval",
+                ),
+                budget=ComparisonBudget(None, None, None, None, None, None, row.elapsed_ms),
+                status="completed" if row.available else "missing",
+                value=row.r_final,
+                reason=row.unavailable_reason,
+            )
+            for row in self.rows
+        )
 
     def row(self, method: str) -> ComparisonMethodRow:
         """Return the row for ``method``.

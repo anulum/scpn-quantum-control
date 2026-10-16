@@ -2,18 +2,18 @@
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
     "domain_package_families": 40,
-    "example_files": 39,
+    "example_files": 40,
     "github_workflows": 44,
     "model_documentation_pages": 14,
     "notebook_files": 109,
     "optional_extras": 43,
     "public_api_exports": 851,
     "public_documentation_pages": 384,
-    "python_model_classes": 1515,
-    "python_model_source_modules": 791,
+    "python_model_classes": 1523,
+    "python_model_source_modules": 794,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1530
+    "test_files": 1534
   },
   "documentation": {
     "examples": [
@@ -55,6 +55,7 @@
       "examples/35_quantum_ssgf_descent.py",
       "examples/README.md",
       "examples/kuramoto_solver_outcomes.py",
+      "examples/method_comparison.py",
       "examples/studio_workflow.py"
     ],
     "notebooks": [
@@ -617,7 +618,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 54
+        "python_modules": 56
       },
       {
         "package": "bridge",
@@ -762,7 +763,7 @@
       {
         "package": "studio",
         "path": "src/scpn_quantum_control/studio",
-        "python_modules": 42
+        "python_modules": 43
       },
       {
         "package": "studio_workspace",
@@ -1249,6 +1250,10 @@
         "path": "src/scpn_quantum_control/resource_budget_gate.py"
       },
       {
+        "name": "BudgetRecord",
+        "path": "src/scpn_quantum_control/benchmarks/method_comparison_contracts.py"
+      },
+      {
         "name": "CFTResult",
         "path": "src/scpn_quantum_control/gauge/cft_analysis.py"
       },
@@ -1439,6 +1444,14 @@
       {
         "name": "CommittedWasmReplayCertificate",
         "path": "src/scpn_quantum_control/polyglot_edge_ad_product.py"
+      },
+      {
+        "name": "ComparisonBudget",
+        "path": "src/scpn_quantum_control/benchmarks/method_comparison_contracts.py"
+      },
+      {
+        "name": "ComparisonMeaning",
+        "path": "src/scpn_quantum_control/benchmarks/method_comparison_contracts.py"
       },
       {
         "name": "ComparisonMethodRow",
@@ -3133,6 +3146,10 @@
         "path": "src/scpn_quantum_control/forecasting/uncertainty.py"
       },
       {
+        "name": "IntervalRecord",
+        "path": "src/scpn_quantum_control/benchmarks/method_comparison_contracts.py"
+      },
+      {
         "name": "IonQCloudHALAdapter",
         "path": "src/scpn_quantum_control/hardware/hal_ionq.py"
       },
@@ -3645,8 +3662,16 @@
         "path": "src/scpn_quantum_control/metamorphic_ad_verification.py"
       },
       {
+        "name": "MethodComparisonRecord",
+        "path": "src/scpn_quantum_control/benchmarks/method_comparison_contracts.py"
+      },
+      {
         "name": "MethodRow",
         "path": "src/scpn_quantum_control/benchmarks/layout_method_comparison.py"
+      },
+      {
+        "name": "MethodRun",
+        "path": "src/scpn_quantum_control/benchmarks/method_comparison_contracts.py"
       },
       {
         "name": "MetricCatalogueRow",
@@ -5889,6 +5914,10 @@
         "path": "src/scpn_quantum_control/benchmarks/layout_method_comparison.py"
       },
       {
+        "name": "RunRecord",
+        "path": "src/scpn_quantum_control/benchmarks/method_comparison_contracts.py"
+      },
+      {
         "name": "RustProgramADInterpreterResult",
         "path": "src/scpn_quantum_control/program_ad_rust_bridge.py"
       },
@@ -6223,6 +6252,10 @@
       {
         "name": "SubmissionUnknownError",
         "path": "src/scpn_quantum_control/hardware/provider_job_journal.py"
+      },
+      {
+        "name": "SummaryRecord",
+        "path": "src/scpn_quantum_control/benchmarks/method_comparison_contracts.py"
       },
       {
         "name": "SurfaceCode",
@@ -7011,6 +7044,8 @@
       "src/scpn_quantum_control/benchmarks/kyma_v3/task.py",
       "src/scpn_quantum_control/benchmarks/layout_method_comparison.py",
       "src/scpn_quantum_control/benchmarks/layout_relaxation_experiment.py",
+      "src/scpn_quantum_control/benchmarks/method_comparison.py",
+      "src/scpn_quantum_control/benchmarks/method_comparison_contracts.py",
       "src/scpn_quantum_control/benchmarks/mps_baseline.py",
       "src/scpn_quantum_control/benchmarks/open_system_objective_evidence.py",
       "src/scpn_quantum_control/benchmarks/quantum_advantage.py",
@@ -7585,6 +7620,7 @@
       "src/scpn_quantum_control/studio/kuramoto_reference.py",
       "src/scpn_quantum_control/studio/kuramoto_scenario_artifact.py",
       "src/scpn_quantum_control/studio/manifest.py",
+      "src/scpn_quantum_control/studio/method_comparison_artifact.py",
       "src/scpn_quantum_control/studio/operator_review_dossier.py",
       "src/scpn_quantum_control/studio/operator_review_script.py",
       "src/scpn_quantum_control/studio/program_ad_replay_artifact.py",
@@ -9553,6 +9589,8 @@
       "tests/test_main_branch_hook_installation.py",
       "tests/test_metamorphic_ad_verification.py",
       "tests/test_metamorphic_ad_verification_quality_gate.py",
+      "tests/test_method_comparison.py",
+      "tests/test_method_comparison_contracts.py",
       "tests/test_migration_guides_product.py",
       "tests/test_migration_guides_product_quality_gate.py",
       "tests/test_mitiq_integration.py",
@@ -10185,6 +10223,8 @@
       "tests/test_studio_lazy_import.py",
       "tests/test_studio_local_experiment_browser.py",
       "tests/test_studio_manifest.py",
+      "tests/test_studio_method_comparison_artifact.py",
+      "tests/test_studio_method_comparison_quality_gates.py",
       "tests/test_studio_owned_worker_journey.py",
       "tests/test_studio_program_ad_quality_gate.py",
       "tests/test_studio_program_ad_replay_artifact.py",

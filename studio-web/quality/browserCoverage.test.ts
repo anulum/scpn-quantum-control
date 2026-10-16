@@ -28,6 +28,43 @@ import {
 } from "./browserRecord";
 
 describe("original native counter conversion", () => {
+  it("admits actual method-comparison counters and refuses each omitted comparison owner", async () => {
+    const filename = process.env["STUDIO_METHOD_COMPARISON_COVERAGE"];
+    if (!filename) throw new Error("Supply actual method_comparison_instrument source evidence");
+    const before = await readFile(filename, "utf8");
+    const maps = await readBrowserCoverage(filename, process.cwd());
+    expect(new Set(maps.flatMap((map) => Object.keys(map)))).toEqual(
+      new Set([...workbenchBrowserOwners].map((owner) => resolve(process.cwd(), `.${owner}`))),
+    );
+    expect(
+      maps.some((map) => Object.values(map).some((file) => Object.values(file.s).includes(0))),
+    ).toBe(true);
+    const directory = await mkdtemp(join(tmpdir(), "studio-method-owner-refusal-"));
+    try {
+      for (const owner of [
+        "MethodComparison.tsx",
+        "methodComparisonArtifact.ts",
+        "useMethodComparison.ts",
+      ]) {
+        const evidence = coverageObject(JSON.parse(before) as unknown);
+        if (!Array.isArray(evidence["native_v8_coverage"]))
+          throw new Error("Actual method counters missing");
+        evidence["native_v8_coverage"] = evidence["native_v8_coverage"].filter((value) => {
+          const native = coverageObject(coverageObject(value)["coverage"]);
+          if (typeof native["url"] !== "string") throw new Error("Actual source URL missing");
+          return new URL(native["url"]).pathname !== `/src/modules/compare/${owner}`;
+        });
+        const refused = join(directory, "omitted-owner.json");
+        await writeFile(refused, JSON.stringify(evidence));
+        await expect(readBrowserCoverage(refused, process.cwd())).rejects.toThrow(
+          "Native workspace coverage has missing production owners",
+        );
+      }
+    } finally {
+      await rm(directory, { recursive: true });
+    }
+    expect(await readFile(filename, "utf8")).toBe(before);
+  });
   it("converts every actual workflow owner while retaining native zero ranges and evidence bytes", async () => {
     const filename = process.env["STUDIO_WORKFLOW_COVERAGE"];
     if (!filename) throw new Error("Supply actual experiment_workflow_runner source evidence");

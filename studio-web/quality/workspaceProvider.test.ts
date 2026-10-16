@@ -110,62 +110,76 @@ it("merges actual browser counters through the original public V8 provider befor
   }
 });
 
-it("keeps ordinary workspace evidence sufficient when no damaged-source cohort is supplied", async () => {
-  if (!process.env["STUDIO_WORKSPACE_COVERAGE"])
-    throw new Error("Supply actual workspace_recovery evidence");
-  const directory = await mkdtemp(join(tmpdir(), "studio-provider-workspace-only-"));
-  const panel = process.env["STUDIO_PANEL_REFUSAL_COVERAGE"];
-  const workbench = process.env["STUDIO_WORKBENCH_COVERAGE"];
-  const parameters = process.env["STUDIO_PARAMETER_COVERAGE"];
-  const experiments = process.env["STUDIO_EXPERIMENT_COVERAGE"];
-  const results = process.env["STUDIO_RESULT_COVERAGE"];
-  const workflows = process.env["STUDIO_WORKFLOW_COVERAGE"];
-  let context: Vitest | null = null;
-  try {
-    delete process.env["STUDIO_PANEL_REFUSAL_COVERAGE"];
-    delete process.env["STUDIO_WORKBENCH_COVERAGE"];
-    delete process.env["STUDIO_PARAMETER_COVERAGE"];
-    delete process.env["STUDIO_EXPERIMENT_COVERAGE"];
-    delete process.env["STUDIO_RESULT_COVERAGE"];
-    delete process.env["STUDIO_WORKFLOW_COVERAGE"];
-    context = await createVitest("test", {
-      config: false,
-      root: process.cwd(),
-      watch: false,
-      coverage: { enabled: true, provider: "v8", reportsDirectory: directory },
-    });
-    const instance = await provider.getProvider();
-    await instance.initialize(context);
-    await instance.clean(true);
-    const actual = coverageObject(await instance.generateCoverage({ allTestsRun: false }));
-    const files = actual["files"];
-    if (typeof files !== "function")
-      throw new Error("Original provider omitted its coverage map API");
-    expect(files.call(actual)).toEqual(
-      expect.arrayContaining(
-        [...browserOwners].map((owner) => resolve(process.cwd(), `.${owner}`)),
-      ),
-    );
-  } finally {
-    if (panel === undefined) delete process.env["STUDIO_PANEL_REFUSAL_COVERAGE"];
-    else process.env["STUDIO_PANEL_REFUSAL_COVERAGE"] = panel;
-    if (workbench === undefined) delete process.env["STUDIO_WORKBENCH_COVERAGE"];
-    else process.env["STUDIO_WORKBENCH_COVERAGE"] = workbench;
-    if (parameters === undefined) delete process.env["STUDIO_PARAMETER_COVERAGE"];
-    else process.env["STUDIO_PARAMETER_COVERAGE"] = parameters;
-    if (experiments === undefined) delete process.env["STUDIO_EXPERIMENT_COVERAGE"];
-    else process.env["STUDIO_EXPERIMENT_COVERAGE"] = experiments;
-    if (results === undefined) delete process.env["STUDIO_RESULT_COVERAGE"];
-    else process.env["STUDIO_RESULT_COVERAGE"] = results;
-    if (workflows === undefined) delete process.env["STUDIO_WORKFLOW_COVERAGE"];
-    else process.env["STUDIO_WORKFLOW_COVERAGE"] = workflows;
+it.each([false, true])(
+  "keeps ordinary workspace evidence sufficient and admits method counters only when supplied: %s",
+  async (withMethods) => {
+    if (!process.env["STUDIO_WORKSPACE_COVERAGE"])
+      throw new Error("Supply actual workspace_recovery evidence");
+    const directory = await mkdtemp(join(tmpdir(), "studio-provider-workspace-only-"));
+    const panel = process.env["STUDIO_PANEL_REFUSAL_COVERAGE"];
+    const workbench = process.env["STUDIO_WORKBENCH_COVERAGE"];
+    const parameters = process.env["STUDIO_PARAMETER_COVERAGE"];
+    const experiments = process.env["STUDIO_EXPERIMENT_COVERAGE"];
+    const results = process.env["STUDIO_RESULT_COVERAGE"];
+    const workflows = process.env["STUDIO_WORKFLOW_COVERAGE"];
+    const methods = process.env["STUDIO_METHOD_COMPARISON_COVERAGE"];
+    let context: Vitest | null = null;
     try {
-      await context?.close();
+      delete process.env["STUDIO_PANEL_REFUSAL_COVERAGE"];
+      delete process.env["STUDIO_WORKBENCH_COVERAGE"];
+      delete process.env["STUDIO_PARAMETER_COVERAGE"];
+      delete process.env["STUDIO_EXPERIMENT_COVERAGE"];
+      delete process.env["STUDIO_RESULT_COVERAGE"];
+      delete process.env["STUDIO_WORKFLOW_COVERAGE"];
+      delete process.env["STUDIO_METHOD_COMPARISON_COVERAGE"];
+      if (withMethods) {
+        if (!methods) throw new Error("Supply actual method_comparison_instrument source evidence");
+        process.env["STUDIO_METHOD_COMPARISON_COVERAGE"] = methods;
+      }
+      context = await createVitest("test", {
+        config: false,
+        root: process.cwd(),
+        watch: false,
+        coverage: { enabled: true, provider: "v8", reportsDirectory: directory },
+      });
+      const instance = await provider.getProvider();
+      await instance.initialize(context);
+      await instance.clean(true);
+      const actual = coverageObject(await instance.generateCoverage({ allTestsRun: false }));
+      const files = actual["files"];
+      if (typeof files !== "function")
+        throw new Error("Original provider omitted its coverage map API");
+      expect(files.call(actual)).toEqual(
+        expect.arrayContaining(
+          [...browserOwners].map((owner) => resolve(process.cwd(), `.${owner}`)),
+        ),
+      );
+      const methodOwner = resolve(process.cwd(), "src/modules/compare/MethodComparison.tsx");
+      if (withMethods) expect(files.call(actual)).toContain(methodOwner);
+      else expect(files.call(actual)).not.toContain(methodOwner);
     } finally {
-      await rm(directory, { recursive: true });
+      if (panel === undefined) delete process.env["STUDIO_PANEL_REFUSAL_COVERAGE"];
+      else process.env["STUDIO_PANEL_REFUSAL_COVERAGE"] = panel;
+      if (workbench === undefined) delete process.env["STUDIO_WORKBENCH_COVERAGE"];
+      else process.env["STUDIO_WORKBENCH_COVERAGE"] = workbench;
+      if (parameters === undefined) delete process.env["STUDIO_PARAMETER_COVERAGE"];
+      else process.env["STUDIO_PARAMETER_COVERAGE"] = parameters;
+      if (experiments === undefined) delete process.env["STUDIO_EXPERIMENT_COVERAGE"];
+      else process.env["STUDIO_EXPERIMENT_COVERAGE"] = experiments;
+      if (results === undefined) delete process.env["STUDIO_RESULT_COVERAGE"];
+      else process.env["STUDIO_RESULT_COVERAGE"] = results;
+      if (workflows === undefined) delete process.env["STUDIO_WORKFLOW_COVERAGE"];
+      else process.env["STUDIO_WORKFLOW_COVERAGE"] = workflows;
+      if (methods === undefined) delete process.env["STUDIO_METHOD_COMPARISON_COVERAGE"];
+      else process.env["STUDIO_METHOD_COMPARISON_COVERAGE"] = methods;
+      try {
+        await context?.close();
+      } finally {
+        await rm(directory, { recursive: true });
+      }
     }
-  }
-});
+  },
+);
 
 it("merges every genuine experiment owner through the unchanged public provider", async () => {
   if (!process.env["STUDIO_WORKSPACE_COVERAGE"] || !process.env["STUDIO_EXPERIMENT_COVERAGE"])
@@ -200,38 +214,43 @@ it("merges every genuine experiment owner through the unchanged public provider"
   }
 });
 
-it("merges every actual workbench owner through the original public provider", async () => {
-  if (!process.env["STUDIO_WORKSPACE_COVERAGE"] || !process.env["STUDIO_WORKBENCH_COVERAGE"])
-    throw new Error("Supply actual workspace and workbench evidence");
-  const directory = await mkdtemp(join(tmpdir(), "studio-provider-workbench-"));
-  let context: Vitest | null = null;
-  try {
-    context = await createVitest("test", {
-      config: false,
-      root: process.cwd(),
-      watch: false,
-      coverage: { enabled: true, provider: "v8", reportsDirectory: directory },
-    });
-    const instance = await provider.getProvider();
-    await instance.initialize(context);
-    await instance.clean(true);
-    const actual = coverageObject(await instance.generateCoverage({ allTestsRun: false }));
-    const files = actual["files"];
-    if (typeof files !== "function")
-      throw new Error("Original provider omitted its coverage map API");
-    expect(files.call(actual)).toEqual(
-      expect.arrayContaining(
-        [...workbenchBrowserOwners].map((owner) => resolve(process.cwd(), `.${owner}`)),
-      ),
-    );
-  } finally {
+it.each(["STUDIO_WORKBENCH_COVERAGE", "STUDIO_METHOD_COMPARISON_COVERAGE"])(
+  "merges every actual workbench owner from %s through the original public provider",
+  async (filename) => {
+    if (!process.env["STUDIO_WORKSPACE_COVERAGE"] || !process.env[filename])
+      throw new Error(
+        "Supply actual workspace and original workbench or method-comparison evidence",
+      );
+    const directory = await mkdtemp(join(tmpdir(), "studio-provider-workbench-"));
+    let context: Vitest | null = null;
     try {
-      await context?.close();
+      context = await createVitest("test", {
+        config: false,
+        root: process.cwd(),
+        watch: false,
+        coverage: { enabled: true, provider: "v8", reportsDirectory: directory },
+      });
+      const instance = await provider.getProvider();
+      await instance.initialize(context);
+      await instance.clean(true);
+      const actual = coverageObject(await instance.generateCoverage({ allTestsRun: false }));
+      const files = actual["files"];
+      if (typeof files !== "function")
+        throw new Error("Original provider omitted its coverage map API");
+      expect(files.call(actual)).toEqual(
+        expect.arrayContaining(
+          [...workbenchBrowserOwners].map((owner) => resolve(process.cwd(), `.${owner}`)),
+        ),
+      );
     } finally {
-      await rm(directory, { recursive: true });
+      try {
+        await context?.close();
+      } finally {
+        await rm(directory, { recursive: true });
+      }
     }
-  }
-});
+  },
+);
 
 it("merges every actual parameter owner through the original public provider", async () => {
   if (!process.env["STUDIO_WORKSPACE_COVERAGE"] || !process.env["STUDIO_PARAMETER_COVERAGE"])

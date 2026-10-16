@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **791 modules** across **41 package families**
-- **4269 documented public module-level symbols**
+- **794 modules** across **41 package families**
+- **4280 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -1378,6 +1378,22 @@ RESEARCH: the preregistered layout-relaxation seed-sweep experiment.
 **Classes:** `RelaxationExperimentInstance`, `InstanceOutcome`, `RelaxationExperimentArtifact`
 
 **Functions:** `preregistered_instances()`, `run_layout_relaxation_experiment()`
+
+### `scpn_quantum_control.benchmarks.method_comparison`
+
+Read-only summaries of every declared repetition, including failed attempts.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/benchmarks/method_comparison.py) · Public symbols: **1**
+
+**Functions:** `summarise_method_comparison()`
+
+### `scpn_quantum_control.benchmarks.method_comparison_contracts`
+
+Explicit scientific meanings, measured costs and original repetition records.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/benchmarks/method_comparison_contracts.py) · Public symbols: **8**
+
+**Classes:** `ComparisonMeaning`, `BudgetRecord`, `ComparisonBudget`, `MethodRun`, `IntervalRecord`, `RunRecord`, `SummaryRecord`, `MethodComparisonRecord`
 
 ### `scpn_quantum_control.benchmarks.mps_baseline`
 
@@ -5396,6 +5412,14 @@ The QUANTUM studio's capability manifest (schema A) on the platform contract.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/manifest.py) · Public symbols: **3**
 
 **Functions:** `declared_surface()`, `build_manifest()`, `build_catalogue()`
+
+### `scpn_quantum_control.studio.method_comparison_artifact`
+
+Adapt native retained-population comparisons into lossless Studio documents.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/method_comparison_artifact.py) · Public symbols: **2**
+
+**Functions:** `read_method_comparison_population()`, `export_method_comparison()`
 
 ### `scpn_quantum_control.studio.operator_review_dossier`
 

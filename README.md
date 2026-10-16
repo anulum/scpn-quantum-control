@@ -104,6 +104,7 @@ inputs, outputs and backends.
 | Review hardware claims | [Hardware Status Ledger](docs/hardware_status_ledger.md) -> [Hardware Result Packs](docs/hardware_result_packs.md) | Raw-count-backed evidence or an explicit blocked promotion route. |
 | Inspect compiler mappings | [Studio workbench](docs/studio_workbench.md#compiler-trace-inspection) | Native pass snapshots, logical/physical layouts, pinned source and exact metadata export; emitted IR remains unexecuted. |
 | Navigate Studio with a keyboard | [Studio keyboard and data tables](docs/studio_workbench.md#keyboard-tables-and-display-preferences) | Modal help, focus recovery, full sample and coupling tables, theme and reduced-motion support. |
+| Compare complete method populations | [Method comparison](docs/studio_workbench.md#method-comparison-and-uncertainty) | Original per-run intervals, all-run descriptive statistics, failed/missing repetitions and declared full costs; selection never replaces an aggregate. |
 | Inspect operator policy decisions | [Studio workbench](docs/studio_workbench.md#operator-policy-decisions) | Exact native admission, dated pricing and requested/effective provenance; no provider contact. |
 | Inspect provider and device profiles | [Studio workbench](docs/studio_workbench.md#provider-and-device-profiles) | Dated offline metadata, separate declarations and observations, exact broker identities and reference invalidation; no provider contact or submission. |
 | Use v0.10 control surfaces | [API Overview](docs/api.md) -> [Tutorials](docs/tutorials.md) -> [Example Gallery](docs/examples_gallery.md) | QRNG health checks, PQC trigger signing, UltraScale+ HLS emission, realtime telemetry, Studio federation, and sensing workflows. |
@@ -154,16 +155,16 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 1.2.0 |
 | Public API exports | 851 |
-| Python source modules | 791 |
-| Public Python classes | 1515 |
+| Python source modules | 794 |
+| Public Python classes | 1523 |
 | Domain package families | 40 |
 | API documentation pages | 14 |
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 53 |
 | Notebook files | 109 |
-| Example files | 39 |
+| Example files | 40 |
 | Optional extras | 43 |
-| Python test files | 1530 |
+| Python test files | 1534 |
 | Public documentation pages | 384 |
 | GitHub Actions workflows | 44 |
 

@@ -27,6 +27,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ### Added
 
+- Studio Results can import native complete-population method comparisons,
+  inspect every retained repetition and its original interval/resource budget,
+  and download the exact admitted source. Incompatible meanings, missing costs
+  or exceeded budgets retain their native comparison refusals. A fixed synthetic
+  interval check retains its negative 182/200 coverage observation at nominal
+  95%; it does not establish calibrated coverage or quantum advantage.
+
 - Studio Operators can inspect existing provider job observations, refresh the
   same job's append-only history and export the admitted original JSON. Local
   lifecycle, provider status, cancellation intent and unknown billing remain

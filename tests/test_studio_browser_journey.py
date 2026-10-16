@@ -48,6 +48,7 @@ import pytest
         "result_value_inspector",
         "immutable_run_comparison",
         "experiment_workflow_runner",
+        "method_comparison_instrument",
     ],
 )
 def test_runner_rejects_external_or_ambiguous_preview(
@@ -138,3 +139,67 @@ def test_public_dispatch_records_url_refusal_before_browser_import(
     assert evidence["passed"] is False
     assert evidence["base_url"] == "rejected"
     assert "ValueError" in evidence["error"]
+
+
+@pytest.mark.parametrize(
+    "scenario",
+    [
+        "capability_catalogue",
+        "evidence_inspector",
+        "resource_plan_projection",
+        "workspace_recovery",
+        "workspace_panel_refusal",
+        "workbench_navigation",
+        "parameter_graph_editor",
+        "program_authoring",
+        "compiler_trace_inspector",
+        "operator_backend_profiles",
+        "operator_policy_decisions",
+        "operator_review_dossiers",
+        "provider_observation_journal",
+        "workbench_accessibility",
+        "owned_kernel_worker",
+        "local_experiment_journey",
+        "result_value_inspector",
+        "immutable_run_comparison",
+        "method_comparison_instrument",
+        "experiment_workflow_runner",
+    ],
+)
+def test_public_dispatch_retains_actual_missing_browser_refusal(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    scenario: str,
+) -> None:
+    """Real SDK availability failures remain failed public CLI evidence for every route."""
+    from tools.studio_browser_journey import main
+
+    absent = tmp_path / "absent-browser-package"
+    monkeypatch.setenv("PLAYWRIGHT_BROWSERS_PATH", str(absent))
+    monkeypatch.setenv("STUDIO_NATIVE_BROWSER_EXECUTABLE", str(absent / "chrome"))
+    output = tmp_path / "missing-browser.json"
+    argv = [
+        "--scenario",
+        scenario,
+        "--base-url",
+        "http://127.0.0.1:4173/",
+        "--output",
+        str(output),
+    ]
+    if scenario in {
+        "workspace_recovery",
+        "workbench_navigation",
+        "parameter_graph_editor",
+        "workbench_accessibility",
+        "local_experiment_journey",
+        "result_value_inspector",
+        "immutable_run_comparison",
+        "method_comparison_instrument",
+        "experiment_workflow_runner",
+    }:
+        argv.extend(["--workspace-source-url", "http://127.0.0.1:4174/"])
+    assert main(argv) == 1
+    evidence = json.loads(output.read_text())
+    assert evidence["scenario"] == scenario and evidence["passed"] is False
+    assert "executable" in evidence["error"].lower()
+    assert not absent.exists()

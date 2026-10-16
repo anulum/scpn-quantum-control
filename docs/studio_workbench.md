@@ -539,6 +539,78 @@ Serve the original production bundle and exact source copy with both shipped
 WASM files as described in the workbench browser setup. The server owner closes
 both hosts; the runner closes every browser context on success and failure.
 
+## Method comparison and uncertainty
+
+Results includes **Method comparison and uncertainty** at
+`#/results`. Import a native comparison file or paste its exact
+JSON, then select **Read native method comparison**. The three captured examples
+show a synthetic full population, existing estimator intervals and actual
+original solver results. Reading evidence calls no solver or provider and does
+not write the workspace cache. Malformed or unsupported replacement preserves
+the last admitted comparison and its original download.
+
+Files must contain valid UTF-8 within the four mebibyte input bound. Malformed
+byte sequences refuse before replacing the current source. A leading UTF-8 BOM
+is preserved in the draft and refused by the strict JSON reader; it is never
+silently removed to admit a changed source.
+
+The summary displays every method's retained/observed population sizes, mean,
+sample variance (n−1), full known cost and native difference against the declared
+reference. `require-complete` refuses an aggregate when any repetition is missing
+or failed; explicit `available-case` retains their identities and discloses its
+observed denominator. Missing values never become zeros. Every original row is
+retained; the table displays 20 at a time. **Inspect retained repetition** reveals
+its source model, precision, observable, shots/protocol, seed, initial condition,
+estimator and full resource declaration. Selection leaves all-run statistics
+unchanged, including when the selected observation is the best seed.
+
+Unknown compilation, data movement, execution or memory fields remain
+**unavailable**. Advisory wall time is separate from full cost. Incompatible
+meaning/precision/seed populations or interval protocols, unknown/exceeded
+budgets and unavailable aggregates show the source's refusal to rank. Actual
+original phase-ODE and quantum-XY examples deliberately preserve their different
+models, observables and initial conditions; their native refusals remain visible.
+
+Intervals retain their original estimator, nominal coverage, bounds, standard
+error, shots and resampling count. They are per-run estimator intervals, not a
+confidence interval for the all-run mean. The captured synthetic check uses all
+200 predetermined seeds (0–199), 1000 shots each, Bernoulli probability 0.75 and
+true order parameter 0.5. Existing analytic and bootstrap estimators both cover
+182/200 cases (91%) at nominal 95%; the Wilson interval is approximately
+[0.862234, 0.942313] and excludes 0.95. The bootstrap retains 2000 resamples and
+its declared seed for each repetition. All count samples and 400 original
+estimator rows remain in `data/studio/method_comparison_cases.json`. The view
+shows this check only for its exact captured artifact digest. It is a negative
+observation under this fixed synthetic protocol, not a general calibration or
+hardware result. No seed, confidence level or acceptance threshold is tuned to
+hide it.
+
+**Original source identity and claim boundary** shows the producer declaration
+and content digest. A matching digest detects content changes; it does not
+authenticate the producer or certify scientific validity. **Download original
+method comparison** retains the exact admitted JSON bytes, including large
+integers and signed zero. Imported statistics are source declarations; the
+browser does not recompute or certify them. No significance, speedup or quantum
+advantage follows from this instrument.
+
+Generate a native export with the
+[comparison API and CLI](benchmarks_api.md#complete-retained-population-comparisons).
+The shared browser runner exercises both the production build and its distinct
+original source host, preserving actual native V8 ranges for qualification:
+
+```bash
+PYTHONPATH=. .venv/bin/python tools/studio_browser_journey.py \
+  --scenario method_comparison_instrument --base-url http://127.0.0.1:4173/ \
+  --workspace-source-url http://127.0.0.1:4174/ --output method-journey.json
+```
+
+Supply the successful journey as `STUDIO_METHOD_COMPARISON_COVERAGE` alongside
+fresh `STUDIO_WORKSPACE_COVERAGE` when running the dedicated comparison coverage
+cohort. Original source hashes/maps and complete owners are required; counters
+alone do not establish any percentage. CI requires 100% statements, branches,
+functions and lines for each comparison UI owner and exact native coverage for
+the complete comparison producers and their dedicated regressions.
+
 ## Provider and device profiles
 
 Open Devices & Operations, then Open declared profiles to inspect the committed

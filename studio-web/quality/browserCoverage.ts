@@ -29,7 +29,9 @@ export async function readBrowserCoverage(
   root: string,
 ): Promise<CoverageMapData[]> {
   const evidence = coverageObject(JSON.parse(await readFile(filename, "utf8")) as unknown);
-  const workbench = evidence["scenario"] === "workbench_navigation";
+  const workbench =
+    evidence["scenario"] === "workbench_navigation" ||
+    evidence["scenario"] === "method_comparison_instrument";
   const parameters = evidence["scenario"] === "parameter_graph_editor";
   const experiments = evidence["scenario"] === "local_experiment_journey";
   const results = evidence["scenario"] === "result_value_inspector";

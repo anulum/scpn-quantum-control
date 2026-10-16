@@ -617,6 +617,11 @@ jobs:
         uses: ./.github/actions/studio-provider-observation
         with:
           preview-dir: ${{ runner.temp }}/studio-browser-preview
+      - name: Qualify complete native method comparison through the shared browser
+        uses: ./.github/actions/studio-method-comparison
+        with:
+          preview-dir: ${{ runner.temp }}/studio-browser-preview
+          source-dir: ${{ runner.temp }}/studio-workbench-source/studio-web
       - name: Exercise original panel refusal over isolated damaged input files
         working-directory: .
         env:
@@ -704,6 +709,7 @@ jobs:
           STUDIO_EXPERIMENT_COVERAGE: ${{ runner.temp }}/studio-experiment-journey.json
           STUDIO_RESULT_COVERAGE: ${{ runner.temp }}/studio-result-journey.json
           STUDIO_WORKFLOW_COVERAGE: ${{ runner.temp }}/studio-workflow-journey.json
+          STUDIO_METHOD_COMPARISON_COVERAGE: ${{ runner.temp }}/studio-method-comparison-journey.json
         run: pnpm test:coverage
       - name: Enforce workbench, parameter, experiment, result, workspace and coverage adapter exact coverage
         env: *studio_native_cohorts
@@ -977,6 +983,9 @@ jobs:
             ${{ runner.temp }}/studio-provider-observation-journey.json
             ${{ runner.temp }}/studio-provider-observation-browser.coverage
             ${{ runner.temp }}/studio-provider-observation-ui-coverage
+            ${{ runner.temp }}/studio-method-comparison-journey.json
+            ${{ runner.temp }}/studio-method-comparison-browser.coverage
+            ${{ runner.temp }}/studio-method-comparison-ui-coverage
             ${{ runner.temp }}/studio-policy-browser.coverage
             ${{ runner.temp }}/studio-policy-ui-coverage
             ${{ runner.temp }}/studio-workbench-source-qualification.json

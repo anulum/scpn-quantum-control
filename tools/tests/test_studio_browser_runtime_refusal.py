@@ -19,7 +19,7 @@ from threading import Thread
 from urllib.request import urlopen
 
 import pytest
-from playwright.sync_api import Error
+from playwright.sync_api import Error, Page
 
 from tools.studio_browser_journey import loopback_url, run_catalogue_journey, run_evidence_journey
 from tools.studio_workspace_browser_journey import run_workspace_journey
@@ -211,6 +211,31 @@ def test_evidence_failure_releases_held_real_kernel_request(preview_directory: P
         pytest.raises(AssertionError),
     ):
         run_evidence_journey(origin)
+
+
+def test_evidence_journey_observes_the_actual_public_page_audit(
+    preview_directory: Path,
+) -> None:
+    """Public audit callbacks observe each real evidence state without replacing its result."""
+    states: list[str] = []
+
+    def audit(page: Page, state: str) -> None:
+        """Read the actual mounted evidence editor while the native journey progresses."""
+        assert page.get_by_role("region", name="Inspect evidence JSON", exact=True).is_visible()
+        states.append(state)
+
+    with owned_fault_host(preview_directory) as origin:
+        result = run_evidence_journey(origin, audit=audit)
+    assert states == [
+        "original-source-real-wasm-match",
+        "actual-original-verification-pending",
+        "same-id-changed-claim-retains-B-after-delayed-A",
+        "altered-source-digest-refused",
+        "attested-falsification-retains-source-status",
+        "missing-source-schema-seal-visible",
+        "malformed-evidence-retains-raw-input",
+    ]
+    assert result["observations"] == [states[index] for index in (0, 2, 3, 4, 5)]
 
 
 def test_catalogue_journey_waits_for_delayed_native_worker_closure(

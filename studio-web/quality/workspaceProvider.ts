@@ -45,6 +45,9 @@ const provider: CoverageProviderModule = {
       const workflowFilename = process.env["STUDIO_WORKFLOW_COVERAGE"];
       if (workflowFilename)
         browser.push(...(await readBrowserCoverage(workflowFilename, context.config.root)));
+      const methodFilename = process.env["STUDIO_METHOD_COMPARISON_COVERAGE"];
+      if (methodFilename)
+        browser.push(...(await readBrowserCoverage(methodFilename, context.config.root)));
       await initialize(context);
     };
     delegate.generateCoverage = async (context) => {

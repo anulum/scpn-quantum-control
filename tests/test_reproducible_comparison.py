@@ -352,3 +352,29 @@ def test_failure_modes_document_each_route() -> None:
     assert "classical_exact" in joined
     assert "classical_ode" in joined
     assert "no quantum advantage" in joined
+
+
+def test_original_native_rows_project_explicit_method_meanings(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Actual existing solvers retain their distinct model and initial-state meanings."""
+    monkeypatch.undo()
+    original = run_reproducible_kuramoto_comparison(
+        n_oscillators=2, t_max=0.1, dt=0.1, seed=7, randomise_initial_phases=True
+    )
+    before = original.to_dict()
+    runs = original.to_method_runs(problem_ref="original-small-problem", repetition_id="repeat-7")
+    assert len(runs) == 3
+    by_method = {row.method: row for row in runs}
+    assert by_method["classical_exact"].value == original.row("classical_exact").r_final
+    assert by_method["quantum_trotter"].value == original.row("quantum_trotter").r_final
+    assert by_method["classical_ode"].meaning.model != by_method["classical_exact"].meaning.model
+    assert by_method["classical_ode"].meaning.initial_condition == "seeded_uniform"
+    assert (
+        by_method["classical_exact"].meaning.initial_condition
+        == "Ry(omega mod 2pi)|0> tensor product"
+    )
+    assert by_method["quantum_trotter"].meaning == by_method["classical_exact"].meaning
+    assert all(row.budget.total_cost_ms is None for row in runs)
+    assert all(row.seed == 7 for row in runs)
+    assert original.to_dict() == before
