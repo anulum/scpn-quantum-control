@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **795 modules** across **41 package families**
-- **4282 documented public module-level symbols**
+- **799 modules** across **41 package families**
+- **4290 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -382,6 +382,22 @@ U(1) symmetry exploitation for the XY Hamiltonian.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/analysis/magnetisation_sectors.py) · Public symbols: **8**
 
 **Functions:** `basis_by_magnetisation()`, `sector_dimensions()`, `largest_sector_dim()`, `project_to_sector()`, `build_sector_hamiltonian()`, `eigh_by_magnetisation()`, `level_spacing_by_magnetisation()`, `memory_estimate()`
+
+### `scpn_quantum_control.analysis.method_comparison`
+
+Public Analysis interface to the single v1 retained-population implementation.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/analysis/method_comparison.py) · Public symbols: **0**
+
+No public module-level class or function is declared.
+
+### `scpn_quantum_control.analysis.method_comparison_contracts`
+
+Public Analysis records retaining their original v1 defining-module identities.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/analysis/method_comparison_contracts.py) · Public symbols: **0**
+
+No public module-level class or function is declared.
 
 ### `scpn_quantum_control.analysis.monte_carlo_xy`
 
@@ -1698,6 +1714,24 @@ Co-design adapters for control ports and sensing, identity, geometry, and FIM ob
 **Classes:** `ControlAdapterEvidence`
 
 **Functions:** `observer_inputs_from_products()`, `adaptive_fim_proposal_port()`, `consume_realtime_feedback_port()`, `consume_qaoa_mpc_port()`, `consume_cosimulation_port()`
+
+### `scpn_quantum_control.codesign.algorithm_design`
+
+Compare ansatzes through existing native planners and numerical owners.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/codesign/algorithm_design.py) · Public symbols: **4**
+
+**Classes:** `DesignEvaluation`, `AlgorithmDesignPlan`, `AlgorithmDesignSelection`
+
+**Functions:** `select_algorithm_design()`
+
+### `scpn_quantum_control.codesign.algorithm_design_contracts`
+
+Typed dimensionless design objectives and declared backend snapshots.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/codesign/algorithm_design_contracts.py) · Public symbols: **4**
+
+**Classes:** `AlgorithmDesignProblem`, `DesignBackendSnapshot`, `DesignCandidate`, `DesignObjectives`
 
 ### `scpn_quantum_control.codesign.components`
 

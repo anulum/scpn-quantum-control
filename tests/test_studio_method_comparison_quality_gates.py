@@ -43,3 +43,34 @@ def test_whole_native_cohort_keeps_strict_docs_all_original_tests_and_exact_cove
     assert data in report
     assert str(tmp_path) in data
     assert not list(tmp_path.iterdir())
+
+
+def test_analysis_aliases_have_original_native_strict_docs_and_exact_coverage(
+    tmp_path: Path,
+) -> None:
+    """Qualify both public aliases in the existing producer cohort without weakening it.
+
+    Parameters
+    ----------
+    tmp_path
+        Caller-owned gate output directory; building commands performs no I/O.
+
+    """
+    gates = dict(build_method_comparison_quality_gates("python", output_root=tmp_path))
+    for filename in ("method_comparison.py", "method_comparison_contracts.py"):
+        path = "src/scpn_quantum_control/analysis/" + filename
+        assert path in gates["studio-method-comparison-strict"]
+        assert path in gates["studio-method-comparison-native-docs"]
+        assert any(
+            "*/analysis/" + filename in arg
+            for arg in gates["studio-method-comparison-native-coverage"]
+        )
+        assert any(
+            "*/analysis/" + filename in arg
+            for arg in gates["studio-method-comparison-native-exact"]
+        )
+    assert (
+        "tests/test_analysis_method_comparison.py"
+        in gates["studio-method-comparison-native-coverage"]
+    )
+    assert "--fail-under=100" in gates["studio-method-comparison-native-exact"]

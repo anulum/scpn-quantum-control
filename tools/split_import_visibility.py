@@ -103,16 +103,27 @@ def _aliases(tree: ast.Module) -> set[str]:
     return aliases
 
 
+def _reference(node: ast.AST) -> str | None:
+    """Read a plain dotted identifier without rendering unrelated AST expressions."""
+    if isinstance(node, ast.Name):
+        return node.id
+    if isinstance(node, ast.Attribute):
+        prefix = _reference(node.value)
+        if prefix is not None:
+            return prefix + "." + node.attr
+    return None
+
+
 def _table(tree: ast.Module, name: str, result: ImportVisibility) -> ast.Dict | None:
     declarations: list[ast.Assign | ast.AnnAssign] = []
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign | ast.AnnAssign):
             targets = node.targets if isinstance(node, ast.Assign) else [node.target]
-            if any(ast.unparse(target) == name for target in targets):
+            if any(_reference(target) == name for target in targets):
                 declarations.append(node)
         if (
             isinstance(node, ast.Name | ast.Attribute)
-            and ast.unparse(node) == name
+            and _reference(node) == name
             and isinstance(node.ctx, ast.Store | ast.Del)
             and not any(
                 node is target
@@ -128,7 +139,7 @@ def _table(tree: ast.Module, name: str, result: ImportVisibility) -> ast.Dict | 
         if (
             isinstance(node, ast.Call)
             and isinstance(node.func, ast.Attribute)
-            and ast.unparse(node.func.value) == name
+            and _reference(node.func.value) == name
             and node.func.attr
             not in {
                 "items",
@@ -141,7 +152,7 @@ def _table(tree: ast.Module, name: str, result: ImportVisibility) -> ast.Dict | 
         if (
             isinstance(node, ast.Subscript)
             and isinstance(node.ctx, ast.Store | ast.Del)
-            and ast.unparse(node.value) == name
+            and _reference(node.value) == name
         ):
             result.problems.append(f"mutated lazy declaration: {name}")
     if not declarations:

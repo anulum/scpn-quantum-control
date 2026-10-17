@@ -2173,7 +2173,7 @@
       "source": "src/scpn_quantum_control/codesign/__init__.py",
       "scope": "__getattr__",
       "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
-      "source_sha256": "09213dc9d8b884511151ccfe723cd82697bf52db0dde6b4be6648a9db7fdb14c",
+      "source_sha256": "6c2eb8e51e9d5e2784ee3298cac0a3255edf371543aa3b28dacda73aba54258e",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
       "count": 1

@@ -30,10 +30,21 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     run = gates["codesign-components focused coverage"]
     report = gates["codesign-components exact coverage threshold"]
     assert "--branch" in run
-    assert run[-1:] == quality_gates.CODESIGN_COMPONENTS_COVERAGE_COHORT
+    assert (
+        run[-len(quality_gates.CODESIGN_COMPONENTS_COVERAGE_COHORT) :]
+        == quality_gates.CODESIGN_COMPONENTS_COVERAGE_COHORT
+    )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/codesign/components.py" in report
+    include = next(arg for arg in report if arg.startswith("--include="))
+    for owner in (
+        "components",
+        "loop",
+        "__init__",
+        "algorithm_design",
+        "algorithm_design_contracts",
+    ):
+        assert f"*/codesign/{owner}.py" in include
 
 
 def test_preflight_uses_helper_defined_gates() -> None:

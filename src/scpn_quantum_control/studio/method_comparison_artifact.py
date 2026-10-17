@@ -18,17 +18,17 @@ import math
 from collections.abc import Sequence
 from typing import Literal, cast
 
-from ..analysis.sync_uncertainty import UncertaintyInterval
-from ..benchmarks.method_comparison import (
+from ..analysis.method_comparison import (
     METHOD_COMPARISON_SCHEMA,
     summarise_method_comparison,
 )
-from ..benchmarks.method_comparison_contracts import (
+from ..analysis.method_comparison_contracts import (
     MAX_COMPARISON_RUNS,
     ComparisonBudget,
     ComparisonMeaning,
     MethodRun,
 )
+from ..analysis.sync_uncertainty import UncertaintyInterval
 from ..studio_workspace.canonical import canonical_digest
 from ..studio_workspace.json_transport import read_json, write_json
 

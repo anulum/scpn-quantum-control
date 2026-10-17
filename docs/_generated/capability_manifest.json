@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 851,
     "public_documentation_pages": 384,
-    "python_model_classes": 1524,
-    "python_model_source_modules": 795,
+    "python_model_classes": 1531,
+    "python_model_source_modules": 799,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1537
+    "test_files": 1540
   },
   "documentation": {
     "examples": [
@@ -603,7 +603,7 @@
       {
         "package": "analysis",
         "path": "src/scpn_quantum_control/analysis",
-        "python_modules": 69
+        "python_modules": 71
       },
       {
         "package": "applications",
@@ -638,7 +638,7 @@
       {
         "package": "codesign",
         "path": "src/scpn_quantum_control/codesign",
-        "python_modules": 7
+        "python_modules": 9
       },
       {
         "package": "compiler",
@@ -900,6 +900,18 @@
       {
         "name": "AggregatorProviderRoute",
         "path": "src/scpn_quantum_control/hardware/aggregators.py"
+      },
+      {
+        "name": "AlgorithmDesignPlan",
+        "path": "src/scpn_quantum_control/codesign/algorithm_design.py"
+      },
+      {
+        "name": "AlgorithmDesignProblem",
+        "path": "src/scpn_quantum_control/codesign/algorithm_design_contracts.py"
+      },
+      {
+        "name": "AlgorithmDesignSelection",
+        "path": "src/scpn_quantum_control/codesign/algorithm_design.py"
       },
       {
         "name": "AnalogBackendCapabilities",
@@ -1910,8 +1922,24 @@
         "path": "src/scpn_quantum_control/hardware/kuramoto_layout_cost.py"
       },
       {
+        "name": "DesignBackendSnapshot",
+        "path": "src/scpn_quantum_control/codesign/algorithm_design_contracts.py"
+      },
+      {
+        "name": "DesignCandidate",
+        "path": "src/scpn_quantum_control/codesign/algorithm_design_contracts.py"
+      },
+      {
+        "name": "DesignEvaluation",
+        "path": "src/scpn_quantum_control/codesign/algorithm_design.py"
+      },
+      {
         "name": "DesignObjective",
         "path": "src/scpn_quantum_control/scientific_design.py"
+      },
+      {
+        "name": "DesignObjectives",
+        "path": "src/scpn_quantum_control/codesign/algorithm_design_contracts.py"
       },
       {
         "name": "DesignReport",
@@ -6941,6 +6969,8 @@
       "src/scpn_quantum_control/analysis/loschmidt_echo.py",
       "src/scpn_quantum_control/analysis/magic_nonstabilizerness.py",
       "src/scpn_quantum_control/analysis/magnetisation_sectors.py",
+      "src/scpn_quantum_control/analysis/method_comparison.py",
+      "src/scpn_quantum_control/analysis/method_comparison_contracts.py",
       "src/scpn_quantum_control/analysis/monte_carlo_xy.py",
       "src/scpn_quantum_control/analysis/otoc.py",
       "src/scpn_quantum_control/analysis/otoc_sync_probe.py",
@@ -7086,6 +7116,8 @@
       "src/scpn_quantum_control/cloud_native_deployment_product.py",
       "src/scpn_quantum_control/codegen/ultrascale_hls.py",
       "src/scpn_quantum_control/codesign/adapters.py",
+      "src/scpn_quantum_control/codesign/algorithm_design.py",
+      "src/scpn_quantum_control/codesign/algorithm_design_contracts.py",
       "src/scpn_quantum_control/codesign/components.py",
       "src/scpn_quantum_control/codesign/contracts.py",
       "src/scpn_quantum_control/codesign/evidence.py",
@@ -8934,6 +8966,8 @@
       "tests/test_advantage_protocol.py",
       "tests/test_advantage_protocol_guards.py",
       "tests/test_aggregators_branches.py",
+      "tests/test_algorithm_design_constraints.py",
+      "tests/test_algorithm_design_contracts.py",
       "tests/test_analog_execution_units.py",
       "tests/test_analog_kuramoto.py",
       "tests/test_analog_kuramoto_helper_branches.py",
@@ -8954,6 +8988,7 @@
       "tests/test_analyse_s1_dynamic_circuit_constraints.py",
       "tests/test_analyse_s1_feedback_hardware.py",
       "tests/test_analysis_entanglement_sync_contracts.py",
+      "tests/test_analysis_method_comparison.py",
       "tests/test_analysis_monte_carlo_contracts.py",
       "tests/test_analysis_topology_contracts.py",
       "tests/test_ancilla_lindblad.py",

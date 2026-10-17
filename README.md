@@ -155,8 +155,8 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 1.2.0 |
 | Public API exports | 851 |
-| Python source modules | 795 |
-| Public Python classes | 1524 |
+| Python source modules | 799 |
+| Public Python classes | 1531 |
 | Domain package families | 40 |
 | API documentation pages | 14 |
 | Rust PyO3 function bindings | 177 |
@@ -164,7 +164,7 @@ claims only when the evidence exists.
 | Notebook files | 109 |
 | Example files | 40 |
 | Optional extras | 43 |
-| Python test files | 1537 |
+| Python test files | 1540 |
 | Public documentation pages | 384 |
 | GitHub Actions workflows | 44 |
 
@@ -284,6 +284,11 @@ benchmark boundaries remain documented in
 [Quantum Gradients](docs/quantum_gradients.md), the
 [claim ledger](data/differentiable_phase_qnode/claim_ledger.md), and the
 [Differentiable Roadmap](docs/differentiable_roadmap.md).
+
+The co-design library also compares bounded native ansatz/layout alternatives
+with matched observables, shared parameters, resource costs and immutable target
+bindings; the [worked example](docs/quantum_classical_codesign_loop.md#compare-ansatzes-and-measurement-plans)
+describes its local diagnostic and execution boundaries.
 
 This matters commercially because optimisation users do not only need circuits.
 They need gradients, convergence evidence, framework interop, reproducible

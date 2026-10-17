@@ -27,6 +27,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ### Added
 
+- Shared Analysis interfaces retain method-comparison v1 producer, canonical
+  export and nominal type identities across the existing public import paths.
+
+- Bounded native ansatz/layout comparison through `CoDesignLoop.design`, with
+  matched Pauli objectives, shared parameter identity, native measurement groups,
+  explicit gate and feasibility limits, local trainability diagnostics and frozen
+  problem/backend-bound selection. Unsupported pulse/analog targets and stale
+  plans refuse without submitting jobs or changing saved state.
+
 - Custom derivative transforms retain trainability masks when parameter names
   are omitted. Invalid mask lengths and duplicate names refuse before numerical
   callbacks, including batched pullbacks. Registered primitive conformance now

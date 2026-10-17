@@ -15,7 +15,14 @@ Gate = tuple[str, list[str]]
 
 CODESIGN_COMPONENTS_QUALITY_RATCHET = [
     "src/scpn_quantum_control/codesign/components.py",
+    "src/scpn_quantum_control/codesign/loop.py",
+    "src/scpn_quantum_control/codesign/__init__.py",
+    "src/scpn_quantum_control/codesign/algorithm_design.py",
+    "src/scpn_quantum_control/codesign/algorithm_design_contracts.py",
     "tests/test_codesign_evaluation.py",
+    "tests/test_codesign_loop.py",
+    "tests/test_algorithm_design_constraints.py",
+    "tests/test_algorithm_design_contracts.py",
     "tools/codesign_components_quality_gates.py",
     "tests/test_codesign_components_quality_gate.py",
 ]
@@ -23,6 +30,10 @@ CODESIGN_COMPONENTS_QUALITY_RATCHET = [
 
 CODESIGN_COMPONENTS_COVERAGE_COHORT = [
     "tests/test_codesign_evaluation.py",
+    "tests/test_codesign_loop.py",
+    "tests/test_algorithm_design_constraints.py",
+    "tests/test_algorithm_design_contracts.py",
+    "tests/test_codesign_components_quality_gate.py",
 ]
 """Tests that own exact co-design component coverage."""
 
@@ -92,7 +103,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={CODESIGN_COMPONENTS_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/codesign/components.py",
+                "--include=*/codesign/components.py,*/codesign/loop.py,*/codesign/__init__.py,*/codesign/algorithm_design.py,*/codesign/algorithm_design_contracts.py,*/tools/codesign_components_quality_gates.py",
             ],
         ),
     ]

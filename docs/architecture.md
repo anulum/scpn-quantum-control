@@ -328,6 +328,17 @@ Observation](multimodal_forecasting.md).
 
 ## Quantum-classical co-design composition
 
+`CoDesignLoop.design(...)` delegates bounded ansatz/layout selection to
+`codesign.algorithm_design`; immutable problem, target and scoring inputs live
+in `codesign.algorithm_design_contracts`. Native Qiskit lowering, Pauli grouping
+and statevector execution remain the numerical owners. The existing finite-
+difference owner supplies an explicitly local trainability diagnostic. Selection
+preserves the complete observable set and native shared parameter identities,
+records resource costs and refusals, and binds original QPY plus bound circuit
+snapshots to the problem and target hashes. A changed backend snapshot invalidates
+reuse. This is a library planning boundary for Studio consumers; it grants no
+provider, pulse or analog execution authority.
+
 `scpn_quantum_control.codesign` is a thin composition layer, not a new physics
 or realtime-control stack. Its dependency direction is one-way: immutable
 contracts feed a local phase-objective evaluator, estimator and controller;

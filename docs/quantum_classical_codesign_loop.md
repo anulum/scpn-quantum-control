@@ -6,6 +6,89 @@ deterministic local loop. It is a software-in-the-loop research surface. It
 does not submit provider jobs, actuate hardware, replace a plant controller, or
 claim operational plasma stability.
 
+## Compare ansatzes and measurement plans
+
+`CoDesignLoop.design(...)` compares native ansatz/layout candidates before loop
+construction. It uses Qiskit's static basis lowering, statevector expectations
+and qubit-wise commuting measurement grouping, plus the existing central
+finite-difference diagnostic. Numerical engines retain their original owners.
+
+Every candidate uses the same dimensionless Pauli objective, parameter values,
+native parameter UUIDs and required occurrence counts. The rightmost Pauli
+character denotes logical qubit zero. Circuit inputs use logical coordinates;
+`layout[logical]` supplies the physical destination. The planner copies each
+circuit and refuses lost observables, changed sharing, unsupported effects,
+unqualified circuit metadata, missing target capacity and unavailable directed
+two-qubit edges. It does not route around undeclared connectivity.
+
+The supported profile has one to eight qubits, up to 4096 operations, one to
+64 real parameters and Pauli terms, and up to 16 alternatives. Parameters are
+finite binary64 angles in radians. The target basis is a declared subset of
+`rx`, `ry`, `rz`, `cx`, `cz`. Pulse and analog target modalities produce an
+explicit refusal; a gate-model declaration is an offline feasibility input,
+not evidence of a device's current availability or calibration.
+
+```python
+from hashlib import sha256
+from qiskit import QuantumCircuit
+from qiskit.circuit import Parameter
+from scpn_quantum_control.codesign import (
+    AlgorithmDesignProblem, CoDesignLoop, DesignBackendSnapshot,
+    DesignCandidate, DesignObjectives,
+)
+from scpn_quantum_control.hardware.hal import BackendCapabilities, BackendProfile
+
+theta = Parameter("theta")
+problem = AlgorithmDesignProblem(
+    source_ref=sha256(b"synthetic two-qubit dimensionless design example").hexdigest(),
+    observables=(("ZI", 1.0), ("IZ", 0.5)),
+    parameters=(theta,), parameter_values=(1.1,), parameter_uses=(2,),
+)
+profile = BackendProfile(
+    "design_local", "local", "direct", "gate_model", "qiskit", ("qiskit",),
+    BackendCapabilities(True, True, True, False, False, False, max_qubits=2),
+)
+backend = DesignBackendSnapshot(
+    profile, "synthetic-no-device-snapshot", ("ry", "cx"), ((0, 1), (1, 0)),
+)
+plain = QuantumCircuit(2)
+plain.ry(theta, 0)
+plain.ry(theta, 1)
+entangled = plain.copy()
+entangled.cx(0, 1)
+selection = CoDesignLoop.design(
+    problem,
+    (DesignCandidate("plain", plain, (0, 1), ("ZI", "IZ")),
+     DesignCandidate("entangled", entangled, (1, 0), ("ZI", "IZ"))),
+    backend,
+    objectives=DesignObjectives(gate_weight=0.1, measurement_weight=0.05),
+)
+assert selection.selected is not None
+selection.selected.require_current(problem, backend)
+```
+
+The result retains every alternative's expectation, lowered gate count,
+measurement groups, numeric buffer estimate and refusal reasons. Eligible
+scores minimise expectation plus weighted gate/group counts minus weighted
+local gradient norm. Weights default to zero, leaving expectation minimisation;
+exact ties use candidate identity. This compares supplied alternatives at one
+evaluation point; it does not train parameters or prove global optimality.
+
+Trainability reports central differences at `h` and `h/2`, their gradient norm
+and empirical difference. That difference is not a certified error bound.
+Optional Pauli symmetry constraints check the candidate state's specified
+eigenvalue at this point, rather than proving preservation over all parameters.
+Model, hardware and shot errors remain unqualified. Existing memory admission
+precedes statevector allocation.
+
+The selected frozen plan retains the original parameterised QPY bytes, bound
+native circuit snapshot, layout, measurement grouping, weights, problem hash
+and complete target snapshot hash. Later circuit edits do not rebind it.
+`require_current(...)` refuses changes to the problem, parameters, calibration
+reference, target capabilities, basis or connectivity. No file is saved or job
+submitted. Studio views may consume this library result through their own
+versioned contract; this API does not implement a browser editor.
+
 ## Execution sequence
 
 ```text

@@ -514,3 +514,37 @@ def test_relative_literal_imports_resolve_against_the_declared_package(
         assert visibility.sites
     else:
         assert not visibility.problems
+
+
+@pytest.mark.parametrize(
+    "unrelated",
+    [
+        "other._EXPORT_GROUPS = {}",
+        "holder[0]._EXPORT_GROUPS = {}",
+        "factory()._EXPORT_GROUPS = {}",
+        "left, right = (1, 2)",
+        "other._PUBLIC_EXPORTS.clear()",
+        "holder[0]._PUBLIC_EXPORTS.clear()",
+        "other._PUBLIC_EXPORTS[0] = 1",
+        "holder[0]._PUBLIC_EXPORTS[0] = 1",
+    ],
+)
+def test_exact_table_names_do_not_capture_unrelated_expression_targets(
+    tmp_path: Path,
+    unrelated: str,
+) -> None:
+    """Keep full plain-reference identity when inspecting real expression-shaped writes.
+
+    Parameters
+    ----------
+    tmp_path
+        Actual source file passed through the public scanner.
+    unrelated
+        A write or call that cannot mutate the declared global export table.
+
+    """
+    edges, visibility = _scan(tmp_path, FACADE + unrelated + "\n")
+    assert not visibility.problems
+    assert [(edge.target_module, edge.kind) for edge in edges] == [
+        ("scpn_quantum_control.phase.child", "lazy"),
+    ]

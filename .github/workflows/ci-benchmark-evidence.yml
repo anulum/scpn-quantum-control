@@ -477,6 +477,13 @@ jobs:
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/codesign/components.py
+          src/scpn_quantum_control/codesign/loop.py
+          src/scpn_quantum_control/codesign/__init__.py
+          src/scpn_quantum_control/codesign/algorithm_design.py
+          src/scpn_quantum_control/codesign/algorithm_design_contracts.py
+          tests/test_codesign_loop.py
+          tests/test_algorithm_design_constraints.py
+          tests/test_algorithm_design_contracts.py
           tests/test_codesign_evaluation.py
           tools/codesign_components_quality_gates.py
           tests/test_codesign_components_quality_gate.py
@@ -484,17 +491,26 @@ jobs:
           python -m ruff check --isolated --select D,D413
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/codesign/components.py
+          src/scpn_quantum_control/codesign/loop.py
+          src/scpn_quantum_control/codesign/__init__.py
+          src/scpn_quantum_control/codesign/algorithm_design.py
+          src/scpn_quantum_control/codesign/algorithm_design_contracts.py
+          tests/test_codesign_loop.py
+          tests/test_algorithm_design_constraints.py
+          tests/test_algorithm_design_contracts.py
           tests/test_codesign_evaluation.py
           tools/codesign_components_quality_gates.py
           tests/test_codesign_components_quality_gate.py
       - run: >-
           python -m coverage run --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-codesign-components-quality.coverage --branch
-          -m pytest -q tests/test_codesign_evaluation.py
+          -m pytest -q tests/test_codesign_evaluation.py tests/test_codesign_loop.py
+          tests/test_algorithm_design_constraints.py tests/test_algorithm_design_contracts.py
+          tests/test_codesign_components_quality_gate.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-codesign-components-quality.coverage
-          --precision=2 --show-missing --fail-under=100 --include=*/codesign/components.py
+          --precision=2 --show-missing --fail-under=100 --include=*/codesign/components.py,*/codesign/loop.py,*/codesign/__init__.py,*/codesign/algorithm_design.py,*/codesign/algorithm_design_contracts.py,*/tools/codesign_components_quality_gates.py
   enaqt-evidence-quality:
     runs-on: ubuntu-latest
     env:

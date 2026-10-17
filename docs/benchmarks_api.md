@@ -887,6 +887,12 @@ observable tolerance, and hardware dataset for the specific workload.
 
 ## Complete retained-population comparisons
 
+The shared comparison implementation and records belong to Analysis. Use
+`analysis.method_comparison` and `analysis.method_comparison_contracts` for their
+public interfaces. The existing `benchmarks` paths retain the original definitions;
+both interfaces expose the same objects, preserving defining modules, trusted
+pickle identities and the v1 export producer and canonical digest.
+
 `benchmarks.method_comparison_contracts` declares immutable `ComparisonMeaning`,
 `ComparisonBudget` and `MethodRun` records. `ComparisonMeaning` binds the problem,
 observable, unit, model, precision, shot count/protocol, initial condition,

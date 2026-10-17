@@ -12,6 +12,13 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 
+from .algorithm_design import AlgorithmDesignSelection, select_algorithm_design
+from .algorithm_design_contracts import (
+    AlgorithmDesignProblem,
+    DesignBackendSnapshot,
+    DesignCandidate,
+    DesignObjectives,
+)
 from .contracts import (
     CoDesignMode,
     ControllerPort,
@@ -33,6 +40,43 @@ class CoDesignLoop:
     controller: ControllerPort
     latency_policy: LatencyPolicy
     safety_envelope: SafetyEnvelope
+
+    @staticmethod
+    def design(
+        problem: AlgorithmDesignProblem,
+        candidates: tuple[DesignCandidate, ...],
+        backend: DesignBackendSnapshot,
+        *,
+        objectives: DesignObjectives | None = None,
+    ) -> AlgorithmDesignSelection:
+        """Compare bounded native designs before constructing an execution loop.
+
+        Parameters
+        ----------
+        problem
+            Shared immutable Pauli objective, parameter identities and constraints.
+        candidates
+            Bounded native ansatz/layout alternatives; caller circuits stay unchanged.
+        backend
+            Declared target snapshot, basis and physical connectivity.
+        objectives
+            Common gate, measurement, empirical trainability and feasibility policy.
+
+        Returns
+        -------
+        AlgorithmDesignSelection
+            Complete comparisons and optional immutable selected design. This does
+            not submit a job, create a loop or mutate estimator/controller state.
+
+        Raises
+        ------
+        ValueError
+            The typed comparison request is malformed.
+        DenseAllocationError
+            Existing resource admission refuses the local native reference.
+
+        """
+        return select_algorithm_design(problem, candidates, backend, objectives=objectives)
 
     def step(
         self,

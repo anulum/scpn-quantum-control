@@ -21,6 +21,13 @@ if TYPE_CHECKING:
         consume_realtime_feedback_port,
         observer_inputs_from_products,
     )
+    from .algorithm_design import AlgorithmDesignPlan, AlgorithmDesignSelection, DesignEvaluation
+    from .algorithm_design_contracts import (
+        AlgorithmDesignProblem,
+        DesignBackendSnapshot,
+        DesignCandidate,
+        DesignObjectives,
+    )
     from .components import (
         ExponentialOrderEstimator,
         GradientFeedbackController,
@@ -61,6 +68,31 @@ if TYPE_CHECKING:
     from .replay import REPLAY_SCHEMA, ReplayTrace, record_replay_trace, verify_replay_trace
 
 _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
+    "AlgorithmDesignPlan": (
+        "scpn_quantum_control.codesign.algorithm_design",
+        "AlgorithmDesignPlan",
+    ),
+    "AlgorithmDesignSelection": (
+        "scpn_quantum_control.codesign.algorithm_design",
+        "AlgorithmDesignSelection",
+    ),
+    "DesignEvaluation": ("scpn_quantum_control.codesign.algorithm_design", "DesignEvaluation"),
+    "AlgorithmDesignProblem": (
+        "scpn_quantum_control.codesign.algorithm_design_contracts",
+        "AlgorithmDesignProblem",
+    ),
+    "DesignBackendSnapshot": (
+        "scpn_quantum_control.codesign.algorithm_design_contracts",
+        "DesignBackendSnapshot",
+    ),
+    "DesignCandidate": (
+        "scpn_quantum_control.codesign.algorithm_design_contracts",
+        "DesignCandidate",
+    ),
+    "DesignObjectives": (
+        "scpn_quantum_control.codesign.algorithm_design_contracts",
+        "DesignObjectives",
+    ),
     "ControlAdapterEvidence": ("scpn_quantum_control.codesign.adapters", "ControlAdapterEvidence"),
     "adaptive_fim_proposal_port": (
         "scpn_quantum_control.codesign.adapters",
@@ -194,6 +226,13 @@ def __dir__() -> list[str]:
 
 
 __all__ = [
+    "AlgorithmDesignPlan",
+    "AlgorithmDesignSelection",
+    "DesignEvaluation",
+    "AlgorithmDesignProblem",
+    "DesignBackendSnapshot",
+    "DesignCandidate",
+    "DesignObjectives",
     "CODESIGN_CLAIM_BOUNDARY",
     "CODESIGN_SCHEMA",
     "EVIDENCE_CLASSIFICATION",
