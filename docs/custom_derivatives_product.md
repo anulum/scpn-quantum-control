@@ -123,6 +123,55 @@ These surfaces describe and validate the bounded registration product. They do
 not claim full transform-algebra matrix CI, mass rule migration, provider or
 hardware evidence, or complete per-rule metamorphic verification.
 
+## Parameter masks and array rules
+
+The original array factories produce callable rules that can be registered
+through the same public boundary. For example, broadcasting repeats an input
+coordinate; its pullback must sum every corresponding output contribution:
+
+```python
+from dataclasses import replace
+
+import numpy as np
+
+from scpn_quantum_control import (
+    CustomDerivativeRegistry,
+    program_ad_assembly_broadcast_to_derivative_rule,
+    registered_custom_jvp,
+    registered_custom_vjp,
+)
+
+registry = CustomDerivativeRegistry()
+identity = "example.team:masked_broadcast@1"
+rule = replace(
+    program_ad_assembly_broadcast_to_derivative_rule((2,), (2, 2)),
+    trainable=(False, True),
+)
+registry.register(identity, rule)
+push = registered_custom_jvp(identity, [3.0, -2.0], [7.0, 5.0], registry=registry)
+pull = registered_custom_vjp(identity, [3.0, -2.0], [1.0, 2.0, 3.0, 4.0], registry=registry)
+np.testing.assert_array_equal(push, [0.0, 5.0, 0.0, 5.0])
+np.testing.assert_array_equal(pull.vjp, [0.0, 6.0])
+assert pull.parameter_names == ("theta_0", "theta_1")
+assert pull.trainable == (False, True)
+```
+
+Names are optional, but omitting them does not discard a supplied mask.
+Names must be unique and, when supplied, match the parameter-vector length.
+A supplied mask must match that length as well. Explicit caller `parameters`
+override rule-local names and masks. Invalid metadata refuses before value or
+derivative callbacks; batch VJP admission follows the same rule. JVPs mask
+input tangents, VJPs mask returned parameter adjoints, and Jacobians have zero
+columns for frozen coordinates.
+
+The supported native wrapper domain is finite real float64 vectors and the
+existing factories' declared static shapes. Duplicate gather indices accumulate
+adjoints. Singular solves and unregistered identities refuse; they do not
+silently detach or substitute an identity Jacobian. A caller-supplied derivative
+rule remains the caller's mathematical responsibility. These Python callable
+wrappers do not establish arbitrary Rust/WASM callback execution, higher-order
+transform composition, device gradients or performance superiority.
+
 ## Bounded product status
 
 Shipped: versioned registration contract · public register API with fail-closed

@@ -13,7 +13,7 @@
     "python_model_source_modules": 795,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1536
+    "test_files": 1537
   },
   "documentation": {
     "examples": [
@@ -9878,6 +9878,7 @@
       "tests/test_prepare_iqm_paper_replication.py",
       "tests/test_prepare_large_system_submission_extensions.py",
       "tests/test_prepare_s1_ibm_live_readiness.py",
+      "tests/test_primitive_array_conformance.py",
       "tests/test_probe_s1_generic_gate_metadata.py",
       "tests/test_probe_s1_ibm_metadata.py",
       "tests/test_program_ad_adjoint.py",

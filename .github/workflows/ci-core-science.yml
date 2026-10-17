@@ -803,7 +803,11 @@ jobs:
         run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/custom_derivatives_product.py
+          src/scpn_quantum_control/differentiable_custom_derivatives.py
+          src/scpn_quantum_control/differentiable_registered_custom.py
+          src/scpn_quantum_control/program_ad_registry.py
           tests/test_custom_derivatives_product.py
+          tests/test_primitive_array_conformance.py
           tools/custom_derivatives_product_quality_gates.py
           tests/test_custom_derivatives_product_quality_gate.py
       - name: Ruff NumPy docstrings for custom-derivatives product quality cohort
@@ -811,7 +815,11 @@ jobs:
           python -m ruff check --isolated --select D,D413
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/custom_derivatives_product.py
+          src/scpn_quantum_control/differentiable_custom_derivatives.py
+          src/scpn_quantum_control/differentiable_registered_custom.py
+          src/scpn_quantum_control/program_ad_registry.py
           tests/test_custom_derivatives_product.py
+          tests/test_primitive_array_conformance.py
           tools/custom_derivatives_product_quality_gates.py
           tests/test_custom_derivatives_product_quality_gate.py
       - name: Run custom-derivatives product focused coverage
@@ -820,8 +828,13 @@ jobs:
           --rcfile=/dev/null
           --data-file=.coverage.custom-derivatives-product-quality
           --branch
-          -m pytest -q
+          -m pytest -q --no-cov
           tests/test_custom_derivatives_product.py
+          tests/test_primitive_array_conformance.py
+          tests/test_differentiable_custom_derivatives.py
+          tests/test_differentiable_registered_custom.py
+          tests/test_program_ad_registry.py
+          tests/test_custom_derivatives_product_quality_gate.py
       - name: Enforce custom-derivatives product exact coverage
         run: >-
           python -m coverage report
@@ -829,4 +842,4 @@ jobs:
           --data-file=.coverage.custom-derivatives-product-quality
           --precision=2 --show-missing
           --fail-under=100
-          --include=*/custom_derivatives_product.py
+          --include=*/custom_derivatives_product.py,*/differentiable_custom_derivatives.py,*/differentiable_registered_custom.py,*/program_ad_registry.py,*/tools/custom_derivatives_product_quality_gates.py

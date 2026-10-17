@@ -35,23 +35,19 @@ def _normalise_custom_derivative_parameters(
     """Return explicit parameter metadata for a custom derivative primitive."""
     if parameters is not None:
         return _normalise_parameters(values, parameters)
-    if rule.parameter_names:
-        if len(rule.parameter_names) != values.size:
-            raise ValueError(
-                "custom derivative parameter_names length must match parameter length"
-            )
-        trainable = (
-            rule.trainable
-            if rule.trainable
-            else tuple(True for _ in range(len(rule.parameter_names)))
-        )
-        if len(trainable) != values.size:
-            raise ValueError("custom derivative trainable mask length must match parameter length")
-        return tuple(
-            Parameter(name, trainable=flag)
-            for name, flag in zip(rule.parameter_names, trainable, strict=True)
-        )
-    return _normalise_parameters(values, None)
+    if rule.parameter_names and len(rule.parameter_names) != values.size:
+        raise ValueError("custom derivative parameter_names length must match parameter length")
+    if rule.trainable and len(rule.trainable) != values.size:
+        raise ValueError("custom derivative trainable mask length must match parameter length")
+    defaults = _normalise_parameters(values, None)
+    names = rule.parameter_names or tuple(parameter.name for parameter in defaults)
+    trainable = rule.trainable or tuple(True for _ in defaults)
+    return _normalise_parameters(
+        values,
+        tuple(
+            Parameter(name, trainable=flag) for name, flag in zip(names, trainable, strict=True)
+        ),
+    )
 
 
 def custom_jvp(
@@ -61,7 +57,33 @@ def custom_jvp(
     *,
     parameters: Sequence[Parameter] | None = None,
 ) -> NDArray[np.float64]:
-    """Return an exact custom Jacobian-vector product for a registered primitive."""
+    """Return exact custom Jacobian-vector product values.
+
+    Parameters
+    ----------
+    rule : CustomDerivativeRule
+        Declared real-vector primitive with the required exact derivative rule.
+    values : array_like
+        Finite one-dimensional real parameter vector.
+    tangent : array_like
+        Tangent vector aligned with the parameter vector. Frozen parameter
+        components contribute zero.
+    parameters : sequence of Parameter, optional
+        Explicit caller metadata overrides rule-local names and trainability.
+        Otherwise the rule mask applies even with generated parameter names.
+
+    Returns
+    -------
+    numpy.ndarray
+        Exact derivative; frozen parameter directions contribute zero.
+
+    Raises
+    ------
+    ValueError
+        If the required rule is absent, values or derivatives are non-finite
+        or mis-shaped, or parameter metadata has invalid length or identity.
+
+    """
     return value_and_custom_jvp(rule, values, tangent, parameters=parameters).jvp
 
 
@@ -72,7 +94,34 @@ def batch_custom_jvp(
     *,
     parameters: Sequence[Parameter] | None = None,
 ) -> NDArray[np.float64]:
-    """Return stacked exact custom JVPs for a batch of tangent vectors."""
+    """Return batched exact custom Jacobian-vector product values.
+
+    Parameters
+    ----------
+    rule : CustomDerivativeRule
+        Declared real-vector primitive with the required exact derivative rule.
+    values : array_like
+        Finite one-dimensional real parameter vector.
+    tangents : array_like
+        Matrix of tangent rows aligned with the parameter vector. Frozen
+        parameter components contribute zero.
+    parameters : sequence of Parameter, optional
+        Explicit caller metadata overrides rule-local names and trainability.
+        Otherwise the rule mask applies even with generated parameter names.
+
+    Returns
+    -------
+    numpy.ndarray
+        Stacked derivatives in input-row order; frozen parameter directions
+        contribute zero.
+
+    Raises
+    ------
+    ValueError
+        If the required rule is absent, values or derivatives are non-finite
+        or mis-shaped, or parameter metadata has invalid length or identity.
+
+    """
     return cast(
         NDArray[np.float64],
         np.vstack(
@@ -96,7 +145,33 @@ def batch_value_and_custom_jvp(
     *,
     parameters: Sequence[Parameter] | None = None,
 ) -> tuple[JVPResult, ...]:
-    """Return one exact custom JVP result per tangent row."""
+    """Evaluate batched exact custom Jacobian-vector product results.
+
+    Parameters
+    ----------
+    rule : CustomDerivativeRule
+        Declared real-vector primitive with the required exact derivative rule.
+    values : array_like
+        Finite one-dimensional real parameter vector.
+    tangents : array_like
+        Matrix of tangent rows aligned with the parameter vector. Frozen
+        parameter components contribute zero.
+    parameters : sequence of Parameter, optional
+        Explicit caller metadata overrides rule-local names and trainability.
+        Otherwise the rule mask applies even with generated parameter names.
+
+    Returns
+    -------
+    tuple[JVPResult, ...]
+        One result per input row, in input order, retaining parameter names and mask.
+
+    Raises
+    ------
+    ValueError
+        If the required rule is absent, values or derivatives are non-finite
+        or mis-shaped, or parameter metadata has invalid length or identity.
+
+    """
     parameter_values = _as_parameter_array(values)
     tangent_batch = _as_batch_parameter_array(
         "custom JVP tangents", tangents, parameter_values.size
@@ -119,7 +194,33 @@ def value_and_custom_jvp(
     *,
     parameters: Sequence[Parameter] | None = None,
 ) -> JVPResult:
-    """Evaluate a custom primitive and its exact JVP rule."""
+    """Evaluate exact custom Jacobian-vector product results.
+
+    Parameters
+    ----------
+    rule : CustomDerivativeRule
+        Declared real-vector primitive with the required exact derivative rule.
+    values : array_like
+        Finite one-dimensional real parameter vector.
+    tangent : array_like
+        Tangent vector aligned with the parameter vector. Frozen parameter
+        components contribute zero.
+    parameters : sequence of Parameter, optional
+        Explicit caller metadata overrides rule-local names and trainability.
+        Otherwise the rule mask applies even with generated parameter names.
+
+    Returns
+    -------
+    JVPResult
+        Exact value and derivative with parameter names and mask.
+
+    Raises
+    ------
+    ValueError
+        If the required rule is absent, values or derivatives are non-finite
+        or mis-shaped, or parameter metadata has invalid length or identity.
+
+    """
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("custom JVP requires a CustomDerivativeRule")
     if rule.jvp_rule is None:
@@ -155,7 +256,32 @@ def custom_vjp(
     *,
     parameters: Sequence[Parameter] | None = None,
 ) -> VJPResult:
-    """Return an exact custom vector-Jacobian product for a registered primitive."""
+    """Evaluate exact custom vector-Jacobian product results.
+
+    Parameters
+    ----------
+    rule : CustomDerivativeRule
+        Declared real-vector primitive with the required exact derivative rule.
+    values : array_like
+        Finite one-dimensional real parameter vector.
+    cotangent : array_like
+        Cotangent vector aligned with the primitive output.
+    parameters : sequence of Parameter, optional
+        Explicit caller metadata overrides rule-local names and trainability.
+        Otherwise the rule mask applies even with generated parameter names.
+
+    Returns
+    -------
+    VJPResult
+        Exact value and derivative with parameter names and mask.
+
+    Raises
+    ------
+    ValueError
+        If the required rule is absent, values or derivatives are non-finite
+        or mis-shaped, or parameter metadata has invalid length or identity.
+
+    """
     return value_and_custom_vjp(rule, values, cotangent, parameters=parameters)
 
 
@@ -166,7 +292,33 @@ def batch_custom_vjp(
     *,
     parameters: Sequence[Parameter] | None = None,
 ) -> NDArray[np.float64]:
-    """Return stacked exact custom VJPs for a batch of cotangent vectors."""
+    """Return batched exact custom vector-Jacobian product values.
+
+    Parameters
+    ----------
+    rule : CustomDerivativeRule
+        Declared real-vector primitive with the required exact derivative rule.
+    values : array_like
+        Finite one-dimensional real parameter vector.
+    cotangents : array_like
+        Matrix of cotangent rows aligned with the primitive output.
+    parameters : sequence of Parameter, optional
+        Explicit caller metadata overrides rule-local names and trainability.
+        Otherwise the rule mask applies even with generated parameter names.
+
+    Returns
+    -------
+    numpy.ndarray
+        Stacked derivatives in input-row order; frozen parameter directions
+        contribute zero.
+
+    Raises
+    ------
+    ValueError
+        If the required rule is absent, values or derivatives are non-finite
+        or mis-shaped, or parameter metadata has invalid length or identity.
+
+    """
     return cast(
         NDArray[np.float64],
         np.vstack(
@@ -190,8 +342,38 @@ def batch_value_and_custom_vjp(
     *,
     parameters: Sequence[Parameter] | None = None,
 ) -> tuple[VJPResult, ...]:
-    """Return one exact custom VJP result per cotangent row."""
+    """Evaluate batched exact custom vector-Jacobian product results.
+
+    Parameters
+    ----------
+    rule : CustomDerivativeRule
+        Declared real-vector primitive with the required exact derivative rule.
+    values : array_like
+        Finite one-dimensional real parameter vector.
+    cotangents : array_like
+        Matrix of cotangent rows aligned with the primitive output.
+    parameters : sequence of Parameter, optional
+        Explicit caller metadata overrides rule-local names and trainability.
+        Otherwise the rule mask applies even with generated parameter names.
+
+    Returns
+    -------
+    tuple[VJPResult, ...]
+        One result per input row, in input order, retaining parameter names and mask.
+
+    Raises
+    ------
+    ValueError
+        If the required rule is absent, values or derivatives are non-finite
+        or mis-shaped, or parameter metadata has invalid length or identity.
+
+    """
+    if not isinstance(rule, CustomDerivativeRule):
+        raise ValueError("custom VJP requires a CustomDerivativeRule")
+    if rule.vjp_rule is None:
+        raise ValueError("custom derivative rule does not define a VJP rule")
     parameter_values = _as_parameter_array(values)
+    _normalise_custom_derivative_parameters(parameter_values, rule, parameters)
     value = _as_vector_output(rule.value_fn(parameter_values.copy()))
     cotangent_batch = _as_batch_vector_array("custom VJP cotangents", cotangents, value.size)
     return tuple(
@@ -212,7 +394,32 @@ def value_and_custom_vjp(
     *,
     parameters: Sequence[Parameter] | None = None,
 ) -> VJPResult:
-    """Evaluate a custom primitive and its exact VJP rule."""
+    """Evaluate exact custom vector-Jacobian product results.
+
+    Parameters
+    ----------
+    rule : CustomDerivativeRule
+        Declared real-vector primitive with the required exact derivative rule.
+    values : array_like
+        Finite one-dimensional real parameter vector.
+    cotangent : array_like
+        Cotangent vector aligned with the primitive output.
+    parameters : sequence of Parameter, optional
+        Explicit caller metadata overrides rule-local names and trainability.
+        Otherwise the rule mask applies even with generated parameter names.
+
+    Returns
+    -------
+    VJPResult
+        Exact value and derivative with parameter names and mask.
+
+    Raises
+    ------
+    ValueError
+        If the required rule is absent, values or derivatives are non-finite
+        or mis-shaped, or parameter metadata has invalid length or identity.
+
+    """
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("custom VJP requires a CustomDerivativeRule")
     if rule.vjp_rule is None:
@@ -247,7 +454,30 @@ def custom_jacobian(
     *,
     parameters: Sequence[Parameter] | None = None,
 ) -> NDArray[np.float64]:
-    """Return the exact dense Jacobian implied by a custom derivative rule."""
+    """Return exact custom dense Jacobian values.
+
+    Parameters
+    ----------
+    rule : CustomDerivativeRule
+        Declared real-vector primitive with the required exact derivative rule.
+    values : array_like
+        Finite one-dimensional real parameter vector.
+    parameters : sequence of Parameter, optional
+        Explicit caller metadata overrides rule-local names and trainability.
+        Otherwise the rule mask applies even with generated parameter names.
+
+    Returns
+    -------
+    numpy.ndarray
+        Exact derivative; frozen parameter directions contribute zero.
+
+    Raises
+    ------
+    ValueError
+        If the required rule is absent, values or derivatives are non-finite
+        or mis-shaped, or parameter metadata has invalid length or identity.
+
+    """
     return value_and_custom_jacobian(rule, values, parameters=parameters).jacobian
 
 
@@ -257,7 +487,31 @@ def batch_custom_jacobian(
     *,
     parameters: Sequence[Parameter] | None = None,
 ) -> NDArray[np.float64]:
-    """Return stacked exact custom Jacobians for a batch of parameter rows."""
+    """Return batched exact custom dense Jacobian values.
+
+    Parameters
+    ----------
+    rule : CustomDerivativeRule
+        Declared real-vector primitive with the required exact derivative rule.
+    values : array_like
+        Finite real parameter matrix; each row is a separate evaluation point.
+    parameters : sequence of Parameter, optional
+        Explicit caller metadata overrides rule-local names and trainability.
+        Otherwise the rule mask applies even with generated parameter names.
+
+    Returns
+    -------
+    numpy.ndarray
+        Stacked derivatives in input-row order; frozen parameter directions
+        contribute zero.
+
+    Raises
+    ------
+    ValueError
+        If the required rule is absent, values or derivatives are non-finite
+        or mis-shaped, or parameter metadata has invalid length or identity.
+
+    """
     return cast(
         NDArray[np.float64],
         np.stack(
@@ -280,7 +534,30 @@ def batch_value_and_custom_jacobian(
     *,
     parameters: Sequence[Parameter] | None = None,
 ) -> tuple[JacobianResult, ...]:
-    """Return one exact custom Jacobian result per parameter row."""
+    """Evaluate batched exact custom dense Jacobian results.
+
+    Parameters
+    ----------
+    rule : CustomDerivativeRule
+        Declared real-vector primitive with the required exact derivative rule.
+    values : array_like
+        Finite real parameter matrix; each row is a separate evaluation point.
+    parameters : sequence of Parameter, optional
+        Explicit caller metadata overrides rule-local names and trainability.
+        Otherwise the rule mask applies even with generated parameter names.
+
+    Returns
+    -------
+    tuple[JacobianResult, ...]
+        One result per input row, in input order, retaining parameter names and mask.
+
+    Raises
+    ------
+    ValueError
+        If the required rule is absent, values or derivatives are non-finite
+        or mis-shaped, or parameter metadata has invalid length or identity.
+
+    """
     batch = _as_real_numeric_array("custom Jacobian values", values)
     if batch.ndim != 2:
         raise ValueError("custom Jacobian values must be a two-dimensional batch")
@@ -302,7 +579,30 @@ def value_and_custom_jacobian(
     *,
     parameters: Sequence[Parameter] | None = None,
 ) -> JacobianResult:
-    """Evaluate a custom primitive and materialise its exact dense Jacobian."""
+    """Evaluate exact custom dense Jacobian results.
+
+    Parameters
+    ----------
+    rule : CustomDerivativeRule
+        Declared real-vector primitive with the required exact derivative rule.
+    values : array_like
+        Finite one-dimensional real parameter vector.
+    parameters : sequence of Parameter, optional
+        Explicit caller metadata overrides rule-local names and trainability.
+        Otherwise the rule mask applies even with generated parameter names.
+
+    Returns
+    -------
+    JacobianResult
+        Exact value and derivative with parameter names and mask.
+
+    Raises
+    ------
+    ValueError
+        If the required rule is absent, values or derivatives are non-finite
+        or mis-shaped, or parameter metadata has invalid length or identity.
+
+    """
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("custom Jacobian requires a CustomDerivativeRule")
     if rule.jvp_rule is None and rule.vjp_rule is None:

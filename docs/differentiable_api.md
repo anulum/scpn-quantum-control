@@ -2154,16 +2154,32 @@ PyTorch or TensorFlow autodiff through a quantum simulator.
 ## Minimal custom primitive route
 
 ```python
-from scpn_quantum_control import CustomDerivativeRule
+import numpy as np
+
+from scpn_quantum_control import CustomDerivativeRule, value_and_custom_jvp
 
 rule = CustomDerivativeRule(
     name="square",
-    value=lambda values: values[0] ** 2,
-    derivative=lambda values, tangent: 2.0 * values[0] * tangent[0],
+    value_fn=lambda values: values ** 2,
+    jvp_rule=lambda values, tangent: 2.0 * values * tangent,
 )
+result = value_and_custom_jvp(rule, [3.0], [0.5])
+np.testing.assert_array_equal(result.value, [9.0])
+np.testing.assert_array_equal(result.jvp, [3.0])
 ```
 
 Production use should add primitive identity, shape, dtype, lowering, batching, nondifferentiability, and fail-closed tests before the primitive is advertised as supported.
+
+Custom transforms accept finite real vectors. Rule-local parameter names must
+be unique and match the input length; a supplied trainability mask must also
+match that length. The mask applies when names are omitted: generated
+`theta_0`, `theta_1`, … names do not make frozen parameters trainable.
+Explicit `parameters` retain their existing precedence over rule-local metadata.
+Malformed metadata and a missing required derivative refuse before numerical
+callbacks run, including batched pullbacks. An absent rule never supplies an
+identity or zero derivative. See the
+[registered broadcast example](custom_derivatives_product.md#parameter-masks-and-array-rules)
+for a real primitive with repeated output coordinates and frozen inputs.
 
 ## API contract checklist
 

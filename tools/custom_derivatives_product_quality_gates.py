@@ -15,13 +15,24 @@ Gate = tuple[str, list[str]]
 
 CUSTOM_DERIVATIVES_PRODUCT_QUALITY_RATCHET = [
     "src/scpn_quantum_control/custom_derivatives_product.py",
+    "src/scpn_quantum_control/differentiable_custom_derivatives.py",
+    "src/scpn_quantum_control/differentiable_registered_custom.py",
+    "src/scpn_quantum_control/program_ad_registry.py",
     "tests/test_custom_derivatives_product.py",
+    "tests/test_primitive_array_conformance.py",
     "tools/custom_derivatives_product_quality_gates.py",
     "tests/test_custom_derivatives_product_quality_gate.py",
 ]
 """Ordered strict-typing and NumPy-docstring cohort."""
 
-CUSTOM_DERIVATIVES_PRODUCT_COVERAGE_COHORT = ["tests/test_custom_derivatives_product.py"]
+CUSTOM_DERIVATIVES_PRODUCT_COVERAGE_COHORT = [
+    "tests/test_custom_derivatives_product.py",
+    "tests/test_primitive_array_conformance.py",
+    "tests/test_differentiable_custom_derivatives.py",
+    "tests/test_differentiable_registered_custom.py",
+    "tests/test_program_ad_registry.py",
+    "tests/test_custom_derivatives_product_quality_gate.py",
+]
 """Tests that own exact custom-derivatives product coverage."""
 
 CUSTOM_DERIVATIVES_PRODUCT_COVERAGE_DATA_FILE = ".coverage.custom-derivatives-product-quality"
@@ -100,6 +111,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 "-m",
                 "pytest",
                 "-q",
+                "--no-cov",
                 *CUSTOM_DERIVATIVES_PRODUCT_COVERAGE_COHORT,
             ],
         ),
@@ -114,7 +126,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={CUSTOM_DERIVATIVES_PRODUCT_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/custom_derivatives_product.py",
+                "--include=*/custom_derivatives_product.py,*/differentiable_custom_derivatives.py,*/differentiable_registered_custom.py,*/program_ad_registry.py,*/tools/custom_derivatives_product_quality_gates.py",
             ],
         ),
     ]

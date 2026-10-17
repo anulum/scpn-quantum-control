@@ -164,7 +164,7 @@ claims only when the evidence exists.
 | Notebook files | 109 |
 | Example files | 40 |
 | Optional extras | 43 |
-| Python test files | 1536 |
+| Python test files | 1537 |
 | Public documentation pages | 384 |
 | GitHub Actions workflows | 44 |
 

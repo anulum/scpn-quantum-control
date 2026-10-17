@@ -27,6 +27,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ### Added
 
+- Custom derivative transforms retain trainability masks when parameter names
+  are omitted. Invalid mask lengths and duplicate names refuse before numerical
+  callbacks, including batched pullbacks. Registered primitive conformance now
+  checks broadcast reductions, duplicate-index adjoints and conditioned linear
+  solves against independent directional and adjoint references.
+
 - Source-bound MCWF sampling evidence records effective simulation rates,
   ordered child seeds, original trajectories, sample variance and standard
   error through the existing product facade. Single-trajectory uncertainty,

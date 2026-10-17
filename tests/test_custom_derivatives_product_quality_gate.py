@@ -36,9 +36,16 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
 
     assert f"--data-file={quality_gates.CUSTOM_DERIVATIVES_PRODUCT_COVERAGE_DATA_FILE}" in run
     assert "--branch" in run
-    assert run[-1:] == quality_gates.CUSTOM_DERIVATIVES_PRODUCT_COVERAGE_COHORT
+    assert (
+        run[-len(quality_gates.CUSTOM_DERIVATIVES_PRODUCT_COVERAGE_COHORT) :]
+        == quality_gates.CUSTOM_DERIVATIVES_PRODUCT_COVERAGE_COHORT
+    )
+    assert "tests/test_primitive_array_conformance.py" in run
     assert "--fail-under=100" in report
-    assert "--include=*/custom_derivatives_product.py" in report
+    assert (
+        "--include=*/custom_derivatives_product.py,*/differentiable_custom_derivatives.py,*/differentiable_registered_custom.py,*/program_ad_registry.py,*/tools/custom_derivatives_product_quality_gates.py"
+        in report
+    )
 
 
 def test_preflight_uses_the_helper_defined_gates() -> None:
@@ -60,5 +67,8 @@ def test_ci_runs_and_aggregates_the_product_gate() -> None:
     for path in quality_gates.CUSTOM_DERIVATIVES_PRODUCT_QUALITY_RATCHET:
         assert path in block
     assert "--fail-under=100" in block
-    assert "--include=*/custom_derivatives_product.py" in block
+    assert (
+        "--include=*/custom_derivatives_product.py,*/differentiable_custom_derivatives.py,*/differentiable_registered_custom.py,*/program_ad_registry.py,*/tools/custom_derivatives_product_quality_gates.py"
+        in block
+    )
     assert "custom-derivatives-product-quality" in workflow[workflow.index("  ci-gate:") :]
