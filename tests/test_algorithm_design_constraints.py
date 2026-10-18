@@ -11,12 +11,11 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import replace
-from io import BytesIO
 from math import cos, sin
 from typing import cast
 
 import pytest
-from qiskit import QuantumCircuit, qpy
+from qiskit import QuantumCircuit
 from qiskit.circuit import Parameter
 
 from scpn_quantum_control.codesign import (
@@ -28,6 +27,7 @@ from scpn_quantum_control.codesign import (
     DesignObjectives,
 )
 from scpn_quantum_control.hardware.hal import BackendCapabilities, BackendProfile
+from scpn_quantum_control.hardware.hal_qiskit import _reviewed_qpy_load_circuits
 
 
 def _inputs() -> tuple[AlgorithmDesignProblem, DesignBackendSnapshot, tuple[DesignCandidate, ...]]:
@@ -161,7 +161,7 @@ def test_shared_parameter_diagnostics_match_analytic_derivative_and_refine() -> 
     assert row.gradient_refinement is not None
     assert coarse.evaluations[0].gradient_refinement is not None
     assert 3.9 < coarse.evaluations[0].gradient_refinement / row.gradient_refinement < 4.1
-    restored = qpy.load(BytesIO(bytes.fromhex(row.ansatz_qpy_hex)))[0]
+    restored = _reviewed_qpy_load_circuits(bytes.fromhex(row.ansatz_qpy_hex))[0]
     assert set(restored.parameters) == set(problem.parameters)
     assert restored.data[-1].operation.name == "cx"
     assert restored.find_bit(restored.data[-1].qubits[0]).index == 0

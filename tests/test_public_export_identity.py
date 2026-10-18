@@ -13,16 +13,15 @@ import ast
 import hashlib
 import importlib
 import inspect
-import io
 import json
 import pickle
 import typing
-from collections.abc import Mapping
 from pathlib import Path
 from types import ModuleType
 from typing import NotRequired, TypedDict, cast
 
 import pytest
+from _pickle_identity import IdentityUnpickler as _IdentityUnpickler
 
 pytestmark = pytest.mark.framework_imports
 
@@ -92,6 +91,18 @@ APPROVED_EXPORT_ADDITIONS: dict[str, tuple[int, tuple[tuple[str, str], ...]]] = 
             ("validate_scientific_design", "scpn_quantum_control.kuramoto_core"),
         ),
     ),
+    "scpn_quantum_control.codesign": (
+        0,
+        (
+            ("AlgorithmDesignPlan", "scpn_quantum_control.codesign.algorithm_design"),
+            ("AlgorithmDesignSelection", "scpn_quantum_control.codesign.algorithm_design"),
+            ("DesignEvaluation", "scpn_quantum_control.codesign.algorithm_design"),
+            ("AlgorithmDesignProblem", "scpn_quantum_control.codesign.algorithm_design_contracts"),
+            ("DesignBackendSnapshot", "scpn_quantum_control.codesign.algorithm_design_contracts"),
+            ("DesignCandidate", "scpn_quantum_control.codesign.algorithm_design_contracts"),
+            ("DesignObjectives", "scpn_quantum_control.codesign.algorithm_design_contracts"),
+        ),
+    ),
     "scpn_quantum_control.compiler": (
         0,
         (
@@ -114,11 +125,26 @@ APPROVED_EXPORT_ADDITIONS: dict[str, tuple[int, tuple[tuple[str, str], ...]]] = 
             ),
         ),
     ),
+    "scpn_quantum_control.mitigation": (
+        0,
+        (
+            ("ReadoutMitigationEstimate", "scpn_quantum_control.mitigation.readout_uncertainty"),
+            ("ReadoutZNEResult", "scpn_quantum_control.mitigation.readout_uncertainty"),
+            (
+                "mitigate_counts_with_uncertainty",
+                "scpn_quantum_control.mitigation.readout_uncertainty",
+            ),
+            (
+                "zne_extrapolate_with_readout_uncertainty",
+                "scpn_quantum_control.mitigation.readout_uncertainty",
+            ),
+        ),
+    ),
 }
 
 
 def _expected_declared_all(package: PackageSnapshot) -> list[str]:
-    """Keep the frozen original order plus exact approved scientific/compiler additions.
+    """Keep the frozen original order plus exact approved public additions.
 
     Parameters
     ----------
@@ -147,14 +173,14 @@ def _expected_declared_all(package: PackageSnapshot) -> list[str]:
 def test_approved_additions_resolve_to_their_actual_owning_objects(
     public_module: str, name: str, origin_module: str
 ) -> None:
-    """Resolve each scientific-input and circuit-compiler addition through its public API.
+    """Resolve each approved addition through its genuine public API and owning object.
 
     Parameters
     ----------
     public_module
         Public namespace containing the explicitly approved addition.
     name
-        Exact exported name from the completed scientific/compiler work.
+        Exact exported name from the completed public interface work.
     origin_module
         Original defining module of that object.
 
@@ -163,54 +189,6 @@ def test_approved_additions_resolve_to_their_actual_owning_objects(
     origin = importlib.import_module(origin_module)
     assert getattr(module, name) is getattr(origin, name)
     assert list(module.__all__).count(name) == 1
-
-
-class _IdentityUnpickler(pickle.Unpickler):
-    """Resolve only exact known globals through their genuine public import paths."""
-
-    def __init__(self, data: bytes, expected: Mapping[tuple[str, str], object]) -> None:
-        """Bind an in-memory pickle to the explicitly expected runtime objects.
-
-        Parameters
-        ----------
-        data
-            Bytes produced locally by the compatibility test.
-        expected
-            Exact module/name bindings permitted for this round trip.
-
-        """
-        self._expected = dict(expected)
-        super().__init__(io.BytesIO(data))
-
-    def find_class(self, module: str, name: str) -> object:
-        """Reject unknown globals and changed bindings before reconstruction.
-
-        Parameters
-        ----------
-        module
-            Defining module requested by the pickle stream.
-        name
-            Global name requested in that module.
-
-        Returns
-        -------
-        object
-            The expected object, resolved through its actual import path.
-
-        Raises
-        ------
-        pickle.UnpicklingError
-            If the global is unregistered or its public binding has changed.
-
-        """
-        try:
-            expected = self._expected[(module, name)]
-        except KeyError as exc:
-            raise pickle.UnpicklingError(f"unregistered pickle global {module}.{name}") from exc
-        actual = getattr(importlib.import_module(module), name)
-        if actual is not expected:
-            raise pickle.UnpicklingError(f"changed pickle binding {module}.{name}")
-        return expected
 
 
 def test_pickle_identity_refuses_unregistered_globals() -> None:

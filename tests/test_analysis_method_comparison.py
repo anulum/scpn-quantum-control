@@ -14,6 +14,7 @@ import pickle
 from pathlib import Path
 
 import pytest
+from _pickle_identity import IdentityUnpickler
 
 from scpn_quantum_control.benchmarks.method_comparison_contracts import (
     ComparisonBudget,
@@ -134,8 +135,17 @@ def test_analysis_contract_names_preserve_original_type_identity(name: str) -> N
     assert current is getattr(original, name)
     if isinstance(current, type):
         assert current.__module__ == "scpn_quantum_control.benchmarks.method_comparison_contracts"
-        assert pickle.loads(pickle.dumps(current)) is current
-    restored = pickle.loads(pickle.dumps(population()))
+        assert (
+            IdentityUnpickler(
+                pickle.dumps(current), {(current.__module__, current.__qualname__): current}
+            ).load()
+            is current
+        )
+    expected = {
+        (record.__module__, record.__qualname__): record
+        for record in (MethodRun, ComparisonMeaning, ComparisonBudget)
+    }
+    restored = IdentityUnpickler(pickle.dumps(population()), expected).load()
     assert restored == population()
     assert all(type(run) is MethodRun for run in restored)
 
