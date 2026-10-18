@@ -2389,7 +2389,7 @@
       "source": "src/scpn_quantum_control/mitigation/__init__.py",
       "scope": "__getattr__",
       "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
-      "source_sha256": "0db0f6b674daf9f9bf99c72afd6979813bd2d8778f3a52557c72d41d6854f5a0",
+      "source_sha256": "294f427609a3c61e64b1f70ff1549fdd5e5b54510b6f0480b5bd633b5a3de7fa",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
       "count": 1
