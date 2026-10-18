@@ -19,6 +19,11 @@ Raw Noisy Circuit
     ├── ZNE: gate_fold_circuit() → zne_extrapolate()
     │         Amplify noise → Richardson extrapolation → zero-noise estimate
     │
+    ├── Readout uncertainty: mitigate_counts_with_uncertainty()
+    │         Signed inverse + sampling/calibration covariance
+    │         → zne_extrapolate_with_readout_uncertainty()
+    │         → full shared-calibration covariance + GLS interval
+    │
     ├── PEC: pauli_twirl_decompose() → pec_sample()
     │         Quasi-probability decomposition → Monte Carlo sampling
     │
@@ -118,6 +123,86 @@ print(result.fit_residual)         # L2 residual
 | `fit_residual` | float | RMS of polynomial fit residual |
 
 ---
+
+### Signed readout estimates and calibration uncertainty
+
+The public `scpn_quantum_control.mitigation` namespace exposes
+`mitigate_counts_with_uncertainty` and
+`zne_extrapolate_with_readout_uncertainty`. They accept the existing
+`ReadoutConfusionMatrix`, retain its measured-basis label order, and preserve
+the raw counts and calibration. Physical-qubit/classical-bit mappings remain
+those of the original folded circuit, including partial and permuted readout.
+
+`ReadoutMitigationEstimate` returns immutable tuple snapshots of `labels`,
+signed `quasiprobabilities`, `sampling_covariance`, `calibration_covariance`,
+the exact measurement `shots` and the recomputed spectral `condition_number`.
+For a column-stochastic calibration \(A\), observed frequencies \(p\),
+measurement count \(N\), and independent column calibration counts \(n_j\):
+
+\[
+q=A^{-1}p,\qquad
+C_{\mathrm{sampling}}=A^{-1}
+\frac{\operatorname{diag}(p)-pp^\top}{N}A^{-\top},
+\]
+\[
+C_{\mathrm{calibration}}=A^{-1}
+\left[\sum_j \frac{q_j^2}{n_j}
+\left(\operatorname{diag}(A_j)-A_jA_j^\top\right)\right]A^{-\top}.
+\]
+
+Negative components of \(q\) remain visible. The existing `mitigate_counts`
+and `mitigate_probabilities` APIs retain their documented clipping and
+normalisation behaviour; their probability output has a different meaning.
+
+```python
+from scpn_quantum_control.mitigation import (
+    build_readout_confusion_matrix,
+    mitigate_counts_with_uncertainty,
+    zne_extrapolate_with_readout_uncertainty,
+)
+
+calibration = build_readout_confusion_matrix(
+    {"0": {"0": 900, "1": 100}, "1": {"0": 200, "1": 800}}, 1
+)
+signed = mitigate_counts_with_uncertainty({"1": 100}, calibration)
+assert signed.quasiprobabilities[0] < 0
+
+result = zne_extrapolate_with_readout_uncertainty(
+    [1, 3],
+    [{"0": 410, "1": 590}, {"0": 550, "1": 450}],
+    calibration,
+    [1.0, -1.0],  # observable weights in calibration label order
+)
+assert result.extrapolation.method == "gls-delta"
+assert result.observation_covariance[0][1] > 0
+```
+
+One calibration shared by several noise scales induces off-diagonal error
+correlations. `ReadoutZNEResult` retains the per-scale estimates and complete
+`observation_covariance` actually consumed by the extrapolator. Supplying only
+independent per-scale standard errors would discard this shared contribution.
+For already-materialised scalar observations,
+`zne_extrapolate_with_uncertainty(..., covariance=...)` accepts a finite,
+symmetric, positive-definite observation covariance. It is mutually exclusive
+with `standard_errors`. Existing OLS and independent-error WLS calls keep their
+original behaviour.
+
+These are empirical first-order multinomial delta covariances and the existing
+normal interval, under independent preparation/measurement batches and a
+stationary full measured-basis calibration. They exclude drift, preparation
+bias, correlated shots, model mismatch and a state-specific parity fit.
+Zero empirical variance is not proof of certainty. Singular covariance,
+inadmissible calibration condition, unrepresentable GLS arithmetic and exceeded
+declared dense-buffer budgets refuse. The default calibration condition ceiling
+is \(10^8\); `max_dense_gib` bounds declared numerical buffers, not total process
+memory. Correction or extrapolation can worsen an estimate.
+
+The dedicated finite-shot diagnostic uses all seeds 0–199 and 1,000 samples per
+independent batch. It reports nominal and observed coverage with an exact
+binomial interval and retains every replicate in CI. Its fixed-model result is
+not a universal finite-sample coverage guarantee. Historical Studio readout
+bundles retain their original state-specific assumptions and raw calibration
+pairs; this full-basis companion does not requalify those measurements.
 
 ### 2. `pec` — Probabilistic Error Cancellation
 
@@ -525,14 +610,16 @@ asymmetry $+10.8\,\%$ for depths $\ge 4$.
 | `pec_coefficients` | `pec` | exact | verified to machine precision |
 
 The PEC quasi-probability decomposition has a Rust path in
-`scpn_quantum_engine.pec_coefficients()`. Other mitigation modules
-operate on circuits and counts, where Rust acceleration is not applicable.
+`scpn_quantum_engine.pec_coefficients()`. Raw readout covariance and GLS use
+vectorised NumPy/SciPy linear algebra. No matching Rust/WASM readout-inversion
+or full-covariance extrapolation API is provided, and no new speedup is claimed.
 
 ## Dependencies
 
 | Module | External | Required? |
 |--------|----------|-----------|
 | `zne` | qiskit | Yes |
+| `readout_uncertainty`, `zne_uncertainty` | numpy, scipy | Yes |
 | `pec` | qiskit | Yes |
 | `cpdr` | qiskit | Yes |
 | `dd` | qiskit | Yes |
@@ -541,9 +628,12 @@ operate on circuits and counts, where Rust acceleration is not applicable.
 
 ## Testing
 
-42 tests across 7 test files:
+Dedicated test owners include:
 
 - `test_zne.py` — Folding correctness, extrapolation accuracy, edge cases
+- `test_zne_uncertainty.py` — OLS/WLS/GLS propagation and numerical refusals
+- `test_readout_uncertainty.py` — Signed correction, independent covariance oracles, finite-shot coverage and domain/resource refusals
+- `test_mitigation_measurement_custody.py` — Actual partial/permuted sampling through readout correction and extrapolation, including harmful mitigation
 - `test_pec.py` — Coefficient validation, sampling convergence, overhead scaling
 - `test_cpdr.py` — Training generation, regression fit, pipeline roundtrip
 - `test_dd.py` — Sequence insertion, qubit validation, gate counts

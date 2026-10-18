@@ -34,6 +34,12 @@ jobs:
           src/scpn_quantum_control/mitigation/cpdr.py
           src/scpn_quantum_control/mitigation/mitiq_integration.py
           src/scpn_quantum_control/mitigation/symmetry_decay.py
+          src/scpn_quantum_control/mitigation/__init__.py
+          src/scpn_quantum_control/mitigation/readout_uncertainty.py
+          src/scpn_quantum_control/mitigation/zne_uncertainty.py
+          tests/test_readout_uncertainty.py
+          tests/test_mitigation_measurement_custody.py
+          tests/test_zne_uncertainty.py
           tests/test_error_mitigation_product.py
           tests/test_compound_mitigation.py
           tests/test_cpdr.py
@@ -50,6 +56,12 @@ jobs:
           src/scpn_quantum_control/mitigation/cpdr.py
           src/scpn_quantum_control/mitigation/mitiq_integration.py
           src/scpn_quantum_control/mitigation/symmetry_decay.py
+          src/scpn_quantum_control/mitigation/__init__.py
+          src/scpn_quantum_control/mitigation/readout_uncertainty.py
+          src/scpn_quantum_control/mitigation/zne_uncertainty.py
+          tests/test_readout_uncertainty.py
+          tests/test_mitigation_measurement_custody.py
+          tests/test_zne_uncertainty.py
           tests/test_error_mitigation_product.py
           tests/test_compound_mitigation.py
           tests/test_cpdr.py
@@ -64,6 +76,10 @@ jobs:
           --data-file=.coverage.error-mitigation-product-quality
           --branch
           -m pytest -q
+          --basetemp=${{ runner.temp }}/error-mitigation-product-quality
+          tests/test_readout_uncertainty.py
+          tests/test_mitigation_measurement_custody.py
+          tests/test_zne_uncertainty.py
           tests/test_error_mitigation_product.py
           tests/test_compound_mitigation.py
           tests/test_cpdr.py
@@ -76,7 +92,14 @@ jobs:
           --data-file=.coverage.error-mitigation-product-quality
           --precision=2 --show-missing
           --fail-under=100
-          --include=*/error_mitigation_product.py,*/mitigation/compound_mitigation.py,*/mitigation/cpdr.py,*/mitigation/mitiq_integration.py,*/mitigation/symmetry_decay.py
+          --include=*/error_mitigation_product.py,*/mitigation/compound_mitigation.py,*/mitigation/cpdr.py,*/mitigation/mitiq_integration.py,*/mitigation/symmetry_decay.py,*/mitigation/readout_uncertainty.py,*/mitigation/zne_uncertainty.py
+      - name: Retain every readout uncertainty replicate
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: readout-uncertainty-replicates
+          path: ${{ runner.temp }}/error-mitigation-product-quality/**/readout_interval_coverage.json
+          if-no-files-found: error
   cloud-native-deployment-quality:
     runs-on: ubuntu-latest
     env:

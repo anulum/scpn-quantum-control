@@ -22,11 +22,13 @@ variances ``s_i**2`` the weighted-least-squares covariance is ``(Vᵀ W V)⁻¹`
 ``W = diag(1/s_i**2)`` and ``V`` the Vandermonde matrix; without per-point
 uncertainties an ordinary-least-squares covariance ``sigma_hat**2 (Vᵀ V)⁻¹`` is used
 with ``sigma_hat**2`` the residual variance (which needs at least one degree of
-freedom). With equal or absent weights the point estimate matches ``zne_extrapolate``.
+freedom). A supplied full observation covariance uses generalised least squares,
+including its off-diagonal correlations. With equal or absent weights the point
+estimate matches ``zne_extrapolate``.
 
-The computation is small dense linear algebra on an ``(order+1)``-square system
-(``order`` is 1 or 2 in practice), pure vectorised NumPy with no Python hot loop, so
-the NumPy path is the optimised path and no separate compiled kernel is warranted.
+Coefficient fitting uses an ``(order+1)``-square system. The full-covariance path
+also solves a system with one row per observation and admits its dense buffers.
+Both reuse vectorised NumPy linear algebra; no separate compiled kernel is used.
 """
 
 from __future__ import annotations
@@ -37,6 +39,8 @@ from statistics import NormalDist
 
 import numpy as np
 from numpy.typing import NDArray
+
+from ..dense_budget import DenseAllocationError, dense_budget_bytes
 
 
 @dataclass(frozen=True)
@@ -58,8 +62,8 @@ class ZNEUncertaintyResult:
     fit_residual:
         Root-mean-square fit residual, matching ``zne_extrapolate``.
     method:
-        ``"wls-delta"`` when per-point uncertainties were supplied, else
-        ``"ols-delta"``.
+        ``"gls-delta"`` for a full observation covariance, ``"wls-delta"`` for
+        independent per-point uncertainties, or ``"ols-delta"`` for residual error.
     n_points:
         Number of noise-scale data points.
 
@@ -126,8 +130,10 @@ def zne_extrapolate_with_uncertainty(
     expectation_values: Sequence[float],
     *,
     standard_errors: Sequence[float] | None = None,
+    covariance: NDArray[np.float64] | None = None,
     order: int = 1,
     coverage: float = 0.95,
+    max_dense_gib: float | None = None,
 ) -> ZNEUncertaintyResult:
     """Zero-noise extrapolation with a propagated uncertainty on the estimate.
 
@@ -141,13 +147,25 @@ def zne_extrapolate_with_uncertainty(
     standard_errors:
         Optional per-scale standard errors (for example Z-basis proxy shot-noise errors from
         :mod:`scpn_quantum_control.analysis.sync_uncertainty`). When given, a
-        weighted least-squares covariance propagates them; when omitted, an
+        weighted least-squares covariance propagates them; when both uncertainty
+        descriptions are omitted, an
         ordinary least-squares residual variance is used and at least
         ``order + 2`` points are required.
+    covariance:
+        Optional full covariance of the supplied expectation values, including
+        correlations from shared calibration. Must be real, finite, symmetric and
+        positive definite, with one row and column per noise scale. Mutually
+        exclusive with ``standard_errors``. Generalised least squares propagates
+        this supplied covariance; the normal interval remains a delta-method
+        approximation and excludes unmodelled bias and drift.
     order:
         Polynomial degree (1 = linear, 2 = quadratic).
     coverage:
         Target coverage of the reported interval, in ``(0, 1)``.
+    max_dense_gib:
+        Dense-buffer allowance in GiB for the full-covariance GLS path, or
+        ``None`` for the existing process budget. Counts declared numerical
+        buffers; it does not reserve process memory.
 
     Returns
     -------
@@ -157,15 +175,48 @@ def zne_extrapolate_with_uncertainty(
     Raises
     ------
     ValueError
-        On malformed inputs, too few points, or a singular design matrix.
+        On malformed inputs, conflicting uncertainty inputs, a nonpositive
+        covariance, too few points, a singular design matrix, or an
+        unrepresentable full-covariance fit.
+    DenseAllocationError
+        If declared full-covariance GLS buffers exceed the active allowance.
 
     """
+    if covariance is not None and any(
+        np.iscomplexobj(value) for value in (covariance, noise_scales, expectation_values)
+    ):
+        raise ValueError("GLS inputs must be real")
     x, y, errors = _validate_inputs(
         noise_scales, expectation_values, standard_errors, order, coverage
     )
+    if covariance is not None:
+        required_bytes = 8 * (6 * x.size**2 + 6 * x.size * (order + 1) + 6 * (order + 1) ** 2)
+        if required_bytes > dense_budget_bytes(max_dense_gib):
+            raise DenseAllocationError("ZNE covariance buffers exceed the active dense budget")
     vander = np.vander(x, order + 1)  # constant term is the final column
 
-    if errors is not None:
+    if covariance is not None:
+        if errors is not None:
+            raise ValueError("covariance and standard_errors are mutually exclusive")
+        supplied = np.asarray(covariance, dtype=np.float64)
+        if supplied.shape != (x.size, x.size):
+            raise ValueError("covariance must have one row and column per noise scale")
+        if not np.all(np.isfinite(supplied)):
+            raise ValueError("covariance must be finite")
+        if not np.array_equal(supplied, supplied.T):
+            raise ValueError("covariance must be symmetric")
+        try:
+            np.linalg.cholesky(supplied)
+        except np.linalg.LinAlgError as exc:
+            raise ValueError("covariance must be positive definite") from exc
+        with np.errstate(over="ignore", invalid="ignore"):
+            weighted_design = np.linalg.solve(supplied, vander)
+            normal_matrix = vander.T @ weighted_design
+            rhs = weighted_design.T @ y
+        if not all(np.all(np.isfinite(value)) for value in (normal_matrix, rhs)):
+            raise ValueError("GLS design and weighted observations must remain finite")
+        method = "gls-delta"
+    elif errors is not None:
         weights = 1.0 / errors**2
         wv = vander * weights[:, None]
         normal_matrix = vander.T @ wv
@@ -182,23 +233,31 @@ def zne_extrapolate_with_uncertainty(
         method = "ols-delta"
 
     try:
-        covariance = np.linalg.inv(normal_matrix)
+        coefficient_covariance = np.linalg.inv(normal_matrix)
     except np.linalg.LinAlgError as exc:
         raise ValueError("noise-scale design matrix is singular") from exc
 
-    coeffs = covariance @ rhs
-    poly = np.poly1d(coeffs)
-    zero_noise_estimate = float(coeffs[-1])  # poly(0) = constant term
-    fit_residual = float(np.sqrt(np.mean((poly(x) - y) ** 2)))
+    if covariance is not None and not np.all(np.isfinite(coefficient_covariance)):
+        raise ValueError("GLS coefficient covariance must remain finite")
+    with np.errstate(over="ignore", invalid="ignore") if covariance is not None else np.errstate():
+        coeffs = coefficient_covariance @ rhs
+        poly = np.poly1d(coeffs)
+        zero_noise_estimate = float(coeffs[-1])  # poly(0) = constant term
+        fit_residual = float(np.sqrt(np.mean((poly(x) - y) ** 2)))
 
-    if errors is None:
+    if errors is None and covariance is None:
         degrees_of_freedom = x.size - (order + 1)
         residual_sum = float(np.sum((poly(x) - y) ** 2))
         sigma_squared = residual_sum / degrees_of_freedom
-        intercept_variance = sigma_squared * float(covariance[-1, -1])
+        intercept_variance = sigma_squared * float(coefficient_covariance[-1, -1])
     else:
-        intercept_variance = float(covariance[-1, -1])
+        intercept_variance = float(coefficient_covariance[-1, -1])
 
+    if covariance is not None and (
+        not np.all(np.isfinite([zero_noise_estimate, fit_residual, intercept_variance]))
+        or intercept_variance <= 0
+    ):
+        raise ValueError("GLS result must be finite with positive intercept variance")
     standard_error = float(np.sqrt(max(intercept_variance, 0.0)))
     z = NormalDist().inv_cdf(0.5 + coverage / 2.0)
     half_width = z * standard_error

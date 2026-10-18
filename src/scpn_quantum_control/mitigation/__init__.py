@@ -37,6 +37,12 @@ if TYPE_CHECKING:
         probability_parity_leakage,
         probability_state_retention,
     )
+    from .readout_uncertainty import (
+        ReadoutMitigationEstimate,
+        ReadoutZNEResult,
+        mitigate_counts_with_uncertainty,
+        zne_extrapolate_with_readout_uncertainty,
+    )
     from .symmetry_decay import (
         GUESSResult,
         SymmetryDecayModel,
@@ -66,6 +72,22 @@ if TYPE_CHECKING:
     from .zne_uncertainty import ZNEUncertaintyResult, zne_extrapolate_with_uncertainty
 
 _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
+    "ReadoutMitigationEstimate": (
+        "scpn_quantum_control.mitigation.readout_uncertainty",
+        "ReadoutMitigationEstimate",
+    ),
+    "ReadoutZNEResult": (
+        "scpn_quantum_control.mitigation.readout_uncertainty",
+        "ReadoutZNEResult",
+    ),
+    "mitigate_counts_with_uncertainty": (
+        "scpn_quantum_control.mitigation.readout_uncertainty",
+        "mitigate_counts_with_uncertainty",
+    ),
+    "zne_extrapolate_with_readout_uncertainty": (
+        "scpn_quantum_control.mitigation.readout_uncertainty",
+        "zne_extrapolate_with_readout_uncertainty",
+    ),
     "CPDRResult": ("scpn_quantum_control.mitigation.cpdr", "CPDRResult"),
     "cpdr_full_pipeline": ("scpn_quantum_control.mitigation.cpdr", "cpdr_full_pipeline"),
     "cpdr_mitigate": ("scpn_quantum_control.mitigation.cpdr", "cpdr_mitigate"),
@@ -243,6 +265,10 @@ def __dir__() -> list[str]:
 
 
 __all__ = [
+    "ReadoutMitigationEstimate",
+    "ReadoutZNEResult",
+    "mitigate_counts_with_uncertainty",
+    "zne_extrapolate_with_readout_uncertainty",
     "gate_fold_circuit",
     "zne_extrapolate",
     "ZNEResult",

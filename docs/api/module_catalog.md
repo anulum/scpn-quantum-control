@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **799 modules** across **41 package families**
-- **4290 documented public module-level symbols**
+- **800 modules** across **41 package families**
+- **4294 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -3754,6 +3754,16 @@ Full-basis readout confusion-matrix mitigation utilities.
 **Classes:** `ReadoutConfusionMatrix`
 
 **Functions:** `computational_basis_labels()`, `label_index_map()`, `bitstring_index()`, `counts_to_probabilities()`, `build_readout_confusion_matrix()`, `mitigate_probabilities()`, `mitigate_counts()`, `probability_state_retention()`, `probability_parity_leakage()`, `probability_magnetisation_leakage()`, `probability_mean_magnetisation()`
+
+### `scpn_quantum_control.mitigation.readout_uncertainty`
+
+Preserve signed readout estimates and propagate finite calibration uncertainty.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/mitigation/readout_uncertainty.py) · Public symbols: **4**
+
+**Classes:** `ReadoutMitigationEstimate`, `ReadoutZNEResult`
+
+**Functions:** `mitigate_counts_with_uncertainty()`, `zne_extrapolate_with_readout_uncertainty()`
 
 ### `scpn_quantum_control.mitigation.symmetry_decay`
 

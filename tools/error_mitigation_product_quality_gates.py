@@ -19,6 +19,12 @@ ERROR_MITIGATION_PRODUCT_QUALITY_RATCHET = [
     "src/scpn_quantum_control/mitigation/cpdr.py",
     "src/scpn_quantum_control/mitigation/mitiq_integration.py",
     "src/scpn_quantum_control/mitigation/symmetry_decay.py",
+    "src/scpn_quantum_control/mitigation/__init__.py",
+    "src/scpn_quantum_control/mitigation/readout_uncertainty.py",
+    "src/scpn_quantum_control/mitigation/zne_uncertainty.py",
+    "tests/test_readout_uncertainty.py",
+    "tests/test_mitigation_measurement_custody.py",
+    "tests/test_zne_uncertainty.py",
     "tests/test_error_mitigation_product.py",
     "tests/test_compound_mitigation.py",
     "tests/test_cpdr.py",
@@ -30,6 +36,9 @@ ERROR_MITIGATION_PRODUCT_QUALITY_RATCHET = [
 """Ordered strict-typing and NumPy-docstring cohort."""
 
 ERROR_MITIGATION_PRODUCT_COVERAGE_COHORT = [
+    "tests/test_readout_uncertainty.py",
+    "tests/test_mitigation_measurement_custody.py",
+    "tests/test_zne_uncertainty.py",
     "tests/test_error_mitigation_product.py",
     "tests/test_compound_mitigation.py",
     "tests/test_cpdr.py",
@@ -104,7 +113,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={ERROR_MITIGATION_PRODUCT_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/error_mitigation_product.py,*/mitigation/compound_mitigation.py,*/mitigation/cpdr.py,*/mitigation/mitiq_integration.py,*/mitigation/symmetry_decay.py",
+                "--include=*/error_mitigation_product.py,*/mitigation/compound_mitigation.py,*/mitigation/cpdr.py,*/mitigation/mitiq_integration.py,*/mitigation/symmetry_decay.py,*/mitigation/readout_uncertainty.py,*/mitigation/zne_uncertainty.py",
             ],
         ),
     ]

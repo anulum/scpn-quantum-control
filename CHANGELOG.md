@@ -27,6 +27,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ### Added
 
+- Signed readout correction preserves negative quasi-probabilities and raw
+  measurement/calibration data. Sampling and calibration covariances remain
+  separate, and shared calibration correlations reach full-covariance GLS
+  extrapolation with explicit normal/delta assumptions and numerical refusals.
+
 - Native control conformance compares signed and rotated binary MPC landscapes,
   full Gaussian covariance objectives, rectangular model Jacobians and compiled
   FEP refusal paths against independent arithmetic. The belief-objective guide

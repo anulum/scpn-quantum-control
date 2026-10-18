@@ -13,6 +13,7 @@ from typing import Any, cast
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.mitigation.zne import zne_extrapolate
 from scpn_quantum_control.mitigation.zne_uncertainty import (
@@ -212,3 +213,117 @@ def test_result_is_frozen() -> None:
     assert isinstance(result, ZNEUncertaintyResult)
     with pytest.raises(AttributeError):
         result.standard_error = 0.0  # type: ignore[misc]
+
+
+def test_full_covariance_retains_shared_offset_uncertainty() -> None:
+    """A common additive error survives extrapolation with its original variance."""
+    values = np.array([0.6, 0.49, 0.45])
+    covariance = 0.01 * np.eye(3) + 0.04 * np.ones((3, 3))
+    original = covariance.copy()
+    result = zne_extrapolate_with_uncertainty([1, 3, 5], values.tolist(), covariance=covariance)
+    weights = np.array([13 / 12, 1 / 3, -5 / 12])
+    assert result.method == "gls-delta"
+    assert result.zero_noise_estimate == pytest.approx(float(weights @ values), abs=1e-12)
+    assert result.standard_error**2 == pytest.approx(0.01 * float(weights @ weights) + 0.04)
+    np.testing.assert_array_equal(covariance, original)
+
+
+def test_diagonal_full_covariance_matches_independent_standard_errors() -> None:
+    """GLS reduces to the existing WLS result for independent supplied noise."""
+    errors = np.array([0.02, 0.04, 0.03])
+    independent = zne_extrapolate_with_uncertainty(
+        [1, 3, 5], [0.6, 0.51, 0.43], standard_errors=errors.tolist()
+    )
+    full = zne_extrapolate_with_uncertainty(
+        [1, 3, 5], [0.6, 0.51, 0.43], covariance=np.diag(errors**2)
+    )
+    assert full.zero_noise_estimate == pytest.approx(independent.zero_noise_estimate)
+    assert full.standard_error == pytest.approx(independent.standard_error)
+    assert full.low == pytest.approx(independent.low)
+    assert full.high == pytest.approx(independent.high)
+
+
+@pytest.mark.parametrize(
+    "covariance,message",
+    [
+        (np.eye(3), "one row and column"),
+        (np.array([[1.0, np.nan], [np.nan, 1.0]]), "finite"),
+        (np.array([[1.0, 0.2], [0.0, 1.0]]), "symmetric"),
+        (np.array([[1.0, 2.0], [2.0, 1.0]]), "positive definite"),
+        (np.ones((2, 2)), "positive definite"),
+    ],
+)
+def test_invalid_full_covariance_refuses(covariance: NDArray[np.float64], message: str) -> None:
+    """Reject malformed or unidentifiable noise without clipping eigenvalues."""
+    original = covariance.copy()
+    with pytest.raises(ValueError, match=message):
+        zne_extrapolate_with_uncertainty([1, 3], [0.6, 0.5], covariance=covariance)
+    np.testing.assert_array_equal(covariance, original)
+
+
+def test_full_covariance_and_standard_errors_cannot_both_be_supplied() -> None:
+    """Do not silently select one of two conflicting uncertainty descriptions."""
+    with pytest.raises(ValueError, match="mutually exclusive"):
+        zne_extrapolate_with_uncertainty(
+            [1, 3], [0.6, 0.5], standard_errors=[0.1, 0.1], covariance=np.eye(2)
+        )
+
+
+def test_full_covariance_obeys_declared_dense_allowance() -> None:
+    """Refuse GLS buffers exceeding their allowance before constructing the design."""
+    from scpn_quantum_control.dense_budget import DenseAllocationError
+
+    with pytest.raises(DenseAllocationError, match="ZNE covariance buffers"):
+        zne_extrapolate_with_uncertainty(
+            [1, 3], [0.6, 0.5], covariance=np.eye(2), max_dense_gib=1e-8
+        )
+
+
+def test_actual_unresolvable_design_refuses_full_covariance_fit() -> None:
+    """Distinct float64 scales can still produce a singular normal design."""
+    with pytest.raises(ValueError, match="design matrix is singular"):
+        zne_extrapolate_with_uncertainty([1.0, 1.0 + 2**-51], [0.6, 0.5], covariance=np.eye(2))
+
+
+@pytest.mark.parametrize(
+    "scales,covariance",
+    [
+        ([1.0, 3.0], np.eye(2) * 1e-310),
+        ([1.0, 3.0], np.eye(2) * 1e308),
+        ([1e154, 2e154], np.eye(2)),
+    ],
+)
+def test_unrepresentable_full_covariance_fit_refuses(
+    scales: list[float], covariance: NDArray[np.float64]
+) -> None:
+    """Finite inputs cannot turn overflow into a successful confidence result."""
+    with pytest.raises(ValueError, match="finite"):
+        zne_extrapolate_with_uncertainty(scales, [0.6, 0.5], covariance=covariance)
+
+
+def test_unrepresentable_gls_fit_residual_refuses() -> None:
+    """A finite normal matrix cannot certify an overflowing residual computation."""
+    with pytest.raises(ValueError, match="finite"):
+        zne_extrapolate_with_uncertainty([1, 3], [5e307, -5e307], covariance=np.eye(2))
+
+
+def test_complex_full_covariance_refuses_imaginary_data_loss() -> None:
+    """Reject complex noise instead of casting its imaginary component away."""
+    covariance = np.eye(2, dtype=np.complex128) * (1 + 0.1j)
+    with pytest.raises(ValueError, match="real"):
+        zne_extrapolate_with_uncertainty([1, 3], [0.6, 0.5], covariance=cast(Any, covariance))
+
+
+@pytest.mark.parametrize("position", ["scales", "values"])
+def test_complex_gls_observations_refuse_imaginary_data_loss(position: str) -> None:
+    """The real GLS contract cannot silently project a complex observation."""
+    scales: object = [1, 3]
+    values: object = [0.6, 0.5]
+    if position == "scales":
+        scales = np.array([1 + 0.1j, 3 + 0.1j], dtype=np.complex128)
+    else:
+        values = np.array([0.6 + 0.1j, 0.5 + 0.1j], dtype=np.complex128)
+    with pytest.raises(ValueError, match="real"):
+        zne_extrapolate_with_uncertainty(
+            cast(Any, scales), cast(Any, values), covariance=np.eye(2)
+        )

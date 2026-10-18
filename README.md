@@ -155,8 +155,8 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 1.2.0 |
 | Public API exports | 851 |
-| Python source modules | 799 |
-| Public Python classes | 1531 |
+| Python source modules | 800 |
+| Public Python classes | 1533 |
 | Domain package families | 40 |
 | API documentation pages | 14 |
 | Rust PyO3 function bindings | 177 |
@@ -164,7 +164,7 @@ claims only when the evidence exists.
 | Notebook files | 109 |
 | Example files | 40 |
 | Optional extras | 43 |
-| Python test files | 1541 |
+| Python test files | 1543 |
 | Public documentation pages | 384 |
 | GitHub Actions workflows | 44 |
 
@@ -600,6 +600,7 @@ for a runnable local example and the SDK/device evidence boundaries.
 | Research module families | Analysis, phase, hardware, bridge, mitigation, QEC, applications, forecasting, and benchmark families; exact current counts are listed in the package map below. |
 | Publication figures | **17** (simulation + hardware, including the Phase 1 DLA parity panels and exact-simulation crossover) |
 | Test, coverage, and typing gates | CI enforces **90% line coverage** through `tools/coverage_policy.json`, collects branch telemetry without inventing an unmeasured branch threshold, and strict-mypy checks production Python. Tests use the additive cohort in `tools/test_typing_policy.json` rather than claiming the legacy test tree is already strict. See [Test Infrastructure](docs/test_infrastructure.md) and the generated capability inventory for current scope. |
+| Readout uncertainty | [Signed readout and shared-calibration GLS](docs/mitigation_api.md#signed-readout-estimates-and-calibration-uncertainty) preserve raw labels/counts and separate sampling/calibration error under explicit normal/delta assumptions. |
 | Reproducibility CLI | `scpn-bench reproduce-methods`, `scpn-bench fim-all`, and `scpn-bench all` regenerate committed methods/FIM artefacts without IBM submission |
 
 ### Exact-Simulation Wall-Time (Not broad quantum-advantage claim)
@@ -743,7 +744,7 @@ graph TD
 
     subgraph "Hardware & QEC"
         hw["hardware/ (85)\nIBM runner, backends\nGPU offload, cutting"]
-        mit["mitigation/ (12)\nZNE, PEC, DD\nZ2 post-selection"]
+        mit["mitigation/ (15)\nZNE, PEC, DD\nZ2 post-selection"]
         qec["qec/ (13)\nToric code, surface code\nrep code, error budget"]
     end
 
@@ -776,7 +777,7 @@ graph TD
 | `applications` | 17 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS, QRC+ESN baseline, honesty kits |
 | `bridge` | 13 | K_nm → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
 | `control` | 11 | QAOA-MPC, residual-certified VQLS Grad-Shafranov proxy, Petri nets, ITER disruption, topological optimiser |
-| `mitigation` | 12 | ZNE, PEC, dynamical decoupling, Z2 parity, CPDR, symmetry verification, GUESS, compound |
+| `mitigation` | 15 | ZNE, PEC, dynamical decoupling, Z2 parity, CPDR, symmetry verification, GUESS, compound |
 | `qec` | 13 | Toric code, repetition code UPDE, surface code, biological surface code, error budget, multi-scale, syndrome flow |
 | `benchmarks` | 7 | Classical vs quantum scaling, MPS baseline, GPU baseline, AppQSim |
 | `crypto` | 9 | Entanglement QKD, topology authentication, ML-DSA signing, key hierarchy |
@@ -893,7 +894,7 @@ scpn_quantum_control/
 ├── bridge/         14 modules — K_nm → quantum objects + cross-repo
 ├── applications/   17 modules — physical benchmarks + honesty kits
 ├── control/        14 modules — QAOA-MPC, residual VQLS-GS proxy, Petri, ITER, topological
-├── mitigation/     12 modules — ZNE, PEC, DD, Z2, CPDR, symmetry
+├── mitigation/     15 modules — ZNE, signed readout covariance, PEC, DD, Z2, CPDR, symmetry
 ├── qec/            13 modules — error correction + biological surface code
 ├── benchmarks/     21 modules — performance baselines
 ├── forecasting/    11 modules — real/source-backed and synthetic partial-observation forecasts
