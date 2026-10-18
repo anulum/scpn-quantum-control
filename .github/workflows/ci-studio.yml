@@ -6,7 +6,6 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — CI Studio
 name: CI / Studio
-
 on:
   workflow_call:
 
@@ -747,6 +746,7 @@ jobs:
           --coverage.thresholds.functions=100
           --coverage.thresholds.lines=100
       - name: Enforce immutable comparison owner exact coverage
+        env: *studio_native_cohorts
         run: >-
           pnpm exec vitest run src/modules/compare
           --coverage --coverage.reporter=text
