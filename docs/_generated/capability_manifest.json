@@ -13,7 +13,7 @@
     "python_model_source_modules": 799,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1540
+    "test_files": 1541
   },
   "documentation": {
     "examples": [
@@ -9157,6 +9157,7 @@
       "tests/test_contraction_optimiser.py",
       "tests/test_contraction_optimiser_contracts.py",
       "tests/test_control_module_contracts.py",
+      "tests/test_control_objective_conformance.py",
       "tests/test_control_plasma_knm.py",
       "tests/test_control_plasma_knm_mock.py",
       "tests/test_control_qec.py",

@@ -2181,6 +2181,53 @@ identity or zero derivative. See the
 [registered broadcast example](custom_derivatives_product.md#parameter-masks-and-array-rules)
 for a real primitive with repeated output coordinates and frozen inputs.
 
+## Control costs and Gaussian belief objectives
+
+`QAOA_MPC.build_cost_hamiltonian()` and `classical_brute_mpc()` use the same
+binary feasible set and vector tracking objective:
+`sum_t ||u_t * (B @ ones) - target||²`, with `u_t` equal to zero or one.
+The signed target and its direction are retained. Returned actions are proposals;
+these functions do not apply them to hardware. Native `brute_mpc` returns the
+same landscape, indexed with timestep `t` in bit `t`, and selects the first
+enumerated minimiser on ties. Its bounded interface accepts contiguous,
+finite float64 arrays and a square actuation matrix.
+
+The public `scpn_quantum_control.fep` functions preserve the full belief
+covariance in the Gaussian KL trace and log-determinant. For example:
+
+```python
+import numpy as np
+from scpn_quantum_control.fep import kl_divergence_gaussian
+
+mean = np.array([0.2, -0.3])
+covariance = np.array([[1.4, 0.3], [0.3, 0.8]])
+prior_covariance = np.array([[2.0, 0.4], [0.4, 1.2]])
+divergence = kl_divergence_gaussian(mean, covariance, np.zeros(2), prior_covariance)
+```
+
+Covariances must be finite, symmetric and positive definite; invalid inputs
+raise `ValueError`. `variational_free_energy()` adds the quadratic prediction
+error to the prior KL. It omits likelihood normalisation terms, including
+`-0.5 * logdet(sensory_precision)`, so this reduced energy is not a normalised
+likelihood for comparing different sensory precisions. The existing prior ridge
+`PRECISION_RIDGE` is explicit. A general quadratic weight is not thereby
+certified as a Gaussian precision.
+
+`free_energy_gradient()` requires a custom model and its Jacobian together.
+For `g: R^n -> R^m`, observations have shape `(m,)`, the Jacobian `(m, n)` and
+sensory weights `(m, m)`. The derivative uses the symmetric parts of quadratic
+weights. An incomplete pair refuses before evaluating the model. Its covariance
+argument is retained for signature compatibility and does not enter this
+mean derivative. `predictive_coding_step()` validates the resulting belief
+objective before returning a new belief array; caller beliefs remain unchanged
+on rejection.
+
+The existing Rust gradient export supports the identity model, including
+strided inputs. The Rust energy export accepts the narrower isotropic posterior
+`sigma_diag * I`; it does not accept or silently diagonalise a full covariance.
+These local numerical contracts confer no actuator, provider, hardware
+performance or control-stability qualification.
+
 ## API contract checklist
 
 Every new differentiable API must document:

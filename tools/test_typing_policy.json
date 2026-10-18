@@ -283,6 +283,7 @@
         "tests/test_confinement.py",
         "tests/test_contraction_optimiser_contracts.py",
         "tests/test_control_module_contracts.py",
+        "tests/test_control_objective_conformance.py",
         "tests/test_control_plasma_knm.py",
         "tests/test_control_plasma_knm_mock.py",
         "tests/test_control_qec.py",

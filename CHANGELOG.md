@@ -27,6 +27,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ### Added
 
+- Native control conformance compares signed and rotated binary MPC landscapes,
+  full Gaussian covariance objectives, rectangular model Jacobians and compiled
+  FEP refusal paths against independent arithmetic. The belief-objective guide
+  makes omitted likelihood normalisation and native covariance limits explicit.
+
 - Shared Analysis interfaces retain method-comparison v1 producer, canonical
   export and nominal type identities across the existing public import paths.
 

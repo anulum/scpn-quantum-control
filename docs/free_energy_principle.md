@@ -15,24 +15,33 @@ For Gaussian distributions:
 
 $$q(z) = \mathcal{N}(\mu, \Sigma), \quad p(z) = \mathcal{N}(0, \Pi^{-1})$$
 
-the free energy decomposes as:
+the implemented reduced objective decomposes as:
 
 $$F = \underbrace{\frac{1}{2}\left(\mu^\top \Pi \mu + \text{tr}(\Pi\Sigma) - \log|\Sigma| - \log|\Pi| - n\right)}_\text{complexity (KL to prior)} + \underbrace{\frac{1}{2}(x - g(\mu))^\top \Gamma (x - g(\mu))}_\text{accuracy (prediction error)}$$
 
 where $\Pi$ is prior precision, $\Gamma$ is sensory precision, and $g(\mu)$
-is the generative model.
+is the generative model. Here the public API computes prior KL plus quadratic
+prediction error. It omits likelihood normalisation, including
+`-0.5 * logdet(sensory_precision)`, and evaluates the model at the belief mean.
+Consequently `elbo = -F` and `surprise_bound = F` retain their compatibility
+field names but do not establish a normalised evidence bound for arbitrary
+models or comparisons across sensory precisions. The abstract identity above
+describes the probabilistic formalism, not an additional runtime guarantee.
 
 ### KL Divergence Between Gaussians
 
 $$D_\text{KL}[\mathcal{N}(\mu_q, \Sigma_q) \| \mathcal{N}(\mu_p, \Sigma_p)] = \frac{1}{2}\left(\text{tr}(\Sigma_p^{-1}\Sigma_q) + (\mu_p - \mu_q)^\top \Sigma_p^{-1}(\mu_p - \mu_q) - n + \log\frac{|\Sigma_p|}{|\Sigma_q|}\right)$$
 
 This is exact (not an approximation) for multivariate Gaussians. The
-implementation uses `numpy.linalg.inv` and `numpy.linalg.slogdet` for
-numerical stability.
+implementation uses Cholesky factors, triangular solves and the full covariance
+log-determinants. It neither forms an explicit covariance inverse for the KL
+calculation nor replaces a full covariance with its diagonal.
 
 ### Free Energy Gradient (Belief Dynamics)
 
-The gradient drives belief updates via gradient descent:
+For symmetric Gaussian precision weights, the gradient drives belief updates
+via gradient descent. In the implementation, the prior is regularised by
+`PRECISION_RIDGE`; the equations below use this effective precision:
 
 $$\frac{d\mu}{dt} = -\frac{\partial F}{\partial \mu} = -\Pi\mu + J^\top \Gamma(x - g(\mu))$$
 
@@ -59,18 +68,12 @@ The FEP maps onto the SCPN hierarchy as follows:
 
 ### ELBO Interpretation
 
-The Evidence Lower BOund (ELBO) is $-F$:
-
-$$\text{ELBO} = -F = \log p(x) - D_\text{KL}[q(z) \| p(z|x)]$$
-
-Maximising ELBO is equivalent to:
-1. Maximising the model evidence $p(x)$ — the model explains the data well
-2. Minimising the posterior gap $D_\text{KL}[q \| p(z|x)]$ — the approximate
-   posterior $q$ is close to the true posterior
-
-In the SCPN context: high ELBO means the oscillator phases (beliefs)
-are well-matched to the observed phases, and the K_nm prior is consistent
-with the data.
+For a fully specified normalised probabilistic model, the formal evidence lower
+bound is the negative variational free energy. The existing result fields
+`elbo` and `surprise_bound` instead contain the negative and positive reduced
+objective defined above. Their names do not qualify model evidence, a posterior
+approximation or a physical oscillator interpretation. For fixed model, sensory
+weights and covariance, the mean-gradient objective remains explicitly evaluable.
 
 ### MAP Point Derivation
 
@@ -94,8 +97,8 @@ Stronger coupling (larger K_nm eigenvalues) means stronger regularisation
 ```
 Algorithm: Hierarchical Predictive Coding on SCPN
 
-Input: observations x, initial beliefs μ, coupling K, learning_rate lr, n_steps
-Output: converged beliefs μ*, free energy trajectory F[t]
+Input: observations x, beliefs μ, coupling K, prior precision Π, lr, n_steps
+Output: proposed beliefs μ, reduced objective trajectory F[t]
 
 1. For t = 1 to n_steps:
    a. For each layer i:
@@ -104,7 +107,7 @@ Output: converged beliefs μ*, free energy trajectory F[t]
       ε_i ← Π_i (x_i − x̂_i)              (precision-weighted error)
 
    b. Compute gradient:
-      ∂F/∂μ = K_reg μ − Γ(x − μ)          (Rust-accelerated)
+      ∂F/∂μ = Π_reg μ − Γ(x − μ)          (Rust-accelerated)
 
    c. Update beliefs:
       μ ← μ − lr × ∂F/∂μ
@@ -114,10 +117,10 @@ Output: converged beliefs μ*, free energy trajectory F[t]
 2. Return μ, F
 ```
 
-The algorithm is equivalent to gradient descent on the variational
-free energy surface. Convergence is guaranteed for convex F (which
-holds when K_nm is positive semi-definite and the generative model
-is the identity).
+The returned update is a gradient step on the declared reduced objective.
+A convex objective alone does not guarantee convergence for an arbitrary fixed
+learning rate. The API does not certify convergence or control stability, and
+it returns a new belief array rather than applying a physical action.
 
 ### Hierarchical Predictive Coding
 
@@ -138,41 +141,20 @@ where higher layers predict lower layers' activity.
 
 ### Why FEP in the SCPN?
 
-The SCPN dynamics can be cast as optimisation across the hierarchy of
-layers. The FEP provides
-the mathematical framework: the UPDE dynamics (Kuramoto coupling) can be
-reinterpreted as belief updating under the FEP — oscillator phases are
-sufficient statistics, and synchronisation is free energy minimisation.
+This module supplies Gaussian belief objectives alongside the oscillator models.
+Interpreting phases as beliefs and choosing a coupling-derived prior precision
+are modelling decisions. The numerical APIs qualify the specified Gaussian and
+quadratic contracts; they do not establish an identity between oscillator
+synchronisation, the UPDE and probabilistic inference.
 
-This is not a metaphor. The Kuramoto model with heterogeneous frequencies
-and distance-dependent coupling IS a predictive coding scheme where:
-- Coupling K_nm = precision (how much to trust the neighbour)
-- Phase difference = prediction error
-- Synchronisation = free energy minimum
+### Relationship to Kuramoto Models
 
-### Kuramoto-FEP Equivalence
-
-The Kuramoto model with coupling $K_{ij}$ and natural frequencies $\omega_i$:
-
-$$\frac{d\theta_i}{dt} = \omega_i + \sum_j K_{ij} \sin(\theta_j - \theta_i)$$
-
-can be rewritten as gradient descent on an energy function:
-
-$$E = -\sum_{i<j} K_{ij} \cos(\theta_i - \theta_j) - \sum_i \omega_i \theta_i$$
-
-This is equivalent to the FEP gradient descent $d\mu/dt = -\partial F / \partial \mu$
-where:
-
-- $\mu = \theta$ (phases are beliefs)
-- The prior energy is $\frac{1}{2}\mu^\top K \mu$ (quadratic approximation
-  of the cosine coupling near synchronisation)
-- The accuracy term encodes the observation that each oscillator's phase
-  should match its natural frequency: $\frac{1}{2}(\omega - \dot{\theta})^\top \Gamma (\omega - \dot{\theta})$
-
-The linearised Kuramoto around the synchronised state IS the FEP gradient
-with K_nm as prior precision. The nonlinear $\sin$ terms provide additional
-structure not captured by the Gaussian FEP, but near synchronisation (small
-phase differences), the equivalence is exact.
+The implemented identity-model belief gradient is a linear quadratic expression
+in the belief mean. The Kuramoto solvers have their own phase, frequency and
+coupling equations. No general nonlinear or linearised Kuramoto/FEP equivalence
+is established by the functions or conformance tests on this page. In
+particular, a coupling matrix is not automatically a valid Gaussian precision;
+choose a separate positive-definite prior when required.
 
 ### Precision-Weighted Message Passing
 
@@ -221,8 +203,9 @@ by `qsnn/dynamic_coupling.py` (Hebbian learning from XY correlations).
 | `analysis/sync_witness.py` | Measures synchronisation | Sync order ↔ low free energy |
 | `qec/multiscale_qec.py` | Error correction | QEC protects belief states |
 
-The FEP provides the theoretical glue: synchronisation (low F) is the
-system's way of minimising surprise about its environment.
+These links describe possible module compositions. Local objective agreement
+does not qualify biological inference, physical actuation or a shared
+probabilistic interpretation of every linked solver.
 
 ## 3. Pipeline Position
 
@@ -249,13 +232,13 @@ phase/phase_vqe.py → updated beliefs → circuit parameters
 
 ## 4. Features
 
-- **Variational free energy:** exact Gaussian computation with complexity/accuracy decomposition
-- **KL divergence:** exact multivariate Gaussian KL via matrix inversion and log-determinant
-- **Evidence lower bound (ELBO):** $-F$ for variational inference optimisation
+- **Belief objective:** full Gaussian prior KL plus quadratic prediction error
+- **KL divergence:** multivariate Gaussian KL via Cholesky solves and log-determinants
+- **Compatibility fields:** `elbo = -F` and `surprise_bound = F` for the reduced objective
 - **Free energy gradient:** analytical $\partial F / \partial \mu$ for gradient descent belief update
 - **Hierarchical predictive coding:** coupling-weighted predictions across SCPN layers
 - **Predictive coding step:** single gradient descent update with error tracking
-- **Rust acceleration:** gradient and prediction error use Rust engine (110 μs and 40 μs per call)
+- **Rust acceleration:** identity-model gradient and prediction error use the optional native engine
 - **Custom generative models:** supports arbitrary $g(\mu)$ and Jacobian $J(\mu)$ with Python fallback
 - **Convergence tracking:** prediction error norm monitored across PC iterations
 
@@ -273,9 +256,10 @@ n = K.shape[0]  # 16
 
 mu = np.zeros(n)  # initial belief: all phases zero
 sigma = 0.1 * np.eye(n)  # belief covariance
+prior_precision = np.eye(n)  # explicit valid prior; separate from coupling K
 x = np.random.default_rng(42).standard_normal(n) * 0.1  # observations
 
-result = variational_free_energy(mu, sigma, x, K)
+result = variational_free_energy(mu, sigma, x, prior_precision)
 print(f"F = {result.free_energy:.4f}")
 print(f"  complexity = {result.complexity:.4f}")
 print(f"  accuracy = {result.accuracy:.4f}")
@@ -290,9 +274,12 @@ from scpn_quantum_control.fep.predictive_coding import predictive_coding_step
 K = build_knm_paper27(L=4)
 x = np.array([0.5, 0.3, -0.2, 0.1])
 beliefs = np.zeros(4)
+prior_precision = np.eye(4)
 
 for step in range(100):
-    result = predictive_coding_step(x, beliefs, K, learning_rate=0.001)
+    result = predictive_coding_step(
+        x, beliefs, K, learning_rate=0.001, prior_precision=prior_precision
+    )
     beliefs = result.beliefs
     if step % 20 == 0:
         print(f"Step {step}: F={result.free_energy:.4f}, "
@@ -329,15 +316,16 @@ K = build_knm_paper27()
 n = K.shape[0]
 mu = np.zeros(n)
 sigma = 0.1 * np.eye(n)
+prior_precision = np.eye(n)
 x = np.random.default_rng(42).standard_normal(n) * 0.1
 
 # Manual gradient descent (equivalent to predictive_coding_step)
 lr = 0.001
 for step in range(200):
-    grad = free_energy_gradient(mu, sigma, x, K)
+    grad = free_energy_gradient(mu, sigma, x, prior_precision)
     mu = mu - lr * grad
 
-result = variational_free_energy(mu, sigma, x, K)
+result = variational_free_energy(mu, sigma, x, prior_precision)
 print(f"Final F = {result.free_energy:.6f}")
 print(f"Final ||grad|| = {np.linalg.norm(grad):.6f}")
 ```
@@ -354,12 +342,13 @@ kl = kl_divergence_gaussian(mu, sigma, mu, sigma)
 assert abs(kl) < 1e-10, "KL[q||q] must be 0"
 
 # KL is always non-negative (Gibbs' inequality)
+rng = np.random.default_rng(42)
 for _ in range(100):
-    mu_q = np.random.randn(3)
-    mu_p = np.random.randn(3)
-    A = np.random.randn(3, 3)
+    mu_q = rng.standard_normal(3)
+    mu_p = rng.standard_normal(3)
+    A = rng.standard_normal((3, 3))
     sigma_q = A @ A.T + 0.1 * np.eye(3)
-    B = np.random.randn(3, 3)
+    B = rng.standard_normal((3, 3))
     sigma_p = B @ B.T + 0.1 * np.eye(3)
     assert kl_divergence_gaussian(mu_q, sigma_q, mu_p, sigma_p) >= -1e-10
 ```
@@ -391,7 +380,7 @@ regularised matrix must still be positive definite.
 | `complexity` | `float` | $D_\text{KL}[q \| \text{prior}]$ |
 | `accuracy` | `float` | $\frac{1}{2}(x - g(\mu))^\top \Gamma (x - g(\mu))$ |
 | `elbo` | `float` | $-F$ |
-| `surprise_bound` | `float` | $F$ (upper bound on $-\log p(x)$) |
+| `surprise_bound` | `float` | Compatibility alias for reduced $F$; no additional bound qualification |
 
 #### `PredictiveCodingResult`
 
@@ -423,7 +412,7 @@ supplied together; see below.
 Precision-weighted prediction errors across SCPN layers.
 Rust-accelerated.
 
-#### `predictive_coding_step(observations, beliefs, K, learning_rate, sigma)`
+#### `predictive_coding_step(observations, beliefs, K, learning_rate, sigma, prior_precision)`
 
 Single gradient descent step. Returns `PredictiveCodingResult`.
 
@@ -438,8 +427,8 @@ Single gradient descent step. Returns `PredictiveCodingResult`.
 
 The coupling matrix and the prior precision are separate objects. A K_nm
 matrix with a zero diagonal is a valid coupling — a layer is not coupled to
-itself — but it is not a precision, because the prior covariance $\Pi^{-1}$
-then does not exist. Passing `K` for both roles is correct only when `K` is
+itself — but it is not a positive-definite Gaussian precision. An algebraic
+inverse, if one exists, need not be a valid covariance. Passing `K` for both roles is correct only when `K` is
 positive definite; otherwise supply `prior_precision`, for example the graph
 Laplacian of `K` with a positive shift, which is what the bundled FEP
 application plugin uses.
@@ -467,9 +456,10 @@ application plugin uses.
 | `generative_fn` | `Callable \| None` | identity | Forward model; requires `generative_jac` |
 | `generative_jac` | `Callable \| None` | — | Jacobian $\partial g / \partial \mu$; requires `generative_fn` |
 
-When `generative_fn` and `generative_jac` are both `None`, uses Rust engine.
-Arguments are validated before that dispatch, so the Python and Rust tiers
-admit the same domain.
+When both model arguments are `None`, the wrapper uses the Rust engine when
+available and otherwise evaluates the Python identity-model gradient. Shape and
+finiteness checks precede dispatch; the direct native exports additionally
+require a nonempty belief vector.
 
 A model and its Jacobian are supplied together or not at all. Neither is
 inferred from the other: substituting the identity for an absent Jacobian
@@ -496,16 +486,18 @@ Available via `import scpn_quantum_engine`:
 #### `free_energy_gradient_rust(mu, x_observed, k_precision, sensory_precision, ridge)`
 
 Computes $\partial F / \partial \mu$ for identity generative model.
-All parameters are numpy arrays. Returns `ndarray[f64]`.
+The four vector/matrix parameters are NumPy float64 arrays; `ridge` is a
+finite scalar. Returns `ndarray[f64]`.
 
 The dimension $n$ comes from `mu`. `x_observed` must have length $n$, and both
 matrices must be exactly $n \times n$; all four arguments and `ridge` must be
 finite. Violations raise `ValueError` naming the argument. Non-contiguous views
 are read through their strides and are not rejected.
 
-Symmetry is not required here: the gradient uses `k_precision` as a general
-linear map. The free-energy export, which needs a log-determinant, does require
-it.
+Symmetry is not required by the quadratic-gradient interface: it uses the
+symmetric parts of both prior and sensory weights, matching the derivative of
+the scalar quadratic forms. General weights are not thereby Gaussian
+precisions. The energy export separately requires a valid regularised prior.
 
 #### `hierarchical_prediction_error_rust(observations, beliefs, k)`
 
@@ -513,12 +505,16 @@ Computes precision-weighted prediction errors. Returns `ndarray[f64]`.
 
 #### `variational_free_energy_rust(mu, x_observed, k_precision, sensory_precision, sigma_diag, ridge)`
 
-Computes $(F, \text{complexity}, \text{accuracy})$ tuple for diagonal $\Sigma$.
+Computes $(F, \text{complexity}, \text{accuracy})$ for isotropic
+$\Sigma = \text{sigma_diag} I$. The scalar argument does not represent an
+arbitrary diagonal or full covariance; the Python objective retains the
+broader full-covariance interface.
 
 Same length, shape and finiteness contract as the gradient export, plus
 `sigma_diag` positive and finite. `k_precision` must additionally be symmetric
-within $10^{-10}$ — the same absolute tolerance as `COVARIANCE_SYMMETRY_ATOL`
-in the Python tier — and positive definite once the ridge is added. The
+within $10^{-10}$ times the largest absolute entry of the regularised matrix,
+matching the scale-aware Python covariance tolerance, and positive definite
+once the ridge is added. The
 symmetry check exists because the log-determinant is taken from a Cholesky
 factor, which reads only the lower triangle: without it, an asymmetric matrix
 returns the determinant of its symmetrised triangle instead of an error.
@@ -540,8 +536,9 @@ against a freshly built extension by the `fep-ffi-contract-quality` job in
 
 ### Numerical Considerations
 
-- **Ridge regularisation:** K_nm + $10^{-10} I$ ensures invertibility.
-  Without this, zero eigenvalues in K_nm cause singular matrix errors.
+- **Ridge regularisation:** the prior receives the declared $10^{-10} I$
+  shift and must still be positive definite. The shift does not repair an
+  arbitrary indefinite coupling matrix into a valid prior.
 - **Log-determinant:** taken from a Cholesky factor as $2 \sum_i \log L_{ii}$,
   which needs no separate sign and cannot silently return the magnitude of a
   negative determinant.
@@ -552,7 +549,7 @@ against a freshly built extension by the `fep-ffi-contract-quality` job in
   complexity. The current implementation prioritises simplicity.
 - **Custom generative models:** when `generative_fn` is not None, Rust
   engine is bypassed. The Python path supports arbitrary callables but
-  is ~10× slower for the gradient computation. The gradient requires the
+  has no current cross-route speed guarantee. The gradient requires the
   paired `generative_jac`; it is not approximated, because a numerical
   derivative would change the accuracy of the result without saying so.
   A caller who wants one builds it explicitly and passes it as the pair:
@@ -583,9 +580,9 @@ argument from reaching either the Python or the native tier.
 
 ### Convergence Rate
 
-For $n = 4$, $\text{lr} = 0.001$, K = `build_knm_paper27(L=4)`, starting from $\mu = 0$:
-- 50 steps: error norm decreases (verified in test)
-- 200 steps: belief change $< 0.01$ per step (convergence verified)
+The example above uses an explicit identity prior separately from its coupling
+matrix and a fixed small learning rate. Its finite run illustrates belief
+updates; it is not a general convergence or control-stability certificate.
 
 ### Scaling with System Size
 
@@ -596,21 +593,25 @@ For $n = 4$, $\text{lr} = 0.001$, K = `build_knm_paper27(L=4)`, starting from $\
 | 16 | ~88 μs | ~110 μs | ~260 μs |
 
 Scaling is $O(n^2)$ for gradient (matrix-vector) and $O(n^3)$ for
-`variational_free_energy` (matrix inversion in KL computation).
+`variational_free_energy` (Cholesky factorisation and solves).
 
 ### Test Coverage
 
-Two owners cover this surface:
+The following owners cover this surface:
 
 | Test file | Scope |
 |-----------|-------|
 | `tests/test_fep.py` | Free energy, KL contract, predictive coding, performance budgets |
 | `tests/test_fep_generative_model_contract.py` | Generative model and Jacobian contract for the gradient |
+| `tests/test_control_objective_conformance.py` | Full covariance, rectangular Jacobian, unchanged beliefs on refusal and actual native boundary comparisons |
 
 `fep/predictive_coding.py` carries an exact 100% statement and branch coverage
 gate, measured from `tests/test_fep.py` alone; see
 `tools/predictive_coding_quality_gates.py`. `fep/variational_free_energy.py` is
-at 100% statement and branch coverage across the two owners together.
+guarded at 100% statement and branch coverage by the native FEP cohort, which
+includes these conformance tests. See the
+[control objective contract](differentiable_api.md#control-costs-and-gaussian-belief-objectives)
+for the matching signed MPC comparison and proposal boundary.
 
 ## 8. Citations
 

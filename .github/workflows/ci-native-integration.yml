@@ -340,7 +340,7 @@ jobs:
           python - <<'GUARD'
           import scpn_quantum_engine as engine
 
-          required = ("free_energy_gradient_rust", "variational_free_energy_rust")
+          required = ("free_energy_gradient_rust", "variational_free_energy_rust", "brute_mpc")
           missing = [name for name in required if not hasattr(engine, name)]
           if missing:
               raise SystemExit(f"installed extension is missing {missing}")
@@ -354,16 +354,40 @@ jobs:
         run: >-
           python -m mypy --strict --explicit-package-bases
           tests/test_rust_ffi_validation.py
+          tests/test_control_objective_conformance.py
           src/scpn_quantum_control/fep/variational_free_energy.py
+      - name: Check control objective NumPy documentation
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/fep/variational_free_energy.py
+          tests/test_control_objective_conformance.py
       - name: Validate the installed FEP FFI numerical domain contract
         run: >-
           python -m pytest -q tests/test_rust_ffi_validation.py
           -k fep_domain_contract
       - name: Confirm the Python FEP tier agrees with the installed engine
+        # Keep the original wall-clock assertions mandatory and uninstrumented.
         run: >-
           python -m pytest -q
           tests/test_fep.py
           tests/test_fep_generative_model_contract.py
+          tests/test_control_objective_conformance.py
+      - name: Measure belief objective branch coverage
+        # TestPerformance executes above; tracing changes the measured workload.
+        run: >-
+          python -m coverage run --rcfile=/dev/null --branch
+          --data-file=${{ runner.temp }}/scpn-qc-control-objective.coverage
+          --include=src/scpn_quantum_control/fep/variational_free_energy.py
+          -m pytest -q -k 'not TestPerformance'
+          tests/test_fep.py
+          tests/test_fep_generative_model_contract.py
+          tests/test_control_objective_conformance.py
+      - name: Enforce exact belief objective coverage
+        run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=${{ runner.temp }}/scpn-qc-control-objective.coverage
+          --precision=2 --show-missing --fail-under=100
   hls-cosimulation-evidence-quality:
     runs-on: ubuntu-latest
     env:

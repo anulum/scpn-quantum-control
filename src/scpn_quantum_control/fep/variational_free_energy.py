@@ -20,7 +20,13 @@ For Gaussian beliefs and generative models:
     p(z,x) = p(x|z) p(z) with p(z) = N(0, Π⁻¹)
 
     F = ½ (μᵀ Π μ + tr(Π Σ) − log|Σ| − log|Π| − n)
-      + ½ (x − g(μ))ᵀ Γ (x − g(μ)) − ½ log|Γ|
+      + ½ (x − g(μ))ᵀ Γ (x − g(μ))
+
+The implemented objective is the Gaussian prior KL plus a quadratic prediction
+error. Likelihood normalisation terms, including ``−½ log|Γ|``, are omitted;
+this reduced energy must not be used as a normalised likelihood when comparing
+different sensory precisions. The full posterior covariance is retained in the
+prior KL trace and log-determinant.
 
 where Π = precision of prior (maps to K_nm in SCPN),
       Γ = precision of likelihood (sensory precision),
@@ -33,8 +39,8 @@ SCPN mapping:
     g(μ) = predicted phases at lower layer (forward model)
     x = observed phases (data from quantum measurement)
 
-A generative model is a pair. ``g`` and its Jacobian ``∂g/∂μ`` are supplied
-together or not at all: an absent Jacobian is not replaced by the identity,
+For gradients, ``g`` and its Jacobian ``∂g/∂μ`` are supplied together or not
+at all: an absent Jacobian is not replaced by the identity,
 because that returns the gradient of a different model rather than an error.
 Models need not be square; for ``g: R^n -> R^m`` the Jacobian is ``(m, n)`` and
 the sensory precision is ``(m, m)``.
@@ -67,13 +73,13 @@ except ImportError:
 
 @dataclass
 class FreeEnergyResult:
-    """Variational free energy decomposition."""
+    """Reduced belief objective and its compatibility result fields."""
 
     free_energy: float  # F
     complexity: float  # KL[q || prior]
-    accuracy: float  # −E_q[log p(x|z)] = prediction error energy
-    elbo: float  # −F = evidence lower bound
-    surprise_bound: float  # F ≥ −log p(x)
+    accuracy: float  # Quadratic prediction error evaluated at the belief mean.
+    elbo: float  # Compatibility alias for the negative reduced objective.
+    surprise_bound: float  # Compatibility alias for the reduced objective.
 
 
 PRECISION_RIDGE: Final[float] = 1e-10
@@ -490,7 +496,7 @@ def variational_free_energy(
     sensory_precision: NDArray[np.float64] | None = None,
     generative_fn: Callable[..., NDArray[np.float64]] | None = None,
 ) -> FreeEnergyResult:
-    """Compute variational free energy ``F = complexity + accuracy``.
+    """Compute reduced belief energy ``F = prior KL + quadratic prediction error``.
 
     Parameters
     ----------
@@ -547,7 +553,10 @@ def evidence_lower_bound(
     x_observed: NDArray[np.float64],
     K_precision: NDArray[np.float64],
 ) -> float:
-    """ELBO = −F (shorthand for optimisation targets).
+    """Return negative reduced energy under the existing ELBO compatibility name.
+
+    Likelihood normalisation is omitted by the underlying objective; this
+    shorthand does not independently establish a normalised evidence bound.
 
     Parameters
     ----------
@@ -563,7 +572,7 @@ def evidence_lower_bound(
     Returns
     -------
     float
-        The evidence lower bound in nats.
+        The negative reduced objective in nats, without likelihood normalisation.
 
     Raises
     ------
@@ -616,8 +625,9 @@ def free_energy_gradient(
     of ``F`` that carry the belief covariance are constant in ``μ``.
 
     The Rust engine implements the identity model only and is used when no model
-    is supplied; the arguments are validated here first, so both tiers see the
-    same admitted domain.
+    is supplied and the extension is available. Shape and finiteness are
+    checked here before dispatch; the native export also requires a nonempty
+    belief vector.
 
     Parameters
     ----------
