@@ -261,6 +261,8 @@ jobs:
           --include=*/studio/scorecard_bundle.py
   studio-web:
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     defaults:
       run:
         working-directory: studio-web
