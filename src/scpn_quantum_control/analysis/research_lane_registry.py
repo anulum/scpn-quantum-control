@@ -517,6 +517,22 @@ _RESEARCH_LANES = tuple(
                 _DO,
             ),
             _lane(
+                "analysis.method_comparison",
+                "Shared retained-population comparison interface preserving v1 producer identity.",
+                _C,
+                _N,
+                _DO,
+                evidence_refs=("data/studio/method_comparison_cases.json",),
+            ),
+            _lane(
+                "analysis.method_comparison_contracts",
+                "Original v1 method-comparison record and budget interfaces.",
+                _C,
+                _N,
+                _DO,
+                evidence_refs=("data/studio/method_comparison_cases.json",),
+            ),
+            _lane(
                 "analysis.monte_carlo_xy",
                 "Classical XY Monte Carlo and finite-size fit baseline.",
                 _P,

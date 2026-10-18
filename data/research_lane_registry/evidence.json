@@ -1,21 +1,21 @@
 {
   "claim_boundary": "catalogue metadata only; registry membership does not grant productisation, differentiability, control, hardware, advantage, criticality, topology, consciousness, clinical, or publication claims",
   "claim_status_counts": {
-    "diagnostic_only": 24,
+    "diagnostic_only": 26,
     "evidence_bounded": 17,
     "refuse_only": 3,
     "research_only": 30
   },
-  "content_digest": "3e55616d2de733a8b02cb96344240e31daa4663467f122d85639d8fc5ed303e2",
+  "content_digest": "efab08390a94bd1bab688d17b960a527413a507ef2461910d75a1e089a556343",
   "diff_hook_counts": {
     "bounded_composition": 5,
     "candidate_requires_evidence": 5,
     "deferred_owner_gate": 1,
     "diagnostic_only": 47,
-    "none": 16
+    "none": 18
   },
   "inventory": {
-    "discovered_count": 74,
+    "discovered_count": 76,
     "discovered_modules": [
       "scpn_quantum_control.analysis.adaptive_fim_evidence",
       "scpn_quantum_control.analysis.adaptive_fim_feedback",
@@ -49,6 +49,8 @@
       "scpn_quantum_control.analysis.loschmidt_echo",
       "scpn_quantum_control.analysis.magic_nonstabilizerness",
       "scpn_quantum_control.analysis.magnetisation_sectors",
+      "scpn_quantum_control.analysis.method_comparison",
+      "scpn_quantum_control.analysis.method_comparison_contracts",
       "scpn_quantum_control.analysis.monte_carlo_xy",
       "scpn_quantum_control.analysis.otoc",
       "scpn_quantum_control.analysis.otoc_sync_probe",
@@ -95,7 +97,7 @@
     "missing_modules": [],
     "orphaned_records": [],
     "passed": true,
-    "registered_count": 74,
+    "registered_count": 76,
     "registered_modules": [
       "scpn_quantum_control.analysis.adaptive_fim_evidence",
       "scpn_quantum_control.analysis.adaptive_fim_feedback",
@@ -129,6 +131,8 @@
       "scpn_quantum_control.analysis.loschmidt_echo",
       "scpn_quantum_control.analysis.magic_nonstabilizerness",
       "scpn_quantum_control.analysis.magnetisation_sectors",
+      "scpn_quantum_control.analysis.method_comparison",
+      "scpn_quantum_control.analysis.method_comparison_contracts",
       "scpn_quantum_control.analysis.monte_carlo_xy",
       "scpn_quantum_control.analysis.otoc",
       "scpn_quantum_control.analysis.otoc_sync_probe",
@@ -174,11 +178,11 @@
     ]
   },
   "maturity_counts": {
-    "product_candidate": 16,
+    "product_candidate": 18,
     "prototype": 29,
     "research": 29
   },
-  "record_count": 74,
+  "record_count": 76,
   "records": [
     {
       "claim_status": "evidence_bounded",
@@ -631,6 +635,36 @@
       "registry_grants_productisation": false,
       "registry_grants_publication_claim": false,
       "summary": "U(1)-sector exact-diagonalisation utilities."
+    },
+    {
+      "claim_status": "diagnostic_only",
+      "diff_hook": "none",
+      "evidence_refs": [
+        "data/studio/method_comparison_cases.json"
+      ],
+      "family": "analysis",
+      "maturity": "product_candidate",
+      "module": "scpn_quantum_control.analysis.method_comparison",
+      "promotion_targets": [],
+      "registry_grants_control": false,
+      "registry_grants_productisation": false,
+      "registry_grants_publication_claim": false,
+      "summary": "Shared retained-population comparison interface preserving v1 producer identity."
+    },
+    {
+      "claim_status": "diagnostic_only",
+      "diff_hook": "none",
+      "evidence_refs": [
+        "data/studio/method_comparison_cases.json"
+      ],
+      "family": "analysis",
+      "maturity": "product_candidate",
+      "module": "scpn_quantum_control.analysis.method_comparison_contracts",
+      "promotion_targets": [],
+      "registry_grants_control": false,
+      "registry_grants_productisation": false,
+      "registry_grants_publication_claim": false,
+      "summary": "Original v1 method-comparison record and budget interfaces."
     },
     {
       "claim_status": "diagnostic_only",

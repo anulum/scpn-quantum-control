@@ -1,8 +1,8 @@
 # Research-lane registry evidence
 
 - Schema: `scpn.research-lane-registry.v1`
-- Content digest: `3e55616d2de733a8b02cb96344240e31daa4663467f122d85639d8fc5ed303e2`
-- Inventory: **PASS** (74 registered / 74 discovered)
+- Content digest: `efab08390a94bd1bab688d17b960a527413a507ef2461910d75a1e089a556343`
+- Inventory: **PASS** (76 registered / 76 discovered)
 - Boundary: catalogue metadata only; registry membership does not grant productisation, differentiability, control, hardware, advantage, criticality, topology, consciousness, clinical, or publication claims.
 
 | Module | Maturity | Diff hook | Claim status | Promotion route | Evidence |
@@ -39,6 +39,8 @@
 | `scpn_quantum_control.analysis.loschmidt_echo` | research | diagnostic_only | research_only | — | — |
 | `scpn_quantum_control.analysis.magic_nonstabilizerness` | prototype | diagnostic_only | evidence_bounded | — | `data/theory_hook_promotion/evidence.json` |
 | `scpn_quantum_control.analysis.magnetisation_sectors` | prototype | diagnostic_only | diagnostic_only | — | — |
+| `scpn_quantum_control.analysis.method_comparison` | product_candidate | none | diagnostic_only | — | `data/studio/method_comparison_cases.json` |
+| `scpn_quantum_control.analysis.method_comparison_contracts` | product_candidate | none | diagnostic_only | — | `data/studio/method_comparison_cases.json` |
 | `scpn_quantum_control.analysis.monte_carlo_xy` | prototype | none | diagnostic_only | — | — |
 | `scpn_quantum_control.analysis.otoc` | research | diagnostic_only | research_only | — | — |
 | `scpn_quantum_control.analysis.otoc_sync_probe` | research | diagnostic_only | research_only | — | — |
