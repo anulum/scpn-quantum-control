@@ -4,6 +4,9 @@
 !.github/workflows/*.yml
 !.github/workflows/*.yaml
 !.github/dependabot.yml
+!.github/actions/
+!.github/actions/*/
+!.github/actions/*/action.yml
 .githooks
 .mypy_cache
 .pytest_cache

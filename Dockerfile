@@ -133,6 +133,7 @@ RUN pip install --no-cache-dir --no-deps -e . \
 COPY tests/ tests/
 COPY tools/ tools/
 COPY .github/workflows/ .github/workflows/
+COPY .github/actions/ .github/actions/
 COPY .github/dependabot.yml .github/dependabot.yml
 # The static Rust-inventory, dependency-evidence, and kernel-execution audits
 # read the engine crate manifest, its locked dependency graph, and every

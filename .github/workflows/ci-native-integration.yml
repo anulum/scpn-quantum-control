@@ -359,6 +359,7 @@ jobs:
       - name: Check control objective NumPy documentation
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/fep/variational_free_energy.py
           tests/test_control_objective_conformance.py

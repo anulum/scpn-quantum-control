@@ -282,6 +282,8 @@ jobs:
           python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
           python -m pip install --no-deps -e .
           python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
       - name: Install locked browser acceptance dependencies
         working-directory: .
         run: |
@@ -379,8 +381,6 @@ jobs:
         run: |
           python -c 'from tools.studio_result_browser import analyse_export; print(analyse_export(), end="")' > "$RUNNER_TEMP/studio-native-analyse.json"
           printf 'STUDIO_ANALYSE_RESULT_PATH=%s\n' "$RUNNER_TEMP/studio-native-analyse.json" >> "$GITHUB_ENV"
-      - name: Install locked dependencies
-        run: pnpm install --frozen-lockfile
       - name: Hold the web source lint and format ceiling
         working-directory: .
         env:

@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import subprocess
 import sys
@@ -171,7 +172,18 @@ def test_public_dispatch_retains_actual_missing_browser_refusal(
     monkeypatch: pytest.MonkeyPatch,
     scenario: str,
 ) -> None:
-    """Real SDK availability failures remain failed public CLI evidence for every route."""
+    """Preserve actual dependency refusals in installed-SDK and installless profiles.
+
+    Parameters
+    ----------
+    tmp_path
+        Owned absent executable and public CLI evidence paths.
+    monkeypatch
+        Point the real browser configuration at the absent executable.
+    scenario
+        Original public route exercised without substituting its runtime APIs.
+
+    """
     from tools.studio_browser_journey import main
 
     absent = tmp_path / "absent-browser-package"
@@ -201,5 +213,15 @@ def test_public_dispatch_retains_actual_missing_browser_refusal(
     assert main(argv) == 1
     evidence = json.loads(output.read_text())
     assert evidence["scenario"] == scenario and evidence["passed"] is False
-    assert "executable" in evidence["error"].lower()
+    if importlib.util.find_spec("playwright") is None:
+        auditor = (
+            Path(__file__).resolve().parents[1] / "studio-web/node_modules/axe-core/axe.min.js"
+        )
+        if scenario == "workbench_accessibility" and not auditor.is_file():
+            assert evidence["error"].startswith("FileNotFoundError:")
+            assert str(auditor) in evidence["error"]
+        else:
+            assert evidence["error"] == "ModuleNotFoundError: No module named 'playwright'"
+    else:
+        assert "executable" in evidence["error"].lower()
     assert not absent.exists()
