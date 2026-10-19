@@ -186,13 +186,27 @@ pub fn compile_program_source(source: &str) -> Result<CompiledProgram, ProgramDi
     Ok(CompiledProgram {
         schema: "studio.program-source.v1".to_owned(),
         source: source.to_owned(),
-        source_sha256: format!("{:x}", Sha256::digest(source.as_bytes())),
+        source_sha256: lower_hex(&Sha256::digest(source.as_bytes())),
         num_qubits: parser.num_qubits,
         num_clbits: parser.num_clbits,
         operations,
         measurements,
         execution_status: "emitted_not_executed".to_owned(),
     })
+}
+
+/// Render digest bytes as lowercase hexadecimal, two digits per byte.
+///
+/// `sha2` 0.11 output arrays no longer implement `LowerHex`, so the digest is
+/// formatted byte by byte.
+fn lower_hex(bytes: &[u8]) -> String {
+    use std::fmt::Write as _;
+    let mut text = String::with_capacity(bytes.len() * 2);
+    for byte in bytes {
+        // Writing into a `String` cannot fail.
+        let _ = write!(text, "{byte:02x}");
+    }
+    text
 }
 
 /// Cursor over an already bounded token stream; no expression evaluation.

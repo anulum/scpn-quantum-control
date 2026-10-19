@@ -96,6 +96,11 @@ fn test_program_authoring_01() {
     assert_eq!(first.operations[1].name, "cx");
     assert_eq!(first.operations[1].qubits, vec![0, 1]);
     assert_eq!(first.execution_status, "emitted_not_executed");
+    // Independent value: Python hashlib.sha256 over the same UTF-8 source.
+    assert_eq!(
+        first.source_sha256,
+        "df99d4a48f8567d2f58f04c56d518c03302f971a79a2ccb7c4e5ee35c3a1ff37"
+    );
 }
 
 #[test]
