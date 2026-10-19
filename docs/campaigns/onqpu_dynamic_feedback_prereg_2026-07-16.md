@@ -77,6 +77,14 @@ and verifier, ledger row before public quotation, per the standing rules.
 
 ## Status
 
+**Superseded on 2026-10-19 and not run.** In ideal simulation, the feedback-on
+and feedback-off final distributions of this template differ by a total-variation
+distance of at most about 0.003, below the about 0.03 resolution of 4096 shots, so
+the experiment could not show its own effect. Its open-loop arm also removes the
+corrections instead of matching them. The redesigned campaign is
+`docs/campaigns/s1v2_information_matched_feedback_prereg_2026-10-19.md`.
+
+
 - [ ] NOW-block corrections green on `main` (prerequisite)
 - [ ] Owner GO with exact shot plan (per submission)
 - [ ] Executed / analysed / packed / ledgered

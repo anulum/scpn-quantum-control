@@ -1,0 +1,278 @@
+{
+  "backend": "ibm_marrakesh",
+  "main": {
+    "estimated_qpu_seconds": 52.800000000000004,
+    "isa_digest": "53452301daf2e8cb7795cdacae7af98fedd62e6681c6fd47f45b85fa58e931ba",
+    "layouts": {
+      "s1v2_c0_CL_m_X": [
+        17,
+        7,
+        6,
+        27,
+        8,
+        5
+      ],
+      "s1v2_c0_CL_m_Y": [
+        17,
+        7,
+        6,
+        27,
+        8,
+        5
+      ],
+      "s1v2_c0_CL_p_X": [
+        17,
+        7,
+        6,
+        27,
+        8,
+        5
+      ],
+      "s1v2_c0_CL_p_Y": [
+        17,
+        7,
+        6,
+        27,
+        8,
+        5
+      ],
+      "s1v2_c0_NONE_p_X": [
+        17,
+        7,
+        6,
+        27,
+        8,
+        5
+      ],
+      "s1v2_c0_NONE_p_Y": [
+        17,
+        7,
+        6,
+        27,
+        8,
+        5
+      ],
+      "s1v2_c0_OL_p_X": [
+        17,
+        7,
+        6,
+        27,
+        8,
+        5,
+        54,
+        98,
+        21
+      ],
+      "s1v2_c0_OL_p_Y": [
+        17,
+        7,
+        6,
+        27,
+        8,
+        5,
+        54,
+        98,
+        21
+      ],
+      "s1v2_c2_CL_p_X": [
+        4,
+        5,
+        54,
+        3,
+        6,
+        53
+      ],
+      "s1v2_c2_CL_p_Y": [
+        4,
+        6,
+        54,
+        3,
+        5,
+        53
+      ],
+      "s1v2_c2_NONE_p_X": [
+        3,
+        54,
+        6,
+        4,
+        53,
+        5
+      ],
+      "s1v2_c2_NONE_p_Y": [
+        3,
+        6,
+        54,
+        4,
+        5,
+        53
+      ],
+      "s1v2_c2_OL_p_X": [
+        4,
+        5,
+        54,
+        3,
+        6,
+        53,
+        12,
+        21,
+        98
+      ],
+      "s1v2_c2_OL_p_Y": [
+        4,
+        6,
+        54,
+        3,
+        5,
+        53,
+        12,
+        21,
+        98
+      ],
+      "s1v2_cal_000": [
+        0,
+        1,
+        2
+      ],
+      "s1v2_cal_111": [
+        0,
+        1,
+        2
+      ]
+    },
+    "logical_digest": "bf06f7e7c7e39af73540fd46b7efcf1658ba70d44039d4dc982e51bc72decf92",
+    "max_two_qubit_gates": 45,
+    "total_shots": 65536,
+    "two_qubit_gates": {
+      "s1v2_c0_CL_m_X": 45,
+      "s1v2_c0_CL_m_Y": 45,
+      "s1v2_c0_CL_p_X": 45,
+      "s1v2_c0_CL_p_Y": 45,
+      "s1v2_c0_NONE_p_X": 45,
+      "s1v2_c0_NONE_p_Y": 45,
+      "s1v2_c0_OL_p_X": 45,
+      "s1v2_c0_OL_p_Y": 45,
+      "s1v2_c2_CL_p_X": 18,
+      "s1v2_c2_CL_p_Y": 18,
+      "s1v2_c2_NONE_p_X": 18,
+      "s1v2_c2_NONE_p_Y": 18,
+      "s1v2_c2_OL_p_X": 18,
+      "s1v2_c2_OL_p_Y": 18,
+      "s1v2_cal_000": 0,
+      "s1v2_cal_111": 0
+    }
+  },
+  "missing_operations": [],
+  "pilot": {
+    "estimated_qpu_seconds": 66.0,
+    "isa_digest": "5ac955a517b0834ba7cfb19bd3089443f76baae3f4dcca35cbc8ea60b392b660",
+    "layouts": {
+      "s1v2_pilot_conditional_k0_X": [
+        0,
+        1
+      ],
+      "s1v2_pilot_conditional_k0_Y": [
+        0,
+        1
+      ],
+      "s1v2_pilot_conditional_k1_X": [
+        0,
+        1
+      ],
+      "s1v2_pilot_conditional_k1_Y": [
+        0,
+        1
+      ],
+      "s1v2_pilot_conditional_k2_X": [
+        0,
+        1
+      ],
+      "s1v2_pilot_conditional_k2_Y": [
+        0,
+        1
+      ],
+      "s1v2_pilot_conditional_k4_X": [
+        0,
+        1
+      ],
+      "s1v2_pilot_conditional_k4_Y": [
+        0,
+        1
+      ],
+      "s1v2_pilot_conditional_k8_X": [
+        0,
+        1
+      ],
+      "s1v2_pilot_conditional_k8_Y": [
+        0,
+        1
+      ],
+      "s1v2_pilot_measure_only_k0_X": [
+        0,
+        1
+      ],
+      "s1v2_pilot_measure_only_k0_Y": [
+        0,
+        1
+      ],
+      "s1v2_pilot_measure_only_k1_X": [
+        0,
+        1
+      ],
+      "s1v2_pilot_measure_only_k1_Y": [
+        0,
+        1
+      ],
+      "s1v2_pilot_measure_only_k2_X": [
+        0,
+        1
+      ],
+      "s1v2_pilot_measure_only_k2_Y": [
+        0,
+        1
+      ],
+      "s1v2_pilot_measure_only_k4_X": [
+        0,
+        1
+      ],
+      "s1v2_pilot_measure_only_k4_Y": [
+        0,
+        1
+      ],
+      "s1v2_pilot_measure_only_k8_X": [
+        0,
+        1
+      ],
+      "s1v2_pilot_measure_only_k8_Y": [
+        0,
+        1
+      ]
+    },
+    "logical_digest": "11cbc277cea29b704cd4b92f7b04317c1af59b42de6b1d775ee10f4ff5ca8998",
+    "max_two_qubit_gates": 0,
+    "total_shots": 40960,
+    "two_qubit_gates": {
+      "s1v2_pilot_conditional_k0_X": 0,
+      "s1v2_pilot_conditional_k0_Y": 0,
+      "s1v2_pilot_conditional_k1_X": 0,
+      "s1v2_pilot_conditional_k1_Y": 0,
+      "s1v2_pilot_conditional_k2_X": 0,
+      "s1v2_pilot_conditional_k2_Y": 0,
+      "s1v2_pilot_conditional_k4_X": 0,
+      "s1v2_pilot_conditional_k4_Y": 0,
+      "s1v2_pilot_conditional_k8_X": 0,
+      "s1v2_pilot_conditional_k8_Y": 0,
+      "s1v2_pilot_measure_only_k0_X": 0,
+      "s1v2_pilot_measure_only_k0_Y": 0,
+      "s1v2_pilot_measure_only_k1_X": 0,
+      "s1v2_pilot_measure_only_k1_Y": 0,
+      "s1v2_pilot_measure_only_k2_X": 0,
+      "s1v2_pilot_measure_only_k2_Y": 0,
+      "s1v2_pilot_measure_only_k4_X": 0,
+      "s1v2_pilot_measure_only_k4_Y": 0,
+      "s1v2_pilot_measure_only_k8_X": 0,
+      "s1v2_pilot_measure_only_k8_Y": 0
+    }
+  },
+  "ready": true,
+  "schema": "s1v2_ibm_readiness_v1"
+}
