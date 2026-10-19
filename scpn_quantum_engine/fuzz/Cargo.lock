@@ -497,6 +497,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "ndarray"
+version = "0.17.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "520080814a7a6b4a6e9070823bb24b4531daac8c4627e08ba5de8c5ef2f2752d"
+dependencies = [
+ "matrixmultiply",
+ "num-complex",
+ "num-integer",
+ "num-traits",
+ "portable-atomic",
+ "portable-atomic-util",
+ "rawpointer",
+]
+
+[[package]]
 name = "num-bigint"
 version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -551,7 +566,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6a5b15d63a5ff39e378daed0e1340d3a5964703ea9712eb09a0dc66fade996f4"
 dependencies = [
  "libc",
- "ndarray",
+ "ndarray 0.17.2",
  "num-complex",
  "num-integer",
  "num-traits",
@@ -746,7 +761,7 @@ dependencies = [
  "chrono",
  "clap",
  "nalgebra",
- "ndarray",
+ "ndarray 0.16.1",
  "num-complex",
  "numpy",
  "pyo3",
@@ -763,7 +778,7 @@ name = "scpn-quantum-engine-fuzz"
 version = "0.0.0"
 dependencies = [
  "libfuzzer-sys",
- "ndarray",
+ "ndarray 0.17.2",
  "scpn-quantum-engine",
  "scpn-quantum-studio-wasm-kernel",
 ]
