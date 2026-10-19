@@ -11,6 +11,12 @@ Each manuscript or venue package has its own numbered subdirectory. Keep
 publication submissions under `paper/submissions/` and JOSS submissions under
 `paper/submissions_joss/`.
 
+Every published submission directory holds its exported PDF, named after the
+paper title. Its metadata (title, author, Zenodo DOI, keywords) comes from the
+paper's Zenodo record and is set when the PDF is compiled; the frozen `.tex`
+source is not edited. Work in progress lives in `paper/drafts/`, which is
+gitignored: only published work appears in this repository.
+
 ## Directory map
 
 | Directory | Contents | Status |
@@ -22,7 +28,7 @@ publication submissions under `paper/submissions/` and JOSS submissions under
 | `submissions/submission_004_scpn_fim_hamiltonian/` | SCPN/FIM Hamiltonian manuscript and bibliography material. | Negative hardware-validation paper candidate. |
 | `submissions/submission_005_phase3_reduced_pauli_entanglement/` | Reduced-Pauli entanglement REVTeX manuscript, bibliography, PDF, and local `figures/phase3/`. | Completed multi-backend IBM run; venue-style source package. |
 | `submissions/submission_006_s1_feedback_control/` | Monitored feedback versus open-loop dynamic-circuit manuscript, bibliography, PDF, and local `figures/s1_feedback_control/`. | Multi-backend dynamic-circuit control-boundary paper. |
-| `submissions/submission_007_iqm_garnet_preregistered_campaigns/` | IQM Garnet manuscript on five preregistered campaigns (parity-sector leakage, its variability between calibration epochs, twelve-epoch depth ordering, layout transfer), with inline reference list and local `figures/` drawn by `scripts/generate_iqm_garnet_paper_assets.py`. The Markdown text it was typeset from is `drafts/submission_007_iqm_garnet_layout_transfer_dla/manuscript.md`. | Preprint on Zenodo; not submitted to a journal. DOI [10.5281/zenodo.23298119](https://doi.org/10.5281/zenodo.23298119). |
+| `submissions/submission_007_iqm_garnet_preregistered_campaigns/` | IQM Garnet manuscript on five preregistered campaigns (parity-sector leakage, its variability between calibration epochs, twelve-epoch depth ordering, layout transfer), with inline reference list and local `figures/` drawn by `scripts/generate_iqm_garnet_paper_assets.py`. | Preprint on Zenodo; not submitted to a journal. DOI [10.5281/zenodo.23298119](https://doi.org/10.5281/zenodo.23298119). |
 | `submissions_joss/submission_joss_001_software_framework_note/` | Current JOSS software-framework note and preview files. | One JOSS submission package; future JOSS notes get sibling directories. |
 
 ## Build commands

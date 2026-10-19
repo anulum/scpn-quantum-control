@@ -56,6 +56,17 @@ paper/**/*.pdf
 paper/**/*.bib
 paper/**/*.bbl
 paper/**/*.blg
+# Published PDF of each submission, named after the paper title (owner 2026-10-19).
+# Other PDFs in paper/ stay ignored as build output.
+!paper/submissions/submission_001_ibm_fez_synchronisation/Quantum simulation of coupled-oscillator synchronisation on a 156-qubit superconducting processor.pdf
+!paper/submissions/submission_002_phase1_dla_parity/Backend-sensitive hardware observation of parity-sector and excitation-number correlated decoherence asymmetry in the XY Hamiltonian.pdf
+!paper/submissions/submission_003_rust_vqe_methods/A Rust-accelerated, topology-informed workflow for Kuramoto-XY quantum simulation and NISQ benchmarking.pdf
+!paper/submissions/submission_004_scpn_fim_hamiltonian/Fisher-information-inspired collective feedback in Kuramoto-XY Hamiltonians - exact small-system structure and a hardware falsification.pdf
+!paper/submissions/submission_005_phase3_reduced_pauli_entanglement/Reduced-Pauli entanglement checks for DLA-sector leakage mechanisms on IBM Heron hardware.pdf
+!paper/submissions/submission_006_s1_feedback_control/Monitored feedback versus open-loop control for Kuramoto-XY synchronisation on IBM dynamic circuits.pdf
+!paper/submissions/submission_007_iqm_garnet_preregistered_campaigns/The calibration epoch as the unit of evidence - preregistered parity-leakage and layout-transfer experiments on IQM Garnet.pdf
+# Work-in-progress manuscripts are private; only published submissions are public.
+paper/drafts/
 
 # Local assistant config — never commit
 CLAUDE.md
