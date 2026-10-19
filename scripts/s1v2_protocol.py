@@ -16,24 +16,27 @@ Design (fixed before any hardware data):
 * three system qubits on the equator (``RY(pi/2)``), detuned by
   ``omega = linspace(-delta, delta, 3)`` and XY-coupled with strength ``K``;
 * each round: Trotter step, a weak ``Y`` readout of every system qubit onto
-  its own monitor qubit, all monitors measured together, then per qubit an
-  unconditional ``RZ(sign*phi)`` and a conditional ``RZ(-2*sign*phi)`` when the
-  monitor reads 1, and finally a monitor reset. Each rotation is applied
-  through ``_rz_from_rx_ry``, which realises ``RZ(-theta)`` from ``rx``/``ry``
-  only, because IQM can condition only ``x, y, rx, ry, r``; the applied
-  rotations are therefore ``RZ(-sign*phi)`` and ``RZ(+2*sign*phi)``;
-* arms: ``CL`` (closed loop, conditioned on the monitor), ``OL``
-  (information-matched open loop: the same corrections conditioned on an
-  independent coin qubit whose per-slot ``P(1)`` equals the ideal closed-loop
-  monitor rate, see ``COIN_PROBABILITIES``), and ``NONE`` (monitors measured,
-  no correction);
+  its own monitor qubit, all monitors and coins measured together, then per
+  qubit the rotations ``RZ(-sign*phi)`` unconditionally and ``RZ(+2*sign*phi)``
+  when the control bit is 1, and finally monitor and coin resets. The rotations
+  are written with ``rx``/``ry`` only (``_rz_from_rx_ry`` realises
+  ``RZ(-theta)``), because IQM can condition only ``x, y, rx, ry, r``;
+* arms: ``CL`` (control bit = monitor), ``OL`` (control bit = an independent
+  coin whose per-slot ``P(1)`` equals the *ideal* closed-loop monitor rate, see
+  ``COIN_PROBABILITIES``) and ``NONE`` (no correction). Every arm prepares,
+  measures and resets the same coins and runs on one common layout, so the
+  arms use identical qubits, measurements and resets. The primary contrast is
+  therefore a comparison of two correction policies with equal resources and
+  ideal-matched correction marginals; on hardware the closed-loop marginals may
+  differ from the ideal ones, which the measured monitor rates disclose;
 * observables from direct ``X`` and ``Y`` readout of the system qubits: the
   Kuramoto order parameter ``R = |mean(<X_i> + i <Y_i>)|`` and the reference
   alignment ``A = mean(<X_i>)``.
 
-The latency pilot measures the coherence that one system qubit keeps after
-``k`` mid-circuit measurement plus classical-decision events, with the monitor
-prepared in ``|0>`` so that the conditional gate never fires.
+The pilot is an operational coherence screen, not a latency measurement and
+not a measurement of the main circuits' coherence: one system qubit on the
+equator undergoes ``k`` mid-circuit monitor measurements, with or without a
+never-firing conditional gate.
 """
 
 from __future__ import annotations
@@ -56,9 +59,9 @@ N_SYSTEM = 3
 #: Per-slot coin probabilities of the information-matched open-loop arm
 #: (round-major, qubit-minor). They equal the ideal closed-loop monitor rates of
 #: polarity +1, estimated once with Qiskit Aer (statevector, 200,000 shots,
-#: seed_simulator=2, seed_transpiler=1; standard error about 0.001), so the open
-#: loop receives every correction that the predictable phase drift alone would
-#: imply and differs from the closed loop only in the measurement information.
+#: seed_simulator=2, seed_transpiler=1; standard error about 0.001), so in the
+#: ideal model the open loop receives the corrections that the predictable phase
+#: drift implies, with the closed loop's per-slot frequencies.
 COIN_PROBABILITIES: dict[str, tuple[float, ...]] = {
     "c0": (0.782, 0.497, 0.218, 0.607, 0.499, 0.398),
     "c2": (0.810, 0.498, 0.189, 0.657, 0.499, 0.344, 0.397, 0.498, 0.606),
@@ -92,6 +95,9 @@ CALIBRATION_SHOTS = 4096
 
 #: Decision events in one c0 circuit: two rounds of (monitor decision + reset).
 C0_DECISION_EVENTS = 4
+#: Pilot screen: the 99 % lower bound of the zero-event coherence must reach the
+#: baseline floor, and the 99 % lower bound of C(4)/C(0) must reach the ratio floor.
+PILOT_BASELINE_FLOOR = 0.5
 PILOT_COHERENCE_FLOOR = 0.15
 PRIMARY_MIN_EFFECT = 0.05
 ONE_SIDED_ALPHA = 0.01
@@ -113,6 +119,7 @@ def xy_hamiltonian(coupling: float, omega: Sequence[float]) -> SparsePauliOp:
     -------
     SparsePauliOp
         The Hamiltonian in Qiskit little-endian order.
+
     """
     n = len(omega)
     terms: list[tuple[str, float]] = []
@@ -170,14 +177,17 @@ def build_arm(
     Returns
     -------
     QuantumCircuit
-        Registers ``s`` (system), ``m`` (monitors), optional ``c`` (coins), and
-        classical registers ``mb`` (monitor bits), optional ``cb`` (coin bits)
-        and ``ro`` (system readout).
+        Registers ``s`` (system), ``m`` (monitors) and ``c`` (coins), and
+        classical registers ``mb`` (monitor bits), ``cb`` (coin bits) and ``ro``
+        (system readout). Every arm prepares, measures and resets the same coins,
+        so CL, OL and NONE use the same qubits, measurements and resets; only the
+        control bit of the correction (monitor, coin, none) differs.
 
     Raises
     ------
     ValueError
         If an argument is outside the frozen design.
+
     """
     if candidate not in CANDIDATES:
         raise ValueError(f"unknown candidate {candidate!r}")
@@ -195,14 +205,12 @@ def build_arm(
     system = QuantumRegister(N_SYSTEM, "s")
     monitors = QuantumRegister(N_SYSTEM, "m")
     registers: list[QuantumRegister | ClassicalRegister] = [system, monitors]
-    coins = QuantumRegister(N_SYSTEM, "c") if arm == "OL" else None
-    if coins is not None:
-        registers.append(coins)
+    coins = QuantumRegister(N_SYSTEM, "c")
+    registers.append(coins)
     monitor_bits = ClassicalRegister(N_SYSTEM * rounds, "mb")
     registers.append(monitor_bits)
-    coin_bits = ClassicalRegister(N_SYSTEM * rounds, "cb") if arm == "OL" else None
-    if coin_bits is not None:
-        registers.append(coin_bits)
+    coin_bits = ClassicalRegister(N_SYSTEM * rounds, "cb")
+    registers.append(coin_bits)
     readout = ClassicalRegister(N_SYSTEM, "ro")
     registers.append(readout)
     circuit = QuantumCircuit(*registers, name=arm_label(candidate, arm, polarity, basis))
@@ -226,26 +234,21 @@ def build_arm(
             circuit.s(system[i])
         for i in range(N_SYSTEM):
             circuit.measure(monitors[i], monitor_bits[round_index * N_SYSTEM + i])
-            if coins is not None and coin_bits is not None:
-                probability = COIN_PROBABILITIES[candidate][round_index * N_SYSTEM + i]
-                circuit.ry(2 * math.asin(math.sqrt(probability)), coins[i])
-                circuit.measure(coins[i], coin_bits[round_index * N_SYSTEM + i])
+            probability = COIN_PROBABILITIES[candidate][round_index * N_SYSTEM + i]
+            circuit.ry(2 * math.asin(math.sqrt(probability)), coins[i])
+            circuit.measure(coins[i], coin_bits[round_index * N_SYSTEM + i])
         if model_latency_ns:
             circuit.delay(model_latency_ns, list(circuit.qubits), unit="ns")
         if arm != "NONE":
             for i in range(N_SYSTEM):
                 _rz_from_rx_ry(circuit, polarity * CORRECTION_ANGLE, system[i])
-                control = (
-                    coin_bits[round_index * N_SYSTEM + i]
-                    if coin_bits is not None
-                    else monitor_bits[round_index * N_SYSTEM + i]
-                )
+                bits = coin_bits if arm == "OL" else monitor_bits
+                control = bits[round_index * N_SYSTEM + i]
                 with circuit.if_test((control, 1)):
                     _rz_from_rx_ry(circuit, -2 * polarity * CORRECTION_ANGLE, system[i])
         for i in range(N_SYSTEM):
             circuit.reset(monitors[i])
-            if coins is not None:
-                circuit.reset(coins[i])
+            circuit.reset(coins[i])
         if model_latency_ns:
             circuit.delay(model_latency_ns, list(circuit.qubits), unit="ns")
     if basis == "Y":
@@ -285,6 +288,7 @@ def build_pilot(events: int, variant: str, basis: str) -> QuantumCircuit:
     ------
     ValueError
         If an argument is outside the frozen pilot design.
+
     """
     if events not in PILOT_EVENTS:
         raise ValueError(f"events must be one of {PILOT_EVENTS}")
@@ -374,6 +378,7 @@ def register_marginal(counts: Mapping[str, int], register_index: int) -> dict[st
     -------
     dict
         Counts of that register's bitstrings.
+
     """
     out: dict[str, int] = {}
     for key, value in counts.items():
@@ -393,6 +398,7 @@ def readout_marginal(counts: Mapping[str, int], width: int) -> dict[str, int]:
     ------
     ValueError
         If a key is too short for the requested register width.
+
     """
     out: dict[str, int] = {}
     for key, value in counts.items():
@@ -436,6 +442,7 @@ def readout_scale(
     ------
     ValueError
         If any qubit's readout is uninformative (contraction not positive).
+
     """
     p_one_given_zero = bit_probabilities(cal_zero, width)
     p_zero_given_one = 1.0 - bit_probabilities(cal_one, width)
@@ -445,14 +452,37 @@ def readout_scale(
     return scale
 
 
-def _resample(
-    counts: Mapping[str, int], draws: int, rng: np.random.Generator
-) -> list[dict[str, int]]:
+def bootstrap_expectations(
+    counts: Mapping[str, int], width: int, draws: int, rng: np.random.Generator
+) -> np.ndarray:
+    """Return ``<Z_i>`` for ``draws`` multinomial resamples of the counts (draws x width).
+
+    Parameters
+    ----------
+    counts
+        Fixed-width counts (bit 0 rightmost).
+    width
+        Register width.
+    draws
+        Number of resamples.
+    rng
+        Random generator.
+
+    Returns
+    -------
+    numpy.ndarray
+        One row of single-qubit expectations per resample.
+
+    """
     keys = list(counts)
     values = np.array([counts[key] for key in keys], dtype=np.int64)
     total = int(values.sum())
+    signs = np.array(
+        [[1 - 2 * int(key[width - 1 - i]) for i in range(width)] for key in keys], dtype=np.float64
+    )
     samples = rng.multinomial(total, values / total, size=draws)
-    return [{key: int(n) for key, n in zip(keys, row, strict=True) if n} for row in samples]
+    result: np.ndarray = samples @ signs / total
+    return result
 
 
 @dataclass(frozen=True)
@@ -490,25 +520,21 @@ def estimate_arm(
     -------
     ArmEstimate
         Point estimates and bootstrap draws.
+
     """
     generator = rng if rng is not None else np.random.default_rng(BOOTSTRAP_SEED)
     divisor = np.ones(N_SYSTEM) if scale is None else np.asarray(scale)
 
-    def point(xc: Mapping[str, int], yc: Mapping[str, int]) -> tuple[float, float]:
-        ex = expectations(xc, N_SYSTEM) / divisor
-        ey = expectations(yc, N_SYSTEM) / divisor
-        return order_parameter(ex, ey), float(np.mean(ex))
-
-    r, a = point(x_counts, y_counts)
-    pairs = [
-        point(xc, yc)
-        for xc, yc in zip(
-            _resample(x_counts, draws, generator),
-            _resample(y_counts, draws, generator),
-            strict=True,
-        )
-    ]
-    return ArmEstimate(r, a, np.array([p[0] for p in pairs]), np.array([p[1] for p in pairs]))
+    ex = expectations(x_counts, N_SYSTEM) / divisor
+    ey = expectations(y_counts, N_SYSTEM) / divisor
+    ex_draws = bootstrap_expectations(x_counts, N_SYSTEM, draws, generator) / divisor
+    ey_draws = bootstrap_expectations(y_counts, N_SYSTEM, draws, generator) / divisor
+    return ArmEstimate(
+        order_parameter(ex, ey),
+        float(np.mean(ex)),
+        np.abs(np.mean(ex_draws + 1j * ey_draws, axis=1)),
+        np.mean(ex_draws, axis=1),
+    )
 
 
 def one_sided_lower(draws: np.ndarray, alpha: float = ONE_SIDED_ALPHA) -> float:
@@ -542,6 +568,7 @@ def analyse_main(
     dict
         Point estimates, bounds, the primary and polarity decisions, and the
         readout-mitigated secondary estimates.
+
     """
     rng = np.random.default_rng(seed)
     scale = readout_scale(
@@ -602,20 +629,36 @@ def pilot_coherence(x_counts: Mapping[str, int], y_counts: Mapping[str, int]) ->
     return float(abs(ex + 1j * ey))
 
 
-def analyse_pilot(counts_by_label: Mapping[str, Mapping[str, int]]) -> dict[str, object]:
-    """Apply the preregistered pilot rule to one backend's pilot counts.
+def analyse_pilot(
+    counts_by_label: Mapping[str, Mapping[str, int]],
+    *,
+    draws: int = BOOTSTRAP_DRAWS,
+    seed: int = BOOTSTRAP_SEED,
+) -> dict[str, object]:
+    """Apply the preregistered pilot screen to one backend's pilot counts.
+
+    The screen passes only if the zero-event coherence is clearly present (its
+    one-sided 99 % lower bound reaches ``PILOT_BASELINE_FLOOR``) and the retained
+    ratio ``C(4)/C(0)`` of the conditional variant has a one-sided 99 % lower
+    bound of at least ``PILOT_COHERENCE_FLOOR``. Both bounds come from a
+    multinomial bootstrap of the X and Y circuits. A noise-dominated baseline
+    therefore cannot pass through a ratio of two small numbers.
 
     Parameters
     ----------
     counts_by_label
         System-readout counts (register ``ro``, 1-bit keys) per pilot label.
+    draws, seed
+        Bootstrap settings.
 
     Returns
     -------
     dict
-        Coherence per event count and variant, the retained-coherence ratio at
-        the c0 event count, and the go/stop decision for the main block.
+        Coherence per event count and variant, the baseline and ratio with their
+        lower bounds, and the go/stop decision for the main block.
+
     """
+    rng = np.random.default_rng(seed)
     coherence: dict[str, dict[int, float]] = {variant: {} for variant in PILOT_VARIANTS}
     for variant in PILOT_VARIANTS:
         for events in PILOT_EVENTS:
@@ -623,11 +666,31 @@ def analyse_pilot(counts_by_label: Mapping[str, Mapping[str, int]]) -> dict[str,
                 counts_by_label[pilot_label(events, variant, "X")],
                 counts_by_label[pilot_label(events, variant, "Y")],
             )
+
+    def coherence_draws(events: int) -> np.ndarray:
+        x_counts = counts_by_label[pilot_label(events, "conditional", "X")]
+        y_counts = counts_by_label[pilot_label(events, "conditional", "Y")]
+        ex = bootstrap_expectations(x_counts, 1, draws, rng)[:, 0]
+        ey = bootstrap_expectations(y_counts, 1, draws, rng)[:, 0]
+        coherence_values: np.ndarray = np.abs(ex + 1j * ey)
+        return coherence_values
+
+    base_draws = coherence_draws(0)
+    event_draws = coherence_draws(C0_DECISION_EVENTS)
+    ratio_draws = np.where(base_draws > 0, event_draws / np.maximum(base_draws, 1e-12), 0.0)
     base = coherence["conditional"][0]
     ratio = coherence["conditional"][C0_DECISION_EVENTS] / base if base > 0 else 0.0
+    baseline_lower = one_sided_lower(base_draws)
+    ratio_lower = one_sided_lower(ratio_draws)
     return {
         "coherence": {variant: dict(values) for variant, values in coherence.items()},
+        "baseline_coherence": base,
+        "baseline_lower_99": baseline_lower,
+        "baseline_floor": PILOT_BASELINE_FLOOR,
         "retained_ratio_at_c0_events": ratio,
+        "retained_ratio_lower_99": ratio_lower,
         "coherence_floor": PILOT_COHERENCE_FLOOR,
-        "main_block_go": bool(ratio >= PILOT_COHERENCE_FLOOR),
+        "main_block_go": bool(
+            baseline_lower >= PILOT_BASELINE_FLOOR and ratio_lower >= PILOT_COHERENCE_FLOOR
+        ),
     }

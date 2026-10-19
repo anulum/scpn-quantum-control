@@ -8,12 +8,15 @@
 """Approval-gated IQM Resonance submitter for the S1v2 campaign (run in ``.venv-iqm``).
 
 Same stages and gates as ``scripts/submit_s1v2_ibm.py``: ``readiness`` (no job),
-``submit --stage pilot``, ``retrieve``, ``analyse``, then ``submit --stage main``
-only after that backend's pilot passed. Every submission needs
-``--i-have-owner-go``; the journal is written before the provider call and a
-stage with a journal is never submitted again. The Resonance URL and token come
-from the project vault through ``scripts/iqm_layout_transfer_resonance.py`` and
-are never printed. IQM can condition only ``x, y, rx, ry, r``; the frozen
+``submit --stage pilot``, ``retrieve``, then ``analyse`` with the IBM script, and
+``submit --stage main`` only after this quantum computer's complete pilot chain
+passed, on the layout frozen in the pilot journal. Every submission needs
+``--i-have-owner-go``; the journal is created exclusively before the provider
+call and a stage with a journal is never submitted again. There is no automatic
+credit cap: the preregistered 10-credit pilot stop is the owner's reading of the
+Resonance dashboard before he gives the main-stage GO. The Resonance URL and
+token come from the project vault through ``scripts/iqm_layout_transfer_resonance.py``
+and are never printed. IQM can condition only ``x, y, rx, ry, r``; the frozen
 circuits use only ``rx``/``ry`` inside ``if_test``.
 """
 
@@ -39,9 +42,6 @@ from scripts import s1v2_submission_common as common  # noqa: E402
 PROVIDER = "iqm"
 DEFAULT_QUANTUM_COMPUTER = "garnet"
 DATA_DIR = REPO_ROOT / "data" / "s1v2_information_matched_feedback"
-MAX_TWO_QUBIT_GATES = 90
-SEED_TRANSPILER = 20261019
-REQUIRED_OPERATIONS = ("if_else", "measure", "reset")
 
 
 def _resonance() -> ModuleType:
@@ -56,58 +56,31 @@ def _resonance() -> ModuleType:
     return module
 
 
-def stage_circuits(stage: str) -> tuple[list[Any], dict[str, int]]:
-    """Return the frozen circuits of a stage and their shot numbers by label."""
-    if stage == "pilot":
-        circuits = protocol.pilot_circuits()
-        return circuits, {c.name: protocol.PILOT_SHOTS for c in circuits}
-    if stage == "main":
-        circuits = protocol.main_circuits()
-        return circuits, {c.name: protocol.MAIN_SHOTS for c in circuits}
-    raise ValueError(f"unknown stage {stage!r}")
-
-
-def _transpile(circuits: Sequence[Any], backend: Any) -> list[Any]:
-    from qiskit import transpile
-
-    return list(
-        transpile(
-            list(circuits), backend=backend, optimization_level=1, seed_transpiler=SEED_TRANSPILER
-        )
-    )
-
-
-def _two_qubit(isa: Sequence[Any]) -> dict[str, int]:
-    return {c.name: int(c.count_ops().get("cz", 0)) for c in isa}
-
-
-def _layouts(isa: Sequence[Any]) -> dict[str, list[int]]:
-    return {c.name: list(c.layout.final_index_layout()) if c.layout else [] for c in isa}
-
-
 def readiness(args: argparse.Namespace) -> int:
-    """Check the live quantum computer and write a readiness record; never submits."""
+    """Check the live quantum computer on the common layout and write a readiness record."""
     backend = _resonance()._backend(args.quantum_computer)
-    missing = [op for op in REQUIRED_OPERATIONS if op not in backend.target.operation_names]
+    main_layout = common.main_reference_layout(backend)
     report: dict[str, Any] = {
         "schema": "s1v2_iqm_readiness_v1",
         "backend": args.quantum_computer,
-        "missing_operations": missing,
+        "missing_operations": common.missing_operations(backend),
+        "main_reference_layout": main_layout,
     }
     for stage in common.STAGES:
-        circuits, shots = stage_circuits(stage)
-        isa = _transpile(circuits, backend)
-        two_qubit = _two_qubit(isa)
+        circuits, shots = common.stage_circuits(stage)
+        isa = common.transpile_stage(circuits, backend, common.stage_layout(stage, main_layout))
+        two_qubit = common.two_qubit_counts(isa)
         report[stage] = {
             "logical_digest": protocol.logical_digest(circuits),
             "isa_digest": protocol.logical_digest(isa),
             "two_qubit_gates": two_qubit,
             "max_two_qubit_gates": max(two_qubit.values()),
-            "layouts": _layouts(isa),
+            "layouts": common.final_layouts(isa),
             "total_shots": sum(shots.values()),
         }
     report["ready"] = bool(
-        not missing and report["main"]["max_two_qubit_gates"] <= MAX_TWO_QUBIT_GATES
+        not report["missing_operations"]
+        and report["main"]["max_two_qubit_gates"] <= common.MAX_TWO_QUBIT_GATES
     )
     path = args.out_dir / PROVIDER / f"{args.quantum_computer}_readiness_{common.utc_stamp()}.json"
     print(f"readiness={report['ready']} file={path} sha256={common.write_json(path, report)}")
@@ -119,24 +92,30 @@ def submit(args: argparse.Namespace) -> int:
     if not args.i_have_owner_go:
         print("REFUSED: submission needs --i-have-owner-go", file=sys.stderr)
         return 2
+    pilot_journal: dict[str, Any] | None = None
     if args.stage == "main":
         if args.pilot_analysis is None:
             print("REFUSED: the main stage needs --pilot-analysis", file=sys.stderr)
             return 2
-        common.require_pilot_go(args.pilot_analysis, args.quantum_computer)
-    circuits, shots = stage_circuits(args.stage)
-    backend = _resonance()._backend(args.quantum_computer)
-    missing = [op for op in REQUIRED_OPERATIONS if op not in backend.target.operation_names]
-    if missing:
-        print(f"REFUSED: quantum computer lacks {missing}", file=sys.stderr)
-        return 3
-    isa = _transpile(circuits, backend)
-    if max(_two_qubit(isa).values()) > MAX_TWO_QUBIT_GATES:
-        print("REFUSED: transpiled CZ count exceeds the preregistered ceiling", file=sys.stderr)
-        return 3
+        pilot_journal = common.pilot_go(args.pilot_analysis, PROVIDER, args.quantum_computer)
+    circuits, shots = common.stage_circuits(args.stage)
     shot_values = set(shots.values())
     if len(shot_values) != 1:
         raise common.StageRefused("an IQM job carries one shot number per stage")
+    backend = _resonance()._backend(args.quantum_computer)
+    missing = common.missing_operations(backend)
+    if missing:
+        print(f"REFUSED: quantum computer lacks {missing}", file=sys.stderr)
+        return 3
+    main_layout = (
+        list(pilot_journal["main_reference_layout"])
+        if pilot_journal is not None
+        else common.main_reference_layout(backend)
+    )
+    isa = common.transpile_stage(circuits, backend, common.stage_layout(args.stage, main_layout))
+    if max(common.two_qubit_counts(isa).values()) > common.MAX_TWO_QUBIT_GATES:
+        print("REFUSED: transpiled CZ count exceeds the preregistered ceiling", file=sys.stderr)
+        return 3
     path = common.journal_path(args.out_dir, PROVIDER, args.quantum_computer, args.stage)
     journal = common.open_journal(
         path,
@@ -148,7 +127,11 @@ def submit(args: argparse.Namespace) -> int:
         isa_digest=protocol.logical_digest(isa),
         labels=[c.name for c in circuits],
         shots=shots,
-        layout=_layouts(isa),
+        layout=common.final_layouts(isa),
+        extra={
+            "main_reference_layout": main_layout,
+            "credit_stop": "manual: owner reads the Resonance dashboard; stop if pilot > 10 credits",
+        },
     )
     job = backend.run(isa, shots=next(iter(shot_values)))
     job_id = job.job_id() if callable(job.job_id) else job.job_id
@@ -173,29 +156,16 @@ def retrieve(args: argparse.Namespace) -> int:
     all_counts = job.result().get_counts()
     if not isinstance(all_counts, list):
         all_counts = [all_counts]
-    width = {
-        label: (1 if label.startswith("s1v2_pilot") else protocol.N_SYSTEM)
-        for label in journal["labels"]
-    }
     counts: dict[str, dict[str, dict[str, int]]] = {}
     for label, raw in zip(journal["labels"], all_counts, strict=True):
         full = common.coerce_counts(raw, journal["shots"][label])
-        registers = {"full": full, "ro": protocol.readout_marginal(full, width[label])}
-        if all(" " in key for key in full):
+        width = 1 if label.startswith("s1v2_pilot") else protocol.N_SYSTEM
+        registers = {"full": full, "ro": protocol.readout_marginal(full, width)}
+        if all(" " in key for key in full) and not label.startswith("s1v2_cal"):
             registers["mb"] = protocol.register_marginal(full, -1)
         counts[label] = registers
-    payload = {
-        "schema": "s1v2_raw_counts_v1",
-        "experiment_id": journal["experiment_id"],
-        "provider": PROVIDER,
-        "backend": journal["backend"],
-        "stage": journal["stage"],
-        "job_ids": journal["job_ids"],
-        "journal_sha256": common.sha256_bytes(args.journal.read_bytes()),
-        "counts": counts,
-    }
-    path = args.journal.with_name(args.journal.name.replace("_journal", "_raw_counts"))
-    print(f"raw counts file={path} sha256={common.write_json(path, payload)}")
+    path = common.write_raw_counts(args.journal, counts)
+    print(f"raw counts file={path} sha256={common.sha256_bytes(path.read_bytes())}")
     return 0
 
 

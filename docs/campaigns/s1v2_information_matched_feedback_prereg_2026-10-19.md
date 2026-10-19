@@ -25,9 +25,17 @@ ideal simulation its feedback-on and feedback-off distributions differ by a
 total-variation distance of at most about 0.003, while the noise floor at 4096
 shots is about 0.03. RC-1 is therefore superseded by this design and is not run.
 
-**Question.** Does measurement-conditioned feedback lock the phases of three detuned
-XY-coupled qubits more strongly than the same corrections applied without the
-measurement information, on IBM Heron and on IQM Garnet?
+**Question.** On IBM Heron and on IQM Garnet, does a measurement-conditioned
+correction policy lock the phases of three detuned XY-coupled qubits more strongly
+than an open-loop policy? The open-loop policy has the same circuits, qubits,
+measurements, resets and layout, and its corrections have the closed loop's
+*ideal* per-slot frequencies.
+
+**Estimand.** This is a comparison of two correction policies with equal resources.
+It is not a proof that only the measurement information differs on noisy hardware:
+the closed-loop correction frequencies on hardware may differ from the ideal ones.
+The measured monitor rates of the closed-loop arms are reported next to the frozen
+coin rates, so that difference stays visible.
 
 ## Frozen design
 
@@ -35,7 +43,7 @@ All circuits come from `scripts/s1v2_protocol.py`.
 
 | Item | Value |
 |---|---|
-| Logical digest, main matrix | `bf06f7e7c7e39af73540fd46b7efcf1658ba70d44039d4dc982e51bc72decf92` |
+| Logical digest, main matrix | `4de9fd99aa2aec5c08f686dacb6167bbac2e1e66e6a39ef6ee40d663ff337fdc` |
 | Logical digest, latency pilot | `11cbc277cea29b704cd4b92f7b04317c1af59b42de6b1d775ee10f4ff5ca8998` |
 
 Both digests are SHA-256 hashes of OpenQASM 3.
@@ -55,6 +63,17 @@ Both digests are SHA-256 hashes of OpenQASM 3.
     from `rx`/`ry` only, because IQM conditions only `x, y, rx, ry, r`; `if_test`
     blocks are not nested.
   - **Reset:** every monitor and coin is reset after each round.
+- **Equal resources.** Every arm (CL, OL, NONE) has the same nine qubits: three
+  system qubits, three monitors and three coins. In every arm the coins are
+  prepared with the frozen per-slot probabilities, then measured and reset.
+  Closed and open loop therefore have identical operation counts and differ only
+  in the control register of the `if_test`: monitor bits or coin bits. NONE has
+  no corrections; it is an unmatched secondary reference.
+- **Common layout.** On each backend, one physical layout (s0..s2, m0..m2,
+  c0..c2) is chosen once by transpiling the c0 OL circuit with seed 20261019 and
+  is used for every main circuit. The pilot runs on the physical s0 and m0 of that
+  layout. The layout is recorded in the pilot journal, and the main stage uses
+  the recorded layout.
 - **Arms of c0:**
   - `CL+` (closed loop, polarity +1);
   - `CL−` (polarity −1);
@@ -62,18 +81,20 @@ Both digests are SHA-256 hashes of OpenQASM 3.
   - `NONE` (monitors measured, no correction).
 - **Arms of c2:** `CL+`, `OL+`, `NONE`.
 - **Open-loop control.** The corrections are the same, but each is conditioned on an
-  independent coin qubit. The coin's per-slot `P(1)` equals the ideal closed-loop
-  monitor rate. These rates are frozen in `COIN_PROBABILITIES`; they range from 0.19
-  to 0.81 because the initial phase drift is predictable. The open loop therefore
-  receives every correction the predictable drift implies, and differs from the
-  closed loop only in the measurement information.
+  independent coin. The coin's per-slot `P(1)` equals the *ideal* closed-loop
+  monitor rate (Aer statevector, 200,000 shots). These rates are frozen in
+  `COIN_PROBABILITIES`; they range from 0.19 to 0.81 because the initial phase
+  drift is predictable. The matching is ideal-only, as stated under Estimand.
 - **Readout.** Every arm is run once in the X basis and once in the Y basis. The
   matrix also has two system-readout calibration circuits (`000`, `111`).
   - Main matrix: 16 circuits at 4096 shots each, 65,536 shots in total.
-- **Latency pilot.** One system qubit on the equator and one monitor in `|0>`. The
+- **Coherence pilot.** One system qubit on the equator and one monitor in `|0>`. The
   pilot applies `k ∈ {0, 1, 2, 4, 8}` events of monitor measurement, with
   (`conditional`) or without (`measure_only`) an `if_test` that never fires. It is
-  read out in X and Y.
+  read out in X and Y. It is an operational screen of how much coherence survives
+  mid-circuit measurement and decision events on the chosen qubits. It is **not** a
+  measurement of the vendor latency, and not of the coherence of the main circuits,
+  which also contain interactions and resets.
   - Pilot: 20 circuits at 2048 shots each, 40,960 shots in total.
 
 ## Order of stages per backend
@@ -87,21 +108,42 @@ Backends:
 The steps, in order:
 
 1. `readiness`: live target check, transpilation and budget estimate, with no job.
-   The readiness of 2026-10-19 passed on all three backends: every required dynamic
-   operation is present and the main matrix needs at most 45 two-qubit gates.
+   The readiness of 2026-10-19 (after review 284, common layout) passed on all three
+   backends: every required dynamic operation is present and the main matrix needs
+   at most 45 two-qubit gates.
 2. `submit --stage pilot`, then `retrieve` and `analyse`.
-3. **Pilot rule.** Let `rho = C_conditional(4) / C_conditional(0)`, where
-   `C = |<X> + i<Y>|` of the pilot qubit. The 4 events equal the decision events of
-   one c0 circuit (2 rounds × monitor decision + reset). The main stage on that
-   backend runs only if `rho ≥ 0.15`. Otherwise the campaign on that backend stops
-   and the pilot is reported as the result.
+3. **Pilot screen.** Let `C = |<X> + i<Y>|` of the pilot qubit and
+   `rho = C_conditional(4) / C_conditional(0)`. The 4 events match the number of
+   decision events of one c0 circuit (2 rounds × monitor decision + reset). The main
+   stage on that backend runs only if **both** conditions hold, with bounds from a
+   multinomial bootstrap of the X and Y circuits (4000 draws):
+   - the one-sided 99 % lower bound of `C_conditional(0)` is at least 0.5, so a
+     coherent baseline is clearly present;
+   - the one-sided 99 % lower bound of `rho` is at least 0.15.
+
+   A noise-dominated baseline therefore cannot pass through a ratio of two small
+   numbers. A fully depolarised Aer pilot is refused (test
+   `test_depolarised_pilot_with_zero_coherence_is_refused`). If the screen fails,
+   the campaign on that backend stops and the pilot is reported as the result.
 4. `submit --stage main --pilot-analysis <that backend's pilot analysis>`, then
    `retrieve` and `analyse`.
 
 The scripts are `scripts/submit_s1v2_ibm.py` and `scripts/submit_s1v2_iqm.py`
-(IQM runs in `.venv-iqm`). A journal is written before each provider call. A stage
-with a journal is never submitted again. An ambiguous provider call is resolved by
-a person, never by a retry.
+(IQM runs in `.venv-iqm`). Their safety mechanisms:
+
+- **Exclusive journal.** Before each provider call, the stage is reserved by
+  creating its journal with an exclusive atomic link and a directory fsync. Of
+  any number of concurrent callers, exactly one obtains the stage. This is tested
+  with 8 separate interpreters in 4 trials.
+- **No resubmission.** A stage with a journal is never submitted again. An
+  ambiguous provider call is resolved by a person, never by a retry.
+- **Pilot chain check.** The main stage verifies the complete pilot chain:
+  analysis → raw counts → journal. It checks experiment, provider, backend,
+  stage, frozen pilot digest, hashes, labels and shots, and recomputes the pilot
+  screen from the raw counts.
+- **IBM job cap.** Each IBM job carries the provider `max_execution_time` equal to
+  `--max-qpu-seconds` (default 300 s, a whole number in 1–10,800). The value is
+  read back from the runtime and recorded in the journal before the call.
 
 ## Endpoints and analysis
 
@@ -127,6 +169,14 @@ and is applied per backend.
 - **Cross-provider statement.** Feedback benefit is called *replicated across
   providers* only if the primary endpoint and the polarity check both pass on IQM
   Garnet and on at least one IBM backend.
+- **Statistical limits.**
+  - The bounds are per-backend percentile-bootstrap bounds. Their exact 99 %
+    coverage near `R = 0` is not demonstrated.
+  - The cross-provider statement combines per-backend decisions (Garnet and at
+    least one IBM backend). It is not a separately calibrated global 99 % test.
+  - The readout-corrected secondary uses the calibration as a plug-in scale and
+    does not propagate its uncertainty.
+  - Raw counts are never pooled across providers.
 
 ## Predictions from the simulation gate
 
@@ -141,16 +191,19 @@ per event:
 
 | Model | 0 | 0.5 µs | 1 µs | 2 µs | 5 µs |
 |---|---|---|---|---|---|
-| ideal | 0.48 | | | | |
-| FakeFez | 0.47 (0.45) | 0.47 | 0.47 | 0.46 | 0.43 (0.40) |
-| FakeMarrakesh | 0.47 (0.44) | 0.47 | 0.46 | 0.46 | 0.44 (0.41) |
-| IQMFakeGarnet | 0.38 (0.36) | 0.36 | 0.32 | 0.25 | 0.11 (0.08) |
+| ideal | 0.46 | | | | |
+| FakeFez | 0.46 (0.44) | 0.48 | 0.47 | 0.46 | 0.44 (0.41) |
+| FakeMarrakesh | 0.47 (0.44) | 0.48 | 0.47 | 0.46 | 0.44 (0.42) |
+| IQMFakeGarnet | 0.39 (0.37) | 0.37 | 0.33 | 0.25 | 0.12 (0.09) |
+
+All rows use the final circuits: coins in every arm, one common layout per backend.
 
 - The primary endpoint and the polarity check pass in every row.
-- Ideal lock points: `A(c0, CL+) = −0.58` and `A(c0, CL−) = +0.53`.
-- Ideal `R`: CL+ 0.58, OL+ 0.10, NONE 0.04.
+- Ideal lock points: `A(c0, CL+) = −0.56` and `A(c0, CL−) = +0.55`.
+- Ideal `R`: CL+ 0.56, OL+ 0.10, NONE 0.04.
 - The Garnet model loses the effect with decision time because its median T2 is
-  about 9.6 µs. IQM does not publish its feedback latency; the pilot measures it.
+  about 9.6 µs. IQM does not publish its feedback latency; the pilot screens the
+  retained coherence on the chosen qubits.
 
 The noise models are reference profiles, not the calibration of the day.
 
@@ -173,27 +226,41 @@ monitor angle `∈ {pi/6, pi/3}`, correction `∈ {0.25, 0.5}` and polarity ±1.
 - **Coin control changed:** the coin control first used a flat `P(1) = 0.5`. It was
   replaced by the per-slot rates before freezing, because that is the stronger
   control.
+- **Changes after review 284 (RIGOR-FOUNDRY, 2026-10-19), all before any hardware
+  data:**
+  - coins added to every arm, giving equal resources;
+  - one common layout per backend;
+  - the pilot screen gained an absolute baseline floor and bootstrap bounds;
+  - exclusive journal reservation and pilot-chain binding;
+  - the IBM provider cap is forwarded to the runtime;
+  - the estimand was narrowed.
 
 ## Budget and caps
 
 - **IBM:** 973 s remained on 2026-10-19 in the period ending 2027-04-24. The estimate
   per backend is 66 s for the pilot and 53 s for the main stage, assuming 1.1 s per
-  circuit × 3 for dynamic circuits. The cap is 300 s per backend stage; the script
-  refuses above it.
+  circuit × 3 for dynamic circuits. Each job carries a provider cap
+  `max_execution_time = 300 s`. The script refuses a stage whose estimate exceeds
+  the cap.
 - **IQM Garnet:** 298 credits remained on 2026-10-19, as the owner read from the
   dashboard. The **preliminary estimate** is 2–8 credits for pilot plus main, based
   on earlier Garnet runs of about 0.04–0.07 credits per circuit. The API does not
-  report credit burn. The owner reads the dashboard after the pilot. The campaign
-  stops if the pilot alone used more than 10 credits.
+  report credit burn, and **there is no automatic credit cap**. The owner reads the
+  dashboard after the pilot before giving the main-stage GO. The campaign stops if
+  the pilot alone used more than 10 credits.
 
 ## Claim boundary
 
 - **Supported after execution:** for each backend and calibration window, whether
-  the measurement information improves phase locking over an information-matched
-  open loop, and whether the lock point follows the policy polarity. The
-  measured idle cost of a mid-circuit decision is also supported.
+  the measurement-conditioned policy locks the phases more strongly than the
+  resource-equal open-loop policy with ideal-matched correction frequencies, and
+  whether the lock point follows the policy polarity. The pilot's coherence screen
+  on the chosen qubits is also supported.
 - **Not supported:**
-  - latency numbers of the vendor controller beyond the pilot's coherence ratio;
+  - latency numbers of the vendor controller;
+  - the claim that only the measurement information differs between the arms on
+    hardware;
+  - the claim that the pilot's retained coherence equals that of the main circuits;
   - any claim of a general controller, of synchronisation protection beyond the
     measured observables, or of quantum advantage;
   - pooling raw counts across providers.

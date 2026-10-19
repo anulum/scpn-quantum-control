@@ -111,7 +111,23 @@ def run_gate(
                 for c, arm, pol in protocol.MAIN_ARMS
                 for basis in protocol.BASES
             ] + protocol.build_calibration()
-            transpiled = transpile(circuits, seed_transpiler=seed, **options)
+            reference = transpile(
+                protocol.build_arm("c0", "OL", 1, "X"),
+                seed_transpiler=seed,
+                num_processes=1,
+                **options,
+            )
+            layout = list(reference.layout.initial_index_layout()[: 3 * protocol.N_SYSTEM])
+            transpiled = [
+                transpile(
+                    circuit,
+                    seed_transpiler=seed,
+                    initial_layout=layout[: circuit.num_qubits],
+                    num_processes=1,
+                    **options,
+                )
+                for circuit in circuits
+            ]
             if latency:
                 transpiled = [relax_delays(c, t1, t2, dt) for c in transpiled]
             result = simulator.run(transpiled, shots=shots, seed_simulator=seed).result()
@@ -164,6 +180,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "logical_main_digest": protocol.logical_digest(protocol.main_circuits()),
         "noise_models": "vendor reference profiles (fake backends), not the calibration of the day",
         "latency_model": "idle delay after each monitor decision and each reset, as T1/T2 relaxation",
+        "layout_model": "one common initial layout per backend and latency for all main circuits",
         "rows": rows,
     }
     args.out.parent.mkdir(parents=True, exist_ok=True)

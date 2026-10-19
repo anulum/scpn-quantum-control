@@ -62,11 +62,29 @@ def test_arm_structure_matches_the_frozen_design(candidate: str, arm: str) -> No
         assert names <= {"rx", "ry"}, names
     controlling = {circuit.find_bit(block.condition[0]).registers[0][0].name for block in blocks}
     assert controlling == (set() if arm == "NONE" else {"cb" if arm == "OL" else "mb"})
-    assert [reg.name for reg in circuit.cregs] == (
-        ["mb", "cb", "ro"] if arm == "OL" else ["mb", "ro"]
-    )
-    assert circuit.num_qubits == protocol.N_SYSTEM * (3 if arm == "OL" else 2)
-    assert circuit.count_ops()["reset"] == protocol.N_SYSTEM * rounds * (2 if arm == "OL" else 1)
+    assert [reg.name for reg in circuit.cregs] == ["mb", "cb", "ro"]
+    assert circuit.num_qubits == protocol.N_SYSTEM * 3
+    assert circuit.count_ops()["reset"] == protocol.N_SYSTEM * rounds * 2
+    assert circuit.count_ops()["measure"] == protocol.N_SYSTEM * (2 * rounds + 1)
+
+
+@pytest.mark.parametrize("candidate", ["c0", "c2"])
+def test_closed_and_open_loop_use_identical_resources(candidate: str) -> None:
+    """CL and OL have the same operations and differ only in the control register.
+
+    Parameters
+    ----------
+    candidate
+        Frozen candidate name.
+
+    """
+    closed = protocol.build_arm(candidate, "CL", 1, "X")
+    opened = protocol.build_arm(candidate, "OL", 1, "X")
+    none = protocol.build_arm(candidate, "NONE", 1, "X")
+    assert dict(closed.count_ops()) == dict(opened.count_ops())
+    assert closed.num_qubits == opened.num_qubits == none.num_qubits
+    for name in ("measure", "reset"):
+        assert closed.count_ops()[name] == none.count_ops()[name]
 
 
 def test_rotation_helper_is_rz_of_minus_theta_up_to_phase() -> None:
@@ -183,7 +201,9 @@ def _simulate(
     """
     simulator = AerSimulator(method="statevector")
     result = simulator.run(
-        transpile(circuits, simulator, seed_transpiler=1), shots=shots, seed_simulator=seed
+        transpile(circuits, simulator, seed_transpiler=1, num_processes=1),
+        shots=shots,
+        seed_simulator=seed,
     ).result()
     return {
         c.name: protocol.register_marginal(result.get_counts(i), 0) for i, c in enumerate(circuits)
@@ -228,27 +248,62 @@ def test_pilot_rule_goes_and_stops() -> None:
     assert protocol.analyse_pilot(dead)["retained_ratio_at_c0_events"] == 0.0
 
 
-def _journal(tmp_path: Path) -> tuple[Path, dict[str, object]]:
-    """Open a pilot journal for ``ibm_fez`` in a temporary directory.
+def test_depolarised_pilot_with_zero_coherence_is_refused() -> None:
+    """A fully depolarised pilot (true coherence 0) cannot pass through a noisy ratio."""
+    from qiskit_aer.noise import NoiseModel, depolarizing_error
+
+    noise = NoiseModel()
+    noise.add_all_qubit_quantum_error(depolarizing_error(1.0, 1), ["ry"])
+    simulator = AerSimulator(noise_model=noise)
+    circuits = protocol.pilot_circuits()
+    result = simulator.run(
+        transpile(
+            circuits,
+            simulator,
+            basis_gates=["ry", "rx", "h", "sdg", "measure", "if_else"],
+            num_processes=1,
+        ),
+        shots=protocol.PILOT_SHOTS,
+        seed_simulator=11,
+    ).result()
+    counts = {
+        c.name: protocol.register_marginal(result.get_counts(i), 0) for i, c in enumerate(circuits)
+    }
+    decision = protocol.analyse_pilot(counts, draws=400)
+    assert decision["main_block_go"] is False
+    baseline = decision["baseline_lower_99"]
+    assert isinstance(baseline, float) and baseline < protocol.PILOT_BASELINE_FLOOR
+
+
+def _journal(
+    tmp_path: Path, stage: str = "pilot", backend: str = "ibm_fez"
+) -> tuple[Path, dict[str, object]]:
+    """Open a journal in a temporary directory.
 
     Parameters
     ----------
     tmp_path
         Temporary directory.
+    stage
+        Stage name.
+    backend
+        Backend name.
 
     """
-    path = common.journal_path(tmp_path, "ibm", "ibm_fez", "pilot")
+    path = common.journal_path(tmp_path, "ibm", backend, stage)
+    circuits, shots = common.stage_circuits(stage)
     journal = common.open_journal(
         path,
         experiment_id=protocol.EXPERIMENT_ID,
         provider="ibm",
-        backend="ibm_fez",
-        stage="pilot",
-        logical_digest="a",
-        isa_digest="b",
-        labels=["x"],
-        shots={"x": 1},
-        layout={"x": [0]},
+        backend=backend,
+        stage=stage,
+        logical_digest=protocol.logical_digest(circuits),
+        isa_digest="isa",
+        labels=[c.name for c in circuits],
+        shots=shots,
+        layout={},
+        extra={"main_reference_layout": list(range(9))},
     )
     return path, journal
 
@@ -271,12 +326,98 @@ def test_journal_is_written_before_and_refuses_a_second_submission(tmp_path: Pat
     common.record_job(path, journal, "job-1")
     stored = json.loads(path.read_text())
     assert stored["status"] == "submitted" and stored["job_ids"] == ["job-1"]
+    assert not list(path.parent.glob(".*.tmp"))
     with pytest.raises(ValueError):
         common.journal_path(tmp_path, "ibm", "ibm_fez", "other")
 
 
-def test_pilot_gate(tmp_path: Path) -> None:
-    """The main stage needs a passing pilot of the same backend.
+_RACE_WORKER = """
+import json, sys, time
+from pathlib import Path
+sys.path.insert(0, sys.argv[1])
+from scripts import s1v2_submission_common as common
+go = Path(sys.argv[3])
+while not go.exists():
+    time.sleep(0.001)
+try:
+    common.open_journal(
+        common.journal_path(Path(sys.argv[2]), "ibm", "ibm_fez", "pilot"),
+        experiment_id="race", provider="ibm", backend="ibm_fez", stage="pilot",
+        logical_digest="d", isa_digest="i", labels=["x"], shots={"x": 1}, layout={},
+    )
+    print("granted")
+except common.StageRefused:
+    print("refused")
+"""
+
+
+@pytest.mark.parametrize("trial", range(4))
+def test_concurrent_processes_get_exactly_one_reservation(trial: int, tmp_path: Path) -> None:
+    """Eight separate interpreters racing for one stage yield one grant and seven refusals.
+
+    Parameters
+    ----------
+    trial
+        Repetition index.
+    tmp_path
+        Temporary directory.
+
+    """
+    import subprocess
+    import sys
+    import time
+
+    repo = str(Path(__file__).resolve().parents[1])
+    go = tmp_path / "go"
+    workers = [
+        subprocess.Popen(
+            [sys.executable, "-c", _RACE_WORKER, repo, str(tmp_path), str(go)],
+            stdout=subprocess.PIPE,
+            text=True,
+        )
+        for _ in range(8)
+    ]
+    time.sleep(1.0)
+    go.touch()
+    outcomes = sorted(worker.communicate(timeout=60)[0].strip() for worker in workers)
+    assert all(worker.returncode == 0 for worker in workers)
+    assert outcomes == ["granted"] + ["refused"] * 7, (trial, outcomes)
+    journal = common.journal_path(tmp_path, "ibm", "ibm_fez", "pilot")
+    assert json.loads(journal.read_text())["status"] == "submitting"
+    assert not list(journal.parent.glob(".*.tmp"))
+
+
+def _pilot_chain(tmp_path: Path, *, dead: bool = False, variant: str = "") -> Path:
+    """Build a real local pilot chain (journal, raw counts, analysis) from simulation.
+
+    Parameters
+    ----------
+    tmp_path
+        Temporary directory.
+    dead
+        Replace the zero-event coherence by an incoherent baseline.
+    variant
+        ``"extra_label"`` adds an unexpected label; ``"short_shots"`` drops shots
+        from one label; both keep the chain hash-consistent.
+
+    """
+    path, journal = _journal(tmp_path)
+    common.record_job(path, journal, "job-pilot")
+    counts = _simulate(protocol.pilot_circuits(), protocol.PILOT_SHOTS)
+    if dead:
+        for basis in protocol.BASES:
+            counts[protocol.pilot_label(0, "conditional", basis)] = {"0": 1024, "1": 1024}
+    if variant == "extra_label":
+        counts["unexpected"] = {"0": protocol.PILOT_SHOTS}
+    if variant == "short_shots":
+        label = protocol.pilot_label(8, "measure_only", "X")
+        counts[label] = {key: value // 2 for key, value in counts[label].items()}
+    raw = common.write_raw_counts(path, {label: {"ro": c} for label, c in counts.items()})
+    return common.analyse_raw(raw)
+
+
+def test_pilot_chain_passes_when_complete(tmp_path: Path) -> None:
+    """A complete, hash-consistent passing pilot chain permits the main stage.
 
     Parameters
     ----------
@@ -284,14 +425,62 @@ def test_pilot_gate(tmp_path: Path) -> None:
         Temporary directory.
 
     """
-    path = tmp_path / "pilot.json"
-    path.write_text(json.dumps({"backend": "garnet", "main_block_go": True}))
-    assert common.require_pilot_go(path, "garnet")["main_block_go"] is True
+    analysis = _pilot_chain(tmp_path)
+    journal = common.pilot_go(analysis, "ibm", "ibm_fez")
+    assert journal["main_reference_layout"] == list(range(9))
+
+
+@pytest.mark.parametrize(
+    "tamper",
+    [
+        "provider",
+        "backend_name",
+        "experiment",
+        "schema",
+        "raw_edit",
+        "raw_missing",
+        "journal_edit",
+        "dead",
+        "extra_label",
+        "short_shots",
+    ],
+)
+def test_pilot_chain_refuses_every_broken_link(tamper: str, tmp_path: Path) -> None:
+    """Wrong identity, stale hashes, missing files or a failing screen are refused.
+
+    Parameters
+    ----------
+    tamper
+        Which link of the chain is broken.
+    tmp_path
+        Temporary directory.
+
+    """
+    variant = tamper if tamper in ("extra_label", "short_shots") else ""
+    analysis = _pilot_chain(tmp_path, dead=tamper == "dead", variant=variant)
+    raw = analysis.with_name("ibm_fez_pilot_raw_counts.json")
+    journal = analysis.with_name("ibm_fez_pilot_journal.json")
+    provider, backend = "ibm", "ibm_fez"
+    if tamper == "provider":
+        provider = "iqm"
+    elif tamper == "backend_name":
+        backend = "ibm_marrakesh"
+    elif tamper in ("experiment", "schema"):
+        document = json.loads(analysis.read_text())
+        document["experiment_id" if tamper == "experiment" else "schema"] = "other"
+        common.write_json(analysis, document)
+    elif tamper == "raw_edit":
+        document = json.loads(raw.read_text())
+        document["job_ids"] = ["edited"]
+        common.write_json(raw, document)
+    elif tamper == "raw_missing":
+        raw.unlink()
+    elif tamper == "journal_edit":
+        document = json.loads(journal.read_text())
+        document["note"] = "edited after retrieval"
+        common.write_json(journal, document)
     with pytest.raises(common.StageRefused):
-        common.require_pilot_go(path, "ibm_fez")
-    path.write_text(json.dumps({"backend": "garnet", "main_block_go": False}))
-    with pytest.raises(common.StageRefused):
-        common.require_pilot_go(path, "garnet")
+        common.pilot_go(analysis, provider, backend)
 
 
 def test_count_coercion() -> None:
@@ -304,7 +493,7 @@ def test_count_coercion() -> None:
         common.coerce_counts({"0": 1}, 2)
 
 
-def test_write_json_is_atomic_and_hashed(tmp_path: Path) -> None:
+def test_write_json_is_durable_and_hashed(tmp_path: Path) -> None:
     """JSON is written without a leftover temporary file and its digest matches.
 
     Parameters
@@ -316,7 +505,7 @@ def test_write_json_is_atomic_and_hashed(tmp_path: Path) -> None:
     path = tmp_path / "a" / "b.json"
     digest = common.write_json(path, {"k": 1})
     assert common.sha256_bytes(path.read_bytes()) == digest
-    assert not path.with_suffix(".json.tmp").exists()
+    assert not list(path.parent.glob(".*.tmp"))
 
 
 @pytest.mark.parametrize("module", [ibm, iqm])
@@ -344,8 +533,8 @@ def test_submitters_refuse_without_owner_go_before_any_provider_call(
 
 
 @pytest.mark.parametrize("module", [ibm, iqm])
-def test_main_stage_requires_a_passing_pilot(module: ModuleType, tmp_path: Path) -> None:
-    """Both submitters refuse the main stage without a matching passing pilot.
+def test_main_stage_requires_a_passing_pilot_chain(module: ModuleType, tmp_path: Path) -> None:
+    """Both submitters refuse the main stage without a valid pilot chain of that backend.
 
     Parameters
     ----------
@@ -359,97 +548,94 @@ def test_main_stage_requires_a_passing_pilot(module: ModuleType, tmp_path: Path)
     if module is ibm:
         base += ["--credentials-vault", str(tmp_path / "absent.md"), "--confirm-budget"]
     assert module.main(base) == 2
-    pilot = tmp_path / "pilot.json"
-    pilot.write_text(json.dumps({"backend": "elsewhere", "main_block_go": True}))
-    assert module.main([*base, "--pilot-analysis", str(pilot)]) == 2
+    stray = tmp_path / "elsewhere_pilot_analysis.json"
+    stray.write_text(json.dumps({"main_block_go": True}))
+    assert module.main([*base, "--pilot-analysis", str(stray)]) == 2
     assert not any(tmp_path.rglob("*journal*"))
 
 
-def test_stage_shots_and_budget() -> None:
-    """Stage shot numbers and the QPU-seconds estimate follow the preregistration."""
-    circuits, shots = ibm.stage_circuits("main")
-    assert sum(shots.values()) == len(circuits) * protocol.MAIN_SHOTS
+@pytest.mark.parametrize("value", [float("nan"), 0.0, 10801.0, 2.5, -5.0])
+def test_ibm_cap_refuses_invalid_values(value: float) -> None:
+    """The per-job QPU cap must be a whole number of seconds within the provider limit.
+
+    Parameters
+    ----------
+    value
+        Candidate cap.
+
+    """
+    with pytest.raises(common.StageRefused):
+        ibm.validated_cap(value)
+
+
+def test_ibm_cap_is_held_by_the_installed_runtime_sampler() -> None:
+    """A real SamplerV2 on a local vendor reference backend holds the cap; nothing is run."""
+    from qiskit_ibm_runtime.fake_provider import FakeFez
+
+    _, effective = ibm.capped_sampler(FakeFez(), ibm.validated_cap(300.0))
+    assert effective == 300
     assert ibm.estimate_seconds(10) == pytest.approx(33.0)
-    pilot, pilot_shots = iqm.stage_circuits("pilot")
-    assert set(pilot_shots.values()) == {protocol.PILOT_SHOTS} and len(pilot) == 20
-    for module in (ibm, iqm):
-        with pytest.raises(ValueError):
-            module.stage_circuits("other")
 
 
-def test_provider_helpers_on_a_vendor_reference_backend() -> None:
-    """Transpile, two-qubit and layout helpers work on a vendor reference backend."""
+def test_common_layout_places_every_stage_on_the_same_qubits() -> None:
+    """All main circuits share one physical layout and the pilot runs on its s0 and m0."""
     from qiskit_ibm_runtime.fake_provider import FakeFez
 
     backend = FakeFez()
-    circuits = protocol.pilot_circuits()[:4] + [protocol.build_arm("c2", "CL", 1, "X")]
-    for module in (ibm, iqm):
-        isa = module._transpile(circuits, backend)
-        two_qubit = module._two_qubit(isa)
-        layouts = module._layouts(isa)
-        assert set(two_qubit) == {c.name for c in circuits}
-        assert two_qubit[circuits[0].name] == 0
-        assert all(isinstance(q, int) for q in layouts[circuits[-1].name])
+    layout = common.main_reference_layout(backend)
+    assert len(layout) == 9 and len(set(layout)) == 9
+    main = [protocol.build_arm("c0", arm, 1, "X") for arm in ("CL", "OL", "NONE")]
+    calibration = common.transpile_stage(protocol.build_calibration(), backend, layout)
+    assert {tuple(c.layout.initial_index_layout()[:3]) for c in calibration} == {tuple(layout[:3])}
+    isa = common.transpile_stage(main, backend, common.stage_layout("main", layout))
+    initial = {tuple(c.layout.initial_index_layout()[:9]) for c in isa}
+    assert initial == {tuple(layout)}
+    pilot = common.transpile_stage(
+        protocol.pilot_circuits()[:2], backend, common.stage_layout("pilot", layout)
+    )
+    assert {tuple(c.layout.initial_index_layout()[:2]) for c in pilot} == {(layout[0], layout[3])}
+    assert common.two_qubit_counts(pilot)[pilot[0].name] == 0
+    assert set(common.final_layouts(isa)) == {c.name for c in main}
+    with pytest.raises(ValueError):
+        common.stage_layout("other", layout)
+    with pytest.raises(ValueError):
+        common.stage_circuits("other")
+    assert common.missing_operations(backend) == []
 
 
-def _raw_record(tmp_path: Path, stage: str, circuits: Sequence[QuantumCircuit]) -> Path:
-    """Write a raw-count record of ideally simulated circuits.
+def test_analyse_command_binds_the_main_analysis(tmp_path: Path) -> None:
+    """The analyse command writes a hash-bound main analysis with monitor rates.
 
     Parameters
     ----------
     tmp_path
         Temporary directory.
-    stage
-        Stage name.
-    circuits
-        Circuits to simulate.
 
     """
+    path, journal = _journal(tmp_path, stage="main")
+    common.record_job(path, journal, "job-main")
     simulator = AerSimulator(method="statevector")
-    shots = 1024
+    circuits = protocol.main_circuits()
     result = simulator.run(
-        transpile(circuits, simulator, seed_transpiler=1), shots=shots, seed_simulator=9
+        transpile(circuits, simulator, seed_transpiler=1, num_processes=1),
+        shots=protocol.MAIN_SHOTS,
+        seed_simulator=9,
     ).result()
     counts = {}
     for index, circuit in enumerate(circuits):
         full = result.get_counts(index)
         registers = {"ro": protocol.register_marginal(full, 0)}
-        if any(reg.name == "mb" for reg in circuit.cregs) and stage == "main":
+        if any(reg.name == "mb" for reg in circuit.cregs):
             registers["mb"] = protocol.register_marginal(full, -1)
         counts[circuit.name] = registers
-    path = tmp_path / f"ibm_fez_{stage}_raw_counts.json"
-    common.write_json(
-        path, {"stage": stage, "backend": "ibm_fez", "provider": "ibm", "counts": counts}
-    )
-    return path
-
-
-@pytest.mark.parametrize("stage", ["pilot", "main"])
-def test_analyse_command_applies_the_preregistered_rule(stage: str, tmp_path: Path) -> None:
-    """The analyse command writes the preregistered pilot or main analysis.
-
-    Parameters
-    ----------
-    stage
-        Stage name.
-    tmp_path
-        Temporary directory.
-
-    """
-    circuits = protocol.pilot_circuits() if stage == "pilot" else protocol.main_circuits()
-    raw = _raw_record(tmp_path, stage, circuits)
+    raw = common.write_raw_counts(path, counts)
     assert ibm.main(["analyse", "--raw-counts", str(raw)]) == 0
-    analysis = json.loads((tmp_path / f"ibm_fez_{stage}_analysis.json").read_text())
-    assert analysis["backend"] == "ibm_fez"
+    analysis = json.loads(raw.with_name("ibm_fez_main_analysis.json").read_text())
     assert analysis["raw_counts_sha256"] == common.sha256_bytes(raw.read_bytes())
-    if stage == "pilot":
-        assert analysis["main_block_go"] is True
-    else:
-        assert analysis["primary_pass"] is True and analysis["polarity_pass"] is True
-        rates = analysis["monitor_rates"][protocol.arm_label("c0", "CL", 1, "X")]
-        frozen = protocol.COIN_PROBABILITIES["c0"]
-        assert len(rates) == len(frozen)
-        assert all(abs(r - f) < 0.08 for r, f in zip(rates, frozen, strict=True))
+    assert analysis["primary_pass"] is True and analysis["polarity_pass"] is True
+    rates = analysis["monitor_rates"][protocol.arm_label("c0", "CL", 1, "X")]
+    frozen = protocol.COIN_PROBABILITIES["c0"]
+    assert all(abs(r - f) < 0.06 for r, f in zip(rates, frozen, strict=True))
 
 
 def test_open_loop_coins_reproduce_the_frozen_rates() -> None:
@@ -463,8 +649,7 @@ def test_open_loop_coins_reproduce_the_frozen_rates() -> None:
         .result()
         .get_counts()
     )
-    coins = protocol.register_marginal(full, 1)
-    rates = protocol.monitor_rates(coins, 2)
+    rates = protocol.monitor_rates(protocol.register_marginal(full, 1), 2)
     assert all(
         abs(r - f) < 0.04 for r, f in zip(rates, protocol.COIN_PROBABILITIES["c0"], strict=True)
     )
