@@ -253,8 +253,15 @@ def require_pilot_go(
                 raise StageRefused(
                     f"pilot {document_name} has {key}={document.get(key)!r}, expected {value!r}"
                 )
-    if analysis.get("schema") != "s1v2_pilot_analysis_v1":
-        raise StageRefused("pilot analysis has an unexpected schema")
+    for document_name, document, schema in (
+        ("analysis", analysis, "s1v2_pilot_analysis_v1"),
+        ("raw counts", raw, "s1v2_raw_counts_v1"),
+        ("journal", journal, "s1v2_submission_journal_v1"),
+    ):
+        if document.get("schema") != schema:
+            raise StageRefused(
+                f"pilot {document_name} has schema {document.get('schema')!r}, expected {schema!r}"
+            )
     if analysis.get("raw_counts_sha256") != raw_sha:
         raise StageRefused("pilot analysis does not bind the present raw counts")
     if raw.get("journal_sha256") != journal_sha or journal.get("status") != "submitted":

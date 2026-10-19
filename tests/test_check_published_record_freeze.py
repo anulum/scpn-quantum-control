@@ -41,15 +41,19 @@ def _make_repo(tmp_path: Path) -> Path:
 
 
 class TestManifestRoundTrip:
+    """Regenerating the manifest and verifying it against the same tree."""
+
     def test_update_then_verify_passes(
         self, tmp_path: Path, capsys: pytest.CaptureFixture[str]
     ) -> None:
+        """An ``--update`` followed by a plain check of the same tree passes."""
         root = _make_repo(tmp_path)
         assert freeze.main(["--root", str(root), "--update"]) == 0
         assert freeze.main(["--root", str(root)]) == 0
         assert "intact" in capsys.readouterr().out
 
     def test_manifest_content_is_sorted_and_hashed(self, tmp_path: Path) -> None:
+        """The written manifest lists every frozen file, sorted, with its SHA-256."""
         root = _make_repo(tmp_path)
         freeze.main(["--root", str(root), "--update"])
         payload = json.loads(
@@ -64,12 +68,14 @@ class TestManifestRoundTrip:
         assert len(digest) == 64 and int(digest, 16) >= 0
 
     def test_missing_docs_page_is_simply_not_frozen(self, tmp_path: Path) -> None:
+        """An absent published page is left out of the manifest instead of raising."""
         root = _make_repo(tmp_path)
         (root / "docs" / "preprint.md").unlink()
         records = freeze.build_manifest(root)
         assert set(records) == {"paper/submissions/s1/main.tex"}
 
     def test_missing_frozen_tree_yields_no_tree_entries(self, tmp_path: Path) -> None:
+        """Without a ``paper/submissions`` tree only the published pages are frozen."""
         root = tmp_path / "bare"
         (root / "docs").mkdir(parents=True)
         (root / "docs" / "preprint.md").write_text("page\n", encoding="utf-8")
@@ -91,6 +97,7 @@ class TestManifestRoundTrip:
     def test_no_git_executable_falls_back_to_plain_walk(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """Without a git executable every file of the frozen tree is hashed."""
         monkeypatch.setattr(shutil, "which", lambda _name: None)
         root = _make_repo(tmp_path)
         records = freeze.build_manifest(root)
@@ -98,8 +105,11 @@ class TestManifestRoundTrip:
 
 
 class TestDriftDetection:
+    """The guard reports every kind of change to a frozen record."""
+
     @pytest.fixture()
     def frozen_repo(self, tmp_path: Path) -> Path:
+        """Return a temporary repository whose manifest was just regenerated."""
         root = _make_repo(tmp_path)
         assert freeze.main(["--root", str(root), "--update"]) == 0
         return root
@@ -107,6 +117,7 @@ class TestDriftDetection:
     def test_modification_fails(
         self, frozen_repo: Path, capsys: pytest.CaptureFixture[str]
     ) -> None:
+        """Editing a frozen file is a blocking finding."""
         (frozen_repo / "docs" / "preprint.md").write_text("edited!\n", encoding="utf-8")
         assert freeze.main(["--root", str(frozen_repo)]) == 1
         out = capsys.readouterr().out
@@ -114,6 +125,7 @@ class TestDriftDetection:
         assert "read-only" in out
 
     def test_deletion_fails(self, frozen_repo: Path, capsys: pytest.CaptureFixture[str]) -> None:
+        """Deleting a frozen file is a blocking finding."""
         (frozen_repo / "paper" / "submissions" / "s1" / "main.tex").unlink()
         assert freeze.main(["--root", str(frozen_repo)]) == 1
         assert "missing published-record file" in capsys.readouterr().out
@@ -121,6 +133,7 @@ class TestDriftDetection:
     def test_addition_inside_frozen_tree_fails(
         self, frozen_repo: Path, capsys: pytest.CaptureFixture[str]
     ) -> None:
+        """Adding an unpinned file inside a frozen tree is a blocking finding."""
         (frozen_repo / "paper" / "submissions" / "s1" / "extra.tex").write_text(
             "new\n", encoding="utf-8"
         )
@@ -128,19 +141,24 @@ class TestDriftDetection:
         assert "unpinned file inside a frozen record tree" in capsys.readouterr().out
 
     def test_manifest_override_path(self, frozen_repo: Path, tmp_path: Path) -> None:
+        """``--manifest`` writes and checks an alternative manifest path."""
         alt = tmp_path / "alt_manifest.json"
         assert freeze.main(["--root", str(frozen_repo), "--manifest", str(alt), "--update"]) == 0
         assert freeze.main(["--root", str(frozen_repo), "--manifest", str(alt)]) == 0
 
 
 class TestManifestValidation:
+    """Malformed manifests are refused before any comparison."""
+
     def test_empty_records_fails_closed(self, tmp_path: Path) -> None:
+        """A manifest with no records is refused."""
         manifest = tmp_path / "bad.json"
         manifest.write_text(json.dumps({"records": {}}), encoding="utf-8")
         with pytest.raises(ValueError, match="non-empty object"):
             freeze.load_manifest(manifest)
 
     def test_records_not_object_fails_closed(self, tmp_path: Path) -> None:
+        """A manifest whose records are not an object is refused."""
         manifest = tmp_path / "bad.json"
         manifest.write_text(json.dumps({"records": ["x"]}), encoding="utf-8")
         with pytest.raises(ValueError, match="non-empty object"):
@@ -151,11 +169,13 @@ class TestCommittedManifest:
     """The committed manifest must match the committed published sources."""
 
     def test_repo_freeze_holds(self) -> None:
+        """The committed manifest matches every tracked published-record file of this repository."""
         pinned = freeze.load_manifest(REPO_ROOT / "data" / "published_record_freeze.json")
         current = freeze.build_manifest(REPO_ROOT)
         assert freeze.compare(pinned, current) == []
 
     def test_repo_freeze_covers_the_published_pages(self) -> None:
+        """The committed manifest pins the published pages and the submissions tree."""
         pinned = freeze.load_manifest(REPO_ROOT / "data" / "published_record_freeze.json")
         assert "docs/preprint.md" in pinned
         assert any(path.startswith("paper/submissions/") for path in pinned)

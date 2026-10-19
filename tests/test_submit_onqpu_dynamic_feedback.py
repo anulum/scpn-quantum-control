@@ -32,7 +32,10 @@ CAL_SHOTS = 8192
 
 
 class TestArmCircuits:
+    """Shape of the RC-1 feedback-on and feedback-off arm circuits."""
+
     def test_on_arm_carries_conditionals_and_off_arm_does_not(self) -> None:
+        """Only the feedback-on arm contains conditional blocks."""
         on_circuit = script.arm_circuit("feedback_on", 2)
         off_circuit = script.arm_circuit("feedback_off", 2)
         on_ops = dict(on_circuit.count_ops())
@@ -45,16 +48,19 @@ class TestArmCircuits:
         assert off_circuit.name == "rc1_feedback_off_rounds2"
 
     def test_register_shapes_follow_the_template(self) -> None:
+        """Classical register names and sizes follow the monitored template."""
         circuit = script.arm_circuit("feedback_on", 3)
         register_names = {register.name: register.size for register in circuit.cregs}
         assert register_names == {"monitor_bit": 3, "readout": 3}
         assert circuit.num_qubits == script.TOTAL_QUBITS
 
     def test_unknown_arm_fails_closed(self) -> None:
+        """An arm name outside the campaign is refused."""
         with pytest.raises(ValueError, match="unknown campaign arm"):
             script.arm_circuit("feedback_maybe", 2)
 
     def test_calibration_circuits_prepare_extremes(self) -> None:
+        """The two calibration circuits prepare all-zero and all-one states."""
         zeros, ones = script.calibration_circuits()
         assert zeros.name == "rc1_cal0" and ones.name == "rc1_cal1"
         assert zeros.num_qubits == script.TOTAL_QUBITS
@@ -62,16 +68,23 @@ class TestArmCircuits:
 
 
 class FakeProps:
+    """Local stand-in for one target instruction's properties (error only); not provider data."""
+
     def __init__(self, error: float | None) -> None:
+        """Store the stand-in error value."""
         self.error = error
 
 
 class FakeTarget:
+    """Local stand-in for a backend target with chosen operations; used only to exercise layout and capability logic."""
+
     def __init__(self, op_maps: dict[str, Any], extra_operations: tuple[str, ...] = ()) -> None:
+        """Store the operation maps and the reported operation names."""
         self._op_maps = op_maps
         self.operation_names = tuple(op_maps) + extra_operations
 
     def __getitem__(self, name: str) -> Any:
+        """Return the qubit-to-properties map of one operation, empty if absent."""
         return self._op_maps.get(name, {})
 
 
@@ -96,12 +109,16 @@ def star_target(extra_operations: tuple[str, ...] = DYNAMIC_OPS) -> FakeTarget:
 
 
 class TestCapabilityAndLayout:
+    """Dynamic-circuit capability check and star-layout selection on stand-in targets."""
+
     def test_dynamic_support_missing_names_the_gaps(self) -> None:
+        """Missing dynamic operations are named in order."""
         target = star_target(extra_operations=())
         assert script.dynamic_support_missing(target) == ["if_else", "reset"]
         assert script.dynamic_support_missing(star_target()) == []
 
     def test_star_layout_selects_the_best_centre(self) -> None:
+        """The centre with the cheapest three neighbours becomes the monitor."""
         star = script.select_star_layout(star_target())
         assert star.monitor == 1
         assert set(star.system) == {0, 2, 3}
@@ -109,6 +126,7 @@ class TestCapabilityAndLayout:
         assert len(star.readout_errors) == 4
 
     def test_two_centres_keep_the_cheaper_one(self) -> None:
+        """Of two eligible centres the cheaper total edge score wins."""
         target = FakeTarget(
             {
                 "cz": {
@@ -127,6 +145,7 @@ class TestCapabilityAndLayout:
         assert star.monitor == 1
 
     def test_no_degree_three_centre_fails_closed(self) -> None:
+        """A target without a degree-three qubit is refused."""
         line = FakeTarget(
             {
                 "cz": {(0, 1): FakeProps(0.002), (1, 2): FakeProps(0.003)},
@@ -137,6 +156,7 @@ class TestCapabilityAndLayout:
             script.select_star_layout(line)
 
     def test_uncalibrated_readout_excludes_the_edge(self) -> None:
+        """An edge whose endpoint has no readout calibration is not used."""
         target = FakeTarget(
             {
                 "cz": {
@@ -152,17 +172,22 @@ class TestCapabilityAndLayout:
 
 
 class TestTvdArithmetic:
+    """Total-variation distance and its per-bin multinomial approximation."""
+
     def test_identical_distributions_give_zero(self) -> None:
+        """Identical count tables have distance zero."""
         counts = {"000": 2048, "111": 2048}
         row = script.total_variation_distance(counts, counts)
         assert row["tvd"] == pytest.approx(0.0)
         assert "multinomial" in row["sigma_note"]
 
     def test_disjoint_distributions_give_one(self) -> None:
+        """Count tables with disjoint support have distance one."""
         row = script.total_variation_distance({"000": 100}, {"111": 100})
         assert row["tvd"] == pytest.approx(1.0)
 
     def test_known_half_shift(self) -> None:
+        """Moving half of the mass gives distance one half, bin by bin."""
         row = script.total_variation_distance({"000": 50, "111": 50}, {"000": 100})
         assert row["tvd"] == pytest.approx(0.5)
         bins = {entry["bitstring"]: entry for entry in row["per_bin"]}
@@ -170,105 +195,141 @@ class TestTvdArithmetic:
         assert bins["111"]["z_score"] > 0.0
 
     def test_zero_shot_table_fails_closed(self) -> None:
+        """An empty count table is refused."""
         with pytest.raises(ValueError, match="at least one shot"):
             script.total_variation_distance({}, {"000": 1})
 
     def test_saturated_bin_has_zero_sigma_and_zero_z(self) -> None:
+        """A bin with probability one has zero sigma and zero z-score."""
         row = script.total_variation_distance({"000": 10}, {"000": 10})
         assert row["per_bin"][0]["sigma"] == 0.0
         assert row["per_bin"][0]["z_score"] == 0.0
 
 
 class TestMonitorRates:
+    """Per-round monitor trigger rates from monitor-register counts."""
+
     def test_marginals_are_little_endian_per_round(self) -> None:
+        """Round 0 is the last character of the bitstring."""
         counts = {"01": 60, "10": 40}
         rates = script.monitor_trigger_rates(counts, 2)
         assert rates[0] == pytest.approx(0.6)  # round 0 = last character
         assert rates[1] == pytest.approx(0.4)
 
     def test_zero_shots_fail_closed(self) -> None:
+        """Empty monitor counts are refused."""
         with pytest.raises(ValueError, match="at least one shot"):
             script.monitor_trigger_rates({}, 2)
 
 
 class TestCoerceAndEstimate:
+    """Count coercion and the QPU-seconds estimate."""
+
     def test_coerce_pads_and_conserves(self) -> None:
+        """Short keys are zero-padded and the shot total is conserved."""
         coerced = script.coerce_counts(
             {"1": 3, "000": 5}, width=3, expected_shots=8, field_name="test"
         )
         assert coerced == {"001": 3, "000": 5}
 
     def test_coerce_duplicate_fails_closed(self) -> None:
+        """Two keys that pad to the same bitstring are refused."""
         with pytest.raises(ValueError, match="duplicate bitstring"):
             script.coerce_counts({"1": 4, "001": 4}, width=3, expected_shots=8, field_name="test")
 
     def test_coerce_shot_mismatch_fails_closed(self) -> None:
+        """Counts that do not sum to the expected shots are refused."""
         with pytest.raises(ValueError, match="expected 9"):
             script.coerce_counts({"000": 8}, width=3, expected_shots=9, field_name="test")
 
     def test_estimate_applies_the_dynamic_multiplier(self) -> None:
         # 4 dynamic mains at 1.1 × 3 plus 2 calibrations at 1.1.
+        """Dynamic circuits cost three times the base estimate, calibrations once."""
         assert script.estimate_qpu_seconds(4, 2) == pytest.approx(15.4)
 
 
 class TestIoHelpers:
+    """JSON writing and timestamp helpers of the RC-1 script."""
+
     def test_write_json_roundtrip(self, tmp_path: Path) -> None:
+        """Written JSON reads back unchanged and its digest is returned."""
         target = tmp_path / "payload.json"
         digest = script._write_json(target, {"a": 1})
         assert json.loads(target.read_text(encoding="utf-8")) == {"a": 1}
         assert digest == script._sha256(target)
 
     def test_timestamp_shape(self) -> None:
+        """Timestamps are compact UTC strings ending in Z."""
         stamp = script._timestamp()
         assert len(stamp) == 16 and stamp.endswith("Z")
 
 
 class FakeRegister:
+    """Local stand-in for a classical-register result with fixed counts; not provider data."""
+
     def __init__(self, counts: dict[str, int]) -> None:
+        """Store the fixed counts."""
         self._counts = counts
 
     def get_counts(self) -> dict[str, int]:
+        """Return the fixed counts."""
         return self._counts
 
 
 class FakePubResult:
+    """Local stand-in for one sampler pub result built from named registers; not provider data."""
+
     def __init__(self, registers: dict[str, dict[str, int]]) -> None:
+        """Expose each named register as a stand-in register on ``data``."""
         self.data = types.SimpleNamespace(
             **{name: FakeRegister(counts) for name, counts in registers.items()}
         )
 
 
 class TestRegisterCounts:
+    """Reading named classical registers from pub results."""
+
     def test_reads_the_named_register(self) -> None:
+        """The named register's counts are returned."""
         pub = FakePubResult({"readout": {"000": 8}, "monitor_bit": {"01": 8}})
         assert script._register_counts(pub, "readout") == {"000": 8}
         assert script._register_counts(pub, "monitor_bit") == {"01": 8}
 
     def test_missing_register_fails_closed(self) -> None:
+        """A missing register is refused with its name."""
         pub = FakePubResult({"readout": {"000": 8}})
         with pytest.raises(RuntimeError, match="monitor_bit"):
             script._register_counts(pub, "monitor_bit")
 
 
 class FakeJob:
+    """Local stand-in for a runtime job returning prepared results; no provider is contacted."""
+
     def __init__(self, results: list[FakePubResult]) -> None:
+        """Store the prepared results."""
         self._results = results
 
     def job_id(self) -> str:
+        """Return a fixed test job identifier."""
         return "test-rc1-job"
 
     def result(self, timeout: float) -> list[FakePubResult]:
+        """Return the prepared results after checking that a positive timeout was passed."""
         assert timeout > 0
         return self._results
 
 
 class FakeSampler:
+    """Local stand-in for SamplerV2 that records pubs and returns synthetic counts; not hardware evidence."""
+
     last_pubs: list[tuple[Any, Any, int]] = []
 
     def __init__(self, mode: Any) -> None:
+        """Store the execution mode the script passed."""
         self.mode = mode
 
     def run(self, pubs: list[tuple[Any, Any, int]]) -> FakeJob:
+        """Record the pubs and return a stand-in job with synthetic counts per pub."""
         FakeSampler.last_pubs = pubs
         results: list[FakePubResult] = []
         for circuit, _, shots in pubs:
@@ -312,9 +373,12 @@ def mocked_hardware(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 class TestMain:
+    """End-to-end behaviour of the RC-1 entry point with stand-in hardware objects."""
+
     def test_submit_without_confirm_budget_is_refused(
         self, capsys: pytest.CaptureFixture[str]
     ) -> None:
+        """``--submit`` without ``--confirm-budget`` is refused."""
         assert script.main(["--submit"]) == 2
         assert "requires --confirm-budget" in capsys.readouterr().err
 
@@ -324,6 +388,7 @@ class TestMain:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """A dry run writes the readiness record and submits nothing."""
         assert script.main(["--out-dir", str(tmp_path)]) == 0
         output = capsys.readouterr().out
         assert "readiness=ready_for_submission" in output
@@ -337,6 +402,7 @@ class TestMain:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """A target without dynamic operations blocks the run."""
         import scripts.prepare_s1_ibm_live_readiness as readiness_module
 
         fake_backend = types.SimpleNamespace(target=star_target(extra_operations=()))
@@ -352,6 +418,7 @@ class TestMain:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """An arm above the depth-ratio ceiling blocks the run."""
         exit_code = script.main(["--out-dir", str(tmp_path), "--max-depth-ratio", "0.1"])
         assert exit_code == 3
         assert "readiness=blocked" in capsys.readouterr().out
@@ -362,6 +429,7 @@ class TestMain:
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
+        """With stand-in hardware a submission writes readiness, raw counts and analysis; this is not provider evidence."""
         exit_code = script.main(["--out-dir", str(tmp_path), "--submit", "--confirm-budget"])
         assert exit_code == 0
         output = capsys.readouterr().out
@@ -390,6 +458,7 @@ class TestMain:
         assert "latency" in analysis["claim_boundary"]
 
     def test_parse_args_defaults(self) -> None:
+        """Command-line defaults match the preregistration."""
         args = script._parse_args([])
         assert args.backend == script.DEFAULT_BACKEND
         assert args.shots == SHOTS
@@ -399,7 +468,10 @@ class TestMain:
 
 
 class TestModuleBootstrap:
+    """Module import behaviour of the RC-1 script."""
+
     def test_reload_inserts_repo_root_when_absent(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Re-importing the script puts the repository root on ``sys.path`` when it is missing."""
         import importlib
 
         stripped = [entry for entry in sys.path if entry != str(script.REPO_ROOT)]

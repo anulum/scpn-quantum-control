@@ -1,13 +1,13 @@
 {
  "schema": "test_documentation_ceiling_v1",
  "ruff_version": "ruff 0.16.4",
- "measured_commit": "2f0a9c7cbcdb246a9119c00b8acda3111f379ead",
+ "measured_commit": "3a0294d80ae49653a42c46bf6a0ec056057a57c2",
  "scopes": [
   "tests",
   "oscillatools/tests"
  ],
- "total_findings": 7332,
- "total_files": 585,
+ "total_findings": 7264,
+ "total_files": 583,
  "files": {
   "oscillatools/tests/conftest.py": 1,
   "oscillatools/tests/kuramoto_delay_sensitivity_witness.py": 1,
@@ -177,7 +177,6 @@
   "tests/test_cft_analysis.py": 13,
   "tests/test_changelog_consistency.py": 3,
   "tests/test_check_internal_todo_policy.py": 13,
-  "tests/test_check_published_record_freeze.py": 17,
   "tests/test_check_retired_claims.py": 33,
   "tests/test_check_rust_pyi_exports.py": 3,
   "tests/test_check_secrets.py": 22,
@@ -548,7 +547,6 @@
   "tests/test_submit_bell_rerun_mitigated.py": 64,
   "tests/test_submit_fim_replication_zne_ibm.py": 5,
   "tests/test_submit_max_width_kuramoto_xy.py": 60,
-  "tests/test_submit_onqpu_dynamic_feedback.py": 51,
   "tests/test_submit_phase3_large_system_ibm.py": 5,
   "tests/test_submit_qkd_qber_basis_metadata.py": 61,
   "tests/test_submit_s1_ibm_feedback_pair.py": 5,

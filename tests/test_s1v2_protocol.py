@@ -437,6 +437,10 @@ def test_pilot_chain_passes_when_complete(tmp_path: Path) -> None:
         "backend_name",
         "experiment",
         "schema",
+        "raw_schema",
+        "journal_schema",
+        "raw_schema_missing",
+        "journal_schema_missing",
         "raw_edit",
         "raw_missing",
         "journal_edit",
@@ -469,6 +473,33 @@ def test_pilot_chain_refuses_every_broken_link(tamper: str, tmp_path: Path) -> N
         document = json.loads(analysis.read_text())
         document["experiment_id" if tamper == "experiment" else "schema"] = "other"
         common.write_json(analysis, document)
+    elif tamper in (
+        "raw_schema",
+        "raw_schema_missing",
+        "journal_schema",
+        "journal_schema_missing",
+    ):
+        # Reseal the chain so that every hash link stays consistent and only the schema is wrong.
+        if tamper.startswith("journal"):
+            document = json.loads(journal.read_text())
+            if tamper.endswith("missing"):
+                document.pop("schema")
+            else:
+                document["schema"] = "other_v1"
+            common.write_json(journal, document)
+            raw_document = json.loads(raw.read_text())
+            raw_document["journal_sha256"] = common.sha256_bytes(journal.read_bytes())
+            common.write_json(raw, raw_document)
+        else:
+            raw_document = json.loads(raw.read_text())
+            if tamper.endswith("missing"):
+                raw_document.pop("schema")
+            else:
+                raw_document["schema"] = "other_v1"
+            common.write_json(raw, raw_document)
+        document = json.loads(analysis.read_text())
+        document["raw_counts_sha256"] = common.sha256_bytes(raw.read_bytes())
+        common.write_json(analysis, document)
     elif tamper == "raw_edit":
         document = json.loads(raw.read_text())
         document["job_ids"] = ["edited"]
@@ -479,8 +510,32 @@ def test_pilot_chain_refuses_every_broken_link(tamper: str, tmp_path: Path) -> N
         document = json.loads(journal.read_text())
         document["note"] = "edited after retrieval"
         common.write_json(journal, document)
-    with pytest.raises(common.StageRefused):
+    with pytest.raises(common.StageRefused, match="schema" if "schema" in tamper else None):
         common.pilot_go(analysis, provider, backend)
+
+
+def test_resealed_chain_with_correct_schemas_still_passes(tmp_path: Path) -> None:
+    """Resealing the hash links without a schema change keeps a valid chain valid.
+
+    This is the positive control of the resealed wrong-schema cases above.
+
+    Parameters
+    ----------
+    tmp_path
+        Temporary directory.
+
+    """
+    analysis = _pilot_chain(tmp_path)
+    raw = analysis.with_name("ibm_fez_pilot_raw_counts.json")
+    journal = analysis.with_name("ibm_fez_pilot_journal.json")
+    common.write_json(journal, json.loads(journal.read_text()))
+    raw_document = json.loads(raw.read_text())
+    raw_document["journal_sha256"] = common.sha256_bytes(journal.read_bytes())
+    common.write_json(raw, raw_document)
+    document = json.loads(analysis.read_text())
+    document["raw_counts_sha256"] = common.sha256_bytes(raw.read_bytes())
+    common.write_json(analysis, document)
+    assert common.pilot_go(analysis, "ibm", "ibm_fez")["stage"] == "pilot"
 
 
 def test_count_coercion() -> None:
