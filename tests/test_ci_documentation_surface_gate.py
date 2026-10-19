@@ -637,7 +637,7 @@ def test_ci_builds_and_reuses_native_wheels_for_supported_python_versions() -> N
     assert "  native-wheels:" in workflow
     assert 'python-version: ["3.11", "3.12", "3.13"]' in workflow
     assert "name: scpn-quantum-engine-${{ matrix.python-version }}" in workflow
-    assert "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c" in workflow
+    assert "actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333" in workflow
     assert workflow_path_for_job("native-wheels").name == "ci-native-build.yml"
 
 
