@@ -41,6 +41,17 @@
   },
   {
    "kind": ".html",
+   "root": "overrides",
+   "gates": [
+    {
+     "workflow": "docs-strict.yml",
+     "job": "build-strict",
+     "command": "mkdocs build --strict --site-dir /tmp/site-strict"
+    }
+   ]
+  },
+  {
+   "kind": ".html",
    "root": "studio-web",
    "gates": [
     {

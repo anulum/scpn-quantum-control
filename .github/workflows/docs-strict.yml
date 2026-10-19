@@ -23,6 +23,7 @@ on:
     paths:
       - "docs/**"
       - "mkdocs.yml"
+      - "overrides/**"
       - "src/**"
       - "oscillatools/**"
       - "scpn_quantum_engine/**"
@@ -36,6 +37,7 @@ on:
     paths:
       - "docs/**"
       - "mkdocs.yml"
+      - "overrides/**"
       - "src/**"
       - "oscillatools/**"
       - "scpn_quantum_engine/**"
