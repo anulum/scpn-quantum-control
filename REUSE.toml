@@ -17,6 +17,13 @@ path = ["*.md", "*.txt", "*.toml", "*.yml", "*.yaml", "*.json", "*.cfg"]
 SPDX-FileCopyrightText = "1996–2026 Miroslav Šotek"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
 
+# Theme override templates render into every page head; an in-file comment
+# header would precede the doctype, so their licence is declared here.
+[[annotations]]
+path = ["overrides/**/*.html"]
+SPDX-FileCopyrightText = "1996–2026 Miroslav Šotek"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
 # Rendered documentation pages carry no in-file header (the code-style block
 # renders as page content — 2026-07-04 rendered-docs header standard); their
 # licence is declared here instead.
