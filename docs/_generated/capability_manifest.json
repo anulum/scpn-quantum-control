@@ -8,12 +8,12 @@
     "notebook_files": 109,
     "optional_extras": 43,
     "public_api_exports": 851,
-    "public_documentation_pages": 384,
+    "public_documentation_pages": 385,
     "python_model_classes": 1533,
     "python_model_source_modules": 800,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1544
+    "test_files": 1545
   },
   "documentation": {
     "examples": [
@@ -317,6 +317,7 @@
       "docs/campaigns/s1d_ibm_policy_sweep_result_2026-05-20.md",
       "docs/campaigns/s1e_ibm_policy_sweep_confirmatory_repeat_2026-05-20.md",
       "docs/campaigns/s1f_ibm_quadrature_mechanism_check_2026-05-20.md",
+      "docs/campaigns/s1v2_information_matched_feedback_prereg_2026-10-19.md",
       "docs/campaigns/s2_full_campaign_plan_2026-05-07.md",
       "docs/campaigns/s2_full_campaign_slice_n10_2026-05-07.md",
       "docs/campaigns/s2_full_campaign_slice_n12_2026-05-07.md",
@@ -10183,6 +10184,7 @@
       "tests/test_rust_path_benchmarks.py",
       "tests/test_s1_feedback_ibm.py",
       "tests/test_s1_feedback_ibm_branches.py",
+      "tests/test_s1v2_protocol.py",
       "tests/test_s2_full_campaign_plan.py",
       "tests/test_s2_full_campaign_slice.py",
       "tests/test_s2_n14_resource_gate.py",

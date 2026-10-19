@@ -4,7 +4,7 @@ The primary navigation stays intentionally compact. This catalog keeps every
 public guide, evidence note, contract, campaign protocol, and reference page
 discoverable without crowding the main learning path.
 
-Current inventory: **384 public pages**; **164** are in the
+Current inventory: **385 public pages**; **164** are in the
 primary navigation and the remainder are indexed here.
 
 Labels marked `catalog` are intentionally outside the primary navigation; they
@@ -153,6 +153,7 @@ are still built, link-checked, searchable, and public.
 | [S1d IBM Policy-Direction Sweep Result](campaigns/s1d_ibm_policy_sweep_result_2026-05-20.md) | catalog | Date: 2026-05-20 Backend: ibm_kingston Experiment ID: s1d_policy_direction_sweep_2026-05-20 Parent experiment: s1_dynamic_feedback_preregistration_2026-05-06 |
 | [S1e IBM Policy-Sweep Confirmatory Repeat](campaigns/s1e_ibm_policy_sweep_confirmatory_repeat_2026-05-20.md) | catalog | Date: 2026-05-20 Backend: ibm_kingston Experiment ID: s1e_policy_sweep_confirmatory_repeat_2026-05-20 Parent experiment: s1_dynamic_feedback_preregistration_2026-05-06 |
 | [S1f IBM Quadrature Mechanism Check](campaigns/s1f_ibm_quadrature_mechanism_check_2026-05-20.md) | catalog | Date: 2026-05-20 Backend: ibm_kingston Experiment ID: s1f_quadrature_mechanism_check_2026-05-20 Parent experiment: s1_dynamic_feedback_preregistration_2026-05-06 |
+| [S1v2: information-matched dynamic-circuit feedback on IBM Heron and IQM Garnet — preregistration](campaigns/s1v2_information_matched_feedback_prereg_2026-10-19.md) | catalog | Date: 2026-10-19 |
 | [S2 Full Scaling Campaign Plan](campaigns/s2_full_campaign_plan_2026-05-07.md) | catalog | Date: 2026-05-07 |
 | [S2 Full Scaling Campaign Slice](campaigns/s2_full_campaign_slice_n10_2026-05-07.md) | catalog | Date: 2026-05-07 |
 | [S2 Full Scaling Campaign Slice](campaigns/s2_full_campaign_slice_n12_2026-05-07.md) | catalog | Date: 2026-05-07 |
