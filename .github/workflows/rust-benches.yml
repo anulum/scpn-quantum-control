@@ -76,13 +76,13 @@ jobs:
           # spot > 30 % regressions, light enough for every PR.
           cargo bench --bench hot_paths -- --quick --output-format bencher | tee bench-output.txt
       - name: Upload Criterion HTML report
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: criterion-report
           path: scpn_quantum_engine/target/criterion/
           retention-days: 90
       - name: Upload raw bencher output
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: bench-output-txt
           path: scpn_quantum_engine/bench-output.txt
