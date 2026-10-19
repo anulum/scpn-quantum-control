@@ -407,6 +407,12 @@
    "target": "workbench-umbrella"
   },
   {
+   "prefix": "overrides/",
+   "kind": "doc",
+   "target": "workbench-umbrella",
+   "reason": "MkDocs theme override that adds the TDM reservation meta tag to every documentation page"
+  },
+  {
    "prefix": "notebooks/",
    "kind": "example",
    "target": "workbench-umbrella"
