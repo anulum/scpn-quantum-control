@@ -39,6 +39,11 @@ updates:
     schedule:
       interval: weekly
       day: monday
+    # The fuzz crate passes ndarray values into the engine, so its exact
+    # ndarray pin must equal the engine's ndarray version; it moves together
+    # with the engine, never as a separate fuzz-only proposal.
+    ignore:
+      - dependency-name: "ndarray"
   - package-ecosystem: cargo
     directory: "/scpn_quantum_engine/program_ad_replay"
     schedule:

@@ -17,7 +17,7 @@ cargo-fuzz = true
 
 [dependencies]
 libfuzzer-sys = "0.4"
-ndarray = "=0.17.2"
+ndarray = "=0.16.1"
 scpn-quantum-engine = { path = ".." }
 scpn-quantum-studio-wasm-kernel = { path = "../studio_wasm_kernel" }
 
