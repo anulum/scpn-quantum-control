@@ -18,6 +18,7 @@ from tools import (
 )
 from tools import differentiable_rust_python_inventory_quality_gates as _inventory_gates
 from tools import differentiable_scalar_kernels_quality_gates as _scalar_gates
+from tools import differentiable_transform_algebra_quality_gates as _transform_gates
 
 Gate = tuple[str, list[str]]
 
@@ -44,6 +45,7 @@ def build_static_quality_gates(python: str) -> list[Gate]:
         *_api_gates.build_static_quality_gates(python),
         *_lm_gates.build_static_quality_gates(python),
         *_natural_gradient_gates.build_static_quality_gates(python),
+        *_transform_gates.build_static_quality_gates(python),
     ]
 
 
@@ -69,6 +71,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
         *_api_gates.build_coverage_gates(python),
         *_lm_gates.build_coverage_gates(python),
         *_natural_gradient_gates.build_coverage_gates(python),
+        *_transform_gates.build_coverage_gates(python),
     ]
 
 

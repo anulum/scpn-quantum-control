@@ -87,7 +87,7 @@ jobs:
     needs: static-analysis
     uses: ./.github/workflows/ci-studio.yml
   native-integration:
-    needs: [static-analysis, native-build]
+    needs: [static-analysis, native-build, differentiable-control]
     uses: ./.github/workflows/ci-native-integration.yml
 
   ci-gate:

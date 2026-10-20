@@ -677,10 +677,18 @@ jobs:
         run: pytest tests/ -v --tb=short -x -m "not slow and not hardware and not internal_corpus and not performance and not framework_imports"
       - name: Audit test quality
         run: python tools/audit_test_quality.py
+      - name: Download exact-commit native transform coverage (3.12 only)
+        if: matrix.python-version == '3.12'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
+        with:
+          name: native-transform-algebra-coverage-${{ github.sha }}
+          path: ${{ runner.temp }}/native-transform-coverage
       - name: Run tests with coverage (3.12 only)
         if: matrix.python-version == '3.12'
         run: |
           pytest tests/ --cov=src/scpn_quantum_control --cov-branch --cov-report=xml --cov-fail-under=0 -m "not slow and not hardware and not internal_corpus and not performance and not framework_imports"
+          python -m coverage combine --append --keep "$RUNNER_TEMP/native-transform-coverage/native-transform.coverage"
+          python -m coverage xml --include='*/scpn_quantum_control/*'
           python tools/audit_coverage_policy.py --coverage-xml coverage.xml
       - name: Audit coverage gaps (3.12 only)
         if: matrix.python-version == '3.12'

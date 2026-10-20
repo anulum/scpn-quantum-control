@@ -15,12 +15,27 @@ from typing import Final, Literal, Protocol
 
 TransformAlgebraSupportStatus = Literal["passed", "failed", "blocked"]
 TransformAlgebraLane = Literal[
+    "framework_native",
     "native",
     "custom_rules",
     "program_ad",
     "quantum_gradients",
     "unsupported_boundary",
 ]
+
+NATIVE_TRANSFORM_ALGEBRA_CATEGORIES: Final[tuple[str, ...]] = (
+    "framework_grad",
+    "framework_hessian",
+    "framework_vmap_grad",
+    "framework_grad_vmap",
+    "framework_jacfwd_jacrev",
+    "framework_jvp_vjp",
+    "framework_structured",
+    "framework_custom_rules",
+    "framework_structured_vmap",
+    "framework_custom_vmap",
+    "framework_quantum_bridge_boundary",
+)
 
 TRANSFORM_ALGEBRA_SUPPORT_MATRIX_CLAIM_BOUNDARY: Final[str] = (
     "generated from bounded local transform-algebra audit rows; supported rows "
@@ -99,6 +114,7 @@ class TransformAlgebraSupportMatrixRow:
         if not self.row_id:
             raise ValueError("transform algebra support row_id must be non-empty")
         if self.lane not in {
+            "framework_native",
             "native",
             "custom_rules",
             "program_ad",
@@ -120,8 +136,6 @@ class TransformAlgebraSupportMatrixRow:
             raise ValueError("supported transform algebra rows must have passed status")
         if self.status == "passed" and not self.supported:
             raise ValueError("passed transform algebra rows must be supported")
-        if self.status == "blocked" and self.supported:
-            raise ValueError("blocked transform algebra rows must not be supported")
         if self.status == "blocked":
             if self.residual is not None:
                 raise ValueError("blocked transform algebra rows must not carry residuals")
@@ -168,6 +182,7 @@ class _SupportMatrixRowSpec:
     transform_stack: tuple[str, ...]
     case_ids: tuple[str, ...]
     notes: tuple[str, ...]
+    claim_boundary: str = TRANSFORM_ALGEBRA_SUPPORT_MATRIX_CLAIM_BOUNDARY
 
 
 _SUPPORT_MATRIX_ROW_SPECS: Final[tuple[_SupportMatrixRowSpec, ...]] = (
@@ -270,8 +285,36 @@ def build_transform_algebra_support_matrix(
 ) -> tuple[TransformAlgebraSupportMatrixRow, ...]:
     """Return support rows generated from transform-algebra audit cases."""
     case_map = {case.case_id: case for case in cases}
+    native_specs = tuple(
+        _SupportMatrixRowSpec(
+            case.case_id,
+            "unsupported_boundary" if case.status == "blocked" else "framework_native",
+            tuple(
+                entry.removeprefix("transform=")
+                for entry in case.evidence
+                if entry.startswith("transform=")
+            )
+            or ("refused before execution",),
+            (case.case_id,),
+            (
+                "Inspect the source case for executed expressions or explicit pre-execution refusal.",
+            ),
+            "pre-execution generic bridge refusal; no derivative or native bridge qualification"
+            if case.status == "blocked"
+            else "framework-native CPU qualification of the named source case only; no hardware or performance claim",
+        )
+        for case in cases
+        for framework in ("jax", "pytorch", "tensorflow")
+        for category in NATIVE_TRANSFORM_ALGEBRA_CATEGORIES
+        if case.case_id == f"{framework}_{category}"
+    )
+    local_specs = _SUPPORT_MATRIX_ROW_SPECS
+    if native_specs and not any(
+        case_id in case_map for spec in local_specs for case_id in spec.case_ids
+    ):
+        local_specs = ()
     return tuple(
-        _support_matrix_row_from_spec(spec, case_map) for spec in _SUPPORT_MATRIX_ROW_SPECS
+        _support_matrix_row_from_spec(spec, case_map) for spec in (*local_specs, *native_specs)
     )
 
 
@@ -294,6 +337,7 @@ def _support_matrix_row_from_spec(
             evidence=("support_matrix_generation",),
             blocked_reasons=("support matrix source case missing: " + ", ".join(missing),),
             notes=spec.notes,
+            claim_boundary=spec.claim_boundary,
         )
     if any(case.status == "failed" for case in selected):
         return TransformAlgebraSupportMatrixRow(
@@ -308,6 +352,7 @@ def _support_matrix_row_from_spec(
             evidence=_unique_strings(item for case in selected for item in case.evidence),
             blocked_reasons=("one or more source audit cases failed",),
             notes=spec.notes,
+            claim_boundary=spec.claim_boundary,
         )
     if all(case.status == "blocked" for case in selected):
         return TransformAlgebraSupportMatrixRow(
@@ -324,6 +369,7 @@ def _support_matrix_row_from_spec(
                 reason for case in selected for reason in case.blocked_reasons
             ),
             notes=spec.notes,
+            claim_boundary=spec.claim_boundary,
         )
     return TransformAlgebraSupportMatrixRow(
         row_id=spec.row_id,
@@ -337,13 +383,14 @@ def _support_matrix_row_from_spec(
         evidence=_unique_strings(item for case in selected for item in case.evidence),
         blocked_reasons=(),
         notes=spec.notes,
+        claim_boundary=spec.claim_boundary,
     )
 
 
 def _max_case_residual(cases: Sequence[TransformAlgebraCaseLike]) -> float:
     residuals = [case.residual for case in cases if case.residual is not None]
     if not residuals:
-        return 0.0
+        raise ValueError("executed transform support sources require a residual")
     return float(max(residuals))
 
 

@@ -401,3 +401,62 @@ jobs:
           --precision=2 --show-missing
           --fail-under=100
           --include=*/differentiable_sparse_derivatives.py,*/differentiable_fisher.py
+
+  native-transform-algebra-quality:
+    needs: [differentiable-sparse-derivatives-quality]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      TF_NUM_INTRAOP_THREADS: "1"
+      TF_NUM_INTEROP_THREADS: "1"
+      JAX_PLATFORMS: cpu
+      CUDA_VISIBLE_DEVICES: ""
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install required CPU native transform profile
+        run: |
+          echo "TMPDIR=$RUNNER_TEMP" >> "$GITHUB_ENV"
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e oscillatools/ -e .
+          python -m pip install --require-hashes --no-deps -r requirements-ci-torch-cpu-py312-linux.txt
+          python -m pip install --require-hashes --no-deps -r requirements-ci-native-ad-py312-linux.txt
+          python -m pip check
+      - name: Audit the committed native CPU dependency additions
+        run: >-
+          python -m pip_audit -r requirements-ci-native-ad-py312-linux.txt
+          --no-deps --disable-pip --strict --desc on
+      - name: Enforce native transform types and NumPy documentation
+        run: |
+          python - <<'PY'
+          import subprocess
+          import sys
+          from tools import differentiable_transform_algebra_quality_gates as gates
+          for name, command in gates.build_static_quality_gates(sys.executable):
+              print(name, flush=True)
+              subprocess.run(command, check=True)
+          PY
+      - name: Qualify native compositions and exact owner coverage
+        run: |
+          python - <<'PY'
+          import subprocess
+          import sys
+          from tools import differentiable_transform_algebra_quality_gates as gates
+          for name, command in gates.build_coverage_gates(sys.executable):
+              print(name, flush=True)
+              subprocess.run(command, check=True)
+          PY
+      - name: Publish measured native coverage for the aggregate audit
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: native-transform-algebra-coverage-${{ github.sha }}
+          path: ${{ runner.temp }}/native-transform.coverage
+          if-no-files-found: error
+          retention-days: 7

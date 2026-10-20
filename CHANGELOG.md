@@ -27,6 +27,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ### Added
 
+- Required CPU JAX, PyTorch and TensorFlow transform qualification through the
+  unified differentiable facade and checker: native batching, structured mixed
+  derivatives and registered custom higher orders with analytic references.
+  Exact native coverage feeds the aggregate CI audit from the same commit;
+  generic quantum host-bridge nesting boundaries remain explicit.
+
 - Signed readout correction preserves negative quasi-probabilities and raw
   measurement/calibration data. Sampling and calibration covariances remain
   separate, and shared calibration correlations reach full-covariance GLS

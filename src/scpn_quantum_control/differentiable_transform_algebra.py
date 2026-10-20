@@ -31,6 +31,7 @@ from .differentiable_parameter_contracts import Parameter
 from .differentiable_result_contracts import FINITE_DIFFERENCE_DIAGNOSTIC_CLAIM_BOUNDARY
 from .differentiable_sparse_derivatives import sparse_jacobian
 from .differentiable_transform_support_matrix import (
+    NATIVE_TRANSFORM_ALGEBRA_CATEGORIES,
     REQUIRED_TRANSFORM_ALGEBRA_SUPPORT_ROWS,
     TransformAlgebraLane,
     TransformAlgebraSupportMatrixRow,
@@ -193,6 +194,8 @@ class TransformAlgebraAudit:
     def missing_support_rows(self) -> tuple[str, ...]:
         """Required support-matrix rows missing from the generated matrix."""
         present = {row.row_id for row in self.support_matrix}
+        if self.required_categories == NATIVE_TRANSFORM_ALGEBRA_CATEGORIES:
+            return tuple(case.case_id for case in self.cases if case.case_id not in present)
         return tuple(
             row_id for row_id in REQUIRED_TRANSFORM_ALGEBRA_SUPPORT_ROWS if row_id not in present
         )
@@ -307,9 +310,150 @@ def assert_transform_algebra_audit_passes(
     details: list[str] = []
     if candidate.missing_categories:
         details.append("missing categories: " + ", ".join(candidate.missing_categories))
+    if candidate.missing_support_rows:
+        details.append("missing support rows: " + ", ".join(candidate.missing_support_rows))
+    for row in candidate.failed_support_rows:
+        details.append(
+            f"support row {row.row_id} residual={row.residual} tolerance={row.tolerance}"
+        )
     for case in candidate.failed_cases:
         details.append(f"{case.case_id} residual={case.residual} tolerance={case.tolerance}")
     raise AssertionError("; ".join(details))
+
+
+def run_native_transform_algebra_audit(
+    framework: str,
+    values: ArrayLike,
+    *,
+    batch_axis: int = 0,
+) -> TransformAlgebraAudit:
+    """Qualify named CPU framework compositions against independent derivatives.
+
+    Parameters
+    ----------
+    framework:
+        Exact runtime selector: ``jax``, ``pytorch`` or ``tensorflow``. The
+        selected dependency is required; no diagnostic fallback is substituted.
+    values:
+        Dimensionless finite real parameters, either a vector or a matrix of
+        independent samples. Each dimension is between one and sixteen. Inputs
+        are copied and promoted to float64 before invoking the selected runtime.
+    batch_axis:
+        Matrix axis containing independent samples, zero or one. Vector inputs
+        require zero. Returned batched evidence always orders samples first.
+
+    Returns
+    -------
+    TransformAlgebraAudit
+        Executed native compositions and explicit unsupported project bridge
+        boundaries, with generated support rows. This read-only audit does not
+        submit provider jobs, persist results or qualify a physical device.
+
+    Raises
+    ------
+    ValueError
+        If the selector, numeric domain, shape or batch axis is inadmissible.
+    ImportError
+        If the selected required framework cannot be imported.
+    RuntimeError
+        If a required native transform is unavailable or cannot execute.
+
+    """
+    if framework not in {"jax", "pytorch", "tensorflow"}:
+        raise ValueError("framework must be jax, pytorch or tensorflow")
+    raw = np.asarray(values)
+    if raw.dtype.kind not in "iuf" or raw.ndim not in {1, 2}:
+        raise ValueError("values must be a real numeric vector or matrix")
+    if type(batch_axis) is not int or batch_axis not in {0, 1}:
+        raise ValueError("batch_axis must be zero or one")
+    if raw.ndim == 1 and batch_axis != 0:
+        raise ValueError("vector values require batch_axis zero")
+    if any(size < 1 or size > 16 for size in raw.shape):
+        raise ValueError("each input dimension must be between one and sixteen")
+    if not np.all(np.isfinite(raw)):
+        raise ValueError("values must contain only finite entries")
+    matrix = np.array(raw, dtype=np.float64, copy=True)
+    if matrix.ndim == 1:
+        matrix = matrix[None, :]
+    elif batch_axis == 1:
+        matrix = matrix.T.copy()
+    if framework == "jax":
+        from .differentiable_jax_transform_algebra import run_jax_transform_algebra_cases
+
+        cases = run_jax_transform_algebra_cases(matrix, batch_axis=batch_axis)
+    elif framework == "pytorch":
+        from .differentiable_torch_transform_algebra import run_torch_transform_algebra_cases
+
+        cases = run_torch_transform_algebra_cases(matrix, batch_axis=batch_axis)
+    else:
+        from .differentiable_tensorflow_transform_algebra import (
+            run_tensorflow_transform_algebra_cases,
+        )
+
+        cases = run_tensorflow_transform_algebra_cases(matrix, batch_axis=batch_axis)
+    return TransformAlgebraAudit(
+        cases=cases,
+        required_categories=NATIVE_TRANSFORM_ALGEBRA_CATEGORIES,
+        claim_boundary=(
+            f"framework-native {framework} CPU float64 composition qualification; "
+            "each support row names its executed transform and domain; project "
+            "host bridges retain separate refusal boundaries; no provider, "
+            "hardware, accelerator or performance qualification"
+        ),
+    )
+
+
+def _framework_transform_case(
+    framework: str,
+    version: str,
+    category: str,
+    actual: ArrayLike,
+    expected: ArrayLike,
+    transforms: Sequence[str],
+) -> TransformAlgebraCase:
+    """Compare an executed CPU transform with its independent float64 oracle."""
+    return _executed_case(
+        f"{framework}_{category}",
+        category,
+        actual,
+        expected,
+        1.0e-10,
+        (
+            f"framework={framework}",
+            f"version={version}",
+            "device=cpu",
+            "dtype=float64",
+            "manual_batching=False",
+            "host_callback=False",
+            *(f"transform={transform}" for transform in transforms),
+        ),
+        claim_boundary=(
+            f"framework-native {framework} {version} CPU float64; "
+            "only the executed named composition and smooth deterministic fixture; "
+            "no project host-bridge, provider, hardware or performance promotion"
+        ),
+    )
+
+
+def _framework_quantum_bridge_boundary_case(framework: str) -> TransformAlgebraCase:
+    """Retain the generic quantum bridge's pre-execution nesting refusal."""
+    from .phase.transform_nesting import plan_gradient_transform_nesting
+
+    plan = plan_gradient_transform_nesting(("grad", "grad", "grad"), adapter=framework)
+    if plan.supported:
+        raise RuntimeError("undeclared third-order quantum bridge unexpectedly accepted")
+    return TransformAlgebraCase(
+        case_id=f"{framework}_framework_quantum_bridge_boundary",
+        category="framework_quantum_bridge_boundary",
+        status="blocked",
+        lhs=(),
+        rhs=(),
+        residual=None,
+        tolerance=0.0,
+        evidence=("plan_gradient_transform_nesting", "no_derivative_execution"),
+        blocked_reasons=plan.blocked_reasons,
+        claim_boundary="generic quantum bridge nesting remains unsupported before execution",
+    )
 
 
 def _grad_vmap_case(tolerance: float) -> TransformAlgebraCase:
@@ -801,6 +945,8 @@ def _executed_case(
     rhs: ArrayLike,
     tolerance: float,
     evidence: Sequence[str],
+    *,
+    claim_boundary: str = TRANSFORM_ALGEBRA_CLAIM_BOUNDARY,
 ) -> TransformAlgebraCase:
     lhs_array = _as_flat_float_tuple(lhs)
     rhs_array = _as_flat_float_tuple(rhs)
@@ -815,6 +961,7 @@ def _executed_case(
         tolerance=tolerance,
         evidence=tuple(evidence),
         blocked_reasons=(),
+        claim_boundary=claim_boundary,
     )
 
 
@@ -848,7 +995,7 @@ def _max_abs(lhs: FloatArray, rhs: FloatArray) -> float:
     if lhs.shape != rhs.shape:
         return float("inf")
     if lhs.size == 0:
-        return 0.0
+        return float("inf")
     return float(np.max(np.abs(lhs - rhs)))
 
 
@@ -864,4 +1011,5 @@ __all__ = [
     "TransformAlgebraStatus",
     "assert_transform_algebra_audit_passes",
     "run_transform_algebra_audit",
+    "run_native_transform_algebra_audit",
 ]

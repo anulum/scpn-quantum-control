@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **800 modules** across **41 package families**
-- **4294 documented public module-level symbols**
+- **803 modules** across **41 package families**
+- **4298 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -6265,6 +6265,14 @@ Optional JAX autodiff adapter for native differentiable objectives.
 
 **Functions:** `is_jax_autodiff_available()`, `jax_value_and_grad()`
 
+### `scpn_quantum_control.differentiable_jax_transform_algebra`
+
+Qualify actual JAX compositions without host callbacks or global dtype changes.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_jax_transform_algebra.py) · Public symbols: **1**
+
+**Functions:** `run_jax_transform_algebra_cases()`
+
 ### `scpn_quantum_control.differentiable_levenberg_marquardt`
 
 Levenberg-Marquardt and Gauss-Newton residual optimization helpers.
@@ -6393,15 +6401,31 @@ Fail-closed stochastic-gradient uncertainty policy contracts.
 
 **Functions:** `gradient_confidence_interval()`
 
+### `scpn_quantum_control.differentiable_tensorflow_transform_algebra`
+
+Qualify native CPU TensorFlow tapes, forward accumulators and vectorized maps.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_tensorflow_transform_algebra.py) · Public symbols: **1**
+
+**Functions:** `run_tensorflow_transform_algebra_cases()`
+
+### `scpn_quantum_control.differentiable_torch_transform_algebra`
+
+Qualify CPU torch.func compositions, including registered custom derivatives.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_torch_transform_algebra.py) · Public symbols: **1**
+
+**Functions:** `run_torch_transform_algebra_cases()`
+
 ### `scpn_quantum_control.differentiable_transform_algebra`
 
 Metamorphic transform-algebra gate for differentiable local routes.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_transform_algebra.py) · Public symbols: **4**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_transform_algebra.py) · Public symbols: **5**
 
 **Classes:** `TransformAlgebraCase`, `TransformAlgebraAudit`
 
-**Functions:** `run_transform_algebra_audit()`, `assert_transform_algebra_audit_passes()`
+**Functions:** `run_transform_algebra_audit()`, `assert_transform_algebra_audit_passes()`, `run_native_transform_algebra_audit()`
 
 ### `scpn_quantum_control.differentiable_transform_helpers`
 

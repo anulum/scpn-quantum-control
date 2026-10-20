@@ -511,6 +511,30 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_jax_transform_algebra.py",
+            ("tests/test_differentiable_jax_transform_algebra.py",),
+            (
+                "native higher-order and custom derivative compositions",
+                "structured native batching",
+            ),
+        ),
+        _record(
+            "src/scpn_quantum_control/differentiable_torch_transform_algebra.py",
+            ("tests/test_differentiable_torch_transform_algebra.py",),
+            (
+                "native higher-order and custom derivative compositions",
+                "structured native batching",
+            ),
+        ),
+        _record(
+            "src/scpn_quantum_control/differentiable_tensorflow_transform_algebra.py",
+            ("tests/test_differentiable_tensorflow_transform_algebra.py",),
+            (
+                "native higher-order and custom derivative compositions",
+                "structured native batching",
+            ),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_transform_algebra.py",
             ("tests/test_differentiable_transform_algebra.py",),
             (

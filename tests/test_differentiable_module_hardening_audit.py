@@ -202,3 +202,33 @@ def test_differentiable_module_hardening_audit_is_exported() -> None:
         run_differentiable_module_hardening_audit
     )
     assert "run_differentiable_module_hardening_audit" in scpn.__all__
+
+
+def test_discovery_does_not_promote_directories_named_as_modules(tmp_path: Path) -> None:
+    """Register real source files while refusing a directory masquerading as a module.
+
+    Parameters
+    ----------
+    tmp_path:
+        Isolated filesystem containing one real module and one directory decoy.
+
+    """
+    module = tmp_path / "src/scpn_quantum_control/differentiable.py"
+    module.parent.mkdir(parents=True)
+    module.write_text("# real module\n")
+    (module.parent / "differentiable_phantom.py").mkdir()
+    test = tmp_path / "tests/test_differentiable.py"
+    test.parent.mkdir()
+    test.write_text("# dedicated test\n")
+    result = run_differentiable_module_hardening_audit(
+        repo_root=tmp_path,
+        registry=(
+            DifferentiableModuleHardeningRecord(
+                module_path="src/scpn_quantum_control/differentiable.py",
+                test_paths=("tests/test_differentiable.py",),
+                diagnostic_surfaces=("real source discovery",),
+            ),
+        ),
+    )
+    assert result.passed, result.errors
+    assert result.discovered_module_paths == ("src/scpn_quantum_control/differentiable.py",)

@@ -2,7 +2,7 @@
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
     "domain_package_families": 40,
-    "example_files": 40,
+    "example_files": 41,
     "github_workflows": 44,
     "model_documentation_pages": 14,
     "notebook_files": 109,
@@ -10,10 +10,10 @@
     "public_api_exports": 851,
     "public_documentation_pages": 385,
     "python_model_classes": 1533,
-    "python_model_source_modules": 800,
+    "python_model_source_modules": 803,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1545
+    "test_files": 1551
   },
   "documentation": {
     "examples": [
@@ -56,6 +56,7 @@
       "examples/README.md",
       "examples/kuramoto_solver_outcomes.py",
       "examples/method_comparison.py",
+      "examples/native_transform_algebra.py",
       "examples/studio_workflow.py"
     ],
     "notebooks": [
@@ -7217,6 +7218,7 @@
       "src/scpn_quantum_control/differentiable_gradient_descent.py",
       "src/scpn_quantum_control/differentiable_implicit_sensitivity.py",
       "src/scpn_quantum_control/differentiable_jax_adapter.py",
+      "src/scpn_quantum_control/differentiable_jax_transform_algebra.py",
       "src/scpn_quantum_control/differentiable_levenberg_marquardt.py",
       "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
       "src/scpn_quantum_control/differentiable_natural_gradient.py",
@@ -7231,6 +7233,8 @@
       "src/scpn_quantum_control/differentiable_sparse_derivatives.py",
       "src/scpn_quantum_control/differentiable_stochastic_estimators.py",
       "src/scpn_quantum_control/differentiable_stochastic_policy.py",
+      "src/scpn_quantum_control/differentiable_tensorflow_transform_algebra.py",
+      "src/scpn_quantum_control/differentiable_torch_transform_algebra.py",
       "src/scpn_quantum_control/differentiable_transform_algebra.py",
       "src/scpn_quantum_control/differentiable_transform_helpers.py",
       "src/scpn_quantum_control/differentiable_transform_support_matrix.py",
@@ -9264,6 +9268,7 @@
       "tests/test_differentiable_isolated_benchmark_plan_edges.py",
       "tests/test_differentiable_jax.py",
       "tests/test_differentiable_jax_adapter_quality_gate.py",
+      "tests/test_differentiable_jax_transform_algebra.py",
       "tests/test_differentiable_levenberg_marquardt.py",
       "tests/test_differentiable_module_hardening_audit.py",
       "tests/test_differentiable_natural_gradient.py",
@@ -9300,8 +9305,12 @@
       "tests/test_differentiable_spsa.py",
       "tests/test_differentiable_stochastic_estimators.py",
       "tests/test_differentiable_support_matrix_page.py",
+      "tests/test_differentiable_tensorflow_transform_algebra.py",
+      "tests/test_differentiable_torch_transform_algebra.py",
       "tests/test_differentiable_transform_algebra.py",
+      "tests/test_differentiable_transform_algebra_quality_gate.py",
       "tests/test_differentiable_transform_helpers.py",
+      "tests/test_differentiable_transform_support_matrix.py",
       "tests/test_differentiable_transform_support_matrix_artifact.py",
       "tests/test_differentiable_transform_support_matrix_artifact_quality_gate.py",
       "tests/test_differentiable_vmap.py",
@@ -9702,6 +9711,7 @@
       "tests/test_native_program_execution.py",
       "tests/test_native_replay_admission.py",
       "tests/test_native_semantic_binding.py",
+      "tests/test_native_transform_composition.py",
       "tests/test_native_whole_program_ad_execution_evidence.py",
       "tests/test_native_whole_program_linalg_factorisation.py",
       "tests/test_negative_inputs.py",

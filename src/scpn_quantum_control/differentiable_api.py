@@ -55,7 +55,10 @@ from .differentiable_dependency_environment_map import (
     run_differentiable_dependency_environment_map,
 )
 from .differentiable_rust_python_inventory import run_differentiable_rust_python_inventory
-from .differentiable_transform_algebra import run_transform_algebra_audit
+from .differentiable_transform_algebra import (
+    run_native_transform_algebra_audit,
+    run_transform_algebra_audit,
+)
 from .phase.gradient_backend import (
     plan_quantum_gradient_backend,
     quantum_gradient_backend_capability,
@@ -702,7 +705,10 @@ def differentiable_api(
     method, step:
         Optional differentiation method and diagnostic step override.
     gate, observable, backend, transform, adapter:
-        Quantum-gradient support and diagnostic route selectors.
+        Quantum-gradient support and diagnostic route selectors. For
+        ``transform_algebra_report``, the default ``native`` preserves the local
+        diagnostic audit; ``jax``, ``pytorch`` or ``tensorflow`` instead requires
+        actual CPU float64 qualification on ``values`` (sample-first batches).
     n_params, shift_terms, shots, allow_hardware:
         Quantum-gradient planning dimensions and hardware-policy controls.
     primitive_identities, registry:
@@ -805,7 +811,20 @@ def differentiable_api(
     if operation == "isolated_benchmark_plan":
         return differentiable_isolated_benchmark_plan_report()
     if operation == "transform_algebra_report":
-        return differentiable_transform_algebra_report()
+        if adapter == "native":
+            return differentiable_transform_algebra_report()
+        audit = run_native_transform_algebra_audit(adapter, _require_values(values))
+        return UnifiedDifferentiableAPIResult(
+            operation="transform_algebra_report",
+            supported=audit.passed,
+            method=f"{adapter}_native_transform_algebra",
+            value=None,
+            gradient=None,
+            jacobian=None,
+            hessian=None,
+            payload=audit.to_dict(),
+            claim_boundary=audit.claim_boundary,
+        )
     if operation == "qfi_fss_report":
         return differentiable_qfi_fss_report(
             system_sizes=system_sizes,

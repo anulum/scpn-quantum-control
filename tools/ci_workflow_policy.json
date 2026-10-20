@@ -118,7 +118,8 @@
         "varqite-quality",
         "xy-compiler-quality",
         "psi-lattice-quality",
-        "differentiable-sparse-derivatives-quality"
+        "differentiable-sparse-derivatives-quality",
+        "native-transform-algebra-quality"
       ]
     },
     {
@@ -383,7 +384,8 @@
       "workflow": ".github/workflows/ci-native-integration.yml",
       "caller_needs": [
         "static-analysis",
-        "native-build"
+        "native-build",
+        "differentiable-control"
       ],
       "jobs": [
         "ml-dsa-seal-quality",
@@ -469,6 +471,7 @@
     "dla-protected-memory-quality",
     "fep-ffi-contract-quality",
     "differentiable-sparse-derivatives-quality",
+    "native-transform-algebra-quality",
     "program-ad-adjoint-quality",
     "circuit-preservation-quality",
     "scientific-problem-quality",

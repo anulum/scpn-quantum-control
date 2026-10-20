@@ -541,3 +541,46 @@ def test_report_dispatch_routes_cover_wrappers_without_external_execution(
         assert result.method == expected_method
         assert result.payload == {"route": operation}
         assert result.claim_boundary == stub.claim_boundary
+
+
+def test_native_transform_dispatch_preserves_failed_delegate(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Preserve failed native evidence in the envelope; real native tests qualify AD.
+
+    Parameters
+    ----------
+    monkeypatch:
+        Scoped facade dependency fault returning an incomplete audit.
+
+    """
+    failed = TransformAlgebraAudit(
+        cases=(
+            TransformAlgebraCase(
+                "incomplete",
+                "unit",
+                "failed",
+                (1.0,),
+                (0.0,),
+                1.0,
+                0.0,
+                ("injected runtime failure",),
+                (),
+            ),
+        ),
+        required_categories=("unit",),
+        claim_boundary="injected failed native evidence",
+    )
+    captured: list[object] = []
+
+    def failed_runtime(framework: str, values: object) -> TransformAlgebraAudit:
+        """Expose a failed runtime audit to check facade failure propagation."""
+        captured.extend([framework, values])
+        return failed
+
+    monkeypatch.setattr(_API_MODULE, "run_native_transform_algebra_audit", failed_runtime)
+    report = differentiable_api("transform_algebra_report", adapter="jax", values=[0.3])
+    assert not report.supported
+    assert report.payload == failed.to_dict()
+    assert report.claim_boundary == failed.claim_boundary
+    assert captured == ["jax", [0.3]]

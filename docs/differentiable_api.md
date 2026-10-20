@@ -35,6 +35,9 @@ rules retain their registered identities; this does not freeze callback state.
 | `scpn_quantum_control.differentiable_api` | Unified façade for value, gradient, Jacobian, Hessian, support, diagnostics, compile, local conformance benchmark, transform-algebra, and dashboard-status reports with one JSON evidence envelope. |
 | `scpn_quantum_control.differentiable` | AD data structures, compatibility re-exports, optimisation helpers, program-AD metadata, and support reports. |
 | `scpn_quantum_control.differentiable_transform_algebra` | Executable local metamorphic gate for `grad(vmap(f))`, `vmap(grad(f))`, `jacrev`/`jacfwd`, Hessian symmetry, JVP/VJP duality, registered custom JVP/VJP composition, whole-program AD Hessian and directional-transform nesting, native phase-QNode `vmap(grad)`, linearity, chain rule, phase-periodic parameter-shift wraparound, sparse/masked parameters, dtype/broadcast replay, and fail-closed unsupported transform boundaries. |
+| `scpn_quantum_control.differentiable_jax_transform_algebra` | Required CPU JAX gradient, curvature, structured/native-batch and registered custom-rule qualification; consumed by the opt-in native audit. |
+| `scpn_quantum_control.differentiable_torch_transform_algebra` | Required CPU `torch.func` and `autograd.Function` composition qualification with independent numeric references. |
+| `scpn_quantum_control.differentiable_tensorflow_transform_algebra` | Required CPU tapes, forward accumulators, custom gradients and vectorized-map qualification with no loop fallback. |
 | `scpn_quantum_control.governed_route_matrix` | Fail-closed multi-ecosystem route matrix: unified route-ID taxonomy across transform/adapter/compiler/Rust/provider/competitor families, `explain_route(...)` with rejected alternatives, zero blank cells (`supported` / `permanent_boundary` / `implementation_path` only). See [Governed route matrix](governed_route_matrix.md). |
 | `scpn_quantum_control.unsuitable_scenario_registry` | Unsuitable-scenario and anti-silent-wrong registry: versioned catalogue of refuse paths, pure `probe_unsuitable_scenario(...)` (always fail-closed), and competitor silent-wrong fixtures with governed route deep links. See [Unsuitable scenario registry](unsuitable_scenario_registry.md). |
 | `scpn_quantum_control.analysis.rl_research_governance` | Disabled-by-default RL-adjacent research policy: preregistration, fixed multi-seed suites, iteration/evaluation budgets, deterministic zero-noise replay, dense-reward gaming warning, and permanent pulse-execution refusal. See [RL research governance](rl_research_governance.md). |
@@ -1342,6 +1345,67 @@ The JSON and markdown artefacts live at
 mirror `run_gradient_support_matrix_audit()` and explain the selected method,
 evaluation mode, warnings, alternatives, and fail-closed boundaries for each
 representative planner cell.
+
+## Native framework transform qualification
+
+The default `differentiable_transform_algebra_report()` retains the bounded local
+NumPy audit and its original payload. Select a required CPU runtime explicitly
+through the same unified facade:
+
+```python
+from scpn_quantum_control.differentiable_api import differentiable_api
+
+report = differentiable_api(
+    "transform_algebra_report", adapter="jax",  # or "pytorch", "tensorflow"
+    values=[[0.2, -0.4], [0.5, 0.7]],
+)
+assert report.supported
+print(report.payload["support_matrix"])
+```
+
+Inputs are copied finite real vectors or sample-first matrices, promoted to
+float64, with each dimension between 1 and 16. The direct
+`run_native_transform_algebra_audit(framework, values, batch_axis=1)` in
+`scpn_quantum_control.differentiable_transform_algebra` also admits column batches.
+A vector requires axis zero. Invalid shape, non-finite/complex values, unknown
+runtime or axis refuse before framework execution. A missing selected runtime
+raises its import error; it never substitutes finite differences or skips the
+requested qualification. Neither route submits jobs or writes evidence files.
+
+| Executed family | Independent reference |
+| --- | --- |
+| Gradient, Hessian, forward/reverse Jacobian of gradient | `f(x)=sum(x**4)`, `4*x**3`, `diag(12*x**2)` |
+| Native map of gradient and gradient of summed native map | Analytic per-sample quartic gradients, axes zero and one |
+| JVP/VJP of gradient | Analytic Hessian times tangent and transpose times cotangent |
+| Dictionary weights and shared scalar bias, mixed Hessian and native map | Derivatives of `sum((weights+bias)**4)`, including both mixed blocks |
+| Registered custom derivatives under sine, higher derivatives and native map | Analytic sine chain rule, including non-diagonal curvature |
+
+JAX uses `grad`, `hessian`, `jacfwd`, `jacrev`, `jvp`, `vjp`, `vmap`,
+`custom_jvp` and `custom_vjp`; the custom-VJP higher derivative uses reverse over
+reverse. PyTorch uses `torch.func` and a real `autograd.Function` with
+`setup_context`, backward, JVP and generated batching rules. TensorFlow uses
+nested `GradientTape`, `ForwardAccumulator`, `custom_gradient` and
+`vectorized_map(fallback_to_while_loop=False)`; column batches are explicitly
+transposed to its leading map axis. Evidence is converted to NumPy after AD.
+These smooth deterministic fixtures use an absolute residual threshold of
+`1e-10`; runtime version, CPU, float64 and actual transform expressions accompany
+each row. No Python loop is relabelled as native batching.
+
+A separate blocked row preserves the generic quantum host bridge's refusal of
+undeclared third-order nesting. Successful polynomial/custom-rule qualification
+does not extend those bridges or qualify arbitrary QNodes, devices, providers,
+accelerators or performance. The owning required-runtime test cohort also checks
+the registered JAX QNode Hessian against an independent trigonometric oracle.
+
+```bash
+python tools/check_differentiable_transform_algebra.py --framework jax
+python tools/check_differentiable_transform_algebra.py --framework pytorch --values '[[0.2,0.5],[-0.4,0.7]]' --batch-axis 1
+python examples/native_transform_algebra.py tensorflow
+```
+
+The required-runtime CI cohort executes each framework in a separate process and
+enforces exact statement/branch coverage on its declared owners. Ordinary sparse
+runs may deselect `framework_imports`; that does not qualify native composition.
 
 ## Minimal transform-algebra support matrix
 
