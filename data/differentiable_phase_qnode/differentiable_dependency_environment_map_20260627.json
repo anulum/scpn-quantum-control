@@ -144,9 +144,9 @@
         "clap==4.6.7",
         "criterion==0.5.1",
         "scpn-quantum-engine==0.2.0",
-        "pyo3==0.29.3",
+        "pyo3==0.30.1",
         "ndarray==0.16.1",
-        "numpy==0.29.0",
+        "numpy==0.30.0",
         "nalgebra==0.35.0",
         "num-complex==0.4.6",
         "rand==0.10.3",
@@ -154,13 +154,13 @@
         "reqwest==0.13.5",
         "scpn-quantum-program-ad-replay==0.1.0",
         "serde==1.0.229",
-        "serde_json==1.0.151"
+        "serde_json==1.0.154"
       ],
       "evidence_paths": [
         "scpn_quantum_engine/Cargo.lock"
       ],
       "evidence_sha256": [
-        "3e5ebf3bff12f2f175fa43ea99927f5f2035e1d600a2a0d792bf772233f09c2e"
+        "d22c588669ee92d02a48c621d20d10f15f195dc0fb0dc0ca76ce1ef70e54f145"
       ],
       "evidence_status": "locked",
       "blockers": [],
