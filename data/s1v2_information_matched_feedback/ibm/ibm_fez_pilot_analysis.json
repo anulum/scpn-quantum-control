@@ -1,0 +1,32 @@
+{
+  "backend": "ibm_fez",
+  "baseline_coherence": 0.9985990247376728,
+  "baseline_floor": 0.5,
+  "baseline_lower_99": 0.9943939042138892,
+  "coherence": {
+    "conditional": {
+      "0": 0.9985990247376728,
+      "1": 0.9772858649050257,
+      "2": 0.8353349171608505,
+      "4": 0.25704193556815785,
+      "8": 0.4933728673061052
+    },
+    "measure_only": {
+      "0": 0.9992758990327423,
+      "1": 0.9998230777635677,
+      "2": 0.9983454367827899,
+      "4": 0.9996528022756982,
+      "8": 0.9993713310131408
+    }
+  },
+  "coherence_floor": 0.15,
+  "experiment_id": "s1v2_information_matched_feedback_2026-10-19",
+  "logical_digest": "11cbc277cea29b704cd4b92f7b04317c1af59b42de6b1d775ee10f4ff5ca8998",
+  "main_block_go": true,
+  "provider": "ibm",
+  "raw_counts_sha256": "792d0537dcdab38cff339447e6d0e15dcfe243cdf83606427a4618ef5ac5f057",
+  "retained_ratio_at_c0_events": 0.25740255017341074,
+  "retained_ratio_lower_99": 0.20748356743029267,
+  "schema": "s1v2_pilot_analysis_v1",
+  "stage": "pilot"
+}

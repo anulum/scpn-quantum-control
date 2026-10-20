@@ -1,0 +1,32 @@
+{
+  "backend": "garnet",
+  "baseline_coherence": 0.9844234394083883,
+  "baseline_floor": 0.5,
+  "baseline_lower_99": 0.9746113320371131,
+  "coherence": {
+    "conditional": {
+      "0": 0.9844234394083883,
+      "1": 0.9258142135481678,
+      "2": 0.8915245465778713,
+      "4": 0.7470371214032101,
+      "8": 0.4789469118265035
+    },
+    "measure_only": {
+      "0": 0.9766113269043579,
+      "1": 0.9688922408490231,
+      "2": 0.9689882047110484,
+      "4": 0.9643400166879131,
+      "8": 0.9885687730219586
+    }
+  },
+  "coherence_floor": 0.15,
+  "experiment_id": "s1v2_information_matched_feedback_2026-10-19",
+  "logical_digest": "11cbc277cea29b704cd4b92f7b04317c1af59b42de6b1d775ee10f4ff5ca8998",
+  "main_block_go": true,
+  "provider": "iqm",
+  "raw_counts_sha256": "fa4163735c4ba6b70e338477e5654d17a43229e62224cda15a5abcb780644a9f",
+  "retained_ratio_at_c0_events": 0.7588575114100891,
+  "retained_ratio_lower_99": 0.7239043717721492,
+  "schema": "s1v2_pilot_analysis_v1",
+  "stage": "pilot"
+}

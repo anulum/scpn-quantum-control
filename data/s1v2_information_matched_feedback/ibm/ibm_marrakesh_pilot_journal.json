@@ -1,0 +1,154 @@
+{
+  "backend": "ibm_marrakesh",
+  "estimated_qpu_seconds": 66.0,
+  "experiment_id": "s1v2_information_matched_feedback_2026-10-19",
+  "isa_digest": "f3860d57529238b9c13954d57aa4bfedf327365c544f2126ddf4e8252382965d",
+  "job_ids": [
+    "dbb69e0c77vs7383qar0"
+  ],
+  "labels": [
+    "s1v2_pilot_conditional_k0_X",
+    "s1v2_pilot_conditional_k0_Y",
+    "s1v2_pilot_measure_only_k0_X",
+    "s1v2_pilot_measure_only_k0_Y",
+    "s1v2_pilot_conditional_k1_X",
+    "s1v2_pilot_conditional_k1_Y",
+    "s1v2_pilot_measure_only_k1_X",
+    "s1v2_pilot_measure_only_k1_Y",
+    "s1v2_pilot_conditional_k2_X",
+    "s1v2_pilot_conditional_k2_Y",
+    "s1v2_pilot_measure_only_k2_X",
+    "s1v2_pilot_measure_only_k2_Y",
+    "s1v2_pilot_conditional_k4_X",
+    "s1v2_pilot_conditional_k4_Y",
+    "s1v2_pilot_measure_only_k4_X",
+    "s1v2_pilot_measure_only_k4_Y",
+    "s1v2_pilot_conditional_k8_X",
+    "s1v2_pilot_conditional_k8_Y",
+    "s1v2_pilot_measure_only_k8_X",
+    "s1v2_pilot_measure_only_k8_Y"
+  ],
+  "layout": {
+    "s1v2_pilot_conditional_k0_X": [
+      7,
+      27
+    ],
+    "s1v2_pilot_conditional_k0_Y": [
+      7,
+      27
+    ],
+    "s1v2_pilot_conditional_k1_X": [
+      7,
+      27
+    ],
+    "s1v2_pilot_conditional_k1_Y": [
+      7,
+      27
+    ],
+    "s1v2_pilot_conditional_k2_X": [
+      7,
+      27
+    ],
+    "s1v2_pilot_conditional_k2_Y": [
+      7,
+      27
+    ],
+    "s1v2_pilot_conditional_k4_X": [
+      7,
+      27
+    ],
+    "s1v2_pilot_conditional_k4_Y": [
+      7,
+      27
+    ],
+    "s1v2_pilot_conditional_k8_X": [
+      7,
+      27
+    ],
+    "s1v2_pilot_conditional_k8_Y": [
+      7,
+      27
+    ],
+    "s1v2_pilot_measure_only_k0_X": [
+      7,
+      27
+    ],
+    "s1v2_pilot_measure_only_k0_Y": [
+      7,
+      27
+    ],
+    "s1v2_pilot_measure_only_k1_X": [
+      7,
+      27
+    ],
+    "s1v2_pilot_measure_only_k1_Y": [
+      7,
+      27
+    ],
+    "s1v2_pilot_measure_only_k2_X": [
+      7,
+      27
+    ],
+    "s1v2_pilot_measure_only_k2_Y": [
+      7,
+      27
+    ],
+    "s1v2_pilot_measure_only_k4_X": [
+      7,
+      27
+    ],
+    "s1v2_pilot_measure_only_k4_Y": [
+      7,
+      27
+    ],
+    "s1v2_pilot_measure_only_k8_X": [
+      7,
+      27
+    ],
+    "s1v2_pilot_measure_only_k8_Y": [
+      7,
+      27
+    ]
+  },
+  "logical_digest": "11cbc277cea29b704cd4b92f7b04317c1af59b42de6b1d775ee10f4ff5ca8998",
+  "main_reference_layout": [
+    7,
+    17,
+    6,
+    27,
+    8,
+    5,
+    54,
+    98,
+    21
+  ],
+  "max_execution_time_s": 300,
+  "opened_utc": "20261019T184303Z",
+  "provider": "ibm",
+  "schema": "s1v2_submission_journal_v1",
+  "shots": {
+    "s1v2_pilot_conditional_k0_X": 2048,
+    "s1v2_pilot_conditional_k0_Y": 2048,
+    "s1v2_pilot_conditional_k1_X": 2048,
+    "s1v2_pilot_conditional_k1_Y": 2048,
+    "s1v2_pilot_conditional_k2_X": 2048,
+    "s1v2_pilot_conditional_k2_Y": 2048,
+    "s1v2_pilot_conditional_k4_X": 2048,
+    "s1v2_pilot_conditional_k4_Y": 2048,
+    "s1v2_pilot_conditional_k8_X": 2048,
+    "s1v2_pilot_conditional_k8_Y": 2048,
+    "s1v2_pilot_measure_only_k0_X": 2048,
+    "s1v2_pilot_measure_only_k0_Y": 2048,
+    "s1v2_pilot_measure_only_k1_X": 2048,
+    "s1v2_pilot_measure_only_k1_Y": 2048,
+    "s1v2_pilot_measure_only_k2_X": 2048,
+    "s1v2_pilot_measure_only_k2_Y": 2048,
+    "s1v2_pilot_measure_only_k4_X": 2048,
+    "s1v2_pilot_measure_only_k4_Y": 2048,
+    "s1v2_pilot_measure_only_k8_X": 2048,
+    "s1v2_pilot_measure_only_k8_Y": 2048
+  },
+  "stage": "pilot",
+  "status": "submitted",
+  "submitted_utc": "20261019T184305Z"
+}

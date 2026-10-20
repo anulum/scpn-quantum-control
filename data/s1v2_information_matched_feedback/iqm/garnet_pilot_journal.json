@@ -1,0 +1,153 @@
+{
+  "backend": "garnet",
+  "credit_stop": "manual: owner reads the Resonance dashboard; stop if pilot > 10 credits",
+  "experiment_id": "s1v2_information_matched_feedback_2026-10-19",
+  "isa_digest": "044e7356c1f14efb2070d557e681ae2724c75cf35e2d1131b54a7e5e54da7675",
+  "job_ids": [
+    "01a15579-948a-70e4-a6a8-077c3227066c"
+  ],
+  "labels": [
+    "s1v2_pilot_conditional_k0_X",
+    "s1v2_pilot_conditional_k0_Y",
+    "s1v2_pilot_measure_only_k0_X",
+    "s1v2_pilot_measure_only_k0_Y",
+    "s1v2_pilot_conditional_k1_X",
+    "s1v2_pilot_conditional_k1_Y",
+    "s1v2_pilot_measure_only_k1_X",
+    "s1v2_pilot_measure_only_k1_Y",
+    "s1v2_pilot_conditional_k2_X",
+    "s1v2_pilot_conditional_k2_Y",
+    "s1v2_pilot_measure_only_k2_X",
+    "s1v2_pilot_measure_only_k2_Y",
+    "s1v2_pilot_conditional_k4_X",
+    "s1v2_pilot_conditional_k4_Y",
+    "s1v2_pilot_measure_only_k4_X",
+    "s1v2_pilot_measure_only_k4_Y",
+    "s1v2_pilot_conditional_k8_X",
+    "s1v2_pilot_conditional_k8_Y",
+    "s1v2_pilot_measure_only_k8_X",
+    "s1v2_pilot_measure_only_k8_Y"
+  ],
+  "layout": {
+    "s1v2_pilot_conditional_k0_X": [
+      11,
+      15
+    ],
+    "s1v2_pilot_conditional_k0_Y": [
+      11,
+      15
+    ],
+    "s1v2_pilot_conditional_k1_X": [
+      11,
+      15
+    ],
+    "s1v2_pilot_conditional_k1_Y": [
+      11,
+      15
+    ],
+    "s1v2_pilot_conditional_k2_X": [
+      11,
+      15
+    ],
+    "s1v2_pilot_conditional_k2_Y": [
+      11,
+      15
+    ],
+    "s1v2_pilot_conditional_k4_X": [
+      11,
+      15
+    ],
+    "s1v2_pilot_conditional_k4_Y": [
+      11,
+      15
+    ],
+    "s1v2_pilot_conditional_k8_X": [
+      11,
+      15
+    ],
+    "s1v2_pilot_conditional_k8_Y": [
+      11,
+      15
+    ],
+    "s1v2_pilot_measure_only_k0_X": [
+      11,
+      15
+    ],
+    "s1v2_pilot_measure_only_k0_Y": [
+      11,
+      15
+    ],
+    "s1v2_pilot_measure_only_k1_X": [
+      11,
+      15
+    ],
+    "s1v2_pilot_measure_only_k1_Y": [
+      11,
+      15
+    ],
+    "s1v2_pilot_measure_only_k2_X": [
+      11,
+      15
+    ],
+    "s1v2_pilot_measure_only_k2_Y": [
+      11,
+      15
+    ],
+    "s1v2_pilot_measure_only_k4_X": [
+      11,
+      15
+    ],
+    "s1v2_pilot_measure_only_k4_Y": [
+      11,
+      15
+    ],
+    "s1v2_pilot_measure_only_k8_X": [
+      11,
+      15
+    ],
+    "s1v2_pilot_measure_only_k8_Y": [
+      11,
+      15
+    ]
+  },
+  "logical_digest": "11cbc277cea29b704cd4b92f7b04317c1af59b42de6b1d775ee10f4ff5ca8998",
+  "main_reference_layout": [
+    11,
+    6,
+    16,
+    15,
+    5,
+    10,
+    0,
+    1,
+    2
+  ],
+  "opened_utc": "20261019T184313Z",
+  "provider": "iqm",
+  "schema": "s1v2_submission_journal_v1",
+  "shots": {
+    "s1v2_pilot_conditional_k0_X": 2048,
+    "s1v2_pilot_conditional_k0_Y": 2048,
+    "s1v2_pilot_conditional_k1_X": 2048,
+    "s1v2_pilot_conditional_k1_Y": 2048,
+    "s1v2_pilot_conditional_k2_X": 2048,
+    "s1v2_pilot_conditional_k2_Y": 2048,
+    "s1v2_pilot_conditional_k4_X": 2048,
+    "s1v2_pilot_conditional_k4_Y": 2048,
+    "s1v2_pilot_conditional_k8_X": 2048,
+    "s1v2_pilot_conditional_k8_Y": 2048,
+    "s1v2_pilot_measure_only_k0_X": 2048,
+    "s1v2_pilot_measure_only_k0_Y": 2048,
+    "s1v2_pilot_measure_only_k1_X": 2048,
+    "s1v2_pilot_measure_only_k1_Y": 2048,
+    "s1v2_pilot_measure_only_k2_X": 2048,
+    "s1v2_pilot_measure_only_k2_Y": 2048,
+    "s1v2_pilot_measure_only_k4_X": 2048,
+    "s1v2_pilot_measure_only_k4_Y": 2048,
+    "s1v2_pilot_measure_only_k8_X": 2048,
+    "s1v2_pilot_measure_only_k8_Y": 2048
+  },
+  "stage": "pilot",
+  "status": "submitted",
+  "submitted_utc": "20261019T184314Z"
+}
