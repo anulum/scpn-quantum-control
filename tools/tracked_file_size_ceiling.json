@@ -1,8 +1,8 @@
 {
  "schema": "tracked_file_size_ceiling_v1",
  "threshold_bytes": 1048576,
- "total_files": 17,
- "total_mebibytes": 49,
+ "total_files": 18,
+ "total_mebibytes": 51,
  "files": {
   "data/iqm_layout_transfer_per_size/fake_counts_2026-07-26.json": 2,
   "data/iqm_layout_transfer_per_size/iqm_layout_transfer_per_size_circuits_2026-07-26.qpy": 3,
@@ -13,6 +13,7 @@
   "data/phase3_entanglement_tomography/phase3_large_system_raw_counts_20260520T195312Z_ibm_marrakesh_n8.json": 2,
   "data/phase3_entanglement_tomography/phase3_large_system_raw_counts_20260520T201657Z_ibm_marrakesh_n8.json": 2,
   "data/phase3_entanglement_tomography/phase3_large_system_raw_counts_20260520T201817Z_ibm_kingston_n8.json": 2,
+  "data/s1v2_information_matched_feedback/iqm/garnet_main_raw_counts.json": 2,
   "data/scpn_fim_hamiltonian/fim_ibm_live_readiness_2026-05-05.csv": 2,
   "data/scpn_fim_hamiltonian/fim_ibm_live_readiness_2026-05-05.json": 2,
   "data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_live_readiness_2026-05-05.csv": 5,

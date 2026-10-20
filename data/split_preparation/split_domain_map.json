@@ -133,6 +133,7 @@
     "differentiable_gradient_descent",
     "differentiable_implicit_sensitivity",
     "differentiable_jax_adapter",
+    "differentiable_jax_transform_algebra",
     "differentiable_levenberg_marquardt",
     "differentiable_module_hardening_audit",
     "differentiable_natural_gradient",
@@ -147,6 +148,8 @@
     "differentiable_sparse_derivatives",
     "differentiable_stochastic_estimators",
     "differentiable_stochastic_policy",
+    "differentiable_tensorflow_transform_algebra",
+    "differentiable_torch_transform_algebra",
     "differentiable_transform_algebra",
     "differentiable_transform_helpers",
     "differentiable_transform_support_matrix",
@@ -280,7 +283,8 @@
     "neural_operator_baseline_product",
     "qsnn",
     "surrogates",
-    "topology_kernel_product"
+    "topology_kernel_product",
+    "variational_baseline_qualification"
    ]
   },
   "qnode": {
