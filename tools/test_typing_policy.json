@@ -602,6 +602,7 @@
         "tests/test_phase_qnode_provider_transforms.py",
         "tests/test_phase_qnode_rust_parity.py",
         "tests/test_phase_qnode_tape.py",
+        "tests/test_phase_qnode_transform_source_contracts.py",
         "tests/test_phase_qnode_transforms.py",
         "tests/test_phase_qnode_vector_transforms.py",
         "tests/test_phase_results.py",

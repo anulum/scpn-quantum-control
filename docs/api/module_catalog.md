@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **804 modules** across **41 package families**
-- **4304 documented public module-level symbols**
+- **808 modules** across **41 package families**
+- **4311 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -4672,6 +4672,38 @@ QNode-style differentiable tape records for supported phase objectives.
 **Classes:** `PhaseQNodeTapeRecord`, `PhaseQNodeTapeReadinessSuiteResult`, `PhaseQNodeTape`
 
 **Functions:** `phase_qnode_tape()`, `run_phase_qnode_tape_readiness_suite()`
+
+### `scpn_quantum_control.phase.qnode_transform_algorithms`
+
+Single numerical bodies for original scalar QNode transforms and readiness.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase/qnode_transform_algorithms.py) · Public symbols: **4**
+
+**Functions:** `execute_phase_qnode_transform()`, `phase_qnode_complex_derivative_contract()`, `execute_phase_qnode_hessian_vector_product()`, `run_phase_qnode_transform_readiness_suite()`
+
+### `scpn_quantum_control.phase.qnode_transform_bindings`
+
+Typed live operation suppliers for the original scalar QNode executor.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase/qnode_transform_bindings.py) · Public symbols: **1**
+
+**Classes:** `QNodeTransformBindings`
+
+### `scpn_quantum_control.phase.qnode_transform_contract_algorithms`
+
+Single original scalar QNode admission and result-construction bodies.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase/qnode_transform_contract_algorithms.py) · Public symbols: **0**
+
+No public module-level class or function is declared.
+
+### `scpn_quantum_control.phase.qnode_transform_contract_bindings`
+
+Typed numerical and nominal dependencies for original scalar QNode admission.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase/qnode_transform_contract_bindings.py) · Public symbols: **2**
+
+**Classes:** `QNodeTransformBuiltins`, `QNodeContractBindings`
 
 ### `scpn_quantum_control.phase.qnode_transforms`
 

@@ -16,6 +16,18 @@ from typing import TypeAlias, cast
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+from scpn_quantum_control.phase import qnode_transform_algorithms as _execution_algorithms
+from scpn_quantum_control.phase import qnode_transform_contract_algorithms as _contract_algorithms
+from scpn_quantum_control.phase.qnode_transform_bindings import (
+    QNodeTransformBindings as _ExecutionBindings,
+)
+from scpn_quantum_control.phase.qnode_transform_contract_bindings import (
+    QNodeContractBindings as _ContractBindings,
+)
+from scpn_quantum_control.phase.qnode_transform_contract_bindings import (
+    QNodeTransformBuiltins as _BuiltinReaders,
+)
+
 from ..differentiable import Parameter, ParameterShiftRule
 from .param_shift import (
     parameter_shift_gradient,
@@ -196,119 +208,22 @@ def execute_phase_qnode_transform(
     rule: ParameterShiftRule | None = None,
 ) -> PhaseQNodeTransformResult:
     """Execute a supported scalar phase-QNode transform or return fail-closed evidence."""
-    values = _as_parameter_vector("params", params)
-    plan = plan_gradient_transform_nesting(
+    return _execution_algorithms.execute_phase_qnode_transform(
         transform,
+        objective,
+        params,
+        tangent=tangent,
+        cotangent=cotangent,
         gate=gate,
         observable=observable,
         backend=backend,
         adapter=adapter,
-        n_params=values.size,
-        shift_terms=shift_terms if rule is None else len(rule.terms),
         shots=shots,
+        shift_terms=shift_terms,
         allow_hardware=allow_hardware,
-    )
-    label = ".".join(plan.transforms)
-    if plan.fail_closed:
-        return _blocked_result(label, plan, values)
-
-    if plan.transforms == ("grad",):
-        gradient = parameter_shift_gradient(objective, values, parameters=parameters, rule=rule)
-        return _supported_result(label, plan, values, gradient=gradient)
-
-    if plan.transforms == ("value_and_grad",):
-        result = value_and_parameter_shift_grad(
-            objective, values, parameters=parameters, rule=rule
-        )
-        return _supported_result(
-            label,
-            plan,
-            values,
-            value=float(result.value),
-            gradient=cast(FloatArray, result.gradient.astype(np.float64, copy=True)),
-        )
-
-    if plan.transforms in {("hessian",), ("grad", "grad")}:
-        hessian = parameter_shift_hessian(objective, values, parameters=parameters, rule=rule)
-        return _supported_result(
-            label,
-            plan,
-            values,
-            hessian=hessian,
-            parameter_shift_evaluations=_hessian_evaluations(
-                values.size, plan.support_plan.backend_plan.shift_terms
-            ),
-        )
-
-    if plan.transforms == ("jvp",):
-        tangent_vector = _as_parameter_vector("tangent", tangent, width=values.size)
-        value = float(objective(values.copy()))
-        gradient = parameter_shift_gradient(objective, values, parameters=parameters, rule=rule)
-        return _supported_result(
-            label,
-            plan,
-            values,
-            value=value,
-            gradient=gradient,
-            tangent=tangent_vector,
-            jvp=float(np.dot(gradient, tangent_vector)),
-        )
-
-    if plan.transforms == ("vjp",):
-        cotangent_vector = _as_cotangent(cotangent)
-        value = float(objective(values.copy()))
-        gradient = parameter_shift_gradient(objective, values, parameters=parameters, rule=rule)
-        return _supported_result(
-            label,
-            plan,
-            values,
-            value=value,
-            gradient=gradient,
-            cotangent=cotangent_vector,
-            vjp=cotangent_vector[0] * gradient,
-        )
-
-    if plan.transforms in {("jacfwd",), ("jacrev",)}:
-        gradient = parameter_shift_gradient(objective, values, parameters=parameters, rule=rule)
-        jacobian = gradient.reshape(1, -1).astype(np.float64, copy=True)
-        return _supported_result(
-            label,
-            plan,
-            values,
-            gradient=gradient,
-            jacobian=jacobian,
-        )
-
-    if plan.transforms == ("vmap", "grad"):
-        return PhaseQNodeTransformResult(
-            transform=label,
-            plan=plan,
-            params=values.copy(),
-            supported=False,
-            value=None,
-            gradient=None,
-            hessian=None,
-            hessian_vector_product=None,
-            jvp=None,
-            vjp=None,
-            jacobian=None,
-            tangent=None,
-            cotangent=None,
-            parameter_shift_evaluations=0,
-            failure_reason=(
-                "scalar QNode transform executor does not accept batched parameters; "
-                "use execute_phase_qnode_vmap_grad for native manual vmap(grad)"
-            ),
-        )
-
-    return _blocked_result(
-        label,
-        plan,
-        values,
-        reason=(
-            f"scalar QNode transform executor has no execution route for {label}; "
-            "use the dedicated phase_qnode_tape or vector-transform API"
-        ),
+        parameters=parameters,
+        rule=rule,
+        _bindings=_qnode_bindings(),
     )
 
 
@@ -316,28 +231,8 @@ def phase_qnode_complex_derivative_contract(
     requested_derivative: str = "wirtinger",
 ) -> PhaseQNodeComplexDerivativeContract:
     """Return the real-only contract for complex Phase-QNode derivative requests."""
-    requested = requested_derivative.strip().lower()
-    if requested not in {"complex", "wirtinger"}:
-        raise ValueError("requested_derivative must be 'complex' or 'wirtinger'")
-    return PhaseQNodeComplexDerivativeContract(
-        supported=False,
-        parameter_domain="real",
-        requested_derivative=requested,
-        failure_reason=(
-            "Complex and Wirtinger Phase-QNode derivatives are not implemented; "
-            "the deterministic local transform surfaces accept real-valued "
-            "parameter, tangent, cotangent, vector, and output arrays only"
-        ),
-        alternatives=(
-            "split complex parameters into explicit real and imaginary real-valued controls",
-            "use real-valued parameter-shift gradients on supported observables",
-            "keep complex-state amplitudes internal to the statevector simulator",
-        ),
-        claim_boundary=(
-            "real-valued parameter vectors and real scalar objectives only; "
-            "complex-valued objectives, holomorphic derivatives, Wirtinger "
-            "partials, and complex tangent/cotangent algebra are fail-closed"
-        ),
+    return _execution_algorithms.phase_qnode_complex_derivative_contract(
+        requested_derivative, _bindings=_qnode_bindings()
     )
 
 
@@ -357,37 +252,20 @@ def execute_phase_qnode_hessian_vector_product(
     rule: ParameterShiftRule | None = None,
 ) -> PhaseQNodeTransformResult:
     """Execute a deterministic local Hessian-vector product for a scalar QNode."""
-    values = _as_parameter_vector("params", params)
-    vector_values = _as_parameter_vector("vector", vector, width=values.size)
-    plan = plan_gradient_transform_nesting(
-        "hessian",
+    return _execution_algorithms.execute_phase_qnode_hessian_vector_product(
+        objective,
+        params,
+        vector,
         gate=gate,
         observable=observable,
         backend=backend,
         adapter=adapter,
-        n_params=values.size,
-        shift_terms=shift_terms if rule is None else len(rule.terms),
         shots=shots,
+        shift_terms=shift_terms,
         allow_hardware=allow_hardware,
-    )
-    if plan.fail_closed:
-        return _blocked_result("hessian_vector_product", plan, values)
-    hessian = parameter_shift_hessian(objective, values, parameters=parameters, rule=rule)
-    return _supported_result(
-        "hessian_vector_product",
-        plan,
-        values,
-        hessian=hessian,
-        hessian_vector_product=hessian @ vector_values,
-        tangent=vector_values,
-        parameter_shift_evaluations=_hessian_evaluations(
-            values.size, plan.support_plan.backend_plan.shift_terms
-        ),
-        claim_boundary=(
-            "deterministic local Hessian-vector product via parameter-shift "
-            "Hessian materialisation; no finite-shot, hardware, sparse implicit "
-            "HVP, or arbitrary-program second-order AD claim"
-        ),
+        parameters=parameters,
+        rule=rule,
+        _bindings=_qnode_bindings(),
     )
 
 
@@ -395,33 +273,12 @@ def run_phase_qnode_transform_readiness_suite() -> PhaseQNodeTransformReadinessS
     """Run scalar QNode transform readiness evidence."""
 
     def objective(params: FloatArray) -> float:
+        """Evaluate the original two-control trigonometric readiness observable."""
         return float(np.cos(params[0]) + 0.25 * np.sin(params[1]))
 
-    params = np.array([0.2, -0.4], dtype=np.float64)
-    records = [
-        execute_phase_qnode_transform("grad", objective, params),
-        execute_phase_qnode_transform("value_and_grad", objective, params),
-        execute_phase_qnode_transform("hessian", objective, params),
-        execute_phase_qnode_hessian_vector_product(
-            objective,
-            params,
-            np.array([0.5, -1.25], dtype=np.float64),
-        ),
-        execute_phase_qnode_transform("jvp", objective, params, tangent=np.array([0.5, -2.0])),
-        execute_phase_qnode_transform("vjp", objective, params, cotangent=np.array([3.0])),
-        execute_phase_qnode_transform("jacfwd", objective, params),
-        execute_phase_qnode_transform("jacrev", objective, params),
-        execute_phase_qnode_transform("grad", objective, params, backend="hardware", shots=1024),
-        execute_phase_qnode_transform(
-            "hessian",
-            objective,
-            params,
-            backend="finite_shot_simulator",
-            shots=256,
-        ),
-        execute_phase_qnode_transform(("vmap", "grad"), objective, params),
-    ]
-    return PhaseQNodeTransformReadinessSuiteResult(records=tuple(records))
+    return _execution_algorithms.run_phase_qnode_transform_readiness_suite(
+        objective, _bindings=_qnode_bindings()
+    )
 
 
 def _supported_result(
@@ -441,31 +298,23 @@ def _supported_result(
     parameter_shift_evaluations: int | None = None,
     claim_boundary: str = CLAIM_BOUNDARY,
 ) -> PhaseQNodeTransformResult:
-    return PhaseQNodeTransformResult(
-        transform=transform,
-        plan=plan,
-        params=params.copy(),
-        supported=True,
+    """Construct the original supported scalar transform record and retain independent arrays."""
+    return _contract_algorithms._supported_result(
+        transform,
+        plan,
+        params,
         value=value,
-        gradient=None if gradient is None else gradient.astype(np.float64, copy=True),
-        hessian=None if hessian is None else hessian.astype(np.float64, copy=True),
-        hessian_vector_product=(
-            None
-            if hessian_vector_product is None
-            else hessian_vector_product.astype(np.float64, copy=True)
-        ),
+        gradient=gradient,
+        hessian=hessian,
+        hessian_vector_product=hessian_vector_product,
         jvp=jvp,
-        vjp=None if vjp is None else vjp.astype(np.float64, copy=True),
-        jacobian=None if jacobian is None else jacobian.astype(np.float64, copy=True),
-        tangent=None if tangent is None else tangent.astype(np.float64, copy=True),
-        cotangent=None if cotangent is None else cotangent.astype(np.float64, copy=True),
-        parameter_shift_evaluations=(
-            plan.support_plan.backend_plan.evaluations
-            if parameter_shift_evaluations is None
-            else parameter_shift_evaluations
-        ),
-        failure_reason="",
+        vjp=vjp,
+        jacobian=jacobian,
+        tangent=tangent,
+        cotangent=cotangent,
+        parameter_shift_evaluations=parameter_shift_evaluations,
         claim_boundary=claim_boundary,
+        _bindings=_contract_bindings(),
     )
 
 
@@ -476,73 +325,29 @@ def _blocked_result(
     *,
     reason: str | None = None,
 ) -> PhaseQNodeTransformResult:
-    return PhaseQNodeTransformResult(
-        transform=transform,
-        plan=plan,
-        params=params.copy(),
-        supported=False,
-        value=None,
-        gradient=None,
-        hessian=None,
-        hessian_vector_product=None,
-        jvp=None,
-        vjp=None,
-        jacobian=None,
-        tangent=None,
-        cotangent=None,
-        parameter_shift_evaluations=0,
-        failure_reason=reason if reason is not None else "; ".join(plan.blocked_reasons),
+    """Construct the original refused scalar transform record and its original reason."""
+    return _contract_algorithms._blocked_result(
+        transform, plan, params, reason=reason, _bindings=_contract_bindings()
     )
 
 
 def _as_parameter_vector(
-    name: str,
-    values: ArrayLike | None,
-    *,
-    width: int | None = None,
+    name: str, values: ArrayLike | None, *, width: int | None = None
 ) -> FloatArray:
-    if values is None:
-        raise ValueError(f"{name} must be provided")
-    raw = np.asarray(values)
-    if raw.dtype.kind in {"c", "O", "S", "U"}:
-        raise ValueError(
-            f"{name} must be a real-valued finite array; complex/Wirtinger derivatives "
-            "are outside the supported Phase-QNode transform contract"
-        )
-    vector = np.asarray(values, dtype=float)
-    if vector.ndim != 1:
-        raise ValueError(f"{name} must be a one-dimensional array")
-    if width is not None and vector.shape != (width,):
-        raise ValueError(f"{name} must have shape ({width},), got {vector.shape}")
-    if not np.all(np.isfinite(vector)):
-        raise ValueError(f"{name} must contain only finite values")
-    return cast(FloatArray, vector.astype(np.float64, copy=True))
+    """Admit an independent real finite parameter or directional vector."""
+    return _contract_algorithms._as_parameter_vector(
+        name, values, width=width, _bindings=_contract_bindings()
+    )
 
 
 def _hessian_evaluations(n_params: int, shift_terms: int) -> int:
-    diagonal = 2 * n_params * shift_terms
-    mixed_pairs = n_params * (n_params - 1) // 2
-    mixed = 4 * mixed_pairs * shift_terms * shift_terms
-    return diagonal + mixed
+    """Count the original diagonal and mixed single-term Hessian probes."""
+    return _contract_algorithms._hessian_evaluations(n_params, shift_terms)
 
 
 def _as_cotangent(values: ArrayLike | float | None) -> FloatArray:
-    if values is None:
-        raise ValueError("cotangent must be provided")
-    raw = np.asarray(values)
-    if raw.dtype.kind in {"c", "O", "S", "U"}:
-        raise ValueError(
-            "cotangent must be a real-valued finite array; complex/Wirtinger derivatives "
-            "are outside the supported Phase-QNode transform contract"
-        )
-    vector = np.asarray(values, dtype=float)
-    if vector.ndim == 0:
-        vector = vector.reshape(1)
-    if vector.ndim != 1 or vector.shape != (1,):
-        raise ValueError("cotangent must be a scalar or one-element vector")
-    if not np.all(np.isfinite(vector)):
-        raise ValueError("cotangent must contain only finite values")
-    return cast(FloatArray, vector.astype(np.float64, copy=True))
+    """Admit the original real finite scalar or one-element cotangent."""
+    return _contract_algorithms._as_cotangent(values, _bindings=_contract_bindings())
 
 
 __all__ = [
@@ -554,3 +359,51 @@ __all__ = [
     "phase_qnode_complex_derivative_contract",
     "run_phase_qnode_transform_readiness_suite",
 ]
+
+_dependency_readers: dict[str, Callable[[], object]] = {
+    "PhaseQNodeTransformResult": lambda: PhaseQNodeTransformResult,
+    "cast": lambda: cast,
+    "FloatArray": lambda: FloatArray,
+    "PhaseQNodeComplexDerivativeContract": lambda: PhaseQNodeComplexDerivativeContract,
+    "PhaseQNodeTransformReadinessSuiteResult": lambda: PhaseQNodeTransformReadinessSuiteResult,
+    "_as_parameter_vector": lambda: _as_parameter_vector,
+    "_supported_result": lambda: _supported_result,
+    "_blocked_result": lambda: _blocked_result,
+    "_hessian_evaluations": lambda: _hessian_evaluations,
+    "_as_cotangent": lambda: _as_cotangent,
+    "parameter_shift_gradient": lambda: parameter_shift_gradient,
+    "parameter_shift_hessian": lambda: parameter_shift_hessian,
+    "value_and_parameter_shift_grad": lambda: value_and_parameter_shift_grad,
+    "plan_gradient_transform_nesting": lambda: plan_gradient_transform_nesting,
+    "execute_phase_qnode_transform": lambda: execute_phase_qnode_transform,
+    "execute_phase_qnode_hessian_vector_product": lambda: (
+        execute_phase_qnode_hessian_vector_product
+    ),
+}
+
+
+def _numpy_reader() -> object:
+    """Read the actual defining source numerical namespace."""
+    return np
+
+
+_builtin_readers = _BuiltinReaders(
+    scalar=lambda: float,
+    length=lambda: len,
+    sequence=lambda: tuple,
+    error=lambda: ValueError,
+)
+
+
+def _contract_bindings() -> _ContractBindings[PhaseQNodeTransformResult]:
+    """Retain genuine local record ownership and original source lookup."""
+    return _ContractBindings(_dependency_readers, _numpy_reader, _builtin_readers)
+
+
+def _qnode_bindings() -> _ExecutionBindings[
+    PhaseQNodeTransformResult,
+    PhaseQNodeComplexDerivativeContract,
+    PhaseQNodeTransformReadinessSuiteResult,
+]:
+    """Read the actual execution suppliers from this defining source."""
+    return _ExecutionBindings(_dependency_readers, _numpy_reader, _builtin_readers)
