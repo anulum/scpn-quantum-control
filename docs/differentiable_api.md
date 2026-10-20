@@ -1351,6 +1351,15 @@ representative planner cell.
 
 ## Native framework transform qualification
 
+`scpn_quantum_control.differentiable_transform_comparison` owns the numerical
+comparison operations used by these audits. `as_finite_flat_array(values)`
+returns an independent finite float64 vector in C order.
+`maximum_absolute_residual(lhs, rhs)` returns the maximum absolute difference
+of equally shaped nonempty arrays; mismatched shapes and empty arrays return
+positive infinity. Callers admit finite values before computing a residual.
+The numerical module constructs no report or QNode support decision. The
+existing audit retains its original result types, evidence and policy checks.
+
 The default `differentiable_transform_algebra_report()` retains the bounded local
 NumPy audit and its original payload. Select a required CPU runtime explicitly
 through the same unified facade:

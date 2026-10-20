@@ -151,6 +151,7 @@
     "differentiable_tensorflow_transform_algebra",
     "differentiable_torch_transform_algebra",
     "differentiable_transform_algebra",
+    "differentiable_transform_comparison",
     "differentiable_transform_helpers",
     "differentiable_transform_support_matrix",
     "differentiable_transform_support_matrix_artifact",

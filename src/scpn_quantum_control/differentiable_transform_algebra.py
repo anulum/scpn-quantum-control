@@ -30,6 +30,11 @@ from .differentiable_finite_difference import (
 from .differentiable_parameter_contracts import Parameter
 from .differentiable_result_contracts import FINITE_DIFFERENCE_DIAGNOSTIC_CLAIM_BOUNDARY
 from .differentiable_sparse_derivatives import sparse_jacobian
+from .differentiable_transform_comparison import (
+    TransformComparisonPrimitives,
+    as_finite_flat_array,
+    maximum_absolute_residual,
+)
 from .differentiable_transform_support_matrix import (
     NATIVE_TRANSFORM_ALGEBRA_CATEGORIES,
     REQUIRED_TRANSFORM_ALGEBRA_SUPPORT_ROWS,
@@ -985,18 +990,22 @@ def _blocked_case(
 
 
 def _as_flat_float_tuple(values: ArrayLike) -> FloatArray:
-    array = np.asarray(values, dtype=np.float64)
-    if not np.all(np.isfinite(array)):
-        raise ValueError("transform algebra values must be finite")
-    return cast(FloatArray, array.reshape(-1).astype(np.float64, copy=True))
+    """Admit comparison values through the AD-owned numerical implementation."""
+    return as_finite_flat_array(values, primitives=_comparison_primitives)
 
 
 def _max_abs(lhs: FloatArray, rhs: FloatArray) -> float:
-    if lhs.shape != rhs.shape:
-        return float("inf")
-    if lhs.size == 0:
-        return float("inf")
-    return float(np.max(np.abs(lhs - rhs)))
+    """Compare admitted values through the AD-owned numerical implementation."""
+    return maximum_absolute_residual(lhs, rhs, primitives=_comparison_primitives)
+
+
+_comparison_primitives = TransformComparisonPrimitives(
+    numpy=lambda: np,
+    scalar=lambda: float,
+    error=lambda: ValueError,
+    array_cast=lambda: cast,
+    array_type=lambda: FloatArray,
+)
 
 
 __all__ = [

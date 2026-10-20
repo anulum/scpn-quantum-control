@@ -16,6 +16,7 @@ from pathlib import Path
 Gate = tuple[str, list[str]]
 SOURCES = [
     "src/scpn_quantum_control/differentiable_transform_algebra.py",
+    "src/scpn_quantum_control/differentiable_transform_comparison.py",
     "src/scpn_quantum_control/differentiable_transform_support_matrix.py",
     "src/scpn_quantum_control/differentiable_jax_transform_algebra.py",
     "src/scpn_quantum_control/differentiable_torch_transform_algebra.py",
@@ -29,6 +30,7 @@ COVERAGE_OWNERS = [
 ]
 LOCAL_TESTS = [
     "tests/test_differentiable_transform_algebra.py",
+    "tests/test_differentiable_transform_comparison.py",
     "tests/test_differentiable_transform_support_matrix.py",
     "tests/test_differentiable_transform_algebra_quality_gate.py",
 ]

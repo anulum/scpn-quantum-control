@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **808 modules** across **41 package families**
-- **4311 documented public module-level symbols**
+- **809 modules** across **41 package families**
+- **4314 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -6458,6 +6458,16 @@ Metamorphic transform-algebra gate for differentiable local routes.
 **Classes:** `TransformAlgebraCase`, `TransformAlgebraAudit`
 
 **Functions:** `run_transform_algebra_audit()`, `assert_transform_algebra_audit_passes()`, `run_native_transform_algebra_audit()`
+
+### `scpn_quantum_control.differentiable_transform_comparison`
+
+Pure finite-array normalization and residuals for AD transform comparisons.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_transform_comparison.py) · Public symbols: **3**
+
+**Classes:** `TransformComparisonPrimitives`
+
+**Functions:** `as_finite_flat_array()`, `maximum_absolute_residual()`
 
 ### `scpn_quantum_control.differentiable_transform_helpers`
 
