@@ -4,6 +4,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Add bounded JAX RBM qualification with complete seeded replay, independent NumPy
+  energy and reference-subspace overlap checks, predeclared fixed-state evaluation,
+  analytic error attribution where identifiable, and explicit functional costs.
+  Preserve the raw v2 codec and repair zero-energy JSON Boolean serialisation.
+
 ### Security
 
 - The Rust engine lock resolves `quinn-proto` 0.11.19 (RUSTSEC-2026-0338,

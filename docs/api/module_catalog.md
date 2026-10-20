@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **803 modules** across **41 package families**
-- **4298 documented public module-level symbols**
+- **804 modules** across **41 package families**
+- **4304 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -6609,11 +6609,11 @@ Fail-closed control observers over the existing identity metrics.
 
 Build claim-bounded JAX NQS evidence against exact diagonalisation.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/jax_nqs_baseline_product.py) · Public symbols: **7**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/jax_nqs_baseline_product.py) · Public symbols: **8**
 
 **Classes:** `JAXNQSBaselineSpec`, `JAXNQSEnvironment`, `JAXNQSComparison`, `JAXNQSBaselineProduct`
 
-**Functions:** `run_jax_nqs_baseline()`, `render_jax_nqs_baseline_markdown()`, `write_jax_nqs_baseline_evidence()`
+**Functions:** `run_jax_nqs_baseline()`, `qualify_jax_nqs_baseline()`, `render_jax_nqs_baseline_markdown()`, `write_jax_nqs_baseline_evidence()`
 
 ### `scpn_quantum_control.kuramoto`
 
@@ -7264,6 +7264,16 @@ Versioned unsuitable-scenario and anti-silent-wrong-gradient registry.
 **Classes:** `UnsuitableScenarioRecord`, `ScenarioProbeResult`
 
 **Functions:** `list_unsuitable_scenario_ids()`, `get_unsuitable_scenario()`, `iter_unsuitable_scenarios()`, `build_unsuitable_scenario_registry()`, `probe_unsuitable_scenario()`, `assert_unsuitable_registry_integrity()`
+
+### `scpn_quantum_control.variational_baseline_qualification`
+
+Qualify the existing positive-amplitude RBM without changing its optimiser.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/variational_baseline_qualification.py) · Public symbols: **5**
+
+**Classes:** `VariationalEvaluationResult`, `VariationalErrorBudget`, `VariationalQualificationCost`, `VariationalBaselineQualification`
+
+**Functions:** `qualify_jax_nqs_baseline()`
 
 ### `scpn_quantum_control.visualisation_dashboard_product`
 

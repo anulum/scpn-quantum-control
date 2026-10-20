@@ -17,18 +17,31 @@ jobs:
   nqs-ansatz-quality:
     runs-on: ubuntu-latest
     env:
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      JAX_PLATFORMS: cpu
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Install the pinned project profile
+        run: |
+          echo "TMPDIR=$RUNNER_TEMP" >> "$GITHUB_ENV"
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/phase/nqs_ansatz.py
           src/scpn_quantum_control/jax_nqs_baseline_product.py
+          src/scpn_quantum_control/variational_baseline_qualification.py
+          src/scpn_quantum_control/phase/jax_nqs.py
+          examples/variational_baseline_qualification.py
           tests/test_nqs_ansatz.py
           tests/test_jax_nqs_baseline_product.py
+          tests/test_jax_nqs.py
+          tests/test_variational_baseline_qualification.py
+          tests/test_variational_quantum_baselines.py
           tools/nqs_ansatz_quality_gates.py
           tests/test_nqs_ansatz_quality_gate.py
       - run: >-
@@ -37,8 +50,14 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/phase/nqs_ansatz.py
           src/scpn_quantum_control/jax_nqs_baseline_product.py
+          src/scpn_quantum_control/variational_baseline_qualification.py
+          src/scpn_quantum_control/phase/jax_nqs.py
+          examples/variational_baseline_qualification.py
           tests/test_nqs_ansatz.py
           tests/test_jax_nqs_baseline_product.py
+          tests/test_jax_nqs.py
+          tests/test_variational_baseline_qualification.py
+          tests/test_variational_quantum_baselines.py
           tools/nqs_ansatz_quality_gates.py
           tests/test_nqs_ansatz_quality_gate.py
       - name: Install real CPU JAX coverage runtime
@@ -47,13 +66,28 @@ jobs:
           python -c "import jax; print(jax.__version__, jax.devices())"
       - run: >-
           python -m coverage run --rcfile=/dev/null
-          --data-file=/tmp/scpn-qc-nqs-ansatz-quality.coverage --branch
+          --data-file=${{ runner.temp }}/scpn-qc-nqs-ansatz-quality.coverage --branch
           -m pytest -q tests/test_nqs_ansatz.py tests/test_jax_nqs_baseline_product.py
+          tests/test_jax_nqs.py tests/test_variational_baseline_qualification.py
+          tests/test_variational_quantum_baselines.py tests/test_nqs_ansatz_quality_gate.py
+      - name: Execute complete NQS qualification example
+        run: >-
+          python -m coverage run --rcfile=/dev/null --append --branch
+          --data-file=${{ runner.temp }}/scpn-qc-nqs-ansatz-quality.coverage
+          examples/variational_baseline_qualification.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
-          --data-file=/tmp/scpn-qc-nqs-ansatz-quality.coverage
+          --data-file=${{ runner.temp }}/scpn-qc-nqs-ansatz-quality.coverage
           --precision=2 --show-missing --fail-under=100
-          --include=*/phase/nqs_ansatz.py,*/jax_nqs_baseline_product.py
+          --include=*/phase/nqs_ansatz.py,*/jax_nqs_baseline_product.py,*/phase/jax_nqs.py,*/variational_baseline_qualification.py,*/tools/nqs_ansatz_quality_gates.py,*/examples/variational_baseline_qualification.py
+      - name: Export exact-commit NQS qualification coverage
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: nqs-ansatz-coverage-${{ github.sha }}
+          path: ${{ runner.temp }}/scpn-qc-nqs-ansatz-quality.coverage
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
   layout-relaxation-experiment-quality:
     runs-on: ubuntu-latest
     env:

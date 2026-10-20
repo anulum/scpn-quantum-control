@@ -41,11 +41,13 @@ class TestJaxAvailability:
     """Tests that always run regardless of JAX installation."""
 
     def test_is_jax_available_returns_bool(self) -> None:
+        """Report availability through the public Boolean probe."""
         from scpn_quantum_control.phase.jax_nqs import is_jax_available
 
         assert isinstance(is_jax_available(), bool)
 
     def test_module_importable(self) -> None:
+        """Retain the public energy and training entry points."""
         from scpn_quantum_control.phase import jax_nqs
 
         assert hasattr(jax_nqs, "is_jax_available")
@@ -58,6 +60,7 @@ class TestJaxRBMEnergy:
     """Tests for jax_rbm_energy."""
 
     def test_returns_scalar(self) -> None:
+        """Return a finite scalar from a real JAX expectation."""
         import jax
         import jax.numpy as jnp
 
@@ -80,6 +83,7 @@ class TestJaxRBMEnergy:
         assert np.isfinite(float(energy))
 
     def test_energy_real(self) -> None:
+        """Keep the Hermitian expectation real within the float32 budget."""
         import jax
         import jax.numpy as jnp
 
@@ -102,6 +106,7 @@ class TestJaxRBMEnergy:
         assert float(jnp.imag(energy)) == pytest.approx(0.0, abs=1e-5)
 
     def test_energy_bounded_by_spectrum(self) -> None:
+        """Bound the actual JAX expectation by the independent dense spectrum."""
         import jax
         import jax.numpy as jnp
 
@@ -134,12 +139,13 @@ class TestJaxVMCGroundState:
     def test_rejects_dense_budget_before_hamiltonian_allocation(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """Refuse the memory budget before constructing the dense Hamiltonian."""
         import scpn_quantum_control.bridge.knm_hamiltonian as bridge_module
 
         K = build_knm_paper27(L=10)
         omega = OMEGA_N_16[:10]
 
-        def fail_if_dense_hamiltonian_is_requested(*args: object, **kwargs: object) -> Any:  # noqa: ARG001
+        def fail_if_dense_hamiltonian_is_requested(*_args: object, **_kwargs: object) -> Any:
             raise AssertionError("dense Hamiltonian allocation happened before budget gate")
 
         monkeypatch.setattr(
@@ -150,6 +156,7 @@ class TestJaxVMCGroundState:
             jax_vmc_ground_state(K, omega, n_iterations=1, max_dense_gib=1e-12)
 
     def test_passes_dense_budget_to_bridge(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Forward the admitted memory budget to the original builder."""
         import scpn_quantum_control.bridge.knm_hamiltonian as bridge_module
 
         K = build_knm_paper27(L=2)
@@ -158,7 +165,7 @@ class TestJaxVMCGroundState:
 
         def fake_dense_matrix(
             K_arg: NDArray[np.float64], omega_arg: NDArray[np.float64], **kwargs: object
-        ) -> NDArray[np.complex128]:  # noqa: ARG001
+        ) -> NDArray[np.complex128]:
             budget = kwargs.get("max_dense_gib")
             assert budget is None or isinstance(budget, float)
             seen_budgets.append(budget)
@@ -224,10 +231,12 @@ class TestJaxVMCGroundState:
         kwargs: dict[str, Any],
         message: str,
     ) -> None:
+        """Reject each malformed native training request at the public boundary."""
         with pytest.raises(ValueError, match=message):
             jax_vmc_ground_state(K, omega, **kwargs)
 
     def test_zero_hidden_width_does_not_silently_select_default(self) -> None:
+        """Reject zero width instead of selecting the default hidden shape."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         with pytest.raises(ValueError, match="n_hidden"):
@@ -266,6 +275,7 @@ class TestJaxVMCGroundState:
     def test_rejects_invalid_bridge_hamiltonian(
         self, monkeypatch: pytest.MonkeyPatch, hamiltonian: NDArray[np.complex128], message: str
     ) -> None:
+        """Refuse non-finite, non-Hermitian and complex builder results."""
         import scpn_quantum_control.bridge.knm_hamiltonian as bridge_module
 
         monkeypatch.setattr(
@@ -277,6 +287,7 @@ class TestJaxVMCGroundState:
             jax_vmc_ground_state(np.zeros((2, 2)), np.zeros(2), n_iterations=1)
 
     def test_returns_dict(self) -> None:
+        """Retain the original public training result fields."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = jax_vmc_ground_state(K, omega, n_iterations=10, seed=42)
@@ -287,12 +298,14 @@ class TestJaxVMCGroundState:
         assert "n_params" in result
 
     def test_energy_finite(self) -> None:
+        """Produce a finite final energy from an actual native run."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = jax_vmc_ground_state(K, omega, n_iterations=10)
         assert np.isfinite(result["energy"])
 
     def test_energy_decreases(self) -> None:
+        """Keep the seeded final loss within the declared improvement slack."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = jax_vmc_ground_state(K, omega, n_iterations=50, seed=42)
@@ -301,6 +314,7 @@ class TestJaxVMCGroundState:
         assert history[-1] <= history[0] + 0.5
 
     def test_params_shapes(self) -> None:
+        """Return visible, hidden and weight arrays in the requested shape."""
         n = 3
         K = build_knm_paper27(L=n)
         omega = OMEGA_N_16[:n]
@@ -310,6 +324,7 @@ class TestJaxVMCGroundState:
         assert result["params"]["W"].shape == (6, n)
 
     def test_n_params_correct(self) -> None:
+        """Report the independently calculated RBM parameter count."""
         n = 2
         n_hid = 4
         K = build_knm_paper27(L=n)
@@ -319,12 +334,14 @@ class TestJaxVMCGroundState:
         assert result["n_params"] == expected
 
     def test_rejects_large_n(self) -> None:
+        """Reject a visible width outside the exact-enumeration limit."""
         K = build_knm_paper27(L=16)
         omega = OMEGA_N_16[:16]
         with pytest.raises(ValueError, match="n<=12"):
             jax_vmc_ground_state(K, omega, n_iterations=1)
 
     def test_deterministic_with_seed(self) -> None:
+        """Reproduce the same native energy from the same request and seed."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         r1 = jax_vmc_ground_state(K, omega, n_iterations=10, seed=99)
@@ -336,6 +353,7 @@ class TestJaxNQSImportErrors:
     """Cover ImportError paths when JAX unavailable (lines 50, 89)."""
 
     def test_import_guard_reports_unavailable_when_jax_import_fails(self) -> None:
+        """Report unavailable when the actual module import is blocked."""
         import scpn_quantum_control.phase.jax_nqs as jax_mod
 
         class BlockJaxImport:
@@ -369,6 +387,7 @@ class TestJaxNQSImportErrors:
             importlib.reload(jax_mod)
 
     def test_jax_rbm_energy_raises_without_jax(self) -> None:
+        """Refuse public energy evaluation when JAX is unavailable."""
         import scpn_quantum_control.phase.jax_nqs as jax_mod
 
         orig = jax_mod._JAX_AVAILABLE
@@ -380,6 +399,7 @@ class TestJaxNQSImportErrors:
             jax_mod._JAX_AVAILABLE = orig
 
     def test_jax_vmc_raises_without_jax(self) -> None:
+        """Refuse public training when JAX is unavailable."""
         import scpn_quantum_control.phase.jax_nqs as jax_mod
 
         orig = jax_mod._JAX_AVAILABLE

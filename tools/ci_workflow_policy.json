@@ -385,7 +385,8 @@
       "caller_needs": [
         "static-analysis",
         "native-build",
-        "differentiable-control"
+        "differentiable-control",
+        "simulation-artifact"
       ],
       "jobs": [
         "ml-dsa-seal-quality",

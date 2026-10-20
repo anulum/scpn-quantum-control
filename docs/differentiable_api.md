@@ -2386,3 +2386,14 @@ the requested bond and cutoff. Invalid input or unavailable Quimb refuses
 explicitly. Small-system bond/time refinement and a matched actual Aer MPS
 baseline qualify approximation behaviour; the N=30–40 benchmark campaign and
 its admission schema retain their separate resource and evidence requirements.
+
+## Variational baseline qualification
+
+The [JAX NQS guide](jax_nqs_baseline.md#frozen-state-qualification) documents
+jax_nqs_baseline_product.qualify_jax_nqs_baseline: a real seeded replay,
+independent NumPy state checks, fixed-state evaluation on predeclared Hamiltonians,
+and separate identifiable error components. It preserves the original raw v2
+record and optimiser. Its finite-budget energy decrease does not certify a
+global optimum or state fidelity; exhaustive summation is not sampled VMC.
+The [executable example](https://github.com/anulum/scpn-quantum-control/blob/main/examples/variational_baseline_qualification.py)
+prints the versioned companion, parameter provenance and functional cost budget.

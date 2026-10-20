@@ -6,8 +6,8 @@
   "tests",
   "oscillatools/tests"
  ],
- "total_findings": 7264,
- "total_files": 583,
+ "total_findings": 7244,
+ "total_files": 582,
  "files": {
   "oscillatools/tests/conftest.py": 1,
   "oscillatools/tests/kuramoto_delay_sensitivity_witness.py": 1,
@@ -305,7 +305,6 @@
   "tests/test_isolated_host_readiness.py": 10,
   "tests/test_iter_benchmark.py": 27,
   "tests/test_jax_accel_contracts.py": 13,
-  "tests/test_jax_nqs.py": 20,
   "tests/test_josephson_array.py": 15,
   "tests/test_knm_hamiltonian_mutation_kills.py": 20,
   "tests/test_knm_parity.py": 14,

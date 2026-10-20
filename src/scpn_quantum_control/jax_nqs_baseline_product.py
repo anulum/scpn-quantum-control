@@ -18,9 +18,10 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 import numpy as np
 from numpy.typing import NDArray
@@ -28,6 +29,9 @@ from numpy.typing import NDArray
 from .advantage_language_protocol import NoAdvantageCertificate, issue_no_advantage_certificate
 from .bridge.knm_hamiltonian import knm_to_dense_matrix
 from .phase.jax_nqs import is_jax_available, jax_vmc_ground_state
+
+if TYPE_CHECKING:
+    from .variational_baseline_qualification import VariationalBaselineQualification
 
 JAX_NQS_BASELINE_PRODUCT_SCHEMA: Final[str] = "jax_nqs_baseline_product.v2"
 JAX_NQS_BASELINE_MIN_QUBITS: Final[int] = 2
@@ -117,7 +121,40 @@ class JAXNQSBaselineSpec:
         variational_slack: float = 1e-5,
         max_dense_gib: float | None = None,
     ) -> JAXNQSBaselineSpec:
-        """Copy NumPy inputs into the immutable contract."""
+        """Copy validated array inputs into the immutable request.
+
+        Parameters
+        ----------
+        coupling : numpy.ndarray
+            Finite symmetric square pair couplings for two through six visible spins.
+        omega : numpy.ndarray
+            Matching finite field vector in the same energy units.
+        n_hidden : int or None
+            Positive hidden width; None selects twice the visible width.
+        learning_rate : float
+            Positive finite gradient-descent step size.
+        n_iterations : int
+            Update budget from one through five thousand.
+        seed : int
+            Non-negative native initialisation seed.
+        relative_error_tolerance : float
+            Non-negative finite threshold for the exact-reference relative gap.
+        variational_slack : float
+            Non-negative numerical slack for the variational upper-bound check.
+        max_dense_gib : float or None
+            Optional positive per-workspace memory ceiling in GiB.
+
+        Returns
+        -------
+        JAXNQSBaselineSpec
+            Frozen request owning copies of both input arrays.
+
+        Raises
+        ------
+        ValueError
+            If request shape, finiteness or declared resource bounds fail.
+
+        """
         coupling_array = np.asarray(coupling, dtype=float)
         omega_array = np.asarray(omega, dtype=float)
         if coupling_array.ndim != 2:
@@ -319,7 +356,30 @@ def _observe_jax_environment() -> JAXNQSEnvironment:
 
 
 def run_jax_nqs_baseline(spec: JAXNQSBaselineSpec) -> JAXNQSBaselineProduct:
-    """Run the bounded ambient JAX RBM and compare it with exact diagonalisation."""
+    """Run the original JAX RBM against an independent dense ground energy.
+
+    Parameters
+    ----------
+    spec : JAXNQSBaselineSpec
+        Validated bounded training and comparison request.
+
+    Returns
+    -------
+    JAXNQSBaselineProduct
+        Original v2 evidence with seeded loss history and actual JAX provenance.
+
+    Raises
+    ------
+    ImportError
+        If real JAX is unavailable; no NumPy optimiser fallback is substituted.
+    RuntimeError
+        If the native runner's history length or parameter count is inconsistent.
+    ValueError
+        If a native result is non-finite or structurally inconsistent.
+    DenseAllocationError
+        If the declared dense-memory budget is exceeded.
+
+    """
     if not is_jax_available():
         raise ImportError(
             "JAX NQS exact-reference execution requires the optional JAX runtime; "
@@ -348,7 +408,7 @@ def run_jax_nqs_baseline(spec: JAXNQSBaselineSpec) -> JAXNQSBaselineProduct:
         raise RuntimeError("ambient JAX NQS parameter count violates its public contract")
     signed_gap = variational_energy - exact_ground_energy
     absolute_gap = abs(signed_gap)
-    energy_scale = max(abs(exact_ground_energy), np.finfo(float).eps)
+    energy_scale = max(abs(exact_ground_energy), float(np.finfo(float).eps))
     relative_error = absolute_gap / energy_scale
     comparison = JAXNQSComparison(
         exact_ground_energy=exact_ground_energy,
@@ -388,8 +448,57 @@ def run_jax_nqs_baseline(spec: JAXNQSBaselineSpec) -> JAXNQSBaselineProduct:
     )
 
 
+def qualify_jax_nqs_baseline(
+    spec: JAXNQSBaselineSpec,
+    *,
+    held_out: Mapping[str, tuple[NDArray[np.float64], NDArray[np.float64]]] | None = None,
+) -> VariationalBaselineQualification:
+    """Qualify real seeded replay, state overlap and frozen evaluation problems.
+
+    Parameters
+    ----------
+    spec : JAXNQSBaselineSpec
+        Original bounded training request, admitted to at most 4096 parameters.
+    held_out : mapping or None
+        Up to eight named ``(coupling, omega)`` pairs with the training visible
+        shape. Effective Hamiltonians must be distinct and are frozen before
+        training; evaluation never changes the fitted parameters.
+
+    Returns
+    -------
+    VariationalBaselineQualification
+        Separate companion with the unchanged raw v2 record, actual real-JAX
+        replay, independent NumPy state checks and functional cost observations.
+
+    Raises
+    ------
+    ValueError
+        If a request violates shape, value or qualification resource admission.
+    ImportError
+        If real JAX is unavailable; there is no numerical fallback.
+    RuntimeError
+        If replay or independent frozen-state validation fails.
+
+    """
+    from .variational_baseline_qualification import qualify_jax_nqs_baseline as qualify
+
+    return qualify(spec, held_out=held_out)
+
+
 def render_jax_nqs_baseline_markdown(product: JAXNQSBaselineProduct) -> str:
-    """Render a compact deterministic review report."""
+    """Render the deterministic raw-baseline review report.
+
+    Parameters
+    ----------
+    product : JAXNQSBaselineProduct
+        Validated original evidence record.
+
+    Returns
+    -------
+    str
+        Markdown containing the original numerical observations and claim boundary.
+
+    """
     comparison = product.comparison
     environment = product.environment
     return "\n".join(
@@ -426,7 +535,28 @@ def write_jax_nqs_baseline_evidence(
     json_path: str | Path,
     markdown_path: str | Path,
 ) -> tuple[Path, Path]:
-    """Write deterministic JSON and Markdown evidence files."""
+    """Write the original deterministic JSON and Markdown records.
+
+    Parameters
+    ----------
+    product : JAXNQSBaselineProduct
+        Validated original evidence to serialise.
+    json_path : str or pathlib.Path
+        JSON destination; missing parent directories are created.
+    markdown_path : str or pathlib.Path
+        Markdown destination; missing parent directories are created.
+
+    Returns
+    -------
+    tuple of pathlib.Path
+        JSON and Markdown paths in that order.
+
+    Raises
+    ------
+    OSError
+        If either destination cannot be written.
+
+    """
     json_output = Path(json_path)
     markdown_output = Path(markdown_path)
     json_output.parent.mkdir(parents=True, exist_ok=True)
@@ -450,6 +580,7 @@ __all__ = [
     "JAXNQSComparison",
     "JAXNQSEnvironment",
     "render_jax_nqs_baseline_markdown",
+    "qualify_jax_nqs_baseline",
     "run_jax_nqs_baseline",
     "write_jax_nqs_baseline_evidence",
 ]

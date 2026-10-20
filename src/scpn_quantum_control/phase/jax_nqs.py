@@ -33,7 +33,14 @@ except ImportError:
 
 
 def is_jax_available() -> bool:
-    """Check if JAX is installed."""
+    """Report whether the real optional JAX runtime imported successfully.
+
+    Returns
+    -------
+    bool
+        Availability of the native runtime in this process.
+
+    """
     return _JAX_AVAILABLE
 
 
@@ -42,11 +49,33 @@ def jax_rbm_energy(
     H: Any,
     n: int,
 ) -> Any:
-    """Compute ⟨ψ|H|ψ⟩ for RBM wavefunction using JAX.
+    """Compute a real positive-amplitude RBM expectation by exact enumeration.
 
-    params: dict with keys 'a' (visible biases), 'b' (hidden biases), 'W' (weights)
-    H: dense Hamiltonian as jax array
-    n: number of qubits
+    Parameters
+    ----------
+    params : dict
+        Real arrays a (n,), b (hidden,) and W (hidden, n).
+    H : array_like
+        Dense real symmetric operator in little-endian computational order.
+    n : int
+        Visible-spin count; summation uses all 2**n configurations.
+
+    Returns
+    -------
+    jax.Array
+        Scalar expectation in the operator's units, differentiable in parameters.
+
+    Raises
+    ------
+    ImportError
+        If JAX is unavailable.
+
+    Notes
+    -----
+    Configurations use float32. Parameter and operator dtypes participate in JAX
+    promotion; the global X64 flag alone does not establish effective precision.
+    No stochastic sampling or convergence certificate is supplied.
+
     """
     if not _JAX_AVAILABLE:
         raise ImportError("JAX not installed: pip install jax jaxlib")
@@ -85,7 +114,46 @@ def jax_vmc_ground_state(
     *,
     max_dense_gib: float | None = None,
 ) -> dict[str, Any]:
-    """Exact-enumeration ground-state search with JAX auto-differentiation."""
+    """Fit the real RBM with JAX gradients and exhaustive configuration sums.
+
+    Parameters
+    ----------
+    K : numpy.ndarray
+        Finite symmetric pair couplings of shape (n, n); diagonal entries are unused.
+    omega : numpy.ndarray
+        Finite field vector of shape (n,), in the coupling energy units.
+    n_hidden : int or None
+        Positive hidden width, defaulting to twice the visible width.
+    learning_rate : float
+        Finite positive gradient-descent step.
+    n_iterations : int
+        Positive update count; the final extra loss is retained in history.
+    seed : int
+        Non-negative seed for native JAX parameter initialisation.
+    max_dense_gib : float or None
+        Optional per-workspace dense allocation ceiling in GiB.
+
+    Returns
+    -------
+    dict
+        Final energy, n_iterations+1 losses, fitted real parameter arrays and
+        parameter count. The Hamiltonian is evaluated as float32.
+
+    Raises
+    ------
+    ImportError
+        If the required real JAX runtime is unavailable.
+    ValueError
+        If shapes, values, optimiser settings or the real Hermitian operator fail.
+    DenseAllocationError
+        If a declared workspace ceiling is exceeded.
+
+    Notes
+    -----
+    The historical name does not imply Monte Carlo sampling. This exact path
+    accepts at most twelve visible spins and makes no global-optimum claim.
+
+    """
     if not _JAX_AVAILABLE:
         raise ImportError("JAX not installed: pip install jax jaxlib")
 

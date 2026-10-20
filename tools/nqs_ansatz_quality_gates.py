@@ -9,26 +9,59 @@
 
 from __future__ import annotations
 
+import os
+import tempfile
 from os import devnull
+from pathlib import Path
 
 Gate = tuple[str, list[str]]
 NQS_ANSATZ_SOURCE = "src/scpn_quantum_control/phase/nqs_ansatz.py"
 JAX_NQS_BASELINE_PRODUCT_SOURCE = "src/scpn_quantum_control/jax_nqs_baseline_product.py"
 JAX_NQS_BASELINE_PRODUCT_TEST = "tests/test_jax_nqs_baseline_product.py"
-NQS_ANSATZ_COVERAGE_COHORT = ["tests/test_nqs_ansatz.py", JAX_NQS_BASELINE_PRODUCT_TEST]
+JAX_NQS_SOURCE = "src/scpn_quantum_control/phase/jax_nqs.py"
+VARIATIONAL_QUALIFICATION_SOURCE = "src/scpn_quantum_control/variational_baseline_qualification.py"
+NQS_ANSATZ_COVERAGE_COHORT = [
+    "tests/test_nqs_ansatz.py",
+    JAX_NQS_BASELINE_PRODUCT_TEST,
+    "tests/test_jax_nqs.py",
+    "tests/test_variational_baseline_qualification.py",
+    "tests/test_variational_quantum_baselines.py",
+    "tests/test_nqs_ansatz_quality_gate.py",
+]
+NQS_ANSATZ_COVERAGE_INCLUDE = (
+    "*/phase/nqs_ansatz.py,*/jax_nqs_baseline_product.py,"
+    "*/phase/jax_nqs.py,*/variational_baseline_qualification.py,"
+    "*/tools/nqs_ansatz_quality_gates.py,*/examples/variational_baseline_qualification.py"
+)
 NQS_ANSATZ_TYPING_RATCHET = [
     NQS_ANSATZ_SOURCE,
     JAX_NQS_BASELINE_PRODUCT_SOURCE,
+    JAX_NQS_SOURCE,
+    VARIATIONAL_QUALIFICATION_SOURCE,
+    "examples/variational_baseline_qualification.py",
     *NQS_ANSATZ_COVERAGE_COHORT,
     "tools/nqs_ansatz_quality_gates.py",
-    "tests/test_nqs_ansatz_quality_gate.py",
 ]
 NQS_ANSATZ_DOCSTRING_RATCHET = [*NQS_ANSATZ_TYPING_RATCHET]
-NQS_ANSATZ_COVERAGE_DATA_FILE = "/tmp/scpn-qc-nqs-ansatz-quality.coverage"  # nosec B108
+NQS_ANSATZ_COVERAGE_DATA_FILE = str(
+    Path(os.environ.get("TMPDIR", tempfile.gettempdir())) / "scpn-qc-nqs-ansatz-quality.coverage"
+)
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:
-    """Build strict typing and complete NumPy-docstring gates."""
+    """Build strict typing and complete NumPy-docstring gates.
+
+    Parameters
+    ----------
+    python : str
+        Interpreter for the existing locked project environment.
+
+    Returns
+    -------
+    list
+        Named executable commands preserving required real-runtime acceptance.
+
+    """
     return [
         (
             "mypy-strict-nqs-ansatz-quality",
@@ -61,7 +94,19 @@ def build_static_quality_gates(python: str) -> list[Gate]:
 
 
 def build_coverage_gates(python: str) -> list[Gate]:
-    """Build real NQS execution and exact source-coverage gates."""
+    """Build real NQS execution and exact source-coverage gates.
+
+    Parameters
+    ----------
+    python : str
+        Interpreter for the existing locked project environment.
+
+    Returns
+    -------
+    list
+        Named executable commands preserving required real-runtime acceptance.
+
+    """
     return [
         (
             "NQS-ansatz focused coverage",
@@ -80,6 +125,20 @@ def build_coverage_gates(python: str) -> list[Gate]:
             ],
         ),
         (
+            "NQS-ansatz complete file example",
+            [
+                python,
+                "-m",
+                "coverage",
+                "run",
+                f"--rcfile={devnull}",
+                f"--data-file={NQS_ANSATZ_COVERAGE_DATA_FILE}",
+                "--append",
+                "--branch",
+                "examples/variational_baseline_qualification.py",
+            ],
+        ),
+        (
             "NQS-ansatz exact coverage threshold",
             [
                 python,
@@ -90,7 +149,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={NQS_ANSATZ_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/phase/nqs_ansatz.py,*/jax_nqs_baseline_product.py",
+                f"--include={NQS_ANSATZ_COVERAGE_INCLUDE}",
             ],
         ),
     ]

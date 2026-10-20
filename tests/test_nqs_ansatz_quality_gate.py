@@ -11,7 +11,8 @@ from pathlib import Path
 
 from tools import nqs_ansatz_quality_gates as quality_gates
 from tools import preflight
-from tools.ci_workflow_inventory import read_ci_workflow_source
+from tools.audit_ci_workflow_modularity import audit_ci_workflow_modularity
+from tools.ci_workflow_inventory import load_ci_workflow_policy, read_ci_workflow_source
 
 
 def test_static_gate_is_strict_and_completely_documented() -> None:
@@ -35,9 +36,9 @@ def test_coverage_gate_is_isolated_connected_and_exact() -> None:
     assert run[-len(quality_gates.NQS_ANSATZ_COVERAGE_COHORT) :] == (
         quality_gates.NQS_ANSATZ_COVERAGE_COHORT
     )
-    assert any(argument.startswith("--data-file=/tmp/") for argument in run)
+    assert f"--data-file={quality_gates.NQS_ANSATZ_COVERAGE_DATA_FILE}" in run
     assert "--fail-under=100" in report
-    assert "--include=*/phase/nqs_ansatz.py,*/jax_nqs_baseline_product.py" in report
+    assert f"--include={quality_gates.NQS_ANSATZ_COVERAGE_INCLUDE}" in report
     assert quality_gates.JAX_NQS_BASELINE_PRODUCT_SOURCE in quality_gates.NQS_ANSATZ_TYPING_RATCHET
     assert quality_gates.JAX_NQS_BASELINE_PRODUCT_TEST in quality_gates.NQS_ANSATZ_COVERAGE_COHORT
 
@@ -69,3 +70,24 @@ def test_ci_runs_and_aggregates_nqs_ansatz_gate() -> None:
     probe = 'python -c "import jax; print(jax.__version__, jax.devices())"'
     assert block.index(install) < block.index(probe) < block.index("python -m coverage run")
     assert "nqs-ansatz-quality" in workflow[workflow.index("  ci-gate:") :]
+
+
+def test_required_jax_coverage_reaches_the_same_commit_aggregate() -> None:
+    """Retain the required runtime cohort and its exact-commit coverage handoff."""
+    simulation = Path(".github/workflows/ci-simulation-artifact.yml").read_text()
+    native = Path(".github/workflows/ci-native-integration.yml").read_text()
+    policy = load_ci_workflow_policy()
+    for path in (
+        "tests/test_variational_baseline_qualification.py",
+        "tests/test_variational_quantum_baselines.py",
+    ):
+        assert path in simulation
+        assert "pytestmark = pytest.mark.framework_imports" in Path(path).read_text()
+    assert "name: nqs-ansatz-coverage-${{ github.sha }}" in simulation
+    assert "name: nqs-ansatz-coverage-${{ github.sha }}" in native
+    native_category = next(
+        row for row in policy["categories"] if row["id"] == "native-integration"
+    )
+    assert "simulation-artifact" in native_category["caller_needs"]
+    assert audit_ci_workflow_modularity(policy) == []
+    assert "nqs-ansatz-coverage/scpn-qc-nqs-ansatz-quality.coverage" in native

@@ -7,7 +7,7 @@
 # SCPN Quantum Control — Neural Quantum State Ansatz
 """Restricted Boltzmann Machine (RBM) ansatz for Kuramoto-XY ground state.
 
-Variational Monte Carlo with a neural network wavefunction, inspired by
+Exact-enumeration variational search with a neural wavefunction, inspired by
 Carleo & Troyer, Science 355, 602 (2017) and the NetKet framework.
 
 The RBM parameterises log(ψ(σ)) = Σ a_i σ_i + Σ log cosh(Σ W_ij σ_j + b_i)
@@ -54,16 +54,48 @@ class RBMWavefunction:
         self.W = self.rng.normal(0, scale, (self.n_hid, self.n_vis)).astype(np.complex128)
 
     def log_psi(self, sigma: NDArray[np.float64]) -> complex:
-        """Compute log(ψ(σ)) for a spin configuration σ ∈ {+1,-1}^n."""
+        """Evaluate the unnormalised complex log amplitude.
+
+        Parameters
+        ----------
+        sigma : numpy.ndarray
+            Spin vector of shape (n_visible,) with entries +1 or -1.
+
+        Returns
+        -------
+        complex
+            Sum of visible-bias and hidden log-cosh terms.
+
+        """
         theta = self.W @ sigma + self.b
         return complex(np.sum(self.a * sigma) + np.sum(np.log(np.cosh(theta))))
 
     def psi(self, sigma: NDArray[np.float64]) -> complex:
-        """Compute ψ(σ)."""
+        """Evaluate the unnormalised complex amplitude.
+
+        Parameters
+        ----------
+        sigma : numpy.ndarray
+            Spin vector of shape (n_visible,) with entries +1 or -1.
+
+        Returns
+        -------
+        complex
+            Exponential of the public log amplitude.
+
+        """
         return complex(np.exp(self.log_psi(sigma)))
 
     def all_amplitudes(self) -> NDArray[np.complex128]:
-        """Compute ψ(σ) for all 2^n configurations (exact, for small n)."""
+        """Enumerate and normalise amplitudes in little-endian basis order.
+
+        Returns
+        -------
+        numpy.ndarray
+            Complex128 state of length 2**n_visible; a zero norm is retained for
+            callers to reject explicitly rather than invent a normalised state.
+
+        """
         dim = 2**self.n_vis
         amps = np.zeros(dim, dtype=np.complex128)
         for k in range(dim):
@@ -73,7 +105,14 @@ class RBMWavefunction:
         return amps / norm if norm > 0 else amps
 
     def n_params(self) -> int:
-        """Total number of variational parameters."""
+        """Count visible biases, hidden biases and pair weights.
+
+        Returns
+        -------
+        int
+            n_visible + n_hidden + n_visible*n_hidden.
+
+        """
         return self.n_vis + self.n_hid + self.n_hid * self.n_vis
 
 

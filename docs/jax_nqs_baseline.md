@@ -115,3 +115,78 @@ This product does not establish:
 
 The JSON record hard-codes those promotion flags to `false`, and construction
 fails if they are changed.
+
+## Frozen-state qualification
+
+The additive public qualify_jax_nqs_baseline(spec, held_out=...) returns a
+VariationalBaselineQualification companion. Its baseline is the unchanged
+jax_nqs_baseline_product.v2 record; the companion uses
+variational_baseline_qualification.v1. The companion digest covers its full
+JSON payload, including the original baseline and observed costs.
+
+The qualifier performs two actual native training runs with the same request
+and seed. It requires the entire loss history to reproduce exactly within that
+process and binds the replay parameters by shape, dtype and value. It then
+evaluates energy and the lowest-reference-subspace projector through the public
+JAX energy function. An independently reconstructed NumPy RBM state checks both
+expectations within 1e-5 + 1e-4 * abs(reference). Observed parameter dtypes and
+both tolerance constants are recorded. The original runner builds its training
+Hamiltonian and spin configurations as float32; enabling global JAX X64 does
+not make every intermediate float64.
+
+~~~python
+from scpn_quantum_control.jax_nqs_baseline_product import qualify_jax_nqs_baseline
+
+qualified = qualify_jax_nqs_baseline(
+    spec, held_out={"opposite_field": (K, -omega)}
+)
+print(qualified.training.reference_subspace_overlap)
+print(qualified.errors)
+print(qualified.to_dict()["evidence_sha256"])
+~~~
+
+Held-out Hamiltonians are copied, validated and frozen before training. Up to
+eight distinct effective Hamiltonians with the same visible shape are admitted;
+the label training is reserved. Changes only to the unused coupling diagonal
+do not create a new problem. Evaluation never updates the fitted parameters.
+This measures transfer of a fixed state between Hamiltonians; it does not
+establish statistical generalisation to an unseen dataset. Qualification admits
+at most 4096 RBM parameters and retains the original two-through-six-spin cap.
+
+The squared overlap is with all eigenvectors within
+1e-10 + 1e-8 * abs(E0) of the dense minimum. The dimension and energy window
+are recorded. For a degenerate ground space, this is a subspace projection,
+rather than fidelity with a particular eigenvector.
+
+## Error attribution and limitations
+
+Exact enumeration has zero Monte Carlo sampling standard error. That statement
+does not remove finite precision, representation bias or optimisation error.
+
+The qualifier separates representation bias from optimisation excess only for
+two analytically identifiable effective Hamiltonian families:
+
+- A diagonal Hamiltonian admits a computational-basis ground state in the closure
+  of the real RBM family; its ansatz energy infimum equals the exact minimum.
+- For two spins with zero field, write c = H[1, 2] = -2*K[0, 1].
+  Positivity of the real RBM amplitudes gives ansatz infimum min(c, 0),
+  while the exact ground energy is -abs(c). Negative pair coupling therefore
+  has representation bias 2*abs(K[0, 1]): its antisymmetric ground state
+  requires a relative sign unavailable to this positive-amplitude ansatz.
+
+These are infima in the closure; finite parameters need not attain them.
+Other problems retain None for the infimum, representation bias and
+optimisation excess. Their combined signed energy excess is still measured.
+Round-off residuals are retained without clipping. A decreasing loss alone
+does not qualify state overlap, a global optimum or an advantage claim.
+
+The required runtime tests compare the sign-obstructed two-spin fixture with
+an actual Aer matrix-product-state preparation of the antisymmetric ground
+state. This bounded reference is not a many-body crossover benchmark.
+
+Wall times separately record the original baseline run, seeded replay and
+frozen evaluation, including compilation and reference work. Explicit loss,
+gradient-transform and observable-call counts disclose the doubled training
+budget; exhaustive configurations are not Monte Carlo samples. These functional
+timings make no isolated speed or scaling claim. Run the complete file example
+with PYTHONPATH=src:oscillatools/src python examples/variational_baseline_qualification.py.

@@ -155,16 +155,16 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 1.2.0 |
 | Public API exports | 851 |
-| Python source modules | 803 |
-| Public Python classes | 1533 |
+| Python source modules | 804 |
+| Public Python classes | 1537 |
 | Domain package families | 40 |
 | API documentation pages | 14 |
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 53 |
 | Notebook files | 109 |
-| Example files | 41 |
+| Example files | 42 |
 | Optional extras | 43 |
-| Python test files | 1551 |
+| Python test files | 1553 |
 | Public documentation pages | 385 |
 | GitHub Actions workflows | 44 |
 
@@ -960,7 +960,7 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [Differentiable Support Matrix](docs/differentiable_support_matrix.md) — generated registry and planner support evidence
 - [Differentiable Reviewer Evidence](docs/differentiable_reviewer_evidence.md) — generated criticism-to-command and open-gap evidence index
 - [Quantum Gradients](docs/quantum_gradients.md) — parameter-shift and gradient-evidence route for VQE and quantum-control objectives
-- [JAX NQS Baseline](docs/jax_nqs_baseline.md) — bounded exact-reference RBM evidence with environment provenance and no performance or hardware claim
+- [JAX NQS Baseline](docs/jax_nqs_baseline.md) — bounded exact-reference RBM evidence, seeded replay, independent state checks and frozen Hamiltonian evaluation
 - [Entangled Initial-State Coherence Study](docs/entanglement_initial_state_study.md) — visibility-aware phase order, dephased controls, deterministic evidence, and no entanglement-specific or shifted-critical-coupling claim
 - [Differentiable API](docs/differentiable_api.md) — public differentiable namespace and support matrix
 - [QNN, QGNN, and QSNN Convergence Examples](docs/ml_convergence_examples.md) — frozen local training tasks, framework rows, and digest-bound evidence
