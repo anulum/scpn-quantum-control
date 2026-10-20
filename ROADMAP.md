@@ -2,10 +2,10 @@
 
 ## Canonical work queue
 
-This file is the single source of truth for active roadmap and TODO
-selection. Older planning files under `private local workspace/` and
-`private internal records/` are retained as historical context only unless an item
-is copied here.
+This is the public capability and research roadmap. Status entries are dated;
+current source contracts and their evidence define supported behaviour.
+Maintainers reconcile implementation priorities in the private work queue.
+Historical targets below do not authorise publication, provider execution or spending.
 
 ### Current platform programme: reproducible evidence and benchmark infrastructure
 
@@ -1917,15 +1917,21 @@ Cross-repo integrations wired:
 
 ## v1.0.0 (Target: Q3 2026)
 
-Remaining items:
+Historical target ledger, reconciled 2026-10-20: v1.0.0 is an ancestor of
+current source version 1.2.0. Research and evidence items below retain their
+own acceptance conditions; they are not outstanding version-bump work.
 
 - [x] IBM Heron r2 hardware evidence ledgered; promoted claims narrowed to
   raw-count-backed or artifact-named rows
-- [ ] Coverage push to 100% (tracked in the internal coverage queue; latest documented baseline is ~97.6%, 315 uncovered lines)
+- [ ] Coverage qualification: require 100% for changed owners and preserve the
+  whole-package coverage policy. Each measurement belongs to its exact source
+  SHA and runtime; older baseline counts are historical, not a current census.
 - [ ] arXiv preprint: "Quantum simulation of coupled-oscillator synchronization on a 156-qubit superconducting processor"
 - [ ] Quantum advantage figure: exact-simulation crossover and hardware-budget boundary; no broad hardware-advantage claim until a preregistered raw-count campaign passes the validation gate
-- [ ] IBM Quantum Credits campaign (applied 2026-03-29, pending review)
-- [ ] Version bump to 1.0.0
+- [ ] IBM Quantum Credits campaign: application recorded 2026-03-29. The old
+  pending-review note is historical; any next campaign needs current account,
+  target, budget and approval evidence.
+- [x] Version bump to 1.0.0: released tag retained; current source is 1.2.0.
 
 ## Future
 
