@@ -1,11 +1,27 @@
 {
   "backend": "garnet",
-  "credit_stop": "manual: owner reads the Resonance dashboard; stop if pilot > 10 credits",
+  "deviation": "one provider job per frozen circuit; batch rejected 3x by IQM station control",
   "experiment_id": "s1v2_information_matched_feedback_2026-10-19",
   "isa_digest": "cdab0046f772bad3dfc2fd34f178bf90707847ec4ab6b17cc9f2fc061d820850",
   "job_ids": [
-    "01a155d5-98c8-7742-83bc-7d3ee396f13b"
+    "01a15958-5ea5-733f-8b11-0aee3a22cfc7",
+    "01a15958-6064-7320-b3ca-058b7adb55e8",
+    "01a15958-6222-7617-8921-086563562478",
+    "01a15958-6413-7470-ab12-4d6f59b48d5e",
+    "01a15958-65be-73eb-8ce4-bf60e088840d",
+    "01a15958-6774-77ca-8110-d7e3a3104ddf",
+    "01a15958-6928-727b-85e0-7b87ea7dccdb",
+    "01a15958-6ac4-71e9-b902-a3d1211a578b",
+    "01a15958-6ed5-7495-b113-7f27c213a27f",
+    "01a15958-7094-72b4-9bf5-880c40d6f2f5",
+    "01a15958-72a1-7619-846b-0d5b1e9ee9fd",
+    "01a15958-741e-7754-9efd-5f9b0a2dbcb4",
+    "01a15958-759c-7353-97e9-d3478cd13e5a",
+    "01a15958-783e-7413-8e38-11210abff9a9",
+    "01a15958-79b2-75ee-babd-d078055da405",
+    "01a15958-7b58-7269-a1d7-18f4befc58cc"
   ],
+  "job_per_label": true,
   "labels": [
     "s1v2_c0_CL_p_X",
     "s1v2_c0_CL_p_Y",
@@ -202,7 +218,7 @@
     1,
     2
   ],
-  "opened_utc": "20261019T202343Z",
+  "opened_utc": "20261020T124525Z",
   "provider": "iqm",
   "schema": "s1v2_submission_journal_v1",
   "shots": {
@@ -225,5 +241,5 @@
   },
   "stage": "main",
   "status": "submitted",
-  "submitted_utc": "20261019T202344Z"
+  "submitted_utc": "20261020T124533Z"
 }

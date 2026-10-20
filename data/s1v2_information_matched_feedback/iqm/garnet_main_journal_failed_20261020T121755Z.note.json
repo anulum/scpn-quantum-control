@@ -1,0 +1,1 @@
+{"schema":"s1v2_failed_job_note_v1","journal":"garnet_main_journal_failed_20261020T121755Z.json","job_id":"01a1593f-7650-7280-816c-d85c06ae8739","provider_status":"failed","reason":"iqm-station-control: unknown: Internal server error occurred (attempt 3, identical batch)","noted_utc":"20261020T121934Z"}
