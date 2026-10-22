@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **810 modules** across **41 package families**
-- **4318 documented public module-level symbols**
+- **811 modules** across **41 package families**
+- **4321 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -6138,6 +6138,14 @@ Batch and sample tensor validation helpers for native transforms.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_batch_helpers.py) · Public symbols: **0**
 
 No public module-level class or function is declared.
+
+### `scpn_quantum_control.differentiable_batched_transform_execution`
+
+Execute native batched derivatives without QNode or reporting dependencies.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_batched_transform_execution.py) · Public symbols: **3**
+
+**Functions:** `jax_batched_gradient()`, `torch_batched_gradient()`, `tensorflow_vectorized_derivatives()`
 
 ### `scpn_quantum_control.differentiable_benchmark_report`
 

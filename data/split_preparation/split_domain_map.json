@@ -115,6 +115,7 @@
     "differentiable_architecture_map",
     "differentiable_baseline_scorecard",
     "differentiable_batch_helpers",
+    "differentiable_batched_transform_execution",
     "differentiable_benchmark_report",
     "differentiable_canonical_api",
     "differentiable_claim_ledger",

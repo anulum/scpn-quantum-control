@@ -318,6 +318,7 @@
         "tests/test_differentiable_audit_contracts_quality_gate.py",
         "tests/test_differentiable_baseline_scorecard.py",
         "tests/test_differentiable_batch_helpers.py",
+        "tests/test_differentiable_batched_transform_execution.py",
         "tests/test_differentiable_benchmark_evidence.py",
         "tests/test_differentiable_benchmark_report.py",
         "tests/test_differentiable_benchmark_workflow.py",

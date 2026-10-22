@@ -14,6 +14,7 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
+from .differentiable_batched_transform_execution import torch_batched_gradient
 from .differentiable_structured_transform_execution import torch_structured_derivatives
 from .differentiable_transform_algebra import (
     TransformAlgebraCase,
@@ -159,10 +160,10 @@ def _execute_cases(
     )
 
     structured_batch = {"weights": batch, "bias": structured["bias"]}
-    structured_mapped = torch.func.vmap(
-        torch.func.grad(structured_loss), in_dims=({"weights": batch_axis, "bias": None},)
-    )(structured_batch)
-    batched_custom = torch.func.vmap(torch.func.grad(custom_composed), in_dims=batch_axis)(batch)
+    structured_mapped = torch_batched_gradient(
+        torch, structured_loss, structured_batch, ({"weights": batch_axis, "bias": None},)
+    )
+    batched_custom = torch_batched_gradient(torch, custom_composed, batch, batch_axis)
     structured_batch_actual = np.concatenate(
         [array(structured_mapped["weights"]).ravel(), array(structured_mapped["bias"]).ravel()]
     )

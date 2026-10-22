@@ -14,6 +14,7 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
+from .differentiable_batched_transform_execution import jax_batched_gradient
 from .differentiable_structured_transform_execution import jax_structured_derivatives
 from .differentiable_transform_algebra import (
     TransformAlgebraCase,
@@ -161,11 +162,11 @@ def _execute_cases(
     )
 
     structured_batch = {"weights": batch, "bias": structured["bias"]}
-    structured_mapped = jax.vmap(
-        jax.grad(structured_loss), in_axes=({"weights": batch_axis, "bias": None},)
-    )(structured_batch)
-    batched_custom = jax.vmap(jax.grad(forward_composed), in_axes=batch_axis)(batch)
-    batched_custom_reverse = jax.vmap(jax.grad(reverse_composed), in_axes=batch_axis)(batch)
+    structured_mapped = jax_batched_gradient(
+        jax, structured_loss, structured_batch, ({"weights": batch_axis, "bias": None},)
+    )
+    batched_custom = jax_batched_gradient(jax, forward_composed, batch, batch_axis)
+    batched_custom_reverse = jax_batched_gradient(jax, reverse_composed, batch, batch_axis)
     structured_batch_actual = np.concatenate(
         [np.ravel(structured_mapped["weights"]), np.ravel(structured_mapped["bias"])]
     )

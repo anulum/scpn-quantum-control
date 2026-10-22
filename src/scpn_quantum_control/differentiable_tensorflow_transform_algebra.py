@@ -14,6 +14,7 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
+from .differentiable_batched_transform_execution import tensorflow_vectorized_derivatives
 from .differentiable_structured_transform_execution import (
     tensorflow_structured_gradient,
     tensorflow_structured_hessian,
@@ -167,8 +168,8 @@ def _execute_cases(
         weights_gradient, bias_gradient = tape.gradient(value, (weights, bias))
         return weights_gradient, bias_gradient
 
-    structured_weights, structured_bias = tf.vectorized_map(
-        structured_batch_gradient, batch, fallback_to_while_loop=False
+    structured_weights, structured_bias = tensorflow_vectorized_derivatives(
+        tf, structured_batch_gradient, batch
     )
 
     def custom_batch_gradient(params: Any) -> Any:
@@ -177,7 +178,7 @@ def _execute_cases(
             value = custom_composed(params)
         return tape.gradient(value, params)
 
-    batched_custom = tf.vectorized_map(custom_batch_gradient, batch, fallback_to_while_loop=False)
+    batched_custom = tensorflow_vectorized_derivatives(tf, custom_batch_gradient, batch)
     structured_batch_actual = np.concatenate(
         [np.ravel(structured_weights), np.ravel(structured_bias)]
     )

@@ -1370,6 +1370,15 @@ the gradient inside the enclosing tape, then `tensorflow_structured_hessian`
 differentiates that recorded tensor. These operations preserve native tensors
 and leave QNode admission and report construction to their callers.
 
+Native batch composition is implemented in
+`scpn_quantum_control.differentiable_batched_transform_execution`.
+`jax_batched_gradient` and `torch_batched_gradient` apply native vectorisation
+to a scalar objective's gradient, retaining each sample's derivative of a
+shared bias. Their native axis trees support either source batch axis.
+`tensorflow_vectorized_derivatives` maps the caller's actual derivative over
+a leading batch axis with `fallback_to_while_loop=False`; the caller retains
+the numerical callback, shared tensors and tape recording contexts.
+
 The default `differentiable_transform_algebra_report()` retains the bounded local
 NumPy audit and its original payload. Select a required CPU runtime explicitly
 through the same unified facade:
