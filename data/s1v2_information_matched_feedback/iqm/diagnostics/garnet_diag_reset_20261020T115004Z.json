@@ -1,0 +1,46 @@
+{
+  "circuit": "s1v2_diag_reset",
+  "counts": {
+    "00": 6,
+    "01": 239,
+    "11": 11
+  },
+  "errors": [],
+  "finished_utc": "20261020T115613Z",
+  "job_id": "01a15925-b0e3-72f6-bc44-50af7d9b9d70",
+  "layout": [
+    11,
+    6,
+    16,
+    15,
+    5,
+    10,
+    0,
+    1,
+    2
+  ],
+  "ops": {
+    "measure": 2,
+    "r": 1,
+    "reset": 1
+  },
+  "probe": "reset",
+  "provider_status": "completed",
+  "schema": "s1v2_garnet_diagnostic_v1",
+  "shots": 256,
+  "submitted_utc": "20261020T115004Z",
+  "timeline": [
+    "iqm-server:created:2026-10-20T11:50:04.779336+00:00",
+    "iqm-station-control:received:2026-10-20T11:52:50.038604+00:00",
+    "iqm-station-control:validation_started:2026-10-20T11:52:50.341492+00:00",
+    "iqm-station-control:validation_ended:2026-10-20T11:52:50.342997+00:00",
+    "iqm-station-control:compilation_started:2026-10-20T11:52:50.371174+00:00",
+    "iqm-station-control:compilation_ended:2026-10-20T11:52:50.436100+00:00",
+    "iqm-station-control:execution_started:2026-10-20T11:56:07.195972+00:00",
+    "iqm-station-control:execution_ended:2026-10-20T11:56:07.633537+00:00",
+    "iqm-station-control:post_processing_started:2026-10-20T11:56:07.635767+00:00",
+    "iqm-station-control:post_processing_ended:2026-10-20T11:56:07.653532+00:00",
+    "iqm-station-control:ready:2026-10-20T11:56:07.657933+00:00",
+    "iqm-server:completed:2026-10-20T11:56:08.319878+00:00"
+  ]
+}
