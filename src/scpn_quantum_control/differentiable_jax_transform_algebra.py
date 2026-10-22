@@ -15,6 +15,12 @@ import numpy as np
 from numpy.typing import NDArray
 
 from .differentiable_batched_transform_execution import jax_batched_gradient
+from .differentiable_native_curvature import (
+    jax_hessian,
+    jax_jacfwd,
+    jax_jacrev,
+    jax_reverse_gradient_jacobian,
+)
 from .differentiable_native_linearization import jax_jvp, jax_vjp
 from .differentiable_structured_transform_execution import jax_structured_derivatives
 from .differentiable_transform_algebra import (
@@ -147,8 +153,8 @@ def _execute_cases(
             np.ravel(reverse_composed(x)),
             np.ravel(jax.grad(forward_composed)(x)),
             np.ravel(jax.grad(reverse_composed)(x)),
-            np.ravel(jax.hessian(forward_composed)(x)),
-            np.ravel(jax.jacrev(jax.grad(reverse_composed))(x)),
+            np.ravel(jax_hessian(jax, forward_composed, x)),
+            np.ravel(jax_reverse_gradient_jacobian(jax, reverse_composed, x)),
         ]
     )
     custom_expected = np.concatenate(
@@ -190,7 +196,7 @@ def _execute_cases(
 
     return (
         case("framework_grad", derivative(x), expected_gradient, "jax.grad"),
-        case("framework_hessian", jax.hessian(loss)(x), curvature, "jax.hessian"),
+        case("framework_hessian", jax_hessian(jax, loss, x), curvature, "jax.hessian"),
         case(
             "framework_vmap_grad",
             mapped,
@@ -208,7 +214,10 @@ def _execute_cases(
         case(
             "framework_jacfwd_jacrev",
             np.concatenate(
-                [np.ravel(jax.jacfwd(derivative)(x)), np.ravel(jax.jacrev(derivative)(x))]
+                [
+                    np.ravel(jax_jacfwd(jax, derivative, x)),
+                    np.ravel(jax_jacrev(jax, derivative, x)),
+                ]
             ),
             np.tile(curvature.ravel(), 2),
             "jax.jacfwd(jax.grad)",

@@ -15,6 +15,13 @@ import numpy as np
 from numpy.typing import NDArray
 
 from .differentiable_batched_transform_execution import torch_batched_gradient
+from .differentiable_native_curvature import (
+    torch_forward_gradient_jacobian,
+    torch_hessian,
+    torch_jacfwd,
+    torch_jacrev,
+    torch_reverse_gradient_jacobian,
+)
 from .differentiable_native_linearization import torch_jvp, torch_vjp
 from .differentiable_structured_transform_execution import torch_structured_derivatives
 from .differentiable_transform_algebra import (
@@ -152,8 +159,8 @@ def _execute_cases(
     custom_actual = np.concatenate(
         [
             array(torch.func.grad(custom_composed)(x)).ravel(),
-            array(torch.func.jacfwd(torch.func.grad(custom_composed))(x)).ravel(),
-            array(torch.func.jacrev(torch.func.grad(custom_composed))(x)).ravel(),
+            array(torch_forward_gradient_jacobian(torch, custom_composed, x)).ravel(),
+            array(torch_reverse_gradient_jacobian(torch, custom_composed, x)).ravel(),
         ]
     )
     custom_expected = np.concatenate(
@@ -184,7 +191,7 @@ def _execute_cases(
 
     return (
         case("framework_grad", derivative(x), expected_gradient, "torch.func.grad"),
-        case("framework_hessian", torch.func.hessian(loss)(x), curvature, "torch.func.hessian"),
+        case("framework_hessian", torch_hessian(torch, loss, x), curvature, "torch.func.hessian"),
         case(
             "framework_vmap_grad",
             mapped,
@@ -203,8 +210,8 @@ def _execute_cases(
             "framework_jacfwd_jacrev",
             np.concatenate(
                 [
-                    array(torch.func.jacfwd(derivative)(x)).ravel(),
-                    array(torch.func.jacrev(derivative)(x)).ravel(),
+                    array(torch_jacfwd(torch, derivative, x)).ravel(),
+                    array(torch_jacrev(torch, derivative, x)).ravel(),
                 ]
             ),
             np.tile(curvature.ravel(), 2),

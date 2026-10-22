@@ -15,6 +15,10 @@ import numpy as np
 from numpy.typing import NDArray
 
 from .differentiable_batched_transform_execution import tensorflow_vectorized_derivatives
+from .differentiable_native_curvature import (
+    tensorflow_forward_jacobian,
+    tensorflow_jacobian,
+)
 from .differentiable_native_linearization import tensorflow_jvp, tensorflow_vjp
 from .differentiable_structured_transform_execution import (
     tensorflow_structured_gradient,
@@ -75,7 +79,7 @@ def _execute_cases(
         with tf.GradientTape(persistent=True) as tape:
             tape.watch(params)
             gradient = derivative(params)
-        return tape.jacobian(gradient, params, experimental_use_pfor=False)
+        return tensorflow_jacobian(tape, gradient, params)
 
     curvature = np.diag(12.0 * matrix[0] ** 2)
     expected_gradient = 4.0 * matrix[0] ** 3
@@ -97,13 +101,7 @@ def _execute_cases(
         pullback.watch(x)
         gradient = derivative(x)
     pulled = tensorflow_vjp(pullback, gradient, x, tangent)
-    forward_hessian = tf.transpose(
-        tf.vectorized_map(
-            forward_gradient,
-            tf.eye(matrix.shape[1], dtype=tf.float64),
-            fallback_to_while_loop=False,
-        )
-    )
+    forward_hessian = tensorflow_forward_jacobian(tf, forward_gradient, matrix)
 
     structured = {"weights": x, "bias": tf.constant(0.3, dtype=tf.float64)}
     with tf.GradientTape(persistent=True) as outer:
@@ -155,7 +153,7 @@ def _execute_cases(
             custom_inner.watch(x)
             custom_value = custom_composed(x)
         custom_gradient = custom_inner.gradient(custom_value, x)
-    custom_hessian = custom_outer.jacobian(custom_gradient, x, experimental_use_pfor=False)
+    custom_hessian = tensorflow_jacobian(custom_outer, custom_gradient, x)
     primal = np.sum(matrix[0] ** 4)
     custom_curvature = np.cos(primal) * curvature - np.sin(primal) * np.outer(
         expected_gradient, expected_gradient

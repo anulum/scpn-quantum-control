@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **812 modules** across **41 package families**
-- **4327 documented public module-level symbols**
+- **813 modules** across **41 package families**
+- **4338 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -6332,6 +6332,14 @@ Module coverage and diagnostic audit for differentiable-programming surfaces.
 **Classes:** `DifferentiableModuleHardeningRecord`, `DifferentiableModuleHardeningAuditResult`
 
 **Functions:** `differentiable_module_hardening_registry()`, `run_differentiable_module_hardening_audit()`
+
+### `scpn_quantum_control.differentiable_native_curvature`
+
+Execute native derivative matrices without QNode or reporting dependencies.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_native_curvature.py) · Public symbols: **11**
+
+**Functions:** `jax_hessian()`, `jax_jacfwd()`, `jax_jacrev()`, `jax_reverse_gradient_jacobian()`, `torch_hessian()`, `torch_jacfwd()`, `torch_jacrev()`, `torch_forward_gradient_jacobian()`, `torch_reverse_gradient_jacobian()`, `tensorflow_forward_jacobian()`, `tensorflow_jacobian()`
 
 ### `scpn_quantum_control.differentiable_native_linearization`
 

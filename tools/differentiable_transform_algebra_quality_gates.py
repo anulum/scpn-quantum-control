@@ -18,6 +18,7 @@ SOURCES = [
     "src/scpn_quantum_control/differentiable_transform_algebra.py",
     "src/scpn_quantum_control/differentiable_transform_comparison.py",
     "src/scpn_quantum_control/differentiable_batched_transform_execution.py",
+    "src/scpn_quantum_control/differentiable_native_curvature.py",
     "src/scpn_quantum_control/differentiable_native_linearization.py",
     "src/scpn_quantum_control/differentiable_structured_transform_execution.py",
     "src/scpn_quantum_control/differentiable_transform_support_matrix.py",
@@ -45,6 +46,7 @@ RUNTIME_TESTS = {
 SHARED_RUNTIME_TESTS = [
     "tests/test_native_transform_composition.py",
     "tests/test_differentiable_batched_transform_execution.py",
+    "tests/test_differentiable_native_curvature.py",
     "tests/test_differentiable_native_linearization.py",
     "tests/test_differentiable_structured_transform_execution.py",
 ]

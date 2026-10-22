@@ -1389,6 +1389,19 @@ TensorFlow callers keep their recording contexts and resources:
 uses the caller's actual tape and output cotangent. No host conversion or
 report policy is performed by these operations.
 
+Native derivative matrices are implemented in
+`scpn_quantum_control.differentiable_native_curvature`. The JAX and PyTorch
+Hessian, forward/reverse Jacobian and gradient-Jacobian operators return
+native arrays or PyTrees. Composed transforms retain their original native
+lookup and construction order. `tensorflow_jacobian` uses the caller's actual
+recording tape with `experimental_use_pfor=False`.
+`tensorflow_forward_jacobian` retains the original native float64 basis,
+vectorised JVP mapping without while-loop fallback, and output-first transpose;
+the supplied JVP callback retains its actual scope and recording resources.
+Each operation stays at
+its original expression site, so report assembly and host conversions retain
+their original order and the caller retains the TensorFlow tape lifetime.
+
 The default `differentiable_transform_algebra_report()` retains the bounded local
 NumPy audit and its original payload. Select a required CPU runtime explicitly
 through the same unified facade:
