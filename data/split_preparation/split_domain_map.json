@@ -138,6 +138,7 @@
     "differentiable_levenberg_marquardt",
     "differentiable_module_hardening_audit",
     "differentiable_native_curvature",
+    "differentiable_native_gradient",
     "differentiable_native_linearization",
     "differentiable_natural_gradient",
     "differentiable_notebook_curriculum",

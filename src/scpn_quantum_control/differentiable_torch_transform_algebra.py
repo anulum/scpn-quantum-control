@@ -14,7 +14,11 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
-from .differentiable_batched_transform_execution import torch_batched_gradient
+from .differentiable_batched_transform_execution import (
+    torch_batched_gradient,
+    torch_vectorized_derivatives,
+    torch_vectorized_sum,
+)
 from .differentiable_native_curvature import (
     torch_forward_gradient_jacobian,
     torch_hessian,
@@ -22,6 +26,7 @@ from .differentiable_native_curvature import (
     torch_jacrev,
     torch_reverse_gradient_jacobian,
 )
+from .differentiable_native_gradient import torch_gradient
 from .differentiable_native_linearization import torch_jvp, torch_vjp
 from .differentiable_structured_transform_execution import torch_structured_derivatives
 from .differentiable_transform_algebra import (
@@ -71,15 +76,15 @@ def _execute_cases(
     def loss(params: Any) -> Any:
         return torch.sum(params**4)
 
-    derivative = torch.func.grad(loss)
+    derivative = torch_gradient(torch, loss)
     curvature = np.diag(12.0 * matrix[0] ** 2)
     expected_gradient = 4.0 * matrix[0] ** 3
-    mapped = torch.func.vmap(derivative, in_dims=batch_axis, out_dims=0)(batch)
+    mapped = torch_vectorized_derivatives(torch, derivative, batch, batch_axis)
 
     def aggregate(params: Any) -> Any:
-        return torch.sum(torch.func.vmap(loss, in_dims=batch_axis)(params))
+        return torch_vectorized_sum(torch, loss, params, batch_axis)
 
-    aggregate_gradient = torch.func.grad(aggregate)(batch)
+    aggregate_gradient = torch_gradient(torch, aggregate)(batch)
     if batch_axis == 1:
         aggregate_gradient = aggregate_gradient.T
     _, pushed = torch_jvp(torch, derivative, x, tangent)
@@ -158,7 +163,7 @@ def _execute_cases(
     )
     custom_actual = np.concatenate(
         [
-            array(torch.func.grad(custom_composed)(x)).ravel(),
+            array(torch_gradient(torch, custom_composed)(x)).ravel(),
             array(torch_forward_gradient_jacobian(torch, custom_composed, x)).ravel(),
             array(torch_reverse_gradient_jacobian(torch, custom_composed, x)).ravel(),
         ]

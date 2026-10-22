@@ -1402,6 +1402,21 @@ Each operation stays at
 its original expression site, so report assembly and host conversions retain
 their original order and the caller retains the TensorFlow tape lifetime.
 
+`scpn_quantum_control.differentiable_native_gradient` constructs the actual
+JAX and PyTorch gradient callable without wrapping it. TensorFlow gradient
+readout uses the caller's recorded value, watched inputs and original tape;
+tape construction, watch calls, contexts, persistence and lifetime remain
+with the caller. Native derivative application and reuse keep their original
+producer binding and expression order.
+
+The batched execution module also maps an already-constructed derivative
+with an explicit leading output axis (`jax_vectorized_derivatives` and
+`torch_vectorized_derivatives`). Its `jax_vectorized_sum`,
+`torch_vectorized_sum` and `tensorflow_vectorized_sum` operations retain the
+original native mapping followed by reduction. These reductions remain
+native differentiable expressions; TensorFlow never substitutes a serial
+fallback. Report assembly and host conversion remain with the caller.
+
 The default `differentiable_transform_algebra_report()` retains the bounded local
 NumPy audit and its original payload. Select a required CPU runtime explicitly
 through the same unified facade:

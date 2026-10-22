@@ -14,11 +14,15 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
-from .differentiable_batched_transform_execution import tensorflow_vectorized_derivatives
+from .differentiable_batched_transform_execution import (
+    tensorflow_vectorized_derivatives,
+    tensorflow_vectorized_sum,
+)
 from .differentiable_native_curvature import (
     tensorflow_forward_jacobian,
     tensorflow_jacobian,
 )
+from .differentiable_native_gradient import tensorflow_gradient
 from .differentiable_native_linearization import tensorflow_jvp, tensorflow_vjp
 from .differentiable_structured_transform_execution import (
     tensorflow_structured_gradient,
@@ -73,7 +77,7 @@ def _execute_cases(
         with tf.GradientTape() as tape:
             tape.watch(params)
             value = loss(params)
-        return tape.gradient(value, params)
+        return tensorflow_gradient(tape, value, params)
 
     def hessian(params: Any) -> Any:
         with tf.GradientTape(persistent=True) as tape:
@@ -83,13 +87,11 @@ def _execute_cases(
 
     curvature = np.diag(12.0 * matrix[0] ** 2)
     expected_gradient = 4.0 * matrix[0] ** 3
-    mapped = tf.vectorized_map(derivative, batch, fallback_to_while_loop=False)
+    mapped = tensorflow_vectorized_derivatives(tf, derivative, batch)
     with tf.GradientTape() as aggregate_tape:
         aggregate_tape.watch(batch)
-        aggregate_loss = tf.reduce_sum(
-            tf.vectorized_map(loss, batch, fallback_to_while_loop=False)
-        )
-    aggregate_gradient = aggregate_tape.gradient(aggregate_loss, batch)
+        aggregate_loss = tensorflow_vectorized_sum(tf, loss, batch)
+    aggregate_gradient = tensorflow_gradient(aggregate_tape, aggregate_loss, batch)
 
     def forward_gradient(direction: Any) -> Any:
         with tf.autodiff.ForwardAccumulator(x, direction) as accumulator:
@@ -152,7 +154,7 @@ def _execute_cases(
         with tf.GradientTape() as custom_inner:
             custom_inner.watch(x)
             custom_value = custom_composed(x)
-        custom_gradient = custom_inner.gradient(custom_value, x)
+        custom_gradient = tensorflow_gradient(custom_inner, custom_value, x)
     custom_hessian = tensorflow_jacobian(custom_outer, custom_gradient, x)
     primal = np.sum(matrix[0] ** 4)
     custom_curvature = np.cos(primal) * curvature - np.sin(primal) * np.outer(
@@ -164,7 +166,7 @@ def _execute_cases(
         with tf.GradientTape() as tape:
             tape.watch((weights, bias))
             value = tf.reduce_sum((weights + bias) ** 4)
-        weights_gradient, bias_gradient = tape.gradient(value, (weights, bias))
+        weights_gradient, bias_gradient = tensorflow_gradient(tape, value, (weights, bias))
         return weights_gradient, bias_gradient
 
     structured_weights, structured_bias = tensorflow_vectorized_derivatives(
@@ -175,7 +177,7 @@ def _execute_cases(
         with tf.GradientTape() as tape:
             tape.watch(params)
             value = custom_composed(params)
-        return tape.gradient(value, params)
+        return tensorflow_gradient(tape, value, params)
 
     batched_custom = tensorflow_vectorized_derivatives(tf, custom_batch_gradient, batch)
     structured_batch_actual = np.concatenate(

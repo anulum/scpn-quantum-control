@@ -20,8 +20,13 @@ from numpy.typing import NDArray
 
 from scpn_quantum_control.differentiable_batched_transform_execution import (
     jax_batched_gradient,
+    jax_vectorized_derivatives,
+    jax_vectorized_sum,
     tensorflow_vectorized_derivatives,
+    tensorflow_vectorized_sum,
     torch_batched_gradient,
+    torch_vectorized_derivatives,
+    torch_vectorized_sum,
 )
 
 pytestmark = pytest.mark.framework_imports
@@ -68,6 +73,20 @@ def test_native_shared_bias_derivatives_remain_per_sample(
                 "bias": jnp.asarray(bias, dtype=jnp.float64),
             }
             gradient = jax_batched_gradient(jax, jax_objective, parameters, axes)
+
+            def row_objective(weights: Any) -> Any:
+                """Evaluate each actual row while retaining the shared native bias."""
+                return jax_objective({"weights": weights, "bias": parameters["bias"]})
+
+            def aggregate(weights: Any) -> Any:
+                """Differentiate the actual mapped JAX reduction as one native expression."""
+                return jax_vectorized_sum(jax, jnp, row_objective, weights, batch_axis)
+
+            mapped_gradient = jax_vectorized_derivatives(
+                jax, jax.grad(row_objective), parameters["weights"], batch_axis
+            )
+            aggregate_value = aggregate(parameters["weights"])
+            aggregate_gradient = jax.grad(aggregate)(parameters["weights"])
             assert gradient["weights"].dtype == np.float64
             assert gradient["bias"].dtype == np.float64
         array = np.asarray
@@ -84,6 +103,20 @@ def test_native_shared_bias_derivatives_remain_per_sample(
             "bias": torch.tensor(bias, dtype=torch.float64, device="cpu"),
         }
         gradient = torch_batched_gradient(torch, torch_objective, parameters, axes)
+
+        def row_objective(weights: Any) -> Any:
+            """Evaluate native torch rows with the same shared bias tensor."""
+            return torch_objective({"weights": weights, "bias": parameters["bias"]})
+
+        def aggregate(weights: Any) -> Any:
+            """Keep the actual torch mapped reduction differentiable."""
+            return torch_vectorized_sum(torch, row_objective, weights, batch_axis)
+
+        mapped_gradient = torch_vectorized_derivatives(
+            torch, torch.func.grad(row_objective), parameters["weights"], batch_axis
+        )
+        aggregate_value = aggregate(parameters["weights"])
+        aggregate_gradient = torch.func.grad(aggregate)(parameters["weights"])
         assert gradient["weights"].dtype == torch.float64
         assert gradient["bias"].dtype == torch.float64
 
@@ -113,11 +146,32 @@ def test_native_shared_bias_derivatives_remain_per_sample(
                 return {"weights": weight_gradient, "bias": bias_gradient}
 
             gradient = tensorflow_vectorized_derivatives(tf, tensorflow_derivative, batch)
+
+            def row_objective(weights: Any) -> Any:
+                """Evaluate native TensorFlow rows under the caller's recording tape."""
+                return (
+                    tf.sin(tf.reduce_sum(weights))
+                    + shared_bias * tf.reduce_sum(weights**2)
+                    + shared_bias**3
+                )
+
+            with tf.GradientTape() as aggregate_tape:
+                aggregate_tape.watch(batch)
+                aggregate_value = tensorflow_vectorized_sum(tf, row_objective, batch)
+            aggregate_gradient = aggregate_tape.gradient(aggregate_value, batch)
+            mapped_gradient = gradient["weights"]
             assert gradient["weights"].dtype == tf.float64
             assert gradient["bias"].dtype == tf.float64
         array = np.asarray
     np.testing.assert_allclose(array(gradient["weights"]), expected_weights, atol=1e-12, rtol=0)
     np.testing.assert_allclose(array(gradient["bias"]), expected_bias, atol=1e-12, rtol=0)
+    np.testing.assert_allclose(array(mapped_gradient), expected_weights, atol=1e-12, rtol=0)
+    reduced_gradient = array(aggregate_gradient)
+    if framework != "tensorflow" and batch_axis == 1:
+        reduced_gradient = reduced_gradient.T
+    np.testing.assert_allclose(reduced_gradient, expected_weights, atol=1e-12, rtol=0)
+    expected_sum = np.sum(np.sin(np.sum(rows, axis=1)) + bias * np.sum(rows**2, axis=1) + bias**3)
+    np.testing.assert_allclose(array(aggregate_value), expected_sum, atol=1e-12, rtol=0)
     np.testing.assert_array_equal(rows, original)
 
 
@@ -162,7 +216,7 @@ def test_native_producers_keep_original_structured_and_custom_objective_scopes(
     expected_callbacks = {
         "jax": ["structured_loss", "forward_composed", "reverse_composed"],
         "pytorch": ["structured_loss", "custom_composed"],
-        "tensorflow": ["structured_batch_gradient", "custom_batch_gradient"],
+        "tensorflow": ["derivative", "structured_batch_gradient", "custom_batch_gradient"],
     }
     assert calls == expected_callbacks[framework]
     assert len(records) == 11

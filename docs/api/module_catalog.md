@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **813 modules** across **41 package families**
-- **4338 documented public module-level symbols**
+- **814 modules** across **41 package families**
+- **4346 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -6143,9 +6143,9 @@ No public module-level class or function is declared.
 
 Execute native batched derivatives without QNode or reporting dependencies.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_batched_transform_execution.py) · Public symbols: **3**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_batched_transform_execution.py) · Public symbols: **8**
 
-**Functions:** `jax_batched_gradient()`, `torch_batched_gradient()`, `tensorflow_vectorized_derivatives()`
+**Functions:** `jax_batched_gradient()`, `torch_batched_gradient()`, `tensorflow_vectorized_derivatives()`, `jax_vectorized_derivatives()`, `torch_vectorized_derivatives()`, `jax_vectorized_sum()`, `torch_vectorized_sum()`, `tensorflow_vectorized_sum()`
 
 ### `scpn_quantum_control.differentiable_benchmark_report`
 
@@ -6340,6 +6340,14 @@ Execute native derivative matrices without QNode or reporting dependencies.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_native_curvature.py) · Public symbols: **11**
 
 **Functions:** `jax_hessian()`, `jax_jacfwd()`, `jax_jacrev()`, `jax_reverse_gradient_jacobian()`, `torch_hessian()`, `torch_jacfwd()`, `torch_jacrev()`, `torch_forward_gradient_jacobian()`, `torch_reverse_gradient_jacobian()`, `tensorflow_forward_jacobian()`, `tensorflow_jacobian()`
+
+### `scpn_quantum_control.differentiable_native_gradient`
+
+Construct native gradients and read recorded derivatives without reporting policy.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_native_gradient.py) · Public symbols: **3**
+
+**Functions:** `jax_gradient()`, `torch_gradient()`, `tensorflow_gradient()`
 
 ### `scpn_quantum_control.differentiable_native_linearization`
 

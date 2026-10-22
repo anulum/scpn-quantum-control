@@ -14,13 +14,18 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
-from .differentiable_batched_transform_execution import jax_batched_gradient
+from .differentiable_batched_transform_execution import (
+    jax_batched_gradient,
+    jax_vectorized_derivatives,
+    jax_vectorized_sum,
+)
 from .differentiable_native_curvature import (
     jax_hessian,
     jax_jacfwd,
     jax_jacrev,
     jax_reverse_gradient_jacobian,
 )
+from .differentiable_native_gradient import jax_gradient
 from .differentiable_native_linearization import jax_jvp, jax_vjp
 from .differentiable_structured_transform_execution import jax_structured_derivatives
 from .differentiable_transform_algebra import (
@@ -67,15 +72,15 @@ def _execute_cases(
     def loss(params: Any) -> Any:
         return jnp.sum(params**4)
 
-    derivative = jax.grad(loss)
+    derivative = jax_gradient(jax, loss)
     curvature = np.diag(12.0 * matrix[0] ** 2)
     expected_gradient = 4.0 * matrix[0] ** 3
-    mapped = jax.vmap(derivative, in_axes=batch_axis, out_axes=0)(batch)
+    mapped = jax_vectorized_derivatives(jax, derivative, batch, batch_axis)
 
     def aggregate(params: Any) -> Any:
-        return jnp.sum(jax.vmap(loss, in_axes=batch_axis)(params))
+        return jax_vectorized_sum(jax, jnp, loss, params, batch_axis)
 
-    aggregate_gradient = jax.grad(aggregate)(batch)
+    aggregate_gradient = jax_gradient(jax, aggregate)(batch)
     if batch_axis == 1:
         aggregate_gradient = aggregate_gradient.T
     _, pushed = jax_jvp(jax, derivative, x, tangent)
@@ -151,8 +156,8 @@ def _execute_cases(
         [
             np.ravel(forward_composed(x)),
             np.ravel(reverse_composed(x)),
-            np.ravel(jax.grad(forward_composed)(x)),
-            np.ravel(jax.grad(reverse_composed)(x)),
+            np.ravel(jax_gradient(jax, forward_composed)(x)),
+            np.ravel(jax_gradient(jax, reverse_composed)(x)),
             np.ravel(jax_hessian(jax, forward_composed, x)),
             np.ravel(jax_reverse_gradient_jacobian(jax, reverse_composed, x)),
         ]
