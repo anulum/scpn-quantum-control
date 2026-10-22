@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **814 modules** across **41 package families**
-- **4346 documented public module-level symbols**
+- **817 modules** across **41 package families**
+- **4360 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -6110,6 +6110,30 @@ Immutable envelopes and type contracts for the unified differentiable API.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_api_contracts.py) · Public symbols: **4**
 
 **Classes:** `UnifiedDifferentiableAPIResult`, `DifferentiabilityDiagnosticReport`, `DifferentiableDashboardCapabilityRow`, `DifferentiableDashboardStatus`
+
+### `scpn_quantum_control.differentiable_api_core`
+
+Public numerical value and derivative routes with live AD providers.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_api_core.py) · Public symbols: **4**
+
+**Functions:** `differentiable_value()`, `differentiable_gradient()`, `differentiable_jacobian()`, `differentiable_hessian()`
+
+### `scpn_quantum_control.differentiable_api_core_algorithms`
+
+Construct numerical API envelopes from supplied AD providers and primitives.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_api_core_algorithms.py) · Public symbols: **4**
+
+**Functions:** `differentiable_value()`, `differentiable_gradient()`, `differentiable_jacobian()`, `differentiable_hessian()`
+
+### `scpn_quantum_control.differentiable_api_core_bindings`
+
+Typed live AD providers and scalar, metadata and error primitives.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_api_core_bindings.py) · Public symbols: **6**
+
+**Classes:** `ValueAndGradProvider`, `ValueAndHessianProvider`, `ValueAndJacobianProvider`, `ScalarConversion`, `ListConversion`, `DifferentiableValueBindings`
 
 ### `scpn_quantum_control.differentiable_architecture_map`
 

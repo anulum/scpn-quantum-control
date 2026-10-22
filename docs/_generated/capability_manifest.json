@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 851,
     "public_documentation_pages": 385,
-    "python_model_classes": 1541,
-    "python_model_source_modules": 814,
+    "python_model_classes": 1547,
+    "python_model_source_modules": 817,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1563
+    "test_files": 1566
   },
   "documentation": {
     "examples": [
@@ -2173,6 +2173,10 @@
         "path": "src/scpn_quantum_control/differentiable_claim_ledger.py"
       },
       {
+        "name": "DifferentiableValueBindings",
+        "path": "src/scpn_quantum_control/differentiable_api_core_bindings.py"
+      },
+      {
         "name": "DifferentiableWorkflowAuditSuiteResult",
         "path": "src/scpn_quantum_control/phase/differentiable_audit_contracts.py"
       },
@@ -3439,6 +3443,10 @@
       {
         "name": "LindbladSyncEngine",
         "path": "src/scpn_quantum_control/phase/lindblad_engine.py"
+      },
+      {
+        "name": "ListConversion",
+        "path": "src/scpn_quantum_control/differentiable_api_core_bindings.py"
       },
       {
         "name": "LocalDeterministicSimulator",
@@ -6057,6 +6065,10 @@
         "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/measurement.py"
       },
       {
+        "name": "ScalarConversion",
+        "path": "src/scpn_quantum_control/differentiable_api_core_bindings.py"
+      },
+      {
         "name": "ScalingBaseline",
         "path": "src/scpn_quantum_control/benchmarks/advantage_protocol.py"
       },
@@ -6741,6 +6753,18 @@
         "path": "src/scpn_quantum_control/studio/executive_validate.py"
       },
       {
+        "name": "ValueAndGradProvider",
+        "path": "src/scpn_quantum_control/differentiable_api_core_bindings.py"
+      },
+      {
+        "name": "ValueAndHessianProvider",
+        "path": "src/scpn_quantum_control/differentiable_api_core_bindings.py"
+      },
+      {
+        "name": "ValueAndJacobianProvider",
+        "path": "src/scpn_quantum_control/differentiable_api_core_bindings.py"
+      },
+      {
         "name": "VarQITEResult",
         "path": "src/scpn_quantum_control/phase/varqite.py"
       },
@@ -7230,6 +7254,9 @@
       "src/scpn_quantum_control/differentiable.py",
       "src/scpn_quantum_control/differentiable_api.py",
       "src/scpn_quantum_control/differentiable_api_contracts.py",
+      "src/scpn_quantum_control/differentiable_api_core.py",
+      "src/scpn_quantum_control/differentiable_api_core_algorithms.py",
+      "src/scpn_quantum_control/differentiable_api_core_bindings.py",
       "src/scpn_quantum_control/differentiable_architecture_map.py",
       "src/scpn_quantum_control/differentiable_baseline_scorecard.py",
       "src/scpn_quantum_control/differentiable_batch_helpers.py",
@@ -9271,6 +9298,9 @@
       "tests/test_diff_namespace.py",
       "tests/test_differentiable_api.py",
       "tests/test_differentiable_api_contracts.py",
+      "tests/test_differentiable_api_core.py",
+      "tests/test_differentiable_api_core_algorithms.py",
+      "tests/test_differentiable_api_core_bindings.py",
       "tests/test_differentiable_api_quality_gate.py",
       "tests/test_differentiable_architecture_map.py",
       "tests/test_differentiable_audit_contracts_quality_gate.py",

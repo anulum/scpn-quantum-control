@@ -1389,6 +1389,16 @@ TensorFlow callers keep their recording contexts and resources:
 uses the caller's actual tape and output cotangent. No host conversion or
 report policy is performed by these operations.
 
+The numerical `value`, `gradient`, `jacobian` and `hessian` routes also have
+standalone AD entry points in `scpn_quantum_control.differentiable_api_core`.
+They use the same numerical providers, method defaults, copied float64 arrays
+and `UnifiedDifferentiableAPIResult` envelope as the original facade. The
+facade keeps its original function definitions and dispatcher; its typed
+numerical bindings retain live provider, result-type and primitive reads,
+including changes made by an objective before result conversion. These
+numerical entry points do not select QNode planners, compiler or benchmark
+reports.
+
 Native derivative matrices are implemented in
 `scpn_quantum_control.differentiable_native_curvature`. The JAX and PyTorch
 Hessian, forward/reverse Jacobian and gradient-Jacobian operators return

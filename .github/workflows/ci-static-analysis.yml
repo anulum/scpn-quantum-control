@@ -549,9 +549,15 @@ jobs:
         run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/differentiable_api.py
+          src/scpn_quantum_control/differentiable_api_core.py
+          src/scpn_quantum_control/differentiable_api_core_algorithms.py
+          src/scpn_quantum_control/differentiable_api_core_bindings.py
           src/scpn_quantum_control/differentiable_canonical_api.py
           src/scpn_quantum_control/differentiable_result_contracts.py
           tests/test_differentiable_api.py
+          tests/test_differentiable_api_core.py
+          tests/test_differentiable_api_core_algorithms.py
+          tests/test_differentiable_api_core_bindings.py
           tests/test_differentiable_api_contracts.py
           tests/test_differentiable_canonical_modes.py
           tests/test_differentiable_package_exports.py
@@ -566,9 +572,15 @@ jobs:
           --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/differentiable_api.py
+          src/scpn_quantum_control/differentiable_api_core.py
+          src/scpn_quantum_control/differentiable_api_core_algorithms.py
+          src/scpn_quantum_control/differentiable_api_core_bindings.py
           src/scpn_quantum_control/differentiable_canonical_api.py
           src/scpn_quantum_control/differentiable_result_contracts.py
           tests/test_differentiable_api.py
+          tests/test_differentiable_api_core.py
+          tests/test_differentiable_api_core_algorithms.py
+          tests/test_differentiable_api_core_bindings.py
           tests/test_differentiable_api_contracts.py
           tests/test_differentiable_canonical_modes.py
           tests/test_differentiable_package_exports.py

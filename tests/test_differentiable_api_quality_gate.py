@@ -59,6 +59,21 @@ def test_hosted_static_commands_match_canonical_gate_arguments() -> None:
     )
 
 
+def test_all_numerical_core_owners_and_tests_are_enforced() -> None:
+    """Keep every actual numerical owner and dedicated runtime test in both gates."""
+    sources = {
+        path.relative_to(ROOT).as_posix()
+        for path in (ROOT / "src/scpn_quantum_control").glob("differentiable_api_core*.py")
+    }
+    tests = {
+        path.relative_to(ROOT).as_posix()
+        for path in (ROOT / "tests").glob("test_differentiable_api_core*.py")
+    }
+    assert len(sources) == len(tests) == 3
+    assert sources | tests <= set(gates.DIFFERENTIABLE_API_QUALITY_RATCHET)
+    assert tests <= set(gates.DIFFERENTIABLE_API_COVERAGE_COHORT)
+
+
 def test_hosted_coverage_executes_every_result_test() -> None:
     """The exact-coverage job must execute the new tests, not just lint them."""
     command = _workflow_command(
@@ -66,6 +81,11 @@ def test_hosted_coverage_executes_every_result_test() -> None:
         "Run unified differentiable API focused coverage",
     )
     assert command == gates.build_coverage_gates("python")[0][1]
+    report = _workflow_command(
+        ".github/workflows/ci-whole-program-trace.yml",
+        "Enforce unified differentiable API exact coverage",
+    )
+    assert report == gates.build_coverage_gates("python")[1][1]
 
 
 @pytest.mark.parametrize("documented", [False, True])

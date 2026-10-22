@@ -19,6 +19,7 @@ from typing import Any, cast
 import numpy as np
 from numpy.typing import ArrayLike
 
+from . import differentiable_api_core as _numerical_core
 from .analysis.finite_size_scaling import FSS_CLAIM_BOUNDARY, finite_size_scaling
 from .benchmarks.differentiable_isolated_benchmark_plan import (
     run_differentiable_isolated_benchmark_plan,
@@ -46,6 +47,7 @@ from .differentiable_api_contracts import (
     UnifiedDifferentiableAPIResult,
     UnifiedDifferentiableOperation,
 )
+from .differentiable_api_core_bindings import DifferentiableValueBindings as _NumericalBindings
 from .differentiable_architecture_map import run_differentiable_architecture_map
 from .differentiable_baseline_scorecard import run_differentiable_baseline_scorecard
 from .differentiable_benchmark_report import build_differentiable_benchmark_report
@@ -65,6 +67,17 @@ from .phase.gradient_backend import (
 )
 from .phase.gradient_support_matrix import plan_gradient_support
 from .phase.qnn_framework_bridge_matrix import run_bounded_qnn_framework_bridge_matrix
+
+_numerical_readers = _NumericalBindings(
+    read_UnifiedDifferentiableAPIResult=lambda: UnifiedDifferentiableAPIResult,
+    read_value_and_grad=lambda: value_and_grad,
+    read_value_and_hessian=lambda: value_and_hessian,
+    read_value_and_jacobian=lambda: value_and_jacobian,
+    read_float64=lambda: np.float64,
+    read_float=lambda: float,
+    read_list=lambda: list,
+    read_error=lambda: ValueError,
+)
 
 
 def differentiable_value(
@@ -93,20 +106,8 @@ def differentiable_value(
         Supported ``value`` envelope with evaluation provenance.
 
     """
-    result = value_and_grad(objective, values, method=method, step=step)
-    return UnifiedDifferentiableAPIResult(
-        operation="value",
-        supported=True,
-        method=result.method,
-        value=float(result.value),
-        gradient=None,
-        jacobian=None,
-        hessian=None,
-        payload={
-            "evaluations": result.evaluations,
-            "parameter_names": list(result.parameter_names),
-            "trainable": list(result.trainable),
-        },
+    return _numerical_core.differentiable_value(
+        objective, values, method=method, step=step, _bindings=_numerical_readers
     )
 
 
@@ -136,20 +137,8 @@ def differentiable_gradient(
         Supported ``gradient`` envelope with a copied ``float64`` gradient.
 
     """
-    result = value_and_grad(objective, values, method=method, step=step)
-    return UnifiedDifferentiableAPIResult(
-        operation="gradient",
-        supported=True,
-        method=result.method,
-        value=float(result.value),
-        gradient=result.gradient.astype(np.float64, copy=True),
-        jacobian=None,
-        hessian=None,
-        payload={
-            "evaluations": result.evaluations,
-            "parameter_names": list(result.parameter_names),
-            "trainable": list(result.trainable),
-        },
+    return _numerical_core.differentiable_gradient(
+        objective, values, method=method, step=step, _bindings=_numerical_readers
     )
 
 
@@ -179,21 +168,8 @@ def differentiable_jacobian(
         Supported ``jacobian`` envelope with objective and evaluation data.
 
     """
-    result = value_and_jacobian(objective, values, method=method, step=step)
-    return UnifiedDifferentiableAPIResult(
-        operation="jacobian",
-        supported=True,
-        method=result.method,
-        value=None,
-        gradient=None,
-        jacobian=result.jacobian.astype(np.float64, copy=True),
-        hessian=None,
-        payload={
-            "objective_value": result.value.tolist(),
-            "evaluations": result.evaluations,
-            "parameter_names": list(result.parameter_names),
-            "trainable": list(result.trainable),
-        },
+    return _numerical_core.differentiable_jacobian(
+        objective, values, method=method, step=step, _bindings=_numerical_readers
     )
 
 
@@ -223,20 +199,8 @@ def differentiable_hessian(
         Supported ``hessian`` envelope with evaluation provenance.
 
     """
-    result = value_and_hessian(objective, values, method=method, step=step)
-    return UnifiedDifferentiableAPIResult(
-        operation="hessian",
-        supported=True,
-        method=result.method,
-        value=float(result.value),
-        gradient=None,
-        jacobian=None,
-        hessian=result.hessian.astype(np.float64, copy=True),
-        payload={
-            "evaluations": result.evaluations,
-            "parameter_names": list(result.parameter_names),
-            "trainable": list(result.trainable),
-        },
+    return _numerical_core.differentiable_hessian(
+        objective, values, method=method, step=step, _bindings=_numerical_readers
     )
 
 
@@ -850,15 +814,11 @@ def differentiable_api(
 
 
 def _require_objective(objective: Callable[[Any], Any] | None) -> Callable[[Any], Any]:
-    if objective is None:
-        raise ValueError("objective is required for this differentiable operation")
-    return objective
+    return _numerical_core._require_objective(objective, _bindings=_numerical_readers)
 
 
 def _require_values(values: ArrayLike | None) -> ArrayLike:
-    if values is None:
-        raise ValueError("values are required for this differentiable operation")
-    return values
+    return _numerical_core._require_values(values, _bindings=_numerical_readers)
 
 
 def _selected_primitive_keys(

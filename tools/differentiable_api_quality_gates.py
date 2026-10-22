@@ -15,9 +15,15 @@ Gate = tuple[str, list[str]]
 
 DIFFERENTIABLE_API_QUALITY_RATCHET = [
     "src/scpn_quantum_control/differentiable_api.py",
+    "src/scpn_quantum_control/differentiable_api_core.py",
+    "src/scpn_quantum_control/differentiable_api_core_algorithms.py",
+    "src/scpn_quantum_control/differentiable_api_core_bindings.py",
     "src/scpn_quantum_control/differentiable_canonical_api.py",
     "src/scpn_quantum_control/differentiable_result_contracts.py",
     "tests/test_differentiable_api.py",
+    "tests/test_differentiable_api_core.py",
+    "tests/test_differentiable_api_core_algorithms.py",
+    "tests/test_differentiable_api_core_bindings.py",
     "tests/test_differentiable_api_contracts.py",
     "tests/test_differentiable_canonical_modes.py",
     "tests/test_differentiable_package_exports.py",
@@ -31,6 +37,9 @@ DIFFERENTIABLE_API_QUALITY_RATCHET = [
 
 DIFFERENTIABLE_API_COVERAGE_COHORT = [
     "tests/test_differentiable_api.py",
+    "tests/test_differentiable_api_core.py",
+    "tests/test_differentiable_api_core_algorithms.py",
+    "tests/test_differentiable_api_core_bindings.py",
     "tests/test_differentiable_api_contracts.py",
     "tests/test_differentiable_canonical_modes.py",
     "tests/test_differentiable_package_exports.py",
@@ -46,7 +55,7 @@ DIFFERENTIABLE_API_COVERAGE_SELECTOR = (
 )
 """Exclude the environment-sensitive benchmark while stubbing its route."""
 
-DIFFERENTIABLE_API_COVERAGE_DATA_FILE = "/tmp/scpn-qc-differentiable-api-quality.coverage"  # nosec B108
+DIFFERENTIABLE_API_COVERAGE_DATA_FILE = ".coverage.differentiable-api-quality"
 """Isolated coverage database for the unified API owner."""
 
 
@@ -140,8 +149,9 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--rcfile={devnull}",
                 f"--data-file={DIFFERENTIABLE_API_COVERAGE_DATA_FILE}",
                 "--precision=2",
+                "--show-missing",
                 "--fail-under=100",
-                "--include=*/differentiable_api.py,*/differentiable_canonical_api.py,*/differentiable_result_contracts.py",
+                "--include=*/differentiable_api.py,*/differentiable_api_core.py,*/differentiable_api_core_algorithms.py,*/differentiable_api_core_bindings.py,*/differentiable_canonical_api.py,*/differentiable_result_contracts.py",
             ],
         ),
     ]

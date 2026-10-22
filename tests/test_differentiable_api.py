@@ -71,14 +71,14 @@ def test_api_quality_gate_spec_is_exact_and_focused() -> None:
     focused_command = coverage_gates[0][1]
     report_command = coverage_gates[1][1]
     assert "--branch" in focused_command
-    assert any(argument.startswith("--data-file=/tmp/") for argument in focused_command)
+    assert "--data-file=.coverage.differentiable-api-quality" in focused_command
     assert all(
         path in focused_command for path in api_quality_gates.DIFFERENTIABLE_API_COVERAGE_COHORT
     )
     assert api_quality_gates.DIFFERENTIABLE_API_COVERAGE_SELECTOR in focused_command
     assert "--fail-under=100" in report_command
     assert (
-        "--include=*/differentiable_api.py,*/differentiable_canonical_api.py,*/differentiable_result_contracts.py"
+        "--include=*/differentiable_api.py,*/differentiable_api_core.py,*/differentiable_api_core_algorithms.py,*/differentiable_api_core_bindings.py,*/differentiable_canonical_api.py,*/differentiable_result_contracts.py"
         in report_command
     )
     for name, command in api_quality_gates.build_static_quality_gates(preflight._PY):
