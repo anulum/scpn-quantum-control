@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **809 modules** across **41 package families**
-- **4314 documented public module-level symbols**
+- **810 modules** across **41 package families**
+- **4318 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -6432,6 +6432,14 @@ Fail-closed stochastic-gradient uncertainty policy contracts.
 **Classes:** `GradientFailurePolicy`, `StochasticGradientConfidenceInterval`
 
 **Functions:** `gradient_confidence_interval()`
+
+### `scpn_quantum_control.differentiable_structured_transform_execution`
+
+Execute native structured derivatives independently of QNode/report policy.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_structured_transform_execution.py) · Public symbols: **4**
+
+**Functions:** `jax_structured_derivatives()`, `torch_structured_derivatives()`, `tensorflow_structured_gradient()`, `tensorflow_structured_hessian()`
 
 ### `scpn_quantum_control.differentiable_tensorflow_transform_algebra`
 

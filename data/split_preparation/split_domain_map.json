@@ -148,6 +148,7 @@
     "differentiable_sparse_derivatives",
     "differentiable_stochastic_estimators",
     "differentiable_stochastic_policy",
+    "differentiable_structured_transform_execution",
     "differentiable_tensorflow_transform_algebra",
     "differentiable_torch_transform_algebra",
     "differentiable_transform_algebra",

@@ -388,6 +388,7 @@
         "tests/test_differentiable_sparse_derivatives_quality_gate.py",
         "tests/test_differentiable_spsa.py",
         "tests/test_differentiable_stochastic_estimators.py",
+        "tests/test_differentiable_structured_transform_execution.py",
         "tests/test_differentiable_support_matrix_page.py",
         "tests/test_differentiable_transform_algebra.py",
         "tests/test_differentiable_transform_comparison.py",

@@ -14,6 +14,10 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
+from .differentiable_structured_transform_execution import (
+    tensorflow_structured_gradient,
+    tensorflow_structured_hessian,
+)
 from .differentiable_transform_algebra import (
     TransformAlgebraCase,
     _framework_quantum_bridge_boundary_case,
@@ -105,15 +109,10 @@ def _execute_cases(
         with tf.GradientTape() as inner:
             inner.watch(structured)
             structured_loss = tf.reduce_sum((structured["weights"] + structured["bias"]) ** 4)
-        structured_gradient = inner.gradient(structured_loss, structured)
-        flat_gradient = tf.concat(
-            [structured_gradient["weights"], tf.reshape(structured_gradient["bias"], [1])], 0
+        structured_gradient, flat_gradient = tensorflow_structured_gradient(
+            tf, inner, structured_loss, structured
         )
-    weights_hessian, bias_hessian = outer.jacobian(
-        flat_gradient,
-        (structured["weights"], structured["bias"]),
-        experimental_use_pfor=False,
-    )
+    weights_hessian, bias_hessian = tensorflow_structured_hessian(outer, flat_gradient, structured)
     shifted = matrix[0] + 0.3
     diagonal = 12.0 * shifted**2
     structured_actual = np.concatenate(

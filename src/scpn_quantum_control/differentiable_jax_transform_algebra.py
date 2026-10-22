@@ -14,6 +14,7 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
+from .differentiable_structured_transform_execution import jax_structured_derivatives
 from .differentiable_transform_algebra import (
     TransformAlgebraCase,
     _framework_quantum_bridge_boundary_case,
@@ -78,8 +79,9 @@ def _execute_cases(
     def structured_loss(params: Any) -> Any:
         return jnp.sum((params["weights"] + params["bias"]) ** 4)
 
-    structured_gradient = jax.grad(structured_loss)(structured)
-    structured_hessian = jax.jacfwd(jax.grad(structured_loss))(structured)
+    structured_gradient, structured_hessian = jax_structured_derivatives(
+        jax, structured_loss, structured
+    )
     shifted = matrix[0] + 0.3
     diagonal = 12.0 * shifted**2
     structured_actual = np.concatenate(

@@ -1360,6 +1360,16 @@ positive infinity. Callers admit finite values before computing a residual.
 The numerical module constructs no report or QNode support decision. The
 existing audit retains its original result types, evidence and policy checks.
 
+Native structured derivatives are implemented in
+`scpn_quantum_control.differentiable_structured_transform_execution`.
+`jax_structured_derivatives` and `torch_structured_derivatives` accept the real
+runtime, a scalar numerical objective, and its native parameter mapping; they
+return gradient and Hessian PyTrees. TensorFlow callers retain their recording
+contexts and tapes: `tensorflow_structured_gradient` computes and concatenates
+the gradient inside the enclosing tape, then `tensorflow_structured_hessian`
+differentiates that recorded tensor. These operations preserve native tensors
+and leave QNode admission and report construction to their callers.
+
 The default `differentiable_transform_algebra_report()` retains the bounded local
 NumPy audit and its original payload. Select a required CPU runtime explicitly
 through the same unified facade:

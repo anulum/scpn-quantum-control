@@ -17,6 +17,7 @@ Gate = tuple[str, list[str]]
 SOURCES = [
     "src/scpn_quantum_control/differentiable_transform_algebra.py",
     "src/scpn_quantum_control/differentiable_transform_comparison.py",
+    "src/scpn_quantum_control/differentiable_structured_transform_execution.py",
     "src/scpn_quantum_control/differentiable_transform_support_matrix.py",
     "src/scpn_quantum_control/differentiable_jax_transform_algebra.py",
     "src/scpn_quantum_control/differentiable_torch_transform_algebra.py",
@@ -39,6 +40,10 @@ RUNTIME_TESTS = {
     "pytorch": "tests/test_differentiable_torch_transform_algebra.py",
     "tensorflow": "tests/test_differentiable_tensorflow_transform_algebra.py",
 }
+SHARED_RUNTIME_TESTS = [
+    "tests/test_native_transform_composition.py",
+    "tests/test_differentiable_structured_transform_execution.py",
+]
 STATIC_COHORT = [
     *SOURCES,
     *LOCAL_TESTS,
@@ -47,7 +52,7 @@ STATIC_COHORT = [
     "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
     "tools/differentiable_quality_gates.py",
     "tests/test_differentiable_api.py",
-    "tests/test_native_transform_composition.py",
+    *SHARED_RUNTIME_TESTS,
     "tools/check_differentiable_transform_algebra.py",
     "tools/differentiable_transform_algebra_quality_gates.py",
     "examples/native_transform_algebra.py",
@@ -130,7 +135,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 *prefix,
                 *pytest_args,
                 *LOCAL_TESTS,
-                "tests/test_native_transform_composition.py",
+                *SHARED_RUNTIME_TESTS,
                 "-m",
                 "not framework_imports",
             ],
@@ -145,7 +150,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                     "--append",
                     *pytest_args,
                     test_path,
-                    "tests/test_native_transform_composition.py",
+                    *SHARED_RUNTIME_TESTS,
                     "-m",
                     "framework_imports",
                     "-k",
@@ -207,6 +212,7 @@ __all__ = [
     "COVERAGE_OWNERS",
     "LOCAL_TESTS",
     "RUNTIME_TESTS",
+    "SHARED_RUNTIME_TESTS",
     "STATIC_COHORT",
     "build_static_quality_gates",
     "build_coverage_gates",
