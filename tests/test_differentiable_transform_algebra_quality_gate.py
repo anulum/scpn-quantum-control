@@ -65,6 +65,21 @@ def test_owning_workflow_uses_canonical_gates_and_required_framework_profile() -
     assert "--branch" in commands["native-transform required jax"]
 
 
+def test_native_gate_executes_the_live_hardening_registry_and_covers_its_owner() -> None:
+    """Catch unregistered source additions through the actual owning runtime gate."""
+    owner = "src/scpn_quantum_control/differentiable_module_hardening_audit.py"
+    test = "tests/test_differentiable_module_hardening_audit.py"
+    commands = dict(gates.build_coverage_gates(sys.executable))
+    assert owner in gates.COVERAGE_OWNERS
+    assert owner in gates.STATIC_COHORT and test in gates.STATIC_COHORT
+    assert test in commands["native-transform local boundaries"]
+    assert "*/differentiable_module_hardening_audit.py" in next(
+        argument
+        for argument in commands["native-transform exact coverage"]
+        if argument.startswith("--include=")
+    )
+
+
 @pytest.mark.parametrize("documented", [False, True])
 def test_native_doc_gate_executes_missing_docstring_refusal(documented: bool) -> None:
     """Verify actual Ruff refusal independently from gate command construction.

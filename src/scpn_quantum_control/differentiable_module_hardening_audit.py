@@ -519,6 +519,89 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_api_core.py",
+            ("tests/test_differentiable_api_core.py",),
+            ("public numerical value and derivative routes", "original method and step defaults"),
+        ),
+        _record(
+            "src/scpn_quantum_control/differentiable_api_core_algorithms.py",
+            ("tests/test_differentiable_api_core_algorithms.py",),
+            ("supplied real AD providers", "coupled scalar and rectangular derivative references"),
+        ),
+        _record(
+            "src/scpn_quantum_control/differentiable_api_core_bindings.py",
+            ("tests/test_differentiable_api_core_bindings.py",),
+            ("objective-time live dependency reads", "result and primitive evaluation order"),
+        ),
+        _record(
+            "src/scpn_quantum_control/differentiable_batched_transform_execution.py",
+            ("tests/test_differentiable_batched_transform_execution.py",),
+            ("native batched derivatives", "sample axes and differentiable reductions"),
+        ),
+        _record(
+            "src/scpn_quantum_control/differentiable_native_curvature.py",
+            ("tests/test_differentiable_native_curvature.py",),
+            ("native Hessian and Jacobian operators", "caller-owned TensorFlow tape scope"),
+        ),
+        _record(
+            "src/scpn_quantum_control/differentiable_native_gradient.py",
+            ("tests/test_differentiable_native_gradient.py",),
+            ("native gradient operators", "original callable and gradient reuse"),
+        ),
+        _record(
+            "src/scpn_quantum_control/differentiable_native_linearization.py",
+            ("tests/test_differentiable_native_linearization.py",),
+            ("native JVP and VJP operators", "pullback resources and host conversion order"),
+        ),
+        _record(
+            "src/scpn_quantum_control/differentiable_structured_transform_execution.py",
+            ("tests/test_differentiable_structured_transform_execution.py",),
+            ("native structured derivatives", "nonseparable container and custom-rule batching"),
+        ),
+        _record(
+            "src/scpn_quantum_control/differentiable_transform_comparison.py",
+            ("tests/test_differentiable_transform_comparison.py",),
+            ("finite comparison input admission", "maximum absolute residual and live primitives"),
+        ),
+        _record(
+            "src/scpn_quantum_control/phase/qnode_transform_algorithms.py",
+            (
+                "tests/test_phase_qnode_transforms.py",
+                "tests/test_phase_qnode_transform_source_contracts.py",
+            ),
+            ("real scalar QNode execution", "original objective and dependency lookup scope"),
+        ),
+        _record(
+            "src/scpn_quantum_control/phase/qnode_transform_bindings.py",
+            (
+                "tests/test_phase_qnode_transforms.py",
+                "tests/test_phase_qnode_transform_source_contracts.py",
+            ),
+            (
+                "live scalar derivative suppliers",
+                "native missing-name and builtin fallback errors",
+            ),
+        ),
+        _record(
+            "src/scpn_quantum_control/phase/qnode_transform_contract_algorithms.py",
+            (
+                "tests/test_phase_qnode_transforms.py",
+                "tests/test_phase_qnode_transform_source_contracts.py",
+            ),
+            (
+                "scalar QNode result construction",
+                "supported and refused original result identities",
+            ),
+        ),
+        _record(
+            "src/scpn_quantum_control/phase/qnode_transform_contract_bindings.py",
+            (
+                "tests/test_phase_qnode_transforms.py",
+                "tests/test_phase_qnode_transform_source_contracts.py",
+            ),
+            ("live scalar admission primitives", "original result and directional-vector reads"),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_torch_transform_algebra.py",
             ("tests/test_differentiable_torch_transform_algebra.py",),
             (

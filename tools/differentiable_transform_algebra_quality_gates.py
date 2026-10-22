@@ -21,6 +21,7 @@ SOURCES = [
     "src/scpn_quantum_control/differentiable_native_curvature.py",
     "src/scpn_quantum_control/differentiable_native_gradient.py",
     "src/scpn_quantum_control/differentiable_native_linearization.py",
+    "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
     "src/scpn_quantum_control/differentiable_structured_transform_execution.py",
     "src/scpn_quantum_control/differentiable_transform_support_matrix.py",
     "src/scpn_quantum_control/differentiable_jax_transform_algebra.py",
@@ -38,6 +39,7 @@ LOCAL_TESTS = [
     "tests/test_differentiable_transform_comparison.py",
     "tests/test_differentiable_transform_support_matrix.py",
     "tests/test_differentiable_transform_algebra_quality_gate.py",
+    "tests/test_differentiable_module_hardening_audit.py",
 ]
 RUNTIME_TESTS = {
     "jax": "tests/test_differentiable_jax_transform_algebra.py",
@@ -57,7 +59,6 @@ STATIC_COHORT = [
     *LOCAL_TESTS,
     *RUNTIME_TESTS.values(),
     "src/scpn_quantum_control/differentiable_api.py",
-    "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
     "tools/differentiable_quality_gates.py",
     "tests/test_differentiable_api.py",
     *SHARED_RUNTIME_TESTS,
