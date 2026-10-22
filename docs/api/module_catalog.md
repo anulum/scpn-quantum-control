@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **817 modules** across **41 package families**
-- **4360 documented public module-level symbols**
+- **819 modules** across **41 package families**
+- **4367 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -6346,6 +6346,22 @@ Levenberg-Marquardt and Gauss-Newton residual optimization helpers.
 **Classes:** `LevenbergMarquardtOptimizer`
 
 **Functions:** `gauss_newton_gradient()`, `custom_gauss_newton_gradient()`, `levenberg_marquardt_step()`, `custom_levenberg_marquardt_step()`, `evaluate_levenberg_marquardt_step()`, `update_levenberg_marquardt_damping()`
+
+### `scpn_quantum_control.differentiable_local_transform_composition`
+
+Pure AD computations for both sides of local transform identities.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_local_transform_composition.py) · Public symbols: **4**
+
+**Functions:** `reduced_mapped_gradient_pair()`, `gradient_linear_difference_pair()`, `chain_rule_jacobian_pair()`, `adjoint_inner_product_pair()`
+
+### `scpn_quantum_control.differentiable_local_transform_primitives`
+
+Typed numerical providers for local derivative composition identities.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_local_transform_primitives.py) · Public symbols: **3**
+
+**Classes:** `GradientProvider`, `CompositionNumpy`, `LocalTransformPrimitives`
 
 ### `scpn_quantum_control.differentiable_module_hardening_audit`
 

@@ -17,6 +17,8 @@ Gate = tuple[str, list[str]]
 SOURCES = [
     "src/scpn_quantum_control/differentiable_transform_algebra.py",
     "src/scpn_quantum_control/differentiable_transform_comparison.py",
+    "src/scpn_quantum_control/differentiable_local_transform_composition.py",
+    "src/scpn_quantum_control/differentiable_local_transform_primitives.py",
     "src/scpn_quantum_control/differentiable_batched_transform_execution.py",
     "src/scpn_quantum_control/differentiable_native_curvature.py",
     "src/scpn_quantum_control/differentiable_native_gradient.py",
@@ -37,6 +39,7 @@ COVERAGE_OWNERS = [
 LOCAL_TESTS = [
     "tests/test_differentiable_transform_algebra.py",
     "tests/test_differentiable_transform_comparison.py",
+    "tests/test_differentiable_local_transform_composition.py",
     "tests/test_differentiable_transform_support_matrix.py",
     "tests/test_differentiable_transform_algebra_quality_gate.py",
     "tests/test_differentiable_module_hardening_audit.py",

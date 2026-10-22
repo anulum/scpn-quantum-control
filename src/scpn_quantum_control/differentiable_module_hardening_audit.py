@@ -559,6 +559,16 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("native structured derivatives", "nonseparable container and custom-rule batching"),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_local_transform_composition.py",
+            ("tests/test_differentiable_local_transform_composition.py",),
+            ("coupled local derivative identities", "actual gradients and rectangular Jacobians"),
+        ),
+        _record(
+            "src/scpn_quantum_control/differentiable_local_transform_primitives.py",
+            ("tests/test_differentiable_local_transform_composition.py",),
+            ("live numerical providers", "callback and scalar evaluation order"),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_transform_comparison.py",
             ("tests/test_differentiable_transform_comparison.py",),
             ("finite comparison input admission", "maximum absolute residual and live primitives"),

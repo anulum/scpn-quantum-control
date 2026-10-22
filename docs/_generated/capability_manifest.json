@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 851,
     "public_documentation_pages": 385,
-    "python_model_classes": 1547,
-    "python_model_source_modules": 817,
+    "python_model_classes": 1550,
+    "python_model_source_modules": 819,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1566
+    "test_files": 1567
   },
   "documentation": {
     "examples": [
@@ -1585,6 +1585,10 @@
         "path": "src/scpn_quantum_control/phase/objectives.py"
       },
       {
+        "name": "CompositionNumpy",
+        "path": "src/scpn_quantum_control/differentiable_local_transform_primitives.py"
+      },
+      {
         "name": "CompoundMitigationResult",
         "path": "src/scpn_quantum_control/mitigation/compound_mitigation.py"
       },
@@ -2809,6 +2813,10 @@
         "path": "src/scpn_quantum_control/codesign/contracts.py"
       },
       {
+        "name": "GradientProvider",
+        "path": "src/scpn_quantum_control/differentiable_local_transform_primitives.py"
+      },
+      {
         "name": "GradientResult",
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
@@ -3455,6 +3463,10 @@
       {
         "name": "LocalRunRecord",
         "path": "src/scpn_quantum_control/studio_workspace/contracts.py"
+      },
+      {
+        "name": "LocalTransformPrimitives",
+        "path": "src/scpn_quantum_control/differentiable_local_transform_primitives.py"
       },
       {
         "name": "LockSignatureArtifact",
@@ -7281,6 +7293,8 @@
       "src/scpn_quantum_control/differentiable_jax_adapter.py",
       "src/scpn_quantum_control/differentiable_jax_transform_algebra.py",
       "src/scpn_quantum_control/differentiable_levenberg_marquardt.py",
+      "src/scpn_quantum_control/differentiable_local_transform_composition.py",
+      "src/scpn_quantum_control/differentiable_local_transform_primitives.py",
       "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
       "src/scpn_quantum_control/differentiable_native_curvature.py",
       "src/scpn_quantum_control/differentiable_native_gradient.py",
@@ -9345,6 +9359,7 @@
       "tests/test_differentiable_jax_adapter_quality_gate.py",
       "tests/test_differentiable_jax_transform_algebra.py",
       "tests/test_differentiable_levenberg_marquardt.py",
+      "tests/test_differentiable_local_transform_composition.py",
       "tests/test_differentiable_module_hardening_audit.py",
       "tests/test_differentiable_native_curvature.py",
       "tests/test_differentiable_native_gradient.py",

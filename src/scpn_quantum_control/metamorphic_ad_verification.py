@@ -403,7 +403,7 @@ _CANONICAL_LAWS: Final[tuple[MetamorphicLawRecord, ...]] = (
         "executable_local",
         "For linear maps, residual |f(a)+f(b)-f(a+b)| must stay within tolerance.",
         evidence_modules=(
-            "scpn_quantum_control.differentiable_transform_algebra",
+            "scpn_quantum_control.differentiable_local_transform_composition",
             "scpn_quantum_control.metamorphic_ad_verification",
         ),
         default_tolerance=1e-12,
@@ -414,7 +414,7 @@ _CANONICAL_LAWS: Final[tuple[MetamorphicLawRecord, ...]] = (
         "executable_local",
         "Scalar chain residual |g'(f(x))*f'(x) - (g∘f)'(x)| within tolerance.",
         evidence_modules=(
-            "scpn_quantum_control.differentiable_transform_algebra",
+            "scpn_quantum_control.differentiable_local_transform_composition",
             "scpn_quantum_control.metamorphic_ad_verification",
         ),
         default_tolerance=1e-10,
@@ -424,7 +424,7 @@ _CANONICAL_LAWS: Final[tuple[MetamorphicLawRecord, ...]] = (
         "metamorphic_identity",
         "evidence_gated",
         "grad(vmap(f)) composition audited by transform-algebra suite.",
-        evidence_modules=("scpn_quantum_control.differentiable_transform_algebra",),
+        evidence_modules=("scpn_quantum_control.differentiable_local_transform_composition",),
         reason=(
             "Full transform-algebra audit is evidence-gated; catalogue entry does "
             "not invent green without running the suite"
@@ -435,7 +435,7 @@ _CANONICAL_LAWS: Final[tuple[MetamorphicLawRecord, ...]] = (
         "metamorphic_identity",
         "evidence_gated",
         "JVP/VJP duality residual band under transform-algebra audit.",
-        evidence_modules=("scpn_quantum_control.differentiable_transform_algebra",),
+        evidence_modules=("scpn_quantum_control.differentiable_local_transform_composition",),
         reason=(
             "Duality is enforced by the transform-algebra audit; this entry maps "
             "the claim to evidence without re-implementing the suite"
@@ -448,7 +448,7 @@ _CANONICAL_LAWS: Final[tuple[MetamorphicLawRecord, ...]] = (
         "Parameter-shift vs finite-difference residual bands for local kernels.",
         evidence_modules=(
             "scpn_quantum_control.differentiable_finite_difference",
-            "scpn_quantum_control.differentiable_transform_algebra",
+            "scpn_quantum_control.differentiable_consistency",
         ),
         reason=(
             "FD agreement bands are method/dtype specific; register documents the "
@@ -464,7 +464,7 @@ _CANONICAL_LAWS: Final[tuple[MetamorphicLawRecord, ...]] = (
         evidence_modules=(
             "scpn_quantum_control.unsuitable_scenario_registry",
             "scpn_quantum_control.governed_route_matrix",
-            "scpn_quantum_control.differentiable_transform_algebra",
+            "scpn_quantum_control.differentiable_exact_modes",
         ),
         reason=(
             "Silent real-gradient substitution on complex objectives is refused; "

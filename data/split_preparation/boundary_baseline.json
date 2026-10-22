@@ -1,7 +1,7 @@
 {
   "schema": "scpn_qc_boundary_baseline_v3",
-  "measured_head": "a966165d1525e4a4537f6ade0cabcbe0f111603d",
-  "domain_map_sha256": "90468b10c82e8dbccc50e7694f9397ca1f9172daea801d1b0204db34a39603c7",
+  "measured_head": "24917e4cb0c79f5ea295de80f087596abcaf3b92",
+  "domain_map_sha256": "44164bb86ed1d4a9591b274417e87381f56060c2c7cbe445e452383c36e8af2a",
   "dependencies": {
     "SCPN-QC-CONTRACTS": [],
     "SCPN-QC-CORE": [
@@ -564,72 +564,6 @@
       "removal_owner": "differentiable-contract-inversion"
     },
     {
-      "source": "src/scpn_quantum_control/differentiable_api.py",
-      "target": "src/scpn_quantum_control/analysis/finite_size_scaling.py",
-      "target_unit": "analysis",
-      "source_target": "SCPN-QC-AD",
-      "destination_target": "SCPN-QC-ANALYSIS",
-      "kind": "module",
-      "count": 2,
-      "reason": "AD contract inversion must remove the dependency on a higher target without changing derivative evidence.",
-      "removal_owner": "differentiable-contract-inversion"
-    },
-    {
-      "source": "src/scpn_quantum_control/differentiable_api.py",
-      "target": "src/scpn_quantum_control/benchmarks/differentiable_isolated_benchmark_plan.py",
-      "target_unit": "benchmarks",
-      "source_target": "SCPN-QC-AD",
-      "destination_target": "SCPN-QC-BENCH",
-      "kind": "module",
-      "count": 1,
-      "reason": "AD contract inversion must remove the dependency on a higher target without changing derivative evidence.",
-      "removal_owner": "differentiable-contract-inversion"
-    },
-    {
-      "source": "src/scpn_quantum_control/differentiable_api.py",
-      "target": "src/scpn_quantum_control/compiler/mlir.py",
-      "target_unit": "compiler",
-      "source_target": "SCPN-QC-AD",
-      "destination_target": "SCPN-QC-COMPILER",
-      "kind": "module",
-      "count": 2,
-      "reason": "AD contract inversion must remove the dependency on a higher target without changing derivative evidence.",
-      "removal_owner": "differentiable-contract-inversion"
-    },
-    {
-      "source": "src/scpn_quantum_control/differentiable_api.py",
-      "target": "src/scpn_quantum_control/phase/gradient_backend.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-AD",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 2,
-      "reason": "AD contract inversion must remove the dependency on a higher target without changing derivative evidence.",
-      "removal_owner": "differentiable-contract-inversion"
-    },
-    {
-      "source": "src/scpn_quantum_control/differentiable_api.py",
-      "target": "src/scpn_quantum_control/phase/gradient_support_matrix.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-AD",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 1,
-      "reason": "AD contract inversion must remove the dependency on a higher target without changing derivative evidence.",
-      "removal_owner": "differentiable-contract-inversion"
-    },
-    {
-      "source": "src/scpn_quantum_control/differentiable_api.py",
-      "target": "src/scpn_quantum_control/phase/qnn_framework_bridge_matrix.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-AD",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 1,
-      "reason": "AD contract inversion must remove the dependency on a higher target without changing derivative evidence.",
-      "removal_owner": "differentiable-contract-inversion"
-    },
-    {
       "source": "src/scpn_quantum_control/differentiable_benchmark_report.py",
       "target": "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
       "target_unit": "benchmarks",
@@ -643,17 +577,6 @@
     {
       "source": "src/scpn_quantum_control/differentiable_benchmark_report.py",
       "target": "src/scpn_quantum_control/phase/gradient_support_matrix.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-AD",
-      "destination_target": "SCPN-QC-QNODE",
-      "kind": "module",
-      "count": 1,
-      "reason": "AD contract inversion must remove the dependency on a higher target without changing derivative evidence.",
-      "removal_owner": "differentiable-contract-inversion"
-    },
-    {
-      "source": "src/scpn_quantum_control/differentiable_transform_algebra.py",
-      "target": "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
       "target_unit": "phase",
       "source_target": "SCPN-QC-AD",
       "destination_target": "SCPN-QC-QNODE",

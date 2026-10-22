@@ -110,7 +110,6 @@
     "diff",
     "diff_contract_audit",
     "differentiable",
-    "differentiable_api",
     "differentiable_api_contracts",
     "differentiable_api_core",
     "differentiable_api_core_algorithms",
@@ -137,8 +136,9 @@
     "differentiable_gradient_descent",
     "differentiable_implicit_sensitivity",
     "differentiable_jax_adapter",
-    "differentiable_jax_transform_algebra",
     "differentiable_levenberg_marquardt",
+    "differentiable_local_transform_composition",
+    "differentiable_local_transform_primitives",
     "differentiable_module_hardening_audit",
     "differentiable_native_curvature",
     "differentiable_native_gradient",
@@ -156,13 +156,9 @@
     "differentiable_stochastic_estimators",
     "differentiable_stochastic_policy",
     "differentiable_structured_transform_execution",
-    "differentiable_tensorflow_transform_algebra",
-    "differentiable_torch_transform_algebra",
-    "differentiable_transform_algebra",
     "differentiable_transform_comparison",
     "differentiable_transform_helpers",
     "differentiable_transform_support_matrix",
-    "differentiable_transform_support_matrix_artifact",
     "differentiable_vmap",
     "governed_route_matrix",
     "gradient_plan_explanation_artifact",
@@ -176,7 +172,8 @@
   "facade": {
    "target": "workbench-umbrella",
    "units": [
-    "__init__"
+    "__init__",
+    "differentiable_api"
    ]
   },
   "governance": {
@@ -298,7 +295,13 @@
   },
   "qnode": {
    "target": "SCPN-QC-QNODE",
-   "units": []
+   "units": [
+    "differentiable_jax_transform_algebra",
+    "differentiable_tensorflow_transform_algebra",
+    "differentiable_torch_transform_algebra",
+    "differentiable_transform_algebra",
+    "differentiable_transform_support_matrix_artifact"
+   ]
   },
   "research_scpn": {
    "target": "SCPN-QC-RESEARCH",
@@ -533,6 +536,36 @@
    "unit": "scientific_problem_parameters",
    "reason": "Original problem/design to Studio ParameterSpec and canonical-identity adapter; the simulation factory consumes problem/design directly and imports no Studio companion.",
    "decision": "Current source responsibility retained for the approved scientific-input/model-convention work. No generic Hamiltonian extraction, shared-contract nucleus or repository split is implied."
+  },
+  {
+   "unit": "differentiable_transform_algebra",
+   "reason": "Composes the original local/native qualification cases and real QNode gradient-nesting evidence. Numerical residuals, native operators and the four local derivative identities are lower AD computations; original objective scopes and report types remain here.",
+   "decision": "Existing composition after genuine numerical separation -> SCPN-QC-QNODE; direct public definitions and ordered native rows retained."
+  },
+  {
+   "unit": "differentiable_jax_transform_algebra",
+   "reason": "Owns JAX qualification fixtures and the ordered eleven-row report including the real QNode nesting boundary; derivative execution is in the lower native AD operators.",
+   "decision": "Existing composition after genuine numerical separation -> SCPN-QC-QNODE; direct public definitions and ordered native rows retained."
+  },
+  {
+   "unit": "differentiable_torch_transform_algebra",
+   "reason": "Owns PyTorch qualification fixtures and the ordered eleven-row report including the real QNode nesting boundary; derivative execution is in the lower native AD operators.",
+   "decision": "Existing composition after genuine numerical separation -> SCPN-QC-QNODE; direct public definitions and ordered native rows retained."
+  },
+  {
+   "unit": "differentiable_tensorflow_transform_algebra",
+   "reason": "Owns TensorFlow qualification fixtures and the ordered eleven-row report including the real QNode nesting boundary; lower native AD operators execute differentiation with caller-owned tape scope.",
+   "decision": "Existing composition after genuine numerical separation -> SCPN-QC-QNODE; direct public definitions and ordered native rows retained."
+  },
+  {
+   "unit": "differentiable_transform_support_matrix_artifact",
+   "reason": "Builds the existing support-matrix artifact from the actual QNode/native report producers; pure matrix row contracts remain in AD.",
+   "decision": "Existing composition after genuine numerical separation -> SCPN-QC-QNODE; direct public definitions and ordered native rows retained."
+  },
+  {
+   "unit": "differentiable_api",
+   "reason": "Preserves the original mixed compilation, benchmark and QNode orchestration facade. The four standalone numerical value/derivative operations are implemented in differentiable_api_core under AD.",
+   "decision": "Existing composition after genuine numerical separation -> workbench-umbrella; direct public definitions and ordered native rows retained."
   }
  ],
  "extra_import_names": {

@@ -27,6 +27,13 @@ from .differentiable_finite_difference import (
     value_and_jacobian,
     vjp,
 )
+from .differentiable_local_transform_composition import (
+    adjoint_inner_product_pair,
+    chain_rule_jacobian_pair,
+    gradient_linear_difference_pair,
+    reduced_mapped_gradient_pair,
+)
+from .differentiable_local_transform_primitives import LocalTransformPrimitives
 from .differentiable_parameter_contracts import Parameter
 from .differentiable_result_contracts import FINITE_DIFFERENCE_DIAGNOSTIC_CLAIM_BOUNDARY
 from .differentiable_sparse_derivatives import sparse_jacobian
@@ -51,6 +58,15 @@ FloatArray: TypeAlias = NDArray[np.float64]
 VectorObjective: TypeAlias = Callable[[FloatArray], ArrayLike]
 ScalarObjective: TypeAlias = Callable[[FloatArray], float | int | np.floating[Any]]
 TransformAlgebraStatus = Literal["passed", "failed", "blocked"]
+
+_LOCAL_TRANSFORM_PRIMITIVES = LocalTransformPrimitives(
+    gradient=lambda: grad,
+    jacobian=lambda: jacobian,
+    jvp=lambda: jvp,
+    vjp=lambda: vjp,
+    numpy=lambda: np,
+    scalar=lambda: float,
+)
 
 TRANSFORM_ALGEBRA_TOLERANCE: Final[float] = 5.0e-5
 TRANSFORM_ALGEBRA_CLAIM_BOUNDARY: Final[str] = (
@@ -472,10 +488,9 @@ def _grad_vmap_case(tolerance: float) -> TransformAlgebraCase:
         mapped = cast(FloatArray, vmap(row_objective)(matrix))
         return float(np.sum(mapped))
 
-    lhs = grad(reduced, values.ravel(), method="finite_difference").reshape(values.shape)
-    rhs = np.vstack(
-        [grad(row_objective, row, method="finite_difference") for row in values]
-    ).astype(np.float64)
+    lhs, rhs = reduced_mapped_gradient_pair(
+        reduced, row_objective, values, primitives=_LOCAL_TRANSFORM_PRIMITIVES
+    )
     return _executed_case(
         "grad_of_reduced_vmap_matches_row_gradients",
         "grad_vmap_composition",
@@ -555,10 +570,9 @@ def _jvp_vjp_duality_case(tolerance: float) -> TransformAlgebraCase:
     def vector_objective(x: FloatArray) -> FloatArray:
         return np.array([x[0] ** 2 + x[1], x[0] - np.sin(x[1])], dtype=np.float64)
 
-    jvp_value = jvp(vector_objective, values, tangent)
-    vjp_value = vjp(vector_objective, values, cotangent)
-    lhs = np.array([float(np.dot(cotangent, jvp_value))], dtype=np.float64)
-    rhs = np.array([float(np.dot(vjp_value, tangent))], dtype=np.float64)
+    lhs, rhs = adjoint_inner_product_pair(
+        vector_objective, values, tangent, cotangent, primitives=_LOCAL_TRANSFORM_PRIMITIVES
+    )
     return _executed_case(
         "jvp_vjp_adjoint_inner_product_identity",
         "jvp_vjp_duality",
@@ -731,11 +745,8 @@ def _linearity_case(tolerance: float) -> TransformAlgebraCase:
     def combined(x: FloatArray) -> float:
         return 2.0 * first(x) - 0.5 * second(x)
 
-    lhs = grad(combined, values, method="finite_difference")
-    rhs = 2.0 * grad(first, values, method="finite_difference") - 0.5 * grad(
-        second,
-        values,
-        method="finite_difference",
+    lhs, rhs = gradient_linear_difference_pair(
+        combined, first, second, values, 2.0, 0.5, primitives=_LOCAL_TRANSFORM_PRIMITIVES
     )
     return _executed_case(
         "gradient_linearity_over_scalar_objectives",
@@ -759,8 +770,9 @@ def _chain_rule_case(tolerance: float) -> TransformAlgebraCase:
     def composed(x: FloatArray) -> FloatArray:
         return outer(inner(x))
 
-    lhs = jacobian(composed, values)
-    rhs = jacobian(outer, inner(values)) @ jacobian(inner, values)
+    lhs, rhs = chain_rule_jacobian_pair(
+        composed, outer, inner, values, primitives=_LOCAL_TRANSFORM_PRIMITIVES
+    )
     return _executed_case(
         "jacobian_chain_rule_for_smooth_vector_composition",
         "chain_rule",

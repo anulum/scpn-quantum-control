@@ -1391,6 +1391,7 @@ report policy is performed by these operations.
 
 The numerical `value`, `gradient`, `jacobian` and `hessian` routes also have
 standalone AD entry points in `scpn_quantum_control.differentiable_api_core`.
+
 They use the same numerical providers, method defaults, copied float64 arrays
 and `UnifiedDifferentiableAPIResult` envelope as the original facade. The
 facade keeps its original function definitions and dispatcher; its typed
@@ -1399,6 +1400,20 @@ including changes made by an objective before result conversion. These
 numerical entry points do not select QNode planners, compiler or benchmark
 reports.
 
+`scpn_quantum_control.differentiable_local_transform_composition` provides four
+numerical pairs: `reduced_mapped_gradient_pair`,
+`gradient_linear_difference_pair`, `chain_rule_jacobian_pair` and
+`adjoint_inner_product_pair`. Each returns the two computed derivative arrays
+for an identity, using caller-supplied objectives and the existing AD operators.
+The chain rule supports rectangular Jacobians; the adjoint pair contracts input
+tangents and output cotangents in their respective spaces. Finite differences
+remain diagnostic evidence. `LocalTransformPrimitives` supplies typed numerical
+readers when execution needs a caller's live numerical namespace.
+
+The original local audit and three native eleven-row producers compose AD
+computations with their existing fixtures and QNode nesting evidence. They retain their original public definitions and report contracts.
+The support-matrix artifact belongs with that QNode report composition; the
+mixed compilation, benchmark and QNode facade remains a workbench orchestrator.
 Native derivative matrices are implemented in
 `scpn_quantum_control.differentiable_native_curvature`. The JAX and PyTorch
 Hessian, forward/reverse Jacobian and gradient-Jacobian operators return
