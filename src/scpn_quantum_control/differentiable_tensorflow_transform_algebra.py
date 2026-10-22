@@ -15,6 +15,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from .differentiable_batched_transform_execution import tensorflow_vectorized_derivatives
+from .differentiable_native_linearization import tensorflow_jvp, tensorflow_vjp
 from .differentiable_structured_transform_execution import (
     tensorflow_structured_gradient,
     tensorflow_structured_hessian,
@@ -89,13 +90,13 @@ def _execute_cases(
     def forward_gradient(direction: Any) -> Any:
         with tf.autodiff.ForwardAccumulator(x, direction) as accumulator:
             gradient = derivative(x)
-        return accumulator.jvp(gradient)
+        return tensorflow_jvp(accumulator, gradient)
 
     pushed = forward_gradient(tangent)
     with tf.GradientTape() as pullback:
         pullback.watch(x)
         gradient = derivative(x)
-    pulled = pullback.gradient(gradient, x, output_gradients=tangent)
+    pulled = tensorflow_vjp(pullback, gradient, x, tangent)
     forward_hessian = tf.transpose(
         tf.vectorized_map(
             forward_gradient,

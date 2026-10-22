@@ -1379,6 +1379,16 @@ shared bias. Their native axis trees support either source batch axis.
 a leading batch axis with `fallback_to_while_loop=False`; the caller retains
 the numerical callback, shared tensors and tape recording contexts.
 
+Native forward and reverse Jacobian products are implemented in
+`scpn_quantum_control.differentiable_native_linearization`.
+`jax_jvp` and `torch_jvp` return the native primal output and directional
+derivative. `jax_vjp` and `torch_vjp` return the actual native primal/pullback
+tuple, so callers retain the original pullback callable and its lifetime.
+TensorFlow callers keep their recording contexts and resources:
+`tensorflow_jvp` reads an existing `ForwardAccumulator`, and `tensorflow_vjp`
+uses the caller's actual tape and output cotangent. No host conversion or
+report policy is performed by these operations.
+
 The default `differentiable_transform_algebra_report()` retains the bounded local
 NumPy audit and its original payload. Select a required CPU runtime explicitly
 through the same unified facade:

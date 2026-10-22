@@ -10,10 +10,10 @@
     "public_api_exports": 851,
     "public_documentation_pages": 385,
     "python_model_classes": 1541,
-    "python_model_source_modules": 811,
+    "python_model_source_modules": 812,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1560
+    "test_files": 1561
   },
   "documentation": {
     "examples": [
@@ -7255,6 +7255,7 @@
       "src/scpn_quantum_control/differentiable_jax_transform_algebra.py",
       "src/scpn_quantum_control/differentiable_levenberg_marquardt.py",
       "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
+      "src/scpn_quantum_control/differentiable_native_linearization.py",
       "src/scpn_quantum_control/differentiable_natural_gradient.py",
       "src/scpn_quantum_control/differentiable_notebook_curriculum.py",
       "src/scpn_quantum_control/differentiable_parameter_contracts.py",
@@ -9313,6 +9314,7 @@
       "tests/test_differentiable_jax_transform_algebra.py",
       "tests/test_differentiable_levenberg_marquardt.py",
       "tests/test_differentiable_module_hardening_audit.py",
+      "tests/test_differentiable_native_linearization.py",
       "tests/test_differentiable_natural_gradient.py",
       "tests/test_differentiable_natural_gradient_line_search.py",
       "tests/test_differentiable_notebook_curriculum.py",

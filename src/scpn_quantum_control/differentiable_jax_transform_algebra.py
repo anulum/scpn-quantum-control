@@ -15,6 +15,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from .differentiable_batched_transform_execution import jax_batched_gradient
+from .differentiable_native_linearization import jax_jvp, jax_vjp
 from .differentiable_structured_transform_execution import jax_structured_derivatives
 from .differentiable_transform_algebra import (
     TransformAlgebraCase,
@@ -71,8 +72,8 @@ def _execute_cases(
     aggregate_gradient = jax.grad(aggregate)(batch)
     if batch_axis == 1:
         aggregate_gradient = aggregate_gradient.T
-    _, pushed = jax.jvp(derivative, (x,), (tangent,))
-    _, pullback = jax.vjp(derivative, x)
+    _, pushed = jax_jvp(jax, derivative, x, tangent)
+    _, pullback = jax_vjp(jax, derivative, x)
     (pulled,) = pullback(tangent)
 
     structured = {"weights": x, "bias": jnp.asarray(0.3, dtype=jnp.float64)}

@@ -357,6 +357,7 @@
         "tests/test_differentiable_jax_adapter_quality_gate.py",
         "tests/test_differentiable_levenberg_marquardt.py",
         "tests/test_differentiable_module_hardening_audit.py",
+        "tests/test_differentiable_native_linearization.py",
         "tests/test_differentiable_natural_gradient.py",
         "tests/test_differentiable_natural_gradient_line_search.py",
         "tests/test_differentiable_notebook_curriculum.py",

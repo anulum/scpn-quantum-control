@@ -15,6 +15,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from .differentiable_batched_transform_execution import torch_batched_gradient
+from .differentiable_native_linearization import torch_jvp, torch_vjp
 from .differentiable_structured_transform_execution import torch_structured_derivatives
 from .differentiable_transform_algebra import (
     TransformAlgebraCase,
@@ -74,8 +75,8 @@ def _execute_cases(
     aggregate_gradient = torch.func.grad(aggregate)(batch)
     if batch_axis == 1:
         aggregate_gradient = aggregate_gradient.T
-    _, pushed = torch.func.jvp(derivative, (x,), (tangent,))
-    _, pullback = torch.func.vjp(derivative, x)
+    _, pushed = torch_jvp(torch, derivative, x, tangent)
+    _, pullback = torch_vjp(torch, derivative, x)
     (pulled,) = pullback(tangent)
 
     structured = {
