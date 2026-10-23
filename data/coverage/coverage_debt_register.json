@@ -263,17 +263,6 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 91,
-      "line_percent": 24.73,
-      "missing_lines": 277,
-      "path": "src/scpn_quantum_control/phase/torch_qnode_transforms.py",
-      "priority": "P3_high_line_debt",
-      "priority_reason": "At least 50 executable lines are uncovered.",
-      "status": "below_target",
-      "valid_lines": 368
-    },
-    {
-      "claim_ids": [],
       "covered_lines": 76,
       "line_percent": 27.54,
       "missing_lines": 200,
@@ -315,17 +304,6 @@
       "priority_reason": "At least 50 executable lines are uncovered.",
       "status": "below_target",
       "valid_lines": 243
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 35,
-      "line_percent": 24.82,
-      "missing_lines": 106,
-      "path": "src/scpn_quantum_control/phase/pennylane_import.py",
-      "priority": "P3_high_line_debt",
-      "priority_reason": "At least 50 executable lines are uncovered.",
-      "status": "below_target",
-      "valid_lines": 141
     },
     {
       "claim_ids": [],
@@ -1279,20 +1257,20 @@
     "sha256": "e21293252643fa8c0d97c5d1f27a649a4f9f0d13795d5b3864e9807b81bc8f55"
   },
   "summary": {
-    "debt_file_count": 114,
+    "debt_file_count": 112,
     "fully_covered_file_count": 604,
     "justified_exclusion_file_count": 44,
-    "known_missing_line_count": 2893,
+    "known_missing_line_count": 2510,
     "measured_non_excluded_file_count": 695,
     "priority_counts": {
       "P0_claim_bearing": 0,
       "P1_runtime_hot_path": 0,
       "P2_unmeasured": 23,
-      "P3_high_line_debt": 18,
+      "P3_high_line_debt": 16,
       "P4_standard": 73
     },
     "status_counts": {
-      "below_target": 91,
+      "below_target": 89,
       "unmeasured_since_baseline": 23
     },
     "unmeasured_debt_file_count": 23

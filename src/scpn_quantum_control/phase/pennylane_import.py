@@ -230,7 +230,7 @@ def _pennylane_value_and_gradient(
     gradient_tape.trainable_params = list(range(n_gate_parameters))
     gradient_tapes, processing = qml.gradients.param_shift(gradient_tape)
     if not gradient_tapes:
-        return value, np.zeros(0, dtype=np.float64)
+        return value, np.zeros(n_gate_parameters, dtype=np.float64)
     results = qml.execute(gradient_tapes, device, diff_method=None)
     gradient = np.atleast_1d(np.asarray(processing(results), dtype=np.float64))
     return value, gradient

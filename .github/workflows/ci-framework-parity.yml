@@ -176,6 +176,13 @@ jobs:
           --precision=2 --show-missing
           --fail-under=100
           --include=*/torch_bridge.py,*/torch_maturity.py,*/torch_qnode_transforms.py,*/torch_autograd_function.py,*/torch_module_state.py,*/torch_checkpoint.py,*/torch_checkpoint_matrix.py,*/torch_device_state.py,*/torch_export.py,*/torch_export_shape_matrix.py,*/torch_training_loop_matrix.py,*/torch_aot_autograd_export.py,*/torch_dynamic_shape_export.py
+      - name: Upload exact-commit Phase-QNode Torch coverage
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: phase-torch-bridge-coverage-${{ github.sha }}
+          if-no-files-found: error
+          path: /tmp/scpn-qc-phase-torch-bridge.coverage
+          retention-days: 7
       - name: Run Phase-QNode PennyLane bridge focused coverage
         run: >-
           python -m coverage run
@@ -195,7 +202,14 @@ jobs:
           --data-file=/tmp/scpn-qc-phase-pennylane-bridge.coverage
           --precision=2 --show-missing
           --fail-under=100
-          --include=*/pennylane_bridge.py
+          --include=*/pennylane_bridge.py,*/pennylane_import.py
+      - name: Upload exact-commit Phase-QNode PennyLane coverage
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: phase-pennylane-bridge-coverage-${{ github.sha }}
+          if-no-files-found: error
+          path: /tmp/scpn-qc-phase-pennylane-bridge.coverage
+          retention-days: 7
       - name: Run required native PennyLane HAL contracts
         timeout-minutes: 5
         run: |

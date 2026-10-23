@@ -804,7 +804,7 @@ def test_main_rejects_conflicting_or_incomplete_modes(tmp_path: Path) -> None:
 
 
 def test_live_policy_records_latest_remote_debt_baseline() -> None:
-    """Pin the hosted baseline and account for new unmeasured source."""
+    """Pin hosted provenance while allowing the measured debt budgets to fall."""
     repo_root = Path(__file__).resolve().parents[1]
     policy = audit.load_policy(repo_root / "tools" / "coverage_debt_policy.json")
     register = json.loads((repo_root / policy.register_path).read_text(encoding="utf-8"))
@@ -815,6 +815,6 @@ def test_live_policy_records_latest_remote_debt_baseline() -> None:
         "53eb8316ed0d2bc6f39385c79ba22022f4a7a5f671860c29ad312cff3828d1bf"
     )
     assert policy.baseline_invalidated_paths == ()
-    assert register["summary"]["debt_file_count"] == 114
-    assert register["summary"]["known_missing_line_count"] == 2893
+    assert register["summary"]["debt_file_count"] == 112
+    assert register["summary"]["known_missing_line_count"] == 2510
     assert register["summary"]["unmeasured_debt_file_count"] == 23
