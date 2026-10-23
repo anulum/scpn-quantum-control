@@ -294,7 +294,10 @@ def test_ci_coverage_job_collects_branches_and_preserves_the_line_gate() -> None
     assert "--cov-fail-under=0" in workflow
     assert "python tools/audit_coverage_policy.py --coverage-xml coverage.xml" in workflow
     assert "python tools/audit_coverage_policy.py --validate-policy" in workflow
-    assert "mypy --strict tools/audit_coverage_policy.py" in workflow
+    assert (
+        "mypy --strict --explicit-package-bases\n"
+        "          tools/audit_coverage_policy.py tests/test_audit_coverage_policy.py" in workflow
+    )
     assert "Upload coverage policy evidence" in workflow
     assert "coverage.xml" in workflow
     assert "coverage-gap-audit.json" in workflow

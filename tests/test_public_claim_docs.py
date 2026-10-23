@@ -22,6 +22,7 @@ import re
 import tomllib
 from pathlib import Path
 
+import pytest
 import yaml
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -86,21 +87,20 @@ _REMOVED_PAPER0_PATH_TOKENS = (
 )
 
 
-def _ci_coverage_gate() -> int:
+def _ci_coverage_gate() -> str:
     """Return the line-coverage percentage enforced by the CI policy audit.
 
     Returns
     -------
-    int
-        The line-coverage gate parsed from ``tools/coverage_policy.json``.
+    str
+        The exact percentage from ``tools/coverage_policy.json``, including decimals.
 
     """
     payload = json.loads(_COVERAGE_POLICY.read_text(encoding="utf-8"))
     value = payload.get("line_minimum_percent")
     assert isinstance(value, (int, float)) and not isinstance(value, bool)
     numeric = float(value)
-    assert numeric.is_integer(), "public line-coverage gate must be an integer percent"
-    return int(numeric)
+    return str(numeric).removesuffix(".0")
 
 
 def _python_floor() -> str:
@@ -184,11 +184,15 @@ def test_typing_docs_distinguish_optional_type_boundary_from_provisioned_runtime
     assert "neither installs it" not in section
 
 
-def test_validation_quotes_the_enforced_coverage_gate() -> None:
-    """VALIDATION.md states exactly the coverage gate that CI enforces."""
-    text = _VALIDATION.read_text(encoding="utf-8")
+@pytest.mark.parametrize(
+    "relative_path",
+    ["VALIDATION.md", "CAPABILITIES_AND_USECASES.md", "docs/index.md", "docs/architecture.md"],
+)
+def test_validation_quotes_the_enforced_coverage_gate(relative_path: str) -> None:
+    """Public coverage claims state the exact fractional gate that CI enforces."""
+    text = (_REPO_ROOT / relative_path).read_text(encoding="utf-8")
     assert f"{_ci_coverage_gate()}% line-coverage gate" in text, (
-        f"VALIDATION.md does not quote the CI coverage gate (enforced: {_ci_coverage_gate()})"
+        f"{relative_path} does not quote the CI coverage gate (enforced: {_ci_coverage_gate()})"
     )
 
 

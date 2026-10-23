@@ -428,8 +428,8 @@ source_pkgs = [
     "scpn_quantum_control.studio.workflow_execution",
     "scpn_quantum_control.studio.workflow_cli",
 ]
-# Collect branch arcs in every coverage.py invocation. CI preserves the
-# historical 90% LINE gate through tools/audit_coverage_policy.py and keeps the
+# Collect branch arcs in every coverage.py invocation. CI enforces the
+# measured line gate through tools/audit_coverage_policy.py and keeps the
 # first whole-suite branch rate in observation mode until remote evidence can
 # support a separate branch threshold.
 branch = true
