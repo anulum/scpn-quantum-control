@@ -806,7 +806,7 @@ auto-generated block is the source of truth if the two ever drift.
 
 | Metric | Count |
 |--------|-------|
-| Python modules | 800 (excluding package initialisers) |
+| Python modules | 823 (excluding package initialisers) |
 | Rust crate | 1 (PyO3 0.29, **177 bindings**, 120 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
 | Julia tier | 1 (now in the `oscillatools` distribution: `oscillatools/accel/julia/order_parameter.jl`; juliacall-bridged, opt-in via `oscillatools[julia]`) |
 | Tests | CI-gated suite (90% line gate; branch telemetry required and currently observational) |
@@ -826,7 +826,7 @@ preparation and `bridge/` for Hamiltonian access.
 ```mermaid
 graph TD
     bridge["bridge/ (15)\nK_nm → quantum objects"]
-    phase["phase/ (121)\nTime evolution"]
+    phase["phase/ (125)\nTime evolution"]
     analysis["analysis/ (71)\nSync probes + governed registries"]
     control["control/ (14)\nQuantum control"]
     qsnn["qsnn/ (7)\nQuantum SNN"]

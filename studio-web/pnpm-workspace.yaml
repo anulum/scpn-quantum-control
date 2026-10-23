@@ -21,9 +21,9 @@ overrides:
   # GHSA-rgw5-rvv9-x895 and GHSA-q2hr-2g5m-vwhr, reached only through the
   # typedoc docs generator; patched in brace-expansion 5.0.12.
   'brace-expansion@<5.0.12': '5.0.12'
-  # GHSA-253c-mchw-3w2r, reached only through the typedoc docs generator;
-  # patched in markdown-it 14.3.1.
-  'markdown-it@<14.3.1': '14.3.1'
+  # GHSA-253c-mchw-3w2r, GHSA-r7fv-28h4-cvq7 and GHSA-gfr2-rv44-r23c
+  # in the TypeDoc generator; all are patched in markdown-it 14.3.3.
+  'markdown-it@<14.3.3': '14.3.3'
   # GHSA-68fv-2mgg-jv7q (Dependabot alert #188), reached through postcss,
   # css-tree and magicast in the build and test tools; patched in
   # source-map-js 1.2.2.

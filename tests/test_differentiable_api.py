@@ -78,7 +78,7 @@ def test_api_quality_gate_spec_is_exact_and_focused() -> None:
     assert api_quality_gates.DIFFERENTIABLE_API_COVERAGE_SELECTOR in focused_command
     assert "--fail-under=100" in report_command
     assert (
-        "--include=*/differentiable_api.py,*/differentiable_api_core.py,*/differentiable_api_core_algorithms.py,*/differentiable_api_core_bindings.py,*/differentiable_canonical_api.py,*/differentiable_result_contracts.py"
+        "--include=*/differentiable_api.py,*/differentiable_api_core.py,*/differentiable_api_core_algorithms.py,*/differentiable_api_core_bindings.py,*/differentiable_canonical_api.py,*/differentiable_result_contracts.py,*/differentiable_tensor_admission.py"
         in report_command
     )
     for name, command in api_quality_gates.build_static_quality_gates(preflight._PY):

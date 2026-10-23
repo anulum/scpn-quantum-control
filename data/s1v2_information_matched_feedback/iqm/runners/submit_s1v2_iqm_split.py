@@ -46,6 +46,7 @@ def _status(backend: object, job_id: str) -> tuple[str, list[str]]:
 
 
 def submit(args: argparse.Namespace) -> int:
+    """Submit one provider job per frozen circuit after the explicit owner gate."""
     if not args.i_have_owner_go:
         print("REFUSED: needs --i-have-owner-go", file=sys.stderr)
         return 2
@@ -89,6 +90,7 @@ def submit(args: argparse.Namespace) -> int:
 
 
 def retrieve(args: argparse.Namespace) -> int:
+    """Retrieve terminal jobs from a complete split journal and write raw counts."""
     journal = json.loads(args.journal.read_text(encoding="utf-8"))
     if not journal.get("job_per_label") or len(journal["job_ids"]) != len(journal["labels"]):
         print("REFUSED: not a complete one-job-per-label journal", file=sys.stderr)
@@ -124,6 +126,7 @@ def retrieve(args: argparse.Namespace) -> int:
 
 
 def main() -> int:
+    """Dispatch the selected split-stage operation and report deliberate refusals."""
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
     s = sub.add_parser("submit")

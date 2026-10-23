@@ -42,10 +42,12 @@ PILOT_JOURNAL = {
 
 
 def label(variant: str, rounds: int, basis: str) -> str:
+    """Return the circuit label for a variant, round count and readout basis."""
     return f"phase_{variant}_n{rounds}_{basis}"
 
 
 def build(variant: str, rounds: int, basis: str) -> QuantumCircuit:
+    """Build the preregistered decision-window circuit for one readout basis."""
     s, m, c = QuantumRegister(3, "s"), QuantumRegister(3, "m"), QuantumRegister(3, "c")
     mb = ClassicalRegister(max(6 * rounds, 1), "mb")
     ro = ClassicalRegister(3, "ro")
@@ -73,12 +75,14 @@ def build(variant: str, rounds: int, basis: str) -> QuantumCircuit:
 
 
 def circuits() -> list[QuantumCircuit]:
+    """Return the shared baseline and all variant, round and basis circuits."""
     out = [build("meas", 0, b) for b in ("X", "Y")]
     out += [build(v, n, b) for v in VARIANTS for n in ROUNDS for b in ("X", "Y")]
     return out
 
 
 def layout(backend_name: str) -> list[int]:
+    """Read the backend reference layout from its frozen pilot journal."""
     return list(
         json.loads(PILOT_JOURNAL[backend_name].read_text(encoding="utf-8"))[
             "main_reference_layout"
@@ -99,6 +103,7 @@ def _write(name: str, record: dict) -> Path:
 
 
 def run_ideal() -> Path:
+    """Simulate the phase circuits with a fixed seed and persist readout counts."""
     from qiskit_aer import AerSimulator
 
     sim = AerSimulator()
@@ -112,6 +117,7 @@ def run_ideal() -> Path:
 
 
 def run_ibm(backend_name: str, vault: Path) -> Path:
+    """Submit the phase circuits on the selected IBM backend and persist results."""
     from qiskit_ibm_runtime import SamplerV2
 
     from scripts import submit_s1v2_ibm as ibm
@@ -138,6 +144,7 @@ def run_ibm(backend_name: str, vault: Path) -> Path:
 
 
 def run_iqm() -> Path:
+    """Submit one Garnet job per phase circuit and persist terminal results."""
     from scripts import submit_s1v2_iqm as iqm
 
     backend = iqm._resonance()._backend("garnet")
@@ -199,6 +206,7 @@ def _resample(counts: dict[str, int], rng: np.random.Generator) -> dict[str, int
 
 
 def analyse(record_path: Path) -> dict:
+    """Estimate phase slopes and seeded bootstrap intervals from recorded counts."""
     rec = json.loads(record_path.read_text(encoding="utf-8"))
     counts = rec["counts_ro"]
     ns = [0, *ROUNDS]
@@ -244,6 +252,7 @@ def analyse(record_path: Path) -> dict:
 
 
 def main() -> int:
+    """Dispatch the phase-test command and print the written record path."""
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("ideal")

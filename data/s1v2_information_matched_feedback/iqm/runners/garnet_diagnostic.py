@@ -59,6 +59,7 @@ def _probe_circuit(name: str, layout: list[int], backend: object) -> object:
 
 
 def main() -> int:
+    """Submit the selected Garnet probe and record its terminal provider result."""
     parser = argparse.ArgumentParser()
     parser.add_argument("probe", choices=("reset", "none", "cl"))
     parser.add_argument("--out", type=Path, required=True)

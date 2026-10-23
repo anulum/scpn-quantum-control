@@ -19,6 +19,7 @@ import pytest
 
 from scpn_quantum_control import TraceADArray, TraceADScalar
 from scpn_quantum_control.control import realtime_runtime
+from tools import differentiable_api_quality_gates
 from tools.ci_workflow_inventory import read_ci_workflow_source, workflow_path_for_job
 
 
@@ -223,12 +224,18 @@ def test_ci_gates_program_ad_array_indexing_exact_quality() -> None:
     assert "Ruff NumPy docstrings for unified differentiable API quality cohort" in workflow
     assert "Run unified differentiable API focused coverage" in workflow
     assert "Enforce unified differentiable API exact coverage" in workflow
-    assert "--data-file=/tmp/scpn-qc-differentiable-api-quality.coverage" in workflow
-    assert "src/scpn_quantum_control/differentiable_canonical_api.py" in workflow
+    assert "--data-file=.coverage.differentiable-api-quality" in workflow
+    assert "python tools/differentiable_api_quality_gates.py typing" in workflow
+    assert "src/scpn_quantum_control/differentiable_canonical_api.py" in (
+        differentiable_api_quality_gates.DIFFERENTIABLE_API_QUALITY_RATCHET
+    )
     assert "tests/test_differentiable_canonical_modes.py" in workflow
     assert "tests/test_differentiable_package_exports.py" in workflow
     assert "tests/test_transform_algebra.py" in workflow
-    assert "--include=*/differentiable_api.py,*/differentiable_canonical_api.py" in workflow
+    assert (
+        "--include=*/differentiable_api.py,*/differentiable_api_core.py,*/differentiable_api_core_algorithms.py,*/differentiable_api_core_bindings.py,*/differentiable_canonical_api.py,*/differentiable_result_contracts.py,*/differentiable_tensor_admission.py"
+        in workflow
+    )
     assert "Type-check differentiable Levenberg-Marquardt quality cohort" in workflow
     assert (
         "Ruff NumPy docstrings for differentiable Levenberg-Marquardt quality cohort" in workflow
