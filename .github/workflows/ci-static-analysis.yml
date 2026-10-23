@@ -213,7 +213,20 @@ jobs:
       - name: Validate line and branch coverage policy
         run: python tools/audit_coverage_policy.py --validate-policy
       - name: Type-check coverage policy audit
-        run: mypy --strict tools/audit_coverage_policy.py
+        run: >-
+          mypy --strict --explicit-package-bases
+          tools/audit_coverage_policy.py tests/test_audit_coverage_policy.py
+      - name: Require complete coverage of the coverage-policy audit
+        run: |
+          python -m coverage run --rcfile=/dev/null \
+            --data-file=.coverage.coverage-policy --branch \
+            -m pytest -q --no-cov tests/test_audit_coverage_policy.py
+          python -m coverage run --append --rcfile=/dev/null \
+            --data-file=.coverage.coverage-policy --branch \
+            tools/audit_coverage_policy.py --validate-policy --json
+          python -m coverage report --rcfile=/dev/null \
+            --data-file=.coverage.coverage-policy --precision=2 --show-missing \
+            --fail-under=100 --include='*/tools/audit_coverage_policy.py'
       - name: Audit coverage-debt register
         run: python tools/audit_coverage_debt.py
       - name: Type-check coverage-debt audit

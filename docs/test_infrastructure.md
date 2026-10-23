@@ -2,7 +2,7 @@
 
 ## Overview
 
-scpn-quantum-control has a CI-gated test suite with a 90% aggregate **line**
+scpn-quantum-control has a CI-gated test suite with a 97.8568% aggregate **line**
 coverage requirement. CI now collects branch arcs in the same run and requires
 real branch opportunity data, but the branch percentage remains observational
 until consecutive remote runs establish a stable baseline. The active test
@@ -620,18 +620,21 @@ CI skips slow tests: `pytest -m "not slow"`.
 ```
 
 Test matrix: Python 3.11, 3.12, 3.13.
-Coverage target: 90% line coverage on the Python 3.12 lane, enforced by
+Coverage target: 97.8568% line coverage on the Python 3.12 lane, enforced by
 `tools/audit_coverage_policy.py` from branch-enabled `coverage.xml`. Branch data
 is mandatory but observational until the policy records an evidence-backed
-branch threshold. The current remote baseline is 97.2116% line coverage and
-95.0064% observed branch coverage at origin `9854a09d` (CI run `33479377146`).
+branch threshold. The recorded remote baseline is 116,066 / 118,608 executable
+lines (97.8568%) and 38,721 / 40,146 branches (96.4505%) at origin `9e316d4a`
+(CI run `39938297231`). Threshold comparisons use the exact counts rather than
+the XML report's rounded rates. This is measurement provenance, not a claim
+that every job in that historical CI run passed.
 Coverage recovery must stay module-specific; coverage-bucket tests remain
 forbidden.
 
 The separate 100% recovery register is
 `data/coverage/coverage_debt_register.json`. It is generated and audited by
 `tools/audit_coverage_debt.py` under `tools/coverage_debt_policy.json`; it does
-not replace or raise the aggregate 90% line gate. The current register derives
+not replace the separate aggregate line gate. Its retained debt baseline derives
 from exact-head Python 3.12 CI run `33479377146`, honours the justified
 exclusions ledger, and records absent optional-dependency paths as unmeasured.
 Debt is ordered first by public claim-ledger ownership, then explicit runtime
@@ -778,10 +781,18 @@ and the CI lane that exercises it instead (or an explicit tracked gap).
 `tests/test_exclusions_ledger_drift.py` is the drift gate: it fails the
 build the moment an omit glob has no ledger row, or a ledger row matches
 no live omit glob — the coverage analogue of the
-no-`pragma: no cover`-without-issue rule, so the 90% number can never
+no-`pragma: no cover`-without-issue rule, so the aggregate percentage can never
 hide a silent, unjustified hole.
 
 ## Test Quality Standards
+
+New or changed behavior must reach 100% statement and branch coverage where
+reachable, using meaningful public/runtime contract tests under Tier 0 rules.
+Any unreachable branch needs a source-specific invariant, reachability proof,
+platform/toolchain evidence and review recorded under the exclusions policy.
+Missing dependencies or credentials do not establish unreachability. Coverage
+padding, silent exclusions, skips and lowered thresholds do not satisfy this
+requirement.
 
 Every test file must have:
 1. **11+ test functions** (no exceptions)

@@ -413,7 +413,7 @@ def test_audit_metrics_observes_branch_and_enforces_line() -> None:
 
     assert _audit.audit_metrics(policy, passing).errors == ()
     assert _audit.audit_metrics(policy, low_line).errors == (
-        "line coverage 89.00% is below 90.00%",
+        "line coverage 89.0000% is below 90.0000%",
     )
     assert _audit.audit_metrics(policy, no_branches).errors == (
         "branch coverage data is required but no branch opportunities were measured",
@@ -425,7 +425,7 @@ def test_audit_metrics_enforces_promoted_branch_threshold() -> None:
     metrics = _audit.CoverageMetrics(95, 100, 0.95, 15, 20, 0.75)
 
     assert _audit.audit_metrics(policy, metrics).errors == (
-        "branch coverage 75.00% is below 80.00%",
+        "branch coverage 75.0000% is below 80.0000%",
     )
 
 
@@ -435,14 +435,14 @@ def test_result_formatters_report_observation_and_blockers() -> None:
     result = _audit.audit_metrics(policy, metrics)
 
     assert result.passed is False
-    assert "branch: 90.00% (observe; 20 opportunities)" in _audit.format_result(result)
+    assert "branch: 90.0000% (observe; 20 opportunities)" in _audit.format_result(result)
     assert "blocker: line coverage" in _audit.format_result(result)
     assert "status: fail" in _audit.format_result(result)
     payload = json.loads(_audit._json_result(result))
     assert payload["status"] == "fail"
     assert payload["branch"]["minimum_percent"] is None
 
-    assert "line minimum 90.00%" in _audit.format_policy(policy)
+    assert "line minimum 90.0000%" in _audit.format_policy(policy)
     policy_payload = json.loads(_audit._json_policy(policy))
     assert policy_payload["status"] == "pass"
     assert policy_payload["branch_mode"] == "observe"
@@ -484,11 +484,64 @@ def test_live_policy_records_latest_remote_line_baseline() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     policy = _audit.load_policy(repo_root / "tools" / "coverage_policy.json")
 
-    assert policy.line_minimum_percent == 90.0
+    assert policy.line_minimum_percent == 97.8568
     assert policy.branch.mode == "observe"
     assert policy.branch.require_data is True
-    assert policy.baseline.origin_commit == "9854a09d837a48746f49be2251373f636068fe38"
-    assert policy.baseline.remote_ci_run == 33479377146
-    assert policy.baseline.covered_lines == 100859
-    assert policy.baseline.measured_lines == 103752
-    assert policy.baseline.branch_percent == 95.0064
+    assert policy.baseline.origin_commit == "9e316d4a999275d873543d28aa7ee640175ff0db"
+    assert policy.baseline.remote_ci_run == 39938297231
+    assert policy.baseline.covered_lines == 116066
+    assert policy.baseline.measured_lines == 118608
+    assert policy.baseline.branch_percent == 96.4505
+
+
+@pytest.mark.parametrize("covered, expected_exit", [(116066, 0), (116065, 1)])
+def test_cli_ratchet_rejects_one_lost_line_despite_identical_rounded_rate(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    covered: int,
+    expected_exit: int,
+) -> None:
+    """Enforce the hosted baseline using exact counts through the public CLI."""
+    report = tmp_path / "coverage.xml"
+    _write_xml(
+        report,
+        attributes={
+            "lines-covered": str(covered),
+            "lines-valid": "118608",
+            "line-rate": "0.9786",
+            "branches-covered": "38721",
+            "branches-valid": "40146",
+            "branch-rate": "0.9645",
+        },
+    )
+
+    assert _audit.main(["--coverage-xml", str(report), "--json"]) == expected_exit
+    result = json.loads(capsys.readouterr().out)
+    assert result["line"]["percent"] == round(covered * 100.0 / 118608, 6)
+    assert result["line"]["minimum_percent"] == 97.8568
+    assert result["status"] == ("pass" if expected_exit == 0 else "fail")
+
+
+def test_cli_requires_branch_data_at_the_line_baseline(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Reject absent branch opportunities without dividing by zero."""
+    report = tmp_path / "coverage.xml"
+    _write_xml(
+        report,
+        attributes={
+            "lines-covered": "116066",
+            "lines-valid": "118608",
+            "line-rate": "0.9786",
+            "branches-covered": "0",
+            "branches-valid": "0",
+            "branch-rate": "0",
+        },
+    )
+
+    assert _audit.main(["--coverage-xml", str(report), "--json"]) == 1
+    result = json.loads(capsys.readouterr().out)
+    assert result["branch"]["percent"] == 0.0
+    assert result["errors"] == [
+        "branch coverage data is required but no branch opportunities were measured"
+    ]

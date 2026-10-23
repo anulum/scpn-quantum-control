@@ -7,7 +7,7 @@
 # SCPN Quantum Control — deterministic coverage-debt register audit
 """Generate and audit the repository's evidence-backed coverage-debt register.
 
-The aggregate release gate remains a separate 90% line contract. This tool
+The aggregate release gate remains a separate line contract. This tool
 tracks the recovery target: every non-excluded package file below 100% or not
 measured by the latest evidence. Public claim-bearing modules and explicit
 runtime hot paths receive deterministic priority ahead of raw line-count debt.

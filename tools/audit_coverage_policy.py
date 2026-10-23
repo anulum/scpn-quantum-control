@@ -7,10 +7,9 @@
 # SCPN Quantum Control — line gate and branch telemetry policy audit
 """Enforce the line gate while validating branch-enabled Cobertura telemetry.
 
-Coverage.py reports a combined percentage when branch collection is enabled,
-so reusing ``--cov-fail-under=90`` would silently change the existing 90%
-line contract. This audit parses the generated XML, preserves the line gate,
-requires real branch opportunity data, and reports branch coverage separately.
+Coverage.py reports a combined percentage when branch collection is enabled.
+This audit enforces the separate line threshold using exact covered and total
+counts, requires branch opportunity data, and reports branch coverage separately.
 A branch threshold remains optional until remote CI establishes a baseline.
 """
 
@@ -34,7 +33,7 @@ _RATE_TOLERANCE = 0.00011
 
 @dataclass(frozen=True)
 class CoverageBaseline:
-    """Latest line-only remote CI evidence before branch collection."""
+    """Recorded whole-package remote CI coverage evidence."""
 
     origin_commit: str
     remote_ci_run: int
@@ -81,12 +80,12 @@ class CoverageMetrics:
     @property
     def line_percent(self) -> float:
         """Aggregate line coverage as a percentage."""
-        return self.line_rate * 100.0
+        return self.lines_covered * 100.0 / self.lines_valid
 
     @property
     def branch_percent(self) -> float:
         """Aggregate branch coverage as a percentage."""
-        return self.branch_rate * 100.0
+        return self.branches_covered * 100.0 / self.branches_valid if self.branches_valid else 0.0
 
 
 @dataclass(frozen=True)
@@ -318,8 +317,8 @@ def audit_metrics(policy: CoveragePolicy, metrics: CoverageMetrics) -> AuditResu
     errors: list[str] = []
     if metrics.line_percent + 1e-9 < policy.line_minimum_percent:
         errors.append(
-            f"line coverage {metrics.line_percent:.2f}% is below "
-            f"{policy.line_minimum_percent:.2f}%"
+            f"line coverage {metrics.line_percent:.4f}% is below "
+            f"{policy.line_minimum_percent:.4f}%"
         )
     if policy.branch.require_data and metrics.branches_valid == 0:
         errors.append("branch coverage data is required but no branch opportunities were measured")
@@ -330,7 +329,7 @@ def audit_metrics(policy: CoveragePolicy, metrics: CoverageMetrics) -> AuditResu
         and metrics.branch_percent + 1e-9 < branch_minimum
     ):
         errors.append(
-            f"branch coverage {metrics.branch_percent:.2f}% is below {branch_minimum:.2f}%"
+            f"branch coverage {metrics.branch_percent:.4f}% is below {branch_minimum:.4f}%"
         )
     return AuditResult(policy=policy, metrics=metrics, errors=tuple(errors))
 
@@ -339,9 +338,9 @@ def format_result(result: AuditResult) -> str:
     """Render a deterministic coverage policy summary."""
     lines = [
         "coverage policy audit:",
-        f"- line: {result.metrics.line_percent:.2f}% "
-        f"(minimum {result.policy.line_minimum_percent:.2f}%)",
-        f"- branch: {result.metrics.branch_percent:.2f}% "
+        f"- line: {result.metrics.line_percent:.4f}% "
+        f"(minimum {result.policy.line_minimum_percent:.4f}%)",
+        f"- branch: {result.metrics.branch_percent:.4f}% "
         f"({result.policy.branch.mode}; {result.metrics.branches_valid} opportunities)",
     ]
     lines.extend(f"- blocker: {error}" for error in result.errors)
@@ -377,7 +376,7 @@ def format_policy(policy: CoveragePolicy) -> str:
     """Render the active thresholds without requiring a coverage report."""
     return (
         "coverage policy current: "
-        f"line minimum {policy.line_minimum_percent:.2f}%; "
+        f"line minimum {policy.line_minimum_percent:.4f}%; "
         f"branch mode {policy.branch.mode}; "
         f"branch data required {policy.branch.require_data}"
     )
@@ -434,5 +433,5 @@ def main(argv: list[str] | None = None) -> int:
     return 0 if result.passed else 1
 
 
-if __name__ == "__main__":  # pragma: no cover
+if __name__ == "__main__":
     raise SystemExit(main())
