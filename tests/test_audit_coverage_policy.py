@@ -103,6 +103,7 @@ def _write_xml(
 
 
 def test_parse_policy_exposes_observation_contract() -> None:
+    """Read the line floor and mandatory observed branch-data contract."""
     policy = _audit.parse_policy(_payload())
 
     assert policy.schema_version == 1
@@ -135,6 +136,16 @@ def test_parse_policy_exposes_observation_contract() -> None:
     ],
 )
 def test_parse_policy_rejects_structural_type_errors(payload: object, message: str) -> None:
+    """Reject malformed policy field types with an actionable diagnostic.
+
+    Parameters
+    ----------
+    payload : object
+        Policy object containing the structural error under test.
+    message : str
+        Expected diagnostic identifying the rejected contract.
+
+    """
     with pytest.raises(ValueError, match=message):
         _audit.parse_policy(payload)
 
@@ -148,12 +159,30 @@ def test_parse_policy_rejects_structural_type_errors(payload: object, message: s
     ],
 )
 def test_parse_policy_rejects_invalid_coverage_paths(coverage_xml: str, message: str) -> None:
+    """Reject absolute, traversing and non-XML coverage report paths.
+
+    Parameters
+    ----------
+    coverage_xml : str
+        Report path that violates the repository-relative XML contract.
+    message : str
+        Expected diagnostic identifying the rejected contract.
+
+    """
     with pytest.raises(ValueError, match=message):
         _audit.parse_policy(_payload(coverage_xml=coverage_xml))
 
 
 @pytest.mark.parametrize("value", [-0.1, 100.1])
 def test_parse_policy_rejects_line_percent_outside_bounds(value: float) -> None:
+    """Reject a line threshold outside the percentage interval.
+
+    Parameters
+    ----------
+    value : float
+        Invalid threshold or baseline field value.
+
+    """
     with pytest.raises(ValueError, match="between 0 and 100"):
         _audit.parse_policy(_payload(line_minimum_percent=value))
 
@@ -171,6 +200,18 @@ def test_parse_policy_rejects_line_percent_outside_bounds(value: float) -> None:
     ],
 )
 def test_parse_policy_rejects_invalid_baseline(field: str, value: object, message: str) -> None:
+    """Reject inconsistent baseline counts and invalid provenance fields.
+
+    Parameters
+    ----------
+    field : str
+        Baseline field whose invalid value must be rejected.
+    value : object
+        Invalid threshold or baseline field value.
+    message : str
+        Expected diagnostic identifying the rejected contract.
+
+    """
     baseline = _baseline()
     baseline[field] = value
 
@@ -191,11 +232,22 @@ def test_parse_policy_rejects_invalid_baseline(field: str, value: object, messag
 def test_parse_policy_rejects_invalid_branch_contract(
     branch: dict[str, object], message: str
 ) -> None:
+    """Reject contradictory branch modes, thresholds and data requirements.
+
+    Parameters
+    ----------
+    branch : dict[str, object]
+        Branch configuration with an invalid mode or threshold combination.
+    message : str
+        Expected diagnostic identifying the rejected contract.
+
+    """
     with pytest.raises(ValueError, match=message):
         _audit.parse_policy(_payload(branch=branch))
 
 
 def test_parse_policy_accepts_enforced_branch_threshold() -> None:
+    """Accept a measured branch threshold when enforcement is enabled."""
     policy = _audit.parse_policy(_payload(branch=_branch(mode="enforce", minimum_percent=80.0)))
 
     assert policy.branch.mode == "enforce"
@@ -215,11 +267,29 @@ def test_parse_policy_accepts_enforced_branch_threshold() -> None:
     ],
 )
 def test_parse_policy_rejects_invalid_top_level_contract(payload: object, message: str) -> None:
+    """Reject unsupported schema and impossible promotion prerequisites.
+
+    Parameters
+    ----------
+    payload : object
+        Policy object containing the structural error under test.
+    message : str
+        Expected diagnostic identifying the rejected contract.
+
+    """
     with pytest.raises(ValueError, match=message):
         _audit.parse_policy(payload)
 
 
 def test_load_policy_reads_utf8_json(tmp_path: Path) -> None:
+    """Load the policy and baseline provenance from its actual JSON file.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Isolated directory for the actual policy or XML report.
+
+    """
     path = tmp_path / "policy.json"
     path.write_text(json.dumps(_payload()), encoding="utf-8")
 
@@ -227,6 +297,14 @@ def test_load_policy_reads_utf8_json(tmp_path: Path) -> None:
 
 
 def test_parse_coverage_xml_returns_aggregate_metrics(tmp_path: Path) -> None:
+    """Read executable-line and branch counts from a Cobertura report.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Isolated directory for the actual policy or XML report.
+
+    """
     path = tmp_path / "coverage.xml"
     _write_xml(path)
 
@@ -398,6 +476,20 @@ def test_parse_coverage_xml_rejects_invalid_reports(
     attributes: dict[str, str],
     message: str,
 ) -> None:
+    """Reject invalid report metadata before comparing policy thresholds.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Isolated directory for the actual policy or XML report.
+    root : str
+        XML root tag under test.
+    attributes : dict[str, str]
+        Coverage metadata containing the invalid count or rate.
+    message : str
+        Expected diagnostic identifying the rejected contract.
+
+    """
     path = tmp_path / "coverage.xml"
     _write_xml(path, root=root, attributes=attributes)
 
@@ -406,6 +498,7 @@ def test_parse_coverage_xml_rejects_invalid_reports(
 
 
 def test_audit_metrics_observes_branch_and_enforces_line() -> None:
+    """Enforce the line floor and refuse reports without branch opportunities."""
     policy = _audit.parse_policy(_payload())
     passing = _audit.CoverageMetrics(95, 100, 0.95, 18, 20, 0.9)
     low_line = _audit.CoverageMetrics(89, 100, 0.89, 18, 20, 0.9)
@@ -421,6 +514,7 @@ def test_audit_metrics_observes_branch_and_enforces_line() -> None:
 
 
 def test_audit_metrics_enforces_promoted_branch_threshold() -> None:
+    """Reject branch coverage below a promoted enforcement threshold."""
     policy = _audit.parse_policy(_payload(branch=_branch(mode="enforce", minimum_percent=80.0)))
     metrics = _audit.CoverageMetrics(95, 100, 0.95, 15, 20, 0.75)
 
@@ -430,6 +524,7 @@ def test_audit_metrics_enforces_promoted_branch_threshold() -> None:
 
 
 def test_result_formatters_report_observation_and_blockers() -> None:
+    """Expose active policy, measured counts and blockers in both output formats."""
     policy = _audit.parse_policy(_payload())
     metrics = _audit.CoverageMetrics(89, 100, 0.89, 18, 20, 0.9)
     result = _audit.audit_metrics(policy, metrics)
@@ -453,6 +548,18 @@ def test_main_supports_default_xml_explicit_xml_json_and_errors(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
+    """Exercise policy inspection, report selection and malformed XML refusal.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Isolated directory for the actual policy or XML report.
+    monkeypatch : pytest.MonkeyPatch
+        Fixture restoring the temporary default report root after the test.
+    capsys : pytest.CaptureFixture[str]
+        Capture CLI diagnostics and JSON emitted by the entrypoint.
+
+    """
     policy_path = tmp_path / "policy.json"
     policy_path.write_text(json.dumps(_payload()), encoding="utf-8")
     xml_path = tmp_path / "coverage.xml"
@@ -501,7 +608,20 @@ def test_cli_ratchet_rejects_one_lost_line_despite_identical_rounded_rate(
     covered: int,
     expected_exit: int,
 ) -> None:
-    """Enforce the hosted baseline using exact counts through the public CLI."""
+    """Enforce the hosted baseline using exact counts through the public CLI.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Isolated directory for the actual policy or XML report.
+    capsys : pytest.CaptureFixture[str]
+        Capture CLI diagnostics and JSON emitted by the entrypoint.
+    covered : int
+        Actual covered-line counter; both cases have the same rounded rate.
+    expected_exit : int
+        Required public CLI success or regression-refusal status.
+
+    """
     report = tmp_path / "coverage.xml"
     _write_xml(
         report,
@@ -525,7 +645,16 @@ def test_cli_ratchet_rejects_one_lost_line_despite_identical_rounded_rate(
 def test_cli_requires_branch_data_at_the_line_baseline(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    """Reject absent branch opportunities without dividing by zero."""
+    """Reject absent branch opportunities without dividing by zero.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Isolated directory for the actual policy or XML report.
+    capsys : pytest.CaptureFixture[str]
+        Capture CLI diagnostics and JSON emitted by the entrypoint.
+
+    """
     report = tmp_path / "coverage.xml"
     _write_xml(
         report,
