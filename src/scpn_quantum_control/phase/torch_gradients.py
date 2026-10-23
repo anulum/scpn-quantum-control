@@ -35,6 +35,15 @@ from ..differentiable_tensor_admission import (
 from ..differentiable_tensor_admission import (
     require_real_parameter_vector as _require_real_parameter_vector,
 )
+from ..differentiable_tensor_construction import (
+    TensorConstructionPrimitives as _TensorConstructionPrimitives,
+)
+from ..differentiable_tensor_construction import (
+    construct_torch_tensor as _construct_torch_tensor,
+)
+from ..differentiable_tensor_construction import (
+    prepare_torch_trainable_tensor as _prepare_torch_trainable_tensor,
+)
 from .qnn_training import (
     parameter_shift_qnn_classifier_gradient,
     parameter_shift_qnn_classifier_loss,
@@ -119,18 +128,13 @@ def _torch_values_to_numpy(values: object) -> FloatArray:
 
 
 def _torch_tensor(torch_module: Any, values: object) -> Any:
-    dtype = getattr(torch_module, "float64", None)
-    as_tensor = getattr(torch_module, "as_tensor", None)
-    if callable(as_tensor):
-        if dtype is None:
-            return as_tensor(values)
-        return as_tensor(values, dtype=dtype)
-    tensor = getattr(torch_module, "tensor", None)
-    if callable(tensor):
-        if dtype is None:
-            return tensor(values)
-        return tensor(values, dtype=dtype)
-    raise RuntimeError("PyTorch module does not expose as_tensor or tensor")
+    return _construct_torch_tensor(
+        torch_module,
+        values,
+        primitives=_TensorConstructionPrimitives(
+            attribute=lambda: getattr, predicate=lambda: callable, invalid=lambda: RuntimeError
+        ),
+    )
 
 
 def _torch_autograd_function(torch_module: Any) -> Any:
@@ -152,16 +156,12 @@ def _torch_autograd_grad(torch_module: Any) -> Any:
 
 def _torch_trainable_tensor(torch_module: Any, values: FloatArray) -> Any:
     tensor = _torch_tensor(torch_module, values)
-    detach = getattr(tensor, "detach", None)
-    if callable(detach):
-        tensor = detach()
-    clone = getattr(tensor, "clone", None)
-    if callable(clone):
-        tensor = clone()
-    requires_grad = getattr(tensor, "requires_grad_", None)
-    if not callable(requires_grad):
-        raise RuntimeError("PyTorch tensor does not expose requires_grad_")
-    return requires_grad(True)
+    return _prepare_torch_trainable_tensor(
+        tensor,
+        primitives=_TensorConstructionPrimitives(
+            attribute=lambda: getattr, predicate=lambda: callable, invalid=lambda: RuntimeError
+        ),
+    )
 
 
 def _bounded_qnn_loss_gradient_reference(

@@ -155,8 +155,8 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 1.2.0 |
 | Public API exports | 851 |
-| Python source modules | 822 |
-| Public Python classes | 1554 |
+| Python source modules | 823 |
+| Public Python classes | 1557 |
 | Domain package families | 40 |
 | API documentation pages | 14 |
 | Rust PyO3 function bindings | 177 |
@@ -164,7 +164,7 @@ claims only when the evidence exists.
 | Notebook files | 109 |
 | Example files | 42 |
 | Optional extras | 43 |
-| Python test files | 1570 |
+| Python test files | 1572 |
 | Public documentation pages | 385 |
 | GitHub Actions workflows | 44 |
 

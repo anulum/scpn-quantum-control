@@ -160,6 +160,14 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_tensor_construction.py",
+            (
+                "tests/test_differentiable_tensor_construction.py",
+                "tests/test_differentiable_tensor_construction_native.py",
+            ),
+            ("real native tensor construction", "storage and autograd lifetime preservation"),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_batch_helpers.py",
             ("tests/test_differentiable_batch_helpers.py",),
             ("parameter-shift sample tensors", "batched tangent/cotangent validation"),

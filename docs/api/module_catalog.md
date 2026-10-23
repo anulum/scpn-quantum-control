@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **822 modules** across **41 package families**
-- **4376 documented public module-level symbols**
+- **823 modules** across **41 package families**
+- **4382 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -6522,6 +6522,16 @@ Admit numerical differentiation inputs without SDK or model dependencies.
 **Classes:** `AdmissionNumpy`, `AdmissionPrimitives`
 
 **Functions:** `require_real_parameter_vector()`, `require_real_scalar()`, `require_nonnegative_tolerance()`
+
+### `scpn_quantum_control.differentiable_tensor_construction`
+
+Construct native tensors without selecting a model or differentiation route.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_tensor_construction.py) · Public symbols: **6**
+
+**Classes:** `TensorAttributeLookup`, `NativeTensorFactory`, `TensorConstructionPrimitives`
+
+**Functions:** `construct_torch_tensor()`, `prepare_torch_trainable_tensor()`, `construct_tensorflow_tensor()`
 
 ### `scpn_quantum_control.differentiable_tensorflow_transform_algebra`
 

@@ -157,6 +157,7 @@
     "differentiable_stochastic_policy",
     "differentiable_structured_transform_execution",
     "differentiable_tensor_admission",
+    "differentiable_tensor_construction",
     "differentiable_transform_comparison",
     "differentiable_transform_helpers",
     "differentiable_transform_support_matrix",

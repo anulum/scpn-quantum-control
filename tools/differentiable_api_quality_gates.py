@@ -25,6 +25,7 @@ DIFFERENTIABLE_API_QUALITY_RATCHET = [
     "src/scpn_quantum_control/differentiable_canonical_api.py",
     "src/scpn_quantum_control/differentiable_result_contracts.py",
     "src/scpn_quantum_control/differentiable_tensor_admission.py",
+    "src/scpn_quantum_control/differentiable_tensor_construction.py",
     "tests/test_differentiable_api.py",
     "tests/test_differentiable_api_core.py",
     "tests/test_differentiable_api_core_algorithms.py",
@@ -36,6 +37,8 @@ DIFFERENTIABLE_API_QUALITY_RATCHET = [
     "tests/test_differentiable_result_provenance.py",
     "tests/test_differentiable_api_quality_gate.py",
     "tests/test_differentiable_tensor_admission.py",
+    "tests/test_differentiable_tensor_construction.py",
+    "tests/test_differentiable_tensor_construction_native.py",
     "tools/differentiable_api_quality_gates.py",
     "tools/differentiable_quality_gates.py",
 ]
@@ -187,12 +190,65 @@ def main(argv: Sequence[str] | None = None) -> int:
     return 0
 
 
+def build_native_tensor_coverage_gates(python: str) -> list[Gate]:
+    """Build real SDK execution and exact native-construction coverage gates.
+
+    Parameters
+    ----------
+    python
+        Interpreter with the admitted CPU PyTorch and TensorFlow dependencies.
+
+    Returns
+    -------
+    list[Gate]
+        Native tests and their exact statement and branch coverage report.
+
+    """
+    data = ".coverage.differentiable-tensor-construction"
+    return [
+        (
+            "native tensor construction focused coverage",
+            [
+                python,
+                "-m",
+                "coverage",
+                "run",
+                f"--rcfile={devnull}",
+                f"--data-file={data}",
+                "--branch",
+                "-m",
+                "pytest",
+                "-q",
+                "--no-cov",
+                "tests/test_differentiable_tensor_construction.py",
+                "tests/test_differentiable_tensor_construction_native.py",
+            ],
+        ),
+        (
+            "native tensor construction exact coverage",
+            [
+                python,
+                "-m",
+                "coverage",
+                "report",
+                f"--rcfile={devnull}",
+                f"--data-file={data}",
+                "--precision=2",
+                "--show-missing",
+                "--fail-under=100",
+                "--include=*/differentiable_tensor_construction.py",
+            ],
+        ),
+    ]
+
+
 __all__ = [
     "DIFFERENTIABLE_API_COVERAGE_COHORT",
     "DIFFERENTIABLE_API_COVERAGE_DATA_FILE",
     "DIFFERENTIABLE_API_COVERAGE_SELECTOR",
     "DIFFERENTIABLE_API_QUALITY_RATCHET",
     "build_coverage_gates",
+    "build_native_tensor_coverage_gates",
     "build_static_quality_gates",
     "main",
 ]

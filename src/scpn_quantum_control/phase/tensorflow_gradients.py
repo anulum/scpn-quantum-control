@@ -35,6 +35,12 @@ from ..differentiable_tensor_admission import (
 from ..differentiable_tensor_admission import (
     require_real_parameter_vector as _require_real_parameter_vector,
 )
+from ..differentiable_tensor_construction import (
+    TensorConstructionPrimitives as _TensorConstructionPrimitives,
+)
+from ..differentiable_tensor_construction import (
+    construct_tensorflow_tensor as _construct_tensorflow_tensor,
+)
 from .qnn_training import (
     parameter_shift_qnn_classifier_gradient,
     parameter_shift_qnn_classifier_loss,
@@ -103,13 +109,13 @@ def _tensorflow_values_to_numpy(values: object) -> FloatArray:
 
 
 def _tensorflow_tensor(tensorflow_module: Any, values: object) -> Any:
-    convert = getattr(tensorflow_module, "convert_to_tensor", None)
-    if not callable(convert):
-        raise RuntimeError("TensorFlow module does not expose convert_to_tensor")
-    dtype = getattr(tensorflow_module, "float64", None)
-    if dtype is None:
-        return convert(values)
-    return convert(values, dtype=dtype)
+    return _construct_tensorflow_tensor(
+        tensorflow_module,
+        values,
+        primitives=_TensorConstructionPrimitives(
+            attribute=lambda: getattr, predicate=lambda: callable, invalid=lambda: RuntimeError
+        ),
+    )
 
 
 def tensorflow_parameter_shift_value_and_grad(

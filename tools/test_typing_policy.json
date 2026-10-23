@@ -399,6 +399,8 @@
         "tests/test_differentiable_structured_transform_execution.py",
         "tests/test_differentiable_support_matrix_page.py",
         "tests/test_differentiable_tensor_admission.py",
+        "tests/test_differentiable_tensor_construction.py",
+        "tests/test_differentiable_tensor_construction_native.py",
         "tests/test_differentiable_transform_algebra.py",
         "tests/test_differentiable_transform_comparison.py",
         "tests/test_differentiable_transform_helpers.py",

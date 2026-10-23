@@ -386,7 +386,8 @@
         "static-analysis",
         "native-build",
         "differentiable-control",
-        "simulation-artifact"
+        "simulation-artifact",
+        "framework-parity"
       ],
       "jobs": [
         "ml-dsa-seal-quality",

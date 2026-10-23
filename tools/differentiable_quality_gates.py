@@ -69,6 +69,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
         *_inventory_gates.build_coverage_gates(python),
         *_programming_contracts_gates.build_coverage_gates(python),
         *_api_gates.build_coverage_gates(python),
+        *_api_gates.build_native_tensor_coverage_gates(python),
         *_lm_gates.build_coverage_gates(python),
         *_natural_gradient_gates.build_coverage_gates(python),
         *_transform_gates.build_coverage_gates(python),

@@ -1352,6 +1352,17 @@ representative planner cell.
 
 ## Native framework transform qualification
 
+Native tensor allocation is implemented in
+`scpn_quantum_control.differentiable_tensor_construction`.
+`construct_torch_tensor` preserves the preference for `as_tensor`, its storage
+sharing, the fallback to `tensor`, and the available float64 dtype.
+`prepare_torch_trainable_tensor` detaches and clones before enabling native
+gradient recording. `construct_tensorflow_tensor` retains the actual conversion
+and tape connection. Their `TensorConstructionPrimitives` read the caller's
+attribute, capability and error operations at each original evaluation point.
+The original framework adapters retain their function definitions and public
+result types; these operations select no QNN model or differentiation policy.
+
 `scpn_quantum_control.differentiable_transform_comparison` owns the numerical
 comparison operations used by these audits. `as_finite_flat_array(values)`
 returns an independent finite float64 vector in C order.

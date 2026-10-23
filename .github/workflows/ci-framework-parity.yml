@@ -49,6 +49,29 @@ jobs:
           python -c
           "import jax; devices=jax.devices();
           print(f'JAX {jax.__version__}; devices={devices}; primary={devices[0]}')"
+      - name: Run real native tensor construction coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=.coverage.differentiable-tensor-construction
+          --branch -m pytest -q --no-cov
+          tests/test_differentiable_tensor_construction.py
+          tests/test_differentiable_tensor_construction_native.py
+      - name: Enforce native tensor construction exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=.coverage.differentiable-tensor-construction
+          --precision=2 --show-missing --fail-under=100
+          --include=*/differentiable_tensor_construction.py
+      - name: Upload exact-commit native tensor construction coverage
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: native-tensor-construction-coverage-${{ github.sha }}
+          include-hidden-files: true
+          if-no-files-found: error
+          path: .coverage.differentiable-tensor-construction
+          retention-days: 7
       - name: Run public package import compatibility coverage
         run: >-
           python -m coverage run

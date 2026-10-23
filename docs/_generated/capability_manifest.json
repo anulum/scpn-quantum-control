@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 851,
     "public_documentation_pages": 385,
-    "python_model_classes": 1554,
-    "python_model_source_modules": 822,
+    "python_model_classes": 1557,
+    "python_model_source_modules": 823,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1570
+    "test_files": 1572
   },
   "documentation": {
     "examples": [
@@ -3861,6 +3861,10 @@
         "path": "src/scpn_quantum_control/native_semantic_binding.py"
       },
       {
+        "name": "NativeTensorFactory",
+        "path": "src/scpn_quantum_control/differentiable_tensor_construction.py"
+      },
+      {
         "name": "NativeWholeProgramADExecutionCase",
         "path": "src/scpn_quantum_control/compiler/mlir_native_execution_evidence.py"
       },
@@ -6553,6 +6557,14 @@
         "path": "src/scpn_quantum_control/experimental/llm_qpu/data/temporal_task.py"
       },
       {
+        "name": "TensorAttributeLookup",
+        "path": "src/scpn_quantum_control/differentiable_tensor_construction.py"
+      },
+      {
+        "name": "TensorConstructionPrimitives",
+        "path": "src/scpn_quantum_control/differentiable_tensor_construction.py"
+      },
+      {
         "name": "TheoryHookEvidenceRecord",
         "path": "src/scpn_quantum_control/analysis/theory_hook_promotion.py"
       },
@@ -7329,6 +7341,7 @@
       "src/scpn_quantum_control/differentiable_stochastic_policy.py",
       "src/scpn_quantum_control/differentiable_structured_transform_execution.py",
       "src/scpn_quantum_control/differentiable_tensor_admission.py",
+      "src/scpn_quantum_control/differentiable_tensor_construction.py",
       "src/scpn_quantum_control/differentiable_tensorflow_transform_algebra.py",
       "src/scpn_quantum_control/differentiable_torch_transform_algebra.py",
       "src/scpn_quantum_control/differentiable_transform_algebra.py",
@@ -9419,6 +9432,8 @@
       "tests/test_differentiable_structured_transform_execution.py",
       "tests/test_differentiable_support_matrix_page.py",
       "tests/test_differentiable_tensor_admission.py",
+      "tests/test_differentiable_tensor_construction.py",
+      "tests/test_differentiable_tensor_construction_native.py",
       "tests/test_differentiable_tensorflow_transform_algebra.py",
       "tests/test_differentiable_torch_transform_algebra.py",
       "tests/test_differentiable_transform_algebra.py",
