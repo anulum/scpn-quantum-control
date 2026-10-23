@@ -19,6 +19,12 @@ from typing import Any, TypeAlias, cast
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+from ..differentiable_tensor_materialization import (
+    TensorMaterializationPrimitives as _TensorMaterializationPrimitives,
+)
+from ..differentiable_tensor_materialization import (
+    materialize_torch_host_values as _materialize_torch_host_values,
+)
 from .qnode_circuit import (
     DenseHermitianObservable,
     PauliCovarianceObservable,
@@ -64,11 +70,12 @@ def _as_parameter_matrix(name: str, values: object, *, width: int | None = None)
 
 
 def _torch_to_numpy_compatible(values: object) -> object:
-    candidate = values
-    for method_name in ("detach", "cpu", "numpy"):
-        method = getattr(candidate, method_name, None)
-        if callable(method):
-            candidate = method()
+    candidate = _materialize_torch_host_values(
+        values,
+        primitives=_TensorMaterializationPrimitives(
+            attribute=lambda: getattr, predicate=lambda: callable
+        ),
+    )
     return candidate
 
 

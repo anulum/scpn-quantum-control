@@ -44,6 +44,12 @@ from ..differentiable_tensor_construction import (
 from ..differentiable_tensor_construction import (
     prepare_torch_trainable_tensor as _prepare_torch_trainable_tensor,
 )
+from ..differentiable_tensor_materialization import (
+    TensorMaterializationPrimitives as _TensorMaterializationPrimitives,
+)
+from ..differentiable_tensor_materialization import (
+    materialize_torch_host_values as _materialize_torch_host_values,
+)
 from .qnn_training import (
     parameter_shift_qnn_classifier_gradient,
     parameter_shift_qnn_classifier_loss,
@@ -114,16 +120,12 @@ def _as_non_negative_tolerance(value: float) -> float:
 
 
 def _torch_values_to_numpy(values: object) -> FloatArray:
-    candidate = values
-    detach = getattr(candidate, "detach", None)
-    if callable(detach):
-        candidate = detach()
-    cpu = getattr(candidate, "cpu", None)
-    if callable(cpu):
-        candidate = cpu()
-    numpy_method = getattr(candidate, "numpy", None)
-    if callable(numpy_method):
-        candidate = numpy_method()
+    candidate = _materialize_torch_host_values(
+        values,
+        primitives=_TensorMaterializationPrimitives(
+            attribute=lambda: getattr, predicate=lambda: callable
+        ),
+    )
     return _as_parameter_vector("values", candidate)
 
 

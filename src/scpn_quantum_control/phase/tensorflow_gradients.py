@@ -41,6 +41,12 @@ from ..differentiable_tensor_construction import (
 from ..differentiable_tensor_construction import (
     construct_tensorflow_tensor as _construct_tensorflow_tensor,
 )
+from ..differentiable_tensor_materialization import (
+    TensorMaterializationPrimitives as _TensorMaterializationPrimitives,
+)
+from ..differentiable_tensor_materialization import (
+    materialize_tensorflow_host_values as _materialize_tensorflow_host_values,
+)
 from .qnn_training import (
     parameter_shift_qnn_classifier_gradient,
     parameter_shift_qnn_classifier_loss,
@@ -101,10 +107,12 @@ def _as_non_negative_tolerance(value: float) -> float:
 
 
 def _tensorflow_values_to_numpy(values: object) -> FloatArray:
-    candidate = values
-    numpy_method = getattr(candidate, "numpy", None)
-    if callable(numpy_method):
-        candidate = numpy_method()
+    candidate = _materialize_tensorflow_host_values(
+        values,
+        primitives=_TensorMaterializationPrimitives(
+            attribute=lambda: getattr, predicate=lambda: callable
+        ),
+    )
     return _as_parameter_vector("values", candidate)
 
 

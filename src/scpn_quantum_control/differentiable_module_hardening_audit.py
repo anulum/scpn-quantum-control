@@ -168,6 +168,14 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("real native tensor construction", "storage and autograd lifetime preservation"),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_tensor_materialization.py",
+            (
+                "tests/test_differentiable_tensor_materialization.py",
+                "tests/test_differentiable_tensor_materialization_native.py",
+            ),
+            ("real native host materialization", "original aliases and live capability order"),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_batch_helpers.py",
             ("tests/test_differentiable_batch_helpers.py",),
             ("parameter-shift sample tensors", "batched tangent/cotangent validation"),

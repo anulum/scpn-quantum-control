@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **823 modules** across **41 package families**
-- **4382 documented public module-level symbols**
+- **824 modules** across **41 package families**
+- **4385 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -6532,6 +6532,16 @@ Construct native tensors without selecting a model or differentiation route.
 **Classes:** `TensorAttributeLookup`, `NativeTensorFactory`, `TensorConstructionPrimitives`
 
 **Functions:** `construct_torch_tensor()`, `prepare_torch_trainable_tensor()`, `construct_tensorflow_tensor()`
+
+### `scpn_quantum_control.differentiable_tensor_materialization`
+
+Materialize native tensor values without selecting a model or host shape.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_tensor_materialization.py) · Public symbols: **3**
+
+**Classes:** `TensorMaterializationPrimitives`
+
+**Functions:** `materialize_torch_host_values()`, `materialize_tensorflow_host_values()`
 
 ### `scpn_quantum_control.differentiable_tensorflow_transform_algebra`
 
