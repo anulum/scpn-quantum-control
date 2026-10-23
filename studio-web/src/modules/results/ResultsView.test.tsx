@@ -93,21 +93,24 @@ it("reaches the original producer result inspector from the production Results r
   expect(screen.getByLabelText("Baseline archive JSON")).toBeTruthy();
 });
 
-it.each([false, true])("retains replay focus when Results is remounted with StrictMode=%s", async (strict) => {
-  window.history.replaceState(null, "", "#/results/program-ad-replay");
-  const first = render(<Workbench>{(_context, editors) => editors}</Workbench>);
-  await screen.findByRole("heading", { name: "Results" }, { timeout: 5000 });
-  expect(document.activeElement?.id).toBe("/results/program-ad-replay");
-  first.unmount();
+it.each([false, true])(
+  "retains replay focus when Results is remounted with StrictMode=%s",
+  async (strict) => {
+    window.history.replaceState(null, "", "#/results/program-ad-replay");
+    const first = render(<Workbench>{(_context, editors) => editors}</Workbench>);
+    await screen.findByRole("heading", { name: "Results" }, { timeout: 5000 });
+    expect(document.activeElement?.id).toBe("/results/program-ad-replay");
+    first.unmount();
 
-  await act(async () => {
-    const workbench = <Workbench>{(_context, editors) => editors}</Workbench>;
-    render(strict ? <StrictMode>{workbench}</StrictMode> : workbench);
-    await vi.dynamicImportSettled();
-  });
-  expect(document.activeElement?.id).toBe("/results/program-ad-replay");
-  const input = screen.getByLabelText("Evidence JSON");
-  input.focus();
-  fireEvent.change(input, { target: { value: "{" } });
-  expect(document.activeElement).toBe(input);
-});
+    await act(async () => {
+      const workbench = <Workbench>{(_context, editors) => editors}</Workbench>;
+      render(strict ? <StrictMode>{workbench}</StrictMode> : workbench);
+      await vi.dynamicImportSettled();
+    });
+    expect(document.activeElement?.id).toBe("/results/program-ad-replay");
+    const input = screen.getByLabelText("Evidence JSON");
+    input.focus();
+    fireEvent.change(input, { target: { value: "{" } });
+    expect(document.activeElement).toBe(input);
+  },
+);
