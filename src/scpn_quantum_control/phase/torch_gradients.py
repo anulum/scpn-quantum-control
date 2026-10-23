@@ -26,6 +26,15 @@ from ..differentiable import (
     ParameterShiftRule,
     value_and_parameter_shift_grad,
 )
+from ..differentiable_tensor_admission import (
+    AdmissionPrimitives as _AdmissionPrimitives,
+)
+from ..differentiable_tensor_admission import (
+    require_nonnegative_tolerance as _require_nonnegative_tolerance,
+)
+from ..differentiable_tensor_admission import (
+    require_real_parameter_vector as _require_real_parameter_vector,
+)
 from .qnn_training import (
     parameter_shift_qnn_classifier_gradient,
     parameter_shift_qnn_classifier_loss,
@@ -51,13 +60,14 @@ def _load_torch() -> Any:
 
 
 def _as_parameter_vector(name: str, values: object, *, width: int | None = None) -> FloatArray:
-    vector = np.asarray(values, dtype=float)
-    if vector.ndim != 1:
-        raise ValueError(f"{name} must be a one-dimensional array")
-    if width is not None and vector.shape != (width,):
-        raise ValueError(f"{name} must have shape ({width},), got {vector.shape}")
-    if not np.all(np.isfinite(vector)):
-        raise ValueError(f"{name} must contain only finite values")
+    vector = _require_real_parameter_vector(
+        name,
+        values,
+        width=width,
+        primitives=_AdmissionPrimitives(
+            numpy=lambda: np, scalar=lambda: float, invalid=lambda: ValueError
+        ),
+    )
     return vector.astype(np.float64, copy=True)
 
 
@@ -84,10 +94,14 @@ def _as_label_vector(labels: ArrayLike, *, n_samples: int) -> FloatArray:
 
 
 def _as_non_negative_tolerance(value: float) -> float:
-    tolerance = float(value)
-    if not np.isfinite(tolerance) or tolerance < 0.0:
-        raise ValueError("tolerance must be a non-negative finite float")
-    return tolerance
+    return _require_nonnegative_tolerance(
+        value,
+        error_text="tolerance must be a non-negative finite float",
+        negative_first=False,
+        primitives=_AdmissionPrimitives(
+            numpy=lambda: np, scalar=lambda: float, invalid=lambda: ValueError
+        ),
+    )
 
 
 def _torch_values_to_numpy(values: object) -> FloatArray:

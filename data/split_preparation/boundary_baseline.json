@@ -1,7 +1,7 @@
 {
   "schema": "scpn_qc_boundary_baseline_v3",
   "measured_head": "24917e4cb0c79f5ea295de80f087596abcaf3b92",
-  "domain_map_sha256": "44164bb86ed1d4a9591b274417e87381f56060c2c7cbe445e452383c36e8af2a",
+  "domain_map_sha256": "884fe2df68f26477b2d1cebf0cce87c10d98bf97d33344e30c551e36cfaba08d",
   "dependencies": {
     "SCPN-QC-CONTRACTS": [],
     "SCPN-QC-CORE": [

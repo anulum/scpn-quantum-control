@@ -26,6 +26,18 @@ from ..differentiable import (
     ParameterShiftRule,
     value_and_parameter_shift_grad,
 )
+from ..differentiable_tensor_admission import (
+    AdmissionPrimitives as _AdmissionPrimitives,
+)
+from ..differentiable_tensor_admission import (
+    require_nonnegative_tolerance as _require_nonnegative_tolerance,
+)
+from ..differentiable_tensor_admission import (
+    require_real_parameter_vector as _require_real_parameter_vector,
+)
+from ..differentiable_tensor_admission import (
+    require_real_scalar as _require_real_scalar,
+)
 from .jax_bridge_contracts import (
     PhaseJAXCustomVJPQNNGradientResult,
     PhaseJAXGradientAgreementResult,
@@ -54,31 +66,36 @@ def _load_jax() -> tuple[Any, Any]:
 
 
 def _as_parameter_vector(name: str, values: object, *, width: int | None = None) -> FloatArray:
-    vector = np.asarray(values, dtype=float)
-    if vector.ndim != 1:
-        raise ValueError(f"{name} must be a one-dimensional array")
-    if width is not None and vector.shape != (width,):
-        raise ValueError(f"{name} must have shape ({width},), got {vector.shape}")
-    if not np.all(np.isfinite(vector)):
-        raise ValueError(f"{name} must contain only finite values")
+    vector = _require_real_parameter_vector(
+        name,
+        values,
+        width=width,
+        primitives=_AdmissionPrimitives(
+            numpy=lambda: np, scalar=lambda: float, invalid=lambda: ValueError
+        ),
+    )
     return cast(FloatArray, vector.astype(np.float64, copy=True))
 
 
 def _as_scalar(name: str, value: object) -> float:
-    array = np.asarray(value, dtype=float)
-    if array.shape != ():
-        raise ValueError(f"{name} must be a scalar")
-    scalar = float(array)
-    if not np.isfinite(scalar):
-        raise ValueError(f"{name} must be finite")
-    return scalar
+    return _require_real_scalar(
+        name,
+        value,
+        primitives=_AdmissionPrimitives(
+            numpy=lambda: np, scalar=lambda: float, invalid=lambda: ValueError
+        ),
+    )
 
 
 def _as_non_negative_tolerance(value: float) -> float:
-    tolerance = float(value)
-    if tolerance < 0.0 or not np.isfinite(tolerance):
-        raise ValueError("tolerance must be finite and non-negative")
-    return tolerance
+    return _require_nonnegative_tolerance(
+        value,
+        error_text="tolerance must be finite and non-negative",
+        negative_first=True,
+        primitives=_AdmissionPrimitives(
+            numpy=lambda: np, scalar=lambda: float, invalid=lambda: ValueError
+        ),
+    )
 
 
 def _as_feature_matrix(features: ArrayLike) -> FloatArray:

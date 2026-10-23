@@ -92,6 +92,7 @@ jobs:
           tests/test_differentiable_result_contracts.py
           tests/test_differentiable_result_provenance.py
           tests/test_differentiable_api_quality_gate.py
+          tests/test_differentiable_tensor_admission.py
           tests/test_transform_algebra.py
           -k 'not unified_differentiable_benchmark_report_is_non_performance_evidence'
       - name: Enforce unified differentiable API exact coverage
@@ -101,7 +102,7 @@ jobs:
           --data-file=.coverage.differentiable-api-quality
           --precision=2 --show-missing
           --fail-under=100
-          --include=*/differentiable_api.py,*/differentiable_api_core.py,*/differentiable_api_core_algorithms.py,*/differentiable_api_core_bindings.py,*/differentiable_canonical_api.py,*/differentiable_result_contracts.py
+          --include=*/differentiable_api.py,*/differentiable_api_core.py,*/differentiable_api_core_algorithms.py,*/differentiable_api_core_bindings.py,*/differentiable_canonical_api.py,*/differentiable_result_contracts.py,*/differentiable_tensor_admission.py
       - name: Run differentiable Levenberg-Marquardt focused coverage
         run: >-
           python -m coverage run

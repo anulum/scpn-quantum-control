@@ -151,6 +151,14 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("facade export compatibility", "diagnostic-only finite differences"),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_tensor_admission.py",
+            ("tests/test_differentiable_tensor_admission.py",),
+            (
+                "real parameter/scalar admission",
+                "late numeric/error reads and short-circuit parity",
+            ),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_batch_helpers.py",
             ("tests/test_differentiable_batch_helpers.py",),
             ("parameter-shift sample tensors", "batched tangent/cotangent validation"),

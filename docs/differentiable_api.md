@@ -2491,3 +2491,17 @@ record and optimiser. Its finite-budget energy decrease does not certify a
 global optimum or state fidelity; exhaustive summation is not sampled VMC.
 The [executable example](https://github.com/anulum/scpn-quantum-control/blob/main/examples/variational_baseline_qualification.py)
 prints the versioned companion, parameter provenance and functional cost budget.
+
+### Real numerical input admission
+
+`scpn_quantum_control.differentiable_tensor_admission` owns finite parameter-vector,
+scalar and non-negative-tolerance checks used by the JAX, PyTorch and TensorFlow
+phase adapters. It takes the actual caller numerical namespace and scalar/error
+readers. Each namespace is read at its original expression boundary; the JAX
+negativity-first tolerance check retains its short circuit.
+
+Admission leaves allocation policy with its caller: an already real array may
+share input storage. The existing adapter functions retain their final
+`astype(..., copy=True)` expressions, original signatures, defining globals and
+private imported identities. The lower admission module loads no framework and
+selects no QNN model, derivative rule or reporting policy.

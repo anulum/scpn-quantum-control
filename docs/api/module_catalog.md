@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **819 modules** across **41 package families**
-- **4367 documented public module-level symbols**
+- **820 modules** across **41 package families**
+- **4372 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -6512,6 +6512,16 @@ Execute native structured derivatives independently of QNode/report policy.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_structured_transform_execution.py) · Public symbols: **4**
 
 **Functions:** `jax_structured_derivatives()`, `torch_structured_derivatives()`, `tensorflow_structured_gradient()`, `tensorflow_structured_hessian()`
+
+### `scpn_quantum_control.differentiable_tensor_admission`
+
+Admit numerical differentiation inputs without SDK or model dependencies.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_tensor_admission.py) · Public symbols: **5**
+
+**Classes:** `AdmissionNumpy`, `AdmissionPrimitives`
+
+**Functions:** `require_real_parameter_vector()`, `require_real_scalar()`, `require_nonnegative_tolerance()`
 
 ### `scpn_quantum_control.differentiable_tensorflow_transform_algebra`
 

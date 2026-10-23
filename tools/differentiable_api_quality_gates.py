@@ -20,6 +20,7 @@ DIFFERENTIABLE_API_QUALITY_RATCHET = [
     "src/scpn_quantum_control/differentiable_api_core_bindings.py",
     "src/scpn_quantum_control/differentiable_canonical_api.py",
     "src/scpn_quantum_control/differentiable_result_contracts.py",
+    "src/scpn_quantum_control/differentiable_tensor_admission.py",
     "tests/test_differentiable_api.py",
     "tests/test_differentiable_api_core.py",
     "tests/test_differentiable_api_core_algorithms.py",
@@ -30,6 +31,7 @@ DIFFERENTIABLE_API_QUALITY_RATCHET = [
     "tests/test_differentiable_result_contracts.py",
     "tests/test_differentiable_result_provenance.py",
     "tests/test_differentiable_api_quality_gate.py",
+    "tests/test_differentiable_tensor_admission.py",
     "tools/differentiable_api_quality_gates.py",
     "tools/differentiable_quality_gates.py",
 ]
@@ -46,6 +48,7 @@ DIFFERENTIABLE_API_COVERAGE_COHORT = [
     "tests/test_differentiable_result_contracts.py",
     "tests/test_differentiable_result_provenance.py",
     "tests/test_differentiable_api_quality_gate.py",
+    "tests/test_differentiable_tensor_admission.py",
     "tests/test_transform_algebra.py",
 ]
 """Tests that own exact unified-API statement and branch coverage."""
@@ -151,7 +154,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 "--precision=2",
                 "--show-missing",
                 "--fail-under=100",
-                "--include=*/differentiable_api.py,*/differentiable_api_core.py,*/differentiable_api_core_algorithms.py,*/differentiable_api_core_bindings.py,*/differentiable_canonical_api.py,*/differentiable_result_contracts.py",
+                "--include=*/differentiable_api.py,*/differentiable_api_core.py,*/differentiable_api_core_algorithms.py,*/differentiable_api_core_bindings.py,*/differentiable_canonical_api.py,*/differentiable_result_contracts.py,*/differentiable_tensor_admission.py",
             ],
         ),
     ]

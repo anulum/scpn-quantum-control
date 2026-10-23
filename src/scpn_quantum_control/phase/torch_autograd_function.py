@@ -25,6 +25,15 @@ from typing import Any, TypeAlias
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+from ..differentiable_tensor_admission import (
+    AdmissionPrimitives as _AdmissionPrimitives,
+)
+from ..differentiable_tensor_admission import (
+    require_nonnegative_tolerance as _require_nonnegative_tolerance,
+)
+from ..differentiable_tensor_admission import (
+    require_real_parameter_vector as _require_real_parameter_vector,
+)
 from .qnn_training import (
     parameter_shift_qnn_classifier_gradient,
     parameter_shift_qnn_classifier_loss,
@@ -611,22 +620,27 @@ def _as_parameter_vector(
     width: int | None = None,
 ) -> FloatArray:
     """Return a validated parameter vector."""
-    vector = np.asarray(values, dtype=float)
-    if vector.ndim != 1:
-        raise ValueError(f"{name} must be a one-dimensional array")
-    if width is not None and vector.shape != (width,):
-        raise ValueError(f"{name} must have shape ({width},), got {vector.shape}")
-    if not np.all(np.isfinite(vector)):
-        raise ValueError(f"{name} must contain only finite values")
+    vector = _require_real_parameter_vector(
+        name,
+        values,
+        width=width,
+        primitives=_AdmissionPrimitives(
+            numpy=lambda: np, scalar=lambda: float, invalid=lambda: ValueError
+        ),
+    )
     return vector.astype(np.float64, copy=True)
 
 
 def _as_non_negative_tolerance(value: float) -> float:
     """Return a finite non-negative tolerance."""
-    tolerance = float(value)
-    if not np.isfinite(tolerance) or tolerance < 0.0:
-        raise ValueError("tolerance must be a finite non-negative number")
-    return tolerance
+    return _require_nonnegative_tolerance(
+        value,
+        error_text="tolerance must be a finite non-negative number",
+        negative_first=False,
+        primitives=_AdmissionPrimitives(
+            numpy=lambda: np, scalar=lambda: float, invalid=lambda: ValueError
+        ),
+    )
 
 
 def _as_positive_learning_rate(value: float) -> float:
