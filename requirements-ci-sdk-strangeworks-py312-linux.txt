@@ -23,9 +23,9 @@ backoff==2.2.1 \
     --hash=sha256:03f829f5bb1923180821643f8753b0502c3b682293992485b0eef2807afa5cba \
     --hash=sha256:63579f9a0628e06278f7e47b7d7d5b6ce20dc65c5e96a6f3ca99a6adca0396e8
     # via gql
-certifi==2026.7.22 \
-    --hash=sha256:62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775 \
-    --hash=sha256:741e2c3b351ddf169a738da9f2c048608ff7f2c5cc02f1ebc6b118bb090d5d55
+certifi==2026.10.19 \
+    --hash=sha256:035c1e85572b141bf1c3a3eff0e33a8eb74917522f2559075ff8d2fea780a1ae \
+    --hash=sha256:42d35340cc5b9ba78e818ddbff0c5b1c2b779de448a340fd1b989f5fa8670e1b
     # via requests
 cffi==2.1.1 \
     --hash=sha256:046bfc24911b37851ee1b51aab8bffe713d89c68c6a057b09484ce9fd5f69b4e \
@@ -364,13 +364,13 @@ cryptography==50.0.2 \
     --hash=sha256:fa8f5efb344d6908a1ce62f4a24e2e5780f825d6f53f5f50ec5ffacac72936cb \
     --hash=sha256:fdd28f912fccfec1846a94e2e1e8f9b0012f557f0c46fe4f3eb0d7a87afcf90b
     # via python-jose
-deprecated==3.0.0 \
-    --hash=sha256:16850204d3a1e6bb0acd06bff48d96e8b0a0d25d1c52f71705405a0f4894192d \
-    --hash=sha256:58204cf4a7f6270d547af5c278ee7a6bb56045a4b3d8441a1cd11660f41b7939
+deprecated==1.3.1 \
+    --hash=sha256:597bfef186b6f60181535a29fbe44865ce137a5079f295b479886c82729d5f3f \
+    --hash=sha256:b1b50e0ff0c1fddaa5708a2c6b0a6588bb09b892825ab2b214ac9ea9d92a5223
     # via strangeworks-core
-dill==0.4.1 \
-    --hash=sha256:1e1ce33e978ae97fcfcff5638477032b801c46c7c65cf717f95fbc2248f79a9d \
-    --hash=sha256:423092df4182177d4d8ba8290c8a5b640c66ab35ec7da59ccfa00f6fa3eea5fa
+dill==0.3.9 \
+    --hash=sha256:468dff3b89520b474c0397703366b7b95eebe6303f108adf9b19da1f702be87a \
+    --hash=sha256:81aa267dddf68cbfe8029c42ca9ec6a4ab3b22371d1c450abc54422577b4512c
     # via
     #   qiskit
     #   strangeworks-core
@@ -378,13 +378,13 @@ ecdsa==0.19.2 \
     --hash=sha256:62635b0ac1ca2e027f82122b5b81cb706edc38cd91c63dda28e4f3455a2bf930 \
     --hash=sha256:840f5dc5e375c68f36c1a7a5b9caad28f95daa65185c9253c0c08dd952bb7399
     # via python-jose
-gql==3.5.3 \
-    --hash=sha256:393b8c049d58e0d2f5461b9d738a2b5f904186a40395500b4a84dd092d56e42b \
-    --hash=sha256:e1fcbde2893fcafdd28114ece87ff47f1cc339a31db271fc4e1d528f5a1d4fbc
+gql==3.5.0 \
+    --hash=sha256:70dda5694a5b194a8441f077aa5fb70cc94e4ec08016117523f013680901ecb7 \
+    --hash=sha256:ccb9c5db543682b28f577069950488218ed65d4ac70bb03b6929aaadaf636de9
     # via strangeworks-core
-graphql-core==3.2.6 \
-    --hash=sha256:78b016718c161a6fb20a7d97bbf107f331cd1afe53e45566c59f776ed7f0b45f \
-    --hash=sha256:c08eec22f9e40f0bd61d805907e3b3b1b9a320bc606e23dc145eebca07c8fbab
+graphql-core==3.2.12 \
+    --hash=sha256:3d8f104532070485e13caa4092c1e71cda2ba6cffd96e98f285111ee10ed1e51 \
+    --hash=sha256:4579094d5fc8a1a59555a9b18e51b320779d9bbc63e2302c519af0c4919d9543
     # via gql
 hypothesis==6.165.10 \
     --hash=sha256:00de0abdcf8c05c9d0eab735a3c49a276376b55151e6fcb903c2b39a90e5e5c3 \
@@ -1492,9 +1492,9 @@ strangeworks==0.7.6 \
     --hash=sha256:0e0eca43ae2cfef059d12375dd62ffd5f05a5117225cf6ff60ef04b3308a9523 \
     --hash=sha256:148a27002375ff3e08ac63ad1e826b6df372ab9c7cf09d55312090adac85b261
     # via -r requirements-ci-sdk-strangeworks-py312-linux.in
-strangeworks-core==0.5.4 \
-    --hash=sha256:84f15af9bcd7e16b2aad9da36539bd306a6b82374c2f87ed965f15dd1693aa0f \
-    --hash=sha256:a25aaad85cf4f31c853d890641fe1e8d803e88183024c3ef8067a64216432d57
+strangeworks-core==0.4.2 \
+    --hash=sha256:3ace37d368d71ded3f47549bf6e137690544a0f085bf78587f84967188f6b7ff \
+    --hash=sha256:8731a8947455a51d960061fa6ca5a90934757f6b20bc8e82784e0c6bc70dd722
     # via strangeworks
 symengine==0.14.1 \
     --hash=sha256:0f977360c9993dae163951386ea5b865d8310f323cf11234e62b6535f330d3ac \

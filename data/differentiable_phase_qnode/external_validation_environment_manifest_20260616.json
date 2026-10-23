@@ -24,8 +24,8 @@
       "path": "requirements-dev.txt",
       "pinned_package_count": 31,
       "role": "Developer verification dependency lock input",
-      "sha256": "18434ac1023426a65605f3f02e0a0aa83e1a27a7e4c4ebb11b88b348a5bcfc6c",
-      "size_bytes": 1504
+      "sha256": "8088f540dbf368ab312699a4489dbe05f83e6bdb71f7556d9b28286663c56031",
+      "size_bytes": 1505
     },
     {
       "line_count": 374,
@@ -36,28 +36,28 @@
       "size_bytes": 29139
     },
     {
-      "line_count": 3036,
+      "line_count": 3025,
       "path": "requirements-ci-py311-linux.txt",
       "pinned_package_count": 157,
       "role": "Python 3.11 Linux CI lockfile",
-      "sha256": "38b5a98f6cd3029a3b766bd1d04d06c433b0c200d8b7da0bdb919d0fc76a72b0",
-      "size_bytes": 224588
+      "sha256": "afbe22d447c55c510e939970dfe140e337d3c42909f6a18da9b0377d40678f31",
+      "size_bytes": 224086
     },
     {
-      "line_count": 2991,
+      "line_count": 2979,
       "path": "requirements-ci-py312-linux.txt",
       "pinned_package_count": 157,
       "role": "Python 3.12 Linux CI lockfile",
-      "sha256": "0506a54097e39743dd7a29636908d2064371340dfe22953ddbbad9a6bb67bdf7",
-      "size_bytes": 220763
+      "sha256": "545ee22b089a003f79f9910bc11c3ecab91b9e79ead77903ab24dcdac94250e1",
+      "size_bytes": 220244
     },
     {
-      "line_count": 3032,
+      "line_count": 3020,
       "path": "requirements-ci-py313-linux.txt",
       "pinned_package_count": 157,
       "role": "Python 3.13 Linux CI lockfile",
-      "sha256": "fe1d99842d1345c791aba12e0a7a9a4ed4c9c9c617d56ed3322ed597e484456b",
-      "size_bytes": 224513
+      "sha256": "29a9e6e9890a280dacef83bf3e2753fc4f90cc1a1f7b2b37a82e9180ce334702",
+      "size_bytes": 223994
     },
     {
       "line_count": 54,

@@ -79,7 +79,7 @@ COPY requirements-ci-sdk-*.in requirements-ci-sdk-*.txt ./
 # Optional-runtime contract tests inspect these locks without installing the
 # heavyweight runtimes in the reproduction image.
 COPY requirements-ci-jax-py312-linux.txt requirements-ci-torch-cpu-py312-linux.txt ./
-COPY requirements-ci-native-ad-py312-linux.in requirements-ci-native-ad-py312-linux.txt ./
+COPY requirements-ci-native-ad-py312-linux.txt ./
 # Reproduction audits inspect these workflow inputs without installing them.
 COPY requirements-ci-julia-tier.txt requirements-integration-sc-neurocore.txt requirements-publish.txt rust-toolchain.toml ./
 # The workflow environment audit reads the lock of every tool a job installs;
