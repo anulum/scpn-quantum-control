@@ -410,3 +410,119 @@ jobs:
 """,
     )
     assert any("conftest.py" in str(item) for item in gate.audit(repo))
+
+
+def test_literal_matrix_locks_supply_common_packages_to_the_cli(tmp_path: Path) -> None:
+    """The CLI admits native coverage installed by every declared Python row."""
+    repo = _repo(tmp_path)
+    (repo / "requirements-other.txt").write_text(_LOCK, encoding="utf-8")
+    _workflow(
+        repo,
+        "matrix.yml",
+        """
+jobs:
+  native-tests:
+    strategy:
+      matrix:
+        include:
+          - {python-version: '3.11', requirements-file: requirements-ci.txt}
+          - {python-version: '3.12', requirements-file: requirements-other.txt}
+    steps:
+      - run: python -m pip install --require-hashes -r ${{ matrix.requirements-file }}
+      - run: python -m coverage report
+""",
+    )
+    result = subprocess.run(
+        [sys.executable, str(Path(gate.__file__).resolve()), "--repo", str(repo)],
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=30,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+@pytest.mark.parametrize("second_lock_exists", [False, True])
+def test_one_matrix_row_without_coverage_cannot_borrow_another_rows_install(
+    tmp_path: Path, second_lock_exists: bool
+) -> None:
+    """A missing lock or missing distribution in any row still blocks the job."""
+    repo = _repo(tmp_path)
+    if second_lock_exists:
+        (repo / "requirements-other.txt").write_text("pytest==9.1.1\n", encoding="utf-8")
+    _workflow(
+        repo,
+        "matrix.yml",
+        """
+jobs:
+  native-tests:
+    strategy:
+      matrix:
+        include:
+          - {requirements-file: requirements-ci.txt}
+          - {requirements-file: requirements-other.txt}
+    steps:
+      - run: python -m pip install -r ${{ matrix.requirements-file }}
+      - run: python -m coverage report
+""",
+    )
+    findings = gate.audit(repo)
+    assert len(findings) == 1
+    assert findings[0].job == "native-tests"
+    assert "pinning 'coverage'" in findings[0].detail
+
+
+@pytest.mark.parametrize(
+    "strategy",
+    [
+        "null",
+        "{matrix: null}",
+        "{matrix: {other: [requirements-ci.txt]}}",
+        "{matrix: {include: null}}",
+        "{matrix: {include: []}}",
+        "{matrix: {include: [null]}}",
+        "{matrix: {include: [{}]}}",
+        "{matrix: {include: [{requirements-file: 123}]}}",
+        "{matrix: {include: [{requirements-file: '../requirements-ci.txt'}]}}",
+        "{matrix: {include: [{requirements-file: '${{ inputs.lock }}'}]}}",
+        "{matrix: {include: [{requirements-file: requirements-ci.txt}], other: [1]}}",
+    ],
+)
+def test_unresolved_matrix_requirements_do_not_supply_modules(
+    tmp_path: Path, strategy: str
+) -> None:
+    """Malformed, dynamic and unsupported matrix selections are never installs."""
+    repo = _repo(tmp_path)
+    _workflow(
+        repo,
+        "matrix.yml",
+        f"""
+jobs:
+  native-tests:
+    strategy: {strategy}
+    steps:
+      - run: python -m pip install -r ${{{{ matrix.requirements-file }}}}
+      - run: python -m coverage report
+""",
+    )
+    assert any("pinning 'coverage'" in str(item) for item in gate.audit(repo))
+
+
+def test_later_matrix_install_cannot_supply_earlier_coverage(tmp_path: Path) -> None:
+    """Matrix lock resolution retains the original install-before-use rule."""
+    repo = _repo(tmp_path)
+    _workflow(
+        repo,
+        "matrix.yml",
+        """
+jobs:
+  native-tests:
+    strategy:
+      matrix:
+        include: [{requirements-file: requirements-ci.txt}]
+    steps:
+      - run: python -m coverage report
+      - run: python -m pip install -r ${{ matrix.requirements-file }}
+""",
+    )
+    assert any("pinning 'coverage'" in str(item) for item in gate.audit(repo))

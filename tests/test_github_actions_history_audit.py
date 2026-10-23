@@ -55,6 +55,7 @@ def _run(
 
 
 def test_actions_audit_marks_old_failures_resolved_by_later_success() -> None:
+    """A later successful run resolves the same workflow and branch."""
     runs = workflow_runs_from_json(
         json.dumps(
             [
@@ -72,6 +73,7 @@ def test_actions_audit_marks_old_failures_resolved_by_later_success() -> None:
 
 
 def test_actions_audit_keeps_unresolved_failures_when_no_later_success() -> None:
+    """Another workflow cannot resolve an outstanding failure."""
     runs = workflow_runs_from_json(
         json.dumps(
             [
@@ -88,6 +90,7 @@ def test_actions_audit_keeps_unresolved_failures_when_no_later_success() -> None
 
 
 def test_actions_audit_classifies_cancelled_runs_by_later_success_evidence() -> None:
+    """Cancellation replacement requires success on the same branch."""
     runs = workflow_runs_from_json(
         json.dumps(
             [
@@ -107,6 +110,7 @@ def test_actions_audit_classifies_cancelled_runs_by_later_success_evidence() -> 
 
 
 def test_actions_audit_reports_in_progress_runs_as_not_deletable() -> None:
+    """Running jobs stay outside deletion candidates."""
     runs = workflow_runs_from_json(
         json.dumps([_run(20, "", "2026-05-06T00:00:00Z", status="in_progress")])
     )
@@ -118,6 +122,7 @@ def test_actions_audit_reports_in_progress_runs_as_not_deletable() -> None:
 
 
 def test_actions_audit_classifies_other_completed_conclusions() -> None:
+    """A skipped run remains distinct from a successful replacement."""
     runs = workflow_runs_from_json(json.dumps([_run(25, "skipped", "2026-05-06T00:00:00Z")]))
 
     classified = classify_workflow_runs(runs)
@@ -129,6 +134,7 @@ def test_actions_audit_classifies_other_completed_conclusions() -> None:
 def test_actions_audit_cli_reads_fixture_and_returns_nonzero_for_unresolved(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """Unresolved input records fail the CLI and appear in its summary."""
     fixture = tmp_path / "runs.json"
     fixture.write_text(
         json.dumps([_run(30, "failure", "2026-05-06T00:00:00Z")]),
@@ -141,6 +147,7 @@ def test_actions_audit_cli_reads_fixture_and_returns_nonzero_for_unresolved(
 
 
 def test_actions_audit_text_summary_lists_safe_delete_candidates() -> None:
+    """The text summary identifies resolved historical runs."""
     runs = workflow_runs_from_json(
         json.dumps(
             [
@@ -157,6 +164,7 @@ def test_actions_audit_text_summary_lists_safe_delete_candidates() -> None:
 
 
 def test_actions_audit_json_output_is_deterministic_and_machine_readable() -> None:
+    """JSON retains run identity, classification and UTC timestamps."""
     runs = workflow_runs_from_json(
         json.dumps(
             [
@@ -178,6 +186,7 @@ def test_actions_audit_json_output_is_deterministic_and_machine_readable() -> No
 def test_actions_audit_cli_json_mode_returns_zero_when_no_unresolved_runs(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """Successful history returns a zero status and a JSON report."""
     fixture = tmp_path / "runs.json"
     fixture.write_text(
         json.dumps([_run(70, "success", "2026-05-06T00:00:00Z")]),
@@ -190,6 +199,7 @@ def test_actions_audit_cli_json_mode_returns_zero_when_no_unresolved_runs(
 
 
 def test_actions_audit_cli_requires_repo_without_input() -> None:
+    """Live loading requires an explicit repository."""
     with pytest.raises(SystemExit):
         main([])
 
@@ -197,6 +207,7 @@ def test_actions_audit_cli_requires_repo_without_input() -> None:
 def test_actions_audit_cli_loads_runs_from_gh_when_input_is_absent(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """The live CLI path serialises the history returned by its loader."""
     runs = workflow_runs_from_json(json.dumps([_run(78, "success", "2026-05-06T00:00:00Z")]))
     monkeypatch.setattr(_MODULE, "_load_runs_from_gh", lambda _repo, _limit: runs)
 
@@ -210,6 +221,7 @@ def test_actions_audit_cli_loads_runs_from_gh_when_input_is_absent(
 def test_actions_audit_loads_runs_through_admitted_gh(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """The admitted CLI executable receives argument arrays without a shell."""
     observed: dict[str, object] = {}
     monkeypatch.setattr(_MODULE, "_resolve_gh_executable", lambda: sys.executable)
 
@@ -245,6 +257,7 @@ def test_actions_audit_loads_runs_through_admitted_gh(
 def test_actions_audit_rejects_missing_gh_for_live_loading(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Live loading refuses an unavailable GitHub CLI."""
     monkeypatch.setattr(_MODULE, "_resolve_gh_executable", lambda: None)
 
     with pytest.raises(RuntimeError, match="gh executable is required"):
@@ -254,6 +267,7 @@ def test_actions_audit_rejects_missing_gh_for_live_loading(
 def test_actions_audit_gh_resolver_rejects_missing_stale_and_non_executable_paths(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    """Missing, stale and non-executable paths cannot run history queries."""
     monkeypatch.setattr(_MODULE.shutil, "which", lambda _name: None)
     assert _MODULE._resolve_gh_executable() is None
 
@@ -271,6 +285,7 @@ def test_actions_audit_gh_resolver_rejects_missing_stale_and_non_executable_path
 def test_actions_audit_gh_resolver_admits_current_python(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """An executable file resolves to an absolute admitted path."""
     monkeypatch.setattr(_MODULE.shutil, "which", lambda _name: sys.executable)
 
     resolved = _MODULE._resolve_gh_executable()
@@ -280,13 +295,90 @@ def test_actions_audit_gh_resolver_admits_current_python(
 
 
 def test_actions_audit_rejects_non_array_json() -> None:
+    """An object cannot substitute for a history array."""
     with pytest.raises(ValueError, match="must be an array"):
         workflow_runs_from_json(json.dumps({"databaseId": 80}))
 
 
 def test_actions_audit_normalises_naive_timestamps_to_utc() -> None:
+    """Timestamp serialisation makes naive input explicitly UTC."""
     run = workflow_run_from_mapping(_run(90, "success", "2026-05-06T00:00:00"))
 
     encoded = classified_runs_to_json(classify_workflow_runs((run,)))
 
     assert json.loads(encoded)[0]["createdAt"] == "2026-05-06T00:00:00Z"
+
+
+@pytest.mark.parametrize(
+    ("other_workflow", "other_branch", "expected_status"),
+    [
+        ("Actions History Audit", "main", 0),
+        ("CI", "main", 1),
+        ("Actions History Audit", "other", 1),
+    ],
+)
+@pytest.mark.parametrize("conclusion", ["failure", "cancelled"])
+def test_audit_cli_keeps_self_failures_without_recursively_blocking_itself(
+    tmp_path: Path, other_workflow: str, other_branch: str, expected_status: int, conclusion: str
+) -> None:
+    """Only this audit's same-branch history is removed from the recursive verdict."""
+    fixture = tmp_path / "runs.json"
+    fixture.write_text(
+        json.dumps(
+            [
+                _run(100, conclusion, "2026-10-20T00:00:00Z", workflow="Actions History Audit"),
+                _run(
+                    101,
+                    conclusion,
+                    "2026-10-20T01:00:00Z",
+                    workflow=other_workflow,
+                    branch=other_branch,
+                ),
+            ]
+        ),
+        encoding="utf-8",
+    )
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(_AUDIT_TOOL),
+            "--input",
+            str(fixture),
+            "--current-workflow",
+            "Actions History Audit",
+            "--current-branch",
+            "main",
+            "--json",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=30,
+    )
+    assert result.returncode == expected_status, result.stdout + result.stderr
+    rows = json.loads(result.stdout)
+    assert [row["databaseId"] for row in rows] == [100, 101]
+    assert all(row["bucket"] == "unresolved_" + conclusion for row in rows)
+    assert all(row["safeDeleteCandidate"] is False for row in rows)
+
+
+@pytest.mark.parametrize(
+    "arguments",
+    [
+        ["--current-workflow", "Actions History Audit"],
+        ["--current-branch", "main"],
+        ["--current-workflow", "", "--current-branch", "main"],
+    ],
+)
+def test_self_audit_identity_requires_both_workflow_and_branch(arguments: list[str]) -> None:
+    """Partial or empty self identity cannot remove failures from the verdict."""
+    with pytest.raises(SystemExit) as result:
+        main(arguments)
+    assert result.value.code == 2
+
+
+def test_history_workflow_supplies_its_actual_runtime_identity() -> None:
+    """The hosted audit binds self history to its workflow and branch metadata."""
+    source = (ROOT / ".github/workflows/actions-history-audit.yml").read_text(encoding="utf-8")
+    assert '--current-workflow "$GITHUB_WORKFLOW"' in source
+    assert '--current-branch "$GITHUB_REF_NAME"' in source

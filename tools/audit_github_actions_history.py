@@ -264,7 +264,17 @@ def main(argv: Sequence[str] | None = None) -> int:
         help="Read gh run-list JSON from this file instead of invoking gh.",
     )
     parser.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
+    parser.add_argument(
+        "--current-workflow",
+        help="Keep this audit's history in the report without recursively gating itself.",
+    )
+    parser.add_argument("--current-branch", help="Branch of the current audit workflow.")
     args = parser.parse_args(argv)
+    current_key: tuple[str, str] | None = None
+    if args.current_workflow is not None or args.current_branch is not None:
+        if not args.current_workflow or not args.current_branch:
+            parser.error("--current-workflow and --current-branch must both be nonempty")
+        current_key = (args.current_workflow, args.current_branch)
 
     if args.input is not None:
         runs = workflow_runs_from_json(args.input.read_text(encoding="utf-8"))
@@ -275,7 +285,14 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     classified = classify_workflow_runs(runs)
     print(classified_runs_to_json(classified) if args.json else format_classified_runs(classified))
-    return 1 if any(item.bucket.startswith("unresolved") for item in classified) else 0
+    return (
+        1
+        if any(
+            item.bucket.startswith("unresolved") and item.run.workflow_key != current_key
+            for item in classified
+        )
+        else 0
+    )
 
 
 if __name__ == "__main__":  # pragma: no cover

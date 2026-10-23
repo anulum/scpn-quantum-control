@@ -25,7 +25,9 @@ runs, and checks three things a runner would otherwise discover the hard way:
 * a tool pinned by version in more than one workflow is pinned to the same
   version in all of them.
 
-The checks are static and limited to recognised literal shell commands. They
+The checks are static and limited to recognised literal shell commands. A
+requirement selected by a literal include-only matrix supplies only packages
+pinned in every row; unresolved matrix expressions supply nothing. They
 read both YAML suffixes and requirement locks without executing workflows.
 Ordering is checked across steps and newline/semicolon/``&&`` command boundaries;
 shell branches, action internals, dynamic expressions and actual package import
@@ -37,6 +39,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Final
@@ -59,6 +62,10 @@ MODULE_INVOCATION: Final[re.Pattern[str]] = re.compile(r"python -m ([A-Za-z_][A-
 #: Matches the requirement files a ``pip install`` step names.
 REQUIREMENT_INSTALL: Final[re.Pattern[str]] = re.compile(
     r"-r\s+(requirements[A-Za-z0-9._-]*\.txt)"
+)
+
+MATRIX_REQUIREMENT_INSTALL: Final[re.Pattern[str]] = re.compile(
+    r"-r\s+\$\{\{\s*matrix\.([A-Za-z0-9_-]+)\s*\}\}"
 )
 
 #: Matches the ways a job installs this project rather than a dependency.
@@ -107,6 +114,31 @@ def distributions_in(lock: Path) -> frozenset[str]:
         return frozenset()
     text = lock.read_text(encoding="utf-8")
     return frozenset(_normalise(match) for match in PINNED_DISTRIBUTION.findall(text))
+
+
+def _matrix_distributions(job: Mapping[str, object], name: str, repo: Path) -> frozenset[str]:
+    """Read packages pinned in every row of a literal include-only matrix."""
+    strategy = job.get("strategy")
+    if not isinstance(strategy, dict):
+        return frozenset()
+    matrix = strategy.get("matrix")
+    if not isinstance(matrix, dict) or set(matrix) != {"include"}:
+        return frozenset()
+    rows = matrix["include"]
+    if not isinstance(rows, list) or not rows:
+        return frozenset()
+    common: set[str] | None = None
+    for row in rows:
+        if not isinstance(row, dict):
+            return frozenset()
+        filename = row.get(name)
+        if not isinstance(filename, str) or not re.fullmatch(
+            r"requirements[A-Za-z0-9._-]*\.txt", filename
+        ):
+            return frozenset()
+        packages = distributions_in(repo / filename)
+        common = set(packages) if common is None else common.intersection(packages)
+    return frozenset(common or ())
 
 
 def _step_bodies(job: dict[str, Any]) -> list[str]:
@@ -212,6 +244,9 @@ def audit_job(
             if not (repo / lock).is_file():
                 findings.append(Finding(workflow, name, f"requirement file is missing: {lock}"))
             provided |= distributions_in(repo / lock)
+        if re.match(r"^(?:python\s+-m\s+)?pip\s+install\b", command):
+            for key in MATRIX_REQUIREMENT_INSTALL.findall(command):
+                provided |= _matrix_distributions(job, key, repo)
         preceding.append((step_index, command))
 
     return findings, _pinned_action_versions(job)
