@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import runpy
 import shlex
 import subprocess
 import sys
@@ -45,18 +46,52 @@ def test_all_result_tests_belong_to_static_and_runtime_cohorts() -> None:
 
 def test_hosted_static_commands_match_canonical_gate_arguments() -> None:
     """Hosted typing and docs must enforce the same explicit source/test cohort."""
-    static = dict(gates.build_static_quality_gates("python"))
     workflow = ".github/workflows/ci-static-analysis.yml"
-    assert (
-        _workflow_command(workflow, "Type-check unified differentiable API quality cohort")
-        == static["mypy-strict-differentiable-api-quality"]
-    )
-    assert (
-        _workflow_command(
-            workflow, "Ruff NumPy docstrings for unified differentiable API quality cohort"
-        )
-        == static["ruff D differentiable-api quality ratchet"]
-    )
+    assert _workflow_command(workflow, "Type-check unified differentiable API quality cohort") == [
+        "python",
+        "tools/differentiable_api_quality_gates.py",
+        "typing",
+    ]
+    assert _workflow_command(
+        workflow, "Ruff NumPy docstrings for unified differentiable API quality cohort"
+    ) == ["python", "tools/differentiable_api_quality_gates.py", "docstrings"]
+
+
+@pytest.mark.parametrize("check", ["typing", "docstrings"])
+def test_static_gate_cli_executes_the_real_canonical_check(check: str) -> None:
+    """Exercise the actual strict and documentation tools through the CI entry.
+
+    Parameters
+    ----------
+    check
+        Canonical static check selected by the hosted step.
+
+    """
+    assert gates.main([check]) == 0
+
+
+def test_static_gate_cli_refuses_an_unknown_check() -> None:
+    """Reject an unsupported selector before any command can execute."""
+    with pytest.raises(SystemExit) as exc:
+        gates.main(["unregistered"])
+    assert exc.value.code == 2
+
+
+def test_static_gate_script_entrypoint_executes_the_documentation_check(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Exercise the same script bootstrap used by the hosted documentation step.
+
+    Parameters
+    ----------
+    monkeypatch
+        Restore process arguments after the actual script entrypoint.
+
+    """
+    monkeypatch.setattr(sys, "argv", [gates.__file__, "docstrings"])
+    with pytest.raises(SystemExit) as exc:
+        runpy.run_path(gates.__file__, run_name="__main__")
+    assert exc.value.code == 0
 
 
 def test_all_numerical_core_owners_and_tests_are_enforced() -> None:

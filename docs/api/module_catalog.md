@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **820 modules** across **41 package families**
-- **4372 documented public module-level symbols**
+- **822 modules** across **41 package families**
+- **4376 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -6870,6 +6870,22 @@ Fail-closed **PGBO quantum geometric tensor** product surface.
 **Classes:** `QgtCapabilityRow`, `QgtBoundaryRow`, `PathEligibilityDecision`, `MaterialisedPgboTensorProbe`
 
 **Functions:** `list_qgt_capability_ids()`, `list_qgt_boundary_ids()`, `get_qgt_capability()`, `get_qgt_boundary()`, `iter_qgt_capabilities()`, `iter_qgt_boundaries()`, `decide_qgt_path()`, `materialise_pgbo_tensor_probe()`, `materialise_demo_pgbo_tensor_probe()`, `map_pgbo_qgt_public_surfaces()`, `build_pgbo_qgt_product_registry()`, `assert_pgbo_qgt_product_integrity()`
+
+### `scpn_quantum_control.phase_qnn_model_numerics`
+
+Typed numerical reads used by the bounded phase classifier's host model.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase_qnn_model_numerics.py) · Public symbols: **2**
+
+**Classes:** `PhaseModelNumpy`, `PhaseModelNumerics`
+
+### `scpn_quantum_control.phase_qnn_numpy_model`
+
+Evaluate the phase classifier model without training or report composition.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase_qnn_numpy_model.py) · Public symbols: **2**
+
+**Functions:** `bounded_phase_qnn_probabilities()`, `phase_qnn_mean_squared_error()`
 
 ### `scpn_quantum_control.phase_qnode_product`
 

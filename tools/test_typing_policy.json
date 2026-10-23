@@ -591,6 +591,8 @@
         "tests/test_phase_qnn_framework_agreement.py",
         "tests/test_phase_qnn_framework_bridge_matrix.py",
         "tests/test_phase_qnn_loss_landscape.py",
+        "tests/test_phase_qnn_model_quality_gate.py",
+        "tests/test_phase_qnn_numpy_model.py",
         "tests/test_phase_qnn_optimizer_benchmark.py",
         "tests/test_phase_qnn_training.py",
         "tests/test_phase_qnn_training_source_contracts.py",

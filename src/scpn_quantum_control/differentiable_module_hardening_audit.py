@@ -17,6 +17,7 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 DIFFERENTIABLE_MODULE_PATTERNS = (
+    "src/scpn_quantum_control/phase_qnn_*.py",
     "src/scpn_quantum_control/differentiable*.py",
     "src/scpn_quantum_control/diff.py",
     "src/scpn_quantum_control/program_ad*.py",
@@ -943,6 +944,16 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             "src/scpn_quantum_control/phase/qiskit_runtime.py",
             ("tests/test_phase_qiskit_runtime.py",),
             ("Runtime evidence chains", "provider-exceedance blockers"),
+        ),
+        _record(
+            "src/scpn_quantum_control/phase_qnn_model_numerics.py",
+            ("tests/test_phase_qnn_numpy_model.py",),
+            ("live numerical namespace", "original scalar constructor order"),
+        ),
+        _record(
+            "src/scpn_quantum_control/phase_qnn_numpy_model.py",
+            ("tests/test_phase_qnn_numpy_model.py",),
+            ("bounded classifier probabilities", "public prediction and training composition"),
         ),
         _record(
             "src/scpn_quantum_control/phase/qnn_framework_bridge_matrix.py",

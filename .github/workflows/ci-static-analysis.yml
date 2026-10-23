@@ -547,52 +547,10 @@ jobs:
           tools/differentiable_rust_python_inventory_quality_gates.py
       - name: Type-check unified differentiable API quality cohort
         run: >-
-          python -m mypy --strict --explicit-package-bases
-          src/scpn_quantum_control/differentiable_api.py
-          src/scpn_quantum_control/differentiable_api_core.py
-          src/scpn_quantum_control/differentiable_api_core_algorithms.py
-          src/scpn_quantum_control/differentiable_api_core_bindings.py
-          src/scpn_quantum_control/differentiable_canonical_api.py
-          src/scpn_quantum_control/differentiable_result_contracts.py
-          src/scpn_quantum_control/differentiable_tensor_admission.py
-          tests/test_differentiable_api.py
-          tests/test_differentiable_api_core.py
-          tests/test_differentiable_api_core_algorithms.py
-          tests/test_differentiable_api_core_bindings.py
-          tests/test_differentiable_api_contracts.py
-          tests/test_differentiable_canonical_modes.py
-          tests/test_differentiable_package_exports.py
-          tests/test_differentiable_result_contracts.py
-          tests/test_differentiable_result_provenance.py
-          tests/test_differentiable_api_quality_gate.py
-          tests/test_differentiable_tensor_admission.py
-          tools/differentiable_api_quality_gates.py
-          tools/differentiable_quality_gates.py
+          python tools/differentiable_api_quality_gates.py typing
       - name: Ruff NumPy docstrings for unified differentiable API quality cohort
         run: >-
-          python -m ruff check --isolated --preview --select D,D413,D417,D420
-          --config 'lint.explicit-preview-rules = true'
-          --config 'lint.pydocstyle.convention = "numpy"'
-          src/scpn_quantum_control/differentiable_api.py
-          src/scpn_quantum_control/differentiable_api_core.py
-          src/scpn_quantum_control/differentiable_api_core_algorithms.py
-          src/scpn_quantum_control/differentiable_api_core_bindings.py
-          src/scpn_quantum_control/differentiable_canonical_api.py
-          src/scpn_quantum_control/differentiable_result_contracts.py
-          src/scpn_quantum_control/differentiable_tensor_admission.py
-          tests/test_differentiable_api.py
-          tests/test_differentiable_api_core.py
-          tests/test_differentiable_api_core_algorithms.py
-          tests/test_differentiable_api_core_bindings.py
-          tests/test_differentiable_api_contracts.py
-          tests/test_differentiable_canonical_modes.py
-          tests/test_differentiable_package_exports.py
-          tests/test_differentiable_result_contracts.py
-          tests/test_differentiable_result_provenance.py
-          tests/test_differentiable_api_quality_gate.py
-          tests/test_differentiable_tensor_admission.py
-          tools/differentiable_api_quality_gates.py
-          tools/differentiable_quality_gates.py
+          python tools/differentiable_api_quality_gates.py docstrings
       - name: Type-check differentiable Levenberg-Marquardt quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases

@@ -260,6 +260,7 @@ if TYPE_CHECKING:
     )
     from tools import phase_jax_qnode_quality_gates as _phase_jax_qnode_quality_gates
     from tools import phase_objectives_quality_gates as _phase_objectives_quality_gates
+    from tools import phase_qnn_model_quality_gates as _phase_qnn_model_quality_gates
     from tools import (
         phase_qnode_framework_parity_quality_gates as _phase_qnode_framework_parity_quality_gates,
     )
@@ -693,6 +694,7 @@ else:
     _phase_torch_bridge_quality_gates = import_module("tools.phase_torch_bridge_quality_gates")
     _phase_results_quality_gates = import_module("tools.phase_results_quality_gates")
     _phase_qnode_product_quality_gates = import_module("tools.phase_qnode_product_quality_gates")
+    _phase_qnn_model_quality_gates = import_module("tools.phase_qnn_model_quality_gates")
     _phase_trainability_quality_gates = import_module("tools.phase_trainability_quality_gates")
     _polyglot_parity_certificate_quality_gates = import_module(
         "tools.polyglot_parity_certificate_quality_gates"
@@ -1445,6 +1447,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_fault_tolerant_resource_product_quality_gates.build_static_quality_gates(_PY),
     *_phase_qnode_product_quality_gates.build_static_quality_gates(_PY),
     *_phase_trainability_quality_gates.build_static_quality_gates(_PY),
+    *_phase_qnn_model_quality_gates.build_static_quality_gates(_PY),
     *_kuramoto_layout_cost_quality_gates.build_static_quality_gates(_PY),
     *_kuramoto_layout_relaxation_quality_gates.build_static_quality_gates(_PY),
     *_application_honesty_quality_gates.build_static_quality_gates(_PY),
@@ -2119,6 +2122,7 @@ FAULT_TOLERANT_RESOURCE_PRODUCT_COVERAGE_GATES = (
 )
 PHASE_QNODE_PRODUCT_COVERAGE_GATES = _phase_qnode_product_quality_gates.build_coverage_gates(_PY)
 PHASE_TRAINABILITY_COVERAGE_GATES = _phase_trainability_quality_gates.build_coverage_gates(_PY)
+PHASE_QNN_MODEL_COVERAGE_GATES = _phase_qnn_model_quality_gates.build_coverage_gates(_PY)
 KURAMOTO_LAYOUT_COST_COVERAGE_GATES = _kuramoto_layout_cost_quality_gates.build_coverage_gates(_PY)
 KURAMOTO_LAYOUT_RELAXATION_COVERAGE_GATES = (
     _kuramoto_layout_relaxation_quality_gates.build_coverage_gates(_PY)
@@ -2518,6 +2522,7 @@ def main() -> int:
             gates.extend(FAULT_TOLERANT_RESOURCE_PRODUCT_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_PRODUCT_COVERAGE_GATES)
             gates.extend(PHASE_TRAINABILITY_COVERAGE_GATES)
+            gates.extend(PHASE_QNN_MODEL_COVERAGE_GATES)
             gates.extend(KURAMOTO_LAYOUT_COST_COVERAGE_GATES)
             gates.extend(KURAMOTO_LAYOUT_RELAXATION_COVERAGE_GATES)
             gates.extend(APPLICATION_HONESTY_COVERAGE_GATES)

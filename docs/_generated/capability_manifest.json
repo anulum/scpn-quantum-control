@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 851,
     "public_documentation_pages": 385,
-    "python_model_classes": 1552,
-    "python_model_source_modules": 820,
+    "python_model_classes": 1554,
+    "python_model_source_modules": 822,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1568
+    "test_files": 1570
   },
   "documentation": {
     "examples": [
@@ -4561,6 +4561,14 @@
         "path": "src/scpn_quantum_control/phase/jax_bridge_contracts.py"
       },
       {
+        "name": "PhaseModelNumerics",
+        "path": "src/scpn_quantum_control/phase_qnn_model_numerics.py"
+      },
+      {
+        "name": "PhaseModelNumpy",
+        "path": "src/scpn_quantum_control/phase_qnn_model_numerics.py"
+      },
+      {
         "name": "PhaseObjectiveSimulator",
         "path": "src/scpn_quantum_control/codesign/components.py"
       },
@@ -7659,6 +7667,8 @@
       "src/scpn_quantum_control/phase/varqite.py",
       "src/scpn_quantum_control/phase/xy_compiler.py",
       "src/scpn_quantum_control/phase/xy_kuramoto.py",
+      "src/scpn_quantum_control/phase_qnn_model_numerics.py",
+      "src/scpn_quantum_control/phase_qnn_numpy_model.py",
       "src/scpn_quantum_control/phase_qnode_product.py",
       "src/scpn_quantum_control/polyglot_edge_ad_product.py",
       "src/scpn_quantum_control/polyglot_parity_certificate.py",
@@ -9962,6 +9972,8 @@
       "tests/test_phase_qnn_framework_agreement.py",
       "tests/test_phase_qnn_framework_bridge_matrix.py",
       "tests/test_phase_qnn_loss_landscape.py",
+      "tests/test_phase_qnn_model_quality_gate.py",
+      "tests/test_phase_qnn_numpy_model.py",
       "tests/test_phase_qnn_optimizer_benchmark.py",
       "tests/test_phase_qnn_training.py",
       "tests/test_phase_qnn_training_source_contracts.py",

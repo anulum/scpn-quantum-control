@@ -75,3 +75,23 @@ def test_qnn_imported_gradient_keeps_serializable_owner() -> None:
     assert pickle.dumps(gradient, protocol=4) == pickle.dumps(
         param_shift.parameter_shift_gradient, protocol=4
     )
+
+
+def test_original_probability_helper_retains_its_shape_error_constructor(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Preserve the original helper's direct shape guard and defining globals.
+
+    Parameters
+    ----------
+    monkeypatch
+        Restore the original error constructor after the namespace probe.
+
+    """
+
+    class ModelInputError(ValueError):
+        """Identify the active constructor in the original module dictionary."""
+
+    monkeypatch.setitem(vars(qnn), "ValueError", ModelInputError)
+    with pytest.raises(ModelInputError, match="initial_params must match the feature width"):
+        qnn._phase_qnn_probabilities(np.zeros((2, 3)), np.zeros(2))

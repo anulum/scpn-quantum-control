@@ -16,6 +16,11 @@ from typing import TypeAlias, cast
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+from ..phase_qnn_model_numerics import PhaseModelNumerics as _PhaseModelNumerics
+from ..phase_qnn_numpy_model import (
+    bounded_phase_qnn_probabilities as _bounded_phase_qnn_probabilities,
+)
+from ..phase_qnn_numpy_model import phase_qnn_mean_squared_error as _phase_qnn_mean_squared_error
 from .gradient_descent import (
     ParameterShiftTrainingCertificate,
     ParameterShiftTrainingResult,
@@ -253,9 +258,11 @@ def _as_external_gradient(name: str, values: ArrayLike, *, width: int) -> FloatA
 def _phase_qnn_probabilities(features: FloatArray, params: FloatArray) -> FloatArray:
     if params.shape != (features.shape[1],):
         raise ValueError("initial_params must match the feature width")
-    probabilities = 0.5 * (1.0 - np.cos(features + params[None, :]))
-    averaged = np.mean(probabilities, axis=1)
-    clipped = np.clip(averaged, 0.0, 1.0).astype(np.float64, copy=False)
+    clipped: object = _bounded_phase_qnn_probabilities(
+        features,
+        params,
+        numerics=_PhaseModelNumerics(numpy=lambda: np, scalar=lambda: float),
+    )
     return cast(FloatArray, clipped)
 
 
@@ -265,8 +272,11 @@ def _qnn_classifier_loss(
     parameters: FloatArray,
 ) -> float:
     probabilities = _phase_qnn_probabilities(feature_matrix, parameters)
-    residual = probabilities - label_vector
-    return float(np.mean(residual * residual))
+    return _phase_qnn_mean_squared_error(
+        probabilities,
+        label_vector,
+        numerics=_PhaseModelNumerics(numpy=lambda: np, scalar=lambda: float),
+    )
 
 
 def _central_finite_difference_gradient(

@@ -288,6 +288,8 @@
     "jax_nqs_baseline_product",
     "ml_examples",
     "neural_operator_baseline_product",
+    "phase_qnn_model_numerics",
+    "phase_qnn_numpy_model",
     "qsnn",
     "surrogates",
     "topology_kernel_product",

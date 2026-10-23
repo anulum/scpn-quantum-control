@@ -554,6 +554,31 @@ jobs:
           python -m coverage report --rcfile=/dev/null
           --data-file=.coverage.phase-trainability-quality
           --precision=2 --show-missing --fail-under=100 --include=*/phase/trainability.py
+      - name: mypy-strict-phase-qnn-model
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/phase/qnn_training.py
+          src/scpn_quantum_control/phase_qnn_model_numerics.py
+          src/scpn_quantum_control/phase_qnn_numpy_model.py tests/test_phase_qnn_numpy_model.py
+          tests/test_phase_qnn_model_quality_gate.py tools/phase_qnn_model_quality_gates.py
+      - name: ruff D phase-qnn-model
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420 --config
+          'lint.explicit-preview-rules = true' --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/phase_qnn_model_numerics.py
+          src/scpn_quantum_control/phase_qnn_numpy_model.py tests/test_phase_qnn_numpy_model.py
+          tests/test_phase_qnn_model_quality_gate.py tools/phase_qnn_model_quality_gates.py
+      - name: phase-qnn-model focused coverage
+        run: >-
+          python -m coverage run --rcfile=/dev/null --data-file=.coverage.phase-qnn-model --branch
+          -m pytest -q tests/test_phase_qnn_numpy_model.py
+          tests/test_phase_qnn_training_source_contracts.py
+          tests/test_phase_qnn_model_quality_gate.py
+      - name: phase-qnn-model exact coverage
+        run: >-
+          python -m coverage report --rcfile=/dev/null --data-file=.coverage.phase-qnn-model
+          --precision=2 --show-missing --fail-under=100
+          '--include=*/phase_qnn_model_numerics.py,*/phase_qnn_numpy_model.py,*/phase_qnn_model_quality_gates.py'
   decisive-advantage-quality:
     runs-on: ubuntu-latest
     env:

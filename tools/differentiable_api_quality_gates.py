@@ -9,6 +9,10 @@
 
 from __future__ import annotations
 
+import argparse
+import subprocess
+import sys
+from collections.abc import Sequence
 from os import devnull
 
 Gate = tuple[str, list[str]]
@@ -160,6 +164,29 @@ def build_coverage_gates(python: str) -> list[Gate]:
     ]
 
 
+def main(argv: Sequence[str] | None = None) -> int:
+    """Execute one canonical static gate from the hosted workflow.
+
+    Parameters
+    ----------
+    argv
+        Static check selector, or the actual process arguments when omitted.
+
+    Returns
+    -------
+    int
+        Zero after the selected command succeeds. Command failures propagate.
+
+    """
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("check", choices=("typing", "docstrings"))
+    args = parser.parse_args(argv)
+    index = 0 if args.check == "typing" else 1
+    _name, command = build_static_quality_gates(sys.executable)[index]
+    subprocess.run(command, check=True)
+    return 0
+
+
 __all__ = [
     "DIFFERENTIABLE_API_COVERAGE_COHORT",
     "DIFFERENTIABLE_API_COVERAGE_DATA_FILE",
@@ -167,4 +194,9 @@ __all__ = [
     "DIFFERENTIABLE_API_QUALITY_RATCHET",
     "build_coverage_gates",
     "build_static_quality_gates",
+    "main",
 ]
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
