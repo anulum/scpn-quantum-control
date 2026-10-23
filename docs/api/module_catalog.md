@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **824 modules** across **41 package families**
-- **4385 documented public module-level symbols**
+- **825 modules** across **41 package families**
+- **4390 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -6144,6 +6144,16 @@ Architecture and Rustification map for differentiable-programming governance.
 **Classes:** `DifferentiableArchitectureMapLayer`, `DifferentiableArchitectureMap`, `DifferentiableArchitectureMapValidation`
 
 **Functions:** `run_differentiable_architecture_map()`, `validate_differentiable_architecture_map()`, `render_differentiable_architecture_map_markdown()`
+
+### `scpn_quantum_control.differentiable_backend_capabilities`
+
+Admit native derivative capabilities without executing or selecting a model.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_backend_capabilities.py) · Public symbols: **5**
+
+**Classes:** `BackendCapabilityPrimitives`
+
+**Functions:** `require_jax_host_callback()`, `require_jax_custom_vjp()`, `resolve_torch_autograd_function()`, `resolve_torch_autograd_grad()`
 
 ### `scpn_quantum_control.differentiable_baseline_scorecard`
 

@@ -1352,6 +1352,17 @@ representative planner cell.
 
 ## Native framework transform qualification
 
+Native derivative capability admission is implemented in
+`scpn_quantum_control.differentiable_backend_capabilities`.
+`require_jax_host_callback` checks JIT, callback and shape-description presence
+in the original order. `require_jax_custom_vjp` checks callable registration and
+value/gradient execution. `resolve_torch_autograd_function` and
+`resolve_torch_autograd_grad` return the exact SDK class and callable after
+admission. `BackendCapabilityPrimitives` retains live attribute, presence,
+callability and refusal-constructor reads. Original adapters retain their
+natural function definitions and imported helper identities; admission executes
+no numerical model, callback or derivative.
+
 Native tensor allocation is implemented in
 `scpn_quantum_control.differentiable_tensor_construction`.
 `construct_torch_tensor` preserves the preference for `as_tensor`, its storage

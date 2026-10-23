@@ -27,6 +27,7 @@ DIFFERENTIABLE_API_QUALITY_RATCHET = [
     "src/scpn_quantum_control/differentiable_tensor_admission.py",
     "src/scpn_quantum_control/differentiable_tensor_construction.py",
     "src/scpn_quantum_control/differentiable_tensor_materialization.py",
+    "src/scpn_quantum_control/differentiable_backend_capabilities.py",
     "tests/test_differentiable_api.py",
     "tests/test_differentiable_api_core.py",
     "tests/test_differentiable_api_core_algorithms.py",
@@ -42,6 +43,8 @@ DIFFERENTIABLE_API_QUALITY_RATCHET = [
     "tests/test_differentiable_tensor_construction_native.py",
     "tests/test_differentiable_tensor_materialization.py",
     "tests/test_differentiable_tensor_materialization_native.py",
+    "tests/test_differentiable_backend_capabilities.py",
+    "tests/test_differentiable_backend_capabilities_native.py",
     "tools/differentiable_api_quality_gates.py",
     "tools/differentiable_quality_gates.py",
 ]
@@ -199,7 +202,7 @@ def build_native_tensor_coverage_gates(python: str) -> list[Gate]:
     Parameters
     ----------
     python
-        Interpreter with the admitted CPU PyTorch and TensorFlow dependencies.
+        Interpreter with the admitted CPU PyTorch, JAX and TensorFlow dependencies.
 
     Returns
     -------
@@ -227,6 +230,8 @@ def build_native_tensor_coverage_gates(python: str) -> list[Gate]:
                 "tests/test_differentiable_tensor_construction_native.py",
                 "tests/test_differentiable_tensor_materialization.py",
                 "tests/test_differentiable_tensor_materialization_native.py",
+                "tests/test_differentiable_backend_capabilities.py",
+                "tests/test_differentiable_backend_capabilities_native.py",
             ],
         ),
         (
@@ -241,7 +246,7 @@ def build_native_tensor_coverage_gates(python: str) -> list[Gate]:
                 "--precision=2",
                 "--show-missing",
                 "--fail-under=100",
-                "--include=*/differentiable_tensor_construction.py,*/differentiable_tensor_materialization.py",
+                "--include=*/differentiable_tensor_construction.py,*/differentiable_tensor_materialization.py,*/differentiable_backend_capabilities.py",
             ],
         ),
     ]

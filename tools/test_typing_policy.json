@@ -319,6 +319,8 @@
         "tests/test_differentiable_api_core_bindings.py",
         "tests/test_differentiable_architecture_map.py",
         "tests/test_differentiable_audit_contracts_quality_gate.py",
+        "tests/test_differentiable_backend_capabilities.py",
+        "tests/test_differentiable_backend_capabilities_native.py",
         "tests/test_differentiable_baseline_scorecard.py",
         "tests/test_differentiable_batch_helpers.py",
         "tests/test_differentiable_batched_transform_execution.py",

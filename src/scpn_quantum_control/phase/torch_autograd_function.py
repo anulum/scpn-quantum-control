@@ -25,6 +25,12 @@ from typing import Any, TypeAlias
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+from ..differentiable_backend_capabilities import (
+    BackendCapabilityPrimitives as _BackendCapabilityPrimitives,
+)
+from ..differentiable_backend_capabilities import (
+    resolve_torch_autograd_function as _resolve_torch_autograd_function,
+)
 from ..differentiable_tensor_admission import (
     AdmissionPrimitives as _AdmissionPrimitives,
 )
@@ -509,12 +515,15 @@ def _load_torch() -> Any:
 
 def _torch_autograd_function(torch_module: Any) -> Any:
     """Return ``torch.autograd.Function`` from an imported PyTorch module."""
-    autograd = getattr(torch_module, "autograd", None)
-    function = getattr(autograd, "Function", None)
-    apply = getattr(function, "apply", None)
-    if autograd is None or function is None or not callable(apply):
-        raise RuntimeError("PyTorch module does not expose torch.autograd.Function.apply")
-    return function
+    return _resolve_torch_autograd_function(
+        torch_module,
+        primitives=_BackendCapabilityPrimitives(
+            attribute=lambda: getattr,
+            predicate=lambda: callable,
+            presence=lambda: hasattr,
+            invalid=lambda: RuntimeError,
+        ),
+    )
 
 
 def _torch_tensor_like(torch_module: Any, values: object, like: object) -> Any:

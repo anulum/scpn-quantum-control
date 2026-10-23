@@ -26,6 +26,15 @@ from ..differentiable import (
     ParameterShiftRule,
     value_and_parameter_shift_grad,
 )
+from ..differentiable_backend_capabilities import (
+    BackendCapabilityPrimitives as _BackendCapabilityPrimitives,
+)
+from ..differentiable_backend_capabilities import (
+    require_jax_custom_vjp as _require_jax_custom_vjp,
+)
+from ..differentiable_backend_capabilities import (
+    require_jax_host_callback as _require_jax_host_callback,
+)
 from ..differentiable_tensor_admission import (
     AdmissionPrimitives as _AdmissionPrimitives,
 )
@@ -127,21 +136,27 @@ def _as_label_vector(labels: ArrayLike, *, n_samples: int) -> FloatArray:
 
 
 def _require_jax_callback_support(jax_module: Any) -> None:
-    if not hasattr(jax_module, "jit"):
-        raise RuntimeError("JAX JIT is unavailable in the active JAX module")
-    if not hasattr(jax_module, "pure_callback"):
-        raise RuntimeError("JAX pure_callback is required for JIT-wrapped host gradients")
-    if not hasattr(jax_module, "ShapeDtypeStruct"):
-        raise RuntimeError("JAX ShapeDtypeStruct is required for JIT-wrapped host gradients")
+    _require_jax_host_callback(
+        jax_module,
+        primitives=_BackendCapabilityPrimitives(
+            attribute=lambda: getattr,
+            predicate=lambda: callable,
+            presence=lambda: hasattr,
+            invalid=lambda: RuntimeError,
+        ),
+    )
 
 
 def _require_jax_custom_vjp_support(jax_module: Any) -> None:
-    custom_vjp = getattr(jax_module, "custom_vjp", None)
-    if not callable(custom_vjp):
-        raise RuntimeError("JAX custom_vjp is required for the bounded-QNN custom VJP route")
-    value_and_grad = getattr(jax_module, "value_and_grad", None)
-    if not callable(value_and_grad):
-        raise RuntimeError("JAX value_and_grad is required for the bounded-QNN custom VJP route")
+    _require_jax_custom_vjp(
+        jax_module,
+        primitives=_BackendCapabilityPrimitives(
+            attribute=lambda: getattr,
+            predicate=lambda: callable,
+            presence=lambda: hasattr,
+            invalid=lambda: RuntimeError,
+        ),
+    )
 
 
 def _custom_vjp_function(jax_module: Any, function: JAXCallable) -> Any:

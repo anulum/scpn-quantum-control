@@ -26,6 +26,15 @@ from ..differentiable import (
     ParameterShiftRule,
     value_and_parameter_shift_grad,
 )
+from ..differentiable_backend_capabilities import (
+    BackendCapabilityPrimitives as _BackendCapabilityPrimitives,
+)
+from ..differentiable_backend_capabilities import (
+    resolve_torch_autograd_function as _resolve_torch_autograd_function,
+)
+from ..differentiable_backend_capabilities import (
+    resolve_torch_autograd_grad as _resolve_torch_autograd_grad,
+)
 from ..differentiable_tensor_admission import (
     AdmissionPrimitives as _AdmissionPrimitives,
 )
@@ -140,20 +149,27 @@ def _torch_tensor(torch_module: Any, values: object) -> Any:
 
 
 def _torch_autograd_function(torch_module: Any) -> Any:
-    autograd = getattr(torch_module, "autograd", None)
-    function = getattr(autograd, "Function", None)
-    apply = getattr(function, "apply", None)
-    if autograd is None or function is None or not callable(apply):
-        raise RuntimeError("PyTorch module does not expose torch.autograd.Function.apply")
-    return function
+    return _resolve_torch_autograd_function(
+        torch_module,
+        primitives=_BackendCapabilityPrimitives(
+            attribute=lambda: getattr,
+            predicate=lambda: callable,
+            presence=lambda: hasattr,
+            invalid=lambda: RuntimeError,
+        ),
+    )
 
 
 def _torch_autograd_grad(torch_module: Any) -> Any:
-    autograd = getattr(torch_module, "autograd", None)
-    grad = getattr(autograd, "grad", None)
-    if not callable(grad):
-        raise RuntimeError("PyTorch module does not expose torch.autograd.grad")
-    return grad
+    return _resolve_torch_autograd_grad(
+        torch_module,
+        primitives=_BackendCapabilityPrimitives(
+            attribute=lambda: getattr,
+            predicate=lambda: callable,
+            presence=lambda: hasattr,
+            invalid=lambda: RuntimeError,
+        ),
+    )
 
 
 def _torch_trainable_tensor(torch_module: Any, values: FloatArray) -> Any:
