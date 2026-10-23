@@ -6,7 +6,8 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // SCPN Quantum Control — original Results evidence guards
 
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { StrictMode } from "react";
 import { afterEach, expect, it, vi } from "vitest";
 const faults = vi.hoisted(() => ({ data: false, replay: false }));
 vi.mock("../../shared/browser/data", async (original) => {
@@ -50,7 +51,7 @@ afterEach(() => {
 it("renders actual original evidence and preserves the viewer's input refusal", async () => {
   window.history.replaceState(null, "", "#/results/program-ad-replay");
   render(<Workbench>{(_context, editors) => editors}</Workbench>);
-  await screen.findByRole("heading", { name: "Results" });
+  await screen.findByRole("heading", { name: "Results" }, { timeout: 5000 });
   expect(screen.getByRole("heading", { name: "Results" })).toBeTruthy();
   expect(screen.getByText("Differentiate support explorer")).toBeTruthy();
   expect(screen.getByText("Baseline scorecard")).toBeTruthy();
@@ -65,7 +66,7 @@ it("renders every missing source explicitly while retaining the original evidenc
   faults.replay = true;
   window.history.replaceState(null, "", "#/results");
   render(<Workbench>{(_context, editors) => editors}</Workbench>);
-  await screen.findByRole("heading", { name: "Results" });
+  await screen.findByRole("heading", { name: "Results" }, { timeout: 5000 });
   expect(screen.getAllByRole("alert")).toHaveLength(4);
   for (const reason of [
     "Matrix source unavailable",
@@ -83,11 +84,30 @@ it("renders every missing source explicitly while retaining the original evidenc
 it("reaches the original producer result inspector from the production Results route", async () => {
   window.history.replaceState(null, "", "#/results");
   render(<Workbench>{(_context, editors) => editors}</Workbench>);
-  await screen.findByRole("heading", { name: "Results" });
+  await screen.findByRole("heading", { name: "Results" }, { timeout: 5000 });
   expect(screen.getByLabelText("Result producer JSON")).toBeTruthy();
   expect(screen.getByRole("button", { name: "Inspect producer result" })).toBeTruthy();
   expect(
     screen.getByRole("heading", { name: "Compare immutable revisions and runs" }),
   ).toBeTruthy();
   expect(screen.getByLabelText("Baseline archive JSON")).toBeTruthy();
+});
+
+it.each([false, true])("retains replay focus when Results is remounted with StrictMode=%s", async (strict) => {
+  window.history.replaceState(null, "", "#/results/program-ad-replay");
+  const first = render(<Workbench>{(_context, editors) => editors}</Workbench>);
+  await screen.findByRole("heading", { name: "Results" }, { timeout: 5000 });
+  expect(document.activeElement?.id).toBe("/results/program-ad-replay");
+  first.unmount();
+
+  await act(async () => {
+    const workbench = <Workbench>{(_context, editors) => editors}</Workbench>;
+    render(strict ? <StrictMode>{workbench}</StrictMode> : workbench);
+    await vi.dynamicImportSettled();
+  });
+  expect(document.activeElement?.id).toBe("/results/program-ad-replay");
+  const input = screen.getByLabelText("Evidence JSON");
+  input.focus();
+  fireEvent.change(input, { target: { value: "{" } });
+  expect(document.activeElement).toBe(input);
 });

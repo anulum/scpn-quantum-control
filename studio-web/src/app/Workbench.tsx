@@ -6,7 +6,7 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // SCPN Quantum Control — persistent workbench shell over the registered modules
 
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { WorkspaceEditor } from "../shared/workspace/WorkspaceEditor";
 import type { WorkspacePanelProps } from "../shared/workspace/WorkspaceEditor";
@@ -133,7 +133,7 @@ export function Workbench({
     }
   }, [routeKey]);
   const focusedRoute = useRef<string | null>(null);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (focusedRoute.current !== routeKey) {
       focusedRoute.current = routeKey;
       content.current?.focus();
