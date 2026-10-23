@@ -952,6 +952,7 @@ _PYTEST_COV = _PYTEST_BASE + [
 ]
 
 STATIC_GATES: list[tuple[str, list[str]]] = [
+    ("CI build environment", [_PY, "tools/audit_ci_build_environment.py"]),
     (
         "workflow environment contracts",
         [_PY, "tools/audit_workflow_environment_contracts.py"],
