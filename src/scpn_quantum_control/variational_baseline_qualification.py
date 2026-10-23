@@ -173,7 +173,7 @@ class VariationalBaselineQualification:
 
     @property
     def global_optimum_claimed(self) -> bool:
-        """Return false; an improving finite-budget iterate proves no optimum.
+        """False; an improving finite-budget iterate proves no global optimum.
 
         Returns
         -------
@@ -185,7 +185,7 @@ class VariationalBaselineQualification:
 
     @property
     def performance_advantage_claimed(self) -> bool:
-        """Return false for these non-isolated functional observations.
+        """False for these non-isolated functional observations.
 
         Returns
         -------
