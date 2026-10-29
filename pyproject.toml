@@ -135,6 +135,7 @@ Documentation = "https://anulum.github.io/scpn-quantum-control"
 
 [tool.hatch.build.targets.sdist]
 exclude = [
+    "agentic_project_memory/",
     ".github/",
     ".coverage",
     ".mypy_cache/",

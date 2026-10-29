@@ -24,6 +24,10 @@ Scientific and hardware claim boundaries remain tied to their recorded evidence.
 
 ### Security
 
+- Source distributions exclude private local project-memory records, including
+  files ignored only through Git repository metadata. A real Hatch build test
+  preserves public documentation with the same file names.
+
 - The Rust engine lock resolves `quinn-proto` 0.11.19 (RUSTSEC-2026-0338,
   RUSTSEC-2026-0339, RUSTSEC-2026-0340, RUSTSEC-2026-0341, RUSTSEC-2026-0342).
   The crate is a transitive entry of the lock and is not part of the engine's

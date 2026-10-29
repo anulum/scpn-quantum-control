@@ -353,6 +353,8 @@ of failed and cancelled Actions history. Version carriers, source documentation,
 the capability snapshot and the Studio federation manifest must agree. Build and
 validate the wheel and sdist; repeat the wheel gate in the publication workflow.
 The release-readiness audit uses the complete exact-commit remote coverage report.
+Source distributions exclude private local project-memory records; a real Hatch
+build regression checks this boundary while retaining public namesakes.
 
 ## 1.2.0 qualification, provider certification and licence-hygiene scope
 
