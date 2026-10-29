@@ -34,7 +34,6 @@ OSCILLATOOLS = ROOT / "oscillatools"
 
 def _requirement_name(requirement: str) -> str:
     """Return the distribution name from a PEP 508 requirement string."""
-
     match = re.match(r"[A-Za-z0-9_.-]+", requirement.strip())
     assert match is not None, f"unparseable requirement {requirement!r}"
     return match.group(0)
@@ -42,7 +41,6 @@ def _requirement_name(requirement: str) -> str:
 
 def test_decision_record_approves_split_with_recorded_promotion_gate() -> None:
     """The public decision record carries the CEO/IP approval and the eight recorded decisions."""
-
     text = DECISION.read_text(encoding="utf-8")
 
     assert "Decision status: APPROVED 2026-07-04 (CEO/IP)." in text
@@ -56,7 +54,6 @@ def test_decision_record_approves_split_with_recorded_promotion_gate() -> None:
 
 def test_repository_reserves_the_approved_name_and_avoids_forbidden_names() -> None:
     """The parent distribution is unchanged and no forbidden Kuramoto package name is used."""
-
     pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     project = pyproject["project"]
 
@@ -71,7 +68,6 @@ def test_repository_reserves_the_approved_name_and_avoids_forbidden_names() -> N
 
 def test_decision_record_is_crosslinked_from_public_docs() -> None:
     """The decision record is reachable from public navigation and handbook docs."""
-
     mkdocs = (ROOT / "mkdocs.yml").read_text(encoding="utf-8")
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     index = (ROOT / "docs" / "index.md").read_text(encoding="utf-8")
@@ -87,7 +83,6 @@ def test_decision_record_is_crosslinked_from_public_docs() -> None:
 
 def test_extraction_created_the_oscillatools_distribution_on_the_recorded_floor() -> None:
     """The approved `oscillatools` distribution exists with the recorded numpy+scipy budget."""
-
     pyproject_path = OSCILLATOOLS / "pyproject.toml"
     assert pyproject_path.exists(), "the oscillatools/ distribution was not created"
     assert (OSCILLATOOLS / "src" / "oscillatools" / "__init__.py").exists()
@@ -106,7 +101,6 @@ def test_extraction_created_the_oscillatools_distribution_on_the_recorded_floor(
 
 def test_parent_depends_on_oscillatools_and_retains_the_reexport_shims() -> None:
     """scpn-quantum-control gains the dependency edge and keeps the three deprecation shims."""
-
     pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     dependencies = pyproject["project"]["dependencies"]
     oscillatools_edges = [
