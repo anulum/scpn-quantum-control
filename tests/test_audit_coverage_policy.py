@@ -591,17 +591,17 @@ def test_live_policy_records_latest_remote_line_baseline() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     policy = _audit.load_policy(repo_root / "tools" / "coverage_policy.json")
 
-    assert policy.line_minimum_percent == 97.8568
+    assert policy.line_minimum_percent == 99.05
     assert policy.branch.mode == "observe"
     assert policy.branch.require_data is True
-    assert policy.baseline.origin_commit == "9e316d4a999275d873543d28aa7ee640175ff0db"
-    assert policy.baseline.remote_ci_run == 39938297231
-    assert policy.baseline.covered_lines == 116066
-    assert policy.baseline.measured_lines == 118608
-    assert policy.baseline.branch_percent == 96.4505
+    assert policy.baseline.origin_commit == "a3759aa3685cf1d724b6f4113f1ffa6f99b86f7c"
+    assert policy.baseline.remote_ci_run == 40837529560
+    assert policy.baseline.covered_lines == 117560
+    assert policy.baseline.measured_lines == 118676
+    assert policy.baseline.branch_percent == 97.7906
 
 
-@pytest.mark.parametrize("covered, expected_exit", [(116066, 0), (116065, 1)])
+@pytest.mark.parametrize("covered, expected_exit", [(117549, 0), (117548, 1)])
 def test_cli_ratchet_rejects_one_lost_line_despite_identical_rounded_rate(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
@@ -627,18 +627,18 @@ def test_cli_ratchet_rejects_one_lost_line_despite_identical_rounded_rate(
         report,
         attributes={
             "lines-covered": str(covered),
-            "lines-valid": "118608",
-            "line-rate": "0.9786",
-            "branches-covered": "38721",
+            "lines-valid": "118676",
+            "line-rate": "0.9905",
+            "branches-covered": "39259",
             "branches-valid": "40146",
-            "branch-rate": "0.9645",
+            "branch-rate": "0.9779",
         },
     )
 
     assert _audit.main(["--coverage-xml", str(report), "--json"]) == expected_exit
     result = json.loads(capsys.readouterr().out)
-    assert result["line"]["percent"] == round(covered * 100.0 / 118608, 6)
-    assert result["line"]["minimum_percent"] == 97.8568
+    assert result["line"]["percent"] == round(covered * 100.0 / 118676, 6)
+    assert result["line"]["minimum_percent"] == 99.05
     assert result["status"] == ("pass" if expected_exit == 0 else "fail")
 
 
@@ -659,9 +659,9 @@ def test_cli_requires_branch_data_at_the_line_baseline(
     _write_xml(
         report,
         attributes={
-            "lines-covered": "116066",
-            "lines-valid": "118608",
-            "line-rate": "0.9786",
+            "lines-covered": "117560",
+            "lines-valid": "118676",
+            "line-rate": "0.9906",
             "branches-covered": "0",
             "branches-valid": "0",
             "branch-rate": "0",

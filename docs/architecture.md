@@ -809,7 +809,7 @@ auto-generated block is the source of truth if the two ever drift.
 | Python modules | 826 (excluding package initialisers) |
 | Rust crate | 1 (PyO3 0.29, **177 bindings**, 120 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
 | Julia tier | 1 (now in the `oscillatools` distribution: `oscillatools/accel/julia/order_parameter.jl`; juliacall-bridged, opt-in via `oscillatools[julia]`) |
-| Tests | CI-gated suite (97.8568% line-coverage gate; branch telemetry required and currently observational) |
+| Tests | CI-gated suite (99.05% line-coverage gate; branch telemetry required and currently observational) |
 | Subpackages | domain package families (see the package map below) |
 | Research gems | See generated capability inventory and module-level docs |
 | Examples | 29 |

@@ -261,7 +261,7 @@ convergence.
 ## Coverage
 
 CI collects both line and branch coverage on the aggregate suite. The tracked
-policy audit enforces a **97.8568% line-coverage gate** and requires non-empty
+policy audit enforces a **99.05% line-coverage gate** and requires non-empty
 branch data; branch coverage is reported in observation mode until consecutive
 remote main-branch runs establish a baseline for a separate threshold. The
 `slow`, `hardware`, `internal_corpus`, and `performance` markers are deselected

@@ -2,7 +2,7 @@
 
 ## Overview
 
-scpn-quantum-control has a CI-gated test suite with a 97.8568% aggregate **line**
+scpn-quantum-control has a CI-gated test suite with a 99.05% aggregate **line**
 coverage requirement. CI now collects branch arcs in the same run and requires
 real branch opportunity data, but the branch percentage remains observational
 until consecutive remote runs establish a stable baseline. The active test
@@ -620,14 +620,14 @@ CI skips slow tests: `pytest -m "not slow"`.
 ```
 
 Test matrix: Python 3.11, 3.12, 3.13.
-Coverage target: 97.8568% line coverage on the Python 3.12 lane, enforced by
+Coverage target: 99.05% line coverage on the Python 3.12 lane, enforced by
 `tools/audit_coverage_policy.py` from branch-enabled `coverage.xml`. Branch data
 is mandatory but observational until the policy records an evidence-backed
-branch threshold. The recorded remote baseline is 116,066 / 118,608 executable
-lines (97.8568%) and 38,721 / 40,146 branches (96.4505%) at origin `9e316d4a`
-(CI run `39938297231`). Threshold comparisons use the exact counts rather than
-the XML report's rounded rates. This is measurement provenance, not a claim
-that every job in that historical CI run passed.
+branch threshold. The recorded remote baseline is 117,560 / 118,676 executable
+lines (99.0596%) and 39,259 / 40,146 branches (97.7906%) at origin `a3759aa3`
+(successful CI run `40837529560`). The 99.05% gate leaves eleven covered lines
+of margin at this measured inventory size. Threshold comparisons use the exact
+counts rather than the XML report's rounded rates.
 Coverage recovery must stay module-specific; coverage-bucket tests remain
 forbidden.
 

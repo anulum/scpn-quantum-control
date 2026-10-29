@@ -1,23 +1,23 @@
 {
   "schema_version": 1,
   "coverage_xml": "coverage.xml",
-  "line_minimum_percent": 97.8568,
+  "line_minimum_percent": 99.05,
   "branch": {
     "minimum_percent": null,
     "mode": "observe",
     "require_data": true
   },
   "baseline": {
-    "branch_percent": 96.4505,
-    "covered_lines": 116066,
-    "line_percent": 97.8568,
-    "measured_lines": 118608,
-    "origin_commit": "9e316d4a999275d873543d28aa7ee640175ff0db",
-    "remote_ci_run": 39938297231,
+    "branch_percent": 97.7906,
+    "covered_lines": 117560,
+    "line_percent": 99.0596,
+    "measured_lines": 118676,
+    "origin_commit": "a3759aa3685cf1d724b6f4113f1ffa6f99b86f7c",
+    "remote_ci_run": 40837529560,
     "source": "coverage-gap-audit-3.12"
   },
   "branch_promotion": {
     "minimum_successful_remote_runs": 3,
-    "rule": "Set branch.mode to enforce and branch.minimum_percent only after consecutive successful main-branch CI artefacts establish a stable branch baseline; do not lower the 97.8568 percent line gate."
+    "rule": "Set branch.mode to enforce and branch.minimum_percent only after consecutive successful main-branch CI artefacts establish a stable branch baseline; do not lower the 99.05 percent line gate."
   }
 }

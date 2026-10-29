@@ -34,7 +34,7 @@
 > non-artefact scientific claims. APIs may evolve as this work progresses.
 
 **Version:** 1.3.0
-**Status:** Kuramoto-XY compiler + hardware runners + analysis stack + bounded differentiable-programming surface | generated capability inventory below | CI coverage gate 97.8568% | IBM Heron r2 evidence ledgered
+**Status:** Kuramoto-XY compiler + hardware runners + analysis stack + bounded differentiable-programming surface | generated capability inventory below | CI coverage gate 99.05% | IBM Heron r2 evidence ledgered
 
 > **Honest scope — read first.** At the system sizes reachable today
 > (n ≤ 16 qubits) classical ODE and exact solvers are **faster and more accurate**
@@ -599,7 +599,7 @@ for a runnable local example and the SDK/device evidence boundaries.
 | Source package surface | Tracked Python source files under `src/scpn_quantum_control` (excluding package initialisers) — the current count lives in the generated capability inventory above. |
 | Research module families | Analysis, phase, hardware, bridge, mitigation, QEC, applications, forecasting, and benchmark families; exact current counts are listed in the package map below. |
 | Publication figures | **17** (simulation + hardware, including the Phase 1 DLA parity panels and exact-simulation crossover) |
-| Test, coverage, and typing gates | CI enforces **97.8568% line coverage** through `tools/coverage_policy.json`, collects branch telemetry without inventing an unmeasured branch threshold, and strict-mypy checks production Python. Tests use the additive cohort in `tools/test_typing_policy.json` rather than claiming the legacy test tree is already strict. See [Test Infrastructure](docs/test_infrastructure.md) and the generated capability inventory for current scope. |
+| Test, coverage, and typing gates | CI enforces **99.05% line coverage** through `tools/coverage_policy.json`, collects branch telemetry without inventing an unmeasured branch threshold, and strict-mypy checks production Python. Tests use the additive cohort in `tools/test_typing_policy.json` rather than claiming the legacy test tree is already strict. See [Test Infrastructure](docs/test_infrastructure.md) and the generated capability inventory for current scope. |
 | Readout uncertainty | [Signed readout and shared-calibration GLS](docs/mitigation_api.md#signed-readout-estimates-and-calibration-uncertainty) preserve raw labels/counts and separate sampling/calibration error under explicit normal/delta assumptions. |
 | Reproducibility CLI | `scpn-bench reproduce-methods`, `scpn-bench fim-all`, and `scpn-bench all` regenerate committed methods/FIM artefacts without IBM submission |
 
