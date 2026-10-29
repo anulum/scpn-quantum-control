@@ -99,6 +99,19 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
     """Return the registered differentiable module hardening evidence map."""
     return (
         _record(
+            "src/scpn_quantum_control/differentiable_axis_compilation.py",
+            ("tests/test_differentiable_axis_compilation.py",),
+            ("eager axis-sorter liveness", "compiler admission", "replacement-sorter guards"),
+        ),
+        _record(
+            "src/scpn_quantum_control/differentiable_backend_capabilities.py",
+            (
+                "tests/test_differentiable_backend_capabilities.py",
+                "tests/test_differentiable_backend_capabilities_native.py",
+            ),
+            ("optional framework admission", "native backend operator requirements"),
+        ),
+        _record(
             "src/scpn_quantum_control/benchmarks/differentiable_catalyst_comparison.py",
             ("tests/test_differentiable_catalyst_comparison.py",),
             ("unsupported-provider-route hard gaps", "compiler-workflow status fail-closed rows"),

@@ -12,6 +12,35 @@ Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-c
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-29
+
+### Added
+
+- Native JAX, PyTorch and TensorFlow derivative qualification, signed readout
+  correction with sampling/calibration uncertainty, and bounded native co-design.
+- Studio workspace transactions, source-preserving method comparisons,
+  provider observation history and a searchable capability catalogue.
+
+### Fixed
+
+- Compiled PyTorch Phase-QNode gradients for fixed-axis Pauli circuits, while
+  retaining the separate dense NumPy observable limitation.
+- Solver time/termination contracts and native FEP/MPC corrections. Public
+  installations use `oscillatools` 0.1.1 and optional Rust engine 0.3.0 with
+  the matching parent 1.3.0 host contract.
+- Native signing-key custody retains explicit destruction; ML-DSA remains a
+  research implementation without constant-time or FIPS-140 validation claims.
+
+### Security and packaging
+
+- Patch dependency locks and Studio `undici` 7.30.1, align action pins, and
+  exclude private local project-memory records from source archives.
+- Three unpatched upstream provider advisories retain explicit codec-only
+  dispositions, reviewed 29 October with a fail-closed deadline of 5 November.
+
+Scientific, hardware and benchmark claims remain bounded by their recorded
+source evidence; engineering checks do not promote those claims.
+
 ## [1.2.0] - 2026-09-29
 
 ### Security
