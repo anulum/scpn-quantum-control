@@ -24,6 +24,12 @@ Scientific and hardware claim boundaries remain tied to their recorded evidence.
 
 ### Security
 
+- Hash-locked CI environments use patched `filelock` 4.2.4, `msgpack` 1.2.3,
+  `setuptools` 84.2.1, `authlib` 1.9.1 and `tornado` 6.6 where applicable.
+  The three existing unpatched provider advisories remain confined to their
+  documented codec-only audit dispositions, reviewed on 29 October with a
+  fail-closed review deadline of 5 November 2026.
+
 - Source distributions exclude private local project-memory records, including
   files ignored only through Git repository metadata. A real Hatch build test
   preserves public documentation with the same file names.

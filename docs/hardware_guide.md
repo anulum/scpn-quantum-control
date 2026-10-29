@@ -205,12 +205,12 @@ different evidence. A successful native codec does not resolve a dependency
 advisory, establish cloud authentication or prove physical hardware operation.
 
 Three currently unpatched upstream advisories have narrowly scoped codec-CI
-dispositions through 25 October 2026: D-Wave's `diskcache` dependency
+dispositions reviewed on 29 October 2026 and valid through 4 November 2026: D-Wave's `diskcache` dependency
 (CVE-2025-69872), and Strangeworks' `python-jose` (CVE-2026-85394) and `ecdsa`
 (CVE-2024-23342) dependencies. These fixtures read no untrusted persistent cache,
 authenticate no cloud client, verify no external JWT and perform no signing,
 key generation or ECDH. The audit excludes only those named advisories in their
-respective cohorts and refuses the exceptions from 26 October onward. These
+respective cohorts and refuses the exceptions from 5 November onward. These
 are unresolved vendor risks, not repaired vulnerabilities or qualification of
 the affected operations. Every other finding and audit failure still blocks.
 

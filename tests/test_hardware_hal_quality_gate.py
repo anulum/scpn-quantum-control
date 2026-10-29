@@ -247,8 +247,8 @@ def test_provider_sdk_locks_have_complete_blocking_advisory_audits() -> None:
         "CVE-2026-85394",
         "CVE-2024-23342",
     ]
-    assert audit.count("Review-by 2026-10-26.") == 3
-    assert 'if ! [[ "$(date -u +%F)" < "2026-10-26" ]]; then' in audit
+    assert audit.count("Review-by 2026-11-05.") == 3
+    assert 'if ! [[ "$(date -u +%F)" < "2026-11-05" ]]; then' in audit
     assert "exit 1" in audit
     assert "|| true" not in audit
     assert "--ignore-vuln" not in audit[audit.index("esac") :]
@@ -292,7 +292,14 @@ def test_provider_sdk_locks_have_complete_blocking_advisory_audits() -> None:
 
 @pytest.mark.parametrize("cohort", ["dwave", "strangeworks"])
 def test_provider_advisory_disposition_expires_before_audit_execution(cohort: str) -> None:
-    """The actual CI shell refuses an expired vendor exception before invoking the auditor."""
+    """Refuse an expired vendor exception before invoking the actual auditor.
+
+    Parameters
+    ----------
+    cohort
+        Isolated native SDK codec whose named disposition must expire.
+
+    """
     workflow = yaml.safe_load(Path(".github/workflows/ci-control-provider.yml").read_text())
     job = workflow["jobs"]["provider-sdk-lock-audit"]
     script = next(
@@ -301,7 +308,7 @@ def test_provider_advisory_disposition_expires_before_audit_execution(cohort: st
         if step.get("name") == "Audit the complete provider SDK lock"
     )
     script = script.replace("${{ matrix.cohort }}", cohort)
-    script = script.replace("$(date -u +%F)", "2026-10-26")
+    script = script.replace("$(date -u +%F)", "2026-11-05")
     syntax = subprocess.run(
         ["bash", "-n"], input=script, capture_output=True, text=True, timeout=10, check=False
     )

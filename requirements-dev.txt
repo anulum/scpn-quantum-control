@@ -1,9 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Pinned Development Dependencies
+# SCPN Quantum Control — Pinned Development Dependencies
 #
 # Version-pinned but intentionally unhashed — see the "Why no --hash here"
 # note in requirements.txt. Development installs layer optional extras on top,
@@ -25,6 +26,9 @@ build==1.5.0
 hatchling==1.31.0
 types-defusedxml==0.7.0.20260504
 types-PyYAML==6.0.12.20260815
+# Patched transitive cache and binary-codec dependencies.
+filelock==4.2.4
+msgpack==1.2.3
 # Docs
 mkdocs==1.6.1
 mkdocs-material==9.7.7

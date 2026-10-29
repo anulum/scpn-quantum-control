@@ -19,3 +19,6 @@ scipy>=1.13,<2
 symengine==0.14.1
 dwave-cloud-client==0.14.8
 dwave-system==1.36.0
+
+# Patched transitive dependency required by the complete lock audit.
+authlib==1.9.1

@@ -792,18 +792,18 @@ jobs:
           advisory_args=()
           case "${{ matrix.cohort }}" in
             dwave)
-              # diskcache CVE-2025-69872: no fixed release; codec fixtures never read an untrusted persistent cache. Review-by 2026-10-26.
+              # diskcache CVE-2025-69872: no fixed release; codec fixtures never read an untrusted persistent cache. Review-by 2026-11-05.
               advisory_args+=(--ignore-vuln CVE-2025-69872)
               ;;
             strangeworks)
-              # python-jose CVE-2026-85394: no fixed release; this codec cohort never authenticates or verifies external JWTs. Review-by 2026-10-26.
+              # python-jose CVE-2026-85394: no fixed release; this codec cohort never authenticates or verifies external JWTs. Review-by 2026-11-05.
               advisory_args+=(--ignore-vuln CVE-2026-85394)
-              # ecdsa CVE-2024-23342: no fixed release; this codec cohort never signs, generates keys or performs ECDH. Review-by 2026-10-26.
+              # ecdsa CVE-2024-23342: no fixed release; this codec cohort never signs, generates keys or performs ECDH. Review-by 2026-11-05.
               advisory_args+=(--ignore-vuln CVE-2024-23342)
               ;;
           esac
           if (( ${#advisory_args[@]} )); then
-            if ! [[ "$(date -u +%F)" < "2026-10-26" ]]; then
+            if ! [[ "$(date -u +%F)" < "2026-11-05" ]]; then
               echo "The named provider advisory dispositions require review; refusing an expired exception."
               exit 1
             fi

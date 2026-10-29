@@ -35,7 +35,7 @@
       "evidence_paths": [
         "requirements-dev.txt"
       ],
-      "pinned_package_count": 31,
+      "pinned_package_count": 33,
       "checksum_count": 1,
       "evidence_status": "locked",
       "blockers": [],
@@ -122,11 +122,11 @@
         "data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.json"
       ],
       "evidence_sha256": [
-        "9061e4e82a589157587a725aa57007092307ab833c5500f0efead6763ebf5754",
-        "6e1dcb43ad2ecd7b2a7428bc601bd3a93190ad0b0a6cce2ab14db518a00bb943",
-        "551d0f83e719d188068604cfb49a97592d56aa94e2033a249c89083dfd04f5fb",
-        "0ed75ecfe97799ab4050cdc2d24e3a5794e56c4237aa49f379864a00ba4b0f51",
-        "9b7738ed1661b39a121a756f50a3da347d1a57c118db082f539b8959da8a07b5"
+        "816344ce63867bb4cba433194e0566dc750fb0fe95230d3360fbb320e2e47a74",
+        "ed6ea0eb75dc0d0fd54622003cffb56fc83cbc428523ade903e1c683cbbee710",
+        "dfa5bd2535b4842e0b6dec97f53c94e75644cc211ba99ee3633c66278646bcc0",
+        "65f6201bbf7c8230118e44101361acbde7a3187353a6d86899053c851447bb33",
+        "d02e36e575ddc5b2367653738ba3082fe82cd1d8353c011366c20b2f906c907a"
       ],
       "evidence_status": "locked",
       "blockers": [],
@@ -262,7 +262,7 @@
       ],
       "evidence_sha256": [
         "fa33d0f2d273e0fbcc7878b899637c543a67cca4cd2d639989a4c26ee317f6eb",
-        "8088f540dbf368ab312699a4489dbe05f83e6bdb71f7556d9b28286663c56031"
+        "abc35b3c04d1b415ee4d5b2776a2522ef14d3117786df6e25f8ab1147e72dd52"
       ],
       "evidence_status": "locked",
       "blockers": [],
@@ -329,7 +329,7 @@
         "src/scpn_quantum_control/phase/torch_maturity.py"
       ],
       "evidence_sha256": [
-        "9061e4e82a589157587a725aa57007092307ab833c5500f0efead6763ebf5754",
+        "816344ce63867bb4cba433194e0566dc750fb0fe95230d3360fbb320e2e47a74",
         "bbc9d36825b9965fabaac9fe152c67549fc305507037d05fb0094dc767a55b2e",
         "b103d89b86a5a8bd9ebe2946622be84165d40b2cc6603a4d5241bb7eb1845136"
       ],
@@ -392,7 +392,7 @@
       ],
       "evidence_sha256": [
         "143adfb150d6dc203fabcd2e6202d4fdd2dc8170e3200ce880399bc4114b6024",
-        "55398579d7de43743813eb151a449ecefddf590e6d4000f9646d2471e4ce6fff"
+        "52969dd6ae8b2a1a9bcf62aaefc0757f9bfad3d260bce7f93247f80f0e263c97"
       ],
       "evidence_status": "hard_gap",
       "blockers": [
@@ -413,7 +413,7 @@
       ],
       "evidence_sha256": [
         "143adfb150d6dc203fabcd2e6202d4fdd2dc8170e3200ce880399bc4114b6024",
-        "55398579d7de43743813eb151a449ecefddf590e6d4000f9646d2471e4ce6fff"
+        "52969dd6ae8b2a1a9bcf62aaefc0757f9bfad3d260bce7f93247f80f0e263c97"
       ],
       "evidence_status": "hard_gap",
       "blockers": [
@@ -434,7 +434,7 @@
       ],
       "evidence_sha256": [
         "bbc9d36825b9965fabaac9fe152c67549fc305507037d05fb0094dc767a55b2e",
-        "55398579d7de43743813eb151a449ecefddf590e6d4000f9646d2471e4ce6fff"
+        "52969dd6ae8b2a1a9bcf62aaefc0757f9bfad3d260bce7f93247f80f0e263c97"
       ],
       "evidence_status": "hard_gap",
       "blockers": [

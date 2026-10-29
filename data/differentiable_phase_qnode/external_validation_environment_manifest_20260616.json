@@ -4,12 +4,12 @@
   "classification": "functional_non_isolated",
   "lockfiles": [
     {
-      "line_count": 527,
+      "line_count": 528,
       "path": "pyproject.toml",
       "pinned_package_count": 0,
       "role": "Package metadata and bounded dependency ranges",
-      "sha256": "9061e4e82a589157587a725aa57007092307ab833c5500f0efead6763ebf5754",
-      "size_bytes": 23009
+      "sha256": "816344ce63867bb4cba433194e0566dc750fb0fe95230d3360fbb320e2e47a74",
+      "size_bytes": 23040
     },
     {
       "line_count": 34,
@@ -20,12 +20,12 @@
       "size_bytes": 1611
     },
     {
-      "line_count": 50,
+      "line_count": 54,
       "path": "requirements-dev.txt",
-      "pinned_package_count": 31,
+      "pinned_package_count": 33,
       "role": "Developer verification dependency lock input",
-      "sha256": "8088f540dbf368ab312699a4489dbe05f83e6bdb71f7556d9b28286663c56031",
-      "size_bytes": 1505
+      "sha256": "abc35b3c04d1b415ee4d5b2776a2522ef14d3117786df6e25f8ab1147e72dd52",
+      "size_bytes": 1594
     },
     {
       "line_count": 374,
@@ -36,28 +36,28 @@
       "size_bytes": 29139
     },
     {
-      "line_count": 3033,
+      "line_count": 3060,
       "path": "requirements-ci-py311-linux.txt",
       "pinned_package_count": 157,
       "role": "Python 3.11 Linux CI lockfile",
-      "sha256": "6e1dcb43ad2ecd7b2a7428bc601bd3a93190ad0b0a6cce2ab14db518a00bb943",
-      "size_bytes": 224269
+      "sha256": "ed6ea0eb75dc0d0fd54622003cffb56fc83cbc428523ade903e1c683cbbee710",
+      "size_bytes": 226620
     },
     {
-      "line_count": 2988,
+      "line_count": 3014,
       "path": "requirements-ci-py312-linux.txt",
       "pinned_package_count": 157,
       "role": "Python 3.12 Linux CI lockfile",
-      "sha256": "551d0f83e719d188068604cfb49a97592d56aa94e2033a249c89083dfd04f5fb",
-      "size_bytes": 220444
+      "sha256": "dfa5bd2535b4842e0b6dec97f53c94e75644cc211ba99ee3633c66278646bcc0",
+      "size_bytes": 222778
     },
     {
-      "line_count": 3029,
+      "line_count": 3055,
       "path": "requirements-ci-py313-linux.txt",
       "pinned_package_count": 157,
       "role": "Python 3.13 Linux CI lockfile",
-      "sha256": "0ed75ecfe97799ab4050cdc2d24e3a5794e56c4237aa49f379864a00ba4b0f51",
-      "size_bytes": 224194
+      "sha256": "65f6201bbf7c8230118e44101361acbde7a3187353a6d86899053c851447bb33",
+      "size_bytes": 226528
     },
     {
       "line_count": 54,
@@ -77,6 +77,6 @@
     }
   ],
   "platform": "Linux-7.0.0-34-generic-x86_64-with-glibc2.39",
-  "python_version": "3.12.14",
+  "python_version": "3.12.15",
   "schema": "scpn_qc_differentiable_external_validation_environment_lock_v2"
 }
