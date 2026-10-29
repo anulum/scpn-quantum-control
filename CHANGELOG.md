@@ -27,6 +27,11 @@ Scientific and hardware claim boundaries remain tied to their recorded evidence.
 
 ### Security
 
+- Upgrade the Studio development dependency `undici` to 7.30.1, addressing
+  GHSA-4w7w-5xrc-9h26, GHSA-2m5v-pch6-74hx, GHSA-qrxm-fqhp-jwvm,
+  GHSA-9fm3-97px-rjf6 and GHSA-xjj6-f33q-929c. These cover redirect-cache
+  disclosure, TLS validation and denial-of-service paths in development tools.
+
 - Hash-locked CI environments use patched `filelock` 4.2.4, `msgpack` 1.2.3,
   `setuptools` 84.2.1, `authlib` 1.9.1 and `tornado` 6.6 where applicable.
   The three existing unpatched provider advisories remain confined to their

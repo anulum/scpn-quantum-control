@@ -15,9 +15,9 @@ overrides:
   'adm-zip@<0.6.1': '0.6.1'
   # Dependabot alert #91; patched in postcss 8.5.23.
   'postcss@<=8.5.22': '8.5.23'
-  # Dependabot alerts #150-153, #156 and #157 (GHSA-w293-vg96-wgc3 and five
-  # others); patched in undici 7.29.1, which also covers alerts #82-86.
-  'undici@<7.29.1': '7.29.1'
+  # Dependabot alerts #210 and #212-215 (TLS, redirects and response handling);
+  # undici 7.30.1 also retains the earlier 7.29.1 security fixes.
+  'undici@<7.30.1': '7.30.1'
   # GHSA-rgw5-rvv9-x895 and GHSA-q2hr-2g5m-vwhr, reached only through the
   # typedoc docs generator; patched in brace-expansion 5.0.12.
   'brace-expansion@<5.0.12': '5.0.12'
