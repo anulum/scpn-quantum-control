@@ -45,7 +45,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-rust = ["scpn-quantum-engine>=0.2.0"]
+rust = ["scpn-quantum-engine>=0.3.0"]
 julia = ["juliacall>=0.9,<2"]
 jax = ["jax>=0.4.30"]
 torch = ["torch>=2.2,<3.0"]

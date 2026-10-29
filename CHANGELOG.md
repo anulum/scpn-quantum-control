@@ -25,6 +25,10 @@ Scientific and hardware claim boundaries remain tied to their recorded evidence.
 - Require companion `oscillatools` 0.1.1 so public installations receive the
   solver time, termination and finite-input fixes qualified in this repository.
 
+- Require optional Rust engine 0.3.0, including native FEP/MPC corrections,
+  bounded execution admission and the zeroizing ML-DSA signing-key holder.
+  The engine requires parent 1.3.0 so both sides use the qualified host contract.
+
 ### Security
 
 - Upgrade the Studio development dependency `undici` to 7.30.1, addressing

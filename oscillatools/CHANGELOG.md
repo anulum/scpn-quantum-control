@@ -22,6 +22,8 @@ All notable changes to `oscillatools` are documented here. The format follows
 - Preserve solver time and termination contracts in fixed-step, delayed,
   adaptive and differentiable Kuramoto integrations. Reject non-finite model
   parameters and malformed callback velocities at their public boundaries.
+- Require optional Rust engine 0.3.0 so accelerated installations receive the
+  corresponding native solver corrections.
 - Align the standalone distribution with the solver implementation qualified by
   `scpn-quantum-control` 1.3.0.
 

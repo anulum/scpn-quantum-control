@@ -231,7 +231,7 @@ def build_differentiable_dependency_environment_evidence(
                 "chrono==0.4.45",
                 "clap==4.6.7",
                 "criterion==0.5.1",
-                "scpn-quantum-engine==0.2.0",
+                "scpn-quantum-engine==0.3.0",
                 "pyo3==0.30.1",
                 "ndarray==0.16.1",
                 "numpy==0.30.0",
