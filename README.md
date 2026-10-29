@@ -33,7 +33,7 @@
 > artefacts are now part of release/repro hardening and are kept separate from
 > non-artefact scientific claims. APIs may evolve as this work progresses.
 
-**Version:** 1.2.0
+**Version:** 1.3.0
 **Status:** Kuramoto-XY compiler + hardware runners + analysis stack + bounded differentiable-programming surface | generated capability inventory below | CI coverage gate 97.8568% | IBM Heron r2 evidence ledgered
 
 > **Honest scope — read first.** At the system sizes reachable today
@@ -74,7 +74,7 @@ The planned **10.0.0 architecture transition** names **16 focused components
 and eight supporting tools**, 24 responsibilities in total. The components
 are planned extractions; the tools are under development or at the design
 stage. This map does not announce independent releases or require migration.
-The current workbench remains at source version **1.2.0**, beta.
+The current workbench remains at source version **1.3.0**, beta.
 
 ![SCPN Quantum Computing Systems: permanent workbench, planned components and supporting tools.](docs/assets/scpn_quantum_group_map.svg)
 
@@ -153,7 +153,7 @@ claims only when the evidence exists.
 
 | Surface | Current inventory |
 |---|---:|
-| Package version | 1.2.0 |
+| Package version | 1.3.0 |
 | Public API exports | 851 |
 | Python source modules | 826 |
 | Public Python classes | 1559 |

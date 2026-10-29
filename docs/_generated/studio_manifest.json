@@ -139,7 +139,7 @@
       }
     ],
     "catalogue": {
-      "identity": "sha256:8695ddd4a0a2bd52070dfc2a26bd3a2e1e883dcfa11249e203a60570a1827d38",
+      "identity": "sha256:bc9f154539dfb27fadfd9115266dea06dbe36a15713af75d59b2e19b1c144b3a",
       "rows": [
         {
           "api": "scpn-studio-run analyse",
@@ -296,7 +296,7 @@
       "schema": "studio-capability-catalogue.v1",
       "source_digest": "sha256:31a28dc1c3293eeb53b3343db1cfe82cdf24bc7a7a0ac098d7de89774d98d83d",
       "source_studio": "scpn-quantum-control",
-      "source_version": "1.2.0"
+      "source_version": "1.3.0"
     },
     "cross_repo": [
       {
@@ -512,7 +512,7 @@
     "platform_sdk": ">=0.9,<0.12",
     "protocol_version": "1",
     "studio": "scpn-quantum-control",
-    "studio_version": "1.2.0",
+    "studio_version": "1.3.0",
     "transport_profile": "local-first",
     "ui_module": {
       "exposes": [

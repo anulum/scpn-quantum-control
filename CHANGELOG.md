@@ -4,6 +4,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-29
+
+This minor release packages native differentiable transform qualification,
+signed readout correction and uncertainty propagation, Studio workspace and
+provider-evidence interfaces, bounded co-design, and dependency security fixes.
+Scientific and hardware claim boundaries remain tied to their recorded evidence.
+
 - Restore compiled PyTorch Phase-QNode gradients for fixed tensor-axis
   permutations through the supported compiler polyfill API. Eager sorting and
   replacement-sorter dependency guards remain active. Qualification covers

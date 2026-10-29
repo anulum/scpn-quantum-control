@@ -334,6 +334,26 @@ Before tagging:
 12. Push the commit and wait for CI before creating a release tag. The tag
     workflow re-runs the Wheel content gate against the publication artifacts.
 
+## 1.3.0 native differentiation and Studio scope
+
+The `1.3.0` minor release packages the changes recorded since `1.2.0`:
+native CPU differentiable transforms, compiled PyTorch tensor-axis ordering,
+signed readout and calibration uncertainty, bounded ansatz/layout co-design,
+Studio workspace and provider-evidence interfaces, and dependency security fixes.
+
+Compiled axis qualification covers the original public Pauli-observable route,
+including real Inductor integration and full-graph eager capture. Captured dense
+NumPy observables retain a separate compiler limitation. This release makes no
+new Inductor performance, compiler export, quantum-advantage or hardware claim.
+Unfinished source-separation work is outside the released tree.
+
+Before tagging this version, require the complete remote CI result for the exact
+release SHA, resolved pull requests and security alerts, and a documented review
+of failed and cancelled Actions history. Version carriers, source documentation,
+the capability snapshot and the Studio federation manifest must agree. Build and
+validate the wheel and sdist; repeat the wheel gate in the publication workflow.
+The release-readiness audit uses the complete exact-commit remote coverage report.
+
 ## 1.2.0 qualification, provider certification and licence-hygiene scope
 
 The `1.2.0` minor release packages the work since `1.1.0`: source-bound
