@@ -894,6 +894,10 @@ and receive the median observed duration; removed items cannot be restored by
 old hints. Invalid or nonfinite hints fail validation before coverage starts.
 Timings affect scheduling only.
 
+Workers record the source they test as the workflow commit. A checkout without
+a commit, such as the container image's synthetic Git index, is recorded by its
+index tree instead, so the same tooling tests run inside the image.
+
 The existing `native-integration / test` profile checks remain mandatory.
 `tools/ci_test_shards.py` verifies all four indexed execution manifests against
 the source commit, workflow attempt and interpreter. It rejects unsuccessful,

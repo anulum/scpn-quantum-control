@@ -22,10 +22,34 @@ from tools.ci_test_shards import RunIdentity
 
 ROOT = Path(__file__).resolve().parents[1]
 PYTHON = f"{sys.version_info.major}.{sys.version_info.minor}"
-SOURCE_SHA = (
-    os.environ.get("GITHUB_SHA")
-    or subprocess.check_output(["git", "-C", str(ROOT), "rev-parse", "HEAD"], text=True).strip()
-)
+
+
+def _source_identity() -> str:
+    """Return the workflow commit, the checked-out commit or the tested index tree.
+
+    Returns
+    -------
+    str
+        ``GITHUB_SHA`` when set, otherwise ``HEAD``; a checkout without a
+        commit (the container image's synthetic index) yields its index tree,
+        matching ``tools/run_ci_test_shards.sh``.
+
+    """
+    explicit = os.environ.get("GITHUB_SHA")
+    if explicit:
+        return explicit
+    head = subprocess.run(
+        ["git", "-C", str(ROOT), "rev-parse", "--verify", "--quiet", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if head.returncode == 0:
+        return head.stdout.strip()
+    return subprocess.check_output(["git", "-C", str(ROOT), "write-tree"], text=True).strip()
+
+
+SOURCE_SHA = _source_identity()
 IDENTITY = RunIdentity(
     SOURCE_SHA,
     os.environ.get("GITHUB_RUN_ID", "local-integration"),

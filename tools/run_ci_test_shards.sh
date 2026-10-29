@@ -25,7 +25,11 @@ if [[ ! $shard_suite =~ ^[a-z][a-z0-9-]*$ || ! $shard_count =~ ^[1-4]$ ]]; then
     exit 2
 fi
 shard_python=${CI_SHARD_PYTHON:-python}
-shard_sha=$(git rev-parse HEAD)
+# A checkout without a commit, such as the container image's synthetic index,
+# is identified by the tree of the source it actually tests.
+if ! shard_sha=$(git rev-parse --verify --quiet HEAD); then
+    shard_sha=$(git write-tree)
+fi
 shard_run=${GITHUB_RUN_ID:-local-integration}
 shard_attempt=${GITHUB_RUN_ATTEMPT:-1}
 shard_version=$("$shard_python" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
