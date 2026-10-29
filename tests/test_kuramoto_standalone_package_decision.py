@@ -115,7 +115,7 @@ def test_parent_depends_on_oscillatools_and_retains_the_reexport_shims() -> None
         if _requirement_name(requirement) == "oscillatools"
     ]
     assert oscillatools_edges, "the parent must depend on the extracted oscillatools distribution"
-    assert ">=0.1.0" in oscillatools_edges[0].replace(" ", "")
+    assert ">=0.1.1" in oscillatools_edges[0].replace(" ", "")
 
     # Gate 5: the old import paths survive as re-export shims through the deprecation window.
     src = ROOT / "src" / "scpn_quantum_control"

@@ -15,6 +15,18 @@ All notable changes to `oscillatools` are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-29
+
+### Fixed
+
+- Preserve solver time and termination contracts in fixed-step, delayed,
+  adaptive and differentiable Kuramoto integrations. Reject non-finite model
+  parameters and malformed callback velocities at their public boundaries.
+- Align the standalone distribution with the solver implementation qualified by
+  `scpn-quantum-control` 1.3.0.
+
+## [0.1.0] - 2026-07-17
+
 ### Added
 
 - Initial extraction of the coupled-phase-oscillator (Kuramoto) toolkit from

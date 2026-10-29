@@ -22,6 +22,9 @@ Scientific and hardware claim boundaries remain tied to their recorded evidence.
   analytic error attribution where identifiable, and explicit functional costs.
   Preserve the raw v2 codec and repair zero-energy JSON Boolean serialisation.
 
+- Require companion `oscillatools` 0.1.1 so public installations receive the
+  solver time, termination and finite-input fixes qualified in this repository.
+
 ### Security
 
 - Hash-locked CI environments use patched `filelock` 4.2.4, `msgpack` 1.2.3,

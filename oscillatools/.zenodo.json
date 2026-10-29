@@ -9,7 +9,7 @@
     }
   ],
   "upload_type": "software",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "access_right": "open",
   "license": "AGPL-3.0-or-later",
   "language": "eng",
@@ -39,5 +39,6 @@
     {
       "identifier": "zenodo"
     }
-  ]
+  ],
+  "publication_date": "2026-10-29"
 }

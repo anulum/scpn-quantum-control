@@ -11,7 +11,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "oscillatools"
-version = "0.1.0"
+version = "0.1.1"
 description = "Differentiable, control-oriented toolkit for coupled-phase-oscillator (Kuramoto) dynamics"
 readme = "README.md"
 license = "AGPL-3.0-or-later"
