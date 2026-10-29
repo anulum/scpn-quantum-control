@@ -8,7 +8,7 @@
 # SCPN Quantum Control — Isolated same-run pytest workers
 set -euo pipefail
 
-if (( $# < 8 )); then
+if (($# < 8)); then
     printf 'Usage: %s SUITE COUNT ROOT TIMINGS COVERAGE_OUTPUT INCLUDE CONCURRENCY TEST...\n' "$0" >&2
     exit 2
 fi
@@ -53,7 +53,7 @@ for shard_pid in "${shard_pids[@]}"; do
     if ! wait "$shard_pid"; then shard_failed=1; fi
 done
 shard_pids=()
-if (( shard_failed )); then exit 1; fi
+if ((shard_failed)); then exit 1; fi
 for ((shard_index = 1; shard_index <= shard_count; shard_index++)); do
     "$shard_python" -m tools.ci_test_shards seal \
         "$shard_root/artifacts/test-shard-$shard_suite-$shard_version-$shard_index-$shard_sha-$shard_attempt" --coverage

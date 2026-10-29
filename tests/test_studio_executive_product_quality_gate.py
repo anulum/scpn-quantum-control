@@ -88,7 +88,6 @@ def test_ci_runs_and_aggregates_gate() -> None:
 
 def test_compiler_trace_is_qualified_by_the_existing_studio_cohort() -> None:
     """Require native and browser trace ownership in the original coherent category."""
-
     gates = dict(quality_gates.build_program_authoring_quality_gates("/python"))
     strict = gates["studio-program-authoring-strict"]
     docs = gates["studio-program-authoring-native-docs"]
@@ -113,7 +112,6 @@ def test_compiler_trace_is_qualified_by_the_existing_studio_cohort() -> None:
 
 def test_backend_profiles_have_native_and_actual_browser_gates() -> None:
     """Require additive profile ownership in the existing Studio CI job."""
-
     gates = dict(quality_gates.build_backend_profiles_quality_gates("/python"))
     for owner in (
         "src/scpn_quantum_control/hardware/backend_profiles.py",
@@ -139,7 +137,6 @@ def test_backend_profiles_have_native_and_actual_browser_gates() -> None:
 
 def test_operator_policy_is_in_original_native_and_real_browser_cohorts() -> None:
     """Retain whole policy ownership, exact thresholds and one original public dispatcher."""
-
     gates = dict(quality_gates.build_operator_policy_quality_gates("/python"))
     for owner in (
         "src/scpn_quantum_control/hardware/operator_policy_contracts.py",
@@ -164,7 +161,6 @@ def test_operator_policy_is_in_original_native_and_real_browser_cohorts() -> Non
 
 def test_operator_dossier_preserves_original_exact_native_and_browser_gates() -> None:
     """Review source stays in the existing native and genuine runtime coverage owners."""
-
     gates = dict(quality_gates.build_operator_dossier_quality_gates("/python"))
     owners = gates["studio-operator-dossier-strict"]
     for path in (
