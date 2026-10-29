@@ -43,7 +43,7 @@ def test_dependency_update_actions_use_the_reviewed_release_commits() -> None:
     )
     stale = _workflow(".github/workflows/stale.yml")
 
-    codeql_sha = "6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee"
+    codeql_sha = "9b3254085494b55a0f7c4c2b3d2d52cc712ce370"
     pnpm_sha = "ea17c68df8912ef543352723c149a84f56e3d413"
     assert codeql.count(codeql_sha) == 2
     assert scorecard.count(codeql_sha) == 1
