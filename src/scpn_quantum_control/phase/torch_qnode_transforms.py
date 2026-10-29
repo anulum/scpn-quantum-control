@@ -14,6 +14,7 @@ active optional-Torch loader and retains later compatibility and maturity work.
 
 from __future__ import annotations
 
+from functools import partial
 from typing import Any, TypeAlias, cast
 
 import numpy as np
@@ -151,6 +152,15 @@ def _torch_phase_qnode_value_and_state(
     return _torch_expectation_value(
         torch_module, state, circuit.n_qubits, circuit.observable
     ), state
+
+
+def _torch_phase_qnode_scalar_value(
+    torch_module: Any,
+    circuit: PhaseQNodeCircuit,
+    parameter_tensor: Any,
+) -> Any:
+    value, _state = _torch_phase_qnode_value_and_state(torch_module, circuit, parameter_tensor)
+    return value
 
 
 def _torch_operation_theta(operation: PhaseQNodeOperation, parameter_tensor: Any) -> Any:
@@ -519,14 +529,7 @@ def torch_phase_qnode_transform_audit(
     if not report.supported:
         raise PhaseQNodeSupportError(report)
 
-    def value_function(parameter_tensor: Any) -> Any:
-        value, _state = _torch_phase_qnode_value_and_state(
-            torch_module,
-            circuit,
-            parameter_tensor,
-        )
-        return value
-
+    value_function = partial(_torch_phase_qnode_scalar_value, torch_module, circuit)
     grad_fn = torch_func_grad(value_function)
     vmap_grad_fn = torch_func_vmap(grad_fn)
     jacrev_fn = torch_func_jacrev(value_function)
@@ -617,14 +620,7 @@ def torch_phase_qnode_compile_audit(
         raise PhaseQNodeSupportError(report)
     parameter_shift = parameter_shift_phase_qnode_gradient(circuit, parameter_values)
 
-    def value_function(parameter_tensor: Any) -> Any:
-        value, _state = _torch_phase_qnode_value_and_state(
-            torch_module,
-            circuit,
-            parameter_tensor,
-        )
-        return value
-
+    value_function = partial(_torch_phase_qnode_scalar_value, torch_module, circuit)
     grad_fn = torch_func_grad(value_function)
     compiled_value_fn = compile_fn(
         value_function,
