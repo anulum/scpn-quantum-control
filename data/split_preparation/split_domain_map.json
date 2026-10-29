@@ -115,6 +115,7 @@
     "differentiable_api_core_algorithms",
     "differentiable_api_core_bindings",
     "differentiable_architecture_map",
+    "differentiable_axis_compilation",
     "differentiable_backend_capabilities",
     "differentiable_baseline_scorecard",
     "differentiable_batch_helpers",

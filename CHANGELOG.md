@@ -4,6 +4,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Restore compiled PyTorch Phase-QNode gradients for fixed tensor-axis
+  permutations through the supported compiler polyfill API. Eager sorting and
+  replacement-sorter dependency guards remain active. Qualification covers
+  Pauli observables with the eager capture backend; dense NumPy observables
+  retain an independent compiler limitation.
+
 - Add bounded JAX RBM qualification with complete seeded replay, independent NumPy
   energy and reference-subspace overlap checks, predeclared fixed-state evaluation,
   analytic error attribution where identifiable, and explicit functional costs.

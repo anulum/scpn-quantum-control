@@ -57,6 +57,32 @@ def test_hosted_static_commands_match_canonical_gate_arguments() -> None:
     ) == ["python", "tools/differentiable_api_quality_gates.py", "docstrings"]
 
 
+def test_native_axis_compilation_uses_required_static_runtime_and_combined_coverage() -> None:
+    """Require the axis compiler bridge in the real SDK producer and final report."""
+    source = "src/scpn_quantum_control/differentiable_axis_compilation.py"
+    test = "tests/test_differentiable_axis_compilation.py"
+    assert {source, test} <= set(gates.DIFFERENTIABLE_API_QUALITY_RATCHET)
+    execution, report = [
+        command for _name, command in gates.build_native_tensor_coverage_gates("python")
+    ]
+    assert test in execution
+    assert "--fail-under=100" in report
+    assert any("*/differentiable_axis_compilation.py" in argument for argument in report)
+    workflow = ".github/workflows/ci-framework-parity.yml"
+    assert _workflow_command(workflow, "Run real native tensor construction coverage") == execution
+    assert (
+        _workflow_command(workflow, "Enforce native tensor construction exact coverage") == report
+    )
+    combined = (ROOT / ".github/workflows/ci-native-integration.yml").read_text()
+    download = combined.index("Download exact-commit native tensor construction coverage")
+    combine = combined.index(
+        'coverage combine --append --keep "$RUNNER_TEMP/native-tensor-coverage/'
+    )
+    exact = combined.index("*/differentiable_axis_compilation.py", combine)
+    xml = combined.index("coverage xml", exact)
+    assert download < combine < exact < xml
+
+
 @pytest.mark.parametrize("check", ["typing", "docstrings"])
 def test_static_gate_cli_executes_the_real_canonical_check(check: str) -> None:
     """Exercise the actual strict and documentation tools through the CI entry.

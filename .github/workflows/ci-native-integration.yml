@@ -716,7 +716,7 @@ jobs:
           python -m coverage combine --append --keep "$RUNNER_TEMP/native-tensor-coverage/.coverage.differentiable-tensor-construction"
           python -m coverage combine --append --keep "$RUNNER_TEMP/phase-torch-coverage/scpn-qc-phase-torch-bridge.coverage"
           python -m coverage combine --append --keep "$RUNNER_TEMP/phase-pennylane-coverage/scpn-qc-phase-pennylane-bridge.coverage"
-          python -m coverage report --precision=2 --show-missing --fail-under=100 --include='*/phase/torch_qnode_transforms.py,*/phase/pennylane_import.py'
+          python -m coverage report --precision=2 --show-missing --fail-under=100 --include='*/phase/torch_qnode_transforms.py,*/phase/pennylane_import.py,*/differentiable_axis_compilation.py'
           python -m coverage xml --include='*/scpn_quantum_control/*'
           python tools/audit_coverage_policy.py --coverage-xml coverage.xml
       - name: Audit coverage gaps (3.12 only)

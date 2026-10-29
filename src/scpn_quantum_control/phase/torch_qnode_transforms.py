@@ -19,6 +19,10 @@ from typing import Any, TypeAlias, cast
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+from ..differentiable_axis_compilation import numpy_axis_order as _numpy_axis_order
+from ..differentiable_axis_compilation import (
+    register_torch_axis_compilation as _register_torch_axis_compilation,
+)
 from ..differentiable_tensor_materialization import (
     TensorMaterializationPrimitives as _TensorMaterializationPrimitives,
 )
@@ -111,6 +115,7 @@ def _torch_compile(torch_module: Any) -> Any:
     compile_fn = getattr(torch_module, "compile", None)
     if not callable(compile_fn):
         raise RuntimeError("PyTorch module does not expose torch.compile")
+    _register_torch_axis_compilation(torch_module)
     return compile_fn
 
 
@@ -333,7 +338,7 @@ def _torch_apply_gate_matrix(
 ) -> Any:
     width = len(qubits)
     axes = list(qubits) + [axis for axis in range(n_qubits) if axis not in qubits]
-    inverse = tuple(int(axis) for axis in np.argsort(axes))
+    inverse = tuple(int(axis) for axis in _numpy_axis_order(np.argsort, axes))
     tensor = torch_module.permute(torch_module.reshape(state, (2,) * n_qubits), tuple(axes))
     front = torch_module.reshape(tensor, (2**width, -1))
     updated = torch_module.reshape(matrix @ front, (2,) * n_qubits)

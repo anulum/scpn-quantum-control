@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **825 modules** across **41 package families**
-- **4390 documented public module-level symbols**
+- **826 modules** across **41 package families**
+- **4393 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -6144,6 +6144,14 @@ Architecture and Rustification map for differentiable-programming governance.
 **Classes:** `DifferentiableArchitectureMapLayer`, `DifferentiableArchitectureMap`, `DifferentiableArchitectureMapValidation`
 
 **Functions:** `run_differentiable_architecture_map()`, `validate_differentiable_architecture_map()`, `render_differentiable_architecture_map_markdown()`
+
+### `scpn_quantum_control.differentiable_axis_compilation`
+
+Trace fixed permutation indices without a NumPy tensor graph interruption.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_axis_compilation.py) · Public symbols: **3**
+
+**Functions:** `numpy_axis_order()`, `trace_numpy_axis_order()`, `register_torch_axis_compilation()`
 
 ### `scpn_quantum_control.differentiable_backend_capabilities`
 

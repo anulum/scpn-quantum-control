@@ -61,13 +61,14 @@ jobs:
           tests/test_differentiable_tensor_materialization_native.py
           tests/test_differentiable_backend_capabilities.py
           tests/test_differentiable_backend_capabilities_native.py
+          tests/test_differentiable_axis_compilation.py
       - name: Enforce native tensor construction exact coverage
         run: >-
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.differentiable-tensor-construction
           --precision=2 --show-missing --fail-under=100
-          --include=*/differentiable_tensor_construction.py,*/differentiable_tensor_materialization.py,*/differentiable_backend_capabilities.py
+          --include=*/differentiable_tensor_construction.py,*/differentiable_tensor_materialization.py,*/differentiable_backend_capabilities.py,*/differentiable_axis_compilation.py
       - name: Upload exact-commit native tensor construction coverage
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:

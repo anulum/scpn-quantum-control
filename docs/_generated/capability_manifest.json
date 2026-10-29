@@ -10,10 +10,10 @@
     "public_api_exports": 851,
     "public_documentation_pages": 385,
     "python_model_classes": 1559,
-    "python_model_source_modules": 825,
+    "python_model_source_modules": 826,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1576
+    "test_files": 1577
   },
   "documentation": {
     "examples": [
@@ -7306,6 +7306,7 @@
       "src/scpn_quantum_control/differentiable_api_core_algorithms.py",
       "src/scpn_quantum_control/differentiable_api_core_bindings.py",
       "src/scpn_quantum_control/differentiable_architecture_map.py",
+      "src/scpn_quantum_control/differentiable_axis_compilation.py",
       "src/scpn_quantum_control/differentiable_backend_capabilities.py",
       "src/scpn_quantum_control/differentiable_baseline_scorecard.py",
       "src/scpn_quantum_control/differentiable_batch_helpers.py",
@@ -9360,6 +9361,7 @@
       "tests/test_differentiable_api_quality_gate.py",
       "tests/test_differentiable_architecture_map.py",
       "tests/test_differentiable_audit_contracts_quality_gate.py",
+      "tests/test_differentiable_axis_compilation.py",
       "tests/test_differentiable_backend_capabilities.py",
       "tests/test_differentiable_backend_capabilities_native.py",
       "tests/test_differentiable_baseline_scorecard.py",
