@@ -52,6 +52,10 @@ it("renders actual original evidence and preserves the viewer's input refusal", 
   window.history.replaceState(null, "", "#/results/program-ad-replay");
   render(<Workbench>{(_context, editors) => editors}</Workbench>);
   await screen.findByRole("heading", { name: "Results" }, { timeout: 5000 });
+  // The heading can appear before the lazy view's passive focus effect has run.
+  await act(async () => {
+    await vi.dynamicImportSettled();
+  });
   expect(screen.getByRole("heading", { name: "Results" })).toBeTruthy();
   expect(screen.getByText("Differentiate support explorer")).toBeTruthy();
   expect(screen.getByText("Baseline scorecard")).toBeTruthy();
@@ -99,6 +103,9 @@ it.each([false, true])(
     window.history.replaceState(null, "", "#/results/program-ad-replay");
     const first = render(<Workbench>{(_context, editors) => editors}</Workbench>);
     await screen.findByRole("heading", { name: "Results" }, { timeout: 5000 });
+    await act(async () => {
+      await vi.dynamicImportSettled();
+    });
     expect(document.activeElement?.id).toBe("/results/program-ad-replay");
     first.unmount();
 
