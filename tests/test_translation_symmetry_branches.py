@@ -21,16 +21,17 @@ from scpn_quantum_control.analysis.translation_symmetry import (
     _require_momentum_sector_budget,
     eigh_with_translation,
 )
+from scpn_quantum_control.dense_budget import DenseAllocationError
 
 _K = np.array([[0.0, 0.5], [0.5, 0.0]], dtype=np.float64)
 _OMEGA = np.array([1.0, 1.0], dtype=np.float64)
 
 
 def test_budget_guard_skips_empty_sector() -> None:
-    """A sub-unit sector dimension skips the workspace budget check without raising."""
-    # The guard returns nothing, so `is None` only restated its declared return
-    # type. What this test asserts is that the call does not raise.
-    _require_momentum_sector_budget(0, max_dense_gib=None)
+    """An empty sector fits a budget that refuses even one dense state."""
+    _require_momentum_sector_budget(0, max_dense_gib=1e-12)
+    with pytest.raises(DenseAllocationError, match="dim=1"):
+        _require_momentum_sector_budget(1, max_dense_gib=1e-12)
 
 
 def test_eigh_rejects_non_integer_momentum() -> None:

@@ -265,7 +265,8 @@ def test_native_kernel_rejects_invalid_constructor_contracts(
         ({"claim_boundary": ""}, "claim_boundary"),
     ]
     for changes, match in cases:
-        _replace_raises(native_kernel, match, **changes)
+        with pytest.raises(ValueError, match=match):
+            replace(native_kernel, **changes)
 
 
 def test_native_kernel_public_batch_inputs_fail_closed(

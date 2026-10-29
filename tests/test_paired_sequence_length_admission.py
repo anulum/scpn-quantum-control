@@ -53,7 +53,14 @@ class TestTrainingDatasetPairing:
         samples = np.zeros((2, 2), dtype=np.float64)
         labels = np.zeros(2, dtype=np.float64)
 
+        loss_before = np.mean(
+            [(classifier.predict(x) - y) ** 2 for x, y in zip(samples, labels, strict=True)]
+        )
         classifier.train(samples, labels, epochs=1)
+        loss_after = np.mean(
+            [(classifier.predict(x) - y) ** 2 for x, y in zip(samples, labels, strict=True)]
+        )
+        assert loss_after < loss_before
 
 
 class TestPersistencePairing:
