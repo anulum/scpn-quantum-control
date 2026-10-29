@@ -136,7 +136,7 @@ def test_global_policy_combines_exact_commit_native_tensor_coverage() -> None:
     coverage_step = next(
         step
         for step in consumer["jobs"]["test"]["steps"]
-        if step.get("name") == "Run tests with coverage (3.12 only)"
+        if step.get("name") == "Admit complete test coverage (3.12 only)"
     )["run"]
     combine = 'python -m coverage combine --append --keep "$RUNNER_TEMP/native-tensor-coverage/.coverage.differentiable-tensor-construction"'
     assert combine in coverage_step

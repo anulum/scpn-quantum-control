@@ -53,7 +53,8 @@ CI_WORKFLOW_PATH = load_ci_workflow_policy()["coordinator"]
 DOCKERFILE_PATH = "Dockerfile"
 WHEEL_TEST_PATH = "tests/test_wheel_contents.py"
 AUDIT_COMMAND = "python tools/audit_ci_build_environment.py"
-LOCK_INSTALL_COMMAND = "python -m pip install --require-hashes -r ${{ matrix.requirements-file }}"
+MATRIX_LOCK_SELECTION = "-r ${{ matrix.requirements-file }}"
+LOCK_INSTALL_COMMAND = f"python -m pip install --require-hashes {MATRIX_LOCK_SELECTION}"
 DOCKER_INSTALL_COMMAND = (
     "pip install --no-cache-dir --require-hashes -r requirements-ci-py312-linux.txt"
 )
@@ -430,8 +431,12 @@ def audit_consumers(
         mapping = f'python-version: "{python_version}"\n            requirements-file: {path}'
         if ci_text.count(mapping) != 1:
             errors.append(f"CI matrix must map Python {python_version} to {path} exactly once")
-    if ci_text.count(LOCK_INSTALL_COMMAND) != 1:
-        errors.append("CI test matrix must install its selected lock with --require-hashes")
+    selected_lock_installs = ci_text.count(MATRIX_LOCK_SELECTION)
+    if (
+        selected_lock_installs == 0
+        or ci_text.count(LOCK_INSTALL_COMMAND) != selected_lock_installs
+    ):
+        errors.append("CI test matrices must install every selected lock with --require-hashes")
     if ci_text.count(AUDIT_COMMAND) != 1:
         errors.append("CI lint job must execute the build-environment audit exactly once")
     if security_source.count(SECURITY_JOB_ENVIRONMENT) != 1:

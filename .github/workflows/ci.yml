@@ -86,12 +86,18 @@ jobs:
   studio:
     needs: static-analysis
     uses: ./.github/workflows/ci-studio.yml
+  python-tests:
+    needs: [static-analysis, native-build]
+    uses: ./.github/workflows/ci-python-tests.yml
   native-integration:
-    needs: [static-analysis, native-build, differentiable-control, simulation-artifact, framework-parity]
+    needs: [static-analysis, native-build, differentiable-control, simulation-artifact, framework-parity, python-tests]
+    if: ${{ !cancelled() }}
     uses: ./.github/workflows/ci-native-integration.yml
+    with:
+      prerequisite-results: ${{ toJSON(needs) }}
 
   ci-gate:
-    needs: [static-analysis, native-build, core-science, control-provider, topology-evidence, differentiable-control, compiler-cosimulation, analysis-model, algorithm-experiment, simulation-artifact, product-deployment, assurance-policy, benchmark-evidence, application-domain, whole-program-trace, runtime-package, framework-parity, security, studio, native-integration]
+    needs: [static-analysis, native-build, core-science, control-provider, topology-evidence, differentiable-control, compiler-cosimulation, analysis-model, algorithm-experiment, simulation-artifact, product-deployment, assurance-policy, benchmark-evidence, application-domain, whole-program-trace, runtime-package, framework-parity, security, studio, python-tests, native-integration]
     runs-on: ubuntu-latest
     if: always()
     steps:

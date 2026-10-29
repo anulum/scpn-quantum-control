@@ -14,6 +14,23 @@ from tools import studio_executive_product_quality_gates as quality_gates
 from tools.ci_workflow_inventory import read_ci_workflow_source
 
 
+def _studio_ci_execution_source() -> str:
+    """Return the Studio CI workflow joined with the browser script it invokes.
+
+    Returns
+    -------
+    str
+        Workflow text followed by the extracted browser-journey script.
+
+    """
+    from pathlib import Path
+
+    repo = Path(__file__).resolve().parents[1]
+    workflow = (repo / ".github/workflows/ci-studio.yml").read_text()
+    assert workflow.count("bash tools/run_studio_browser_journeys.sh") == 1
+    return workflow + (repo / "tools/run_studio_browser_journeys.sh").read_text()
+
+
 def test_static_gate_is_strict_and_numpy_documented() -> None:
     """Require strict typing and isolated NumPy docstrings."""
     gates = dict(quality_gates.build_static_quality_gates("/python"))
@@ -71,7 +88,6 @@ def test_ci_runs_and_aggregates_gate() -> None:
 
 def test_compiler_trace_is_qualified_by_the_existing_studio_cohort() -> None:
     """Require native and browser trace ownership in the original coherent category."""
-    from pathlib import Path
 
     gates = dict(quality_gates.build_program_authoring_quality_gates("/python"))
     strict = gates["studio-program-authoring-strict"]
@@ -88,8 +104,7 @@ def test_compiler_trace_is_qualified_by_the_existing_studio_cohort() -> None:
     assert "tests/test_studio_compiler_trace.py" in run
     assert any("*/studio/compiler_trace.py" in field for field in exact)
     assert "--fail-under=100" in exact
-    repo = Path(__file__).resolve().parents[1]
-    workflow = (repo / ".github/workflows/ci-studio.yml").read_text()
+    workflow = _studio_ci_execution_source()
     assert workflow.count("--scenario compiler_trace_inspector") == 1
     assert "tools/tests/test_studio_compiler_trace_browser.py" in workflow
     assert "--coverage.include='src/modules/compiler/*.{ts,tsx}'" in workflow
@@ -98,7 +113,6 @@ def test_compiler_trace_is_qualified_by_the_existing_studio_cohort() -> None:
 
 def test_backend_profiles_have_native_and_actual_browser_gates() -> None:
     """Require additive profile ownership in the existing Studio CI job."""
-    from pathlib import Path
 
     gates = dict(quality_gates.build_backend_profiles_quality_gates("/python"))
     for owner in (
@@ -116,9 +130,7 @@ def test_backend_profiles_have_native_and_actual_browser_gates() -> None:
     )
     assert "--branch" in gates["studio-backend-profiles-native-coverage"]
     assert "--fail-under=100" in gates["studio-backend-profiles-native-exact"]
-    workflow = (
-        Path(__file__).resolve().parents[1] / ".github/workflows/ci-studio.yml"
-    ).read_text()
+    workflow = _studio_ci_execution_source()
     assert workflow.count("--scenario operator_backend_profiles") == 1
     assert "tools/tests/test_studio_backend_profiles_browser.py" in workflow
     assert "--coverage.include='src/modules/operators/profiles/*.{ts,tsx}'" in workflow
@@ -127,7 +139,6 @@ def test_backend_profiles_have_native_and_actual_browser_gates() -> None:
 
 def test_operator_policy_is_in_original_native_and_real_browser_cohorts() -> None:
     """Retain whole policy ownership, exact thresholds and one original public dispatcher."""
-    from pathlib import Path
 
     gates = dict(quality_gates.build_operator_policy_quality_gates("/python"))
     for owner in (
@@ -143,9 +154,7 @@ def test_operator_policy_is_in_original_native_and_real_browser_cohorts() -> Non
         assert owner in gates["studio-operator-policy-native-docs"]
     assert "--branch" in gates["studio-operator-policy-native-coverage"]
     assert "--fail-under=100" in gates["studio-operator-policy-native-exact"]
-    workflow = (
-        Path(__file__).resolve().parents[1] / ".github/workflows/ci-studio.yml"
-    ).read_text()
+    workflow = _studio_ci_execution_source()
     assert workflow.count("--scenario operator_policy_decisions") == 1
     assert "tools/tests/test_studio_operator_policy_browser.py" in workflow
     assert "--coverage.include='src/modules/operators/policy/*.{ts,tsx}'" in workflow
@@ -155,7 +164,6 @@ def test_operator_policy_is_in_original_native_and_real_browser_cohorts() -> Non
 
 def test_operator_dossier_preserves_original_exact_native_and_browser_gates() -> None:
     """Review source stays in the existing native and genuine runtime coverage owners."""
-    from pathlib import Path
 
     gates = dict(quality_gates.build_operator_dossier_quality_gates("/python"))
     owners = gates["studio-operator-dossier-strict"]
@@ -175,9 +183,7 @@ def test_operator_dossier_preserves_original_exact_native_and_browser_gates() ->
             assert "--fail-under=100" in command
         if name.endswith("native-coverage"):
             assert "--branch" in command and "--rcfile=/dev/null" in command
-    workflow = (
-        Path(__file__).resolve().parents[1] / ".github/workflows/ci-studio.yml"
-    ).read_text()
+    workflow = _studio_ci_execution_source()
     assert workflow.count("--scenario operator_review_dossiers") == 1
     assert "tools/tests/test_studio_operator_dossier_browser.py" in workflow
     assert "build_operator_dossier_quality_gates" in workflow
@@ -239,7 +245,7 @@ def test_workflow_native_and_browser_owners_keep_exact_original_gates() -> None:
     ).read_text()
     assert workflow.count("build_workflow_quality_gates(sys.executable)") == 1
     assert "--coverage.include='src/modules/workflows/*.{ts,tsx}'" in workflow
-    assert workflow.count("--scenario experiment_workflow_runner") == 1
+    assert _studio_ci_execution_source().count("--scenario experiment_workflow_runner") == 1
     workflow_ui = workflow.split("- name: Enforce workflow browser owner exact coverage", 1)[
         1
     ].split("- name:", 1)[0]

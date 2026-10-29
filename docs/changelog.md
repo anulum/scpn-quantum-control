@@ -12,6 +12,17 @@ Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-c
 
 ## [Unreleased]
 
+### Changed
+
+- CI partitions the complete admitted test inventory across four workers per
+  Python interpreter, shares existing ABI-matched native wheels and uses
+  observed durations for scheduling. Stable profile checks retain all native
+  coverage inputs, critical-owner gates and the 99.05% aggregate line threshold.
+- Studio's runtime browser cohort uses two isolated workers with verified
+  coverage union; its original browser journeys and exact owner checks remain.
+- The advisory workflow gate counts tolerances in repository scripts a step
+  runs, and every matrix-selected CI lock installation must be hash-locked.
+
 ## [1.3.0] - 2026-10-29
 
 ### Added

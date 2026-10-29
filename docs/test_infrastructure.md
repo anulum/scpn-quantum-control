@@ -877,3 +877,46 @@ machine, exclude the heavy lane with `-m 'not slow'`, or run in shards by path
 (`pytest tests/<subset>`), rather than running the entire suite single-process.
 `pytest-xdist` is not a declared dependency; install it separately if you want
 `-n auto` process sharding.
+
+### Complete CI partitions
+
+CI runs four workers for each Python 3.11, 3.12 and 3.13 profile. Each worker
+installs its original hash-locked dependencies and the same-run Rust wheel for
+its interpreter ABI. Normal pytest collection and marker filtering finish
+before `tools/pytest_ci_shard.py` partitions the admitted item identities.
+Every admitted item belongs to exactly one worker. Exhaustive execution stays
+in hosted CI; local verification uses a module-specific cohort.
+
+All workers share one immutable timing snapshot for the run. Without history,
+sorted identities are distributed round-robin. With history, longest measured
+items go to the least-loaded worker. New items enter discovery automatically
+and receive the median observed duration; removed items cannot be restored by
+old hints. Invalid or nonfinite hints fail validation before coverage starts.
+Timings affect scheduling only.
+
+The existing `native-integration / test` profile checks remain mandatory.
+`tools/ci_test_shards.py` verifies all four indexed execution manifests against
+the source commit, workflow attempt and interpreter. It rejects unsuccessful,
+collection-only, unsealed or incomplete execution, different inventories,
+duplicates, omissions, and missing or damaged branch data. The Python 3.12
+union then includes all five original native/framework coverage producers
+before the existing critical-owner 100% checks, **99.05% line gate**, branch
+observation and frozen coverage-debt audit. The canonical coverage artifact is
+published after these mandatory checks and the existing CLI smoke test pass.
+
+The public Rust replay-admission tests run as an independent mandatory job.
+Their Cargo cache contains rebuildable products; Cargo still checks current
+source and the tests execute on every run. Native wheels remain shared once
+per compatible ABI.
+
+Studio retains its original browser journeys and exact owner coverage checks.
+The eight runtime-refusal and editor/workflow modules use two isolated pytest
+processes through `tools/run_ci_test_shards.sh`. Workers have separate browser
+contexts, result directories and coverage databases. The complete verified
+union is appended to the existing browser coverage only after both workers
+succeed. Actual case timings and indexed evidence accompany browser acceptance
+artifacts; no concurrent writes share a coverage database.
+
+Elapsed time and runner minutes must be compared between complete successful
+runs at identified commits. Queueing, setup, cold or warm caches and an
+indivisible long test can limit the benefit of additional workers.

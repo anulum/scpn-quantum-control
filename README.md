@@ -164,9 +164,9 @@ claims only when the evidence exists.
 | Notebook files | 109 |
 | Example files | 42 |
 | Optional extras | 43 |
-| Python test files | 1578 |
+| Python test files | 1583 |
 | Public documentation pages | 385 |
-| GitHub Actions workflows | 44 |
+| GitHub Actions workflows | 45 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
 <!-- capability-snapshot:end -->
@@ -599,7 +599,7 @@ for a runnable local example and the SDK/device evidence boundaries.
 | Source package surface | Tracked Python source files under `src/scpn_quantum_control` (excluding package initialisers) — the current count lives in the generated capability inventory above. |
 | Research module families | Analysis, phase, hardware, bridge, mitigation, QEC, applications, forecasting, and benchmark families; exact current counts are listed in the package map below. |
 | Publication figures | **17** (simulation + hardware, including the Phase 1 DLA parity panels and exact-simulation crossover) |
-| Test, coverage, and typing gates | CI enforces **99.05% line coverage** through `tools/coverage_policy.json`, collects branch telemetry without inventing an unmeasured branch threshold, and strict-mypy checks production Python. Tests use the additive cohort in `tools/test_typing_policy.json` rather than claiming the legacy test tree is already strict. See [Test Infrastructure](docs/test_infrastructure.md) and the generated capability inventory for current scope. |
+| Test, coverage, and typing gates | CI enforces **99.05% line coverage** through `tools/coverage_policy.json`, collects branch telemetry without inventing an unmeasured branch threshold, and strict-mypy checks production Python. Three Python profiles use complete indexed test partitions with mandatory aggregate checks and exact coverage union. Tests use the additive cohort in `tools/test_typing_policy.json` rather than claiming the legacy test tree is already strict. See [Test Infrastructure](docs/test_infrastructure.md) and the generated capability inventory for current scope. |
 | Readout uncertainty | [Signed readout and shared-calibration GLS](docs/mitigation_api.md#signed-readout-estimates-and-calibration-uncertainty) preserve raw labels/counts and separate sampling/calibration error under explicit normal/delta assumptions. |
 | Reproducibility CLI | `scpn-bench reproduce-methods`, `scpn-bench fim-all`, and `scpn-bench all` regenerate committed methods/FIM artefacts without IBM submission |
 

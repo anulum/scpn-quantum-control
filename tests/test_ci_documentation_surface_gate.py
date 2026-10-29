@@ -390,7 +390,10 @@ def test_public_import_contracts_use_the_real_cpu_framework_environment() -> Non
     assert "omit" not in configuration["run"]
     assert "omit" not in configuration["report"]
     aggregate = Path(".github/workflows/ci-native-integration.yml").read_text(encoding="utf-8")
-    assert aggregate.count("and not framework_imports") == 2
+    assert "not framework_imports" not in aggregate
+    workers = Path(".github/workflows/ci-python-tests.yml").read_text(encoding="utf-8")
+    assert workers.count("python -m pytest tests/") == 1
+    assert workers.count("and not framework_imports") == 1
     dockerfile = Path("Dockerfile").read_text(encoding="utf-8")
     docker_command = json.loads(
         next(line[4:] for line in dockerfile.splitlines() if line.startswith("CMD "))
@@ -706,7 +709,7 @@ def test_ci_jobs_install_what_their_cohorts_execute() -> None:
     sections = re.split(r"^  ([a-z0-9_-]+):\n", workflow, flags=re.MULTILINE)
     jobs = dict(zip(sections[1::2], sections[2::2], strict=False))
     editable = "python -m pip install --no-deps -e ."
-    for job in ("test", "competitive-baseline-watch-quality"):
+    for job in ("python-test-shards", "competitive-baseline-watch-quality"):
         block = jobs[job]
         assert block.index(editable) < block.index("pytest")
     studio = jobs["studio-web"]

@@ -4,6 +4,20 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Partition the complete admitted Python test inventory across four CI workers
+  per Python 3.11, 3.12 and 3.13 profile, using same-run ABI-matched Rust
+  wheels and one immutable timing snapshot. The existing profile checks verify
+  every indexed worker manifest and the exact branch-data union before the
+  unchanged critical-owner checks and 99.05% line gate.
+
+- Run the Studio runtime browser modules in two isolated workers whose
+  verified coverage union joins the existing browser coverage.
+
+- Count tolerated failures in repository shell scripts that a workflow step
+  runs towards that step's advisory policy site.
+
+- Require every matrix-selected CI lock installation to use `--require-hashes`.
+
 ## [1.3.0] - 2026-10-29
 
 This minor release packages native differentiable transform qualification,

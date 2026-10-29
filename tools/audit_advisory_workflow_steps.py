@@ -15,7 +15,12 @@ down at all, and nothing noticed a new one.
 
 This gate reads every tracked workflow and finds three kinds of site: a job
 with ``continue-on-error``, a step with ``continue-on-error``, and a ``run``
-step that contains ``|| true``, ``|| :`` or ``set +e``. Each site must have a
+step that contains ``|| true``, ``|| :`` or ``set +e``. A repository shell
+script that the step runs (``bash path.sh``, ``sh path.sh`` or the path at the
+start of a line) belongs to the step: its tolerances, and those of the scripts
+it runs in turn, count towards the step's site, so moving a command into a
+script does not hide it. A script that is only named, for example by a linter,
+is not read. Each site must have a
 row in ``tools/advisory_workflow_policy.json`` with the reason and exactly one
 of three outcomes: ``promotion``, the condition under which the site becomes
 blocking; ``permanent``, why it never decides a result; or ``undecided``, what
@@ -49,6 +54,10 @@ STEP: Final[str] = "step-continue-on-error"
 SHELL: Final[str] = "shell-tolerance"
 OUTCOMES: Final[tuple[str, ...]] = ("promotion", "permanent", "undecided")
 _TOLERANCE: Final[re.Pattern[str]] = re.compile(r"\|\|\s*(?:true|:)(?![\w-])|\bset \+e\b")
+_SCRIPT_RUN: Final[re.Pattern[str]] = re.compile(
+    r"(?:^[ \t]*|\b(?:bash|sh)[ \t]+)(?:\./)?((?:[\w.-]+/)*[\w.-]+\.sh)(?![\w./-])",
+    re.MULTILINE,
+)
 
 Key = tuple[str, str, str, str]
 
@@ -190,6 +199,34 @@ def _label(step: dict[str, object]) -> str:
     return lines[0].strip() if lines else ""
 
 
+def _tolerances(repo: Path, text: str, read: set[str]) -> int:
+    """Count tolerances in a step body and in the repository scripts it runs.
+
+    Parameters
+    ----------
+    repo
+        Repository root that relative script paths resolve against.
+    text
+        Shell text of a ``run`` step or of a script it runs.
+    read
+        Scripts already counted for this step; a script is counted once.
+
+    Returns
+    -------
+    int
+        Number of tolerated failures in ``text`` and every script it runs.
+
+    """
+    count = len(_TOLERANCE.findall(text))
+    for relative in _SCRIPT_RUN.findall(text):
+        script = repo / relative
+        if relative in read or not script.is_file():
+            continue
+        read.add(relative)
+        count += _tolerances(repo, script.read_text(encoding="utf-8"), read)
+    return count
+
+
 def scan(repo: Path) -> list[Site]:
     """Find every tolerated failure in the tracked workflows.
 
@@ -229,7 +266,7 @@ def scan(repo: Path) -> list[Site]:
                 label = _label(step)
                 if _tolerates(step):
                     sites.append(Site(workflow, str(job), label, STEP, 1))
-                count = len(_TOLERANCE.findall(str(step.get("run", ""))))
+                count = _tolerances(repo, str(step.get("run", "")), set())
                 if count:
                     sites.append(Site(workflow, str(job), label, SHELL, count))
     keys = [site.key for site in sites]

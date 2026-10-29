@@ -1,0 +1,220 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — Complete parallel Python profiles
+name: CI / Python Tests
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  python-test-timings:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install the locked snapshot validator
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Restore Python 3.11 duration hints
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: ${{ runner.temp }}/ci-test-timings-cache/3.11.json
+          key: ${{ runner.os }}-ci-test-timings-v1-3.11-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: ${{ runner.os }}-ci-test-timings-v1-3.11-
+      - name: Restore Python 3.12 duration hints
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: ${{ runner.temp }}/ci-test-timings-cache/3.12.json
+          key: ${{ runner.os }}-ci-test-timings-v1-3.12-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: ${{ runner.os }}-ci-test-timings-v1-3.12-
+      - name: Restore Python 3.13 duration hints
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: ${{ runner.temp }}/ci-test-timings-cache/3.13.json
+          key: ${{ runner.os }}-ci-test-timings-v1-3.13-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: ${{ runner.os }}-ci-test-timings-v1-3.13-
+      - name: Validate one immutable snapshot for all workers
+        run: |
+          for version in 3.11 3.12 3.13; do
+            python -m tools.ci_test_shards snapshot \
+              --source "$RUNNER_TEMP/ci-test-timings-cache/$version.json" \
+              --output "$RUNNER_TEMP/ci-test-timings/$version.json"
+          done
+      - name: Publish the same-run timing snapshot
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: python-test-timings-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/ci-test-timings/*.json
+          if-no-files-found: error
+          retention-days: 3
+
+  python-test-shards:
+    needs: python-test-timings
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        include:
+          - {python-version: "3.11", shard: 1, requirements-file: requirements-ci-py311-linux.txt}
+          - {python-version: "3.11", shard: 2, requirements-file: requirements-ci-py311-linux.txt}
+          - {python-version: "3.11", shard: 3, requirements-file: requirements-ci-py311-linux.txt}
+          - {python-version: "3.11", shard: 4, requirements-file: requirements-ci-py311-linux.txt}
+          - {python-version: "3.12", shard: 1, requirements-file: requirements-ci-py312-linux.txt}
+          - {python-version: "3.12", shard: 2, requirements-file: requirements-ci-py312-linux.txt}
+          - {python-version: "3.12", shard: 3, requirements-file: requirements-ci-py312-linux.txt}
+          - {python-version: "3.12", shard: 4, requirements-file: requirements-ci-py312-linux.txt}
+          - {python-version: "3.13", shard: 1, requirements-file: requirements-ci-py313-linux.txt}
+          - {python-version: "3.13", shard: 2, requirements-file: requirements-ci-py313-linux.txt}
+          - {python-version: "3.13", shard: 3, requirements-file: requirements-ci-py313-linux.txt}
+          - {python-version: "3.13", shard: 4, requirements-file: requirements-ci-py313-linux.txt}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: ./.github/actions/pinned-rust-toolchain
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install the unchanged locked profile and Studio dependency
+        run: |
+          python -m pip install --require-hashes -r ${{ matrix.requirements-file }}
+          python -m pip install --no-deps -e .
+          python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt
+      - name: Download the ABI-matched Rust engine wheel
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
+        with:
+          name: scpn-quantum-engine-${{ matrix.python-version }}
+          path: dist
+      - name: Install the current Rust engine wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
+      - name: Download the common timing snapshot
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
+        with:
+          name: python-test-timings-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/test-timings
+      - name: Validate timing hints before starting coverage
+        run: >-
+          python -m tools.ci_test_shards snapshot
+          --source "$RUNNER_TEMP/test-timings/${{ matrix.python-version }}.json"
+          --output "$RUNNER_TEMP/validated-test-timings.json"
+      - name: Prime the real Studio WASM build for offline regression
+        run: >-
+          cargo build --release --locked --target wasm32-unknown-unknown
+          --manifest-path scpn_quantum_engine/studio_wasm_kernel/Cargo.toml
+      - name: Run the complete admitted profile partition
+        env:
+          TEST_PYTHON: ${{ matrix.python-version }}
+          TEST_SHARD: ${{ matrix.shard }}
+        run: |
+          shard_dir="$RUNNER_TEMP/test-shards/test-shard-python-$TEST_PYTHON-$TEST_SHARD-$GITHUB_SHA-$GITHUB_RUN_ATTEMPT"
+          test_options=(-v --tb=short -x)
+          if [ "$TEST_PYTHON" = 3.12 ]; then
+            export COVERAGE_FILE="$shard_dir/.coverage.shard-$TEST_SHARD"
+            test_options=(--cov=src/scpn_quantum_control --cov-branch --cov-report= --cov-fail-under=0)
+          fi
+          python -m pytest tests/ -p tools.pytest_ci_shard \
+            --ci-shard "$TEST_SHARD" --ci-shards 4 --ci-output "$shard_dir" \
+            --ci-timings "$RUNNER_TEMP/validated-test-timings.json" \
+            --ci-source-sha "$GITHUB_SHA" --ci-run-id "$GITHUB_RUN_ID" --ci-attempt "$GITHUB_RUN_ATTEMPT" \
+            --junitxml "$shard_dir/junit.xml" \
+            "${test_options[@]}" \
+            -m "not slow and not hardware and not internal_corpus and not performance and not framework_imports"
+      - name: Seal successful indexed execution evidence
+        env:
+          TEST_PYTHON: ${{ matrix.python-version }}
+          TEST_SHARD: ${{ matrix.shard }}
+        run: |
+          coverage_options=()
+          if [ "$TEST_PYTHON" = 3.12 ]; then coverage_options=(--coverage); fi
+          python -m tools.ci_test_shards seal \
+            "$RUNNER_TEMP/test-shards/test-shard-python-$TEST_PYTHON-$TEST_SHARD-$GITHUB_SHA-$GITHUB_RUN_ATTEMPT" \
+            "${coverage_options[@]}"
+      - name: Publish only successful authoritative worker data
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: test-shard-python-${{ matrix.python-version }}-${{ matrix.shard }}-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/test-shards/test-shard-python-${{ matrix.python-version }}-${{ matrix.shard }}-${{ github.sha }}-${{ github.run_attempt }}
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 3
+
+  program-ad-replay:
+    runs-on: ubuntu-latest
+    env:
+      CARGO_TARGET_DIR: ${{ github.workspace }}/scpn_quantum_engine/target
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: ./.github/actions/pinned-rust-toolchain
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        id: python
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install the original locked replay profile
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e .
+          python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt
+      - name: Download the Python 3.12 Rust engine wheel
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
+        with:
+          name: scpn-quantum-engine-3.12
+          path: dist
+      - name: Install the current Rust engine wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
+      - name: Cache rebuildable Cargo products with compiler invalidation
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: ${{ env.CARGO_TARGET_DIR }}
+          key: ${{ runner.os }}-${{ runner.arch }}-replay-target-${{ steps.python.outputs.python-version }}-${{ hashFiles('rust-toolchain.toml', 'scpn_quantum_engine/Cargo.toml', 'scpn_quantum_engine/Cargo.lock') }}-${{ hashFiles('scpn_quantum_engine/**/*.rs') }}
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-replay-target-${{ steps.python.outputs.python-version }}-${{ hashFiles('rust-toolchain.toml', 'scpn_quantum_engine/Cargo.toml', 'scpn_quantum_engine/Cargo.lock') }}-
+      - name: Exercise public Rust replay admission and recovery
+        run: >-
+          cargo test --manifest-path scpn_quantum_engine/Cargo.toml
+          --locked --test 'program_ad*'
+
+  python-sharding-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install locked test and quality tools
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e .
+      - name: Check shard runner types, documentation and security
+        run: |
+          python -m mypy --strict --explicit-package-bases tools/ci_test_shards.py tools/pytest_ci_shard.py tests/_ci_shard_execution.py tests/test_ci_test_shards.py tests/test_pytest_ci_shard.py tests/test_run_ci_test_shards.py tests/test_run_studio_browser_journeys.py
+          python -m ruff check --isolated --preview --select D,D413,D417,D420 --config 'lint.explicit-preview-rules = true' --config 'lint.pydocstyle.convention = "numpy"' tools/ci_test_shards.py tools/pytest_ci_shard.py tests/_ci_shard_execution.py tests/test_ci_test_shards.py tests/test_pytest_ci_shard.py tests/test_run_ci_test_shards.py tests/test_run_studio_browser_journeys.py
+          python -m bandit -q tools/ci_test_shards.py tools/pytest_ci_shard.py
+      - name: Exercise real runner and exact branch-data union
+        env:
+          CI_SHARD_TOOL_COVERAGE_DIR: ${{ runner.temp }}/ci-sharding-quality
+        run: |
+          mkdir -p "$CI_SHARD_TOOL_COVERAGE_DIR"
+          python -m coverage run --rcfile=/dev/null --branch \
+            --source=tools.ci_test_shards,tools.pytest_ci_shard \
+            --data-file="$CI_SHARD_TOOL_COVERAGE_DIR/.coverage.parent" \
+            -m pytest --noconftest -q tests/test_ci_test_shards.py tests/test_pytest_ci_shard.py tests/test_run_ci_test_shards.py tests/test_run_studio_browser_journeys.py
+          python -m coverage combine --rcfile=/dev/null \
+            --data-file="$CI_SHARD_TOOL_COVERAGE_DIR/.coverage" "$CI_SHARD_TOOL_COVERAGE_DIR"
+          python -m coverage report --rcfile=/dev/null \
+            --data-file="$CI_SHARD_TOOL_COVERAGE_DIR/.coverage" \
+            --include='*/tools/ci_test_shards.py,*/tools/pytest_ci_shard.py' \
+            --precision=2 --show-missing --fail-under=100

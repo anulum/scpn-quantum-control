@@ -121,7 +121,7 @@ def test_global_coverage_retains_required_exact_commit_sdk_measurements(
     coverage_step = next(
         step
         for step in consumer_steps
-        if step.get("name") == "Run tests with coverage (3.12 only)"
+        if step.get("name") == "Admit complete test coverage (3.12 only)"
     )
     destination = download["with"]["path"].replace("${{ runner.temp }}", "$RUNNER_TEMP")
     combine = (

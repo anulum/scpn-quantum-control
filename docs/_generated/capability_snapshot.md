@@ -16,8 +16,8 @@
 | Notebook files | 109 |
 | Example files | 42 |
 | Optional extras | 43 |
-| Python test files | 1578 |
+| Python test files | 1583 |
 | Public documentation pages | 385 |
-| GitHub Actions workflows | 44 |
+| GitHub Actions workflows | 45 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.

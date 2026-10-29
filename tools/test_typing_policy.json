@@ -13,6 +13,7 @@
     {
       "activation_criterion": "Every listed repository-policy test passes mypy --strict together in the pinned CI environment.",
       "files": [
+        "tests/_ci_shard_execution.py",
         "tests/_git_location_isolation.py",
         "tests/_test_identifier_limits.py",
         "tests/test_audit_advisory_workflow_steps.py",
@@ -40,6 +41,7 @@
         "tests/test_check_secrets.py",
         "tests/test_check_version_consistency.py",
         "tests/test_ci_documentation_surface_gate.py",
+        "tests/test_ci_test_shards.py",
         "tests/test_ci_workflow_inventory.py",
         "tests/test_ci_workflow_ownership.py",
         "tests/test_config.py",
@@ -54,7 +56,10 @@
         "tests/test_preflight_tool.py",
         "tests/test_project_paths.py",
         "tests/test_public_api.py",
+        "tests/test_pytest_ci_shard.py",
         "tests/test_qualification_projection_quality_gate.py",
+        "tests/test_run_ci_test_shards.py",
+        "tests/test_run_studio_browser_journeys.py",
         "tests/test_serialization_surface_audit.py",
         "tests/test_source_archive_contents.py",
         "tests/test_split_boundary_guard.py",

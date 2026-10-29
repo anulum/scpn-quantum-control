@@ -10,16 +10,100 @@
 from __future__ import annotations
 
 import json
+import os
 import runpy
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tools import audit_ci_workflow_modularity as modularity
 from tools import ci_workflow_inventory as inventory
 from tools.ci_workflow_inventory import WorkflowCategory, WorkflowPolicy
 
 _ACTION_SHA = "0123456789abcdef0123456789abcdef01234567"
+
+
+@pytest.mark.parametrize(
+    "defect", [None, "failure", "skipped", "cancelled", "missing", "unexpected"]
+)
+def test_actual_native_aggregate_refuses_unsuccessful_prerequisites(defect: str | None) -> None:
+    """Execute the real aggregate admission script against damaged needs metadata."""
+    policy = inventory.load_ci_workflow_policy()
+    coordinator = yaml.safe_load((inventory.REPOSITORY_ROOT / policy["coordinator"]).read_text())
+    caller = coordinator["jobs"]["native-integration"]
+    assert caller["if"] == "${{ !cancelled() }}"
+    assert coordinator["jobs"]["python-tests"]["needs"] == ["static-analysis", "native-build"]
+    owner = inventory.workflow_path_for_job("test")
+    job = yaml.safe_load(owner.read_text())["jobs"]["test"]
+    assert job["if"] == "${{ !cancelled() }}"
+    step = next(
+        item
+        for item in job["steps"]
+        if item.get("name") == "Require every mandatory producer and test worker"
+    )
+    script = "\n".join(step["run"].splitlines()[1:-1])
+    results = {name: {"result": "success"} for name in caller["needs"]}
+    if defect == "missing":
+        results.pop("python-tests")
+    elif defect == "unexpected":
+        results["unidentified-worker"] = {"result": "success"}
+    elif defect is not None:
+        results["python-tests"]["result"] = defect
+    actual = subprocess.run(
+        [sys.executable, "-c", script],
+        env=dict(os.environ, PREREQUISITE_RESULTS=json.dumps(results)),
+        text=True,
+        capture_output=True,
+        timeout=10,
+    )
+    assert actual.returncode == (0 if defect is None else 1), actual.stdout + actual.stderr
+
+
+def test_parallel_profile_and_authoritative_coverage_contracts() -> None:
+    """Preserve all interpreter lanes, native union gates and success-only evidence."""
+    source = inventory.workflow_path_for_job("python-test-shards")
+    workers = yaml.safe_load(source.read_text())["jobs"]["python-test-shards"]
+    rows = workers["strategy"]["matrix"]["include"]
+    assert set(workers["strategy"]["matrix"]) == {"include"}
+    assert [(row["python-version"], row["shard"]) for row in rows] == [
+        (version, shard) for version in ("3.11", "3.12", "3.13") for shard in (1, 2, 3, 4)
+    ]
+    assert all(
+        row["requirements-file"]
+        == f"requirements-ci-py{row['python-version'].replace('.', '')}-linux.txt"
+        for row in rows
+    )
+    assert workers["strategy"]["fail-fast"] is False
+    assert workers.get("continue-on-error", False) is False
+    assert workers["steps"][-1]["name"] == "Publish only successful authoritative worker data"
+    assert "if" not in workers["steps"][-1]
+    job = yaml.safe_load(inventory.workflow_path_for_job("test").read_text())["jobs"]["test"]
+    assert [row["python-version"] for row in job["strategy"]["matrix"]["include"]] == [
+        "3.11",
+        "3.12",
+        "3.13",
+    ]
+    steps = job["steps"]
+    union = next(
+        item for item in steps if item.get("name") == "Admit complete test coverage (3.12 only)"
+    )
+    assert "--shards 4 --coverage-output .coverage" in union["run"]
+    assert union["run"].count("coverage combine --append --keep") == 5
+    assert "tools/audit_coverage_policy.py" in union["run"]
+    authoritative = next(
+        item for item in steps if item.get("name") == "Upload coverage policy evidence (3.12 only)"
+    )
+    assert "always()" not in authoritative["if"]
+    assert steps.index(authoritative) > steps.index(
+        next(
+            item
+            for item in steps
+            if item.get("name") == "Smoke-test DLA-parity validation CLI (3.12 only)"
+        )
+    )
 
 
 def _policy() -> WorkflowPolicy:
@@ -94,8 +178,8 @@ def test_live_inventory_is_complete_unique_and_bounded() -> None:
     policy = inventory.load_ci_workflow_policy()
     jobs = [job for category in policy["categories"] for job in category["jobs"]]
 
-    assert len(policy["categories"]) == 20
-    assert len(jobs) == len(set(jobs)) == len(policy["job_order"]) == 212
+    assert len(policy["categories"]) == 21
+    assert len(jobs) == len(set(jobs)) == len(policy["job_order"]) == 216
     assert set(jobs) == set(policy["job_order"])
     assert modularity.audit_ci_workflow_modularity(policy) == []
     assert modularity.main() == 0

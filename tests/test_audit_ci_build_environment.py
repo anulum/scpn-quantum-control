@@ -351,6 +351,25 @@ def test_consumer_audit_rejects_matrix_install_gate_docker_and_fixture_drift() -
     assert any("real wheel tests" in error for error in errors)
 
 
+def test_every_matrix_selected_lock_install_requires_hashes() -> None:
+    """Parallel workers and the aggregate may both install the selected lock, only hash-locked."""
+    docker = (
+        f"RUN {build_audit.DOCKER_INSTALL_COMMAND}\n"
+        + "\n".join(build_audit.DOCKER_CONTEXT_COPIES)
+        + "\n"
+    )
+    wheel_test = 'args = ["--no-isolation"]\n'
+    second_worker = f"  python-test-shards:\n      - run: {build_audit.LOCK_INSTALL_COMMAND}\n"
+    assert build_audit.audit_consumers(_ci() + second_worker, docker, wheel_test) == ()
+    unhashed = (
+        "  python-test-shards:\n"
+        f"      - run: python -m pip install {build_audit.MATRIX_LOCK_SELECTION}\n"
+    )
+    assert build_audit.audit_consumers(_ci() + unhashed, docker, wheel_test) == (
+        "CI test matrices must install every selected lock with --require-hashes",
+    )
+
+
 def test_incomplete_repository_reports_read_and_policy_failures(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],

@@ -9,6 +9,10 @@ name: CI / Native Integration
 
 on:
   workflow_call:
+    inputs:
+      prerequisite-results:
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -628,6 +632,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100
           --include=*/studio/result_pack_seal.py
   test:
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
@@ -642,6 +647,18 @@ jobs:
           - python-version: "3.13"
             requirements-file: requirements-ci-py313-linux.txt
     steps:
+      - name: Require every mandatory producer and test worker
+        env:
+          PREREQUISITE_RESULTS: ${{ inputs.prerequisite-results }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          results = json.loads(os.environ["PREREQUISITE_RESULTS"])
+          expected = {"static-analysis", "native-build", "differentiable-control", "simulation-artifact", "framework-parity", "python-tests"}
+          if set(results) != expected or any(value["result"] != "success" for value in results.values()):
+              raise SystemExit("Mandatory shard or coverage producer did not succeed")
+          PY
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: ./.github/actions/pinned-rust-toolchain
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
@@ -662,19 +679,18 @@ jobs:
           path: dist
       - name: Install the current Rust engine wheel
         run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
-      - name: Exercise public Rust replay admission and recovery
-        if: matrix.python-version == '3.12'
-        run: >-
-          cargo test --manifest-path scpn_quantum_engine/Cargo.toml
-          --locked --test 'program_ad*'
-      - name: Prime the real Studio WASM build for offline regression
-        run: >-
-          cargo build --release --locked --target wasm32-unknown-unknown
-          --manifest-path scpn_quantum_engine/studio_wasm_kernel/Cargo.toml
-      - name: Run tests
-        # Python 3.12 runs the same selection once, under coverage, in the next test step.
+      - name: Download the complete indexed profile evidence
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
+        with:
+          pattern: test-shard-python-${{ matrix.python-version }}-*-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/python-test-shards
+      - name: Admit the complete compatibility profile
         if: matrix.python-version != '3.12'
-        run: pytest tests/ -v --tb=short -x -m "not slow and not hardware and not internal_corpus and not performance and not framework_imports"
+        run: >-
+          python -m tools.ci_test_shards verify "$RUNNER_TEMP/python-test-shards"
+          --source-sha "$GITHUB_SHA" --run-id "$GITHUB_RUN_ID" --attempt "$GITHUB_RUN_ATTEMPT"
+          --python "${{ matrix.python-version }}" --shards 4
+          --timings-output "$RUNNER_TEMP/ci-test-timings-cache/${{ matrix.python-version }}.json"
       - name: Audit test quality
         run: python tools/audit_test_quality.py
       - name: Download exact-commit native transform coverage (3.12 only)
@@ -707,10 +723,13 @@ jobs:
         with:
           name: phase-pennylane-bridge-coverage-${{ github.sha }}
           path: ${{ runner.temp }}/phase-pennylane-coverage
-      - name: Run tests with coverage (3.12 only)
+      - name: Admit complete test coverage (3.12 only)
         if: matrix.python-version == '3.12'
         run: |
-          pytest tests/ --cov=src/scpn_quantum_control --cov-branch --cov-report=xml --cov-fail-under=0 -m "not slow and not hardware and not internal_corpus and not performance and not framework_imports"
+          python -m tools.ci_test_shards verify "$RUNNER_TEMP/python-test-shards" \
+            --source-sha "$GITHUB_SHA" --run-id "$GITHUB_RUN_ID" --attempt "$GITHUB_RUN_ATTEMPT" \
+            --python 3.12 --shards 4 --coverage-output .coverage \
+            --timings-output "$RUNNER_TEMP/ci-test-timings-cache/3.12.json"
           python -m coverage combine --append --keep "$RUNNER_TEMP/native-transform-coverage/native-transform.coverage"
           python -m coverage combine --append --keep "$RUNNER_TEMP/nqs-ansatz-coverage/scpn-qc-nqs-ansatz-quality.coverage"
           python -m coverage combine --append --keep "$RUNNER_TEMP/native-tensor-coverage/.coverage.differentiable-tensor-construction"
@@ -726,17 +745,6 @@ jobs:
           python tools/audit_coverage_debt.py \
             --coverage-audit coverage-gap-audit.json \
             --check-current
-      - name: Upload coverage policy evidence (3.12 only)
-        if: always() && matrix.python-version == '3.12'
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
-        with:
-          name: coverage-gap-audit-${{ matrix.python-version }}
-          include-hidden-files: true
-          path: |
-            .coverage
-            coverage.xml
-            coverage-gap-audit.json
-          retention-days: 30
       - name: Smoke-test DLA-parity validation CLI (3.12 only)
         if: matrix.python-version == '3.12'
         run: python scripts/run_dla_parity_suite.py --json > /tmp/dla_parity_result.json
@@ -747,6 +755,24 @@ jobs:
           files: coverage.xml
           fail_ci_if_error: false
 
+      - name: Save observed durations after mandatory profile success
+        if: github.ref == 'refs/heads/main'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: ${{ runner.temp }}/ci-test-timings-cache/${{ matrix.python-version }}.json
+          key: ${{ runner.os }}-ci-test-timings-v1-${{ matrix.python-version }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Upload coverage policy evidence (3.12 only)
+        if: matrix.python-version == '3.12'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: coverage-gap-audit-${{ matrix.python-version }}
+          include-hidden-files: true
+          path: |
+            .coverage
+            coverage.xml
+            coverage-gap-audit.json
+          if-no-files-found: error
+          retention-days: 30
   # Cross-platform package smoke. The full scientific artefact and
   # documentation corpus is validated on Linux with the pinned Linux
   # lock above; this job verifies that the install/import/core-QEC

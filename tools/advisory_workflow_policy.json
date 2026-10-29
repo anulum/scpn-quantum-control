@@ -13,9 +13,9 @@
    "job": "studio-web",
    "step": "Run the real catalogue browser journey",
    "kind": "shell-tolerance",
-   "count": 3,
-   "reason": "An exit trap stops the two local servers the step started and waits for them.",
-   "permanent": "The tolerated commands are the cleanup in the trap; the journey commands of the step run without tolerance and decide its result."
+   "count": 5,
+   "reason": "Exit traps stop the two local servers the step's browser script started and the isolated test workers of tools/run_ci_test_shards.sh, then wait for them.",
+   "permanent": "The tolerated commands are the cleanup in the traps; the journey commands and every worker's exit status run without tolerance and decide the step's result."
   },
   {
    "workflow": "ci-studio.yml",

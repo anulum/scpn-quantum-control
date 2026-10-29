@@ -141,6 +141,55 @@ def test_scan_finds_job_step_and_shell_tolerances_in_tracked_workflows(tmp_path:
     ]
 
 
+SCRIPTED = """\
+jobs:
+  browser:
+    steps:
+      - name: Journeys
+        run: |
+          bash tools/outer.sh --flag
+          shellcheck tools/linted.sh
+          bash -n tools/linted.sh
+          tools/missing.sh
+      - name: Direct
+        run: ./tools/inner.sh
+"""
+
+
+def test_scripts_a_step_runs_count_towards_its_site(tmp_path: Path) -> None:
+    """Tolerances move with a command into a script, nested scripts included.
+
+    A script that is only linted or syntax-checked is not read, a missing script
+    adds nothing and a script that runs itself is counted once.
+    """
+    repo = _repository(tmp_path, {"scripted.yml": SCRIPTED}, [])
+    tools = repo / "tools"
+    (tools / "outer.sh").write_text(
+        "trap 'kill \"$pid\" || true' EXIT\nbash tools/inner.sh\nbash tools/outer.sh\n",
+        encoding="utf-8",
+    )
+    (tools / "inner.sh").write_text("wait || :\nset +e\n", encoding="utf-8")
+    (tools / "linted.sh").write_text("probe || true\n", encoding="utf-8")
+
+    sites = gate.scan(repo)
+
+    assert sites == [
+        gate.Site("scripted.yml", "browser", "Journeys", gate.SHELL, 3),
+        gate.Site("scripted.yml", "browser", "Direct", gate.SHELL, 2),
+    ]
+    rows = [
+        gate.Row(
+            gate.Site("scripted.yml", "browser", "Journeys", gate.SHELL, 1), "r", "permanent", "s"
+        )
+    ]
+    assert gate.compare(sites, rows) == [
+        "tolerance count changed: scripted.yml / browser / Journeys (shell-tolerance): "
+        "recorded 1, found 3",
+        "tolerated failure outside the advisory policy: "
+        "scripted.yml / browser / Direct (shell-tolerance)",
+    ]
+
+
 def test_gate_passes_when_every_site_is_recorded_and_prints_undecided_rows(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:

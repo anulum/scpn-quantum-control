@@ -53,6 +53,7 @@ def test_owning_workflow_uses_canonical_gates_and_required_framework_profile() -
         "differentiable-control",
         "simulation-artifact",
         "framework-parity",
+        "python-tests",
     ]
     assert "gates.build_static_quality_gates" in native_job
     assert "gates.build_coverage_gates" in native_job
