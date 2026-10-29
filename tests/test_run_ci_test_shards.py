@@ -79,9 +79,27 @@ def test_real_concurrent_runner_preserves_complete_union_and_failures(
         assert all(result["sealed"] for result in inventories)
 
 
+EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+SOURCE_STATES = (
+    (
+        "src/scpn_quantum_control/logging_setup.py",
+        COHORT,
+        "tools/run_ci_test_shards.sh",
+        "tools/ci_test_shards.py",
+        "tools/pytest_ci_shard.py",
+    ),
+    ("tests/test_config.py",),
+)
+
+
 def test_runner_identifies_a_checkout_without_commits_by_its_index_tree(tmp_path: Path) -> None:
-    """Bind workers to the tested index tree where no commit exists, as in the container image."""
-    repository = tmp_path / "uncommitted.git"
+    """Bind workers to the staged source tree where no commit exists, as in the container image.
+
+    A private index over the real checkout is staged with the maintained runner,
+    runtime and test sources, then with one more maintained test file; each
+    distinct non-empty tree must be the identity the actual runner records.
+    """
+    repository = tmp_path / "uncommitted"
     clean = {name: value for name, value in os.environ.items() if not name.startswith("GIT_")}
     subprocess.run(["git", "init", "-q", str(repository)], check=True, timeout=10, env=clean)
     env = dict(
@@ -91,32 +109,37 @@ def test_runner_identifies_a_checkout_without_commits_by_its_index_tree(tmp_path
         GIT_DIR=str(repository / ".git"),
         GIT_WORK_TREE=str(ROOT),
     )
-    tree = subprocess.run(
-        ["git", "write-tree"], cwd=ROOT, env=env, capture_output=True, text=True, check=True
-    ).stdout.strip()
-    root = tmp_path / "workers"
-    result = subprocess.run(
-        [
-            "bash",
-            "tools/run_ci_test_shards.sh",
-            "logging-integration",
-            "1",
-            str(root),
-            str(tmp_path / "absent-timings.json"),
-            str(tmp_path / ".coverage.accepted"),
-            "*/logging_setup.py",
-            "thread",
-            str(ROOT / COHORT),
-        ],
-        cwd=ROOT,
-        env=env,
-        capture_output=True,
-        text=True,
-        timeout=90,
-    )
-    assert result.returncode == 0, result.stdout + result.stderr
-    (evidence,) = (root / "artifacts").glob("*/result.json")
-    assert json.loads(evidence.read_text())["identity"]["source_sha"] == tree
+    trees: list[str] = []
+    for state, paths in enumerate(SOURCE_STATES):
+        subprocess.run(["git", "add", "--", *paths], cwd=ROOT, env=env, check=True, timeout=30)
+        tree = subprocess.run(
+            ["git", "write-tree"], cwd=ROOT, env=env, capture_output=True, text=True, check=True
+        ).stdout.strip()
+        assert tree != EMPTY_TREE and tree not in trees
+        trees.append(tree)
+        root = tmp_path / f"workers-{state}"
+        result = subprocess.run(
+            [
+                "bash",
+                "tools/run_ci_test_shards.sh",
+                "logging-integration",
+                "1",
+                str(root),
+                str(tmp_path / "absent-timings.json"),
+                str(tmp_path / f".coverage.accepted-{state}"),
+                "*/logging_setup.py",
+                "thread",
+                str(ROOT / COHORT),
+            ],
+            cwd=ROOT,
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=90,
+        )
+        assert result.returncode == 0, result.stdout + result.stderr
+        (evidence,) = (root / "artifacts").glob("*/result.json")
+        assert json.loads(evidence.read_text())["identity"]["source_sha"] == tree
 
 
 def test_shell_runner_refuses_bad_arguments_and_corrupt_timing_cache(tmp_path: Path) -> None:
