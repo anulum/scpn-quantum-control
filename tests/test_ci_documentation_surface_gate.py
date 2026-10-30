@@ -451,7 +451,7 @@ def test_ci_phase_jax_qnode_gate_runs_after_the_real_cpu_overlay() -> None:
     assert "tests/test_phase_jax_qnode_transforms.py" in workflow
     assert "tests/test_phase_jax_qnode_statevector_edges.py" in workflow
     assert "--data-file=/tmp/scpn-qc-phase-jax-qnode.coverage" in workflow
-    assert "--source=src/scpn_quantum_control/phase" in workflow
+    assert "--source=src/scpn_quantum_control/phase" not in workflow
     assert "Enforce Phase-QNode JAX exact coverage" in workflow
     assert "*/jax_qnode_transforms.py" in workflow
     assert "--fail-under=100" in workflow

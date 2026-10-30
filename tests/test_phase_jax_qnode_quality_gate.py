@@ -99,7 +99,8 @@ def test_default_local_gate_has_exact_owner_coverage() -> None:
     assert run_cmd[:4] == [_preflight._PY, "-m", "coverage", "run"]
     assert "--rcfile=/dev/null" in run_cmd
     assert "--branch" in run_cmd
-    assert "--source=src/scpn_quantum_control/phase" in run_cmd
+    assert f"--include={_quality_gates.PHASE_JAX_QNODE_COVERAGE_INCLUDE}" in run_cmd
+    assert not any(argument.startswith("--source") for argument in run_cmd)
     assert run_cmd[-len(cohort) :] == cohort
     assert f"--data-file={data_file}" in run_cmd
     assert report_cmd[:4] == [_preflight._PY, "-m", "coverage", "report"]
@@ -149,7 +150,8 @@ def test_ci_and_local_gates_share_exact_owner_order() -> None:
         == _quality_gates.PHASE_JAX_QNODE_COVERAGE_COHORT
     )
     assert "Enforce Phase-QNode JAX exact coverage" in workflow
-    assert "--source=src/scpn_quantum_control/phase" in workflow
+    assert "--source=src/scpn_quantum_control/phase" not in workflow
+    assert workflow.count(f"--include={_quality_gates.PHASE_JAX_QNODE_COVERAGE_INCLUDE}") == 2
     assert (
         "--include=*/jax_bridge.py,*/jax_maturity.py,*/jax_qnode_transforms.py,"
         "*/phase_qnode_jax_audits.py"

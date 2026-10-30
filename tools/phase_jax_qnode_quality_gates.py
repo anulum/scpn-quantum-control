@@ -57,6 +57,11 @@ PHASE_JAX_QNODE_COVERAGE_COHORT = [
 PHASE_JAX_QNODE_COVERAGE_DATA_FILE = f"{gettempdir()}/scpn-qc-phase-jax-qnode.coverage"
 """Isolated coverage database for the Phase-QNode JAX owner."""
 
+PHASE_JAX_QNODE_COVERAGE_INCLUDE = (
+    "*/jax_bridge.py,*/jax_maturity.py,*/jax_qnode_transforms.py,*/phase_qnode_jax_audits.py"
+)
+"""Owner files measured and enforced; an include list also measures the top-level audits."""
+
 
 def build_static_quality_gates(python: str) -> list[Gate]:
     """Build strict typing and NumPy-docstring gates.
@@ -127,7 +132,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--rcfile={devnull}",
                 f"--data-file={PHASE_JAX_QNODE_COVERAGE_DATA_FILE}",
                 "--branch",
-                "--source=src/scpn_quantum_control/phase",
+                f"--include={PHASE_JAX_QNODE_COVERAGE_INCLUDE}",
                 "-m",
                 "pytest",
                 "-q",
@@ -145,8 +150,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={PHASE_JAX_QNODE_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/jax_bridge.py,*/jax_maturity.py,*/jax_qnode_transforms.py,"
-                "*/phase_qnode_jax_audits.py",
+                f"--include={PHASE_JAX_QNODE_COVERAGE_INCLUDE}",
             ],
         ),
     ]
@@ -155,6 +159,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
 __all__ = [
     "PHASE_JAX_QNODE_COVERAGE_COHORT",
     "PHASE_JAX_QNODE_COVERAGE_DATA_FILE",
+    "PHASE_JAX_QNODE_COVERAGE_INCLUDE",
     "PHASE_JAX_QNODE_QUALITY_RATCHET",
     "build_coverage_gates",
     "build_static_quality_gates",

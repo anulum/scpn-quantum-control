@@ -307,17 +307,6 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 449,
-      "line_percent": 81.49,
-      "missing_lines": 102,
-      "path": "src/scpn_quantum_control/phase/jax_qnode_transforms.py",
-      "priority": "P3_high_line_debt",
-      "priority_reason": "At least 50 executable lines are uncovered.",
-      "status": "below_target",
-      "valid_lines": 551
-    },
-    {
-      "claim_ids": [],
       "covered_lines": 117,
       "line_percent": 54.93,
       "missing_lines": 96,
@@ -436,17 +425,6 @@
       "priority_reason": "At least 50 executable lines are uncovered.",
       "status": "below_target",
       "valid_lines": 286
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 47,
-      "line_percent": 50.0,
-      "missing_lines": 47,
-      "path": "src/scpn_quantum_control/benchmarks/differentiable_programming_quantum.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 94
     },
     {
       "claim_ids": [],
@@ -1000,17 +978,6 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 51,
-      "line_percent": 89.47,
-      "missing_lines": 6,
-      "path": "src/scpn_quantum_control/ml_examples/qnn_convergence.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 57
-    },
-    {
-      "claim_ids": [],
       "covered_lines": 230,
       "line_percent": 97.46000000000001,
       "missing_lines": 6,
@@ -1257,20 +1224,20 @@
     "sha256": "3cd7db0f89f297af0afab4b8081e85df0c412c596a6398e69469985c908f16a1"
   },
   "summary": {
-    "debt_file_count": 112,
+    "debt_file_count": 109,
     "fully_covered_file_count": 604,
     "justified_exclusion_file_count": 44,
-    "known_missing_line_count": 2510,
+    "known_missing_line_count": 2355,
     "measured_non_excluded_file_count": 695,
     "priority_counts": {
       "P0_claim_bearing": 0,
       "P1_runtime_hot_path": 0,
       "P2_unmeasured": 23,
-      "P3_high_line_debt": 16,
-      "P4_standard": 73
+      "P3_high_line_debt": 15,
+      "P4_standard": 71
     },
     "status_counts": {
-      "below_target": 89,
+      "below_target": 86,
       "unmeasured_since_baseline": 23
     },
     "unmeasured_debt_file_count": 23

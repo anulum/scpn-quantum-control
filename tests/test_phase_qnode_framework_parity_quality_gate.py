@@ -129,13 +129,45 @@ def test_native_operator_gate_requires_actual_runtimes_and_exact_coverage() -> N
 
 
 @pytest.mark.parametrize(
-    ("framework", "source_name"),
-    [("Torch", "torch_qnode_transforms.py"), ("PennyLane", "pennylane_import.py")],
+    ("title", "owner_gate_name", "source_names"),
+    [
+        (
+            "Phase-QNode Torch",
+            "Enforce Phase-QNode Torch bridge exact coverage",
+            ("torch_qnode_transforms.py",),
+        ),
+        (
+            "Phase-QNode PennyLane",
+            "Enforce Phase-QNode PennyLane bridge exact coverage",
+            ("pennylane_import.py",),
+        ),
+        (
+            "Phase-QNode JAX",
+            "Enforce Phase-QNode JAX exact coverage",
+            ("jax_qnode_transforms.py", "phase_qnode_jax_audits.py"),
+        ),
+        (
+            "framework benchmark and example",
+            "Enforce framework benchmark and example exact coverage",
+            ("differentiable_programming_quantum.py", "qnn_convergence.py"),
+        ),
+    ],
 )
 def test_global_coverage_retains_required_exact_commit_sdk_measurements(
-    framework: str, source_name: str
+    title: str, owner_gate_name: str, source_names: tuple[str, ...]
 ) -> None:
-    """Prevent SDK coverage being gated separately but lost from the release report."""
+    """Prevent SDK coverage being gated separately but lost from the release report.
+
+    Parameters
+    ----------
+    title
+        Descriptive name shared by the upload and download steps.
+    owner_gate_name
+        Name of the producer's exact-coverage gate for the uploaded data.
+    source_names
+        Framework-dependent sources the global report must enforce at 100%.
+
+    """
     policy = load_ci_workflow_policy()
     category = next(item for item in policy["categories"] if item["id"] == "native-integration")
     assert "framework-parity" in category["caller_needs"]
@@ -146,13 +178,12 @@ def test_global_coverage_retains_required_exact_commit_sdk_measurements(
     upload = next(
         step
         for step in producer_steps
-        if step.get("name") == f"Upload exact-commit Phase-QNode {framework} coverage"
+        if step.get("name") == f"Upload exact-commit {title} coverage"
     )
     download = next(
         step
         for step in consumer_steps
-        if step.get("name")
-        == f"Download exact-commit Phase-QNode {framework} coverage (3.12 only)"
+        if step.get("name") == f"Download exact-commit {title} coverage (3.12 only)"
     )
     assert upload["uses"].startswith("actions/upload-artifact@")
     assert upload["with"]["name"] == download["with"]["name"]
@@ -163,15 +194,12 @@ def test_global_coverage_retains_required_exact_commit_sdk_measurements(
     assert download["uses"].startswith("actions/download-artifact@")
     assert download["if"] == "matrix.python-version == '3.12'"
     assert download.get("continue-on-error", False) is False
-    owner_gate = next(
-        step
-        for step in producer_steps
-        if step.get("name") == f"Enforce Phase-QNode {framework} bridge exact coverage"
-    )
+    owner_gate = next(step for step in producer_steps if step.get("name") == owner_gate_name)
     owner_command = shlex.split(owner_gate["run"])
     assert "--fail-under=100" in owner_command
     assert f"--data-file={upload['with']['path']}" in owner_command
-    assert any(source_name in arg for arg in owner_command if arg.startswith("--include="))
+    for source_name in source_names:
+        assert any(source_name in arg for arg in owner_command if arg.startswith("--include="))
     assert producer_steps.index(owner_gate) < producer_steps.index(upload)
     coverage_step = next(
         step
@@ -189,7 +217,8 @@ def test_global_coverage_retains_required_exact_commit_sdk_measurements(
         shlex.split(line) for line in commands.splitlines() if "coverage report" in line
     )
     assert "--fail-under=100" in exact_report
-    assert any(source_name in arg for arg in exact_report if arg.startswith("--include="))
+    for source_name in source_names:
+        assert any(source_name in arg for arg in exact_report if arg.startswith("--include="))
     assert commands.index("coverage report") < commands.index("tools/audit_coverage_policy.py")
     assert consumer_steps.index(download) < consumer_steps.index(coverage_step)
 
