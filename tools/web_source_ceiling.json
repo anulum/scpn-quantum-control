@@ -1,13 +1,12 @@
 {
  "schema": "web_source_ceiling_v1",
  "release": "2.5.15",
- "measured_commit": "f98b48bbd650b32c79db4856b113fdaa5665c931",
- "total_lint_findings": 41,
- "total_lint_files": 10,
- "total_unformatted_files": 36,
+ "measured_commit": "3c9682a14456e526bd55abafdb199430f564f59e",
+ "total_lint_findings": 40,
+ "total_lint_files": 9,
+ "total_unformatted_files": 35,
  "lint": {
   "docs/js/goatcounter.js": 3,
-  "studio-web/browser-tests/federation.native.tsx": 1,
   "studio-web/browser-tests/workspaceFormatting.native.ts": 1,
   "studio-web/browser-tests/workspaceSaveRaces.native.ts": 1,
   "studio-web/src/app/WorkbenchHelp.tsx": 9,
@@ -18,7 +17,6 @@
   "studio-web/test-support/kernelWorker.ts": 1
  },
  "unformatted": [
-  "studio-web/browser-tests/federation.native.tsx",
   "studio-web/browser-tests/federation.vite.ts",
   "studio-web/browser-tests/workspaceConnections.native.ts",
   "studio-web/browser-tests/workspaceFixture.ts",

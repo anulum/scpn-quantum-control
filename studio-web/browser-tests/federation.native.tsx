@@ -23,7 +23,8 @@ interface Remote {
 }
 
 function object(value: unknown): Record<string, unknown> {
-  if (typeof value !== "object" || value === null) throw new Error("Federation module object required");
+  if (typeof value !== "object" || value === null)
+    throw new Error("Federation module object required");
   return value as Record<string, unknown>;
 }
 
@@ -31,21 +32,48 @@ async function boot(): Promise<void> {
   const url = "/remoteEntry.js";
   const imported: unknown = await import(/* @vite-ignore */ url);
   const record = object(imported);
-  if (typeof record["init"] !== "function" || typeof record["get"] !== "function") throw new Error("Original federation container contract missing");
+  if (typeof record["init"] !== "function" || typeof record["get"] !== "function")
+    throw new Error("Original federation container contract missing");
   const remote = record as unknown as Remote;
   const scope = {
     // The host shares the React it actually loaded, as an embedding Hub does.
-    react: { [React.version]: { get: async () => () => React, from: "workbench-acceptance-host", loaded: true } },
-    "react-dom": { [ReactDOM.version]: { get: async () => () => ReactDOM, from: "workbench-acceptance-host", loaded: true } },
+    react: {
+      [React.version]: {
+        get: async () => () => React,
+        from: "workbench-acceptance-host",
+        loaded: true,
+      },
+    },
+    "react-dom": {
+      [ReactDOM.version]: {
+        get: async () => () => ReactDOM,
+        from: "workbench-acceptance-host",
+        loaded: true,
+      },
+    },
   };
   await remote.init(scope);
   const factory = await remote.get("./QuantumStudioPanel");
   const exposed = object(factory());
-  if (typeof exposed["default"] !== "function" || exposed["default"] !== exposed["QuantumStudioPanel"]) throw new Error("Original named/default panel identity missing");
+  if (
+    typeof exposed["default"] !== "function" ||
+    exposed["default"] !== exposed["QuantumStudioPanel"]
+  )
+    throw new Error("Original named/default panel identity missing");
   const Panel = exposed["default"] as React.ComponentType<QuantumStudioPanelProps>;
   function Host() {
     const [count, setCount] = React.useState(0);
-    return <><button onClick={() => setCount(value => value + 1)}>Host singleton counter</button><output aria-label="Federation consumer state">{count}</output><div style={{ width: "100%", maxWidth: "720px" }}><Panel mode="embedded" rawCodecs={conformanceCodecs} /></div></>;
+    return (
+      <>
+        <button type="button" onClick={() => setCount((value) => value + 1)}>
+          Host singleton counter
+        </button>
+        <output aria-label="Federation consumer state">{count}</output>
+        <div style={{ width: "100%", maxWidth: "720px" }}>
+          <Panel mode="embedded" rawCodecs={conformanceCodecs} />
+        </div>
+      </>
+    );
   }
   const container = document.getElementById("consumer");
   if (container === null) throw new Error("Native consumer root missing");
