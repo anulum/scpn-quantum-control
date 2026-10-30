@@ -110,10 +110,15 @@ export interface BenchRun {
   readonly colour: number;
   /** Oscillator count, coupling, frequency spread, steps and mode of the run. */
   readonly controls: {
+    /** Oscillator count. */
     readonly n: number;
+    /** Coupling strength K. */
     readonly coupling: number;
+    /** Half-width of the natural-frequency spread. */
     readonly spread: number;
+    /** Integration steps. */
     readonly steps: number;
+    /** Kernel mode. */
     readonly mode: string;
   };
   /** Order-parameter samples of the run. */
@@ -131,11 +136,13 @@ export type RunHistoryAction =
   | {
       /** Record a finished run. */
       readonly type: "record";
+      /** The finished run; the history assigns its number, colour and overlay. */
       readonly run: Omit<BenchRun, "number" | "colour" | "overlaid">;
     }
   | {
       /** Draw or stop drawing a run over the current result. */
       readonly type: "toggle";
+      /** Session number of the run. */
       readonly number: number;
     }
   | {

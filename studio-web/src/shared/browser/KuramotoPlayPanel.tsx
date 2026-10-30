@@ -7,19 +7,31 @@
 // scpn-quantum-control — studio-web Kuramoto Play panel
 
 import { useEffect, useMemo, useState } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { dataEntries } from "../contracts/canonical";
 import {
   admitOwnedKuramotoResources,
   browserResourcePolicy,
   smallerKuramotoRequest,
 } from "../resources/kuramotoResources";
+import type {
+  KuramotoResourceRequest,
+  OwnedKuramotoResourceAdmission,
+} from "../resources/kuramotoResources";
 import { ResourcePlanInspector } from "../resources/ResourcePlanInspector";
 import type { ResourcePolicy } from "../resources/admission";
 
-import type { KuramotoKernel, KuramotoMode, KuramotoRequest, KuramotoScenario } from "./kuramoto";
+import type {
+  KuramotoKernel,
+  KuramotoMode,
+  KuramotoRequest,
+  KuramotoScenario,
+  OwnedKernelOutcome,
+} from "./kuramoto";
 import { fetchKuramoto, maxOrderParameterDeviation } from "./kuramoto";
 import { SimulationDataTable } from "./SimulationDataTable";
 import { useOwnedKuramoto } from "./useOwnedKuramoto";
+import type { OwnedKuramotoJob, OwnedKuramotoState } from "./useOwnedKuramoto";
 import { kernelBinarySize, ownedWorkerBinary } from "../workers/kernelProtocol";
 
 /** Loader for the WASM kernel; overridable so tests inject a built kernel. */
@@ -30,11 +42,17 @@ const FIXED_DT = 0.05;
 // The committed reference and the WASM kernel differ only in float op-order.
 const GROUND_TRUTH_TOL = 1e-6;
 
-interface Controls {
+/** The live model controls of Kuramoto Play. */
+export interface Controls {
+  /** Kernel mode: mean-field or a networked coupling matrix. */
   readonly mode: KuramotoMode;
+  /** Oscillator count. */
   readonly n: number;
+  /** Coupling strength K. */
   readonly coupling: number;
+  /** Half-width of the natural-frequency spread. */
   readonly spread: number;
+  /** Integration steps. */
   readonly steps: number;
 }
 
@@ -73,19 +91,121 @@ export function sparklinePoints(series: Float64Array, width: number, height: num
   return points.join(" ");
 }
 
-type KernelState =
-  | { readonly phase: "loading" }
-  | ({ readonly phase: "ready" } & KuramotoKernel)
-  | { readonly phase: "error"; readonly reason: string };
+/** A loaded WASM kernel, tagged as ready. */
+export type ReadyKernel = {
+  /** The kernel loaded; its exports and declared bounds follow. */
+  readonly phase: "ready";
+} & KuramotoKernel;
 
-/**
- * The Kuramoto Play panel. It loads the SAME Rust kernel the repository ships
- * (as WASM) and integrates R(t) live as the controls move. The kernel's own
- * declared N/step limits are shown as first-class fail-closed boundaries — the
- * sliders cannot exceed them and an out-of-range kernel rejection reads loud.
- */
+/** Loading state of the WASM kernel. */
+export type KernelState =
+  | {
+      /** The kernel is still loading. */
+      readonly phase: "loading";
+    }
+  | ReadyKernel
+  | {
+      /** The kernel could not be loaded. */
+      readonly phase: "error";
+      /** Why loading failed. */
+      readonly reason: string;
+    };
+
+/** Oscillator and step limits the kernel itself declares. */
+export interface DisplayBounds {
+  /** Largest oscillator count the kernel admits. */
+  readonly maxOscillators: number;
+  /** Largest step count the kernel admits. */
+  readonly maxSteps: number;
+}
+
+/** Resource admission of the current controls, or why it could not be computed. */
+export type PlayResource =
+  | {
+      /** The plan was computed; the admission still says whether it may run. */
+      readonly ok: true;
+      /** Original kernel binary that each worker checks. */
+      readonly bytes: Uint8Array<ArrayBuffer>;
+      /** Declared plan, policy and admission verdict. */
+      readonly admission: OwnedKuramotoResourceAdmission;
+    }
+  | {
+      /** No plan could be computed. */
+      readonly ok: false;
+      /** Why the plan is refused. */
+      readonly reason: string;
+    };
+
+/** One admitted run request, with an explicit identity for restarts. */
+export interface PlayJob extends OwnedKuramotoJob {
+  /** The loaded kernel the run uses. */
+  readonly kernel: ReadyKernel;
+  /** Incremented to restart; it never changes the numerical input. */
+  readonly requestSequence: number;
+}
+
+/** Outcome of the current run, or why there is none. */
+export type PlayResult =
+  | OwnedKernelOutcome
+  | {
+      /** No trajectory is available. */
+      readonly ok: false;
+      /** Why there is no trajectory. */
+      readonly reason: string;
+    };
+
+/** Check of the committed scenario against its ground truth. */
+export type GroundTruth =
+  | {
+      /** The check has not run. */
+      readonly evaluated: false;
+      /** Why the check has not run. */
+      readonly reason: string;
+    }
+  | {
+      /** The check ran. */
+      readonly evaluated: true;
+      /** Whether the kernel reproduced the committed order parameter. */
+      readonly verified: boolean;
+    };
+
 /** Everything the Kuramoto Play instrument computes, shared by its compositions. */
-export type KuramotoPlay = ReturnType<typeof useKuramotoPlay>;
+export interface KuramotoPlay {
+  /** Loading state of the WASM kernel. */
+  readonly kernel: KernelState;
+  /** Kernel-declared limits, or null until they can be read. */
+  readonly displayBounds: DisplayBounds | null;
+  /** Requested memory ceiling in KiB. */
+  readonly memoryKiB: number;
+  /** Change the requested memory ceiling. */
+  readonly setMemoryKiB: Dispatch<SetStateAction<number>>;
+  /** Requested wall-clock ceiling in milliseconds, empty when unset. */
+  readonly wallMs: string;
+  /** Change the requested wall-clock ceiling. */
+  readonly setWallMs: Dispatch<SetStateAction<string>>;
+  /** Worker disposal deadline in milliseconds. */
+  readonly deadlineMs: number;
+  /** Change the worker disposal deadline. */
+  readonly setDeadlineMs: Dispatch<SetStateAction<number>>;
+  /** Live model controls. */
+  readonly controls: Controls;
+  /** Change the model controls. */
+  readonly setControls: Dispatch<SetStateAction<Controls>>;
+  /** Restart the current run with the same input. */
+  readonly setRestart: Dispatch<SetStateAction<number>>;
+  /** Resource admission of the controls, or null before the kernel loads. */
+  readonly resource: PlayResource | null;
+  /** The admitted run request, or null when nothing may run. */
+  readonly job: PlayJob | null;
+  /** State of the owned worker run. */
+  readonly owned: OwnedKuramotoState;
+  /** Outcome of the current run. */
+  readonly result: PlayResult;
+  /** Ground-truth check of the committed scenario. */
+  readonly groundTruth: GroundTruth;
+  /** A smaller request that would be admitted, when the current one is refused. */
+  readonly smaller: KuramotoResourceRequest | null;
+}
 
 /**
  * Own the kernel, controls, resource admission and the bounded job of Kuramoto Play.
@@ -102,7 +222,7 @@ export function useKuramotoPlay(
   scenario: KuramotoScenario,
   loadKernel: KuramotoLoader = fetchKuramoto,
   resourcePolicy?: ResourcePolicy,
-) {
+): KuramotoPlay {
   const [kernel, setKernel] = useState<KernelState>({ phase: "loading" });
   const [memoryKiB, setMemoryKiB] = useState(4096);
   const [wallMs, setWallMs] = useState("");
@@ -582,6 +702,15 @@ export function PlayResult({
   );
 }
 
+/**
+ * The Kuramoto Play panel. It loads the SAME Rust kernel the repository ships
+ * (as WASM) and integrates R(t) live as the controls move. The kernel's own
+ * declared N/step limits are shown as first-class fail-closed boundaries — the
+ * sliders cannot exceed them and an out-of-range kernel rejection reads loud.
+ *
+ * @param props - Committed scenario, optional kernel loader and resource policy.
+ * @returns The panel.
+ */
 export function KuramotoPlayPanel({
   scenario,
   loadKernel = fetchKuramoto,
