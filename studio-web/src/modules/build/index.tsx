@@ -7,6 +7,8 @@
 // SCPN Quantum Control — registered workbench module
 
 import { lazy } from "react";
+// Loaded with the module entry, not the lazy view, so embedded hosts receive it in the main bundle.
+import "./build.css";
 import type { StudioModule } from "../../shared/contracts/module";
 import type {
   NavigationServices,

@@ -146,6 +146,29 @@ describe("design tokens", () => {
     expect(colourLiteral.test(tokens.slice(tokenBlockEnd))).toBe(false);
   });
 
+  it("keeps module stylesheets to defined tokens, with no colours or tokens of their own", () => {
+    const sheets = readdirSync(join(sourceRoot, "modules"), { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .flatMap((entry) =>
+        readdirSync(join(sourceRoot, "modules", entry.name))
+          .filter((name) => name.endsWith(".css"))
+          .map((name) => join("modules", entry.name, name)),
+      );
+    expect(sheets).toContain(join("modules", "build", "build.css"));
+    const defined = new Set([...tokens.matchAll(/(--qsp-[a-z0-9-]+)\s*:/g)].map((m) => m[1]));
+    for (const sheet of sheets) {
+      const css = readFileSync(join(sourceRoot, sheet), "utf8");
+      expect(colourLiteral.test(css), sheet).toBe(false);
+      expect(css.match(/--qsp-[a-z0-9-]+\s*:/g), sheet).toBeNull();
+      const used = [...css.matchAll(/var\((--qsp-[a-z0-9-]+)/g)].map((m) => m[1]);
+      expect(used.length, sheet).toBeGreaterThan(0);
+      expect(
+        used.filter((name) => !defined.has(name)),
+        sheet,
+      ).toEqual([]);
+    }
+  });
+
   it("bundles every interface font with the application and fetches none", () => {
     const faces = [...tokens.matchAll(/@font-face\s*{([^}]*)}/g)].map(
       (match) => match[1] as string,

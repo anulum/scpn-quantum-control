@@ -181,7 +181,13 @@ existing Vitest provider. Stale, failed or incomplete evidence refuses.
 
 The workbench is a desktop-style application. These rules are the design every
 view follows; a view that does not follow them yet is restyled by its own change.
-Build is the reference view. Styles live only in `studio-web/src/tokens.css`.
+Build is the reference view. Tokens and the shell's styles live in
+`studio-web/src/tokens.css`. A module's own styles live in its folder (for example
+`modules/build/build.css`), imported by the module entry so that embedded hosts
+receive them with the main bundle. A module stylesheet uses only tokens that
+`tokens.css` defines, defines no tokens and contains no colour value; the tests
+check all three. A module rule that must yield to a shared rule keeps its
+specificity low with `:where()` rather than relying on load order.
 
 ### Regions
 
