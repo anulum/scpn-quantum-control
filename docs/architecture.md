@@ -806,7 +806,7 @@ auto-generated block is the source of truth if the two ever drift.
 
 | Metric | Count |
 |--------|-------|
-| Python modules | 845 (excluding package initialisers) |
+| Python modules | 847 (excluding package initialisers) |
 | Rust crate | 1 (PyO3 0.29, **177 bindings**, 120 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
 | Julia tier | 1 (now in the `oscillatools` distribution: `oscillatools/accel/julia/order_parameter.jl`; juliacall-bridged, opt-in via `oscillatools[julia]`) |
 | Tests | CI-gated suite (99.05% line-coverage gate; branch telemetry required and currently observational) |
@@ -837,7 +837,7 @@ graph TD
     gauge["gauge/ (6)\nGauge theory"]
     apps["applications/ (17)\nBenchmarks"]
     crypto["crypto/ (9)\nQKD + PQC"]
-    benchmarks["benchmarks/ (38)\nPerformance"]
+    benchmarks["benchmarks/ (39)\nPerformance"]
     ssgf["ssgf/ (4)\nGeometry"]
     psi_field["psi_field/ (4)\nU(1) lattice gauge"]
     oscillatools["oscillatools (external)\nKuramoto substrate: Rust → Julia → Python dispatch"]

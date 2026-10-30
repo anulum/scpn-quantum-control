@@ -39,6 +39,7 @@ def test_studio_executes_the_original_browser_scenarios_and_isolated_refusals() 
         "local_experiment_journey",
         "workbench_accessibility",
         "program_authoring",
+        "gradient_debugger",
         "compiler_trace_inspector",
         "operator_backend_profiles",
         "operator_policy_decisions",
@@ -58,7 +59,8 @@ def test_studio_executes_the_original_browser_scenarios_and_isolated_refusals() 
     ):
         assert f"tools/tests/test_{owner}.py" in source
     assert "--concurrency=greenlet" in source
-    assert source.count("--fail-under=100") == 5
+    assert "tools/tests/test_studio_gradient_debugger_browser.py" in source
+    assert source.count("--fail-under=100") == 6
     assert "trap " in source and 'wait "$preview_pid"' in source and 'wait "$source_pid"' in source
     evidence = next(
         item for item in steps if item.get("name") == "Preserve browser acceptance evidence"

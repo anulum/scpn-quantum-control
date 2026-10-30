@@ -7,13 +7,13 @@
     "model_documentation_pages": 14,
     "notebook_files": 109,
     "optional_extras": 43,
-    "public_api_exports": 851,
+    "public_api_exports": 859,
     "public_documentation_pages": 385,
-    "python_model_classes": 1571,
-    "python_model_source_modules": 845,
+    "python_model_classes": 1590,
+    "python_model_source_modules": 847,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1596
+    "test_files": 1601
   },
   "documentation": {
     "examples": [
@@ -621,7 +621,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 56
+        "python_modules": 57
       },
       {
         "package": "bridge",
@@ -766,7 +766,7 @@
       {
         "package": "studio",
         "path": "src/scpn_quantum_control/studio",
-        "python_modules": 43
+        "python_modules": 44
       },
       {
         "package": "studio_workspace",
@@ -1313,6 +1313,10 @@
         "path": "src/scpn_quantum_control/campaign_harness_product.py"
       },
       {
+        "name": "CandidateVerdict",
+        "path": "src/scpn_quantum_control/benchmarks/numerical_method_admission.py"
+      },
+      {
         "name": "CapturedSemanticRecord",
         "path": "src/scpn_quantum_control/semantic_operations.py"
       },
@@ -1653,6 +1657,10 @@
         "path": "src/scpn_quantum_control/deployment/cloud_native.py"
       },
       {
+        "name": "ContinuousSolverSensitivity",
+        "path": "src/scpn_quantum_control/differentiable_implicit_sensitivity.py"
+      },
+      {
         "name": "ContractionBenchmarkResult",
         "path": "src/scpn_quantum_control/phase/contraction_optimiser.py"
       },
@@ -1907,6 +1915,10 @@
       {
         "name": "DecodedXYCompileInput",
         "path": "src/scpn_quantum_control/studio/recompute_kernel.py"
+      },
+      {
+        "name": "DecoderExperiment",
+        "path": "src/scpn_quantum_control/fault_tolerant_resource_product.py"
       },
       {
         "name": "DegeneracyMode",
@@ -2213,6 +2225,10 @@
         "path": "src/scpn_quantum_control/phase/mps_diagnostics.py"
       },
       {
+        "name": "DiscreteSolverSensitivity",
+        "path": "src/scpn_quantum_control/differentiable_implicit_sensitivity.py"
+      },
+      {
         "name": "DisruptionBenchmark",
         "path": "src/scpn_quantum_control/control/q_disruption_iter.py"
       },
@@ -2301,6 +2317,10 @@
         "path": "src/scpn_quantum_control/polyglot_edge_ad_product.py"
       },
       {
+        "name": "EigenpairDerivative",
+        "path": "src/scpn_quantum_control/wirtinger_calculus.py"
+      },
+      {
         "name": "EnforceDecision",
         "path": "src/scpn_quantum_control/hardware_safe_execution.py"
       },
@@ -2387,6 +2407,10 @@
       {
         "name": "EstimatorProvenance",
         "path": "src/scpn_quantum_control/diff.py"
+      },
+      {
+        "name": "EvidenceReference",
+        "path": "src/scpn_quantum_control/benchmarks/numerical_method_admission.py"
       },
       {
         "name": "ExactBaselineRow",
@@ -3505,6 +3529,14 @@
         "path": "src/scpn_quantum_control/qec/logical_dla_parity.py"
       },
       {
+        "name": "LogicalFailureConfidence",
+        "path": "src/scpn_quantum_control/fault_tolerant_resource_product.py"
+      },
+      {
+        "name": "LogicalOperationSemantics",
+        "path": "src/scpn_quantum_control/fault_tolerant_resource_product.py"
+      },
+      {
         "name": "LogicalQubit",
         "path": "src/scpn_quantum_control/qec/fault_tolerant.py"
       },
@@ -3719,6 +3751,10 @@
       {
         "name": "MeasuredField",
         "path": "src/scpn_quantum_control/semantic_record.py"
+      },
+      {
+        "name": "MeasuredMethodCandidate",
+        "path": "src/scpn_quantum_control/benchmarks/numerical_method_admission.py"
       },
       {
         "name": "MeasurementPlan",
@@ -3945,6 +3981,18 @@
         "path": "src/scpn_quantum_control/advantage_language_protocol.py"
       },
       {
+        "name": "NumericalMethodRequest",
+        "path": "src/scpn_quantum_control/benchmarks/numerical_method_admission.py"
+      },
+      {
+        "name": "NumericalMethodSelection",
+        "path": "src/scpn_quantum_control/benchmarks/numerical_method_admission.py"
+      },
+      {
+        "name": "NumericalMethodSelectionCache",
+        "path": "src/scpn_quantum_control/benchmarks/numerical_method_admission.py"
+      },
+      {
         "name": "OQCHALAdapter",
         "path": "src/scpn_quantum_control/hardware/hal_oqc.py"
       },
@@ -4083,6 +4131,14 @@
       {
         "name": "OuterCycleResult",
         "path": "src/scpn_quantum_control/ssgf/quantum_outer_cycle.py"
+      },
+      {
+        "name": "OverheadAssumptions",
+        "path": "src/scpn_quantum_control/fault_tolerant_resource_product.py"
+      },
+      {
+        "name": "OverheadScenarioEstimate",
+        "path": "src/scpn_quantum_control/fault_tolerant_resource_product.py"
       },
       {
         "name": "OwnershipRow",
@@ -5505,6 +5561,10 @@
         "path": "src/scpn_quantum_control/hardware/hal_qbraid.py"
       },
       {
+        "name": "QecClaimQualification",
+        "path": "src/scpn_quantum_control/fault_tolerant_resource_product.py"
+      },
+      {
         "name": "QgtBoundaryRow",
         "path": "src/scpn_quantum_control/pgbo_qgt_product.py"
       },
@@ -6265,12 +6325,20 @@
         "path": "src/scpn_quantum_control/studio/executive_simulate.py"
       },
       {
+        "name": "SingleErrorSyndrome",
+        "path": "src/scpn_quantum_control/fault_tolerant_resource_product.py"
+      },
+      {
         "name": "SinkhornRelaxationConfig",
         "path": "src/scpn_quantum_control/hardware/kuramoto_layout_relaxation.py"
       },
       {
         "name": "SizeBlockPlan",
         "path": "src/scpn_quantum_control/benchmarks/iqm_layout_transfer_benchmark.py"
+      },
+      {
+        "name": "SolverDerivativeRefusal",
+        "path": "src/scpn_quantum_control/differentiable_implicit_sensitivity.py"
       },
       {
         "name": "SourceSpan",
@@ -6287,6 +6355,14 @@
       {
         "name": "SpectralBridgeResult",
         "path": "src/scpn_quantum_control/ssgf/quantum_spectral.py"
+      },
+      {
+        "name": "SpectralDegeneracyError",
+        "path": "src/scpn_quantum_control/wirtinger_calculus.py"
+      },
+      {
+        "name": "SpectralProjectorDerivative",
+        "path": "src/scpn_quantum_control/wirtinger_calculus.py"
       },
       {
         "name": "SpectrumSummary",
@@ -7244,6 +7320,7 @@
       "src/scpn_quantum_control/benchmarks/method_comparison.py",
       "src/scpn_quantum_control/benchmarks/method_comparison_contracts.py",
       "src/scpn_quantum_control/benchmarks/mps_baseline.py",
+      "src/scpn_quantum_control/benchmarks/numerical_method_admission.py",
       "src/scpn_quantum_control/benchmarks/open_system_objective_evidence.py",
       "src/scpn_quantum_control/benchmarks/quantum_advantage.py",
       "src/scpn_quantum_control/benchmarks/reproducible_comparison.py",
@@ -7862,6 +7939,7 @@
       "src/scpn_quantum_control/studio/executive_simulate.py",
       "src/scpn_quantum_control/studio/executive_validate.py",
       "src/scpn_quantum_control/studio/federation.py",
+      "src/scpn_quantum_control/studio/gradient_debugger_artifact.py",
       "src/scpn_quantum_control/studio/kuramoto_reference.py",
       "src/scpn_quantum_control/studio/kuramoto_scenario_artifact.py",
       "src/scpn_quantum_control/studio/manifest.py",
@@ -8272,6 +8350,7 @@
     "DualNumber",
     "DynamicCouplingConfig",
     "DynamicCouplingEngine",
+    "EigenpairDerivative",
     "EntropyHealthReport",
     "EnzymeMLIRBenchmarkAttachment",
     "EnzymeMLIRCompilerADBreadthArtifact",
@@ -8469,6 +8548,8 @@
     "ShotAllocationResult",
     "ShotPolicy",
     "SparseMatrixResult",
+    "SpectralDegeneracyError",
+    "SpectralProjectorDerivative",
     "StableCorePreflightResult",
     "StochasticGradientConfidenceInterval",
     "StochasticGradientResult",
@@ -8691,6 +8772,7 @@
     "finite_difference_vjp",
     "forecasting",
     "forward_mode_gradient",
+    "framework_complex_gradient",
     "frc_pulsed_shot_cost",
     "from_fusion_core_shot",
     "gate_fold_circuit",
@@ -8702,6 +8784,7 @@
     "gradient_confidence_interval",
     "guess_extrapolate",
     "hardware_replay_backend",
+    "hermitian_eigenpair_derivative",
     "hessian",
     "holomorphic_gradient",
     "huber_residual_weights",
@@ -8880,6 +8963,8 @@
     "quantum_to_ssgf_state",
     "qutip_backend",
     "qutip_lindblad_baseline",
+    "real_block_gradient",
+    "real_block_jacobian",
     "real_objective_gradient",
     "register_custom_derivative_rule",
     "register_primitive_batching_rule",
@@ -8954,6 +9039,7 @@
     "sparse_empirical_fisher_metric",
     "sparse_hessian",
     "sparse_jacobian",
+    "spectral_projector_derivative",
     "spike_trace_correlation_distance",
     "spike_train_to_rotations",
     "spsa_gradient_estimate",
@@ -9358,6 +9444,7 @@
       "tests/test_compiler_isolated_benchmark_evidence.py",
       "tests/test_compiler_observable_preservation.py",
       "tests/test_compiler_promotion_batch.py",
+      "tests/test_complex_spectral_conformance.py",
       "tests/test_compound_mitigation.py",
       "tests/test_config.py",
       "tests/test_confinement.py",
@@ -9944,6 +10031,7 @@
       "tests/test_notebook_workflows.py",
       "tests/test_nqs_ansatz.py",
       "tests/test_nqs_ansatz_quality_gate.py",
+      "tests/test_numerical_method_admission.py",
       "tests/test_nv_magnetometry.py",
       "tests/test_nv_magnetometry_high_field.py",
       "tests/test_observables.py",
@@ -10297,6 +10385,7 @@
       "tests/test_qcvv.py",
       "tests/test_qec_decoder_boundary_docs.py",
       "tests/test_qec_properties.py",
+      "tests/test_qec_resource_claim_boundaries.py",
       "tests/test_qec_validators_fuzz.py",
       "tests/test_qfi.py",
       "tests/test_qfi_criticality.py",
@@ -10463,6 +10552,7 @@
       "tests/test_snn_adapter_branches.py",
       "tests/test_snn_backward.py",
       "tests/test_snn_neurocore_e2e.py",
+      "tests/test_solver_derivative_conformance.py",
       "tests/test_source_admission.py",
       "tests/test_source_archive_contents.py",
       "tests/test_sparse_hamiltonian.py",
@@ -10525,6 +10615,7 @@
       "tests/test_studio_executive_replay.py",
       "tests/test_studio_executive_simulate.py",
       "tests/test_studio_executive_validate.py",
+      "tests/test_studio_gradient_debugger_artifact.py",
       "tests/test_studio_kuramoto_reference.py",
       "tests/test_studio_kuramoto_scenario_artifact.py",
       "tests/test_studio_lazy_import.py",

@@ -170,7 +170,7 @@ def test_ci_and_preflight_share_studio_program_ad_cohorts() -> None:
     )
     assert ci_coverage_paths == _preflight.STUDIO_PROGRAM_AD_COVERAGE_COHORT
     assert "Enforce Studio Program-AD exact coverage" in workflow
-    assert "--include=*/program_ad_replay_artifact.py,*/executive.py" in workflow
+    assert f"--include={program_ad_quality_gates.STUDIO_PROGRAM_AD_COVERAGE_INCLUDE}" in workflow
     assert workflow_path_for_job("studio-program-ad-quality").name == ("ci-application-domain.yml")
     coverage_job = workflow[
         workflow.index("  studio-program-ad-quality:") : workflow.index(

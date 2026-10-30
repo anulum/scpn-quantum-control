@@ -16,6 +16,8 @@ Gate = tuple[str, list[str]]
 STUDIO_PROGRAM_AD_QUALITY_RATCHET = [
     "src/scpn_quantum_control/studio/program_ad_replay_artifact.py",
     "tests/test_studio_program_ad_replay_artifact.py",
+    "src/scpn_quantum_control/studio/gradient_debugger_artifact.py",
+    "tests/test_studio_gradient_debugger_artifact.py",
     "src/scpn_quantum_control/studio/executive.py",
     "tests/test_studio_executive.py",
     "tools/program_ad_quality_gates.py",
@@ -25,11 +27,14 @@ STUDIO_PROGRAM_AD_QUALITY_RATCHET = [
 
 STUDIO_PROGRAM_AD_COVERAGE_COHORT = [
     "tests/test_studio_program_ad_replay_artifact.py",
+    "tests/test_studio_gradient_debugger_artifact.py",
     "tests/test_studio_executive.py",
 ]
 """Python tests that own exact replay-artifact and executive coverage."""
 
-STUDIO_PROGRAM_AD_COVERAGE_INCLUDE = "*/program_ad_replay_artifact.py,*/executive.py"
+STUDIO_PROGRAM_AD_COVERAGE_INCLUDE = (
+    "*/program_ad_replay_artifact.py,*/gradient_debugger_artifact.py,*/executive.py"
+)
 """Exact source-owner patterns enforced against the isolated coverage data."""
 
 STUDIO_PROGRAM_AD_BROWSER_TESTS = [

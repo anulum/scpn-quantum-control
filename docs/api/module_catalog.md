@@ -4,9 +4,9 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **845 modules** across **41 package families**
-- **4526 documented public module-level symbols**
-- **851 root-package exports** governed by the stable API surface
+- **847 modules** across **41 package families**
+- **4566 documented public module-level symbols**
+- **859 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
 the [API selection guide](../api.md) and [stable facades](../stable_facades_api.md).
@@ -1420,6 +1420,16 @@ Entropy-based MPS storage heuristics, distinct from solver qualification.
 **Classes:** `MPSBaselineResult`
 
 **Functions:** `required_bond_dimension()`, `mps_memory()`, `exact_memory()`, `quantum_advantage_n()`, `mps_baseline_comparison()`
+
+### `scpn_quantum_control.benchmarks.numerical_method_admission`
+
+Choose a numerical method only from measured evidence, never from a heuristic.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/benchmarks/numerical_method_admission.py) · Public symbols: **11**
+
+**Classes:** `EvidenceReference`, `MeasuredMethodCandidate`, `NumericalMethodRequest`, `CandidateVerdict`, `NumericalMethodSelection`, `NumericalMethodSelectionCache`
+
+**Functions:** `plan_digest()`, `select_numerical_method()`, `candidates_from_tn_baseline_flagship()`, `candidates_from_reproducible_comparison()`, `render_numerical_method_selection_markdown()`
 
 ### `scpn_quantum_control.benchmarks.open_system_objective_evidence`
 
@@ -5473,6 +5483,14 @@ The QUANTUM studio's federation document for STUDIO/Hub ingestion.
 
 **Functions:** `build_architecture_map_extension()`, `build_federation_document()`, `write_federation_document()`, `studio_manifest_drift()`, `main()`
 
+### `scpn_quantum_control.studio.gradient_debugger_artifact`
+
+Build, write and check the committed units the Studio gradient debugger replays.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/gradient_debugger_artifact.py) · Public symbols: **4**
+
+**Functions:** `build_gradient_debugger_artifact()`, `differences()`, `serialise()`, `main()`
+
 ### `scpn_quantum_control.studio.kuramoto_reference`
 
 Python reference for the WASM Kuramoto live simulator.
@@ -6341,11 +6359,13 @@ Native gradient-descent optimizer for differentiable scalar objectives.
 
 ### `scpn_quantum_control.differentiable_implicit_sensitivity`
 
-Implicit stationary and fixed-point sensitivity solvers.
+Implicit stationary, fixed-point and explicit-solver sensitivities.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_implicit_sensitivity.py) · Public symbols: **2**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_implicit_sensitivity.py) · Public symbols: **7**
 
-**Functions:** `implicit_stationary_sensitivity()`, `implicit_fixed_point_sensitivity()`
+**Classes:** `SolverDerivativeRefusal`, `DiscreteSolverSensitivity`, `ContinuousSolverSensitivity`
+
+**Functions:** `implicit_stationary_sensitivity()`, `implicit_fixed_point_sensitivity()`, `rk4_forward_sensitivity()`, `refine_solver_sensitivity()`
 
 ### `scpn_quantum_control.differentiable_jax_adapter`
 
@@ -6717,11 +6737,11 @@ Static execution-surface scanner for notebooks and publication scripts.
 
 Compose existing QEC resource primitives into a conservative fault-tolerant resource report.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/fault_tolerant_resource_product.py) · Public symbols: **12**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/fault_tolerant_resource_product.py) · Public symbols: **24**
 
-**Classes:** `FaultTolerantResourceBoundaryError`, `FormulaReference`, `SyncProblemResourceRequest`, `ResourceEstimate`, `SensitivityPoint`, `RegimeComparisonRow`, `FaultTolerantResourceProduct`
+**Classes:** `FaultTolerantResourceBoundaryError`, `FormulaReference`, `SyncProblemResourceRequest`, `ResourceEstimate`, `SensitivityPoint`, `RegimeComparisonRow`, `FaultTolerantResourceProduct`, `LogicalFailureConfidence`, `SingleErrorSyndrome`, `DecoderExperiment`, `LogicalOperationSemantics`, `OverheadAssumptions`, `OverheadScenarioEstimate`, `QecClaimQualification`
 
-**Functions:** `estimate_ft_resources()`, `build_ft_sensitivity()`, `build_regime_comparison()`, `build_fault_tolerant_resource_product()`, `render_ft_resource_markdown()`
+**Functions:** `estimate_ft_resources()`, `build_ft_sensitivity()`, `build_regime_comparison()`, `build_fault_tolerant_resource_product()`, `render_ft_resource_markdown()`, `logical_failure_confidence()`, `enumerate_single_error_syndromes()`, `run_toric_decoder_experiment()`, `estimate_overhead_scenario()`, `build_qec_claim_qualification()`
 
 ### `scpn_quantum_control.fisher_semantic_binding`
 
@@ -7721,11 +7741,11 @@ Operator-intercepted forward-AD trace value classes and their operations.
 
 Wirtinger calculus: holomorphic and non-holomorphic complex derivatives.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/wirtinger_calculus.py) · Public symbols: **7**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/wirtinger_calculus.py) · Public symbols: **15**
 
-**Classes:** `WirtingerDerivative`, `WirtingerOptimisationResult`
+**Classes:** `WirtingerDerivative`, `WirtingerOptimisationResult`, `SpectralDegeneracyError`, `EigenpairDerivative`, `SpectralProjectorDerivative`
 
-**Functions:** `wirtinger_partials()`, `is_holomorphic()`, `holomorphic_gradient()`, `real_objective_gradient()`, `minimise_real_objective()`
+**Functions:** `wirtinger_partials()`, `is_holomorphic()`, `holomorphic_gradient()`, `real_objective_gradient()`, `real_block_jacobian()`, `real_block_gradient()`, `framework_complex_gradient()`, `hermitian_eigenpair_derivative()`, `spectral_projector_derivative()`, `minimise_real_objective()`
 
 ### `scpn_quantum_control.wirtinger_implicit_product`
 

@@ -670,12 +670,14 @@ def test_ci_optional_runtime_locks_and_preview_rules_are_explicit() -> None:
             "kyma-v3-quality",
             "nqs-ansatz-quality",
             "whole-program-ad-product-quality",
+            "wirtinger-implicit-product-quality",
         },
         "requirements-ci-torch-cpu-py312-linux.txt": {
             "gpu-batch-vqe-quality",
             "whole-program-ad-product-quality",
             "neural-operator-baseline-product-quality",
             "phase-qnode-product-quality",
+            "wirtinger-implicit-product-quality",
         },
     }
     dockerfile = Path("Dockerfile").read_text(encoding="utf-8")
