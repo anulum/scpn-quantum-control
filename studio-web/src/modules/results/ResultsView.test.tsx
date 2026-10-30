@@ -65,6 +65,18 @@ it("renders actual original evidence and preserves the viewer's input refusal", 
   expect(screen.getByRole("alert").textContent).toContain("Cannot inspect evidence");
 });
 
+it("focuses the gradient debugger when its deep link opens Analyse", async () => {
+  window.history.replaceState(null, "", "#/results/gradient-debugger");
+  render(<Workbench>{(_context, editors) => editors}</Workbench>);
+  await screen.findByRole("heading", { name: "Analyse" }, { timeout: 5000 });
+  // The heading can appear before the lazy view's passive focus effect has run.
+  await act(async () => {
+    await vi.dynamicImportSettled();
+  });
+  expect(document.activeElement?.id).toBe("/results/gradient-debugger");
+  expect(screen.getByRole("region", { name: "Gradient debugger", exact: true })).toBeTruthy();
+});
+
 it("renders every missing source explicitly while retaining the original evidence input", async () => {
   faults.data = true;
   faults.replay = true;
