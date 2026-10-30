@@ -314,9 +314,12 @@ optional contribution points. A module may contribute any of these slots:
   The shell shows an item only while its module is available. The shell's own
   limit, "Remote execution off", is not a module contribution.
 
-Module presentation lives in `studio-web/src/modules/<module>/`. Shared archive
-contracts, numerical plans, worker protocols, storage and browser instruments
-live under `studio-web/src/shared/`. The import guard reads actual TypeScript
+Module presentation lives in `studio-web/src/modules/<module>/`. The shell, in
+`studio-web/src/app/`, also owns the rendering of every contribution slot
+(`app/moduleViews/`: stage editors, document views, explorer, command search,
+job dock and the contribution boundary). Shared archive contracts, numerical
+plans, worker protocols, storage and browser instruments live under
+`studio-web/src/shared/`. The import guard reads actual TypeScript
 syntax and rejects imports from a module into the shell or another module,
 including dynamic imports and re-exports. Shared code cannot import
 module presentation. Modules compose through shared services rather than reading

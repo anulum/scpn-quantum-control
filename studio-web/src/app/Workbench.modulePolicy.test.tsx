@@ -24,7 +24,7 @@ import { prepareExperimentPlan } from "../shared/experiments/experimentPlan";
 import type { ExperimentPlan } from "../shared/experiments/experimentPlan";
 import { localExperimentCodecs } from "../shared/experiments/kuramotoArtifacts";
 import { useExperimentRun } from "../shared/experiments/useExperimentRun";
-import { ModuleJobDock } from "../shared/moduleViews/ModuleJobDock";
+import { ModuleJobDock } from "./moduleViews/ModuleJobDock";
 import { useWorkflowRun } from "../shared/workflows/useWorkflowRun";
 import { useWorkspace } from "../shared/workspace/useWorkspace";
 import { workbenchModules } from "./moduleRegistry";

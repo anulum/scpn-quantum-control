@@ -269,7 +269,7 @@ def test_capture_actual_workspace_owners(native_browser: Browser) -> None:
         assert {
             "/src/app/moduleRegistry.tsx",
             "/src/shared/contracts/module.ts",
-            "/src/shared/moduleViews/ModuleDocumentViews.tsx",
+            "/src/app/moduleViews/ModuleDocumentViews.tsx",
             "/src/shared/browser/ScrollRegion.tsx",
         } <= actual
     finally:
@@ -354,7 +354,7 @@ def test_capture_actual_workflow_owners(native_browser: Browser) -> None:
         assert {
             "/src/app/moduleRegistry.tsx",
             "/src/shared/contracts/module.ts",
-            "/src/shared/moduleViews/ModuleDocumentViews.tsx",
+            "/src/app/moduleViews/ModuleDocumentViews.tsx",
             "/src/shared/browser/ScrollRegion.tsx",
         } <= actual
     finally:
@@ -447,7 +447,7 @@ def test_capture_actual_experiment_owners(native_browser: Browser) -> None:
         assert {
             "/src/app/moduleRegistry.tsx",
             "/src/shared/contracts/module.ts",
-            "/src/shared/moduleViews/ModuleDocumentViews.tsx",
+            "/src/app/moduleViews/ModuleDocumentViews.tsx",
             "/src/shared/browser/ScrollRegion.tsx",
         } <= actual
     finally:
@@ -569,7 +569,7 @@ def test_capture_actual_workbench_navigation_owners(
             )
         assert expected <= actual
         assert "/src/app/moduleRegistry.tsx" in actual
-        assert "/src/shared/moduleViews/ModuleJobDock.tsx" in actual
+        assert "/src/app/moduleViews/ModuleJobDock.tsx" in actual
     finally:
         context.close()
 
@@ -719,7 +719,7 @@ def test_capture_actual_parameter_editor_owners(native_browser: Browser) -> None
         assert {
             "/src/app/moduleRegistry.tsx",
             "/src/shared/contracts/module.ts",
-            "/src/shared/moduleViews/ModuleDocumentViews.tsx",
+            "/src/app/moduleViews/ModuleDocumentViews.tsx",
             "/src/shared/browser/ScrollRegion.tsx",
         } <= actual
     finally:
@@ -923,7 +923,7 @@ def test_capture_actual_result_owners(native_browser: Browser) -> None:
         assert {
             "/src/app/moduleRegistry.tsx",
             "/src/shared/contracts/module.ts",
-            "/src/shared/moduleViews/ModuleDocumentViews.tsx",
+            "/src/app/moduleViews/ModuleDocumentViews.tsx",
             "/src/shared/browser/ScrollRegion.tsx",
         } <= actual
     finally:

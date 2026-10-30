@@ -14,7 +14,7 @@ import { stationaryPlan } from "../../test-fixtures/stationary-experiment-plan";
 import { requirePresent } from "../../test-support/requirePresent";
 import type { ModuleDocument } from "../shared/contracts/module";
 import type { WorkbenchServices } from "../shared/contracts/workbench";
-import { ModuleDocumentViews } from "../shared/moduleViews/ModuleDocumentViews";
+import { ModuleDocumentViews } from "./moduleViews/ModuleDocumentViews";
 import { declaredBy, workbenchRegistry } from "./moduleRegistry";
 import { studioManifest } from "../shared/browser/data";
 

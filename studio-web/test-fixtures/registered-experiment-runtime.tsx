@@ -19,8 +19,8 @@ import type { WorkbenchServices, WorkspaceViewServices } from "../src/shared/con
 import type { ExperimentPlan } from "../src/shared/experiments/experimentPlan";
 import { localExperimentCodecs } from "../src/shared/experiments/kuramotoArtifacts";
 import { useExperimentRun } from "../src/shared/experiments/useExperimentRun";
-import { ModuleJobDock } from "../src/shared/moduleViews/ModuleJobDock";
-import type { ModuleJobDockProps } from "../src/shared/moduleViews/ModuleJobDock";
+import { ModuleJobDock } from "../src/app/moduleViews/ModuleJobDock";
+import type { ModuleJobDockProps } from "../src/app/moduleViews/ModuleJobDock";
 import { useWorkflowRun } from "../src/shared/workflows/useWorkflowRun";
 import { useWorkspace } from "../src/shared/workspace/useWorkspace";
 import { BuiltKernelWorker } from "../test-support/kernelWorker";

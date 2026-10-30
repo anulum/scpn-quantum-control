@@ -7,7 +7,11 @@
 // SCPN Quantum Control — registered command search and dispatch
 
 import { useState } from "react";
-import type { ModuleCommandAction, ModuleRegistry, ModuleRequirements } from "../contracts/module";
+import type {
+  ModuleCommandAction,
+  ModuleRegistry,
+  ModuleRequirements,
+} from "../../shared/contracts/module";
 
 /** Searchable compiled commands with shell-owned navigation and job dispatch. */
 export interface ModuleCommandSearchProps<Services, DocumentServices = Services> {

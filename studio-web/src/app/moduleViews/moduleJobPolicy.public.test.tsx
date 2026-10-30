@@ -17,11 +17,11 @@ import {
 import { stationaryPlan } from "../../../test-fixtures/stationary-experiment-plan";
 import { BuiltKernelWorker } from "../../../test-support/kernelWorker";
 import { requirePresent } from "../../../test-support/requirePresent";
-import { workbenchRegistry } from "../../app/moduleRegistry";
-import type { ModuleDocument, ModuleJobEstimate } from "../contracts/module";
-import type { WorkbenchServices } from "../contracts/workbench";
-import { admitWorkspaceArchive } from "../storage/workspaceArchive";
-import { localExperimentCodecs } from "../experiments/kuramotoArtifacts";
+import { workbenchRegistry } from "../moduleRegistry";
+import type { ModuleDocument, ModuleJobEstimate } from "../../shared/contracts/module";
+import type { WorkbenchServices } from "../../shared/contracts/workbench";
+import { admitWorkspaceArchive } from "../../shared/storage/workspaceArchive";
+import { localExperimentCodecs } from "../../shared/experiments/kuramotoArtifacts";
 import { admitModuleJob } from "./moduleJobPolicy";
 
 const originalCrypto = Object.getOwnPropertyDescriptor(globalThis, "crypto");

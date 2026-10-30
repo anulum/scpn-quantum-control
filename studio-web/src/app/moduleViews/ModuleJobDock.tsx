@@ -12,8 +12,8 @@ import type {
   ModuleJobEstimate,
   ModuleRegistry,
   ModuleRequirements,
-} from "../contracts/module";
-import type { WorkbenchServices, WorkspaceViewServices } from "../contracts/workbench";
+} from "../../shared/contracts/module";
+import type { WorkbenchServices, WorkspaceViewServices } from "../../shared/contracts/workbench";
 import { admitModuleJob } from "./moduleJobPolicy";
 
 /** Compiled jobs executed through the existing source, policy and disposal owners. */

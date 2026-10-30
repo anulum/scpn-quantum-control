@@ -6,11 +6,11 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // SCPN Quantum Control — source-owned local module job admission
 
-import type { ModuleDocument, ModuleJob, ModuleJobEstimate } from "../contracts/module";
-import type { WorkbenchServices } from "../contracts/workbench";
-import { checkResourcePlan } from "../resources/admission";
-import { readWorkflowArchive } from "../workflows/workflowArchive";
-import { buildWorkflowCells } from "../workflows/workflowSweep";
+import type { ModuleDocument, ModuleJob, ModuleJobEstimate } from "../../shared/contracts/module";
+import type { WorkbenchServices } from "../../shared/contracts/workbench";
+import { checkResourcePlan } from "../../shared/resources/admission";
+import { readWorkflowArchive } from "../../shared/workflows/workflowArchive";
+import { buildWorkflowCells } from "../../shared/workflows/workflowSweep";
 
 /** Recheck original source, lifecycle and policy before calling a module's job runner. */
 export async function admitModuleJob(

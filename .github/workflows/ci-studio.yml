@@ -594,7 +594,7 @@ jobs:
           pnpm exec vitest run src/app src/shared src/modules src/WorkspacePanel.test.tsx
           src/QuantumStudioPanel.test.tsx src/QuantumStudioPanel.unverifiable.test.tsx quality
           --coverage --coverage.reporter=text
-          --coverage.include='src/app/**/*.{ts,tsx}' --coverage.include='src/shared/moduleViews/*.{ts,tsx}' --coverage.include='src/shared/workspace/*.{ts,tsx}' --coverage.include='src/modules/**/*.{ts,tsx}' --coverage.include=src/WorkspacePanel.tsx
+          --coverage.include='src/app/**/*.{ts,tsx}' --coverage.include='src/shared/workspace/*.{ts,tsx}' --coverage.include='src/modules/**/*.{ts,tsx}' --coverage.include=src/WorkspacePanel.tsx
           --coverage.include=src/shared/contracts/module.ts
           --coverage.include='src/modules/catalogue/*.{ts,tsx}'
           --coverage.include='src/modules/parameters/*.{ts,tsx}' --coverage.include='src/shared/parameters/*.{ts,tsx}'

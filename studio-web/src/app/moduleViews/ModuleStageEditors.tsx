@@ -6,7 +6,11 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // SCPN Quantum Control — registered stage editor rendering
 
-import type { ModuleRegistry, ModuleRequirements, ModuleStageEditor } from "../contracts/module";
+import type {
+  ModuleRegistry,
+  ModuleRequirements,
+  ModuleStageEditor,
+} from "../../shared/contracts/module";
 import { ContributionBoundary } from "./ContributionBoundary";
 
 /** Fixed work-area slot with the build's registry and existing stage services. */

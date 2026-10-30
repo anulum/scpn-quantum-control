@@ -11,7 +11,7 @@ import type {
   ModuleExplorer,
   ModuleRegistry,
   ModuleRequirements,
-} from "../contracts/module";
+} from "../../shared/contracts/module";
 import { ContributionBoundary } from "./ContributionBoundary";
 
 /** Registered project-tree contributions with admitted source selection. */

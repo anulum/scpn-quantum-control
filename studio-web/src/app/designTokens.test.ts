@@ -72,7 +72,7 @@ function shellSources(): readonly string[] {
     ...listed("app"),
     ...listed("modules/build"),
     ...listed("modules/parameters"),
-    ...listed("shared/moduleViews"),
+    ...listed("app/moduleViews"),
   ];
 }
 

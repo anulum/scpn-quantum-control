@@ -8,7 +8,7 @@
 
 import { declaredBy, workbenchRegistry } from "./app/moduleRegistry";
 import { studioManifest } from "./shared/browser/data";
-import { ModuleDocumentViews } from "./shared/moduleViews/ModuleDocumentViews";
+import { ModuleDocumentViews } from "./app/moduleViews/ModuleDocumentViews";
 import { WorkspaceEditor as WorkspacePresentation } from "./shared/workspace/WorkspaceEditor";
 import type { WorkspaceEditorProps, WorkspacePanelProps } from "./shared/workspace/WorkspaceEditor";
 import { noWorkspaceProducers, useWorkspace } from "./shared/workspace/useWorkspace";

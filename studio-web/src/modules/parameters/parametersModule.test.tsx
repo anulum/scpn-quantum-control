@@ -14,7 +14,7 @@ import { declaredBy, workbenchRegistry } from "../../app/moduleRegistry";
 import { conformanceArchive, conformanceCodecs } from "../../../browser-tests/workspaceFixture";
 import { studioManifest } from "../../shared/browser/data";
 import type { ModuleDocument } from "../../shared/contracts/module";
-import { ModuleDocumentViews } from "../../shared/moduleViews/ModuleDocumentViews";
+import { ModuleDocumentViews } from "../../app/moduleViews/ModuleDocumentViews";
 import { admitWorkspaceArchive } from "../../shared/storage/workspaceArchive";
 import { useWorkspace } from "../../shared/workspace/useWorkspace";
 

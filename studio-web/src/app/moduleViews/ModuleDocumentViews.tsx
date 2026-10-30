@@ -12,7 +12,7 @@ import type {
   ModuleEditor,
   ModuleRegistry,
   ModuleRequirements,
-} from "../contracts/module";
+} from "../../shared/contracts/module";
 import { ContributionBoundary } from "./ContributionBoundary";
 
 /** Document contribution slots that preserve source bytes and grant no job authority. */

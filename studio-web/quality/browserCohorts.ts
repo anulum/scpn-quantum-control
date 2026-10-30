@@ -117,18 +117,18 @@ export async function readBrowserCohorts(root: string): Promise<BrowserSourceCoh
     ...compiled,
     "/src/app/moduleRegistry.tsx",
     "/src/shared/contracts/module.ts",
-    "/src/shared/moduleViews/ModuleDocumentViews.tsx",
+    "/src/app/moduleViews/ModuleDocumentViews.tsx",
     "/src/shared/browser/ScrollRegion.tsx",
     "/src/shared/storage/workspaceDownload.ts",
   ];
   const shell = [
     "/src/app/Workbench.tsx",
     "/src/app/WorkbenchHelp.tsx",
-    "/src/shared/moduleViews/ModuleStageEditors.tsx",
-    "/src/shared/moduleViews/ModuleExplorerView.tsx",
-    "/src/shared/moduleViews/ModuleCommandSearch.tsx",
-    "/src/shared/moduleViews/ModuleJobDock.tsx",
-    "/src/shared/moduleViews/moduleJobPolicy.ts",
+    "/src/app/moduleViews/ModuleStageEditors.tsx",
+    "/src/app/moduleViews/ModuleExplorerView.tsx",
+    "/src/app/moduleViews/ModuleCommandSearch.tsx",
+    "/src/app/moduleViews/ModuleJobDock.tsx",
+    "/src/app/moduleViews/moduleJobPolicy.ts",
     "/src/shared/workspace/useWorkspaceDocuments.ts",
   ];
   const group = (...parts: readonly string[][]): readonly string[] =>

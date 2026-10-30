@@ -19,11 +19,11 @@ import type { ModuleRegistry, ModuleRequirements } from "../shared/contracts/mod
 import { declaredBy, workbenchRegistry } from "./moduleRegistry";
 import type { WorkbenchServices } from "./moduleRegistry";
 import type { WorkspaceViewServices } from "../shared/contracts/workbench";
-import { ModuleDocumentViews } from "../shared/moduleViews/ModuleDocumentViews";
-import { ModuleStageEditors } from "../shared/moduleViews/ModuleStageEditors";
-import { ModuleExplorerView } from "../shared/moduleViews/ModuleExplorerView";
-import { ModuleCommandSearch } from "../shared/moduleViews/ModuleCommandSearch";
-import { ModuleJobDock } from "../shared/moduleViews/ModuleJobDock";
+import { ModuleDocumentViews } from "./moduleViews/ModuleDocumentViews";
+import { ModuleStageEditors } from "./moduleViews/ModuleStageEditors";
+import { ModuleExplorerView } from "./moduleViews/ModuleExplorerView";
+import { ModuleCommandSearch } from "./moduleViews/ModuleCommandSearch";
+import { ModuleJobDock } from "./moduleViews/ModuleJobDock";
 import { useWorkspaceDocuments } from "../shared/workspace/useWorkspaceDocuments";
 import { emptyWorkbenchContext, formatWorkbenchContext, formatWorkbenchRoute } from "./routing";
 import type { WorkbenchContext } from "./routing";
