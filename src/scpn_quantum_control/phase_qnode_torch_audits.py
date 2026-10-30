@@ -64,7 +64,7 @@ FloatArray: TypeAlias = NDArray[np.float64]
 Resolver: TypeAlias = Callable[[], Callable[..., Any]]
 """Zero-argument callable returning the operation to call at that moment."""
 
-DYNAMIC_COMPILE_QUALIFIED_TORCH: frozenset[tuple[int, int]] = frozenset({(2, 13)})
+DYNAMIC_COMPILE_QUALIFIED_TORCH: frozenset[tuple[int, int]] = frozenset({(2, 13), (2, 15)})
 """PyTorch minor releases on which the dynamic compile audit was qualified."""
 
 

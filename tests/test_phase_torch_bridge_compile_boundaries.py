@@ -283,7 +283,9 @@ def test_dynamic_audit_refuses_an_unqualified_release_with_private_settings() ->
     runtime = _TorchRuntime(torch, version="2.12.0")
     circuit, params = _audit_circuit()
     with config.patch(specialize_int=False):
-        with pytest.raises(RuntimeError, match="qualified only on PyTorch 2.13; found 2.12.0"):
+        with pytest.raises(
+            RuntimeError, match="qualified only on PyTorch 2.13, 2.15; found 2.12.0"
+        ):
             qnode_transforms.torch_phase_qnode_compile_audit(
                 circuit, params, dynamic=True, _torch_loader=lambda: runtime
             )

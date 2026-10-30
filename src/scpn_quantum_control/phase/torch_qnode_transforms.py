@@ -288,7 +288,7 @@ def _torch_phase_qnode_scalar_value(
     return value
 
 
-_DYNAMIC_AUDIT_QUALIFIED_TORCH: frozenset[tuple[int, int]] = frozenset({(2, 13)})
+_DYNAMIC_AUDIT_QUALIFIED_TORCH: frozenset[tuple[int, int]] = frozenset({(2, 13), (2, 15)})
 """PyTorch minor releases whose scoped integer specialisation was qualified."""
 
 
@@ -302,7 +302,7 @@ def _torch_static_circuit_integers(
     structure is fixed for one audit, so symbolic wires only make tracing
     fail; that failed attempt marks shared helper frames to be skipped for the
     rest of the process, which later breaks fullgraph ``torch.func.grad`` in
-    other public routes. PyTorch 2.13 exposes the integer specialisation only
+    other public routes. PyTorch 2.13 and 2.15 expose the integer specialisation only
     through ``torch._dynamo.config``; tensors stay dynamic. The patch restores
     the caller's value on exit. A runtime without that setting is refused
     before anything is compiled, so the damaging attempt never starts.

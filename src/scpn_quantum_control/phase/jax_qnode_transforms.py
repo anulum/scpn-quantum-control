@@ -23,6 +23,8 @@ from typing import Any, TypeAlias, cast
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+from ..differentiable_axis_operators import jax_binary_axis_matmul as _jax_binary_axis_matmul
+from ..differentiable_axis_operators import restore_binary_axis_order as _restore_binary_axis_order
 from ..differentiable_tree_vectors import (
     batched_gradient_tree_matrix as _batched_gradient_tree_matrix,
 )
@@ -105,9 +107,6 @@ from ..phase_qnode_native_operators import (
 )
 from ..phase_qnode_native_operators import (
     two_qubit_operator_entries as _two_qubit_operator_entries,
-)
-from ..phase_qnode_native_statevector import (
-    jax_apply_local_operator as _jax_apply_local_operator,
 )
 from ..phase_qnode_native_statevector import (
     jax_operation_theta as _native_jax_operation_theta,
@@ -716,11 +715,16 @@ def _jax_apply_gate_matrix(
     qubits: tuple[int, ...],
     matrix: Any,
 ) -> Any:
+    width = len(qubits)
     axes = list(qubits) + [axis for axis in range(n_qubits) if axis not in qubits]
     inverse = np.argsort(axes)
-    inverse_axes = tuple(int(axis) for axis in inverse)
-    return _jax_apply_local_operator(
-        jnp, state, n_qubits, qubits, matrix, inverse_order=lambda _axes: inverse_axes
+    updated = _jax_binary_axis_matmul(
+        jnp, state, matrix, dimensions=n_qubits, width=width, axes=axes
+    )
+    reshape = jnp.reshape
+    permute = jnp.transpose
+    return _restore_binary_axis_order(
+        updated, tuple(int(axis) for axis in inverse), reshape=reshape, permute=permute
     )
 
 
