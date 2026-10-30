@@ -4,6 +4,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Keep the derivative of a discretised ODE solver apart from the continuous
+  sensitivity:
+  - `rk4_forward_sensitivity` differentiates the fixed-step RK4 map exactly;
+  - `refine_solver_sensitivity` issues a continuous value only from
+    fourth-order mesh-refinement evidence.
+
+  Failed solves and crossed events, including crossings exactly on a mesh
+  point, raise a typed refusal instead of returning a gradient.
+
 - State complex derivatives in the real-block Jacobian convention:
   - convert explicitly to the PyTorch or JAX complex gradient (each is checked
     against the framework itself);

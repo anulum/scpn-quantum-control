@@ -485,6 +485,7 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/differentiable_implicit_sensitivity.py
           tests/test_differentiable_implicit_sensitivity.py
+          tests/test_solver_derivative_conformance.py
           tools/differentiable_implicit_sensitivity_quality_gates.py
           tests/test_differentiable_implicit_sensitivity_quality_gate.py
       - name: Ruff NumPy docstrings for differentiable implicit-sensitivity owners
@@ -494,6 +495,7 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/differentiable_implicit_sensitivity.py
           tests/test_differentiable_implicit_sensitivity.py
+          tests/test_solver_derivative_conformance.py
           tools/differentiable_implicit_sensitivity_quality_gates.py
           tests/test_differentiable_implicit_sensitivity_quality_gate.py
       - name: Run local differentiable implicit-sensitivity coverage
@@ -501,6 +503,7 @@ jobs:
           python -m coverage run --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-differentiable-implicit-sensitivity-quality.coverage --branch
           -m pytest -q tests/test_differentiable_implicit_sensitivity.py
+          tests/test_solver_derivative_conformance.py
       - name: Enforce differentiable implicit-sensitivity exact coverage
         run: >-
           python -m coverage report --rcfile=/dev/null

@@ -66,6 +66,8 @@ def test_ci_runs_and_aggregates_differentiable_implicit_sensitivity_gate() -> No
         assert path in block
     assert "--fail-under=100" in block
     assert quality_gates.DIFFERENTIABLE_IMPLICIT_SENSITIVITY_SOURCE in block
+    for path in quality_gates.DIFFERENTIABLE_IMPLICIT_SENSITIVITY_COVERAGE_COHORT:
+        assert path in block
     assert (
         "differentiable-implicit-sensitivity-quality" in workflow[workflow.index("  ci-gate:") :]
     )

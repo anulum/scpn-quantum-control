@@ -1435,6 +1435,8 @@ hessian(objective, values, parameters=None, method="finite_difference", step=1e-
 value_and_hessian(objective, values, parameters=None, method="finite_difference", step=1e-4) -> HessianResult
 implicit_stationary_sensitivity(hessian, cross_derivative, parameters=None, hyperparameter_names=None, damping=0.0, rcond=1e-12) -> ImplicitSensitivityResult
 implicit_fixed_point_sensitivity(state_jacobian, parameter_jacobian, parameters=None, hyperparameter_names=None, damping=0.0, rcond=1e-12) -> FixedPointSensitivityResult
+rk4_forward_sensitivity(rhs, state_jacobian, parameter_jacobian, initial_state, theta, final_time, steps, initial_sensitivity=None, event=None, divergence_bound=1e12) -> DiscreteSolverSensitivity
+refine_solver_sensitivity(rhs, state_jacobian, parameter_jacobian, initial_state, theta, final_time, base_steps=16, refinements=3, tolerance=1e-8, order_tolerance=0.5, initial_sensitivity=None, event=None) -> ContinuousSolverSensitivity
 finite_difference_hvp(objective, values, tangent, parameters=None, step=1e-5) -> np.ndarray
 value_and_finite_difference_hvp(objective, values, tangent, parameters=None, step=1e-5) -> HVPResult
 batch_finite_difference_hvp(objective, values, tangents, parameters=None, step=1e-5) -> np.ndarray
@@ -1828,6 +1830,34 @@ tracks condition number, and preserves hyperparameter provenance.
 trainable subspace. It keeps the nonsymmetric fixed-point operator explicit,
 supports damping, rejects singular or ill-conditioned maps, and preserves state
 and hyperparameter provenance.
+
+Two different objects come from an ODE solve, and they are kept apart:
+
+- `rk4_forward_sensitivity()` returns the *discrete* derivative: the exact
+  derivative of the fixed-step RK4 map at one mesh, propagated through every
+  stage. For `y' = a y` it equals
+  `y0 N R(ah)^(N-1) h R'(ah)`, where `R` is the RK4 amplification factor. It is
+  not the continuous `T y0 exp(aT)`.
+- `refine_solver_sensitivity()` is the only route to a *continuous* sensitivity.
+  It runs at least three doubling meshes. It issues a Richardson-refined value
+  only when the observed order is near four and the error estimate is within
+  tolerance. Otherwise it raises `SolverDerivativeRefusal("not_refined")`.
+  Two equal discrete implementations are not evidence of convergence.
+
+The following never return a gradient. They raise `SolverDerivativeRefusal`
+with reason `"failed_solve"`, or `"event_crossing"` for an event:
+
+- a solve that becomes non-finite or diverges;
+- an event function that reaches or crosses zero, including exactly at a mesh
+  point.
+
+`SOLVER_DERIVATIVE_SUPPORT` records each solver control decision:
+
+- fixed-step RK4: supported;
+- adaptive accept/reject: excluded;
+- event time: refused;
+- delayed history: excluded;
+- failed solve: refused.
 `finite_difference_jacobian()` and `value_and_finite_difference_jacobian()`
 support vector-valued diagnostics such as multi-observable residual maps while
 requiring stable one-dimensional finite outputs across all perturbations.

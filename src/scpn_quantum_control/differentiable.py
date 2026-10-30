@@ -98,8 +98,14 @@ from .differentiable_fisher import (
 )
 from .differentiable_gradient_descent import DifferentiableOptimizer
 from .differentiable_implicit_sensitivity import (
+    SOLVER_DERIVATIVE_SUPPORT,
+    ContinuousSolverSensitivity,
+    DiscreteSolverSensitivity,
+    SolverDerivativeRefusal,
     implicit_fixed_point_sensitivity,
     implicit_stationary_sensitivity,
+    refine_solver_sensitivity,
+    rk4_forward_sensitivity,
 )
 from .differentiable_jax_adapter import (
     is_jax_autodiff_available,
@@ -754,6 +760,12 @@ __all__ = [
     "huber_residual_weights",
     "hessian",
     "implicit_fixed_point_sensitivity",
+    "ContinuousSolverSensitivity",
+    "DiscreteSolverSensitivity",
+    "SOLVER_DERIVATIVE_SUPPORT",
+    "SolverDerivativeRefusal",
+    "refine_solver_sensitivity",
+    "rk4_forward_sensitivity",
     "implicit_stationary_sensitivity",
     "is_jax_autodiff_available",
     "jacfwd",

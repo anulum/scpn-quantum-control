@@ -1452,6 +1452,7 @@
         "tests/test_shadow_tomography.py",
         "tests/test_snn_adapter_branches.py",
         "tests/test_snn_backward.py",
+        "tests/test_solver_derivative_conformance.py",
         "tests/test_sparse_hamiltonian.py",
         "tests/test_sparse_hamiltonian_branches.py",
         "tests/test_sparse_hamiltonian_quality_gate.py",
