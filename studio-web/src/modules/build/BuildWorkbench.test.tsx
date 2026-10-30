@@ -209,6 +209,31 @@ it("selects a coupling from the graph by its two end nodes and shows it in the m
   expect(screen.getByRole("button", { name: "K[7,2] = 0.208" }).dataset["linked"]).toBe("true");
 });
 
+it("forgets a chosen end that a smaller oscillator count removed", async () => {
+  renderBuild(async () => kernel);
+  await screen.findByRole("button", { name: "Run simulation" });
+  fireEvent.click(screen.getByRole("tab", { name: "Coupling" }));
+  fireEvent.click(screen.getByRole("button", { name: "Oscillator 11" }));
+  fireEvent.change(screen.getByLabelText(/Oscillators N/), { target: { value: "6" } });
+  const hint = screen
+    .getAllByRole("status")
+    .find((node) => node.classList.contains("qsp-graph-hint"));
+  expect(hint?.textContent).toBe("Choose two oscillators to select their coupling.");
+  fireEvent.click(screen.getByRole("button", { name: "Oscillator 0" }));
+  fireEvent.click(screen.getByRole("button", { name: "Oscillator 1" }));
+  fireEvent.click(screen.getByRole("button", { name: "Matrix K" }));
+  expect(screen.getByRole("button", { name: /^K\[0,1\] = / }).getAttribute("aria-pressed")).toBe(
+    "true",
+  );
+  expect(screen.getByRole("button", { name: /^K\[1,0\] = / }).dataset["linked"]).toBe("true");
+  fireEvent.click(screen.getByRole("button", { name: "Graph" }));
+  fireEvent.click(screen.getByRole("button", { name: "Oscillator 4" }));
+  fireEvent.change(screen.getByLabelText(/Oscillators N/), { target: { value: "12" } });
+  expect(screen.getByRole("button", { name: "Oscillator 4" }).getAttribute("aria-pressed")).toBe(
+    "false",
+  );
+}, 60000);
+
 it("summarises above the drawn limit and drops a selection the controls removed", async () => {
   renderBuild(async () => kernel);
   await screen.findByRole("button", { name: "Run simulation" });

@@ -578,6 +578,8 @@ export function BuildWorkbench({
               <div>
                 {display === "graph" ? (
                   <CouplingGraph
+                    // A new oscillator count starts a fresh choice of ends.
+                    key={view.n}
                     view={view}
                     selection={selection}
                     phases={shownPhases}
