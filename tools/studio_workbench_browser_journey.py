@@ -52,19 +52,24 @@ def _navigation(
 
     nav = page.get_by_role("navigation", name="Workbench views")
     expect(nav).to_be_visible()
-    expect(page.get_by_role("heading", name="Baseline scorecard", exact=True)).to_be_visible()
-    for heading in (
-        "Capabilities",
-        "Compile recompute",
-        "Kuramoto Play",
-        "3D Lab",
-        "Program-AD gradient replay",
-        "Differentiate support explorer",
-        "Gradient-plan explanation",
-    ):
+    for heading in ("Compile recompute", "Kuramoto Play", "3D Lab", "Program-AD gradient replay"):
         expect(page.get_by_role("heading", name=heading, exact=True)).to_be_visible()
     expect(page.get_by_role("region", name="Capability catalogue")).to_be_visible()
     expect(page.get_by_role("region", name="Inspect evidence JSON")).to_be_visible()
+    # The committed evidence surfaces live in the Evidence catalogue destination.
+    page.get_by_role("navigation", name="Continue working").get_by_role(
+        "link", name="Evidence catalogue", exact=True
+    ).click()
+    catalogue = page.get_by_role("article", name="Committed evidence catalogue")
+    for heading in (
+        "Capabilities",
+        "Differentiate support explorer",
+        "Gradient-plan explanation",
+        "Baseline scorecard",
+    ):
+        expect(catalogue.get_by_role("heading", name=heading, exact=True)).to_be_visible()
+    nav.get_by_role("link", name="Workspace", exact=True).click()
+    expect(page.get_by_role("region", name="Capability catalogue")).to_be_visible()
     saved = run_empty_project_ui(page, navigate=False)
     identity = page.get_by_label("Saved workspace identity")
     project = identity.locator("dd").nth(0).inner_text()

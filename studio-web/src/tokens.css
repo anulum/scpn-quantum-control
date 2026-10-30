@@ -852,7 +852,8 @@ color-scheme, which is the system preference unless the admitted display setting
   padding: var(--qsp-space-4) var(--qsp-space-5);
   background: var(--qsp-surface);
   border-top: 1px solid var(--qsp-line);
-  overflow-x: auto;
+  /* Wrap long job reasons instead of scrolling: a scroll region needs a keyboard stop. */
+  overflow-wrap: anywhere;
 }
 
 .qsp-workbench :focus-visible {
