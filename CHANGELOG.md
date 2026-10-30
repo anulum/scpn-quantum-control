@@ -4,6 +4,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Choose numerical methods only from committed measured evidence:
+  - An exact request never selects a compressed, trajectory, Trotter, ODE or
+    variational method.
+  - Approximation needs explicit consent and both tolerances.
+  - An unmeasured error component gives `unknown`, and an unmeasured size is
+    refused.
+  - A canonical plan digest keeps a cached choice from being reused for
+    another precision or tolerance.
+
 - Separate QEC evidence from future-resource planning in the fault-tolerant
   resource product:
   - single-error syndromes of admitted toric codes;
