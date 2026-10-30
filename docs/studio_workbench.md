@@ -269,7 +269,9 @@ pre-flight estimate, the run, a live view, a result card and a session record.
 
 - **Model tabs.** *Program* holds the program editor. *Coupling* shows the
   oscillators as a graph or as the matrix K, side by side with a phase circle.
-  Selecting an edge or a matrix cell selects its mirror, and the graph and circle
+  A coupling is selected by a matrix cell or by the i/j picker below the view.
+  The selection marks the mirrored cell and the edge with its two nodes on the
+  graph; the graph itself is read-only. The graph and circle
   show the same named phase snapshot: initial phases before a run and final
   phases after one. *Script* is the exact request a run submits.
 - **Live result.** The live result card draws the order parameter R(t) with axes,
