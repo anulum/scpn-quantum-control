@@ -800,6 +800,7 @@ jobs:
           src/scpn_quantum_control/fault_tolerant_resource_product.py
           src/scpn_quantum_control/qec/error_budget.py
           tests/test_fault_tolerant_resource_product.py
+          tests/test_qec_resource_claim_boundaries.py
           tests/test_error_budget.py
           tools/fault_tolerant_resource_product_quality_gates.py
           tests/test_fault_tolerant_resource_product_quality_gate.py
@@ -810,6 +811,7 @@ jobs:
           src/scpn_quantum_control/fault_tolerant_resource_product.py
           src/scpn_quantum_control/qec/error_budget.py
           tests/test_fault_tolerant_resource_product.py
+          tests/test_qec_resource_claim_boundaries.py
           tests/test_error_budget.py
           tools/fault_tolerant_resource_product_quality_gates.py
           tests/test_fault_tolerant_resource_product_quality_gate.py
@@ -817,6 +819,7 @@ jobs:
           python -m coverage run --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-fault-tolerant-resource-product.coverage --branch
           -m pytest -q tests/test_fault_tolerant_resource_product.py
+          tests/test_qec_resource_claim_boundaries.py
           tests/test_error_budget.py tests/test_control_module_contracts.py
       - run: >-
           python -m coverage report --rcfile=/dev/null

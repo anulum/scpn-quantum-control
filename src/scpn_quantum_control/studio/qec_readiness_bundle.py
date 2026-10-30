@@ -23,6 +23,12 @@ boundary carries the artefact's own supported/blocked lists verbatim — fault
 tolerance, scalable QEC, and hardware logical-error reduction stay blocked.
 An artefact missing its aggregates, its distance, or its blocked list is
 refused outright.
+
+Each logical-failure rate is restated with an exact Clopper–Pearson bound
+recomputed from that row's own failures and trials. The artefact's stored
+normal-approximation intervals collapse to zero width when no failure was
+observed, so they are not carried. A row whose counts are missing or disagree
+with its rate is refused.
 """
 
 from __future__ import annotations
@@ -50,6 +56,7 @@ from scpn_studio_platform.evidence import (
 )
 
 from ..differentiable_claim_ledger import REPO_ROOT
+from ..fault_tolerant_resource_product import LogicalFailureConfidence, logical_failure_confidence
 from .evidence_bundle import (
     DEFAULT_ACTIVITY_TIMESTAMP,
     _committed_artifact_edge,
@@ -68,6 +75,54 @@ DEFAULT_QEC_READINESS_ARTIFACT_PATH = Path(
 QEC_READINESS_ARTIFACT_ID = "phase3-multicircuit-qec-readiness-2026-05-07"
 
 _REGENERATED_BY = "python -m scpn_quantum_control.studio.qec_readiness_bundle"
+
+
+def _aggregate_confidence(aggregate: dict[str, Any], distance: int) -> LogicalFailureConfidence:
+    """Restate one aggregate's rate with an exact interval for its own sample.
+
+    Parameters
+    ----------
+    aggregate
+        One decoder aggregate of the committed artefact.
+    distance
+        The artefact's code distance.
+
+    Returns
+    -------
+    LogicalFailureConfidence
+        Exact two-sided 95 % interval on the per-trial failure probability.
+
+    Raises
+    ------
+    ValueError
+        If the failures or trials are missing, or disagree with the stored rate.
+
+    """
+    failures = aggregate.get("failures")
+    trials = aggregate.get("trials")
+    if (
+        isinstance(failures, bool)
+        or isinstance(trials, bool)
+        or not isinstance(failures, int)
+        or not isinstance(trials, int)
+    ):
+        raise ValueError("QEC readiness aggregate lacks integer failures and trials")
+    statement = logical_failure_confidence(
+        failures,
+        trials,
+        sample_model=(
+            f"offline distance-{distance} {aggregate.get('decoder')} decoding of "
+            f"{aggregate.get('label')} under {aggregate.get('noise_model')}"
+        ),
+    )
+    rate = aggregate.get("logical_failure_rate")
+    if (
+        isinstance(rate, bool)
+        or not isinstance(rate, int | float)
+        or not abs(statement.rate - float(rate)) <= 1e-12
+    ):
+        raise ValueError("QEC readiness aggregate rate disagrees with its failures and trials")
+    return statement
 
 
 def _load_readiness(artifact_path: Path) -> dict[str, Any]:
@@ -111,6 +166,8 @@ def _load_readiness(artifact_path: Path) -> dict[str, Any]:
         or not boundary["supported"]
     ):
         raise ValueError("QEC readiness artefact is missing its supported/blocked claim boundary")
+    for aggregate in aggregates:
+        _aggregate_confidence(aggregate, distance)
     return payload
 
 
@@ -144,10 +201,21 @@ def build_qec_readiness_bundle(
     payload = _load_readiness(artifact_path)
     aggregates: list[dict[str, Any]] = payload["decoder_aggregates"]
     boundary = payload["claim_boundary"]
+    bounds = "; ".join(
+        f"{aggregate['decoder']}/{aggregate['label']}/{aggregate['noise_model']}: "
+        f"{statement.failures}/{statement.trials} failures, upper {statement.upper:.3g}"
+        for aggregate, statement in (
+            (aggregate, _aggregate_confidence(aggregate, int(payload["distance"])))
+            for aggregate in aggregates
+        )
+    )
     note = (
         f"decision: {payload['readiness_decision']}; "
         f"supported: {'; '.join(boundary['supported'])}; "
-        f"blocked: {'; '.join(boundary['blocked'])}"
+        f"blocked: {'; '.join(boundary['blocked'])}; "
+        "case errors are observed failure fractions of offline samples; exact 95 % "
+        "Clopper-Pearson upper bounds recomputed from each row's failures and trials "
+        f"(stored normal-approximation intervals are not carried): {bounds}"
     )
     return EvidenceBundle(
         schema=QEC_READINESS_SCHEMA,

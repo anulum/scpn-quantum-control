@@ -45,6 +45,9 @@ from phase1_mini_bench_ibm_kingston import (  # noqa: E402
     build_xy_trotter_circuit,
 )
 
+from scpn_quantum_control.fault_tolerant_resource_product import (  # noqa: E402
+    logical_failure_confidence,
+)
 from scpn_quantum_control.qec.control_qec import ControlQEC  # noqa: E402
 from scpn_quantum_control.qec.surface_code_upde import SurfaceCodeUPDE  # noqa: E402
 
@@ -155,11 +158,15 @@ def _two_qubit_count(circuit: Any) -> int:
 
 
 def _binomial_ci(failures: int, trials: int) -> tuple[float, float]:
-    if trials <= 0:
-        return (0.0, 0.0)
-    p_hat = failures / trials
-    half_width = 1.96 * math.sqrt(max(p_hat * (1.0 - p_hat), 0.0) / trials)
-    return (max(0.0, p_hat - half_width), min(1.0, p_hat + half_width))
+    """Return the exact 95 % Clopper-Pearson interval of one sampled failure count.
+
+    A normal approximation collapses to zero width when no failure is observed;
+    the exact interval keeps a positive upper bound. Malformed counts are refused.
+    """
+    statement = logical_failure_confidence(
+        failures, trials, sample_model="offline distance-3 surface-code decoder trials"
+    )
+    return (statement.lower, statement.upper)
 
 
 def _unencoded_trial_failure(spec: CaseSpec, noise: NoiseModel, rng: np.random.Generator) -> bool:

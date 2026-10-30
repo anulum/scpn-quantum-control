@@ -113,6 +113,47 @@ def _drifted_artifact(tmp_path: Path, mutate: dict[str, Any]) -> Path:
     return path
 
 
+def test_zero_failure_rows_carry_an_exact_nonzero_upper_bound() -> None:
+    """Restate every rate with an exact bound; zero failures never read as zero risk."""
+    payload = _committed_payload()
+    note = qec_readiness_bundle.build_qec_readiness_bundle().claim_boundary.validity_domain.note
+    assert note is not None
+    assert "stored normal-approximation intervals are not carried" in note
+    zero = [row for row in payload["decoder_aggregates"] if row["failures"] == 0]
+    assert zero and all(row["logical_failure_ci_high"] == 0.0 for row in zero)
+    for row in zero:
+        upper = 1.0 - 0.025 ** (1.0 / row["trials"])
+        entry = (
+            f"{row['decoder']}/{row['label']}/{row['noise_model']}: "
+            f"0/{row['trials']} failures, upper {upper:.3g}"
+        )
+        assert entry in note
+    assert note.count(" failures, upper ") == len(payload["decoder_aggregates"])
+
+
+@pytest.mark.parametrize(
+    ("change", "message"),
+    [
+        ({"trials": None}, "integer failures and trials"),
+        ({"failures": True}, "integer failures and trials"),
+        ({"failures": 80}, "rate disagrees"),
+        ({"logical_failure_rate": None}, "rate disagrees"),
+        ({"logical_failure_rate": True}, "rate disagrees"),
+        ({"logical_failure_rate": float("nan")}, "rate disagrees"),
+    ],
+)
+def test_aggregate_counts_must_support_the_rate(
+    tmp_path: Path, change: dict[str, Any], message: str
+) -> None:
+    """Refuse a row whose counts are missing or do not produce its stated rate."""
+    payload = _committed_payload()
+    rows = [dict(row) for row in payload["decoder_aggregates"]]
+    rows[0].update(change)
+    path = _drifted_artifact(tmp_path, {"decoder_aggregates": rows})
+    with pytest.raises(ValueError, match=message):
+        qec_readiness_bundle.build_qec_readiness_bundle(artifact_path=path)
+
+
 def test_empty_aggregates_fail_closed(tmp_path: Path) -> None:
     """Reject a readiness artefact without decoder aggregates."""
     path = _drifted_artifact(tmp_path, {"decoder_aggregates": []})

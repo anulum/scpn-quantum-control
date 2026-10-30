@@ -4,6 +4,19 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Separate QEC evidence from future-resource planning in the fault-tolerant
+  resource product:
+  - single-error syndromes of admitted toric codes;
+  - seeded decoder Monte Carlo with exact Clopper–Pearson logical-failure
+    intervals stated for the sampled model;
+  - logical-operation meaning;
+  - routing, factory and decoder overhead scenarios whose spread is reported.
+
+  The Studio QEC-readiness bundle restates each committed decoder rate with an
+  exact bound from its own failures and trials. Rows with no failures no longer
+  read as a zero interval. The readiness generator uses the same exact interval
+  for future runs.
+
 - Partition the complete admitted Python test inventory across four CI workers
   per Python 3.11, 3.12 and 3.13 profile, using same-run ABI-matched Rust
   wheels and one immutable timing snapshot. The existing profile checks verify

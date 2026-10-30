@@ -30,6 +30,7 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     assert "--branch" in run
     cohort = quality_gates.FAULT_TOLERANT_RESOURCE_PRODUCT_COVERAGE_COHORT
     assert run[-len(cohort) :] == cohort
+    assert "tests/test_qec_resource_claim_boundaries.py" in cohort
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
     assert "--include=*/fault_tolerant_resource_product.py,*/qec/error_budget.py" in report
@@ -54,4 +55,7 @@ def test_ci_runs_and_aggregates_gate() -> None:
         path in block for path in quality_gates.FAULT_TOLERANT_RESOURCE_PRODUCT_QUALITY_RATCHET
     )
     assert quality_gates.FAULT_TOLERANT_RESOURCE_PRODUCT_COVERAGE_DATA_FILE in block
+    assert all(
+        path in block for path in quality_gates.FAULT_TOLERANT_RESOURCE_PRODUCT_COVERAGE_COHORT
+    )
     assert "fault-tolerant-resource-product-quality" in workflow[workflow.index("  ci-gate:") :]

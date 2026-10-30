@@ -21,13 +21,19 @@ import hashlib
 import json
 import math
 from dataclasses import asdict, dataclass, replace
-from typing import Final, Literal
+from typing import TYPE_CHECKING, Final, Literal
+
+import numpy as np
+from numpy.typing import NDArray
 
 from .qec.error_budget import SURFACE_CODE_THRESHOLD, logical_error_rate
 from .qec.logical_dla_parity import (
     repetition_scaffold_physical_qubits,
     surface_code_physical_qubits,
 )
+
+if TYPE_CHECKING:
+    from .qec.control_qec import MWPMDecoder, SurfaceCode
 
 SupportPosture = Literal["supported", "research", "boundary"]
 SensitivityStatus = Literal["estimated", "refused"]
@@ -506,20 +512,619 @@ def render_ft_resource_markdown(product: FaultTolerantResourceProduct) -> str:
     return "\n".join(lines) + "\n"
 
 
+# --- Calibrated logical-failure confidence -------------------------------------------
+
+LOGICAL_FAILURE_CONFIDENCE_METHOD: Final[str] = "clopper_pearson_exact"
+"""Exact binomial interval; it never collapses to zero width at zero failures."""
+
+
+@dataclass(frozen=True, slots=True)
+class LogicalFailureConfidence:
+    """A logical-failure rate stated only for the sample that produced it.
+
+    Attributes
+    ----------
+    failures, trials
+        Observed logical failures and the number of independent trials.
+    confidence_level
+        Two-sided confidence level of the exact interval.
+    lower, upper
+        Clopper–Pearson bounds on the per-trial failure probability.
+    sample_model
+        The exact code, decoder and noise model the trials were drawn from.
+    method
+        Interval method; always :data:`LOGICAL_FAILURE_CONFIDENCE_METHOD`.
+
+    """
+
+    failures: int
+    trials: int
+    confidence_level: float
+    lower: float
+    upper: float
+    sample_model: str
+    method: str = LOGICAL_FAILURE_CONFIDENCE_METHOD
+
+    @property
+    def rate(self) -> float:
+        """Return the observed failure fraction."""
+        return self.failures / self.trials
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a JSON-ready confidence statement including the observed rate."""
+        return {**asdict(self), "rate": self.rate}
+
+
+def logical_failure_confidence(
+    failures: int,
+    trials: int,
+    *,
+    sample_model: str,
+    confidence_level: float = 0.95,
+) -> LogicalFailureConfidence:
+    """State an exact two-sided confidence interval for sampled logical failures.
+
+    Parameters
+    ----------
+    failures
+        Observed logical failures, ``0 <= failures <= trials``.
+    trials
+        Independent trials actually sampled, at least one.
+    sample_model
+        Non-empty description of the code, decoder and noise model sampled.
+    confidence_level
+        Two-sided level with ``0 < confidence_level < 1``.
+
+    Returns
+    -------
+    LogicalFailureConfidence
+        Clopper–Pearson bounds. Zero failures still give a positive upper bound,
+        and all failures still give a lower bound below one.
+
+    Raises
+    ------
+    ValueError
+        If the counts, level or sample model are malformed.
+
+    """
+    from scipy.stats import beta
+
+    for name, value in (("failures", failures), ("trials", trials)):
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise ValueError(f"{name} must be an integer")
+    if trials < 1 or not 0 <= failures <= trials:
+        raise ValueError("counts must satisfy 0 <= failures <= trials and trials >= 1")
+    if (
+        isinstance(confidence_level, bool)
+        or not math.isfinite(confidence_level)
+        or not 0.0 < confidence_level < 1.0
+    ):
+        raise ValueError("confidence_level must be finite with 0 < value < 1")
+    if not sample_model.strip():
+        raise ValueError("sample_model must name the sampled code, decoder and noise model")
+    alpha = 1.0 - confidence_level
+    lower = 0.0 if failures == 0 else float(beta.ppf(alpha / 2.0, failures, trials - failures + 1))
+    upper = (
+        1.0
+        if failures == trials
+        else float(beta.ppf(1.0 - alpha / 2.0, failures + 1, trials - failures))
+    )
+    return LogicalFailureConfidence(failures, trials, confidence_level, lower, upper, sample_model)
+
+
+# --- Structural code scaffold and decoder experiment ---------------------------------
+
+ADMITTED_TORIC_DISTANCES: Final[tuple[int, ...]] = (3, 5)
+"""Toric-code distances whose syndromes and decoding this module admits."""
+TORIC_ERROR_MODEL: Final[str] = (
+    "independent bit flips on every data qubit at the stated rate; one round of "
+    "perfect vertex-syndrome extraction; no measurement, leakage or correlated errors"
+)
+DECODER_EXPERIMENT_CLAIM_BOUNDARY: Final[str] = (
+    "Software Monte Carlo of a toric code under the stated error model only; no "
+    "hardware syndrome, circuit-level noise, measured logical-error reduction or "
+    "threshold claim"
+)
+
+
+def _admitted_toric_distance(distance: int) -> int:
+    if isinstance(distance, bool) or distance not in ADMITTED_TORIC_DISTANCES:
+        raise FaultTolerantResourceBoundaryError(
+            f"toric distance must be one of {ADMITTED_TORIC_DISTANCES}"
+        )
+    return distance
+
+
+def _toric_logical_parity(residual: NDArray[np.int8], distance: int) -> bool:
+    """Return whether a syndrome-free residual winds around the torus."""
+    horizontal_cut = [2 * row * distance for row in range(distance)]
+    vertical_cut = [2 * column + 1 for column in range(distance)]
+    return bool(residual[horizontal_cut].sum() % 2 or residual[vertical_cut].sum() % 2)
+
+
+def _toric_trial_failed(code: SurfaceCode, decoder: MWPMDecoder, error: NDArray[np.int8]) -> bool:
+    syndrome = ((code.Hx @ error) % 2).astype(np.int8)
+    residual = (error ^ decoder.decode(syndrome)).astype(np.int8)
+    # A correction that leaves any syndrome counts as a failure, never as a success.
+    return bool(((code.Hx @ residual) % 2).any()) or _toric_logical_parity(residual, code.d)
+
+
+@dataclass(frozen=True, slots=True)
+class SingleErrorSyndrome:
+    """The syndrome and decoding outcome of one data-qubit flip.
+
+    Attributes
+    ----------
+    data_qubit
+        Flipped data-qubit index.
+    defects
+        Vertex checks that fire, in increasing order.
+    corrected
+        Whether matching returns the code to a trivial logical class.
+
+    """
+
+    data_qubit: int
+    defects: tuple[int, ...]
+    corrected: bool
+
+
+def enumerate_single_error_syndromes(distance: int = 3) -> tuple[SingleErrorSyndrome, ...]:
+    """Flip each data qubit of an admitted toric code once and decode it.
+
+    Parameters
+    ----------
+    distance
+        Admitted toric distance from :data:`ADMITTED_TORIC_DISTANCES`.
+
+    Returns
+    -------
+    tuple[SingleErrorSyndrome, ...]
+        One row per data qubit, in data-qubit order.
+
+    Raises
+    ------
+    FaultTolerantResourceBoundaryError
+        If the distance is not admitted.
+
+    """
+    from .qec.control_qec import MWPMDecoder, SurfaceCode
+
+    code = SurfaceCode(_admitted_toric_distance(distance))
+    decoder = MWPMDecoder(distance)
+    rows: list[SingleErrorSyndrome] = []
+    for qubit in range(code.num_data):
+        error = np.zeros(code.num_data, dtype=np.int8)
+        error[qubit] = 1
+        defects = tuple(int(index) for index in np.flatnonzero((code.Hx @ error) % 2))
+        rows.append(
+            SingleErrorSyndrome(qubit, defects, not _toric_trial_failed(code, decoder, error))
+        )
+    return tuple(rows)
+
+
+@dataclass(frozen=True, slots=True)
+class DecoderExperiment:
+    """One seeded decoder Monte Carlo and the confidence its sample supports.
+
+    Attributes
+    ----------
+    distance, physical_error_rate, shots, seed
+        Exactly what was sampled.
+    confidence
+        Exact interval on the logical-failure probability of this sample model.
+    code, decoder, error_model, claim_boundary
+        Fixed identities of the scaffold, decoder, noise model and claim scope.
+    measured_logical_error_reduction_claim_allowed
+        Always false; a software sample is not a hardware measurement.
+
+    """
+
+    distance: int
+    physical_error_rate: float
+    shots: int
+    seed: int
+    confidence: LogicalFailureConfidence
+    code: str = "toric_surface_code"
+    decoder: str = "minimum_weight_perfect_matching"
+    error_model: str = TORIC_ERROR_MODEL
+    claim_boundary: str = DECODER_EXPERIMENT_CLAIM_BOUNDARY
+    measured_logical_error_reduction_claim_allowed: bool = False
+
+    def __post_init__(self) -> None:
+        """Keep the experiment claim blocked and its sample consistent."""
+        if self.measured_logical_error_reduction_claim_allowed:
+            raise ValueError("a software decoder sample cannot claim measured error reduction")
+        if self.confidence.trials != self.shots:
+            raise ValueError("confidence must be stated for exactly the sampled shots")
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a JSON-ready experiment record."""
+        payload = asdict(self)
+        payload["confidence"] = self.confidence.to_dict()
+        return payload
+
+
+def run_toric_decoder_experiment(
+    distance: int,
+    physical_error_rate: float,
+    shots: int,
+    seed: int,
+    *,
+    confidence_level: float = 0.95,
+) -> DecoderExperiment:
+    """Sample bit-flip errors on an admitted toric code and decode each shot.
+
+    Parameters
+    ----------
+    distance
+        Admitted toric distance.
+    physical_error_rate
+        Per-data-qubit flip probability, ``0 <= p < 1``.
+    shots
+        Independent trials, at least one.
+    seed
+        Non-negative seed of the NumPy generator; the same seed repeats the sample.
+    confidence_level
+        Two-sided level of the exact interval.
+
+    Returns
+    -------
+    DecoderExperiment
+        Counts and an interval stated only for this sample model.
+
+    Raises
+    ------
+    FaultTolerantResourceBoundaryError
+        If the distance is not admitted.
+    ValueError
+        If the rate, shots or seed are malformed.
+
+    """
+    from .qec.control_qec import MWPMDecoder, SurfaceCode
+
+    code = SurfaceCode(_admitted_toric_distance(distance))
+    if (
+        isinstance(physical_error_rate, bool)
+        or not math.isfinite(physical_error_rate)
+        or not 0.0 <= physical_error_rate < 1.0
+    ):
+        raise ValueError("physical_error_rate must be finite with 0 <= value < 1")
+    for name, value in (("shots", shots), ("seed", seed)):
+        if (
+            isinstance(value, bool)
+            or not isinstance(value, int)
+            or value < (1 if name == "shots" else 0)
+        ):
+            raise ValueError(
+                f"{name} must be a {'positive' if name == 'shots' else 'non-negative'} integer"
+            )
+    decoder = MWPMDecoder(distance)
+    errors = (
+        np.random.default_rng(seed).random((shots, code.num_data)) < physical_error_rate
+    ).astype(np.int8)
+    failures = sum(_toric_trial_failed(code, decoder, error) for error in errors)
+    sample_model = (
+        f"toric code d={distance}, minimum-weight perfect matching, {TORIC_ERROR_MODEL}, "
+        f"p={physical_error_rate!r}, seed={seed}"
+    )
+    return DecoderExperiment(
+        distance=distance,
+        physical_error_rate=physical_error_rate,
+        shots=shots,
+        seed=seed,
+        confidence=logical_failure_confidence(
+            int(failures), shots, sample_model=sample_model, confidence_level=confidence_level
+        ),
+    )
+
+
+# --- Logical-operation semantics ------------------------------------------------------
+
+LogicalOperationStatus = Literal["counted_not_validated", "modelled_ideal", "not_modelled"]
+
+
+@dataclass(frozen=True, slots=True)
+class LogicalOperationSemantics:
+    """What the estimate means, and does not mean, for one logical operation."""
+
+    operation: str
+    status: LogicalOperationStatus
+    meaning: str
+
+
+LOGICAL_OPERATION_SEMANTICS: Final[tuple[LogicalOperationSemantics, ...]] = (
+    LogicalOperationSemantics(
+        "logical_rz",
+        "counted_not_validated",
+        "T gates are counted from a Clifford+T synthesis upper estimate; no logical RZ is validated.",
+    ),
+    LogicalOperationSemantics(
+        "logical_rzz",
+        "counted_not_validated",
+        "Each pairwise term is counted as one synthesised Z rotation; no lattice-surgery RZZ is validated.",
+    ),
+    LogicalOperationSemantics(
+        "syndrome_extraction",
+        "modelled_ideal",
+        "Decoder experiments assume one perfect extraction round; circuit-level extraction is not modelled.",
+    ),
+    LogicalOperationSemantics(
+        "magic_state_distillation",
+        "not_modelled",
+        "Factory footprint and throughput enter only through caller-stated overhead scenarios.",
+    ),
+    LogicalOperationSemantics(
+        "lattice_surgery_routing",
+        "not_modelled",
+        "Routing enters only as a caller-stated overhead factor on the data patches.",
+    ),
+)
+
+
+# --- Future resource scenarios with explicit overheads --------------------------------
+
+QEC_CLAIM_QUALIFICATION_SCHEMA: Final[str] = "qec_claim_qualification.v1"
+EXCLUDED_FROM_BASE_ESTIMATE: Final[tuple[str, ...]] = (
+    "lattice-surgery routing space and time",
+    "magic-state factory footprint and throughput",
+    "decoder latency and feed-forward",
+    "measurement, leakage and correlated noise",
+)
+OVERHEAD_SCENARIO_CLAIM_BOUNDARY: Final[str] = (
+    "Time and space floors under caller-stated routing, factory and decoder "
+    "assumptions; a scenario spread, not a runtime, device-availability or "
+    "fault-tolerant-execution claim"
+)
+
+
+@dataclass(frozen=True, slots=True)
+class OverheadAssumptions:
+    """Caller-stated routing, factory and decoder assumptions for one scenario."""
+
+    label: str
+    routing_overhead_factor: float
+    factory_count: int
+    factory_physical_qubits: int
+    factory_cycles_per_t_state: int
+    decoder_latency_seconds_per_round: float = 0.0
+
+    def __post_init__(self) -> None:
+        """Refuse assumptions that would silently shrink or invent resources."""
+        if not self.label.strip():
+            raise ValueError("scenario label must be non-empty")
+        if (
+            isinstance(self.routing_overhead_factor, bool)
+            or not math.isfinite(self.routing_overhead_factor)
+            or self.routing_overhead_factor < 1.0
+        ):
+            raise ValueError("routing_overhead_factor must be finite and >= 1")
+        for name in ("factory_count", "factory_physical_qubits", "factory_cycles_per_t_state"):
+            value = getattr(self, name)
+            if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+                raise ValueError(f"{name} must be an integer >= 1")
+        if (
+            isinstance(self.decoder_latency_seconds_per_round, bool)
+            or not math.isfinite(self.decoder_latency_seconds_per_round)
+            or self.decoder_latency_seconds_per_round < 0.0
+        ):
+            raise ValueError("decoder_latency_seconds_per_round must be finite and >= 0")
+
+
+@dataclass(frozen=True, slots=True)
+class OverheadScenarioEstimate:
+    """Space and time floors of the base estimate under one overhead scenario."""
+
+    assumptions: OverheadAssumptions
+    data_patch_physical_qubits: int
+    routed_patch_physical_qubits: int
+    factory_physical_qubits: int
+    total_physical_qubits: int
+    t_state_time_floor_seconds: float
+    decoding_time_floor_seconds: float
+    scenario_time_floor_seconds: float
+    claim_boundary: str = OVERHEAD_SCENARIO_CLAIM_BOUNDARY
+    hardware_availability_claim_allowed: bool = False
+    total_runtime_claim_allowed: bool = False
+
+    def __post_init__(self) -> None:
+        """Keep scenario arithmetic exact and availability claims blocked."""
+        if self.hardware_availability_claim_allowed or self.total_runtime_claim_allowed:
+            raise ValueError(
+                "overhead scenarios must keep availability and runtime claims blocked"
+            )
+        if self.total_physical_qubits != (
+            self.routed_patch_physical_qubits + self.factory_physical_qubits
+        ):
+            raise ValueError("total_physical_qubits arithmetic mismatch")
+
+
+def estimate_overhead_scenario(
+    request: SyncProblemResourceRequest, assumptions: OverheadAssumptions
+) -> OverheadScenarioEstimate:
+    """Add caller-stated routing, factory and decoder overheads to the base estimate.
+
+    Parameters
+    ----------
+    request
+        The same bounded request the base estimate uses.
+    assumptions
+        Routing factor, factory count, size and cycle cost, and decoder latency.
+
+    Returns
+    -------
+    OverheadScenarioEstimate
+        Routed patches plus factories, and the larger of the syndrome and
+        T-state time floors plus decoding latency.
+
+    Raises
+    ------
+    FaultTolerantResourceBoundaryError
+        If the base estimate itself is refused.
+
+    """
+    base = estimate_ft_resources(request)
+    routed = math.ceil(base.surface_code_physical_qubits * assumptions.routing_overhead_factor)
+    factories = assumptions.factory_count * assumptions.factory_physical_qubits
+    t_state_floor = (
+        math.ceil(base.total_t_count / assumptions.factory_count)
+        * assumptions.factory_cycles_per_t_state
+        * request.syndrome_cycle_seconds
+    )
+    decoding_floor = base.qec_rounds * assumptions.decoder_latency_seconds_per_round
+    return OverheadScenarioEstimate(
+        assumptions=assumptions,
+        data_patch_physical_qubits=base.surface_code_physical_qubits,
+        routed_patch_physical_qubits=routed,
+        factory_physical_qubits=factories,
+        total_physical_qubits=routed + factories,
+        t_state_time_floor_seconds=t_state_floor,
+        decoding_time_floor_seconds=decoding_floor,
+        scenario_time_floor_seconds=max(base.syndrome_time_floor_seconds, t_state_floor)
+        + decoding_floor,
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class QecClaimQualification:
+    """Separate decoder evidence, code scaffold, operation semantics and future resources.
+
+    The base resource product keeps its own schema and digest; this companion
+    record refers to it by digest and never alters it.
+    """
+
+    schema: str
+    resource_payload_sha256: str
+    scenarios: tuple[OverheadScenarioEstimate, ...]
+    total_physical_qubit_range: tuple[int, int]
+    scenario_time_floor_range_seconds: tuple[float, float]
+    excluded_from_base_estimate: tuple[str, ...]
+    logical_operations: tuple[LogicalOperationSemantics, ...]
+    decoder_experiment: DecoderExperiment | None
+    payload_sha256: str
+    device_available_claim_allowed: bool = False
+
+    def __post_init__(self) -> None:
+        """Refuse an incomplete or availability-claiming record."""
+        if self.schema != QEC_CLAIM_QUALIFICATION_SCHEMA:
+            raise ValueError(f"unknown qualification schema: {self.schema!r}")
+        if self.device_available_claim_allowed:
+            raise ValueError("resource estimates never establish device availability")
+        if not self.scenarios:
+            raise ValueError("at least one overhead scenario is required")
+
+    def to_dict(self) -> dict[str, object]:
+        """Return the deterministic qualification record."""
+        return {
+            **_qualification_payload(self),
+            "payload_sha256": self.payload_sha256,
+        }
+
+
+def _qualification_payload(record: QecClaimQualification) -> dict[str, object]:
+    return {
+        "schema": record.schema,
+        "resource_payload_sha256": record.resource_payload_sha256,
+        "scenarios": [asdict(row) for row in record.scenarios],
+        "total_physical_qubit_range": list(record.total_physical_qubit_range),
+        "scenario_time_floor_range_seconds": list(record.scenario_time_floor_range_seconds),
+        "excluded_from_base_estimate": list(record.excluded_from_base_estimate),
+        "logical_operations": [asdict(row) for row in record.logical_operations],
+        "decoder_experiment": (
+            None if record.decoder_experiment is None else record.decoder_experiment.to_dict()
+        ),
+        "device_available_claim_allowed": record.device_available_claim_allowed,
+    }
+
+
+def build_qec_claim_qualification(
+    request: SyncProblemResourceRequest,
+    scenarios: tuple[OverheadAssumptions, ...],
+    *,
+    decoder_experiment: DecoderExperiment | None = None,
+) -> QecClaimQualification:
+    """Qualify a resource estimate against explicit overheads and decoder evidence.
+
+    Parameters
+    ----------
+    request
+        Bounded request of the base resource product.
+    scenarios
+        One or more uniquely labelled overhead scenarios; their spread is the
+        reported scaling uncertainty.
+    decoder_experiment
+        Optional sampled decoder evidence, kept separate from the resource model.
+
+    Returns
+    -------
+    QecClaimQualification
+        Companion record bound to the base product by its payload digest.
+
+    Raises
+    ------
+    ValueError
+        If no scenario is given or labels repeat.
+    FaultTolerantResourceBoundaryError
+        If the base estimate is refused.
+
+    """
+    if not scenarios:
+        raise ValueError("at least one overhead scenario is required")
+    labels = [scenario.label for scenario in scenarios]
+    if len(set(labels)) != len(labels):
+        raise ValueError("overhead scenario labels must be unique")
+    product = build_fault_tolerant_resource_product(request)
+    rows = tuple(estimate_overhead_scenario(request, scenario) for scenario in scenarios)
+    totals = [row.total_physical_qubits for row in rows]
+    floors = [row.scenario_time_floor_seconds for row in rows]
+    draft = QecClaimQualification(
+        schema=QEC_CLAIM_QUALIFICATION_SCHEMA,
+        resource_payload_sha256=product.payload_sha256,
+        scenarios=rows,
+        total_physical_qubit_range=(min(totals), max(totals)),
+        scenario_time_floor_range_seconds=(min(floors), max(floors)),
+        excluded_from_base_estimate=EXCLUDED_FROM_BASE_ESTIMATE,
+        logical_operations=LOGICAL_OPERATION_SEMANTICS,
+        decoder_experiment=decoder_experiment,
+        payload_sha256="0" * 64,
+    )
+    return replace(draft, payload_sha256=_payload_digest(_qualification_payload(draft)))
+
+
 __all__ = [
+    "ADMITTED_TORIC_DISTANCES",
+    "DECODER_EXPERIMENT_CLAIM_BOUNDARY",
+    "EXCLUDED_FROM_BASE_ESTIMATE",
     "FORMULA_REFERENCES",
     "FT_RESOURCE_CLAIM_BOUNDARY",
     "FT_RESOURCE_PRODUCT_SCHEMA",
+    "LOGICAL_FAILURE_CONFIDENCE_METHOD",
+    "LOGICAL_OPERATION_SEMANTICS",
+    "OVERHEAD_SCENARIO_CLAIM_BOUNDARY",
+    "QEC_CLAIM_QUALIFICATION_SCHEMA",
+    "TORIC_ERROR_MODEL",
+    "DecoderExperiment",
     "FaultTolerantResourceBoundaryError",
     "FaultTolerantResourceProduct",
     "FormulaReference",
+    "LogicalFailureConfidence",
+    "LogicalOperationSemantics",
+    "OverheadAssumptions",
+    "OverheadScenarioEstimate",
+    "QecClaimQualification",
     "RegimeComparisonRow",
     "ResourceEstimate",
     "SensitivityPoint",
+    "SingleErrorSyndrome",
     "SyncProblemResourceRequest",
     "build_fault_tolerant_resource_product",
     "build_ft_sensitivity",
+    "build_qec_claim_qualification",
     "build_regime_comparison",
+    "enumerate_single_error_syndromes",
     "estimate_ft_resources",
+    "estimate_overhead_scenario",
+    "logical_failure_confidence",
     "render_ft_resource_markdown",
+    "run_toric_decoder_experiment",
 ]

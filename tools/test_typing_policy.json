@@ -1363,6 +1363,7 @@
         "tests/test_q_disruption_iter_contract.py",
         "tests/test_qaoa_mpc.py",
         "tests/test_qaoa_mpc_branches.py",
+        "tests/test_qec_resource_claim_boundaries.py",
         "tests/test_qfi_geometric_crosscheck.py",
         "tests/test_qlayer.py",
         "tests/test_qnode_circuit_contracts_quality_gate.py",

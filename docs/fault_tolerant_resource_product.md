@@ -44,6 +44,80 @@ assert product.estimate.hardware_availability_claim_allowed is False
 markdown = render_ft_resource_markdown(product)
 ```
 
+## Decoder evidence, code structure and overhead scenarios
+
+Four things stay separate, so that no single number reads as more than it is.
+
+- **Code structure.** `enumerate_single_error_syndromes(distance)` flips each
+  data qubit of an admitted toric code (distance 3 or 5) once. It records which
+  vertex checks fire and whether the existing minimum-weight perfect-matching
+  decoder restores a trivial logical class. Every single flip fires exactly the
+  two vertices its edge touches and is corrected.
+- **Decoder Monte Carlo.** `run_toric_decoder_experiment(distance, p, shots,
+  seed)` samples independent bit flips at rate `p` with one round of perfect
+  syndrome extraction, decodes every shot and counts logical failures. The same
+  seed repeats the sample.
+- **Calibrated confidence.** `logical_failure_confidence(failures, trials,
+  sample_model=...)` gives an exact two-sided Clopper–Pearson interval, stated
+  only for the sample model it names. Zero failures in `n` trials still give a
+  positive upper bound, `1 - (α/2)^(1/n)`. A normal approximation would
+  collapse to zero width there.
+- **Logical-operation meaning.** `LOGICAL_OPERATION_SEMANTICS` records the
+  status of each operation:
+  - logical RZ and RZZ are counted from the synthesis estimate but not
+    validated;
+  - syndrome extraction is modelled as ideal;
+  - magic-state distillation and lattice-surgery routing are not modelled.
+- **Future resources.** `estimate_overhead_scenario(request, assumptions)`
+  adds the routing factor, the factories (count, size and cycles per T state)
+  and the decoder latency that you state to the base estimate. The base
+  estimate leaves these out (`EXCLUDED_FROM_BASE_ESTIMATE`).
+
+  `build_qec_claim_qualification` combines several scenarios, the operation
+  meanings and an optional decoder experiment. It reports the spread of the
+  scenarios as the scaling uncertainty. The record refers to the base report by
+  its payload digest and leaves the base report unchanged.
+
+```python
+from scpn_quantum_control.fault_tolerant_resource_product import (
+    OverheadAssumptions,
+    SyncProblemResourceRequest,
+    build_qec_claim_qualification,
+    run_toric_decoder_experiment,
+)
+
+request = SyncProblemResourceRequest(
+    n_oscillators=4,
+    evolution_time=1.0,
+    target_precision=0.01,
+    coupling_density=0.5,
+    trotter_steps=8,
+)
+experiment = run_toric_decoder_experiment(3, 0.001, 300, seed=7)
+assert experiment.confidence.failures == 0 and experiment.confidence.upper > 0.0
+record = build_qec_claim_qualification(
+    request,
+    (
+        OverheadAssumptions("compact", 1.5, 2, 1000, 10, 1e-6),
+        OverheadAssumptions("wide", 3.0, 8, 1000, 10, 1e-6),
+    ),
+    decoder_experiment=experiment,
+)
+low, high = record.total_physical_qubit_range
+assert low < high and record.device_available_claim_allowed is False
+```
+
+Overhead scenarios are space and time floors under assumptions you state. They
+are not runtimes. Neither a scenario nor a qualification record can claim that
+hardware is available or that it runs fault-tolerantly. A decoder experiment is
+a software sample under the stated error model. It is not a measured reduction
+in logical error.
+
+The Studio QEC-readiness bundle applies the same exact interval to each
+committed decoder aggregate, recomputed from that row's failures and trials.
+The artefact stores normal-approximation intervals, which read `[0, 0]` for
+rows with no failures, so the bundle does not carry them.
+
 ## Regime boundaries
 
 The report keeps six regimes non-equivalent: classical reference, NISQ

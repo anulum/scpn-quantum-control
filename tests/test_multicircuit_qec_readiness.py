@@ -32,6 +32,7 @@ def _load_module() -> ModuleType:
 
 
 def test_weighted_decoder_matrix_is_symmetric_with_zero_diagonal() -> None:
+    """Keep the physics-aware decoder weights symmetric, self-free and coupling-ordered."""
     module = _load_module()
 
     matrix = module.weighted_decoder_matrix(3)
@@ -43,6 +44,7 @@ def test_weighted_decoder_matrix_is_symmetric_with_zero_diagonal() -> None:
 
 
 def test_binomial_ci_contains_observed_rate() -> None:
+    """Keep the observed failure fraction inside its interval."""
     module = _load_module()
 
     low, high = module._binomial_ci(10, 100)
@@ -50,7 +52,18 @@ def test_binomial_ci_contains_observed_rate() -> None:
     assert 0.0 <= low <= 0.1 <= high <= 1.0
 
 
+def test_binomial_ci_keeps_a_positive_upper_bound_at_zero_failures() -> None:
+    """Bound zero observed failures by the exact Clopper-Pearson upper limit, never by zero."""
+    module = _load_module()
+
+    low, high = module._binomial_ci(0, 3200)
+
+    assert low == 0.0
+    assert abs(high - (1.0 - 0.025 ** (1.0 / 3200))) < 1e-15
+
+
 def test_resource_rows_include_encoded_and_unencoded_comparators() -> None:
+    """Report encoded and unencoded circuit resources for every default case."""
     module = _load_module()
 
     rows = module.resource_rows(module.default_cases())
@@ -62,6 +75,7 @@ def test_resource_rows_include_encoded_and_unencoded_comparators() -> None:
 
 
 def test_summary_and_manifest_use_precise_offline_qec_boundary(tmp_path: Path) -> None:
+    """Keep the summary and manifest inside the offline distance-3 claim boundary."""
     module = _load_module()
     decoder_rows = []
     for spec in module.default_cases():
@@ -108,6 +122,7 @@ def test_summary_and_manifest_use_precise_offline_qec_boundary(tmp_path: Path) -
 
 
 def test_summary_blocks_when_physics_aware_does_not_beat_ablation() -> None:
+    """Block hardware readiness when the physics-aware decoder does not beat its baselines."""
     module = _load_module()
     decoder_rows = []
     for spec in module.default_cases():
@@ -145,6 +160,7 @@ def test_summary_blocks_when_physics_aware_does_not_beat_ablation() -> None:
 
 
 def test_write_outputs_records_manifest_and_hashes(tmp_path: Path) -> None:
+    """Write every output with a manifest that records its content hashes."""
     module = _load_module()
     decoder_rows = []
     for spec in module.default_cases():

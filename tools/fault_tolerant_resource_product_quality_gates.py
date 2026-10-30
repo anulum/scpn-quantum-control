@@ -16,6 +16,7 @@ FAULT_TOLERANT_RESOURCE_PRODUCT_QUALITY_RATCHET = [
     "src/scpn_quantum_control/fault_tolerant_resource_product.py",
     "src/scpn_quantum_control/qec/error_budget.py",
     "tests/test_fault_tolerant_resource_product.py",
+    "tests/test_qec_resource_claim_boundaries.py",
     "tests/test_error_budget.py",
     "tools/fault_tolerant_resource_product_quality_gates.py",
     "tests/test_fault_tolerant_resource_product_quality_gate.py",
@@ -23,6 +24,7 @@ FAULT_TOLERANT_RESOURCE_PRODUCT_QUALITY_RATCHET = [
 """Ordered strict-typing and NumPy-docstring cohort."""
 FAULT_TOLERANT_RESOURCE_PRODUCT_COVERAGE_COHORT = [
     "tests/test_fault_tolerant_resource_product.py",
+    "tests/test_qec_resource_claim_boundaries.py",
     "tests/test_error_budget.py",
     "tests/test_control_module_contracts.py",
 ]
