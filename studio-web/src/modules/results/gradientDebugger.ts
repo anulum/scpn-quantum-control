@@ -88,12 +88,21 @@ export interface GradientUnit {
   /** SHA-256 the replay input must hash to before the kernel runs. */
   readonly inputSha256: string;
   /** Value and gradient from the differentiate action. */
-  readonly expected: { readonly value: number; readonly gradient: readonly number[] };
+  readonly expected: {
+    /** Objective value at the committed parameters. */
+    readonly value: number;
+    /** Gradient with respect to every parameter, in parameter order. */
+    readonly gradient: readonly number[];
+  };
   /** Central finite-difference cross-check from the same action. */
   readonly finiteDifference: {
+    /** Central-difference gradient, in parameter order. */
     readonly gradient: readonly number[];
+    /** Central-difference step. */
     readonly step: number;
+    /** Largest absolute difference from the differentiated gradient. */
     readonly maxAbsError: number;
+    /** Largest difference the action admits. */
     readonly tolerance: number;
   };
   /** Gradient under every trainable mask. */
@@ -101,7 +110,12 @@ export interface GradientUnit {
   /** Owner reference, or null when none is linked. */
   readonly reference: UnitReference | null;
   /** Exact request a local runner accepts. */
-  readonly localRunner: { readonly actionId: string; readonly params: unknown };
+  readonly localRunner: {
+    /** Registered differentiate action the runner executes. */
+    readonly actionId: string;
+    /** Parameters the action accepts, saved as the runner's parameter file. */
+    readonly params: unknown;
+  };
 }
 
 /** The committed units and the claim they carry. */
@@ -409,7 +423,9 @@ export function withinBudget(actual: readonly number[], reference: readonly numb
  * @returns The shell command and the JSON parameters to save beside it.
  */
 export function localRunnerRequest(unit: GradientUnit | null): {
+  /** Shell command the local runner accepts. */
   readonly command: string;
+  /** Parameter file contents, or null when the cell has no committed unit. */
   readonly paramsJson: string | null;
 } {
   if (unit === null)
