@@ -34,8 +34,9 @@ async function boot(): Promise<void> {
   if (typeof record["init"] !== "function" || typeof record["get"] !== "function") throw new Error("Original federation container contract missing");
   const remote = record as unknown as Remote;
   const scope = {
-    react: { "19.2.7": { get: async () => () => React, from: "workbench-acceptance-host", loaded: true } },
-    "react-dom": { "19.2.7": { get: async () => () => ReactDOM, from: "workbench-acceptance-host", loaded: true } },
+    // The host shares the React it actually loaded, as an embedding Hub does.
+    react: { [React.version]: { get: async () => () => React, from: "workbench-acceptance-host", loaded: true } },
+    "react-dom": { [ReactDOM.version]: { get: async () => () => ReactDOM, from: "workbench-acceptance-host", loaded: true } },
   };
   await remote.init(scope);
   const factory = await remote.get("./QuantumStudioPanel");

@@ -146,7 +146,9 @@ Vite app: a static portal (`dist/index.html`) and a Module Federation remote
 (`dist/remoteEntry.js`, ESM). The federation contract is locked in
 `studio-web/module-federation.config.ts` and guarded by tests: federation name
 `scpn_quantum_control`, one exposed module `./QuantumStudioPanel`, and
-react/react-dom shared as version-pinned singletons.
+react/react-dom shared as version-pinned singletons. The pinned version is
+React 19.3.0, the version the SCPN Studio Hub ships, so the panel runs inside
+the Hub on the same React its tests and journeys use.
 
 ```bash
 cd studio-web

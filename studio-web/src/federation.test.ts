@@ -36,8 +36,8 @@ describe("module federation contract", () => {
     });
   });
 
-  it("pins the installed react to the shared singleton version", () => {
-    expect(REACT_VERSION).toBe("19.2.7");
+  it("pins the installed react to the shared singleton version the Hub also ships", () => {
+    expect(REACT_VERSION).toBe("19.3.0");
     expect(packageJson.dependencies.react).toBe(REACT_VERSION);
     expect(packageJson.dependencies["react-dom"]).toBe(REACT_VERSION);
   });
