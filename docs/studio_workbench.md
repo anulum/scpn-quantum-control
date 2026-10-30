@@ -1687,6 +1687,16 @@ another tab require an explicit reload/reconciliation. Interrupted writes,
 quota failures and corrupt saved data surface errors. Missing/evicted cache
 requires an independent exported copy rather than a manufactured success.
 
+A page that cannot use IndexedDB at all keeps saved work in the memory of that
+page session instead. This happens when IndexedDB is missing, or when its use
+throws SecurityError, as in an opaque-origin frame such as a sandboxed host
+embedding. Saving follows the same admission and prior-identity rules, and every
+saved workspace is marked session-only. A standing notice says that the work
+disappears when the page closes or reloads and that export is the backup. A
+blocked, timed-out or failing IndexedDB is still refused, never replaced by
+session storage. The owner approved this exception to the original IndexedDB-only
+rule on 2026-10-30.
+
 Export preview archive downloads the current admitted preview. Export saved
 archive downloads the last committed archive. These are separate actions:
 unpreviewed editor changes do not silently replace the saved backup. Keep an

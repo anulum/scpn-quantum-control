@@ -15,7 +15,8 @@ import {
   previewWorkspaceArchive,
 } from "../storage/workspaceArchive";
 import type { WorkspaceArchivePreview } from "../storage/workspaceArchive";
-import { openWorkspaceStore } from "../storage/workspaceStore";
+import { openWorkspacePersistence } from "../storage/workspacePersistence";
+import type { WorkspacePersistence } from "../storage/workspacePersistence";
 import type { StoredWorkspace, WorkspaceStore } from "../storage/workspaceStore";
 import type { WorkspaceController } from "./workspaceService";
 
@@ -31,6 +32,7 @@ export function useWorkspace(
   const [preview, setPreview] = useState<WorkspaceArchivePreview | null>(null);
   const [busy, setBusy] = useState(true);
   const [storageAvailable, setStorageAvailable] = useState(false);
+  const [persistence, setPersistence] = useState<WorkspacePersistence | null>(null);
   const [message, setMessage] = useState("Opening browser workspace cache…");
   const store = useRef<WorkspaceStore | null>(null);
   const generation = useRef(0);
@@ -58,13 +60,15 @@ export function useWorkspace(
     const connect = async () => {
       let connection: WorkspaceStore | null = null;
       try {
-        connection = await openWorkspaceStore(rawCodecs);
+        const opened = await openWorkspacePersistence(rawCodecs);
+        connection = opened.store;
         if (disposed) {
           connection.close();
           return;
         }
         store.current = connection;
         setStorageAvailable(true);
+        setPersistence(opened.persistence);
         const current = await restore(connection);
         if (disposed || epoch !== generation.current) return;
         setSaved(current);
@@ -73,7 +77,7 @@ export function useWorkspace(
         setMessage(
           current
             ? "Restored exact saved workspace. Export a portable backup."
-            : "No saved project found. Browser cache may have been evicted; restore an exported copy or create an empty project.",
+            : opened.emptyMessage,
         );
       } catch (cause: unknown) {
         if (!disposed && epoch === generation.current) report(cause);
@@ -111,6 +115,7 @@ export function useWorkspace(
     preview,
     busy,
     storageAvailable,
+    persistence,
     message,
     edit(text: string): void {
       cancellation.current?.abort();

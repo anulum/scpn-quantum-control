@@ -7,6 +7,7 @@
 // SCPN Quantum Control — workspace service contract
 
 import type { WorkspaceArchivePreview } from "../storage/workspaceArchive";
+import type { WorkspacePersistence } from "../storage/workspacePersistence";
 import type { StoredWorkspace } from "../storage/workspaceStore";
 
 /** Workspace controller's complete observable draft and saved-state boundary. */
@@ -21,6 +22,8 @@ export interface WorkspaceController {
   readonly busy: boolean;
   /** Whether the native storage connection is currently available. */
   readonly storageAvailable: boolean;
+  /** Browser cache or this page session only, once a store is open; otherwise null. */
+  readonly persistence: WorkspacePersistence | null;
   /** User-visible state or explicit refusal. */
   readonly message: string;
   /** Replace an unsaved draft without modifying saved data. */

@@ -32,6 +32,17 @@ import {
 import { prepareExperimentPlan } from "../../shared/experiments/experimentPlan";
 import { useExperimentRun } from "../../shared/experiments/useExperimentRun";
 
+// Storage stays refused at opening (blocked or timed out), the case that still
+// leaves no store; a page without IndexedDB gets session storage instead.
+vi.mock("../../shared/storage/workspacePersistence", async (original) => ({
+  ...(await original<typeof import("../../shared/storage/workspacePersistence")>()),
+  openWorkspacePersistence: async () => {
+    throw new Error(
+      "Workspace database open blocked or timed out; close other connections before retrying",
+    );
+  },
+}));
+
 beforeEach(() => {
   vi.stubGlobal("crypto", webcrypto);
 });

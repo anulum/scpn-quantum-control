@@ -56,7 +56,7 @@ it("test_workbench_navigation_01: original named/default consumer retains every 
   expect(screen.queryByText("Baseline scorecard")).toBeNull();
   await waitFor(() =>
     expect(screen.getByRole("region", { name: "Local workspace" }).textContent).toContain(
-      "IndexedDB unavailable",
+      "kept for this page session only",
     ),
   );
 });

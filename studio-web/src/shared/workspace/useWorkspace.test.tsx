@@ -7,8 +7,20 @@
 // SCPN Quantum Control — workspace controller refusal tests
 
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
 import { useWorkspace } from "./useWorkspace";
+
+// These cases keep browser storage refused at opening (blocked or timed out), the
+// failure that still leaves no store; a page without IndexedDB gets session
+// storage instead, covered in useWorkspace.session.test.tsx.
+const refusal =
+  "Workspace database open blocked or timed out; close other connections before retrying";
+vi.mock("../storage/workspacePersistence", async (original) => ({
+  ...(await original<typeof import("../storage/workspacePersistence")>()),
+  openWorkspacePersistence: async () => {
+    throw new Error(refusal);
+  },
+}));
 import { maxArchiveBytes, previewWorkspaceArchive } from "../storage/workspaceArchive";
 import corpusText from "../../../../tests/data/studio_workspace/documents.json?raw";
 import { conformanceArchive, conformanceCodecs } from "../../../browser-tests/workspaceFixture";
@@ -90,7 +102,7 @@ it.each(["Portable recovery project", "x".repeat(512)])(
     const { result } = renderHook(() => useWorkspace());
     await waitFor(() => expect(result.current.busy).toBe(false));
     expect(result.current.storageAvailable).toBe(false);
-    expect(result.current.message).toContain("IndexedDB unavailable");
+    expect(result.current.message).toContain(refusal);
 
     await act(async () => {
       await result.current.create(title);

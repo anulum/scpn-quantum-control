@@ -153,7 +153,7 @@ it("reaches settings through the original workspace archive preview without clai
   const preview = await admitted();
   render(<WorkspacePanel rawCodecs={fixtureCodecs()} />);
   await waitFor(() =>
-    expect(screen.getByRole("status").textContent).toContain("IndexedDB unavailable"),
+    expect(screen.getByRole("status").textContent).toContain("kept for this page session only"),
   );
   const input = screen.getByLabelText("Workspace archive JSON") as HTMLTextAreaElement;
   fireEvent.change(input, { target: { value: preview.json } });
@@ -164,12 +164,13 @@ it("reaches settings through the original workspace archive preview without clai
   ).toContain('7"run"');
   expect(screen.getByText(/Settings digest/).textContent).toContain(preview.documentHashes[0]);
   expect(input.value).toBe(preview.json);
+  // Session storage can accept the admitted preview, but nothing is saved until asked.
   expect(
     (
       screen.getByRole("button", {
         name: "Save draft and revision references",
       }) as HTMLButtonElement
     ).disabled,
-  ).toBe(true);
+  ).toBe(false);
   expect(screen.queryByRole("definition", { name: "Saved workspace digest" })).toBeNull();
 });

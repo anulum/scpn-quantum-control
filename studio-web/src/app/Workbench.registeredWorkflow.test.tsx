@@ -8,7 +8,7 @@
 
 import { webcrypto } from "node:crypto";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, beforeEach, expect, it } from "vitest";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { nativeKernelHttp } from "../../test-fixtures/native-kernel-http";
 import { RegisteredExperimentRuntime } from "../../test-fixtures/registered-experiment-runtime";
 import { stationaryPlan } from "../../test-fixtures/stationary-experiment-plan";
@@ -20,6 +20,17 @@ import type { WorkbenchServices } from "../shared/contracts/workbench";
 import { admitWorkspaceArchive } from "../shared/storage/workspaceArchive";
 import { localExperimentCodecs } from "../shared/experiments/kuramotoArtifacts";
 import { workbenchRegistry } from "./moduleRegistry";
+
+// Storage stays refused at opening (blocked or timed out), the case that still
+// leaves no store; a page without IndexedDB gets session storage instead.
+vi.mock("../shared/storage/workspacePersistence", async (original) => ({
+  ...(await original<typeof import("../shared/storage/workspacePersistence")>()),
+  openWorkspacePersistence: async () => {
+    throw new Error(
+      "Workspace database open blocked or timed out; close other connections before retrying",
+    );
+  },
+}));
 
 const originalCrypto = Object.getOwnPropertyDescriptor(globalThis, "crypto");
 beforeEach(() => {
