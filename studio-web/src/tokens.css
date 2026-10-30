@@ -8,40 +8,218 @@ Contact: www.anulum.li | protoscience@anulum.li
 scpn-quantum-control — vendored floor design tokens (until keeper K2)
 */
 
+/*
+Two colour sets in one declaration: light-dark(<light>, <dark>). The used set follows
+color-scheme, which is the system preference unless the admitted display setting
+`theme` sets data-theme on the workbench. Colours appear only in this block.
+*/
 :root {
-  --qsp-bg: #ffffff;
-  --qsp-fg: #1a1d21;
-  --qsp-muted: #5b6470;
-  --qsp-line: #d4d9df;
-  --qsp-surface: #f5f7f9;
-  --qsp-boundary: #8a5a00;
-  --qsp-boundary-bg: #fff5e0;
-  --qsp-fail-closed: #1f4e79;
-  --qsp-fail-closed-bg: #e8f0f8;
-  --qsp-unverifiable: #9b1c1c;
-  --qsp-unverifiable-bg: #fdecec;
-  --qsp-font:
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    sans-serif;
-  --qsp-mono: ui-monospace, "JetBrains Mono", monospace;
+  color-scheme: light dark;
+  /* Ground, surfaces and lines. */
+  --qsp-bg: light-dark(#f4f6f9, #0e1116);
+  --qsp-surface: light-dark(#ffffff, #151a21);
+  --qsp-surface-sunken: light-dark(#eef1f5, #12161c);
+  --qsp-surface-raised: light-dark(#e4e9ef, #1c232c);
+  --qsp-line: light-dark(#c9d1db, #2a323d);
+  --qsp-line-subtle: light-dark(#dde3ea, #222a34);
+  /* Text. */
+  --qsp-fg: light-dark(#14181e, #e6eaf0);
+  --qsp-fg-secondary: light-dark(#2e3846, #c3ccd8);
+  --qsp-muted: light-dark(#4e5968, #9aa6b5);
+  --qsp-faint: light-dark(#5e6a79, #8592a2);
+  --qsp-link: light-dark(#1a56b0, #8fb8ff);
+  /* One accent: selection and the primary action only. */
+  --qsp-accent: light-dark(#0b6e66, #3dd6c6);
+  --qsp-on-accent: light-dark(#ffffff, #06231f);
+  /* Five trust states, each also carried by a label and a shape. */
+  --qsp-verified: light-dark(#17633a, #7fe3a8);
+  --qsp-verified-bg: light-dark(#e3f4ea, #173a2a);
+  --qsp-boundary: light-dark(#7a4f00, #f2b84b);
+  --qsp-boundary-bg: light-dark(#fff3d6, #3a2e12);
+  --qsp-fail-closed: light-dark(#1f4e79, #8fb8dd);
+  --qsp-fail-closed-bg: light-dark(#e8f0f8, #16242f);
+  --qsp-unverifiable: light-dark(#9b1c1c, #f08d8d);
+  --qsp-unverifiable-bg: light-dark(#fdecec, #331414);
+  --qsp-simulated: light-dark(#5b3a99, #c8a2ff);
+  --qsp-simulated-bg: light-dark(#f0e9fb, #2a2240);
+  --qsp-backdrop: light-dark(rgb(20 24 30 / 45%), rgb(0 0 0 / 55%));
+  /* Shape, spacing and type scale. */
+  --qsp-radius-sm: 4px;
+  --qsp-radius-md: 6px;
+  --qsp-radius-lg: 8px;
+  --qsp-radius-xl: 10px;
+  --qsp-radius-pill: 999px;
+  --qsp-space-1: 2px;
+  --qsp-space-2: 4px;
+  --qsp-space-3: 6px;
+  --qsp-space-4: 8px;
+  --qsp-space-5: 12px;
+  --qsp-space-6: 16px;
+  --qsp-space-7: 24px;
+  --qsp-text-xs: 11px;
+  --qsp-text-sm: 12px;
+  --qsp-text-md: 13px;
+  --qsp-text-lg: 14px;
+  --qsp-text-xl: 18px;
+  --qsp-control-min: 36px;
+  --qsp-target-min: 44px;
+  --qsp-rail-width: 64px;
+  --qsp-explorer-width: 236px;
+  --qsp-inspector-width: 300px;
+  --qsp-font: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --qsp-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --qsp-bg: #16181c;
-    --qsp-fg: #e6e9ec;
-    --qsp-muted: #9aa4af;
-    --qsp-line: #333a42;
-    --qsp-surface: #1e2126;
-    --qsp-boundary: #e8b45a;
-    --qsp-boundary-bg: #33280f;
-    --qsp-fail-closed: #8fb8dd;
-    --qsp-fail-closed-bg: #16242f;
-    --qsp-unverifiable: #f08d8d;
-    --qsp-unverifiable-bg: #331414;
-  }
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* Bundled fonts: served by the application, never fetched from a font service. */
+@font-face {
+  font-family: "Hanken Grotesk";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/hanken-grotesk-latin-400-normal.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Hanken Grotesk";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("./fonts/hanken-grotesk-latin-500-normal.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Hanken Grotesk";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("./fonts/hanken-grotesk-latin-600-normal.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Hanken Grotesk";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("./fonts/hanken-grotesk-latin-700-normal.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Hanken Grotesk";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/hanken-grotesk-latin-ext-400-normal.woff2") format("woff2");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Hanken Grotesk";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("./fonts/hanken-grotesk-latin-ext-500-normal.woff2") format("woff2");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Hanken Grotesk";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("./fonts/hanken-grotesk-latin-ext-600-normal.woff2") format("woff2");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Hanken Grotesk";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("./fonts/hanken-grotesk-latin-ext-700-normal.woff2") format("woff2");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/jetbrains-mono-latin-400-normal.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("./fonts/jetbrains-mono-latin-500-normal.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/jetbrains-mono-latin-ext-400-normal.woff2") format("woff2");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("./fonts/jetbrains-mono-latin-ext-500-normal.woff2") format("woff2");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+.qsp-trust {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qsp-space-3);
+  padding: var(--qsp-space-1) var(--qsp-space-4);
+  border: 1px solid currentColor;
+  border-radius: var(--qsp-radius-pill);
+  font-size: var(--qsp-text-sm);
+  white-space: nowrap;
+}
+.qsp-trust svg {
+  flex: none;
+}
+.qsp-trust[data-trust="verified"] {
+  color: var(--qsp-verified);
+  background: var(--qsp-verified-bg);
+}
+.qsp-trust[data-trust="bounded"] {
+  color: var(--qsp-boundary);
+  background: var(--qsp-boundary-bg);
+}
+.qsp-trust[data-trust="fail-closed"] {
+  color: var(--qsp-fail-closed);
+  background: var(--qsp-fail-closed-bg);
+}
+.qsp-trust[data-trust="unverifiable"] {
+  color: var(--qsp-unverifiable);
+  background: var(--qsp-unverifiable-bg);
+}
+.qsp-trust[data-trust="simulated"] {
+  color: var(--qsp-simulated);
+  background: var(--qsp-simulated-bg);
 }
 
 .qsp-panel {
@@ -251,13 +429,34 @@ scpn-quantum-control — vendored floor design tokens (until keeper K2)
   color: var(--qsp-boundary);
 }
 
-.qsp-catalogue-filters { display: flex; flex-wrap: wrap; gap: 1rem; align-items: end; }
-.qsp-catalogue-filters label { display: grid; gap: .35rem; }
-.qsp-catalogue-rows { list-style: none; padding: 0; display: grid; gap: 1rem; }
-.qsp-catalogue-rows li { border: 1px solid currentColor; border-radius: .5rem; padding: 1rem; }
-.qsp-catalogue a:focus-visible, .qsp-catalogue input:focus-visible,
-.qsp-catalogue select:focus-visible, .qsp-panel [tabindex="-1"]:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
-
+.qsp-catalogue-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: end;
+}
+.qsp-catalogue-filters label {
+  display: grid;
+  gap: 0.35rem;
+}
+.qsp-catalogue-rows {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+.qsp-catalogue-rows li {
+  border: 1px solid currentColor;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+.qsp-catalogue a:focus-visible,
+.qsp-catalogue input:focus-visible,
+.qsp-catalogue select:focus-visible,
+.qsp-panel [tabindex="-1"]:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
 
 .qsp-evidence-inspector {
   padding: 1rem;
@@ -266,8 +465,12 @@ scpn-quantum-control — vendored floor design tokens (until keeper K2)
   background: var(--qsp-surface);
 }
 
-.qsp-evidence-inspector h4 { margin: 0 0 0.75rem; }
-.qsp-evidence-inspector dl { margin: 0; }
+.qsp-evidence-inspector h4 {
+  margin: 0 0 0.75rem;
+}
+.qsp-evidence-inspector dl {
+  margin: 0;
+}
 .qsp-evidence-inspector dl > div {
   display: grid;
   grid-template-columns: minmax(8rem, 1fr) minmax(0, 3fr);
@@ -275,9 +478,17 @@ scpn-quantum-control — vendored floor design tokens (until keeper K2)
   padding: 0.4rem 0;
   border-bottom: 1px solid var(--qsp-line);
 }
-.qsp-evidence-inspector dt { color: var(--qsp-muted); }
-.qsp-evidence-inspector dd { margin: 0; overflow-wrap: anywhere; }
-.qsp-evidence-viewer label { display: grid; gap: 0.5rem; }
+.qsp-evidence-inspector dt {
+  color: var(--qsp-muted);
+}
+.qsp-evidence-inspector dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.qsp-evidence-viewer label {
+  display: grid;
+  gap: 0.5rem;
+}
 .qsp-evidence-viewer textarea {
   width: 100%;
   box-sizing: border-box;
@@ -289,7 +500,9 @@ scpn-quantum-control — vendored floor design tokens (until keeper K2)
   border: 1px solid var(--qsp-line);
   font-family: var(--qsp-mono);
 }
-.qsp-evidence-viewer button { margin-top: 0.75rem; }
+.qsp-evidence-viewer button {
+  margin-top: 0.75rem;
+}
 .qsp-evidence-viewer textarea:focus-visible,
 .qsp-evidence-viewer button:focus-visible,
 .qsp-evidence-inspector button:focus-visible {
@@ -297,7 +510,10 @@ scpn-quantum-control — vendored floor design tokens (until keeper K2)
   outline-offset: 3px;
 }
 @media (max-width: 40rem) {
-  .qsp-evidence-inspector dl > div { grid-template-columns: 1fr; gap: 0.2rem; }
+  .qsp-evidence-inspector dl > div {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
 }
 
 .qsp-evidence-inspector dd[data-negative="true"] {
@@ -310,62 +526,559 @@ scpn-quantum-control — vendored floor design tokens (until keeper K2)
   font-size: 0.9em;
 }
 
-.qsp-resource-plan { margin-block: 1rem; padding: 1rem; border: 1px solid currentColor; border-radius: 0.5rem; }
-.qsp-resource-plan dl > div { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 1rem; padding-block: 0.3rem; }
-.qsp-resource-plan dt, .qsp-resource-plan dd { margin: 0; overflow-wrap: anywhere; }
-@media (max-width: 540px) { .qsp-resource-plan dl > div { grid-template-columns: 1fr; gap: 0.2rem; } }
+.qsp-resource-plan {
+  margin-block: 1rem;
+  padding: 1rem;
+  border: 1px solid currentColor;
+  border-radius: 0.5rem;
+}
+.qsp-resource-plan dl > div {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 1rem;
+  padding-block: 0.3rem;
+}
+.qsp-resource-plan dt,
+.qsp-resource-plan dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 540px) {
+  .qsp-resource-plan dl > div {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
+}
 
-.qsp-workspace textarea { display: block; width: 100%; min-height: 14rem; box-sizing: border-box; font-family: monospace; resize: vertical; }
-.qsp-workspace label { display: block; margin-block: .75rem; }
-.qsp-workspace-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
-.qsp-workspace dd { overflow-wrap: anywhere; }
+.qsp-workspace textarea {
+  display: block;
+  width: 100%;
+  min-height: 14rem;
+  box-sizing: border-box;
+  font-family: monospace;
+  resize: vertical;
+}
+.qsp-workspace label {
+  display: block;
+  margin-block: 0.75rem;
+}
+.qsp-workspace-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.qsp-workspace dd {
+  overflow-wrap: anywhere;
+}
+/* Workbench shell: title bar, stage rail, explorer, work area, inspector, jobs dock, status bar. */
 .qsp-workbench {
   box-sizing: border-box;
+  display: grid;
+  grid-template-columns:
+    var(--qsp-rail-width) minmax(12rem, var(--qsp-explorer-width)) minmax(0, 1fr)
+    minmax(15rem, var(--qsp-inspector-width));
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    "title title title title"
+    "rail explorer work inspector"
+    "rail explorer dock inspector"
+    "status status status status";
+  width: 100%;
+  min-width: 0;
+  min-height: 100vh;
   color: var(--qsp-fg);
   background: var(--qsp-bg);
   font-family: var(--qsp-font);
-  width: 100%;
-  min-width: 0;
-  max-width: 76rem;
-  margin: 0 auto;
-  padding: 1rem;
+  font-size: var(--qsp-text-md);
+  line-height: 1.4;
 }
-
-.qsp-workbench[data-mode="embedded"] { margin: 0; max-width: none; }
-.qsp-workbench *, .qsp-workbench *::before, .qsp-workbench *::after { box-sizing: border-box; }
-.qsp-workbench-header nav { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 0.8rem 0; }
-.qsp-workbench-header a { color: var(--qsp-fg); padding: 0.4rem; }
-.qsp-workbench-header a[aria-current="page"] { font-weight: 700; text-decoration-thickness: 0.2rem; }
-.qsp-workbench :focus-visible, .qsp-workbench-content:focus { outline: 3px solid var(--qsp-fail-closed); outline-offset: 3px; }
-.qsp-workbench-content, .qsp-workbench-inspector { min-width: 0; overflow-wrap: anywhere; }
-.qsp-workbench-inspector { padding: 1rem; border: 1px solid var(--qsp-line); }
-.qsp-workbench-inspector dl { display: grid; grid-template-columns: minmax(0, 12rem) minmax(0, 1fr); gap: 0.4rem; }
-.qsp-workbench-inspector dd { margin: 0; }
-.qsp-workbench .qsp-panel { width: 100%; min-width: 0; }
-.qsp-workbench .qsp-badge { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
-.qsp-workbench .qsp-lab-figures { grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); }
-.qsp-workbench .qsp-workspace textarea, .qsp-workbench .qsp-workspace input { max-width: 100%; }
-.qsp-workbench [hidden] { display: none; }
-@media (max-width: 480px) {
-  .qsp-workbench { padding: 0.5rem; }
-  .qsp-workbench-inspector dl { grid-template-columns: minmax(0, 1fr); }
-  .qsp-workbench .qsp-panel { padding: 0.5rem; }
+.qsp-workbench[data-mode="embedded"] {
+  min-height: 0;
 }
-
-.qsp-workbench button, .qsp-workbench input, .qsp-workbench select, .qsp-workbench textarea {
+.qsp-workbench *,
+.qsp-workbench *::before,
+.qsp-workbench *::after {
+  box-sizing: border-box;
+}
+.qsp-workbench h2,
+.qsp-workbench h3,
+.qsp-workbench h4 {
+  margin: 0 0 var(--qsp-space-4);
+}
+.qsp-workbench button,
+.qsp-workbench input,
+.qsp-workbench select,
+.qsp-workbench textarea {
   font: inherit;
   max-width: 100%;
 }
-.qsp-workbench button { white-space: normal; }
-.qsp-workbench a, .qsp-workbench a:visited { color: var(--qsp-fail-closed); }
-.qsp-skip { position: absolute; clip-path: inset(50%); width: 1px; height: 1px; overflow: hidden; }
-.qsp-skip:focus-visible { position: static; clip-path: none; width: auto; height: auto; overflow: visible; }
-.qsp-keyboard-help { color: var(--qsp-fg); background: var(--qsp-bg); border: 2px solid var(--qsp-line); width: min(40rem, calc(100% - 2rem)); max-height: calc(100% - 2rem); overflow: auto; }
-.qsp-keyboard-help::backdrop { background: rgb(0 0 0 / 55%); }
-.qsp-data-scroll { max-width: 100%; overflow-x: auto; }
-.qsp-data-scroll table { border-collapse: collapse; width: 100%; }
-.qsp-data-scroll caption { text-align: left; font-weight: 600; margin-block: .75rem; }
-.qsp-data-scroll th, .qsp-data-scroll td { border: 1px solid var(--qsp-line); padding: .4rem; text-align: left; }
+.qsp-workbench button {
+  min-height: var(--qsp-control-min);
+  padding: 0 var(--qsp-space-5);
+  color: var(--qsp-fg);
+  background: var(--qsp-surface-raised);
+  border: 1px solid var(--qsp-line);
+  border-radius: var(--qsp-radius-lg);
+  white-space: normal;
+  cursor: pointer;
+}
+.qsp-workbench button:disabled {
+  color: var(--qsp-muted);
+  cursor: not-allowed;
+}
+.qsp-workbench button[aria-pressed="true"] {
+  border-color: var(--qsp-accent);
+  box-shadow: inset 0 0 0 1px var(--qsp-accent);
+}
+.qsp-workbench
+  :where(input:not([type="checkbox"], [type="radio"], [type="range"]), select, textarea) {
+  min-height: var(--qsp-control-min);
+  padding: var(--qsp-space-2) var(--qsp-space-4);
+  color: var(--qsp-fg);
+  background: var(--qsp-bg);
+  border: 1px solid var(--qsp-line);
+  border-radius: var(--qsp-radius-md);
+}
+.qsp-workbench :where(input, select, textarea) {
+  accent-color: var(--qsp-accent);
+}
+.qsp-workbench :where(fieldset) {
+  margin: var(--qsp-space-5) 0;
+  padding: var(--qsp-space-5);
+  border: 1px solid var(--qsp-line);
+  border-radius: var(--qsp-radius-lg);
+}
+.qsp-workbench :where(legend) {
+  padding: 0 var(--qsp-space-3);
+  color: var(--qsp-fg-secondary);
+  font-weight: 600;
+}
+.qsp-workbench a,
+.qsp-workbench a:visited {
+  color: var(--qsp-link);
+}
+
+.qsp-statusbar {
+  grid-area: status;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qsp-space-6);
+  padding: var(--qsp-space-2) var(--qsp-space-5);
+  color: var(--qsp-muted);
+  background: var(--qsp-surface);
+  border-top: 1px solid var(--qsp-line);
+  font-size: var(--qsp-text-sm);
+}
+.qsp-statusbar p {
+  margin: 0;
+}
+
+.qsp-titlebar {
+  grid-area: title;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qsp-space-5);
+  min-height: 48px;
+  padding: var(--qsp-space-2) var(--qsp-space-5);
+  background: var(--qsp-surface);
+  border-bottom: 1px solid var(--qsp-line);
+}
+.qsp-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--qsp-space-4);
+  color: var(--qsp-accent);
+}
+.qsp-brand h2 {
+  margin: 0;
+  color: var(--qsp-fg);
+  font-size: var(--qsp-text-lg);
+  letter-spacing: 0.02em;
+}
+.qsp-titlebar > nav {
+  position: relative;
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+.qsp-titlebar > nav label {
+  display: flex;
+  align-items: center;
+  gap: var(--qsp-space-4);
+  color: var(--qsp-muted);
+}
+.qsp-titlebar > nav input {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--qsp-control-min);
+  padding: 0 var(--qsp-space-5);
+  color: var(--qsp-fg);
+  background: var(--qsp-bg);
+  border: 1px solid var(--qsp-line);
+  border-radius: var(--qsp-radius-lg);
+}
+.qsp-titlebar > nav > ul,
+.qsp-titlebar > nav > p {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  max-height: 60vh;
+  overflow: auto;
+  margin: var(--qsp-space-2) 0 0;
+  padding: var(--qsp-space-3);
+  list-style: none;
+  background: var(--qsp-surface);
+  border: 1px solid var(--qsp-line);
+  border-radius: var(--qsp-radius-lg);
+}
+.qsp-titlebar > nav:focus-within > ul,
+.qsp-titlebar > nav:focus-within > p {
+  display: block;
+}
+.qsp-titlebar > nav li button {
+  width: 100%;
+  min-height: var(--qsp-control-min);
+  text-align: left;
+}
+
+.qsp-rail {
+  grid-area: rail;
+  display: flex;
+  flex-direction: column;
+  gap: var(--qsp-space-2);
+  padding: var(--qsp-space-4) var(--qsp-space-3);
+  background: var(--qsp-surface);
+  border-right: 1px solid var(--qsp-line);
+  counter-reset: qsp-stage;
+}
+.qsp-workbench .qsp-rail a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--qsp-space-1);
+  min-height: var(--qsp-target-min);
+  padding: var(--qsp-space-2);
+  color: var(--qsp-muted);
+  font-size: var(--qsp-text-xs);
+  text-align: center;
+  text-decoration: none;
+  border-radius: var(--qsp-radius-lg);
+  counter-increment: qsp-stage;
+}
+.qsp-rail a::before {
+  content: counter(qsp-stage, decimal-leading-zero);
+  font-family: var(--qsp-mono);
+  font-weight: 500;
+}
+.qsp-workbench .qsp-rail a[aria-current="page"] {
+  color: var(--qsp-fg);
+  background: var(--qsp-surface-raised);
+  box-shadow: inset 2px 0 0 var(--qsp-accent);
+  font-weight: 600;
+}
+
+.qsp-explorer {
+  grid-area: explorer;
+  display: flex;
+  flex-direction: column;
+  gap: var(--qsp-space-6);
+  min-width: 0;
+  padding: var(--qsp-space-5) var(--qsp-space-4);
+  background: var(--qsp-surface-sunken);
+  border-right: 1px solid var(--qsp-line);
+  overflow-wrap: anywhere;
+}
+.qsp-explorer nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--qsp-space-3);
+}
+.qsp-explorer section {
+  min-width: 0;
+}
+
+.qsp-work {
+  grid-area: work;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.qsp-workbench-content {
+  min-width: 0;
+  padding: var(--qsp-space-5);
+  overflow-wrap: anywhere;
+}
+
+.qsp-inspector {
+  grid-area: inspector;
+  display: flex;
+  flex-direction: column;
+  gap: var(--qsp-space-6);
+  min-width: 0;
+  padding: var(--qsp-space-6);
+  background: var(--qsp-surface-sunken);
+  border-left: 1px solid var(--qsp-line);
+  overflow-wrap: anywhere;
+}
+.qsp-workbench-inspector {
+  min-width: 0;
+  padding: var(--qsp-space-5);
+  background: var(--qsp-surface);
+  border: 1px solid var(--qsp-line);
+  border-radius: var(--qsp-radius-xl);
+}
+.qsp-workbench-inspector dl {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--qsp-space-3) var(--qsp-space-5);
+}
+.qsp-workbench-inspector dt {
+  color: var(--qsp-muted);
+}
+.qsp-workbench-inspector dd {
+  margin: 0;
+  font-family: var(--qsp-mono);
+  font-size: var(--qsp-text-xs);
+}
+
+.qsp-dock {
+  grid-area: dock;
+  min-width: 0;
+  padding: var(--qsp-space-4) var(--qsp-space-5);
+  background: var(--qsp-surface);
+  border-top: 1px solid var(--qsp-line);
+  overflow-x: auto;
+}
+
+.qsp-workbench :focus-visible {
+  outline: 3px solid var(--qsp-accent);
+  outline-offset: 2px;
+}
+.qsp-workbench-content:focus {
+  outline: 2px solid var(--qsp-accent);
+  outline-offset: -2px;
+}
+.qsp-workbench .qsp-panel {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  background: transparent;
+}
+.qsp-workbench .qsp-badge {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.qsp-workbench .qsp-lab-figures {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+}
+.qsp-workbench .qsp-workspace textarea,
+.qsp-workbench .qsp-workspace input {
+  max-width: 100%;
+}
+.qsp-workbench [hidden] {
+  display: none;
+}
+
+/* Workspace landing: the next step first. */
+.qsp-continue {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--qsp-space-4);
+  margin: var(--qsp-space-5) 0;
+}
+.qsp-workbench .qsp-continue a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--qsp-target-min);
+  padding: 0 var(--qsp-space-6);
+  color: var(--qsp-fg);
+  background: var(--qsp-surface);
+  border: 1px solid var(--qsp-line);
+  border-radius: var(--qsp-radius-lg);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* Cards and the Build reference view. */
+.qsp-card {
+  min-width: 0;
+  padding: var(--qsp-space-5) var(--qsp-space-6);
+  background: var(--qsp-surface);
+  border: 1px solid var(--qsp-line);
+  border-radius: var(--qsp-radius-xl);
+}
+.qsp-card:empty {
+  display: none;
+}
+.qsp-build-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(18rem, 2fr);
+  gap: var(--qsp-space-5);
+  align-items: start;
+}
+.qsp-build-main,
+.qsp-build-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--qsp-space-5);
+  min-width: 0;
+}
+.qsp-workbench .qsp-build {
+  padding: 0;
+}
+.qsp-workbench button.qsp-primary {
+  color: var(--qsp-on-accent);
+  background: var(--qsp-accent);
+  border-color: var(--qsp-accent);
+  font-weight: 700;
+}
+.qsp-workbench button.qsp-primary:disabled {
+  color: var(--qsp-muted);
+  background: var(--qsp-surface-raised);
+  border-color: var(--qsp-line);
+}
+.qsp-workbench button[data-linked="true"] {
+  outline: 2px dashed var(--qsp-accent);
+  outline-offset: 1px;
+}
+.qsp-edge-selected,
+.qsp-edge-linked {
+  stroke: var(--qsp-accent);
+}
+.qsp-edge-linked {
+  stroke-dasharray: 5 3;
+}
+.qsp-node-selected {
+  stroke: var(--qsp-accent);
+  stroke-width: 2.5;
+}
+@media (max-width: 80rem) {
+  .qsp-build-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* A standalone workbench owns its page; an embedding host keeps its own body. */
+body:has(> * > .qsp-workbench[data-mode="standalone"]) {
+  margin: 0;
+  background: var(--qsp-bg);
+}
+.qsp-workbench[data-mode="standalone"] {
+  background-image: linear-gradient(
+    to right,
+    var(--qsp-surface) 0 var(--qsp-rail-width),
+    var(--qsp-line) var(--qsp-rail-width) calc(var(--qsp-rail-width) + 1px),
+    transparent 0
+  );
+}
+
+/* The page scrolls as one; the title bar and the status bar stay in view. */
+.qsp-workbench[data-mode="standalone"] .qsp-titlebar {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+@media (min-width: 64.0625rem) {
+  .qsp-workbench[data-mode="standalone"] .qsp-rail {
+    position: sticky;
+    top: 48px;
+    align-self: start;
+    border-right: 0;
+  }
+}
+.qsp-workbench[data-mode="standalone"] .qsp-statusbar {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+}
+
+/* Narrow screens stack the regions; the work area stays first after the title bar. */
+@media (max-width: 64rem) {
+  .qsp-workbench {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    grid-template-areas: "title" "rail" "work" "dock" "explorer" "inspector" "status";
+  }
+  .qsp-rail {
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-right: 0;
+    border-bottom: 1px solid var(--qsp-line);
+  }
+  .qsp-explorer,
+  .qsp-inspector {
+    border: 0;
+    border-top: 1px solid var(--qsp-line);
+  }
+}
+@media (max-width: 480px) {
+  .qsp-workbench-content,
+  .qsp-inspector,
+  .qsp-explorer {
+    padding: var(--qsp-space-3);
+  }
+  .qsp-workbench-inspector dl {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .qsp-workbench .qsp-panel {
+    padding: var(--qsp-space-3);
+  }
+}
+.qsp-skip {
+  position: absolute;
+  clip-path: inset(50%);
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.qsp-skip:focus-visible {
+  position: static;
+  clip-path: none;
+  width: auto;
+  height: auto;
+  overflow: visible;
+}
+.qsp-keyboard-help {
+  color: var(--qsp-fg);
+  background: var(--qsp-bg);
+  border: 2px solid var(--qsp-line);
+  width: min(40rem, calc(100% - 2rem));
+  max-height: calc(100% - 2rem);
+  overflow: auto;
+}
+.qsp-keyboard-help::backdrop {
+  background: var(--qsp-backdrop);
+}
+.qsp-data-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.qsp-data-scroll table {
+  border-collapse: collapse;
+  width: 100%;
+}
+.qsp-data-scroll caption {
+  text-align: left;
+  font-weight: 600;
+  margin-block: 0.75rem;
+}
+.qsp-data-scroll table th,
+.qsp-data-scroll table td {
+  border: 1px solid var(--qsp-line);
+  padding: 0.4rem;
+  text-align: left;
+}
 @media (prefers-reduced-motion: reduce) {
-  .qsp-workbench, .qsp-workbench * { scroll-behavior: auto; animation: none; transition: none; }
+  .qsp-workbench,
+  .qsp-workbench * {
+    scroll-behavior: auto;
+    animation: none;
+    transition: none;
+  }
 }

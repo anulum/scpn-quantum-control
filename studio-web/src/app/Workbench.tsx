@@ -31,6 +31,7 @@ import { useWorkbenchRoute } from "./useWorkbenchRoute";
 import { RouteBoundary } from "./RouteBoundary";
 import { WorkbenchInspector } from "./WorkbenchInspector";
 import { WorkbenchHelp } from "./WorkbenchHelp";
+import { displayTheme } from "./displayTheme";
 
 const committedDeclarations = declaredBy(studioManifest);
 
@@ -115,6 +116,8 @@ export function Workbench({
     workflow,
     workspaceHref: href("workspace"),
   };
+  // Display-only colour set from the admitted saved workspace; absent follows the system.
+  const theme = useMemo(() => displayTheme(workspace.saved?.preview ?? null), [workspace.saved]);
   const revisionPreview =
     workspace.preview ??
     (workspace.saved?.preview.json === workspace.draft ? workspace.saved.preview : null);
@@ -148,7 +151,12 @@ export function Workbench({
     return () => window.removeEventListener("hashchange", recover);
   }, []);
   return (
-    <section className="qsp-workbench" data-mode={mode} aria-label="Quantum Studio workbench">
+    <section
+      className="qsp-workbench"
+      data-mode={mode}
+      data-theme={theme ?? undefined}
+      aria-label="Quantum Studio workbench"
+    >
       <button
         className="qsp-skip"
         type="button"
@@ -156,19 +164,54 @@ export function Workbench({
       >
         Skip to current view
       </button>
-      <header className="qsp-workbench-header">
-        <h2>Quantum Studio</h2>
-        <p>
-          {mode === "embedded" ? "Embedded workbench" : "Standalone workbench"} · Local browser
-          storage and available browser instruments. Navigation does not submit provider jobs.
-        </p>
+      <header className="qsp-workbench-header qsp-titlebar">
+        <div className="qsp-brand">
+          <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true" focusable="false">
+            <circle cx="11" cy="11" r="9" fill="none" stroke="currentColor" strokeWidth="1.6" />
+            <circle cx="11" cy="11" r="3" fill="currentColor" />
+            <path d="M11 2v4M11 16v4M2 11h4M16 11h4" stroke="currentColor" strokeWidth="1.6" />
+          </svg>
+          <h2>Quantum Studio</h2>
+        </div>
+        <ModuleCommandSearch
+          registry={registry}
+          declared={declared}
+          dispatch={(action) => {
+            if (action.kind === "job") {
+              requestJob((previous) => ({
+                sequence: (previous?.sequence ?? 0) + 1,
+                job: action.job,
+              }));
+              return;
+            }
+            if (registry.stage(action.stage) === undefined) return;
+            window.history.pushState(
+              null,
+              "",
+              formatWorkbenchRoute({
+                ...context,
+                view: action.stage,
+                instrument: action.instrument,
+              }),
+            );
+            window.dispatchEvent(new HashChangeEvent("hashchange"));
+          }}
+        />
         <WorkbenchHelp routeKey={routeKey} />
-        <nav aria-label="Workbench views">
-          {primaryStages.map(({ id, label }) => (
-            <a key={id} href={href(id)} aria-current={view === id ? "page" : undefined}>
-              {label}
-            </a>
-          ))}
+      </header>
+      <nav className="qsp-rail" aria-label="Workbench views">
+        {primaryStages.map(({ id, label }) => (
+          <a key={id} href={href(id)} aria-current={view === id ? "page" : undefined}>
+            {label}
+          </a>
+        ))}
+      </nav>
+      <div className="qsp-explorer">
+        <nav aria-label="Breadcrumbs">
+          <a href={href("workspace")}>Quantum Studio</a>
+          <span aria-hidden="true"> / </span>
+          <span aria-current="page">{title}</span>
+          {instrument !== null && <span> / {instrument}</span>}
         </nav>
         <nav aria-label="Workbench context destinations">
           {contextStages.map(({ id, label }) => (
@@ -177,159 +220,145 @@ export function Workbench({
             </a>
           ))}
         </nav>
-        <nav aria-label="Breadcrumbs">
-          <a href={href("workspace")}>Quantum Studio</a>
-          <span aria-hidden="true"> / </span>
-          <span aria-current="page">{title}</span>
-          {instrument !== null && <span> / {instrument}</span>}
-        </nav>
-      </header>
-      <ModuleCommandSearch
-        registry={registry}
-        declared={declared}
-        dispatch={(action) => {
-          if (action.kind === "job") {
-            requestJob((previous) => ({
-              sequence: (previous?.sequence ?? 0) + 1,
-              job: action.job,
-            }));
-            return;
-          }
-          if (registry.stage(action.stage) === undefined) return;
-          window.history.pushState(
-            null,
-            "",
-            formatWorkbenchRoute({ ...context, view: action.stage, instrument: action.instrument }),
-          );
-          window.dispatchEvent(new HashChangeEvent("hashchange"));
-        }}
-      />
-      <ModuleExplorerView
-        registry={registry}
-        services={services}
-        declared={declared}
-        documents={admittedSources.documents}
-        selected={selectedSource}
-        select={(source) => selectSource(source.sha256)}
-      />
-      <p role="status" aria-label="Workspace source admission">
-        {admittedSources.message}
-      </p>
-      <WorkbenchInspector context={context} saved={workspace.saved} />
-      {selectedDocument !== null && (
-        <aside aria-label="Selected source inspectors">
-          <ModuleDocumentViews
-            registry={registry}
-            slot="inspectors"
-            document={selectedDocument}
-            services={{ workspace, codecs }}
-            declared={declared}
-          />
-        </aside>
-      )}
-      <section
-        className="qsp-workbench-content"
-        ref={content}
-        aria-label="Workbench view"
-        tabIndex={-1}
-        id={`/${view ?? "unavailable"}-view`}
-      >
-        {location.ok ? (
-          <RouteBoundary key={routeKey} workspaceHref={href("workspace")}>
-            <Suspense fallback={<p role="status">Loading {title} view…</p>}>
-              {selectedDocument !== null ? (
-                <>
-                  <nav aria-label="Document tabs">
-                    <button type="button" onClick={() => selectSource(null)}>
-                      Return to {title}
-                    </button>
-                    <span aria-current="page">{selectedDocument.schema}</span>
-                  </nav>
-                  <ModuleDocumentViews
-                    registry={registry}
-                    slot="editors"
-                    document={selectedDocument}
-                    services={{ workspace, codecs }}
-                    declared={declared}
-                  />
-                </>
-              ) : lacking.length > 0 ? (
-                <article className="qsp-panel">
-                  <h3>{title} unavailable</h3>
-                  <p>This installation does not declare what the view needs:</p>
-                  <ul>
-                    {lacking.map(({ kind, name }) => (
-                      <li key={`${kind}:${name}`}>
-                        {kind} <code>{name}</code>
-                      </li>
-                    ))}
-                  </ul>
-                  <a href={href("workspace")}>Open Workspace</a>
-                </article>
-              ) : (
-                stage?.render(services, instrument)
-              )}
-            </Suspense>
-          </RouteBoundary>
-        ) : (
-          <div role="alert">
-            <h3>Route unavailable</h3>
-            <p>{location.reason}</p>
-            <a href={href("workspace")}>Return to Workspace</a>
-          </div>
-        )}
-      </section>
-      <ModuleJobDock
-        registry={registry}
-        services={services}
-        declared={declared}
-        document={
-          selectedDocument ??
-          admittedSources.documents.find(
-            (source) => source.schema === "quantum_workspace_archive.v1",
-          ) ??
-          null
-        }
-        activeStage={view}
-        request={jobRequest}
-      />
-      <div hidden={view !== "workspace"}>
-        <WorkspaceEditor
-          workspace={workspace}
-          rawCodecs={codecs}
-          previewViews={
-            workspace.preview === null ? undefined : (
-              <ModuleDocumentViews
-                registry={registry}
-                slot="settings"
-                declared={declared}
-                services={services}
-                document={{
-                  schema: workspace.preview.schema,
-                  sha256: workspace.preview.archiveDigest,
-                  content: workspace.preview.json,
-                }}
-              />
-            )
-          }
-          revisionViews={
-            revisionPreview === null ||
-            selectedSource === revisionPreview.archiveDigest ? undefined : (
-              <ModuleDocumentViews
-                registry={registry}
-                slot="editors"
-                declared={declared}
-                services={services}
-                document={{
-                  schema: revisionPreview.schema,
-                  sha256: revisionPreview.archiveDigest,
-                  content: revisionPreview.json,
-                }}
-              />
-            )
-          }
+        <ModuleExplorerView
+          registry={registry}
+          services={services}
+          declared={declared}
+          documents={admittedSources.documents}
+          selected={selectedSource}
+          select={(source) => selectSource(source.sha256)}
         />
       </div>
+      <div className="qsp-inspector">
+        <WorkbenchInspector context={context} saved={workspace.saved} />
+        {selectedDocument !== null && (
+          <aside aria-label="Selected source inspectors">
+            <ModuleDocumentViews
+              registry={registry}
+              slot="inspectors"
+              document={selectedDocument}
+              services={{ workspace, codecs }}
+              declared={declared}
+            />
+          </aside>
+        )}
+      </div>
+      <div className="qsp-work">
+        <section
+          className="qsp-workbench-content"
+          ref={content}
+          aria-label="Workbench view"
+          tabIndex={-1}
+          id={`/${view ?? "unavailable"}-view`}
+        >
+          {location.ok ? (
+            <RouteBoundary key={routeKey} workspaceHref={href("workspace")}>
+              <Suspense fallback={<p role="status">Loading {title} view…</p>}>
+                {selectedDocument !== null ? (
+                  <>
+                    <nav aria-label="Document tabs">
+                      <button type="button" onClick={() => selectSource(null)}>
+                        Return to {title}
+                      </button>
+                      <span aria-current="page">{selectedDocument.schema}</span>
+                    </nav>
+                    <ModuleDocumentViews
+                      registry={registry}
+                      slot="editors"
+                      document={selectedDocument}
+                      services={{ workspace, codecs }}
+                      declared={declared}
+                    />
+                  </>
+                ) : lacking.length > 0 ? (
+                  <article className="qsp-panel">
+                    <h3>{title} unavailable</h3>
+                    <p>This installation does not declare what the view needs:</p>
+                    <ul>
+                      {lacking.map(({ kind, name }) => (
+                        <li key={`${kind}:${name}`}>
+                          {kind} <code>{name}</code>
+                        </li>
+                      ))}
+                    </ul>
+                    <a href={href("workspace")}>Open Workspace</a>
+                  </article>
+                ) : (
+                  stage?.render(services, instrument)
+                )}
+              </Suspense>
+            </RouteBoundary>
+          ) : (
+            <div role="alert">
+              <h3>Route unavailable</h3>
+              <p>{location.reason}</p>
+              <a href={href("workspace")}>Return to Workspace</a>
+            </div>
+          )}
+        </section>
+        <div hidden={view !== "workspace"}>
+          <WorkspaceEditor
+            workspace={workspace}
+            rawCodecs={codecs}
+            previewViews={
+              workspace.preview === null ? undefined : (
+                <ModuleDocumentViews
+                  registry={registry}
+                  slot="settings"
+                  declared={declared}
+                  services={services}
+                  document={{
+                    schema: workspace.preview.schema,
+                    sha256: workspace.preview.archiveDigest,
+                    content: workspace.preview.json,
+                  }}
+                />
+              )
+            }
+            revisionViews={
+              revisionPreview === null ||
+              selectedSource === revisionPreview.archiveDigest ? undefined : (
+                <ModuleDocumentViews
+                  registry={registry}
+                  slot="editors"
+                  declared={declared}
+                  services={services}
+                  document={{
+                    schema: revisionPreview.schema,
+                    sha256: revisionPreview.archiveDigest,
+                    content: revisionPreview.json,
+                  }}
+                />
+              )
+            }
+          />
+        </div>
+      </div>
+      <div className="qsp-dock">
+        <ModuleJobDock
+          registry={registry}
+          services={services}
+          declared={declared}
+          document={
+            selectedDocument ??
+            admittedSources.documents.find(
+              (source) => source.schema === "quantum_workspace_archive.v1",
+            ) ??
+            null
+          }
+          activeStage={view}
+          request={jobRequest}
+        />
+      </div>
+      <footer className="qsp-statusbar">
+        <p role="status" aria-label="Workspace source admission">
+          {admittedSources.message}
+        </p>
+        <p>
+          {mode === "embedded" ? "Embedded workbench" : "Standalone workbench"} · Local browser
+          storage and available browser instruments. Navigation does not submit provider jobs.
+        </p>
+      </footer>
     </section>
   );
 }

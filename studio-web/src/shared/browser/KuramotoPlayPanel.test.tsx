@@ -614,3 +614,41 @@ it("keeps incorrect reference values unverified and refused reference shapes une
   );
   expect(screen.getByLabelText("order parameter over time")).toBeTruthy();
 });
+
+it("test_build_reference_01: the run action is unavailable without an estimate and after a refused estimate", async () => {
+  const pending = new Promise<KuramotoKernel>(() => undefined);
+  const component = render(
+    <KuramotoPlayPanel scenario={scenario()} loadKernel={async () => pending} />,
+  );
+  const run = () => screen.getByRole("button", { name: "Run simulation" });
+  expect(screen.queryByLabelText("Resource plan")).toBeNull();
+  expect(screen.queryByRole("button", { name: "Run simulation" })).toBeNull();
+  component.unmount();
+  const policy = {
+    source: "component declared test policy",
+    addressableBytes: 0xffff_ffffn,
+    memoryBytes: 4n * 1024n * 1024n,
+    overheadBytes: 0n,
+    workUnits: 1000000000n,
+  };
+  const admitted = render(
+    <KuramotoPlayPanel
+      scenario={scenario()}
+      loadKernel={async () => realLoaded}
+      resourcePolicy={policy}
+    />,
+  );
+  await waitFor(() => expect(screen.getByLabelText("Resource plan")).toBeTruthy());
+  await waitFor(() => expect(run()).toHaveProperty("disabled", false));
+  expect(run().className).toBe("qsp-primary");
+  admitted.rerender(
+    <KuramotoPlayPanel
+      scenario={scenario()}
+      loadKernel={async () => realLoaded}
+      resourcePolicy={{ ...policy, memoryBytes: 0n }}
+    />,
+  );
+  const refusal = await screen.findByText(/Resource plan refused: declared_storage_exceeds_budget/);
+  expect(run()).toHaveProperty("disabled", true);
+  expect(run().closest(".qsp-play")?.contains(refusal)).toBe(true);
+});

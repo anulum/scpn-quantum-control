@@ -504,6 +504,7 @@
   ".toml": "configuration",
   ".txt": "text",
   ".typed": "typing marker",
+  ".woff2": "bundled interface font binary",
   ".yaml": "configuration",
   ".yml": "configuration",
   "CODEOWNERS": "repository ownership",

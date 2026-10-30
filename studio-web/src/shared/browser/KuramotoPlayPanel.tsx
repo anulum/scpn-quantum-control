@@ -389,6 +389,7 @@ export function KuramotoPlayPanel({
         </label>
         <button
           type="button"
+          className="qsp-primary"
           disabled={job === null}
           onClick={() => setRestart((current) => current + 1)}
         >

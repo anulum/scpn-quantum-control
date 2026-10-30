@@ -593,3 +593,28 @@ it("leaves every coupling edge unselected while another parameter owns the selec
     screen.getAllByRole("button", { pressed: true }).map((button) => button.textContent),
   ).toEqual(["omega[1] = 2"]);
 });
+
+it("test_build_reference_02: selecting an edge selects the mirrored matrix cells and back", () => {
+  render(<ParameterEditor source={source()} />);
+  const cell = (address: string, value: string) =>
+    screen.getByRole("button", { name: `K_nm[${address}] = ${value}` });
+  fireEvent.click(screen.getByRole("button", { name: "Edge 1 → 0: -2 rad/s" }));
+  expect(cell("0,1", "-2").getAttribute("aria-pressed")).toBe("true");
+  expect(cell("1,0", "5").getAttribute("data-linked")).toBeNull();
+  fireEvent.change(screen.getByLabelText("Matrix edit policy"), { target: { value: "symmetric" } });
+  expect(cell("0,1", "-2").getAttribute("aria-pressed")).toBe("true");
+  expect(cell("1,0", "5").getAttribute("data-linked")).toBe("true");
+  const diagram = screen.getByRole("img", { name: "K_nm coupling graph diagram" });
+  expect(diagram.querySelectorAll(".qsp-edge-selected")).toHaveLength(1);
+  expect(diagram.querySelectorAll(".qsp-edge-linked")).toHaveLength(1);
+  expect(diagram.querySelectorAll(".qsp-node-selected")).toHaveLength(2);
+  fireEvent.click(cell("1,0", "5"));
+  expect(
+    screen.getByRole("button", { name: "Edge 0 → 1: 5 rad/s" }).getAttribute("aria-pressed"),
+  ).toBe("true");
+  expect(cell("0,1", "-2").getAttribute("data-linked")).toBe("true");
+  fireEvent.click(cell("0,0", "0"));
+  expect(screen.getAllByRole("button").some((button) => button.dataset["linked"] === "true")).toBe(
+    false,
+  );
+});

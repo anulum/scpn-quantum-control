@@ -25,7 +25,7 @@ import type { WorkbenchView } from "./routing";
 describe("workbenchRegistry", () => {
   it("admits exactly the addresses the workbench had before it was modular", () => {
     expectTypeOf<WorkbenchView>().toEqualTypeOf<
-      "workspace" | "build" | "experiments" | "results" | "atlas" | "operations"
+      "workspace" | "build" | "experiments" | "results" | "atlas" | "operations" | "evidence"
     >();
     expect(
       [...workbenchRegistry.paths].map(([path, { view, instrument }]) => [path, view, instrument]),
@@ -38,6 +38,7 @@ describe("workbenchRegistry", () => {
       ["/results/program-ad-replay", "results", "program-ad-replay"],
       ["/atlas", "atlas", null],
       ["/operations", "operations", null],
+      ["/evidence", "evidence", null],
     ]);
   });
 
@@ -49,6 +50,7 @@ describe("workbenchRegistry", () => {
       ["Results", "primary"],
       ["Atlas", "primary"],
       ["Devices & Operations", "context"],
+      ["Evidence catalogue", "context"],
     ]);
   });
 

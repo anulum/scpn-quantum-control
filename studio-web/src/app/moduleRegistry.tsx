@@ -17,6 +17,7 @@ import { experimentsModule } from "../modules/experiments";
 import { resultsModule } from "../modules/results";
 import { atlasModule } from "../modules/atlas";
 import { operatorsModule } from "../modules/operators";
+import { evidenceModule } from "../modules/evidence";
 import { programsModule } from "../modules/programs";
 import { compilerModule } from "../modules/compiler";
 import { workflowsModule } from "../modules/workflows";
@@ -33,6 +34,7 @@ export const workbenchModules = [
   resultsModule,
   atlasModule,
   operatorsModule,
+  evidenceModule,
   programsModule,
   compilerModule,
   workflowsModule,

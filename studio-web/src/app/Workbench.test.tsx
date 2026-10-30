@@ -52,8 +52,8 @@ it("test_workbench_navigation_01: original named/default consumer retains every 
   expect(screen.getByRole("region", { name: "Local workspace" })).toBeTruthy();
   expect(screen.getByRole("region", { name: "Capability catalogue" })).toBeTruthy();
   expect(screen.getByRole("region", { name: "Inspect evidence JSON" })).toBeTruthy();
-  expect(screen.getByText("Differentiate support explorer")).toBeTruthy();
-  expect(screen.getByText("Baseline scorecard")).toBeTruthy();
+  expect(screen.queryByText("Differentiate support explorer")).toBeNull();
+  expect(screen.queryByText("Baseline scorecard")).toBeNull();
   await waitFor(() =>
     expect(screen.getByRole("region", { name: "Local workspace" }).textContent).toContain(
       "IndexedDB unavailable",

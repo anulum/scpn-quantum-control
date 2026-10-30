@@ -31,8 +31,12 @@ availability without a fresh deployment probe.
 
 ## Workbench navigation
 
-The Workspace view retains the original capability catalogue, committed cards
-and local archive editor. Build opens the existing compile recomputation,
+The Workspace view leads to work: links to continue in Build, Experiments,
+Results or the evidence catalogue, the capability catalogue of what the
+installation can do, the worked local instruments, the evidence inspector and the
+local archive editor. The committed capability declarations, support matrix,
+gradient-plan explanation and baseline scorecard are on their own context
+destination, **Evidence catalogue**. Build opens the existing compile recomputation,
 Kuramoto Play and 3D Lab instruments, together with the program editor and compiler
 trace inspector. Results opens the source result inspector, program-AD replay,
 evidence inspection, the support explorer, gradient explanations and scorecard.
@@ -41,7 +45,7 @@ Atlas shows its unavailable workflow and a link back to Workspace. The mode
 banner distinguishes standalone and embedded layouts;
 federation hosts can pass `mode="embedded"` to the same exposed panel.
 Devices & Operations is a separate context destination for dated provider and
-device profiles. It retains the requested project, revision and snapshot context.
+device profiles, and Evidence catalogue another for the committed evidence surfaces. It retains the requested project, revision and snapshot context.
 
 Hash addresses work on static hosting without server rewrite rules:
 
@@ -53,6 +57,7 @@ Hash addresses work on static hosting without server rewrite rules:
 | Results | `#/results` or `#/results/program-ad-replay` |
 | Atlas | `#/atlas` |
 | Devices & Operations | `#/operations` |
+| Evidence catalogue | `#/evidence` |
 
 Optional `project`, `revision` and `snapshot` query fields retain exact opaque
 identity through links, reload and browser history. For example,
@@ -171,6 +176,84 @@ owners, compiled module entries and generic shell contribution slots. Set
 the affected owner coverage cohort. The source qualifier verifies actual code,
 source maps and current owner hashes before merging counters through the
 existing Vitest provider. Stale, failed or incomplete evidence refuses.
+
+## Workbench design
+
+The workbench is a desktop-style application. These rules are the design every
+view follows; a view that does not follow them yet is restyled by its own change.
+Build is the reference view. Styles live only in `studio-web/src/tokens.css`.
+
+### Regions
+
+| Region | Contents |
+| --- | --- |
+| Title bar | Product mark, command search (results open under the field while it has focus), keyboard help |
+| Stage rail | The primary views, numbered in order; the current view is marked by the accent bar and weight |
+| Explorer | Breadcrumbs, context destinations and the project explorer |
+| Work area | The current view |
+| Inspector | Requested and admitted identity; inspectors of a selected source |
+| Jobs dock | Registered jobs and their lifecycle |
+| Status bar | Source admission and the workbench mode |
+
+Regions are slots of the module contract; a module contributes to them and does
+not draw its own frame. The page scrolls as one, with the title bar and status
+bar kept in view. Below 64rem the regions stack with the work area first after
+the rail. Embedded hosts keep their own page.
+
+### Tokens and colour sets
+
+Every colour, radius, spacing step and type size the shell and the reference view
+use is a token. Components name tokens, never literal values; a source scan in the
+tests refuses a colour literal outside the token block.
+
+Each colour token is written once as `light-dark(<light>, <dark>)`. The set in use
+follows the system preference unless the admitted display setting `theme` is
+`light` or `dark`; that setting is display-only and enters no numerical digest.
+Every text and background pair the shell paints meets a 4.5:1 contrast ratio in
+both sets, and the tests check it.
+
+Text uses Hanken Grotesk and identifiers, digests and numbers use JetBrains Mono.
+Both are bundled with the application (`studio-web/src/fonts/`), so the
+interface works offline and under the content-security policy.
+
+### Accent and trust states
+
+The accent marks the current selection and the primary action of a view only;
+Build's primary action is **Run simulation**. A primary action that cannot run
+yet is shown disabled, with the reason in the same card.
+
+Five trust states are distinguishable without colour. Each chip carries a label
+and a shape:
+
+| State | Label | Mark |
+| --- | --- | --- |
+| Recomputed here | Verified here | circle with a check |
+| Bounded model | Bounded model | half-filled diamond |
+| Fail-closed boundary | Fail-closed | square with a bar |
+| Cannot be checked | Unverifiable | octagon with a cross |
+| Simulated or operator-only | Simulated · operator only | dashed ring |
+
+### Density, cards and tables
+
+Content sits in cards on the surface colour with a 1px line and a 10px radius;
+the spacing scale is 2, 4, 6, 8, 12, 16 and 24 pixels. Controls are at least
+36px high and navigation targets 44px. A wide table keeps its own **Scroll ...**
+button and region rather than widening the page. Numbers and identifiers are set
+in the monospace face; column headers name the unit.
+
+### Charts with intervals
+
+A chart has a data table equivalent with the same samples. An estimate with an
+interval draws the interval, and the table gives its bounds and the method that
+produced it. A value without an interval is not drawn as if it had one.
+
+### Empty and refusal states
+
+An empty state says what is missing and how to supply it. A refusal names the
+governing limit or the failed check where the action is, in the same card,
+before anything runs. A surface that fails its guard is shown as an
+**Unverifiable** block in place of its content; it is never hidden or replaced
+by a placeholder value.
 
 ## Modules
 

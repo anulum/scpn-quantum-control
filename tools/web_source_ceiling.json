@@ -1,10 +1,10 @@
 {
  "schema": "web_source_ceiling_v1",
  "release": "2.5.15",
- "measured_commit": "78fcc3e77da6b69f95ed1f49c7244d4aa4f4be50",
- "total_lint_findings": 44,
- "total_lint_files": 11,
- "total_unformatted_files": 38,
+ "measured_commit": "f98b48bbd650b32c79db4856b113fdaa5665c931",
+ "total_lint_findings": 41,
+ "total_lint_files": 10,
+ "total_unformatted_files": 36,
  "lint": {
   "docs/js/goatcounter.js": 3,
   "studio-web/browser-tests/federation.native.tsx": 1,
@@ -15,7 +15,6 @@
   "studio-web/src/shared/contracts/graph.test.ts": 16,
   "studio-web/src/shared/contracts/graph.ts": 4,
   "studio-web/src/shared/contracts/settings.test.ts": 2,
-  "studio-web/src/tokens.css": 3,
   "studio-web/test-support/kernelWorker.ts": 1
  },
  "unformatted": [
@@ -30,7 +29,6 @@
   "studio-web/browser-tests/workspaceSaveRaces.native.ts",
   "studio-web/browser-tests/workspaceStore.native.ts",
   "studio-web/browser-tests/workspaceTabs.native.ts",
-  "studio-web/src/QuantumStudioPanel.test.tsx",
   "studio-web/src/app/RouteBoundary.test.tsx",
   "studio-web/src/app/RouteBoundary.tsx",
   "studio-web/src/app/Workbench.accessibility.test.tsx",
@@ -54,7 +52,6 @@
   "studio-web/src/shared/resources/labResources.test.ts",
   "studio-web/src/shared/storage/workspaceStore.test.ts",
   "studio-web/src/shared/storage/workspaceStore.ts",
-  "studio-web/src/tokens.css",
   "studio-web/test-support/kernelWorker.ts",
   "studio-web/vite.config.ts"
  ],

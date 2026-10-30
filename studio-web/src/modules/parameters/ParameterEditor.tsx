@@ -65,6 +65,25 @@ export function ParameterEditor({ source, onSave }: ParameterEditorProps) {
   );
 }
 
+/**
+ * Index of the transposed coefficient that a symmetric edit also changes.
+ *
+ * @param policy - Current matrix edit policy.
+ * @param shape - Shape of the parameter holding the selection.
+ * @param index - Selected row-major index.
+ * @returns The mirrored index, or `null` for the directed policy, a non-square value or the diagonal.
+ */
+function mirroredIndex(
+  policy: "directed" | "symmetric",
+  shape: readonly bigint[],
+  index: number,
+): number | null {
+  if (policy !== "symmetric" || shape.length !== 2 || shape[0] !== shape[1]) return null;
+  const n = Number(shape[0]);
+  const mirror = (index % n) * n + Math.floor(index / n);
+  return mirror === index ? null : mirror;
+}
+
 /** Keep editing and saves bound to one admitted immutable source and its selected metadata. */
 function ParameterDraftEditor({
   initial,
@@ -205,6 +224,10 @@ function ParameterDraftEditor({
         <legend>Source parameter forms and matrices</legend>
         {Object.entries(draft.snapshot.parameters).map(([key, value], parameterIndex) => {
           const { spec, unit: sourceUnit } = parameterField(draft, key);
+          const linkedIndex =
+            selection?.key === key
+              ? mirroredIndex(draft.policy, value.shape, selection.index)
+              : null;
           return (
             <section key={key} aria-label={`${key} parameter`}>
               <h4>
@@ -228,6 +251,7 @@ function ParameterDraftEditor({
                       type="button"
                       key={`${key}:${address}`}
                       aria-pressed={selection?.key === key && selection.index === index}
+                      data-linked={linkedIndex === index ? "true" : undefined}
                       onClick={() => dispatch({ type: "select", key, index })}
                     >
                       {key}[{address}] = {display}
@@ -285,7 +309,19 @@ function ParameterDraftEditor({
                           d={path}
                           fill="none"
                           stroke="currentColor"
-                          strokeWidth={selection?.key === key && selection.index === index ? 3 : 1}
+                          className={
+                            selection?.key === key && selection.index === index
+                              ? "qsp-edge-selected"
+                              : linkedIndex === index
+                                ? "qsp-edge-linked"
+                                : undefined
+                          }
+                          strokeWidth={
+                            (selection?.key === key && selection.index === index) ||
+                            linkedIndex === index
+                              ? 3
+                              : 1
+                          }
                           strokeDasharray={display.startsWith("-") ? "4 3" : undefined}
                           markerEnd={`url(#${id}-${parameterIndex}-arrow)`}
                         >
@@ -304,7 +340,20 @@ function ParameterDraftEditor({
                         y = 120 + 85 * Math.sin(angle);
                       return (
                         <g key={identity}>
-                          <circle cx={x} cy={y} r="10" fill="Canvas" stroke="currentColor" />
+                          <circle
+                            cx={x}
+                            cy={y}
+                            r="10"
+                            fill="Canvas"
+                            stroke="currentColor"
+                            className={
+                              selection?.key === key &&
+                              (selection.index % Number(value.shape[0]) === node ||
+                                Math.floor(selection.index / Number(value.shape[0])) === node)
+                                ? "qsp-node-selected"
+                                : undefined
+                            }
+                          />
                           <text
                             x={x}
                             y={y}

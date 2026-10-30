@@ -30,34 +30,44 @@ export default function BuildView({
     if (focusInstrument && target.current !== null) target.current.focus();
   }, [focusInstrument]);
   return (
-    <article className="qsp-panel">
+    <article className="qsp-panel qsp-build">
       <h3>Build</h3>
-      {editors}
-      <p>
+      <p className="qsp-meta">
         Browser instruments use their committed inputs and original resource admission. A requested
         workspace revision is not substituted into these fixtures.
       </p>
-      <div id="/build/compile-recompute" tabIndex={-1} ref={target}>
-        {recomputeUnit.ok ? (
-          <RecomputeCard unit={recomputeUnit.value} />
-        ) : (
-          <Unverifiable
-            surface="xy_compile_recompute_unit_20260708.json"
-            reason={recomputeUnit.reason}
-          />
-        )}
+      <div className="qsp-build-grid">
+        <div className="qsp-build-main">
+          <div className="qsp-card">{editors}</div>
+          {committedScenario.ok && (
+            <div className="qsp-card">
+              <Lab3DPanel scenario={committedScenario.value} />
+            </div>
+          )}
+        </div>
+        <div className="qsp-build-side">
+          <div className="qsp-card">
+            {committedScenario.ok ? (
+              <KuramotoPlayPanel scenario={committedScenario.value} />
+            ) : (
+              <Unverifiable
+                surface="kuramoto_scenario_meanfield_20260708.json"
+                reason={committedScenario.reason}
+              />
+            )}
+          </div>
+          <div className="qsp-card" id="/build/compile-recompute" tabIndex={-1} ref={target}>
+            {recomputeUnit.ok ? (
+              <RecomputeCard unit={recomputeUnit.value} />
+            ) : (
+              <Unverifiable
+                surface="xy_compile_recompute_unit_20260708.json"
+                reason={recomputeUnit.reason}
+              />
+            )}
+          </div>
+        </div>
       </div>
-      {committedScenario.ok ? (
-        <>
-          <KuramotoPlayPanel scenario={committedScenario.value} />
-          <Lab3DPanel scenario={committedScenario.value} />
-        </>
-      ) : (
-        <Unverifiable
-          surface="kuramoto_scenario_meanfield_20260708.json"
-          reason={committedScenario.reason}
-        />
-      )}
     </article>
   );
 }

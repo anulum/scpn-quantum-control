@@ -10,7 +10,15 @@ import { expect, it } from "vitest";
 import { isWorkbenchView } from "./routing";
 
 it("retains the six original stage names and refuses malformed names at the public narrowing boundary", () => {
-  for (const stage of ["workspace", "build", "experiments", "results", "atlas", "operations"])
+  for (const stage of [
+    "workspace",
+    "build",
+    "experiments",
+    "results",
+    "atlas",
+    "operations",
+    "evidence",
+  ])
     expect(isWorkbenchView(stage)).toBe(true);
   for (const stage of ["", "Workspace", "../workspace", "workspace?project=foreign", "workspace\0"])
     expect(isWorkbenchView(stage)).toBe(false);

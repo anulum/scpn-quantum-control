@@ -7,16 +7,27 @@
 // scpn-quantum-control — QuantumStudioPanel render tests
 
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 import QuantumStudioPanel from "./QuantumStudioPanel";
+
+/** Open the committed evidence surfaces at their own destination. */
+async function renderEvidence(): Promise<void> {
+  window.history.replaceState(null, "", "#/evidence");
+  render(<QuantumStudioPanel />);
+  await screen.findByRole("heading", { name: "Evidence catalogue" }, { timeout: 10000 });
+}
+
+afterEach(() => window.history.replaceState(null, "", "/"));
 
 describe("QuantumStudioPanel", () => {
   it("mounts the local workspace without granting execution authority", () => {
     render(<QuantumStudioPanel />);
     const workspace = screen.getByRole("region", { name: "Local workspace" });
     expect(within(workspace).getByLabelText("Workspace archive JSON")).toBeTruthy();
-    expect(within(workspace).getByText(/grants no execution, hardware or provider authority/)).toBeTruthy();
+    expect(
+      within(workspace).getByText(/grants no execution, hardware or provider authority/),
+    ).toBeTruthy();
   });
   it("renders the boundary banner before any evidence", () => {
     render(<QuantumStudioPanel />);
@@ -25,8 +36,8 @@ describe("QuantumStudioPanel", () => {
     ).toBeTruthy();
   });
 
-  it("renders the capability manifest verbatim", () => {
-    render(<QuantumStudioPanel />);
+  it("renders the capability manifest verbatim", async () => {
+    await renderEvidence();
     const capabilities = screen.getByText("Capabilities").closest("section");
     expect(capabilities).not.toBeNull();
     if (capabilities !== null) {
@@ -37,8 +48,8 @@ describe("QuantumStudioPanel", () => {
     }
   });
 
-  it("renders all 13 support rows with fail-closed boundaries first-class", () => {
-    render(<QuantumStudioPanel />);
+  it("renders all 13 support rows with fail-closed boundaries first-class", async () => {
+    await renderEvidence();
     expect(screen.getByText(/13 rows · 9 supported · 4 fail-closed boundaries/)).toBeTruthy();
     expect(screen.getByText("frameworks 5")).toBeTruthy();
     expect(screen.getByText("exactness levels 3")).toBeTruthy();
@@ -47,8 +58,8 @@ describe("QuantumStudioPanel", () => {
     expect(screen.getAllByText(/blocked · fail-closed · fail-closed boundary/)).toHaveLength(4);
   });
 
-  it("narrows the cockpit by framework without hiding the boundary counts", () => {
-    render(<QuantumStudioPanel />);
+  it("narrows the cockpit by framework without hiding the boundary counts", async () => {
+    await renderEvidence();
     fireEvent.change(screen.getByLabelText("Framework"), {
       target: { value: "unsupported-boundary" },
     });
@@ -57,8 +68,8 @@ describe("QuantumStudioPanel", () => {
     expect(screen.getByText(/13 rows · 9 supported · 4 fail-closed boundaries/)).toBeTruthy();
   });
 
-  it("narrows the cockpit by backend, exactness, claim status, and operation search", () => {
-    render(<QuantumStudioPanel />);
+  it("narrows the cockpit by backend, exactness, claim status, and operation search", async () => {
+    await renderEvidence();
     fireEvent.change(screen.getByLabelText("Backend"), {
       target: { value: "parameter-shift-reference" },
     });
@@ -75,8 +86,8 @@ describe("QuantumStudioPanel", () => {
     expect(screen.queryByText("native_grad_vmap")).toBeNull();
   });
 
-  it("renders an explicit empty state when filters match no committed row", () => {
-    render(<QuantumStudioPanel />);
+  it("renders an explicit empty state when filters match no committed row", async () => {
+    await renderEvidence();
     fireEvent.change(screen.getByLabelText("Operation"), {
       target: { value: "not-a-committed-support-row" },
     });
@@ -84,15 +95,15 @@ describe("QuantumStudioPanel", () => {
     expect(screen.getByText(/13 rows · 9 supported · 4 fail-closed boundaries/)).toBeTruthy();
   });
 
-  it("renders all 11 scorecard categories verbatim at the boundary", () => {
-    render(<QuantumStudioPanel />);
+  it("renders all 11 scorecard categories verbatim at the boundary", async () => {
+    await renderEvidence();
     const badges = screen.getAllByText(/behind_baseline · bounded-model · boundary/);
     expect(badges).toHaveLength(11);
     expect(screen.getByText("jax_native_transforms")).toBeTruthy();
   });
 
-  it("renders the gradient-plan explanation surface from the committed artefact", () => {
-    render(<QuantumStudioPanel />);
+  it("renders the gradient-plan explanation surface from the committed artefact", async () => {
+    await renderEvidence();
     expect(screen.getByText("Gradient-plan explanation")).toBeTruthy();
     expect(screen.getByText(/gradient-plan-explanations-20260709/)).toBeTruthy();
     fireEvent.change(screen.getByLabelText("Planner framework"), {
@@ -101,18 +112,21 @@ describe("QuantumStudioPanel", () => {
     expect(screen.getByText("jax_host_callback_parameter_shift")).toBeTruthy();
   });
 
-  it("never renders a validated or green grade anywhere", () => {
-    const { container } = render(<QuantumStudioPanel />);
-    expect(container.textContent).not.toContain("reference-validated");
-    expect(container.querySelector(".qsp-badge-validated")).toBeNull();
+  it("never renders a validated or green grade anywhere", async () => {
+    const landing = render(<QuantumStudioPanel />);
+    expect(landing.container.textContent).not.toContain("reference-validated");
+    expect(landing.container.querySelector(".qsp-badge-validated")).toBeNull();
+    landing.unmount();
+    await renderEvidence();
+    expect(document.body.textContent).not.toContain("reference-validated");
+    expect(document.querySelector(".qsp-badge-validated")).toBeNull();
   });
 });
-
 
 it("exposes the local evidence inspector without enabling a provider action", () => {
   render(<QuantumStudioPanel />);
   expect(screen.getByRole("region", { name: "Inspect evidence JSON" })).toBeTruthy();
-  fireEvent.change(screen.getByLabelText("Evidence JSON"), { target: { value: '{}' } });
+  fireEvent.change(screen.getByLabelText("Evidence JSON"), { target: { value: "{}" } });
   fireEvent.click(screen.getByRole("button", { name: "Inspect snapshot" }));
   expect(screen.getByText("Missing schema")).toBeTruthy();
   expect(screen.queryByRole("button", { name: "Submit to provider" })).toBeNull();

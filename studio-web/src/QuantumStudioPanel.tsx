@@ -11,16 +11,13 @@ import type { WorkspacePanelProps } from "./shared/workspace/WorkspaceEditor";
 import { Workbench } from "./app/Workbench";
 import type { WorkbenchMode } from "./app/Workbench";
 
-import { GradientPlanExplanation } from "./shared/browser/GradientPlanExplanation";
 import { KuramotoPlayPanel } from "./shared/browser/KuramotoPlayPanel";
 import { Lab3DPanel } from "./shared/browser/Lab3DPanel";
-import { ManifestCapabilities } from "./shared/browser/ManifestCapabilities";
 import { EvidenceViewer } from "./shared/evidence/EvidenceViewer";
 import { ProgramADReplayCard } from "./shared/browser/ProgramADReplayCard";
 import { RecomputeCard } from "./shared/browser/RecomputeCard";
-import { ScorecardTable } from "./shared/browser/ScorecardTable";
-import { SupportMatrixGrid } from "./shared/browser/SupportMatrixGrid";
 import { Unverifiable } from "./shared/browser/Unverifiable";
+import { formatWorkbenchRoute } from "./app/routing";
 import {
   gradientPlanExplanations,
   scorecard,
@@ -52,7 +49,7 @@ export function QuantumStudioPanel({ rawCodecs, mode }: QuantumStudioPanelProps 
       {...(rawCodecs === undefined ? {} : { rawCodecs })}
       {...(mode === undefined ? {} : { mode })}
     >
-      {(_context, editors) => (
+      {(context, editors) => (
         <article className="qsp-panel" aria-label="Committed evidence overview">
           <header className="qsp-header">
             <h2>SCPN QUANTUM CONTROL</h2>
@@ -61,12 +58,25 @@ export function QuantumStudioPanel({ rawCodecs, mode }: QuantumStudioPanelProps 
               fail-closed boundaries, not failures.
             </p>
           </header>
-          {studioManifest.ok ? (
-            <ManifestCapabilities manifest={studioManifest.value} />
-          ) : (
+          <nav className="qsp-continue" aria-label="Continue working">
+            {(
+              [
+                ["build", "Build a model"],
+                ["experiments", "Run an experiment"],
+                ["results", "Compare results"],
+                ["evidence", "Evidence catalogue"],
+              ] as const
+            ).map(([view, label]) => (
+              <a key={view} href={formatWorkbenchRoute({ ...context, view, instrument: null })}>
+                {label}
+              </a>
+            ))}
+          </nav>
+          {editors}
+          {/* Successful evidence surfaces live at #/evidence; a failed guard stays visible here. */}
+          {!studioManifest.ok && (
             <Unverifiable surface="studio_manifest.json" reason={studioManifest.reason} />
           )}
-          {editors}
           <div id="/build/compile-recompute" tabIndex={-1}>
             {recomputeUnit.ok ? (
               <RecomputeCard unit={recomputeUnit.value} />
@@ -104,25 +114,19 @@ export function QuantumStudioPanel({ rawCodecs, mode }: QuantumStudioPanelProps 
             )}
           </div>
           <EvidenceViewer />
-          {supportMatrix.ok ? (
-            <SupportMatrixGrid matrix={supportMatrix.value} />
-          ) : (
+          {!supportMatrix.ok && (
             <Unverifiable
               surface="differentiable_transform_support_matrix_20260708.json"
               reason={supportMatrix.reason}
             />
           )}
-          {gradientPlanExplanations.ok ? (
-            <GradientPlanExplanation plans={gradientPlanExplanations.value} />
-          ) : (
+          {!gradientPlanExplanations.ok && (
             <Unverifiable
               surface="gradient_plan_explanations_20260709.json"
               reason={gradientPlanExplanations.reason}
             />
           )}
-          {scorecard.ok ? (
-            <ScorecardTable scorecard={scorecard.value} />
-          ) : (
+          {!scorecard.ok && (
             <Unverifiable
               surface="differentiable_baseline_scorecard_20260620.json"
               reason={scorecard.reason}
