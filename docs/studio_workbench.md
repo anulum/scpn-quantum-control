@@ -60,7 +60,7 @@ Hash addresses work on static hosting without server rewrite rules:
 | Workspace | `#/workspace` (also the empty address) |
 | Model | `#/build` or `#/build/compile-recompute` |
 | Run | `#/experiments` |
-| Analyse | `#/results` or `#/results/program-ad-replay` |
+| Analyse | `#/results`, `#/results/program-ad-replay` or `#/results/gradient-debugger` |
 | Compare | `#/compare` |
 | Evidence | `#/evidence` |
 | Atlas | `#/atlas` |
@@ -669,6 +669,57 @@ existing native converter and affected owner coverage cohort. It requires all
 11 original Results, result-projection and workspace owners, preserving exact
 source hashes, maps and native zero counters. Raw browser observations remain
 separate from the subsequently measured coverage percentage.
+
+## Gradient debugger
+
+Open **Analyse**, or search for **Open gradient debugger**, to reach the
+gradient debugger at `#/results/gradient-debugger`. Choose an objective,
+transform, backend and framework. Only combinations the gradient plan declares
+and programs the repository commits can be chosen.
+
+Each choice shows the declared plan:
+
+- the method;
+- the framework and backend;
+- the cost in backend evaluations and shots;
+- whether finite-shot variance is involved;
+- the plan's warnings.
+
+What happens next depends on the choice:
+
+- **A combination the plan blocks** is refused before anything runs, with the
+  plan's own reasons. For example, higher-order derivatives on a sampling
+  backend are refused because "hessian support is limited to deterministic
+  local backends".
+- **A framework the browser cannot run**, such as JAX, Qiskit or a provider
+  callback, is never emulated. The debugger instead prepares the exact local
+  command and its parameter file:
+  `scpn-studio-run differentiate --action-id … --params-file …`. That command
+  differentiates the same objective with the package's own backends. Nothing is
+  submitted from the browser.
+- **A committed program** is replayed by the browser WASM kernel. Its view shows:
+  - the parameters with a **Trainable** mask, and which inputs are active;
+  - the gradient under that mask, as the parameter-shift rule states it (frozen
+    parameters are zero);
+  - the forward and reverse flow of the program;
+  - a comparison of the `differentiate` action's reverse-mode value and
+    gradient, its central finite-difference cross-check, the owner's exact-state
+    reference with its framework versions and circuit fingerprint, and the
+    browser recompute.
+
+  The recompute runs only after the replay input matches its committed SHA-256.
+  It agrees when every value is within the float64 budget
+  `|actual − reference| ≤ 1e-10 + 1e-8·|reference|`. A budget is used rather than
+  bit identity because `sin` and `cos` come from each platform's math library.
+
+The committed programs live in `data/studio/gradient_debugger_units_20261030.json`.
+They include RY(θ) followed by a Z measurement, which gives ⟨Z⟩ = cos θ with
+gradient −sin θ at θ = 0.4, and a two-angle program for the trainable mask.
+
+- Regenerate the file with
+  `python -m scpn_quantum_control.studio.gradient_debugger_artifact --write`.
+- `--check` compares it with a fresh build. It compares numbers within the same
+  budget and everything else exactly.
 
 ## Immutable revision and run comparison
 

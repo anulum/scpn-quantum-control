@@ -154,6 +154,7 @@ def test_public_dispatch_records_url_refusal_before_browser_import(
         "parameter_graph_editor",
         "program_authoring",
         "compiler_trace_inspector",
+        "gradient_debugger",
         "operator_backend_profiles",
         "operator_policy_decisions",
         "operator_review_dossiers",

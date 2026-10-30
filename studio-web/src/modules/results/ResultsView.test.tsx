@@ -71,7 +71,10 @@ it("renders every missing source explicitly while retaining the original evidenc
   window.history.replaceState(null, "", "#/results");
   render(<Workbench>{(_context, editors) => editors}</Workbench>);
   await screen.findByRole("heading", { name: "Analyse" }, { timeout: 5000 });
-  expect(screen.getAllByRole("alert")).toHaveLength(4);
+  // The gradient debugger reads the same plan source, so it reports it unverifiable too.
+  expect(screen.getAllByRole("alert")).toHaveLength(5);
+  const debuggerSlot = document.getElementById("/results/gradient-debugger") as HTMLElement;
+  expect(debuggerSlot.textContent).toContain("Gradient source unavailable");
   for (const reason of [
     "Matrix source unavailable",
     "Gradient source unavailable",

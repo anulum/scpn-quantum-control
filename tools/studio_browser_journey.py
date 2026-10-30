@@ -424,6 +424,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "parameter_graph_editor",
             "program_authoring",
             "compiler_trace_inspector",
+            "gradient_debugger",
             "operator_backend_profiles",
             "operator_policy_decisions",
             "operator_review_dossiers",
@@ -568,6 +569,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 )
 
                 journey = partial(run_provider_observation_journey, evidence=evidence)
+            elif args.scenario == "gradient_debugger":
+                from tools.studio_gradient_debugger_browser import run_gradient_debugger_journey
+
+                journey = partial(run_gradient_debugger_journey, evidence=evidence)
             elif args.scenario == "compiler_trace_inspector":
                 from tools.studio_compiler_trace_browser import run_compiler_trace_journey
 

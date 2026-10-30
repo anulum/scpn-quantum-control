@@ -769,6 +769,7 @@ jobs:
           --branch
           -m pytest -q
           tests/test_studio_program_ad_replay_artifact.py
+          tests/test_studio_gradient_debugger_artifact.py
           tests/test_studio_executive.py
       - name: Enforce Studio Program-AD exact coverage
         run: >-
@@ -777,4 +778,4 @@ jobs:
           --data-file=.coverage.studio-program-ad
           --precision=2 --show-missing
           --fail-under=100
-          --include=*/program_ad_replay_artifact.py,*/executive.py
+          --include=*/program_ad_replay_artifact.py,*/gradient_debugger_artifact.py,*/executive.py

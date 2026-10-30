@@ -27,10 +27,11 @@ export const resultsModule: StudioModule<Services, WorkspaceViewServices, "resul
       id: "results" as const,
       label: "Analyse",
       group: "primary",
-      instruments: ["program-ad-replay"],
+      instruments: ["program-ad-replay", "gradient-debugger"],
       render: (services: Services, instrument: string | null) => (
         <ResultsView
           focusInstrument={instrument === "program-ad-replay"}
+          focusGradientDebugger={instrument === "gradient-debugger"}
           plan={services.experiment.plan}
           outcome={services.experiment.outcome}
           editors={services.renderEditors("results")}
@@ -43,6 +44,11 @@ export const resultsModule: StudioModule<Services, WorkspaceViewServices, "resul
       id: "open-results",
       label: "Open Analyse",
       action: { kind: "navigate", stage: "results", instrument: null },
+    },
+    {
+      id: "open-gradient-debugger",
+      label: "Open gradient debugger",
+      action: { kind: "navigate", stage: "results", instrument: "gradient-debugger" },
     },
   ],
 };

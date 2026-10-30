@@ -7,9 +7,8 @@
 # scpn-quantum-control — Studio executive differentiate handler
 """The ``differentiate`` executive action handler — the first spine plugin.
 
-Given a bounded *rational* scalar program (parameters plus ``mul``/``add``
-operations, no transcendentals so value and gradient are exact and platform
-reproducible), this handler:
+Given a bounded scalar program (parameters plus binary ``mul``/``add`` and
+unary ``sin``/``cos`` operations), this handler:
 
 1. plans the run under the read-only ``differentiate`` contract;
 2. executes it through the compiled ``scpn_quantum_engine`` effect-IR replay,
@@ -18,9 +17,12 @@ reproducible), this handler:
 3. writes a standalone Python script that reconstructs the program and
    reproduces the value and gradient from the engine.
 
-The claim boundary is deliberately narrow: exact reverse-mode differentiation of
-a bounded rational program, cross-checked against finite differences — not
-transcendental, linear-algebra, unbounded, provider, or hardware differentiation.
+The claim boundary is deliberately narrow: reverse-mode differentiation of a
+bounded scalar program, cross-checked against finite differences. ``mul`` and
+``add`` are exact and reproducible on every platform; ``sin`` and ``cos`` come
+from the platform math library, so their last bits are not claimed to agree
+across platforms. Not linear-algebra, unbounded, provider, or hardware
+differentiation.
 """
 
 from __future__ import annotations
@@ -46,11 +48,15 @@ _FINITE_DIFFERENCE_STEP: Final[float] = 1.0e-5
 _GRADIENT_TOLERANCE: Final[float] = 1.0e-6
 
 DIFFERENTIATE_CLAIM_BOUNDARY: Final[str] = (
-    "exact reverse-mode value and gradient of a bounded rational scalar program "
-    "(mul/add over named parameters and numeric literals), cross-checked against "
-    "central finite differences of the same value; not transcendental, "
-    "linear-algebra, unbounded, provider, or hardware differentiation"
+    "reverse-mode value and gradient of a bounded scalar program (binary mul/add "
+    "and unary sin/cos over named parameters and numeric literals), cross-checked "
+    "against central finite differences of the same value; mul/add are exact on "
+    "every platform, sin/cos use the platform math library; not linear-algebra, "
+    "unbounded, provider, or hardware differentiation"
 )
+
+#: Operations and the number of references each takes.
+DIFFERENTIATE_OPERATIONS: Final[Mapping[str, int]] = {"mul": 2, "add": 2, "sin": 1, "cos": 1}
 
 _Operation = Mapping[str, Any]
 _NormalisedProgram = dict[str, Any]
@@ -113,14 +119,17 @@ def _normalise_operation(
     op = operation.get("op")
     refs = operation.get("inputs")
     into = operation.get("into")
-    if op not in ("mul", "add"):
-        raise ValueError("operation op must be 'mul' or 'add'")
+    if not isinstance(op, str) or op not in DIFFERENTIATE_OPERATIONS:
+        raise ValueError("operation op must be one of 'mul', 'add', 'sin' or 'cos'")
+    arity = DIFFERENTIATE_OPERATIONS[op]
     if not isinstance(into, str) or not into:
         raise ValueError("operation into must be a non-empty name")
     if into in names:
         raise ValueError(f"operation into {into!r} shadows an existing name")
-    if not isinstance(refs, Sequence) or isinstance(refs, (str, bytes)) or len(refs) != 2:
-        raise ValueError("operation inputs must be two references")
+    if not isinstance(refs, Sequence) or isinstance(refs, (str, bytes)) or len(refs) != arity:
+        raise ValueError(
+            f"operation {op!r} takes {'one reference' if arity == 1 else 'two references'}"
+        )
     resolved: list[str] = []
     for ref in refs:
         if not isinstance(ref, str) or not ref:
@@ -412,6 +421,7 @@ def default_registry() -> ActionRegistry:
 
 __all__ = [
     "DIFFERENTIATE_CLAIM_BOUNDARY",
+    "DIFFERENTIATE_OPERATIONS",
     "DIFFERENTIATE_VERB",
     "DifferentiateActionHandler",
     "build_effect_ir",

@@ -285,6 +285,8 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/studio/program_ad_replay_artifact.py
           tests/test_studio_program_ad_replay_artifact.py
+          src/scpn_quantum_control/studio/gradient_debugger_artifact.py
+          tests/test_studio_gradient_debugger_artifact.py
           src/scpn_quantum_control/studio/executive.py
           tests/test_studio_executive.py
           tools/program_ad_quality_gates.py
@@ -296,6 +298,8 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/studio/program_ad_replay_artifact.py
           tests/test_studio_program_ad_replay_artifact.py
+          src/scpn_quantum_control/studio/gradient_debugger_artifact.py
+          tests/test_studio_gradient_debugger_artifact.py
           src/scpn_quantum_control/studio/executive.py
           tests/test_studio_executive.py
           tools/program_ad_quality_gates.py

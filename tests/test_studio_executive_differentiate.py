@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 import pytest
@@ -23,6 +24,7 @@ from scpn_quantum_control.studio.executive import (  # noqa: E402
     run_action,
 )
 from scpn_quantum_control.studio.executive_differentiate import (  # noqa: E402
+    DIFFERENTIATE_OPERATIONS,
     DIFFERENTIATE_VERB,
     DifferentiateActionHandler,
     _as_float,
@@ -208,6 +210,9 @@ def test_normalise_program_rejects_invalid(parameters: dict[str, Any]) -> None:
         {"op": "mul", "inputs": ["x"], "into": "f"},
         {"op": "mul", "inputs": ["x", ""], "into": "f"},
         {"op": "mul", "inputs": ["x", "unknown"], "into": "f"},
+        {"op": "cos", "inputs": ["x", "x"], "into": "f"},
+        {"op": "sin", "inputs": [], "into": "f"},
+        {"op": 3, "inputs": ["x"], "into": "f"},
     ],
 )
 def test_normalise_operation_rejects_invalid(operation: Any) -> None:
@@ -215,6 +220,51 @@ def test_normalise_operation_rejects_invalid(operation: Any) -> None:
     parameters = {"inputs": [["x", 1.0]], "operations": [operation], "output": "f"}
     with pytest.raises(ValueError):
         _normalise_program(parameters)
+
+
+def test_cos_of_a_rotation_angle_has_gradient_minus_sin() -> None:
+    """RY(theta) then Z measures cos(theta); its gradient is -sin(theta)."""
+    theta = 0.4
+    program = _program(
+        [{"op": "cos", "inputs": ["theta"], "into": "z"}], "z", inputs=[["theta", theta]]
+    )
+    record = run_action(_request(program), registry=default_registry())
+    outputs = record.result.outputs
+    assert outputs["value"] == pytest.approx(math.cos(theta), abs=1e-15)
+    assert outputs["gradient"] == pytest.approx([-math.sin(theta)], abs=1e-15)
+    assert outputs["verified"] is True
+    assert '"operation":"cos"' in outputs["effect_ir"]
+
+
+def test_sin_and_cos_compose_with_mul_and_add() -> None:
+    """f(a, b) = cos(a) + 0.25 sin(b) differentiates per parameter."""
+    a, b = 0.3, -1.1
+    program = _program(
+        [
+            {"op": "cos", "inputs": ["a"], "into": "ca"},
+            {"op": "sin", "inputs": ["b"], "into": "sb"},
+            {"op": "mul", "inputs": ["sb", "0.25"], "into": "qb"},
+            {"op": "add", "inputs": ["ca", "qb"], "into": "f"},
+        ],
+        "f",
+        inputs=[["a", a], ["b", b]],
+    )
+    outputs = run_action(_request(program), registry=default_registry()).result.outputs
+    assert outputs["value"] == pytest.approx(math.cos(a) + 0.25 * math.sin(b), abs=1e-15)
+    assert outputs["gradient"] == pytest.approx([-math.sin(a), 0.25 * math.cos(b)], abs=1e-15)
+    assert outputs["verified"] is True
+
+
+def test_unknown_operation_message_names_every_declared_operation() -> None:
+    """The refusal lists exactly the operations the handler declares."""
+    parameters = {
+        "inputs": [["x", 1.0]],
+        "operations": [{"op": "tan", "inputs": ["x"], "into": "f"}],
+        "output": "f",
+    }
+    with pytest.raises(ValueError, match="'mul', 'add', 'sin' or 'cos'"):
+        _normalise_program(parameters)
+    assert dict(DIFFERENTIATE_OPERATIONS) == {"mul": 2, "add": 2, "sin": 1, "cos": 1}
 
 
 def test_numeric_literal_reference_is_accepted() -> None:

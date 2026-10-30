@@ -43,6 +43,7 @@ describe("workbenchRegistry", () => {
       ["/experiments", "experiments", null],
       ["/results", "results", null],
       ["/results/program-ad-replay", "results", "program-ad-replay"],
+      ["/results/gradient-debugger", "results", "gradient-debugger"],
       ["/compare", "compare", null],
       ["/evidence", "evidence", null],
       ["/atlas", "atlas", null],

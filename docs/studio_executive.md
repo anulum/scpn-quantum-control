@@ -31,11 +31,16 @@ endpoint safety contract.
 ## Running a differentiate action
 
 The first plugin is the read-only `differentiate` handler. It differentiates a
-bounded *rational* scalar program (named parameters plus `mul`/`add` operations
-and numeric literals, no transcendentals so value and gradient are exact and
-platform reproducible), executes it through the compiled `scpn_quantum_engine`
+bounded scalar program: named parameters and numeric literals combined by binary
+`mul`/`add` and unary `sin`/`cos` operations. For example, `cos(theta)` is the
+Z expectation after an RY(theta) rotation, and its gradient is `-sin(theta)`.
+The handler executes the program through the compiled `scpn_quantum_engine`
 effect-IR replay, cross-checks the reverse-mode gradient against central finite
-differences, and writes a standalone reproduction script.
+differences, and writes a standalone reproduction script. `mul` and `add` are
+exact and reproducible on every platform. `sin` and `cos` come from the platform
+math library, so their last bits are not claimed to agree across platforms. An
+operation with the wrong number of references, or any other operation, is
+refused before execution.
 
 ```python
 from scpn_quantum_control.studio import ExecutiveRequest, preview_action, run_action
@@ -433,8 +438,8 @@ carries every verb the studio advertises on the federation contract
 
 ## Claim boundary
 
-The differentiate action proves the exact reverse-mode value and gradient of a
-bounded rational program, cross-checked against central finite differences — not
-transcendental, linear-algebra, unbounded, provider, or hardware
+The differentiate action proves the reverse-mode value and gradient of a bounded
+scalar program of `mul`, `add`, `sin` and `cos`, cross-checked against central
+finite differences. It is not linear-algebra, unbounded, provider or hardware
 differentiation. Gated verbs such as `execute` never run without an explicit
 approval on the request.

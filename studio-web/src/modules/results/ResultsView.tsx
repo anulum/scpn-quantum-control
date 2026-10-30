@@ -8,6 +8,8 @@
 
 import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
+import { GradientDebugger } from "./GradientDebugger";
+import { gradientUnits } from "./gradientDebugger";
 import { ResultLoader } from "./ResultLoader";
 import type { ResultLoaderProps } from "./ResultLoader";
 import { EvidenceViewer } from "../../shared/evidence/EvidenceViewer";
@@ -22,19 +24,26 @@ import { gradientPlanExplanations, scorecard, supportMatrix } from "../../shared
 /** Original evidence and replay owners retain their source identities and claim boundaries. */
 export default function ResultsView({
   focusInstrument = false,
+  focusGradientDebugger = false,
   plan = null,
   outcome = null,
   editors,
 }: ResultLoaderProps & {
   /** Focus the original replay target only after this lazy module has mounted. */
   focusInstrument?: boolean;
+  /** Focus the gradient debugger after this lazy module has mounted. */
+  focusGradientDebugger?: boolean;
   /** Registered comparison and inspection controls supplied by the shell slot. */
   editors?: ReactNode;
 }) {
   const target = useRef<HTMLDivElement>(null);
+  const debugger_ = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (focusInstrument && target.current !== null) target.current.focus();
   }, [focusInstrument]);
+  useEffect(() => {
+    if (focusGradientDebugger && debugger_.current !== null) debugger_.current.focus();
+  }, [focusGradientDebugger]);
   return (
     <article className="qsp-panel">
       <h3>Analyse</h3>
@@ -53,6 +62,9 @@ export default function ResultsView({
             reason={programAdUnit.reason}
           />
         )}
+      </div>
+      <div id="/results/gradient-debugger" tabIndex={-1} ref={debugger_}>
+        <GradientDebugger plan={gradientPlanExplanations} units={gradientUnits} />
       </div>
       <EvidenceViewer />
       {supportMatrix.ok ? (
