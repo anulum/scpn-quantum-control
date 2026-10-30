@@ -366,6 +366,23 @@ owned by the original storage and admission code. A source with no registered
 editor or inspector remains readable in the generic source inspector, which
 retains its original content rather than rewriting it into a known schema.
 
+The one exception is the Workspace module. Its stage is the shell's home, the
+breadcrumb root and the recovery target, so a registry without it is refused
+when the workbench renders.
+
+The conformance suite `studio-web/src/app/moduleConformance.test.tsx` holds
+every registered module to the contract. For each module it checks that:
+
+- its contract version is compatible;
+- each of its stages opens with its label in the breadcrumb and with no route
+  or contribution failure;
+- with nothing declared by the installation it stays visible and names what is
+  missing instead of failing;
+- removing it closes its addresses and removes its rail links while every
+  other stage keeps working.
+
+A new module is covered as soon as it is registered.
+
 The address table comes from registered stages: `#/<stage>` and
 `#/<stage>/<instrument>` for declared names. Unregistered paths are refused.
 Identifiers are lower-case words of at most forty characters. Duplicate module,
