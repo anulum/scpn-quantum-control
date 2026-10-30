@@ -31,33 +31,40 @@ availability without a fresh deployment probe.
 
 ## Workbench navigation
 
-The Workspace view leads to work: links to continue in Build, Experiments,
-Results or the evidence catalogue, the capability catalogue of what the
-installation can do, the worked local instruments, the evidence inspector and the
-local archive editor. The committed capability declarations, support matrix,
-gradient-plan explanation and baseline scorecard are on their own context
-destination, **Evidence catalogue**. Build opens the existing compile recomputation,
-Kuramoto Play and 3D Lab instruments, together with the program editor and compiler
-trace inspector. Results opens the source result inspector, program-AD replay,
-evidence inspection, the support explorer, gradient explanations and scorecard.
-Experiments opens the source-bound local experiment workflow described below.
-Atlas shows its unavailable workflow and a link back to Workspace. The mode
-banner distinguishes standalone and embedded layouts;
-federation hosts can pass `mode="embedded"` to the same exposed panel.
-Devices & Operations is a separate context destination for dated provider and
-device profiles, and Evidence catalogue another for the committed evidence surfaces. It retains the requested project, revision and snapshot context.
+The stage rail follows the research loop after the project's home: **Workspace**,
+then **Model**, **Run**, **Analyse**, **Compare** and **Evidence**. **Atlas** and
+**Devices & Operations** are context destinations in the explorer. Stage
+identifiers and addresses predate these labels and are unchanged, so saved
+addresses keep working.
+
+The Workspace view leads to work: links to continue in Model, Run, Compare or the
+evidence catalogue, the capability catalogue of what the installation can do, the
+worked local instruments, the evidence inspector and the local archive editor.
+Model (the Build module) opens the existing compile recomputation, Kuramoto Play
+and 3D Lab instruments, together with the program editor and compiler trace
+inspector. Run (the experiments module) opens the source-bound local experiment
+workflow described below. Analyse (the results module) opens the source result
+inspector, program-AD replay, evidence inspection, the support explorer, gradient
+explanations and scorecard. Compare holds the run comparison and the method
+comparison. Evidence holds the committed capability declarations, support matrix,
+gradient-plan explanation and baseline scorecard. Atlas shows its unavailable
+workflow and a link back to Workspace. Devices & Operations holds dated provider
+and device profiles. Every destination retains the requested project, revision
+and snapshot context. The mode banner distinguishes standalone and embedded
+layouts; federation hosts can pass `mode="embedded"` to the same exposed panel.
 
 Hash addresses work on static hosting without server rewrite rules:
 
 | View | Address |
 | --- | --- |
 | Workspace | `#/workspace` (also the empty address) |
-| Build | `#/build` or `#/build/compile-recompute` |
-| Experiments | `#/experiments` |
-| Results | `#/results` or `#/results/program-ad-replay` |
+| Model | `#/build` or `#/build/compile-recompute` |
+| Run | `#/experiments` |
+| Analyse | `#/results` or `#/results/program-ad-replay` |
+| Compare | `#/compare` |
+| Evidence | `#/evidence` |
 | Atlas | `#/atlas` |
 | Devices & Operations | `#/operations` |
-| Evidence catalogue | `#/evidence` |
 
 Optional `project`, `revision` and `snapshot` query fields retain exact opaque
 identity through links, reload and browser history. For example,
@@ -82,7 +89,7 @@ reload restores the last saved archive. Export remains the independent backup.
 View links and breadcrumbs are keyboard accessible, and navigating focuses the
 view or its instrument target. Navigation wraps to fit narrow host layouts.
 
-Build, Experiments, Results and unavailable-view modules load on navigation. The compatibility
+Model, Run, Analyse, Compare and unavailable-view modules load on navigation. The compatibility
 Workspace overview still includes its original instrument dependencies at
 startup; lazy route modules do not imply that all numerical code has been
 removed from the initial bundle. Existing federation name, expose key and
@@ -389,15 +396,15 @@ whole-graph memory is explicitly unknown, and the original runtime admits each
 numerical stage before allocation. The `local-service` runner is unavailable in
 this build; these commands do not submit remote provider jobs.
 
-The default stages remain Workspace, Build, Experiments, Results, Atlas and
-Devices & Operations, with their original eight addresses. Atlas retains its
+The default stages are Workspace, Model, Run, Analyse, Compare, Evidence, Atlas
+and Devices & Operations. All earlier addresses are kept, and `#/compare` is new. Atlas retains its
 unavailable-state explanation. The standalone workbench and the federation
 expose use the same registered controls and the original storage and numerical
 owners.
 
 ## Reproducible experiment graphs and sweeps
 
-**Reproducible workflows** in Experiments composes a typed acyclic graph over the
+**Reproducible workflows** in Run composes a typed acyclic graph over the
 original action owners. **Compose local workflow** creates `validate`, `simulate`
 and `analyse` stages for the admitted classical Kuramoto revision. The dependency
 view and **Workflow JSON** describe the same graph. **Preview workflow graph**
@@ -446,7 +453,7 @@ If a host ownership callback or archive admission fails after computation, the
 partial journal retains the native evidence. An archive admission refusal records
 `archive_admitted: false`; those events have no admitted run reference and cannot
 complete a dependent stage or serve as a replay source.
-Leaving Experiments or changing the selected source cancels source ownership;
+Leaving Run or changing the selected source cancels source ownership;
 a late completion cannot write into the new selection. IndexedDB remains an
 evictable local cache. Export the workspace for a portable backup; graph JSON
 alone does not contain its source archive or raw result members.
@@ -492,14 +499,14 @@ local classical journey.
 
 ## Local experiment and portable replay
 
-Open **Experiments**, then **Open Kuramoto sample**. The committed classical
+Open **Run**, then **Open Kuramoto sample**. The committed classical
 mean-field sample becomes an unsaved workspace draft; opening it starts no
 worker. Select **Validate experiment archive**, then **Edit source parameters
 in Workspace**. The existing linked parameter editor validates typed values
 against their immutable specifications. **Save parameter revision** appends a
 child revision and retains the original input bytes and parent identity.
 
-Return to Experiments and choose **Prepare numerical plan**. Inspect its exact
+Return to Run and choose **Prepare numerical plan**. Inspect its exact
 revision, plan fingerprint, shipped kernel digest, method, float64 precision,
 source shape, actual native limits, declared byte/work estimates and policy
 origin. The original source records matching requested/effective settings and
@@ -527,7 +534,7 @@ parameter trajectory; it does not supply a complete phase history. The result
 is a classical Kuramoto calculation, with no quantum-spin, physical-device or
 provider execution claim.
 
-**Cancel experiment**, navigation away from Experiments, a selected source edit
+**Cancel experiment**, navigation away from Run, a selected source edit
 or unmount disposes the owned worker. Its original diagnostic events remain
 bound to the captured revision and plan. A failed, cancelled or stale attempt
 cannot acquire a success badge. A changed immutable revision cannot inherit an
@@ -550,7 +557,7 @@ browser storage. Persistence-unavailable browsers retain portable export and
 explicitly disable saved-state claims. Keep an independent exported backup.
 
 In a clean browser context, open Workspace, select the exported local JSON file,
-preview the complete archive and explicitly save it. In Experiments, **Prepare
+preview the complete archive and explicitly save it. In Run, **Prepare
 saved replay** re-admits the original completed record and recomputes its exact
 numerical plan. It starts no worker and makes no fresh success claim. **Run
 experiment** creates a new run and attempt identity, then compares every actual
@@ -588,7 +595,7 @@ phase worker have distinct model and output contracts.
 
 ## Source result values and exports
 
-After a successful disposed local experiment, open **Results**. **Result value
+After a successful disposed local experiment, open **Analyse**. **Result value
 inspector** shows the original order-parameter trajectory and final phases from
 that plan and output. The caption identifies the requested model-time grid:
 the kernel reports no measured timestamps or full phase history. The output
@@ -648,7 +655,7 @@ separate from the subsequently measured coverage percentage.
 
 ## Immutable revision and run comparison
 
-Open **Results** and use **Compare immutable revisions and runs**. The baseline
+Open **Compare** and use **Compare immutable revisions and runs**. The baseline
 and candidate initially contain the current workspace's exact archive text.
 You can also choose an original archive file or paste its portable JSON into
 either side. Select **Read baseline archive** and **Read candidate archive**
@@ -675,12 +682,12 @@ preserves every original value. A matched finite difference is candidate minus
 baseline; an overflowing difference stays unavailable. No aggregate ranking is
 derived from these values.
 
-Returning to Workspace, reloading the saved archive or reopening Results retains
+Returning to Workspace, reloading the saved archive or reopening Analyse retains
 the original revisions and raw members. A refused import retains the previous
 admitted comparison and saved workspace. Use **Use current workspace as baseline**
 or **Use current workspace as candidate** to replace only a comparison input,
 then read it again. Browser storage remains a cache; export an independent backup
-through the original Workspace or Experiments controls.
+through the original Workspace or Run controls.
 
 The original shared browser runner exercises genuine original WASM runs,
 incompatible declarations, all unmatched samples, source preservation and native
@@ -699,8 +706,8 @@ both hosts; the runner closes every browser context on success and failure.
 
 ## Method comparison and uncertainty
 
-Results includes **Method comparison and uncertainty** at
-`#/results`. Import a native comparison file or paste its exact
+Compare includes **Method comparison and uncertainty** at
+`#/compare`. Import a native comparison file or paste its exact
 JSON, then select **Read native method comparison**. The three captured examples
 show a synthetic full population, existing estimator intervals and actual
 original solver results. Reading evidence calls no solver or provider and does
@@ -842,7 +849,7 @@ The runner closes its browser context; the preview owner stops its server.
 
 ## Supported program authoring
 
-Open Build to edit a program source or append an operation through the form.
+Open Model to edit a program source or append an operation through the form.
 Compile source invokes the shipped Rust/WASM compiler. The result displays
 ordered IR, parameter bits, source positions, classical conditions and readout
 pairs. **Emitted — not executed** means the source was admitted and recorded.
@@ -851,7 +858,7 @@ This action constructs no numerical result and submits no provider job.
 Changing source immediately clears the current compiled plan and disables its
 export. A late result for an earlier draft is discarded. The last ten compilation
 attempts retain their original revision and digest or refusal category. This
-history belongs to the mounted editor; export the source before leaving Build
+history belongs to the mounted editor; export the source before leaving Model
 or reloading. Workspace archives and earlier saved results remain independent.
 
 The supported source is a bounded OpenQASM 2.0 subset:
@@ -929,7 +936,7 @@ its contexts; the process owner stops the preview server.
 
 ## Compiler trace inspection
 
-Open Build to import a native compiler trace or open the explicit native example.
+Open Model to import a native compiler trace or open the explicit native example.
 The inspector shows each pass's input and output source, IR digests, parameters,
 logical-to-physical qubit layouts, classical output layout, readout correspondence,
 ordered measurement effects and declared gate/depth/resource changes. The example

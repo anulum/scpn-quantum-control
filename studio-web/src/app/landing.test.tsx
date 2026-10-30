@@ -35,7 +35,7 @@ it("test_landing_01: the former landing instruments are reachable at their exist
   expect(links.map((link) => [link.textContent, link.getAttribute("href")])).toEqual([
     ["Build a model", "#/build?project=project+%CE%B1"],
     ["Run an experiment", "#/experiments?project=project+%CE%B1"],
-    ["Compare results", "#/results?project=project+%CE%B1"],
+    ["Compare results", "#/compare?project=project+%CE%B1"],
     ["Evidence catalogue", "#/evidence?project=project+%CE%B1"],
   ]);
   expect(screen.getByRole("region", { name: "Capability catalogue" })).toBeTruthy();

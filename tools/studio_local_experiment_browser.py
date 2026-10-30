@@ -69,7 +69,7 @@ def _navigate(page: Page, view: str) -> None:
     page : Page
         Actual Workbench browser page.
     view : str
-        Original Workspace or Experiments view label.
+        Original Workspace or Run view label.
 
     """
     from playwright.sync_api import expect
@@ -304,9 +304,9 @@ def run_local_experiment_journey(
                             )
                         ):
                             experiment.get_by_role("button", name="Open Kuramoto sample").click()
-                        page.get_by_role("navigation", name="Workbench views").get_by_role(
-                            "link", name="Atlas", exact=True
-                        ).click()
+                        page.get_by_role(
+                            "navigation", name="Workbench context destinations"
+                        ).get_by_role("link", name="Atlas", exact=True).click()
                         expect(
                             page.get_by_role("heading", name="Atlas unavailable", exact=True)
                         ).to_be_visible()
@@ -390,7 +390,7 @@ def run_local_experiment_journey(
                         expect(
                             page.get_by_label("Saved workspace identity", exact=True)
                         ).to_be_visible()
-                        _navigate(page, "Experiments")
+                        _navigate(page, "Run")
                         experiment.get_by_role("button", name="Prepare saved replay").click()
                         expect(
                             experiment.get_by_role("button", name="Run experiment", exact=True)
@@ -438,7 +438,7 @@ def run_local_experiment_journey(
                         ).to_be_visible()
                         edited = _archive(page)
                         assert edited != sample_archive
-                        _navigate(page, "Experiments")
+                        _navigate(page, "Run")
                         experiment.get_by_role("button", name="Prepare numerical plan").click()
                         expect(
                             experiment.get_by_role("button", name="Run experiment", exact=True)
@@ -468,7 +468,7 @@ def run_local_experiment_journey(
                         assert _archive(page) == edited, (
                             "Portable attempt export changed the original saved source"
                         )
-                        _navigate(page, "Experiments")
+                        _navigate(page, "Run")
                         experiment.get_by_role("button", name="Save experiment attempt").click()
                         expect(
                             experiment.get_by_role("status", name="Experiment operation")
@@ -484,7 +484,7 @@ def run_local_experiment_journey(
                         _navigate(page, "Workspace")
                         assert _archive(page) == exported
                         saved = exported
-                        _navigate(page, "Experiments")
+                        _navigate(page, "Run")
                         before = page.evaluate("window.__ownedKernel.started")
                         experiment.get_by_label("Run numeric byte budget").fill("0")
                         expect(
@@ -497,7 +497,7 @@ def run_local_experiment_journey(
                         assert page.evaluate("window.__ownedKernel.started") == before
                         _navigate(page, "Workspace")
                         assert _archive(page) == saved
-                        _navigate(page, "Experiments")
+                        _navigate(page, "Run")
                         observations.append(
                             {
                                 "outcome": "test_local_experiment_journey_02",
@@ -527,7 +527,7 @@ def run_local_experiment_journey(
                         ).to_contain_text("cancelled")
                         _navigate(page, "Workspace")
                         assert _archive(page) == saved
-                        _navigate(page, "Experiments")
+                        _navigate(page, "Run")
                         observations.append(
                             {
                                 "outcome": "test_local_experiment_journey_03",
@@ -564,7 +564,7 @@ def run_local_experiment_journey(
                         for route in held:
                             route.continue_()
                         held.clear()
-                        _navigate(page, "Experiments")
+                        _navigate(page, "Run")
                         expect(
                             experiment.get_by_role("status", name="Experiment lifecycle")
                         ).to_contain_text("stale")

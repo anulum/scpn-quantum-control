@@ -42,8 +42,8 @@ afterEach(() => {
 it("renders the actual original instrument owners with their committed inputs", async () => {
   window.history.replaceState(null, "", "#/build/compile-recompute");
   render(<Workbench>{(_context, editors) => editors}</Workbench>);
-  await screen.findByRole("heading", { name: "Build" });
-  expect(screen.getByRole("heading", { name: "Build" })).toBeTruthy();
+  await screen.findByRole("heading", { name: "Model" });
+  expect(screen.getByRole("heading", { name: "Model" })).toBeTruthy();
   // The lazy program editor loads inside its own contribution boundary, after the stage.
   expect(await screen.findByRole("heading", { name: "Program editor" })).toBeTruthy();
   expect(screen.getByRole("button", { name: "Compile source" })).toBeTruthy();
@@ -63,7 +63,7 @@ it("renders the actual original instrument owners with their committed inputs", 
 it("opens original native compiler metadata through the Build route beside source authoring", async () => {
   window.history.replaceState(null, "", "#/build");
   render(<Workbench>{(_context, editors) => editors}</Workbench>);
-  await screen.findByRole("heading", { name: "Build" });
+  await screen.findByRole("heading", { name: "Model" });
   fireEvent.click(screen.getByRole("button", { name: "Open native example" }));
   await screen.findByRole("table", { name: "Qubit mapping" });
   expect(screen.getByRole("region", { name: "Program authoring" })).toBeTruthy();
@@ -79,7 +79,7 @@ it("refuses a missing compile source without removing available simulation instr
   faults.compile = true;
   window.history.replaceState(null, "", "#/build");
   render(<Workbench>{(_context, editors) => editors}</Workbench>);
-  await screen.findByRole("heading", { name: "Build" });
+  await screen.findByRole("heading", { name: "Model" });
   expect(screen.getByRole("alert").textContent).toContain("Compile source unavailable");
   expect(screen.queryByRole("button", { name: "Recompute in browser" })).toBeNull();
   expect(screen.getByRole("heading", { name: "Kuramoto Play" })).toBeTruthy();
@@ -90,7 +90,7 @@ it("refuses a missing scenario for both original simulation owners", async () =>
   faults.scenario = true;
   window.history.replaceState(null, "", "#/build");
   render(<Workbench>{(_context, editors) => editors}</Workbench>);
-  await screen.findByRole("heading", { name: "Build" });
+  await screen.findByRole("heading", { name: "Model" });
   expect(screen.getByRole("alert").textContent).toContain("Scenario source unavailable");
   expect(screen.getByRole("button", { name: "Recompute in browser" })).toBeTruthy();
   expect(screen.queryByText("Kuramoto Play")).toBeNull();

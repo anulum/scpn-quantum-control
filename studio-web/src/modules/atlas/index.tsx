@@ -22,7 +22,7 @@ export const atlasModule: StudioModule<Services, WorkspaceViewServices, "atlas">
     {
       id: "atlas" as const,
       label: "Atlas",
-      group: "primary",
+      group: "context",
       instruments: [],
       render: (services: Services) => (
         <UnavailableView view="atlas" workspaceHref={services.workspaceHref} />

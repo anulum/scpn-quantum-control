@@ -159,7 +159,7 @@ def run_backend_profiles_journey(
             expect(panel.get_by_label("Plan reference")).to_have_text("none")
             observations.append("valid-source-recovery")
             page.get_by_role("navigation", name="Workbench views").get_by_role(
-                "link", name="Build", exact=True
+                "link", name="Model", exact=True
             ).click()
             recompute = page.locator('[id="/build/compile-recompute"]')
             recompute.get_by_role("button", name="Recompute in browser").click()

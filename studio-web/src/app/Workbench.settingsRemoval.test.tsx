@@ -46,6 +46,6 @@ it("retains the original archive and reports the missing settings view after the
       "No settings view is registered for quantum_workspace_archive.v1. The original document is retained.",
     ),
   ).toBeTruthy();
-  expect(screen.getByRole("link", { name: "Build" }).getAttribute("href")).toBe("#/build");
+  expect(screen.getByRole("link", { name: "Model" }).getAttribute("href")).toBe("#/build");
   expect(editor.value).toBe(plan.sourceJson);
 });

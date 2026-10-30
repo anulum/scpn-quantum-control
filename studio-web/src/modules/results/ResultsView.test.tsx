@@ -51,12 +51,12 @@ afterEach(() => {
 it("renders actual original evidence and preserves the viewer's input refusal", async () => {
   window.history.replaceState(null, "", "#/results/program-ad-replay");
   render(<Workbench>{(_context, editors) => editors}</Workbench>);
-  await screen.findByRole("heading", { name: "Results" }, { timeout: 5000 });
+  await screen.findByRole("heading", { name: "Analyse" }, { timeout: 5000 });
   // The heading can appear before the lazy view's passive focus effect has run.
   await act(async () => {
     await vi.dynamicImportSettled();
   });
-  expect(screen.getByRole("heading", { name: "Results" })).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "Analyse" })).toBeTruthy();
   expect(screen.getByText("Differentiate support explorer")).toBeTruthy();
   expect(screen.getByText("Baseline scorecard")).toBeTruthy();
   expect(document.activeElement?.id).toBe("/results/program-ad-replay");
@@ -70,7 +70,7 @@ it("renders every missing source explicitly while retaining the original evidenc
   faults.replay = true;
   window.history.replaceState(null, "", "#/results");
   render(<Workbench>{(_context, editors) => editors}</Workbench>);
-  await screen.findByRole("heading", { name: "Results" }, { timeout: 5000 });
+  await screen.findByRole("heading", { name: "Analyse" }, { timeout: 5000 });
   expect(screen.getAllByRole("alert")).toHaveLength(4);
   for (const reason of [
     "Matrix source unavailable",
@@ -88,11 +88,19 @@ it("renders every missing source explicitly while retaining the original evidenc
 it("reaches the original producer result inspector from the production Results route", async () => {
   window.history.replaceState(null, "", "#/results");
   render(<Workbench>{(_context, editors) => editors}</Workbench>);
-  await screen.findByRole("heading", { name: "Results" }, { timeout: 5000 });
+  await screen.findByRole("heading", { name: "Analyse" }, { timeout: 5000 });
   expect(screen.getByLabelText("Result producer JSON")).toBeTruthy();
   expect(screen.getByRole("button", { name: "Inspect producer result" })).toBeTruthy();
+  // Comparison has its own stage in the research loop; Analyse no longer carries it.
   expect(
-    screen.getByRole("heading", { name: "Compare immutable revisions and runs" }),
+    screen.queryByRole("heading", { name: "Compare immutable revisions and runs" }),
+  ).toBeNull();
+  cleanup();
+  window.history.replaceState(null, "", "#/compare");
+  render(<Workbench>{(_context, editors) => editors}</Workbench>);
+  await screen.findByRole("heading", { name: "Compare" }, { timeout: 5000 });
+  expect(
+    await screen.findByRole("heading", { name: "Compare immutable revisions and runs" }),
   ).toBeTruthy();
   expect(screen.getByLabelText("Baseline archive JSON")).toBeTruthy();
 });
@@ -102,7 +110,7 @@ it.each([false, true])(
   async (strict) => {
     window.history.replaceState(null, "", "#/results/program-ad-replay");
     const first = render(<Workbench>{(_context, editors) => editors}</Workbench>);
-    await screen.findByRole("heading", { name: "Results" }, { timeout: 5000 });
+    await screen.findByRole("heading", { name: "Analyse" }, { timeout: 5000 });
     await act(async () => {
       await vi.dynamicImportSettled();
     });

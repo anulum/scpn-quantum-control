@@ -52,7 +52,7 @@ export default function BuildView({
   );
   return (
     <article className="qsp-panel qsp-build">
-      <h3>Build</h3>
+      <h3>Model</h3>
       <p className="qsp-meta">
         Browser instruments use their committed inputs and original resource admission. A requested
         workspace revision is not substituted into these fixtures.

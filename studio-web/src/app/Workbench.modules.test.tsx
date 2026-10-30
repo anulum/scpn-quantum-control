@@ -30,13 +30,13 @@ it("keeps a stage visible and names what the installation does not declare", asy
   expect(screen.getByText("host overview")).toBeTruthy();
   visit("#/build?project=p");
   const view = screen.getByRole("region", { name: "Workbench view" });
-  expect(within(view).getByRole("heading", { name: "Build unavailable" })).toBeTruthy();
+  expect(within(view).getByRole("heading", { name: "Model unavailable" })).toBeTruthy();
   expect(within(view).getByRole("listitem").textContent).toBe("verb compile");
   expect(within(view).getByRole("link", { name: "Open Workspace" }).getAttribute("href")).toBe(
     "#/workspace?project=p",
   );
   const navigation = screen.getByRole("navigation", { name: "Workbench views" });
-  expect(within(navigation).getByRole("link", { name: "Build" }).getAttribute("aria-current")).toBe(
+  expect(within(navigation).getByRole("link", { name: "Model" }).getAttribute("aria-current")).toBe(
     "page",
   );
   // A stage of a module that requires nothing is served under the same declarations.
@@ -52,6 +52,6 @@ it("serves the stage once the installation declares the verb", async () => {
     </Workbench>,
   );
   visit("#/build");
-  expect(screen.queryByRole("heading", { name: "Build unavailable" })).toBeNull();
+  expect(screen.queryByRole("heading", { name: "Model unavailable" })).toBeNull();
   expect(await screen.findByRole("heading", { name: "Compile recompute" })).toBeTruthy();
 });

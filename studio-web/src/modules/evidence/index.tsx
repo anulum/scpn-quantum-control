@@ -21,8 +21,8 @@ export const evidenceModule: StudioModule<Services, WorkspaceViewServices, "evid
   stages: [
     {
       id: "evidence" as const,
-      label: "Evidence catalogue",
-      group: "context",
+      label: "Evidence",
+      group: "primary",
       instruments: [],
       render: () => <EvidenceCatalogueView />,
     },
@@ -30,7 +30,7 @@ export const evidenceModule: StudioModule<Services, WorkspaceViewServices, "evid
   commands: [
     {
       id: "open-evidence",
-      label: "Open Evidence catalogue",
+      label: "Open Evidence",
       action: { kind: "navigate", stage: "evidence", instrument: null },
     },
   ],

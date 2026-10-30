@@ -164,28 +164,20 @@ def run_accessibility_journey(
                     })""")
                     assert reduced_motion, "A delivered control animates under reduced motion"
                     observed[f"{theme}_reduced_motion"] = reduced_motion
-                    for route in (
-                        "build",
-                        "workspace",
-                        "results",
-                        "operations",
-                        "experiments",
-                        "atlas",
+                    for route, navigation_name, label in (
+                        ("build", "Workbench views", "Model"),
+                        ("workspace", "Workbench views", "Workspace"),
+                        ("results", "Workbench views", "Analyse"),
+                        ("compare", "Workbench views", "Compare"),
+                        ("evidence", "Workbench views", "Evidence"),
+                        ("operations", "Workbench context destinations", "Devices & Operations"),
+                        ("experiments", "Workbench views", "Run"),
+                        ("atlas", "Workbench context destinations", "Atlas"),
                     ):
                         navigation = page.get_by_role(
-                            "navigation",
-                            name="Workbench context destinations"
-                            if route == "operations"
-                            else "Workbench views",
-                            exact=True,
+                            "navigation", name=navigation_name, exact=True
                         )
-                        link = navigation.get_by_role(
-                            "link",
-                            name="Devices & Operations"
-                            if route == "operations"
-                            else route.title(),
-                            exact=True,
-                        )
+                        link = navigation.get_by_role("link", name=label, exact=True)
                         link.focus()
                         page.keyboard.press("Enter")
                         expect(

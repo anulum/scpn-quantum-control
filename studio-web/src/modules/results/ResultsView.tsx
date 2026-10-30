@@ -37,7 +37,7 @@ export default function ResultsView({
   }, [focusInstrument]);
   return (
     <article className="qsp-panel">
-      <h3>Results</h3>
+      <h3>Analyse</h3>
       <p>
         Inspect source-bound evidence or replay the committed browser fixture. These results are not
         attached to a requested revision by navigation.

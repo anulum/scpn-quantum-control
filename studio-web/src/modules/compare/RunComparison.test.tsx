@@ -196,16 +196,16 @@ it("starts with no fabricated source or execution authority", () => {
   expect(screen.queryByRole("table", { name: "Original matched and unmatched values" })).toBeNull();
 });
 
-it("loads the registered comparison from Results and retains the original workspace without starting another worker", async () => {
+it("loads the registered comparison from Compare and retains the original workspace without starting another worker", async () => {
   const started = BuiltKernelWorker.started;
   window.history.replaceState(null, "", "#/workspace");
   render(<Workbench rawCodecs={localExperimentCodecs}>{(_context, editors) => editors}</Workbench>);
   fireEvent.change(screen.getByLabelText("Workspace archive JSON"), { target: { value: json } });
   const navigation = screen.getByRole("navigation", { name: "Workbench views" });
-  fireEvent.click(screen.getByRole("button", { name: "Open Results" }));
+  fireEvent.click(screen.getByRole("button", { name: "Open Compare" }));
   await act(() => vi.dynamicImportSettled());
   expect(
-    within(navigation).getByRole("link", { name: "Results" }).getAttribute("aria-current"),
+    within(navigation).getByRole("link", { name: "Compare" }).getAttribute("aria-current"),
   ).toBe("page");
   await screen.findByLabelText("Baseline archive JSON");
   await admitBoth();

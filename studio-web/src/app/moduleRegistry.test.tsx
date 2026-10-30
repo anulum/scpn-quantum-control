@@ -23,9 +23,16 @@ import { parseWorkbenchRoute } from "./routing";
 import type { WorkbenchView } from "./routing";
 
 describe("workbenchRegistry", () => {
-  it("admits exactly the addresses the workbench had before it was modular", () => {
+  it("admits every address the workbench had before it was modular, plus Compare", () => {
     expectTypeOf<WorkbenchView>().toEqualTypeOf<
-      "workspace" | "build" | "experiments" | "results" | "atlas" | "operations" | "evidence"
+      | "workspace"
+      | "build"
+      | "experiments"
+      | "results"
+      | "compare"
+      | "evidence"
+      | "atlas"
+      | "operations"
     >();
     expect(
       [...workbenchRegistry.paths].map(([path, { view, instrument }]) => [path, view, instrument]),
@@ -36,21 +43,23 @@ describe("workbenchRegistry", () => {
       ["/experiments", "experiments", null],
       ["/results", "results", null],
       ["/results/program-ad-replay", "results", "program-ad-replay"],
+      ["/compare", "compare", null],
+      ["/evidence", "evidence", null],
       ["/atlas", "atlas", null],
       ["/operations", "operations", null],
-      ["/evidence", "evidence", null],
     ]);
   });
 
-  it("keeps the navigation labels, their order and their groups", () => {
+  it("orders the research loop after Workspace and keeps Atlas and operations as context", () => {
     expect(workbenchRegistry.stages.map(({ label, group }) => [label, group])).toEqual([
       ["Workspace", "primary"],
-      ["Build", "primary"],
-      ["Experiments", "primary"],
-      ["Results", "primary"],
-      ["Atlas", "primary"],
+      ["Model", "primary"],
+      ["Run", "primary"],
+      ["Analyse", "primary"],
+      ["Compare", "primary"],
+      ["Evidence", "primary"],
+      ["Atlas", "context"],
       ["Devices & Operations", "context"],
-      ["Evidence catalogue", "context"],
     ]);
   });
 

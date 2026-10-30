@@ -27,14 +27,14 @@ export const buildModule: StudioModule<Services, WorkspaceViewServices, "build">
   stages: [
     {
       id: "build" as const,
-      label: "Build",
+      label: "Model",
       group: "primary",
       instruments: ["compile-recompute"],
       render: (services: Services, instrument: string | null) => (
         <BuildView
           focusInstrument={instrument === "compile-recompute"}
           editors={services.renderEditors("build")}
-          compareHref={`#/results${services.contextSuffix}`}
+          compareHref={`#/compare${services.contextSuffix}`}
         />
       ),
     },
@@ -43,7 +43,7 @@ export const buildModule: StudioModule<Services, WorkspaceViewServices, "build">
   commands: [
     {
       id: "open-build",
-      label: "Open Build",
+      label: "Open Model",
       action: { kind: "navigate", stage: "build", instrument: null },
     },
   ],

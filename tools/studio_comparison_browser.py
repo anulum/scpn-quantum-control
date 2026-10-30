@@ -356,11 +356,11 @@ def run_comparison_journey(
                     expect(
                         page.get_by_role("region", name="Local workspace").get_by_role("status")
                     ).to_contain_text("Parameter revision transaction committed")
-                    _navigate(page, "Experiments")
+                    _navigate(page, "Run")
                     _run_attempt(page)
                     saved = _archive(page)
                     receipt["final_saved_archive_json"] = saved
-                    _navigate(page, "Results")
+                    _navigate(page, "Compare")
                     wait_for_worker_disposal(page)
                     panel = page.get_by_label("Immutable revision and run comparison", exact=True)
                     for side in ("baseline", "candidate"):
@@ -442,7 +442,7 @@ def run_comparison_journey(
                         page.get_by_role("region", name="Local workspace").get_by_role("status")
                     ).to_contain_text("Restored exact saved workspace")
                     assert _archive(page) == saved
-                    _navigate(page, "Results")
+                    _navigate(page, "Compare")
                     expect(page.get_by_label("Candidate archive JSON", exact=True)).to_have_value(
                         saved
                     )

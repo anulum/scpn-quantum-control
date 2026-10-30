@@ -253,7 +253,7 @@ def run_operator_dossier_journey(
             observed["dossier_storage_write_observations"] = writes
             assert panel.get_by_role("button", name="submit", exact=False).count() == 0
             page.get_by_role("navigation", name="Workbench views").get_by_role(
-                "link", name="Build", exact=True
+                "link", name="Model", exact=True
             ).click()
             recompute = page.locator('[id="/build/compile-recompute"]')
             recompute.get_by_role("button", name="Recompute in browser").click()

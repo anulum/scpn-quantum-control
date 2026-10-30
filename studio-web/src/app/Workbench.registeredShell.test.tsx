@@ -73,9 +73,9 @@ it("dispatches two real jobs through command search and opens the registered set
     );
     const commands = within(screen.getByRole("navigation", { name: "Workbench commands" }));
     fireEvent.change(commands.getByLabelText("Search commands"), {
-      target: { value: "Open Experiments" },
+      target: { value: "Open Run" },
     });
-    fireEvent.click(commands.getByRole("button", { name: "Open Experiments" }));
+    fireEvent.click(commands.getByRole("button", { name: "Open Run" }));
     await screen.findByRole("heading", { name: "Local experiment" });
     await clickReady("Validate experiment archive");
     await clickReady("Prepare numerical plan");
@@ -113,7 +113,7 @@ it("dispatches two real jobs through command search and opens the registered set
     fireEvent.click(explorer.getByRole("button", { name: /^resolved_settings\.v1 ·/ }));
     await screen.findByRole("region", { name: "Settings document inspector" });
     expect(screen.getByRole("table", { name: "Requested and effective settings" })).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Return to Experiments" }));
+    fireEvent.click(screen.getByRole("button", { name: "Return to Run" }));
     await screen.findByRole("heading", { name: "Local experiment" });
     expect(screen.queryByRole("region", { name: "Settings document inspector" })).toBeNull();
     expect((screen.getByLabelText("Workspace archive JSON") as HTMLTextAreaElement).value).toBe(

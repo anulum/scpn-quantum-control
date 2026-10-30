@@ -73,7 +73,7 @@ it("test_workbench_navigation_02: fresh deep link and history events retain exac
   expect(within(inspector).getByText("r/1", { exact: true })).toBeTruthy();
   expect(within(inspector).getByText("s+2", { exact: true })).toBeTruthy();
   const atlas = screen
-    .getByRole("navigation", { name: "Workbench views" })
+    .getByRole("navigation", { name: "Workbench context destinations" })
     .querySelector('a[href^="#/atlas"]');
   expect(atlas?.getAttribute("href")).toBe(
     "#/atlas?project=project+%CE%B1&revision=r%2F1&snapshot=s%2B2",
@@ -106,7 +106,7 @@ it("test_workbench_navigation_03: embedded mode exposes keyboard targets and cur
   expect(screen.getByRole("navigation", { name: "Breadcrumbs" }).textContent).toContain("Atlas");
   expect(
     screen
-      .getByRole("navigation", { name: "Workbench views" })
+      .getByRole("navigation", { name: "Workbench context destinations" })
       .querySelector('[aria-current="page"]')?.textContent,
   ).toBe("Atlas");
 });
@@ -125,14 +125,14 @@ it("test_workbench_navigation_04: rejected route retains the original live edito
 
 it("test_workbench_navigation_05: feature view is absent until navigation and reuses the original instrument", async () => {
   render(<QuantumStudioPanel />);
-  expect(screen.queryByRole("heading", { name: "Build" })).toBeNull();
+  expect(screen.queryByRole("heading", { name: "Model" })).toBeNull();
   await visit("#/build/compile-recompute?project=p&revision=r");
-  await screen.findByRole("heading", { name: "Build" });
+  await screen.findByRole("heading", { name: "Model" });
   expect(screen.getByRole("button", { name: "Recompute in browser" })).toBeTruthy();
   expect(screen.queryByRole("region", { name: "Capability catalogue" })).toBeNull();
   expect(document.getElementById("/build/compile-recompute")?.tabIndex).toBe(-1);
   await visit("#/results/program-ad-replay?project=p&revision=r");
-  await screen.findByRole("heading", { name: "Results" });
+  await screen.findByRole("heading", { name: "Analyse" });
   expect(screen.getByRole("region", { name: "Inspect evidence JSON" })).toBeTruthy();
 });
 
@@ -157,7 +157,7 @@ it("operator profiles are reachable from the production shell without replacing 
   await screen.findByLabelText("Backend profile");
   expect(
     screen.getByRole("navigation", { name: "Workbench views" }).querySelectorAll("a"),
-  ).toHaveLength(5);
+  ).toHaveLength(6);
   await visit("#/workspace");
   expect(screen.getByLabelText("Workspace archive JSON")).toBe(editor);
   expect(editor.value).toBe('{"unsaved":"profile-navigation α"}');

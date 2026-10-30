@@ -144,7 +144,7 @@ it("adds one compiled module entry and removes it while retaining exact admitted
   );
   expect(screen.queryByRole("button", { name: "Open source notes" })).toBeNull();
   await act(async () => {
-    fireEvent.click(screen.getByRole("button", { name: "Open Build" }));
+    fireEvent.click(screen.getByRole("button", { name: "Open Model" }));
     await Promise.all([
       import("../modules/build/BuildView"),
       import("../modules/programs/ProgramEditor"),

@@ -30,7 +30,7 @@ export const experimentsModule: StudioModule<Services, WorkspaceViewServices, "e
   stages: [
     {
       id: "experiments" as const,
-      label: "Experiments",
+      label: "Run",
       group: "primary",
       instruments: [],
       render: (services: Services) => (
@@ -49,7 +49,7 @@ export const experimentsModule: StudioModule<Services, WorkspaceViewServices, "e
   commands: [
     {
       id: "open-experiments",
-      label: "Open Experiments",
+      label: "Open Run",
       action: { kind: "navigate", stage: "experiments", instrument: null },
     },
     {

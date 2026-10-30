@@ -75,7 +75,16 @@ def test_workbench_accessibility_real_routes_values_and_refusal_states(
     assert isinstance(audits, list)
     states = {audit["state"] for audit in audits}
     for theme in ("light", "dark"):
-        for route in ("build", "workspace", "results", "operations", "experiments", "atlas"):
+        for route in (
+            "build",
+            "workspace",
+            "results",
+            "compare",
+            "evidence",
+            "operations",
+            "experiments",
+            "atlas",
+        ):
             assert f"{theme}:{route}:normal" in states
             assert f"{theme}:{route}:css-zoom-200" in states
         for state in (
@@ -111,7 +120,7 @@ def test_workbench_accessibility_real_routes_values_and_refusal_states(
             row["impact"] in ("serious", "critical") for row in audit["report"]["violations"]
         )
     keyboard = observed["keyboard"]
-    assert isinstance(keyboard, list) and len(keyboard) == 12
+    assert isinstance(keyboard, list) and len(keyboard) == 16
     assert all(
         row["enabled_controls"] == row["tab_reached"] and row["native_modal_trap_and_origin"]
         for row in keyboard

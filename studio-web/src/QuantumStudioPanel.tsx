@@ -63,7 +63,7 @@ export function QuantumStudioPanel({ rawCodecs, mode }: QuantumStudioPanelProps 
               [
                 ["build", "Build a model"],
                 ["experiments", "Run an experiment"],
-                ["results", "Compare results"],
+                ["compare", "Compare results"],
                 ["evidence", "Evidence catalogue"],
               ] as const
             ).map(([view, label]) => (

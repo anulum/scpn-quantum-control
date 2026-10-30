@@ -51,6 +51,7 @@ def _navigation(
     from tools.studio_workspace_browser_ui import run_empty_project_ui
 
     nav = page.get_by_role("navigation", name="Workbench views")
+    context_nav = page.get_by_role("navigation", name="Workbench context destinations")
     expect(nav).to_be_visible()
     for heading in ("Compile recompute", "Kuramoto Play", "3D Lab", "Program-AD gradient replay"):
         expect(page.get_by_role("heading", name=heading, exact=True)).to_be_visible()
@@ -77,7 +78,7 @@ def _navigation(
     editor = page.get_by_label("Workspace archive JSON")
     draft = cast(str, saved["archive"]) + "\n"
     editor.fill(draft)
-    nav.get_by_role("link", name="Build", exact=True).focus()
+    nav.get_by_role("link", name="Model", exact=True).focus()
     page.keyboard.press("Enter")
     if chunk_error:
         expect(page.get_by_role("alert")).to_contain_text("Your workspace and editor are retained")
@@ -85,22 +86,28 @@ def _navigation(
         expect(editor).to_have_value(draft)
         expect(identity.locator("dd").nth(2)).to_have_text(archive)
         return {"saved": saved, "draft_retained": True, "real_chunk_status": 503}
-    expect(page.get_by_role("heading", name="Build", exact=True)).to_be_visible()
+    expect(page.get_by_role("heading", name="Model", exact=True)).to_be_visible()
     expect(page.get_by_role("region", name="Workbench view", exact=True)).to_be_focused()
     if kernels:
         page.get_by_role("button", name="Recompute in browser", exact=True).click()
         expect(
             page.get_by_text("recomputed digest matches the signed claim", exact=True)
         ).to_be_visible()
-    nav.get_by_role("link", name="Results", exact=True).click()
-    expect(page.get_by_role("heading", name="Results", exact=True)).to_be_visible()
+    nav.get_by_role("link", name="Analyse", exact=True).click()
+    expect(page.get_by_role("heading", name="Analyse", exact=True)).to_be_visible()
     if kernels:
         page.get_by_role("button", name="Recompute gradient in browser", exact=True).click()
         expect(page.locator('[data-verdict="match"]')).to_be_visible()
     page.go_back()
-    expect(page.get_by_role("heading", name="Build", exact=True)).to_be_visible()
+    expect(page.get_by_role("heading", name="Model", exact=True)).to_be_visible()
     page.go_forward()
-    expect(page.get_by_role("heading", name="Results", exact=True)).to_be_visible()
+    expect(page.get_by_role("heading", name="Analyse", exact=True)).to_be_visible()
+    # Comparison is its own stage of the loop; its registered instruments load there.
+    nav.get_by_role("link", name="Compare", exact=True).click()
+    expect(page.get_by_role("heading", name="Compare", exact=True)).to_be_visible()
+    expect(
+        page.get_by_role("heading", name="Method comparison and uncertainty", exact=True)
+    ).to_be_visible()
     nav.get_by_role("link", name="Workspace", exact=True).click()
     expect(editor).to_have_value(draft)
     for invalid in ("#/build?project=a&project=b", "#/future", "#/atlas?revision=%FF"):
@@ -109,7 +116,7 @@ def _navigation(
         page.get_by_role("link", name="Return to Workspace").click()
         expect(editor).to_have_value(draft)
         expect(identity.locator("dd").nth(2)).to_have_text(archive)
-    nav.get_by_role("link", name="Atlas", exact=True).click()
+    context_nav.get_by_role("link", name="Atlas", exact=True).click()
     expect(page.get_by_role("heading", name="Atlas unavailable")).to_be_visible()
     if before_reload is not None:
         before_reload()
@@ -122,7 +129,7 @@ def _navigation(
     expect(inspector.get_by_text(archive, exact=True)).to_be_visible()
     page.reload(wait_until="networkidle")
     expect(inspector.get_by_text("r/α", exact=True)).to_be_visible()
-    nav.get_by_role("link", name="Experiments", exact=True).click()
+    nav.get_by_role("link", name="Run", exact=True).click()
     expect(page.get_by_role("heading", name="Local experiment", exact=True)).to_be_visible()
     expect(page.get_by_role("button", name="Open Kuramoto sample", exact=True)).to_be_enabled()
     expect(page.get_by_label("Current experiment result", exact=True)).to_have_count(0)
@@ -133,10 +140,10 @@ def _navigation(
     nav.get_by_role("link", name="Workspace", exact=True).click()
     expect(editor).to_have_value(cast(str, saved["archive"]))
     assert "revision=r%2F%CE%B1" in page.url
-    nav.get_by_role("link", name="Atlas", exact=True).focus()
+    nav.get_by_role("link", name="Evidence", exact=True).focus()
     page.keyboard.press("Shift+Tab")
     page.keyboard.press("Tab")
-    link = nav.get_by_role("link", name="Atlas", exact=True)
+    link = nav.get_by_role("link", name="Evidence", exact=True)
     expect(link).to_be_focused()
     box = link.bounding_box()
     assert box is not None and box["x"] >= 0 and box["x"] + box["width"] <= 320
@@ -336,9 +343,9 @@ def run_workbench_journey(
                         # Workspace may still be preparing automatic playback at the snapshot.
                         # Always unmount its owner, then await native closure, including workers
                         # created while disposal is being observed.
-                        page.get_by_role("navigation", name="Workbench views").get_by_role(
-                            "link", name="Atlas", exact=True
-                        ).click()
+                        page.get_by_role(
+                            "navigation", name="Workbench context destinations"
+                        ).get_by_role("link", name="Atlas", exact=True).click()
                         expect(
                             page.get_by_role("heading", name="Atlas unavailable")
                         ).to_be_visible()

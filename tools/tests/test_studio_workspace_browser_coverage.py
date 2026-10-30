@@ -421,7 +421,7 @@ def test_capture_actual_experiment_owners(native_browser: Browser) -> None:
             loopback_url(supplied) + "browser-tests/workbench.html", wait_until="networkidle"
         )
         page.get_by_role("navigation", name="Workbench views").get_by_role(
-            "link", name="Experiments", exact=True
+            "link", name="Run", exact=True
         ).click()
         expect(page.get_by_role("heading", name="Local experiment", exact=True)).to_be_visible()
         records = take_native_coverage(session, include_experiments=True)
@@ -485,7 +485,7 @@ def test_experiment_capture_refuses_interrupted_original_owner(native_browser: B
             loopback_url(supplied) + "browser-tests/workbench.html", wait_until="networkidle"
         )
         page.get_by_role("navigation", name="Workbench views").get_by_role(
-            "link", name="Experiments", exact=True
+            "link", name="Run", exact=True
         ).click()
         expect(page.get_by_role("alert")).to_contain_text("unavailable")
         records: list[dict[str, object]] = []
@@ -528,14 +528,13 @@ def test_capture_actual_workbench_navigation_owners(
         page = context.new_page()
         session = start_native_coverage(page)
         page.goto(source + "browser-tests/workbench.html", wait_until="networkidle")
-        nav = page.get_by_role("navigation", name="Workbench views")
-        for view in ("Build", "Results", "Atlas"):
-            nav.get_by_role("link", name=view, exact=True).click()
-            expect(
-                page.get_by_role(
-                    "heading", name=view if view != "Atlas" else "Atlas unavailable", exact=True
-                )
-            ).to_be_visible()
+        for view, heading in (
+            ("Model", "Model"),
+            ("Analyse", "Analyse"),
+            ("Atlas", "Atlas unavailable"),
+        ):
+            page.get_by_role("link", name=view, exact=True).click()
+            expect(page.get_by_role("heading", name=heading, exact=True)).to_be_visible()
         records = take_native_coverage(
             session, include_panel=include_panel, include_workbench=include_workbench
         )

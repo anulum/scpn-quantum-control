@@ -175,7 +175,7 @@ def run_operator_policy_journey(
             observed["policy_storage_write_observations"] = writes
             observations.append("actual-policy-storage-write-custody")
             page.get_by_role("navigation", name="Workbench views").get_by_role(
-                "link", name="Build", exact=True
+                "link", name="Model", exact=True
             ).click()
             recompute = page.locator('[id="/build/compile-recompute"]')
             recompute.get_by_role("button", name="Recompute in browser").click()

@@ -279,7 +279,7 @@ def run_workflow_journey(
                     ).to_contain_text("transaction committed")
                     initial = _archive(page)
                     receipt["initial_native_workers"] = page.evaluate("window.__ownedKernel")
-                    _navigate(page, "Experiments")
+                    _navigate(page, "Run")
                     panel = page.get_by_role("region", name="Reproducible workflows", exact=True)
                     panel.get_by_role("button", name="Compose local workflow", exact=True).click()
                     expect(
@@ -318,7 +318,7 @@ def run_workflow_journey(
                         assert page.evaluate("window.__ownedKernel.started") == before_workers
                         _navigate(page, "Workspace")
                         assert _archive(page) == initial
-                        _navigate(page, "Experiments")
+                        _navigate(page, "Run")
                         observations.append(
                             {
                                 "host": target,
@@ -426,7 +426,7 @@ def run_workflow_journey(
                         take_native_coverage(session, records, include_workflows=True)
                         profiler = start_native_coverage(page, session=session)
                     page.reload(wait_until="networkidle")
-                    _navigate(page, "Experiments")
+                    _navigate(page, "Run")
                     panel = page.get_by_role("region", name="Reproducible workflows", exact=True)
                     expect(
                         panel.get_by_role("button", name="Run or resume workflow", exact=True)
@@ -452,7 +452,7 @@ def run_workflow_journey(
                     assert _selected_journal(resumed) == journal
                     assert resumed["members"] == completed["members"]
                     observations.append({"host": target, "case": "restart", "native_workers": 0})
-                    _navigate(page, "Experiments")
+                    _navigate(page, "Run")
                     graph = cast(dict[str, object], read_json(write_json(graph)))
                     body = cast(dict[str, object], graph["body"])
                     body["workflow_id"] = "failed-native-parent"
@@ -480,7 +480,7 @@ def run_workflow_journey(
                     observations.append(
                         {"host": target, "case": "failed_parent", "journal": failed}
                     )
-                    _navigate(page, "Experiments")
+                    _navigate(page, "Run")
                     cancellation = cast(dict[str, object], read_json(write_json(graph)))
                     cancel_body = cast(dict[str, object], cancellation["body"])
                     cancel_body["workflow_id"] = "cancel-original-workflow"
@@ -567,7 +567,7 @@ def run_workflow_journey(
                     assert (
                         cast(dict[str, object], cancel_entries[-1]["output"])["disposed"] is True
                     )
-                    _navigate(page, "Experiments")
+                    _navigate(page, "Run")
                     observations.append(
                         {
                             "host": target,

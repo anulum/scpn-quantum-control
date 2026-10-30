@@ -25,7 +25,7 @@ export const resultsModule: StudioModule<Services, WorkspaceViewServices, "resul
   stages: [
     {
       id: "results" as const,
-      label: "Results",
+      label: "Analyse",
       group: "primary",
       instruments: ["program-ad-replay"],
       render: (services: Services, instrument: string | null) => (
@@ -41,7 +41,7 @@ export const resultsModule: StudioModule<Services, WorkspaceViewServices, "resul
   commands: [
     {
       id: "open-results",
-      label: "Open Results",
+      label: "Open Analyse",
       action: { kind: "navigate", stage: "results", instrument: null },
     },
   ],

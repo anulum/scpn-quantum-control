@@ -146,7 +146,7 @@ def run_method_comparison_journey(
                             }
                         }""")
                         navigation = page.get_by_role("navigation", name="Workbench views")
-                        navigation.get_by_role("link", name="Results", exact=True).click()
+                        navigation.get_by_role("link", name="Compare", exact=True).click()
                         panel = page.get_by_role(
                             "region", name="Method comparison and uncertainty", exact=True
                         )
@@ -334,7 +334,7 @@ def run_method_comparison_journey(
                         writes = page.evaluate("window.methodComparisonWrites")
                         assert writes == [], writes
                         observed["storage_write_observations"] = writes
-                        navigation.get_by_role("link", name="Build", exact=True).click()
+                        navigation.get_by_role("link", name="Model", exact=True).click()
                         compiler = page.locator('[id="/build/compile-recompute"]')
                         compiler.get_by_role("button", name="Recompute in browser").click()
                         expect(compiler.get_by_role("status")).to_have_text(
@@ -342,8 +342,15 @@ def run_method_comparison_journey(
                         )
                         observations.append(kind + ":original-built-wasm-recompute")
                         # Original workbench cohort includes every route's actual lazy composition.
-                        for view in ["Experiments", "Results", "Atlas", "Workspace"]:
-                            navigation.get_by_role("link", name=view, exact=True).click()
+                        for view in [
+                            "Run",
+                            "Analyse",
+                            "Compare",
+                            "Evidence",
+                            "Atlas",
+                            "Workspace",
+                        ]:
+                            page.get_by_role("link", name=view, exact=True).click()
                         expect(workspace).to_have_value(draft)
                         assert not errors, errors
                         assert not external, external

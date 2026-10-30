@@ -205,7 +205,7 @@ def run_provider_observation_journey(
             assert writes == [], writes
             observed["job_storage_write_observations"] = writes
             page.get_by_role("navigation", name="Workbench views").get_by_role(
-                "link", name="Build", exact=True
+                "link", name="Model", exact=True
             ).click()
             recompute = page.locator('[id="/build/compile-recompute"]')
             recompute.get_by_role("button", name="Recompute in browser").click()

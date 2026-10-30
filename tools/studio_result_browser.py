@@ -266,7 +266,7 @@ def run_result_journey(
                         if row["schema"] == "studio.kuramoto-output.v1"
                     )
                     page.get_by_role("navigation", name="Workbench views").get_by_role(
-                        "link", name="Results", exact=True
+                        "link", name="Analyse", exact=True
                     ).click()
                     loader = page.get_by_role("region", name="Source result inspector", exact=True)
                     inspector = loader.get_by_role("region", name="Result value inspector").first
