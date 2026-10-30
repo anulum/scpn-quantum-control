@@ -19,6 +19,8 @@ from scpn_quantum_control.phase import qnn_training as qnn
 from scpn_quantum_control.phase_qnn_model_numerics import PhaseModelNumerics
 from scpn_quantum_control.phase_qnn_numpy_model import (
     bounded_phase_qnn_probabilities,
+    numpy_phase_classifier_gradient,
+    numpy_phase_classifier_loss_and_gradient,
     phase_qnn_mean_squared_error,
 )
 
@@ -70,10 +72,109 @@ def test_model_and_original_public_routes_match_independent_scalar_reference(
     assert loss == pytest.approx(expected_loss, rel=0.0, abs=3e-16)
     np.testing.assert_array_equal(prediction.probabilities, probabilities)
     assert qnn.parameter_shift_qnn_classifier_loss(features, labels, params) == loss
+    analytic_loss, analytic_gradient = numpy_phase_classifier_loss_and_gradient(
+        features, labels, params, numerics=numerics
+    )
+    expected_gradient = np.array(
+        [
+            sum(
+                (float(expected[row]) - float(labels[row]))
+                * math.sin(float(features[row, column] + params[column]))
+                for row in range(samples)
+            )
+            / (samples * width)
+            for column in range(width)
+        ]
+    )
+    assert analytic_loss == pytest.approx(expected_loss, rel=0.0, abs=3e-16)
+    np.testing.assert_allclose(analytic_gradient, expected_gradient, rtol=0.0, atol=3e-16)
+    np.testing.assert_array_equal(
+        numpy_phase_classifier_gradient(features, labels, params, numerics=numerics),
+        analytic_gradient,
+    )
     np.testing.assert_array_equal(features, original_features)
     np.testing.assert_array_equal(params, original_params)
     assert not np.shares_memory(probabilities, features)
     assert not np.shares_memory(probabilities, params)
+
+
+@pytest.mark.parametrize("gradient_only", [False, True])
+def test_analytic_model_retains_scalar_construction_order_and_gradient_only_work(
+    gradient_only: bool,
+) -> None:
+    """Construct the loss before dimension factors and omit it on the gradient route.
+
+    Parameters
+    ----------
+    gradient_only
+        Request only the derivative, which must not construct a scalar loss.
+
+    """
+    constructed: list[float] = []
+
+    class ModelScalar(float):
+        """Record actual scalar values constructed by the numerical model."""
+
+        def __new__(cls, value: float) -> ModelScalar:
+            """Construct the scalar subclass while recording its numerical argument."""
+            constructed.append(float(value))
+            return super().__new__(cls, value)
+
+    features = np.array([[0.2, -0.4], [1.1, 0.7], [0.3, -0.8]])
+    labels = np.array([0.0, 1.0, 0.25])
+    params = np.array([0.4, -0.2])
+    numerics = PhaseModelNumerics(numpy=lambda: np, scalar=lambda: ModelScalar)
+    expected_loss = qnn.parameter_shift_qnn_classifier_loss(features, labels, params)
+    if gradient_only:
+        gradient = numpy_phase_classifier_gradient(features, labels, params, numerics=numerics)
+        assert constructed == [2.0, 3.0]
+    else:
+        loss, gradient = numpy_phase_classifier_loss_and_gradient(
+            features, labels, params, numerics=numerics
+        )
+        assert type(loss) is ModelScalar
+        np.testing.assert_allclose(constructed, [expected_loss, 2.0, 3.0], atol=1e-16)
+    np.testing.assert_allclose(
+        gradient,
+        qnn.parameter_shift_qnn_classifier_gradient(features, labels, params),
+        rtol=0.0,
+        atol=1e-14,
+    )
+
+
+def test_analytic_loss_resolves_scalar_before_a_real_numpy_underflow_callback() -> None:
+    """Retain constructor evaluation order when native arithmetic rebinds it."""
+
+    class OriginalScalar(float):
+        """Identify the constructor selected before residual multiplication."""
+
+    class ReboundScalar(float):
+        """Identify the constructor selected after NumPy reports underflow."""
+
+    active: type[float] = OriginalScalar
+    events: list[tuple[str, int]] = []
+
+    def record_underflow(error: str, flag: int) -> None:
+        nonlocal active
+        events.append((error, flag))
+        active = ReboundScalar
+
+    previous = np.seterrcall(record_underflow)
+    try:
+        with np.errstate(under="call"):
+            loss, gradient = numpy_phase_classifier_loss_and_gradient(
+                np.array([[0.0]]),
+                np.array([1e-160]),
+                np.array([0.0]),
+                numerics=PhaseModelNumerics(numpy=lambda: np, scalar=lambda: active),
+            )
+    finally:
+        np.seterrcall(previous)
+    assert events and any("underflow" in error for error, _flag in events)
+    assert active is ReboundScalar
+    assert type(loss) is OriginalScalar
+    assert 0.0 < loss < np.finfo(np.float64).tiny
+    np.testing.assert_array_equal(gradient, np.array([0.0]))
 
 
 def test_public_parameter_shift_derivative_retains_feature_coupling() -> None:

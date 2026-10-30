@@ -22,6 +22,9 @@ from typing import Any, TypeAlias, cast
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+from ..differentiable_torch_state import iter_state_mismatches as _iter_state_mismatches
+from ..differentiable_torch_state import state_key_partition as _state_key_partition
+from ..differentiable_torch_state import tensor_descriptor as _lower_tensor_descriptor
 from .torch_bridge import (
     _as_feature_matrix,
     _as_label_vector,
@@ -217,26 +220,26 @@ def validate_torch_bounded_qnn_state_dict(
 
     """
     expected_state = _module_state_dict(module)
-    observed_keys = tuple(str(key) for key in state_dict)
-    expected_keys = tuple(expected_state)
-    missing_keys = tuple(key for key in expected_keys if key not in state_dict)
-    unexpected_keys = tuple(key for key in observed_keys if key not in expected_state)
+    observed_keys, expected_keys, missing_keys, unexpected_keys = _state_key_partition(
+        expected_state, state_dict
+    )
     mismatches: list[PhaseTorchModuleStateTensorMismatch] = []
-    for key in expected_keys:
-        if key not in state_dict:
-            continue
-        expected_shape, expected_dtype = _tensor_descriptor(expected_state[key])
-        observed_shape, observed_dtype = _tensor_descriptor(state_dict[key])
-        if expected_shape != observed_shape or expected_dtype != observed_dtype:
-            mismatches.append(
-                PhaseTorchModuleStateTensorMismatch(
-                    key=key,
-                    expected_shape=expected_shape,
-                    observed_shape=observed_shape,
-                    expected_dtype=expected_dtype,
-                    observed_dtype=observed_dtype,
-                )
+    for (
+        key,
+        expected_shape,
+        observed_shape,
+        expected_dtype,
+        observed_dtype,
+    ) in _iter_state_mismatches(expected_state, state_dict, descriptor=lambda: _tensor_descriptor):
+        mismatches.append(
+            PhaseTorchModuleStateTensorMismatch(
+                key=key,
+                expected_shape=expected_shape,
+                observed_shape=observed_shape,
+                expected_dtype=expected_dtype,
+                observed_dtype=observed_dtype,
             )
+        )
     return PhaseTorchModuleStateValidationResult(
         state_dict_keys=observed_keys,
         expected_keys=expected_keys,
@@ -382,12 +385,7 @@ def run_torch_module_state_audit(
 
 def _tensor_descriptor(value: object) -> tuple[tuple[int, ...], str]:
     """Return shape and dtype metadata for a tensor-like state entry."""
-    shape = getattr(value, "shape", None)
-    if shape is None:
-        array = np.asarray(value)
-        return tuple(int(axis) for axis in array.shape), str(array.dtype)
-    dtype = getattr(value, "dtype", None)
-    return tuple(int(axis) for axis in shape), str(dtype)
+    return _lower_tensor_descriptor(value, numpy=lambda: np)
 
 
 def _clone_state_value(value: object) -> object:

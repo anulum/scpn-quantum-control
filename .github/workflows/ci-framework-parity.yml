@@ -49,6 +49,30 @@ jobs:
           python -c
           "import jax; devices=jax.devices();
           print(f'JAX {jax.__version__}; devices={devices}; primary={devices[0]}')"
+      - name: Run native phase classifier model coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=.coverage.phase-qnn-native-model
+          --branch
+          --include=*/phase_qnn_native_model.py,*/phase_qnn_native_contracts.py,*/phase_qnn_framework_gradients.py
+          -m pytest -q --no-cov tests/test_phase_qnn_native_model.py
+          tests/test_phase_qnn_framework_gradients.py
+      - name: Enforce native phase classifier model exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=.coverage.phase-qnn-native-model
+          --precision=2 --show-missing --fail-under=100
+          --include=*/phase_qnn_native_model.py,*/phase_qnn_native_contracts.py,*/phase_qnn_framework_gradients.py
+      - name: Upload exact-commit native phase classifier coverage
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: native-phase-classifier-coverage-${{ github.sha }}
+          include-hidden-files: true
+          if-no-files-found: error
+          path: .coverage.phase-qnn-native-model
+          retention-days: 7
       - name: Run real native tensor construction coverage
         run: >-
           python -m coverage run
@@ -61,14 +85,16 @@ jobs:
           tests/test_differentiable_tensor_materialization_native.py
           tests/test_differentiable_backend_capabilities.py
           tests/test_differentiable_backend_capabilities_native.py
+          tests/test_differentiable_axis_operators.py
           tests/test_differentiable_axis_compilation.py
+          tests/test_differentiable_tree_vectors.py
       - name: Enforce native tensor construction exact coverage
         run: >-
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.differentiable-tensor-construction
           --precision=2 --show-missing --fail-under=100
-          --include=*/differentiable_tensor_construction.py,*/differentiable_tensor_materialization.py,*/differentiable_backend_capabilities.py,*/differentiable_axis_compilation.py
+          --include=*/differentiable_tensor_construction.py,*/differentiable_tensor_materialization.py,*/differentiable_backend_capabilities.py,*/differentiable_axis_operators.py,*/differentiable_axis_compilation.py,*/differentiable_tree_vectors.py
       - name: Upload exact-commit native tensor construction coverage
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
@@ -130,6 +156,7 @@ jobs:
           tests/test_phase_jax_qnode_pytree_validation.py
           tests/test_phase_jax_qnode_aot_validation.py
           tests/test_phase_jax_qnode_statevector_edges.py
+          tests/test_phase_qnode_jax_capability_audits.py
       - name: Enforce Phase-QNode JAX exact coverage
         run: >-
           python -m coverage report
@@ -137,7 +164,7 @@ jobs:
           --data-file=/tmp/scpn-qc-phase-jax-qnode.coverage
           --precision=2 --show-missing
           --fail-under=100
-          --include=*/jax_bridge.py,*/jax_maturity.py,*/jax_qnode_transforms.py
+          --include=*/jax_bridge.py,*/jax_maturity.py,*/jax_qnode_transforms.py,*/phase_qnode_jax_audits.py
       - name: Run Phase-QNode Torch bridge focused coverage
         run: >-
           python -m coverage run
@@ -171,6 +198,7 @@ jobs:
           tests/test_phase_torch_aot_autograd_export.py
           tests/test_phase_torch_dynamic_shape_export.py
           tests/test_optional_torch_export_contracts.py
+          tests/test_phase_qnode_torch_capability_audits.py
       - name: Enforce Phase-QNode Torch bridge exact coverage
         run: >-
           python -m coverage report
@@ -178,7 +206,7 @@ jobs:
           --data-file=/tmp/scpn-qc-phase-torch-bridge.coverage
           --precision=2 --show-missing
           --fail-under=100
-          --include=*/torch_bridge.py,*/torch_maturity.py,*/torch_qnode_transforms.py,*/torch_autograd_function.py,*/torch_module_state.py,*/torch_checkpoint.py,*/torch_checkpoint_matrix.py,*/torch_device_state.py,*/torch_export.py,*/torch_export_shape_matrix.py,*/torch_training_loop_matrix.py,*/torch_aot_autograd_export.py,*/torch_dynamic_shape_export.py
+          --include=*/torch_bridge.py,*/torch_maturity.py,*/torch_qnode_transforms.py,*/torch_autograd_function.py,*/torch_module_state.py,*/torch_checkpoint.py,*/torch_checkpoint_matrix.py,*/torch_device_state.py,*/torch_export.py,*/torch_export_shape_matrix.py,*/torch_training_loop_matrix.py,*/torch_aot_autograd_export.py,*/torch_dynamic_shape_export.py,*/phase_qnode_torch_audits.py,*/phase_qnode_audit_admission.py,*/differentiable_torch_compile_specialisation.py,*/differentiable_torch_state.py,*/differentiable_torch_graph_replay.py
       - name: Upload exact-commit Phase-QNode Torch coverage
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
@@ -234,6 +262,36 @@ jobs:
           --precision=2 --show-missing
           --fail-under=100
           --include=*/qnode_framework_parity.py
+      - name: Run native QNode arithmetic coverage
+        env:
+          JAX_ENABLE_X64: "true"
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=.coverage.phase-qnode-native-arithmetic
+          --branch --include=*/phase_qnode_native_operators.py,*/phase_qnode_native_expectations.py,*/phase_qnode_gate_numerics.py,*/phase_qnode_state_evolution.py,*/phase_qnode_gate_dispatch.py,*/phase_qnode_native_gates.py,*/phase_qnode_statevector_engine.py,*/phase_qnode_native_statevector.py
+          -m pytest -q --no-cov tests/test_phase_qnode_gate_numerics.py
+          tests/test_phase_qnode_native_operators.py
+          tests/test_phase_qnode_native_expectations.py
+          tests/test_phase_qnode_state_evolution.py
+          tests/test_phase_qnode_gate_dispatch.py
+          tests/test_phase_qnode_native_gates.py
+          tests/test_phase_qnode_native_statevector.py
+      - name: Enforce native QNode arithmetic exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=.coverage.phase-qnode-native-arithmetic
+          --precision=2 --show-missing --fail-under=100
+          --include=*/phase_qnode_native_operators.py,*/phase_qnode_native_expectations.py,*/phase_qnode_gate_numerics.py,*/phase_qnode_state_evolution.py,*/phase_qnode_gate_dispatch.py,*/phase_qnode_native_gates.py,*/phase_qnode_statevector_engine.py,*/phase_qnode_native_statevector.py
+      - name: Upload exact-commit native QNode arithmetic coverage
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: native-qnode-arithmetic-coverage-${{ github.sha }}
+          include-hidden-files: true
+          if-no-files-found: error
+          path: .coverage.phase-qnode-native-arithmetic
+          retention-days: 7
       - name: Run differentiable parity tests
         run: >
           pytest

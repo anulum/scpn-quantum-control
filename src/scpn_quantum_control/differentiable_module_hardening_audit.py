@@ -104,6 +104,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("eager axis-sorter liveness", "compiler admission", "replacement-sorter guards"),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_axis_operators.py",
+            ("tests/test_differentiable_axis_operators.py",),
+            ("supplied binary-axis operator application", "native inverse-permutation order"),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_backend_capabilities.py",
             (
                 "tests/test_differentiable_backend_capabilities.py",
@@ -192,6 +197,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             "src/scpn_quantum_control/differentiable_batch_helpers.py",
             ("tests/test_differentiable_batch_helpers.py",),
             ("parameter-shift sample tensors", "batched tangent/cotangent validation"),
+        ),
+        _record(
+            "src/scpn_quantum_control/differentiable_tree_vectors.py",
+            ("tests/test_differentiable_tree_vectors.py",),
+            ("native parameter-tree packing", "explicit host numerical namespace"),
         ),
         _record(
             "src/scpn_quantum_control/differentiable_vmap.py",
@@ -666,6 +676,30 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_torch_graph_replay.py",
+            (
+                "tests/test_phase_torch_aot_autograd_export.py",
+                "tests/test_phase_qnode_torch_capability_audits.py",
+            ),
+            ("loaded forward/backward graph replay", "empty-output refusal"),
+        ),
+        _record(
+            "src/scpn_quantum_control/differentiable_torch_state.py",
+            (
+                "tests/test_phase_torch_module_state.py",
+                "tests/test_phase_qnode_torch_capability_audits.py",
+            ),
+            ("state key, shape and dtype comparison", "host and native descriptors"),
+        ),
+        _record(
+            "src/scpn_quantum_control/differentiable_torch_compile_specialisation.py",
+            (
+                "tests/test_phase_torch_bridge_compile_boundaries.py",
+                "tests/test_phase_qnode_torch_capability_audits.py",
+            ),
+            ("qualified-release refusal before compilation", "caller setting restoration"),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_transform_algebra.py",
             ("tests/test_differentiable_transform_algebra.py",),
             (
@@ -978,6 +1012,21 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             "src/scpn_quantum_control/phase_qnn_model_numerics.py",
             ("tests/test_phase_qnn_numpy_model.py",),
             ("live numerical namespace", "original scalar constructor order"),
+        ),
+        _record(
+            "src/scpn_quantum_control/phase_qnn_framework_gradients.py",
+            ("tests/test_phase_qnn_framework_gradients.py", "tests/test_ml_convergence_qnn.py"),
+            ("framework classifier gradients against parameter shift", "audit-evidence refusal"),
+        ),
+        _record(
+            "src/scpn_quantum_control/phase_qnn_native_contracts.py",
+            ("tests/test_phase_qnn_native_model.py",),
+            ("classifier tensor-operation protocol", "native runtime structural typing"),
+        ),
+        _record(
+            "src/scpn_quantum_control/phase_qnn_native_model.py",
+            ("tests/test_phase_qnn_native_model.py",),
+            ("admitted native classifier arithmetic", "caller-owned differentiation contexts"),
         ),
         _record(
             "src/scpn_quantum_control/phase_qnn_numpy_model.py",

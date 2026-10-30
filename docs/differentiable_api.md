@@ -101,7 +101,10 @@ rules retain their registered identities; this does not freeze callback state.
 | `scpn_quantum_control.ml_examples` | Deterministic local convergence certificates for one frozen QNN, QGNN, and QSNN task; complete framework-status rows; notebook pointers; and digest-bound JSON/Markdown evidence. It reuses the existing trainers and makes no arbitrary-architecture, generalisation, provider, QPU, neuromorphic-hardware, or production claim. See [QNN, QGNN, and QSNN convergence examples](ml_convergence_examples.md). |
 | `scpn_quantum_control.phase.qnn_training` | Bounded data-reuploading phase-QNN classifier training with multi-frequency parameter-shift descent, prediction evidence, and accuracy certificates. |
 | `scpn_quantum_control.differentiable_axis_compilation` | Torch compiler polyfill for fixed dimension-permutation metadata. Eager execution invokes the actual supplied sorter; compilation lowers NumPy-native ordering to integer operations and traces replacement sorters normally. The original QNode compiler route registers this numerical bridge with signature checking and dependency guards enabled. This adds no Inductor performance or export claim. |
-| `scpn_quantum_control.phase_qnn_numpy_model` | NumPy numerical model for admitted bounded phase-classifier inputs: per-feature phase probabilities, sample averaging, clipping to [0, 1], and full-batch mean squared label error. The original `phase.qnn_training` entry points retain input validation, parameter-shift training, prediction thresholds, and result construction. |
+| `scpn_quantum_control.differentiable_tree_vectors` | Generic parameter/derivative tree packing, native JAX vector and batch reconstruction, and host gradient/Hessian block assembly. SDK leaf ordering, strict shape pairing, finite-value errors, fresh host arrays and native transform graphs are retained. Original Phase-QNode adapters retain their defining functions and late numerical namespace lookups. |
+| `scpn_quantum_control.phase_qnode_state_evolution` | Lazy evolution of native statevectors through supplied local matrix applications, plus JAX and PyTorch computational-zero allocation. Each application finishes before the next instruction is requested; the last gate matrix can remain alive through the caller observable calculation. Gate construction, circuit admission and framework contexts remain caller-owned. |
+| `scpn_quantum_control.phase_qnn_numpy_model` | NumPy numerical model for admitted bounded phase-classifier inputs. Prediction probabilities retain clipping to [0, 1]; analytic loss-and-gradient and gradient-only routes retain their original unclipped residuals and sample/feature reduction order. Callers retain input validation, parameter-shift training, prediction thresholds, and result construction. |
+| `scpn_quantum_control.phase_qnn_native_model` | Bounded phase-classifier arithmetic on admitted JAX, PyTorch and TensorFlow tensors. Callers retain SDK loading, input admission, differentiation contexts and result construction. Native tensors remain in their original gradient graph. |
 | `scpn_quantum_control.phase.qnn_convergence` | Deterministic bounded-QNN convergence evidence with loss-drop thresholds, accuracy thresholds, parameter-shift evaluation accounting, multi-seed initial-condition envelopes, and unsuitable-scenario records. |
 | `scpn_quantum_control.phase.qnn_finite_shot` | Seeded finite-shot simulator evidence for bounded-QNN gradients and noisy-gradient convergence with replay seeds, shot counts, uncertainty radii, and non-hardware claim boundaries. |
 | `scpn_quantum_control.phase.qnn_framework_bridge_matrix` | Fail-closed support matrix for bounded phase-QNN framework bridges, separating implemented JAX/PyTorch/TensorFlow routes from arbitrary simulator autodiff and hardware-gradient gaps. |
@@ -1412,6 +1415,31 @@ TensorFlow callers keep their recording contexts and resources:
 `tensorflow_jvp` reads an existing `ForwardAccumulator`, and `tensorflow_vjp`
 uses the caller's actual tape and output cotangent. No host conversion or
 report policy is performed by these operations.
+
+`scpn_quantum_control.differentiable_axis_operators` applies supplied matrices
+to selected binary tensor dimensions using native JAX or PyTorch arrays.
+The caller supplies the dimension order, then restores the inverse permutation
+using its resolved native reshape and transpose operations. Matrix application
+preserves complex values and the native gradient graph. Circuit registration,
+gate selection and input admission remain with their callers.
+
+`scpn_quantum_control.phase_qnode_native_operators` constructs controlled
+two-state operators, fresh Pauli matrix entries and three-qubit basis transpositions with real JAX or
+PyTorch arrays. Targets retain complex amplitudes and their native gradient
+graphs. The original registered-circuit consumers select gates and preserve
+their active tensor constructors; PyTorch callers retain final row stacking.
+
+`scpn_quantum_control.phase_qnode_native_expectations` evaluates dense
+quadratic forms, weighted real and complex overlaps, symmetrized moments and
+covariance from supplied native tensors. Complex ordered products remain
+complex until explicit real projection. Observable selection, coefficient reads
+and operator application stay with the registered-circuit consumers.
+
+`scpn_quantum_control.phase_qnode_gate_numerics` constructs native Pauli
+rotations, phase, Hadamard, square-root-X and controlled-Z operators from
+supplied numerical primitives. Native parameters retain their differentiation
+graphs. Original compatibility callers keep their defining nested factories
+and resolve active constructors and numerical constants at their original points.
 
 The numerical `value`, `gradient`, `jacobian` and `hessian` routes also have
 standalone AD entry points in `scpn_quantum_control.differentiable_api_core`.

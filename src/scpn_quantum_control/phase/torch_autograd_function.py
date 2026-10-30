@@ -40,6 +40,8 @@ from ..differentiable_tensor_admission import (
 from ..differentiable_tensor_admission import (
     require_real_parameter_vector as _require_real_parameter_vector,
 )
+from ..phase_qnn_model_numerics import PhaseModelNumerics as _PhaseModelNumerics
+from ..phase_qnn_numpy_model import numpy_phase_classifier_gradient as _phase_qnn_analytic_model
 from .qnn_training import (
     parameter_shift_qnn_classifier_gradient,
     parameter_shift_qnn_classifier_loss,
@@ -492,14 +494,11 @@ def _bounded_analytic_qnn_gradient(
     parameter_values: FloatArray,
 ) -> FloatArray:
     """Return the exact bounded phase-QNN MSE gradient."""
-    shifted = feature_matrix + parameter_values[None, :]
-    probabilities = 0.5 * (1.0 - np.cos(shifted))
-    predictions = np.mean(probabilities, axis=1)
-    residual = predictions - label_vector
-    scale = 1.0 / float(feature_matrix.shape[1])
-    gradient = (2.0 / float(feature_matrix.shape[0])) * np.sum(
-        residual[:, None] * (0.5 * np.sin(shifted) * scale),
-        axis=0,
+    gradient = _phase_qnn_analytic_model(
+        feature_matrix,
+        label_vector,
+        parameter_values,
+        numerics=_PhaseModelNumerics(numpy=lambda: np, scalar=lambda: float),
     )
     return _as_parameter_vector("bounded phase-QNN analytic gradient", gradient)
 

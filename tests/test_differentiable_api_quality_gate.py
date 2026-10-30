@@ -57,6 +57,53 @@ def test_hosted_static_commands_match_canonical_gate_arguments() -> None:
     ) == ["python", "tools/differentiable_api_quality_gates.py", "docstrings"]
 
 
+def test_native_axis_operator_uses_the_required_native_tensor_gate() -> None:
+    """Enforce the same actual source and test cohort in preflight and hosted CI."""
+    assert "src/scpn_quantum_control/differentiable_axis_operators.py" in (
+        gates.DIFFERENTIABLE_API_QUALITY_RATCHET
+    )
+    assert "tests/test_differentiable_axis_operators.py" in (
+        gates.DIFFERENTIABLE_API_QUALITY_RATCHET
+    )
+    execution, report = [
+        command for _name, command in gates.build_native_tensor_coverage_gates("python")
+    ]
+    assert "tests/test_differentiable_axis_operators.py" in execution
+    assert "--fail-under=100" in report
+    assert any("*/differentiable_axis_operators.py" in argument for argument in report)
+    workflow = ".github/workflows/ci-framework-parity.yml"
+    assert _workflow_command(workflow, "Run real native tensor construction coverage") == execution
+    assert (
+        _workflow_command(workflow, "Enforce native tensor construction exact coverage") == report
+    )
+
+
+def test_native_tree_vectors_use_required_static_runtime_and_combined_coverage() -> None:
+    """Require the extracted tree math in the real SDK producer and final report."""
+    source = "src/scpn_quantum_control/differentiable_tree_vectors.py"
+    test = "tests/test_differentiable_tree_vectors.py"
+    assert {source, test} <= set(gates.DIFFERENTIABLE_API_QUALITY_RATCHET)
+    execution, report = [
+        command for _name, command in gates.build_native_tensor_coverage_gates("python")
+    ]
+    assert test in execution
+    assert "--fail-under=100" in report
+    assert any("*/differentiable_tree_vectors.py" in argument for argument in report)
+    workflow = ".github/workflows/ci-framework-parity.yml"
+    assert _workflow_command(workflow, "Run real native tensor construction coverage") == execution
+    assert (
+        _workflow_command(workflow, "Enforce native tensor construction exact coverage") == report
+    )
+    combined = (ROOT / ".github/workflows/ci-native-integration.yml").read_text()
+    download = combined.index("Download exact-commit native tensor construction coverage")
+    combine = combined.index(
+        'coverage combine --append --keep "$RUNNER_TEMP/native-tensor-coverage/'
+    )
+    exact = combined.index("*/differentiable_tree_vectors.py", combine)
+    xml = combined.index("coverage xml", exact)
+    assert download < combine < exact < xml
+
+
 def test_native_axis_compilation_uses_required_static_runtime_and_combined_coverage() -> None:
     """Require the axis compiler bridge in the real SDK producer and final report."""
     source = "src/scpn_quantum_control/differentiable_axis_compilation.py"

@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **826 modules** across **41 package families**
-- **4393 documented public module-level symbols**
+- **834 modules** across **41 package families**
+- **4441 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -6153,15 +6153,23 @@ Trace fixed permutation indices without a NumPy tensor graph interruption.
 
 **Functions:** `numpy_axis_order()`, `trace_numpy_axis_order()`, `register_torch_axis_compilation()`
 
+### `scpn_quantum_control.differentiable_axis_operators`
+
+Apply a supplied linear operator to supplied binary tensor axes.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_axis_operators.py) · Public symbols: **3**
+
+**Functions:** `jax_binary_axis_matmul()`, `torch_binary_axis_matmul()`, `restore_binary_axis_order()`
+
 ### `scpn_quantum_control.differentiable_backend_capabilities`
 
 Admit native derivative capabilities without executing or selecting a model.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_backend_capabilities.py) · Public symbols: **5**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_backend_capabilities.py) · Public symbols: **8**
 
 **Classes:** `BackendCapabilityPrimitives`
 
-**Functions:** `require_jax_host_callback()`, `require_jax_custom_vjp()`, `resolve_torch_autograd_function()`, `resolve_torch_autograd_grad()`
+**Functions:** `require_jax_host_callback()`, `require_jax_custom_vjp()`, `resolve_torch_autograd_function()`, `resolve_torch_autograd_grad()`, `torch_runtime_available()`, `jax_runtime_available()`, `tensorflow_runtime_available()`
 
 ### `scpn_quantum_control.differentiable_baseline_scorecard`
 
@@ -6625,6 +6633,14 @@ Committed-artefact emission for the transform-algebra support matrix.
 
 **Functions:** `build_transform_support_matrix_artifact()`, `validate_transform_support_matrix_artifact()`, `render_transform_support_matrix_markdown()`, `main()`
 
+### `scpn_quantum_control.differentiable_tree_vectors`
+
+Pack native parameter and derivative trees without circuit or model policy.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_tree_vectors.py) · Public symbols: **7**
+
+**Functions:** `parameter_tree_vector()`, `jax_tree_vector()`, `jax_vector_tree()`, `jax_batch_tree()`, `gradient_tree_vector()`, `batched_gradient_tree_matrix()`, `hessian_tree_matrix()`
+
 ### `scpn_quantum_control.differentiable_vmap`
 
 Eager vectorization transform for differentiable-programming objectives.
@@ -6913,17 +6929,57 @@ Fail-closed **PGBO quantum geometric tensor** product surface.
 
 Typed numerical reads used by the bounded phase classifier's host model.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase_qnn_model_numerics.py) · Public symbols: **2**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase_qnn_model_numerics.py) · Public symbols: **3**
 
-**Classes:** `PhaseModelNumpy`, `PhaseModelNumerics`
+**Classes:** `PhaseModelNumpy`, `AnalyticPhaseModelNumpy`, `PhaseModelNumerics`
+
+### `scpn_quantum_control.phase_qnn_native_contracts`
+
+Numerical tensor operations required by the bounded phase classifier model.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase_qnn_native_contracts.py) · Public symbols: **5**
+
+**Classes:** `PhaseTensor`, `TorchPhaseTensor`, `JAXPhaseNamespace`, `TorchPhaseNamespace`, `TensorMean`
+
+### `scpn_quantum_control.phase_qnn_native_model`
+
+Native model arithmetic for admitted real tensors, separate from report policy.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase_qnn_native_model.py) · Public symbols: **4**
+
+**Functions:** `jax_phase_classifier_loss()`, `jax_phase_classifier_gradient()`, `torch_phase_classifier_loss()`, `tensorflow_phase_classifier_loss()`
 
 ### `scpn_quantum_control.phase_qnn_numpy_model`
 
 Evaluate the phase classifier model without training or report composition.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase_qnn_numpy_model.py) · Public symbols: **2**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase_qnn_numpy_model.py) · Public symbols: **4**
 
-**Functions:** `bounded_phase_qnn_probabilities()`, `phase_qnn_mean_squared_error()`
+**Functions:** `bounded_phase_qnn_probabilities()`, `phase_qnn_mean_squared_error()`, `numpy_phase_classifier_loss_and_gradient()`, `numpy_phase_classifier_gradient()`
+
+### `scpn_quantum_control.phase_qnode_gate_numerics`
+
+Construct supplied native gate operators without model or circuit selection.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase_qnode_gate_numerics.py) · Public symbols: **7**
+
+**Functions:** `pauli_rotation()`, `hadamard_operator()`, `sqrt_x_operator()`, `quarter_turn_phase()`, `jax_phase_operator()`, `torch_phase_operator()`, `controlled_z_operator()`
+
+### `scpn_quantum_control.phase_qnode_native_expectations`
+
+Compute quantum expectation moments from supplied native tensors.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase_qnode_native_expectations.py) · Public symbols: **5**
+
+**Functions:** `real_quadratic_form()`, `weighted_real_overlap()`, `weighted_complex_overlap()`, `real_symmetrized_overlap()`, `covariance_from_moments()`
+
+### `scpn_quantum_control.phase_qnode_native_operators`
+
+Construct native QNode operators without selecting circuits or model policy.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase_qnode_native_operators.py) · Public symbols: **7**
+
+**Functions:** `phase_operator_entries()`, `two_qubit_operator_entries()`, `pauli_operator_entries()`, `jax_controlled_operator()`, `torch_controlled_operator_rows()`, `jax_basis_transposition()`, `torch_basis_transposition()`
 
 ### `scpn_quantum_control.phase_qnode_product`
 
@@ -6934,6 +6990,16 @@ Fail-closed Phase-QNode **product** catalogue and journey map.
 **Classes:** `PhaseQNodeJourney`, `PhaseQNodeJourneyDecision`
 
 **Functions:** `list_phase_qnode_journey_ids()`, `get_phase_qnode_journey()`, `iter_phase_qnode_journeys()`, `dry_run_phase_qnode_journey()`, `map_phase_qnode_public_surfaces()`, `build_phase_qnode_product_registry()`, `assert_phase_qnode_product_integrity()`
+
+### `scpn_quantum_control.phase_qnode_state_evolution`
+
+Evolve native statevectors using supplied numerical matrix applications.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase_qnode_state_evolution.py) · Public symbols: **4**
+
+**Classes:** `NativeLocalOperator`
+
+**Functions:** `evolve_local_operators()`, `jax_zero_state()`, `torch_zero_state()`
 
 ### `scpn_quantum_control.polyglot_edge_ad_product`
 

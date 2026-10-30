@@ -49,11 +49,11 @@ from ..differentiable import (
     vmap,
     whole_program_value_and_grad,
 )
-from ..phase.jax_bridge import (
-    is_phase_jax_available,
+from ..differentiable_backend_capabilities import (
+    jax_runtime_available as is_phase_jax_available,
 )
-from ..phase.torch_bridge import (
-    is_phase_torch_available,
+from ..differentiable_backend_capabilities import (
+    torch_runtime_available as is_phase_torch_available,
 )
 from .differentiable_programming_contracts import (
     DifferentiableProgrammingBenchmarkResult as DifferentiableProgrammingBenchmarkResult,

@@ -711,6 +711,18 @@ jobs:
         with:
           name: native-tensor-construction-coverage-${{ github.sha }}
           path: ${{ runner.temp }}/native-tensor-coverage
+      - name: Download exact-commit native phase classifier coverage (3.12 only)
+        if: matrix.python-version == '3.12'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
+        with:
+          name: native-phase-classifier-coverage-${{ github.sha }}
+          path: ${{ runner.temp }}/native-phase-classifier-coverage
+      - name: Download exact-commit native QNode arithmetic coverage (3.12 only)
+        if: matrix.python-version == '3.12'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
+        with:
+          name: native-qnode-arithmetic-coverage-${{ github.sha }}
+          path: ${{ runner.temp }}/native-qnode-arithmetic-coverage
       - name: Download exact-commit Phase-QNode Torch coverage (3.12 only)
         if: matrix.python-version == '3.12'
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
@@ -733,9 +745,11 @@ jobs:
           python -m coverage combine --append --keep "$RUNNER_TEMP/native-transform-coverage/native-transform.coverage"
           python -m coverage combine --append --keep "$RUNNER_TEMP/nqs-ansatz-coverage/scpn-qc-nqs-ansatz-quality.coverage"
           python -m coverage combine --append --keep "$RUNNER_TEMP/native-tensor-coverage/.coverage.differentiable-tensor-construction"
+          python -m coverage combine --append --keep "$RUNNER_TEMP/native-phase-classifier-coverage/.coverage.phase-qnn-native-model"
+          python -m coverage combine --append --keep "$RUNNER_TEMP/native-qnode-arithmetic-coverage/.coverage.phase-qnode-native-arithmetic"
           python -m coverage combine --append --keep "$RUNNER_TEMP/phase-torch-coverage/scpn-qc-phase-torch-bridge.coverage"
           python -m coverage combine --append --keep "$RUNNER_TEMP/phase-pennylane-coverage/scpn-qc-phase-pennylane-bridge.coverage"
-          python -m coverage report --precision=2 --show-missing --fail-under=100 --include='*/phase/torch_qnode_transforms.py,*/phase/pennylane_import.py,*/differentiable_axis_compilation.py'
+          python -m coverage report --precision=2 --show-missing --fail-under=100 --include='*/phase/torch_qnode_transforms.py,*/phase/pennylane_import.py,*/phase_qnn_native_model.py,*/phase_qnn_native_contracts.py,*/phase_qnn_framework_gradients.py,*/phase_qnode_native_operators.py,*/phase_qnode_native_expectations.py,*/phase_qnode_gate_numerics.py,*/phase_qnode_state_evolution.py,*/phase_qnode_gate_dispatch.py,*/phase_qnode_native_gates.py,*/phase_qnode_statevector_engine.py,*/phase_qnode_native_statevector.py,*/differentiable_tree_vectors.py,*/differentiable_axis_compilation.py'
           python -m coverage xml --include='*/scpn_quantum_control/*'
           python tools/audit_coverage_policy.py --coverage-xml coverage.xml
       - name: Audit coverage gaps (3.12 only)

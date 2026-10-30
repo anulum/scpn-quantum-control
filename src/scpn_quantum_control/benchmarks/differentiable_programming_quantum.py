@@ -15,12 +15,6 @@ from collections.abc import Callable
 import numpy as np
 from numpy.typing import NDArray
 
-from ..phase.jax_bridge import (
-    jax_phase_qnode_aot_export_audit,
-    jax_phase_qnode_native_transform_audit,
-    jax_phase_qnode_pytree_transform_audit,
-    jax_phase_qnode_sharding_transform_audit,
-)
 from ..phase.param_shift import verify_parameter_shift_gradient
 from ..phase.qnode_circuit import (
     PauliTerm,
@@ -29,11 +23,17 @@ from ..phase.qnode_circuit import (
     execute_phase_qnode_circuit,
     parameter_shift_phase_qnode_gradient,
 )
-from ..phase.torch_bridge import (
-    torch_phase_qnode_compile_audit,
-    torch_phase_qnode_compile_boundary_audit,
-    torch_phase_qnode_transform_audit,
-    torch_phase_qnode_value_and_grad,
+from ..phase_qnode_jax_audits import (
+    native_jax_aot_export_audit,
+    native_jax_native_transform_audit,
+    native_jax_pytree_transform_audit,
+    native_jax_sharding_transform_audit,
+)
+from ..phase_qnode_torch_audits import (
+    native_torch_compile_audit,
+    native_torch_compile_boundary_audit,
+    native_torch_func_transform_audit,
+    native_torch_statevector_gradient_audit,
 )
 from .differentiable_programming_contracts import QuantumGradientBenchmarkResult, _max_abs_error
 
@@ -99,6 +99,8 @@ def _sparse_ising_chain_quantum_gradient_case() -> QuantumGradientBenchmarkResul
 
 
 def _torch_registered_phase_qnode_statevector_case() -> QuantumGradientBenchmarkResult:
+    import torch
+
     values = np.array([0.37, -0.21], dtype=np.float64)
     circuit = PhaseQNodeCircuit(
         n_qubits=2,
@@ -109,9 +111,11 @@ def _torch_registered_phase_qnode_statevector_case() -> QuantumGradientBenchmark
         ),
         observable=PauliTerm(1.0, ((0, "z"), (1, "z"))),
     )
-    result = torch_phase_qnode_value_and_grad(circuit, values, tolerance=1.0e-8)
+    result = native_torch_statevector_gradient_audit(torch, circuit, values, tolerance=1.0e-8)
     finite_difference_certificate = verify_parameter_shift_gradient(
-        lambda params: torch_phase_qnode_value_and_grad(circuit, params, tolerance=1.0e-8).value,
+        lambda params: (
+            native_torch_statevector_gradient_audit(torch, circuit, params, tolerance=1.0e-8).value
+        ),
         values,
     )
     return QuantumGradientBenchmarkResult(
@@ -135,6 +139,8 @@ def _torch_registered_phase_qnode_statevector_case() -> QuantumGradientBenchmark
 
 
 def _torch_registered_phase_qnode_func_transform_case() -> QuantumGradientBenchmarkResult:
+    import torch
+
     values = np.array([0.37, -0.21], dtype=np.float64)
     params_batch = np.array([[0.37, -0.21], [0.4, -0.25]], dtype=np.float64)
     circuit = PhaseQNodeCircuit(
@@ -146,7 +152,8 @@ def _torch_registered_phase_qnode_func_transform_case() -> QuantumGradientBenchm
         ),
         observable=PauliTerm(1.0, ((0, "z"), (1, "z"))),
     )
-    result = torch_phase_qnode_transform_audit(
+    result = native_torch_func_transform_audit(
+        torch,
         circuit,
         values,
         params_batch=params_batch,
@@ -154,7 +161,8 @@ def _torch_registered_phase_qnode_func_transform_case() -> QuantumGradientBenchm
     )
     finite_difference_certificate = verify_parameter_shift_gradient(
         lambda params: (
-            torch_phase_qnode_transform_audit(
+            native_torch_func_transform_audit(
+                torch,
                 circuit,
                 params,
                 params_batch=params[None, :],
@@ -185,6 +193,8 @@ def _torch_registered_phase_qnode_func_transform_case() -> QuantumGradientBenchm
 
 
 def _torch_registered_phase_qnode_compile_case() -> QuantumGradientBenchmarkResult:
+    import torch
+
     values = np.array([0.37, -0.21], dtype=np.float64)
     circuit = PhaseQNodeCircuit(
         n_qubits=2,
@@ -195,7 +205,8 @@ def _torch_registered_phase_qnode_compile_case() -> QuantumGradientBenchmarkResu
         ),
         observable=PauliTerm(1.0, ((0, "z"), (1, "z"))),
     )
-    result = torch_phase_qnode_compile_audit(
+    result = native_torch_compile_audit(
+        torch,
         circuit,
         values,
         tolerance=1.0e-8,
@@ -203,7 +214,8 @@ def _torch_registered_phase_qnode_compile_case() -> QuantumGradientBenchmarkResu
     )
     finite_difference_certificate = verify_parameter_shift_gradient(
         lambda params: (
-            torch_phase_qnode_compile_audit(
+            native_torch_compile_audit(
+                torch,
                 circuit,
                 params,
                 tolerance=1.0e-8,
@@ -234,6 +246,8 @@ def _torch_registered_phase_qnode_compile_case() -> QuantumGradientBenchmarkResu
 
 
 def _torch_registered_phase_qnode_compile_boundary_case() -> QuantumGradientBenchmarkResult:
+    import torch
+
     values = np.array([0.37, -0.21], dtype=np.float64)
     circuit = PhaseQNodeCircuit(
         n_qubits=2,
@@ -244,7 +258,8 @@ def _torch_registered_phase_qnode_compile_boundary_case() -> QuantumGradientBenc
         ),
         observable=PauliTerm(1.0, ((0, "z"), (1, "z"))),
     )
-    result = torch_phase_qnode_compile_boundary_audit(
+    result = native_torch_compile_boundary_audit(
+        torch,
         circuit,
         values,
         tolerance=1.0e-8,
@@ -276,6 +291,9 @@ def _torch_registered_phase_qnode_compile_boundary_case() -> QuantumGradientBenc
 
 
 def _jax_registered_phase_qnode_native_transform_case() -> QuantumGradientBenchmarkResult:
+    import jax
+    import jax.numpy as jnp
+
     values = np.array([0.37, -0.21], dtype=np.float64)
     circuit = PhaseQNodeCircuit(
         n_qubits=2,
@@ -286,10 +304,12 @@ def _jax_registered_phase_qnode_native_transform_case() -> QuantumGradientBenchm
         ),
         observable=PauliTerm(1.0, ((0, "z"), (1, "z"))),
     )
-    result = jax_phase_qnode_native_transform_audit(circuit, values, tolerance=1.0e-8)
+    result = native_jax_native_transform_audit(jax, jnp, circuit, values, tolerance=1.0e-8)
     finite_difference_certificate = verify_parameter_shift_gradient(
         lambda params: (
-            jax_phase_qnode_native_transform_audit(
+            native_jax_native_transform_audit(
+                jax,
+                jnp,
                 circuit,
                 params,
                 tolerance=1.0e-8,
@@ -324,6 +344,9 @@ def _jax_registered_phase_qnode_native_transform_case() -> QuantumGradientBenchm
 
 
 def _jax_registered_phase_qnode_pytree_transform_case() -> QuantumGradientBenchmarkResult:
+    import jax
+    import jax.numpy as jnp
+
     values = np.array([0.37, -0.21], dtype=np.float64)
     params_pytree = {
         "parameter_0": np.array([values[0]], dtype=np.float64),
@@ -338,10 +361,12 @@ def _jax_registered_phase_qnode_pytree_transform_case() -> QuantumGradientBenchm
         ),
         observable=PauliTerm(1.0, ((0, "z"), (1, "z"))),
     )
-    result = jax_phase_qnode_pytree_transform_audit(circuit, params_pytree, tolerance=1.0e-8)
+    result = native_jax_pytree_transform_audit(jax, jnp, circuit, params_pytree, tolerance=1.0e-8)
     finite_difference_certificate = verify_parameter_shift_gradient(
         lambda params: (
-            jax_phase_qnode_pytree_transform_audit(
+            native_jax_pytree_transform_audit(
+                jax,
+                jnp,
                 circuit,
                 {
                     "parameter_0": np.array([params[0]], dtype=np.float64),
@@ -380,6 +405,7 @@ def _jax_registered_phase_qnode_pytree_transform_case() -> QuantumGradientBenchm
 
 def _jax_registered_phase_qnode_sharding_transform_case() -> QuantumGradientBenchmarkResult:
     import jax
+    import jax.numpy as jnp
 
     local_device_count = int(jax.local_device_count())
     values = np.array([0.37, -0.21], dtype=np.float64)
@@ -397,13 +423,17 @@ def _jax_registered_phase_qnode_sharding_transform_case() -> QuantumGradientBenc
         ),
         observable=PauliTerm(1.0, ((0, "z"), (1, "z"))),
     )
-    result = jax_phase_qnode_sharding_transform_audit(
+    result = native_jax_sharding_transform_audit(
+        jax,
+        jnp,
         circuit,
         params_batch,
         tolerance=1.0e-8,
     )
     finite_difference_certificate = verify_parameter_shift_gradient(
-        lambda params: jax_phase_qnode_sharding_transform_audit(
+        lambda params: native_jax_sharding_transform_audit(
+            jax,
+            jnp,
             circuit,
             params[None, :] + offsets,
             tolerance=1.0e-8,
@@ -432,6 +462,9 @@ def _jax_registered_phase_qnode_sharding_transform_case() -> QuantumGradientBenc
 
 
 def _jax_registered_phase_qnode_aot_export_case() -> QuantumGradientBenchmarkResult:
+    import jax
+    import jax.numpy as jnp
+
     values = np.array([0.37, -0.21], dtype=np.float64)
     circuit = PhaseQNodeCircuit(
         n_qubits=2,
@@ -442,7 +475,7 @@ def _jax_registered_phase_qnode_aot_export_case() -> QuantumGradientBenchmarkRes
         ),
         observable=PauliTerm(1.0, ((0, "z"), (1, "z"))),
     )
-    result = jax_phase_qnode_aot_export_audit(circuit, values, tolerance=1.0e-8)
+    result = native_jax_aot_export_audit(jax, jnp, circuit, values, tolerance=1.0e-8)
     parameter_shift = parameter_shift_phase_qnode_gradient(circuit, values)
     finite_difference_certificate = verify_parameter_shift_gradient(
         lambda params: execute_phase_qnode_circuit(circuit, params).value,

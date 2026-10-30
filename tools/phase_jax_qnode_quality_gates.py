@@ -19,6 +19,7 @@ PHASE_JAX_QNODE_QUALITY_RATCHET = [
     "src/scpn_quantum_control/phase/jax_maturity.py",
     "src/scpn_quantum_control/phase/jax_qnode_transforms.py",
     "src/scpn_quantum_control/phase/jax_compatibility.py",
+    "src/scpn_quantum_control/phase_qnode_jax_audits.py",
     "tests/_phase_jax_bridge_test_helpers.py",
     "tests/_phase_jax_qnode_test_helpers.py",
     "tests/test_phase_jax_bridge_aot_export.py",
@@ -28,6 +29,7 @@ PHASE_JAX_QNODE_QUALITY_RATCHET = [
     "tests/test_phase_jax_qnode_pytree_validation.py",
     "tests/test_phase_jax_qnode_aot_validation.py",
     "tests/test_phase_jax_qnode_statevector_edges.py",
+    "tests/test_phase_qnode_jax_capability_audits.py",
     "tools/phase_jax_qnode_quality_gates.py",
     "tests/test_phase_jax_qnode_quality_gate.py",
 ]
@@ -48,6 +50,7 @@ PHASE_JAX_QNODE_COVERAGE_COHORT = [
     "tests/test_phase_jax_qnode_pytree_validation.py",
     "tests/test_phase_jax_qnode_aot_validation.py",
     "tests/test_phase_jax_qnode_statevector_edges.py",
+    "tests/test_phase_qnode_jax_capability_audits.py",
 ]
 """Public-path tests that own exact transform-leaf coverage."""
 
@@ -142,7 +145,8 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={PHASE_JAX_QNODE_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/jax_bridge.py,*/jax_maturity.py,*/jax_qnode_transforms.py",
+                "--include=*/jax_bridge.py,*/jax_maturity.py,*/jax_qnode_transforms.py,"
+                "*/phase_qnode_jax_audits.py",
             ],
         ),
     ]

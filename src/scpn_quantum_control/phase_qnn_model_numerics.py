@@ -46,6 +46,18 @@ class PhaseModelNumpy(Protocol):
         ...
 
 
+class AnalyticPhaseModelNumpy(PhaseModelNumpy, Protocol):
+    """Add analytic-derivative operations without widening the prediction protocol."""
+
+    def sin(self, values: FloatArray, /) -> FloatArray:
+        """Evaluate the sine used by the analytic phase derivative."""
+        ...
+
+    def sum(self, values: FloatArray, *, axis: int) -> FloatArray:
+        """Sum sample derivatives without reducing their feature dimension."""
+        ...
+
+
 @dataclass(frozen=True)
 class PhaseModelNumerics:
     """Read numerical names when their original expressions evaluate them.
@@ -65,4 +77,4 @@ class PhaseModelNumerics:
     scalar: Callable[[], type[float]]
 
 
-__all__ = ["FloatArray", "PhaseModelNumerics", "PhaseModelNumpy"]
+__all__ = ["AnalyticPhaseModelNumpy", "FloatArray", "PhaseModelNumerics", "PhaseModelNumpy"]

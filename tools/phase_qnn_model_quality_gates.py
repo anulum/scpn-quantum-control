@@ -19,9 +19,19 @@ PHASE_QNN_MODEL_SOURCES = [
 ]
 """Numerical LEARN owners enforced at exact statement and branch coverage."""
 
+PHASE_QNN_NATIVE_MODEL_SOURCES = [
+    "src/scpn_quantum_control/phase_qnn_native_contracts.py",
+    "src/scpn_quantum_control/phase_qnn_native_model.py",
+]
+"""Native model arithmetic and structural tensor contracts, without SDK imports."""
+
 PHASE_QNN_MODEL_QUALITY_RATCHET = [
     *PHASE_QNN_MODEL_SOURCES,
+    *PHASE_QNN_NATIVE_MODEL_SOURCES,
+    "src/scpn_quantum_control/phase_qnn_framework_gradients.py",
     "tests/test_phase_qnn_numpy_model.py",
+    "tests/test_phase_qnn_native_model.py",
+    "tests/test_phase_qnn_framework_gradients.py",
     "tests/test_phase_qnn_model_quality_gate.py",
     "tools/phase_qnn_model_quality_gates.py",
 ]

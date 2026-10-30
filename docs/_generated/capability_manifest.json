@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 851,
     "public_documentation_pages": 385,
-    "python_model_classes": 1559,
-    "python_model_source_modules": 826,
+    "python_model_classes": 1571,
+    "python_model_source_modules": 845,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1583
+    "test_files": 1596
   },
   "documentation": {
     "examples": [
@@ -995,6 +995,10 @@
       {
         "name": "AnalyticDesignEvidenceRow",
         "path": "src/scpn_quantum_control/active_sensing_product.py"
+      },
+      {
+        "name": "AnalyticPhaseModelNumpy",
+        "path": "src/scpn_quantum_control/phase_qnn_model_numerics.py"
       },
       {
         "name": "AncillaCircuitStats",
@@ -2757,6 +2761,10 @@
         "path": "src/scpn_quantum_control/hardware/provider_semantics.py"
       },
       {
+        "name": "GateOperatorFactories",
+        "path": "src/scpn_quantum_control/phase_qnode_gate_dispatch.py"
+      },
+      {
         "name": "GaugeLatticeCrosscheck",
         "path": "src/scpn_quantum_control/gauge/lattice_crosscheck.py"
       },
@@ -3217,6 +3225,10 @@
         "path": "src/scpn_quantum_control/hardware/provider_smoke.py"
       },
       {
+        "name": "JAXAuditOperations",
+        "path": "src/scpn_quantum_control/phase_qnode_jax_audits.py"
+      },
+      {
         "name": "JAXNQSBaselineProduct",
         "path": "src/scpn_quantum_control/jax_nqs_baseline_product.py"
       },
@@ -3231,6 +3243,10 @@
       {
         "name": "JAXNQSEnvironment",
         "path": "src/scpn_quantum_control/jax_nqs_baseline_product.py"
+      },
+      {
+        "name": "JAXPhaseNamespace",
+        "path": "src/scpn_quantum_control/phase_qnn_native_contracts.py"
       },
       {
         "name": "JITExplanation",
@@ -3855,6 +3871,10 @@
       {
         "name": "NativeAnnealingRecord",
         "path": "src/scpn_quantum_control/hardware/provider_modalities.py"
+      },
+      {
+        "name": "NativeLocalOperator",
+        "path": "src/scpn_quantum_control/phase_qnode_state_evolution.py"
       },
       {
         "name": "NativeRegisterSamples",
@@ -4713,6 +4733,10 @@
         "path": "src/scpn_quantum_control/phase/qnode_vector_transforms.py"
       },
       {
+        "name": "PhaseTensor",
+        "path": "src/scpn_quantum_control/phase_qnn_native_contracts.py"
+      },
+      {
         "name": "PhaseTensorFlowFunctionCompatibilityResult",
         "path": "src/scpn_quantum_control/phase/tensorflow_bridge_contracts.py"
       },
@@ -5375,6 +5399,10 @@
       {
         "name": "QGNNTrainingResult",
         "path": "src/scpn_quantum_control/phase/qgnn.py"
+      },
+      {
+        "name": "QNNGradientOperations",
+        "path": "src/scpn_quantum_control/phase_qnn_framework_gradients.py"
       },
       {
         "name": "QNNOptimizerBaselineResult",
@@ -6305,6 +6333,10 @@
         "path": "src/scpn_quantum_control/codesign/contracts.py"
       },
       {
+        "name": "StatevectorKernels",
+        "path": "src/scpn_quantum_control/phase_qnode_statevector_engine.py"
+      },
+      {
         "name": "StaticCircuitPlan",
         "path": "src/scpn_quantum_control/experimental/llm_qpu/contracts/static.py"
       },
@@ -6573,6 +6605,10 @@
         "path": "src/scpn_quantum_control/differentiable_tensor_materialization.py"
       },
       {
+        "name": "TensorMean",
+        "path": "src/scpn_quantum_control/phase_qnn_native_contracts.py"
+      },
+      {
         "name": "TheoryHookEvidenceRecord",
         "path": "src/scpn_quantum_control/analysis/theory_hook_promotion.py"
       },
@@ -6667,6 +6703,18 @@
       {
         "name": "TopologyProjectionReport",
         "path": "src/scpn_quantum_control/chimera_control/topology.py"
+      },
+      {
+        "name": "TorchAuditOperations",
+        "path": "src/scpn_quantum_control/phase_qnode_torch_audits.py"
+      },
+      {
+        "name": "TorchPhaseNamespace",
+        "path": "src/scpn_quantum_control/phase_qnn_native_contracts.py"
+      },
+      {
+        "name": "TorchPhaseTensor",
+        "path": "src/scpn_quantum_control/phase_qnn_native_contracts.py"
       },
       {
         "name": "TraceADArray",
@@ -7307,6 +7355,7 @@
       "src/scpn_quantum_control/differentiable_api_core_bindings.py",
       "src/scpn_quantum_control/differentiable_architecture_map.py",
       "src/scpn_quantum_control/differentiable_axis_compilation.py",
+      "src/scpn_quantum_control/differentiable_axis_operators.py",
       "src/scpn_quantum_control/differentiable_backend_capabilities.py",
       "src/scpn_quantum_control/differentiable_baseline_scorecard.py",
       "src/scpn_quantum_control/differentiable_batch_helpers.py",
@@ -7354,12 +7403,16 @@
       "src/scpn_quantum_control/differentiable_tensor_construction.py",
       "src/scpn_quantum_control/differentiable_tensor_materialization.py",
       "src/scpn_quantum_control/differentiable_tensorflow_transform_algebra.py",
+      "src/scpn_quantum_control/differentiable_torch_compile_specialisation.py",
+      "src/scpn_quantum_control/differentiable_torch_graph_replay.py",
+      "src/scpn_quantum_control/differentiable_torch_state.py",
       "src/scpn_quantum_control/differentiable_torch_transform_algebra.py",
       "src/scpn_quantum_control/differentiable_transform_algebra.py",
       "src/scpn_quantum_control/differentiable_transform_comparison.py",
       "src/scpn_quantum_control/differentiable_transform_helpers.py",
       "src/scpn_quantum_control/differentiable_transform_support_matrix.py",
       "src/scpn_quantum_control/differentiable_transform_support_matrix_artifact.py",
+      "src/scpn_quantum_control/differentiable_tree_vectors.py",
       "src/scpn_quantum_control/differentiable_vmap.py",
       "src/scpn_quantum_control/dla_parity/baselines.py",
       "src/scpn_quantum_control/dla_parity/dataset.py",
@@ -7691,9 +7744,23 @@
       "src/scpn_quantum_control/phase/varqite.py",
       "src/scpn_quantum_control/phase/xy_compiler.py",
       "src/scpn_quantum_control/phase/xy_kuramoto.py",
+      "src/scpn_quantum_control/phase_qnn_framework_gradients.py",
       "src/scpn_quantum_control/phase_qnn_model_numerics.py",
+      "src/scpn_quantum_control/phase_qnn_native_contracts.py",
+      "src/scpn_quantum_control/phase_qnn_native_model.py",
       "src/scpn_quantum_control/phase_qnn_numpy_model.py",
+      "src/scpn_quantum_control/phase_qnode_audit_admission.py",
+      "src/scpn_quantum_control/phase_qnode_gate_dispatch.py",
+      "src/scpn_quantum_control/phase_qnode_gate_numerics.py",
+      "src/scpn_quantum_control/phase_qnode_jax_audits.py",
+      "src/scpn_quantum_control/phase_qnode_native_expectations.py",
+      "src/scpn_quantum_control/phase_qnode_native_gates.py",
+      "src/scpn_quantum_control/phase_qnode_native_operators.py",
+      "src/scpn_quantum_control/phase_qnode_native_statevector.py",
       "src/scpn_quantum_control/phase_qnode_product.py",
+      "src/scpn_quantum_control/phase_qnode_state_evolution.py",
+      "src/scpn_quantum_control/phase_qnode_statevector_engine.py",
+      "src/scpn_quantum_control/phase_qnode_torch_audits.py",
       "src/scpn_quantum_control/polyglot_edge_ad_product.py",
       "src/scpn_quantum_control/polyglot_parity_certificate.py",
       "src/scpn_quantum_control/program_ad_adjoint.py",
@@ -9365,6 +9432,7 @@
       "tests/test_differentiable_architecture_map.py",
       "tests/test_differentiable_audit_contracts_quality_gate.py",
       "tests/test_differentiable_axis_compilation.py",
+      "tests/test_differentiable_axis_operators.py",
       "tests/test_differentiable_backend_capabilities.py",
       "tests/test_differentiable_backend_capabilities_native.py",
       "tests/test_differentiable_baseline_scorecard.py",
@@ -9462,6 +9530,7 @@
       "tests/test_differentiable_transform_support_matrix.py",
       "tests/test_differentiable_transform_support_matrix_artifact.py",
       "tests/test_differentiable_transform_support_matrix_artifact_quality_gate.py",
+      "tests/test_differentiable_tree_vectors.py",
       "tests/test_differentiable_vmap.py",
       "tests/test_disclose_ibm_job_ids.py",
       "tests/test_disruption_classifier.py",
@@ -10005,8 +10074,10 @@
       "tests/test_phase_qnn_finite_shot.py",
       "tests/test_phase_qnn_framework_agreement.py",
       "tests/test_phase_qnn_framework_bridge_matrix.py",
+      "tests/test_phase_qnn_framework_gradients.py",
       "tests/test_phase_qnn_loss_landscape.py",
       "tests/test_phase_qnn_model_quality_gate.py",
+      "tests/test_phase_qnn_native_model.py",
       "tests/test_phase_qnn_numpy_model.py",
       "tests/test_phase_qnn_optimizer_benchmark.py",
       "tests/test_phase_qnn_training.py",
@@ -10026,11 +10097,20 @@
       "tests/test_phase_qnode_count_mapping.py",
       "tests/test_phase_qnode_framework_parity.py",
       "tests/test_phase_qnode_framework_parity_quality_gate.py",
+      "tests/test_phase_qnode_gate_dispatch.py",
+      "tests/test_phase_qnode_gate_numerics.py",
+      "tests/test_phase_qnode_jax_capability_audits.py",
+      "tests/test_phase_qnode_native_expectations.py",
+      "tests/test_phase_qnode_native_gates.py",
+      "tests/test_phase_qnode_native_operators.py",
+      "tests/test_phase_qnode_native_statevector.py",
       "tests/test_phase_qnode_product.py",
       "tests/test_phase_qnode_product_quality_gate.py",
       "tests/test_phase_qnode_provider_transforms.py",
       "tests/test_phase_qnode_rust_parity.py",
+      "tests/test_phase_qnode_state_evolution.py",
       "tests/test_phase_qnode_tape.py",
+      "tests/test_phase_qnode_torch_capability_audits.py",
       "tests/test_phase_qnode_transform_source_contracts.py",
       "tests/test_phase_qnode_transforms.py",
       "tests/test_phase_qnode_vector_source_contracts.py",

@@ -47,6 +47,14 @@ from ..differentiable_tensor_materialization import (
 from ..differentiable_tensor_materialization import (
     materialize_tensorflow_host_values as _materialize_tensorflow_host_values,
 )
+from ..phase_qnn_framework_gradients import QNNGradientOperations as _QNNGradientOperations
+from ..phase_qnn_framework_gradients import (
+    tensorflow_bounded_qnn_audit as _tensorflow_bounded_qnn_audit,
+)
+from ..phase_qnn_model_numerics import PhaseModelNumerics as _PhaseModelNumerics
+from ..phase_qnn_numpy_model import (
+    numpy_phase_classifier_loss_and_gradient as _phase_qnn_analytic_model,
+)
 from .qnn_training import (
     parameter_shift_qnn_classifier_gradient,
     parameter_shift_qnn_classifier_loss,
@@ -126,6 +134,27 @@ def _tensorflow_tensor(tensorflow_module: Any, values: object) -> Any:
     )
 
 
+def _tensorflow_qnn_routes() -> _QNNGradientOperations:
+    """Return QNN gradient resolvers reading this module's live names."""
+    return _QNNGradientOperations(
+        feature_matrix=lambda: _as_feature_matrix,
+        label_vector=lambda: _as_label_vector,
+        parameter_vector=lambda: _as_parameter_vector,
+        tolerance=lambda: _as_non_negative_tolerance,
+        analytic_model=lambda: (
+            lambda features, labels, params: _phase_qnn_analytic_model(
+                features,
+                labels,
+                params,
+                numerics=_PhaseModelNumerics(numpy=lambda: np, scalar=lambda: float),
+            )
+        ),
+        reference_loss=lambda: parameter_shift_qnn_classifier_loss,
+        reference_gradient=lambda: parameter_shift_qnn_classifier_gradient,
+        tensor=lambda: _tensorflow_tensor,
+    )
+
+
 def tensorflow_parameter_shift_value_and_grad(
     objective: ScalarObjective,
     values: ArrayLike | object,
@@ -196,58 +225,11 @@ def tensorflow_bounded_qnn_value_and_grad(
         )
     tolerance_value = _as_non_negative_tolerance(tolerance)
 
-    shifted = feature_matrix + parameter_values[None, :]
-    probabilities = 0.5 * (1.0 - np.cos(shifted))
-    predictions = np.mean(probabilities, axis=1)
-    residual = predictions - label_vector
-    loss = float(np.mean(residual * residual))
-    scale = 1.0 / float(feature_matrix.shape[1])
-    gradient = (2.0 / float(feature_matrix.shape[0])) * np.sum(
-        residual[:, None] * (0.5 * np.sin(shifted) * scale),
-        axis=0,
-    )
-    gradient = _as_parameter_vector(
-        "TensorFlow bounded phase-QNN gradient",
-        gradient,
-        width=parameter_values.size,
-    )
-
-    reference_loss = parameter_shift_qnn_classifier_loss(
+    return _tensorflow_bounded_qnn_audit(
+        tensorflow_module,
         feature_matrix,
         label_vector,
         parameter_values,
-    )
-    if abs(loss - reference_loss) > tolerance_value:
-        raise RuntimeError(
-            "TensorFlow bounded phase-QNN tensor loss disagrees with SCPN "
-            f"parameter-shift loss: {loss} != {reference_loss}",
-        )
-    reference_gradient = parameter_shift_qnn_classifier_gradient(
-        feature_matrix,
-        label_vector,
-        parameter_values,
-    )
-    reference_gradient = _as_parameter_vector(
-        "SCPN bounded phase-QNN parameter-shift gradient",
-        reference_gradient,
-        width=parameter_values.size,
-    )
-    delta = gradient - reference_gradient
-    max_abs_error = float(np.max(np.abs(delta))) if delta.size else 0.0
-    l2_error = float(np.linalg.norm(delta))
-    passed = bool(max_abs_error <= tolerance_value)
-    return PhaseTensorFlowQNNGradientResult(
-        loss=loss,
-        gradient=gradient,
-        parameter_shift_gradient=reference_gradient,
-        tensorflow_loss=_tensorflow_tensor(tensorflow_module, np.asarray(loss, dtype=np.float64)),
-        tensorflow_gradient=_tensorflow_tensor(tensorflow_module, gradient),
-        tensorflow_parameter_shift_gradient=_tensorflow_tensor(
-            tensorflow_module,
-            reference_gradient,
-        ),
-        max_abs_error=max_abs_error,
-        l2_error=l2_error,
-        tolerance=tolerance_value,
-        passed=passed,
+        tolerance_value,
+        _tensorflow_qnn_routes(),
     )

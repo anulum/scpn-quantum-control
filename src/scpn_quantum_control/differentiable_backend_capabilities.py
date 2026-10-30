@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import importlib
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import TypeAlias
@@ -158,11 +159,65 @@ def resolve_torch_autograd_grad(
     return grad
 
 
+def torch_runtime_available() -> bool:
+    """Return whether the optional PyTorch runtime can be imported.
+
+    Returns
+    -------
+    bool
+        ``False`` when importing ``torch`` raises ``ImportError``.
+
+    """
+    try:
+        importlib.import_module("torch")
+    except ImportError:
+        return False
+    return True
+
+
+def jax_runtime_available() -> bool:
+    """Return whether the optional JAX runtime and ``jax.numpy`` can be imported.
+
+    Returns
+    -------
+    bool
+        ``False`` when either import raises ``AttributeError``, ``ImportError``,
+        ``RuntimeError`` or ``ValueError``, the refusals a misconfigured JAX
+        installation produces at import time.
+
+    """
+    try:
+        importlib.import_module("jax")
+        importlib.import_module("jax.numpy")
+    except (AttributeError, ImportError, RuntimeError, ValueError):
+        return False
+    return True
+
+
+def tensorflow_runtime_available() -> bool:
+    """Return whether the optional TensorFlow runtime can be imported.
+
+    Returns
+    -------
+    bool
+        ``False`` when importing ``tensorflow`` raises ``ImportError``.
+
+    """
+    try:
+        importlib.import_module("tensorflow")
+    except ImportError:
+        return False
+    return True
+
+
 __all__ = [
     "BackendAttributeLookup",
     "BackendCapabilityPrimitives",
+    "jax_runtime_available",
     "require_jax_custom_vjp",
     "require_jax_host_callback",
     "resolve_torch_autograd_function",
     "resolve_torch_autograd_grad",
+    "tensorflow_runtime_available",
+    "torch_runtime_available",
 ]

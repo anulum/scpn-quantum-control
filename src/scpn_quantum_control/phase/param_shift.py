@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
-from typing import TypeAlias
+from typing import Any, TypeAlias
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
@@ -578,6 +578,57 @@ def _parameter_shift_hessian_with_evaluations(
             hessian[row, col] = value
             hessian[col, row] = value
     return hessian, evaluations
+
+
+def parameter_shift_objective_values(
+    objective: ScalarObjective,
+    values: FloatArray,
+    rule: ParameterShiftRule,
+    *,
+    scalar: Callable[[], Callable[[str, object], float]],
+    numpy: Callable[[], Any],
+) -> tuple[FloatArray, FloatArray]:
+    """Evaluate an objective at every plus and minus parameter-shift point.
+
+    Parameters
+    ----------
+    objective
+        Objective of a parameter vector.
+    values
+        Base parameter vector; it is copied for each shifted point.
+    rule
+        Parameter-shift rule whose shifts define the evaluation points.
+    scalar
+        Resolver of ``(name, value) -> float`` admitting each objective value.
+    numpy
+        Resolver of the NumPy namespace, read separately at each allocation.
+
+    Returns
+    -------
+    tuple[FloatArray, FloatArray]
+        Plus-shift and minus-shift values with shape ``(terms, parameters)``.
+        For each term and parameter the plus point is evaluated before the
+        minus point.
+
+    """
+    terms = rule.terms
+    plus_values: FloatArray = numpy().zeros((len(terms), values.size), dtype=numpy().float64)
+    minus_values: FloatArray = numpy().zeros_like(plus_values)
+    for term_index, (shift, _coefficient) in enumerate(terms):
+        for param_index in range(values.size):
+            plus = values.copy()
+            minus = values.copy()
+            plus[param_index] += shift
+            minus[param_index] -= shift
+            plus_values[term_index, param_index] = scalar()(
+                "plus shifted objective",
+                objective(plus),
+            )
+            minus_values[term_index, param_index] = scalar()(
+                "minus shifted objective",
+                objective(minus),
+            )
+    return plus_values, minus_values
 
 
 def parameter_shift_gradient(

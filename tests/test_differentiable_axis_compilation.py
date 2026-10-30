@@ -24,6 +24,7 @@ from scpn_quantum_control.differentiable_axis_compilation import (
     trace_numpy_axis_order,
 )
 from scpn_quantum_control.phase.qnode_circuit import (
+    DenseHermitianObservable,
     PauliTerm,
     PhaseQNodeCircuit,
     PhaseQNodeOperation,
@@ -32,6 +33,20 @@ from scpn_quantum_control.phase.qnode_circuit import (
 )
 
 pytestmark = pytest.mark.framework_imports
+
+
+@pytest.fixture(autouse=True)
+def _fresh_compiler_caches() -> Iterable[None]:
+    """Give every case its own Dynamo caches.
+
+    Compiled audits specialise on each circuit's structure, and PyTorch limits
+    recompilations per function within one process, so cases must not depend
+    on which compiled circuits ran before them.
+    """
+    torch = importlib.import_module("torch")
+    torch.compiler.reset()
+    yield
+    torch.compiler.reset()
 
 
 @pytest.mark.parametrize("axes", [[], [0], [1, 0], [2, 0, 1]])
@@ -183,3 +198,55 @@ def test_cached_original_graph_revalidates_actual_sorter_dependency(
     gradient = captured[1](parameters)
     np.testing.assert_allclose(float(value), math.cos(0.23), atol=1e-14)
     np.testing.assert_allclose(gradient.detach().numpy(), [-math.sin(0.23)], atol=1e-14)
+
+
+@pytest.mark.parametrize(
+    "gate,qubits,parameter_index",
+    [("ry", (2,), 3), ("rxx", (2, 0), 3), ("ccnot", (2, 0, 1), None)],
+)
+def test_original_public_fullgraph_dense_gradient_matches_registered_numpy_execution(
+    gate: str,
+    qubits: tuple[int, ...],
+    parameter_index: int | None,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Capture original public values and gradients on reordered one-to-three wires.
+
+    Parameters
+    ----------
+    gate
+        Actual registered local gate, including controlled three-wire execution.
+    qubits
+        Ordered wire dimensions used by the admitted circuit.
+    parameter_index
+        Original parameter binding, absent for the fixed controlled gate.
+    monkeypatch
+        Restore actual Torch compilation after selecting the eager capture backend.
+
+    """
+    torch = importlib.import_module("torch")
+    module = importlib.import_module("scpn_quantum_control.phase.torch_qnode_transforms")
+    values = np.arange(64, dtype=np.float64).reshape(8, 8)
+    observable = DenseHermitianObservable(
+        np.asarray((values + values.T + 1j * (values - values.T)) / 80, dtype=np.complex128)
+    )
+    circuit = PhaseQNodeCircuit(
+        n_qubits=3,
+        operations=(
+            PhaseQNodeOperation("ry", (0,), parameter_index=0),
+            PhaseQNodeOperation("rx", (1,), parameter_index=1),
+            PhaseQNodeOperation("ry", (2,), parameter_index=2),
+            PhaseQNodeOperation(gate, qubits, parameter_index=parameter_index),
+        ),
+        observable=observable,
+    )
+    params = np.array([0.31, -0.23, 0.47, 0.41])
+    expected = execute_phase_qnode_circuit(circuit, params)
+    derivative = parameter_shift_phase_qnode_gradient(circuit, params)
+    monkeypatch.setattr(torch, "compile", partial(torch.compile, backend="eager"))
+    result = module.torch_phase_qnode_compile_audit(
+        circuit, params, fullgraph=True, tolerance=1e-10
+    )
+    assert result.passed and result.fullgraph
+    np.testing.assert_allclose(result.value, expected.value, rtol=0, atol=1e-13)
+    np.testing.assert_allclose(result.gradient, derivative.gradient, rtol=0, atol=1e-13)

@@ -28,6 +28,11 @@ PHASE_TORCH_BRIDGE_QUALITY_RATCHET = [
     "src/scpn_quantum_control/phase/torch_training_loop_matrix.py",
     "src/scpn_quantum_control/phase/torch_aot_autograd_export.py",
     "src/scpn_quantum_control/phase/torch_dynamic_shape_export.py",
+    "src/scpn_quantum_control/phase_qnode_torch_audits.py",
+    "src/scpn_quantum_control/phase_qnode_audit_admission.py",
+    "src/scpn_quantum_control/differentiable_torch_compile_specialisation.py",
+    "src/scpn_quantum_control/differentiable_torch_state.py",
+    "src/scpn_quantum_control/differentiable_torch_graph_replay.py",
     "tests/test_phase_torch_module_state.py",
     "tests/test_phase_torch_checkpoint.py",
     "tests/test_phase_torch_checkpoint_matrix.py",
@@ -44,6 +49,7 @@ PHASE_TORCH_BRIDGE_QUALITY_RATCHET = [
     "tests/test_phase_torch_bridge_qnode_edge_routes.py",
     "tests/test_phase_torch_bridge_compile_boundaries.py",
     "tests/test_phase_torch_autograd_function.py",
+    "tests/test_phase_qnode_torch_capability_audits.py",
     "tools/phase_torch_bridge_quality_gates.py",
     "tests/test_phase_torch_bridge_quality_gate.py",
 ]
@@ -76,6 +82,7 @@ PHASE_TORCH_BRIDGE_COVERAGE_COHORT = [
     "tests/test_phase_torch_aot_autograd_export.py",
     "tests/test_phase_torch_dynamic_shape_export.py",
     "tests/test_optional_torch_export_contracts.py",
+    "tests/test_phase_qnode_torch_capability_audits.py",
 ]
 """Real facade and leaf tests that own exact Torch bridge coverage."""
 
@@ -87,7 +94,9 @@ PHASE_TORCH_BRIDGE_COVERAGE_INCLUDE = (
     "*/torch_autograd_function.py,*/torch_module_state.py,"
     "*/torch_checkpoint.py,*/torch_checkpoint_matrix.py,*/torch_device_state.py,"
     "*/torch_export.py,*/torch_export_shape_matrix.py,*/torch_training_loop_matrix.py,"
-    "*/torch_aot_autograd_export.py,*/torch_dynamic_shape_export.py"
+    "*/torch_aot_autograd_export.py,*/torch_dynamic_shape_export.py,"
+    "*/phase_qnode_torch_audits.py,*/phase_qnode_audit_admission.py,*/differentiable_torch_compile_specialisation.py,"
+    "*/differentiable_torch_state.py,*/differentiable_torch_graph_replay.py"
 )
 """Production source enforced at exact branch coverage."""
 

@@ -21,6 +21,7 @@ from typing import Any, TypeAlias
 import numpy as np
 from numpy.typing import ArrayLike
 
+from ..phase_qnn_native_model import tensorflow_phase_classifier_loss as _phase_qnn_native_loss
 from .qnn_training import (
     parameter_shift_qnn_classifier_gradient,
     parameter_shift_qnn_classifier_loss,
@@ -227,11 +228,7 @@ def _tensorflow_bounded_qnn_loss_tensor(
     reduce_mean = getattr(tensorflow_module, "reduce_mean", None)
     if not callable(cos) or not callable(reduce_mean):
         raise RuntimeError("TensorFlow module does not expose cos and reduce_mean")
-    shifted = feature_tensor + parameter_tensor
-    probabilities = 0.5 * (1.0 - cos(shifted))
-    predictions = reduce_mean(probabilities, axis=1)
-    residual = predictions - label_tensor
-    return reduce_mean(residual * residual)
+    return _phase_qnn_native_loss(cos, reduce_mean, feature_tensor, label_tensor, parameter_tensor)
 
 
 def run_tensorflow_gradient_tape_compatibility_audit(

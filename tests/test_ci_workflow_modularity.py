@@ -91,7 +91,7 @@ def test_parallel_profile_and_authoritative_coverage_contracts() -> None:
         item for item in steps if item.get("name") == "Admit complete test coverage (3.12 only)"
     )
     assert "--shards 4 --coverage-output .coverage" in union["run"]
-    assert union["run"].count("coverage combine --append --keep") == 5
+    assert union["run"].count("coverage combine --append --keep") == 7
     assert "tools/audit_coverage_policy.py" in union["run"]
     authoritative = next(
         item for item in steps if item.get("name") == "Upload coverage policy evidence (3.12 only)"

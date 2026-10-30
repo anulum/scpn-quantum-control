@@ -44,6 +44,7 @@ from .param_shift import (
     plan_parameter_shift_shots,
     verify_parameter_shift_gradient,
 )
+from .param_shift import parameter_shift_objective_values as _parameter_shift_objective_values
 from .pennylane_bridge import is_phase_pennylane_available
 from .tensorflow_bridge import (
     is_phase_tensorflow_available,
@@ -118,24 +119,9 @@ def _shifted_objective_values(
     values: FloatArray,
     rule: ParameterShiftRule,
 ) -> tuple[FloatArray, FloatArray]:
-    terms = rule.terms
-    plus_values = np.zeros((len(terms), values.size), dtype=np.float64)
-    minus_values = np.zeros_like(plus_values)
-    for term_index, (shift, _coefficient) in enumerate(terms):
-        for param_index in range(values.size):
-            plus = values.copy()
-            minus = values.copy()
-            plus[param_index] += shift
-            minus[param_index] -= shift
-            plus_values[term_index, param_index] = _as_finite_scalar(
-                "plus shifted objective",
-                objective(plus),
-            )
-            minus_values[term_index, param_index] = _as_finite_scalar(
-                "minus shifted objective",
-                objective(minus),
-            )
-    return plus_values, minus_values
+    return _parameter_shift_objective_values(
+        objective, values, rule, scalar=lambda: _as_finite_scalar, numpy=lambda: np
+    )
 
 
 def _stochastic_input(array: FloatArray) -> FloatArray:

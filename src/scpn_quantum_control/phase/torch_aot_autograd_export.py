@@ -31,6 +31,7 @@ from typing import Any, TypeAlias, cast
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+from ..differentiable_torch_graph_replay import replay_aot_graphs as _replay_aot_graphs
 from .qnn_training import (
     parameter_shift_qnn_classifier_gradient,
     parameter_shift_qnn_classifier_loss,
@@ -442,31 +443,15 @@ def _replay_loaded_aot_graphs(
     label_vector: FloatArray,
 ) -> tuple[float, FloatArray]:
     """Replay loaded AOTAutograd forward/backward graphs locally."""
-    forward_call = cast(Callable[..., object], forward_graph)
-    backward_call = cast(Callable[..., object], backward_graph)
-    parameter_tensor = _torch_tensor(torch_module, parameter_values)
-    feature_tensor = _torch_tensor(torch_module, feature_matrix)
-    label_tensor = _torch_tensor(torch_module, label_vector)
-    forward_output = _as_tuple(
-        forward_call(parameter_tensor, feature_tensor, label_tensor),
-        name="loaded AOTAutograd forward output",
-    )
-    if not forward_output:
-        raise RuntimeError("loaded AOTAutograd forward graph returned no outputs")
-    loaded_loss_tensor = forward_output[0]
-    saved_tensors = forward_output[1:]
-    ones_like = getattr(torch_module, "ones_like", None)
-    if not callable(ones_like):
-        raise RuntimeError("PyTorch module does not expose torch.ones_like")
-    backward_output = _as_tuple(
-        backward_call(*saved_tensors, ones_like(loaded_loss_tensor)),
-        name="loaded AOTAutograd backward output",
-    )
-    if not backward_output:
-        raise RuntimeError("loaded AOTAutograd backward graph returned no outputs")
-    return (
-        _torch_scalar_to_float(loaded_loss_tensor),
-        _torch_values_to_numpy(backward_output[0]),
+    return _replay_aot_graphs(
+        torch_module=torch_module,
+        forward_graph=forward_graph,
+        backward_graph=backward_graph,
+        inputs=(parameter_values, feature_matrix, label_vector),
+        tensor=lambda: _torch_tensor,
+        output_tuple=lambda: _as_tuple,
+        scalar_to_float=lambda: _torch_scalar_to_float,
+        values_to_numpy=lambda: _torch_values_to_numpy,
     )
 
 

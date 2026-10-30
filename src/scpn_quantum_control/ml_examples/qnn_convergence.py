@@ -11,18 +11,21 @@ from __future__ import annotations
 
 import importlib.util
 from collections.abc import Callable
-from typing import Protocol, TypeAlias, cast
+from importlib import import_module
+from typing import Protocol, TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
 
-from ..phase.jax_bridge import jax_native_qnn_value_and_grad
 from ..phase.qnn_training import (
     ParameterShiftQNNTrainingResult,
     train_parameter_shift_qnn_classifier,
 )
-from ..phase.tensorflow_bridge import tensorflow_bounded_qnn_value_and_grad
-from ..phase.torch_bridge import torch_autograd_qnn_value_and_grad
+from ..phase_qnn_framework_gradients import (
+    native_jax_qnn_value_and_grad,
+    native_tensorflow_bounded_qnn_value_and_grad,
+    native_torch_autograd_qnn_value_and_grad,
+)
 from .contracts import (
     ConvergenceCertificate,
     ConvergenceExampleSpec,
@@ -117,16 +120,39 @@ _FrameworkRunner: TypeAlias = Callable[
     [NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]],
     _FrameworkAgreementResult,
 ]
+
+
+def _jax_qnn_row(
+    features: NDArray[np.float64], labels: NDArray[np.float64], params: NDArray[np.float64]
+) -> _FrameworkAgreementResult:
+    return native_jax_qnn_value_and_grad(
+        import_module("jax"), import_module("jax.numpy"), features, labels, params
+    )
+
+
+def _torch_qnn_row(
+    features: NDArray[np.float64], labels: NDArray[np.float64], params: NDArray[np.float64]
+) -> _FrameworkAgreementResult:
+    return native_torch_autograd_qnn_value_and_grad(
+        import_module("torch"), features, labels, params
+    )
+
+
+def _tensorflow_qnn_row(
+    features: NDArray[np.float64], labels: NDArray[np.float64], params: NDArray[np.float64]
+) -> _FrameworkAgreementResult:
+    return native_tensorflow_bounded_qnn_value_and_grad(
+        import_module("tensorflow"), features, labels, params
+    )
+
+
 _FRAMEWORK_RUNNERS: dict[
     str,
     tuple[str, _FrameworkRunner],
 ] = {
-    "jax": ("jax", cast(_FrameworkRunner, jax_native_qnn_value_and_grad)),
-    "pytorch": ("torch", cast(_FrameworkRunner, torch_autograd_qnn_value_and_grad)),
-    "tensorflow": (
-        "tensorflow",
-        cast(_FrameworkRunner, tensorflow_bounded_qnn_value_and_grad),
-    ),
+    "jax": ("jax", _jax_qnn_row),
+    "pytorch": ("torch", _torch_qnn_row),
+    "tensorflow": ("tensorflow", _tensorflow_qnn_row),
 }
 
 

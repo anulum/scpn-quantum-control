@@ -19,6 +19,7 @@ from typing import Any, TypeAlias
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+from ..phase_qnn_native_model import torch_phase_classifier_loss as _phase_qnn_native_loss
 from .qnn_training import parameter_shift_qnn_classifier_gradient
 from .torch_bridge_contracts import (
     PhaseTorchCompileCompatibilityResult,
@@ -84,11 +85,7 @@ def _torch_bounded_qnn_loss_tensor(
     label_tensor: Any,
     parameter_tensor: Any,
 ) -> Any:
-    shifted = feature_tensor + parameter_tensor.unsqueeze(0)
-    probabilities = 0.5 * (1.0 - torch_module.cos(shifted))
-    predictions = torch_module.mean(probabilities, dim=1)
-    residual = predictions - label_tensor
-    return torch_module.mean(residual * residual)
+    return _phase_qnn_native_loss(torch_module, feature_tensor, label_tensor, parameter_tensor)
 
 
 def run_torch_func_compatibility_audit(

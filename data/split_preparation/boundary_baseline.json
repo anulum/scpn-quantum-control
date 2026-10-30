@@ -1144,17 +1144,6 @@
       "removal_owner": "residual-dependency-inversions"
     },
     {
-      "source": "src/scpn_quantum_control/phase/differentiable_audit.py",
-      "target": "src/scpn_quantum_control/phase/coupling_learning.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-QNODE",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 2,
-      "reason": "Public boundary contract must invert this non-DAG dependency through an owned versioned interface; source unit must not silently acquire a new target dependency.",
-      "removal_owner": "residual-dependency-inversions"
-    },
-    {
       "source": "src/scpn_quantum_control/phase/differentiable_audit_contracts.py",
       "target": "src/scpn_quantum_control/phase/coupling_learning.py",
       "target_unit": "phase",
@@ -1196,39 +1185,6 @@
       "kind": "module",
       "count": 1,
       "reason": "Public boundary contract must invert this non-DAG dependency through an owned versioned interface; source unit must not silently acquire a new target dependency.",
-      "removal_owner": "residual-dependency-inversions"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/jax_compatibility.py",
-      "target": "src/scpn_quantum_control/phase/qnn_training.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-QNODE",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 2,
-      "reason": "Public boundary contract must invert this non-DAG dependency through an owned versioned interface; source unit must not silently acquire a new target dependency.",
-      "removal_owner": "residual-dependency-inversions"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/jax_gradients.py",
-      "target": "src/scpn_quantum_control/phase/qnn_training.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-QNODE",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 2,
-      "reason": "Public boundary contract must invert this non-DAG dependency through an owned versioned interface; source unit must not silently acquire a new target dependency.",
-      "removal_owner": "residual-dependency-inversions"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/jax_maturity.py",
-      "target": "src/scpn_quantum_control/phase/__init__.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-QNODE",
-      "destination_target": "workbench-umbrella",
-      "kind": "string_ref",
-      "count": 1,
-      "reason": "Existing source reference to the reviewed phase compatibility facade is now an explicit child-to-umbrella dependency. Preserve its exact count until the consumer uses an owned leaf or versioned domain contract.",
       "removal_owner": "residual-dependency-inversions"
     },
     {
@@ -1295,171 +1251,6 @@
       "kind": "module",
       "count": 2,
       "reason": "Public boundary contract must invert this non-DAG dependency through an owned versioned interface; source unit must not silently acquire a new target dependency.",
-      "removal_owner": "residual-dependency-inversions"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/tensorflow_compatibility.py",
-      "target": "src/scpn_quantum_control/phase/qnn_training.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-QNODE",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 2,
-      "reason": "Public boundary contract must invert this non-DAG dependency through an owned versioned interface; source unit must not silently acquire a new target dependency.",
-      "removal_owner": "residual-dependency-inversions"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/tensorflow_gradients.py",
-      "target": "src/scpn_quantum_control/phase/qnn_training.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-QNODE",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 2,
-      "reason": "Public boundary contract must invert this non-DAG dependency through an owned versioned interface; source unit must not silently acquire a new target dependency.",
-      "removal_owner": "residual-dependency-inversions"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/torch_aot_autograd_export.py",
-      "target": "src/scpn_quantum_control/phase/__init__.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-QNODE",
-      "destination_target": "workbench-umbrella",
-      "kind": "string_ref",
-      "count": 1,
-      "reason": "Existing source reference to the reviewed phase compatibility facade is now an explicit child-to-umbrella dependency. Preserve its exact count until the consumer uses an owned leaf or versioned domain contract.",
-      "removal_owner": "residual-dependency-inversions"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/torch_aot_autograd_export.py",
-      "target": "src/scpn_quantum_control/phase/qnn_training.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-QNODE",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 2,
-      "reason": "Public boundary contract must invert this non-DAG dependency through an owned versioned interface; source unit must not silently acquire a new target dependency.",
-      "removal_owner": "residual-dependency-inversions"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/torch_autograd_function.py",
-      "target": "src/scpn_quantum_control/phase/__init__.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-QNODE",
-      "destination_target": "workbench-umbrella",
-      "kind": "string_ref",
-      "count": 1,
-      "reason": "Existing source reference to the reviewed phase compatibility facade is now an explicit child-to-umbrella dependency. Preserve its exact count until the consumer uses an owned leaf or versioned domain contract.",
-      "removal_owner": "residual-dependency-inversions"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/torch_autograd_function.py",
-      "target": "src/scpn_quantum_control/phase/qnn_training.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-QNODE",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 2,
-      "reason": "Public boundary contract must invert this non-DAG dependency through an owned versioned interface; source unit must not silently acquire a new target dependency.",
-      "removal_owner": "residual-dependency-inversions"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/torch_checkpoint.py",
-      "target": "src/scpn_quantum_control/phase/__init__.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-QNODE",
-      "destination_target": "workbench-umbrella",
-      "kind": "string_ref",
-      "count": 1,
-      "reason": "Existing source reference to the reviewed phase compatibility facade is now an explicit child-to-umbrella dependency. Preserve its exact count until the consumer uses an owned leaf or versioned domain contract.",
-      "removal_owner": "residual-dependency-inversions"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/torch_checkpoint_matrix.py",
-      "target": "src/scpn_quantum_control/phase/__init__.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-QNODE",
-      "destination_target": "workbench-umbrella",
-      "kind": "string_ref",
-      "count": 1,
-      "reason": "Existing source reference to the reviewed phase compatibility facade is now an explicit child-to-umbrella dependency. Preserve its exact count until the consumer uses an owned leaf or versioned domain contract.",
-      "removal_owner": "residual-dependency-inversions"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/torch_compatibility.py",
-      "target": "src/scpn_quantum_control/phase/qnn_training.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-QNODE",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 1,
-      "reason": "Public boundary contract must invert this non-DAG dependency through an owned versioned interface; source unit must not silently acquire a new target dependency.",
-      "removal_owner": "residual-dependency-inversions"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/torch_dynamic_shape_export.py",
-      "target": "src/scpn_quantum_control/phase/__init__.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-QNODE",
-      "destination_target": "workbench-umbrella",
-      "kind": "string_ref",
-      "count": 1,
-      "reason": "Existing source reference to the reviewed phase compatibility facade is now an explicit child-to-umbrella dependency. Preserve its exact count until the consumer uses an owned leaf or versioned domain contract.",
-      "removal_owner": "residual-dependency-inversions"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/torch_dynamic_shape_export.py",
-      "target": "src/scpn_quantum_control/phase/qnn_training.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-QNODE",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 1,
-      "reason": "Public boundary contract must invert this non-DAG dependency through an owned versioned interface; source unit must not silently acquire a new target dependency.",
-      "removal_owner": "residual-dependency-inversions"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/torch_export_shape_matrix.py",
-      "target": "src/scpn_quantum_control/phase/__init__.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-QNODE",
-      "destination_target": "workbench-umbrella",
-      "kind": "string_ref",
-      "count": 1,
-      "reason": "Existing source reference to the reviewed phase compatibility facade is now an explicit child-to-umbrella dependency. Preserve its exact count until the consumer uses an owned leaf or versioned domain contract.",
-      "removal_owner": "residual-dependency-inversions"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/torch_gradients.py",
-      "target": "src/scpn_quantum_control/phase/qnn_training.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-QNODE",
-      "destination_target": "SCPN-QC-LEARN",
-      "kind": "module",
-      "count": 2,
-      "reason": "Public boundary contract must invert this non-DAG dependency through an owned versioned interface; source unit must not silently acquire a new target dependency.",
-      "removal_owner": "residual-dependency-inversions"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/torch_maturity.py",
-      "target": "src/scpn_quantum_control/phase/__init__.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-QNODE",
-      "destination_target": "workbench-umbrella",
-      "kind": "string_ref",
-      "count": 1,
-      "reason": "Existing source reference to the reviewed phase compatibility facade is now an explicit child-to-umbrella dependency. Preserve its exact count until the consumer uses an owned leaf or versioned domain contract.",
-      "removal_owner": "residual-dependency-inversions"
-    },
-    {
-      "source": "src/scpn_quantum_control/phase/torch_training_loop_matrix.py",
-      "target": "src/scpn_quantum_control/phase/__init__.py",
-      "target_unit": "phase",
-      "source_target": "SCPN-QC-QNODE",
-      "destination_target": "workbench-umbrella",
-      "kind": "string_ref",
-      "count": 1,
-      "reason": "Existing source reference to the reviewed phase compatibility facade is now an explicit child-to-umbrella dependency. Preserve its exact count until the consumer uses an owned leaf or versioned domain contract.",
       "removal_owner": "residual-dependency-inversions"
     },
     {
@@ -2024,7 +1815,7 @@
       "source": "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
       "scope": "_installed_version",
       "call_sha256": "c0b0fcd67f7efc2c869b33547a90f3ea5fda2fc2d433c74d32ddb46e72abca69",
-      "source_sha256": "c3f4c78252d903a0ce4087ea63df4c92781f4736a539325f45292b4390ecb5cb",
+      "source_sha256": "a68d5f389d35aeb3d4d0e2cd1e5cdfe12c2d635325c719d2bcdaf16a70acbf94",
       "role": "external",
       "reason": "The sole caller obtains dependency names from the literal packages_by_backend table; fallback imports external toolchain and framework modules.",
       "count": 1
@@ -2330,7 +2121,7 @@
       "source": "src/scpn_quantum_control/ml_examples/qnn_convergence.py",
       "scope": "run_qnn_framework_rows",
       "call_sha256": "82fe3b3559c3036efe9fd828d3cdf007bafdcc777acf815740025bc60d0ca5ff",
-      "source_sha256": "ee0353cf81ab00982224abb3a790f567b9689304f3ce30bdc64287d9b6e85b59",
+      "source_sha256": "c2c9a884ac71f25d2d357a1bd4b3388ec6bba5b3e30fdc6c82eb23add9ca18fc",
       "role": "external",
       "reason": "Validated framework names select literal dependency strings jax, torch or tensorflow from the framework-runner table.",
       "count": 1

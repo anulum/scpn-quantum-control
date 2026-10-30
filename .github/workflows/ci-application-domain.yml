@@ -559,14 +559,24 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/phase/qnn_training.py
           src/scpn_quantum_control/phase_qnn_model_numerics.py
-          src/scpn_quantum_control/phase_qnn_numpy_model.py tests/test_phase_qnn_numpy_model.py
+          src/scpn_quantum_control/phase_qnn_numpy_model.py
+          src/scpn_quantum_control/phase_qnn_native_contracts.py
+          src/scpn_quantum_control/phase_qnn_native_model.py
+          src/scpn_quantum_control/phase_qnn_framework_gradients.py
+          tests/test_phase_qnn_numpy_model.py tests/test_phase_qnn_native_model.py
+          tests/test_phase_qnn_framework_gradients.py
           tests/test_phase_qnn_model_quality_gate.py tools/phase_qnn_model_quality_gates.py
       - name: ruff D phase-qnn-model
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420 --config
           'lint.explicit-preview-rules = true' --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/phase_qnn_model_numerics.py
-          src/scpn_quantum_control/phase_qnn_numpy_model.py tests/test_phase_qnn_numpy_model.py
+          src/scpn_quantum_control/phase_qnn_numpy_model.py
+          src/scpn_quantum_control/phase_qnn_native_contracts.py
+          src/scpn_quantum_control/phase_qnn_native_model.py
+          src/scpn_quantum_control/phase_qnn_framework_gradients.py
+          tests/test_phase_qnn_numpy_model.py tests/test_phase_qnn_native_model.py
+          tests/test_phase_qnn_framework_gradients.py
           tests/test_phase_qnn_model_quality_gate.py tools/phase_qnn_model_quality_gates.py
       - name: phase-qnn-model focused coverage
         run: >-

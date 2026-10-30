@@ -9,15 +9,22 @@
 
 Each feature contributes a phase-shifted one-qubit probability. A sample's
 prediction is their mean, clipped to the physical probability interval before
-the full-batch mean squared label error. The caller owns input admission,
-parameter-shift execution, optimisation, certificates and result objects.
+the prediction route's full-batch mean squared label error. Analytic SDK-reference
+routes retain their original unclipped residuals and reduction order. The caller
+owns input admission, parameter-shift execution, optimisation, certificates and
+result objects.
 """
 
 from __future__ import annotations
 
 from typing import cast
 
-from .phase_qnn_model_numerics import FloatArray, PhaseModelNumerics, PhaseModelNumpy
+from .phase_qnn_model_numerics import (
+    AnalyticPhaseModelNumpy,
+    FloatArray,
+    PhaseModelNumerics,
+    PhaseModelNumpy,
+)
 
 
 def bounded_phase_qnn_probabilities(
@@ -83,4 +90,101 @@ def phase_qnn_mean_squared_error(
     return numerics.scalar()(cast(PhaseModelNumpy, numerics.numpy()).mean(residual * residual))
 
 
-__all__ = ["bounded_phase_qnn_probabilities", "phase_qnn_mean_squared_error"]
+def _phase_classifier_residual(
+    features: FloatArray,
+    labels: FloatArray,
+    parameters: FloatArray,
+    numerics: PhaseModelNumerics,
+) -> tuple[FloatArray, FloatArray]:
+    shifted = features + parameters[None, :]
+    probabilities = 0.5 * (1.0 - cast(PhaseModelNumpy, numerics.numpy()).cos(shifted))
+    predictions = cast(PhaseModelNumpy, numerics.numpy()).mean(probabilities, axis=1)
+    return shifted, predictions - labels
+
+
+def _phase_classifier_gradient(
+    features: FloatArray,
+    shifted: FloatArray,
+    residual: FloatArray,
+    numerics: PhaseModelNumerics,
+) -> FloatArray:
+    scale = 1.0 / numerics.scalar()(features.shape[1])
+    return (2.0 / numerics.scalar()(features.shape[0])) * cast(
+        AnalyticPhaseModelNumpy, numerics.numpy()
+    ).sum(
+        residual[:, None]
+        * (0.5 * cast(AnalyticPhaseModelNumpy, numerics.numpy()).sin(shifted) * scale),
+        axis=0,
+    )
+
+
+def numpy_phase_classifier_loss_and_gradient(
+    features: FloatArray,
+    labels: FloatArray,
+    parameters: FloatArray,
+    *,
+    numerics: PhaseModelNumerics,
+) -> tuple[float, FloatArray]:
+    """Return analytic loss and derivative with the original reduction order.
+
+    Parameters
+    ----------
+    features
+        Admitted finite real sample-by-feature matrix with nonempty dimensions.
+    labels
+        Admitted real label vector with one entry per sample.
+    parameters
+        Admitted real phase vector with one entry per feature.
+    numerics
+        Late readers for the caller's numerical namespace and float constructor.
+
+    Returns
+    -------
+    tuple[float, FloatArray]
+        Mean squared prediction error and its analytic phase derivative.
+        Admission, reference comparison and report construction stay with the
+        caller. Inputs are not mutated.
+
+    """
+    shifted, residual = _phase_classifier_residual(features, labels, parameters, numerics)
+    loss = numerics.scalar()(cast(PhaseModelNumpy, numerics.numpy()).mean(residual * residual))
+    return loss, _phase_classifier_gradient(features, shifted, residual, numerics)
+
+
+def numpy_phase_classifier_gradient(
+    features: FloatArray,
+    labels: FloatArray,
+    parameters: FloatArray,
+    *,
+    numerics: PhaseModelNumerics,
+) -> FloatArray:
+    """Return the analytic phase derivative without evaluating the scalar loss.
+
+    Parameters
+    ----------
+    features
+        Admitted finite nonempty sample-by-feature matrix.
+    labels
+        Admitted real label vector with one entry per sample.
+    parameters
+        Admitted real phase vector with one entry per feature.
+    numerics
+        Original numerical namespace and scalar readers. This gradient-only
+        route reads the scalar constructor only for the two dimension factors.
+
+    Returns
+    -------
+    FloatArray
+        Analytic gradient before the caller's existing copy and shape checks.
+
+    """
+    shifted, residual = _phase_classifier_residual(features, labels, parameters, numerics)
+    return _phase_classifier_gradient(features, shifted, residual, numerics)
+
+
+__all__ = [
+    "bounded_phase_qnn_probabilities",
+    "phase_qnn_mean_squared_error",
+    "numpy_phase_classifier_loss_and_gradient",
+    "numpy_phase_classifier_gradient",
+]

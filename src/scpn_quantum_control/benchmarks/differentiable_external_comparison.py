@@ -26,7 +26,15 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
-from ..phase.jax_bridge import is_phase_jax_available
+from ..differentiable_backend_capabilities import (
+    jax_runtime_available as is_phase_jax_available,
+)
+from ..differentiable_backend_capabilities import (
+    tensorflow_runtime_available as is_phase_tensorflow_available,
+)
+from ..differentiable_backend_capabilities import (
+    torch_runtime_available as is_phase_torch_available,
+)
 from ..phase.pennylane_bridge import is_phase_pennylane_available
 from ..phase.qnode_circuit import (
     PauliTerm,
@@ -34,8 +42,6 @@ from ..phase.qnode_circuit import (
     execute_phase_qnode_circuit,
     parameter_shift_phase_qnode_gradient,
 )
-from ..phase.tensorflow_bridge import is_phase_tensorflow_available
-from ..phase.torch_bridge import is_phase_torch_available
 from .differentiable_catalyst_comparison import (
     CATALYST_UNSUPPORTED_PROVIDER_ROUTES,
     CatalystCompilerWorkflowComparison,

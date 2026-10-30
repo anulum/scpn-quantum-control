@@ -59,6 +59,15 @@ from ..differentiable_tensor_materialization import (
 from ..differentiable_tensor_materialization import (
     materialize_torch_host_values as _materialize_torch_host_values,
 )
+from ..phase_qnn_framework_gradients import QNNGradientOperations as _QNNGradientOperations
+from ..phase_qnn_framework_gradients import bounded_qnn_reference as _bounded_qnn_reference
+from ..phase_qnn_framework_gradients import (
+    torch_autograd_qnn_audit as _torch_autograd_qnn_audit,
+)
+from ..phase_qnn_model_numerics import PhaseModelNumerics as _PhaseModelNumerics
+from ..phase_qnn_numpy_model import (
+    numpy_phase_classifier_loss_and_gradient as _phase_qnn_analytic_model,
+)
 from .qnn_training import (
     parameter_shift_qnn_classifier_gradient,
     parameter_shift_qnn_classifier_loss,
@@ -182,6 +191,28 @@ def _torch_trainable_tensor(torch_module: Any, values: FloatArray) -> Any:
     )
 
 
+def _torch_qnn_routes() -> _QNNGradientOperations:
+    """Return QNN gradient resolvers reading this module's live names."""
+    return _QNNGradientOperations(
+        feature_matrix=lambda: _as_feature_matrix,
+        label_vector=lambda: _as_label_vector,
+        parameter_vector=lambda: _as_parameter_vector,
+        tolerance=lambda: _as_non_negative_tolerance,
+        analytic_model=lambda: (
+            lambda features, labels, params: _phase_qnn_analytic_model(
+                features,
+                labels,
+                params,
+                numerics=_PhaseModelNumerics(numpy=lambda: np, scalar=lambda: float),
+            )
+        ),
+        reference_loss=lambda: parameter_shift_qnn_classifier_loss,
+        reference_gradient=lambda: parameter_shift_qnn_classifier_gradient,
+        tensor=lambda: _torch_tensor,
+        trainable_tensor=lambda: _torch_trainable_tensor,
+    )
+
+
 def _bounded_qnn_loss_gradient_reference(
     features: ArrayLike,
     labels: ArrayLike,
@@ -189,64 +220,13 @@ def _bounded_qnn_loss_gradient_reference(
     *,
     tolerance: float,
 ) -> tuple[FloatArray, FloatArray, FloatArray, float, float, float, bool]:
-    feature_matrix = _as_feature_matrix(features)
-    label_vector = _as_label_vector(labels, n_samples=feature_matrix.shape[0])
-    parameter_values = _as_parameter_vector("params", params)
-    if parameter_values.shape != (feature_matrix.shape[1],):
-        raise ValueError(
-            "params width must match feature width: "
-            f"{parameter_values.shape[0]} != {feature_matrix.shape[1]}",
-        )
-    tolerance_value = _as_non_negative_tolerance(tolerance)
-
-    shifted = feature_matrix + parameter_values[None, :]
-    probabilities = 0.5 * (1.0 - np.cos(shifted))
-    predictions = np.mean(probabilities, axis=1)
-    residual = predictions - label_vector
-    loss = float(np.mean(residual * residual))
-    scale = 1.0 / float(feature_matrix.shape[1])
-    gradient = (2.0 / float(feature_matrix.shape[0])) * np.sum(
-        residual[:, None] * (0.5 * np.sin(shifted) * scale),
-        axis=0,
-    )
-    gradient = _as_parameter_vector(
-        "PyTorch bounded phase-QNN gradient",
-        gradient,
-        width=parameter_values.size,
-    )
-
-    reference_loss = parameter_shift_qnn_classifier_loss(
-        feature_matrix,
-        label_vector,
-        parameter_values,
-    )
-    if abs(loss - reference_loss) > tolerance_value:
-        raise RuntimeError(
-            "PyTorch bounded phase-QNN tensor loss disagrees with SCPN "
-            f"parameter-shift loss: {loss} != {reference_loss}",
-        )
-    reference_gradient = parameter_shift_qnn_classifier_gradient(
-        feature_matrix,
-        label_vector,
-        parameter_values,
-    )
-    reference_gradient = _as_parameter_vector(
-        "SCPN bounded phase-QNN parameter-shift gradient",
-        reference_gradient,
-        width=parameter_values.size,
-    )
-    delta = gradient - reference_gradient
-    max_abs_error = float(np.max(np.abs(delta))) if delta.size else 0.0
-    l2_error = float(np.linalg.norm(delta))
-    passed = bool(max_abs_error <= tolerance_value)
-    return (
-        np.asarray(loss, dtype=np.float64),
-        gradient,
-        reference_gradient,
-        max_abs_error,
-        l2_error,
-        tolerance_value,
-        passed,
+    return _bounded_qnn_reference(
+        features,
+        labels,
+        params,
+        tolerance=tolerance,
+        operations=_torch_qnn_routes(),
+        runtime_label="PyTorch",
     )
 
 
@@ -399,29 +379,14 @@ def torch_autograd_qnn_value_and_grad(
         def backward(ctx: Any, grad_output: Any) -> tuple[Any]:
             return (ctx.gradient * grad_output,)
 
-    trainable_params = _torch_trainable_tensor(torch_module, parameter_values)
-    torch_loss = _BoundedPhaseQNNFunction.apply(trainable_params)
-    torch_gradient = autograd_grad(
-        torch_loss,
-        trainable_params,
-        retain_graph=False,
-        create_graph=False,
-    )[0]
-    try:
-        loss, gradient, reference_gradient, max_abs_error, l2_error, passed = audit["record"]
-    except KeyError as exc:
-        raise RuntimeError("PyTorch autograd forward did not produce audit evidence") from exc
-    return PhaseTorchAutogradQNNGradientResult(
-        loss=loss,
-        gradient=_as_parameter_vector("PyTorch autograd bounded phase-QNN gradient", gradient),
-        parameter_shift_gradient=reference_gradient,
-        torch_loss=torch_loss,
-        torch_gradient=torch_gradient,
-        torch_parameter_shift_gradient=_torch_tensor(torch_module, reference_gradient),
-        max_abs_error=max_abs_error,
-        l2_error=l2_error,
-        tolerance=tolerance_value,
-        passed=passed,
+    return _torch_autograd_qnn_audit(
+        torch_module,
+        autograd_grad,
+        _BoundedPhaseQNNFunction,
+        audit,
+        parameter_values,
+        tolerance_value,
+        _torch_qnn_routes(),
     )
 
 

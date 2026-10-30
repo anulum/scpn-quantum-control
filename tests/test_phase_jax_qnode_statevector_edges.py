@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+import importlib
+
 import numpy as np
 import pytest
 from _phase_jax_bridge_test_helpers import _FakeJAX
@@ -113,3 +115,11 @@ def test_sharding_transform_uses_deterministic_device_fallbacks(
     assert result.passed
     assert result.device_descriptions == ("local-device-0",)
     assert result.sharding_mode == "single_device_pmap_smoke"
+
+
+def test_private_gate_operator_keeps_its_key_error_for_unregistered_names() -> None:
+    """Keep the historical JAX gate operator's ``KeyError`` behind admission."""
+    jnp = pytest.importorskip("jax.numpy")
+    transforms = importlib.import_module("scpn_quantum_control.phase.jax_qnode_transforms")
+    with pytest.raises(KeyError, match="toffoli"):
+        transforms._jax_gate_matrix(jnp, "toffoli", jnp.asarray(0.0))

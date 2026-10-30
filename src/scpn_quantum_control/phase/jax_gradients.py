@@ -47,6 +47,14 @@ from ..differentiable_tensor_admission import (
 from ..differentiable_tensor_admission import (
     require_real_scalar as _require_real_scalar,
 )
+from ..phase_qnn_framework_gradients import QNNGradientOperations as _QNNGradientOperations
+from ..phase_qnn_framework_gradients import jax_native_qnn_audit as _jax_native_qnn_audit
+from ..phase_qnn_native_model import (
+    jax_phase_classifier_gradient as _phase_qnn_native_gradient,
+)
+from ..phase_qnn_native_model import (
+    jax_phase_classifier_loss as _phase_qnn_native_loss,
+)
 from .jax_bridge_contracts import (
     PhaseJAXCustomVJPQNNGradientResult,
     PhaseJAXGradientAgreementResult,
@@ -170,10 +178,7 @@ def _jax_bounded_qnn_loss(
     label_tensor: Any,
     parameter_tensor: Any,
 ) -> Any:
-    probabilities = 0.5 * (1.0 - jnp.cos(feature_tensor + parameter_tensor[None, :]))
-    predictions = jnp.mean(probabilities, axis=1)
-    residual = predictions - label_tensor
-    return jnp.mean(residual * residual)
+    return _phase_qnn_native_loss(jnp, feature_tensor, label_tensor, parameter_tensor)
 
 
 def _jax_bounded_qnn_gradient(
@@ -182,13 +187,7 @@ def _jax_bounded_qnn_gradient(
     label_tensor: Any,
     parameter_tensor: Any,
 ) -> Any:
-    feature_count = feature_tensor.shape[1]
-    probabilities = 0.5 * (1.0 - jnp.cos(feature_tensor + parameter_tensor[None, :]))
-    predictions = jnp.mean(probabilities, axis=1)
-    residual = predictions - label_tensor
-    probability_derivative = 0.5 * jnp.sin(feature_tensor + parameter_tensor[None, :])
-    prediction_derivative = probability_derivative / feature_count
-    return jnp.mean(2.0 * residual[:, None] * prediction_derivative, axis=0)
+    return _phase_qnn_native_gradient(jnp, feature_tensor, label_tensor, parameter_tensor)
 
 
 def jax_parameter_shift_value_and_grad(
@@ -323,6 +322,16 @@ def check_jax_parameter_shift_agreement(
     )
 
 
+def _jax_qnn_routes() -> _QNNGradientOperations:
+    """Return QNN gradient resolvers reading this module's live names."""
+    return _QNNGradientOperations(
+        parameter_vector=lambda: _as_parameter_vector,
+        reference_loss=lambda: parameter_shift_qnn_classifier_loss,
+        reference_gradient=lambda: parameter_shift_qnn_classifier_gradient,
+        scalar=lambda: _as_scalar,
+    )
+
+
 def jax_native_qnn_value_and_grad(
     features: ArrayLike,
     labels: ArrayLike,
@@ -356,52 +365,16 @@ def jax_native_qnn_value_and_grad(
     def loss_fn(raw_params: object) -> object:
         return _jax_bounded_qnn_loss(jnp, feature_tensor, label_tensor, jnp.asarray(raw_params))
 
-    value_and_grad_fn = getattr(jax_module, "value_and_grad", None)
-    if not callable(value_and_grad_fn):
-        raise RuntimeError("JAX value_and_grad is required for native QNN autodiff")
-    executable = value_and_grad_fn(loss_fn)
-    jitted = False
-    if jit:
-        jit_fn = getattr(jax_module, "jit", None)
-        if not callable(jit_fn):
-            raise RuntimeError("JAX JIT is unavailable in the active JAX module")
-        executable = jit_fn(executable)
-        jitted = True
-
-    loss_obj, gradient_obj = executable(jnp.asarray(parameter_values))
-    gradient = _as_parameter_vector(
-        "JAX native QNN gradient",
-        gradient_obj,
-        width=parameter_values.size,
-    )
-    reference_gradient = parameter_shift_qnn_classifier_gradient(
+    return _jax_native_qnn_audit(
+        jax_module,
         feature_matrix,
         label_vector,
         parameter_values,
-    )
-    reference_loss = parameter_shift_qnn_classifier_loss(
-        feature_matrix,
-        label_vector,
-        parameter_values,
-    )
-    loss = _as_scalar("JAX native QNN loss", loss_obj)
-    if abs(loss - reference_loss) > max(tolerance_value, 1e-12):
-        raise RuntimeError("JAX native QNN loss disagrees with parameter-shift loss")
-    delta = gradient - reference_gradient
-    max_abs_error = float(np.max(np.abs(delta))) if delta.size else 0.0
-    l2_error = float(np.linalg.norm(delta, ord=2))
-    return PhaseJAXNativeQNNGradientResult(
-        loss=loss,
-        gradient=gradient,
-        parameter_shift_gradient=reference_gradient.copy(),
-        max_abs_error=max_abs_error,
-        l2_error=l2_error,
-        tolerance=tolerance_value,
-        passed=max_abs_error <= tolerance_value,
-        native_framework_autodiff=True,
-        host_callback=False,
-        jit_requested=jit,
-        jitted=jitted,
+        tolerance_value,
+        loss_fn,
+        _jax_qnn_routes(),
+        jnp=jnp,
+        jit=jit,
     )
 
 
