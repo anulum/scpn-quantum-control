@@ -757,6 +757,7 @@ jobs:
           pnpm exec vitest run src/modules/workflows src/modules/parameters src/shared/parameters src/shared/workflows
           src/app/Workbench.test.tsx src/app/Workbench.modules.test.tsx src/shared/experiments/experimentArchive.test.ts src/shared/experiments/useExperimentRun.test.tsx
           src/app/Workbench.moduleContributions.test.tsx src/app/Workbench.navigationDeclarations.test.tsx
+          src/app/Workbench.statusItems.test.tsx
           src/app/Workbench.registeredShell.test.tsx src/app/Workbench.registeredWorkflow.test.tsx
           src/WorkspacePanel.test.tsx src/shared/parameters/parameterRevision.test.ts
           src/shared/workspace/useWorkspace.test.tsx
