@@ -187,7 +187,7 @@ Build is the reference view. Styles live only in `studio-web/src/tokens.css`.
 
 | Region | Contents |
 | --- | --- |
-| Title bar | Product mark, command search (results open under the field while it has focus), keyboard help |
+| Title bar | Product mark, command search (results open under the field while it has focus), module status items and the execution limit, keyboard help |
 | Stage rail | The primary views, numbered in order; the current view is marked by the accent bar and weight |
 | Explorer | Breadcrumbs, context destinations and the project explorer |
 | Work area | The current view |
@@ -293,7 +293,7 @@ cannot load executable code or change that registry.
 
 Each module has an identifier, the shell contract version it was written for
 (`apiVersion`, as `major.minor`) and the manifest verbs and evidence schemas it
-requires. The shell offers contract version `2.0`. It refuses a module from a
+requires. The shell offers contract version `2.1`. It refuses a module from a
 different major version or a later minor version when the registry is built,
 before reading any of the module's contributions. A minor version only adds
 optional contribution points. A module may contribute any of these slots:
@@ -308,6 +308,11 @@ optional contribution points. A module may contribute any of these slots:
 - **Jobs** declare their runner and source-bound estimate and call an existing
   execution owner.
 - **Settings** render admitted settings schemas without changing their source.
+- **Status items** (since contract 2.1) are short title-bar facts about what
+  works here, such as Build's "Browser kernel · WASM". Each item has a label and
+  a tone: `active` for something that works, `boundary` for a limit it keeps.
+  The shell shows an item only while its module is available. The shell's own
+  limit, "Remote execution off", is not a module contribution.
 
 Module presentation lives in `studio-web/src/modules/<module>/`. Shared archive
 contracts, numerical plans, worker protocols, storage and browser instruments

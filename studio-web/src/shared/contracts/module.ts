@@ -15,7 +15,7 @@ import type { ResourcePlan } from "../resources/admission";
  * A minor step only adds optional contribution points; a major step changes
  * or removes something a module relies on.
  */
-export const MODULE_API_VERSION = "2.0";
+export const MODULE_API_VERSION = "2.1";
 
 const apiVersionPattern = /^(0|[1-9][0-9]{0,3})\.(0|[1-9][0-9]{0,3})$/u;
 
@@ -167,8 +167,30 @@ export interface ModuleJob<Services> {
   ) => Promise<void>;
 }
 
+/**
+ * A short fact about what this installation can do, shown in the title bar.
+ *
+ * Status items are declarations, not controls; the shell shows one only while
+ * its module is available. Since contract 2.1.
+ */
+export interface ModuleStatusItem {
+  /** Unique identifier in the status slot. */
+  readonly id: string;
+  /** Text of the item. */
+  readonly label: string;
+  /** `active` for something that works here, `boundary` for a limit it keeps. */
+  readonly tone: "active" | "boundary";
+}
+
 /** Contribution slots whose ownership the shell can inspect. */
-export type ModuleSlot = "explorer" | "editors" | "inspectors" | "commands" | "jobs" | "settings";
+export type ModuleSlot =
+  | "explorer"
+  | "editors"
+  | "inspectors"
+  | "commands"
+  | "jobs"
+  | "settings"
+  | "statusItems";
 
 /**
  * One destination a module adds to the workbench.
@@ -229,6 +251,8 @@ export interface StudioModule<
   readonly jobs?: readonly ModuleJob<Services>[];
   /** Settings projections; resolution and authority remain with the settings owner. */
   readonly settings?: readonly ModuleDocumentView<DocumentServices>[];
+  /** Title-bar facts about what the module makes possible; since contract 2.1. */
+  readonly statusItems?: readonly ModuleStatusItem[];
 }
 
 /** Destination of one admitted address path. */
@@ -275,6 +299,8 @@ export interface ModuleRegistry<Services, DocumentServices = Services> {
   readonly jobs: readonly ModuleJob<Services>[];
   /** Registered settings projections in module order. */
   readonly settings: readonly ModuleDocumentView<DocumentServices>[];
+  /** Registered title-bar status items in module order. */
+  readonly statusItems: readonly ModuleStatusItem[];
   /** Find the module responsible for a contribution without transferring authority. */
   readonly contributionOwner: (
     slot: ModuleSlot,
@@ -289,6 +315,7 @@ const contributionSlots: readonly ModuleSlot[] = [
   "commands",
   "jobs",
   "settings",
+  "statusItems",
 ];
 
 const identifier = /^[a-z][a-z0-9-]{0,39}$/u;
@@ -352,6 +379,7 @@ export function createModuleRegistry<Services, DocumentServices = Services>(
   const commands = Object.freeze(modules.flatMap((module) => module.commands ?? []));
   const jobs = Object.freeze(modules.flatMap((module) => module.jobs ?? []));
   const settings = Object.freeze(modules.flatMap((module) => module.settings ?? []));
+  const statusItems = Object.freeze(modules.flatMap((module) => module.statusItems ?? []));
   const contributionOwners = new Map<
     ModuleSlot,
     ReadonlyMap<string, StudioModule<Services, DocumentServices>>
@@ -386,6 +414,7 @@ export function createModuleRegistry<Services, DocumentServices = Services>(
     commands,
     jobs,
     settings,
+    statusItems,
     contributionOwner: (slot: ModuleSlot, id: string) => contributionOwners.get(slot)?.get(id),
     stage: (id: string) => byIdentifier.get(id),
     owner: (stage: string) => owners.get(stage),

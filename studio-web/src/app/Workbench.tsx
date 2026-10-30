@@ -125,9 +125,13 @@ export function Workbench({
   const title = stage?.label ?? "Unavailable route";
   // A module whose requirements the installation does not declare stays visible and says why.
   const owner = view === null ? undefined : registry.owner(view);
-  const lacking = registry
-    .missing(declared)
-    .filter((requirement) => requirement.module === owner?.id);
+  const missing = registry.missing(declared);
+  const lacking = missing.filter((requirement) => requirement.module === owner?.id);
+  // A status item states what works here, so it is shown only while its module is available.
+  const availableStatusItems = registry.statusItems.filter((item) => {
+    const provider = registry.contributionOwner("statusItems", item.id);
+    return provider !== undefined && !missing.some(({ module }) => module === provider.id);
+  });
   const selectionRoute = useRef(routeKey);
   useEffect(() => {
     if (selectionRoute.current !== routeKey) {
@@ -198,10 +202,16 @@ export function Workbench({
           }}
         />
         <ul className="qsp-chips" aria-label="Execution boundary">
-          <li className="qsp-chip">
-            <span className="qsp-dot" aria-hidden="true" />
-            Browser kernel · WASM
-          </li>
+          {availableStatusItems.map((item) => (
+            <li
+              key={item.id}
+              className={item.tone === "active" ? "qsp-chip" : "qsp-chip qsp-chip-boundary"}
+            >
+              {item.tone === "active" && <span className="qsp-dot" aria-hidden="true" />}
+              {item.label}
+            </li>
+          ))}
+          {/* The shell grants no remote runner; this limit is its own, not a module's. */}
           <li className="qsp-chip qsp-chip-boundary">Remote execution off</li>
         </ul>
         <WorkbenchHelp routeKey={routeKey} />

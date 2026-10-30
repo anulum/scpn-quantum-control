@@ -116,6 +116,7 @@ describe("createModuleRegistry", () => {
         { id: "run-local", label: "Run local", action: { kind: "job", job: localJob.id } },
       ],
       jobs: [localJob],
+      statusItems: [{ id: "local-kernel", label: "Local kernel", tone: "active" }],
     };
     const base = createModuleRegistry([first]);
     const registry = createModuleRegistry([first, extension]);
@@ -128,6 +129,9 @@ describe("createModuleRegistry", () => {
     expect(registry.settings).toEqual([documentView]);
     expect(registry.commands.map((command) => command.id)).toEqual(["open-source", "run-local"]);
     expect(registry.jobs).toEqual([localJob]);
+    expect(registry.statusItems).toEqual([
+      { id: "local-kernel", label: "Local kernel", tone: "active" },
+    ]);
     for (const slot of [
       "explorer",
       "editors",
@@ -135,6 +139,7 @@ describe("createModuleRegistry", () => {
       "commands",
       "jobs",
       "settings",
+      "statusItems",
     ] as const) {
       expect(registry.contributionOwner(slot, requirePresent(registry[slot][0]).id)).toBe(
         extension,
@@ -146,7 +151,15 @@ describe("createModuleRegistry", () => {
     expect(retainedDocument.content).toBe(writeJson(admittedSettings.value));
   });
 
-  it.each(["explorer", "editors", "inspectors", "commands", "jobs", "settings"] as const)(
+  it.each([
+    "explorer",
+    "editors",
+    "inspectors",
+    "commands",
+    "jobs",
+    "settings",
+    "statusItems",
+  ] as const)(
     "refuses colliding identifiers in the %s slot before a view or job can run",
     (slot: ModuleSlot) => {
       const contributors =
@@ -162,7 +175,9 @@ describe("createModuleRegistry", () => {
               ]
             : slot === "jobs"
               ? [{ ...localJob, id: "same" }]
-              : [{ ...documentView, id: "same" }];
+              : slot === "statusItems"
+                ? [{ id: "same", label: "Same", tone: "boundary" }]
+                : [{ ...documentView, id: "same" }];
       const extension = { ...module("second", []), [slot]: contributors };
       const duplicate = { ...module("third", []), [slot]: contributors };
       expect(() => createModuleRegistry([first, extension, duplicate])).toThrow(
@@ -288,9 +303,11 @@ describe("module contract version", () => {
   });
 
   it("refuses a module written against a contract this shell does not offer, naming both", () => {
-    const later = { ...first, apiVersion: "2.1" };
+    expect(MODULE_API_VERSION).toBe("2.1");
+    expect(createModuleRegistry([{ ...first, apiVersion: "2.0" }, second]).modules).toHaveLength(2);
+    const later = { ...first, apiVersion: "2.2" };
     expect(() => createModuleRegistry([second, later])).toThrow(
-      `Module first targets contract 2.1; this shell offers ${MODULE_API_VERSION}`,
+      `Module first targets contract 2.2; this shell offers ${MODULE_API_VERSION}`,
     );
     expect(() => createModuleRegistry([{ ...first, apiVersion: "1.0" }])).toThrow(
       "targets contract 1.0",

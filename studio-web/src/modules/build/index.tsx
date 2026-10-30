@@ -20,7 +20,7 @@ const BuildView = lazy(() => import("./BuildView"));
 /** Original compiled instruments and registered authoring editors on their existing addresses. */
 export const buildModule: StudioModule<Services, WorkspaceViewServices, "build"> = {
   id: "build",
-  apiVersion: "2.0",
+  apiVersion: "2.1",
   requires: { verbs: ["compile"], schemas: [] },
   stages: [
     {
@@ -37,6 +37,7 @@ export const buildModule: StudioModule<Services, WorkspaceViewServices, "build">
       ),
     },
   ],
+  statusItems: [{ id: "browser-kernel", label: "Browser kernel · WASM", tone: "active" }],
   commands: [
     {
       id: "open-build",
