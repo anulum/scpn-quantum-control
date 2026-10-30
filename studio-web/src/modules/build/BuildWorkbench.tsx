@@ -86,7 +86,11 @@ export function Disclosure({
 /**
  * The oscillators on a ring with their couplings and one named phase snapshot.
  *
- * @param props - Coupling view and the selection.
+ * Every node is a button: choosing one end and then the other selects the
+ * coupling between them, with the pointer or the keyboard. Choosing the same
+ * node again cancels the pending end.
+ *
+ * @param props - Coupling view, the selection and how to change it.
  * @returns The drawing, or a summary above the drawn limit.
  */
 export function CouplingGraph({
@@ -94,16 +98,20 @@ export function CouplingGraph({
   selection,
   phases,
   snapshot,
+  select,
 }: {
   /** Coupling view of the live request. */
   readonly view: CouplingView;
   /** Selected coupling, if any. */
   readonly selection: CouplingSelection | null;
+  /** Select a coupling. */
+  readonly select: (selection: CouplingSelection) => void;
   /** Phases each node shows by colour and direction: final after a run, otherwise initial. */
   readonly phases: ArrayLike<number>;
   /** Which snapshot the phases are, named in the accessible description. */
   readonly snapshot: "initial" | "final";
 }) {
+  const [pending, setPending] = useState<number | null>(null);
   if (!view.drawn)
     return (
       <p role="status" className="qsp-empty">
@@ -113,54 +121,82 @@ export function CouplingGraph({
     );
   return (
     <div className="qsp-graph-canvas">
-      <svg
-        className="qsp-coupling-graph"
-        viewBox="0 0 360 340"
-        role="img"
-        aria-label={`Coupling graph of ${view.n} oscillators, ${view.mode}, each node showing its ${snapshot} phase`}
-      >
-        <title>
-          {view.n} oscillators · {view.mode} · every distinct pair coupled with K/N
-        </title>
-        <g className="qsp-graph-edges">
-          {view.pairs.map((pair) => {
-            const from = view.nodes[pair.i] as CouplingView["nodes"][number];
-            const to = view.nodes[pair.j] as CouplingView["nodes"][number];
+      <div className="qsp-graph-stage">
+        <svg
+          className="qsp-coupling-graph"
+          viewBox="0 0 360 340"
+          role="img"
+          aria-label={`Coupling graph of ${view.n} oscillators, ${view.mode}, each node showing its ${snapshot} phase`}
+        >
+          <title>
+            {view.n} oscillators · {view.mode} · every distinct pair coupled with K/N
+          </title>
+          <g className="qsp-graph-edges">
+            {view.pairs.map((pair) => {
+              const from = view.nodes[pair.i] as CouplingView["nodes"][number];
+              const to = view.nodes[pair.j] as CouplingView["nodes"][number];
+              return (
+                <line
+                  key={`edge:${pair.i}:${pair.j}`}
+                  x1={from.x}
+                  y1={from.y}
+                  x2={to.x}
+                  y2={to.y}
+                  className={isSelectedPair(selection, pair) ? "qsp-edge-selected" : undefined}
+                />
+              );
+            })}
+          </g>
+          {view.nodes.map((node) => {
+            const selected =
+              selection !== null && (selection.i === node.index || selection.j === node.index);
+            const theta = phases[node.index] as number;
             return (
-              <line
-                key={`edge:${pair.i}:${pair.j}`}
-                x1={from.x}
-                y1={from.y}
-                x2={to.x}
-                y2={to.y}
-                className={isSelectedPair(selection, pair) ? "qsp-edge-selected" : undefined}
-              />
+              <g key={`node:${node.index}`} className="qsp-graph-node">
+                <circle
+                  cx={node.x}
+                  cy={node.y}
+                  r="13"
+                  className={`qsp-phase-dot qsp-phase-${phaseBin(theta)}${selected ? " qsp-node-selected" : ""}`}
+                />
+                <path
+                  className="qsp-graph-phase"
+                  d={`M${node.x} ${node.y}l${(11 * Math.cos(theta)).toFixed(2)} ${(-11 * Math.sin(theta)).toFixed(2)}`}
+                />
+                <text x={node.x} y={node.y + (node.y < 170 ? -20 : 28)} textAnchor="middle">
+                  {node.index}
+                </text>
+              </g>
             );
           })}
-        </g>
-        {view.nodes.map((node) => {
-          const selected =
-            selection !== null && (selection.i === node.index || selection.j === node.index);
-          const theta = phases[node.index] as number;
-          return (
-            <g key={`node:${node.index}`} className="qsp-graph-node">
-              <circle
-                cx={node.x}
-                cy={node.y}
-                r="13"
-                className={`qsp-phase-dot qsp-phase-${phaseBin(theta)}${selected ? " qsp-node-selected" : ""}`}
-              />
-              <path
-                className="qsp-graph-phase"
-                d={`M${node.x} ${node.y}l${(11 * Math.cos(theta)).toFixed(2)} ${(-11 * Math.sin(theta)).toFixed(2)}`}
-              />
-              <text x={node.x} y={node.y + (node.y < 170 ? -20 : 28)} textAnchor="middle">
-                {node.index}
-              </text>
-            </g>
-          );
-        })}
-      </svg>
+        </svg>
+        {view.nodes.map((node) => (
+          <button
+            key={`pick:${node.index}`}
+            type="button"
+            className="qsp-node-pick"
+            style={{ left: `${(node.x / 360) * 100}%`, top: `${(node.y / 340) * 100}%` }}
+            aria-label={`Oscillator ${node.index}`}
+            aria-pressed={
+              pending === node.index ||
+              (selection !== null && (selection.i === node.index || selection.j === node.index))
+            }
+            onClick={() => {
+              if (pending === null) setPending(node.index);
+              else if (pending === node.index) setPending(null);
+              else {
+                select({ i: Math.min(pending, node.index), j: Math.max(pending, node.index) });
+                setPending(null);
+              }
+            }}
+          />
+        ))}
+      </div>
+      <p role="status" className="qsp-graph-hint">
+        {pending === null
+          ? "Choose two oscillators to select their coupling."
+          : `Oscillator ${pending} chosen; choose the other end.`}
+      </p>
     </div>
   );
 }
@@ -546,6 +582,7 @@ export function BuildWorkbench({
                     selection={selection}
                     phases={shownPhases}
                     snapshot={finalShown ? "final" : "initial"}
+                    select={select}
                   />
                 ) : (
                   <CouplingMatrix view={view} selection={selection} select={select} />

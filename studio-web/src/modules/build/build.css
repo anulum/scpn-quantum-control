@@ -100,6 +100,33 @@
   stroke: var(--qsp-accent);
   stroke-width: 4;
 }
+/* Node buttons sit over the drawn nodes; the drawing beneath shows their state. */
+/* The stage has the drawing's own box, so node positions in percent land on the nodes. */
+.qsp-graph-stage {
+  position: relative;
+  max-width: 520px;
+  margin: 0 auto;
+}
+.qsp-workbench .qsp-node-pick {
+  position: absolute;
+  width: var(--qsp-target-min);
+  height: var(--qsp-target-min);
+  min-height: 0;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+}
+.qsp-workbench .qsp-node-pick[aria-pressed="true"] {
+  border-color: var(--qsp-accent);
+}
+.qsp-graph-hint {
+  margin: var(--qsp-space-2) 0 0;
+  color: var(--qsp-muted);
+  font-size: var(--qsp-text-xs);
+}
 .qsp-graph-node circle {
   fill: var(--qsp-surface-raised);
   stroke: var(--qsp-muted);

@@ -177,6 +177,38 @@ it("shows initial phases on the graph and circle, and links matrix and graph sel
   expect(screen.getByRole("button", { name: "K[5,2] = 0.208" }).dataset["linked"]).toBe("true");
 });
 
+it("selects a coupling from the graph by its two end nodes and shows it in the matrix", () => {
+  renderBuild(pending);
+  fireEvent.click(screen.getByRole("tab", { name: "Coupling" }));
+  const hint = () =>
+    screen.getAllByRole("status").find((node) => node.classList.contains("qsp-graph-hint"))
+      ?.textContent;
+  expect(hint()).toBe("Choose two oscillators to select their coupling.");
+  const node = (k: number) => screen.getByRole("button", { name: `Oscillator ${k}` });
+  expect(screen.getAllByRole("button", { name: /^Oscillator \d+$/ })).toHaveLength(12);
+  fireEvent.click(node(5));
+  expect(node(5).getAttribute("aria-pressed")).toBe("true");
+  expect(hint()).toBe("Oscillator 5 chosen; choose the other end.");
+  fireEvent.click(node(5));
+  expect(node(5).getAttribute("aria-pressed")).toBe("false");
+  expect(hint()).toBe("Choose two oscillators to select their coupling.");
+  fireEvent.click(node(7));
+  fireEvent.click(node(2));
+  const graph = screen.getByRole("img", { name: /Coupling graph/ });
+  expect(graph.querySelectorAll(".qsp-edge-selected")).toHaveLength(1);
+  expect(node(2).getAttribute("aria-pressed")).toBe("true");
+  expect(node(7).getAttribute("aria-pressed")).toBe("true");
+  expect(node(5).getAttribute("aria-pressed")).toBe("false");
+  expect(
+    screen.getAllByRole("status").some((status) => status.textContent?.includes("[2,7] [7,2]")),
+  ).toBe(true);
+  fireEvent.click(screen.getByRole("button", { name: "Matrix K" }));
+  expect(screen.getByRole("button", { name: "K[2,7] = 0.208" }).getAttribute("aria-pressed")).toBe(
+    "true",
+  );
+  expect(screen.getByRole("button", { name: "K[7,2] = 0.208" }).dataset["linked"]).toBe("true");
+});
+
 it("summarises above the drawn limit and drops a selection the controls removed", async () => {
   renderBuild(async () => kernel);
   await screen.findByRole("button", { name: "Run simulation" });
