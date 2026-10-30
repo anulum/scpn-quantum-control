@@ -528,9 +528,11 @@ def test_capture_actual_workbench_navigation_owners(
         page = context.new_page()
         session = start_native_coverage(page)
         page.goto(source + "browser-tests/workbench.html", wait_until="networkidle")
+        # Compare loads the lazy method-comparison owners the workbench cohort requires.
         for view, heading in (
             ("Model", "Model"),
             ("Analyse", "Analyse"),
+            ("Compare", "Method comparison and uncertainty"),
             ("Atlas", "Atlas unavailable"),
         ):
             page.get_by_role("link", name=view, exact=True).click()
