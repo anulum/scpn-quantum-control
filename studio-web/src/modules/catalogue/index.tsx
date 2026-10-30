@@ -10,7 +10,10 @@ import catalogueJson from "../../../../docs/_generated/studio_manifest.json";
 import { studioManifest } from "../../shared/browser/data";
 import { Unverifiable } from "../../shared/browser/Unverifiable";
 import type { StudioModule } from "../../shared/contracts/module";
-import type { WorkbenchServices, WorkspaceViewServices } from "../../shared/contracts/workbench";
+import type { NavigationServices, WorkspaceViewServices } from "../../shared/contracts/workbench";
+/** Shell services this module uses; the compiler refuses any other. */
+type Services = NavigationServices;
+
 import { CapabilityCatalogue } from "./CapabilityCatalogue";
 import { parseCatalogue } from "./catalogue";
 import { useCatalogueRuntimes } from "./useCatalogueRuntimes";
@@ -39,7 +42,7 @@ export function CatalogueView({
 }
 
 /** Capability catalogue contributed to the original workspace overview position. */
-export const catalogueModule: StudioModule<WorkbenchServices, WorkspaceViewServices, never> = {
+export const catalogueModule: StudioModule<Services, WorkspaceViewServices, never> = {
   id: "catalogue",
   apiVersion: "2.0",
   requires: { verbs: [], schemas: [] },
@@ -50,9 +53,7 @@ export const catalogueModule: StudioModule<WorkbenchServices, WorkspaceViewServi
       id: "capability-catalogue",
       label: "Capability catalogue",
       stage: "workspace",
-      render: (services: WorkbenchServices) => (
-        <CatalogueView contextSuffix={services.contextSuffix} />
-      ),
+      render: (services: Services) => <CatalogueView contextSuffix={services.contextSuffix} />,
     },
   ],
 };

@@ -8,10 +8,13 @@
 
 import { lazy } from "react";
 import type { StudioModule } from "../../shared/contracts/module";
-import type { WorkbenchServices, WorkspaceViewServices } from "../../shared/contracts/workbench";
+import type { NoServices, WorkspaceViewServices } from "../../shared/contracts/workbench";
+/** Shell services this module uses; the compiler refuses any other. */
+type Services = NoServices;
+
 const EvidenceCatalogueView = lazy(() => import("./EvidenceCatalogueView"));
 /** Committed capability, support, gradient-plan and scorecard surfaces on their own destination. */
-export const evidenceModule: StudioModule<WorkbenchServices, WorkspaceViewServices, "evidence"> = {
+export const evidenceModule: StudioModule<Services, WorkspaceViewServices, "evidence"> = {
   id: "evidence",
   apiVersion: "2.0",
   requires: { verbs: [], schemas: [] },

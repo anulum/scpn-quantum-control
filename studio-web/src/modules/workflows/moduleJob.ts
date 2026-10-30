@@ -8,12 +8,12 @@
 
 import { fetchKuramoto } from "../../shared/browser/kuramoto";
 import type { ModuleJob } from "../../shared/contracts/module";
-import type { WorkbenchServices } from "../../shared/contracts/workbench";
+import type { WorkflowServices, WorkspaceViewServices } from "../../shared/contracts/workbench";
 import { readWorkflowArchive } from "../../shared/workflows/workflowArchive";
 import { buildWorkflowCells } from "../../shared/workflows/workflowSweep";
 
 /** Execute the original selected graph; each stage retains its native admission and disposal. */
-export const workflowJob: ModuleJob<WorkbenchServices> = {
+export const workflowJob: ModuleJob<WorkspaceViewServices & WorkflowServices> = {
   id: "local-workflow",
   label: "Run selected local workflow",
   runner: "worker",

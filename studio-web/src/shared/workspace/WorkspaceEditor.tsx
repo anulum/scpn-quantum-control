@@ -12,7 +12,7 @@ import type { RawCodec } from "../contracts";
 import { downloadWorkspaceArchive } from "../storage/workspaceDownload";
 export { downloadWorkspaceArchive } from "../storage/workspaceDownload";
 import type { StoredWorkspace } from "../storage/workspaceStore";
-import type { WorkspaceController } from "./useWorkspace";
+import type { WorkspaceController } from "./workspaceService";
 
 /** Trusted producer registry from the host; imported data cannot install verifiers. */
 export interface WorkspacePanelProps {

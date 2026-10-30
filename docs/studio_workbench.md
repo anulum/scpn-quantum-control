@@ -317,6 +317,25 @@ including dynamic imports and re-exports. Shared code cannot import
 module presentation. Modules compose through shared services rather than reading
 each other's implementation.
 
+The shell passes every stage the same service set, defined in
+`studio-web/src/shared/contracts/workbench.ts` as narrow interfaces:
+
+| Interface | Provides |
+| --- | --- |
+| `NavigationServices` | Addresses that keep the requested context |
+| `StageCompositionServices` | Other modules' editors and the host overview for a stage |
+| `SourceServices` | The workspace, its verifiers and the admitted source records |
+| `ExperimentServices` | The local experiment run |
+| `WorkflowServices` | The local workflow run |
+
+A module types its contributions with only the interfaces it uses (for example
+Build uses navigation and stage composition), so the compiler refuses any other
+access. A module that uses none declares `NoServices`. The interfaces of the
+workspace, experiment and workflow controllers live in type-only files
+(`workspaceService.ts`, `experimentRunService.ts`, `workflowRunService.ts`).
+The import guard refuses a shared contract that imports an implementation hook
+(a `use…` file).
+
 Add a module folder and one registry entry to contribute a stage, command or
 inspector; the shell and other modules require no edits. Removing that entry
 removes its controls and addresses. Existing archive and document bytes remain

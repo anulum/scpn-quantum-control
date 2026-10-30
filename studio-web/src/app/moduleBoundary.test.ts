@@ -33,6 +33,10 @@ it("refuses static, type, re-export and lazy cross-module edges and shared-barre
     "modules/first/local.ts":
       "import './source'; import { value } from '../../shared/value'; import React from 'react'; import data from '../../../manifest.json?raw';",
     "shared/value.ts": "export const value = 1;",
+    "shared/contracts/services.ts":
+      "import type { Controller } from '../workspace/useWorkspace'; import type { Service } from '../workspace/workspaceService';",
+    "shared/workspace/useWorkspace.ts": "export type Controller = string;",
+    "shared/workspace/workspaceService.ts": "export type Service = string;",
   };
   try {
     for (const [path, source] of Object.entries(sources)) {
@@ -50,6 +54,14 @@ it("refuses static, type, re-export and lazy cross-module edges and shared-barre
       "Module imports executable code outside its own and shared folders",
       "Shared owner imports a module",
       "Module or shared owner imports the shell",
+      "Contract imports an implementation hook",
+    ]);
+    expect(findings.filter(({ file }) => file.includes("contracts"))).toEqual([
+      {
+        file: join("shared", "contracts", "services.ts"),
+        target: "../workspace/useWorkspace",
+        reason: "Contract imports an implementation hook",
+      },
     ]);
     expect(findings.some(({ file }) => file.endsWith("local.ts"))).toBe(false);
     expect(findings.map(({ target }) => target)).toContain("target");

@@ -10,54 +10,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createOwnedKuramotoRun } from "../browser/kuramoto";
 import type { OwnedKuramotoHandle } from "../browser/kuramoto";
 import type { KernelWorkerPort } from "../../workers/kernelClient";
-import type { KernelWorkerEvent, OwnedKernelOutcome } from "../workers/kernelProtocol";
-import type { RawCodec } from "../contracts";
-import type { WorkspaceArchivePreview } from "../storage/workspaceArchive";
+import type { KernelWorkerEvent } from "../workers/kernelProtocol";
 import { readLocalExperiment } from "./experimentArchive";
 import { verifyReplayOutcome } from "./experimentPlan";
-import type { ExperimentPlan, ReplayExpectation } from "./experimentPlan";
 import { ExperimentRefusal } from "./kuramotoArtifacts";
-
-/** Public lifecycle statuses; stale diagnostics never authorize a new revision's result. */
-export type ExperimentRunStatus =
-  | "idle"
-  | "planned"
-  | "running"
-  | "cancelling"
-  | "succeeded"
-  | "refused"
-  | "cancelled"
-  | "failed"
-  | "stale";
-interface RunState {
-  /** Prepared immutable admission, or null before explicit preparation. */ readonly plan: ExperimentPlan | null;
-  /** Saved exact output used only for an explicitly prepared replay. */ readonly expected: ReplayExpectation | null;
-  /** Original native run UUID, empty before allocation. */ readonly runId: string;
-  /** Independent immutable archive attempt UUID, empty before allocation. */ readonly attemptId: string;
-  /** Actual ordered worker and original client outcome diagnostics. */ readonly events: readonly KernelWorkerEvent[];
-  /** Actual disposed outcome for the selected unchanged source, or null. */ readonly outcome: OwnedKernelOutcome | null;
-  /** Current original plan, execution and disposal phase. */ readonly status: ExperimentRunStatus;
-  /** Authored lifecycle status or preserved original worker diagnostic. */ readonly reason: string;
-  /** Exact saved output comparison passed after genuine worker disposal. */ readonly replayVerified: boolean;
-}
-
-/** Original worker execution controls, owned by the continuously mounted workbench. */
-export interface ExperimentRunController extends Omit<RunState, "expected"> {
-  /** Whether a current original source plan can execute with one owned worker. */ readonly canRun: boolean;
-  /** Whether a disposed attempt can be committed to that unchanged source. */ readonly canSave: boolean;
-  /** Disposal failed; starting another run remains forbidden in this mount. */ readonly disposalBlocked: boolean;
-  /** Admit a prepared exact source/plan binding without executing it. */ prepare(
-    plan: ExperimentPlan,
-    expected?: ReplayExpectation,
-  ): Promise<void>;
-  /** Start the original source-owned disposable worker after final admission. */ run(): Promise<void>;
-  /** Observe cancellation; source draft and already captured diagnostic events remain. */ cancel(): Promise<void>;
-  /** Retain the same immutable result after an admitted archive-only save, never after a revision edit. */ retainSavedAttempt(
-    archive: WorkspaceArchivePreview,
-    priorJson: string,
-    rawCodecs: ReadonlyMap<string, RawCodec>,
-  ): Promise<void>;
-}
+import type { ExperimentRunController, ExperimentRunState } from "./experimentRunService";
 
 /** Optional original transport seam; production uses the real browser Worker implementation. */
 export interface ExperimentWorkerOptions {
@@ -70,7 +27,7 @@ export function useExperimentRun(
   active: boolean,
   options: ExperimentWorkerOptions = {},
 ): ExperimentRunController {
-  const [state, setState] = useState<RunState>({
+  const [state, setState] = useState<ExperimentRunState>({
     plan: null,
     expected: null,
     runId: "",

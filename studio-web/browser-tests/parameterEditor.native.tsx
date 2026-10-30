@@ -32,7 +32,7 @@ import {
   parameterDraftReducer,
 } from "../src/shared/parameters/parameterDraft";
 import { useWorkspace } from "../src/shared/workspace/useWorkspace";
-import type { WorkspaceController } from "../src/shared/workspace/useWorkspace";
+import type { WorkspaceController } from "../src/shared/workspace/workspaceService";
 import { openWorkspaceStore } from "../src/shared/storage/workspaceStore";
 import { conformanceArchive, conformanceCodecs } from "./workspaceFixture";
 

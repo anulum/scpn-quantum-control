@@ -8,10 +8,17 @@
 
 import { lazy } from "react";
 import type { StudioModule } from "../../shared/contracts/module";
-import type { WorkbenchServices, WorkspaceViewServices } from "../../shared/contracts/workbench";
+import type {
+  NavigationServices,
+  StageCompositionServices,
+  WorkspaceViewServices,
+} from "../../shared/contracts/workbench";
+/** Shell services this module uses; the compiler refuses any other. */
+type Services = NavigationServices & StageCompositionServices;
+
 const BuildView = lazy(() => import("./BuildView"));
 /** Original compiled instruments and registered authoring editors on their existing addresses. */
-export const buildModule: StudioModule<WorkbenchServices, WorkspaceViewServices, "build"> = {
+export const buildModule: StudioModule<Services, WorkspaceViewServices, "build"> = {
   id: "build",
   apiVersion: "2.0",
   requires: { verbs: ["compile"], schemas: [] },
@@ -21,7 +28,7 @@ export const buildModule: StudioModule<WorkbenchServices, WorkspaceViewServices,
       label: "Build",
       group: "primary",
       instruments: ["compile-recompute"],
-      render: (services: WorkbenchServices, instrument: string | null) => (
+      render: (services: Services, instrument: string | null) => (
         <BuildView
           focusInstrument={instrument === "compile-recompute"}
           editors={services.renderEditors("build")}

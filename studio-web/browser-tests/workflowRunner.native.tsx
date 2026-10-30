@@ -11,7 +11,7 @@ import { createRoot } from "react-dom/client";
 import { fetchKuramoto } from "../src/shared/browser/kuramoto";
 import { localExperimentCodecs } from "../src/shared/experiments/kuramotoArtifacts";
 import { useWorkspace } from "../src/shared/workspace/useWorkspace";
-import type { WorkspaceController } from "../src/shared/workspace/useWorkspace";
+import type { WorkspaceController } from "../src/shared/workspace/workspaceService";
 import { WorkflowRunner } from "../src/modules/workflows/WorkflowRunner";
 import { useWorkflowRun } from "../src/shared/workflows/useWorkflowRun";
 

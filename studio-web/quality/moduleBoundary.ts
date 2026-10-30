@@ -7,7 +7,7 @@
 // SCPN Quantum Control — build-time workbench module import boundaries
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { isAbsolute, join, relative, resolve, sep } from "node:path";
+import { basename, isAbsolute, join, relative, resolve, sep } from "node:path";
 import ts from "typescript";
 
 /** A source dependency that crosses a workbench module's owned boundary. */
@@ -43,6 +43,9 @@ function within(directory: string, path: string): boolean {
  * Shared owners cannot import modules or the shell, preventing a shared barrel
  * from concealing a module-to-module dependency. Static data and binary resources
  * retain their source-owned paths; they are not executable module imports.
+ * Shared contracts are types and validators only: they cannot import an
+ * implementation hook (a `use…` file), so a service interface never depends on
+ * the code that implements it.
  *
  * @param sourceRoot - The application's source directory, or an isolated source tree for a refusal test.
  * @returns Every forbidden edge in deterministic file and syntax order.
@@ -52,6 +55,7 @@ export function inspectModuleBoundaries(sourceRoot: string): readonly ModuleBoun
   const modules = join(root, "modules");
   const shared = join(root, "shared");
   const app = join(root, "app");
+  const contracts = join(shared, "contracts");
   const moduleFiles = sourceFiles(modules);
   if (!existsSync(shared) || moduleFiles.length === 0) {
     throw new Error("Module and shared source inventory must exist and contain module sources");
@@ -90,6 +94,8 @@ export function inspectModuleBoundaries(sourceRoot: string): readonly ModuleBoun
       else if (!inModule && within(modules, destination)) reason = "Shared owner imports a module";
       else if (inModule && !within(owner, destination) && !within(shared, destination))
         reason = "Module imports executable code outside its own and shared folders";
+      else if (within(contracts, file) && /^use[A-Z]/u.test(basename(destination)))
+        reason = "Contract imports an implementation hook";
       if (reason !== null) findings.push({ file: relative(root, file), target, reason });
     };
     const visit = (node: ts.Node): void => {

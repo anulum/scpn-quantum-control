@@ -9,12 +9,19 @@
 import { lazy } from "react";
 import { workflowJob } from "./moduleJob";
 import type { StudioModule } from "../../shared/contracts/module";
-import type { WorkbenchServices, WorkspaceViewServices } from "../../shared/contracts/workbench";
+import type {
+  ExperimentServices,
+  WorkflowServices,
+  WorkspaceViewServices,
+} from "../../shared/contracts/workbench";
+/** Shell services this module uses; the compiler refuses any other. */
+type Services = WorkspaceViewServices & ExperimentServices & WorkflowServices;
+
 const WorkflowRunner = lazy(() =>
   import("./WorkflowRunner").then((module) => ({ default: module.WorkflowRunner })),
 );
 /** Original workflow traversal and worker settlement contributed to Experiments. */
-export const workflowsModule: StudioModule<WorkbenchServices, WorkspaceViewServices, never> = {
+export const workflowsModule: StudioModule<Services, WorkspaceViewServices, never> = {
   id: "workflows",
   apiVersion: "2.0",
   requires: { verbs: [], schemas: [] },
@@ -25,7 +32,7 @@ export const workflowsModule: StudioModule<WorkbenchServices, WorkspaceViewServi
       id: "workflow-graph",
       label: "Workflow graph",
       stage: "experiments",
-      render: (services: WorkbenchServices) => (
+      render: (services: Services) => (
         <WorkflowRunner
           workspace={services.workspace}
           rawCodecs={services.codecs}

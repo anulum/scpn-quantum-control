@@ -8,28 +8,30 @@
 
 import { lazy } from "react";
 import type { StudioModule } from "../../shared/contracts/module";
-import type { WorkbenchServices, WorkspaceViewServices } from "../../shared/contracts/workbench";
+import type { NoServices, WorkspaceViewServices } from "../../shared/contracts/workbench";
+/** Shell services this module uses; the compiler refuses any other. */
+type Services = NoServices;
+
 const OperationsView = lazy(() => import("./OperationsView"));
 /** Source-owned offline profiles, policy metadata and review dossiers on the original stage. */
-export const operatorsModule: StudioModule<WorkbenchServices, WorkspaceViewServices, "operations"> =
-  {
-    id: "operations",
-    apiVersion: "2.0",
-    requires: { verbs: [], schemas: [] },
-    stages: [
-      {
-        id: "operations" as const,
-        label: "Devices & Operations",
-        group: "context",
-        instruments: [],
-        render: () => <OperationsView />,
-      },
-    ],
-    commands: [
-      {
-        id: "open-operations",
-        label: "Open Devices & Operations",
-        action: { kind: "navigate", stage: "operations", instrument: null },
-      },
-    ],
-  };
+export const operatorsModule: StudioModule<Services, WorkspaceViewServices, "operations"> = {
+  id: "operations",
+  apiVersion: "2.0",
+  requires: { verbs: [], schemas: [] },
+  stages: [
+    {
+      id: "operations" as const,
+      label: "Devices & Operations",
+      group: "context",
+      instruments: [],
+      render: () => <OperationsView />,
+    },
+  ],
+  commands: [
+    {
+      id: "open-operations",
+      label: "Open Devices & Operations",
+      action: { kind: "navigate", stage: "operations", instrument: null },
+    },
+  ],
+};

@@ -8,10 +8,13 @@
 
 import { lazy } from "react";
 import type { StudioModule } from "../../shared/contracts/module";
-import type { WorkbenchServices, WorkspaceViewServices } from "../../shared/contracts/workbench";
+import type { NavigationServices, WorkspaceViewServices } from "../../shared/contracts/workbench";
+/** Shell services this module uses; the compiler refuses any other. */
+type Services = NavigationServices;
+
 const UnavailableView = lazy(() => import("./UnavailableView"));
 /** Preserve the truthful unavailable Atlas stage without inventing a snapshot browser. */
-export const atlasModule: StudioModule<WorkbenchServices, WorkspaceViewServices, "atlas"> = {
+export const atlasModule: StudioModule<Services, WorkspaceViewServices, "atlas"> = {
   id: "atlas",
   apiVersion: "2.0",
   requires: { verbs: [], schemas: [] },
@@ -21,7 +24,7 @@ export const atlasModule: StudioModule<WorkbenchServices, WorkspaceViewServices,
       label: "Atlas",
       group: "primary",
       instruments: [],
-      render: (services: WorkbenchServices) => (
+      render: (services: Services) => (
         <UnavailableView view="atlas" workspaceHref={services.workspaceHref} />
       ),
     },

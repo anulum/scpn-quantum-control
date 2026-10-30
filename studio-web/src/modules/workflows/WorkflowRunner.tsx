@@ -11,7 +11,7 @@ import { fetchKuramoto } from "../../shared/browser/kuramoto";
 import type { KuramotoKernel } from "../../shared/browser/kuramoto";
 import { canonicalDigest, writeJson } from "../../shared/contracts";
 import type { RawCodec } from "../../shared/contracts";
-import type { WorkspaceController } from "../../shared/workspace/useWorkspace";
+import type { WorkspaceController } from "../../shared/workspace/workspaceService";
 import { readLocalExperiment } from "../../shared/experiments/experimentArchive";
 import { archiveWorkflow, readWorkflowArchive } from "../../shared/workflows/workflowArchive";
 import type { ArchivedWorkflow } from "../../shared/workflows/workflowArchive";
@@ -22,7 +22,7 @@ import {
   workflowDocument,
 } from "../../shared/workflows/workflowModel";
 import type { WorkflowDefinition } from "../../shared/workflows/workflowModel";
-import type { WorkflowRunController } from "../../shared/workflows/useWorkflowRun";
+import type { WorkflowRunController } from "../../shared/workflows/workflowRunService";
 
 /** Original continuously mounted workspace and actual worker ownership controls. */
 export interface WorkflowRunnerProps {

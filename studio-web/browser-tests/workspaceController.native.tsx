@@ -9,7 +9,7 @@
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { useWorkspace } from "../src/shared/workspace/useWorkspace";
-import type { WorkspaceController } from "../src/shared/workspace/useWorkspace";
+import type { WorkspaceController } from "../src/shared/workspace/workspaceService";
 import { conformanceCodecs } from "./workspaceFixture";
 
 async function tick(): Promise<void> {

@@ -9,14 +9,21 @@
 import { lazy } from "react";
 import { experimentJob } from "./moduleJob";
 import type { StudioModule } from "../../shared/contracts/module";
-import type { WorkbenchServices, WorkspaceViewServices } from "../../shared/contracts/workbench";
+import type {
+  ExperimentServices,
+  NavigationServices,
+  StageCompositionServices,
+  WorkspaceViewServices,
+} from "../../shared/contracts/workbench";
+/** Shell services this module uses; the compiler refuses any other. */
+type Services = NavigationServices &
+  StageCompositionServices &
+  WorkspaceViewServices &
+  ExperimentServices;
+
 const ExperimentRunner = lazy(() => import("./ExperimentRunner"));
 /** Original experiment runner shares the work area with independently registered workflow controls. */
-export const experimentsModule: StudioModule<
-  WorkbenchServices,
-  WorkspaceViewServices,
-  "experiments"
-> = {
+export const experimentsModule: StudioModule<Services, WorkspaceViewServices, "experiments"> = {
   id: "experiments",
   apiVersion: "2.0",
   requires: { verbs: [], schemas: [] },
@@ -26,7 +33,7 @@ export const experimentsModule: StudioModule<
       label: "Experiments",
       group: "primary",
       instruments: [],
-      render: (services: WorkbenchServices) => (
+      render: (services: Services) => (
         <>
           <ExperimentRunner
             workspace={services.workspace}

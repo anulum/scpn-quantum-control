@@ -8,10 +8,17 @@
 
 import { lazy } from "react";
 import type { StudioModule } from "../../shared/contracts/module";
-import type { WorkbenchServices, WorkspaceViewServices } from "../../shared/contracts/workbench";
+import type {
+  ExperimentServices,
+  StageCompositionServices,
+  WorkspaceViewServices,
+} from "../../shared/contracts/workbench";
+/** Shell services this module uses; the compiler refuses any other. */
+type Services = StageCompositionServices & ExperimentServices;
+
 const ResultsView = lazy(() => import("./ResultsView"));
 /** Original results and committed replay retain their source and lifecycle bindings. */
-export const resultsModule: StudioModule<WorkbenchServices, WorkspaceViewServices, "results"> = {
+export const resultsModule: StudioModule<Services, WorkspaceViewServices, "results"> = {
   id: "results",
   apiVersion: "2.0",
   requires: { verbs: [], schemas: [] },
@@ -21,7 +28,7 @@ export const resultsModule: StudioModule<WorkbenchServices, WorkspaceViewService
       label: "Results",
       group: "primary",
       instruments: ["program-ad-replay"],
-      render: (services: WorkbenchServices, instrument: string | null) => (
+      render: (services: Services, instrument: string | null) => (
         <ResultsView
           focusInstrument={instrument === "program-ad-replay"}
           plan={services.experiment.plan}

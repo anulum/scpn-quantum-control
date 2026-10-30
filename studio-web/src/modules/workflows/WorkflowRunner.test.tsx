@@ -25,7 +25,7 @@ import type { WorkflowExecutionResult } from "../../shared/workflows/workflowExe
 import { runLocalWorkflow } from "../../shared/workflows/workflowExecution";
 import { parseWorkflow, workflowDocument } from "../../shared/workflows/workflowModel";
 import { readWorkflowArchive } from "../../shared/workflows/workflowArchive";
-import type { WorkflowRunRequest } from "../../shared/workflows/useWorkflowRun";
+import type { WorkflowRunRequest } from "../../shared/workflows/workflowRunService";
 import { WorkflowRunner } from "./WorkflowRunner";
 import { useWorkflowRun } from "../../shared/workflows/useWorkflowRun";
 

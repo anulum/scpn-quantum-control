@@ -7,12 +7,15 @@
 // SCPN Quantum Control — registered source-owned settings projection
 
 import type { StudioModule } from "../../shared/contracts/module";
-import type { WorkbenchServices, WorkspaceViewServices } from "../../shared/contracts/workbench";
+import type { NoServices, WorkspaceViewServices } from "../../shared/contracts/workbench";
+/** Shell services this module uses; the compiler refuses any other. */
+type Services = NoServices;
+
 import { SettingsDocumentInspector } from "./SettingsDocumentInspector";
 import { SettingsInspector } from "./SettingsInspector";
 
 /** Display the original resolver's settings without recomputing policy or granting authority. */
-export const settingsModule: StudioModule<WorkbenchServices, WorkspaceViewServices, never> = {
+export const settingsModule: StudioModule<Services, WorkspaceViewServices, never> = {
   id: "settings",
   apiVersion: "2.0",
   requires: { verbs: [], schemas: [] },

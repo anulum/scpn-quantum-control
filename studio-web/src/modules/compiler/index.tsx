@@ -8,12 +8,15 @@
 
 import { lazy } from "react";
 import type { StudioModule } from "../../shared/contracts/module";
-import type { WorkbenchServices, WorkspaceViewServices } from "../../shared/contracts/workbench";
+import type { NoServices, WorkspaceViewServices } from "../../shared/contracts/workbench";
+/** Shell services this module uses; the compiler refuses any other. */
+type Services = NoServices;
+
 const CompilerTrace = lazy(() =>
   import("./CompilerTrace").then((module) => ({ default: module.CompilerTrace })),
 );
 /** The original compiler trace inspector contributed to Build. */
-export const compilerModule: StudioModule<WorkbenchServices, WorkspaceViewServices, never> = {
+export const compilerModule: StudioModule<Services, WorkspaceViewServices, never> = {
   id: "compiler",
   apiVersion: "2.0",
   requires: { verbs: ["compile"], schemas: [] },

@@ -7,11 +7,14 @@
 // SCPN Quantum Control — registered parameter revision editor
 
 import type { StudioModule } from "../../shared/contracts/module";
-import type { WorkbenchServices, WorkspaceViewServices } from "../../shared/contracts/workbench";
+import type { NoServices, WorkspaceViewServices } from "../../shared/contracts/workbench";
+/** Shell services this module uses; the compiler refuses any other. */
+type Services = NoServices;
+
 import { ParameterWorkspace } from "./ParameterWorkspace";
 
 /** Original parameter editor and save owner behind the workspace document slot. */
-export const parametersModule: StudioModule<WorkbenchServices, WorkspaceViewServices, never> = {
+export const parametersModule: StudioModule<Services, WorkspaceViewServices, never> = {
   id: "parameters",
   apiVersion: "2.0",
   requires: { verbs: [], schemas: [] },

@@ -7,10 +7,10 @@
 // SCPN Quantum Control — registered original experiment worker job
 
 import type { ModuleJob } from "../../shared/contracts/module";
-import type { WorkbenchServices } from "../../shared/contracts/workbench";
+import type { ExperimentServices } from "../../shared/contracts/workbench";
 
 /** Existing prepared numerical plan and original worker lifecycle, without self-issued admission. */
-export const experimentJob: ModuleJob<WorkbenchServices> = {
+export const experimentJob: ModuleJob<ExperimentServices> = {
   id: "local-experiment",
   label: "Run prepared local experiment",
   runner: "worker",

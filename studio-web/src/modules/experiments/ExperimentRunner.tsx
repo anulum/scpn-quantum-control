@@ -12,14 +12,14 @@ import type { KuramotoKernel } from "../../shared/browser/kuramoto";
 import { SimulationDataTable } from "../../shared/browser/SimulationDataTable";
 import type { RawCodec } from "../../shared/contracts";
 import { downloadWorkspaceArchive } from "../../shared/storage/workspaceDownload";
-import type { WorkspaceController } from "../../shared/workspace/useWorkspace";
+import type { WorkspaceController } from "../../shared/workspace/workspaceService";
 import {
   appendExperimentAttempt,
   createLocalSample,
   readLocalExperiment,
 } from "../../shared/experiments/experimentArchive";
 import { prepareExperimentPlan, prepareSavedReplay } from "../../shared/experiments/experimentPlan";
-import type { ExperimentRunController } from "../../shared/experiments/useExperimentRun";
+import type { ExperimentRunController } from "../../shared/experiments/experimentRunService";
 import { ExperimentRefusal } from "../../shared/experiments/kuramotoArtifacts";
 
 /** Original workspace and worker owners supplied by the continuously mounted workbench. */

@@ -8,12 +8,15 @@
 
 import { lazy } from "react";
 import type { StudioModule } from "../../shared/contracts/module";
-import type { WorkbenchServices, WorkspaceViewServices } from "../../shared/contracts/workbench";
+import type { NoServices, WorkspaceViewServices } from "../../shared/contracts/workbench";
+/** Shell services this module uses; the compiler refuses any other. */
+type Services = NoServices;
+
 const ProgramEditor = lazy(() =>
   import("./ProgramEditor").then((module) => ({ default: module.ProgramEditor })),
 );
 /** The original supported program authoring controls contributed to Build. */
-export const programsModule: StudioModule<WorkbenchServices, WorkspaceViewServices, never> = {
+export const programsModule: StudioModule<Services, WorkspaceViewServices, never> = {
   id: "programs",
   apiVersion: "2.0",
   requires: { verbs: ["compile"], schemas: [] },

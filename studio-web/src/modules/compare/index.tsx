@@ -8,7 +8,10 @@
 
 import { lazy } from "react";
 import type { StudioModule } from "../../shared/contracts/module";
-import type { WorkbenchServices, WorkspaceViewServices } from "../../shared/contracts/workbench";
+import type { WorkspaceViewServices } from "../../shared/contracts/workbench";
+/** Shell services this module uses; the compiler refuses any other. */
+type Services = WorkspaceViewServices;
+
 const RunComparison = lazy(() =>
   import("./RunComparison").then((module) => ({ default: module.RunComparison })),
 );
@@ -16,7 +19,7 @@ const MethodComparison = lazy(() =>
   import("./MethodComparison").then((module) => ({ default: module.MethodComparison })),
 );
 /** Independently source-bound run and complete method-population comparison controls. */
-export const compareModule: StudioModule<WorkbenchServices, WorkspaceViewServices, never> = {
+export const compareModule: StudioModule<Services, WorkspaceViewServices, never> = {
   id: "compare",
   apiVersion: "2.0",
   requires: { verbs: [], schemas: [] },
@@ -27,7 +30,7 @@ export const compareModule: StudioModule<WorkbenchServices, WorkspaceViewService
       id: "run-comparison",
       label: "Run comparison",
       stage: "results",
-      render: (services: WorkbenchServices) => (
+      render: (services: Services) => (
         <RunComparison sourceJson={services.workspace.draft} rawCodecs={services.codecs} />
       ),
     },
