@@ -108,6 +108,22 @@ if TYPE_CHECKING:
         run_kuramoto_competitive_comparison,
     )
     from .mps_baseline import MPSBaselineResult, mps_baseline_comparison
+    from .numerical_method_admission import (
+        METHOD_SELECTION_OBJECTIVE,
+        NUMERICAL_METHOD_ADMISSION_CLAIM_BOUNDARY,
+        NUMERICAL_METHOD_ADMISSION_SCHEMA,
+        CandidateVerdict,
+        EvidenceReference,
+        MeasuredMethodCandidate,
+        NumericalMethodRequest,
+        NumericalMethodSelection,
+        NumericalMethodSelectionCache,
+        candidates_from_reproducible_comparison,
+        candidates_from_tn_baseline_flagship,
+        plan_digest,
+        render_numerical_method_selection_markdown,
+        select_numerical_method,
+    )
     from .open_system_objective_evidence import (
         OPEN_SYSTEM_OBJECTIVE_EVIDENCE_SCHEMA,
         OpenSystemObjectiveEvidenceArtifact,
@@ -538,6 +554,62 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
         "scpn_quantum_control.benchmarks.tn_mps_baseline_design",
         "render_tn_mps_baseline_design_markdown",
     ),
+    "METHOD_SELECTION_OBJECTIVE": (
+        "scpn_quantum_control.benchmarks.numerical_method_admission",
+        "METHOD_SELECTION_OBJECTIVE",
+    ),
+    "NUMERICAL_METHOD_ADMISSION_CLAIM_BOUNDARY": (
+        "scpn_quantum_control.benchmarks.numerical_method_admission",
+        "NUMERICAL_METHOD_ADMISSION_CLAIM_BOUNDARY",
+    ),
+    "NUMERICAL_METHOD_ADMISSION_SCHEMA": (
+        "scpn_quantum_control.benchmarks.numerical_method_admission",
+        "NUMERICAL_METHOD_ADMISSION_SCHEMA",
+    ),
+    "CandidateVerdict": (
+        "scpn_quantum_control.benchmarks.numerical_method_admission",
+        "CandidateVerdict",
+    ),
+    "EvidenceReference": (
+        "scpn_quantum_control.benchmarks.numerical_method_admission",
+        "EvidenceReference",
+    ),
+    "MeasuredMethodCandidate": (
+        "scpn_quantum_control.benchmarks.numerical_method_admission",
+        "MeasuredMethodCandidate",
+    ),
+    "NumericalMethodRequest": (
+        "scpn_quantum_control.benchmarks.numerical_method_admission",
+        "NumericalMethodRequest",
+    ),
+    "NumericalMethodSelection": (
+        "scpn_quantum_control.benchmarks.numerical_method_admission",
+        "NumericalMethodSelection",
+    ),
+    "NumericalMethodSelectionCache": (
+        "scpn_quantum_control.benchmarks.numerical_method_admission",
+        "NumericalMethodSelectionCache",
+    ),
+    "candidates_from_reproducible_comparison": (
+        "scpn_quantum_control.benchmarks.numerical_method_admission",
+        "candidates_from_reproducible_comparison",
+    ),
+    "candidates_from_tn_baseline_flagship": (
+        "scpn_quantum_control.benchmarks.numerical_method_admission",
+        "candidates_from_tn_baseline_flagship",
+    ),
+    "plan_digest": (
+        "scpn_quantum_control.benchmarks.numerical_method_admission",
+        "plan_digest",
+    ),
+    "render_numerical_method_selection_markdown": (
+        "scpn_quantum_control.benchmarks.numerical_method_admission",
+        "render_numerical_method_selection_markdown",
+    ),
+    "select_numerical_method": (
+        "scpn_quantum_control.benchmarks.numerical_method_admission",
+        "select_numerical_method",
+    ),
     "TN_MPS_CROSSOVER_ADMISSION_SCHEMA": (
         "scpn_quantum_control.benchmarks.tn_mps_crossover_admission",
         "TN_MPS_CROSSOVER_ADMISSION_SCHEMA",
@@ -713,6 +785,20 @@ __all__ = [
     "TNBaselineSizePlan",
     "build_tn_mps_baseline_design",
     "render_tn_mps_baseline_design_markdown",
+    "METHOD_SELECTION_OBJECTIVE",
+    "NUMERICAL_METHOD_ADMISSION_CLAIM_BOUNDARY",
+    "NUMERICAL_METHOD_ADMISSION_SCHEMA",
+    "CandidateVerdict",
+    "EvidenceReference",
+    "MeasuredMethodCandidate",
+    "NumericalMethodRequest",
+    "NumericalMethodSelection",
+    "NumericalMethodSelectionCache",
+    "candidates_from_reproducible_comparison",
+    "candidates_from_tn_baseline_flagship",
+    "plan_digest",
+    "render_numerical_method_selection_markdown",
+    "select_numerical_method",
     "TN_MPS_CROSSOVER_CLAIM_BOUNDARY",
     "TN_MPS_CROSSOVER_PROTOCOL_ID",
     "TN_MPS_CROSSOVER_REQUIRED_FIELDS",

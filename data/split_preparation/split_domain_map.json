@@ -923,6 +923,7 @@
     "layout_method_comparison.py",
     "layout_relaxation_experiment.py",
     "mps_baseline.py",
+    "numerical_method_admission.py",
     "open_system_objective_evidence.py",
     "quantum_advantage.py",
     "reproducible_comparison.py",

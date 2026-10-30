@@ -134,7 +134,9 @@ jobs:
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/benchmarks/tn_mps_crossover_admission.py
+          src/scpn_quantum_control/benchmarks/numerical_method_admission.py
           tests/test_tn_mps_crossover_admission.py
+          tests/test_numerical_method_admission.py
           scripts/export_tn_mps_crossover_admission.py
           tools/tn_mps_crossover_admission_quality_gates.py
           tests/test_tn_mps_crossover_admission_quality_gate.py
@@ -143,7 +145,9 @@ jobs:
           --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/benchmarks/tn_mps_crossover_admission.py
+          src/scpn_quantum_control/benchmarks/numerical_method_admission.py
           tests/test_tn_mps_crossover_admission.py
+          tests/test_numerical_method_admission.py
           scripts/export_tn_mps_crossover_admission.py
           tools/tn_mps_crossover_admission_quality_gates.py
           tests/test_tn_mps_crossover_admission_quality_gate.py
@@ -151,11 +155,12 @@ jobs:
           python -m coverage run --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-tn-mps-crossover-admission-quality.coverage
           --branch -m pytest -q tests/test_tn_mps_crossover_admission.py
+          tests/test_numerical_method_admission.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-tn-mps-crossover-admission-quality.coverage
           --precision=2 --show-missing --fail-under=100
-          --include=*/benchmarks/tn_mps_crossover_admission.py
+          --include=*/benchmarks/tn_mps_crossover_admission.py,*/benchmarks/numerical_method_admission.py
       - name: Install the pinned tensor-network execution runtime
         run: >-
           python -m pip install --require-hashes

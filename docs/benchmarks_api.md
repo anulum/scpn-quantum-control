@@ -91,6 +91,58 @@ N=30-40 compute owner-gated and leaves `advantage_claim_allowed=false`.
 See [TN/MPS Crossover Admission Contract](tn_mps_crossover_admission.md) for the
 generated artifact and regeneration command.
 
+### 1c-ii. `numerical_method_admission` — Measured Numerical-Method Selection
+
+Chooses a numerical method only from committed measured evidence. It never runs
+a solver and never ranks by heuristic:
+
+- `select_numerical_method` — returns `selected`, `unknown`, `consent_required`
+  or `refused`, with a per-candidate verdict and reason.
+- `NumericalMethodSelectionCache` — keyed by `plan_digest`, a canonical SHA-256
+  over the request, the candidate evidence and the objective version, so a
+  float64 choice is never reused for a float32 or tighter-tolerance request.
+- `candidates_from_tn_baseline_flagship` and
+  `candidates_from_reproducible_comparison` — read the committed MPS
+  bond-dimension sweeps and the exact/ODE/Trotter n=8 comparison. The evidence
+  files do not record arithmetic precision, so the caller states it and the
+  candidate carries that statement as an assumption.
+- `render_numerical_method_selection_markdown` — human-reviewable decision.
+
+An exact request never selects a compressed, trajectory, Trotter, ODE or
+variational method, even when it is cheaper. An approximate method needs an
+approximate request, `allow_approximation=True` (a strict boolean), and errors
+within both the request tolerance and the method's own acceptance tolerance. A
+required error component nobody measured gives `unknown`; a size without
+measured rows is `refused`, never extrapolated. Among feasible candidates the
+frozen objective `lowest_measured_wall_time_then_memory_then_name` decides.
+
+```python
+from pathlib import Path
+from scpn_quantum_control.benchmarks import (
+    NumericalMethodRequest,
+    candidates_from_tn_baseline_flagship,
+    select_numerical_method,
+)
+
+path = "data/tn_baseline_flagship/tn_baseline_flagship_20260717T024000Z.json"
+candidates = candidates_from_tn_baseline_flagship(
+    Path(path).read_bytes(), path=path, precision="float64"
+)
+selection = select_numerical_method(
+    NumericalMethodRequest(
+        problem="kuramoto8",
+        n_qubits=8,
+        exactness="approximate",
+        precision="float64",
+        tolerance=1e-3,
+        required_error_components=("r_abs_error",),
+        allow_approximation=True,
+    ),
+    candidates,
+)
+assert selection.selected is not None and selection.selected.method == "mps_chi_4"
+```
+
 ### 1d. `josephson_magnitude_study` — Josephson K_nm Magnitude Study
 
 Builds the no-claim preregistration artifact for the Josephson

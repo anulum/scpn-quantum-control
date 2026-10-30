@@ -15,9 +15,20 @@ Gate = tuple[str, list[str]]
 TN_MPS_CROSSOVER_ADMISSION_SOURCE = (
     "src/scpn_quantum_control/benchmarks/tn_mps_crossover_admission.py"
 )
-TN_MPS_CROSSOVER_ADMISSION_COVERAGE_COHORT = ["tests/test_tn_mps_crossover_admission.py"]
+NUMERICAL_METHOD_ADMISSION_SOURCE = (
+    "src/scpn_quantum_control/benchmarks/numerical_method_admission.py"
+)
+TN_MPS_CROSSOVER_ADMISSION_COVERAGE_COHORT = [
+    "tests/test_tn_mps_crossover_admission.py",
+    "tests/test_numerical_method_admission.py",
+]
+TN_MPS_CROSSOVER_ADMISSION_COVERAGE_INCLUDE = (
+    "--include=*/benchmarks/tn_mps_crossover_admission.py,"
+    "*/benchmarks/numerical_method_admission.py"
+)
 TN_MPS_CROSSOVER_ADMISSION_TYPING_RATCHET = [
     TN_MPS_CROSSOVER_ADMISSION_SOURCE,
+    NUMERICAL_METHOD_ADMISSION_SOURCE,
     *TN_MPS_CROSSOVER_ADMISSION_COVERAGE_COHORT,
     "scripts/export_tn_mps_crossover_admission.py",
     "tools/tn_mps_crossover_admission_quality_gates.py",
@@ -63,7 +74,11 @@ def build_static_quality_gates(python: str) -> list[Gate]:
 
 
 def build_coverage_gates(python: str) -> list[Gate]:
-    """Build admission execution and exact source-coverage gates."""
+    """Build admission execution and exact source-coverage gates.
+
+    Both admission owners share one cohort, so 100 % of their joint total
+    means 100 % of each.
+    """
     return [
         (
             "TN/MPS-crossover-admission focused coverage",
@@ -92,15 +107,17 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={TN_MPS_CROSSOVER_ADMISSION_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/benchmarks/tn_mps_crossover_admission.py",
+                TN_MPS_CROSSOVER_ADMISSION_COVERAGE_INCLUDE,
             ],
         ),
     ]
 
 
 __all__ = [
+    "NUMERICAL_METHOD_ADMISSION_SOURCE",
     "TN_MPS_CROSSOVER_ADMISSION_COVERAGE_COHORT",
     "TN_MPS_CROSSOVER_ADMISSION_COVERAGE_DATA_FILE",
+    "TN_MPS_CROSSOVER_ADMISSION_COVERAGE_INCLUDE",
     "TN_MPS_CROSSOVER_ADMISSION_DOCSTRING_RATCHET",
     "TN_MPS_CROSSOVER_ADMISSION_SOURCE",
     "TN_MPS_CROSSOVER_ADMISSION_TYPING_RATCHET",

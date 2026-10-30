@@ -76,6 +76,7 @@ SNAPSHOT = cast(ExportSnapshot, json.loads(SNAPSHOT_PATH.read_text(encoding="utf
 PACKAGES = SNAPSHOT["packages"]
 
 
+NUMERICAL_METHOD_ADMISSION = "scpn_quantum_control.benchmarks.numerical_method_admission"
 APPROVED_EXPORT_ADDITIONS: dict[str, tuple[int, tuple[tuple[str, str], ...]]] = {
     "scpn_quantum_control": (
         3,
@@ -89,6 +90,25 @@ APPROVED_EXPORT_ADDITIONS: dict[str, tuple[int, tuple[tuple[str, str], ...]]] = 
             ("kuramoto_convention_matrix", "scpn_quantum_control.kuramoto_model_conventions"),
             ("kuramoto_model_convention", "scpn_quantum_control.kuramoto_model_conventions"),
             ("validate_scientific_design", "scpn_quantum_control.kuramoto_core"),
+        ),
+    ),
+    "scpn_quantum_control.benchmarks": (
+        85,
+        (
+            ("METHOD_SELECTION_OBJECTIVE", NUMERICAL_METHOD_ADMISSION),
+            ("NUMERICAL_METHOD_ADMISSION_CLAIM_BOUNDARY", NUMERICAL_METHOD_ADMISSION),
+            ("NUMERICAL_METHOD_ADMISSION_SCHEMA", NUMERICAL_METHOD_ADMISSION),
+            ("CandidateVerdict", NUMERICAL_METHOD_ADMISSION),
+            ("EvidenceReference", NUMERICAL_METHOD_ADMISSION),
+            ("MeasuredMethodCandidate", NUMERICAL_METHOD_ADMISSION),
+            ("NumericalMethodRequest", NUMERICAL_METHOD_ADMISSION),
+            ("NumericalMethodSelection", NUMERICAL_METHOD_ADMISSION),
+            ("NumericalMethodSelectionCache", NUMERICAL_METHOD_ADMISSION),
+            ("candidates_from_reproducible_comparison", NUMERICAL_METHOD_ADMISSION),
+            ("candidates_from_tn_baseline_flagship", NUMERICAL_METHOD_ADMISSION),
+            ("plan_digest", NUMERICAL_METHOD_ADMISSION),
+            ("render_numerical_method_selection_markdown", NUMERICAL_METHOD_ADMISSION),
+            ("select_numerical_method", NUMERICAL_METHOD_ADMISSION),
         ),
     ),
     "scpn_quantum_control.codesign": (

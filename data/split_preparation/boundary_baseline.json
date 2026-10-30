@@ -1806,7 +1806,7 @@
       "source": "src/scpn_quantum_control/benchmarks/__init__.py",
       "scope": "__getattr__",
       "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
-      "source_sha256": "d3864c6330e0318745c3e6d86aac4d6b157a3bb50286f0d15ec2708f3dfc727e",
+      "source_sha256": "010a86bdf87e30cfc1887ad7e523c7696d8223560e41f058a206cdc973289230",
       "role": "first-party-lazy",
       "reason": "Literal public-export table retains original source-module and attribute pairs; the resolver imports only target[0], preserves genuine objects, and caches only successful access. Scientific implementations remain in their owning leaves.",
       "count": 1

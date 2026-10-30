@@ -1241,6 +1241,7 @@
         "tests/test_notebook_workflows.py",
         "tests/test_nqs_ansatz.py",
         "tests/test_nqs_ansatz_quality_gate.py",
+        "tests/test_numerical_method_admission.py",
         "tests/test_nv_magnetometry.py",
         "tests/test_nv_magnetometry_high_field.py",
         "tests/test_observables.py",
