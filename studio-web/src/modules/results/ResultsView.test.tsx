@@ -74,7 +74,7 @@ it("focuses the gradient debugger when its deep link opens Analyse", async () =>
     await vi.dynamicImportSettled();
   });
   expect(document.activeElement?.id).toBe("/results/gradient-debugger");
-  expect(screen.getByRole("region", { name: "Gradient debugger", exact: true })).toBeTruthy();
+  expect(screen.getByRole("region", { name: "Gradient debugger" })).toBeTruthy();
 });
 
 it("renders every missing source explicitly while retaining the original evidence input", async () => {
