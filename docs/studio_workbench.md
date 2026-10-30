@@ -255,6 +255,32 @@ before anything runs. A surface that fails its guard is shown as an
 **Unverifiable** block in place of its content; it is never hidden or replaced
 by a placeholder value.
 
+### Keyboard reach
+
+Every control that is laid out can be reached with Tab. A disclosure renders its
+content only while it is open, because Chromium lays out the content of a closed
+`<details>` but does not focus it. A region does not scroll on its own unless it
+also has a keyboard stop; long text wraps instead.
+
+### Build: the reference instrument
+
+Build follows the pattern every instrument takes: parameters and script, a
+pre-flight estimate, the run, a live view, a result card and a session record.
+
+- **Model tabs.** *Program* holds the program editor. *Coupling* shows the
+  oscillators as a graph or as the matrix K, side by side with a phase circle.
+  Selecting an edge or a matrix cell selects its mirror, and the graph and circle
+  show the same named phase snapshot: initial phases before a run and final
+  phases after one. *Script* is the exact request a run submits.
+- **Live result.** The live result card draws the order parameter R(t) with axes,
+  a data table and the run statistics: initial and final R, time to 90 % of
+  final R, and R of the final phases. It also reports the ground-truth check.
+- **Right rail.** The rail holds the parameters, then the resource estimate with
+  its admission verdict and **Run simulation**, then the evidence.
+- **Bench.** The bench below has four tabs: messages, progress, a run log and the
+  runs of this session. Up to twelve runs are kept with stable colours and can
+  be drawn over the current one. Nothing from the bench is stored.
+
 ## Modules
 
 The workbench shell owns layout, address parsing, source selection and local job

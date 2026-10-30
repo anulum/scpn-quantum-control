@@ -25,6 +25,7 @@ export const buildModule: StudioModule<WorkbenchServices, WorkspaceViewServices,
         <BuildView
           focusInstrument={instrument === "compile-recompute"}
           editors={services.renderEditors("build")}
+          compareHref={`#/results${services.contextSuffix}`}
         />
       ),
     },

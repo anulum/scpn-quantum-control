@@ -92,6 +92,11 @@ describe("display theme", () => {
     expect(displayTheme(null)).toBeNull();
   });
 
+  it("leaves an archive without settings records to the system preference", () => {
+    const preview = { json: '{"members":[]}' } as WorkspaceArchivePreview;
+    expect(displayTheme(preview)).toBeNull();
+  });
+
   it("refuses a malformed archive without choosing a set", () => {
     const preview = { json: "{}" } as WorkspaceArchivePreview;
     expect(displayTheme(preview)).toBeNull();

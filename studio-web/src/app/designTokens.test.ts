@@ -17,7 +17,7 @@ const tokenBlockEnd = tokens.indexOf("[data-theme=");
 /** Parse every two-set colour token as its light and dark sRGB hex value. */
 function colourTokens(): ReadonlyMap<string, { readonly light: string; readonly dark: string }> {
   const result = new Map<string, { light: string; dark: string }>();
-  const pattern = /(--qsp-[a-z-]+):\s*light-dark\((#[0-9a-f]{6}),\s*(#[0-9a-f]{6})\)/g;
+  const pattern = /(--qsp-[a-z0-9-]+):\s*light-dark\((#[0-9a-f]{6}),\s*(#[0-9a-f]{6})\)/g;
   for (const match of tokens.slice(0, tokenBlockEnd).matchAll(pattern)) {
     result.set(match[1] as string, { light: match[2] as string, dark: match[3] as string });
   }
@@ -99,9 +99,37 @@ describe("design tokens", () => {
     expect(failures).toEqual([]);
   });
 
+  it("keeps control borders at 3:1 against every ground in both sets (WCAG 1.4.11)", () => {
+    const values = colourTokens();
+    const border = values.get("--qsp-control-border") as { light: string; dark: string };
+    for (const set of ["light", "dark"] as const)
+      for (const ground of groundTokens) {
+        const background = values.get(ground) as { light: string; dark: string };
+        expect(contrast(border[set], background[set]), `${set} ${ground}`).toBeGreaterThanOrEqual(
+          3,
+        );
+      }
+  });
+
+  it("keeps phase and run series colours at 3:1 against the chart grounds in both sets", () => {
+    const values = colourTokens();
+    const graphics = [...values.keys()].filter((name) => /^--qsp-(phase|series)-\d$/.test(name));
+    expect(graphics).toHaveLength(14);
+    for (const set of ["light", "dark"] as const)
+      for (const name of graphics)
+        for (const ground of ["--qsp-surface", "--qsp-surface-sunken", "--qsp-bg"]) {
+          const colour = values.get(name) as { light: string; dark: string };
+          const background = values.get(ground) as { light: string; dark: string };
+          expect(
+            contrast(colour[set], background[set]),
+            `${set} ${name} on ${ground}`,
+          ).toBeGreaterThanOrEqual(3);
+        }
+  });
+
   it("defines each colour token once, for both sets", () => {
     const declared = [
-      ...tokens.slice(0, tokenBlockEnd).matchAll(/(--qsp-[a-z-]+):\s*light-dark\(/g),
+      ...tokens.slice(0, tokenBlockEnd).matchAll(/(--qsp-[a-z0-9-]+):\s*light-dark\(/g),
     ];
     const names = declared.map((match) => match[1]);
     expect(new Set(names).size).toBe(names.length);

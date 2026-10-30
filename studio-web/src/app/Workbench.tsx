@@ -197,6 +197,13 @@ export function Workbench({
             window.dispatchEvent(new HashChangeEvent("hashchange"));
           }}
         />
+        <ul className="qsp-chips" aria-label="Execution boundary">
+          <li className="qsp-chip">
+            <span className="qsp-dot" aria-hidden="true" />
+            Browser kernel · WASM
+          </li>
+          <li className="qsp-chip qsp-chip-boundary">Remote execution off</li>
+        </ul>
         <WorkbenchHelp routeKey={routeKey} />
       </header>
       <nav className="qsp-rail" aria-label="Workbench views">

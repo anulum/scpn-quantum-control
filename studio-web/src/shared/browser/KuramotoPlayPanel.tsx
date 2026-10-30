@@ -84,16 +84,25 @@ type KernelState =
  * declared N/step limits are shown as first-class fail-closed boundaries — the
  * sliders cannot exceed them and an out-of-range kernel rejection reads loud.
  */
-export function KuramotoPlayPanel({
-  scenario,
-  loadKernel = fetchKuramoto,
-  resourcePolicy,
-}: {
-  scenario: KuramotoScenario;
-  loadKernel?: KuramotoLoader;
-  /** Optional tighter declared policy; original kernel bounds still apply. */
-  resourcePolicy?: ResourcePolicy;
-}) {
+/** Everything the Kuramoto Play instrument computes, shared by its compositions. */
+export type KuramotoPlay = ReturnType<typeof useKuramotoPlay>;
+
+/**
+ * Own the kernel, controls, resource admission and the bounded job of Kuramoto Play.
+ *
+ * The panel and the Build reference view compose the same state; the numerical
+ * request, admission and verification are those of the original panel.
+ *
+ * @param scenario - Committed scenario whose ground truth the run is checked against.
+ * @param loadKernel - How the WASM kernel is obtained.
+ * @param resourcePolicy - Optional tighter declared policy; kernel bounds still apply.
+ * @returns The live instrument state and its actions.
+ */
+export function useKuramotoPlay(
+  scenario: KuramotoScenario,
+  loadKernel: KuramotoLoader = fetchKuramoto,
+  resourcePolicy?: ResourcePolicy,
+) {
   const [kernel, setKernel] = useState<KernelState>({ phase: "loading" });
   const [memoryKiB, setMemoryKiB] = useState(4096);
   const [wallMs, setWallMs] = useState("");
@@ -301,6 +310,290 @@ export function KuramotoPlayPanel({
     );
   }, [kernel, controls, requestedPolicy, resource, wallMs]);
 
+  return {
+    kernel,
+    displayBounds,
+    memoryKiB,
+    setMemoryKiB,
+    wallMs,
+    setWallMs,
+    deadlineMs,
+    setDeadlineMs,
+    controls,
+    setControls,
+    setRestart,
+    resource,
+    job,
+    owned,
+    result,
+    groundTruth,
+    smaller,
+  };
+}
+
+/** The declared resource plan of the current controls, or why it was refused. */
+export function PlayResourcePlan({ play }: { readonly play: KuramotoPlay }) {
+  const { resource } = play;
+  return (
+    <>
+      {resource?.ok ? (
+        <ResourcePlanInspector admission={resource.admission} />
+      ) : (
+        <p role="alert">Resource plan refused: {resource?.reason}</p>
+      )}
+    </>
+  );
+}
+
+/** Memory, wall-clock and timeout ceilings the run is admitted under. */
+export function PlayAdmissionInputs({ play }: { readonly play: KuramotoPlay }) {
+  const { memoryKiB, setMemoryKiB, wallMs, setWallMs, deadlineMs, setDeadlineMs } = play;
+  return (
+    <>
+      <label>
+        Memory ceiling (KiB)
+        <input
+          type="number"
+          min={0}
+          max={4096}
+          step={1}
+          value={memoryKiB}
+          onChange={(event) => setMemoryKiB(Number(event.target.value))}
+        />
+      </label>
+      <label>
+        Wall-clock ceiling (ms; optional)
+        <input
+          type="number"
+          min={1}
+          step={1}
+          value={wallMs}
+          onChange={(event) => setWallMs(event.target.value)}
+        />
+      </label>
+      <label>
+        Simulation timeout (ms)
+        <input
+          type="number"
+          min={1}
+          max={60000}
+          step={1}
+          value={deadlineMs}
+          onChange={(event) => setDeadlineMs(Number(event.target.value))}
+        />
+      </label>
+    </>
+  );
+}
+
+/** Run, cancel and the smaller supported configuration; Run needs an admitted plan. */
+export function PlayRunActions({ play }: { readonly play: KuramotoPlay }) {
+  const { setRestart, setControls, job, owned, smaller } = play;
+  return (
+    <>
+      <button
+        type="button"
+        className="qsp-primary"
+        disabled={job === null}
+        onClick={() => setRestart((current) => current + 1)}
+      >
+        Run simulation
+      </button>
+      {job !== null && (
+        <button
+          type="button"
+          onClick={() => {
+            void owned.cancel();
+          }}
+        >
+          Cancel simulation
+        </button>
+      )}
+      {smaller && (
+        <button
+          type="button"
+          onClick={() =>
+            setControls((current) => ({ ...current, n: smaller.n, steps: smaller.steps }))
+          }
+        >
+          Apply smaller supported configuration (N={smaller.n}, steps={smaller.steps})
+        </button>
+      )}
+    </>
+  );
+}
+
+/** Topology, oscillator count, coupling, frequency spread and steps. */
+export function PlayModelControls({
+  play,
+  bounds,
+}: {
+  readonly play: KuramotoPlay;
+  /** Kernel limits the sliders cannot exceed. */
+  readonly bounds: { readonly maxOscillators: number; readonly maxSteps: number };
+}) {
+  const { controls, setControls } = play;
+  return (
+    <>
+      <label>
+        Topology
+        <select
+          value={controls.mode}
+          onChange={(event) =>
+            setControls((c) => ({ ...c, mode: event.target.value as KuramotoMode }))
+          }
+        >
+          <option value="mean-field">mean-field</option>
+          <option value="networked">networked</option>
+        </select>
+      </label>
+      <label>
+        Oscillators N: {controls.n}
+        <input
+          type="range"
+          min={1}
+          max={bounds.maxOscillators}
+          value={controls.n}
+          onChange={(event) => setControls((c) => ({ ...c, n: Number(event.target.value) }))}
+        />
+      </label>
+      <label>
+        Coupling K: {controls.coupling.toFixed(2)}
+        <input
+          type="range"
+          min={0}
+          max={8}
+          step={0.1}
+          value={controls.coupling}
+          onChange={(event) => setControls((c) => ({ ...c, coupling: Number(event.target.value) }))}
+        />
+      </label>
+      <label>
+        Frequency spread: {controls.spread.toFixed(2)}
+        <input
+          type="range"
+          min={0}
+          max={4}
+          step={0.1}
+          value={controls.spread}
+          onChange={(event) => setControls((c) => ({ ...c, spread: Number(event.target.value) }))}
+        />
+      </label>
+      <label>
+        Steps: {controls.steps}
+        <input
+          type="range"
+          min={1}
+          max={Math.min(bounds.maxSteps, 800)}
+          value={controls.steps}
+          onChange={(event) => setControls((c) => ({ ...c, steps: Number(event.target.value) }))}
+        />
+      </label>
+    </>
+  );
+}
+
+/** The live R(t) trajectory and its data table, or why there is none yet. */
+export function PlayTrajectory({ play }: { readonly play: KuramotoPlay }) {
+  const { job, owned, result } = play;
+  return (
+    <>
+      {result.ok ? (
+        <>
+          <svg
+            className="qsp-play-chart"
+            viewBox="0 0 300 80"
+            preserveAspectRatio="none"
+            role="img"
+            aria-label="order parameter over time"
+          >
+            <polyline
+              points={sparklinePoints(result.run.orderParameter, 300, 80)}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            />
+          </svg>
+          <p className="qsp-meta">
+            R initial <strong>{(result.run.orderParameter[0] as number).toFixed(3)}</strong> → R
+            final <strong>{(result.run.orderParameter.at(-1) as number).toFixed(3)}</strong>
+          </p>
+          <SimulationDataTable
+            label="Order parameter data"
+            orderParameter={result.run.orderParameter}
+          />
+        </>
+      ) : (
+        <p
+          className="qsp-badge qsp-badge-unverifiable"
+          role={job !== null && owned.phase === "running" ? "status" : "alert"}
+        >
+          unverifiable — {result.reason}
+        </p>
+      )}
+    </>
+  );
+}
+
+/** Whether the committed ground truth was reproduced, not evaluated or missed. */
+export function PlayGroundTruth({
+  play,
+  scenario,
+}: {
+  readonly play: KuramotoPlay;
+  /** Committed scenario whose ground truth is checked. */
+  readonly scenario: KuramotoScenario;
+}) {
+  const { groundTruth } = play;
+  return (
+    <>
+      {groundTruth?.evaluated === false ? (
+        <p className="qsp-badge qsp-badge-boundary" role="status">
+          committed ground truth not evaluated — {groundTruth.reason}
+        </p>
+      ) : groundTruth?.verified ? (
+        <p className="qsp-badge qsp-badge-boundary" role="status">
+          verified against the committed ground truth ({scenario.artifactId})
+        </p>
+      ) : (
+        <p className="qsp-badge qsp-badge-unverifiable" role="alert">
+          committed ground truth not reproduced
+        </p>
+      )}
+    </>
+  );
+}
+
+/** The live R(t) trajectory, its data table and the ground-truth check. */
+export function PlayResult({
+  play,
+  scenario,
+}: {
+  readonly play: KuramotoPlay;
+  /** Committed scenario whose ground truth is checked. */
+  readonly scenario: KuramotoScenario;
+}) {
+  return (
+    <>
+      <PlayTrajectory play={play} />
+
+      <PlayGroundTruth play={play} scenario={scenario} />
+    </>
+  );
+}
+
+export function KuramotoPlayPanel({
+  scenario,
+  loadKernel = fetchKuramoto,
+  resourcePolicy,
+}: {
+  scenario: KuramotoScenario;
+  loadKernel?: KuramotoLoader;
+  /** Optional tighter declared policy; original kernel bounds still apply. */
+  resourcePolicy?: ResourcePolicy;
+}) {
+  const play = useKuramotoPlay(scenario, loadKernel, resourcePolicy);
+  const { kernel, displayBounds } = play;
   if (kernel.phase === "loading") {
     return (
       <section className="qsp-play">
@@ -348,178 +641,15 @@ export function KuramotoPlayPanel({
         playback controls retain their own bounded kernel request.
       </p>
 
-      {resource?.ok ? (
-        <ResourcePlanInspector admission={resource.admission} />
-      ) : (
-        <p role="alert">Resource plan refused: {resource?.reason}</p>
-      )}
+      <PlayResourcePlan play={play} />
 
       <div className="qsp-play-controls">
-        <label>
-          Memory ceiling (KiB)
-          <input
-            type="number"
-            min={0}
-            max={4096}
-            step={1}
-            value={memoryKiB}
-            onChange={(event) => setMemoryKiB(Number(event.target.value))}
-          />
-        </label>
-        <label>
-          Wall-clock ceiling (ms; optional)
-          <input
-            type="number"
-            min={1}
-            step={1}
-            value={wallMs}
-            onChange={(event) => setWallMs(event.target.value)}
-          />
-        </label>
-        <label>
-          Simulation timeout (ms)
-          <input
-            type="number"
-            min={1}
-            max={60000}
-            step={1}
-            value={deadlineMs}
-            onChange={(event) => setDeadlineMs(Number(event.target.value))}
-          />
-        </label>
-        <button
-          type="button"
-          className="qsp-primary"
-          disabled={job === null}
-          onClick={() => setRestart((current) => current + 1)}
-        >
-          Run simulation
-        </button>
-        {job !== null && (
-          <button
-            type="button"
-            onClick={() => {
-              void owned.cancel();
-            }}
-          >
-            Cancel simulation
-          </button>
-        )}
-        {smaller && (
-          <button
-            type="button"
-            onClick={() =>
-              setControls((current) => ({ ...current, n: smaller.n, steps: smaller.steps }))
-            }
-          >
-            Apply smaller supported configuration (N={smaller.n}, steps={smaller.steps})
-          </button>
-        )}
-        <label>
-          Topology
-          <select
-            value={controls.mode}
-            onChange={(event) =>
-              setControls((c) => ({ ...c, mode: event.target.value as KuramotoMode }))
-            }
-          >
-            <option value="mean-field">mean-field</option>
-            <option value="networked">networked</option>
-          </select>
-        </label>
-        <label>
-          Oscillators N: {controls.n}
-          <input
-            type="range"
-            min={1}
-            max={bounds.maxOscillators}
-            value={controls.n}
-            onChange={(event) => setControls((c) => ({ ...c, n: Number(event.target.value) }))}
-          />
-        </label>
-        <label>
-          Coupling K: {controls.coupling.toFixed(2)}
-          <input
-            type="range"
-            min={0}
-            max={8}
-            step={0.1}
-            value={controls.coupling}
-            onChange={(event) =>
-              setControls((c) => ({ ...c, coupling: Number(event.target.value) }))
-            }
-          />
-        </label>
-        <label>
-          Frequency spread: {controls.spread.toFixed(2)}
-          <input
-            type="range"
-            min={0}
-            max={4}
-            step={0.1}
-            value={controls.spread}
-            onChange={(event) => setControls((c) => ({ ...c, spread: Number(event.target.value) }))}
-          />
-        </label>
-        <label>
-          Steps: {controls.steps}
-          <input
-            type="range"
-            min={1}
-            max={Math.min(bounds.maxSteps, 800)}
-            value={controls.steps}
-            onChange={(event) => setControls((c) => ({ ...c, steps: Number(event.target.value) }))}
-          />
-        </label>
+        <PlayAdmissionInputs play={play} />
+        <PlayRunActions play={play} />
+        <PlayModelControls play={play} bounds={bounds} />
       </div>
 
-      {result.ok ? (
-        <>
-          <svg
-            className="qsp-play-chart"
-            viewBox="0 0 300 80"
-            preserveAspectRatio="none"
-            role="img"
-            aria-label="order parameter over time"
-          >
-            <polyline
-              points={sparklinePoints(result.run.orderParameter, 300, 80)}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-            />
-          </svg>
-          <p className="qsp-meta">
-            R initial <strong>{(result.run.orderParameter[0] as number).toFixed(3)}</strong> → R
-            final <strong>{(result.run.orderParameter.at(-1) as number).toFixed(3)}</strong>
-          </p>
-          <SimulationDataTable
-            label="Order parameter data"
-            orderParameter={result.run.orderParameter}
-          />
-        </>
-      ) : (
-        <p
-          className="qsp-badge qsp-badge-unverifiable"
-          role={job !== null && owned.phase === "running" ? "status" : "alert"}
-        >
-          unverifiable — {result.reason}
-        </p>
-      )}
-
-      {groundTruth?.evaluated === false ? (
-        <p className="qsp-badge qsp-badge-boundary" role="status">
-          committed ground truth not evaluated — {groundTruth.reason}
-        </p>
-      ) : groundTruth?.verified ? (
-        <p className="qsp-badge qsp-badge-boundary" role="status">
-          verified against the committed ground truth ({scenario.artifactId})
-        </p>
-      ) : (
-        <p className="qsp-badge qsp-badge-unverifiable" role="alert">
-          committed ground truth not reproduced
-        </p>
-      )}
+      <PlayResult play={play} scenario={scenario} />
     </section>
   );
 }

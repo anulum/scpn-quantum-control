@@ -22,6 +22,8 @@ color-scheme, which is the system preference unless the admitted display setting
   --qsp-surface-raised: light-dark(#e4e9ef, #1c232c);
   --qsp-line: light-dark(#c9d1db, #2a323d);
   --qsp-line-subtle: light-dark(#dde3ea, #222a34);
+  /* Borders of controls a person operates: at least 3:1 against every ground (WCAG 1.4.11). */
+  --qsp-control-border: light-dark(#7a8594, #728091);
   /* Text. */
   --qsp-fg: light-dark(#14181e, #e6eaf0);
   --qsp-fg-secondary: light-dark(#2e3846, #c3ccd8);
@@ -31,6 +33,7 @@ color-scheme, which is the system preference unless the admitted display setting
   /* One accent: selection and the primary action only. */
   --qsp-accent: light-dark(#0b6e66, #3dd6c6);
   --qsp-on-accent: light-dark(#ffffff, #06231f);
+  --qsp-accent-dim: light-dark(#cdeeea, #12302d);
   /* Five trust states, each also carried by a label and a shape. */
   --qsp-verified: light-dark(#17633a, #7fe3a8);
   --qsp-verified-bg: light-dark(#e3f4ea, #173a2a);
@@ -42,6 +45,21 @@ color-scheme, which is the system preference unless the admitted display setting
   --qsp-unverifiable-bg: light-dark(#fdecec, #331414);
   --qsp-simulated: light-dark(#5b3a99, #c8a2ff);
   --qsp-simulated-bg: light-dark(#f0e9fb, #2a2240);
+  /* Eight cyclic phase hues (0 to 2π) and six run series colours; graphics only, 3:1 or more. */
+  --qsp-phase-0: light-dark(#c62828, #ff8a80);
+  --qsp-phase-1: light-dark(#b45309, #ffb74d);
+  --qsp-phase-2: light-dark(#8a6d00, #ffe082);
+  --qsp-phase-3: light-dark(#2e7d32, #a5d6a7);
+  --qsp-phase-4: light-dark(#00796b, #80cbc4);
+  --qsp-phase-5: light-dark(#1565c0, #90caf9);
+  --qsp-phase-6: light-dark(#4527a0, #b39ddb);
+  --qsp-phase-7: light-dark(#ad1457, #f48fb1);
+  --qsp-series-0: light-dark(#0b6e66, #3dd6c6);
+  --qsp-series-1: light-dark(#1565c0, #90caf9);
+  --qsp-series-2: light-dark(#b45309, #ffb74d);
+  --qsp-series-3: light-dark(#ad1457, #f48fb1);
+  --qsp-series-4: light-dark(#4527a0, #b39ddb);
+  --qsp-series-5: light-dark(#2e7d32, #a5d6a7);
   --qsp-backdrop: light-dark(rgb(20 24 30 / 45%), rgb(0 0 0 / 55%));
   /* Shape, spacing and type scale. */
   --qsp-radius-sm: 4px;
@@ -997,6 +1015,564 @@ body:has(> * > .qsp-workbench[data-mode="standalone"]) {
   position: sticky;
   bottom: 0;
   z-index: 3;
+}
+
+/* Title-bar chips: what runs here and what never leaves the browser. */
+.qsp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--qsp-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.qsp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qsp-space-3);
+  padding: var(--qsp-space-2) var(--qsp-space-5);
+  color: var(--qsp-fg-secondary);
+  background: var(--qsp-surface-raised);
+  border: 1px solid var(--qsp-line);
+  border-radius: var(--qsp-radius-pill);
+  font-size: var(--qsp-text-sm);
+}
+.qsp-chip-boundary {
+  color: var(--qsp-boundary);
+}
+.qsp-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--qsp-verified);
+  border-radius: 50%;
+}
+
+/* Build reference view: tab bar, cards with heads, graph, matrix, parameters. */
+.qsp-build-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--qsp-space-5);
+  margin: 0 0 var(--qsp-space-5);
+  border-bottom: 1px solid var(--qsp-line);
+}
+.qsp-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--qsp-space-2);
+}
+.qsp-workbench .qsp-tabs [role="tab"] {
+  min-height: var(--qsp-target-min);
+  padding: 0 var(--qsp-space-6);
+  color: var(--qsp-muted);
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+}
+.qsp-workbench .qsp-tabs [role="tab"][aria-selected="true"] {
+  color: var(--qsp-fg);
+  border-bottom-color: var(--qsp-accent);
+  font-weight: 600;
+}
+.qsp-build-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qsp-space-4);
+  padding-bottom: var(--qsp-space-3);
+}
+.qsp-workbench .qsp-build-actions a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--qsp-control-min);
+  padding: 0 var(--qsp-space-5);
+  color: var(--qsp-fg);
+  background: var(--qsp-surface-raised);
+  border: 1px solid var(--qsp-line);
+  border-radius: var(--qsp-radius-lg);
+  text-decoration: none;
+}
+.qsp-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qsp-space-4);
+  margin: calc(-1 * var(--qsp-space-5)) calc(-1 * var(--qsp-space-6)) var(--qsp-space-5);
+  padding: var(--qsp-space-4) var(--qsp-space-6);
+  border-bottom: 1px solid var(--qsp-line);
+}
+.qsp-card-head h4 {
+  margin: 0;
+  font-size: var(--qsp-text-lg);
+}
+.qsp-card-meta,
+.qsp-mono {
+  font-family: var(--qsp-mono);
+  font-size: var(--qsp-text-xs);
+}
+.qsp-card-meta {
+  color: var(--qsp-muted);
+}
+.qsp-card-foot {
+  margin: var(--qsp-space-5) calc(-1 * var(--qsp-space-6)) calc(-1 * var(--qsp-space-5));
+  padding: var(--qsp-space-4) var(--qsp-space-6);
+  color: var(--qsp-muted);
+  border-top: 1px solid var(--qsp-line);
+}
+.qsp-card-foot .qsp-mono {
+  color: var(--qsp-fg);
+}
+.qsp-coupling-graph {
+  display: block;
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+  margin: 0 auto;
+}
+.qsp-graph-edges line {
+  stroke: var(--qsp-line);
+  stroke-width: 1;
+}
+.qsp-graph-edges line.qsp-edge-selected {
+  stroke: var(--qsp-accent);
+  stroke-width: 4;
+}
+.qsp-graph-node circle {
+  fill: var(--qsp-surface-raised);
+  stroke: var(--qsp-muted);
+  stroke-width: 1.5;
+}
+.qsp-graph-phase {
+  stroke: var(--qsp-boundary);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.qsp-graph-node text {
+  fill: var(--qsp-fg-secondary);
+  font-family: var(--qsp-mono);
+  font-size: 10px;
+}
+.qsp-edge-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--qsp-space-5);
+}
+.qsp-matrix {
+  display: grid;
+  gap: var(--qsp-space-2);
+  overflow-x: auto;
+}
+.qsp-workbench .qsp-matrix button {
+  min-width: 0;
+  min-height: var(--qsp-control-min);
+  padding: 0;
+  overflow: hidden;
+  font-family: var(--qsp-mono);
+  font-size: var(--qsp-text-xs);
+  background: var(--qsp-surface-sunken);
+  border-color: var(--qsp-line-subtle);
+  border-radius: var(--qsp-radius-md);
+}
+.qsp-workbench .qsp-matrix button:disabled {
+  color: var(--qsp-faint);
+}
+.qsp-build .qsp-parameters label,
+.qsp-build .qsp-estimate-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--qsp-space-2);
+  color: var(--qsp-fg-secondary);
+}
+.qsp-parameters,
+.qsp-estimate-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--qsp-space-5);
+}
+.qsp-parameters input[type="range"] {
+  width: 100%;
+}
+.qsp-estimate-controls {
+  margin-top: var(--qsp-space-5);
+}
+.qsp-workbench .qsp-build h3 {
+  font-size: var(--qsp-text-lg);
+}
+.qsp-lab-card {
+  margin-top: var(--qsp-space-5);
+}
+
+/* Polish shared with the SNN Studio conventions: one focus ring, control borders,
+   status pills, summaries, toolbars and empty states. */
+.qsp-workbench :where(button, input, select, textarea, summary):focus-visible {
+  outline: 2px solid var(--qsp-accent);
+  outline-offset: 1px;
+  box-shadow: 0 0 0 4px var(--qsp-accent-dim);
+}
+.qsp-workbench
+  :where(button, input:not([type="checkbox"], [type="radio"], [type="range"]), select, textarea) {
+  border-color: var(--qsp-control-border);
+}
+.qsp-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qsp-space-4);
+  margin: 0;
+  padding: 0 0 var(--qsp-space-3);
+  border: 0;
+}
+.qsp-status {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--qsp-space-1) var(--qsp-space-4);
+  border: 1px solid currentColor;
+  border-radius: var(--qsp-radius-pill);
+  font-family: var(--qsp-mono);
+  font-size: var(--qsp-text-xs);
+}
+.qsp-status-ok {
+  color: var(--qsp-verified);
+  background: var(--qsp-verified-bg);
+}
+.qsp-status-refused {
+  color: var(--qsp-unverifiable);
+  background: var(--qsp-unverifiable-bg);
+}
+.qsp-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  margin: 0;
+}
+.qsp-summary dt,
+.qsp-summary dd {
+  margin: 0;
+  padding: var(--qsp-space-2) 0;
+  border-bottom: 1px solid var(--qsp-line-subtle);
+}
+.qsp-summary dt {
+  color: var(--qsp-muted);
+}
+.qsp-summary dd {
+  font-family: var(--qsp-mono);
+  text-align: right;
+}
+.qsp-refusal {
+  margin: var(--qsp-space-4) 0 0;
+  color: var(--qsp-unverifiable);
+}
+.qsp-details {
+  margin-top: var(--qsp-space-5);
+}
+.qsp-details > summary {
+  color: var(--qsp-fg-secondary);
+  cursor: pointer;
+}
+.qsp-run {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--qsp-space-4);
+  margin-top: var(--qsp-space-5);
+}
+.qsp-workbench .qsp-run .qsp-primary {
+  flex: 1 1 100%;
+  min-height: var(--qsp-target-min);
+}
+.qsp-selection {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qsp-space-5);
+}
+.qsp-build .qsp-selection label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qsp-space-3);
+}
+.qsp-graph-canvas {
+  padding: var(--qsp-space-4);
+  background-color: var(--qsp-surface-sunken);
+  background-image: radial-gradient(var(--qsp-line) 1px, transparent 1px);
+  background-size: 24px 24px;
+  border: 1px solid var(--qsp-line-subtle);
+  border-radius: var(--qsp-radius-lg);
+}
+.qsp-empty {
+  margin: 0;
+  padding: var(--qsp-space-7) var(--qsp-space-5);
+  color: var(--qsp-muted);
+  text-align: center;
+}
+.qsp-workbench .qsp-card-head h3,
+.qsp-workbench .qsp-card-head h4 {
+  margin: 0;
+  font-size: var(--qsp-text-md);
+  font-weight: 600;
+}
+.qsp-workbench .qsp-explorer section > h3,
+.qsp-workbench .qsp-explorer section > h4 {
+  color: var(--qsp-muted);
+  font-size: var(--qsp-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Live bench: coupling body with phase circle, R(t) chart, script, bench panel. */
+.qsp-segmented {
+  display: inline-flex;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.qsp-workbench .qsp-segmented button {
+  min-height: 30px;
+  border-radius: 0;
+}
+.qsp-workbench .qsp-segmented button:first-child {
+  border-radius: var(--qsp-radius-md) 0 0 var(--qsp-radius-md);
+}
+.qsp-workbench .qsp-segmented button:last-child {
+  border-radius: 0 var(--qsp-radius-md) var(--qsp-radius-md) 0;
+}
+.qsp-workbench .qsp-segmented button[aria-pressed="true"] {
+  color: var(--qsp-on-accent);
+  background: var(--qsp-accent);
+  border-color: var(--qsp-accent);
+  box-shadow: none;
+}
+.qsp-coupling-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(10rem, 13rem);
+  gap: var(--qsp-space-5);
+  align-items: start;
+}
+.qsp-phase-circle {
+  margin: 0;
+  padding: var(--qsp-space-4);
+  background: var(--qsp-surface-sunken);
+  border: 1px solid var(--qsp-line-subtle);
+  border-radius: var(--qsp-radius-lg);
+}
+.qsp-phase-circle svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.qsp-phase-circle figcaption,
+.qsp-order-chart figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--qsp-space-4);
+  margin-top: var(--qsp-space-3);
+  color: var(--qsp-muted);
+  font-size: var(--qsp-text-sm);
+}
+.qsp-phase-ring {
+  fill: none;
+  stroke: var(--qsp-line);
+  stroke-width: 1.5;
+}
+.qsp-phase-axis {
+  stroke: var(--qsp-line-subtle);
+}
+.qsp-phase-dot {
+  stroke: var(--qsp-surface);
+  stroke-width: 1;
+}
+.qsp-phase-dot.qsp-phase-0 {
+  fill: var(--qsp-phase-0);
+}
+.qsp-phase-dot.qsp-phase-1 {
+  fill: var(--qsp-phase-1);
+}
+.qsp-phase-dot.qsp-phase-2 {
+  fill: var(--qsp-phase-2);
+}
+.qsp-phase-dot.qsp-phase-3 {
+  fill: var(--qsp-phase-3);
+}
+.qsp-phase-dot.qsp-phase-4 {
+  fill: var(--qsp-phase-4);
+}
+.qsp-phase-dot.qsp-phase-5 {
+  fill: var(--qsp-phase-5);
+}
+.qsp-phase-dot.qsp-phase-6 {
+  fill: var(--qsp-phase-6);
+}
+.qsp-phase-dot.qsp-phase-7 {
+  fill: var(--qsp-phase-7);
+}
+.qsp-order-arrow {
+  stroke: var(--qsp-accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.qsp-order-tip {
+  fill: var(--qsp-accent);
+}
+.qsp-result-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(12rem, 15rem);
+  gap: var(--qsp-space-5);
+  align-items: start;
+}
+.qsp-result-body .qsp-details {
+  grid-column: 1 / -1;
+}
+.qsp-order-chart {
+  margin: 0;
+}
+.qsp-order-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.qsp-chart-grid line {
+  stroke: var(--qsp-line-subtle);
+}
+.qsp-chart-grid text {
+  fill: var(--qsp-muted);
+  font-family: var(--qsp-mono);
+  font-size: 10px;
+}
+.qsp-series,
+.qsp-series-current {
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+.qsp-series-current {
+  stroke: var(--qsp-accent);
+  stroke-width: 2.5;
+}
+.qsp-series-0 {
+  stroke: var(--qsp-series-0);
+}
+.qsp-swatch-0 {
+  background: var(--qsp-series-0);
+}
+.qsp-series-1 {
+  stroke: var(--qsp-series-1);
+}
+.qsp-swatch-1 {
+  background: var(--qsp-series-1);
+}
+.qsp-series-2 {
+  stroke: var(--qsp-series-2);
+}
+.qsp-swatch-2 {
+  background: var(--qsp-series-2);
+}
+.qsp-series-3 {
+  stroke: var(--qsp-series-3);
+}
+.qsp-swatch-3 {
+  background: var(--qsp-series-3);
+}
+.qsp-series-4 {
+  stroke: var(--qsp-series-4);
+}
+.qsp-swatch-4 {
+  background: var(--qsp-series-4);
+}
+.qsp-series-5 {
+  stroke: var(--qsp-series-5);
+}
+.qsp-swatch-5 {
+  background: var(--qsp-series-5);
+}
+.qsp-legend {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--qsp-space-5);
+}
+.qsp-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: var(--qsp-space-3);
+  border-radius: 2px;
+  vertical-align: middle;
+}
+.qsp-swatch-current {
+  background: var(--qsp-accent);
+}
+.qsp-script {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: var(--qsp-space-5);
+  color: var(--qsp-fg-secondary);
+  background: var(--qsp-surface-sunken);
+  border: 1px solid var(--qsp-line-subtle);
+  border-radius: var(--qsp-radius-lg);
+  font-family: var(--qsp-mono);
+  font-size: var(--qsp-text-sm);
+  line-height: 1.6;
+}
+.qsp-bench-panel {
+  margin-top: var(--qsp-space-5);
+}
+.qsp-bench-panel .qsp-tabs {
+  margin: calc(-1 * var(--qsp-space-5)) calc(-1 * var(--qsp-space-6)) var(--qsp-space-5);
+  padding: 0 var(--qsp-space-4);
+  border-bottom: 1px solid var(--qsp-line);
+}
+.qsp-messages,
+.qsp-log {
+  margin: 0;
+  padding-left: var(--qsp-space-6);
+}
+.qsp-messages li[data-tone="refusal"] {
+  color: var(--qsp-unverifiable);
+}
+.qsp-messages li[data-tone="note"] {
+  color: var(--qsp-verified);
+}
+.qsp-log li {
+  font-size: var(--qsp-text-xs);
+}
+.qsp-runs {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--qsp-text-sm);
+}
+.qsp-runs caption {
+  color: var(--qsp-muted);
+  text-align: left;
+}
+.qsp-runs thead th {
+  color: var(--qsp-muted);
+  font-weight: 500;
+  text-align: left;
+}
+.qsp-runs thead th,
+.qsp-runs tbody td {
+  padding: var(--qsp-space-2) var(--qsp-space-4);
+  border-bottom: 1px solid var(--qsp-line-subtle);
+}
+.qsp-runs tbody td {
+  font-family: var(--qsp-mono);
+}
+.qsp-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@media (max-width: 90rem) {
+  .qsp-coupling-body,
+  .qsp-result-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 /* Narrow screens stack the regions; the work area stays first after the title bar. */
