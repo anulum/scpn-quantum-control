@@ -6,7 +6,6 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // SCPN Quantum Control — registered document contribution rendering
 
-import { Fragment } from "react";
 import type {
   ModuleDocument,
   ModuleDocumentView,
@@ -14,6 +13,7 @@ import type {
   ModuleRegistry,
   ModuleRequirements,
 } from "../contracts/module";
+import { ContributionBoundary } from "./ContributionBoundary";
 
 /** Document contribution slots that preserve source bytes and grant no job authority. */
 export type DocumentModuleSlot = "editors" | "inspectors" | "settings";
@@ -38,6 +38,8 @@ export interface ModuleDocumentViewsProps<Services, DocumentServices = Services>
  * An unavailable module is named without executing its renderer. Unknown
  * inspector schemas keep a generic read-only view of the original bytes; a
  * missing editor or settings module keeps the document and reports absence.
+ * Each view renders inside its own boundary, keyed by the document identity, so
+ * a failing view is contained and a newly selected document retries it.
  *
  * @param props - Registered slot, unchanged admitted document and existing shell services.
  * @returns Available projections or the explicit retained-document fallback.
@@ -97,7 +99,12 @@ export function ModuleDocumentViews<Services, DocumentServices = Services>({
             <p>The original document is retained.</p>
           </section>
         ) : (
-          <Fragment key={view.id}>{view.render(services, document)}</Fragment>
+          <ContributionBoundary
+            key={`${view.id}:${document.sha256}`}
+            label={view.label}
+            owner={owner.id}
+            render={() => view.render(services, document)}
+          />
         );
       })}
     </>

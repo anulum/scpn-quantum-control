@@ -16,7 +16,7 @@ const WorkflowRunner = lazy(() =>
 /** Original workflow traversal and worker settlement contributed to Experiments. */
 export const workflowsModule: StudioModule<WorkbenchServices, WorkspaceViewServices, never> = {
   id: "workflows",
-  version: "1",
+  apiVersion: "2.0",
   requires: { verbs: [], schemas: [] },
   stages: [],
   editors: [

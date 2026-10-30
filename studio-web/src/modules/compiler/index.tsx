@@ -15,7 +15,7 @@ const CompilerTrace = lazy(() =>
 /** The original compiler trace inspector contributed to Build. */
 export const compilerModule: StudioModule<WorkbenchServices, WorkspaceViewServices, never> = {
   id: "compiler",
-  version: "1",
+  apiVersion: "2.0",
   requires: { verbs: ["compile"], schemas: [] },
   stages: [],
   editors: [

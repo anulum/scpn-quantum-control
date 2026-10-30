@@ -14,7 +14,7 @@ import { SettingsInspector } from "./SettingsInspector";
 /** Display the original resolver's settings without recomputing policy or granting authority. */
 export const settingsModule: StudioModule<WorkbenchServices, WorkspaceViewServices, never> = {
   id: "settings",
-  version: "1",
+  apiVersion: "2.0",
   requires: { verbs: [], schemas: [] },
   stages: [],
   inspectors: [

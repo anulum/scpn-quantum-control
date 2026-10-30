@@ -41,7 +41,7 @@ it("does not open duplicate, undeclared-kind or different admitted source nodes 
     ...workbenchModules,
     {
       id: "source-explorer-probe",
-      version: "1",
+      apiVersion: "2.0",
       requires: { verbs: [], schemas: [] },
       stages: [],
       explorer: [

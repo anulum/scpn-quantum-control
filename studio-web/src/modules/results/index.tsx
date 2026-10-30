@@ -13,7 +13,7 @@ const ResultsView = lazy(() => import("./ResultsView"));
 /** Original results and committed replay retain their source and lifecycle bindings. */
 export const resultsModule: StudioModule<WorkbenchServices, WorkspaceViewServices, "results"> = {
   id: "results",
-  version: "1",
+  apiVersion: "2.0",
   requires: { verbs: [], schemas: [] },
   stages: [
     {

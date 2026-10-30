@@ -44,7 +44,7 @@ it.each(["edit", "stage", "unmount"])(
       ...workbenchModules,
       {
         id: "completion-boundary",
-        version: "1",
+        apiVersion: "2.0",
         requires: { verbs: [], schemas: [] },
         stages: [],
         jobs: [
@@ -116,7 +116,7 @@ it.each(["estimate", "run"])(
       ...workbenchModules,
       {
         id: "primitive-refusal",
-        version: "1",
+        apiVersion: "2.0",
         requires: { verbs: [], schemas: [] },
         stages: [],
         jobs: [

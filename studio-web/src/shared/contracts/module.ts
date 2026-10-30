@@ -9,6 +9,34 @@
 import type { ReactNode } from "react";
 import type { ResourcePlan } from "../resources/admission";
 
+/**
+ * Version of the contract this shell offers modules, as `major.minor`.
+ *
+ * A minor step only adds optional contribution points; a major step changes
+ * or removes something a module relies on.
+ */
+export const MODULE_API_VERSION = "2.0";
+
+const apiVersionPattern = /^(0|[1-9][0-9]{0,3})\.(0|[1-9][0-9]{0,3})$/u;
+
+/**
+ * Whether a module written against one contract version runs on this shell.
+ *
+ * @param requested - Contract version the module declares, as `major.minor`.
+ * @param provided - Contract version the shell offers.
+ * @returns True for the same major version and a minor version not above the shell's.
+ * @throws Error When either version is not `major.minor`.
+ */
+export function isCompatibleApiVersion(
+  requested: string,
+  provided: string = MODULE_API_VERSION,
+): boolean {
+  const want = apiVersionPattern.exec(requested);
+  const have = apiVersionPattern.exec(provided);
+  if (want === null || have === null) throw new Error("Contract versions are major.minor");
+  return want[1] === have[1] && Number(want[2]) <= Number(have[2]);
+}
+
 /** Exact document bytes and identity supplied by the workspace admission owner. */
 export interface ModuleDocument {
   /** Original document or evidence schema, without a compatibility conversion. */
@@ -183,8 +211,8 @@ export interface StudioModule<
 > {
   /** Stable identifier of the module. */
   readonly id: string;
-  /** Version of the module's own contract with the shell. */
-  readonly version: string;
+  /** Shell contract version the module was written against, as `major.minor`. */
+  readonly apiVersion: string;
   /** Verbs and schemas the installed manifest must declare. */
   readonly requires: ModuleRequirements;
   /** Stages the module adds, in navigation order. */
@@ -278,16 +306,23 @@ function requireDistinct(kind: string, values: readonly string[]): void {
  *
  * Identifiers are lower-case words of at most forty characters. A repeated
  * module, stage or instrument identifier is refused, so that one address can
- * never name two destinations.
+ * never name two destinations. A module written against a contract version
+ * this shell does not offer is refused before any of its contributions is read.
  *
  * @param modules - Modules in the order their stages appear in navigation.
  * @returns The immutable registry.
- * @throws Error When an identifier is malformed or repeated.
+ * @throws Error When an identifier is malformed or repeated, or a contract version is incompatible.
  */
 export function createModuleRegistry<Services, DocumentServices = Services>(
   modules: readonly StudioModule<Services, DocumentServices>[],
 ): ModuleRegistry<Services, DocumentServices> {
-  for (const module of modules) requireIdentifier("module", module.id);
+  for (const module of modules) {
+    requireIdentifier("module", module.id);
+    if (!isCompatibleApiVersion(module.apiVersion))
+      throw new Error(
+        `Module ${module.id} targets contract ${module.apiVersion}; this shell offers ${MODULE_API_VERSION}`,
+      );
+  }
   requireDistinct(
     "module",
     modules.map((module) => module.id),

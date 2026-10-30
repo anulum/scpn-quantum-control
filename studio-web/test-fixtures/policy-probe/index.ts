@@ -52,7 +52,7 @@ export function policyProbeModule(
   );
   return {
     id: "policy-probe",
-    version: "1",
+    apiVersion: "2.0",
     requires: { verbs: [], schemas: [] },
     stages: [],
     jobs: [job],

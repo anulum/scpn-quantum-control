@@ -15,7 +15,7 @@ import type {
 /** Test-only module that consumes actual admitted review-fixture bytes without changing them. */
 export const sourceNotesModule = {
   id: "source-notes",
-  version: "1",
+  apiVersion: "2.0",
   requires: { verbs: ["compile"], schemas: [] },
   stages: [
     {

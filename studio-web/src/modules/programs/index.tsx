@@ -15,7 +15,7 @@ const ProgramEditor = lazy(() =>
 /** The original supported program authoring controls contributed to Build. */
 export const programsModule: StudioModule<WorkbenchServices, WorkspaceViewServices, never> = {
   id: "programs",
-  version: "1",
+  apiVersion: "2.0",
   requires: { verbs: ["compile"], schemas: [] },
   stages: [],
   editors: [

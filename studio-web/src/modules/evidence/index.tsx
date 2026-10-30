@@ -13,7 +13,7 @@ const EvidenceCatalogueView = lazy(() => import("./EvidenceCatalogueView"));
 /** Committed capability, support, gradient-plan and scorecard surfaces on their own destination. */
 export const evidenceModule: StudioModule<WorkbenchServices, WorkspaceViewServices, "evidence"> = {
   id: "evidence",
-  version: "1",
+  apiVersion: "2.0",
   requires: { verbs: [], schemas: [] },
   stages: [
     {

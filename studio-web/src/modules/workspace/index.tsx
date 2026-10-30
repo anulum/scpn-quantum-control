@@ -12,7 +12,7 @@ import type { WorkbenchServices, WorkspaceViewServices } from "../../shared/cont
 export const workspaceModule: StudioModule<WorkbenchServices, WorkspaceViewServices, "workspace"> =
   {
     id: "workspace",
-    version: "1",
+    apiVersion: "2.0",
     requires: { verbs: [], schemas: [] },
     stages: [
       {

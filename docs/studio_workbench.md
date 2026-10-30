@@ -291,8 +291,12 @@ admission. Compiled modules contribute controls through the typed contract in
 in `studio-web/src/app/moduleRegistry.tsx`; an archive, URL or settings document
 cannot load executable code or change that registry.
 
-Each module has an identifier, a contract version and the manifest verbs and
-evidence schemas it requires. It may contribute any of these slots:
+Each module has an identifier, the shell contract version it was written for
+(`apiVersion`, as `major.minor`) and the manifest verbs and evidence schemas it
+requires. The shell offers contract version `2.0`. It refuses a module from a
+different major version or a later minor version when the registry is built,
+before reading any of the module's contributions. A minor version only adds
+optional contribution points. A module may contribute any of these slots:
 
 - **Stages** declare their label, navigation group, deep-link instruments and
   work-area renderer.
@@ -325,6 +329,14 @@ The address table comes from registered stages: `#/<stage>` and
 Identifiers are lower-case words of at most forty characters. Duplicate module,
 stage, instrument or slot identifiers, and commands targeting an absent stage or
 job, prevent registry construction.
+
+Every stage editor, document view, inspector, settings view and explorer
+section renders inside its own boundary. If one throws, or its lazy code fails
+to load, a notice names it and its module, and the other contributions keep
+working. Code that is still loading shows its own loading line instead of
+holding up the stage. A document view retries when another document is
+selected. The stage as a whole keeps its route boundary, which offers the way
+back to Workspace.
 
 Unavailable modules stay visible and name their missing verbs and schemas.
 Their renderers and commands remain unavailable. A manifest that fails its guard

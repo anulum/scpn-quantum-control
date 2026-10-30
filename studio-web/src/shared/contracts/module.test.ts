@@ -12,7 +12,7 @@ import { describe, expect, it } from "vitest";
 import settingsFixtureText from "../../../../tests/data/studio_workspace/settings.json?raw";
 import { readJson, writeJson } from "./jsonTransport";
 import { documentDigest, parseResolvedSettings } from "./workspace";
-import { createModuleRegistry } from "./module";
+import { MODULE_API_VERSION, createModuleRegistry, isCompatibleApiVersion } from "./module";
 import type {
   ModuleDocument,
   ModuleDocumentView,
@@ -30,7 +30,7 @@ function module(
 ): StudioModule<Services> {
   return {
     id,
-    version: "1",
+    apiVersion: "2.0",
     requires,
     stages: stages.map(([stage, instruments]) => ({
       id: stage,
@@ -266,5 +266,35 @@ describe("createModuleRegistry", () => {
         schemas: ["studio.quantum-evolution.v1"],
       }),
     ).toEqual([]);
+  });
+});
+
+describe("module contract version", () => {
+  it("admits the same major version with a minor version not above the shell's", () => {
+    expect(isCompatibleApiVersion("2.0", "2.0")).toBe(true);
+    expect(isCompatibleApiVersion("2.0", "2.3")).toBe(true);
+    expect(isCompatibleApiVersion("2.3", "2.3")).toBe(true);
+    expect(isCompatibleApiVersion("2.4", "2.3")).toBe(false);
+    expect(isCompatibleApiVersion("1.9", "2.3")).toBe(false);
+    expect(isCompatibleApiVersion("3.0", "2.3")).toBe(false);
+    expect(isCompatibleApiVersion("10.0", "1.0")).toBe(false);
+    expect(isCompatibleApiVersion(MODULE_API_VERSION)).toBe(true);
+  });
+
+  it("refuses a version that is not major.minor", () => {
+    for (const malformed of ["2", "2.0.0", "02.0", "2.01", "v2.0", " 2.0", "2.-1", ""])
+      expect(() => isCompatibleApiVersion(malformed, "2.0")).toThrow("major.minor");
+    expect(() => isCompatibleApiVersion("2.0", "2")).toThrow("major.minor");
+  });
+
+  it("refuses a module written against a contract this shell does not offer, naming both", () => {
+    const later = { ...first, apiVersion: "2.1" };
+    expect(() => createModuleRegistry([second, later])).toThrow(
+      `Module first targets contract 2.1; this shell offers ${MODULE_API_VERSION}`,
+    );
+    expect(() => createModuleRegistry([{ ...first, apiVersion: "1.0" }])).toThrow(
+      "targets contract 1.0",
+    );
+    expect(() => createModuleRegistry([{ ...first, apiVersion: "2" }])).toThrow("major.minor");
   });
 });

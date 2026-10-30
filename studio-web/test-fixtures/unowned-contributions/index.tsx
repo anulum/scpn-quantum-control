@@ -22,7 +22,7 @@ export const unownedContributionsModule: StudioModule<
   never
 > = {
   id: "unowned-contributions",
-  version: "1",
+  apiVersion: "2.0",
   requires: { verbs: [], schemas: [] },
   stages: [],
   explorer: [

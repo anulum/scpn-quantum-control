@@ -13,7 +13,7 @@ const BuildView = lazy(() => import("./BuildView"));
 /** Original compiled instruments and registered authoring editors on their existing addresses. */
 export const buildModule: StudioModule<WorkbenchServices, WorkspaceViewServices, "build"> = {
   id: "build",
-  version: "1",
+  apiVersion: "2.0",
   requires: { verbs: ["compile"], schemas: [] },
   stages: [
     {

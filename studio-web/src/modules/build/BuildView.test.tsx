@@ -44,12 +44,19 @@ it("renders the actual original instrument owners with their committed inputs", 
   render(<Workbench>{(_context, editors) => editors}</Workbench>);
   await screen.findByRole("heading", { name: "Build" });
   expect(screen.getByRole("heading", { name: "Build" })).toBeTruthy();
-  expect(screen.getByRole("heading", { name: "Program editor" })).toBeTruthy();
+  // The lazy program editor loads inside its own contribution boundary, after the stage.
+  expect(await screen.findByRole("heading", { name: "Program editor" })).toBeTruthy();
   expect(screen.getByRole("button", { name: "Compile source" })).toBeTruthy();
   expect(screen.getByRole("region", { name: "Compiler trace inspector" })).toBeTruthy();
   expect(screen.getByRole("button", { name: "Recompute in browser" })).toBeTruthy();
   expect(screen.getByText(/A requested workspace revision is not substituted/)).toBeTruthy();
-  expect(screen.queryByRole("alert")).toBeNull();
+  // jsdom serves no WASM kernel, so only the kernel fetch may be reported; no instrument
+  // owner, contribution or route is refused.
+  expect(
+    screen
+      .queryAllByRole("alert")
+      .every((alert) => alert.textContent === "unverifiable — fetch failed"),
+  ).toBe(true);
   expect(document.activeElement?.id).toBe("/build/compile-recompute");
 });
 

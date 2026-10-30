@@ -47,7 +47,7 @@ it.each(changes)(
       ...workbenchModules,
       {
         id: "workflow-estimate-probe",
-        version: "1",
+        apiVersion: "2.0",
         requires: { verbs: [], schemas: [] },
         stages: [],
         jobs: [

@@ -18,7 +18,7 @@ const MethodComparison = lazy(() =>
 /** Independently source-bound run and complete method-population comparison controls. */
 export const compareModule: StudioModule<WorkbenchServices, WorkspaceViewServices, never> = {
   id: "compare",
-  version: "1",
+  apiVersion: "2.0",
   requires: { verbs: [], schemas: [] },
   stages: [],
   editors: [

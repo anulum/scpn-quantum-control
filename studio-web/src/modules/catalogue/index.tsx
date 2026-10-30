@@ -41,7 +41,7 @@ export function CatalogueView({
 /** Capability catalogue contributed to the original workspace overview position. */
 export const catalogueModule: StudioModule<WorkbenchServices, WorkspaceViewServices, never> = {
   id: "catalogue",
-  version: "1",
+  apiVersion: "2.0",
   requires: { verbs: [], schemas: [] },
   stages: [],
   editors: [

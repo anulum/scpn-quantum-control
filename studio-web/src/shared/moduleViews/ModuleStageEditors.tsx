@@ -6,8 +6,8 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // SCPN Quantum Control — registered stage editor rendering
 
-import { Fragment } from "react";
 import type { ModuleRegistry, ModuleRequirements, ModuleStageEditor } from "../contracts/module";
+import { ContributionBoundary } from "./ContributionBoundary";
 
 /** Fixed work-area slot with the build's registry and existing stage services. */
 export interface ModuleStageEditorsProps<Services, DocumentServices = Services> {
@@ -21,7 +21,12 @@ export interface ModuleStageEditorsProps<Services, DocumentServices = Services> 
   readonly declared: ModuleRequirements;
 }
 
-/** Render available stage editors in registration order without calling unavailable modules. */
+/**
+ * Render available stage editors in registration order without calling unavailable modules.
+ *
+ * Each editor renders inside its own boundary, so one failing or loading editor
+ * leaves the others on the stage working.
+ */
 export function ModuleStageEditors<Services, DocumentServices = Services>({
   registry,
   stage,
@@ -51,7 +56,12 @@ export function ModuleStageEditors<Services, DocumentServices = Services>({
             </ul>
           </section>
         ) : (
-          <Fragment key={editor.id}>{editor.render(services)}</Fragment>
+          <ContributionBoundary
+            key={editor.id}
+            label={editor.label}
+            owner={owner.id}
+            render={() => editor.render(services)}
+          />
         );
       })}
     </>

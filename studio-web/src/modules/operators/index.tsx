@@ -14,7 +14,7 @@ const OperationsView = lazy(() => import("./OperationsView"));
 export const operatorsModule: StudioModule<WorkbenchServices, WorkspaceViewServices, "operations"> =
   {
     id: "operations",
-    version: "1",
+    apiVersion: "2.0",
     requires: { verbs: [], schemas: [] },
     stages: [
       {

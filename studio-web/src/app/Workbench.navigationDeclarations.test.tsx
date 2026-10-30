@@ -30,7 +30,7 @@ it("refuses a compiled command whose retained declaration changes to an unregist
     ...workbenchModules,
     {
       id: "navigation-lifetime",
-      version: "1",
+      apiVersion: "2.0",
       requires: { verbs: [], schemas: [] },
       stages: [],
       commands: [command],

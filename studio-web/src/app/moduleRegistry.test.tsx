@@ -94,7 +94,7 @@ describe("workbenchRegistry", () => {
   it("gains a destination from one registry entry and loses none of its own", () => {
     const fixture: StudioModule<WorkbenchServices, WorkspaceViewServices> = {
       id: "fixture",
-      version: "1",
+      apiVersion: "2.0",
       requires: { verbs: ["mitigate"], schemas: [] },
       stages: [
         {

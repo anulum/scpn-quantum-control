@@ -50,7 +50,7 @@ it("renders a command and explorer as unavailable when their producer changes re
     ...workbenchModules,
     {
       id: "retained-declarations",
-      version: "1",
+      apiVersion: "2.0",
       requires: { verbs: [], schemas: [] },
       stages: [],
       commands: [command],
@@ -82,7 +82,7 @@ it("refuses a retained original job declaration whose identifier no longer resol
     ...workbenchModules,
     {
       id: "retained-job-owner",
-      version: "1",
+      apiVersion: "2.0",
       requires: { verbs: [], schemas: [] },
       stages: [],
       jobs: [job],

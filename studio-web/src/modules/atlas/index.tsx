@@ -13,7 +13,7 @@ const UnavailableView = lazy(() => import("./UnavailableView"));
 /** Preserve the truthful unavailable Atlas stage without inventing a snapshot browser. */
 export const atlasModule: StudioModule<WorkbenchServices, WorkspaceViewServices, "atlas"> = {
   id: "atlas",
-  version: "1",
+  apiVersion: "2.0",
   requires: { verbs: [], schemas: [] },
   stages: [
     {

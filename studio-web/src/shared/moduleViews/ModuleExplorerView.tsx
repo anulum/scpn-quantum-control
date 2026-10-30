@@ -6,7 +6,13 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // SCPN Quantum Control — registered source explorer
 
-import type { ModuleDocument, ModuleRegistry, ModuleRequirements } from "../contracts/module";
+import type {
+  ModuleDocument,
+  ModuleExplorer,
+  ModuleRegistry,
+  ModuleRequirements,
+} from "../contracts/module";
+import { ContributionBoundary } from "./ContributionBoundary";
 
 /** Registered project-tree contributions with admitted source selection. */
 export interface ModuleExplorerViewProps<Services, DocumentServices = Services> {
@@ -43,51 +49,81 @@ export function ModuleExplorerView<Services, DocumentServices = Services>({
               <p>{lacking.map(({ kind, name }) => `${kind} ${name}`).join(" · ")}</p>
             </section>
           );
-        const nodes = explorer.nodes(services);
-        const counts = new Map<string, number>();
-        const occurrences = new Map<string, number>();
-        for (const node of nodes) counts.set(node.id, (counts.get(node.id) ?? 0) + 1);
         return (
-          <section key={explorer.id}>
-            <h3>{explorer.label}</h3>
-            {nodes.length === 0 ? (
-              <p>No admitted source records</p>
-            ) : (
-              <ul>
-                {nodes.map((node) => {
-                  const occurrence = occurrences.get(node.id) ?? 0;
-                  occurrences.set(node.id, occurrence + 1);
-                  const source = documents.find(
-                    (document) =>
-                      document.sha256 === node.document.sha256 &&
-                      document.schema === node.document.schema &&
-                      document.content === node.document.content,
-                  );
-                  const available =
-                    source !== undefined &&
-                    counts.get(node.id) === 1 &&
-                    explorer.kinds.includes(node.kind);
-                  return (
-                    <li key={`${explorer.id}:${node.id}:${node.document.sha256}:${occurrence}`}>
-                      <button
-                        type="button"
-                        disabled={!available}
-                        aria-pressed={selected === node.document.sha256}
-                        onClick={
-                          source !== undefined && available ? () => select(source) : undefined
-                        }
-                      >
-                        {node.label}
-                      </button>
-                      {!available && <span> · Source unavailable</span>}
-                    </li>
-                  );
-                })}
-              </ul>
+          <ContributionBoundary
+            key={explorer.id}
+            label={explorer.label}
+            owner={owner.id}
+            render={() => (
+              <ExplorerSection
+                explorer={explorer}
+                services={services}
+                documents={documents}
+                selected={selected}
+                select={select}
+              />
             )}
-          </section>
+          />
         );
       })}
     </nav>
+  );
+}
+
+/** One available explorer contribution; its nodes are read inside the contribution boundary. */
+function ExplorerSection<Services>({
+  explorer,
+  services,
+  documents,
+  selected,
+  select,
+}: {
+  /** Registered, available explorer contribution. */ readonly explorer: ModuleExplorer<Services>;
+  /** Original shell services used to project nodes. */ readonly services: Services;
+  /** Source records from complete workspace admission. */ readonly documents: readonly ModuleDocument[];
+  /** Currently selected original source identity. */ readonly selected: string | null;
+  /** Open an existing admitted record. */ readonly select: (document: ModuleDocument) => void;
+}) {
+  const nodes = explorer.nodes(services);
+  const counts = new Map<string, number>();
+  const occurrences = new Map<string, number>();
+  for (const node of nodes) counts.set(node.id, (counts.get(node.id) ?? 0) + 1);
+  return (
+    <section>
+      <h3>{explorer.label}</h3>
+      {nodes.length === 0 ? (
+        <p>No admitted source records</p>
+      ) : (
+        <ul>
+          {nodes.map((node) => {
+            const occurrence = occurrences.get(node.id) ?? 0;
+            occurrences.set(node.id, occurrence + 1);
+            const source = documents.find(
+              (document) =>
+                document.sha256 === node.document.sha256 &&
+                document.schema === node.document.schema &&
+                document.content === node.document.content,
+            );
+            const available =
+              source !== undefined &&
+              counts.get(node.id) === 1 &&
+              explorer.kinds.includes(node.kind);
+            return (
+              <li key={`${explorer.id}:${node.id}:${node.document.sha256}:${occurrence}`}>
+                <button
+                  type="button"
+                  disabled={!available}
+                  aria-pressed={selected === node.document.sha256}
+                  onClick={source !== undefined && available ? () => select(source) : undefined}
+                >
+                  {node.label}
+                </button>
+                {!available && <span> · Source unavailable</span>}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
   );
 }

@@ -49,7 +49,7 @@ export function heldWorkflowEstimate(): HeldWorkflowEstimate {
     },
     module: {
       id: "held-workflow",
-      version: "1",
+      apiVersion: "2.0",
       requires: { verbs: [], schemas: [] },
       stages: [],
       jobs: [

@@ -13,7 +13,7 @@ import { ParameterWorkspace } from "./ParameterWorkspace";
 /** Original parameter editor and save owner behind the workspace document slot. */
 export const parametersModule: StudioModule<WorkbenchServices, WorkspaceViewServices, never> = {
   id: "parameters",
-  version: "1",
+  apiVersion: "2.0",
   requires: { verbs: [], schemas: [] },
   stages: [],
   editors: [

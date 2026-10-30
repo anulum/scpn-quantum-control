@@ -18,7 +18,7 @@ export const experimentsModule: StudioModule<
   "experiments"
 > = {
   id: "experiments",
-  version: "1",
+  apiVersion: "2.0",
   requires: { verbs: [], schemas: [] },
   stages: [
     {

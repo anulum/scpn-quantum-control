@@ -54,7 +54,7 @@ it("retains a real edit made during source admission after the original register
     ...workbenchModules,
     {
       id: "admission-source-race",
-      version: "1",
+      apiVersion: "2.0",
       requires: { verbs: [], schemas: [] },
       stages: [],
       jobs: [
