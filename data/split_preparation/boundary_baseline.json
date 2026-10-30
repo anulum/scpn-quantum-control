@@ -1752,7 +1752,7 @@
       "source": "src/scpn_quantum_control/__init__.py",
       "scope": "__getattr__",
       "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
-      "source_sha256": "30f0720000e8de05ea71c51b210e0b7bdbb7704878e2164054c8731aef97ef1e",
+      "source_sha256": "5d4b8832bf4b1265a6f642358f535c45f3f7d125ae7cc99887e35540a3ef9c1b",
       "role": "first-party-lazy",
       "reason": "Complete literal table retains all 851 existing module/attribute bindings. The unchanged resolver imports only target[0] and caches successful access. Module assignment now defers public-object resolution until the owning module finishes loading, avoiding partial-initialisation re-entry without changing export identity. When the import system publishes a child module under a name that also has an object export, the deferred branch now also drops a stale cached entry, so the next access goes through the same resolver. Actual cold/public API and failure/restoration fixtures qualify this complete source; no new dynamic call or target is admitted.",
       "count": 1

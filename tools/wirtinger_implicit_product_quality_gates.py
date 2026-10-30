@@ -16,6 +16,7 @@ WIRTINGER_IMPLICIT_PRODUCT_QUALITY_RATCHET = [
     "src/scpn_quantum_control/wirtinger_implicit_product.py",
     "src/scpn_quantum_control/wirtinger_calculus.py",
     "tests/test_wirtinger_implicit_product.py",
+    "tests/test_complex_spectral_conformance.py",
     "tools/wirtinger_implicit_product_quality_gates.py",
     "tests/test_wirtinger_implicit_product_quality_gate.py",
 ]
@@ -25,6 +26,7 @@ WIRTINGER_IMPLICIT_PRODUCT_DOCSTRING_RATCHET = [
     "src/scpn_quantum_control/wirtinger_calculus.py",
     "tests/test_wirtinger_implicit_product.py",
     "tests/test_wirtinger_calculus.py",
+    "tests/test_complex_spectral_conformance.py",
     "tools/wirtinger_implicit_product_quality_gates.py",
     "tests/test_wirtinger_implicit_product_quality_gate.py",
 ]
@@ -32,6 +34,7 @@ WIRTINGER_IMPLICIT_PRODUCT_DOCSTRING_RATCHET = [
 WIRTINGER_IMPLICIT_PRODUCT_COVERAGE_COHORT = [
     "tests/test_wirtinger_implicit_product.py",
     "tests/test_wirtinger_calculus.py",
+    "tests/test_complex_spectral_conformance.py",
 ]
 """Tests that own exact Wirtinger-implicit product coverage."""
 WIRTINGER_IMPLICIT_PRODUCT_COVERAGE_DATA_FILE = ".coverage.wirtinger-implicit-quality"

@@ -930,12 +930,20 @@ if TYPE_CHECKING:
         validate_topology_hardware_manifest,
     )
     from .wirtinger_calculus import (
+        EigenpairDerivative,
+        SpectralDegeneracyError,
+        SpectralProjectorDerivative,
         WirtingerDerivative,
         WirtingerOptimisationResult,
+        framework_complex_gradient,
+        hermitian_eigenpair_derivative,
         holomorphic_gradient,
         is_holomorphic,
         minimise_real_objective,
+        real_block_gradient,
+        real_block_jacobian,
         real_objective_gradient,
+        spectral_projector_derivative,
         wirtinger_partials,
     )
 
@@ -3471,6 +3479,29 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
         "real_objective_gradient",
     ),
     "wirtinger_partials": ("scpn_quantum_control.wirtinger_calculus", "wirtinger_partials"),
+    "EigenpairDerivative": ("scpn_quantum_control.wirtinger_calculus", "EigenpairDerivative"),
+    "SpectralDegeneracyError": (
+        "scpn_quantum_control.wirtinger_calculus",
+        "SpectralDegeneracyError",
+    ),
+    "SpectralProjectorDerivative": (
+        "scpn_quantum_control.wirtinger_calculus",
+        "SpectralProjectorDerivative",
+    ),
+    "framework_complex_gradient": (
+        "scpn_quantum_control.wirtinger_calculus",
+        "framework_complex_gradient",
+    ),
+    "hermitian_eigenpair_derivative": (
+        "scpn_quantum_control.wirtinger_calculus",
+        "hermitian_eigenpair_derivative",
+    ),
+    "real_block_gradient": ("scpn_quantum_control.wirtinger_calculus", "real_block_gradient"),
+    "real_block_jacobian": ("scpn_quantum_control.wirtinger_calculus", "real_block_jacobian"),
+    "spectral_projector_derivative": (
+        "scpn_quantum_control.wirtinger_calculus",
+        "spectral_projector_derivative",
+    ),
 }
 
 
@@ -3560,6 +3591,14 @@ __all__ = [
     "kuramoto_convention_matrix",
     "kuramoto_model_convention",
     "validate_scientific_design",
+    "EigenpairDerivative",
+    "SpectralDegeneracyError",
+    "SpectralProjectorDerivative",
+    "framework_complex_gradient",
+    "hermitian_eigenpair_derivative",
+    "real_block_gradient",
+    "real_block_jacobian",
+    "spectral_projector_derivative",
     "Problem",
     "Backend",
     "Experiment",

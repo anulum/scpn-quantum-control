@@ -31,9 +31,10 @@ non-holomorphic functions.
 
 from __future__ import annotations
 
+import math
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Literal
 
 import numpy as np
 from numpy.typing import NDArray
@@ -165,6 +166,345 @@ def real_objective_gradient(
         return complex(float(np.real(loss(vector))), 0.0)
 
     return wirtinger_partials(_complex_loss, z, step=step).df_dconj_z
+
+
+ComplexVectorFunction = Callable[[NDArray[np.complex128]], Any]
+FrameworkConvention = Literal["torch", "jax"]
+MatrixInput = NDArray[np.complexfloating[Any, Any]] | NDArray[np.floating[Any]]
+"""Real symmetric or complex Hermitian matrix accepted by the spectral derivatives."""
+
+
+def _complex_output(value: Any) -> NDArray[np.complex128]:
+    array = np.atleast_1d(np.asarray(value, dtype=np.complex128))
+    if array.ndim != 1 or array.size == 0:
+        raise ValueError("f must return a complex scalar or a non-empty complex vector")
+    if not np.all(np.isfinite(array.real)) or not np.all(np.isfinite(array.imag)):
+        raise ValueError("f must return finite values")
+    return array
+
+
+def real_block_jacobian(
+    f: ComplexVectorFunction,
+    z: NDArray[np.complex128],
+    *,
+    step: float = 1e-6,
+) -> NDArray[np.float64]:
+    """Return the authoritative real-block Jacobian of ``f: C^n -> C^m`` at ``z``.
+
+    Parameters
+    ----------
+    f
+        Callable taking a length-``n`` complex vector and returning a complex
+        scalar or a length-``m`` complex vector.
+    z
+        Evaluation point.
+    step
+        Central-difference step along every real and imaginary direction.
+
+    Returns
+    -------
+    numpy.ndarray
+        ``float64`` array of shape ``(2m, 2n)``, ordered
+        ``[[dRe f/dx, dRe f/dy], [dIm f/dx, dIm f/dy]]``. It is defined for every
+        real-differentiable ``f``, holomorphic or not, and is the convention every
+        framework gradient in this module is converted from.
+
+    Raises
+    ------
+    ValueError
+        If ``z``, ``step`` or the returned values are malformed, or the output
+        size changes between evaluations.
+
+    """
+    point = _as_complex_vector(z)
+    h = _validate_step(step)
+    size = _complex_output(f(point)).size
+    columns: list[NDArray[np.float64]] = []
+    for direction in (1.0 + 0.0j, 1.0j):
+        for k in range(point.size):
+            basis = np.zeros(point.size, dtype=np.complex128)
+            basis[k] = direction * h
+            upper = _complex_output(f(point + basis))
+            lower = _complex_output(f(point - basis))
+            if upper.size != size or lower.size != size:
+                raise ValueError("f must return the same output size at every point")
+            derivative = (upper - lower) / (2.0 * h)
+            columns.append(np.concatenate((derivative.real, derivative.imag)))
+    return np.stack(columns, axis=1).astype(np.float64)
+
+
+def real_block_gradient(
+    loss: RealObjective,
+    z: NDArray[np.complex128],
+    *,
+    step: float = 1e-6,
+) -> NDArray[np.float64]:
+    """Return ``(dL/dx, dL/dy)`` of a real loss as one ``float64`` vector of length ``2n``.
+
+    Parameters
+    ----------
+    loss
+        Real-valued objective of a complex vector.
+    z
+        Evaluation point.
+    step
+        Central-difference step.
+
+    Returns
+    -------
+    numpy.ndarray
+        The first row of :func:`real_block_jacobian` of ``loss``.
+
+    Raises
+    ------
+    ValueError
+        If the loss returns a value with a non-zero imaginary part.
+
+    """
+
+    def _checked(vector: NDArray[np.complex128]) -> complex:
+        value = complex(loss(vector))
+        if value.imag != 0.0:
+            raise ValueError("loss must be real-valued")
+        return value
+
+    gradient: NDArray[np.float64] = real_block_jacobian(_checked, z, step=step)[0]
+    return gradient
+
+
+def framework_complex_gradient(
+    loss: RealObjective,
+    z: NDArray[np.complex128],
+    *,
+    convention: FrameworkConvention,
+    step: float = 1e-6,
+) -> NDArray[np.complex128]:
+    """Express a real loss's gradient in a named framework's complex convention.
+
+    Parameters
+    ----------
+    loss
+        Real-valued objective of a complex vector.
+    z
+        Evaluation point.
+    convention
+        ``"torch"`` gives ``dL/dx + i dL/dy`` (``2 dL/dconj_z``, the direction
+        PyTorch autograd returns); ``"jax"`` gives ``dL/dx - i dL/dy``
+        (``2 dL/dz``, the conjugate that ``jax.grad`` returns).
+    step
+        Central-difference step of the underlying real-block gradient.
+
+    Returns
+    -------
+    numpy.ndarray
+        Complex gradient in the requested convention, converted explicitly from
+        the real-block gradient.
+
+    Raises
+    ------
+    ValueError
+        If the convention is not ``"torch"`` or ``"jax"``.
+
+    """
+    if convention not in ("torch", "jax"):
+        raise ValueError("convention must be 'torch' or 'jax'")
+    gradient = real_block_gradient(loss, z, step=step)
+    half = gradient.size // 2
+    sign = 1.0 if convention == "torch" else -1.0
+    return (gradient[:half] + sign * 1j * gradient[half:]).astype(np.complex128)
+
+
+class SpectralDegeneracyError(ValueError):
+    """Raised when a spectral derivative is undefined at a repeated eigenvalue."""
+
+
+def _hermitian_matrix(matrix: MatrixInput, name: str) -> NDArray[np.complex128]:
+    array = np.asarray(matrix, dtype=np.complex128)
+    if array.ndim != 2 or array.shape[0] != array.shape[1] or array.shape[0] == 0:
+        raise ValueError(f"{name} must be a non-empty square matrix")
+    if not np.all(np.isfinite(array.real)) or not np.all(np.isfinite(array.imag)):
+        raise ValueError(f"{name} must be finite")
+    scale = max(1.0, float(np.max(np.abs(array))))
+    if float(np.max(np.abs(array - array.conj().T))) > 1e-12 * scale:
+        raise ValueError(f"{name} must be Hermitian")
+    return array
+
+
+def _gap_tolerance(eigenvalues: NDArray[np.float64], gap_tolerance: float | None) -> float:
+    if gap_tolerance is None:
+        return 1e-10 * max(1.0, float(np.max(np.abs(eigenvalues))))
+    if not np.isfinite(gap_tolerance) or gap_tolerance <= 0.0:
+        raise ValueError("gap_tolerance must be a positive finite value")
+    return float(gap_tolerance)
+
+
+@dataclass(frozen=True)
+class EigenpairDerivative:
+    """First-order change of one simple Hermitian eigenpair along a tangent.
+
+    The eigenvector derivative is stated in the gauge ``<v, dv> = 0``; any other
+    phase convention differs from it by ``i * c * v`` for a real ``c``.
+    """
+
+    eigenvalue: float
+    eigenvalue_derivative: float
+    eigenvector: NDArray[np.complex128]
+    eigenvector_derivative: NDArray[np.complex128]
+    minimum_gap: float
+
+
+def hermitian_eigenpair_derivative(
+    matrix: MatrixInput,
+    tangent: MatrixInput,
+    index: int,
+    *,
+    gap_tolerance: float | None = None,
+) -> EigenpairDerivative:
+    """Differentiate one eigenpair of a Hermitian matrix, refusing at degeneracy.
+
+    Parameters
+    ----------
+    matrix
+        Hermitian matrix ``A``.
+    tangent
+        Hermitian direction ``dA`` of the same shape.
+    index
+        Eigenpair index in ascending eigenvalue order.
+    gap_tolerance
+        Smallest admitted distance to every other eigenvalue; defaults to
+        ``1e-10 * max(1, max|lambda|)``.
+
+    Returns
+    -------
+    EigenpairDerivative
+        ``dlambda = v^H dA v`` and ``dv = sum_j v_j (v_j^H dA v) / (lambda - lambda_j)``.
+
+    Raises
+    ------
+    SpectralDegeneracyError
+        If another eigenvalue lies within ``gap_tolerance``. The individual
+        eigenvector derivative is then undefined; no denominator is clipped.
+        Use :func:`spectral_projector_derivative` for the invariant subspace.
+    ValueError
+        If the matrices, index or tolerance are malformed.
+
+    """
+    a = _hermitian_matrix(matrix, "matrix")
+    d = _hermitian_matrix(tangent, "tangent")
+    if d.shape != a.shape:
+        raise ValueError("tangent must have the shape of matrix")
+    if isinstance(index, bool) or not isinstance(index, int) or not 0 <= index < a.shape[0]:
+        raise ValueError("index must address one eigenpair")
+    eigenvalues, eigenvectors = np.linalg.eigh(a)
+    others = np.delete(eigenvalues, index)
+    gap = float(np.min(np.abs(others - eigenvalues[index]))) if others.size else math.inf
+    tolerance = _gap_tolerance(eigenvalues, gap_tolerance)
+    if gap <= tolerance:
+        raise SpectralDegeneracyError(
+            f"eigenvalue {index} is within {tolerance:.3e} of another eigenvalue "
+            f"(gap {gap:.3e}); its individual eigenvector derivative is undefined"
+        )
+    vector = eigenvectors[:, index]
+    coupling = eigenvectors.conj().T @ d @ vector
+    differences = eigenvalues[index] - eigenvalues
+    differences[index] = 1.0
+    weights = coupling / differences
+    weights[index] = 0.0
+    derivative = eigenvectors @ weights
+    return EigenpairDerivative(
+        eigenvalue=float(eigenvalues[index]),
+        eigenvalue_derivative=float(np.real(coupling[index])),
+        eigenvector=vector.astype(np.complex128),
+        eigenvector_derivative=derivative.astype(np.complex128),
+        minimum_gap=gap,
+    )
+
+
+@dataclass(frozen=True)
+class SpectralProjectorDerivative:
+    """Projector onto an invariant subspace and its first-order change."""
+
+    projector: NDArray[np.complex128]
+    projector_derivative: NDArray[np.complex128]
+    indices: tuple[int, ...]
+    separating_gap: float
+
+
+def spectral_projector_derivative(
+    matrix: MatrixInput,
+    tangent: MatrixInput,
+    indices: tuple[int, ...],
+    *,
+    gap_tolerance: float | None = None,
+) -> SpectralProjectorDerivative:
+    """Differentiate the projector onto the eigenspace of chosen eigenvalues.
+
+    Parameters
+    ----------
+    matrix
+        Hermitian matrix ``A``.
+    tangent
+        Hermitian direction ``dA`` of the same shape.
+    indices
+        Eigenvalue indices, ascending order, spanning the subspace. Repeated
+        eigenvalues inside the subspace are supported.
+    gap_tolerance
+        Smallest admitted gap between the chosen and the remaining eigenvalues.
+
+    Returns
+    -------
+    SpectralProjectorDerivative
+        ``P = sum_{i in S} v_i v_i^H`` and
+        ``dP = sum_{i in S, j not in S} (v_j v_j^H dA v_i v_i^H + h.c.) / (lambda_i - lambda_j)``.
+        Both are independent of every eigenvector phase and of the basis chosen
+        inside a degenerate subspace.
+
+    Raises
+    ------
+    SpectralDegeneracyError
+        If a remaining eigenvalue lies within ``gap_tolerance`` of a chosen one,
+        so the subspace itself is not separated.
+    ValueError
+        If the matrices, indices or tolerance are malformed.
+
+    """
+    a = _hermitian_matrix(matrix, "matrix")
+    d = _hermitian_matrix(tangent, "tangent")
+    if d.shape != a.shape:
+        raise ValueError("tangent must have the shape of matrix")
+    size = a.shape[0]
+    if (
+        not indices
+        or len(set(indices)) != len(indices)
+        or any(isinstance(i, bool) or not isinstance(i, int) or not 0 <= i < size for i in indices)
+    ):
+        raise ValueError("indices must be distinct eigenpair indices")
+    chosen = tuple(sorted(indices))
+    rest = [i for i in range(size) if i not in chosen]
+    eigenvalues, eigenvectors = np.linalg.eigh(a)
+    gap = (
+        float(np.min(np.abs(eigenvalues[list(chosen)][:, None] - eigenvalues[rest][None, :])))
+        if rest
+        else math.inf
+    )
+    tolerance = _gap_tolerance(eigenvalues, gap_tolerance)
+    if gap <= tolerance:
+        raise SpectralDegeneracyError(
+            f"the chosen eigenvalues are within {tolerance:.3e} of the rest "
+            f"(gap {gap:.3e}); the invariant subspace is not separated"
+        )
+    inside = eigenvectors[:, list(chosen)]
+    outside = eigenvectors[:, rest]
+    projector = inside @ inside.conj().T
+    weights = 1.0 / (eigenvalues[list(chosen)][None, :] - eigenvalues[rest][:, None])
+    half = outside @ ((outside.conj().T @ d @ inside) * weights) @ inside.conj().T
+    derivative = half + half.conj().T
+    return SpectralProjectorDerivative(
+        projector=projector.astype(np.complex128),
+        projector_derivative=derivative.astype(np.complex128),
+        indices=chosen,
+        separating_gap=gap,
+    )
 
 
 def minimise_real_objective(

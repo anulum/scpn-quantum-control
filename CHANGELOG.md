@@ -4,6 +4,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- State complex derivatives in the real-block Jacobian convention:
+  - convert explicitly to the PyTorch or JAX complex gradient (each is checked
+    against the framework itself);
+  - differentiate Hermitian eigenpairs, refusing at a repeated eigenvalue
+    instead of clipping its denominator;
+  - differentiate the phase-invariant projector onto a degenerate cluster.
+
 - Choose numerical methods only from committed measured evidence:
   - An exact request never selects a compressed, trajectory, Trotter, ODE or
     variational method.
