@@ -6,7 +6,7 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // scpn-quantum-control — studio-web schema-A capabilities view
 
-import type { StudioManifestView } from "./data";
+import type { StudioManifestView } from "../../shared/browser/data";
 
 /**
  * Verbatim rendering of the committed schema-A capability manifest: the

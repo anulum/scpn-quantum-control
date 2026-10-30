@@ -7,7 +7,7 @@
 // SCPN Quantum Control — committed evidence catalogue destination
 
 import { GradientPlanExplanation } from "../../shared/browser/GradientPlanExplanation";
-import { ManifestCapabilities } from "../../shared/browser/ManifestCapabilities";
+import { ManifestCapabilities } from "./ManifestCapabilities";
 import { ScorecardTable } from "../../shared/browser/ScorecardTable";
 import { SupportMatrixGrid } from "../../shared/browser/SupportMatrixGrid";
 import { Unverifiable } from "../../shared/browser/Unverifiable";
