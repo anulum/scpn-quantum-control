@@ -444,13 +444,10 @@ def _torch_apply_gate_matrix(
     qubits: tuple[int, ...],
     matrix: Any,
 ) -> Any:
+    axes = list(qubits) + [axis for axis in range(n_qubits) if axis not in qubits]
+    inverse = tuple(int(axis) for axis in _numpy_axis_order(np.argsort, axes))
     return _torch_apply_local_operator(
-        torch_module,
-        state,
-        n_qubits,
-        qubits,
-        matrix,
-        inverse_order=lambda axes: _numpy_axis_order(np.argsort, axes),
+        torch_module, state, n_qubits, qubits, matrix, inverse_order=lambda _axes: inverse
     )
 
 

@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import importlib
 import math
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from types import GeneratorType
 from typing import cast
 
@@ -33,6 +33,34 @@ from scpn_quantum_control.phase.qnode_circuit import (
 )
 
 pytestmark = pytest.mark.framework_imports
+
+
+@pytest.fixture(autouse=True)
+def _double_precision(request: pytest.FixtureRequest) -> Iterator[None]:
+    """Use and restore actual JAX double precision for JAX cases only.
+
+    Parameters
+    ----------
+    request
+        Pytest request whose ``backend`` parameter selects the runtime.
+
+    Yields
+    ------
+    None
+        Control to the test while JAX double precision is enabled.
+
+    """
+    callspec = getattr(request.node, "callspec", None)
+    if callspec is None or callspec.params.get("backend") != "jax":
+        yield
+        return
+    jax = importlib.import_module("jax")
+    previous = jax.config.x64_enabled
+    jax.config.update("jax_enable_x64", True)
+    try:
+        yield
+    finally:
+        jax.config.update("jax_enable_x64", previous)
 
 
 def _bit_reference(

@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **834 modules** across **41 package families**
-- **4441 documented public module-level symbols**
+- **845 modules** across **41 package families**
+- **4526 documented public module-level symbols**
 - **851 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -4361,11 +4361,11 @@ Convergence certificates for small phase ground-state objectives.
 
 Parameter-shift gradients for phase and Kuramoto-XY VQE objectives.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase/param_shift.py) · Public symbols: **17**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase/param_shift.py) · Public symbols: **18**
 
 **Classes:** `ParamShiftConvergenceDiagnostics`, `ParamShiftVQEResult`, `GenericParameterShiftEvaluationPlan`, `GradientVerificationResult`, `HessianVerificationResult`
 
-**Functions:** `parameter_shift_gradient()`, `plan_generic_parameter_shift_evaluations()`, `parameter_shift_hessian()`, `verify_parameter_shift_gradient()`, `verify_parameter_shift_hessian()`, `verify_vqe_parameter_shift_gradient()`, `verify_vqe_parameter_shift_hessian()`, `parameter_shift_gradient_with_uncertainty()`, `plan_parameter_shift_shots()`, `validate_param_shift_convergence()`, `value_and_vqe_grad()`, `vqe_with_param_shift()`
+**Functions:** `parameter_shift_objective_values()`, `parameter_shift_gradient()`, `plan_generic_parameter_shift_evaluations()`, `parameter_shift_hessian()`, `verify_parameter_shift_gradient()`, `verify_parameter_shift_hessian()`, `verify_vqe_parameter_shift_gradient()`, `verify_vqe_parameter_shift_hessian()`, `parameter_shift_gradient_with_uncertainty()`, `plan_parameter_shift_shots()`, `validate_param_shift_convergence()`, `value_and_vqe_grad()`, `vqe_with_param_shift()`
 
 ### `scpn_quantum_control.phase.pennylane_bridge`
 
@@ -6577,6 +6577,30 @@ Qualify native CPU TensorFlow tapes, forward accumulators and vectorized maps.
 
 **Functions:** `run_tensorflow_transform_algebra_cases()`
 
+### `scpn_quantum_control.differentiable_torch_compile_specialisation`
+
+Keep Python integers static while ``torch.compile`` traces dynamic tensors.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_torch_compile_specialisation.py) · Public symbols: **2**
+
+**Functions:** `torch_minor_release()`, `torch_static_integer_specialisation()`
+
+### `scpn_quantum_control.differentiable_torch_graph_replay`
+
+Replay captured AOTAutograd forward and backward graphs on supplied inputs.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_torch_graph_replay.py) · Public symbols: **1**
+
+**Functions:** `replay_aot_graphs()`
+
+### `scpn_quantum_control.differentiable_torch_state`
+
+Describe and compare PyTorch state entries without loading them.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_torch_state.py) · Public symbols: **3**
+
+**Functions:** `tensor_descriptor()`, `state_key_partition()`, `iter_state_mismatches()`
+
 ### `scpn_quantum_control.differentiable_torch_transform_algebra`
 
 Qualify CPU torch.func compositions, including registered custom derivatives.
@@ -6925,6 +6949,16 @@ Fail-closed **PGBO quantum geometric tensor** product surface.
 
 **Functions:** `list_qgt_capability_ids()`, `list_qgt_boundary_ids()`, `get_qgt_capability()`, `get_qgt_boundary()`, `iter_qgt_capabilities()`, `iter_qgt_boundaries()`, `decide_qgt_path()`, `materialise_pgbo_tensor_probe()`, `materialise_demo_pgbo_tensor_probe()`, `map_pgbo_qgt_public_surfaces()`, `build_pgbo_qgt_product_registry()`, `assert_pgbo_qgt_product_integrity()`
 
+### `scpn_quantum_control.phase_qnn_framework_gradients`
+
+Differentiate the bounded phase classifier in PyTorch, JAX and TensorFlow.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase_qnn_framework_gradients.py) · Public symbols: **13**
+
+**Classes:** `QNNGradientOperations`
+
+**Functions:** `admitted_feature_matrix()`, `admitted_label_vector()`, `jax_admitted_feature_matrix()`, `jax_admitted_label_vector()`, `admitted_bounded_qnn_reference()`, `bounded_qnn_reference()`, `torch_autograd_qnn_audit()`, `jax_native_qnn_audit()`, `tensorflow_bounded_qnn_audit()`, `native_torch_autograd_qnn_value_and_grad()`, `native_jax_qnn_value_and_grad()`, `native_tensorflow_bounded_qnn_value_and_grad()`
+
 ### `scpn_quantum_control.phase_qnn_model_numerics`
 
 Typed numerical reads used by the bounded phase classifier's host model.
@@ -6957,6 +6991,24 @@ Evaluate the phase classifier model without training or report composition.
 
 **Functions:** `bounded_phase_qnn_probabilities()`, `phase_qnn_mean_squared_error()`, `numpy_phase_classifier_loss_and_gradient()`, `numpy_phase_classifier_gradient()`
 
+### `scpn_quantum_control.phase_qnode_audit_admission`
+
+Admit host parameters, batches, scalars and tolerances for capability audits.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase_qnode_audit_admission.py) · Public symbols: **6**
+
+**Functions:** `admitted_parameter_vector()`, `admitted_scalar()`, `admitted_torch_tolerance()`, `admitted_jax_tolerance()`, `admitted_parameter_matrix()`, `admitted_parameter_batch()`
+
+### `scpn_quantum_control.phase_qnode_gate_dispatch`
+
+Select the native operator for a registered Phase-QNode gate name.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase_qnode_gate_dispatch.py) · Public symbols: **3**
+
+**Classes:** `GateOperatorFactories`
+
+**Functions:** `dispatch_gate_operator()`, `refuse_unregistered_gate()`
+
 ### `scpn_quantum_control.phase_qnode_gate_numerics`
 
 Construct supplied native gate operators without model or circuit selection.
@@ -6964,6 +7016,16 @@ Construct supplied native gate operators without model or circuit selection.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase_qnode_gate_numerics.py) · Public symbols: **7**
 
 **Functions:** `pauli_rotation()`, `hadamard_operator()`, `sqrt_x_operator()`, `quarter_turn_phase()`, `jax_phase_operator()`, `torch_phase_operator()`, `controlled_z_operator()`
+
+### `scpn_quantum_control.phase_qnode_jax_audits`
+
+Execute JAX Phase-QNode capabilities and compare them with parameter shift.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase_qnode_jax_audits.py) · Public symbols: **19**
+
+**Classes:** `JAXAuditOperations`
+
+**Functions:** `enable_jax_x64()`, `require_jax_transform_support()`, `require_jax_pmap_support()`, `require_jax_pytree_support()`, `require_jax_aot_export_support()`, `jax_export_version()`, `jax_local_devices()`, `jax_native_transform_audit()`, `jax_pytree_transform_audit()`, `jax_sharding_transform_audit()`, `jax_aot_export_audit()`, `admitted_parameter_tree()`, `native_jax_value_function()`, `native_jax_tree_value_function()`, `native_jax_native_transform_audit()`, `native_jax_pytree_transform_audit()`, `native_jax_sharding_transform_audit()`, `native_jax_aot_export_audit()`
 
 ### `scpn_quantum_control.phase_qnode_native_expectations`
 
@@ -6973,6 +7035,14 @@ Compute quantum expectation moments from supplied native tensors.
 
 **Functions:** `real_quadratic_form()`, `weighted_real_overlap()`, `weighted_complex_overlap()`, `real_symmetrized_overlap()`, `covariance_from_moments()`
 
+### `scpn_quantum_control.phase_qnode_native_gates`
+
+Build registered Phase-QNode gate operators on a supplied native runtime.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase_qnode_native_gates.py) · Public symbols: **2**
+
+**Functions:** `torch_gate_operator()`, `jax_gate_operator()`
+
 ### `scpn_quantum_control.phase_qnode_native_operators`
 
 Construct native QNode operators without selecting circuits or model policy.
@@ -6980,6 +7050,14 @@ Construct native QNode operators without selecting circuits or model policy.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase_qnode_native_operators.py) · Public symbols: **7**
 
 **Functions:** `phase_operator_entries()`, `two_qubit_operator_entries()`, `pauli_operator_entries()`, `jax_controlled_operator()`, `torch_controlled_operator_rows()`, `jax_basis_transposition()`, `torch_basis_transposition()`
+
+### `scpn_quantum_control.phase_qnode_native_statevector`
+
+Supply PyTorch and JAX kernels to the Phase-QNode statevector engine.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase_qnode_native_statevector.py) · Public symbols: **8**
+
+**Functions:** `torch_apply_local_operator()`, `jax_apply_local_operator()`, `torch_operation_theta()`, `jax_operation_theta()`, `torch_statevector_kernels()`, `jax_statevector_kernels()`, `torch_statevector_value_and_state()`, `jax_statevector_value_and_state()`
 
 ### `scpn_quantum_control.phase_qnode_product`
 
@@ -7000,6 +7078,26 @@ Evolve native statevectors using supplied numerical matrix applications.
 **Classes:** `NativeLocalOperator`
 
 **Functions:** `evolve_local_operators()`, `jax_zero_state()`, `torch_zero_state()`
+
+### `scpn_quantum_control.phase_qnode_statevector_engine`
+
+Evaluate a registered Phase-QNode circuit on a supplied native runtime.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase_qnode_statevector_engine.py) · Public symbols: **10**
+
+**Classes:** `StatevectorKernels`
+
+**Functions:** `registered_operations()`, `native_statevector_kernels()`, `statevector_value_and_state()`, `observable_expectation()`, `term_expectation()`, `symmetrized_product_expectation()`, `term_product_expectation()`, `apply_term_operator()`, `refuse_unregistered_observable()`
+
+### `scpn_quantum_control.phase_qnode_torch_audits`
+
+Execute PyTorch Phase-QNode capabilities and compare them with parameter shift.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase_qnode_torch_audits.py) · Public symbols: **17**
+
+**Classes:** `TorchAuditOperations`
+
+**Functions:** `torch_host_values()`, `torch_scalar_to_float()`, `torch_func_transforms()`, `torch_compile_function()`, `torch_compile_dense_matrix()`, `compile_boundary_exception_reason()`, `torch_statevector_gradient_audit()`, `torch_func_transform_audit()`, `torch_compile_audit()`, `torch_compile_boundary_route()`, `torch_aot_autograd_boundary_route()`, `torch_compile_boundary_audit()`, `native_torch_statevector_gradient_audit()`, `native_torch_func_transform_audit()`, `native_torch_compile_audit()`, `native_torch_compile_boundary_audit()`
 
 ### `scpn_quantum_control.polyglot_edge_ad_product`
 

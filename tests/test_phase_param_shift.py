@@ -28,6 +28,7 @@ from scpn_quantum_control.phase.param_shift import (
     parameter_shift_gradient,
     parameter_shift_gradient_with_uncertainty,
     parameter_shift_hessian,
+    parameter_shift_objective_values,
     plan_generic_parameter_shift_evaluations,
     plan_quantum_gradient_backend,
     validate_param_shift_convergence,
@@ -616,3 +617,51 @@ def test_vqe_with_param_shift_records_backtracking_and_rejection() -> None:
     assert backtracked.step_sizes == (0.5,)
     assert rejected.accepted_steps == 0
     assert rejected.rejected_steps == 1
+
+
+def test_shifted_objective_values_follow_term_parameter_plus_minus_order() -> None:
+    """Evaluate each shift point in order, admit it by name and read NumPy per allocation."""
+    rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
+    values = np.array([0.4, -0.3])
+    original = values.copy()
+    points: list[tuple[float, ...]] = []
+    admitted: list[str] = []
+    numpy_reads: list[int] = []
+
+    def objective(point: FloatArray) -> float:
+        points.append(tuple(float(entry) for entry in point))
+        return float(np.sin(point[0]) + 0.5 * np.cos(point[1]))
+
+    def admit(name: str, value: object) -> float:
+        admitted.append(name)
+        return float(cast(float, value))
+
+    def numpy_namespace() -> object:
+        numpy_reads.append(len(numpy_reads))
+        return np
+
+    plus_values, minus_values = parameter_shift_objective_values(
+        objective, values, rule, scalar=lambda: admit, numpy=numpy_namespace
+    )
+
+    expected_points: list[tuple[float, ...]] = []
+    for shift, _coefficient in rule.terms:
+        for index in range(values.size):
+            for sign in (1.0, -1.0):
+                point = values.copy()
+                point[index] += sign * shift
+                expected_points.append(tuple(float(entry) for entry in point))
+    assert points == expected_points
+    assert admitted == ["plus shifted objective", "minus shifted objective"] * (
+        len(rule.terms) * values.size
+    )
+    assert len(numpy_reads) == 3
+    assert plus_values.shape == minus_values.shape == (len(rule.terms), values.size)
+    assert plus_values.dtype == np.dtype(np.float64)
+    np.testing.assert_array_equal(
+        plus_values.ravel(), [objective(np.asarray(point)) for point in expected_points[0::2]]
+    )
+    np.testing.assert_array_equal(
+        minus_values.ravel(), [objective(np.asarray(point)) for point in expected_points[1::2]]
+    )
+    np.testing.assert_array_equal(values, original)

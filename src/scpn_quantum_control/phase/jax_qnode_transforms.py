@@ -716,8 +716,11 @@ def _jax_apply_gate_matrix(
     qubits: tuple[int, ...],
     matrix: Any,
 ) -> Any:
+    axes = list(qubits) + [axis for axis in range(n_qubits) if axis not in qubits]
+    inverse = np.argsort(axes)
+    inverse_axes = tuple(int(axis) for axis in inverse)
     return _jax_apply_local_operator(
-        jnp, state, n_qubits, qubits, matrix, inverse_order=lambda axes: np.argsort(axes)
+        jnp, state, n_qubits, qubits, matrix, inverse_order=lambda _axes: inverse_axes
     )
 
 
