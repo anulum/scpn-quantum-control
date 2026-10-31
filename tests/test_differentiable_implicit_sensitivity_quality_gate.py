@@ -41,7 +41,10 @@ def test_coverage_gate_is_isolated_local_and_exact() -> None:
     )
     assert quality_gates.DIFFERENTIABLE_IMPLICIT_SENSITIVITY_COVERAGE_DATA_FILE.startswith("/tmp/")
     assert "--fail-under=100" in report
-    assert "--include=*/differentiable_implicit_sensitivity.py" in report
+    assert (
+        f"--include={quality_gates.DIFFERENTIABLE_IMPLICIT_SENSITIVITY_COVERAGE_INCLUDE}" in report
+    )
+    assert "*/differentiable_implicit_kkt.py" in report[-1]
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -66,6 +69,8 @@ def test_ci_runs_and_aggregates_differentiable_implicit_sensitivity_gate() -> No
         assert path in block
     assert "--fail-under=100" in block
     assert quality_gates.DIFFERENTIABLE_IMPLICIT_SENSITIVITY_SOURCE in block
+    assert quality_gates.DIFFERENTIABLE_IMPLICIT_KKT_SOURCE in block
+    assert quality_gates.DIFFERENTIABLE_IMPLICIT_SENSITIVITY_COVERAGE_INCLUDE in block
     for path in quality_gates.DIFFERENTIABLE_IMPLICIT_SENSITIVITY_COVERAGE_COHORT:
         assert path in block
     assert (

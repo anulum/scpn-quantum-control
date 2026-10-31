@@ -4,6 +4,14 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Issue implicit root and KKT sensitivities only at a verified solution:
+  `implicit_root_sensitivity` and `implicit_kkt_sensitivity` check the
+  residual or KKT conditions, conditioning, strict complementarity and the
+  reduced Hessian first, and otherwise raise `ImplicitDerivativeRefusal` with
+  a typed reason. The KKT result reports how far a parameter may move before
+  the active set changes. The Lagrangian Hessian may be given as a
+  Hessian-vector product.
+
 - Qualify delayed, stochastic and second-order Kuramoto sensitivities:
   - the continuous-delay sensitivity is checked against re-solving at a
     perturbed delay and against step refinement; an integer step-count delay

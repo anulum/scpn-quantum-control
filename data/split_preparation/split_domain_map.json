@@ -137,6 +137,7 @@
     "differentiable_fisher",
     "differentiable_framework_overlay",
     "differentiable_gradient_descent",
+    "differentiable_implicit_kkt",
     "differentiable_implicit_sensitivity",
     "differentiable_jax_adapter",
     "differentiable_levenberg_marquardt",

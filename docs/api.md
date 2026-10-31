@@ -1231,6 +1231,8 @@ from scpn_quantum_control import (
     hessian,
     huber_residual_weights,
     implicit_fixed_point_sensitivity,
+    implicit_kkt_sensitivity,
+    implicit_root_sensitivity,
     implicit_stationary_sensitivity,
     jacobian,
     least_squares_covariance,
@@ -1441,6 +1443,8 @@ hessian(objective, values, parameters=None, method="finite_difference", step=1e-
 value_and_hessian(objective, values, parameters=None, method="finite_difference", step=1e-4) -> HessianResult
 implicit_stationary_sensitivity(hessian, cross_derivative, parameters=None, hyperparameter_names=None, damping=0.0, rcond=1e-12) -> ImplicitSensitivityResult
 implicit_fixed_point_sensitivity(state_jacobian, parameter_jacobian, parameters=None, hyperparameter_names=None, damping=0.0, rcond=1e-12) -> FixedPointSensitivityResult
+implicit_root_sensitivity(residual, state_jacobian, parameter_jacobian, solution, parameters, residual_tolerance=1e-10, rcond=1e-12) -> RootSensitivity
+implicit_kkt_sensitivity(solution, objective_gradient, lagrangian_hessian, cross_derivative, constraint_values=None, constraint_jacobian=None, constraint_parameter_jacobian=None, multipliers=None, equality_values=None, equality_jacobian=None, equality_parameter_jacobian=None, equality_multipliers=None, kkt_tolerance=1e-9, active_tolerance=1e-7, rcond=1e-12) -> KktSensitivity
 rk4_forward_sensitivity(rhs, state_jacobian, parameter_jacobian, initial_state, theta, final_time, steps, initial_sensitivity=None, event=None, divergence_bound=1e12) -> DiscreteSolverSensitivity
 refine_solver_sensitivity(rhs, state_jacobian, parameter_jacobian, initial_state, theta, final_time, base_steps=16, refinements=4, tolerance=1e-8, order_tolerance=0.5, initial_sensitivity=None, event=None, divergence_bound=1e12) -> ContinuousSolverSensitivity
 qualify_adaptive_dopri_gradient(initial_phases, omega, coupling, cotangent, final_time, rtols=(1e-6, 1e-8, 1e-10), atol_scale=1e-3, tolerance=1e-6) -> QualifiedAdaptiveGradient
@@ -1838,6 +1842,34 @@ tracks condition number, and preserves hyperparameter provenance.
 trainable subspace. It keeps the nonsymmetric fixed-point operator explicit,
 supports damping, rejects singular or ill-conditioned maps, and preserves state
 and hyperparameter provenance.
+Neither of those two checks that the supplied point is a solution: they take
+the Hessian or Jacobian as given. `implicit_root_sensitivity()` and
+`implicit_kkt_sensitivity()` do, and raise `ImplicitDerivativeRefusal` with a
+typed `reason` instead of returning a derivative:
+
+- `incomplete_solve`: the root residual, or a KKT condition (stationarity,
+  primal or dual feasibility, complementarity), exceeds its tolerance;
+- `singular`: `dF/dx` or the KKT matrix is singular or ill-conditioned, or the
+  active constraint gradients are linearly dependent; `x^2 = p` at `p = 0` is
+  refused here;
+- `active_set_switch`: a constraint is weakly active (on its bound with a
+  near-zero multiplier), so a small change of `p` can change the active set
+  and the one-sided derivatives differ;
+- `not_a_strict_minimum`: the Lagrangian Hessian is not positive definite on
+  the null space of the active constraint gradients, so the minimiser is not
+  unique or not a minimum.
+
+`implicit_kkt_sensitivity()` takes the Lagrangian Hessian as a matrix or as a
+Hessian-vector product, and returns `dx*/dp`, the multiplier derivatives and
+`KktSensitivity.step_limit(direction)`, the step along a parameter direction at
+which the first-order prediction changes the active set; beyond it the
+derivative no longer describes the solution. Both results carry
+`kind = "implicit_at_verified_solution"`. They are not the derivative of the
+iterations that produced the solution: an unrolled optimiser's derivative
+depends on the iteration count and only approaches the implicit one as the
+solve converges. `oscillatools.accel.mpc_optimum_parameter_sensitivity()`
+accepts `residual_tolerance` and then refuses an unconverged horizon solve
+before the pullback.
 
 Two different objects come from an ODE solve, and they are kept apart:
 

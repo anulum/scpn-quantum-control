@@ -194,6 +194,7 @@ def mpc_optimum_parameter_sensitivity(
     n_iterations: int,
     optimiser: str = "gd",
     initial_control: NDArray[np.float64] | None = None,
+    residual_tolerance: float | None = None,
 ) -> MpcOptimumSensitivity:
     r"""Pull a control cotangent back through the MPC optimum by the implicit function theorem.
 
@@ -230,6 +231,11 @@ def mpc_optimum_parameter_sensitivity(
         ``"gd"`` (default) or ``"adam"``.
     initial_control : numpy.ndarray, optional
         The warm-start ``(horizon, N)`` control; defaults to zeros (uncontrolled).
+    residual_tolerance : float, optional
+        Largest admitted stationarity residual ``‖∇_u J(u*, θ)‖``. When given, a solve that has
+        not reached it is refused before the pullback, so no gradient is issued at an unconverged
+        point. When omitted the gradient is returned with its residual, and it is the
+        implicit-function formula evaluated at that point, exact only as the residual goes to zero.
 
     Returns
     -------
@@ -240,11 +246,14 @@ def mpc_optimum_parameter_sensitivity(
     Raises
     ------
     ValueError
-        If any argument falls outside its documented bound.
+        If any argument falls outside its documented bound, or the residual exceeds
+        ``residual_tolerance``.
     ImportError
         If JAX is not installed.
 
     """
+    if residual_tolerance is not None and not residual_tolerance > 0.0:
+        raise ValueError(f"residual_tolerance must be positive, got {residual_tolerance}")
     state = np.ascontiguousarray(phases, dtype=np.float64)
     frequencies = np.ascontiguousarray(omega, dtype=np.float64)
     matrix = np.ascontiguousarray(coupling, dtype=np.float64)
@@ -282,7 +291,6 @@ def mpc_optimum_parameter_sensitivity(
     optimum, pullback = backend.jax.vjp(
         plan, jnp.asarray(state), jnp.asarray(frequencies), jnp.asarray(matrix)
     )
-    phases_bar, omega_bar, coupling_bar = pullback(jnp.asarray(cotangent))
     residual_vector = backend.value_and_grad(
         jnp.asarray(state),
         optimum,
@@ -292,9 +300,16 @@ def mpc_optimum_parameter_sensitivity(
         float(target_coherence),
         float(control_weight),
     )[1]
+    residual = float(np.linalg.norm(np.asarray(residual_vector, dtype=np.float64)))
+    if residual_tolerance is not None and not residual <= residual_tolerance:
+        raise ValueError(
+            f"incomplete solve: the stationarity residual {residual:.3e} exceeds "
+            f"residual_tolerance {residual_tolerance:.3e}; no implicit gradient is issued"
+        )
+    phases_bar, omega_bar, coupling_bar = pullback(jnp.asarray(cotangent))
     return MpcOptimumSensitivity(
         optimal_control=np.asarray(optimum, dtype=np.float64),
-        stationarity_residual=float(np.linalg.norm(np.asarray(residual_vector, dtype=np.float64))),
+        stationarity_residual=residual,
         phases_cotangent=np.asarray(phases_bar, dtype=np.float64),
         omega_cotangent=np.asarray(omega_bar, dtype=np.float64),
         coupling_cotangent=np.asarray(coupling_bar, dtype=np.float64),
@@ -314,6 +329,7 @@ def mpc_plan_energy_gradient(
     n_iterations: int,
     optimiser: str = "gd",
     initial_control: NDArray[np.float64] | None = None,
+    residual_tolerance: float | None = None,
 ) -> MpcOptimumSensitivity:
     r"""Gradient of the optimal plan energy ``½‖u*‖²`` with respect to the dynamics parameters.
 
@@ -330,6 +346,8 @@ def mpc_plan_energy_gradient(
     horizon : int
         The control-horizon length (``≥ 1``).
     target_coherence, control_weight, step_size, n_iterations, optimiser, initial_control
+        As for :func:`mpc_optimum_parameter_sensitivity`.
+    residual_tolerance
         As for :func:`mpc_optimum_parameter_sensitivity`.
 
     Returns
@@ -370,6 +388,7 @@ def mpc_plan_energy_gradient(
         n_iterations=n_iterations,
         optimiser=optimiser,
         initial_control=initial_control,
+        residual_tolerance=residual_tolerance,
     )
 
 

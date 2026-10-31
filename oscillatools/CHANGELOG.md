@@ -17,6 +17,10 @@ All notable changes to `oscillatools` are documented here. The format follows
 
 ### Added
 
+- `mpc_optimum_parameter_sensitivity` and `mpc_plan_energy_gradient` accept
+  `residual_tolerance`; a horizon solve whose stationarity residual exceeds it
+  is refused before the pullback instead of returning the implicit gradient
+  at an unconverged point.
 - `noisy_expectation_value_and_grad` estimates `E[L]` and `∇E[L]` over
   independent noise seeds, with the standard error of each mean
   (`NoisyExpectationEstimate`, `EXPECTATION_ESTIMAND`); one path's gradient

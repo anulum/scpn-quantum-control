@@ -18,6 +18,8 @@ determinism, and every validation and residency contract.
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pytest
 
@@ -308,6 +310,78 @@ def test_reported_residual_tightens_with_iterations() -> None:
     assert tight.stationarity_residual < 1e-6
 
 
+def test_residual_tolerance_refuses_an_unconverged_optimum() -> None:
+    """With a tolerance, an unconverged solve gives no gradient; a converged one is unchanged."""
+    n, horizon = 3, 4
+    phases, omega, coupling = _problem(n, seed=2)
+    cotangent = np.ones((horizon, n))
+    with pytest.raises(ValueError, match="incomplete solve"):
+        kkt.mpc_optimum_parameter_sensitivity(
+            phases,
+            omega,
+            coupling,
+            _DT,
+            cotangent,
+            n_iterations=100,
+            residual_tolerance=1e-6,
+            target_coherence=_TARGET,
+            control_weight=_WEIGHT,
+            step_size=_STEP,
+        )
+    with pytest.raises(ValueError, match="incomplete solve"):
+        kkt.mpc_plan_energy_gradient(
+            phases,
+            omega,
+            coupling,
+            _DT,
+            horizon,
+            n_iterations=100,
+            residual_tolerance=1e-6,
+            target_coherence=_TARGET,
+            control_weight=_WEIGHT,
+            step_size=_STEP,
+        )
+    checked = kkt.mpc_optimum_parameter_sensitivity(
+        phases,
+        omega,
+        coupling,
+        _DT,
+        cotangent,
+        n_iterations=9000,
+        residual_tolerance=1e-6,
+        target_coherence=_TARGET,
+        control_weight=_WEIGHT,
+        step_size=_STEP,
+    )
+    unchecked = kkt.mpc_optimum_parameter_sensitivity(
+        phases,
+        omega,
+        coupling,
+        _DT,
+        cotangent,
+        n_iterations=9000,
+        target_coherence=_TARGET,
+        control_weight=_WEIGHT,
+        step_size=_STEP,
+    )
+    assert checked.stationarity_residual <= 1e-6
+    np.testing.assert_array_equal(checked.omega_cotangent, unchecked.omega_cotangent)
+    for bad in (0.0, -1.0, float("nan")):
+        with pytest.raises(ValueError, match="residual_tolerance must be positive"):
+            kkt.mpc_optimum_parameter_sensitivity(
+                phases,
+                omega,
+                coupling,
+                _DT,
+                cotangent,
+                n_iterations=10,
+                residual_tolerance=bad,
+                target_coherence=_TARGET,
+                control_weight=_WEIGHT,
+                step_size=_STEP,
+            )
+
+
 def test_adam_optimiser_and_warm_start_paths() -> None:
     """The Adam schedule and a warm-start control both drive to a low-residual optimum."""
     n, horizon = 3, 4
@@ -335,7 +409,7 @@ def test_sensitivity_is_deterministic() -> None:
     n, horizon = 3, 4
     phases, omega, coupling = _problem(n, seed=4)
     cotangent = np.random.default_rng(0).normal(size=(horizon, n))
-    kwargs = dict(
+    kwargs: dict[str, Any] = dict(
         target_coherence=_TARGET, control_weight=_WEIGHT, step_size=_STEP, n_iterations=1500
     )
     first = kkt.mpc_optimum_parameter_sensitivity(
@@ -348,7 +422,9 @@ def test_sensitivity_is_deterministic() -> None:
     np.testing.assert_array_equal(first.phases_cotangent, second.phases_cotangent)
 
 
-_BASE = dict(target_coherence=_TARGET, control_weight=_WEIGHT, step_size=_STEP, n_iterations=100)
+_BASE: dict[str, Any] = dict(
+    target_coherence=_TARGET, control_weight=_WEIGHT, step_size=_STEP, n_iterations=100
+)
 
 
 @pytest.mark.parametrize(

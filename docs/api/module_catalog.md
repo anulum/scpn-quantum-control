@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **855 modules** across **41 package families**
-- **4621 documented public module-level symbols**
+- **856 modules** across **41 package families**
+- **4626 documented public module-level symbols**
 - **875 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -6426,6 +6426,16 @@ Native gradient-descent optimizer for differentiable scalar objectives.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_gradient_descent.py) · Public symbols: **1**
 
 **Classes:** `DifferentiableOptimizer`
+
+### `scpn_quantum_control.differentiable_implicit_kkt`
+
+Implicit root and KKT sensitivities, issued only at a verified solution.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_implicit_kkt.py) · Public symbols: **5**
+
+**Classes:** `ImplicitDerivativeRefusal`, `RootSensitivity`, `KktSensitivity`
+
+**Functions:** `implicit_root_sensitivity()`, `implicit_kkt_sensitivity()`
 
 ### `scpn_quantum_control.differentiable_implicit_sensitivity`
 

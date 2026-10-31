@@ -97,6 +97,14 @@ from .differentiable_fisher import (
     least_squares_covariance,
 )
 from .differentiable_gradient_descent import DifferentiableOptimizer
+from .differentiable_implicit_kkt import (
+    IMPLICIT_DERIVATIVE_KIND,
+    ImplicitDerivativeRefusal,
+    KktSensitivity,
+    RootSensitivity,
+    implicit_kkt_sensitivity,
+    implicit_root_sensitivity,
+)
 from .differentiable_implicit_sensitivity import (
     DELAYED_METHOD_OF_STEPS_ORDERS,
     SOLVER_DERIVATIVE_SUPPORT,
@@ -939,4 +947,10 @@ __all__ = [
     "value_and_vjp",
     "vector_jacobian_product",
     "vjp",
+    "IMPLICIT_DERIVATIVE_KIND",
+    "ImplicitDerivativeRefusal",
+    "KktSensitivity",
+    "RootSensitivity",
+    "implicit_kkt_sensitivity",
+    "implicit_root_sensitivity",
 ]
