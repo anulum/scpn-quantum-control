@@ -56,6 +56,11 @@ class WirtingerDerivative:
     df_dz: NDArray[np.complex128]
     df_dconj_z: NDArray[np.complex128]
     holomorphic_residual: float
+    difference_noise: NDArray[np.float64] = field(
+        default_factory=lambda: np.zeros(0, dtype=np.float64)
+    )
+    """Per-coordinate rounding floor of the partials, ``4 eps max|f| / h_k``;
+    a residual below it is indistinguishable from zero."""
 
 
 @dataclass(frozen=True)
@@ -134,15 +139,26 @@ def wirtinger_partials(
     n = point.size
     df_dz = np.empty(n, dtype=np.complex128)
     df_dconj_z = np.empty(n, dtype=np.complex128)
+    noise = np.empty(n, dtype=np.float64)
+    eps = float(np.finfo(np.float64).eps)
     for k in range(n):
-        upper, lower, realised = _displaced(point, k, 1.0, h)
-        df_dx = (complex(f(upper)) - complex(f(lower))) / realised
-        upper, lower, realised = _displaced(point, k, 1.0j, h)
-        df_dy = (complex(f(upper)) - complex(f(lower))) / realised
+        values: list[complex] = []
+        upper, lower, realised_x = _displaced(point, k, 1.0, h)
+        values += [complex(f(upper)), complex(f(lower))]
+        df_dx = (values[0] - values[1]) / realised_x
+        upper, lower, realised_y = _displaced(point, k, 1.0j, h)
+        values += [complex(f(upper)), complex(f(lower))]
+        df_dy = (values[2] - values[3]) / realised_y
         df_dz[k] = 0.5 * (df_dx - 1j * df_dy)
         df_dconj_z[k] = 0.5 * (df_dx + 1j * df_dy)
+        noise[k] = 4.0 * eps * max(abs(value) for value in values) / min(realised_x, realised_y)
     residual = float(np.max(np.abs(df_dconj_z))) if n else 0.0
-    return WirtingerDerivative(df_dz=df_dz, df_dconj_z=df_dconj_z, holomorphic_residual=residual)
+    return WirtingerDerivative(
+        df_dz=df_dz,
+        df_dconj_z=df_dconj_z,
+        holomorphic_residual=residual,
+        difference_noise=noise,
+    )
 
 
 def is_holomorphic(
@@ -154,10 +170,12 @@ def is_holomorphic(
 ) -> bool:
     """Test the Cauchy-Riemann condition ``df/dconj_z = 0`` at ``z``.
 
-    ``tolerance`` is relative: the residual ``max|df/dconj_z|`` must not exceed
-    ``tolerance * max|df/dz|``, so the test does not depend on the size of
-    ``f`` or of ``z``. A function with ``df/dz = 0`` is holomorphic only if its
-    residual is exactly zero.
+    ``tolerance`` is relative and applies per coordinate: each
+    ``|df/dconj_z_k|`` must not exceed ``tolerance * |df/dz_k|`` plus the
+    rounding floor of that coordinate's central differences. The test
+    therefore depends neither on the size of ``f`` or ``z`` nor on how large
+    other coordinates' derivatives are, and a critical point is not refused
+    for rounding noise.
     """
     if tolerance < 0.0:
         raise ValueError("tolerance must be non-negative")
@@ -165,9 +183,14 @@ def is_holomorphic(
 
 
 def _cauchy_riemann_holds(derivative: WirtingerDerivative, tolerance: float) -> bool:
-    """Compare the Cauchy-Riemann residual with the size of ``df/dz``."""
-    scale = float(np.max(np.abs(derivative.df_dz))) if derivative.df_dz.size else 0.0
-    return derivative.holomorphic_residual <= tolerance * scale
+    """Compare each coordinate's residual with its own ``|df/dz_k|`` and noise floor."""
+    noise = (
+        derivative.difference_noise
+        if derivative.difference_noise.shape == derivative.df_dz.shape
+        else np.zeros(derivative.df_dz.shape, dtype=np.float64)
+    )
+    limit = tolerance * np.abs(derivative.df_dz) + noise
+    return bool(np.all(np.abs(derivative.df_dconj_z) <= limit))
 
 
 def holomorphic_gradient(
@@ -282,6 +305,7 @@ def real_block_gradient(
     z: NDArray[np.complex128],
     *,
     step: float = 1e-6,
+    scale: float | None = None,
 ) -> NDArray[np.float64]:
     """Return ``(dL/dx, dL/dy)`` of a real loss as one ``float64`` vector of length ``2n``.
 
@@ -293,6 +317,12 @@ def real_block_gradient(
         Evaluation point.
     step
         Relative central-difference step, as in :func:`real_block_jacobian`.
+    scale
+        Magnitude of the terms the loss is computed from, such as ``|H|`` for
+        ``vdot(v, H @ v)``. Its rounding residue is judged against it. Defaults
+        to the largest ``|L|`` over the evaluated points, which refuses a real
+        loss that passes near zero while summing large terms; give the scale
+        explicitly there.
 
     Returns
     -------
@@ -302,8 +332,8 @@ def real_block_gradient(
     Raises
     ------
     ValueError
-        If the loss returns an imaginary part above rounding: above
-        ``1e-12`` times the largest ``|L|`` over every point evaluated. A real
+        If ``scale`` is not finite and non-negative, or the loss returns an
+        imaginary part above rounding: above ``1e-12`` times ``scale``. A real
         loss computed in complex arithmetic, such as ``vdot(v, H @ v)``,
         carries such rounding and is admitted; only the real part is
         differentiated. The scale is the loss's own, so a small loss with a
@@ -317,10 +347,16 @@ def real_block_gradient(
         seen.append(value)
         return value
 
+    if scale is not None and (isinstance(scale, bool) or not np.isfinite(scale) or scale < 0.0):
+        raise ValueError("scale must be a finite non-negative value")
     gradient: NDArray[np.float64] = real_block_jacobian(_recorded, z, step=step)[0]
-    scale = max(abs(value) for value in seen)
-    if max(abs(value.imag) for value in seen) > _REAL_LOSS_IMAGINARY_TOLERANCE * scale:
-        raise ValueError("loss must be real-valued")
+    reference = max(abs(value) for value in seen) if scale is None else float(scale)
+    residue = max(abs(value.imag) for value in seen)
+    if residue > _REAL_LOSS_IMAGINARY_TOLERANCE * reference:
+        raise ValueError(
+            f"loss must be real-valued: imaginary residue {residue:.3e} exceeds "
+            f"1e-12 * {reference:.3e}; pass scale= when a real loss sums large terms"
+        )
     return gradient
 
 
@@ -330,6 +366,7 @@ def framework_complex_gradient(
     *,
     convention: FrameworkConvention,
     step: float = 1e-6,
+    scale: float | None = None,
 ) -> NDArray[np.complex128]:
     """Express a real loss's gradient in a named framework's complex convention.
 
@@ -345,6 +382,8 @@ def framework_complex_gradient(
         (``2 dL/dz``, the conjugate that ``jax.grad`` returns).
     step
         Central-difference step of the underlying real-block gradient.
+    scale
+        Magnitude of the loss's terms, as in :func:`real_block_gradient`.
 
     Returns
     -------
@@ -360,7 +399,7 @@ def framework_complex_gradient(
     """
     if convention not in ("torch", "jax"):
         raise ValueError("convention must be 'torch' or 'jax'")
-    gradient = real_block_gradient(loss, z, step=step)
+    gradient = real_block_gradient(loss, z, step=step, scale=scale)
     half = gradient.size // 2
     sign = 1.0 if convention == "torch" else -1.0
     return (gradient[:half] + sign * 1j * gradient[half:]).astype(np.complex128)
@@ -406,10 +445,11 @@ class EigenpairDerivative:
     eigenvector_derivative: NDArray[np.complex128]
     minimum_gap: float
     rounding_error_estimate: float = 0.0
-    """First-order bound on the Euclidean norm of the error in
-    ``eigenvector_derivative`` from rounding in the eigendecomposition,
-    ``eps * max|lambda| * (|dv| / gap + 2 * |dA|_2 / gap**2)``. The second term
-    dominates when the tangent splits a near-degenerate pair without mixing it."""
+    """First-order estimate, with a safety factor of two, of the Euclidean norm of
+    the error in ``eigenvector_derivative`` from rounding in the
+    eigendecomposition: ``2 eps max|lambda| (|dv| / gap + 2 |dA|_2 / gap**2)``.
+    The second term dominates when the tangent splits a near-degenerate pair
+    without mixing it. It is an estimate, not a proven bound."""
 
 
 def hermitian_eigenpair_derivative(
@@ -487,10 +527,12 @@ def hermitian_eigenpair_derivative(
         eigenvector=vector.astype(np.complex128),
         eigenvector_derivative=derivative.astype(np.complex128),
         minimum_gap=gap,
+        # Divided step by step so that neither tiny nor huge matrices overflow.
         rounding_error_estimate=float(
-            np.finfo(np.float64).eps
-            * np.max(np.abs(eigenvalues))
-            * (np.linalg.norm(derivative) / gap + 2.0 * np.linalg.norm(d, 2) / gap**2)
+            2.0
+            * np.finfo(np.float64).eps
+            * (np.max(np.abs(eigenvalues)) / gap)
+            * (np.linalg.norm(derivative) + 2.0 * (np.linalg.norm(d, 2) / gap))
         ),
     )
 

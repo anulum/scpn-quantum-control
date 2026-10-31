@@ -49,8 +49,13 @@ equations). `is_holomorphic` tests that residual, and `holomorphic_gradient`
 returns the ordinary complex derivative `df/dz`, failing closed when the function
 is not holomorphic at the point. Their `tolerance` (default `1e-6`) is
 relative: the residual may be at most `tolerance * max|df/dz|`. `z**2` at
-`1e8(1 + i)` therefore counts as holomorphic, `1e-12 * conj(z)` does not, and a
-function with `df/dz = 0` counts only if its residual is exactly zero.
+`1e8(1 + i)` therefore counts as holomorphic and `1e-12 * conj(z)` does not.
+The test applies per coordinate, `|df/dconj_z_k| <= tolerance * |df/dz_k| +
+noise_k`, so `1e8 * z0 + conj(z1)` is not holomorphic. Here `noise_k`,
+`4 eps max|f| / h_k`, is the rounding floor of that coordinate's differences,
+reported as `difference_noise`. At a critical point such as `z**2 - 2z` at
+`z = 1`, rounding noise is therefore not mistaken for a conjugate
+dependence.
 
 ```python
 from scpn_quantum_control.wirtinger_calculus import holomorphic_gradient
@@ -93,10 +98,12 @@ It exists for every real-differentiable `f`, holomorphic or not, and
 returns the first row, `(dL/dx, dL/dy)`; for `|z|**2` that is `(2x, 2y)`.
 A real loss computed in complex arithmetic, such as `np.vdot(v, H @ v)`,
 carries an imaginary rounding residue. Only the real part is differentiated.
-The residue is admitted up to `1e-12` times the largest `|L|` over every point
-evaluated, and a larger one is refused as a complex loss. The scale is the
-loss's own, so a tiny loss with a comparable imaginary part is refused in any
-units.
+The residue is admitted up to `1e-12 * scale`, and a larger one is refused as a
+complex loss. By default `scale` is the largest `|L|` over every point
+evaluated, so a tiny loss with a comparable imaginary part is refused in any
+units. A real loss that passes near zero while summing large terms, such as
+`<psi|H|psi>` between eigenvalues of opposite sign, is refused by that
+default. Pass the size of its terms, for example `scale=np.linalg.norm(H, 2)`.
 
 Frameworks report the gradient of a real loss of complex parameters in two
 different complex forms, and the two are conjugates of each other.
@@ -145,13 +152,16 @@ derivative is returned at its true size, which grows as `1 / gap`.
 
 Its accuracy also degrades as the gap closes. Rounding in the
 eigendecomposition perturbs `dv` by up to about
-`eps * max|lambda| * (|dv| / gap + 2 * |dA|_2 / gap**2)` in norm, and the
-result reports this bound as `rounding_error_estimate`. The `1 / gap**2` term
+`eps * max|lambda| * (|dv| / gap + 2 * |dA|_2 / gap**2)` in norm. The result
+reports twice this as `rounding_error_estimate`; it is a first-order estimate
+with a safety factor, not a proven bound. The `1 / gap**2` term
 dominates when the tangent splits a near-degenerate pair without mixing it.
 For eigenvalues of order one, a gap of `1e-8` then leaves `dv` wrong at order
 one, a hundred times above the default tolerance. Compare the estimate with
-`|dv|` before relying on the result. Against a 50-digit reference, the
-measured error was 0.01 to 0.42 times the estimate.
+`|dv|` before relying on the result. Against 50-digit references the
+measured error stayed below the estimate. The worst ratio an independent
+check found was about 0.65, for a spectrum offset by `1e3`; it was 1.29 before
+the safety factor was added.
 
 For a repeated eigenvalue, use the invariant subspace instead.
 `spectral_projector_derivative(A, dA, indices)` returns the projector `P` onto

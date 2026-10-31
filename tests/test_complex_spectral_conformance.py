@@ -420,3 +420,60 @@ def test_numpy_integer_indices_are_admitted() -> None:
     assert by_numpy.eigenvalue_derivative == by_python.eigenvalue_derivative
     projector = spectral_projector_derivative(matrix, tangent, (cast(int, np.int64(0)),))
     assert projector.indices == (0,)
+
+
+@pytest.mark.parametrize("magnitude", [1e-200, 1e200])
+def test_rounding_estimate_stays_finite_at_extreme_scales(magnitude: float) -> None:
+    """Neither a tiny nor a huge matrix overflows the estimate, and a zero tangent gives zero.
+
+    Parameters
+    ----------
+    magnitude
+        Scale of the matrix and of its tangent.
+
+    """
+    matrix = magnitude * _hermitian((0.0, 1.0, 3.0), 31)
+    result = hermitian_eigenpair_derivative(matrix, magnitude * _direction(3, 32), 0)
+    assert np.isfinite(result.rounding_error_estimate)
+    assert np.all(np.isfinite(result.eigenvector_derivative))
+    still = hermitian_eigenpair_derivative(matrix, np.zeros((3, 3)), 0)
+    assert still.rounding_error_estimate == 0.0
+
+
+def test_offset_spectrum_error_stays_within_the_estimate() -> None:
+    """A large common offset still leaves the error inside the estimate."""
+    matrix = _hermitian((1e3, 1e3 + 1e-2, 1e3 + 1.0), 41)
+    tangent = _direction(3, 42)
+    result = hermitian_eigenpair_derivative(matrix, tangent, 0)
+    vector = result.eigenvector
+    derivative = np.outer(result.eigenvector_derivative, vector.conj()) + np.outer(
+        vector, result.eigenvector_derivative.conj()
+    )
+    error = float(np.linalg.norm(derivative - _reference_projector_derivative(matrix, tangent)))
+    assert error <= 2.0 * result.rounding_error_estimate
+
+
+def test_real_loss_passing_near_zero_needs_its_term_scale() -> None:
+    """``<psi|H|psi>`` near zero is refused by default and admitted with ``scale``."""
+    hamiltonian = _hermitian((-2.0, -1.0, 1.0, 2.0), 51)
+    _, vectors = np.linalg.eigh(hamiltonian)
+    state = ((vectors[:, 1] + vectors[:, 2]) / np.sqrt(2.0)).astype(np.complex128)
+
+    def expectation(vector: NDArray[np.complex128]) -> complex:
+        return complex(np.vdot(vector, hamiltonian @ vector))
+
+    force = 2.0 * hamiltonian @ state
+    gradient = real_block_gradient(expectation, state, scale=2.0)
+    assert _within_budget(gradient, np.concatenate((force.real, force.imag)), absolute=1e-8)
+    with pytest.raises(ValueError, match="scale must be"):
+        real_block_gradient(expectation, state, scale=-1.0)
+
+
+def test_holomorphy_is_judged_per_coordinate_with_a_noise_floor() -> None:
+    """A large holomorphic part cannot hide a conjugate coordinate; critical points pass."""
+    point = np.array([0.4 + 0.2j, -0.3 + 0.5j])
+    assert not is_holomorphic(lambda v: 1e8 * v[0] + np.conj(v[1]), point)
+    assert not is_holomorphic(lambda v: v[0] + 1e-3 * np.conj(v[1]), point, tolerance=1e-2)
+    critical = np.array([1.0 + 0.0j])
+    assert is_holomorphic(lambda v: v[0] ** 2 - 2.0 * v[0], critical)
+    assert np.all(np.abs(holomorphic_gradient(lambda v: v[0] ** 2 - 2.0 * v[0], critical)) < 1e-8)
