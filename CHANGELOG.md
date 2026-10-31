@@ -28,9 +28,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     superset, wider phases and the earlier grid. No rule costs more than
     before, and spectra the earlier search refused, such as 16 near-integer
     frequencies, are planned exactly;
-  - the plan-bound finite-shot route requires `observable_range` and floors
-    each sampled variance at its Agresti-Coull value. The plug-in variance had
-    covered 112 of 200 replicates at a total angle of 1.6;
+  - the plan-bound finite-shot route requires `observable_range`. Near an end
+    of the range, where the expected minority count is below ten, each sampled
+    variance is floored at its Agresti-Coull value; mid-range variances of
+    multi-outcome observables are kept. The plug-in variance had covered 112
+    of 200 replicates at a total angle of 1.6;
+  - exact plans keep one term per frequency, since they pay per evaluation;
+  - 64 shared rotations plan, matching the order cap;
   - eigenvalue sums and frequencies are merged within `1e-12` instead of being
     rounded to 12 decimals.
 

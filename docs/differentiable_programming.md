@@ -493,7 +493,9 @@ calibration=..., shots=...)` binds the circuit structure before anything runs:
   - grids `k pi / D` at the original scale.
 
   The earlier first-admissible grid is among them, so no rule costs more than
-  before. Phases above `pi` times the rule size are skipped, because they
+  before. An exact plan (`shots=None`) pays per evaluation, so it keeps one
+  term per frequency and never takes the superset rule
+  (`multi_frequency_parameter_shift_rule(..., prefer="evaluations")`). Phases above `pi` times the rule size are skipped, because they
   lose the derivative to rounding. Units never decide a refusal:
   `{0.1, ..., 0.6}` is planned like `{1, ..., 6}`. Eigenvalue sums and
   frequencies that agree to `1e-12` relative are merged, not rounded to a
@@ -502,7 +504,7 @@ calibration=..., shots=...)` binds the circuit structure before anything runs:
   `2 * sum c**2`. With `n` shots per evaluation and single-shot variance
   `s**2`, that gradient component has variance `factor * s**2 / n`. For
   `{3, 6, 9}` the factor is 28.5; the earlier first-admissible search gave 734.
-- **Other refusals:** a parameter with more than 64 eigenvalue sums, more than
+- **Other refusals:** a parameter with more than 65 eigenvalue sums, more than
   64 equidistant frequencies, or more than 16 non-equidistant frequencies
   refuses with `spectrum_too_large`. This happens before any shift search, so
   planning time stays bounded. A spectrum whose shift system cannot be solved
@@ -539,11 +541,15 @@ The interval is a normal approximation built from the sampled variances.
 Where a shifted expectation lies near an end of the observable's range, few
 outcomes differ and the sampled variance collapses towards zero. With the
 plug-in variance, the `{1, 2}` rule at a total angle of 1.6 covered only 112
-of 200 replicates. The route therefore requires `observable_range` and floors
-each sampled variance at the Agresti-Coull variance of a two-outcome
-observable over that range: `(high - low)**2 * p~ (1 - p~)` with
-`p~ = (p * shots + 2) / (shots + 4)`. Away from the ends this changes nothing;
-at the ends the interval becomes conservative rather than too short. A mean
+of 200 replicates. The route therefore requires `observable_range`. With
+`p = (mean - low) / (high - low)`, a sample whose expected minority count
+`shots * min(p, 1 - p)` is below ten has its variance floored at the
+Agresti-Coull variance of a two-outcome observable over that range:
+`(high - low)**2 * p~ (1 - p~)` with `p~ = (p * shots + 2) / (shots + 4)`.
+That is an upper bound for any outcome distribution with that mean, so the
+interval there becomes conservative rather than too short. Every other sample
+keeps its sampled variance, so a multi-outcome observable such as `ZI + IZ`
+is not inflated in mid-range. A mean
 outside the range is refused. Noise or measurement channels that depend on a
 parameter break the trigonometric-polynomial assumption and are outside the
 claim.

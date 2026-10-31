@@ -989,3 +989,61 @@ def test_one_third_scales_keep_exact_frequencies() -> None:
         for shift, coefficient in rule.terms
     )
     assert abs(estimate + math.sin(theta)) <= 1e-14
+
+
+def test_mid_range_variance_of_a_multi_outcome_observable_is_kept() -> None:
+    """``ZI + IZ`` at mean 0 keeps its sampled variance 0.5; only near an end is it floored."""
+    plan = _plan([GateOccurrence("ry", 0)], 1, shots=1000)
+    rule = plan.rules[0]
+    assert rule is not None
+    ((_shift, coefficient),) = rule.terms
+    provenance = {"sample_seed": 0, "shot_batch_id": "multi", "source_class": "synthetic_fixture"}
+    middle = execute_quantum_gradient_estimator_with_uncertainty(
+        plan,
+        lambda values: (0.0, 0.5),
+        [0.3],
+        calibration=_CALIBRATION,
+        shots=1000,
+        sample_provenance=provenance,
+        observable_range=(-2.0, 2.0),
+    )
+    assert _within_budget(middle.standard_error, [abs(coefficient) * math.sqrt(1.0 / 1000)])
+    edge = execute_quantum_gradient_estimator_with_uncertainty(
+        plan,
+        lambda values: (1.999, 0.0),
+        [0.3],
+        calibration=_CALIBRATION,
+        shots=1000,
+        sample_provenance=provenance,
+        observable_range=(-2.0, 2.0),
+    )
+    assert float(edge.standard_error[0]) > 0.0
+
+
+def test_exact_plans_prefer_fewer_evaluations() -> None:
+    """Exact expectations pay per evaluation, so no superset rule is chosen for them."""
+    occurrences = [GateOccurrence("ry", 0), GateOccurrence("ry", 0, 4.0)]
+    exact = _plan(occurrences, 1)
+    assert exact.frequencies[0] == (1.0, 3.0, 4.0, 5.0)
+    exact_rule = exact.rules[0]
+    assert exact_rule is not None and len(exact_rule.terms) == 4
+    assert exact.evaluations == 1 + 2 * 4
+    by_shots = multi_frequency_parameter_shift_rule([1.0, 3.0, 4.0, 5.0])
+    by_evaluations = multi_frequency_parameter_shift_rule(
+        [1.0, 3.0, 4.0, 5.0], prefer="evaluations"
+    )
+    assert len(by_evaluations.terms) == 4
+    assert by_shots.shot_variance_factor * len(
+        by_shots.terms
+    ) <= by_evaluations.shot_variance_factor * len(by_evaluations.terms)
+    with pytest.raises(ValueError, match="prefer"):
+        multi_frequency_parameter_shift_rule([1.0, 3.0], prefer=cast(Any, "fastest"))
+
+
+def test_sixty_four_rotations_plan_and_sixty_five_refuse() -> None:
+    """The sum cap matches the order cap: 64 shared rotations plan, 65 do not."""
+    planned = _plan([GateOccurrence("ry", 0)] * 64, 1)
+    assert len(planned.frequencies[0]) == 64
+    with pytest.raises(QuantumGradientEstimatorRefusal) as refusal:
+        _plan([GateOccurrence("ry", 0)] * 65, 1)
+    assert refusal.value.reason == "spectrum_too_large"

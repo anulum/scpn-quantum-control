@@ -435,8 +435,11 @@ QUANTUM_GRADIENT_ESTIMATOR_PLAN_SCHEMA = "quantum_gradient_estimator_plan.v1"
 """Schema and major version of a spectrum-bound estimator plan."""
 
 _CALIBRATION_SCHEMA = "quantum_gradient_calibration.v1"
-_MAX_SPECTRUM_SUMS = 64
 _MAX_SPECTRUM_FREQUENCIES = 64
+# n rotations of one parameter give n + 1 eigenvalue sums and n frequencies.
+_MAX_SPECTRUM_SUMS = _MAX_SPECTRUM_FREQUENCIES + 1
+_MINORITY_COUNT = 10.0
+"""Expected minority-outcome count below which a normal interval is not trusted."""
 _MERGE_TOLERANCE = 1.0e-12
 """Relative distance, against the largest magnitude present, below which two
 eigenvalue sums or frequencies are the same value up to rounding."""
@@ -715,7 +718,12 @@ def plan_quantum_gradient_estimator(
             rules.append(ParameterShiftRule())
             continue
         try:
-            rules.append(multi_frequency_parameter_shift_rule(spectrum))
+            # Exact plans pay per evaluation; finite-shot plans pay per shot variance.
+            rules.append(
+                multi_frequency_parameter_shift_rule(
+                    spectrum, prefer="shot_cost" if shots is not None else "evaluations"
+                )
+            )
         except ValueError as error:
             raise QuantumGradientEstimatorRefusal(
                 "ill_conditioned_spectrum", f"parameter {index}: {error}"
@@ -880,12 +888,14 @@ def execute_quantum_gradient_estimator_with_uncertainty(
 
     Near the ends of the observable's range almost every shot gives the same
     outcome, so the sampled variance collapses towards zero and a normal
-    interval would under-cover. Each sampled variance is therefore floored at
-    the Agresti-Coull variance of a two-outcome observable spanning
-    ``observable_range``: with ``p = (mean - low) / (high - low)``, the floor is
+    interval would under-cover. With ``p = (mean - low) / (high - low)``, a
+    sample whose expected minority count ``shots * min(p, 1 - p)`` is below
+    ten has its variance floored at the Agresti-Coull variance of a
+    two-outcome observable spanning ``observable_range``:
     ``(high - low)**2 * p~ (1 - p~)`` for ``p~ = (p * shots + 2) / (shots + 4)``.
-    Away from the ends the floor is below the sampled variance and changes
-    nothing; at the ends it makes the interval conservative.
+    That is an upper bound for any outcome distribution with that mean, so the
+    interval there is conservative. Every other sample keeps its own variance,
+    which matters for observables with more than two outcomes.
 
     Parameters
     ----------
@@ -960,6 +970,8 @@ def execute_quantum_gradient_estimator_with_uncertainty(
         if not low <= mean_value <= high:
             raise ValueError("sampled mean lies outside observable_range")
         fraction = (mean_value - low) / (high - low)
+        if shots * min(fraction, 1.0 - fraction) >= _MINORITY_COUNT:
+            return mean_value, variance_value
         adjusted = (fraction * shots + 2.0) / (shots + 4.0)
         floor = (high - low) ** 2 * adjusted * (1.0 - adjusted)
         return mean_value, max(variance_value, floor)

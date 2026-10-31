@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import cast
+from typing import Literal, cast
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
@@ -203,6 +203,7 @@ def multi_frequency_parameter_shift_rule(
     *,
     shifts: ArrayLike | None = None,
     max_condition: float = 1.0e10,
+    prefer: Literal["shot_cost", "evaluations"] = "shot_cost",
 ) -> ParameterShiftRule:
     """Return an exact multi-frequency parameter-shift rule.
 
@@ -211,6 +212,12 @@ def multi_frequency_parameter_shift_rule(
     ``2 * sin(frequency_i * shift_j) @ coefficient_j = frequency_i``.
     The resulting rule can exactly differentiate any supported linear
     combination of sine/cosine components at those frequencies.
+
+    Without explicit ``shifts`` the default shifts are chosen by ``prefer``:
+    ``"shot_cost"`` minimises ``2 * sum c**2`` times the number of terms and may
+    solve over an equidistant superset of the frequencies; ``"evaluations"``
+    keeps one term per frequency, for exact expectations where each
+    evaluation costs the same, and minimises the shot cost among those.
     """
     frequency_values = _as_parameter_array(frequencies)
     if frequency_values.size == 0:
@@ -223,9 +230,13 @@ def multi_frequency_parameter_shift_rule(
     if condition_limit <= 1.0:
         raise ValueError("max_condition must be finite and greater than one")
 
+    if prefer not in ("shot_cost", "evaluations"):
+        raise ValueError("prefer must be 'shot_cost' or 'evaluations'")
     if shifts is None:
         frequency_values, shift_values = _default_multi_frequency_shifts(
-            frequency_values, max_condition=condition_limit
+            frequency_values,
+            max_condition=condition_limit,
+            allow_superset=prefer == "shot_cost",
         )
     else:
         shift_values = _as_parameter_array(shifts)
@@ -307,6 +318,7 @@ def _default_multi_frequency_shifts(
     frequencies: NDArray[np.float64],
     *,
     max_condition: float,
+    allow_superset: bool = True,
 ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Return the frequencies to solve over and the cheapest admissible shifts.
 
@@ -349,7 +361,7 @@ def _default_multi_frequency_shifts(
     candidates: list[tuple[NDArray[np.float64], NDArray[np.float64]]] = [
         (frequencies, _equidistant_shifts(count, base))
     ]
-    superset = _superset_order(frequencies)
+    superset = _superset_order(frequencies) if allow_superset else None
     if superset is not None and superset <= MAX_EQUIDISTANT_SPECTRUM_ORDER:
         candidates.append(
             (
