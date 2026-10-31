@@ -15,11 +15,23 @@ Gate = tuple[str, list[str]]
 STUDIO_READOUT_MITIGATION_BUNDLE_SOURCE = (
     "src/scpn_quantum_control/studio/readout_mitigation_bundle.py"
 )
+STUDIO_MITIGATION_INSTRUMENT_SOURCE = (
+    "src/scpn_quantum_control/studio/mitigation_instrument_artifact.py"
+)
+STUDIO_COMMITTED_DATA_SOURCE = "src/scpn_quantum_control/studio/committed_data.py"
 STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_COHORT = [
-    "tests/test_studio_readout_mitigation_bundle.py"
+    "tests/test_studio_readout_mitigation_bundle.py",
+    "tests/test_studio_mitigation_instrument_artifact.py",
+    "tests/test_studio_committed_data.py",
 ]
+STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_INCLUDE = (
+    "--include=*/studio/readout_mitigation_bundle.py,"
+    "*/studio/mitigation_instrument_artifact.py,*/studio/committed_data.py"
+)
 STUDIO_READOUT_MITIGATION_BUNDLE_TYPING_RATCHET = [
     STUDIO_READOUT_MITIGATION_BUNDLE_SOURCE,
+    STUDIO_MITIGATION_INSTRUMENT_SOURCE,
+    STUDIO_COMMITTED_DATA_SOURCE,
     *STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_COHORT,
     "tools/studio_readout_mitigation_bundle_quality_gates.py",
     "tests/test_studio_readout_mitigation_bundle_quality_gate.py",
@@ -95,15 +107,18 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/studio/readout_mitigation_bundle.py",
+                STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_INCLUDE,
             ],
         ),
     ]
 
 
 __all__ = [
+    "STUDIO_COMMITTED_DATA_SOURCE",
+    "STUDIO_MITIGATION_INSTRUMENT_SOURCE",
     "STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_COHORT",
     "STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_DATA_FILE",
+    "STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_INCLUDE",
     "STUDIO_READOUT_MITIGATION_BUNDLE_DOCSTRING_RATCHET",
     "STUDIO_READOUT_MITIGATION_BUNDLE_SOURCE",
     "STUDIO_READOUT_MITIGATION_BUNDLE_TYPING_RATCHET",

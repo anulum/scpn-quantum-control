@@ -4,6 +4,22 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Inspect readout correction and zero-noise extrapolation in Studio: Analyse
+  gains a mitigation and readout instrument at `#/results/mitigation`.
+  - Readout cases keep their raw counts, classical-bit-to-qubit map,
+    calibration matrix and shot accounting beside signed corrected values
+    with separate measurement and calibration standard errors. Negative
+    values are named and nothing is clipped or renormalised; a calibration
+    the source refuses keeps its raw counts and the reason.
+  - A CSV export per case carries the measurement map and label order.
+  - A zero-noise extrapolation shows raw and corrected values at each noise
+    scale and the interval from the shared calibration's full covariance.
+  - The measured hardware parity pairs appear with their summary's caveat:
+    a state-specific parity inversion, not a full confusion-matrix inversion.
+  - Every value comes from `data/studio/mitigation_instrument_20261031.json`,
+    built from the source owners by
+    `python -m scpn_quantum_control.studio.mitigation_instrument_artifact`.
+
 - Run batched independent evolutions with placement evidence:
   - label-ordered shards with measured times;
   - a resumable checkpoint when a shard fails;

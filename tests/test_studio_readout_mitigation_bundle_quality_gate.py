@@ -41,7 +41,15 @@ def test_coverage_gate_is_isolated_public_and_exact() -> None:
     )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/studio/readout_mitigation_bundle.py" in report
+    assert quality_gates.STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_INCLUDE in report
+    for source in (
+        "readout_mitigation_bundle.py",
+        "mitigation_instrument_artifact.py",
+        "committed_data.py",
+    ):
+        assert (
+            f"*/studio/{source}" in quality_gates.STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_INCLUDE
+        )
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -66,5 +74,13 @@ def test_ci_runs_and_aggregates_studio_readout_mitigation_gate() -> None:
         assert path in block
     assert "--fail-under=100" in block
     assert quality_gates.STUDIO_READOUT_MITIGATION_BUNDLE_SOURCE in block
+    assert quality_gates.STUDIO_MITIGATION_INSTRUMENT_SOURCE in block
+    assert quality_gates.STUDIO_COMMITTED_DATA_SOURCE in block
+    for test in quality_gates.STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_COHORT:
+        assert test in block
+    assert (
+        quality_gates.STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_INCLUDE.removeprefix("--include=")
+        in block
+    )
     aggregate = workflow[workflow.index("  ci-gate:") :]
     assert "studio-readout-mitigation-bundle-quality" in aggregate

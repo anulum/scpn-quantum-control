@@ -111,6 +111,21 @@ python -m coverage report --rcfile=/dev/null \
     --include="*/tools/studio_qec_resource_browser.py" --precision=2 --show-missing --fail-under=100
 python -m coverage combine --rcfile=/dev/null --append --keep \
     --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" "$RUNNER_TEMP/studio-qec-browser.coverage"
+python -m coverage run --rcfile=/dev/null --branch --concurrency=greenlet \
+    --data-file="$RUNNER_TEMP/studio-mitigation-browser.coverage" \
+    --include="*/tools/studio_mitigation_browser.py,*/tools/studio_browser_journey.py" \
+    tools/studio_browser_journey.py --scenario mitigation_inspector \
+    --base-url http://127.0.0.1:4173/ --output "$RUNNER_TEMP/studio-mitigation-journey.json"
+STUDIO_PREVIEW_DIR="$RUNNER_TEMP/studio-browser-preview" \
+    python -m coverage run --rcfile=/dev/null --append --branch --concurrency=greenlet \
+    --data-file="$RUNNER_TEMP/studio-mitigation-browser.coverage" \
+    --include="*/tools/studio_mitigation_browser.py" \
+    -m pytest --noconftest -q tools/tests/test_studio_mitigation_browser.py
+python -m coverage report --rcfile=/dev/null \
+    --data-file="$RUNNER_TEMP/studio-mitigation-browser.coverage" \
+    --include="*/tools/studio_mitigation_browser.py" --precision=2 --show-missing --fail-under=100
+python -m coverage combine --rcfile=/dev/null --append --keep \
+    --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" "$RUNNER_TEMP/studio-mitigation-browser.coverage"
 "${browser_coverage_command[@]}" tools/studio_browser_journey.py --scenario compiler_trace_inspector \
     --base-url http://127.0.0.1:4173/ --output "$RUNNER_TEMP/studio-compiler-journey.json"
 STUDIO_PREVIEW_DIR="$RUNNER_TEMP/studio-browser-preview" \

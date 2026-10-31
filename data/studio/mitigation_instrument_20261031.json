@@ -1,0 +1,1128 @@
+{
+  "artifact_id": "studio-mitigation-instrument-20261031",
+  "claim_boundary": "Readout correction and zero-noise extrapolation of stated fixture counts, beside measured hardware parity pairs, kept separate; corrected values are signed estimates, not probabilities, and no fixture is a device measurement",
+  "generated_by": "python -m scpn_quantum_control.studio.mitigation_instrument_artifact --write",
+  "hardware": {
+    "admitted": true,
+    "bundle_digest": "sha256:b38e00da7389bc0a82749bdeadbc206557311111c97b6dee7754c8e25108cfeb",
+    "bundle_schema": "studio.mitigation.v1",
+    "caveat": "Existing Phase 2 raw counts include selected readout-only calibration states, not all computational basis states; a literal 2^n x 2^n confusion-matrix inversion would require new calibration circuits.",
+    "full_confusion_matrix_available": false,
+    "method": "state_specific_parity_confusion_inversion",
+    "pairs": [
+      {
+        "comparison": "even_minus_odd",
+        "corrected_relative": -0.04808191156738652,
+        "dataset": "phase2_ag_n4",
+        "depth": 2,
+        "left_corrected": 0.07048698572628044,
+        "left_raw": 0.08369954427083333,
+        "n_left": 30,
+        "n_right": 30,
+        "raw_relative": 0.014900335504243052,
+        "right_corrected": 0.07404732254047322,
+        "right_raw": 0.082470703125
+      },
+      {
+        "comparison": "even_minus_odd",
+        "corrected_relative": 0.05222346624507934,
+        "dataset": "phase2_ag_n4",
+        "depth": 4,
+        "left_corrected": 0.1080352644836272,
+        "left_raw": 0.1200927734375,
+        "n_left": 30,
+        "n_right": 30,
+        "raw_relative": 0.08651155941687519,
+        "right_corrected": 0.10267330842673308,
+        "right_raw": 0.11053059895833334
+      },
+      {
+        "comparison": "even_minus_odd",
+        "corrected_relative": 0.017837226034165626,
+        "dataset": "phase2_ag_n4",
+        "depth": 6,
+        "left_corrected": 0.14194794290512175,
+        "left_raw": 0.15296223958333333,
+        "n_left": 30,
+        "n_right": 30,
+        "raw_relative": 0.04346860600677293,
+        "right_corrected": 0.13946035699460357,
+        "right_raw": 0.14659016927083332
+      },
+      {
+        "comparison": "even_minus_odd",
+        "corrected_relative": 0.005637642350404895,
+        "dataset": "phase2_ag_n4",
+        "depth": 8,
+        "left_corrected": 0.16302267002518891,
+        "left_raw": 0.173388671875,
+        "n_left": 30,
+        "n_right": 30,
+        "raw_relative": 0.02724073091943499,
+        "right_corrected": 0.16210875882108758,
+        "right_raw": 0.16879069010416667
+      },
+      {
+        "comparison": "even_minus_odd",
+        "corrected_relative": 0.027775342728675528,
+        "dataset": "phase2_ag_n4",
+        "depth": 10,
+        "left_corrected": 0.1863392107472712,
+        "left_raw": 0.19598795572916666,
+        "n_left": 30,
+        "n_right": 30,
+        "raw_relative": 0.04467965123845058,
+        "right_corrected": 0.18130344541303445,
+        "right_raw": 0.18760579427083332
+      },
+      {
+        "comparison": "even_minus_odd",
+        "corrected_relative": 0.03078159697115882,
+        "dataset": "phase2_ag_n4",
+        "depth": 14,
+        "left_corrected": 0.2305373635600336,
+        "left_raw": 0.23882649739583334,
+        "n_left": 30,
+        "n_right": 30,
+        "raw_relative": 0.04237408538751153,
+        "right_corrected": 0.22365296803652968,
+        "right_raw": 0.22911783854166667
+      },
+      {
+        "comparison": "even_minus_odd",
+        "corrected_relative": 0.023263501384499882,
+        "dataset": "phase2_ag_n4",
+        "depth": 20,
+        "left_corrected": 0.2823425692695214,
+        "left_raw": 0.2890380859375,
+        "n_left": 30,
+        "n_right": 30,
+        "raw_relative": 0.030972423802612628,
+        "right_corrected": 0.2759236197592362,
+        "right_raw": 0.2803548177083333
+      },
+      {
+        "comparison": "even_minus_odd",
+        "corrected_relative": -0.004224742743944046,
+        "dataset": "phase2_ag_n4",
+        "depth": 30,
+        "left_corrected": 0.34067170445004197,
+        "left_raw": 0.3455729166666667,
+        "n_left": 30,
+        "n_right": 30,
+        "raw_relative": 0.0009664568748085624,
+        "right_corrected": 0.3421170610211706,
+        "right_raw": 0.3452392578125
+      },
+      {
+        "comparison": "even_minus_odd",
+        "corrected_relative": -0.00230994911888575,
+        "dataset": "phase2_ag_n4",
+        "depth": 40,
+        "left_corrected": 0.38554156171284637,
+        "left_raw": 0.3890625,
+        "n_left": 30,
+        "n_right": 30,
+        "raw_relative": 0.0009840664977701092,
+        "right_corrected": 0.38643420506434206,
+        "right_raw": 0.3886800130208333
+      },
+      {
+        "comparison": "even_minus_odd",
+        "corrected_relative": -0.0030281579909209955,
+        "dataset": "phase2_ag_n4",
+        "depth": 50,
+        "left_corrected": 0.41903442485306464,
+        "left_raw": 0.42152506510416665,
+        "n_left": 30,
+        "n_right": 30,
+        "raw_relative": -0.000848749059624639,
+        "right_corrected": 0.42030718140307183,
+        "right_raw": 0.4218831380208333
+      },
+      {
+        "comparison": "original_E0_minus_O0",
+        "corrected_relative": -0.020243463226438257,
+        "dataset": "phase2_popcount",
+        "depth": 4,
+        "left_corrected": 0.07489504617968094,
+        "left_raw": 0.08797200520833333,
+        "n_left": 12,
+        "n_right": 12,
+        "raw_relative": 0.03717917965939063,
+        "right_corrected": 0.07644250726442507,
+        "right_raw": 0.08481852213541667
+      },
+      {
+        "comparison": "within_even_E0_minus_E1",
+        "corrected_relative": -0.10103425402369427,
+        "dataset": "phase2_popcount",
+        "depth": 4,
+        "left_corrected": 0.07489504617968094,
+        "left_raw": 0.08797200520833333,
+        "n_left": 12,
+        "n_right": 12,
+        "raw_relative": -0.06305525460455039,
+        "right_corrected": 0.083312458249833,
+        "right_raw": 0.09389241536458333
+      },
+      {
+        "comparison": "within_odd_O0_minus_O1",
+        "corrected_relative": 0.025483446509551425,
+        "dataset": "phase2_popcount",
+        "depth": 4,
+        "left_corrected": 0.07644250726442507,
+        "left_raw": 0.08481852213541667,
+        "n_left": 12,
+        "n_right": 12,
+        "raw_relative": 0.04068896655017486,
+        "right_corrected": 0.07454289732770746,
+        "right_raw": 0.08150227864583333
+      },
+      {
+        "comparison": "excitation_inversion_E0_minus_O3",
+        "corrected_relative": -0.26405160645860465,
+        "dataset": "phase2_popcount",
+        "depth": 4,
+        "left_corrected": 0.07489504617968094,
+        "left_raw": 0.08797200520833333,
+        "n_left": 12,
+        "n_right": 12,
+        "raw_relative": -0.26299642065791723,
+        "right_corrected": 0.1017667092379736,
+        "right_raw": 0.11936442057291667
+      },
+      {
+        "comparison": "original_E0_minus_O0",
+        "corrected_relative": 0.061226377929256205,
+        "dataset": "phase2_popcount",
+        "depth": 6,
+        "left_corrected": 0.10224601175482788,
+        "left_raw": 0.11448160807291667,
+        "n_left": 12,
+        "n_right": 12,
+        "raw_relative": 0.09730889235569432,
+        "right_corrected": 0.09634703196347032,
+        "right_raw": 0.10432942708333333
+      },
+      {
+        "comparison": "within_even_E0_minus_E1",
+        "corrected_relative": 0.07365036104850388,
+        "dataset": "phase2_popcount",
+        "depth": 6,
+        "left_corrected": 0.10224601175482788,
+        "left_raw": 0.11448160807291667,
+        "n_left": 12,
+        "n_right": 12,
+        "raw_relative": 0.0850366370998843,
+        "right_corrected": 0.09523213092852371,
+        "right_raw": 0.10550944010416667
+      },
+      {
+        "comparison": "within_odd_O0_minus_O1",
+        "corrected_relative": -0.00973930668157672,
+        "dataset": "phase2_popcount",
+        "depth": 6,
+        "left_corrected": 0.09634703196347032,
+        "left_raw": 0.10432942708333333,
+        "n_left": 12,
+        "n_right": 12,
+        "raw_relative": 0.004308656482569482,
+        "right_corrected": 0.0972946140481509,
+        "right_raw": 0.1038818359375
+      },
+      {
+        "comparison": "excitation_inversion_E0_minus_O3",
+        "corrected_relative": 0.019422247929077627,
+        "dataset": "phase2_popcount",
+        "depth": 6,
+        "left_corrected": 0.10224601175482788,
+        "left_raw": 0.11448160807291667,
+        "n_left": 12,
+        "n_right": 12,
+        "raw_relative": -0.02949292859606761,
+        "right_corrected": 0.10029799914857386,
+        "right_raw": 0.11796061197916667
+      },
+      {
+        "comparison": "original_E0_minus_O0",
+        "corrected_relative": 0.1474915541878554,
+        "dataset": "phase2_popcount",
+        "depth": 8,
+        "left_corrected": 0.12117968094038623,
+        "left_raw": 0.13283284505208334,
+        "n_left": 12,
+        "n_right": 12,
+        "raw_relative": 0.1713311804808038,
+        "right_corrected": 0.10560398505603985,
+        "right_raw": 0.1134033203125
+      },
+      {
+        "comparison": "within_even_E0_minus_E1",
+        "corrected_relative": 0.10930468866200302,
+        "dataset": "phase2_popcount",
+        "depth": 8,
+        "left_corrected": 0.12117968094038623,
+        "left_raw": 0.13283284505208334,
+        "n_left": 12,
+        "n_right": 12,
+        "raw_relative": 0.11473450571965182,
+        "right_corrected": 0.10923931195724783,
+        "right_raw": 0.11916097005208333
+      },
+      {
+        "comparison": "within_odd_O0_minus_O1",
+        "corrected_relative": -0.09231262764632625,
+        "dataset": "phase2_popcount",
+        "depth": 8,
+        "left_corrected": 0.10560398505603985,
+        "left_raw": 0.1134033203125,
+        "n_left": 12,
+        "n_right": 12,
+        "raw_relative": -0.07516177202588352,
+        "right_corrected": 0.1163440059568131,
+        "right_raw": 0.12261962890625
+      },
+      {
+        "comparison": "excitation_inversion_E0_minus_O3",
+        "corrected_relative": 0.0332162269653984,
+        "dataset": "phase2_popcount",
+        "depth": 8,
+        "left_corrected": 0.12117968094038623,
+        "left_raw": 0.13283284505208334,
+        "n_left": 12,
+        "n_right": 12,
+        "raw_relative": -0.010157671315948923,
+        "right_corrected": 0.11728395061728394,
+        "right_raw": 0.13419596354166666
+      },
+      {
+        "comparison": "original_E0_minus_O0",
+        "corrected_relative": 0.11887905745313126,
+        "dataset": "phase2_popcount",
+        "depth": 10,
+        "left_corrected": 0.12273299748110832,
+        "left_raw": 0.13433837890625,
+        "n_left": 12,
+        "n_right": 12,
+        "raw_relative": 0.144169121469416,
+        "right_corrected": 0.10969281859692818,
+        "right_raw": 0.11741129557291667
+      },
+      {
+        "comparison": "within_even_E0_minus_E1",
+        "corrected_relative": -0.01928248351375929,
+        "dataset": "phase2_popcount",
+        "depth": 10,
+        "left_corrected": 0.12273299748110832,
+        "left_raw": 0.13433837890625,
+        "n_left": 12,
+        "n_right": 12,
+        "raw_relative": -0.002417283577579763,
+        "right_corrected": 0.12514612558450233,
+        "right_raw": 0.13466389973958334
+      },
+      {
+        "comparison": "within_odd_O0_minus_O1",
+        "corrected_relative": -0.1064147609900111,
+        "dataset": "phase2_popcount",
+        "depth": 10,
+        "left_corrected": 0.10969281859692818,
+        "left_raw": 0.11741129557291667,
+        "n_left": 12,
+        "n_right": 12,
+        "raw_relative": -0.08931671137762351,
+        "right_corrected": 0.1227558533962108,
+        "right_raw": 0.12892659505208334
+      },
+      {
+        "comparison": "excitation_inversion_E0_minus_O3",
+        "corrected_relative": -0.05614728733631218,
+        "dataset": "phase2_popcount",
+        "depth": 10,
+        "left_corrected": 0.12273299748110832,
+        "left_raw": 0.13433837890625,
+        "n_left": 12,
+        "n_right": 12,
+        "raw_relative": -0.08227936066713001,
+        "right_corrected": 0.1300340570455513,
+        "right_raw": 0.14638264973958334
+      },
+      {
+        "comparison": "original_E0_minus_O0",
+        "corrected_relative": -0.053916993419156484,
+        "dataset": "phase2_popcount",
+        "depth": 14,
+        "left_corrected": 0.13969353484466834,
+        "left_raw": 0.15077718098958334,
+        "n_left": 12,
+        "n_right": 12,
+        "raw_relative": -0.024868421052631578,
+        "right_corrected": 0.14765462847654628,
+        "right_raw": 0.15462239583333334
+      },
+      {
+        "comparison": "within_even_E0_minus_E1",
+        "corrected_relative": -0.14513552718459474,
+        "dataset": "phase2_popcount",
+        "depth": 14,
+        "left_corrected": 0.13969353484466834,
+        "left_raw": 0.15077718098958334,
+        "n_left": 12,
+        "n_right": 12,
+        "raw_relative": -0.12316611452910553,
+        "right_corrected": 0.16341015364061456,
+        "right_raw": 0.17195638020833334
+      },
+      {
+        "comparison": "within_odd_O0_minus_O1",
+        "corrected_relative": -0.05981746640536551,
+        "dataset": "phase2_popcount",
+        "depth": 14,
+        "left_corrected": 0.14765462847654628,
+        "left_raw": 0.15462239583333334,
+        "n_left": 12,
+        "n_right": 12,
+        "raw_relative": -0.0494058786741713,
+        "right_corrected": 0.15704889550757012,
+        "right_raw": 0.16265869140625
+      },
+      {
+        "comparison": "excitation_inversion_E0_minus_O3",
+        "corrected_relative": -0.14846214259731166,
+        "dataset": "phase2_popcount",
+        "depth": 14,
+        "left_corrected": 0.13969353484466834,
+        "left_raw": 0.15077718098958334,
+        "n_left": 12,
+        "n_right": 12,
+        "raw_relative": -0.15717047651540994,
+        "right_corrected": 0.1640485312899106,
+        "right_raw": 0.17889404296875
+      },
+      {
+        "comparison": "original_E0_minus_O0",
+        "corrected_relative": -0.12009376769450167,
+        "dataset": "phase2_popcount",
+        "depth": 20,
+        "left_corrected": 0.18564231738035264,
+        "left_raw": 0.1953125,
+        "n_left": 12,
+        "n_right": 12,
+        "raw_relative": -0.0986761806403155,
+        "right_corrected": 0.2109796596097966,
+        "right_raw": 0.21669514973958334
+      },
+      {
+        "comparison": "within_even_E0_minus_E1",
+        "corrected_relative": -0.11415384283410575,
+        "dataset": "phase2_popcount",
+        "depth": 20,
+        "left_corrected": 0.18564231738035264,
+        "left_raw": 0.1953125,
+        "n_left": 12,
+        "n_right": 12,
+        "raw_relative": -0.09969051861577422,
+        "right_corrected": 0.20956496325985305,
+        "right_raw": 0.21693929036458334
+      },
+      {
+        "comparison": "within_odd_O0_minus_O1",
+        "corrected_relative": 0.16843580559157453,
+        "dataset": "phase2_popcount",
+        "depth": 20,
+        "left_corrected": 0.2109796596097966,
+        "left_raw": 0.21669514973958334,
+        "n_left": 12,
+        "n_right": 12,
+        "raw_relative": 0.16633815155497159,
+        "right_corrected": 0.18056589724497393,
+        "right_raw": 0.185791015625
+      },
+      {
+        "comparison": "excitation_inversion_E0_minus_O3",
+        "corrected_relative": -0.027380832995542864,
+        "dataset": "phase2_popcount",
+        "depth": 20,
+        "left_corrected": 0.18564231738035264,
+        "left_raw": 0.1953125,
+        "n_left": 12,
+        "n_right": 12,
+        "raw_relative": -0.04506117576842734,
+        "right_corrected": 0.1908684546615581,
+        "right_raw": 0.20452880859375
+      }
+    ],
+    "source": "data/phase2_readout_mitigation/phase2_readout_mitigation_summary_2026-05-05.json"
+  },
+  "label_order": "Labels read classical bits from highest to lowest, so the rightmost character is classical bit 0",
+  "readout": {
+    "cases": [
+      {
+        "calibration": {
+          "condition_number": 1.2382380115676308,
+          "matrix": [
+            [
+              0.9408,
+              0.0784,
+              0.048,
+              0.004
+            ],
+            [
+              0.0392,
+              0.9016,
+              0.002,
+              0.046
+            ],
+            [
+              0.0192,
+              0.0016,
+              0.912,
+              0.076
+            ],
+            [
+              0.0008,
+              0.0184,
+              0.038,
+              0.874
+            ]
+          ],
+          "shots_by_prepared_state": [
+            10000,
+            10000,
+            10000,
+            10000
+          ]
+        },
+        "case_id": "permuted-partial-map",
+        "corrected": {
+          "calibration_standard_error": [
+            0.002382493189446049,
+            0.0005182780114391208,
+            0.0032493900166729902,
+            0.002269553652117212
+          ],
+          "negative_labels": [
+            "11"
+          ],
+          "quasiprobabilities": [
+            0.002016129032258075,
+            0.006048387096774192,
+            0.9923020527859238,
+            -0.0003665689149560114
+          ],
+          "sampling_standard_error": [
+            0.0038712127257580567,
+            0.001542665052654445,
+            0.005340111835565954,
+            0.0035929151008282194
+          ],
+          "sum": 1.0,
+          "total_standard_error": [
+            0.004545609064341975,
+            0.0016273990173963579,
+            0.00625102630747989,
+            0.004249695601051684
+          ]
+        },
+        "labels": [
+          "00",
+          "01",
+          "10",
+          "11"
+        ],
+        "measurement_map": [
+          {
+            "classical_bit": 0,
+            "qubit": 2
+          },
+          {
+            "classical_bit": 1,
+            "qubit": 0
+          }
+        ],
+        "raw_counts": [
+          200,
+          30,
+          3620,
+          150
+        ],
+        "raw_frequencies": [
+          0.05,
+          0.0075,
+          0.905,
+          0.0375
+        ],
+        "readout": [
+          {
+            "one_to_zero": 0.05,
+            "qubit": 0,
+            "zero_to_one": 0.02
+          },
+          {
+            "one_to_zero": 0.08,
+            "qubit": 2,
+            "zero_to_one": 0.04
+          }
+        ],
+        "shots": 4000,
+        "status": "corrected",
+        "title": "Classical bit 0 reads qubit 2 and bit 1 reads qubit 0; qubit 1 is not measured",
+        "unmeasured_qubits": [
+          1
+        ]
+      },
+      {
+        "calibration": {
+          "condition_number": 1.0,
+          "matrix": [
+            [
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "shots_by_prepared_state": [
+            1000,
+            1000,
+            1000,
+            1000
+          ]
+        },
+        "case_id": "identity-calibration",
+        "corrected": {
+          "calibration_standard_error": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "negative_labels": [],
+          "quasiprobabilities": [
+            0.6,
+            0.0,
+            0.0,
+            0.4
+          ],
+          "sampling_standard_error": [
+            0.015491933384829668,
+            0.0,
+            0.0,
+            0.015491933384829668
+          ],
+          "sum": 1.0,
+          "total_standard_error": [
+            0.015491933384829668,
+            0.0,
+            0.0,
+            0.015491933384829668
+          ]
+        },
+        "labels": [
+          "00",
+          "01",
+          "10",
+          "11"
+        ],
+        "measurement_map": [
+          {
+            "classical_bit": 0,
+            "qubit": 0
+          },
+          {
+            "classical_bit": 1,
+            "qubit": 1
+          }
+        ],
+        "raw_counts": [
+          600,
+          0,
+          0,
+          400
+        ],
+        "raw_frequencies": [
+          0.6,
+          0.0,
+          0.0,
+          0.4
+        ],
+        "readout": [
+          {
+            "one_to_zero": 0.0,
+            "qubit": 0,
+            "zero_to_one": 0.0
+          },
+          {
+            "one_to_zero": 0.0,
+            "qubit": 1,
+            "zero_to_one": 0.0
+          }
+        ],
+        "shots": 1000,
+        "status": "corrected",
+        "title": "A calibration that never flips leaves the observed frequencies unchanged",
+        "unmeasured_qubits": []
+      },
+      {
+        "calibration": {
+          "condition_number": 1.5624999999999998,
+          "matrix": [
+            [
+              0.81,
+              0.09,
+              0.09,
+              0.01
+            ],
+            [
+              0.09,
+              0.81,
+              0.01,
+              0.09
+            ],
+            [
+              0.09,
+              0.01,
+              0.81,
+              0.09
+            ],
+            [
+              0.01,
+              0.09,
+              0.09,
+              0.81
+            ]
+          ],
+          "shots_by_prepared_state": [
+            10000,
+            10000,
+            10000,
+            10000
+          ]
+        },
+        "case_id": "negative-quasi-probabilities",
+        "corrected": {
+          "calibration_standard_error": [
+            0.006664199380486265,
+            0.004883149304790253,
+            0.004883149304790253,
+            0.001810729378696202
+          ],
+          "negative_labels": [
+            "01",
+            "10"
+          ],
+          "quasiprobabilities": [
+            1.2093749999999996,
+            -0.10937500000000001,
+            -0.10937500000000001,
+            0.009375000000000001
+          ],
+          "sampling_standard_error": [
+            0.008714212528966689,
+            0.00625,
+            0.00625,
+            0.0009682458365518543
+          ],
+          "sum": 0.9999999999999997,
+          "total_standard_error": [
+            0.010970371615532153,
+            0.00793143411577462,
+            0.00793143411577462,
+            0.0020533486997764247
+          ]
+        },
+        "labels": [
+          "00",
+          "01",
+          "10",
+          "11"
+        ],
+        "measurement_map": [
+          {
+            "classical_bit": 0,
+            "qubit": 0
+          },
+          {
+            "classical_bit": 1,
+            "qubit": 1
+          }
+        ],
+        "raw_counts": [
+          960,
+          20,
+          20,
+          0
+        ],
+        "raw_frequencies": [
+          0.96,
+          0.02,
+          0.02,
+          0.0
+        ],
+        "readout": [
+          {
+            "one_to_zero": 0.1,
+            "qubit": 0,
+            "zero_to_one": 0.1
+          },
+          {
+            "one_to_zero": 0.1,
+            "qubit": 1,
+            "zero_to_one": 0.1
+          }
+        ],
+        "shots": 1000,
+        "status": "corrected",
+        "title": "Correcting counts near one basis state gives negative signed values",
+        "unmeasured_qubits": []
+      },
+      {
+        "calibration": {
+          "condition_number": 100.00000000000028,
+          "matrix": [
+            [
+              0.3025,
+              0.2475,
+              0.2475,
+              0.2025
+            ],
+            [
+              0.2475,
+              0.3025,
+              0.2025,
+              0.2475
+            ],
+            [
+              0.2475,
+              0.2025,
+              0.3025,
+              0.2475
+            ],
+            [
+              0.2025,
+              0.2475,
+              0.2475,
+              0.3025
+            ]
+          ],
+          "shots_by_prepared_state": [
+            10000,
+            10000,
+            10000,
+            10000
+          ]
+        },
+        "case_id": "ill-conditioned",
+        "corrected": {
+          "calibration_standard_error": [
+            12.63809698144855,
+            12.628203368353667,
+            12.628203368353667,
+            12.618301997990809
+          ],
+          "negative_labels": [
+            "01",
+            "10"
+          ],
+          "quasiprobabilities": [
+            26.249999999999957,
+            -24.749999999999957,
+            -24.749999999999957,
+            24.24999999999995
+          ],
+          "sampling_standard_error": [
+            0.1549193338482969,
+            1.5291120701489073e-16,
+            1.5291120701489073e-16,
+            0.15491933384829656
+          ],
+          "sum": 0.9999999999999929,
+          "total_standard_error": [
+            12.63904645582486,
+            12.628203368353667,
+            12.628203368353667,
+            12.619252961744559
+          ]
+        },
+        "labels": [
+          "00",
+          "01",
+          "10",
+          "11"
+        ],
+        "measurement_map": [
+          {
+            "classical_bit": 0,
+            "qubit": 0
+          },
+          {
+            "classical_bit": 1,
+            "qubit": 1
+          }
+        ],
+        "raw_counts": [
+          600,
+          0,
+          0,
+          400
+        ],
+        "raw_frequencies": [
+          0.6,
+          0.0,
+          0.0,
+          0.4
+        ],
+        "readout": [
+          {
+            "one_to_zero": 0.45,
+            "qubit": 0,
+            "zero_to_one": 0.45
+          },
+          {
+            "one_to_zero": 0.45,
+            "qubit": 1,
+            "zero_to_one": 0.45
+          }
+        ],
+        "shots": 1000,
+        "status": "corrected",
+        "title": "Flip probabilities near one half amplify both errors through the inverse",
+        "unmeasured_qubits": []
+      },
+      {
+        "calibration": {
+          "condition_number": 1.0186864308903608e+80,
+          "matrix": [
+            [
+              0.25,
+              0.25,
+              0.25,
+              0.25
+            ],
+            [
+              0.25,
+              0.25,
+              0.25,
+              0.25
+            ],
+            [
+              0.25,
+              0.25,
+              0.25,
+              0.25
+            ],
+            [
+              0.25,
+              0.25,
+              0.25,
+              0.25
+            ]
+          ],
+          "shots_by_prepared_state": [
+            10000,
+            10000,
+            10000,
+            10000
+          ]
+        },
+        "case_id": "singular-calibration",
+        "labels": [
+          "00",
+          "01",
+          "10",
+          "11"
+        ],
+        "measurement_map": [
+          {
+            "classical_bit": 0,
+            "qubit": 0
+          },
+          {
+            "classical_bit": 1,
+            "qubit": 1
+          }
+        ],
+        "raw_counts": [
+          600,
+          0,
+          0,
+          400
+        ],
+        "raw_frequencies": [
+          0.6,
+          0.0,
+          0.0,
+          0.4
+        ],
+        "readout": [
+          {
+            "one_to_zero": 0.5,
+            "qubit": 0,
+            "zero_to_one": 0.5
+          },
+          {
+            "one_to_zero": 0.5,
+            "qubit": 1,
+            "zero_to_one": 0.5
+          }
+        ],
+        "reason": "calibration condition exceeds the admitted ceiling",
+        "shots": 1000,
+        "status": "refused",
+        "title": "A calibration that reads every state at random cannot be inverted",
+        "unmeasured_qubits": []
+      }
+    ],
+    "claim_boundary": "Stated calibration and measurement counts, not device measurements; standard errors are first-order delta estimates at the empirical frequencies and exclude calibration drift, preparation bias and model error",
+    "method": "full measured-basis inverse without clipping"
+  },
+  "schema": "scpn_qc_studio_mitigation_instrument_v1",
+  "zne": {
+    "calibration": {
+      "condition_number": 1.1952549103202235,
+      "matrix": [
+        [
+          0.9506,
+          0.0485,
+          0.0588,
+          0.003
+        ],
+        [
+          0.0194,
+          0.9215,
+          0.0012,
+          0.057
+        ],
+        [
+          0.0294,
+          0.0015,
+          0.9212,
+          0.047
+        ],
+        [
+          0.0006,
+          0.0285,
+          0.0188,
+          0.893
+        ]
+      ],
+      "shots_by_prepared_state": [
+        10000,
+        10000,
+        10000,
+        10000
+      ]
+    },
+    "claim_boundary": "Stated calibration and measurement counts, not device measurements; standard errors are first-order delta estimates at the empirical frequencies and exclude calibration drift, preparation bias and model error",
+    "extrapolation": {
+      "coverage": 0.95,
+      "fit_residual": 0.005545231496207351,
+      "high": 1.068693117368894,
+      "low": 0.9819429669946318,
+      "method": "gls-delta",
+      "order": 1,
+      "standard_error": 0.022130547055592933,
+      "zero_noise_estimate": 1.025318042181763
+    },
+    "labels": [
+      "00",
+      "01",
+      "10",
+      "11"
+    ],
+    "measurement_map": [
+      {
+        "classical_bit": 0,
+        "qubit": 0
+      },
+      {
+        "classical_bit": 1,
+        "qubit": 1
+      }
+    ],
+    "observable": "Z0 Z1 parity",
+    "observable_weights": [
+      1.0,
+      -1.0,
+      -1.0,
+      1.0
+    ],
+    "observation_covariance": [
+      [
+        0.0001955874169884704,
+        1.510195463082969e-05,
+        1.3540170299668792e-05
+      ],
+      [
+        1.510195463082969e-05,
+        0.0002690435739318634,
+        1.265151083908183e-05
+      ],
+      [
+        1.3540170299668792e-05,
+        1.265151083908183e-05,
+        0.00031596621738535683
+      ]
+    ],
+    "points": [
+      {
+        "corrected_expectation": 0.82642089093702,
+        "corrected_standard_error": 0.013985257129866093,
+        "noise_scale": 1.0,
+        "raw_counts": [
+          1750,
+          310,
+          290,
+          1650
+        ],
+        "raw_expectation": 0.7,
+        "shots": 4000
+      },
+      {
+        "corrected_expectation": 0.6140848398912915,
+        "corrected_standard_error": 0.01640254778782441,
+        "noise_scale": 2.0,
+        "raw_counts": [
+          1560,
+          490,
+          470,
+          1480
+        ],
+        "raw_expectation": 0.52,
+        "shots": 4000
+      },
+      {
+        "corrected_expectation": 0.425026586316909,
+        "corrected_standard_error": 0.01777543859895887,
+        "noise_scale": 3.0,
+        "raw_counts": [
+          1400,
+          650,
+          630,
+          1320
+        ],
+        "raw_expectation": 0.36,
+        "shots": 4000
+      }
+    ]
+  }
+}

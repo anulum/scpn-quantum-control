@@ -10,6 +10,8 @@ import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import { GradientDebugger } from "./GradientDebugger";
 import { gradientUnits } from "./gradientDebugger";
+import { MitigationInspector } from "./MitigationInspector";
+import { mitigationInstrument } from "./mitigationInstrument";
 import { QecInspector } from "./QecInspector";
 import { qecInstrument } from "./qecInstrument";
 import { ResultLoader } from "./ResultLoader";
@@ -28,6 +30,7 @@ export default function ResultsView({
   focusInstrument = false,
   focusGradientDebugger = false,
   focusQecInstrument = false,
+  focusMitigationInstrument = false,
   plan = null,
   outcome = null,
   editors,
@@ -38,12 +41,15 @@ export default function ResultsView({
   focusGradientDebugger?: boolean;
   /** Focus the QEC and future-resource instrument after this lazy module has mounted. */
   focusQecInstrument?: boolean;
+  /** Focus the mitigation and readout instrument after this lazy module has mounted. */
+  focusMitigationInstrument?: boolean;
   /** Registered comparison and inspection controls supplied by the shell slot. */
   editors?: ReactNode;
 }) {
   const target = useRef<HTMLDivElement>(null);
   const debugger_ = useRef<HTMLDivElement>(null);
   const qec = useRef<HTMLDivElement>(null);
+  const mitigation = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (focusInstrument && target.current !== null) target.current.focus();
   }, [focusInstrument]);
@@ -53,6 +59,9 @@ export default function ResultsView({
   useEffect(() => {
     if (focusQecInstrument && qec.current !== null) qec.current.focus();
   }, [focusQecInstrument]);
+  useEffect(() => {
+    if (focusMitigationInstrument && mitigation.current !== null) mitigation.current.focus();
+  }, [focusMitigationInstrument]);
   return (
     <article className="qsp-panel">
       <h3>Analyse</h3>
@@ -77,6 +86,9 @@ export default function ResultsView({
       </div>
       <div id="/results/qec-resources" tabIndex={-1} ref={qec}>
         <QecInspector instrument={qecInstrument} />
+      </div>
+      <div id="/results/mitigation" tabIndex={-1} ref={mitigation}>
+        <MitigationInspector instrument={mitigationInstrument} />
       </div>
       <EvidenceViewer />
       {supportMatrix.ok ? (

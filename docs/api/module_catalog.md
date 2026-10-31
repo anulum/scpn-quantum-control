@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **848 modules** across **41 package families**
-- **4600 documented public module-level symbols**
+- **850 modules** across **41 package families**
+- **4603 documented public module-level symbols**
 - **875 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -5341,6 +5341,14 @@ Federate the committed native-speedup benchmark rows as a schema-B bundle.
 
 **Functions:** `build_benchmark_databank_bundle()`, `main()`
 
+### `scpn_quantum_control.studio.committed_data`
+
+Write, print and check the committed JSON data of Studio instruments.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/committed_data.py) · Public symbols: **3**
+
+**Functions:** `differences()`, `serialise()`, `run_committed_data_cli()`
+
 ### `scpn_quantum_control.studio.compiler_trace`
 
 Project actual native pass evidence without replacing its numerical authority.
@@ -5487,9 +5495,9 @@ The QUANTUM studio's federation document for STUDIO/Hub ingestion.
 
 Build, write and check the committed units the Studio gradient debugger replays.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/gradient_debugger_artifact.py) · Public symbols: **4**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/gradient_debugger_artifact.py) · Public symbols: **2**
 
-**Functions:** `build_gradient_debugger_artifact()`, `differences()`, `serialise()`, `main()`
+**Functions:** `build_gradient_debugger_artifact()`, `main()`
 
 ### `scpn_quantum_control.studio.kuramoto_reference`
 
@@ -5524,6 +5532,16 @@ Adapt native retained-population comparisons into lossless Studio documents.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/method_comparison_artifact.py) · Public symbols: **2**
 
 **Functions:** `read_method_comparison_population()`, `export_method_comparison()`
+
+### `scpn_quantum_control.studio.mitigation_instrument_artifact`
+
+Build, write and check the data the Studio mitigation instrument shows.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/mitigation_instrument_artifact.py) · Public symbols: **4**
+
+**Classes:** `QubitReadout`, `ReadoutCase`
+
+**Functions:** `build_mitigation_instrument_artifact()`, `main()`
 
 ### `scpn_quantum_control.studio.operator_review_dossier`
 
@@ -5587,9 +5605,9 @@ Federate the committed offline QEC-readiness decision as a schema-B bundle.
 
 Build, write and check the data the Studio QEC instrument shows.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/qec_resource_instrument_artifact.py) · Public symbols: **4**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/qec_resource_instrument_artifact.py) · Public symbols: **2**
 
-**Functions:** `build_qec_instrument_artifact()`, `differences()`, `serialise()`, `main()`
+**Functions:** `build_qec_instrument_artifact()`, `main()`
 
 ### `scpn_quantum_control.studio.qpu_result_pack`
 

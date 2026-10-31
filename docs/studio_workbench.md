@@ -60,7 +60,7 @@ Hash addresses work on static hosting without server rewrite rules:
 | Workspace | `#/workspace` (also the empty address) |
 | Model | `#/build` or `#/build/compile-recompute` |
 | Run | `#/experiments` |
-| Analyse | `#/results`, `#/results/program-ad-replay`, `#/results/gradient-debugger` or `#/results/qec-resources` |
+| Analyse | `#/results`, `#/results/program-ad-replay`, `#/results/gradient-debugger`, `#/results/qec-resources` or `#/results/mitigation` |
 | Compare | `#/compare` |
 | Evidence | `#/evidence` |
 | Atlas | `#/atlas` |
@@ -764,6 +764,57 @@ interval inconsistent with its counts refuses the whole instrument.
 - Regenerate it with
   `python -m scpn_quantum_control.studio.qec_resource_instrument_artifact --write`.
 - `--check` compares it with a fresh build. It compares numbers within
+  `|actual − reference| ≤ 1e-10 + 1e-8·|reference|` and everything else
+  exactly.
+
+## Mitigation and readout
+
+Open **Analyse**, or search for **Open mitigation and readout**, to reach the
+instrument at `#/results/mitigation`. It keeps three different things in
+separate tabs. The browser chooses among source values and computes none of
+them. Labels read classical bits from highest to lowest, so the rightmost
+character is classical bit 0.
+
+- **Readout correction:** stated calibration and measurement counts corrected
+  by `mitigate_counts_with_uncertainty`, which inverts the full measured-basis
+  calibration without clipping. These counts are fixtures, not device
+  measurements.
+  - Each case shows its measurement map (for example `c0←q2, c1←q0`, with
+    qubit 1 not measured), the raw counts and frequencies, the calibration
+    matrix, the calibration and measurement shots and the condition number.
+  - Corrected values are signed. Negative ones are marked and named, and the
+    sum is stated; nothing is clipped or renormalised into a probability.
+  - Each value has a standard error from the measurement counts and one from
+    the calibration counts, shown together and separately.
+  - The plot draws raw frequencies beside the corrected values, with a zero line
+    and error bars, in the case's label order.
+  - **Download CSV** exports the raw and corrected columns, headed by the
+    measurement map and the case status.
+  - The five cases are a permuted, partial map; an identity calibration, which
+    leaves the frequencies unchanged; counts that correct to negative values;
+    an ill-conditioned calibration (condition number 100), whose corrected
+    values reach 26 and whose standard errors are about half their size; and a
+    singular calibration, which the source refuses.
+    A refused case keeps its raw counts and states the reason.
+- **Zero-noise extrapolation:** counts at noise scales 1, 2 and 3, corrected
+  with one shared calibration and extrapolated linearly by
+  `zne_extrapolate_with_readout_uncertainty`. Each scale shows the raw and the
+  corrected Z0 Z1 parity with its standard error, and the extrapolation shows
+  the zero-noise estimate, its 95 % interval, the method (`gls-delta`) and the
+  fit residual. The shared calibration's correlations enter the interval.
+- **Hardware pairs:** the measured raw-versus-corrected parity pairs of the
+  committed readout-mitigation summary, admitted by the federation gate, with
+  the summary's own method and caveat: its correction is a state-specific
+  parity inversion, not a full confusion-matrix inversion.
+
+The data lives in `data/studio/mitigation_instrument_20261031.json`. Malformed
+data, counts that do not add up to their shots, a label list that misses or
+repeats a label, negative values that are not all named, or a hardware section
+that claims a full confusion matrix refuses the whole instrument.
+
+- Regenerate it with
+  `python -m scpn_quantum_control.studio.mitigation_instrument_artifact --write`.
+- `--check` compares it with a fresh build, numbers within
   `|actual − reference| ≤ 1e-10 + 1e-8·|reference|` and everything else
   exactly.
 

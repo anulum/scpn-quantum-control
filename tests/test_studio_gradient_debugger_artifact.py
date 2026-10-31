@@ -115,25 +115,6 @@ def test_build_refuses_a_missing_reference_case(root: Path) -> None:
         artifact.build_gradient_debugger_artifact(root)
 
 
-@pytest.mark.parametrize(
-    ("committed", "fresh", "expected"),
-    [
-        (1.0, 1.0 + 1e-12, []),
-        (1.0, 1.0 + 1e-6, ["$: 1.0 is outside the budget of 1.000001"]),
-        (True, 1.0, ["$: True is outside the budget of 1.0"]),
-        ({"a": 1}, {"b": 1}, ["$: keys ['a'] != ['b']"]),
-        ([1, 2], [1], ["$: length 2 != 1"]),
-        ({"a": [1.0, "x"]}, {"a": [1.0, "y"]}, ["$.a[1]: 'x' != 'y'"]),
-        ("same", "same", []),
-    ],
-)
-def test_differences_tolerate_float_budget_only(
-    committed: object, fresh: object, expected: list[str]
-) -> None:
-    """Floats agree within the frozen budget; everything else must be equal."""
-    assert artifact.differences(committed, fresh) == expected
-
-
 def test_main_prints_writes_and_checks(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     """The CLI prints, writes, accepts a current file and reports drift or unreadable files."""
     target = tmp_path / "units.json"

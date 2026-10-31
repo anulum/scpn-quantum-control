@@ -8,6 +8,7 @@
 
 import committedUnitsJson from "../../../../data/studio/gradient_debugger_units_20261030.json";
 import type { GradientPlanExplanationRowView, Loaded } from "../../shared/browser/data";
+import { finite, list, numbers, record, text } from "./jsonFields";
 
 /** Schema of the committed gradient-debugger units. */
 export const GRADIENT_UNITS_SCHEMA = "scpn_qc_studio_gradient_debugger_units_v1";
@@ -126,34 +127,6 @@ export interface GradientUnits {
   readonly claimBoundary: string;
   /** Units in artefact order. */
   readonly units: readonly GradientUnit[];
-}
-
-function record(value: unknown, field: string): Record<string, unknown> {
-  if (typeof value !== "object" || value === null || Array.isArray(value))
-    throw new Error(`${field} must be an object`);
-  return value as Record<string, unknown>;
-}
-
-function text(value: unknown, field: string): string {
-  if (typeof value !== "string" || value.length === 0)
-    throw new Error(`${field} must be a non-empty string`);
-  return value;
-}
-
-function finite(value: unknown, field: string): number {
-  if (typeof value !== "number" || !Number.isFinite(value))
-    throw new Error(`${field} must be a finite number`);
-  return value;
-}
-
-function numbers(value: unknown, field: string): number[] {
-  if (!Array.isArray(value)) throw new Error(`${field} must be a list`);
-  return value.map((item, index) => finite(item, `${field}[${index}]`));
-}
-
-function list(value: unknown, field: string): unknown[] {
-  if (!Array.isArray(value)) throw new Error(`${field} must be a list`);
-  return value;
 }
 
 function steps(effectIr: unknown, field: string): ProgramStep[] {

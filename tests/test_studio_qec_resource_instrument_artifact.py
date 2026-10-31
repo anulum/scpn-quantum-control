@@ -133,36 +133,6 @@ def test_build_uses_the_given_root(root: Path, payload: dict[str, Any]) -> None:
         artifact.build_qec_instrument_artifact(root)
 
 
-@pytest.mark.parametrize(
-    ("committed", "fresh", "expected"),
-    [
-        (0.1 + 1e-12, 0.1, []),
-        (0.2, 0.1, ["$: 0.2 is outside the budget of 0.1"]),
-        (True, 1.0, ["$: True is outside the budget of 1.0"]),
-        ({"a": 1}, {"b": 1}, ["$: keys ['a'] != ['b']"]),
-        ([1], [1, 2], ["$: length 1 != 2"]),
-        ({"a": [1, "x"]}, {"a": [1, "y"]}, ["$.a[1]: 'x' != 'y'"]),
-    ],
-    ids=["within-budget", "outside-budget", "bool-for-float", "keys", "length", "nested"],
-)
-def test_differences_name_every_departure(
-    committed: object, fresh: object, expected: list[str]
-) -> None:
-    """Floats compare within the frozen budget; everything else exactly.
-
-    Parameters
-    ----------
-    committed
-        Committed value.
-    fresh
-        Freshly built value.
-    expected
-        Messages the comparison must produce.
-
-    """
-    assert artifact.differences(committed, fresh) == expected
-
-
 def test_main_prints_writes_and_checks(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],

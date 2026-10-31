@@ -8,6 +8,7 @@
 
 import committedInstrumentJson from "../../../../data/studio/qec_resource_instrument_20261031.json";
 import type { Loaded } from "../../shared/browser/data";
+import { count, finite, flag, list, record, text, texts } from "./jsonFields";
 
 /** Schema of the committed instrument data. */
 export const QEC_INSTRUMENT_SCHEMA = "scpn_qc_studio_qec_resource_instrument_v1";
@@ -186,45 +187,6 @@ export interface QecInstrument {
   readonly readiness: Readiness;
   /** Future resources section. */
   readonly resources: Resources;
-}
-
-function record(value: unknown, field: string): Record<string, unknown> {
-  if (typeof value !== "object" || value === null || Array.isArray(value))
-    throw new Error(`${field} must be an object`);
-  return value as Record<string, unknown>;
-}
-
-function text(value: unknown, field: string): string {
-  if (typeof value !== "string" || value.length === 0)
-    throw new Error(`${field} must be a non-empty string`);
-  return value;
-}
-
-function finite(value: unknown, field: string): number {
-  if (typeof value !== "number" || !Number.isFinite(value))
-    throw new Error(`${field} must be a finite number`);
-  return value;
-}
-
-function count(value: unknown, field: string): number {
-  const number = finite(value, field);
-  if (!Number.isInteger(number) || number < 0)
-    throw new Error(`${field} must be a non-negative integer`);
-  return number;
-}
-
-function flag(value: unknown, field: string): boolean {
-  if (typeof value !== "boolean") throw new Error(`${field} must be true or false`);
-  return value;
-}
-
-function list(value: unknown, field: string): unknown[] {
-  if (!Array.isArray(value)) throw new Error(`${field} must be a list`);
-  return value;
-}
-
-function texts(value: unknown, field: string): string[] {
-  return list(value, field).map((item, index) => text(item, `${field}[${index}]`));
 }
 
 function interval(row: Record<string, unknown>, field: string) {

@@ -77,6 +77,21 @@ it("focuses the gradient debugger when its deep link opens Analyse", async () =>
   expect(screen.getByRole("region", { name: "Gradient debugger" })).toBeTruthy();
 });
 
+it.each([
+  ["/results/qec-resources", "QEC and future resources"],
+  ["/results/mitigation", "Mitigation and readout"],
+])("focuses %s when its deep link opens Analyse", async (path, region) => {
+  window.history.replaceState(null, "", `#${path}`);
+  render(<Workbench>{(_context, editors) => editors}</Workbench>);
+  await screen.findByRole("heading", { name: "Analyse" }, { timeout: 5000 });
+  // The heading can appear before the lazy view's passive focus effect has run.
+  await act(async () => {
+    await vi.dynamicImportSettled();
+  });
+  expect(document.activeElement?.id).toBe(path);
+  expect(screen.getByRole("region", { name: region })).toBeTruthy();
+});
+
 it("renders every missing source explicitly while retaining the original evidence input", async () => {
   faults.data = true;
   faults.replay = true;

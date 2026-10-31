@@ -24,11 +24,9 @@ recomputes the program through the WASM kernel.
 
 from __future__ import annotations
 
-import argparse
 import itertools
 import json
 import math
-import sys
 from collections.abc import Callable, Mapping, Sequence
 from hashlib import sha256
 from pathlib import Path
@@ -39,6 +37,7 @@ from numpy.typing import NDArray
 
 from ..differentiable_parameter_contracts import Parameter
 from ..differentiable_parameter_shift import parameter_shift_gradient
+from .committed_data import differences, run_committed_data_cli, serialise
 from .executive import ExecutiveRequest, run_action
 from .executive_differentiate import (
     DIFFERENTIATE_CLAIM_BOUNDARY,
@@ -245,72 +244,6 @@ def build_gradient_debugger_artifact(root: Path = REPO_ROOT) -> dict[str, object
     }
 
 
-def _within_budget(actual: float, reference: float) -> bool:
-    """Frozen float64 analytic budget: ``|actual - reference| <= 1e-10 + 1e-8 |reference|``."""
-    return abs(actual - reference) <= 1e-10 + 1e-8 * abs(reference)
-
-
-def differences(committed: object, fresh: object, path: str = "$") -> list[str]:
-    """List where a committed payload departs from a fresh build.
-
-    Floats agree within the frozen float64 budget, since ``sin`` and ``cos``
-    come from the platform math library; every other value must be equal.
-
-    Parameters
-    ----------
-    committed
-        Decoded committed payload.
-    fresh
-        Freshly built payload.
-    path
-        Location prefix used in the messages.
-
-    Returns
-    -------
-    list[str]
-        One message per difference, empty when the payloads agree.
-
-    """
-    if isinstance(fresh, float) and isinstance(committed, (int, float)):
-        if isinstance(committed, bool) or not _within_budget(float(committed), fresh):
-            return [f"{path}: {committed!r} is outside the budget of {fresh!r}"]
-        return []
-    if isinstance(fresh, dict) and isinstance(committed, dict):
-        if set(fresh) != set(committed):
-            return [f"{path}: keys {sorted(committed)} != {sorted(fresh)}"]
-        return [
-            message
-            for key in sorted(fresh)
-            for message in differences(committed[key], fresh[key], f"{path}.{key}")
-        ]
-    if isinstance(fresh, list) and isinstance(committed, list):
-        if len(fresh) != len(committed):
-            return [f"{path}: length {len(committed)} != {len(fresh)}"]
-        return [
-            message
-            for index, (left, right) in enumerate(zip(committed, fresh, strict=True))
-            for message in differences(left, right, f"{path}[{index}]")
-        ]
-    return [] if committed == fresh else [f"{path}: {committed!r} != {fresh!r}"]
-
-
-def serialise(payload: Mapping[str, object]) -> str:
-    """Serialise a payload exactly as it is committed.
-
-    Parameters
-    ----------
-    payload
-        Artefact payload.
-
-    Returns
-    -------
-    str
-        Sorted, indented JSON with a trailing newline.
-
-    """
-    return json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
-
-
 def main(argv: Sequence[str] | None = None) -> int:
     """Print, write or check the committed gradient-debugger units.
 
@@ -326,39 +259,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         build, ``2`` when it cannot be read.
 
     """
-    parser = argparse.ArgumentParser(description=__doc__)
-    mode = parser.add_mutually_exclusive_group()
-    mode.add_argument("--write", action="store_true", help="write the committed artefact")
-    mode.add_argument("--check", action="store_true", help="compare it with a fresh build")
-    parser.add_argument(
-        "--json-path",
-        type=Path,
-        default=REPO_ROOT / DEFAULT_GRADIENT_DEBUGGER_JSON_PATH,
-        help="committed JSON artefact path",
+    return run_committed_data_cli(
+        argv,
+        build=build_gradient_debugger_artifact,
+        default_path=REPO_ROOT / DEFAULT_GRADIENT_DEBUGGER_JSON_PATH,
+        label="gradient-debugger units",
+        description=__doc__,
     )
-    args = parser.parse_args(list(argv) if argv is not None else None)
-    payload = build_gradient_debugger_artifact()
-    fresh = serialise(payload)
-    if args.check:
-        try:
-            committed = json.loads(args.json_path.read_text(encoding="utf-8"))
-        except (OSError, UnicodeError, ValueError) as exc:
-            print(f"gradient-debugger units are unreadable: {exc}", file=sys.stderr)
-            return 2
-        found = differences(committed, json.loads(fresh))
-        if not found:
-            print("gradient-debugger units: current")
-            return 0
-        for message in found:
-            print(f"gradient-debugger units drift: {message}", file=sys.stderr)
-        return 1
-    if args.write:
-        args.json_path.parent.mkdir(parents=True, exist_ok=True)
-        args.json_path.write_text(fresh, encoding="utf-8")
-        print(f"wrote {args.json_path}")
-        return 0
-    print(fresh, end="")
-    return 0
 
 
 __all__ = [
