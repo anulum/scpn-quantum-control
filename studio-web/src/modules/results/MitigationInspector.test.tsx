@@ -147,6 +147,9 @@ describe("mitigation and readout instrument", () => {
     const csv = csvOf(screen.getByRole("link", { name: "Download CSV" })).split("\n");
     expect(csv[2]).toBe("# status,refused: calibration condition exceeds the admitted ceiling");
     expect(csv[4]).toBe("00,600,0.6,,,,");
+    expect(screen.getByLabelText("Shot accounting").textContent).toContain(
+      "not reported: the source refused the calibration",
+    );
   });
 
   it("shows the extrapolation with raw values beside corrected ones", () => {
@@ -359,6 +362,17 @@ describe("mitigation and readout instrument", () => {
         "calibration shots",
         (p) => (((first(p)["calibration"] as Json)["shots_by_prepared_state"] as number[])[0] = 0),
         "shots must all be positive",
+      ],
+      [
+        "refused calibration with a condition number",
+        (p) =>
+          ((caseOf(p, "singular-calibration")["calibration"] as Json)["condition_number"] = 1e80),
+        "must be reported exactly when the calibration is admitted",
+      ],
+      [
+        "admitted calibration without a condition number",
+        (p) => ((first(p)["calibration"] as Json)["condition_number"] = null),
+        "must be reported exactly when the calibration is admitted",
       ],
       [
         "condition number",

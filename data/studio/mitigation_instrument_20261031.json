@@ -910,7 +910,7 @@
       },
       {
         "calibration": {
-          "condition_number": 1.0186864308903608e+80,
+          "condition_number": null,
           "matrix": [
             [
               0.25,

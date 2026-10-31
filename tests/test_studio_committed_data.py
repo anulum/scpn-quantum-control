@@ -67,6 +67,13 @@ def test_serialise_is_sorted_indented_and_keeps_unicode() -> None:
     assert text == '{\n  "a": [\n    1,\n    2\n  ],\n  "b": "c0←q2"\n}\n'
 
 
+def test_serialise_refuses_non_finite_numbers() -> None:
+    """No NaN or infinity reaches a committed file."""
+    for value in (float("inf"), float("nan")):
+        with pytest.raises(ValueError, match="not JSON compliant"):
+            committed_data.serialise({"x": value})
+
+
 def test_cli_prints_writes_and_checks(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     """Print, write, then check current, drifted and unreadable files."""
     payload: dict[str, object] = {"value": 0.25, "label": "x"}

@@ -73,7 +73,11 @@ function CalibrationDetails({
         <dt>Measurement shots</dt>
         <dd>{shots}</dd>
         <dt>Condition number</dt>
-        <dd>{value(calibration.conditionNumber)}</dd>
+        <dd>
+          {calibration.conditionNumber === null
+            ? "not reported: the source refused the calibration"
+            : value(calibration.conditionNumber)}
+        </dd>
       </dl>
     </details>
   );

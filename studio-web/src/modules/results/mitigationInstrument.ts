@@ -48,8 +48,8 @@ export interface Calibration {
   readonly matrix: readonly (readonly number[])[];
   /** Shots of each prepared state, in label order. */
   readonly shotsByPreparedState: readonly number[];
-  /** Spectral condition number measured by the source. */
-  readonly conditionNumber: number;
+  /** Spectral condition number measured by the source; ``null`` for a refused calibration. */
+  readonly conditionNumber: number | null;
 }
 
 /** Signed corrected values with separate standard errors, in label order. */
@@ -299,13 +299,20 @@ function calibration(value: unknown, field: string, size: number): Calibration {
   return {
     matrix,
     shotsByPreparedState: positiveCounts(row["shots_by_prepared_state"], `${field}.shots`, size),
-    conditionNumber: within(
-      row["condition_number"],
-      `${field}.condition_number`,
-      1,
-      Number.MAX_VALUE,
-    ),
+    conditionNumber:
+      row["condition_number"] === null
+        ? null
+        : within(row["condition_number"], `${field}.condition_number`, 1, Number.MAX_VALUE),
   };
+}
+
+/** A condition number is reported exactly when the source admitted the calibration. */
+function reported(calibrationView: Calibration, admitted: boolean, field: string): Calibration {
+  if ((calibrationView.conditionNumber !== null) !== admitted)
+    throw new Error(
+      `${field}.condition_number must be reported exactly when the calibration is admitted`,
+    );
+  return calibrationView;
 }
 
 function corrected(value: unknown, field: string, labels: readonly string[]): Corrected {
@@ -388,7 +395,11 @@ function readoutCase(raw: unknown, index: number): ReadoutCase {
     rawCounts,
     rawFrequencies,
     shots,
-    calibration: calibration(row["calibration"], `${field}.calibration`, labels.length),
+    calibration: reported(
+      calibration(row["calibration"], `${field}.calibration`, labels.length),
+      row["status"] !== "refused",
+      `${field}.calibration`,
+    ),
   };
   if (row["status"] === "refused")
     return { ...base, status: "refused", reason: text(row["reason"], `${field}.reason`) };
@@ -416,7 +427,11 @@ function zne(raw: unknown): Zne {
     observable: text(row["observable"], "zne.observable"),
     labels,
     measurementMap: map,
-    calibration: calibration(row["calibration"], "zne.calibration", labels.length),
+    calibration: reported(
+      calibration(row["calibration"], "zne.calibration", labels.length),
+      true,
+      "zne.calibration",
+    ),
     points: list(row["points"], "zne.points").map((item, index) => {
       const field = `zne.points[${index}]`;
       const point = record(item, field);

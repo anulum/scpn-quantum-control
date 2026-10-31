@@ -85,8 +85,16 @@ def serialise(payload: Mapping[str, object]) -> str:
     str
         Sorted, indented JSON with a trailing newline.
 
+    Raises
+    ------
+    ValueError
+        If a value is not finite: ``NaN`` and infinities are not JSON, and a
+        committed infinity would differ by platform.
+
     """
-    return json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+    return (
+        json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False, allow_nan=False) + "\n"
+    )
 
 
 def run_committed_data_cli(

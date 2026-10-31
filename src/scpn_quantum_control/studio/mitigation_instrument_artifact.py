@@ -38,7 +38,7 @@ import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Final
+from typing import Any, Final, cast
 
 import numpy as np
 
@@ -311,6 +311,9 @@ def _readout_case(case: ReadoutCase) -> dict[str, object]:
     try:
         estimate = mitigate_counts_with_uncertainty(case.counts, calibration)
     except ValueError as refusal:
+        # A refused calibration's condition number is not reported: near a
+        # singular matrix it is rounding, and differs by platform (finite or inf).
+        cast(dict[str, object], row["calibration"])["condition_number"] = None
         row.update(status="refused", reason=str(refusal))
         return row
     row.update(status="corrected", corrected=_corrected(estimate))

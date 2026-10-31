@@ -148,7 +148,8 @@ def test_mitigation_inspector_04_ill_conditioned_keeps_its_diagnostics(
     assert singular["status"] == "refused"
     assert "condition" in singular["reason"]
     assert "corrected" not in singular
-    assert singular["calibration"]["condition_number"] > 1e15
+    # Rounding near a singular matrix gives a platform-dependent figure, so none is shown.
+    assert singular["calibration"]["condition_number"] is None
     assert sum(singular["raw_counts"]) == singular["shots"]
 
 
