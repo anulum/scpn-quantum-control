@@ -4,6 +4,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Qualify competitive comparisons on a frozen challenge:
+  `qualify_competitive_campaign` ranks methods only when every retained run,
+  failures included, shares the problem, model, precision, measurement, seed
+  population and cost basis, keeps losing methods in the result, and promotes
+  a ranking as isolated performance evidence only with recorded CPU affinity on
+  the reserved core of a ready, low-load host.
+
 - Keep domain evidence honest about its origin: `DomainEvidence` records the
   estimand, data kind (synthetic, proxy, empirical or clinical), source, split
   identity, null baseline and use authority, and keeps the kind through JSON

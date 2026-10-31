@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 883,
     "public_documentation_pages": 385,
-    "python_model_classes": 1637,
+    "python_model_classes": 1639,
     "python_model_source_modules": 857,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1625
+    "test_files": 1626
   },
   "documentation": {
     "examples": [
@@ -1551,6 +1551,10 @@
       {
         "name": "CompetitiveBaselineValidation",
         "path": "src/scpn_quantum_control/differentiable_competitive_baselines.py"
+      },
+      {
+        "name": "CompetitiveCampaignResult",
+        "path": "src/scpn_quantum_control/benchmarks/reproducible_comparison.py"
       },
       {
         "name": "CompetitiveWatchRecord",
@@ -3335,6 +3339,10 @@
       {
         "name": "IsolatedProviderSmokeLane",
         "path": "src/scpn_quantum_control/hardware/provider_smoke.py"
+      },
+      {
+        "name": "IsolationEvidence",
+        "path": "src/scpn_quantum_control/benchmarks/reproducible_comparison.py"
       },
       {
         "name": "JAXAuditOperations",
@@ -9661,6 +9669,7 @@
       "tests/test_compare_eeg_plv_cohorts.py",
       "tests/test_competitive_baseline_watch.py",
       "tests/test_competitive_baseline_watch_quality_gate.py",
+      "tests/test_competitive_qualification_campaign.py",
       "tests/test_compile_budget.py",
       "tests/test_compiler_alias_activity_evidence.py",
       "tests/test_compiler_boundary_product.py",

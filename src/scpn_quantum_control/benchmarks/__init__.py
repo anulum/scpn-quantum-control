@@ -139,8 +139,12 @@ if TYPE_CHECKING:
         run_scaling_benchmark,
     )
     from .reproducible_comparison import (
+        CAMPAIGN_CLAIM_BOUNDARY,
         ComparisonMethodRow,
+        CompetitiveCampaignResult,
+        IsolationEvidence,
         ReproducibleKuramotoComparison,
+        qualify_competitive_campaign,
         run_reproducible_kuramoto_comparison,
     )
     from .sync_witness_evidence import (
@@ -506,6 +510,22 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
         "scpn_quantum_control.benchmarks.reproducible_comparison",
         "run_reproducible_kuramoto_comparison",
     ),
+    "CAMPAIGN_CLAIM_BOUNDARY": (
+        "scpn_quantum_control.benchmarks.reproducible_comparison",
+        "CAMPAIGN_CLAIM_BOUNDARY",
+    ),
+    "CompetitiveCampaignResult": (
+        "scpn_quantum_control.benchmarks.reproducible_comparison",
+        "CompetitiveCampaignResult",
+    ),
+    "IsolationEvidence": (
+        "scpn_quantum_control.benchmarks.reproducible_comparison",
+        "IsolationEvidence",
+    ),
+    "qualify_competitive_campaign": (
+        "scpn_quantum_control.benchmarks.reproducible_comparison",
+        "qualify_competitive_campaign",
+    ),
     "SYNC_WITNESS_EVIDENCE_SCHEMA": (
         "scpn_quantum_control.benchmarks.sync_witness_evidence",
         "SYNC_WITNESS_EVIDENCE_SCHEMA",
@@ -799,6 +819,10 @@ __all__ = [
     "plan_digest",
     "render_numerical_method_selection_markdown",
     "select_numerical_method",
+    "CAMPAIGN_CLAIM_BOUNDARY",
+    "CompetitiveCampaignResult",
+    "IsolationEvidence",
+    "qualify_competitive_campaign",
     "TN_MPS_CROSSOVER_CLAIM_BOUNDARY",
     "TN_MPS_CROSSOVER_PROTOCOL_ID",
     "TN_MPS_CROSSOVER_REQUIRED_FIELDS",

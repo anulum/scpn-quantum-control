@@ -143,6 +143,29 @@ selection = select_numerical_method(
 assert selection.selected is not None and selection.selected.method == "mps_chi_4"
 ```
 
+### 1c-iii. `reproducible_comparison` — Competitive Qualification on a Frozen Challenge
+
+`qualify_competitive_campaign` ranks competing methods only on one frozen
+challenge. It takes every retained `MethodRun`, failed and missing ones
+included, and builds on `summarise_method_comparison`:
+
+- The record keeps every raw run. Each method's mean, sample variance and total
+  cost can be recomputed from those rows; failed runs keep their measured cost.
+- A ranking exists only when problem, observable, model, precision, measurement,
+  seed population and cost basis agree for every run. A competitor measured in
+  `float32` against a `float64` reference, or a method that failed on a seed the
+  others completed, gives no ranking, and the blockers say why.
+- `better="lower"` or `"higher"` sets the direction. Methods worse than the
+  baseline are listed in `losing_methods` and stay in the ranking.
+- `performance_class` is `isolated_affinity` only when cost comparison is
+  allowed and `IsolationEvidence` records CPU affinity on exactly the reserved
+  core of a host that `assess_host_readiness` found ready (stable governor,
+  readable frequency, low load). Otherwise it is `functional_non_isolated`, and
+  `promotion_blockers` lists each missing condition.
+
+The function runs no solver and writes nothing. Its claim is limited to the
+measured challenge (`CAMPAIGN_CLAIM_BOUNDARY`).
+
 ### 1d. `josephson_magnitude_study` — Josephson K_nm Magnitude Study
 
 Builds the no-claim preregistration artifact for the Josephson

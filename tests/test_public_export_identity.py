@@ -77,6 +77,7 @@ PACKAGES = SNAPSHOT["packages"]
 
 
 NUMERICAL_METHOD_ADMISSION = "scpn_quantum_control.benchmarks.numerical_method_admission"
+REPRODUCIBLE_COMPARISON = "scpn_quantum_control.benchmarks.reproducible_comparison"
 APPROVED_EXPORT_ADDITIONS: dict[str, tuple[int, tuple[tuple[str, str], ...]]] = {
     "scpn_quantum_control": (
         3,
@@ -159,6 +160,10 @@ APPROVED_EXPORT_ADDITIONS: dict[str, tuple[int, tuple[tuple[str, str], ...]]] = 
             ("plan_digest", NUMERICAL_METHOD_ADMISSION),
             ("render_numerical_method_selection_markdown", NUMERICAL_METHOD_ADMISSION),
             ("select_numerical_method", NUMERICAL_METHOD_ADMISSION),
+            ("CAMPAIGN_CLAIM_BOUNDARY", REPRODUCIBLE_COMPARISON),
+            ("CompetitiveCampaignResult", REPRODUCIBLE_COMPARISON),
+            ("IsolationEvidence", REPRODUCIBLE_COMPARISON),
+            ("qualify_competitive_campaign", REPRODUCIBLE_COMPARISON),
         ),
     ),
     "scpn_quantum_control.codesign": (

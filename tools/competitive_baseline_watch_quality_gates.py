@@ -20,6 +20,7 @@ COMPETITIVE_BASELINE_WATCH_QUALITY_RATCHET = [
     "src/scpn_quantum_control/benchmarks/kuramoto_external_competitors.py",
     "tests/test_competitive_baseline_watch.py",
     "tests/test_reproducible_comparison.py",
+    "tests/test_competitive_qualification_campaign.py",
     "tests/test_kuramoto_competitive_types.py",
     "tests/test_kuramoto_competitive_benchmark.py",
     "tests/test_bench_kuramoto_competitive.py",
@@ -31,6 +32,7 @@ COMPETITIVE_BASELINE_WATCH_QUALITY_RATCHET = [
 COMPETITIVE_BASELINE_WATCH_COVERAGE_COHORT = [
     "tests/test_competitive_baseline_watch.py",
     "tests/test_reproducible_comparison.py",
+    "tests/test_competitive_qualification_campaign.py",
     "tests/test_kuramoto_competitive_types.py",
     "tests/test_kuramoto_competitive_benchmark.py",
     "tests/test_bench_kuramoto_competitive.py",

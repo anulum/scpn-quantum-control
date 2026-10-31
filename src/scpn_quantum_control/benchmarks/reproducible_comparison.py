@@ -35,8 +35,9 @@ statevector-quantum rows are reported as unavailable instead of being faked.
 from __future__ import annotations
 
 import time
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Literal, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -46,7 +47,14 @@ from scpn_quantum_control.hardware.classical import classical_exact_evolution
 from scpn_quantum_control.phase import QuantumKuramotoSolver
 
 from .classical_baselines import scipy_ode_baseline
-from .method_comparison_contracts import ComparisonBudget, ComparisonMeaning, MethodRun
+from .isolated_host_readiness import HostReadiness
+from .method_comparison import summarise_method_comparison
+from .method_comparison_contracts import (
+    ComparisonBudget,
+    ComparisonMeaning,
+    MethodComparisonRecord,
+    MethodRun,
+)
 
 #: Maximum oscillator count for direct exact/statevector quantum comparison.
 MAX_STATEVECTOR_OSCILLATORS = 16
@@ -450,4 +458,167 @@ def run_reproducible_kuramoto_comparison(
             "omega_source": "omega_n_16" if omega is None else "caller",
             "statevector_boundary": MAX_STATEVECTOR_OSCILLATORS,
         },
+    )
+
+
+#: Boundary embedded in every competitive campaign result.
+CAMPAIGN_CLAIM_BOUNDARY = (
+    "Ranks methods only on one frozen challenge whose problem, observable, model, "
+    "precision, measurement and cost basis agree for every retained run, failures "
+    "included. Losing methods stay in the result. A performance ranking is promoted "
+    "as isolated only with recorded CPU affinity on the reserved core and a ready, "
+    "low-load host; otherwise it is functional, non-isolated evidence. Nothing here "
+    "extends beyond the measured challenge or establishes quantum advantage."
+)
+
+
+@dataclass(frozen=True)
+class IsolationEvidence:
+    """Host conditions recorded while the campaign ran.
+
+    Parameters
+    ----------
+    cpu_affinity : tuple of int or None
+        CPUs the benchmark process was pinned to, as read during the runs
+        (for example ``os.sched_getaffinity(0)``); ``None`` when not recorded.
+    host : HostReadiness or None
+        Governor, frequency and load verdict captured for the same runs.
+
+    """
+
+    cpu_affinity: tuple[int, ...] | None
+    host: HostReadiness | None
+
+    def __post_init__(self) -> None:
+        """Reject an empty, repeated or negative CPU set."""
+        affinity = self.cpu_affinity
+        if affinity is None:
+            return
+        if (
+            not affinity
+            or len(set(affinity)) != len(affinity)
+            or any(
+                isinstance(cpu, bool) or not isinstance(cpu, int) or cpu < 0 for cpu in affinity
+            )
+        ):
+            raise ValueError("cpu_affinity must list distinct non-negative CPU indices")
+
+
+@dataclass(frozen=True)
+class CompetitiveCampaignResult:
+    """A qualified comparison of competing methods on one frozen challenge.
+
+    Attributes
+    ----------
+    better : {"lower", "higher"}
+        Which direction of the observable is better.
+    comparison : MethodComparisonRecord
+        Every retained run and the descriptive per-method summaries, from
+        :func:`summarise_method_comparison`.
+    ranking : tuple of str
+        Methods from best to worst by mean; empty when ranking is refused.
+    losing_methods : tuple of str
+        Methods whose mean is worse than the baseline's.
+    performance_class : {"isolated_affinity", "functional_non_isolated"}
+        Isolated only when cost comparison is allowed and isolation is evidenced.
+    promotion_blockers : tuple of str
+        Why the result is not isolated performance evidence.
+
+    """
+
+    better: Literal["lower", "higher"]
+    comparison: MethodComparisonRecord
+    ranking: tuple[str, ...]
+    losing_methods: tuple[str, ...]
+    performance_class: Literal["isolated_affinity", "functional_non_isolated"]
+    promotion_blockers: tuple[str, ...]
+    claim_boundary: str = CAMPAIGN_CLAIM_BOUNDARY
+
+
+def _isolation_blockers(isolation: IsolationEvidence | None) -> list[str]:
+    """Return every missing or failed isolation condition."""
+    if isolation is None:
+        return ["no isolation evidence was recorded for the runs"]
+    blockers: list[str] = []
+    host = isolation.host
+    if host is None:
+        blockers.append("host governor, frequency and load were not recorded")
+    else:
+        blockers.extend(host.blockers)
+        if not host.ready and not host.blockers:
+            blockers.append("host was not ready for isolated benchmarking")
+    if isolation.cpu_affinity is None:
+        blockers.append("CPU affinity was not recorded")
+    elif host is not None and isolation.cpu_affinity != (host.reserved_core,):
+        blockers.append(
+            f"runs used CPUs {list(isolation.cpu_affinity)}, not only the reserved "
+            f"core {host.reserved_core}"
+        )
+    return blockers
+
+
+def qualify_competitive_campaign(
+    runs: Sequence[MethodRun],
+    *,
+    baseline_method: str,
+    better: Literal["lower", "higher"],
+    isolation: IsolationEvidence | None,
+    missing_data_policy: Literal["require-complete", "available-case"] = "require-complete",
+) -> CompetitiveCampaignResult:
+    """Rank competing methods on one frozen challenge without hiding losses.
+
+    Parameters
+    ----------
+    runs : sequence of MethodRun
+        Every retained repetition of every method, failed and missing ones included.
+    baseline_method : str
+        The reference method; losses are measured against it.
+    better : {"lower", "higher"}
+        Direction in which the observable improves.
+    isolation : IsolationEvidence or None
+        Affinity and host conditions recorded during the runs.
+    missing_data_policy : {"require-complete", "available-case"}
+        Passed to :func:`summarise_method_comparison`.
+
+    Returns
+    -------
+    CompetitiveCampaignResult
+        The full comparison record. A ranking exists only when every meaning,
+        seed population and cost basis agree; losing methods are listed; the
+        result is isolated performance evidence only with recorded affinity on
+        the reserved core of a ready host.
+
+    Raises
+    ------
+    ValueError
+        If ``better`` is not ``"lower"`` or ``"higher"``, or the population is
+        rejected by :func:`summarise_method_comparison`.
+
+    """
+    if better not in ("lower", "higher"):
+        raise ValueError("better must be 'lower' or 'higher'")
+    comparison = summarise_method_comparison(
+        runs, baseline_method=baseline_method, missing_data_policy=missing_data_policy
+    )
+    sign = 1.0 if better == "lower" else -1.0
+    ranking: tuple[str, ...] = ()
+    losing: tuple[str, ...] = ()
+    if comparison["ranking_allowed"]:
+        # Ranking is allowed only when every method has a finite mean.
+        means = {row["method"]: cast(float, row["mean"]) for row in comparison["methods"]}
+        ranking = tuple(sorted(means, key=lambda method: (sign * means[method], method)))
+        reference = means[baseline_method]
+        losing = tuple(method for method in ranking if sign * (means[method] - reference) > 0.0)
+    blockers: list[str] = []
+    if not comparison["cost_comparison_allowed"]:
+        blockers.append("cost comparison is not allowed for this population")
+        blockers.extend(comparison["blockers"])
+    blockers.extend(_isolation_blockers(isolation))
+    return CompetitiveCampaignResult(
+        better=better,
+        comparison=comparison,
+        ranking=ranking,
+        losing_methods=losing,
+        performance_class="functional_non_isolated" if blockers else "isolated_affinity",
+        promotion_blockers=tuple(dict.fromkeys(blockers)),
     )

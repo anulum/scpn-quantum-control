@@ -5,7 +5,7 @@ module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
 - **857 modules** across **41 package families**
-- **4648 documented public module-level symbols**
+- **4651 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -1455,11 +1455,11 @@ Quantum vs classical scaling benchmark for Kuramoto Hamiltonian simulation.
 
 Deterministic head-to-head comparison of classical and quantum Kuramoto routes.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/benchmarks/reproducible_comparison.py) · Public symbols: **3**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/benchmarks/reproducible_comparison.py) · Public symbols: **6**
 
-**Classes:** `ComparisonMethodRow`, `ReproducibleKuramotoComparison`
+**Classes:** `ComparisonMethodRow`, `ReproducibleKuramotoComparison`, `IsolationEvidence`, `CompetitiveCampaignResult`
 
-**Functions:** `run_reproducible_kuramoto_comparison()`
+**Functions:** `run_reproducible_kuramoto_comparison()`, `qualify_competitive_campaign()`
 
 ### `scpn_quantum_control.benchmarks.s3_design_protocol`
 
