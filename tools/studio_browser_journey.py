@@ -425,6 +425,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "program_authoring",
             "compiler_trace_inspector",
             "gradient_debugger",
+            "qec_resource_instrument",
             "operator_backend_profiles",
             "operator_policy_decisions",
             "operator_review_dossiers",
@@ -573,6 +574,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 from tools.studio_gradient_debugger_browser import run_gradient_debugger_journey
 
                 journey = partial(run_gradient_debugger_journey, evidence=evidence)
+            elif args.scenario == "qec_resource_instrument":
+                from tools.studio_qec_resource_browser import run_qec_resource_journey
+
+                journey = partial(run_qec_resource_journey, evidence=evidence)
             elif args.scenario == "compiler_trace_inspector":
                 from tools.studio_compiler_trace_browser import run_compiler_trace_journey
 

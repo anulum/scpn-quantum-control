@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **847 modules** across **41 package families**
-- **4596 documented public module-level symbols**
+- **848 modules** across **41 package families**
+- **4600 documented public module-level symbols**
 - **875 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -5582,6 +5582,14 @@ Federate the committed offline QEC-readiness decision as a schema-B bundle.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/qec_readiness_bundle.py) · Public symbols: **2**
 
 **Functions:** `build_qec_readiness_bundle()`, `main()`
+
+### `scpn_quantum_control.studio.qec_resource_instrument_artifact`
+
+Build, write and check the data the Studio QEC instrument shows.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/qec_resource_instrument_artifact.py) · Public symbols: **4**
+
+**Functions:** `build_qec_instrument_artifact()`, `differences()`, `serialise()`, `main()`
 
 ### `scpn_quantum_control.studio.qpu_result_pack`
 

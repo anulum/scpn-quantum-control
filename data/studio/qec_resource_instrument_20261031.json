@@ -1,0 +1,1336 @@
+{
+  "artifact_id": "studio-qec-resource-instrument-20261031",
+  "claim_boundary": "Software decoder samples, an offline readiness decision and phenomenological resource estimates, kept separate; none is a hardware logical-error measurement, a fault-tolerant execution or a named-device feasibility claim",
+  "decoder": {
+    "claim_boundary": "Software Monte Carlo of a toric code under the stated error model only; no hardware syndrome, circuit-level noise, measured logical-error reduction or threshold claim",
+    "experiments": [
+      {
+        "code": "toric_surface_code",
+        "confidence_level": 0.95,
+        "decoder": "minimum_weight_perfect_matching",
+        "distance": 3,
+        "failures": 0,
+        "lower": 0.0,
+        "measured_logical_error_reduction_claim_allowed": false,
+        "method": "clopper_pearson_exact",
+        "physical_error_rate": 0.003,
+        "rate": 0.0,
+        "seed": 20264034,
+        "shots": 2000,
+        "upper": 0.0018427397934059364
+      },
+      {
+        "code": "toric_surface_code",
+        "confidence_level": 0.95,
+        "decoder": "minimum_weight_perfect_matching",
+        "distance": 3,
+        "failures": 3,
+        "lower": 0.00030944294931233317,
+        "measured_logical_error_reduction_claim_allowed": false,
+        "method": "clopper_pearson_exact",
+        "physical_error_rate": 0.01,
+        "rate": 0.0015,
+        "seed": 20264041,
+        "shots": 2000,
+        "upper": 0.004377320104529616
+      },
+      {
+        "code": "toric_surface_code",
+        "confidence_level": 0.95,
+        "decoder": "minimum_weight_perfect_matching",
+        "distance": 3,
+        "failures": 49,
+        "lower": 0.018178923099919003,
+        "measured_logical_error_reduction_claim_allowed": false,
+        "method": "clopper_pearson_exact",
+        "physical_error_rate": 0.03,
+        "rate": 0.0245,
+        "seed": 20264061,
+        "shots": 2000,
+        "upper": 0.03226209510538474
+      },
+      {
+        "code": "toric_surface_code",
+        "confidence_level": 0.95,
+        "decoder": "minimum_weight_perfect_matching",
+        "distance": 3,
+        "failures": 169,
+        "lower": 0.07267630642142361,
+        "measured_logical_error_reduction_claim_allowed": false,
+        "method": "clopper_pearson_exact",
+        "physical_error_rate": 0.06,
+        "rate": 0.0845,
+        "seed": 20264091,
+        "shots": 2000,
+        "upper": 0.09755772481691696
+      },
+      {
+        "code": "toric_surface_code",
+        "confidence_level": 0.95,
+        "decoder": "minimum_weight_perfect_matching",
+        "distance": 3,
+        "failures": 450,
+        "lower": 0.20686267908077094,
+        "measured_logical_error_reduction_claim_allowed": false,
+        "method": "clopper_pearson_exact",
+        "physical_error_rate": 0.1,
+        "rate": 0.225,
+        "seed": 20264131,
+        "shots": 2000,
+        "upper": 0.24394699055632552
+      },
+      {
+        "code": "toric_surface_code",
+        "confidence_level": 0.95,
+        "decoder": "minimum_weight_perfect_matching",
+        "distance": 5,
+        "failures": 0,
+        "lower": 0.0,
+        "measured_logical_error_reduction_claim_allowed": false,
+        "method": "clopper_pearson_exact",
+        "physical_error_rate": 0.003,
+        "rate": 0.0,
+        "seed": 20266034,
+        "shots": 2000,
+        "upper": 0.0018427397934059364
+      },
+      {
+        "code": "toric_surface_code",
+        "confidence_level": 0.95,
+        "decoder": "minimum_weight_perfect_matching",
+        "distance": 5,
+        "failures": 1,
+        "lower": 1.26588238685579e-05,
+        "measured_logical_error_reduction_claim_allowed": false,
+        "method": "clopper_pearson_exact",
+        "physical_error_rate": 0.01,
+        "rate": 0.0005,
+        "seed": 20266041,
+        "shots": 2000,
+        "upper": 0.0027826398346589465
+      },
+      {
+        "code": "toric_surface_code",
+        "confidence_level": 0.95,
+        "decoder": "minimum_weight_perfect_matching",
+        "distance": 5,
+        "failures": 7,
+        "lower": 0.0014083038325025414,
+        "measured_logical_error_reduction_claim_allowed": false,
+        "method": "clopper_pearson_exact",
+        "physical_error_rate": 0.03,
+        "rate": 0.0035,
+        "seed": 20266061,
+        "shots": 2000,
+        "upper": 0.007197961714658002
+      },
+      {
+        "code": "toric_surface_code",
+        "confidence_level": 0.95,
+        "decoder": "minimum_weight_perfect_matching",
+        "distance": 5,
+        "failures": 119,
+        "lower": 0.04953466723336207,
+        "measured_logical_error_reduction_claim_allowed": false,
+        "method": "clopper_pearson_exact",
+        "physical_error_rate": 0.06,
+        "rate": 0.0595,
+        "seed": 20266091,
+        "shots": 2000,
+        "upper": 0.07077953726883711
+      },
+      {
+        "code": "toric_surface_code",
+        "confidence_level": 0.95,
+        "decoder": "minimum_weight_perfect_matching",
+        "distance": 5,
+        "failures": 446,
+        "lower": 0.20492359063260712,
+        "measured_logical_error_reduction_claim_allowed": false,
+        "method": "clopper_pearson_exact",
+        "physical_error_rate": 0.1,
+        "rate": 0.223,
+        "seed": 20266131,
+        "shots": 2000,
+        "upper": 0.2418920129489933
+      }
+    ],
+    "shots": 2000,
+    "single_error_syndromes": [
+      {
+        "corrected": true,
+        "data_qubit": 0,
+        "defects": [
+          0,
+          1
+        ],
+        "distance": 3
+      },
+      {
+        "corrected": true,
+        "data_qubit": 1,
+        "defects": [
+          0,
+          3
+        ],
+        "distance": 3
+      },
+      {
+        "corrected": true,
+        "data_qubit": 2,
+        "defects": [
+          1,
+          2
+        ],
+        "distance": 3
+      },
+      {
+        "corrected": true,
+        "data_qubit": 3,
+        "defects": [
+          1,
+          4
+        ],
+        "distance": 3
+      },
+      {
+        "corrected": true,
+        "data_qubit": 4,
+        "defects": [
+          0,
+          2
+        ],
+        "distance": 3
+      },
+      {
+        "corrected": true,
+        "data_qubit": 5,
+        "defects": [
+          2,
+          5
+        ],
+        "distance": 3
+      },
+      {
+        "corrected": true,
+        "data_qubit": 6,
+        "defects": [
+          3,
+          4
+        ],
+        "distance": 3
+      },
+      {
+        "corrected": true,
+        "data_qubit": 7,
+        "defects": [
+          3,
+          6
+        ],
+        "distance": 3
+      },
+      {
+        "corrected": true,
+        "data_qubit": 8,
+        "defects": [
+          4,
+          5
+        ],
+        "distance": 3
+      },
+      {
+        "corrected": true,
+        "data_qubit": 9,
+        "defects": [
+          4,
+          7
+        ],
+        "distance": 3
+      },
+      {
+        "corrected": true,
+        "data_qubit": 10,
+        "defects": [
+          3,
+          5
+        ],
+        "distance": 3
+      },
+      {
+        "corrected": true,
+        "data_qubit": 11,
+        "defects": [
+          5,
+          8
+        ],
+        "distance": 3
+      },
+      {
+        "corrected": true,
+        "data_qubit": 12,
+        "defects": [
+          6,
+          7
+        ],
+        "distance": 3
+      },
+      {
+        "corrected": true,
+        "data_qubit": 13,
+        "defects": [
+          0,
+          6
+        ],
+        "distance": 3
+      },
+      {
+        "corrected": true,
+        "data_qubit": 14,
+        "defects": [
+          7,
+          8
+        ],
+        "distance": 3
+      },
+      {
+        "corrected": true,
+        "data_qubit": 15,
+        "defects": [
+          1,
+          7
+        ],
+        "distance": 3
+      },
+      {
+        "corrected": true,
+        "data_qubit": 16,
+        "defects": [
+          6,
+          8
+        ],
+        "distance": 3
+      },
+      {
+        "corrected": true,
+        "data_qubit": 17,
+        "defects": [
+          2,
+          8
+        ],
+        "distance": 3
+      },
+      {
+        "corrected": true,
+        "data_qubit": 0,
+        "defects": [
+          0,
+          1
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 1,
+        "defects": [
+          0,
+          5
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 2,
+        "defects": [
+          1,
+          2
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 3,
+        "defects": [
+          1,
+          6
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 4,
+        "defects": [
+          2,
+          3
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 5,
+        "defects": [
+          2,
+          7
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 6,
+        "defects": [
+          3,
+          4
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 7,
+        "defects": [
+          3,
+          8
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 8,
+        "defects": [
+          0,
+          4
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 9,
+        "defects": [
+          4,
+          9
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 10,
+        "defects": [
+          5,
+          6
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 11,
+        "defects": [
+          5,
+          10
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 12,
+        "defects": [
+          6,
+          7
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 13,
+        "defects": [
+          6,
+          11
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 14,
+        "defects": [
+          7,
+          8
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 15,
+        "defects": [
+          7,
+          12
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 16,
+        "defects": [
+          8,
+          9
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 17,
+        "defects": [
+          8,
+          13
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 18,
+        "defects": [
+          5,
+          9
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 19,
+        "defects": [
+          9,
+          14
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 20,
+        "defects": [
+          10,
+          11
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 21,
+        "defects": [
+          10,
+          15
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 22,
+        "defects": [
+          11,
+          12
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 23,
+        "defects": [
+          11,
+          16
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 24,
+        "defects": [
+          12,
+          13
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 25,
+        "defects": [
+          12,
+          17
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 26,
+        "defects": [
+          13,
+          14
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 27,
+        "defects": [
+          13,
+          18
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 28,
+        "defects": [
+          10,
+          14
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 29,
+        "defects": [
+          14,
+          19
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 30,
+        "defects": [
+          15,
+          16
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 31,
+        "defects": [
+          15,
+          20
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 32,
+        "defects": [
+          16,
+          17
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 33,
+        "defects": [
+          16,
+          21
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 34,
+        "defects": [
+          17,
+          18
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 35,
+        "defects": [
+          17,
+          22
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 36,
+        "defects": [
+          18,
+          19
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 37,
+        "defects": [
+          18,
+          23
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 38,
+        "defects": [
+          15,
+          19
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 39,
+        "defects": [
+          19,
+          24
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 40,
+        "defects": [
+          20,
+          21
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 41,
+        "defects": [
+          0,
+          20
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 42,
+        "defects": [
+          21,
+          22
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 43,
+        "defects": [
+          1,
+          21
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 44,
+        "defects": [
+          22,
+          23
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 45,
+        "defects": [
+          2,
+          22
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 46,
+        "defects": [
+          23,
+          24
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 47,
+        "defects": [
+          3,
+          23
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 48,
+        "defects": [
+          20,
+          24
+        ],
+        "distance": 5
+      },
+      {
+        "corrected": true,
+        "data_qubit": 49,
+        "defects": [
+          4,
+          24
+        ],
+        "distance": 5
+      }
+    ]
+  },
+  "generated_by": "python -m scpn_quantum_control.studio.qec_resource_instrument_artifact --write",
+  "readiness": {
+    "admitted": true,
+    "aggregates": [
+      {
+        "decoder": "physics_aware_mwpm",
+        "failures": 79,
+        "family": "dla_parity",
+        "label": "n4_even_signal",
+        "lower": 0.0195929058296546,
+        "method": "clopper_pearson_exact",
+        "noise_model": "depolarising_1pct",
+        "rate": 0.0246875,
+        "trials": 3200,
+        "upper": 0.030674075758178924
+      },
+      {
+        "decoder": "physics_feature_disabled",
+        "failures": 41,
+        "family": "dla_parity",
+        "label": "n4_even_signal",
+        "lower": 0.00920973517634714,
+        "method": "clopper_pearson_exact",
+        "noise_model": "depolarising_1pct",
+        "rate": 0.0128125,
+        "trials": 3200,
+        "upper": 0.017341832416938055
+      },
+      {
+        "decoder": "standard_mwpm",
+        "failures": 41,
+        "family": "dla_parity",
+        "label": "n4_even_signal",
+        "lower": 0.00920973517634714,
+        "method": "clopper_pearson_exact",
+        "noise_model": "depolarising_1pct",
+        "rate": 0.0128125,
+        "trials": 3200,
+        "upper": 0.017341832416938055
+      },
+      {
+        "decoder": "unencoded_physical",
+        "failures": 221,
+        "family": "dla_parity",
+        "label": "n4_even_signal",
+        "lower": 0.06051801061924295,
+        "method": "clopper_pearson_exact",
+        "noise_model": "depolarising_1pct",
+        "rate": 0.0690625,
+        "trials": 3200,
+        "upper": 0.07840438051896681
+      },
+      {
+        "decoder": "physics_aware_mwpm",
+        "failures": 0,
+        "family": "dla_parity",
+        "label": "n4_even_signal",
+        "lower": 0.0,
+        "method": "clopper_pearson_exact",
+        "noise_model": "ideal",
+        "rate": 0.0,
+        "trials": 3200,
+        "upper": 0.0011521106397518327
+      },
+      {
+        "decoder": "physics_feature_disabled",
+        "failures": 0,
+        "family": "dla_parity",
+        "label": "n4_even_signal",
+        "lower": 0.0,
+        "method": "clopper_pearson_exact",
+        "noise_model": "ideal",
+        "rate": 0.0,
+        "trials": 3200,
+        "upper": 0.0011521106397518327
+      },
+      {
+        "decoder": "standard_mwpm",
+        "failures": 0,
+        "family": "dla_parity",
+        "label": "n4_even_signal",
+        "lower": 0.0,
+        "method": "clopper_pearson_exact",
+        "noise_model": "ideal",
+        "rate": 0.0,
+        "trials": 3200,
+        "upper": 0.0011521106397518327
+      },
+      {
+        "decoder": "unencoded_physical",
+        "failures": 0,
+        "family": "dla_parity",
+        "label": "n4_even_signal",
+        "lower": 0.0,
+        "method": "clopper_pearson_exact",
+        "noise_model": "ideal",
+        "rate": 0.0,
+        "trials": 3200,
+        "upper": 0.0011521106397518327
+      },
+      {
+        "decoder": "physics_aware_mwpm",
+        "failures": 54,
+        "family": "dla_parity",
+        "label": "n4_even_signal",
+        "lower": 0.0127017880831886,
+        "method": "clopper_pearson_exact",
+        "noise_model": "readout_biased_1p5pct",
+        "rate": 0.016875,
+        "trials": 3200,
+        "upper": 0.02196145886915708
+      },
+      {
+        "decoder": "physics_feature_disabled",
+        "failures": 28,
+        "family": "dla_parity",
+        "label": "n4_even_signal",
+        "lower": 0.005821961614113882,
+        "method": "clopper_pearson_exact",
+        "noise_model": "readout_biased_1p5pct",
+        "rate": 0.00875,
+        "trials": 3200,
+        "upper": 0.012621531143548548
+      },
+      {
+        "decoder": "standard_mwpm",
+        "failures": 28,
+        "family": "dla_parity",
+        "label": "n4_even_signal",
+        "lower": 0.005821961614113882,
+        "method": "clopper_pearson_exact",
+        "noise_model": "readout_biased_1p5pct",
+        "rate": 0.00875,
+        "trials": 3200,
+        "upper": 0.012621531143548548
+      },
+      {
+        "decoder": "unencoded_physical",
+        "failures": 210,
+        "family": "dla_parity",
+        "label": "n4_even_signal",
+        "lower": 0.05728925475063604,
+        "method": "clopper_pearson_exact",
+        "noise_model": "readout_biased_1p5pct",
+        "rate": 0.065625,
+        "trials": 3200,
+        "upper": 0.07476493153114702
+      },
+      {
+        "decoder": "physics_aware_mwpm",
+        "failures": 79,
+        "family": "dla_parity",
+        "label": "n4_odd_signal",
+        "lower": 0.0195929058296546,
+        "method": "clopper_pearson_exact",
+        "noise_model": "depolarising_1pct",
+        "rate": 0.0246875,
+        "trials": 3200,
+        "upper": 0.030674075758178924
+      },
+      {
+        "decoder": "physics_feature_disabled",
+        "failures": 41,
+        "family": "dla_parity",
+        "label": "n4_odd_signal",
+        "lower": 0.00920973517634714,
+        "method": "clopper_pearson_exact",
+        "noise_model": "depolarising_1pct",
+        "rate": 0.0128125,
+        "trials": 3200,
+        "upper": 0.017341832416938055
+      },
+      {
+        "decoder": "standard_mwpm",
+        "failures": 41,
+        "family": "dla_parity",
+        "label": "n4_odd_signal",
+        "lower": 0.00920973517634714,
+        "method": "clopper_pearson_exact",
+        "noise_model": "depolarising_1pct",
+        "rate": 0.0128125,
+        "trials": 3200,
+        "upper": 0.017341832416938055
+      },
+      {
+        "decoder": "unencoded_physical",
+        "failures": 221,
+        "family": "dla_parity",
+        "label": "n4_odd_signal",
+        "lower": 0.06051801061924295,
+        "method": "clopper_pearson_exact",
+        "noise_model": "depolarising_1pct",
+        "rate": 0.0690625,
+        "trials": 3200,
+        "upper": 0.07840438051896681
+      },
+      {
+        "decoder": "physics_aware_mwpm",
+        "failures": 0,
+        "family": "dla_parity",
+        "label": "n4_odd_signal",
+        "lower": 0.0,
+        "method": "clopper_pearson_exact",
+        "noise_model": "ideal",
+        "rate": 0.0,
+        "trials": 3200,
+        "upper": 0.0011521106397518327
+      },
+      {
+        "decoder": "physics_feature_disabled",
+        "failures": 0,
+        "family": "dla_parity",
+        "label": "n4_odd_signal",
+        "lower": 0.0,
+        "method": "clopper_pearson_exact",
+        "noise_model": "ideal",
+        "rate": 0.0,
+        "trials": 3200,
+        "upper": 0.0011521106397518327
+      },
+      {
+        "decoder": "standard_mwpm",
+        "failures": 0,
+        "family": "dla_parity",
+        "label": "n4_odd_signal",
+        "lower": 0.0,
+        "method": "clopper_pearson_exact",
+        "noise_model": "ideal",
+        "rate": 0.0,
+        "trials": 3200,
+        "upper": 0.0011521106397518327
+      },
+      {
+        "decoder": "unencoded_physical",
+        "failures": 0,
+        "family": "dla_parity",
+        "label": "n4_odd_signal",
+        "lower": 0.0,
+        "method": "clopper_pearson_exact",
+        "noise_model": "ideal",
+        "rate": 0.0,
+        "trials": 3200,
+        "upper": 0.0011521106397518327
+      },
+      {
+        "decoder": "physics_aware_mwpm",
+        "failures": 54,
+        "family": "dla_parity",
+        "label": "n4_odd_signal",
+        "lower": 0.0127017880831886,
+        "method": "clopper_pearson_exact",
+        "noise_model": "readout_biased_1p5pct",
+        "rate": 0.016875,
+        "trials": 3200,
+        "upper": 0.02196145886915708
+      },
+      {
+        "decoder": "physics_feature_disabled",
+        "failures": 28,
+        "family": "dla_parity",
+        "label": "n4_odd_signal",
+        "lower": 0.005821961614113882,
+        "method": "clopper_pearson_exact",
+        "noise_model": "readout_biased_1p5pct",
+        "rate": 0.00875,
+        "trials": 3200,
+        "upper": 0.012621531143548548
+      },
+      {
+        "decoder": "standard_mwpm",
+        "failures": 28,
+        "family": "dla_parity",
+        "label": "n4_odd_signal",
+        "lower": 0.005821961614113882,
+        "method": "clopper_pearson_exact",
+        "noise_model": "readout_biased_1p5pct",
+        "rate": 0.00875,
+        "trials": 3200,
+        "upper": 0.012621531143548548
+      },
+      {
+        "decoder": "unencoded_physical",
+        "failures": 210,
+        "family": "dla_parity",
+        "label": "n4_odd_signal",
+        "lower": 0.05728925475063604,
+        "method": "clopper_pearson_exact",
+        "noise_model": "readout_biased_1p5pct",
+        "rate": 0.065625,
+        "trials": 3200,
+        "upper": 0.07476493153114702
+      }
+    ],
+    "blocked": [
+      "fault tolerance",
+      "scalable QEC",
+      "hardware logical-error reduction",
+      "QPU submission authorisation",
+      "quantum advantage"
+    ],
+    "bundle_digest": "sha256:14fe7a02de0425a9d946e19708e5024532b6eddd80a7579c918e7e78baba43c9",
+    "bundle_schema": "studio.qec-readiness.v1",
+    "decision": "blocked_physics_aware_decoder_did_not_beat_baselines",
+    "distance": 3,
+    "hardware_logical_error_reduction": "not measured",
+    "source": "data/phase3_multicircuit_qec/qec_readiness_2026-05-07.json",
+    "supported": [
+      "distance-3 surface-code offline logical-failure comparison",
+      "decoder ablation against a K-matrix-weighted feature",
+      "encoded/unencoded circuit-resource comparison",
+      "promotion or rejection before live backend submission"
+    ]
+  },
+  "resources": {
+    "claim_boundary": "Conservative future-resource planning only: rotated-patch register counts, phenomenological logical-error ansatz, union-bound opportunities, and Clifford+T rotation-synthesis upper estimate; no available FT hardware, validated logical RZ/RZZ, decoder integration, magic-state factory, total runtime, target precision attainment, or fault-tolerant execution claim",
+    "excluded_from_base_estimate": [
+      "lattice-surgery routing space and time",
+      "magic-state factory footprint and throughput",
+      "decoder latency and feed-forward",
+      "measurement, leakage and correlated noise"
+    ],
+    "request": {
+      "coupling_density": 0.5,
+      "evolution_time": 1.0,
+      "max_code_distance": 51,
+      "n_oscillators": 8,
+      "nisq_shots": 4096,
+      "physical_error_rate": 0.001,
+      "syndrome_cycle_seconds": 1e-06,
+      "target_precision": 0.01,
+      "trotter_steps": 10
+    },
+    "rows": [
+      {
+        "code_distance": 3,
+        "data_patch_physical_qubits": 136,
+        "logical_failure_union_bound": 0.0024000000000000002,
+        "payload_sha256": "4d0dca055f032666c3e3f5d5020d62961c3fafe56bff59912b0c9dd3b413aff3",
+        "physical_error_rate": 0.0001,
+        "qec_rounds": 30,
+        "qualification_sha256": "57f201ff6d075a55f10fb087bfec47276531e10e512618f6cb5f54e97470c274",
+        "scenarios": [
+          {
+            "decoding_time_floor_seconds": 0.0,
+            "factory_count": 1,
+            "factory_physical_qubits": 375,
+            "label": "lean",
+            "routing_overhead_factor": 1.5,
+            "scenario_time_floor_seconds": 0.16499999999999998,
+            "t_state_time_floor_seconds": 0.16499999999999998,
+            "total_physical_qubits": 579
+          },
+          {
+            "decoding_time_floor_seconds": 2.9999999999999997e-05,
+            "factory_count": 4,
+            "factory_physical_qubits": 3000,
+            "label": "central",
+            "routing_overhead_factor": 2.0,
+            "scenario_time_floor_seconds": 0.08252999999999999,
+            "t_state_time_floor_seconds": 0.08249999999999999,
+            "total_physical_qubits": 3272
+          },
+          {
+            "decoding_time_floor_seconds": 0.00030000000000000003,
+            "factory_count": 8,
+            "factory_physical_qubits": 12000,
+            "label": "conservative",
+            "routing_overhead_factor": 3.0,
+            "scenario_time_floor_seconds": 0.08281999999999999,
+            "t_state_time_floor_seconds": 0.08252,
+            "total_physical_qubits": 12408
+          }
+        ],
+        "status": "estimated",
+        "syndrome_time_floor_seconds": 2.9999999999999997e-05,
+        "total_t_count": 16500
+      },
+      {
+        "code_distance": 7,
+        "data_patch_physical_qubits": 776,
+        "logical_failure_union_bound": 0.0003500000000000001,
+        "payload_sha256": "1e31abfef6d3570ba7fdbe1dd284330d4640fa0b32c5c4fe521bbfe4adc97990",
+        "physical_error_rate": 0.0005,
+        "qec_rounds": 70,
+        "qualification_sha256": "9cc6cf74e4ea01feab3a71bf81d0d00e47b5ab640a35ff0dfecb279d73502dbb",
+        "scenarios": [
+          {
+            "decoding_time_floor_seconds": 0.0,
+            "factory_count": 1,
+            "factory_physical_qubits": 375,
+            "label": "lean",
+            "routing_overhead_factor": 1.5,
+            "scenario_time_floor_seconds": 0.16499999999999998,
+            "t_state_time_floor_seconds": 0.16499999999999998,
+            "total_physical_qubits": 1539
+          },
+          {
+            "decoding_time_floor_seconds": 7e-05,
+            "factory_count": 4,
+            "factory_physical_qubits": 3000,
+            "label": "central",
+            "routing_overhead_factor": 2.0,
+            "scenario_time_floor_seconds": 0.08256999999999999,
+            "t_state_time_floor_seconds": 0.08249999999999999,
+            "total_physical_qubits": 4552
+          },
+          {
+            "decoding_time_floor_seconds": 0.0007000000000000001,
+            "factory_count": 8,
+            "factory_physical_qubits": 12000,
+            "label": "conservative",
+            "routing_overhead_factor": 3.0,
+            "scenario_time_floor_seconds": 0.08322,
+            "t_state_time_floor_seconds": 0.08252,
+            "total_physical_qubits": 14328
+          }
+        ],
+        "status": "estimated",
+        "syndrome_time_floor_seconds": 7e-05,
+        "total_t_count": 16500
+      },
+      {
+        "code_distance": 9,
+        "data_patch_physical_qubits": 1288,
+        "logical_failure_union_bound": 0.0007200000000000003,
+        "payload_sha256": "77ff931ec1fbbb52be9fe7f1e26b7e58dc6134ea8db1f4e3ea7936aab9831336",
+        "physical_error_rate": 0.001,
+        "qec_rounds": 90,
+        "qualification_sha256": "f27a5058fcf06c0ba3541f35957b89a11ae8954d0067c3749af64da13128dc36",
+        "scenarios": [
+          {
+            "decoding_time_floor_seconds": 0.0,
+            "factory_count": 1,
+            "factory_physical_qubits": 375,
+            "label": "lean",
+            "routing_overhead_factor": 1.5,
+            "scenario_time_floor_seconds": 0.16499999999999998,
+            "t_state_time_floor_seconds": 0.16499999999999998,
+            "total_physical_qubits": 2307
+          },
+          {
+            "decoding_time_floor_seconds": 8.999999999999999e-05,
+            "factory_count": 4,
+            "factory_physical_qubits": 3000,
+            "label": "central",
+            "routing_overhead_factor": 2.0,
+            "scenario_time_floor_seconds": 0.08259,
+            "t_state_time_floor_seconds": 0.08249999999999999,
+            "total_physical_qubits": 5576
+          },
+          {
+            "decoding_time_floor_seconds": 0.0009000000000000001,
+            "factory_count": 8,
+            "factory_physical_qubits": 12000,
+            "label": "conservative",
+            "routing_overhead_factor": 3.0,
+            "scenario_time_floor_seconds": 0.08342,
+            "t_state_time_floor_seconds": 0.08252,
+            "total_physical_qubits": 15864
+          }
+        ],
+        "status": "estimated",
+        "syndrome_time_floor_seconds": 8.999999999999999e-05,
+        "total_t_count": 16500
+      },
+      {
+        "code_distance": 17,
+        "data_patch_physical_qubits": 4616,
+        "logical_failure_union_bound": 0.0026768879999999992,
+        "payload_sha256": "a0a72deab0e1c2b91823233a4705d8bd81ba1db8235ea3d9c354d37fc94aca5b",
+        "physical_error_rate": 0.003,
+        "qec_rounds": 170,
+        "qualification_sha256": "2b7be2da0c0a15d264da22152baa861e605f77199fdbdf6026af764cf33ce235",
+        "scenarios": [
+          {
+            "decoding_time_floor_seconds": 0.0,
+            "factory_count": 1,
+            "factory_physical_qubits": 375,
+            "label": "lean",
+            "routing_overhead_factor": 1.5,
+            "scenario_time_floor_seconds": 0.16499999999999998,
+            "t_state_time_floor_seconds": 0.16499999999999998,
+            "total_physical_qubits": 7299
+          },
+          {
+            "decoding_time_floor_seconds": 0.00016999999999999999,
+            "factory_count": 4,
+            "factory_physical_qubits": 3000,
+            "label": "central",
+            "routing_overhead_factor": 2.0,
+            "scenario_time_floor_seconds": 0.08267,
+            "t_state_time_floor_seconds": 0.08249999999999999,
+            "total_physical_qubits": 12232
+          },
+          {
+            "decoding_time_floor_seconds": 0.0017000000000000001,
+            "factory_count": 8,
+            "factory_physical_qubits": 12000,
+            "label": "conservative",
+            "routing_overhead_factor": 3.0,
+            "scenario_time_floor_seconds": 0.08421999999999999,
+            "t_state_time_floor_seconds": 0.08252,
+            "total_physical_qubits": 25848
+          }
+        ],
+        "status": "estimated",
+        "syndrome_time_floor_seconds": 0.00016999999999999999,
+        "total_t_count": 16500
+      },
+      {
+        "code_distance": 33,
+        "data_patch_physical_qubits": 17416,
+        "logical_failure_union_bound": 0.00201416015625,
+        "payload_sha256": "f4e50a08c289cba2bcdb474d6ba06a9141a90965e57dc68bfc181b06c79ea4bd",
+        "physical_error_rate": 0.005,
+        "qec_rounds": 330,
+        "qualification_sha256": "1149d78bb10b87ac31a40af1dfb06a4e20b9af01acd9d99d0ba5af0954291f6f",
+        "scenarios": [
+          {
+            "decoding_time_floor_seconds": 0.0,
+            "factory_count": 1,
+            "factory_physical_qubits": 375,
+            "label": "lean",
+            "routing_overhead_factor": 1.5,
+            "scenario_time_floor_seconds": 0.16499999999999998,
+            "t_state_time_floor_seconds": 0.16499999999999998,
+            "total_physical_qubits": 26499
+          },
+          {
+            "decoding_time_floor_seconds": 0.00033,
+            "factory_count": 4,
+            "factory_physical_qubits": 3000,
+            "label": "central",
+            "routing_overhead_factor": 2.0,
+            "scenario_time_floor_seconds": 0.08282999999999999,
+            "t_state_time_floor_seconds": 0.08249999999999999,
+            "total_physical_qubits": 37832
+          },
+          {
+            "decoding_time_floor_seconds": 0.0033000000000000004,
+            "factory_count": 8,
+            "factory_physical_qubits": 12000,
+            "label": "conservative",
+            "routing_overhead_factor": 3.0,
+            "scenario_time_floor_seconds": 0.08582,
+            "t_state_time_floor_seconds": 0.08252,
+            "total_physical_qubits": 64248
+          }
+        ],
+        "status": "estimated",
+        "syndrome_time_floor_seconds": 0.00033,
+        "total_t_count": 16500
+      },
+      {
+        "physical_error_rate": 0.01,
+        "reason": "physical_error_rate is at or above the repository surface-code threshold ansatz",
+        "status": "refused"
+      }
+    ],
+    "scenario_claim_boundary": "Time and space floors under caller-stated routing, factory and decoder assumptions; a scenario spread, not a runtime, device-availability or fault-tolerant-execution claim"
+  },
+  "schema": "scpn_qc_studio_qec_resource_instrument_v1"
+}

@@ -22,6 +22,21 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     are linear in the number of edges;
   - the sparse kernels report CPU float64 placement and no GPU path.
 
+- Inspect QEC decoder samples, the offline readiness decision and future
+  resources in Studio: Analyse gains a QEC and future-resources instrument at
+  `#/results/qec-resources`.
+  - Three separate tabs: seeded toric-code decoder samples with exact
+    Clopper-Pearson intervals and single-error syndromes; the committed
+    readiness decision, where hardware logical-error reduction always reads
+    "not measured"; and phenomenological resource estimates across physical
+    error rates, with three stated overhead scenarios.
+  - The overheads excluded from the base estimate are always listed, and a
+    rate at the threshold is shown as the source's refusal.
+  - Every value comes from `data/studio/qec_resource_instrument_20261031.json`,
+    built from the source owners by
+    `python -m scpn_quantum_control.studio.qec_resource_instrument_artifact`.
+    The browser computes none of them.
+
 - Qualify solver derivatives across every shipped solver:
   - `refine_solver_sensitivity` needs four meshes and every consecutive
     observed order near four; one ratio admitted pre-asymptotic meshes with a

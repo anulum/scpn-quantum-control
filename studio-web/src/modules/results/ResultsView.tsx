@@ -10,6 +10,8 @@ import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import { GradientDebugger } from "./GradientDebugger";
 import { gradientUnits } from "./gradientDebugger";
+import { QecInspector } from "./QecInspector";
+import { qecInstrument } from "./qecInstrument";
 import { ResultLoader } from "./ResultLoader";
 import type { ResultLoaderProps } from "./ResultLoader";
 import { EvidenceViewer } from "../../shared/evidence/EvidenceViewer";
@@ -25,6 +27,7 @@ import { gradientPlanExplanations, scorecard, supportMatrix } from "../../shared
 export default function ResultsView({
   focusInstrument = false,
   focusGradientDebugger = false,
+  focusQecInstrument = false,
   plan = null,
   outcome = null,
   editors,
@@ -33,17 +36,23 @@ export default function ResultsView({
   focusInstrument?: boolean;
   /** Focus the gradient debugger after this lazy module has mounted. */
   focusGradientDebugger?: boolean;
+  /** Focus the QEC and future-resource instrument after this lazy module has mounted. */
+  focusQecInstrument?: boolean;
   /** Registered comparison and inspection controls supplied by the shell slot. */
   editors?: ReactNode;
 }) {
   const target = useRef<HTMLDivElement>(null);
   const debugger_ = useRef<HTMLDivElement>(null);
+  const qec = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (focusInstrument && target.current !== null) target.current.focus();
   }, [focusInstrument]);
   useEffect(() => {
     if (focusGradientDebugger && debugger_.current !== null) debugger_.current.focus();
   }, [focusGradientDebugger]);
+  useEffect(() => {
+    if (focusQecInstrument && qec.current !== null) qec.current.focus();
+  }, [focusQecInstrument]);
   return (
     <article className="qsp-panel">
       <h3>Analyse</h3>
@@ -65,6 +74,9 @@ export default function ResultsView({
       </div>
       <div id="/results/gradient-debugger" tabIndex={-1} ref={debugger_}>
         <GradientDebugger plan={gradientPlanExplanations} units={gradientUnits} />
+      </div>
+      <div id="/results/qec-resources" tabIndex={-1} ref={qec}>
+        <QecInspector instrument={qecInstrument} />
       </div>
       <EvidenceViewer />
       {supportMatrix.ok ? (

@@ -13,9 +13,19 @@ from os import devnull
 
 Gate = tuple[str, list[str]]
 STUDIO_QEC_READINESS_BUNDLE_SOURCE = "src/scpn_quantum_control/studio/qec_readiness_bundle.py"
-STUDIO_QEC_READINESS_BUNDLE_COVERAGE_COHORT = ["tests/test_studio_qec_readiness_bundle.py"]
+STUDIO_QEC_INSTRUMENT_SOURCE = (
+    "src/scpn_quantum_control/studio/qec_resource_instrument_artifact.py"
+)
+STUDIO_QEC_READINESS_BUNDLE_COVERAGE_COHORT = [
+    "tests/test_studio_qec_readiness_bundle.py",
+    "tests/test_studio_qec_resource_instrument_artifact.py",
+]
+STUDIO_QEC_READINESS_BUNDLE_COVERAGE_INCLUDE = (
+    "--include=*/studio/qec_readiness_bundle.py,*/studio/qec_resource_instrument_artifact.py"
+)
 STUDIO_QEC_READINESS_BUNDLE_TYPING_RATCHET = [
     STUDIO_QEC_READINESS_BUNDLE_SOURCE,
+    STUDIO_QEC_INSTRUMENT_SOURCE,
     *STUDIO_QEC_READINESS_BUNDLE_COVERAGE_COHORT,
     "tools/studio_qec_readiness_bundle_quality_gates.py",
     "tests/test_studio_qec_readiness_bundle_quality_gate.py",
@@ -91,7 +101,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={STUDIO_QEC_READINESS_BUNDLE_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/studio/qec_readiness_bundle.py",
+                STUDIO_QEC_READINESS_BUNDLE_COVERAGE_INCLUDE,
             ],
         ),
     ]

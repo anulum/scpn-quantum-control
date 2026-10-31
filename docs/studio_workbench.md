@@ -60,7 +60,7 @@ Hash addresses work on static hosting without server rewrite rules:
 | Workspace | `#/workspace` (also the empty address) |
 | Model | `#/build` or `#/build/compile-recompute` |
 | Run | `#/experiments` |
-| Analyse | `#/results`, `#/results/program-ad-replay` or `#/results/gradient-debugger` |
+| Analyse | `#/results`, `#/results/program-ad-replay`, `#/results/gradient-debugger` or `#/results/qec-resources` |
 | Compare | `#/compare` |
 | Evidence | `#/evidence` |
 | Atlas | `#/atlas` |
@@ -720,6 +720,52 @@ gradient −sin θ at θ = 0.4, and a two-angle program for the trainable mask.
   `python -m scpn_quantum_control.studio.gradient_debugger_artifact --write`.
 - `--check` compares it with a fresh build. It compares numbers within the same
   budget and everything else exactly.
+
+## QEC and future resources
+
+Open **Analyse**, or search for **Open QEC and future resources**, to reach the
+instrument at `#/results/qec-resources`. It keeps three different things in
+separate tabs. The browser chooses among source values and computes none of
+them.
+
+- **Decoder simulation:** seeded toric-code Monte Carlo of minimum-weight
+  matching, at distances 3 and 5 and bit-flip rates from 0.003 to 0.1, with
+  2000 trials each.
+  - Choosing a distance and a rate shows that sample's failures, rate, seed and
+    exact Clopper-Pearson interval.
+  - The interval states its trial count. With no failure observed, its upper
+    bound is still positive, for example 0.00184 for 0 of 2000.
+  - The single-error syndromes of the chosen distance list each flipped data
+    qubit, the checks that fire and whether matching corrects it.
+  - At a rate of 0.1, above the matching threshold, distance 5 does not beat
+    distance 3, and the instrument shows that as it is.
+- **Offline readiness:** the committed multicircuit decision, its supported and
+  blocked claims, and every decoder aggregate with an interval recomputed from
+  its counts. *Hardware logical-error reduction* always reads **not measured**.
+  No reduction factor is derived from a simulation.
+- **Future resources:** the phenomenological estimate for a bounded
+  eight-oscillator problem across physical error rates.
+  - Choosing a rate shows the code distance, data-patch qubits, T count,
+    syndrome time floor and the payload digest. A different rate gives a
+    different estimate and digest.
+  - Three stated overhead scenarios (routing factor, factories, decoder
+    latency) give total qubits and time floors.
+  - The overheads excluded from the base estimate, such as lattice-surgery
+    routing, magic-state factories and decoder latency, are always listed.
+  - A rate at the threshold ansatz is shown as the source's refusal, not as an
+    estimate.
+  - A log-log plot shows data patches as dots and the scenario range as bars.
+    No named device is assessed.
+
+The data lives in `data/studio/qec_resource_instrument_20261031.json`.
+Malformed data, a sample that claims a measured logical-error reduction, or an
+interval inconsistent with its counts refuses the whole instrument.
+
+- Regenerate it with
+  `python -m scpn_quantum_control.studio.qec_resource_instrument_artifact --write`.
+- `--check` compares it with a fresh build. It compares numbers within
+  `|actual − reference| ≤ 1e-10 + 1e-8·|reference|` and everything else
+  exactly.
 
 ## Immutable revision and run comparison
 

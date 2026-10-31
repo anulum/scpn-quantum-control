@@ -27,11 +27,12 @@ export const resultsModule: StudioModule<Services, WorkspaceViewServices, "resul
       id: "results" as const,
       label: "Analyse",
       group: "primary",
-      instruments: ["program-ad-replay", "gradient-debugger"],
+      instruments: ["program-ad-replay", "gradient-debugger", "qec-resources"],
       render: (services: Services, instrument: string | null) => (
         <ResultsView
           focusInstrument={instrument === "program-ad-replay"}
           focusGradientDebugger={instrument === "gradient-debugger"}
+          focusQecInstrument={instrument === "qec-resources"}
           plan={services.experiment.plan}
           outcome={services.experiment.outcome}
           editors={services.renderEditors("results")}
@@ -49,6 +50,11 @@ export const resultsModule: StudioModule<Services, WorkspaceViewServices, "resul
       id: "open-gradient-debugger",
       label: "Open gradient debugger",
       action: { kind: "navigate", stage: "results", instrument: "gradient-debugger" },
+    },
+    {
+      id: "open-qec-resources",
+      label: "Open QEC and future resources",
+      action: { kind: "navigate", stage: "results", instrument: "qec-resources" },
     },
   ],
 };

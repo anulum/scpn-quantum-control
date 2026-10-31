@@ -41,7 +41,9 @@ def test_coverage_gate_is_isolated_public_and_exact() -> None:
     )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/studio/qec_readiness_bundle.py" in report
+    assert quality_gates.STUDIO_QEC_READINESS_BUNDLE_COVERAGE_INCLUDE in report
+    for source in ("qec_readiness_bundle.py", "qec_resource_instrument_artifact.py"):
+        assert f"*/studio/{source}" in quality_gates.STUDIO_QEC_READINESS_BUNDLE_COVERAGE_INCLUDE
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -66,5 +68,10 @@ def test_ci_runs_and_aggregates_studio_qec_readiness_bundle_gate() -> None:
         assert path in block
     assert "--fail-under=100" in block
     assert quality_gates.STUDIO_QEC_READINESS_BUNDLE_SOURCE in block
+    assert quality_gates.STUDIO_QEC_INSTRUMENT_SOURCE in block
+    assert (
+        quality_gates.STUDIO_QEC_READINESS_BUNDLE_COVERAGE_INCLUDE.removeprefix("--include=")
+        in block
+    )
     aggregate = workflow[workflow.index("  ci-gate:") :]
     assert "studio-qec-readiness-bundle-quality" in aggregate

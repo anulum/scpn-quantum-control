@@ -44,6 +44,7 @@ describe("workbenchRegistry", () => {
       ["/results", "results", null],
       ["/results/program-ad-replay", "results", "program-ad-replay"],
       ["/results/gradient-debugger", "results", "gradient-debugger"],
+      ["/results/qec-resources", "results", "qec-resources"],
       ["/compare", "compare", null],
       ["/evidence", "evidence", null],
       ["/atlas", "atlas", null],
