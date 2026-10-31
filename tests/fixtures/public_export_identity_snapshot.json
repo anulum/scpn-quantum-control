@@ -53584,6 +53584,16 @@
       ]
     },
     {
+      "path": "src/scpn_quantum_control/studio_workspace/jobs/__init__.py",
+      "module": "scpn_quantum_control.studio_workspace.jobs",
+      "source_sha256": "cfc1ab3d9aea06fa58a36c07da731281e8a752ed021dcb2b96163657aa861ad3",
+      "has_declared_all": true,
+      "declared_all": [],
+      "all_container_type": "list",
+      "star_names": [],
+      "bindings": []
+    },
+    {
       "path": "src/scpn_quantum_control/surrogates/__init__.py",
       "module": "scpn_quantum_control.surrogates",
       "source_sha256": "cd252f25f00f923aee6ac1745f650bf7abd1cca93b4e8ccfd0b7f95e52483f5f",
