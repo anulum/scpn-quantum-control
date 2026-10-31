@@ -221,3 +221,37 @@ def test_module_runs_as_a_script(monkeypatch: pytest.MonkeyPatch) -> None:
             "scpn_quantum_control.studio.pulse_instrument_artifact", run_name="__main__"
         )
     assert exited.value.code == 0
+
+
+def test_a_snapshot_observed_after_the_assessment_says_so(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A snapshot that was not yet observed at the assessment is refused with that reason."""
+    current = next(case for case in artifact.PULSE_CASES if case.case_id == "current-snapshot")
+    assert current.snapshot is not None
+    future = dict(current.snapshot)
+    future["metadata"] = {
+        "observed_at": "2026-11-01T00:00:00Z",
+        "expires_at": "2026-12-01T00:00:00Z",
+    }
+    monkeypatch.setattr(
+        artifact,
+        "PULSE_CASES",
+        (
+            artifact.PulseCase(
+                "future-snapshot",
+                "Observed after the assessment",
+                current.pulses,
+                current.placement,
+                snapshot=future,
+                snapshot_limits=current.snapshot_limits,
+            ),
+        ),
+    )
+    cases = cast(list[dict[str, Any]], artifact.build_pulse_instrument_artifact()["cases"])
+    assert len(cases) == 1
+    case = cases[0]
+    assert case["snapshot"]["valid_at_assessment"] is False
+    assert case["dossier"] is None
+    assert case["dossier_refusal"] == (
+        "the capability snapshot was observed at 2026-11-01T00:00:00Z, after the assessment "
+        "at 2026-10-31T12:00:00Z"
+    )

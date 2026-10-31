@@ -238,7 +238,12 @@ def _case(case: PulseCase) -> dict[str, object]:
             "max_pulses": snapshot.max_pulses,
             "max_pulse_duration_seconds": snapshot.max_pulse_duration,
         }
-        if not valid:
+        if utc_second(ASSESSED_AT) < utc_second(observed_at):
+            dossier_refusal = (
+                f"the capability snapshot was observed at {observed_at}, after the assessment "
+                f"at {ASSESSED_AT}"
+            )
+        elif not valid:
             dossier_refusal = (
                 f"the capability snapshot expired at {expires_at}, before the assessment "
                 f"at {ASSESSED_AT}"

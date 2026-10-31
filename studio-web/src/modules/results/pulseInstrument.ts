@@ -148,49 +148,135 @@ function nullable<T>(value: unknown, read: (item: unknown) => T): T | null {
   return value === null ? null : read(value);
 }
 
+const UTC_SECOND = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
+
+/** Read an exact ``YYYY-MM-DDTHH:MM:SSZ`` instant as milliseconds, refusing anything else. */
+function utcSecond(value: unknown, field: string): number {
+  const instant = text(value, field);
+  const milliseconds = Date.parse(instant);
+  if (!UTC_SECOND.test(instant) || Number.isNaN(milliseconds))
+    throw new Error(`${field} must be an exact UTC second, YYYY-MM-DDTHH:MM:SSZ`);
+  return milliseconds;
+}
+
+function positive(value: unknown, field: string): number {
+  return within(value, field, Number.MIN_VALUE, Number.MAX_VALUE);
+}
+
+/** Largest native amplitude the owner admits: the limit plus its rounding tolerance. */
+const AMPLITUDE_TOLERANCE = 1e-12;
+
+/** JSON text with every object's keys sorted, so equal values compare equal. */
+function canonical(value: unknown): string {
+  return JSON.stringify(value, (_key, item: unknown) =>
+    typeof item === "object" && item !== null && !Array.isArray(item)
+      ? Object.fromEntries(
+          Object.entries(item as Record<string, unknown>).sort(([left], [right]) =>
+            left < right ? -1 : 1,
+          ),
+        )
+      : item,
+  );
+}
+
+function sameJson(left: unknown, right: unknown): boolean {
+  return canonical(left) === canonical(right);
+}
+
 function limits(raw: unknown, field: string): PulseLimits {
   const row = record(raw, field);
   const source = row["source"];
   if (source !== "design" && source !== "provider_metadata")
     throw new Error(`${field}.source must be design or provider_metadata`);
+  const nQubits = count(row["n_qubits"], `${field}.n_qubits`);
+  if (nQubits < 1) throw new Error(`${field}.n_qubits must be at least 1`);
+  const granularitySamples = count(row["granularity_samples"], `${field}.granularity`);
+  if (granularitySamples < 1) throw new Error(`${field}.granularity must be at least 1`);
   return {
     source,
     dtSeconds: within(row["dt_seconds"], `${field}.dt_seconds`, Number.MIN_VALUE, 1),
-    granularitySamples: count(row["granularity_samples"], `${field}.granularity`),
-    rabiRatePerAmplitude: finite(row["rabi_rate_per_amplitude"], `${field}.rabi`),
+    granularitySamples,
+    rabiRatePerAmplitude: positive(row["rabi_rate_per_amplitude"], `${field}.rabi`),
     couplerRatePerAmplitude: nullable(row["coupler_rate_per_amplitude"], (item) =>
-      finite(item, `${field}.coupler`),
+      positive(item, `${field}.coupler`),
     ),
-    maxAmplitude: finite(row["max_amplitude"], `${field}.max_amplitude`),
-    maxSlew: nullable(row["max_slew"], (item) => finite(item, `${field}.max_slew`)),
-    nQubits: count(row["n_qubits"], `${field}.n_qubits`),
-    couplingMap: list(row["coupling_map"], `${field}.coupling_map`).map((pair, at) =>
-      numbers(pair, `${field}.coupling_map[${at}]`),
-    ),
+    maxAmplitude: positive(row["max_amplitude"], `${field}.max_amplitude`),
+    maxSlew: nullable(row["max_slew"], (item) => positive(item, `${field}.max_slew`)),
+    nQubits,
+    couplingMap: list(row["coupling_map"], `${field}.coupling_map`).map((raw, at) => {
+      const pair = numbers(raw, `${field}.coupling_map[${at}]`);
+      if (
+        pair.length !== 2 ||
+        pair[0] === pair[1] ||
+        pair.some((qubit) => !Number.isInteger(qubit) || qubit < 0 || qubit >= nQubits)
+      )
+        throw new Error(`${field}.coupling_map[${at}] must be two distinct physical qubits`);
+      return pair;
+    }),
   };
 }
 
-function snapshot(raw: unknown, field: string): CapabilitySnapshot {
+/** A snapshot whose validity flag is the one its own dates give at the assessment time. */
+function snapshot(raw: unknown, field: string, assessed: number): CapabilitySnapshot {
   const row = record(raw, field);
+  const observed = utcSecond(row["observed_at"], `${field}.observed_at`);
+  const expires = utcSecond(row["expires_at"], `${field}.expires_at`);
+  if (observed >= expires) throw new Error(`${field} must be observed before it expires`);
+  const validAtAssessment = flag(row["valid_at_assessment"], `${field}.valid_at_assessment`);
+  if (validAtAssessment !== (observed <= assessed && assessed < expires))
+    throw new Error(`${field}.valid_at_assessment disagrees with its dates`);
   return {
     provider: text(row["provider"], `${field}.provider`),
     backendName: text(row["backend_name"], `${field}.backend_name`),
     observedAt: text(row["observed_at"], `${field}.observed_at`),
     expiresAt: text(row["expires_at"], `${field}.expires_at`),
-    validAtAssessment: flag(row["valid_at_assessment"], `${field}.valid_at_assessment`),
+    validAtAssessment,
   };
 }
 
-/** A dossier must say, in its own fields, that it submits nothing and authorises nothing. */
-function dossier(raw: unknown, field: string): Readonly<Record<string, unknown>> {
+/**
+ * A dossier must be the owner's export of this case: its schema, its limits and
+ * native pulses, and in its own fields no submission and no device authority.
+ */
+function dossier(
+  raw: unknown,
+  field: string,
+  limits: PulseLimits,
+  native: readonly NativePulse[],
+): Readonly<Record<string, unknown>> {
   const row = record(raw, field);
   if (row["hardware_submission"] !== false || row["device_authority"] !== false)
     throw new Error(`${field} must not submit or claim device authority`);
   if (row["submissions"] !== 0) throw new Error(`${field} must record zero submissions`);
+  if (row["schema"] !== "native_pulse_design_v1")
+    throw new Error(`${field}.schema must be native_pulse_design_v1`);
+  const expectedLimits = {
+    coupler_rate_per_amplitude: limits.couplerRatePerAmplitude,
+    coupling_map: limits.couplingMap,
+    granularity: limits.granularitySamples,
+    max_amplitude: limits.maxAmplitude,
+    max_slew: limits.maxSlew,
+    n_qubits: limits.nQubits,
+    rabi_rate_per_amplitude: limits.rabiRatePerAmplitude,
+  };
+  if (
+    row["dt"] !== limits.dtSeconds ||
+    row["limits_source"] !== limits.source ||
+    !sameJson(record(row["limits"], `${field}.limits`), expectedLimits)
+  )
+    throw new Error(`${field} must carry the case's own limits`);
+  const pulses = native.map((pulse) => ({
+    channel: pulse.channel,
+    physical_qubits: pulse.physicalQubits,
+    t0: pulse.t0,
+    samples: pulse.samples,
+  }));
+  if (!sameJson(row["pulses"], pulses))
+    throw new Error(`${field}.pulses must be the case's native pulses`);
   return row;
 }
 
-function pulseCase(raw: unknown, index: number): PulseCase {
+function pulseCase(raw: unknown, index: number, assessed: number): PulseCase {
   const field = `cases[${index}]`;
   const row = record(raw, field);
   if (row["device_authority"] !== false || row["hardware_submission"] !== false)
@@ -225,26 +311,35 @@ function pulseCase(raw: unknown, index: number): PulseCase {
   const feasible = flag(row["feasible"], `${field}.feasible`);
   if (feasible !== (violations.length === 0))
     throw new Error(`${field}.feasible must hold exactly when there is no violation`);
+  const caseLimits = limits(row["limits"], `${field}.limits`);
   const native = list(row["native"], `${field}.native`).map((item, at) => {
     const pulse = record(item, `${field}.native[${at}]`);
+    const samples = numbers(pulse["samples"], `${field}.native[${at}].samples`);
+    if (samples.some((sample) => Math.abs(sample) > caseLimits.maxAmplitude + AMPLITUDE_TOLERANCE))
+      throw new Error(`${field}.native[${at}] has a sample above the amplitude limit`);
     return {
       channel: text(pulse["channel"], `${field}.native[${at}].channel`),
       physicalQubits: numbers(pulse["physical_qubits"], `${field}.native[${at}].qubits`),
       t0: count(pulse["t0"], `${field}.native[${at}].t0`),
-      samples: numbers(pulse["samples"], `${field}.native[${at}].samples`),
+      samples,
     };
   });
   if (!feasible && native.length > 0)
     throw new Error(`${field} has native pulses although it is not feasible`);
-  const snapshotView = nullable(row["snapshot"], (item) => snapshot(item, `${field}.snapshot`));
-  const dossierView = nullable(row["dossier"], (item) => dossier(item, `${field}.dossier`));
+  const snapshotView = nullable(row["snapshot"], (item) =>
+    snapshot(item, `${field}.snapshot`, assessed),
+  );
   const dossierRefusal = nullable(row["dossier_refusal"], (item) =>
     text(item, `${field}.dossier_refusal`),
   );
-  if ((dossierView === null) === (dossierRefusal === null))
+  const exported = row["dossier"] !== null;
+  if (exported === (dossierRefusal !== null))
     throw new Error(`${field} must have either a dossier or the reason it has none`);
-  if (dossierView !== null && (!feasible || snapshotView?.validAtAssessment === false))
+  if (exported && (!feasible || snapshotView?.validAtAssessment === false))
     throw new Error(`${field} exports a dossier for an infeasible design or an expired snapshot`);
+  const dossierView = exported
+    ? dossier(row["dossier"], `${field}.dossier`, caseLimits, native)
+    : null;
   return {
     caseId: text(row["case_id"], `${field}.case_id`),
     title: text(row["title"], `${field}.title`),
@@ -255,7 +350,7 @@ function pulseCase(raw: unknown, index: number): PulseCase {
         physical: count(pair["physical"], `${field}.placement[${at}].physical`),
       };
     }),
-    limits: limits(row["limits"], `${field}.limits`),
+    limits: caseLimits,
     snapshot: snapshotView,
     design,
     feasible,
@@ -289,7 +384,9 @@ export function parsePulseInstrument(raw: unknown): Loaded<PulseInstrument> {
         claimBoundary: text(payload["claim_boundary"], "claim_boundary"),
         designClaimBoundary: text(payload["design_claim_boundary"], "design_claim_boundary"),
         assessedAt: text(payload["assessed_at"], "assessed_at"),
-        cases: list(payload["cases"], "cases").map(pulseCase),
+        cases: list(payload["cases"], "cases").map((item, index) =>
+          pulseCase(item, index, utcSecond(payload["assessed_at"], "assessed_at")),
+        ),
       },
     };
   } catch (cause: unknown) {

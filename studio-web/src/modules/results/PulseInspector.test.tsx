@@ -152,6 +152,8 @@ describe("pulse feasibility instrument", () => {
     render(<PulseInspector instrument={refused} />);
     expect(screen.getByRole("alert").textContent).toContain("pulse_instrument_20261031.json");
     const first = (p: Json) => caseOf(p, "half-grid-and-over-amplitude");
+    const expired = (p: Json) => caseOf(p, "expired-snapshot");
+    const feasible = (p: Json) => caseOf(p, "feasible-design");
     const rows: [string, (payload: Json) => void, string][] = [
       ["source", (p) => ((first(p)["limits"] as Json)["source"] = "guess"), "design or provider"],
       ["order", (p) => (((first(p)["design"] as Json[])[1] as Json)["index"] = 0), "index order"],
@@ -185,6 +187,77 @@ describe("pulse feasibility instrument", () => {
         "must not submit or claim device authority",
       ],
       ["dt", (p) => ((first(p)["limits"] as Json)["dt_seconds"] = 0), "dt_seconds must lie in"],
+      [
+        "valid flag flipped",
+        (p) => ((expired(p)["snapshot"] as Json)["valid_at_assessment"] = true),
+        "valid_at_assessment disagrees with its dates",
+      ],
+      [
+        "flipped with a dossier",
+        (p) => {
+          (expired(p)["snapshot"] as Json)["valid_at_assessment"] = true;
+          expired(p)["dossier"] = caseOf(copy(), "current-snapshot")["dossier"];
+          expired(p)["dossier_refusal"] = null;
+        },
+        "valid_at_assessment disagrees with its dates",
+      ],
+      [
+        "expiry not a UTC second",
+        (p) => ((expired(p)["snapshot"] as Json)["expires_at"] = "2026-10-30"),
+        "expires_at must be an exact UTC second",
+      ],
+      [
+        "observed after expiry",
+        (p) => ((expired(p)["snapshot"] as Json)["observed_at"] = "2026-10-31T00:00:00Z"),
+        "must be observed before it expires",
+      ],
+      ["assessment time", (p) => (p["assessed_at"] = "yesterday"), "assessed_at must be an exact"],
+      [
+        "sample above the limit",
+        (p) =>
+          (((feasible(p)["native"] as Json[])[0] as Json)["samples"] as number[]).splice(0, 1, 2),
+        "sample above the amplitude limit",
+      ],
+      [
+        "dossier period",
+        (p) => ((feasible(p)["dossier"] as Json)["dt"] = 1e-9),
+        "must carry the case's own limits",
+      ],
+      [
+        "dossier pulses",
+        (p) => ((feasible(p)["dossier"] as Json)["pulses"] = []),
+        "pulses must be the case's native pulses",
+      ],
+      [
+        "dossier schema",
+        (p) => ((feasible(p)["dossier"] as Json)["schema"] = "other"),
+        "schema must be native_pulse_design_v1",
+      ],
+      [
+        "negative amplitude limit",
+        (p) => ((first(p)["limits"] as Json)["max_amplitude"] = -1),
+        "max_amplitude must lie in",
+      ],
+      [
+        "zero grid",
+        (p) => ((first(p)["limits"] as Json)["granularity_samples"] = 0),
+        "granularity must be at least 1",
+      ],
+      [
+        "no qubits",
+        (p) => ((first(p)["limits"] as Json)["n_qubits"] = 0),
+        "n_qubits must be at least 1",
+      ],
+      [
+        "coupling out of range",
+        (p) => ((first(p)["limits"] as Json)["coupling_map"] = [[0, 9]]),
+        "must be two distinct physical qubits",
+      ],
+      [
+        "self coupling",
+        (p) => ((first(p)["limits"] as Json)["coupling_map"] = [[1, 1]]),
+        "must be two distinct physical qubits",
+      ],
     ];
     for (const [name, edit, reason] of rows) {
       const payload = copy();
