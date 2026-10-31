@@ -233,7 +233,7 @@ SolverRefusalReason = Literal["failed_solve", "event_crossing", "not_refined"]
 
 RK4_ORDER: Final[int] = 4
 """Global order of the classical fixed-step Runge-Kutta method."""
-DELAYED_METHOD_OF_STEPS_ORDERS: Final[tuple[int, ...]] = (2, 3, 4)
+DELAYED_METHOD_OF_STEPS_ORDERS: Final[tuple[int, ...]] = (2, 4)
 """Global orders the delayed method-of-steps integrator shows under step halving.
 
 Lagged values between grid points are interpolated, which limits the order to
@@ -254,14 +254,16 @@ SOLVER_DERIVATIVE_SUPPORT: Final[dict[str, str]] = {
     ),
     "event_time": (
         "refused: a crossed event raises SolverDerivativeRefusal; a continuous claim is also "
-        "refused when the event comes within two one-step changes of zero, since a crossing "
-        "between mesh points cannot then be excluded"
+        "refused when the event comes within two one-step changes of zero on the finest mesh. "
+        "The event is sampled only at mesh points: a feature of g narrower than one step can "
+        "cross zero and return unseen, so the continuous claim assumes g is resolved by the "
+        "finest mesh"
     ),
     "delayed_history": (
         "qualified only by step refinement: delayed_phase_sensitivity is the exact derivative "
         "of the discrete method-of-steps map; qualify_delayed_sensitivity issues a continuous "
         "claim for the frequency and coupling channels only from step-halving evidence at "
-        "a consistent observed order of two to four"
+        "a consistent observed order of two or four"
     ),
     "failed_solve": (
         "refused: non-finite or diverging states or sensitivities raise SolverDerivativeRefusal"
@@ -659,7 +661,10 @@ def refine_solver_sensitivity(
         fourth-order convergence or the error estimate exceeds ``tolerance``;
         ``event_crossing`` when the event comes within two one-step changes of
         zero on the finest mesh, since the flow could then cross between mesh
-        points; any refusal of a single mesh.
+        points; any refusal of a single mesh. The event is sampled only at
+        mesh points, so a feature of ``g`` narrower than one finest step can
+        cross zero unseen; the continuous claim assumes the finest mesh
+        resolves ``g``.
     ValueError
         If the refinement settings are malformed.
 
@@ -834,7 +839,7 @@ def qualify_delayed_sensitivity(
     is the exact derivative of the discrete delayed map at one step. The
     history channels change size with the step, so only the frequency and
     coupling channels, ``dtheta_T/d(omega, K)``, are refined. The integrator
-    converges at second order in general and at up to fourth order where its
+    converges at second order in general and at fourth order where its
     interpolation of lagged values is exact. The continuous claim is issued
     only when every consecutive observed order is within ``order_tolerance``
     of the same order in :data:`DELAYED_METHOD_OF_STEPS_ORDERS`, which is then

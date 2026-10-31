@@ -579,3 +579,21 @@ def test_qualifiers_refuse_non_finite_gradients() -> None:
             final_time=1.0,
         )
     assert delayed.value.reason == "failed_solve"
+
+
+def test_event_narrower_than_a_step_is_outside_the_continuous_guarantee() -> None:
+    """A time pulse in ``g`` between mesh points crosses zero unseen: the documented limit.
+
+    ``g(t) = 1 - 2 exp(-((t - 0.5003) / 1e-4)**2)`` dips to -1 for about 2e-4 of
+    time, far narrower than the finest step 1/128. No mesh point sees it, so a
+    continuous claim is issued; ``SOLVER_DERIVATIVE_SUPPORT`` states that the
+    claim assumes the finest mesh resolves ``g``.
+    """
+
+    def pulse(t: float, y: Vector, th: Vector) -> float:
+        return 1.0 - 2.0 * math.exp(-(((t - 0.5003) / 1e-4) ** 2))
+
+    result = refine_solver_sensitivity(*_linear(), [1.0], [-0.5], 1.0, base_steps=16, event=pulse)
+    assert result.kind == "continuous_refined"
+    assert pulse(0.5003, np.zeros(1), np.zeros(1)) < 0.0
+    assert "resolved by the" in SOLVER_DERIVATIVE_SUPPORT["event_time"]

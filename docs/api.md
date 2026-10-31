@@ -1866,6 +1866,11 @@ with reason `"failed_solve"`, or `"event_crossing"` for an event:
   zero on the finest mesh, since the flow could then cross between mesh
   points.
 
+The event is sampled only at mesh points. A feature of `g` narrower than one
+finest step, such as a pulse in time, can cross zero and return between mesh
+points without being seen. A continuous claim with an event therefore assumes
+that the finest mesh resolves `g`.
+
 Two other solvers ship discrete derivatives, and each has a qualifier for a
 continuous claim:
 
@@ -1879,7 +1884,7 @@ continuous claim:
   discrete delayed method-of-steps map. `qualify_delayed_sensitivity()`
   halves the step on four or more meshes, samples a history function on each,
   and refines the frequency and coupling channels. The integrator converges
-  at second order in general (lagged values are interpolated) and up to fourth
+  at second order in general (lagged values are interpolated) and at fourth
   order where that interpolation is exact. The claim needs every observed order
   to agree with one order in `DELAYED_METHOD_OF_STEPS_ORDERS`.
 

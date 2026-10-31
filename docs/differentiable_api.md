@@ -1684,11 +1684,13 @@ A gradient through an ODE or DDE solve is one of two objects, and the
 | `kuramoto_dopri_vjp` (oscillatools) | adjoint of the realised adaptive step sequence, decisions held fixed | none |
 | `qualify_adaptive_dopri_gradient` | that adjoint at three or more tightening tolerances | only when the changes shrink and the last is within tolerance |
 | `delayed_phase_sensitivity` (oscillatools) | exact derivative of the delayed method-of-steps map | none |
-| `qualify_delayed_sensitivity` | step-halving refinement of the frequency and coupling channels | only at a consistent observed order of two to four |
+| `qualify_delayed_sensitivity` | step-halving refinement of the frequency and coupling channels | only at a consistent observed order of two or four |
 
 A failed solve, a non-finite sensitivity or event value, or an event that
 reaches zero raises `SolverDerivativeRefusal`. So does an event that comes
 within two one-step changes of zero when a continuous claim is requested.
+Events are sampled at mesh points only, so a continuous claim with an event
+assumes the finest mesh resolves it.
 `SOLVER_DERIVATIVE_SUPPORT` states the same per control decision. Details:
 [API reference](api.md).
 
