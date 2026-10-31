@@ -300,6 +300,7 @@ if TYPE_CHECKING:
     from tools import (
         qualification_projection_quality_gates as _qualification_projection_quality_gates,
     )
+    from tools import quantum_geometry_quality_gates as _quantum_geometry_quality_gates
     from tools import (
         quantum_neuromorphic_bridge_quality_gates as _quantum_neuromorphic_bridge_quality_gates,
     )
@@ -676,6 +677,7 @@ else:
     _differentiable_sparse_derivatives_quality_gates = import_module(
         "tools.differentiable_sparse_derivatives_quality_gates"
     )
+    _quantum_geometry_quality_gates = import_module("tools.quantum_geometry_quality_gates")
     _program_ad_adjoint_quality_gates = import_module("tools.program_ad_adjoint_quality_gates")
     _program_ad_alias_analysis_quality_gates = import_module(
         "tools.program_ad_alias_analysis_quality_gates"
@@ -1341,6 +1343,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_p_h1_open_guard_quality_gates.build_static_quality_gates(_PY),
     *_differentiable_parameter_shift_quality_gates.build_static_quality_gates(_PY),
     *_differentiable_sparse_derivatives_quality_gates.build_static_quality_gates(_PY),
+    *_quantum_geometry_quality_gates.build_static_quality_gates(_PY),
     *_program_ad_adjoint_quality_gates.build_static_quality_gates(_PY),
     *_qpu_compute_types_quality_gates.build_static_quality_gates(_PY),
     *_hls_cosimulation_evidence_quality_gates.build_static_quality_gates(_PY),
@@ -1905,6 +1908,7 @@ DIFFERENTIABLE_PARAMETER_SHIFT_COVERAGE_GATES = (
 DIFFERENTIABLE_SPARSE_DERIVATIVES_COVERAGE_GATES = (
     _differentiable_sparse_derivatives_quality_gates.build_coverage_gates(_PY)
 )
+QUANTUM_GEOMETRY_COVERAGE_GATES = _quantum_geometry_quality_gates.build_coverage_gates(_PY)
 PROGRAM_AD_ADJOINT_COVERAGE_GATES = _program_ad_adjoint_quality_gates.build_coverage_gates(_PY)
 QPU_COMPUTE_TYPES_COVERAGE_GATES = _qpu_compute_types_quality_gates.build_coverage_gates(_PY)
 HLS_COSIMULATION_EVIDENCE_COVERAGE_GATES = (
@@ -2419,6 +2423,7 @@ def main() -> int:
             gates.extend(P_H1_OPEN_GUARD_COVERAGE_GATES)
             gates.extend(DIFFERENTIABLE_PARAMETER_SHIFT_COVERAGE_GATES)
             gates.extend(DIFFERENTIABLE_SPARSE_DERIVATIVES_COVERAGE_GATES)
+            gates.extend(QUANTUM_GEOMETRY_COVERAGE_GATES)
             gates.extend(PROGRAM_AD_ADJOINT_COVERAGE_GATES)
             gates.extend(QPU_COMPUTE_TYPES_COVERAGE_GATES)
             gates.extend(HLS_COSIMULATION_EVIDENCE_COVERAGE_GATES)

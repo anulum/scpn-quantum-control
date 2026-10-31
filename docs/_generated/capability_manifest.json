@@ -13,7 +13,7 @@
     "python_model_source_modules": 856,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1614
+    "test_files": 1616
   },
   "documentation": {
     "examples": [
@@ -10590,6 +10590,8 @@
       "tests/test_quantum_entropy_source.py",
       "tests/test_quantum_evs.py",
       "tests/test_quantum_evs_branches.py",
+      "tests/test_quantum_geometry_conformance.py",
+      "tests/test_quantum_geometry_quality_gate.py",
       "tests/test_quantum_gradient_estimators.py",
       "tests/test_quantum_kernel.py",
       "tests/test_quantum_kernel_branches.py",

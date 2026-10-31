@@ -25,8 +25,8 @@ Reference: Braunstein & Caves, PRL 72, 3439 (1994).
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any
+from dataclasses import dataclass, field
+from typing import Any, Final
 
 import numpy as np
 from numpy.typing import NDArray
@@ -35,16 +35,37 @@ from qiskit.quantum_info import SparsePauliOp
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
 from ..dense_budget import require_dense_allocation
 
+QFI_CONVENTION: Final[str] = (
+    "F_ab = 4 Re<d_a psi|(1 - |psi><psi|)|d_b psi> for the non-degenerate ground state psi of "
+    "H(K) = -sum_{i<j} K_ij (X_i X_j + Y_i Y_j) - sum_i omega_i Z_i, one parameter K_ij per "
+    "listed pair; pure states only; four times the real part (Fubini-Study metric) of the "
+    "quantum geometric tensor; the Berry curvature is not included"
+)
+"""The convention and scope of :func:`compute_qfi`."""
+QFI_PSD_TOLERANCE: Final[float] = 1.0e-10
+"""Relative bound on a negative QFI eigenvalue admitted as rounding: ``-tol * max(1, max |eig|)``."""
+
 
 @dataclass
 class QFIResult:
-    """Quantum Fisher Information computation result."""
+    """Quantum Fisher Information computation result.
+
+    ``metric_eigenvalues`` are the eigenvalues of ``qfi_matrix`` in ascending
+    order, and ``metric_rank`` counts those above ``QFI_PSD_TOLERANCE`` times
+    the largest. A rank below the number of pairs marks parameter directions
+    the ground state does not resolve; they are reported, not regularised.
+    """
 
     qfi_matrix: NDArray[np.float64]
     coupling_pairs: list[tuple[int, int]]
     precision_bounds: NDArray[np.float64]
     spectral_gap: float
     n_qubits: int
+    metric_eigenvalues: NDArray[np.float64] = field(
+        default_factory=lambda: np.zeros(0, dtype=np.float64)
+    )
+    metric_rank: int = 0
+    convention: str = QFI_CONVENTION
 
     def precision_for(self, i: int, j: int, n_measurements: int = 10000) -> float:
         """Cramér-Rao lower bound on Var(K̂_ij) for given measurement budget."""
@@ -62,18 +83,26 @@ def compute_qfi(
     pairs: list[tuple[int, int]] | None = None,
     *,
     max_dense_gib: float | None = None,
+    degeneracy_tolerance: float = 1.0e-9,
 ) -> QFIResult:
     """Compute the Quantum Fisher Information matrix for coupling parameters.
 
     K: coupling matrix (symmetric, n×n)
     omega: natural frequencies (n,)
     pairs: which coupling pairs to compute QFI for (default: all nonzero K_ij)
+    degeneracy_tolerance: a spectral gap at most this times ``max(1, max |E|)``
+    is a degenerate ground state, for which the QFI is not defined (any state
+    in the ground space could be returned) and a ``ValueError`` is raised.
 
-    Returns QFIResult with the QFI matrix, coupling pairs, and precision bounds.
+    Returns QFIResult with the QFI matrix, coupling pairs, precision bounds,
+    metric eigenvalues and rank, under :data:`QFI_CONVENTION`. A metric with a
+    negative eigenvalue beyond :data:`QFI_PSD_TOLERANCE` is refused.
     This exact spectral implementation is dense and small-system only;
     ``max_dense_gib`` fails closed before Hamiltonian, eigensolver, or
     derivative-operator allocations exceed the active budget.
     """
+    if not np.isfinite(degeneracy_tolerance) or degeneracy_tolerance <= 0.0:
+        raise ValueError("degeneracy_tolerance must be finite and positive")
     n = len(omega)
     if pairs is None:
         pairs = [(i, j) for i in range(n) for j in range(i + 1, n) if abs(K[i, j]) > 1e-10]
@@ -92,6 +121,12 @@ def compute_qfi(
     E0 = eigenvalues[0]
     psi0 = eigenvectors[:, 0]
     gap = float(eigenvalues[1] - eigenvalues[0])
+    scale = max(1.0, float(np.max(np.abs(eigenvalues))))
+    if gap <= degeneracy_tolerance * scale:
+        raise ValueError(
+            f"the ground state is degenerate (gap {gap:.3e}); the QFI of a ground space is not "
+            "defined by one state, so none is returned"
+        )
 
     n_pairs = len(pairs)
     qfi = np.zeros((n_pairs, n_pairs))
@@ -122,13 +157,20 @@ def compute_qfi(
     for a in range(n_pairs):
         for b in range(a, n_pairs):
             val = 0.0
+            # Every excited level lies at least the admitted gap above E0.
             for m in range(1, dim):
                 denom = (eigenvalues[m] - E0) ** 2
-                if denom < 1e-30:
-                    continue
                 val += np.real(mel[m, a].conj() * mel[m, b]) / denom
             qfi[a, b] = 4.0 * val
             qfi[b, a] = qfi[a, b]
+
+    spectrum = np.linalg.eigvalsh(qfi) if n_pairs else np.zeros(0, dtype=np.float64)
+    largest = max(1.0, float(np.max(np.abs(spectrum)))) if n_pairs else 1.0
+    if n_pairs and float(spectrum[0]) < -QFI_PSD_TOLERANCE * largest:
+        raise ValueError(
+            f"the QFI matrix has a negative eigenvalue {float(spectrum[0]):.3e}; it is not a metric"
+        )
+    rank = int(np.count_nonzero(spectrum > QFI_PSD_TOLERANCE * largest))
 
     # Precision bounds: diagonal elements give per-parameter bounds
     diag = np.diag(qfi)
@@ -141,6 +183,8 @@ def compute_qfi(
         precision_bounds=precision,
         spectral_gap=gap,
         n_qubits=n,
+        metric_eigenvalues=np.asarray(spectrum, dtype=np.float64),
+        metric_rank=rank,
     )
 
 

@@ -162,6 +162,8 @@ class ParameterShiftNaturalGradientResult:
     converged: bool
     reason: str
     claim_boundary: str
+    metric_evaluations: int = 0
+    """Calls of a callable metric, one per visited parameter point; zero for a fixed metric."""
 
     @property
     def value_history(self) -> tuple[float, ...]:
@@ -192,6 +194,7 @@ class ParameterShiftNaturalGradientResult:
             "accepted_steps": self.accepted_steps,
             "rejected_steps": self.rejected_steps,
             "evaluations": self.evaluations,
+            "metric_evaluations": self.metric_evaluations,
             "backend": self.backend_plan.backend,
             "plan_method": self.backend_plan.method,
             "method": self.method,
@@ -234,6 +237,8 @@ class ParameterShiftNaturalGradientCertificate:
     shift_terms: int
     reason: str
     claim_boundary: str
+    metric_evaluations: int = 0
+    """Calls of a callable metric during training, reported beside objective evaluations."""
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready certificate metadata."""
@@ -251,6 +256,7 @@ class ParameterShiftNaturalGradientCertificate:
             "accepted_steps": self.accepted_steps,
             "rejected_steps": self.rejected_steps,
             "evaluations": self.evaluations,
+            "metric_evaluations": self.metric_evaluations,
             "final_gradient_norm": self.final_gradient_norm,
             "final_natural_gradient_norm": self.final_natural_gradient_norm,
             "metric_source": self.metric_source,
@@ -374,9 +380,14 @@ def _regularized_metric(
     if policy.max_condition_number <= 1.0:
         raise ValueError("max_condition_number must be greater than one")
     if maximum > minimum:
-        required = (maximum - policy.max_condition_number * minimum) / (
-            policy.max_condition_number - 1.0
-        )
+        # The regularised smallest eigenvalue carries a relative rounding error of about
+        # eps * kappa, so aim below the limit by that margin; aiming exactly at it lets the
+        # computed condition number exceed the limit and refuse a metric it should admit.
+        slack = 64.0 * float(np.finfo(np.float64).eps) * policy.max_condition_number
+        target = policy.max_condition_number / (1.0 + slack)
+        if target <= 1.0:
+            raise ValueError("max_condition_number must exceed one by more than rounding")
+        required = (maximum - target * minimum) / (target - 1.0)
         condition_shift = max(0.0, required - policy.damping)
     diagonal_shift = policy.damping + max(floor_shift, condition_shift)
     regularized = metric + diagonal_shift * np.eye(metric.shape[0], dtype=np.float64)
@@ -522,7 +533,10 @@ def parameter_shift_natural_gradient_descent(
     metric tensor supplied by the caller. The default identity metric is an
     auditable preconditioner baseline, not a claim of quantum Fisher metric
     extraction. Hardware backends remain fail-closed through the backend
-    planner unless an explicit future policy enables them.
+    planner unless an explicit future policy enables them. A callable metric is
+    evaluated once per visited parameter point and those calls are reported as
+    ``metric_evaluations`` beside the objective ``evaluations``, so a comparison
+    with plain gradient descent counts the metric's cost.
     """
     params = _as_parameter_vector("initial_params", initial_params)
     rate = _positive_float("learning_rate", learning_rate)
@@ -550,6 +564,20 @@ def parameter_shift_natural_gradient_descent(
         allow_hardware=allow_hardware,
     )
     _ensure_supported(plan)
+    metric_calls = 0
+    last_metric: tuple[bytes, FloatArray] | None = None
+
+    def metric_here(point: FloatArray) -> FloatArray:
+        # One provider call per visited point, so a callable metric's cost is counted once.
+        nonlocal metric_calls, last_metric
+        key = point.tobytes()
+        if last_metric is not None and last_metric[0] == key:
+            return last_metric[1]
+        metric = _metric_at(metric_tensor, point)
+        if callable(metric_tensor):
+            metric_calls += 1
+        last_metric = (key, metric)
+        return metric
 
     current = _value_and_parameter_shift_grad(
         objective,
@@ -571,7 +599,7 @@ def parameter_shift_natural_gradient_descent(
     converged = False
     final_direction = solve_natural_gradient_direction(
         current_gradient,
-        _metric_at(metric_tensor, params),
+        metric_here(params),
         damping=damp,
         eigenvalue_floor=floor,
         max_condition_number=max_condition,
@@ -582,7 +610,7 @@ def parameter_shift_natural_gradient_descent(
         gradient_norm = float(np.linalg.norm(current_gradient))
         direction = solve_natural_gradient_direction(
             current_gradient,
-            _metric_at(metric_tensor, params),
+            metric_here(params),
             damping=damp,
             eigenvalue_floor=floor,
             max_condition_number=max_condition,
@@ -686,7 +714,7 @@ def parameter_shift_natural_gradient_descent(
     else:
         final_direction = solve_natural_gradient_direction(
             current_gradient,
-            _metric_at(metric_tensor, params),
+            metric_here(params),
             damping=damp,
             eigenvalue_floor=floor,
             max_condition_number=max_condition,
@@ -705,7 +733,7 @@ def parameter_shift_natural_gradient_descent(
 
     final_direction = solve_natural_gradient_direction(
         current_gradient,
-        _metric_at(metric_tensor, params),
+        metric_here(params),
         damping=damp,
         eigenvalue_floor=floor,
         max_condition_number=max_condition,
@@ -743,6 +771,7 @@ def parameter_shift_natural_gradient_descent(
             "identity metric is preconditioner baseline only; no hardware or "
             "arbitrary-circuit quantum Fisher extraction is implied"
         ),
+        metric_evaluations=metric_calls,
     )
 
 
@@ -799,6 +828,7 @@ def validate_natural_gradient_training(
         accepted_steps=result.accepted_steps,
         rejected_steps=result.rejected_steps,
         evaluations=result.evaluations,
+        metric_evaluations=result.metric_evaluations,
         final_gradient_norm=result.final_gradient_norm,
         final_natural_gradient_norm=result.final_natural_gradient_norm,
         metric_source=result.metric_source,

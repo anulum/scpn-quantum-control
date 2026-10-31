@@ -34,7 +34,10 @@ class QuantumFisherInformation:
         Routes to the spectral QFI engine when both ``coupling_matrix`` and
         ``natural_frequencies`` are supplied; otherwise the legacy
         sync-order/DLA estimate is available only as an explicitly labelled
-        diagnostic proxy, never as a production QFI claim.
+        diagnostic proxy, never as a production QFI claim. The production
+        result reports the metric rank and smallest eigenvalue, so unresolved
+        coupling directions are visible; a degenerate ground state is refused
+        by the spectral engine.
         """
         coupling_matrix = kwargs.get("coupling_matrix")
         natural_frequencies = kwargs.get("natural_frequencies")
@@ -129,6 +132,10 @@ class QuantumFisherInformation:
             "qfi": float(np.max(diagonal)) if len(diagonal) else 0.0,
             "qfi_max_diagonal": float(np.max(diagonal)) if len(diagonal) else 0.0,
             "qfi_trace": float(np.trace(result.qfi_matrix)),
+            "qfi_rank": float(result.metric_rank),
+            "qfi_min_eigenvalue": (
+                float(result.metric_eigenvalues[0]) if len(result.metric_eigenvalues) else 0.0
+            ),
             "qfi_matrix_shape_0": float(result.qfi_matrix.shape[0]),
             "qfi_matrix_shape_1": float(result.qfi_matrix.shape[1]),
             "precision_bound_for_measurement_budget": precision_bound,

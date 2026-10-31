@@ -22,6 +22,8 @@ from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 class TestQFI:
+    """Spectral QFI of the XY ground state and its result record."""
+
     def test_2qubit_qfi_positive(self) -> None:
         """Strong coupling relative to frequencies → entangled ground state → nonzero QFI."""
         K = np.array([[0, 2.0], [2.0, 0]])
@@ -31,6 +33,7 @@ class TestQFI:
         assert result.qfi_matrix[0, 0] > 0
 
     def test_4qubit_qfi_shape(self) -> None:
+        """One row and column per coupling pair; four qubits have six pairs."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = compute_qfi(K, omega)
@@ -39,12 +42,14 @@ class TestQFI:
         assert n_pairs == 6  # 4 choose 2
 
     def test_qfi_symmetric(self) -> None:
+        """The QFI matrix is symmetric."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_qfi(K, omega)
         np.testing.assert_allclose(result.qfi_matrix, result.qfi_matrix.T, atol=1e-10)
 
     def test_qfi_positive_semidefinite(self) -> None:
+        """The QFI matrix has no negative eigenvalue beyond rounding."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_qfi(K, omega)
@@ -52,8 +57,11 @@ class TestQFI:
         assert np.all(eigenvalues >= -1e-10)
 
     def test_precision_bounds(self) -> None:
-        """Precision bounds are positive. Some may be inf if QFI diagonal = 0
-        (ground state insensitive to that coupling parameter)."""
+        """Precision bounds are positive.
+
+        Some may be infinite when a QFI diagonal is zero, that is when the
+        ground state does not respond to that coupling.
+        """
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_qfi(K, omega)
@@ -83,12 +91,14 @@ class TestQFI:
         assert np.max(diag) < 1.0
 
     def test_spectral_gap_positive(self) -> None:
+        """The admitted ground state has a positive spectral gap."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_qfi(K, omega)
         assert result.spectral_gap > 0
 
     def test_gap_tradeoff(self) -> None:
+        """The gap/QFI trade-off report has a positive gap and a non-negative QFI."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         tradeoff = qfi_gap_tradeoff(K, omega)
@@ -106,6 +116,7 @@ class TestQFI:
         assert tradeoff["tradeoff_ratio"] > 0
 
     def test_gap_tradeoff_propagates_dense_budget(self) -> None:
+        """The trade-off report refuses before exceeding the dense budget."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
 
@@ -113,6 +124,7 @@ class TestQFI:
             qfi_gap_tradeoff(K, omega, max_dense_gib=1e-6)
 
     def test_qfi_result_precision_method(self) -> None:
+        """The Cramér-Rao bound is ``1 / (M F_ii)``."""
         result = QFIResult(
             qfi_matrix=np.array([[4.0]]),
             coupling_pairs=[(0, 1)],
@@ -124,6 +136,7 @@ class TestQFI:
         assert prec == pytest.approx(1.0 / 400, rel=1e-10)
 
     def test_precision_method_zero_qfi_is_infinite(self) -> None:
+        """A zero QFI entry gives an infinite variance bound."""
         result = QFIResult(
             qfi_matrix=np.array([[0.0]]),
             coupling_pairs=[(0, 1)],
@@ -135,6 +148,7 @@ class TestQFI:
         assert result.precision_for(1, 0, n_measurements=100) == float("inf")
 
     def test_custom_pairs(self) -> None:
+        """Only the requested pairs are parameters."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = compute_qfi(K, omega, pairs=[(0, 1), (2, 3)])
@@ -144,6 +158,14 @@ class TestQFI:
     def test_rejects_dense_qfi_before_hamiltonian_allocation(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """The dense budget is checked before any Hamiltonian is built.
+
+        Parameters
+        ----------
+        monkeypatch
+            Replaces the dense builder with one that fails if called.
+
+        """
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
 
@@ -155,7 +177,19 @@ class TestQFI:
         with pytest.raises(DenseAllocationError, match="QFI dense eigensolver"):
             compute_qfi(K, omega, max_dense_gib=1e-6)
 
-    def test_degenerate_excited_level_is_skipped(self, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_degenerate_ground_level_is_refused(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """A degenerate ground level has no single ground state, so no QFI is returned.
+
+        Earlier behaviour picked the first eigenvector of the ground space and
+        skipped the zero denominators, returning a basis-dependent number.
+
+        Parameters
+        ----------
+        monkeypatch
+            Replaces the Hamiltonian builders with a fixed degenerate spectrum.
+
+        """
+
         def fake_hamiltonian(K: NDArray[np.float64], omega: NDArray[np.float64]) -> None:
             del K, omega
             return None
@@ -170,8 +204,5 @@ class TestQFI:
         monkeypatch.setattr(qfi_mod, "knm_to_hamiltonian", fake_hamiltonian)
         monkeypatch.setattr(qfi_mod, "knm_to_dense_matrix", fake_dense_matrix)
 
-        result = compute_qfi(np.zeros((2, 2)), np.zeros(2), pairs=[(0, 1)])
-
-        assert result.spectral_gap == 0.0
-        assert np.isfinite(result.qfi_matrix).all()
-        assert result.precision_bounds.shape == (1,)
+        with pytest.raises(ValueError, match="ground state is degenerate"):
+            compute_qfi(np.zeros((2, 2)), np.zeros(2), pairs=[(0, 1)])

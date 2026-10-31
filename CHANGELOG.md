@@ -4,6 +4,17 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Make the quantum Fisher metric's convention, rank and regularisation
+  explicit:
+  - `compute_qfi` states its convention (`QFI_CONVENTION`), refuses a
+    degenerate ground state instead of using an arbitrary state of the ground
+    space, refuses a non-PSD result and reports the metric eigenvalues and
+    rank; the QFI observable reports rank and smallest eigenvalue;
+  - the natural-gradient regulariser admits rank-deficient metrics that its
+    condition cap previously refused through rounding;
+  - natural-gradient descent counts callable-metric evaluations
+    (`metric_evaluations`) beside objective evaluations.
+
 - Issue implicit root and KKT sensitivities only at a verified solution:
   `implicit_root_sensitivity` and `implicit_kkt_sensitivity` check the
   residual or KKT conditions, conditioning, strict complementarity and the

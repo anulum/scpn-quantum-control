@@ -1087,6 +1087,8 @@ def test_main_uses_coverage_pytest_by_default(
         "differentiable-parameter-shift exact coverage threshold",
         "differentiable-sparse-derivatives focused coverage",
         "differentiable-sparse-derivatives exact coverage threshold",
+        "quantum-geometry focused coverage",
+        "quantum-geometry exact coverage threshold",
         "Program AD adjoint focused coverage",
         "Program AD adjoint exact coverage threshold",
         "Program AD captured state exact coverage threshold",

@@ -1,13 +1,13 @@
 {
  "schema": "test_documentation_ceiling_v1",
  "ruff_version": "ruff 0.16.4",
- "measured_commit": "f7debaacf6eef3d2a6a28bf69da8e570d100aa7f",
+ "measured_commit": "c0f32859c7d3327bf0eece83fde497902b5d0e42",
  "scopes": [
   "tests",
   "oscillatools/tests"
  ],
- "total_findings": 7181,
- "total_files": 576,
+ "total_findings": 7167,
+ "total_files": 575,
  "files": {
   "oscillatools/tests/conftest.py": 1,
   "oscillatools/tests/kuramoto_delay_sensitivity_witness.py": 1,
@@ -459,7 +459,6 @@
   "tests/test_qcvv.py": 10,
   "tests/test_qec_properties.py": 1,
   "tests/test_qec_validators_fuzz.py": 21,
-  "tests/test_qfi.py": 14,
   "tests/test_qfi_criticality.py": 15,
   "tests/test_qiskit_compat.py": 12,
   "tests/test_qlif.py": 6,

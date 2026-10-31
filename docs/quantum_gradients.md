@@ -1291,6 +1291,36 @@ a natural-gradient preconditioner, and inspect `final_metric_nullity`,
 `final_regularization_reason`, and each step's `diagonal_shift` in the returned
 training record.
 
+A damping or diagonal shift `lambda` biases the step: along a metric eigenvector
+with eigenvalue `mu` the regularised component is `mu / (mu + lambda)` of the
+exact natural-gradient component, so a regularised step is not the natural
+gradient of the unregularised metric. A condition-number cap aims slightly
+below the cap, by the relative rounding of the smallest eigenvalue (about
+`64 * eps * cap`), so a genuinely rank-deficient metric is admitted with a
+recorded shift instead of being refused by rounding.
+
+`ParameterShiftNaturalGradientResult.metric_evaluations` counts the calls of a
+callable metric, one per visited parameter point, beside the objective
+`evaluations`. Compare natural-gradient and plain descent by both counts (and
+by the shots each implies), not by step count: a metric evaluation is extra
+work, and fewer steps on one ansatz do not establish faster training in
+general.
+
+### Spectral coupling QFI convention
+
+`analysis.qfi.compute_qfi` returns `F_ab = 4 Re<d_a psi|(1 - |psi><psi|)|d_b psi>`
+for the non-degenerate ground state of
+`H(K) = -sum_{i<j} K_ij (X_i X_j + Y_i Y_j) - sum_i omega_i Z_i`, one parameter
+`K_ij` per listed pair (`QFI_CONVENTION`). This is four times the
+Fubini-Study metric, the real part of the quantum geometric tensor; the Berry
+curvature is not included, and only pure states are covered. A degenerate
+ground state (gap at most `degeneracy_tolerance * max(1, max |E|)`) is refused,
+because the QFI of a ground space depends on which state in it is chosen. The
+result reports `metric_eigenvalues` and `metric_rank`: a rank below the number
+of pairs, for example when the same pair is listed twice, marks directions the
+ground state does not resolve. They are reported rather than regularised; a
+negative eigenvalue beyond `QFI_PSD_TOLERANCE` relative is refused.
+
 ## Trainability diagnostics and shot dry-runs
 
 `run_barren_plateau_trainability_report(...)` samples parameter-shift gradients
