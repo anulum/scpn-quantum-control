@@ -340,3 +340,19 @@ def test_sqrt_fails_closed_at_nonpositive_boundary() -> None:
 
     with pytest.raises(ValueError, match="sqrt input must be positive"):
         np.sqrt(values)
+
+
+def test_truth_values_are_recorded_predicates() -> None:
+    """Truth is ``value != 0``: refused at zero, recorded elsewhere, NumPy rules for arrays."""
+    values = _trace_array(np.array([0.0, 2.0, -3.0, 4.0], dtype=np.float64))
+    with pytest.raises(ValueError, match="non-differentiable at zero"):
+        bool(values[0])
+    assert bool(values[1]) is True
+    assert bool(values[2]) is True
+    assert bool(values[1:2]) is True
+    with pytest.raises(ValueError, match="non-differentiable at zero"):
+        bool(values[0:1])
+    with pytest.raises(ValueError, match="ambiguous"):
+        bool(values)
+    branches = [node.op for node in values.context.nodes if node.op.startswith("branch:")]
+    assert len(branches) == 3 and all(":ne:" in op for op in branches)

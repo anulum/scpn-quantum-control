@@ -406,7 +406,9 @@ or a digest that no longer matches the content.
 
 `replay_whole_program(record, objective)` checks the runtime and the
 objective's captured-state digest before the objective runs. A changed closure
-value, global, default, aliasing pattern or code raises
+value, global (including one read only inside a generator expression), default,
+aliasing pattern, code, or a swapped library callable such as `np.add` for
+`np.multiply` or `max` for `min` raises
 `WholeProgramReplayMismatchError` with `fields == ("captured_state_sha256",)`,
 without executing the objective. If the state matches, the program is
 differentiated again at the saved parameter values. The graph, effects and
@@ -421,6 +423,10 @@ Limits:
   version.
 - A mutation that was reverted before the replay is not detected, because the
   digest identifies content, not history.
+- The saved parameter values are fed back into the replay, so their
+  comparison only checks that the record's float encoding round-trips.
+- The program IR records the text of numeric constants; it does not record
+  primal values computed from the parameters.
 - The portable digest also hashes code constants. A capture that fits the live
   snapshot limit can therefore exceed the portable one, and it is refused with
   "no portable encoding".
@@ -438,6 +444,12 @@ runtime refuses rather than returning a one-sided derivative:
 - **`abs`, `maximum` and `minimum`** refuse at their kinks.
 - **`float()` and `math.*` conversions** of a traced value refuse, because
   they would drop the derivative.
+- **Truthiness** (`if y:`, `not y`, `y and z`) is the recorded predicate
+  `y != 0`. It refuses at zero and records its branch elsewhere. As in NumPy,
+  only a one-element array has a truth value.
+- **Reading `.primal` or `.tangent`** of a parameter-dependent value is refused
+  before execution, because a branch on the raw primal would bypass the
+  recorded predicates.
 
 Comparisons that involve a frozen (non-trainable) parameter follow the same
 equality rule.

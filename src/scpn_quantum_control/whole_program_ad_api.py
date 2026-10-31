@@ -958,6 +958,9 @@ def replay_whole_program(
     reverse_error = (
         None if reverse is None else float(np.max(np.abs(reverse - saved_gradient), initial=0.0))
     )
+    # The replay runs at the saved parameter values, so "parameter_values" can
+    # differ only if the record's float-hex codec failed to round-trip; it is
+    # kept as that codec check, not as evidence about the objective.
     mismatched = [
         name
         for name in (

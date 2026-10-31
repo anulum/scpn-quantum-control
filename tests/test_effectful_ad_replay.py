@@ -721,3 +721,143 @@ def test_record_accepts_effects_without_an_operation() -> None:
     changed = replace(record, effects=(*record.effects, ("mutation", None)))
     assert WholeProgramReplayRecord.from_json(changed.to_json()) == changed
     assert changed.digest != record.digest
+
+
+_SWAPPABLE_UFUNC: Any = np.add
+_SWAPPABLE_BUILTIN: Any = max
+_GENERATOR_WEIGHTS = np.array([1.0, 2.0])
+
+
+def _truthy(values: TraceADArray) -> object:
+    """Branch on the truth of a parameter, as plain-number code would."""
+    y = cast(TraceADScalar, values[0])
+    return y + 1.0 if y else y * 5.0
+
+
+def _array_truthy(values: TraceADArray) -> object:
+    """Branch on the truth of the parameter array itself."""
+    return values[0] * 2.0 if values else values[0] * 7.0
+
+
+def _primal_branch(values: TraceADArray) -> object:
+    """Branch on the untraced primal of a parameter."""
+    y = cast(TraceADScalar, values[0])
+    return 3.0 * y if y.primal > 1.0 else y
+
+
+def _tangent_read(values: TraceADArray) -> object:
+    """Read the tangent of a parameter as a number."""
+    y = cast(TraceADScalar, values[0])
+    return y * float(y.tangent[0])
+
+
+def _ufunc_objective(values: TraceADArray) -> object:
+    """Apply a ufunc held in a module global."""
+    return _SWAPPABLE_UFUNC(values[0], values[1])
+
+
+def _builtin_objective(values: TraceADArray) -> object:
+    """Apply a builtin held in a module global."""
+    return _SWAPPABLE_BUILTIN(values[0], values[1]) * 2.0
+
+
+def _generator_objective(values: TraceADArray) -> object:
+    """Read a global only inside a generator expression."""
+    return sum(_GENERATOR_WEIGHTS[i] * values[i] for i in range(2))
+
+
+def test_truth_of_a_traced_scalar_is_a_recorded_predicate() -> None:
+    """``if y`` refuses at zero and records its branch everywhere else."""
+    with pytest.raises(ValueError, match="non-differentiable at zero"):
+        whole_program_value_and_grad(_truthy, [0.0], trace=False)
+    for point, value in ((0.5, 1.5), (-0.5, 0.5)):
+        result = whole_program_value_and_grad(_truthy, [point], trace=False)
+        assert result.value == value
+        assert result.gradient.tolist() == [1.0]
+        assert result.program_ir is not None
+        assert "branch:" in result.program_ir.serialization
+
+
+def test_truth_of_a_traced_array_follows_numpy() -> None:
+    """Only a one-element array has a truth value, recorded like a scalar's."""
+    with pytest.raises(ValueError, match="non-differentiable at zero"):
+        whole_program_value_and_grad(_array_truthy, [0.0], trace=False)
+    result = whole_program_value_and_grad(_array_truthy, [0.5], trace=False)
+    assert (result.value, result.gradient.tolist()) == (1.0, [2.0])
+    with pytest.raises(ValueError, match="ambiguous"):
+        whole_program_value_and_grad(_array_truthy, [1.0, 2.0], trace=False)
+
+
+@pytest.mark.parametrize("objective", [_primal_branch, _tangent_read], ids=["primal", "tangent"])
+def test_reading_trace_internals_is_refused_before_execution(
+    objective: Callable[[TraceADArray], object],
+) -> None:
+    """Branching on ``.primal`` would take a silent one-sided derivative.
+
+    Parameters
+    ----------
+    objective
+        Objective that reads a traced value's primal or tangent.
+
+    """
+    with pytest.raises(ValueError, match="semantic=trace_internal_attribute"):
+        whole_program_value_and_grad(objective, [1.0], trace=False)
+
+
+@pytest.mark.parametrize(
+    ("objective", "name", "replacement"),
+    [
+        (_ufunc_objective, "_SWAPPABLE_UFUNC", np.multiply),
+        (_builtin_objective, "_SWAPPABLE_BUILTIN", min),
+    ],
+    ids=["ufunc", "builtin"],
+)
+def test_swapped_library_callable_is_refused_before_execution(
+    objective: Callable[[TraceADArray], object], name: str, replacement: object
+) -> None:
+    """``np.add`` → ``np.multiply`` or ``max`` → ``min`` changes the portable digest.
+
+    Parameters
+    ----------
+    objective
+        Objective calling the global.
+    name
+        Module global holding the callable.
+    replacement
+        Different callable of the same kind.
+
+    """
+    record = capture_whole_program_replay(
+        whole_program_value_and_grad(objective, [2.0, 3.0], trace=False)
+    )
+    module = sys.modules[__name__]
+    original = getattr(module, name)
+    setattr(module, name, replacement)
+    try:
+        with pytest.raises(WholeProgramReplayMismatchError, match="not executed") as refusal:
+            replay_whole_program(record, objective, deadline_monotonic=time.monotonic() - 1.0)
+        assert refusal.value.fields == ("captured_state_sha256",)
+    finally:
+        setattr(module, name, original)
+    assert replay_whole_program(record, objective).record == record
+
+
+def test_globals_read_inside_generator_expressions_are_bound() -> None:
+    """A global read only by nested code is part of both digests."""
+    result = whole_program_value_and_grad(_generator_objective, [1.0, 1.0], trace=False)
+    record = capture_whole_program_replay(result)
+    assert result.gradient.tolist() == [1.0, 2.0]
+    _GENERATOR_WEIGHTS[1] = 50.0
+    try:
+        with pytest.raises(ValueError, match="captured program state changed"):
+            program_adjoint_replay_gradient(result)
+        with pytest.raises(ValueError, match="captured program state changed"):
+            capture_whole_program_replay(result)
+        with pytest.raises(WholeProgramReplayMismatchError, match="not executed") as refusal:
+            replay_whole_program(
+                record, _generator_objective, deadline_monotonic=time.monotonic() - 1.0
+            )
+        assert refusal.value.fields == ("captured_state_sha256",)
+    finally:
+        _GENERATOR_WEIGHTS[1] = 2.0
+    assert replay_whole_program(record, _generator_objective).record == record

@@ -417,6 +417,7 @@ class _Fingerprint:
             self.seen.add(identity)
         if identity in _NUMPY_CALLABLE_IDS:
             self.add(b"numpy-intrinsic")
+            self.add(_intrinsic_name(value))
             if kind is FunctionType:
                 function = typing.cast(FunctionType, value)
                 self.memory.reference(len(self.code_references) + 1)
@@ -476,6 +477,7 @@ class _Fingerprint:
         elif kind is BuiltinFunctionType:
             builtin = typing.cast(BuiltinFunctionType, value)
             self.add(b"builtin")
+            self.add(_intrinsic_name(builtin))
             self.visit(builtin.__self__, depth + 1, module_names)
         elif _is_passive_local_class(value):
             constructor = typing.cast(type, value)
@@ -493,6 +495,7 @@ class _Fingerprint:
             or kind is _CALLABLE_ALIAS
         ):
             self.add(b"intrinsic")
+            self.add(_intrinsic_name(value))
         else:
             raise _UnsupportedState("captured state storage type is unsupported")
 
@@ -526,11 +529,7 @@ class _Fingerprint:
             except ValueError:
                 raise _UnsupportedState("captured closure cell is empty") from None
             self.visit(captured, depth + 1, names)
-        global_names = tuple(
-            instruction.argval
-            for instruction in dis.get_instructions(function.__code__)
-            if instruction.opname in {"LOAD_GLOBAL", "LOAD_NAME"}
-        )
+        global_names = _global_names(function.__code__)
         namespace = function.__globals__
         self.namespace(namespace)
         builtin_namespace: object = FunctionType.__getattribute__(function, "__builtins__")
@@ -551,6 +550,61 @@ class _Fingerprint:
         mapping = typing.cast(dict[object, object], namespace)
         if len(mapping) > _MAX_NODES or any(type(key) is not str for key in mapping):
             raise _UnsupportedState("captured namespace storage is unsupported")
+
+
+def _intrinsic_name(value: object) -> bytes:
+    """Name a ufunc, builtin, type or typing object without running its descriptors.
+
+    The live digest tells such objects apart by address. The portable digest
+    numbers them by first visit, so without a name ``np.add`` and
+    ``np.multiply``, or ``max`` and ``min``, would fingerprint alike.
+    """
+    kind = type(value)
+    if kind is np.ufunc:
+        return f"ufunc:{typing.cast(np.ufunc, value).__name__}".encode()
+    if kind is BuiltinFunctionType:
+        builtin = typing.cast(BuiltinFunctionType, value)
+        return f"builtin:{builtin.__module__}:{builtin.__qualname__}".encode()
+    if kind is type:
+        constructor = typing.cast(type, value)
+        module = type.__getattribute__(constructor, "__module__")
+        qualname = type.__getattribute__(constructor, "__qualname__")
+        return f"type:{module}:{qualname}".encode()
+    if kind is FunctionType:
+        function = typing.cast(FunctionType, value)
+        return f"function:{function.__module__}:{function.__qualname__}".encode()
+    if kind is GenericAlias or kind is _CALLABLE_ALIAS or kind is type(typing.Any):
+        # Typing objects print their full meaning and no address.
+        return f"typing:{value!r}".encode()
+    kind_name = f"{kind.__module__}.{kind.__qualname__}"
+    # NumPy's own callables (array-function dispatchers, ABC classes) carry
+    # their names; anything else is named by its type only, never by a repr
+    # that could hold an address.
+    module = getattr(value, "__module__", None)
+    name = getattr(value, "__qualname__", None) or getattr(value, "__name__", None)
+    if isinstance(module, str) and isinstance(name, str):
+        return f"{kind_name}:{module}:{name}".encode()
+    return kind_name.encode()
+
+
+def _global_names(code: CodeType) -> tuple[str, ...]:
+    """Return the global names read by code and by the code nested in it.
+
+    Generator expressions and comprehensions compile to nested code objects
+    that read globals themselves, so scanning only the outer instructions
+    would leave those reads out of the digest.
+    """
+    names: list[str] = []
+    pending = [code]
+    while pending:
+        current = pending.pop()
+        names.extend(
+            instruction.argval
+            for instruction in dis.get_instructions(current)
+            if instruction.opname in {"LOAD_GLOBAL", "LOAD_NAME"}
+        )
+        pending.extend(constant for constant in current.co_consts if type(constant) is CodeType)
+    return tuple(dict.fromkeys(names))
 
 
 _FRAME_BYTES = sum(

@@ -239,6 +239,33 @@ class TraceADScalar:
             "whole-program AD scalar cannot be converted to float without losing derivatives"
         )
 
+    def __bool__(self) -> bool:
+        """Branch on ``value != 0`` as a recorded predicate.
+
+        Python's default truth of an object is always ``True``, which would
+        take a branch the plain-number program does not take at zero and leave
+        no branch in the trace. Truthiness is therefore the recorded predicate
+        ``value != 0``: it refuses on its switching surface, at zero, and
+        records the branch everywhere else.
+
+        Returns
+        -------
+        bool
+            Whether the primal value is non-zero.
+
+        Raises
+        ------
+        ValueError
+            If the primal value is zero, where the branch is not differentiable.
+
+        """
+        if self.primal == 0.0:
+            raise ValueError(
+                "whole-program AD truth value of a parameter-dependent value is "
+                "non-differentiable at zero"
+            )
+        return bool(self._compare("ne", 0.0))
+
     def __int__(self) -> NoReturn:
         """Reject parameter-dependent integer conversion.
 
@@ -489,6 +516,31 @@ class TraceADArray:
         if not self.shape:
             raise TypeError("scalar TraceADArray has no len()")
         return self.shape[0]
+
+    def __bool__(self) -> bool:
+        """Follow NumPy truthiness through the recorded scalar predicate.
+
+        Without this the leading-axis length decided truth, so ``[0.0]`` was
+        ``True`` although the NumPy program finds it ``False``. As in NumPy,
+        only a one-element array has a truth value.
+
+        Returns
+        -------
+        bool
+            Truth of the single element, recorded as ``value != 0``.
+
+        Raises
+        ------
+        ValueError
+            If the array does not hold exactly one element, or that element
+            is zero, where the branch is not differentiable.
+
+        """
+        if len(self._items) != 1:
+            raise ValueError(
+                "whole-program AD truth value of an array with other than one element is ambiguous"
+            )
+        return bool(self._items[0])
 
     def __iter__(self) -> Iterator[TraceADScalar | TraceADArray]:
         """Iterate over trace scalars or rank-one row views."""

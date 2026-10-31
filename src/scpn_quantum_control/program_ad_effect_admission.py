@@ -55,6 +55,9 @@ from .program_ad_effect_values import (
     _value_signature,
 )
 
+_TRACE_INTERNAL_ATTRIBUTES = frozenset({"primal", "tangent", "context", "name"})
+"""Attributes of a traced value that expose its untraced primal or bookkeeping."""
+
 
 @dataclass(frozen=True, slots=True)
 class _MappedHelper:
@@ -141,8 +144,15 @@ class _Visitor(ast.NodeVisitor):
         self.analysis.add(self.location or node, semantic, detail)
 
     def visit_Attribute(self, node: ast.Attribute) -> None:
-        """Refuse captured class reads without invoking attribute descriptors."""
+        """Refuse captured class reads and reads of a traced value's internals."""
         receiver = self.value(node.value)
+        if receiver.active and node.attr in _TRACE_INTERNAL_ATTRIBUTES:
+            self.add(
+                node,
+                "trace_internal_attribute",
+                f"reading .{node.attr} of a parameter-dependent value bypasses the "
+                "recorded predicates and derivatives",
+            )
         if (
             receiver.captured
             and type(receiver.value) is type

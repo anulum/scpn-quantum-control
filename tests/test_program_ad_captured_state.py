@@ -1357,3 +1357,19 @@ def test_absent_dependency_global_retains_binding_when_the_namespace_changes() -
     del mapping["coefficient"]
     np.testing.assert_array_equal(program_adjoint_replay_gradient(result), [2.0])
     assert active_reserved_bytes() == baseline
+
+
+def test_portable_digest_names_library_objects_without_addresses() -> None:
+    """NumPy objects without a qualified name are named by their type, never a repr."""
+    from scpn_quantum_control.program_ad_captured_state import _portable_program_state_digest
+
+    def first(values: object) -> object:
+        return (values, np.test, np.add, max, np.ndarray)
+
+    def second(values: object) -> object:
+        return (values, np.test, np.multiply, max, np.ndarray)
+
+    digest = _portable_program_state_digest(first)
+    assert digest is not None
+    assert _portable_program_state_digest(first) == digest
+    assert _portable_program_state_digest(second) not in (None, digest)

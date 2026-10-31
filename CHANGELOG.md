@@ -35,6 +35,18 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     `eps * max|lambda| / gap`;
   - NumPy integer indices are accepted.
 
+- Close gaps in whole-program AD branch and replay checks:
+  - the truth of a traced value (`if y:`) was always `True`. At `y = 0` the
+    program returned the other branch's value with no branch recorded. Truth
+    is now the recorded predicate `y != 0`, refused at zero; arrays follow
+    NumPy;
+  - reading `.primal` or `.tangent` of a parameter-dependent value is refused,
+    since branching on it gave a silent one-sided derivative;
+  - the portable captured-state digest names ufuncs, builtins and types, so
+    swapping `np.add` for `np.multiply` or `max` for `min` is refused before
+    replay executes anything;
+  - globals read only inside generator expressions are part of both digests.
+
 - Check pulse designs against declared native limits:
   - `assess_pulse_design` converts seconds and Rabi rates to native samples;
   - it refuses off-grid events, amplitude or slew over the limit, and
