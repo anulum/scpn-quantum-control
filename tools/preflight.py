@@ -844,6 +844,7 @@ REALTIME_RUNTIME_QUALITY_RATCHET = [
     "src/scpn_quantum_control/control/realtime_runtime.py",
     "tests/test_realtime_runtime.py",
     "tests/test_realtime_runtime_branches.py",
+    "tests/test_runtime_deadline_admission.py",
 ]
 
 PHASE_QNODE_AFFINITY_QUALITY_RATCHET = [

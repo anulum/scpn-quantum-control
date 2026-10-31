@@ -242,8 +242,15 @@ if TYPE_CHECKING:
     )
     from .control.qpetri import QuantumPetriCampaignReport, QuantumPetriNet, QuantumPetriStepReport
     from .control.realtime_runtime import (
+        GATED_TIMING_CLAIM,
+        ActuationProposal,
+        ActuationVeto,
+        AdmissionDecision,
+        ApplyPort,
         CycleSample,
+        GatedActuationResult,
         MonotonicRealtimeClock,
+        OfflineApplyPort,
         RealtimeClock,
         RealtimeRunResult,
         RealtimeRuntimeConfig,
@@ -255,6 +262,7 @@ if TYPE_CHECKING:
         VirtualRealtimeClock,
         enforce_realtime_sla,
         evaluate_realtime_sla,
+        run_gated_actuation_loop,
         run_realtime_control_loop,
         summarise_cycle_samples,
     )
@@ -1655,6 +1663,38 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
     "run_realtime_control_loop": (
         "scpn_quantum_control.control.realtime_runtime",
         "run_realtime_control_loop",
+    ),
+    "GATED_TIMING_CLAIM": (
+        "scpn_quantum_control.control.realtime_runtime",
+        "GATED_TIMING_CLAIM",
+    ),
+    "ActuationProposal": (
+        "scpn_quantum_control.control.realtime_runtime",
+        "ActuationProposal",
+    ),
+    "ActuationVeto": (
+        "scpn_quantum_control.control.realtime_runtime",
+        "ActuationVeto",
+    ),
+    "AdmissionDecision": (
+        "scpn_quantum_control.control.realtime_runtime",
+        "AdmissionDecision",
+    ),
+    "ApplyPort": (
+        "scpn_quantum_control.control.realtime_runtime",
+        "ApplyPort",
+    ),
+    "GatedActuationResult": (
+        "scpn_quantum_control.control.realtime_runtime",
+        "GatedActuationResult",
+    ),
+    "OfflineApplyPort": (
+        "scpn_quantum_control.control.realtime_runtime",
+        "OfflineApplyPort",
+    ),
+    "run_gated_actuation_loop": (
+        "scpn_quantum_control.control.realtime_runtime",
+        "run_gated_actuation_loop",
     ),
     "summarise_cycle_samples": (
         "scpn_quantum_control.control.realtime_runtime",
@@ -3693,6 +3733,14 @@ __all__ = [
     "execute_quantum_gradient_estimator",
     "execute_quantum_gradient_estimator_with_uncertainty",
     "plan_quantum_gradient_estimator",
+    "GATED_TIMING_CLAIM",
+    "ActuationProposal",
+    "ActuationVeto",
+    "AdmissionDecision",
+    "ApplyPort",
+    "GatedActuationResult",
+    "OfflineApplyPort",
+    "run_gated_actuation_loop",
     "Problem",
     "Backend",
     "Experiment",

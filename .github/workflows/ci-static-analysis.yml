@@ -258,6 +258,7 @@ jobs:
           src/scpn_quantum_control/control/realtime_runtime.py
           tests/test_realtime_runtime.py
           tests/test_realtime_runtime_branches.py
+          tests/test_runtime_deadline_admission.py
       - name: Ruff NumPy docstrings for realtime runtime quality cohort
         run: >-
           python -m ruff check --isolated --select D,D413
@@ -265,6 +266,7 @@ jobs:
           src/scpn_quantum_control/control/realtime_runtime.py
           tests/test_realtime_runtime.py
           tests/test_realtime_runtime_branches.py
+          tests/test_runtime_deadline_admission.py
       - name: Type-check Phase-QNode affinity quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases

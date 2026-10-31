@@ -4,6 +4,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Gate actuation on deadline, freshness and veto: `run_gated_actuation_loop`
+  hands a tick's proposal to the apply port only when it is on time by the
+  monotonic clock, its telemetry is fresh and an independent veto passes;
+  cancellation ends the loop, the default port actuates nothing, and the
+  recorded timings are measured software evidence, not a real-time
+  guarantee.
+
 - Keep QSNN training honest about state and data: `QSNNTrainer.checkpoint()`
   and `restore()` resume training exactly (weights, learning rate, epochs,
   loss history and training-data custody), training leaves the caller's

@@ -5,8 +5,8 @@ module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
 - **856 modules** across **41 package families**
-- **4633 documented public module-level symbols**
-- **875 root-package exports** governed by the stable API surface
+- **4640 documented public module-level symbols**
+- **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
 the [API selection guide](../api.md) and [stable facades](../stable_facades_api.md).
@@ -2111,11 +2111,11 @@ Closed-loop Kuramoto-XY synchronisation feedback.
 
 Deadline-aware realtime control runtime.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/control/realtime_runtime.py) · Public symbols: **15**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/control/realtime_runtime.py) · Public symbols: **22**
 
-**Classes:** `RealtimeClock`, `MonotonicRealtimeClock`, `VirtualRealtimeClock`, `RealtimeRuntimeConfig`, `RealtimeTickRecord`, `RealtimeRunResult`, `RealtimeSLAConfig`, `RealtimeSLAReport`, `CycleSample`, `SubMicrosecondReport`, `SubMicrosecondTracker`
+**Classes:** `RealtimeClock`, `MonotonicRealtimeClock`, `VirtualRealtimeClock`, `RealtimeRuntimeConfig`, `RealtimeTickRecord`, `RealtimeRunResult`, `RealtimeSLAConfig`, `RealtimeSLAReport`, `CycleSample`, `SubMicrosecondReport`, `SubMicrosecondTracker`, `ActuationProposal`, `ActuationVeto`, `ApplyPort`, `OfflineApplyPort`, `AdmissionDecision`, `GatedActuationResult`
 
-**Functions:** `run_realtime_control_loop()`, `evaluate_realtime_sla()`, `enforce_realtime_sla()`, `summarise_cycle_samples()`
+**Functions:** `run_realtime_control_loop()`, `evaluate_realtime_sla()`, `enforce_realtime_sla()`, `summarise_cycle_samples()`, `run_gated_actuation_loop()`
 
 ### `scpn_quantum_control.control.structured_ansatz`
 

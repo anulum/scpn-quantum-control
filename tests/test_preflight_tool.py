@@ -294,11 +294,17 @@ def test_static_gates_include_realtime_runtime_quality_ratchets() -> None:
     docstring_cmd = gate_map["ruff D realtime-runtime quality ratchet"]
     assert "--strict" in strict_cmd
     assert "--explicit-package-bases" in strict_cmd
-    assert strict_cmd[-3:] == _preflight.REALTIME_RUNTIME_QUALITY_RATCHET
+    assert (
+        strict_cmd[-len(_preflight.REALTIME_RUNTIME_QUALITY_RATCHET) :]
+        == _preflight.REALTIME_RUNTIME_QUALITY_RATCHET
+    )
     assert "--isolated" in docstring_cmd
     assert "D,D413" in docstring_cmd
     assert 'lint.pydocstyle.convention = "numpy"' in docstring_cmd
-    assert docstring_cmd[-3:] == _preflight.REALTIME_RUNTIME_QUALITY_RATCHET
+    assert (
+        docstring_cmd[-len(_preflight.REALTIME_RUNTIME_QUALITY_RATCHET) :]
+        == _preflight.REALTIME_RUNTIME_QUALITY_RATCHET
+    )
 
 
 def test_ci_and_preflight_share_realtime_runtime_quality_cohort() -> None:

@@ -1435,6 +1435,7 @@
         "tests/test_run_layout_method_comparison.py",
         "tests/test_run_layout_relaxation_experiment.py",
         "tests/test_run_quantum_ssgf_descent.py",
+        "tests/test_runtime_deadline_admission.py",
         "tests/test_rust_accel_import_resilience.py",
         "tests/test_rust_accel_import_resilience_quality_gate.py",
         "tests/test_rust_ffi_validation.py",

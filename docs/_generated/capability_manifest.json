@@ -7,13 +7,13 @@
     "model_documentation_pages": 14,
     "notebook_files": 109,
     "optional_extras": 43,
-    "public_api_exports": 875,
+    "public_api_exports": 883,
     "public_documentation_pages": 385,
-    "python_model_classes": 1628,
+    "python_model_classes": 1634,
     "python_model_source_modules": 856,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1623
+    "test_files": 1624
   },
   "documentation": {
     "examples": [
@@ -837,6 +837,14 @@
         "path": "src/scpn_quantum_control/active_sensing_product.py"
       },
       {
+        "name": "ActuationProposal",
+        "path": "src/scpn_quantum_control/control/realtime_runtime.py"
+      },
+      {
+        "name": "ActuationVeto",
+        "path": "src/scpn_quantum_control/control/realtime_runtime.py"
+      },
+      {
         "name": "AdapterPortRow",
         "path": "src/scpn_quantum_control/control_stack_compose_product.py"
       },
@@ -879,6 +887,10 @@
       {
         "name": "AdjointReplaySurfaceRow",
         "path": "src/scpn_quantum_control/adjoint_replay_product.py"
+      },
+      {
+        "name": "AdmissionDecision",
+        "path": "src/scpn_quantum_control/control/realtime_runtime.py"
       },
       {
         "name": "AdmissionNumpy",
@@ -1063,6 +1075,10 @@
       {
         "name": "ApplicationSupportStatus",
         "path": "src/scpn_quantum_control/applications/honesty_kits.py"
+      },
+      {
+        "name": "ApplyPort",
+        "path": "src/scpn_quantum_control/control/realtime_runtime.py"
       },
       {
         "name": "ApprovalGatedFeedbackHardwareScheduler",
@@ -2841,6 +2857,10 @@
         "path": "src/scpn_quantum_control/phase_qnode_gate_dispatch.py"
       },
       {
+        "name": "GatedActuationResult",
+        "path": "src/scpn_quantum_control/control/realtime_runtime.py"
+      },
+      {
         "name": "GaugeLatticeCrosscheck",
         "path": "src/scpn_quantum_control/gauge/lattice_crosscheck.py"
       },
@@ -4119,6 +4139,10 @@
       {
         "name": "ObserverInputs",
         "path": "src/scpn_quantum_control/codesign/contracts.py"
+      },
+      {
+        "name": "OfflineApplyPort",
+        "path": "src/scpn_quantum_control/control/realtime_runtime.py"
       },
       {
         "name": "OpenPulseCalibrationWorkflow",
@@ -8408,10 +8432,14 @@
   },
   "package_exports": [
     "ARCANE_SAPIENCE_SPEC",
+    "ActuationProposal",
+    "ActuationVeto",
+    "AdmissionDecision",
     "AdvantageResult",
     "AerQuantumEntropySource",
     "AggregatorProviderOptionalDependencyRow",
     "AggregatorProviderRoute",
+    "ApplyPort",
     "ArcaneNeuronBridge",
     "ArmijoLineSearchResult",
     "AzureQuantumHALAdapter",
@@ -8537,9 +8565,11 @@
     "FisherVectorProductResult",
     "FixedPointSensitivityResult",
     "ForecastModelRun",
+    "GATED_TIMING_CLAIM",
     "GENERATOR_EIGENVALUES",
     "GUESSResult",
     "GateOccurrence",
+    "GatedActuationResult",
     "GradientCheckResult",
     "GradientFailurePolicy",
     "GradientResult",
@@ -8602,6 +8632,7 @@
     "OQCHALAdapter",
     "ORCHESTRATOR_MAPPING",
     "ObjectiveBreakdown",
+    "OfflineApplyPort",
     "OptimizationResult",
     "PECResult",
     "PTSymmetricKuramotoSpec",
@@ -9180,6 +9211,7 @@
     "run_differentiable_rust_python_inventory",
     "run_documented_classical_baselines",
     "run_enzyme_mlir_maturity_audit",
+    "run_gated_actuation_loop",
     "run_quantum_gradient_benchmark_suite",
     "run_real_data_sync_forecast_benchmark",
     "run_real_data_sync_forecast_suite",
@@ -10702,6 +10734,7 @@
       "tests/test_run_quantum_ssgf_descent.py",
       "tests/test_run_studio_browser_journeys.py",
       "tests/test_runner_guards.py",
+      "tests/test_runtime_deadline_admission.py",
       "tests/test_rust_accel_import_resilience.py",
       "tests/test_rust_accel_import_resilience_quality_gate.py",
       "tests/test_rust_ffi_safety_audit.py",

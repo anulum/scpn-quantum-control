@@ -20,8 +20,9 @@ import time
 from collections import deque
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
+from threading import Event
 from types import MappingProxyType
-from typing import Protocol
+from typing import Final, Literal, Protocol
 
 import numpy as np
 from numpy.typing import NDArray
@@ -923,8 +924,235 @@ def _require_non_negative(value: float, name: str) -> None:
         raise ValueError(f"{name} must be finite and non-negative")
 
 
+# --- Gated actuation ---------------------------------------------------------------------
+
+GATED_TIMING_CLAIM: Final[str] = (
+    "latency and jitter are software timings measured with the given clock on this process; "
+    "they are not a hard-real-time guarantee, an intra-shot hardware latency or a physical "
+    "safety certificate"
+)
+AdmissionOutcome = Literal["applied", "late", "stale", "vetoed"]
+
+
+@dataclass(frozen=True)
+class ActuationProposal:
+    """An action a controller proposes for one tick, with the age of its telemetry.
+
+    Attributes
+    ----------
+    values : tuple of float
+        The proposed action; finite.
+    telemetry_time_s : float
+        Monotonic time at which the telemetry the proposal is based on was sampled.
+
+    """
+
+    values: tuple[float, ...]
+    telemetry_time_s: float
+
+    def __post_init__(self) -> None:
+        """Require finite values and a finite telemetry time."""
+        if not self.values or not all(math.isfinite(value) for value in self.values):
+            raise ValueError("proposal values must be non-empty and finite")
+        if not math.isfinite(self.telemetry_time_s):
+            raise ValueError("telemetry_time_s must be finite")
+
+
+class ActuationVeto(Protocol):
+    """An independent check that may refuse a proposal; it returns a reason or ``None``."""
+
+    def __call__(self, proposal: ActuationProposal) -> str | None:
+        """Return why the proposal must not be applied, or ``None``."""
+        ...
+
+
+class ApplyPort(Protocol):
+    """Where admitted proposals go."""
+
+    def apply(self, proposal: ActuationProposal) -> None:
+        """Receive one admitted proposal."""
+        ...
+
+
+class OfflineApplyPort:
+    """The default port: it records admitted proposals and actuates nothing."""
+
+    def __init__(self) -> None:
+        """Start with no recorded proposals."""
+        self.received: list[ActuationProposal] = []
+
+    def apply(self, proposal: ActuationProposal) -> None:
+        """Record the proposal without any physical effect.
+
+        Parameters
+        ----------
+        proposal : ActuationProposal
+            The admitted proposal.
+
+        """
+        self.received.append(proposal)
+
+
+@dataclass(frozen=True)
+class AdmissionDecision:
+    """What happened to one tick's proposal.
+
+    Attributes
+    ----------
+    index : int
+        Tick index.
+    outcome : str
+        ``applied``, ``late``, ``stale`` or ``vetoed``; only ``applied`` reached the port.
+    reason : str
+        Why, in words.
+    elapsed_s : float
+        Time from the tick start to the decision, by the loop's clock.
+    telemetry_age_s : float
+        Age of the proposal's telemetry at the decision.
+
+    """
+
+    index: int
+    outcome: AdmissionOutcome
+    reason: str
+    elapsed_s: float
+    telemetry_age_s: float
+
+
+@dataclass(frozen=True)
+class GatedActuationResult:
+    """Every decision of a gated actuation loop and whether it ran to the end.
+
+    Attributes
+    ----------
+    decisions : tuple of AdmissionDecision
+        One per tick that produced a proposal, in order.
+    completed : bool
+        ``False`` when the loop stopped on cancellation.
+    cancelled_at : int or None
+        The tick at which cancellation was observed, before proposing.
+    applied : int
+        Number of proposals that reached the apply port.
+    timing_claim : str
+        :data:`GATED_TIMING_CLAIM`.
+
+    """
+
+    decisions: tuple[AdmissionDecision, ...]
+    completed: bool
+    cancelled_at: int | None
+    applied: int
+    timing_claim: str = GATED_TIMING_CLAIM
+
+
+def run_gated_actuation_loop(
+    n_ticks: int,
+    propose: Callable[[int], ActuationProposal],
+    *,
+    config: RealtimeRuntimeConfig,
+    max_telemetry_age_s: float,
+    veto: ActuationVeto,
+    apply_port: ApplyPort | None = None,
+    clock: RealtimeClock | None = None,
+    cancel: Event | None = None,
+) -> GatedActuationResult:
+    """Admit each tick's proposal only if it is on time, fresh and not vetoed.
+
+    Each tick first checks ``cancel``; once set, the loop stops before proposing and
+    returns, owning no further work. Otherwise the proposal is checked, in order, against
+    the tick's monotonic deadline (``deadline_s`` after the tick start), the telemetry age
+    limit and the independent veto, and only then handed to ``apply_port``. The deadline is
+    checked again immediately before applying. A late, stale or vetoed proposal never
+    reaches the port. The default port is :class:`OfflineApplyPort`, which actuates nothing.
+
+    Parameters
+    ----------
+    n_ticks : int
+        Number of ticks (``>= 1``).
+    propose : callable
+        Returns the tick's :class:`ActuationProposal`.
+    config : RealtimeRuntimeConfig
+        Period, deadline and alignment.
+    max_telemetry_age_s : float
+        Largest admitted telemetry age (``> 0``).
+    veto : callable
+        Independent check; a returned reason refuses the proposal.
+    apply_port : ApplyPort or None
+        Receiver of admitted proposals; offline when omitted.
+    clock : RealtimeClock or None
+        Monotonic clock; the wall clock when omitted.
+    cancel : threading.Event or None
+        Cooperative cancellation.
+
+    Returns
+    -------
+    GatedActuationResult
+        Every decision, whether the loop completed and the timing claim.
+
+    Raises
+    ------
+    ValueError
+        If ``n_ticks`` or ``max_telemetry_age_s`` is invalid.
+
+    """
+    if not isinstance(n_ticks, int) or isinstance(n_ticks, bool) or n_ticks < 1:
+        raise ValueError("n_ticks must be a positive integer")
+    _require_positive(max_telemetry_age_s, "max_telemetry_age_s")
+    runtime_clock = clock or MonotonicRealtimeClock()
+    port = apply_port if apply_port is not None else OfflineApplyPort()
+    start_s = runtime_clock.now()
+    decisions: list[AdmissionDecision] = []
+    applied = 0
+    for index in range(n_ticks):
+        if cancel is not None and cancel.is_set():
+            return GatedActuationResult(tuple(decisions), False, index, applied)
+        scheduled = start_s + index * config.sample_period_s
+        if config.align_to_period:
+            runtime_clock.sleep_until(scheduled)
+        tick_start = runtime_clock.now()
+        proposal = propose(index)
+
+        def decide(
+            outcome: AdmissionOutcome,
+            reason: str,
+            index: int = index,
+            tick_start: float = tick_start,
+            proposal: ActuationProposal = proposal,
+        ) -> AdmissionDecision:
+            now = runtime_clock.now()
+            return AdmissionDecision(
+                index, outcome, reason, now - tick_start, now - proposal.telemetry_time_s
+            )
+
+        decision: AdmissionDecision
+        now = runtime_clock.now()
+        if now - tick_start > config.deadline_s:
+            decision = decide("late", f"proposal ready after the {config.deadline_s:g} s deadline")
+        elif now - proposal.telemetry_time_s > max_telemetry_age_s:
+            decision = decide("stale", f"telemetry older than {max_telemetry_age_s:g} s")
+        else:
+            refusal = veto(proposal)
+            if refusal is not None:
+                decision = decide("vetoed", refusal)
+            elif runtime_clock.now() - tick_start > config.deadline_s:
+                decision = decide("late", "the deadline passed during the veto check")
+            else:
+                port.apply(proposal)
+                applied += 1
+                decision = decide("applied", "on time, fresh and not vetoed")
+        decisions.append(decision)
+    return GatedActuationResult(tuple(decisions), True, None, applied)
+
+
 __all__ = [
+    "GATED_TIMING_CLAIM",
+    "ActuationProposal",
+    "ActuationVeto",
+    "AdmissionDecision",
+    "ApplyPort",
     "CycleSample",
+    "GatedActuationResult",
+    "OfflineApplyPort",
     "RealtimeSLAConfig",
     "RealtimeSLAReport",
     "MonotonicRealtimeClock",
@@ -937,6 +1165,7 @@ __all__ = [
     "VirtualRealtimeClock",
     "enforce_realtime_sla",
     "evaluate_realtime_sla",
+    "run_gated_actuation_loop",
     "run_realtime_control_loop",
     "summarise_cycle_samples",
 ]

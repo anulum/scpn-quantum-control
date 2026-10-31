@@ -75,6 +75,33 @@ finite-value validation.
 p95/p99 latency, and the miss rate. `enforce_realtime_sla` returns the same
 report when compliant and raises with every breach reason otherwise.
 
+## Gated actuation
+
+`run_gated_actuation_loop` admits each tick's `ActuationProposal` only when
+it passes every check below. A proposal that fails any of them never reaches
+the `ApplyPort`. The checks run in this order:
+
+1. **Cancellation:** a set `threading.Event` stops the loop before the next
+   proposal; the result is `completed=False` with `cancelled_at`, and nothing
+   keeps running.
+2. **Deadline:** a proposal ready more than `deadline_s` after the tick
+   start, by the monotonic clock, is `late`.
+3. **Freshness:** a proposal whose telemetry is older than
+   `max_telemetry_age_s` is `stale`.
+4. **Veto:** an independent `ActuationVeto` that returns a reason gives
+   `vetoed`.
+5. **Deadline again:** the deadline is checked once more after the veto, so
+   a slow check cannot push a late proposal through.
+
+The default port is `OfflineApplyPort`, which records admitted proposals and
+actuates nothing. Every tick's `AdmissionDecision` records the outcome, the
+reason, the elapsed time and the telemetry age.
+
+The recorded timings are software timings taken with the given clock in this
+process (`GATED_TIMING_CLAIM`). They are not a hard-real-time guarantee, an
+intra-shot hardware latency or a physical safety certificate. Live actuation
+needs its own physical-integration approval, outside this module.
+
 ## Sub-microsecond tracker
 
 `SubMicrosecondTracker` records integer-nanosecond cycle samples and reports
