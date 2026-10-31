@@ -583,7 +583,7 @@ def test_scaled_and_long_equidistant_spectra_are_planned_quickly() -> None:
         [GateOccurrence("rz", 0, 0.1), GateOccurrence("rx", 0, 0.2), GateOccurrence("ry", 0, 0.3)],
         1,
     )
-    assert tenths.frequencies[0] == (0.1, 0.2, 0.3, 0.4, 0.5, 0.6)
+    assert tenths.frequencies[0] == pytest.approx((0.1, 0.2, 0.3, 0.4, 0.5, 0.6), rel=1e-12)
     ten = _plan([GateOccurrence("ry", 0)] * 10, 1)
     assert ten.frequencies[0] == tuple(float(order) for order in range(1, 11))
     started = time.perf_counter()
@@ -688,6 +688,7 @@ def test_finite_shot_execution_uses_each_parameter_rule() -> None:
             "shot_batch_id": "exact",
             "source_class": "synthetic_fixture",
         },
+        observable_range=(-1.0, 1.0),
     )
     angle = 2.0 * values[0] + values[1]
     assert _within_budget(result.gradient, [-2.0 * math.sin(angle), -math.sin(angle)])
@@ -704,6 +705,7 @@ def test_finite_shot_execution_uses_each_parameter_rule() -> None:
             "shot_batch_id": "frozen",
             "source_class": "synthetic_fixture",
         },
+        observable_range=(-1.0, 1.0),
         parameters=[Parameter("a"), Parameter("b", trainable=False)],
     )
     assert frozen.gradient[1] == 0.0 and frozen.evaluations == plan.evaluations - 2
@@ -731,6 +733,7 @@ def test_finite_shot_execution_refuses_before_sampling() -> None:
                 calibration=calibration,
                 shots=shots,
                 sample_provenance=provenance,
+                observable_range=(-1.0, 1.0),
             )
         assert refusal.value.reason == reason
     assert calls == []
@@ -743,10 +746,17 @@ def test_finite_shot_execution_refuses_before_sampling() -> None:
             calibration=_CALIBRATION,
             shots=cast(int, None),
             sample_provenance=provenance,
+            observable_range=(-1.0, 1.0),
         )
     with pytest.raises(ValueError, match="non-negative"):
         execute_quantum_gradient_estimator_with_uncertainty(
-            plan, sampler, [0.2], calibration=_CALIBRATION, shots=100, sample_provenance=provenance
+            plan,
+            sampler,
+            [0.2],
+            calibration=_CALIBRATION,
+            shots=100,
+            sample_provenance=provenance,
+            observable_range=(-1.0, 1.0),
         )
     with pytest.raises(ValueError, match="values length"):
         execute_quantum_gradient_estimator_with_uncertainty(
@@ -756,6 +766,7 @@ def test_finite_shot_execution_refuses_before_sampling() -> None:
             calibration=_CALIBRATION,
             shots=100,
             sample_provenance=provenance,
+            observable_range=(-1.0, 1.0),
         )
     for level, z_value, message in ((1.0, 1.96, "confidence_level"), (0.95, -1.0, "confidence_z")):
         with pytest.raises(ValueError, match=message):
@@ -766,6 +777,7 @@ def test_finite_shot_execution_refuses_before_sampling() -> None:
                 calibration=_CALIBRATION,
                 shots=100,
                 sample_provenance=provenance,
+                observable_range=(-1.0, 1.0),
                 confidence_level=level,
                 confidence_z=z_value,
             )
@@ -805,6 +817,7 @@ def test_multi_frequency_finite_shot_intervals_cover_at_the_nominal_rate() -> No
                 "shot_batch_id": f"multi-{seed}",
                 "source_class": "local_simulator",
             },
+            observable_range=(-1.0, 1.0),
             parameters=[Parameter("a"), Parameter("b", trainable=False)],
         )
         interval = result.confidence_interval
@@ -836,3 +849,143 @@ def test_signed_rule_runs_through_the_sample_route() -> None:
         rule=single,
     )
     assert _within_budget(estimate.gradient, [coefficient * (0.1 - 0.3)])
+
+
+def test_pole_samples_give_conservative_intervals() -> None:
+    """Where every shifted sample sits near +-1 the floored variance does not under-cover.
+
+    At a total angle of 1.6 the two-term rule's shifted points all lie near the
+    poles. The plug-in variance covered 112 of 200 replicates there; with the
+    Agresti-Coull floor the observed coverage must not fall below the nominal
+    level (it may exceed it, since the floor is conservative).
+    """
+    plan = _plan(
+        [GateOccurrence("ry", 0), GateOccurrence("ry", 0), GateOccurrence("ry", 1)], 2, shots=1000
+    )
+    values = [0.7, 0.2]
+    exact = -2.0 * math.sin(2.0 * values[0] + values[1])
+    covered = 0
+    for seed in range(200):
+        result = execute_quantum_gradient_estimator_with_uncertainty(
+            plan,
+            _shared_sampler(1000, seed),
+            values,
+            calibration=_CALIBRATION,
+            shots=1000,
+            sample_provenance={
+                "sample_seed": seed,
+                "shot_batch_id": f"pole-{seed}",
+                "source_class": "local_simulator",
+            },
+            observable_range=(-1.0, 1.0),
+            parameters=[Parameter("a"), Parameter("b", trainable=False)],
+        )
+        interval = result.confidence_interval
+        assert interval is not None
+        covered += bool(float(interval.lower[0]) <= exact <= float(interval.upper[0]))
+    high = float(beta.ppf(0.975, covered + 1, 200 - covered)) if covered < 200 else 1.0
+    assert high >= 0.95, covered
+
+
+@pytest.mark.parametrize(
+    ("observable_range", "mean", "message"),
+    [((1.0, -1.0), 0.0, "low < high"), ((-1.0, 1.0), 1.5, "outside observable_range")],
+    ids=["reversed-range", "mean-outside"],
+)
+def test_observable_range_is_checked(
+    observable_range: tuple[float, float], mean: float, message: str
+) -> None:
+    """A reversed range or a mean outside it refuses.
+
+    Parameters
+    ----------
+    observable_range
+        Declared single-shot range.
+    mean
+        Sampled mean returned by the sampler.
+    message
+        Expected refusal text.
+
+    """
+    plan = _plan([GateOccurrence("ry", 0)], 1, shots=100)
+    with pytest.raises(ValueError, match=message):
+        execute_quantum_gradient_estimator_with_uncertainty(
+            plan,
+            lambda values: (mean, 0.1),
+            [0.2],
+            calibration=_CALIBRATION,
+            shots=100,
+            sample_provenance={
+                "sample_seed": 0,
+                "shot_batch_id": "range",
+                "source_class": "synthetic_fixture",
+            },
+            observable_range=observable_range,
+        )
+
+
+def _first_admissible_cost(frequencies: list[float]) -> float | None:
+    """Return the shot cost of the earlier first-admissible grid, or ``None`` if it refused.
+
+    This restates the earlier default independently: grids ``k pi / D`` at the
+    original scale from ``D = 2n + 1``, the first with condition number at most
+    ``1e10`` and smallest singular value at least ``1e-6``.
+    """
+    spectrum = np.asarray(frequencies, dtype=np.float64)
+    count = spectrum.size
+    start = 2 * count + 1
+    stop = max(start + 64, math.ceil(4.0 * float(spectrum.max()) * count) + 65)
+    steps = np.arange(1, count + 1, dtype=np.float64)
+    for denominator in range(start, stop):
+        system = 2.0 * np.sin(np.outer(spectrum, steps * math.pi / denominator))
+        singular = np.linalg.svd(system, compute_uv=False)
+        if singular[-1] >= 1e-6 and singular[0] / singular[-1] <= 1e10:
+            coefficients = np.linalg.solve(system, spectrum)
+            return 2.0 * float(np.sum(coefficients**2)) * count
+    return None
+
+
+@pytest.mark.parametrize(
+    "frequencies",
+    [
+        [1.0, 3.0],
+        [0.5, 1.5, 2.5],
+        [0.75, 2.25, 3.0, 3.75],
+        [2**0.5 - 1.0, 1.0, 2**0.5, 1.0 + 2**0.5],
+        [1.0, 2.0, 3.0 * (1.0 + 1.1e-9)],
+        [float(k) * (1.0 + 1e-7 * (k % 3)) for k in range(1, 17)],
+    ],
+    ids=["one-three", "odd-halves", "superset", "root-two", "past-tolerance", "near-integer-16"],
+)
+def test_non_equidistant_rules_never_cost_more_than_before(frequencies: list[float]) -> None:
+    """The search includes the earlier grid, an equidistant superset and wider phases.
+
+    Cost is ``2 * sum c**2`` times the number of terms, the shot cost for a
+    fixed total number of shots. Spectra the earlier search refused must now
+    be planned exactly.
+
+    Parameters
+    ----------
+    frequencies
+        Non-equidistant generator frequencies.
+
+    """
+    rule = multi_frequency_parameter_shift_rule(frequencies)
+    cost = rule.shot_variance_factor * len(rule.terms)
+    before = _first_admissible_cost(frequencies)
+    assert before is None or cost <= before * (1.0 + 1e-12)
+    assert _trig_polynomial_derivative_error(frequencies, 3) <= 1e-12
+
+
+def test_one_third_scales_keep_exact_frequencies() -> None:
+    """Three ``RY(theta/3)`` gates plan ``{1/3, 2/3, 1}`` without decimal rounding."""
+    plan = _plan([GateOccurrence("ry", 0, 1.0 / 3.0)] * 3, 1)
+    assert plan.frequencies[0][-1] == 1.0
+    rule = plan.rules[0]
+    assert rule is not None
+    theta = 0.8
+    estimate = sum(
+        coefficient * (math.cos(theta + shift) - math.cos(theta - shift))
+        for shift, coefficient in rule.terms
+    )
+    assert abs(estimate + math.sin(theta)) <= 1e-14

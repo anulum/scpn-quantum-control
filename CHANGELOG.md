@@ -22,6 +22,18 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     are linear in the number of edges;
   - the sparse kernels report CPU float64 placement and no GPU path.
 
+- Search more shift sets for non-equidistant spectra and keep finite-shot
+  intervals from under-covering near the poles:
+  - candidates now include equidistant shifts, the smallest equidistant
+    superset, wider phases and the earlier grid. No rule costs more than
+    before, and spectra the earlier search refused, such as 16 near-integer
+    frequencies, are planned exactly;
+  - the plan-bound finite-shot route requires `observable_range` and floors
+    each sampled variance at its Agresti-Coull value. The plug-in variance had
+    covered 112 of 200 replicates at a total angle of 1.6;
+  - eigenvalue sums and frequencies are merged within `1e-12` instead of being
+    rounded to 12 decimals.
+
 - Choose quantum gradient rules by exactness and shot cost, and bind the
   finite-shot route to the plan:
   - equidistant spectra get the closed-form equidistant rule, and other

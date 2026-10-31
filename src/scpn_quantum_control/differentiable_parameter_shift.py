@@ -437,7 +437,26 @@ QUANTUM_GRADIENT_ESTIMATOR_PLAN_SCHEMA = "quantum_gradient_estimator_plan.v1"
 _CALIBRATION_SCHEMA = "quantum_gradient_calibration.v1"
 _MAX_SPECTRUM_SUMS = 64
 _MAX_SPECTRUM_FREQUENCIES = 64
-_FREQUENCY_DECIMALS = 12
+_MERGE_TOLERANCE = 1.0e-12
+"""Relative distance, against the largest magnitude present, below which two
+eigenvalue sums or frequencies are the same value up to rounding."""
+
+
+def _merge_close(values: Sequence[float]) -> tuple[float, ...]:
+    """Return the sorted, non-empty values with near-equal neighbours merged into the first.
+
+    Rounding to a fixed number of decimals moved values such as ``1/3 * 3`` to
+    ``1.000000000002``; merging keeps one exact representative instead.
+    """
+    ordered = sorted(values)
+    tolerance = _MERGE_TOLERANCE * max(abs(ordered[0]), abs(ordered[-1]))
+    merged = [ordered[0]]
+    for value in ordered[1:]:
+        if value - merged[-1] > tolerance:
+            merged.append(value)
+    return tuple(merged)
+
+
 _SPECTRUM_CLAIM_BOUNDARY = (
     "spectrum-bound parameter shift: exact for expectations whose dependence on each "
     "parameter is a trigonometric polynomial with the declared generator frequencies; "
@@ -652,11 +671,15 @@ def plan_quantum_gradient_estimator(
             raise QuantumGradientEstimatorRefusal(
                 "invalid_occurrence", "occurrence scale must be finite and nonzero"
             )
-        sums[index] = {
-            round(total + float(scale) * eigenvalue, _FREQUENCY_DECIMALS)
-            for total in sums[index]
-            for eigenvalue in eigenvalues
-        }
+        sums[index] = set(
+            _merge_close(
+                [
+                    total + float(scale) * eigenvalue
+                    for total in sums[index]
+                    for eigenvalue in eigenvalues
+                ]
+            )
+        )
         if len(sums[index]) > _MAX_SPECTRUM_SUMS:
             raise QuantumGradientEstimatorRefusal(
                 "spectrum_too_large",
@@ -671,14 +694,12 @@ def plan_quantum_gradient_estimator(
             rules.append(None)
             continue
         totals = sorted(sums[index])
-        spectrum = tuple(
-            sorted(
-                {
-                    round(upper - lower, _FREQUENCY_DECIMALS)
-                    for position, lower in enumerate(totals)
-                    for upper in totals[position + 1 :]
-                }
-            )
+        spectrum = _merge_close(
+            [
+                upper - lower
+                for position, lower in enumerate(totals)
+                for upper in totals[position + 1 :]
+            ]
         )
         frequencies.append(spectrum)
         equidistant = _equidistant_order(np.array(spectrum, dtype=np.float64)) is not None
@@ -842,6 +863,7 @@ def execute_quantum_gradient_estimator_with_uncertainty(
     calibration: Mapping[str, object],
     shots: int,
     sample_provenance: Mapping[str, object] | FiniteShotSampleProvenance,
+    observable_range: tuple[float, float],
     parameters: Sequence[Parameter] | None = None,
     confidence_level: float = 0.95,
     confidence_z: float = 1.959963984540054,
@@ -855,6 +877,15 @@ def execute_quantum_gradient_estimator_with_uncertainty(
     term count or coefficient signs, and the variance
     ``sum c**2 * (s_plus**2 + s_minus**2) / shots`` assumes the plus and minus
     samples are independent.
+
+    Near the ends of the observable's range almost every shot gives the same
+    outcome, so the sampled variance collapses towards zero and a normal
+    interval would under-cover. Each sampled variance is therefore floored at
+    the Agresti-Coull variance of a two-outcome observable spanning
+    ``observable_range``: with ``p = (mean - low) / (high - low)``, the floor is
+    ``(high - low)**2 * p~ (1 - p~)`` for ``p~ = (p * shots + 2) / (shots + 4)``.
+    Away from the ends the floor is below the sampled variance and changes
+    nothing; at the ends it makes the interval conservative.
 
     Parameters
     ----------
@@ -872,6 +903,9 @@ def execute_quantum_gradient_estimator_with_uncertainty(
         Shots per evaluation now in force; they must match the planned ones.
     sample_provenance:
         ``sample_seed``, ``shot_batch_id`` and ``source_class`` of the samples.
+    observable_range:
+        ``(low, high)`` bounds of a single-shot outcome, such as ``(-1, 1)`` for
+        a Pauli observable; used for the variance floor.
     parameters:
         Optional metadata controlling names and trainable masks.
     confidence_level:
@@ -893,7 +927,8 @@ def execute_quantum_gradient_estimator_with_uncertainty(
         With reason ``plan_changed``, ``calibration_changed`` or
         ``budget_drift``, before the sampler is called.
     ValueError
-        If the plan is exact, or the values or samples are malformed.
+        If the plan is exact, the range is not finite and increasing, or the
+        values or samples are malformed.
 
     """
     _admit_planned_execution(plan, calibration, shots)
@@ -911,13 +946,23 @@ def execute_quantum_gradient_estimator_with_uncertainty(
     if z_value <= 0.0:
         raise ValueError("confidence_z must be finite and positive")
 
+    low = _as_real_scalar("observable_range low", observable_range[0])
+    high = _as_real_scalar("observable_range high", observable_range[1])
+    if not low < high:
+        raise ValueError("observable_range must be finite with low < high")
+
     def sample(point: NDArray[np.float64]) -> tuple[float, float]:
         mean, variance = sampler(point)
         mean_value = _as_real_scalar("sampled mean", mean)
         variance_value = _as_real_scalar("sampled variance", variance)
         if variance_value < 0.0:
             raise ValueError("sampled single-shot variance must be non-negative")
-        return mean_value, variance_value
+        if not low <= mean_value <= high:
+            raise ValueError("sampled mean lies outside observable_range")
+        fraction = (mean_value - low) / (high - low)
+        adjusted = (fraction * shots + 2.0) / (shots + 4.0)
+        floor = (high - low) ** 2 * adjusted * (1.0 - adjusted)
+        return mean_value, max(variance_value, floor)
 
     base_value, _ = sample(parameter_values.copy())
     gradient = np.zeros_like(parameter_values)
@@ -970,6 +1015,8 @@ def execute_quantum_gradient_estimator_with_uncertainty(
         trainable=trainable,
         failure_policy=failure_policy,
     )
+    # ``shots`` lists the planned shots per evaluation for every parameter,
+    # frozen ones included; the records list what was actually sampled.
     return StochasticGradientResult(
         value=base_value,
         gradient=gradient,

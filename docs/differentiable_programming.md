@@ -483,9 +483,21 @@ calibration=..., shots=...)` binds the circuit structure before anything runs:
   rule, shifts `(2m - 1) pi / (2 R W)` for `m = 1..R`. Its coefficients
   alternate in sign. A single frequency `w` is `R = 1`: shift `pi / (2w)` and
   coefficient `w / 2`, however close `w` is to an integer. Any other spectrum
-  is rescaled to a largest frequency of one, and the admissible shift grid
-  with the smallest `sum c**2` is chosen. Units therefore never decide a
-  refusal: `{0.1, ..., 0.6}` is planned like `{1, ..., 6}`.
+  is solved over several candidate shift sets, and the one with the smallest
+  shot cost (`2 * sum c**2` times the number of terms) is kept. The candidates
+  are:
+  - equidistant shifts of its own size;
+  - the equidistant rule of the smallest equidistant superset, when every
+    frequency is an integer multiple of the smallest;
+  - grids `k pi / D` at unit top frequency;
+  - grids `k pi / D` at the original scale.
+
+  The earlier first-admissible grid is among them, so no rule costs more than
+  before. Phases above `pi` times the rule size are skipped, because they
+  lose the derivative to rounding. Units never decide a refusal:
+  `{0.1, ..., 0.6}` is planned like `{1, ..., 6}`. Eigenvalue sums and
+  frequencies that agree to `1e-12` relative are merged, not rounded to a
+  fixed number of decimals.
 - **Shot cost:** `plan.shot_variance_factors` gives each parameter's
   `2 * sum c**2`. With `n` shots per evaluation and single-shot variance
   `s**2`, that gradient component has variance `factor * s**2 / n`. For
@@ -510,8 +522,8 @@ It then shifts each parameter with the rule for its own spectrum. All
 refusals are `QuantumGradientEstimatorRefusal` with a stable `reason`.
 
 **Finite shots.** `execute_quantum_gradient_estimator_with_uncertainty(plan,
-sampler, values, calibration=..., shots=..., sample_provenance=...)` is the
-plan-bound route. It makes the same checks, then calls
+sampler, values, calibration=..., shots=..., sample_provenance=...,
+observable_range=(low, high))` is the plan-bound route. It makes the same checks, then calls
 `sampler(values) -> (mean, single-shot variance)` at every shifted point. Each
 parameter is differentiated with its own planned rule, whatever its term
 count or coefficient signs. The variance is
@@ -524,11 +536,17 @@ independent plus and minus samples. Common random numbers between the two
 would correlate them, and they are not supported.
 
 The interval is a normal approximation built from the sampled variances.
-Where a shifted expectation lies near `+-1`, few outcomes differ, the sampled
-variance collapses towards zero, and the interval under-covers. At a total
-angle of 1.6 for the `{1, 2}` rule it covered 112 of 200 replicates. Noise or
-measurement channels that depend on a parameter break the
-trigonometric-polynomial assumption and are outside the claim.
+Where a shifted expectation lies near an end of the observable's range, few
+outcomes differ and the sampled variance collapses towards zero. With the
+plug-in variance, the `{1, 2}` rule at a total angle of 1.6 covered only 112
+of 200 replicates. The route therefore requires `observable_range` and floors
+each sampled variance at the Agresti-Coull variance of a two-outcome
+observable over that range: `(high - low)**2 * p~ (1 - p~)` with
+`p~ = (p * shots + 2) / (shots + 4)`. Away from the ends this changes nothing;
+at the ends the interval becomes conservative rather than too short. A mean
+outside the range is refused. Noise or measurement channels that depend on a
+parameter break the trigonometric-polynomial assumption and are outside the
+claim.
 
 The qualification uses the frozen protocol: seeds 0..199 and 1000 shots per
 shifted expectation. It runs on two cases:
