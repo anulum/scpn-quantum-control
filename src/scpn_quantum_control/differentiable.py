@@ -98,12 +98,16 @@ from .differentiable_fisher import (
 )
 from .differentiable_gradient_descent import DifferentiableOptimizer
 from .differentiable_implicit_sensitivity import (
+    DELAYED_METHOD_OF_STEPS_ORDERS,
     SOLVER_DERIVATIVE_SUPPORT,
     ContinuousSolverSensitivity,
     DiscreteSolverSensitivity,
+    QualifiedAdaptiveGradient,
     SolverDerivativeRefusal,
     implicit_fixed_point_sensitivity,
     implicit_stationary_sensitivity,
+    qualify_adaptive_dopri_gradient,
+    qualify_delayed_sensitivity,
     refine_solver_sensitivity,
     rk4_forward_sensitivity,
 )
@@ -764,6 +768,10 @@ __all__ = [
     "DiscreteSolverSensitivity",
     "SOLVER_DERIVATIVE_SUPPORT",
     "SolverDerivativeRefusal",
+    "DELAYED_METHOD_OF_STEPS_ORDERS",
+    "QualifiedAdaptiveGradient",
+    "qualify_adaptive_dopri_gradient",
+    "qualify_delayed_sensitivity",
     "refine_solver_sensitivity",
     "rk4_forward_sensitivity",
     "implicit_stationary_sensitivity",

@@ -5,7 +5,7 @@ module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
 - **847 modules** across **41 package families**
-- **4593 documented public module-level symbols**
+- **4596 documented public module-level symbols**
 - **875 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -6361,11 +6361,11 @@ Native gradient-descent optimizer for differentiable scalar objectives.
 
 Implicit stationary, fixed-point and explicit-solver sensitivities.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_implicit_sensitivity.py) · Public symbols: **7**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_implicit_sensitivity.py) · Public symbols: **10**
 
-**Classes:** `SolverDerivativeRefusal`, `DiscreteSolverSensitivity`, `ContinuousSolverSensitivity`
+**Classes:** `SolverDerivativeRefusal`, `DiscreteSolverSensitivity`, `ContinuousSolverSensitivity`, `QualifiedAdaptiveGradient`
 
-**Functions:** `implicit_stationary_sensitivity()`, `implicit_fixed_point_sensitivity()`, `rk4_forward_sensitivity()`, `refine_solver_sensitivity()`
+**Functions:** `implicit_stationary_sensitivity()`, `implicit_fixed_point_sensitivity()`, `rk4_forward_sensitivity()`, `refine_solver_sensitivity()`, `qualify_adaptive_dopri_gradient()`, `qualify_delayed_sensitivity()`
 
 ### `scpn_quantum_control.differentiable_jax_adapter`
 

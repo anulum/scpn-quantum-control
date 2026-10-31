@@ -9,7 +9,7 @@
     "optional_extras": 43,
     "public_api_exports": 875,
     "public_documentation_pages": 385,
-    "python_model_classes": 1607,
+    "python_model_classes": 1608,
     "python_model_source_modules": 847,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
@@ -5679,6 +5679,10 @@
       {
         "name": "QualificationSupportRow",
         "path": "src/scpn_quantum_control/differentiable_baseline_scorecard.py"
+      },
+      {
+        "name": "QualifiedAdaptiveGradient",
+        "path": "src/scpn_quantum_control/differentiable_implicit_sensitivity.py"
       },
       {
         "name": "QualifiedCircuitCompilation",

@@ -1672,6 +1672,37 @@ periodic objectives route to local parameter-shift training, hybrid objectives
 route to exact term-gradient training, and hardware, unknown backends, or forced
 pure parameter-shift on analytic safety terms return unsupported plans.
 
+## Solver derivatives: discrete map versus continuous sensitivity
+
+A gradient through an ODE or DDE solve is one of two objects, and the
+`scpn_quantum_control.differentiable` namespace keeps them apart:
+
+| Route | Object | Continuous claim |
+|---|---|---|
+| `rk4_forward_sensitivity` | exact derivative of the fixed-step RK4 map at one mesh | none |
+| `refine_solver_sensitivity` | Richardson-refined sensitivity over four or more doubling meshes | only when every observed order is near four |
+| `kuramoto_dopri_vjp` (oscillatools) | adjoint of the realised adaptive step sequence, decisions held fixed | none |
+| `qualify_adaptive_dopri_gradient` | that adjoint at three or more tightening tolerances | only when the changes shrink and the last is within tolerance |
+| `delayed_phase_sensitivity` (oscillatools) | exact derivative of the delayed method-of-steps map | none |
+| `qualify_delayed_sensitivity` | step-halving refinement of the frequency and coupling channels | only at a consistent observed order of two to four |
+
+A failed solve, a non-finite sensitivity or event value, or an event that
+reaches zero raises `SolverDerivativeRefusal`. So does an event that comes
+within two one-step changes of zero when a continuous claim is requested.
+`SOLVER_DERIVATIVE_SUPPORT` states the same per control decision. Details:
+[API reference](api.md).
+
+```python
+import numpy as np
+from scpn_quantum_control.differentiable import refine_solver_sensitivity
+
+rhs = lambda t, y, th: th[0] * y
+jy = lambda t, y, th: np.array([[th[0]]])
+jp = lambda t, y, th: y.reshape(1, 1)
+result = refine_solver_sensitivity(rhs, jy, jp, [1.3], [-0.7], 2.0)
+# result.sensitivity[0, 0] is within result.error_estimate of 2 * 1.3 * exp(-1.4)
+```
+
 ## Minimal provider-gradient readiness audit
 
 ```python

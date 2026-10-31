@@ -10,16 +10,19 @@
 from __future__ import annotations
 
 import math
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pytest
 from numpy.typing import NDArray
 
 from scpn_quantum_control.differentiable_implicit_sensitivity import (
+    DELAYED_METHOD_OF_STEPS_ORDERS,
     RK4_ORDER,
     SOLVER_DERIVATIVE_SUPPORT,
     SolverDerivativeRefusal,
+    qualify_adaptive_dopri_gradient,
+    qualify_delayed_sensitivity,
     refine_solver_sensitivity,
     rk4_forward_sensitivity,
 )
@@ -63,8 +66,9 @@ def test_solver_derivative_conformance_01() -> None:
     assert errors[0] > 1e-6
     continuous = refine_solver_sensitivity(rhs, jy, jp, [y0], [a], final_time, base_steps=16)
     assert continuous.kind == "continuous_refined"
-    assert continuous.meshes == (16, 32, 64)
-    assert abs(continuous.observed_order - RK4_ORDER) < 0.1
+    assert continuous.meshes == (16, 32, 64, 128)
+    assert len(continuous.observed_orders) == 2
+    assert all(abs(order - RK4_ORDER) < 0.1 for order in continuous.observed_orders)
     assert abs(continuous.sensitivity[0, 0] - exact) <= continuous.error_estimate
     assert continuous.error_estimate <= continuous.tolerance
 
@@ -143,9 +147,10 @@ def test_solver_derivative_conformance_03() -> None:
     before = rk4_forward_sensitivity(*falling, [1.0], [1.0], 0.5, 16, event=ground)
     assert before.sensitivity[0, 0] == pytest.approx(-0.5, rel=1e-14)
     assert SOLVER_DERIVATIVE_SUPPORT["event_time"].startswith("refused")
-    assert SOLVER_DERIVATIVE_SUPPORT["adaptive_accept_reject"].startswith("excluded")
-    assert SOLVER_DERIVATIVE_SUPPORT["delayed_history"].startswith("excluded")
+    assert SOLVER_DERIVATIVE_SUPPORT["adaptive_accept_reject"].startswith("qualified only")
+    assert SOLVER_DERIVATIVE_SUPPORT["delayed_history"].startswith("qualified only")
     assert SOLVER_DERIVATIVE_SUPPORT["failed_solve"].startswith("refused")
+    assert SOLVER_DERIVATIVE_SUPPORT["open_system_objectives"].startswith("discrete only")
 
 
 def test_initial_sensitivity_propagates_through_the_flow() -> None:
@@ -255,3 +260,322 @@ def test_inputs_are_not_modified() -> None:
     rhs, jy, jp = _linear()
     rk4_forward_sensitivity(rhs, jy, jp, state, theta, 1.0, 4, initial_sensitivity=seed)
     assert state.tolist() == [1.0] and theta.tolist() == [0.5] and seed.tolist() == [[0.25]]
+
+
+def test_non_finite_sensitivity_is_a_failed_solve() -> None:
+    """A state that stays finite while its sensitivity overflows yields no derivative."""
+    stiff = (
+        lambda t, y, th: 100.0 * y + th[0],
+        lambda t, y, th: np.array([[100.0]]),
+        lambda t, y, th: np.array([[1.0]]),
+    )
+    with pytest.raises(SolverDerivativeRefusal, match="sensitivity became non-finite") as refused:
+        rk4_forward_sensitivity(*stiff, [0.0], [0.0], 8.0, 1000)
+    assert refused.value.reason == "failed_solve"
+
+
+def _rotation() -> tuple[Any, Any, Any]:
+    """Return ``y' = theta * (y1, -y0)``, the unit circle at angular speed ``theta``."""
+    return (
+        lambda t, y, th: th[0] * np.array([y[1], -y[0]]),
+        lambda t, y, th: th[0] * np.array([[0.0, 1.0], [-1.0, 0.0]]),
+        lambda t, y, th: np.array([[y[1]], [-y[0]]]),
+    )
+
+
+def test_event_near_zero_between_mesh_points_refuses_a_continuous_claim() -> None:
+    """``cos t + 0.9999999`` nearly touches zero at ``t = pi`` without changing sign at nodes."""
+    grazing = refine_solver_sensitivity
+    with pytest.raises(SolverDerivativeRefusal) as refused:
+        grazing(
+            *_rotation(),
+            [1.0, 0.0],
+            [1.0],
+            4.0,
+            base_steps=128,
+            event=lambda t, y, th: float(y[0]) + 0.9999999,
+        )
+    assert refused.value.reason == "event_crossing"
+    distant = refine_solver_sensitivity(
+        *_rotation(),
+        [1.0, 0.0],
+        [1.0],
+        4.0,
+        base_steps=128,
+        event=lambda t, y, th: float(y[0]) + 2.0,
+    )
+    exact = np.array([[-4.0 * math.sin(4.0)], [-4.0 * math.cos(4.0)]])
+    assert np.all(np.abs(distant.sensitivity - exact) <= 10.0 * distant.error_estimate + 1e-12)
+
+
+def test_non_finite_event_value_is_a_failed_solve() -> None:
+    """``nan * side <= 0`` is false, so a NaN event must be refused explicitly."""
+    with pytest.raises(SolverDerivativeRefusal) as refused:
+        rk4_forward_sensitivity(*_linear(), [1.0], [0.5], 1.0, 4, event=lambda t, y, th: math.nan)
+    assert refused.value.reason == "failed_solve"
+
+
+@pytest.mark.parametrize("amplitude", [1e-4, 1e-16], ids=["unit-scale", "tiny-scale"])
+def test_pre_asymptotic_kink_is_not_refined(amplitude: float) -> None:
+    """A kink between mesh points shows inconsistent orders; one ratio near four is not enough.
+
+    Parameters
+    ----------
+    amplitude
+        Size of the kinked forcing; the tiny case once fabricated order four.
+
+    """
+    kinked = (
+        lambda t, y, th: np.array([th[0] * amplitude * abs(t - 0.154)]),
+        lambda t, y, th: np.zeros((1, 1)),
+        lambda t, y, th: np.array([[amplitude * abs(t - 0.154)]]),
+    )
+    with pytest.raises(SolverDerivativeRefusal) as refused:
+        refine_solver_sensitivity(*kinked, [0.0], [1.0], 1.0, tolerance=1.0)
+    assert refused.value.reason == "not_refined"
+
+
+def test_divergence_bound_and_numpy_steps_are_forwarded() -> None:
+    """Large but bounded states refine with a matching bound; ``np.int64`` steps are counts."""
+    rhs, jy, jp = _linear()
+    result = refine_solver_sensitivity(
+        rhs, jy, jp, [1e13], [-0.5], 1.0, base_steps=16, tolerance=1e6, divergence_bound=1e15
+    )
+    assert result.sensitivity[0, 0] == pytest.approx(1e13 * math.exp(-0.5), rel=1e-8)
+    counted = rk4_forward_sensitivity(rhs, jy, jp, [1.0], [0.5], 1.0, cast(int, np.int64(8)))
+    assert counted.steps == 8
+
+
+def _van_der_pol() -> tuple[Any, Any, Any]:
+    """Return the Van der Pol field with ``theta = (mu, omega)`` and its Jacobians."""
+    return (
+        lambda t, y, th: np.array([y[1], th[0] * (1 - y[0] ** 2) * y[1] - th[1] ** 2 * y[0]]),
+        lambda t, y, th: np.array(
+            [[0.0, 1.0], [-2 * th[0] * y[0] * y[1] - th[1] ** 2, th[0] * (1 - y[0] ** 2)]]
+        ),
+        lambda t, y, th: np.array([[0.0, 0.0], [(1 - y[0] ** 2) * y[1], -2 * th[1] * y[0]]]),
+    )
+
+
+def test_nonlinear_two_parameter_sensitivity_matches_a_variational_oracle() -> None:
+    """Van der Pol with two states and two parameters, against DOP853 at ``rtol=1e-12``."""
+    from scipy.integrate import solve_ivp
+
+    theta, start, final_time = np.array([0.8, 1.3]), np.array([0.4, -0.2]), 3.0
+    rhs, jy, jp = _van_der_pol()
+
+    def augmented(t: float, packed: Vector) -> Vector:
+        state, sens = packed[:2], packed[2:].reshape(2, 2)
+        return np.concatenate(
+            (rhs(t, state, theta), (jy(t, state, theta) @ sens + jp(t, state, theta)).ravel())
+        )
+
+    oracle = (
+        solve_ivp(
+            augmented,
+            (0.0, final_time),
+            np.concatenate((start, np.zeros(4))),
+            method="DOP853",
+            rtol=1e-12,
+            atol=1e-14,
+        )
+        .y[2:, -1]
+        .reshape(2, 2)
+    )
+    refined = refine_solver_sensitivity(rhs, jy, jp, start, theta, final_time, base_steps=64)
+    assert np.all(np.abs(refined.sensitivity - oracle) <= 10.0 * refined.error_estimate + 1e-10)
+    discrete = rk4_forward_sensitivity(rhs, jy, jp, start, theta, final_time, 64)
+    step = 1e-6
+    for column in range(2):
+        shift = np.zeros(2)
+        shift[column] = step
+        plus = rk4_forward_sensitivity(
+            rhs, jy, jp, start, theta + shift, final_time, 64
+        ).final_state
+        minus = rk4_forward_sensitivity(
+            rhs, jy, jp, start, theta - shift, final_time, 64
+        ).final_state
+        assert np.allclose(discrete.sensitivity[:, column], (plus - minus) / (2 * step), atol=1e-8)
+
+
+def _kuramoto_terminal(
+    theta0: Vector, omega: Vector, coupling: Vector, final_time: float
+) -> Vector:
+    """Integrate the Kuramoto flow with DOP853 at ``rtol=1e-12``."""
+    from scipy.integrate import solve_ivp
+
+    def field(t: float, phases: Vector) -> Vector:
+        drift: Vector = omega + np.sum(
+            coupling * np.sin(phases[None, :] - phases[:, None]), axis=1
+        )
+        return drift
+
+    result: Vector = solve_ivp(
+        field, (0.0, final_time), theta0, method="DOP853", rtol=1e-12, atol=1e-14
+    ).y[:, -1]
+    return result
+
+
+def test_adaptive_dopri_gradient_is_qualified_by_tolerance_refinement() -> None:
+    """The fixed-grid adjoint is issued only from refinement evidence, close to the flow."""
+    theta0 = np.array([0.1, 0.5, -0.3])
+    omega = np.array([0.4, -0.2, 0.9])
+    coupling = 0.5 * np.array([[0.0, 1.0, 0.3], [0.7, 0.0, 0.2], [0.1, 0.9, 0.0]])
+    cotangent = np.ones(3)
+    qualified = qualify_adaptive_dopri_gradient(
+        theta0, omega, coupling, cotangent, final_time=2.0, tolerance=1e-6
+    )
+    assert qualified.kind == "continuous_refined" and len(qualified.differences) == 2
+    step = 1e-6
+    for index in range(3):
+        shift = np.zeros(3)
+        shift[index] = step
+        flow = (
+            (
+                _kuramoto_terminal(theta0, omega + shift, coupling, 2.0)
+                - _kuramoto_terminal(theta0, omega - shift, coupling, 2.0)
+            )
+            @ cotangent
+            / (2 * step)
+        )
+        assert abs(qualified.omega[index] - flow) <= 10.0 * qualified.error_estimate + 1e-7
+    with pytest.raises(SolverDerivativeRefusal) as refused:
+        qualify_adaptive_dopri_gradient(
+            theta0, omega, coupling, cotangent, final_time=2.0, tolerance=1e-15
+        )
+    assert refused.value.reason == "not_refined"
+
+
+@pytest.mark.parametrize(
+    ("changes", "message"),
+    [
+        ({"rtols": (1e-6, 1e-8)}, "at least three"),
+        ({"rtols": (1e-6, 1e-6, 1e-8)}, "strictly decreasing"),
+        ({"atol_scale": 0.0}, "atol_scale"),
+        ({"final_time": -1.0}, "final_time"),
+    ],
+    ids=["two-tolerances", "not-decreasing", "zero-atol", "negative-time"],
+)
+def test_adaptive_qualification_refuses_malformed_settings(
+    changes: dict[str, Any], message: str
+) -> None:
+    """Malformed tolerance ladders and times raise before any solve.
+
+    Parameters
+    ----------
+    changes
+        Keyword arguments replacing the valid defaults.
+    message
+        Expected refusal text.
+
+    """
+    options: dict[str, Any] = {"final_time": 1.0}
+    options.update(changes)
+    with pytest.raises(ValueError, match=message):
+        qualify_adaptive_dopri_gradient(
+            np.zeros(2), np.ones(2), np.zeros((2, 2)), np.ones(2), **options
+        )
+
+
+def test_delayed_sensitivity_is_qualified_against_a_closed_form() -> None:
+    """With ``K = 0`` and a free-running history, ``dtheta_j/dK_jk`` integrates a sinusoid.
+
+    Then ``theta_k(t - tau) - theta_j(t) = a + b t`` with
+    ``a = theta_k(0) - theta_j(0) - omega_k tau`` and ``b = omega_k - omega_j``,
+    so ``dtheta_j(T)/dK_jk = (cos(a) - cos(a + b T)) / b``, which is
+    ``T sin(a)`` for the self-coupling ``b = 0``, and ``dtheta(T)/domega = T * I``.
+    """
+    start = np.array([0.2, -0.4])
+    omega = np.array([0.7, 1.5])
+    delay, final_time = 0.5, 2.0
+
+    def history(times: Vector) -> Vector:
+        return start[None, :] + omega[None, :] * times[:, None]
+
+    result = qualify_delayed_sensitivity(
+        history, omega, np.zeros((2, 2)), delay=delay, final_time=final_time, tolerance=1e-6
+    )
+    assert result.observed_orders
+    assert (
+        min(abs(allowed - result.observed_order) for allowed in DELAYED_METHOD_OF_STEPS_ORDERS)
+        < 0.5
+    )
+    expected = np.zeros((2, 6))
+    expected[:, :2] = final_time * np.eye(2)
+    for j in range(2):
+        for k in range(2):
+            a = start[k] - start[j] - omega[k] * delay
+            b = omega[k] - omega[j]
+            # The self-coupling term has b = 0: a constant integrand sin(a).
+            expected[j, 2 + 2 * j + k] = (
+                final_time * math.sin(a)
+                if b == 0.0
+                else (math.cos(a) - math.cos(a + b * final_time)) / b
+            )
+    assert np.all(np.abs(result.sensitivity - expected) <= 10.0 * result.error_estimate + 1e-9)
+
+
+@pytest.mark.parametrize(
+    ("changes", "message"),
+    [
+        ({"final_time": 2.1}, "integer multiple"),
+        ({"delay": 0.0}, "delay"),
+        ({"history": lambda times: np.zeros((len(times), 3))}, "history must return"),
+        ({"refinements": 3}, "refinements"),
+    ],
+    ids=["off-mesh-time", "zero-delay", "wrong-history-shape", "three-meshes"],
+)
+def test_delayed_qualification_refuses_malformed_settings(
+    changes: dict[str, Any], message: str
+) -> None:
+    """Off-mesh times, non-positive delays, wrong histories and short ladders raise.
+
+    Parameters
+    ----------
+    changes
+        Keyword arguments replacing the valid defaults.
+    message
+        Expected refusal text.
+
+    """
+    options: dict[str, Any] = {
+        "history": lambda times: np.zeros((len(times), 2)),
+        "delay": 0.5,
+        "final_time": 2.0,
+    }
+    options.update(changes)
+    history = options.pop("history")
+    with pytest.raises(ValueError, match=message):
+        qualify_delayed_sensitivity(history, np.ones(2), np.zeros((2, 2)), **options)
+
+
+def test_delayed_qualification_refuses_an_unmet_tolerance() -> None:
+    """A tolerance below the refined error estimate is not a continuous claim."""
+    with pytest.raises(SolverDerivativeRefusal) as refused:
+        qualify_delayed_sensitivity(
+            lambda times: np.stack((np.sin(times), np.cos(times)), axis=1),
+            np.array([0.3, -0.5]),
+            np.array([[0.0, 0.8], [0.6, 0.0]]),
+            delay=0.5,
+            final_time=2.0,
+            tolerance=1e-14,
+        )
+    assert refused.value.reason == "not_refined"
+
+
+def test_qualifiers_refuse_non_finite_gradients() -> None:
+    """An overflowing adjoint or delayed sensitivity is a failed solve, never a claim."""
+    with np.errstate(all="ignore"), pytest.raises(SolverDerivativeRefusal) as adaptive:
+        qualify_adaptive_dopri_gradient(
+            np.zeros(2), np.ones(2), 0.1 * np.ones((2, 2)), np.full(2, 1e308), final_time=10.0
+        )
+    assert adaptive.value.reason == "failed_solve"
+    with np.errstate(all="ignore"), pytest.raises(SolverDerivativeRefusal) as delayed:
+        qualify_delayed_sensitivity(
+            lambda times: np.stack((np.sin(times), np.cos(times)), axis=1),
+            np.ones(2),
+            1e200 * np.array([[0.0, 1.0], [1.0, 0.0]]),
+            delay=0.5,
+            final_time=1.0,
+        )
+    assert delayed.value.reason == "failed_solve"

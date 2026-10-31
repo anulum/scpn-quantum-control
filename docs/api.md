@@ -1442,7 +1442,9 @@ value_and_hessian(objective, values, parameters=None, method="finite_difference"
 implicit_stationary_sensitivity(hessian, cross_derivative, parameters=None, hyperparameter_names=None, damping=0.0, rcond=1e-12) -> ImplicitSensitivityResult
 implicit_fixed_point_sensitivity(state_jacobian, parameter_jacobian, parameters=None, hyperparameter_names=None, damping=0.0, rcond=1e-12) -> FixedPointSensitivityResult
 rk4_forward_sensitivity(rhs, state_jacobian, parameter_jacobian, initial_state, theta, final_time, steps, initial_sensitivity=None, event=None, divergence_bound=1e12) -> DiscreteSolverSensitivity
-refine_solver_sensitivity(rhs, state_jacobian, parameter_jacobian, initial_state, theta, final_time, base_steps=16, refinements=3, tolerance=1e-8, order_tolerance=0.5, initial_sensitivity=None, event=None) -> ContinuousSolverSensitivity
+refine_solver_sensitivity(rhs, state_jacobian, parameter_jacobian, initial_state, theta, final_time, base_steps=16, refinements=4, tolerance=1e-8, order_tolerance=0.5, initial_sensitivity=None, event=None, divergence_bound=1e12) -> ContinuousSolverSensitivity
+qualify_adaptive_dopri_gradient(initial_phases, omega, coupling, cotangent, final_time, rtols=(1e-6, 1e-8, 1e-10), atol_scale=1e-3, tolerance=1e-6) -> QualifiedAdaptiveGradient
+qualify_delayed_sensitivity(history, omega, coupling, delay, final_time, base_steps_per_delay=4, refinements=4, tolerance=1e-6, order_tolerance=0.5) -> ContinuousSolverSensitivity
 finite_difference_hvp(objective, values, tangent, parameters=None, step=1e-5) -> np.ndarray
 value_and_finite_difference_hvp(objective, values, tangent, parameters=None, step=1e-5) -> HVPResult
 batch_finite_difference_hvp(objective, values, tangents, parameters=None, step=1e-5) -> np.ndarray
@@ -1845,25 +1847,51 @@ Two different objects come from an ODE solve, and they are kept apart:
   `y0 N R(ah)^(N-1) h R'(ah)`, where `R` is the RK4 amplification factor. It is
   not the continuous `T y0 exp(aT)`.
 - `refine_solver_sensitivity()` is the only route to a *continuous* sensitivity.
-  It runs at least three doubling meshes. It issues a Richardson-refined value
-  only when the observed order is near four and the error estimate is within
-  tolerance. Otherwise it raises `SolverDerivativeRefusal("not_refined")`.
-  Two equal discrete implementations are not evidence of convergence.
+  It runs at least four doubling meshes. It issues a Richardson-refined value
+  only when every consecutive observed order is near four and the error
+  estimate is within `tolerance`, which is absolute on every entry. One ratio
+  near four is not enough: a kink between mesh points can produce one by
+  chance on pre-asymptotic meshes. Otherwise it raises
+  `SolverDerivativeRefusal("not_refined")`. Two equal discrete implementations
+  are not evidence of convergence.
 
 The following never return a gradient. They raise `SolverDerivativeRefusal`
 with reason `"failed_solve"`, or `"event_crossing"` for an event:
 
-- a solve that becomes non-finite or diverges;
-- an event function that reaches or crosses zero, including exactly at a mesh
-  point.
+- a solve that becomes non-finite or diverges, or whose sensitivity becomes
+  non-finite while the state stays finite;
+- an event function that is non-finite (`"failed_solve"`), or reaches or
+  crosses zero, including exactly at a mesh point;
+- for a continuous claim, an event that comes within two one-step changes of
+  zero on the finest mesh, since the flow could then cross between mesh
+  points.
+
+Two other solvers ship discrete derivatives, and each has a qualifier for a
+continuous claim:
+
+- `kuramoto_dopri_vjp` in oscillatools differentiates the realised adaptive
+  Dormand-Prince step sequence with every accept/reject decision held fixed.
+  `qualify_adaptive_dopri_gradient()` repeats the forward and adjoint at three
+  or more tightening tolerances. It issues the tightest gradient only when
+  every change shrinks at least by the square root of the tolerance ratio and
+  the last one is within `tolerance`.
+- `delayed_phase_sensitivity` in oscillatools is the exact derivative of the
+  discrete delayed method-of-steps map. `qualify_delayed_sensitivity()`
+  halves the step on four or more meshes, samples a history function on each,
+  and refines the frequency and coupling channels. The integrator converges
+  at second order in general (lagged values are interpolated) and up to fourth
+  order where that interpolation is exact. The claim needs every observed order
+  to agree with one order in `DELAYED_METHOD_OF_STEPS_ORDERS`.
 
 `SOLVER_DERIVATIVE_SUPPORT` records each solver control decision:
 
 - fixed-step RK4: supported;
-- adaptive accept/reject: excluded;
+- adaptive accept/reject: qualified only by tolerance refinement;
 - event time: refused;
-- delayed history: excluded;
-- failed solve: refused.
+- delayed history: qualified only by step refinement;
+- failed solve: refused;
+- open-system objectives: discrete only (finite differences of the
+  time-discretised Lindblad solve and of a seeded MCWF ensemble).
 `finite_difference_jacobian()` and `value_and_finite_difference_jacobian()`
 support vector-valued diagnostics such as multi-observable residual maps while
 requiring stable one-dimensional finite outputs across all perturbations.

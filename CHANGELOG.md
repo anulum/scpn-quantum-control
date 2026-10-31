@@ -22,6 +22,21 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     are linear in the number of edges;
   - the sparse kernels report CPU float64 placement and no GPU path.
 
+- Qualify solver derivatives across every shipped solver:
+  - `refine_solver_sensitivity` needs four meshes and every consecutive
+    observed order near four; one ratio admitted pre-asymptotic meshes with a
+    7.5x understated error;
+  - a non-finite sensitivity, a non-finite event value, and an event within two
+    one-step changes of zero on the finest mesh are refused for a continuous
+    claim;
+  - `divergence_bound` is forwarded, NumPy integer step counts are accepted,
+    and the exact-convergence shortcut no longer has a unit floor;
+  - `qualify_adaptive_dopri_gradient` qualifies the fixed-grid Dormand-Prince
+    adjoint by tolerance refinement, and `qualify_delayed_sensitivity` the
+    delayed method-of-steps sensitivity by step halving;
+  - `SOLVER_DERIVATIVE_SUPPORT` states the adaptive, delayed and open-system
+    routes instead of calling them excluded.
+
 - Search more shift sets for non-equidistant spectra and keep finite-shot
   intervals from under-covering near the poles:
   - candidates now include equidistant shifts, the smallest equidistant
