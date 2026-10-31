@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 pytest.importorskip("jax")
 
@@ -63,6 +64,16 @@ def _reference_phases(
 
 @pytest.mark.parametrize(("n", "delay_steps"), [(6, 3), (8, 1), (5, 5)])
 def test_forward_matches_numpy_delayed_at_x64(n: int, delay_steps: int) -> None:
+    """The 64-bit JAX delayed solve reproduces the NumPy method-of-steps trajectory.
+
+    Parameters
+    ----------
+    n
+        Number of oscillators.
+    delay_steps
+        Delay in steps.
+
+    """
     history, omega, coupling, delay = _delayed_case(n, delay_steps, seed=n * 10 + delay_steps)
     reference = _reference_phases(history, omega, coupling, delay)
     jax_trajectory = jkd.jax_kuramoto_delayed_trajectory(
@@ -77,6 +88,16 @@ def test_forward_matches_numpy_delayed_at_x64(n: int, delay_steps: int) -> None:
 
 @pytest.mark.parametrize(("n", "delay_steps"), [(6, 3), (8, 1), (5, 5)])
 def test_gradient_matches_hand_derived_sensitivity(n: int, delay_steps: int) -> None:
+    """The JAX reverse-mode gradient equals the hand-derived discrete gradient.
+
+    Parameters
+    ----------
+    n
+        Number of oscillators.
+    delay_steps
+        Delay in steps.
+
+    """
     history, omega, coupling, delay = _delayed_case(n, delay_steps, seed=n * 10 + delay_steps + 1)
     rng = np.random.default_rng(n + delay_steps)
     cotangent = rng.normal(0.0, 1.0, size=n)
@@ -103,6 +124,7 @@ def test_gradient_matches_hand_derived_sensitivity(n: int, delay_steps: int) -> 
 
 
 def test_gradient_matches_central_finite_difference() -> None:
+    """The coupling gradient equals a central difference of the delayed solve."""
     n, delay_steps = 4, 2
     history, omega, coupling, delay = _delayed_case(n, delay_steps, seed=99)
     cotangent = np.sin(np.arange(n) + 1.0)
@@ -126,6 +148,7 @@ def test_gradient_matches_central_finite_difference() -> None:
 
 
 def test_trajectory_runs_on_the_jax_default_device() -> None:
+    """The jitted delayed solve runs on the device JAX selected."""
     import jax
 
     history, omega, coupling, _ = _delayed_case(10, 3, seed=7)
@@ -139,6 +162,7 @@ def test_trajectory_runs_on_the_jax_default_device() -> None:
 
 
 def test_forward_rejects_out_of_range_and_malformed() -> None:
+    """Out-of-range step counts, off-grid delays and malformed shapes are refused."""
     history, omega, coupling, delay = _delayed_case(6, 3, seed=2)
     with pytest.raises(ValueError, match="n_steps must be positive"):
         jkd.jax_kuramoto_delayed_trajectory(
@@ -167,6 +191,7 @@ def test_forward_rejects_out_of_range_and_malformed() -> None:
 
 
 def test_gradient_rejects_bad_cotangent() -> None:
+    """A cotangent of the wrong length is refused."""
     history, omega, coupling, delay = _delayed_case(6, 3, seed=3)
     with pytest.raises(ValueError, match="cotangent"):
         jkd.jax_kuramoto_delayed_gradient(
@@ -175,6 +200,15 @@ def test_gradient_rejects_bad_cotangent() -> None:
 
 
 def test_missing_jax_raises_import_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Without JAX the tier raises ``ImportError`` with the install hint.
+
+    Parameters
+    ----------
+    monkeypatch
+        Replaces the backend loader with one that fails.
+
+    """
+
     def _raise() -> object:
         raise ImportError("the JAX delayed-Kuramoto tier requires JAX; install oscillatools[jax]")
 
@@ -191,6 +225,7 @@ def test_missing_jax_raises_import_error(monkeypatch: pytest.MonkeyPatch) -> Non
 
 
 def test_forward_and_gradient_are_deterministic() -> None:
+    """Repeated forward and gradient calls give identical arrays."""
     history, omega, coupling, delay = _delayed_case(12, 4, seed=5)
     first = jkd.jax_kuramoto_delayed_trajectory(
         history, omega, coupling, delay=delay, dt=_DT, n_steps=_STEPS
@@ -223,6 +258,7 @@ def _delayed_ensemble(
 
 
 def test_ensemble_forward_matches_each_single_member() -> None:
+    """Each ensemble member equals its own single delayed solve."""
     batch, n, delay_steps = 5, 6, 3
     history_batch, omega, coupling, delay, _ = _delayed_ensemble(n, delay_steps, batch, seed=21)
     ensemble = jkd.jax_kuramoto_delayed_ensemble(
@@ -238,6 +274,7 @@ def test_ensemble_forward_matches_each_single_member() -> None:
 
 
 def test_ensemble_gradient_matches_each_single_member() -> None:
+    """Each ensemble gradient equals the single-member gradient."""
     batch, n, delay_steps = 5, 6, 3
     history_batch, omega, coupling, delay, cotangent_batch = _delayed_ensemble(
         n, delay_steps, batch, seed=22
@@ -270,6 +307,7 @@ def test_ensemble_gradient_matches_each_single_member() -> None:
 
 
 def test_ensemble_runs_on_the_jax_default_device() -> None:
+    """The batched delayed solve runs on the device JAX selected."""
     import jax
 
     history_batch, omega, coupling, _, _ = _delayed_ensemble(10, 3, 4, seed=23)
@@ -283,6 +321,7 @@ def test_ensemble_runs_on_the_jax_default_device() -> None:
 
 
 def test_ensemble_rejects_bad_shapes() -> None:
+    """Ensemble inputs of the wrong rank, size or cotangent shape are refused."""
     history_batch, omega, coupling, delay, cotangent_batch = _delayed_ensemble(6, 3, 4, seed=24)
     with pytest.raises(ValueError, match="three-dimensional"):
         jkd.jax_kuramoto_delayed_ensemble(
@@ -304,25 +343,25 @@ def test_ensemble_rejects_bad_shapes() -> None:
         )
 
 
-def _cosine_objective() -> tuple[object, object, object]:
-    """Return ``L = Σ cos θ`` with its gradient and Hessian."""
+def _cosine_value(theta: NDArray[np.float64]) -> float:
+    """Objective ``L = Σ cos θ``."""
+    return float(np.sum(np.cos(theta)))
 
-    def value(theta: np.ndarray) -> float:
-        return float(np.sum(np.cos(theta)))
 
-    def gradient(theta: np.ndarray) -> np.ndarray:
-        return -np.sin(theta)
+def _cosine_gradient(theta: NDArray[np.float64]) -> NDArray[np.float64]:
+    """Gradient of :func:`_cosine_value`."""
+    return np.asarray(-np.sin(theta), dtype=np.float64)
 
-    def hessian(theta: np.ndarray) -> np.ndarray:
-        return np.diag(-np.cos(theta))
 
-    return value, gradient, hessian
+def _cosine_hessian(theta: NDArray[np.float64]) -> NDArray[np.float64]:
+    """Hessian of :func:`_cosine_value`."""
+    return np.asarray(np.diag(-np.cos(theta)), dtype=np.float64)
 
 
 def test_hessian_vector_product_matches_a_difference_of_hand_derived_gradients() -> None:
     """The second-order product equals a central difference of the hand-written gradient."""
     history, omega, coupling, delay = _delayed_case(4, 3, seed=11)
-    value, gradient, hessian = _cosine_objective()
+    value, gradient, hessian = _cosine_value, _cosine_gradient, _cosine_hessian
     rng = np.random.default_rng(5)
     direction = (
         rng.normal(size=history.shape),
@@ -363,15 +402,16 @@ def test_hessian_vector_product_matches_a_difference_of_hand_derived_gradients()
 def test_hessian_vector_product_refuses_malformed_inputs() -> None:
     """Directions, gradients and Hessians of the wrong shape or non-finite are refused."""
     history, omega, coupling, delay = _delayed_case(3, 2, seed=2)
-    _, gradient, hessian = _cosine_objective()
+    gradient, hessian = _cosine_gradient, _cosine_hessian
     good = (np.zeros_like(history), np.zeros_like(omega), np.zeros_like(coupling))
-    common = {"delay": delay, "dt": _DT, "n_steps": 5}
     with pytest.raises(ValueError, match="omega direction"):
         jkd.jax_kuramoto_delayed_hessian_vector_product(
             history,
             omega,
             coupling,
-            **common,
+            delay=delay,
+            dt=_DT,
+            n_steps=5,
             objective_grad=gradient,
             objective_hessian=hessian,
             direction=(good[0], np.zeros(2), good[2]),
@@ -381,7 +421,9 @@ def test_hessian_vector_product_refuses_malformed_inputs() -> None:
             history,
             omega,
             coupling,
-            **common,
+            delay=delay,
+            dt=_DT,
+            n_steps=5,
             objective_grad=gradient,
             objective_hessian=hessian,
             direction=(np.full_like(history, np.nan), good[1], good[2]),
@@ -391,7 +433,9 @@ def test_hessian_vector_product_refuses_malformed_inputs() -> None:
             history,
             omega,
             coupling,
-            **common,
+            delay=delay,
+            dt=_DT,
+            n_steps=5,
             objective_grad=lambda theta: np.zeros(2),
             objective_hessian=hessian,
             direction=good,
@@ -401,7 +445,9 @@ def test_hessian_vector_product_refuses_malformed_inputs() -> None:
             history,
             omega,
             coupling,
-            **common,
+            delay=delay,
+            dt=_DT,
+            n_steps=5,
             objective_grad=gradient,
             objective_hessian=lambda theta: np.full((3, 3), np.inf),
             direction=good,

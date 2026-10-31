@@ -85,6 +85,7 @@ def _central_difference(base: NDArray[np.float64], scalar_loss: Any) -> NDArray[
 
 
 def test_sensitivity_reproduces_forward_noise_path() -> None:
+    """The sensitivity pass replays exactly the forward Euler-Maruyama path of its seed."""
     problem = _problem()
     theta_n, _ = noisy_phase_sensitivity(
         problem["phases"],
@@ -100,6 +101,7 @@ def test_sensitivity_reproduces_forward_noise_path() -> None:
 
 
 def test_pathwise_gradient_matches_finite_difference_on_every_channel() -> None:
+    """Each pathwise gradient channel equals a central difference on the same noise path."""
     problem = _problem()
 
     def objective(theta: NDArray[np.float64]) -> float:
@@ -149,6 +151,7 @@ def test_pathwise_gradient_matches_finite_difference_on_every_channel() -> None:
 
 
 def test_phase_sensitivity_shape() -> None:
+    """The phase sensitivity has one column per phase, frequency, coupling and diffusion entry."""
     problem = _problem(n=5, seed=1)
     theta_n, sensitivity = noisy_phase_sensitivity(
         problem["phases"],
@@ -165,6 +168,7 @@ def test_phase_sensitivity_shape() -> None:
 
 
 def test_gradients_are_deterministic() -> None:
+    """The same seed and inputs give identical gradients on every call."""
     problem = _problem(seed=7)
     kwargs: dict[str, Any] = dict(
         diffusion=_D,
@@ -185,6 +189,7 @@ def test_gradients_are_deterministic() -> None:
 
 
 def test_returns_noisy_gradients_type() -> None:
+    """The gradient is returned as a ``NoisyGradients`` record."""
     problem = _problem()
     _, grads = noisy_terminal_value_and_grad(
         problem["phases"],
@@ -201,6 +206,7 @@ def test_returns_noisy_gradients_type() -> None:
 
 
 def test_objective_grad_wrong_shape_raises() -> None:
+    """An objective gradient of the wrong length is refused."""
     problem = _problem()
     with pytest.raises(ValueError, match="objective_grad must return"):
         noisy_terminal_value_and_grad(
@@ -228,6 +234,16 @@ def test_objective_grad_wrong_shape_raises() -> None:
     ],
 )
 def test_validation_errors(mutation: dict[str, Any], message: str) -> None:
+    """Malformed problem arguments are refused with a specific message.
+
+    Parameters
+    ----------
+    mutation
+        Arguments replaced in an otherwise valid call.
+    message
+        Expected error text.
+
+    """
     problem = _problem()
     call: dict[str, Any] = {
         "phases": problem["phases"],

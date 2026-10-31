@@ -1,13 +1,13 @@
 {
  "schema": "test_documentation_ceiling_v1",
  "ruff_version": "ruff 0.16.4",
- "measured_commit": "9c798e475720fc45db96c338fc12e215eeb51e92",
+ "measured_commit": "f7debaacf6eef3d2a6a28bf69da8e570d100aa7f",
  "scopes": [
   "tests",
   "oscillatools/tests"
  ],
- "total_findings": 7200,
- "total_files": 578,
+ "total_findings": 7181,
+ "total_files": 576,
  "files": {
   "oscillatools/tests/conftest.py": 1,
   "oscillatools/tests/kuramoto_delay_sensitivity_witness.py": 1,
@@ -23,13 +23,11 @@
   "oscillatools/tests/test_diff_kuramoto_dopri.py": 27,
   "oscillatools/tests/test_diff_kuramoto_euler.py": 20,
   "oscillatools/tests/test_diff_kuramoto_inertial.py": 7,
-  "oscillatools/tests/test_diff_kuramoto_noisy.py": 7,
   "oscillatools/tests/test_diff_kuramoto_rk4.py": 21,
   "oscillatools/tests/test_formal_neural_lyapunov.py": 2,
   "oscillatools/tests/test_gradient_matrix_renderer.py": 8,
   "oscillatools/tests/test_handbook_workflow_example.py": 4,
   "oscillatools/tests/test_jax_kuramoto.py": 19,
-  "oscillatools/tests/test_jax_kuramoto_delayed.py": 12,
   "oscillatools/tests/test_jax_kuramoto_mpc.py": 13,
   "oscillatools/tests/test_kuramoto_adaptive.py": 25,
   "oscillatools/tests/test_kuramoto_basin_stability.py": 5,
