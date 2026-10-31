@@ -1,13 +1,13 @@
 {
  "schema": "test_documentation_ceiling_v1",
  "ruff_version": "ruff 0.16.4",
- "measured_commit": "a15e6c994916fa49acf7e5b84be6592b977e4f75",
+ "measured_commit": "b630d80f6520c19a36f77a6d1eb18514e0879eba",
  "scopes": [
   "tests",
   "oscillatools/tests"
  ],
- "total_findings": 7163,
- "total_files": 574,
+ "total_findings": 7158,
+ "total_files": 573,
  "files": {
   "oscillatools/tests/conftest.py": 1,
   "oscillatools/tests/kuramoto_delay_sensitivity_witness.py": 1,
@@ -55,7 +55,6 @@
   "oscillatools/tests/test_kuramoto_inertial_hysteresis_reproduction.py": 1,
   "oscillatools/tests/test_kuramoto_lyapunov.py": 15,
   "oscillatools/tests/test_kuramoto_mean_field.py": 22,
-  "oscillatools/tests/test_kuramoto_network_control.py": 5,
   "oscillatools/tests/test_kuramoto_networkx_interop.py": 18,
   "oscillatools/tests/test_kuramoto_neural_operator.py": 4,
   "oscillatools/tests/test_kuramoto_noisy.py": 17,

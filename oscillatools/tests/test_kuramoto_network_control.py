@@ -24,7 +24,9 @@ from numpy.typing import NDArray
 
 from oscillatools.accel.diff_kuramoto_rk4 import kuramoto_rk4_trajectory
 from oscillatools.accel.kuramoto_network_control import (
+    ControlDisturbance,
     ControlledNetworkTrajectory,
+    evaluate_control_under_disturbances,
     integrate_controlled_network,
     network_control_value_and_grad,
     optimise_network_control,
@@ -36,6 +38,7 @@ _DT = 0.05
 
 
 def _problem(seed: int = 1) -> dict[str, Any]:
+    """Return a reproducible symmetric-coupling network problem."""
     rng = np.random.default_rng(seed)
     raw = rng.uniform(0.0, 1.0, size=(_N, _N))
     coupling = 0.4 * (raw + raw.T)
@@ -48,6 +51,7 @@ def _problem(seed: int = 1) -> dict[str, Any]:
 
 
 def test_zero_control_reproduces_networked_rk4() -> None:
+    """With zero control the trajectory equals the uncontrolled RK4 network."""
     problem = _problem()
     n_steps = 20
     trajectory = integrate_controlled_network(
@@ -60,6 +64,7 @@ def test_zero_control_reproduces_networked_rk4() -> None:
 
 
 def test_adjoint_gradient_matches_finite_differences() -> None:
+    """The adjoint control gradient equals central differences of the cost."""
     problem = _problem()
     rng = np.random.default_rng(3)
     n_steps = 15
@@ -98,6 +103,7 @@ def test_adjoint_gradient_matches_finite_differences() -> None:
 
 
 def test_gradient_descent_desynchronises_with_monotone_cost() -> None:
+    """Gradient descent lowers the cost monotonically and desynchronises the network."""
     problem = _problem()
     n_steps = 15
     control, history = optimise_network_control(
@@ -128,6 +134,7 @@ def test_gradient_descent_desynchronises_with_monotone_cost() -> None:
 
 
 def test_trajectory_container() -> None:
+    """The trajectory record exposes times, phases and terminal phases."""
     problem = _problem()
     n_steps = 10
     trajectory = integrate_controlled_network(
@@ -156,6 +163,18 @@ def test_trajectory_container() -> None:
     ],
 )
 def test_validation_errors(call: str, kwargs: dict[str, Any], message: str) -> None:
+    """Each argument outside its documented bound is refused.
+
+    Parameters
+    ----------
+    call
+        Which public function to call.
+    kwargs
+        Arguments replaced in an otherwise valid call.
+    message
+        Expected error text.
+
+    """
     problem = _problem()
     with pytest.raises(ValueError, match=message):
         if call == "integrate":
@@ -193,3 +212,65 @@ def test_validation_errors(call: str, kwargs: dict[str, Any], message: str) -> N
                 n_iterations=opt["n_iterations"],
                 initial_control=opt.get("initial_control"),
             )
+
+
+def test_disturbed_evaluation_reports_every_case() -> None:
+    """The fixed control is scored on every plant; losses and the amplitude bound are reported."""
+    problem = _problem()
+    control = np.full((10, _N), 0.2)
+    shift = ControlDisturbance(np.full(_N, 0.1), np.zeros((_N, _N)), np.zeros(_N))
+    report = evaluate_control_under_disturbances(
+        problem["phases"],
+        control,
+        problem["omega"],
+        problem["coupling"],
+        _DT,
+        disturbances=[shift, shift],
+        amplitude_bound=0.2,
+        target_order=1.0,
+    )
+    assert report.constraint_satisfied and report.max_amplitude == pytest.approx(0.2)
+    warm, history = optimise_network_control(
+        problem["phases"],
+        problem["omega"],
+        problem["coupling"],
+        _DT,
+        10,
+        control_weight=0.1,
+        learning_rate=0.5,
+        n_iterations=2,
+        initial_control=control,
+    )
+    assert warm.shape == control.shape and history.shape == (3,)
+    assert len(report.held_out) == 2 and report.held_out[0] == report.held_out[1]
+    assert set(report.losing_cases) == {
+        index for index, item in enumerate(report.held_out) if not item.succeeded
+    }
+    for name, kwargs, message in (
+        ("bound", {"amplitude_bound": float("nan")}, "amplitude_bound"),
+        ("target", {"target_order": -0.1}, "target_order"),
+    ):
+        arguments: dict[str, Any] = {"amplitude_bound": 1.0, "target_order": 0.5, **kwargs}
+        with pytest.raises(ValueError, match=message):
+            evaluate_control_under_disturbances(
+                problem["phases"],
+                control,
+                problem["omega"],
+                problem["coupling"],
+                _DT,
+                disturbances=(),
+                amplitude_bound=arguments["amplitude_bound"],
+                target_order=arguments["target_order"],
+            )
+        assert name
+    with pytest.raises(ValueError, match="disturbance 0"):
+        evaluate_control_under_disturbances(
+            problem["phases"],
+            control,
+            problem["omega"],
+            problem["coupling"],
+            _DT,
+            disturbances=[ControlDisturbance(np.zeros(_N), np.zeros((2, 2)), np.zeros(_N))],
+            amplitude_bound=1.0,
+            target_order=0.5,
+        )

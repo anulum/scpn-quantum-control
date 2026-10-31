@@ -26,6 +26,10 @@ All notable changes to `oscillatools` are documented here. The format follows
 
 ### Added
 
+- `evaluate_control_under_disturbances` (`ControlDisturbance`,
+  `DisturbedControlOutcome`, `ControlRobustnessReport`) scores a fixed
+  open-loop network control on held-out plant disturbances against the same
+  plants uncontrolled, checks the amplitude bound and lists losing cases.
 - `infer_network_bayesian` reports `parameter_covariances`, `data_rank`,
   `unidentified_directions` and `identifiable`; a rank-deficient design is no
   longer hidden by a ridge, and a noise-free series is refused.

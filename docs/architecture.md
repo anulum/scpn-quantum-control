@@ -323,6 +323,19 @@ Not covered: real recordings, non-Gaussian or correlated noise, and
 time-varying coupling beyond the window propagation of
 `track_time_varying_coupling`.
 
+Synchronisation limits inference and tests control. With a constant phase
+difference `δ`, the design `[1, sin δ]` is constant, so only
+`ω_i + K_ij sin δ` is observed. The posterior reports the direction
+`(sin δ, -1)` as unidentified and claims no separate coupling. For control,
+`evaluate_control_under_disturbances` applies one fixed open-loop series,
+designed for the nominal plant, to held-out disturbances of the frequencies,
+couplings and initial phases. Each controlled run is compared with the same
+plant left uncontrolled, over the same horizon and step. A case is lost when
+the control does not lower the time-averaged `r²` or does not end at or
+below the target order, and lost cases are listed, never dropped. The
+amplitude bound is checked on the series itself. These are simulated plants:
+no biological or plant efficacy follows (`tests/test_synchronisation_inference_control.py`).
+
 ## Chimera and multiscale control composition
 
 `scpn_quantum_control.chimera_control` separates the surface into six

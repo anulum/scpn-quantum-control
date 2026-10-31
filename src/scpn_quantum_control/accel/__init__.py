@@ -58,7 +58,13 @@ if TYPE_CHECKING:
         ContinuationBranch as ContinuationBranch,
     )
     from oscillatools.accel import (
+        ControlDisturbance as ControlDisturbance,
+    )
+    from oscillatools.accel import (
         ControlledNetworkTrajectory as ControlledNetworkTrajectory,
+    )
+    from oscillatools.accel import (
+        ControlRobustnessReport as ControlRobustnessReport,
     )
     from oscillatools.accel import (
         CoordinatedResetGradients as CoordinatedResetGradients,
@@ -95,6 +101,9 @@ if TYPE_CHECKING:
     )
     from oscillatools.accel import (
         DesynchronisingPolicy as DesynchronisingPolicy,
+    )
+    from oscillatools.accel import (
+        DisturbedControlOutcome as DisturbedControlOutcome,
     )
     from oscillatools.accel import (
         DopriTrajectory as DopriTrajectory,
@@ -452,6 +461,9 @@ if TYPE_CHECKING:
     )
     from oscillatools.accel import (
         estimate_ring_basins as estimate_ring_basins,
+    )
+    from oscillatools.accel import (
+        evaluate_control_under_disturbances as evaluate_control_under_disturbances,
     )
     from oscillatools.accel import (
         evaluate_held_out as evaluate_held_out,
@@ -1853,6 +1865,13 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
     "InverseProblemSplit": ("oscillatools.accel", "InverseProblemSplit"),
     "evaluate_held_out": ("oscillatools.accel", "evaluate_held_out"),
     "fit_with_held_out": ("oscillatools.accel", "fit_with_held_out"),
+    "ControlDisturbance": ("oscillatools.accel", "ControlDisturbance"),
+    "ControlRobustnessReport": ("oscillatools.accel", "ControlRobustnessReport"),
+    "DisturbedControlOutcome": ("oscillatools.accel", "DisturbedControlOutcome"),
+    "evaluate_control_under_disturbances": (
+        "oscillatools.accel",
+        "evaluate_control_under_disturbances",
+    ),
     "sparse_networked_kuramoto_force": ("oscillatools.accel", "sparse_networked_kuramoto_force"),
     "sparse_kuramoto_euler_trajectory": ("oscillatools.accel", "sparse_kuramoto_euler_trajectory"),
     "sparse_kuramoto_rk4_trajectory": ("oscillatools.accel", "sparse_kuramoto_rk4_trajectory"),

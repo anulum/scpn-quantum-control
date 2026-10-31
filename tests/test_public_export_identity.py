@@ -222,6 +222,10 @@ APPROVED_EXPORT_ADDITIONS: dict[str, tuple[int, tuple[tuple[str, str], ...]]] = 
             ("InverseProblemSplit", "oscillatools.accel.kuramoto_bayesian_inference"),
             ("evaluate_held_out", "oscillatools.accel.kuramoto_bayesian_inference"),
             ("fit_with_held_out", "oscillatools.accel.kuramoto_bayesian_inference"),
+            ("ControlDisturbance", "oscillatools.accel.kuramoto_network_control"),
+            ("ControlRobustnessReport", "oscillatools.accel.kuramoto_network_control"),
+            ("DisturbedControlOutcome", "oscillatools.accel.kuramoto_network_control"),
+            ("evaluate_control_under_disturbances", "oscillatools.accel.kuramoto_network_control"),
         ),
     ),
 }

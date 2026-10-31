@@ -318,8 +318,12 @@ from .kuramoto_mean_field import (
     mean_field_jacobian,
 )
 from .kuramoto_network_control import (
+    ControlDisturbance,
     ControlledNetworkTrajectory,
+    ControlRobustnessReport,
+    DisturbedControlOutcome,
     NetworkControlGradients,
+    evaluate_control_under_disturbances,
     integrate_controlled_network,
     network_control_value_and_grad,
     optimise_network_control,
@@ -1032,7 +1036,8 @@ __all__ = [
     "SparseExecutionReport",
     "sparse_kuramoto_execution_report",
     # Public additions after the frozen export order: delayed second order, replicated noisy
-    # expectations, and identifiability and held-out evaluation of network inference.
+    # expectations, identifiability and held-out evaluation of network inference, and
+    # network control under held-out disturbances.
     "jax_kuramoto_delayed_hessian_vector_product",
     "EXPECTATION_ESTIMAND",
     "NoisyExpectationEstimate",
@@ -1043,6 +1048,10 @@ __all__ = [
     "InverseProblemSplit",
     "evaluate_held_out",
     "fit_with_held_out",
+    "ControlDisturbance",
+    "ControlRobustnessReport",
+    "DisturbedControlOutcome",
+    "evaluate_control_under_disturbances",
     "sparse_networked_kuramoto_force",
     "sparse_kuramoto_euler_trajectory",
     "sparse_kuramoto_rk4_trajectory",

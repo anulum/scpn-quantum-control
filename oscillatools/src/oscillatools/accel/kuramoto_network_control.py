@@ -37,6 +37,7 @@ adjoint optimal control.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 import numpy as np
@@ -362,8 +363,197 @@ def optimise_network_control(
     return np.ascontiguousarray(control, dtype=np.float64), history
 
 
+@dataclass(frozen=True)
+class ControlDisturbance:
+    """A held-out change of the plant the control was not designed for.
+
+    Attributes
+    ----------
+    omega_shift : numpy.ndarray
+        Added to the natural frequencies (length ``N``).
+    coupling_shift : numpy.ndarray
+        Added to the coupling matrix (``(N, N)``).
+    phase_shift : numpy.ndarray
+        Added to the initial phases (length ``N``).
+
+    """
+
+    omega_shift: NDArray[np.float64]
+    coupling_shift: NDArray[np.float64]
+    phase_shift: NDArray[np.float64]
+
+
+@dataclass(frozen=True)
+class DisturbedControlOutcome:
+    """The fixed control applied to one plant, against the same plant left uncontrolled.
+
+    Attributes
+    ----------
+    mean_order_squared : float
+        Time average of ``r(θ_k)²`` under the control.
+    uncontrolled_mean_order_squared : float
+        The same average with zero control on the same plant and horizon.
+    final_order : float
+        ``r`` at the end of the controlled horizon.
+    succeeded : bool
+        Whether the control lowered the average and ended at or below the target order.
+
+    """
+
+    mean_order_squared: float
+    uncontrolled_mean_order_squared: float
+    final_order: float
+    succeeded: bool
+
+
+@dataclass(frozen=True)
+class ControlRobustnessReport:
+    """A fixed open-loop control evaluated on the nominal plant and on held-out disturbances.
+
+    Attributes
+    ----------
+    amplitude_bound : float
+        The declared bound on ``max |u|``.
+    max_amplitude : float
+        The control's ``max |u|``.
+    constraint_satisfied : bool
+        Whether ``max |u| <= amplitude_bound``; the control is the same on every plant.
+    target_order : float
+        The order parameter the horizon must end at or below.
+    nominal : DisturbedControlOutcome
+        The outcome on the plant the control was designed for.
+    held_out : tuple of DisturbedControlOutcome
+        One outcome per held-out disturbance, in order.
+    losing_cases : tuple of int
+        Indices of held-out disturbances on which the control did not succeed.
+
+    """
+
+    amplitude_bound: float
+    max_amplitude: float
+    constraint_satisfied: bool
+    target_order: float
+    nominal: DisturbedControlOutcome
+    held_out: tuple[DisturbedControlOutcome, ...]
+    losing_cases: tuple[int, ...]
+
+
+def _disturbed_outcome(
+    phases: NDArray[np.float64],
+    control: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    coupling: NDArray[np.float64],
+    dt: float,
+    target_order: float,
+) -> DisturbedControlOutcome:
+    """Run the control and zero control on one plant and compare their order parameters."""
+    controlled = integrate_controlled_network(phases, control, omega, coupling, dt).phases[1:]
+    free = integrate_controlled_network(
+        phases, np.zeros_like(control), omega, coupling, dt
+    ).phases[1:]
+    controlled_order = np.array([order_parameter(row) for row in controlled])
+    free_order = np.array([order_parameter(row) for row in free])
+    mean = float(np.mean(controlled_order**2))
+    baseline = float(np.mean(free_order**2))
+    final = float(controlled_order[-1])
+    return DisturbedControlOutcome(
+        mean_order_squared=mean,
+        uncontrolled_mean_order_squared=baseline,
+        final_order=final,
+        succeeded=mean < baseline and final <= target_order,
+    )
+
+
+def evaluate_control_under_disturbances(
+    phases: NDArray[np.float64],
+    control: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    coupling: NDArray[np.float64],
+    dt: float,
+    *,
+    disturbances: Sequence[ControlDisturbance],
+    amplitude_bound: float,
+    target_order: float,
+) -> ControlRobustnessReport:
+    r"""Evaluate a fixed open-loop control on held-out plant disturbances and name the losses.
+
+    The control series is not re-optimised: each disturbed plant receives exactly the series
+    designed for the nominal one, over the same horizon and step as its own uncontrolled run, so
+    the comparison spends the same observation and control budget. A case is lost when the
+    control does not lower the time-averaged ``r²`` below the uncontrolled run or does not end at
+    or below ``target_order``; lost cases are reported, never dropped. The amplitude constraint
+    belongs to the series itself and is checked once.
+
+    Parameters
+    ----------
+    phases, control, omega, coupling, dt
+        As for :func:`integrate_controlled_network`, for the nominal plant.
+    disturbances : sequence of ControlDisturbance
+        Held-out plant changes the control was not designed for.
+    amplitude_bound : float
+        Declared bound on ``max |u|`` (``> 0``).
+    target_order : float
+        Order parameter in ``[0, 1]`` the controlled horizon must end at or below.
+
+    Returns
+    -------
+    ControlRobustnessReport
+        The constraint check, the nominal and held-out outcomes and the losing cases.
+
+    Raises
+    ------
+    ValueError
+        If any argument falls outside its documented bound or a disturbance has the wrong shape.
+
+    """
+    state = np.ascontiguousarray(phases, dtype=np.float64)
+    series = np.ascontiguousarray(control, dtype=np.float64)
+    frequencies = np.ascontiguousarray(omega, dtype=np.float64)
+    matrix = np.ascontiguousarray(coupling, dtype=np.float64)
+    _validate(state, series, frequencies, matrix, dt)
+    if not amplitude_bound > 0.0 or not np.isfinite(amplitude_bound):
+        raise ValueError(f"amplitude_bound must be positive and finite, got {amplitude_bound}")
+    if not 0.0 <= target_order <= 1.0:
+        raise ValueError(f"target_order must lie in [0, 1], got {target_order}")
+    count = state.size
+    for index, disturbance in enumerate(disturbances):
+        shapes = (
+            np.shape(disturbance.omega_shift),
+            np.shape(disturbance.coupling_shift),
+            np.shape(disturbance.phase_shift),
+        )
+        if shapes != ((count,), (count, count), (count,)):
+            raise ValueError(f"disturbance {index} must match the plant shapes, got {shapes}")
+    max_amplitude = float(np.max(np.abs(series)))
+    nominal = _disturbed_outcome(state, series, frequencies, matrix, dt, target_order)
+    held_out = tuple(
+        _disturbed_outcome(
+            state + np.asarray(item.phase_shift, dtype=np.float64),
+            series,
+            frequencies + np.asarray(item.omega_shift, dtype=np.float64),
+            matrix + np.asarray(item.coupling_shift, dtype=np.float64),
+            dt,
+            target_order,
+        )
+        for item in disturbances
+    )
+    return ControlRobustnessReport(
+        amplitude_bound=float(amplitude_bound),
+        max_amplitude=max_amplitude,
+        constraint_satisfied=max_amplitude <= amplitude_bound,
+        target_order=float(target_order),
+        nominal=nominal,
+        held_out=held_out,
+        losing_cases=tuple(index for index, item in enumerate(held_out) if not item.succeeded),
+    )
+
+
 __all__ = [
+    "ControlDisturbance",
+    "ControlRobustnessReport",
     "ControlledNetworkTrajectory",
+    "DisturbedControlOutcome",
+    "evaluate_control_under_disturbances",
     "NetworkControlGradients",
     "integrate_controlled_network",
     "network_control_value_and_grad",

@@ -14,13 +14,18 @@ from os import devnull
 Gate = tuple[str, list[str]]
 INVERSE_PROBLEM_SOURCES = [
     "oscillatools/src/oscillatools/accel/kuramoto_bayesian_inference.py",
+    "oscillatools/src/oscillatools/accel/kuramoto_network_control.py",
 ]
 INVERSE_PROBLEM_CONFORMANCE_TEST = "tests/test_inverse_problem_identifiability.py"
 INVERSE_PROBLEM_COVERAGE_COHORT = [
     INVERSE_PROBLEM_CONFORMANCE_TEST,
     "oscillatools/tests/test_kuramoto_bayesian_inference.py",
+    "tests/test_synchronisation_inference_control.py",
+    "oscillatools/tests/test_kuramoto_network_control.py",
 ]
-INVERSE_PROBLEM_COVERAGE_INCLUDE = "*/accel/kuramoto_bayesian_inference.py"
+INVERSE_PROBLEM_COVERAGE_INCLUDE = (
+    "*/accel/kuramoto_bayesian_inference.py,*/accel/kuramoto_network_control.py"
+)
 INVERSE_PROBLEM_TYPING_RATCHET = [
     *INVERSE_PROBLEM_SOURCES,
     *INVERSE_PROBLEM_COVERAGE_COHORT,

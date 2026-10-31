@@ -4,6 +4,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Evaluate synchronisation control on held-out disturbances:
+  `evaluate_control_under_disturbances` runs a fixed open-loop control on
+  disturbed plants against their uncontrolled runs, checks the amplitude
+  bound and lists every losing case; phase-locked observations are reported
+  as unable to separate coupling from frequency.
+
 - Qualify full-program whole-program AD journeys: a polynomial, linear solve
   and scalar objective agree with the chain rule, and the Python replay record
   and the bounded Rust effect-IR replay reproduce the same program hash, value
