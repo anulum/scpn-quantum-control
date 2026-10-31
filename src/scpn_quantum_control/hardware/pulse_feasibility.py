@@ -224,6 +224,8 @@ _MAX_SAMPLE_INDEX = 1 << 36
 """Largest start or end sample; below it the grid tolerance stays far under half a sample."""
 _GRID_RELATIVE_TOLERANCE = 1.0e-12
 """Rounding admitted per sample of distance from zero, for starts summed from many durations."""
+_MAX_DESIGN_SAMPLES = 1 << 26
+"""Most native samples one design may convert in total, across all of its pulses."""
 
 
 @dataclass(frozen=True)
@@ -494,7 +496,8 @@ def assess_pulse_design(
     ValueError
         If a pulse is not a :class:`DesignPulse`, has non-finite fields or
         non-integer qubits, starts or ends beyond ``2**36`` samples, or is
-        longer than ``2**24`` samples.
+        longer than ``2**24`` samples, or the pulses together are longer than
+        ``2**26`` samples.
 
     """
     violations: list[str] = []
@@ -504,8 +507,12 @@ def assess_pulse_design(
     edges = {frozenset(pair) for pair in limits.coupling_map}
     occupied: dict[str, list[tuple[int, int]]] = {}
     converted: list[_ConvertedPulse] = []
+    total_samples = 0.0
     for index, pulse in enumerate(pulses):
         _validate_design_pulse(index, pulse, limits)
+        total_samples += max(pulse.duration / limits.dt, 0.0)
+        if total_samples > _MAX_DESIGN_SAMPLES:
+            raise ValueError(f"the design converts more than {_MAX_DESIGN_SAMPLES} samples")
         result = _assess_one(index, pulse, limits, placement, edges, violations)
         if result is None:
             continue
@@ -626,7 +633,7 @@ def _assess_one(
 ) -> _ConvertedPulse | None:
     """Record one pulse's violations; return it converted when timing and placement hold."""
     convertible = True
-    if pulse.start < 0.0:
+    if pulse.start / limits.dt < -_GRID_TOLERANCE:
         violations.append(
             f"negative_start: pulse {index} starts at sample {pulse.start / limits.dt:.6g}"
         )

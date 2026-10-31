@@ -546,7 +546,8 @@ def _validate_coupling_matrix(K_nm: FloatArray) -> FloatArray:
     # Within the tolerance the two triangles may differ in the last digits. The
     # blocks copy one value per pair, so averaging keeps that residue out of
     # the dropped block; an exactly symmetric input is returned unchanged.
-    K = 0.5 * (K + K.T)
+    # Halving before adding keeps finite entries near the float limit finite.
+    K = 0.5 * K + 0.5 * K.T
     np.fill_diagonal(K, 0.0)
     return K
 

@@ -650,3 +650,22 @@ def test_hybrid_partition_keeps_tolerated_asymmetry_out_of_the_dropped_block() -
     assert partition.model_preserved is True
     symmetrised = 0.5 * (couplings + couplings.T)
     np.testing.assert_array_equal(partition.analog_K_nm + partition.digital_K_nm, symmetrised)
+
+
+def test_conversion_edges_near_zero_and_in_total() -> None:
+    """A start a rounding error below zero is zero; a whole design has a sample budget."""
+    nearly_zero = DesignPulse((0,), -1.0e-18, 16 * _DT, (1.0e7,))
+    assessment = assess_pulse_design([nearly_zero], _limits(), _PLACEMENT)
+    assert assessment.feasible and assessment.native[0].t0 == 0
+    many = [DesignPulse((index % 3,), 0.0, float(1 << 24) * _DT, (1.0e7,)) for index in range(5)]
+    with pytest.raises(ValueError, match="the design converts more than"):
+        assess_pulse_design(many, _limits(), _PLACEMENT)
+
+
+def test_hybrid_partition_of_couplings_near_the_float_limit_stays_finite() -> None:
+    """Averaging the triangles cannot overflow a finite symmetric matrix."""
+    couplings = np.array([[0.0, 1.0e308], [1.0e308, 0.0]])
+    partition = partition_kuramoto_couplings(couplings)
+    assert partition.dropped_K_nm is not None
+    assert np.all(np.isfinite(partition.analog_K_nm + partition.digital_K_nm))
+    assert partition.n_dropped_couplings == 0

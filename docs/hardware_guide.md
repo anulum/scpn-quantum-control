@@ -290,7 +290,10 @@ its segments and placement.
   pulse edges count, and two pulses that meet on a channel are checked across
   the junction. Steps between the segments of one pulse count too;
 - `duration_over_limit` and `too_many_pulses`: above the provider snapshot's
-  `max_pulse_duration` or `max_pulses`, for copied limits;
+  `max_pulse_duration` or `max_pulses`, for copied limits. Here
+  `max_pulse_duration` limits each pulse; the schedule-level provider check
+  (`assess_pulse_provider_feasibility`) compares it with the whole schedule's
+  duration instead;
 - `unplaced_qubit`, `repeated_qubit`, `placement_out_of_range` and
   `non_injective_placement`;
 - `disconnected_placement`: a two-qubit pulse on an uncoupled physical pair;
@@ -300,7 +303,9 @@ its segments and placement.
   `channel_overlap`.
 
 A pulse that starts or ends beyond 2^36 samples, or is longer than 2^24
-samples, raises `ValueError` before anything is allocated. Grid alignment
+samples, or a design whose pulses together exceed 2^26 samples, raises
+`ValueError` before anything is allocated. A start within the grid tolerance
+below zero counts as zero. Grid alignment
 admits `1e-9 + 1e-12 * |samples|` of rounding, which stays below a tenth of a
 sample in that range.
 
