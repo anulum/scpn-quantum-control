@@ -4,6 +4,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Verify constrained co-design proposals before adopting them:
+  `ConstrainedCodesignSession` recomputes the objective and every constraint
+  (nominal and held-out disturbances) for an optimiser's plan, adopts it only
+  inside the tested domain and budget, and keeps the previous plan on
+  infeasible, unconverged, out-of-domain or over-budget proposals; nothing
+  is actuated.
+
 - Report identifiability and score network inference on held-out data:
   `infer_network_bayesian` returns per-node parameter covariances, data rank
   and the unidentified parameter directions instead of hiding a rank-deficient

@@ -19,6 +19,7 @@ CONTROL_STACK_COMPOSE_QUALITY_RATCHET = [
     "src/scpn_quantum_control/control/qaoa_mpc.py",
     "tests/test_control_stack_compose_product.py",
     "tests/test_control_stack_runtime_adapters.py",
+    "tests/test_constrained_codesign_conformance.py",
     "tests/test_qaoa_mpc.py",
     "tests/test_qaoa_mpc_branches.py",
     "tools/control_stack_compose_product_quality_gates.py",
@@ -29,6 +30,7 @@ CONTROL_STACK_COMPOSE_QUALITY_RATCHET = [
 CONTROL_STACK_COMPOSE_COVERAGE_COHORT = [
     "tests/test_control_stack_compose_product.py",
     "tests/test_control_stack_runtime_adapters.py",
+    "tests/test_constrained_codesign_conformance.py",
     "tests/test_qaoa_mpc.py",
     "tests/test_qaoa_mpc_branches.py",
 ]

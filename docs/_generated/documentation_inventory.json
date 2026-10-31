@@ -1,12 +1,12 @@
 {
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
-  "content_digest": "bed218a11f9360c7177f62c8ffc864571cafd49f97e3b493ae770fb392f47c94",
+  "content_digest": "8f4a797a37cc37783c5d42f8b37087e11903ac58004621849340898185d24b14",
   "counts": {
     "module_docstring_gaps": 0,
     "notebooks": 109,
     "primary_navigation_pages": 164,
     "public_documentation_pages": 385,
-    "public_module_symbols": 4626,
+    "public_module_symbols": 4630,
     "public_symbol_docstring_gaps": 0,
     "python_modules": 856,
     "root_package_exports": 875

@@ -74,6 +74,55 @@ result = run_qaoa_mpc_adapter(
 assert result.decision.mode.value == "simulation"
 ```
 
+### Verified constrained co-design proposals
+
+`ConstrainedCodesignSession` holds the last accepted plan of a constrained
+co-design problem: an objective, inequality constraints `g(plan, d) <= 0`, and
+the box `[lower, upper]` that is the tested domain. An optimiser is adapted
+through `ConstrainedOptimiserPort.optimize(start) -> OptimiserOutcome`.
+
+A proposal is adopted only when all of the following hold:
+- the optimiser converged within `evaluation_budget`;
+- the plan lies in the domain;
+- the session recomputes every constraint for the nominal case and for each
+  held-out disturbance (which the optimiser never sees) and finds it within
+  `tolerance`.
+
+Each `ConstrainedProposal` records the recomputed objective, every constraint
+value and the domain. Its status is one of `CODESIGN_PROPOSAL_STATUSES`.
+`infeasible`, `nonconvergent`, `out_of_domain` and `over_budget` are outcomes,
+not exceptions: the previous accepted plan stays in force. Each proposal is
+first authorised by `ClosedLoopExecutionPolicy` in simulation mode. A proposal
+never actuates hardware (`hardware_actuation` is always `False`). An accepted
+plan claims feasibility only in the checked cases and inside the tested
+domain.
+
+```python
+import numpy as np
+
+from scpn_quantum_control.control.closed_loop_analysis import ClosedLoopExecutionPolicy
+from scpn_quantum_control.control_stack_runtime_adapters import (
+    ConstrainedCodesignSession,
+    OptimiserOutcome,
+)
+
+
+class Halfway:
+    def optimize(self, start):
+        return OptimiserOutcome(np.array([0.4, 0.4]), True, 1)
+
+
+session = ConstrainedCodesignSession(
+    lambda plan: float(np.sum((plan - 0.9) ** 2)),
+    lambda plan, disturbance: np.array([plan[0] + plan[1] - 1.0]),
+    [0.0, 0.0],
+    [1.0, 1.0],
+    policy=ClosedLoopExecutionPolicy(),
+)
+proposal = session.propose(Halfway())
+assert proposal.status == "accepted" and session.current_plan == (0.4, 0.4)
+```
+
 ## Public API contracts
 
 ### Ownership and adapter discovery

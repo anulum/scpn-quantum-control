@@ -5,7 +5,7 @@ module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
 - **856 modules** across **41 package families**
-- **4626 documented public module-level symbols**
+- **4630 documented public module-level symbols**
 - **875 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -6129,9 +6129,9 @@ Fail-closed **compose existing control/*** product surface.
 
 Executable control-stack adapters over existing control and co-simulation surfaces.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/control_stack_runtime_adapters.py) · Public symbols: **12**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/control_stack_runtime_adapters.py) · Public symbols: **16**
 
-**Classes:** `PolicyGatedAdapterError`, `RealtimeFeedbackPort`, `QaoaMpcPort`, `RealtimeFeedbackAdapterResult`, `QaoaMpcAdapterResult`, `CosimulationPartitionTelemetry`, `CosimulationPartitionAdapterResult`, `PulseComposeBoundaryDecision`
+**Classes:** `PolicyGatedAdapterError`, `RealtimeFeedbackPort`, `QaoaMpcPort`, `RealtimeFeedbackAdapterResult`, `QaoaMpcAdapterResult`, `CosimulationPartitionTelemetry`, `CosimulationPartitionAdapterResult`, `PulseComposeBoundaryDecision`, `OptimiserOutcome`, `ConstrainedOptimiserPort`, `ConstrainedProposal`, `ConstrainedCodesignSession`
 
 **Functions:** `run_realtime_feedback_adapter()`, `run_qaoa_mpc_adapter()`, `run_cosimulation_partition_adapter()`, `decide_pulse_compose_boundary()`
 
