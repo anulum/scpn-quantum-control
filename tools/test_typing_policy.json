@@ -702,6 +702,7 @@
         "tests/test_program_ad_rust_linalg_diagflat_bridge.py",
         "tests/test_program_ad_tape_binding.py",
         "tests/test_program_ad_triangular_diagonal_assembly.py",
+        "tests/test_pulse_analog_feasibility.py",
         "tests/test_pulse_feasibility.py",
         "tests/test_pulse_feasibility_branches.py",
         "tests/test_pulse_shaping.py",

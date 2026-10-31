@@ -26,6 +26,7 @@ HARDWARE_SAFE_EXECUTION_TYPING_RATCHET = [
     "tests/test_active_sensing_product.py",
     "tests/test_s1_feedback_ibm.py",
     "tests/test_s1_feedback_ibm_branches.py",
+    "tests/test_pulse_analog_feasibility.py",
     "tools/hardware_safe_execution_quality_gates.py",
     "tests/test_hardware_safe_execution_quality_gate.py",
 ]
@@ -53,6 +54,7 @@ HARDWARE_SAFE_EXECUTION_QUALITY_RATCHET = [
     "tests/test_job_dossier_branches.py",
     "tests/test_pulse_feasibility.py",
     "tests/test_pulse_feasibility_branches.py",
+    "tests/test_pulse_analog_feasibility.py",
     "tests/test_s1_feedback_ibm.py",
     "tests/test_s1_feedback_ibm_branches.py",
     "tools/hardware_safe_execution_quality_gates.py",
@@ -73,6 +75,7 @@ HARDWARE_SAFE_EXECUTION_COVERAGE_COHORT = [
     "tests/test_job_dossier_branches.py",
     "tests/test_pulse_feasibility.py",
     "tests/test_pulse_feasibility_branches.py",
+    "tests/test_pulse_analog_feasibility.py",
     "tests/test_s1_feedback_ibm.py",
     "tests/test_s1_feedback_ibm_branches.py",
 ]

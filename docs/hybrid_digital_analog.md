@@ -65,7 +65,12 @@ program = compile_hybrid_program(
 ## Coupling Split
 
 The splitter treats the upper triangle of `K_nm` as the source of coupling
-terms. Couplings with `abs(K_ij) <= zero_threshold` are ignored. Eligible
+terms. Couplings with `abs(K_ij) <= zero_threshold` are executed by neither
+block. They are kept in `partition.dropped_K_nm`, so that
+`analog + digital + dropped` equals the validated matrix. Whenever any coupling
+is dropped, the partition payload and the compiled programme's metadata report
+`model_preserved: false`, the number of dropped couplings and their norm.
+Eligible
 analog couplings are ranked by descending `abs(K_ij)` and then by `(i, j)`
 for deterministic tie-breaking. `max_analog_couplers` limits how many of
 those couplings are routed to analog execution.

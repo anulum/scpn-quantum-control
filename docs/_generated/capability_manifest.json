@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 874,
     "public_documentation_pages": 385,
-    "python_model_classes": 1596,
+    "python_model_classes": 1600,
     "python_model_source_modules": 847,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1603
+    "test_files": 1604
   },
   "documentation": {
     "examples": [
@@ -1977,6 +1977,10 @@
         "path": "src/scpn_quantum_control/codesign/algorithm_design_contracts.py"
       },
       {
+        "name": "DesignPulse",
+        "path": "src/scpn_quantum_control/hardware/pulse_feasibility.py"
+      },
+      {
         "name": "DesignReport",
         "path": "src/scpn_quantum_control/benchmarks/kyma_v3/task.py"
       },
@@ -3917,6 +3921,10 @@
         "path": "src/scpn_quantum_control/phase_qnode_state_evolution.py"
       },
       {
+        "name": "NativePulse",
+        "path": "src/scpn_quantum_control/hardware/pulse_feasibility.py"
+      },
+      {
         "name": "NativeRegisterSamples",
         "path": "src/scpn_quantum_control/hardware/provider_semantics.py"
       },
@@ -5407,6 +5415,14 @@
       {
         "name": "PulseComposeBoundaryDecision",
         "path": "src/scpn_quantum_control/control_stack_runtime_adapters.py"
+      },
+      {
+        "name": "PulseDesignAssessment",
+        "path": "src/scpn_quantum_control/hardware/pulse_feasibility.py"
+      },
+      {
+        "name": "PulseDeviceLimits",
+        "path": "src/scpn_quantum_control/hardware/pulse_feasibility.py"
       },
       {
         "name": "PulseFeasibilityDecision",
@@ -10407,6 +10423,7 @@
       "tests/test_public_api_stability_quality_gate.py",
       "tests/test_public_claim_docs.py",
       "tests/test_public_export_identity.py",
+      "tests/test_pulse_analog_feasibility.py",
       "tests/test_pulse_feasibility.py",
       "tests/test_pulse_feasibility_branches.py",
       "tests/test_pulse_shaping.py",

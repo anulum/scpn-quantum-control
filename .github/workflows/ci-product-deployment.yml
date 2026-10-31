@@ -420,6 +420,7 @@ jobs:
           tests/test_active_sensing_product.py
           tests/test_s1_feedback_ibm.py
           tests/test_s1_feedback_ibm_branches.py
+          tests/test_pulse_analog_feasibility.py
           tools/hardware_safe_execution_quality_gates.py
           tests/test_hardware_safe_execution_quality_gate.py
       - run: >-
@@ -448,6 +449,7 @@ jobs:
           tests/test_job_dossier_branches.py
           tests/test_pulse_feasibility.py
           tests/test_pulse_feasibility_branches.py
+          tests/test_pulse_analog_feasibility.py
           tests/test_s1_feedback_ibm.py
           tests/test_s1_feedback_ibm_branches.py
           tools/hardware_safe_execution_quality_gates.py
@@ -462,6 +464,7 @@ jobs:
           tests/test_feedback_submission.py tests/test_feedback_submission_branches.py
           tests/test_job_dossier.py tests/test_job_dossier_branches.py
           tests/test_pulse_feasibility.py tests/test_pulse_feasibility_branches.py
+          tests/test_pulse_analog_feasibility.py
           tests/test_s1_feedback_ibm.py tests/test_s1_feedback_ibm_branches.py
       - run: >-
           python -m coverage report --rcfile=/dev/null

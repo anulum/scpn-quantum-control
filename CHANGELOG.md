@@ -4,6 +4,17 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Check pulse designs against declared native limits:
+  - `assess_pulse_design` converts seconds and Rabi rates to native samples;
+  - it refuses off-grid events, amplitude or slew over the limit, and
+    disconnected or invalid placements, each with a stable code;
+  - `export_native_pulse_program` serialises without any submission or device
+    authority.
+
+  The hybrid digital-analog split no longer drops couplings at the zero
+  threshold silently. They are kept as an explicit dropped block, and the
+  programme reports `model_preserved: false`.
+
 - Bind parameter-shift gradients to the circuit's generator spectra:
   - `plan_quantum_gradient_estimator` derives each parameter's frequencies
     from its gate occurrences, so a parameter shared by several rotations gets

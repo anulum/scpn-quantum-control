@@ -56,11 +56,18 @@ class HybridCouplingAssignment:
 
 @dataclass(frozen=True)
 class HybridCouplingPartition:
-    """Analog/digital split of a validated Kuramoto coupling matrix."""
+    """Analog/digital split of a validated Kuramoto coupling matrix.
+
+    ``dropped_K_nm`` holds the couplings at or below the zero threshold, which
+    neither block executes, so ``analog + digital + dropped`` is the validated
+    matrix. A non-empty dropped block means the hybrid programme models a
+    truncated coupling matrix, and ``model_preserved`` is then ``False``.
+    """
 
     analog_K_nm: FloatArray
     digital_K_nm: FloatArray
     assignments: tuple[HybridCouplingAssignment, ...]
+    dropped_K_nm: FloatArray = field(default_factory=lambda: np.zeros((0, 0), dtype=np.float64))
 
     @property
     def n_couplings(self) -> int:
@@ -88,6 +95,23 @@ class HybridCouplingPartition:
         return float(np.linalg.norm(self.digital_K_nm))
 
     @property
+    def n_dropped_couplings(self) -> int:
+        """Number of non-zero couplings dropped at the zero threshold."""
+        if self.dropped_K_nm.size == 0:
+            return 0
+        return int(np.count_nonzero(np.triu(self.dropped_K_nm, k=1)))
+
+    @property
+    def dropped_norm(self) -> float:
+        """Frobenius norm of the dropped coupling block."""
+        return float(np.linalg.norm(self.dropped_K_nm))
+
+    @property
+    def model_preserved(self) -> bool:
+        """Whether the analog and digital blocks together execute every coupling."""
+        return self.n_dropped_couplings == 0
+
+    @property
     def analog_fraction(self) -> float:
         """Fraction of non-zero couplings routed to analog execution."""
         if not self.assignments:
@@ -103,6 +127,9 @@ class HybridCouplingPartition:
             "analog_norm": self.analog_norm,
             "digital_norm": self.digital_norm,
             "analog_fraction": self.analog_fraction,
+            "n_dropped_couplings": self.n_dropped_couplings,
+            "dropped_norm": self.dropped_norm,
+            "model_preserved": self.model_preserved,
             "assignments": [assignment.to_payload() for assignment in self.assignments],
         }
 
@@ -291,6 +318,9 @@ class HybridDigitalAnalogBackend:
             "n_digital_couplers": partition.n_digital_couplings,
             "analog_threshold": _require_non_negative(analog_threshold, "analog_threshold"),
             "zero_threshold": self.zero_threshold,
+            "model_preserved": partition.model_preserved,
+            "n_dropped_couplings": partition.n_dropped_couplings,
+            "dropped_coupling_norm": partition.dropped_norm,
             "digital_local_detunings": "zero_residual_to_avoid_double_counting",
             "digital_circuit_depth": digital_circuit.depth(),
             "digital_circuit_size": digital_circuit.size(),
@@ -367,12 +397,17 @@ def partition_kuramoto_couplings(
         )
         for row, col, code in zip(rows, cols, route_codes, strict=True)
     )
+    # Both blocks copy coefficients from disjoint positions, so this is
+    # exactly the couplings neither of them executes.
+    dropped = K - analog - digital
     analog.setflags(write=False)
     digital.setflags(write=False)
+    dropped.setflags(write=False)
     return HybridCouplingPartition(
         analog_K_nm=analog,
         digital_K_nm=digital,
         assignments=assignments,
+        dropped_K_nm=dropped,
     )
 
 

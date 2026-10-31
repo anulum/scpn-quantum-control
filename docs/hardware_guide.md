@@ -250,6 +250,45 @@ credit, calibration or a hardware observation.
 For the complete original settings/provenance export and browser inspection,
 see [Operator policy decisions](studio_workbench.md#operator-policy-decisions).
 
+## Pulse design feasibility
+
+`scpn_quantum_control.hardware.pulse_feasibility` checks a pulse design
+against declared native limits. It never submits anything.
+
+- **`PulseDeviceLimits`** declares:
+  - the sample period `dt` in seconds and the grid `granularity` in samples;
+  - the design-to-native conversion `rabi_rate_per_amplitude` (rad/s at native
+    amplitude 1.0);
+  - `max_amplitude`, an optional `max_slew` per sample, the qubit count and the
+    `coupling_map`;
+  - the limits' `source` (`design` or `provider_metadata`).
+- **`DesignPulse`** gives the logical qubits, start and duration in seconds, and
+  a piecewise-constant Rabi rate in rad/s.
+
+`assess_pulse_design(pulses, limits, placement)` reports every violation with
+a stable code, and returns native samples only when there is none:
+
+- `off_grid`: a start or duration that is not a whole multiple of the grid, for
+  example a half-grid event;
+- `amplitude_over_limit`: an amplitude above `max_amplitude`. Exactly at the
+  limit passes;
+- `slew_over_limit`: a step above `max_slew`, including the ramps from and back
+  to zero at the pulse edges;
+- `unplaced_qubit`, `placement_out_of_range` and `non_injective_placement`;
+- `disconnected_placement`: a two-qubit pulse on an uncoupled physical pair;
+- `unsupported_arity`, `segment_mismatch`, `non_positive_duration` and
+  `channel_overlap`.
+
+A constant drive at Rabi rate `W` for `T` seconds converts to native amplitude
+`W / rabi_rate_per_amplitude`. Integrated over its samples it reproduces
+`RX(W*T)`.
+
+`export_native_pulse_program(assessment)` serialises a feasible design with
+`submissions: 0` and opens no connection. Neither design nor copied provider
+limits confer device authority. Every assessment and export carries the claim
+that the result is design feasibility, not a device-executable or calibrated
+control schedule.
+
 ## Architecture
 
 ### HAL job identity custody

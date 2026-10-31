@@ -5,7 +5,7 @@ module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
 - **847 modules** across **41 package families**
-- **4576 documented public module-level symbols**
+- **4582 documented public module-level symbols**
 - **874 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -3519,11 +3519,11 @@ Bind no-submit provider metadata to a cloud adapter immediately before run.
 
 No-submit provider feasibility probes for S3 pulse schedules.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/pulse_feasibility.py) · Public symbols: **7**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/pulse_feasibility.py) · Public symbols: **13**
 
-**Classes:** `PulseProviderSnapshot`, `PulseScheduleSummary`, `PulseFeasibilityDecision`
+**Classes:** `PulseProviderSnapshot`, `PulseScheduleSummary`, `PulseFeasibilityDecision`, `PulseDeviceLimits`, `DesignPulse`, `NativePulse`, `PulseDesignAssessment`
 
-**Functions:** `summarise_pulse_schedule()`, `assess_pulse_provider_feasibility()`, `assess_pulse_provider_fleet()`, `pulse_snapshot_from_metadata()`
+**Functions:** `summarise_pulse_schedule()`, `assess_pulse_provider_feasibility()`, `assess_pulse_provider_fleet()`, `pulse_snapshot_from_metadata()`, `assess_pulse_design()`, `export_native_pulse_program()`
 
 ### `scpn_quantum_control.hardware.qasm_export`
 
