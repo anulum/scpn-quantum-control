@@ -33,8 +33,10 @@ from scpn_quantum_control.hardware.pulse_feasibility import (
     PULSE_DESIGN_CLAIM_BOUNDARY,
     DesignPulse,
     PulseDeviceLimits,
+    PulseProviderSnapshot,
     assess_pulse_design,
     export_native_pulse_program,
+    pulse_limits_from_snapshot,
 )
 
 _DT = 1.0e-9
@@ -52,12 +54,40 @@ def _limits(**changes: Any) -> PulseDeviceLimits:
         "max_amplitude": 0.5,
         "n_qubits": 3,
         "coupling_map": ((0, 1), (1, 2)),
+        "coupler_rate_per_amplitude": _RATE,
     }
     options.update(changes)
     return PulseDeviceLimits(**options)
 
 
 _PLACEMENT = {0: 0, 1: 1, 2: 2}
+
+
+def _snapshot(**changes: Any) -> PulseProviderSnapshot:
+    """Return a pulse-capable snapshot of the same 3-qubit line device."""
+    options: dict[str, Any] = {
+        "provider": "example",
+        "backend_name": "line-3",
+        "n_qubits": 3,
+        "supports_pulse_control": True,
+        "supports_native_xy": False,
+        "min_time_step": _DT,
+        "supported_features": ("pulse",),
+    }
+    options.update(changes)
+    return PulseProviderSnapshot(**options)
+
+
+def _snapshot_limits(**changes: Any) -> PulseDeviceLimits:
+    """Return the fixture limits copied from :func:`_snapshot`."""
+    return pulse_limits_from_snapshot(
+        _snapshot(**changes),
+        granularity=16,
+        rabi_rate_per_amplitude=_RATE,
+        max_amplitude=0.5,
+        coupling_map=((0, 1), (1, 2)),
+        coupler_rate_per_amplitude=_RATE,
+    )
 
 
 def _within_budget(actual: object, reference: object) -> bool:
@@ -204,7 +234,9 @@ def test_pulse_analog_feasibility_04(theta: float) -> None:
 
     The design rate is converted to native amplitude ``W / r``; integrating the
     native piecewise-constant Hamiltonian ``a_k * r * X / 2`` over its samples
-    must reproduce the analytic rotation at the same physical units.
+    must reproduce the analytic rotation at the same physical units. Every
+    factor is a multiple of ``X``, so this checks the unit conversion of the
+    rate and the sample period, not phase, detuning or any other dynamics.
 
     Parameters
     ----------
@@ -257,7 +289,7 @@ def test_pulse_analog_feasibility_05(monkeypatch: pytest.MonkeyPatch, tmp_path: 
     monkeypatch.chdir(tmp_path)
     assessment = assess_pulse_design(
         [DesignPulse((0, 1), 16 * _DT, 32 * _DT, (1.0e7,))],
-        _limits(source="provider_metadata"),
+        _snapshot_limits(),
         _PLACEMENT,
     )
     payload = export_native_pulse_program(assessment)
@@ -271,6 +303,18 @@ def test_pulse_analog_feasibility_05(monkeypatch: pytest.MonkeyPatch, tmp_path: 
     assert payload["pulses"] == [
         {"channel": "u0_1", "physical_qubits": [0, 1], "t0": 16, "samples": [0.2] * 32}
     ]
+    assert payload["limits"] == {
+        "granularity": 16,
+        "rabi_rate_per_amplitude": _RATE,
+        "coupler_rate_per_amplitude": _RATE,
+        "max_amplitude": 0.5,
+        "max_slew": None,
+        "n_qubits": 3,
+        "coupling_map": [[0, 1], [1, 2]],
+    }
+    assert payload["provider_snapshot"] == {"provider": "example", "backend_name": "line-3"}
+    area = sum(payload["pulses"][0]["samples"]) * payload["limits"]["coupler_rate_per_amplitude"]
+    assert _within_budget(area * payload["dt"], 1.0e7 * 32 * _DT)
     assert assessment.device_authority is False and assessment.hardware_submission is False
 
 
@@ -353,6 +397,7 @@ def test_hybrid_partition_states_the_couplings_it_drops() -> None:
     )
     for threshold, dropped in ((1.0e-12, 1), (0.25, 2), (0.0, 0)):
         partition = partition_kuramoto_couplings(couplings, zero_threshold=threshold)
+        assert partition.dropped_K_nm is not None
         total = partition.analog_K_nm + partition.digital_K_nm + partition.dropped_K_nm
         np.testing.assert_array_equal(total, couplings)
         assert partition.n_dropped_couplings == dropped
@@ -389,12 +434,219 @@ def test_hybrid_programme_metadata_reports_model_preservation() -> None:
     assert clean.metadata["dropped_coupling_norm"] == 0.0
 
 
-def test_partition_built_directly_without_dropped_block_reports_none() -> None:
-    """A hand-built partition without a dropped block reports no truncation."""
+def test_partition_built_directly_without_dropped_block_states_nothing() -> None:
+    """A hand-built partition without a dropped block cannot claim it kept the model."""
     from scpn_quantum_control.hardware.hybrid_digital_analog import HybridCouplingPartition
 
     partition = HybridCouplingPartition(
         analog_K_nm=np.zeros((2, 2)), digital_K_nm=np.zeros((2, 2)), assignments=()
     )
+    assert partition.n_dropped_couplings is None
+    assert partition.dropped_norm is None
+    assert partition.model_preserved is None
+    payload = partition.to_payload()
+    assert payload["model_preserved"] is None and payload["n_dropped_couplings"] is None
+
+
+def test_negative_start_is_refused_and_never_exported() -> None:
+    """A pulse that starts before sample zero is a violation, not a native ``t0 < 0``."""
+    assessment = assess_pulse_design(
+        [DesignPulse((0,), -32 * _DT, 32 * _DT, (1.0e7,))], _limits(), _PLACEMENT
+    )
+    assert assessment.violations == ("negative_start: pulse 0 starts at sample -32",)
+    assert assessment.native == ()
+    with pytest.raises(ValueError, match="only a feasible"):
+        export_native_pulse_program(assessment)
+
+
+def test_slew_is_checked_where_pulses_meet_on_a_channel() -> None:
+    """Abutting pulses step from one amplitude to the next, not through zero."""
+    first = DesignPulse((0,), 0.0, 16 * _DT, (0.2 * _RATE,))
+    reversed_ = DesignPulse((0,), 16 * _DT, 16 * _DT, (-0.2 * _RATE,))
+    for order in ((first, reversed_), (reversed_, first)):
+        refused = assess_pulse_design(list(order), _limits(max_slew=0.2), _PLACEMENT)
+        assert [code.split(":")[0] for code in refused.violations] == ["slew_over_limit"]
+        assert "d0 steps 0.4 at sample 16" in refused.violations[0]
+    continued = DesignPulse((0,), 16 * _DT, 16 * _DT, (0.2 * _RATE,))
+    assert assess_pulse_design([first, continued], _limits(max_slew=0.2), _PLACEMENT).feasible
+    climbing = DesignPulse((0,), 16 * _DT, 16 * _DT, (0.3 * _RATE,))
+    joined = assess_pulse_design([first, climbing], _limits(max_slew=0.2), _PLACEMENT)
+    # The junction steps 0.1, but the second pulse still falls 0.3 back to zero.
+    assert joined.violations == (
+        "slew_over_limit: d0 steps 0.3 at sample 32 (pulse 1), exceeding 0.2",
+    )
+    apart = DesignPulse((0,), 32 * _DT, 16 * _DT, (-0.2 * _RATE,))
+    assert assess_pulse_design([first, apart], _limits(max_slew=0.2), _PLACEMENT).feasible
+    other_channel = DesignPulse((1,), 16 * _DT, 16 * _DT, (-0.2 * _RATE,))
+    assert assess_pulse_design([first, other_channel], _limits(max_slew=0.2), _PLACEMENT).feasible
+
+
+def test_slew_between_segments_and_of_unplaced_pulses_is_checked() -> None:
+    """Steps inside a pulse count, and an unplaced pulse is checked against zero."""
+    stepped = DesignPulse((0,), 0.0, 32 * _DT, (0.1 * _RATE, 0.4 * _RATE))
+    inside = assess_pulse_design([stepped], _limits(max_slew=0.25), _PLACEMENT)
+    assert inside.violations == (
+        "slew_over_limit: pulse 0 step 0.3 exceeds 0.25",
+        "slew_over_limit: d0 steps 0.4 at sample 32 (pulse 0), exceeding 0.25",
+    )
+    unplaced = assess_pulse_design(
+        [DesignPulse((0,), 0.0, 16 * _DT, (0.3 * _RATE,))], _limits(max_slew=0.2), {}
+    )
+    assert [code.split(":")[0] for code in unplaced.violations] == [
+        "unplaced_qubit",
+        "slew_over_limit",
+    ]
+
+
+def test_an_unconvertible_pulse_is_still_checked_for_everything_else() -> None:
+    """Off-grid timing does not hide an amplitude or placement violation."""
+    pulse = DesignPulse((0, 2), 8 * _DT, 16 * _DT, (1.0 * _RATE,))
+    assessment = assess_pulse_design([pulse], _limits(), _PLACEMENT)
+    assert [code.split(":")[0] for code in assessment.violations] == [
+        "off_grid",
+        "disconnected_placement",
+        "amplitude_over_limit",
+    ]
+    negative = DesignPulse((0,), -16 * _DT, 0.0, (1.0 * _RATE,))
+    assert [
+        code.split(":")[0]
+        for code in assess_pulse_design([negative], _limits(), _PLACEMENT).violations
+    ] == ["negative_start", "non_positive_duration", "amplitude_over_limit"]
+
+
+@pytest.mark.parametrize(
+    ("start", "duration", "message"),
+    [
+        (1.0e300, 16 * _DT, "start lies beyond"),
+        (-1.0e300, 16 * _DT, "start lies beyond"),
+        (0.0, 1.0e308, "end lies beyond"),
+        (0.0, 1.0, "longer than"),
+    ],
+    ids=["huge-start", "huge-negative-start", "huge-end", "one-second-at-1ns"],
+)
+def test_out_of_budget_times_refuse_before_any_allocation(
+    start: float, duration: float, message: str
+) -> None:
+    """Finite times past the conversion budget raise ``ValueError``, never ``OverflowError``.
+
+    Parameters
+    ----------
+    start
+        Start time in seconds.
+    duration
+        Duration in seconds.
+    message
+        Expected refusal text.
+
+    """
+    with pytest.raises(ValueError, match=message):
+        assess_pulse_design([DesignPulse((0,), start, duration, (1.0e7,))], _limits(), _PLACEMENT)
+
+
+def test_grid_check_holds_far_from_sample_zero() -> None:
+    """A start 6e8 samples out is on the grid; four tenths of a sample later it is not."""
+    on_grid = DesignPulse((0,), 600_000_000 * _DT, 16 * _DT, (1.0e7,))
+    assessment = assess_pulse_design([on_grid], _limits(), _PLACEMENT)
+    assert assessment.feasible and assessment.native[0].t0 == 600_000_000
+    shifted = DesignPulse((0,), 600_000_000.4 * _DT, 16 * _DT, (1.0e7,))
+    refused = assess_pulse_design([shifted], _limits(), _PLACEMENT)
+    assert refused.violations[0].startswith("off_grid:")
+
+
+def test_coupler_pulses_need_their_own_declared_conversion() -> None:
+    """A coupler rate converts with the coupler factor, and without one it refuses."""
+    pulse = DesignPulse((0, 1), 0.0, 16 * _DT, (1.0e7,))
+    missing = assess_pulse_design([pulse], _limits(coupler_rate_per_amplitude=None), _PLACEMENT)
+    assert [code.split(":")[0] for code in missing.violations] == ["undefined_coupler_conversion"]
+    converted = assess_pulse_design(
+        [pulse, DesignPulse((0,), 0.0, 16 * _DT, (1.0e7,))],
+        _limits(coupler_rate_per_amplitude=2.0 * _RATE),
+        _PLACEMENT,
+    )
+    assert converted.native[0].samples == (0.1,) * 16
+    assert converted.native[1].samples == (0.2,) * 16
+
+
+def test_repeated_logical_qubit_and_untyped_qubits() -> None:
+    """``(0, 0)`` is a repeated qubit, and qubits must be a tuple of integers."""
+    repeated = assess_pulse_design(
+        [DesignPulse((0, 0), 0.0, 16 * _DT, (1.0e7,))], _limits(), _PLACEMENT
+    )
+    assert repeated.violations == ("repeated_qubit: pulse 0 drives logical [0, 0]",)
+    for qubits in (cast(tuple[int, ...], 0), cast(tuple[int, ...], (0.0,))):
+        with pytest.raises(ValueError, match="tuple of integers"):
+            assess_pulse_design(
+                [DesignPulse(qubits, 0.0, 16 * _DT, (1.0e7,))], _limits(), _PLACEMENT
+            )
+
+
+def test_provider_limits_are_bound_to_their_snapshot() -> None:
+    """Copied limits carry the snapshot; its duration and pulse-count limits are checked."""
+    limits = _snapshot_limits(max_pulse_duration=32 * _DT, max_pulses=1)
+    assert (limits.source, limits.dt, limits.n_qubits) == ("provider_metadata", _DT, 3)
+    pulse = DesignPulse((0,), 0.0, 32 * _DT, (1.0e7,))
+    assert assess_pulse_design([pulse], limits, _PLACEMENT).feasible
+    long_pulse = DesignPulse((0,), 0.0, 48 * _DT, (1.0e7,))
+    assert [
+        code.split(":")[0]
+        for code in assess_pulse_design([long_pulse], limits, _PLACEMENT).violations
+    ] == ["duration_over_limit"]
+    two = assess_pulse_design(
+        [pulse, DesignPulse((1,), 0.0, 16 * _DT, (1.0e7,))], limits, _PLACEMENT
+    )
+    assert two.violations == ("too_many_pulses: 2 pulses exceed the provider's 1",)
+    design = export_native_pulse_program(assess_pulse_design([pulse], _limits(), _PLACEMENT))
+    assert design["provider_snapshot"] is None and design["limits_source"] == "design"
+
+
+@pytest.mark.parametrize(
+    ("build", "message"),
+    [
+        (lambda: _snapshot_limits(min_time_step=None), "no min_time_step"),
+        (lambda: _snapshot_limits(supports_pulse_control=False), "pulse control"),
+        (lambda: _limits(source="provider_metadata"), "PulseProviderSnapshot"),
+        (lambda: _limits(snapshot=_snapshot()), "design limits cannot carry"),
+        (
+            lambda: _limits(source="provider_metadata", snapshot=_snapshot(), dt=2 * _DT),
+            "min_time_step",
+        ),
+        (
+            lambda: _limits(source="provider_metadata", snapshot=_snapshot(n_qubits=5)),
+            "qubit count",
+        ),
+        (lambda: _limits(coupler_rate_per_amplitude=0.0), "coupler_rate_per_amplitude"),
+    ],
+    ids=[
+        "no-period",
+        "no-pulse-control",
+        "unbound-provider-source",
+        "design-with-snapshot",
+        "period-mismatch",
+        "qubit-mismatch",
+        "zero-coupler-rate",
+    ],
+)
+def test_snapshot_binding_refuses_inconsistent_limits(build: Any, message: str) -> None:
+    """Provider limits must match the snapshot they claim to come from.
+
+    Parameters
+    ----------
+    build
+        Builds the inconsistent limits.
+    message
+        Expected refusal text.
+
+    """
+    with pytest.raises(ValueError, match=message):
+        build()
+
+
+def test_hybrid_partition_keeps_tolerated_asymmetry_out_of_the_dropped_block() -> None:
+    """Triangles differing within the symmetry tolerance drop nothing."""
+    couplings = np.array([[0.0, 1.0], [1.0 + 1.0e-12, 0.0]])
+    partition = partition_kuramoto_couplings(couplings)
     assert partition.n_dropped_couplings == 0
+    assert partition.dropped_norm == 0.0
     assert partition.model_preserved is True
+    symmetrised = 0.5 * (couplings + couplings.T)
+    np.testing.assert_array_equal(partition.analog_K_nm + partition.digital_K_nm, symmetrised)

@@ -59,15 +59,17 @@ class HybridCouplingPartition:
     """Analog/digital split of a validated Kuramoto coupling matrix.
 
     ``dropped_K_nm`` holds the couplings at or below the zero threshold, which
-    neither block executes, so ``analog + digital + dropped`` is the validated
-    matrix. A non-empty dropped block means the hybrid programme models a
-    truncated coupling matrix, and ``model_preserved`` is then ``False``.
+    neither block executes, so ``analog + digital + dropped`` is the validated,
+    exactly symmetric matrix. A non-empty dropped block means the hybrid
+    programme models a truncated coupling matrix, and ``model_preserved`` is
+    then ``False``. A partition built without a dropped block cannot say what
+    it dropped: its dropped count, norm and ``model_preserved`` are ``None``.
     """
 
     analog_K_nm: FloatArray
     digital_K_nm: FloatArray
     assignments: tuple[HybridCouplingAssignment, ...]
-    dropped_K_nm: FloatArray = field(default_factory=lambda: np.zeros((0, 0), dtype=np.float64))
+    dropped_K_nm: FloatArray | None = None
 
     @property
     def n_couplings(self) -> int:
@@ -95,21 +97,24 @@ class HybridCouplingPartition:
         return float(np.linalg.norm(self.digital_K_nm))
 
     @property
-    def n_dropped_couplings(self) -> int:
-        """Number of non-zero couplings dropped at the zero threshold."""
-        if self.dropped_K_nm.size == 0:
-            return 0
+    def n_dropped_couplings(self) -> int | None:
+        """Number of non-zero couplings dropped at the zero threshold, if stated."""
+        if self.dropped_K_nm is None:
+            return None
         return int(np.count_nonzero(np.triu(self.dropped_K_nm, k=1)))
 
     @property
-    def dropped_norm(self) -> float:
-        """Frobenius norm of the dropped coupling block."""
+    def dropped_norm(self) -> float | None:
+        """Frobenius norm of the dropped coupling block, if stated."""
+        if self.dropped_K_nm is None:
+            return None
         return float(np.linalg.norm(self.dropped_K_nm))
 
     @property
-    def model_preserved(self) -> bool:
-        """Whether the analog and digital blocks together execute every coupling."""
-        return self.n_dropped_couplings == 0
+    def model_preserved(self) -> bool | None:
+        """Whether the blocks together execute every coupling, or ``None`` if unstated."""
+        dropped = self.n_dropped_couplings
+        return None if dropped is None else dropped == 0
 
     @property
     def analog_fraction(self) -> float:
@@ -538,6 +543,10 @@ def _validate_coupling_matrix(K_nm: FloatArray) -> FloatArray:
         raise ValueError("K_nm must contain only finite values")
     if not np.allclose(K, K.T, atol=1e-12, rtol=1e-12):
         raise ValueError("K_nm must be symmetric for hybrid splitting")
+    # Within the tolerance the two triangles may differ in the last digits. The
+    # blocks copy one value per pair, so averaging keeps that residue out of
+    # the dropped block; an exactly symmetric input is returned unchanged.
+    K = 0.5 * (K + K.T)
     np.fill_diagonal(K, 0.0)
     return K
 

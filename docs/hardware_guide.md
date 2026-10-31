@@ -258,36 +258,64 @@ against declared native limits. It never submits anything.
 - **`PulseDeviceLimits`** declares:
   - the sample period `dt` in seconds and the grid `granularity` in samples;
   - the design-to-native conversion `rabi_rate_per_amplitude` (rad/s at native
-    amplitude 1.0);
+    amplitude 1.0 on a drive channel);
+  - `coupler_rate_per_amplitude`, the coupling rate in rad/s at native
+    amplitude 1.0 on a two-qubit coupler. It only converts units; no
+    two-qubit Hamiltonian form is claimed. Without it coupler pulses are
+    refused;
   - `max_amplitude`, an optional `max_slew` per sample, the qubit count and the
     `coupling_map`;
-  - the limits' `source` (`design` or `provider_metadata`).
-- **`DesignPulse`** gives the logical qubits, start and duration in seconds, and
-  a piecewise-constant Rabi rate in rad/s.
+  - the limits' `source`: `design`, or `provider_metadata` for limits copied
+    from a provider snapshot.
+- **`pulse_limits_from_snapshot(snapshot, ...)`** copies the snapshot's
+  `min_time_step` as `dt` and its qubit count, and keeps the snapshot. The
+  snapshot must declare pulse control. Copied limits without their snapshot,
+  or with a different period or qubit count, are refused.
+- **`DesignPulse`** gives the logical qubits, start (at or after zero) and
+  duration in seconds, and a piecewise-constant rate in rad/s: a Rabi rate on
+  a drive, a coupling rate on a coupler.
 
 `assess_pulse_design(pulses, limits, placement)` reports every violation with
-a stable code, and returns native samples only when there is none:
+a stable code, and returns native samples only when there is none. A pulse
+whose timing cannot be converted is still checked for amplitude, slew between
+its segments and placement.
 
+- `negative_start`: a pulse that starts before sample zero;
 - `off_grid`: a start or duration that is not a whole multiple of the grid, for
   example a half-grid event;
 - `amplitude_over_limit`: an amplitude above `max_amplitude`. Exactly at the
   limit passes;
-- `slew_over_limit`: a step above `max_slew`, including the ramps from and back
-  to zero at the pulse edges;
-- `unplaced_qubit`, `placement_out_of_range` and `non_injective_placement`;
+- `slew_over_limit`: a step above `max_slew` on a channel's whole waveform. The
+  channel is zero outside its pulses, so the steps from and back to zero at
+  pulse edges count, and two pulses that meet on a channel are checked across
+  the junction. Steps between the segments of one pulse count too;
+- `duration_over_limit` and `too_many_pulses`: above the provider snapshot's
+  `max_pulse_duration` or `max_pulses`, for copied limits;
+- `unplaced_qubit`, `repeated_qubit`, `placement_out_of_range` and
+  `non_injective_placement`;
 - `disconnected_placement`: a two-qubit pulse on an uncoupled physical pair;
+- `undefined_coupler_conversion`: a coupler pulse without
+  `coupler_rate_per_amplitude`;
 - `unsupported_arity`, `segment_mismatch`, `non_positive_duration` and
   `channel_overlap`.
 
+A pulse that starts or ends beyond 2^36 samples, or is longer than 2^24
+samples, raises `ValueError` before anything is allocated. Grid alignment
+admits `1e-9 + 1e-12 * |samples|` of rounding, which stays below a tenth of a
+sample in that range.
+
 A constant drive at Rabi rate `W` for `T` seconds converts to native amplitude
 `W / rabi_rate_per_amplitude`. Integrated over its samples it reproduces
-`RX(W*T)`.
+`RX(W*T)`. Every factor of that product is a multiple of `X`, so this checks
+the unit conversion only, not phase, detuning or other dynamics.
 
 `export_native_pulse_program(assessment)` serialises a feasible design with
-`submissions: 0` and opens no connection. Neither design nor copied provider
-limits confer device authority. Every assessment and export carries the claim
-that the result is design feasibility, not a device-executable or calibrated
-control schedule.
+`submissions: 0` and opens no connection. It carries the limits and both
+conversions, so its samples can be read back in physical units, and the
+provider and backend name when the limits were copied from a snapshot.
+Neither design nor copied provider limits confer device authority. Every
+assessment and export carries the claim that the result is design
+feasibility, not a device-executable or calibrated control schedule.
 
 ## Architecture
 

@@ -218,6 +218,14 @@ def pulse_snapshot_from_metadata(metadata: Mapping[str, Any]) -> PulseProviderSn
     )
 
 
+_MAX_PULSE_SAMPLES = 1 << 24
+"""Longest pulse, in samples, that is converted to native samples."""
+_MAX_SAMPLE_INDEX = 1 << 36
+"""Largest start or end sample; below it the grid tolerance stays far under half a sample."""
+_GRID_RELATIVE_TOLERANCE = 1.0e-12
+"""Rounding admitted per sample of distance from zero, for starts summed from many durations."""
+
+
 @dataclass(frozen=True)
 class PulseDeviceLimits:
     """Declared native limits for converting and checking design pulses.
@@ -229,8 +237,8 @@ class PulseDeviceLimits:
     granularity:
         Every start time and duration must be a multiple of this many samples.
     rabi_rate_per_amplitude:
-        Rabi rate in rad/s produced by native amplitude 1.0; this is the
-        design-to-native unit conversion.
+        Rabi rate in rad/s produced by native amplitude 1.0 on a single-qubit
+        drive channel; this is the design-to-native unit conversion.
     max_amplitude:
         Largest allowed absolute native amplitude.
     n_qubits:
@@ -238,12 +246,25 @@ class PulseDeviceLimits:
     coupling_map:
         Undirected physical qubit pairs that two-qubit pulses may drive.
     max_slew:
-        Largest allowed change of native amplitude between samples, including
-        the ramps from and back to zero at the pulse edges; ``None`` disables
-        the slew check.
+        Largest allowed change of native amplitude between consecutive samples
+        of a channel's whole waveform. The channel is zero outside its pulses,
+        so the step from and back to zero at a pulse edge counts, and two
+        pulses that meet on a channel are checked across their junction.
+        ``None`` disables the slew check.
     source:
         ``design`` for limits chosen by the designer, ``provider_metadata`` for
-        limits copied from a provider. Neither confers device authority.
+        limits copied from a provider snapshot. Neither confers device authority.
+    coupler_rate_per_amplitude:
+        Coupling rate in rad/s produced by native amplitude 1.0 on a two-qubit
+        coupler channel. It only converts a coupler design rate into a native
+        amplitude; no two-qubit Hamiltonian form is claimed. ``None`` means
+        coupler pulses cannot be converted and are reported.
+    snapshot:
+        The provider snapshot ``provider_metadata`` limits were copied from.
+        It is required for that source and refused for ``design``. Its
+        ``min_time_step`` and qubit count must equal ``dt`` and ``n_qubits``,
+        it must declare pulse control, and its pulse-count and pulse-duration
+        limits are checked by :func:`assess_pulse_design`.
 
     """
 
@@ -255,13 +276,16 @@ class PulseDeviceLimits:
     coupling_map: tuple[tuple[int, int], ...] = ()
     max_slew: float | None = None
     source: PulseLimitsSource = "design"
+    coupler_rate_per_amplitude: float | None = None
+    snapshot: PulseProviderSnapshot | None = None
 
     def __post_init__(self) -> None:
-        """Reject non-physical periods, conversions, limits or couplings."""
+        """Reject non-physical periods, conversions, limits, couplings or sources."""
         for name in ("dt", "rabi_rate_per_amplitude", "max_amplitude"):
             _required_positive_float(getattr(self, name), name)
-        if self.max_slew is not None:
-            _required_positive_float(self.max_slew, "max_slew")
+        for name in ("max_slew", "coupler_rate_per_amplitude"):
+            if getattr(self, name) is not None:
+                _required_positive_float(getattr(self, name), name)
         _required_int({"granularity": self.granularity}, "granularity")
         _required_int({"n_qubits": self.n_qubits}, "n_qubits")
         if self.source not in ("design", "provider_metadata"):
@@ -275,23 +299,86 @@ class PulseDeviceLimits:
                 or pair[0] == pair[1]
             ):
                 raise ValueError("coupling_map pairs must be two distinct physical qubits")
+        if self.source == "design":
+            if self.snapshot is not None:
+                raise ValueError("design limits cannot carry a provider snapshot")
+            return
+        if not isinstance(self.snapshot, PulseProviderSnapshot):
+            raise ValueError(
+                "provider_metadata limits must carry the PulseProviderSnapshot they were copied from"
+            )
+        if not self.snapshot.supports_pulse_control:
+            raise ValueError("the provider snapshot does not declare pulse control")
+        if self.snapshot.min_time_step != self.dt:
+            raise ValueError("dt must equal the provider snapshot's min_time_step")
+        if self.snapshot.n_qubits != self.n_qubits:
+            raise ValueError("n_qubits must equal the provider snapshot's qubit count")
+
+
+def pulse_limits_from_snapshot(
+    snapshot: PulseProviderSnapshot,
+    *,
+    granularity: int,
+    rabi_rate_per_amplitude: float,
+    max_amplitude: float,
+    coupling_map: tuple[tuple[int, int], ...] = (),
+    max_slew: float | None = None,
+    coupler_rate_per_amplitude: float | None = None,
+) -> PulseDeviceLimits:
+    """Copy the sample period and qubit count of a provider snapshot into limits.
+
+    Parameters
+    ----------
+    snapshot:
+        Validated provider snapshot; it must declare pulse control and a
+        ``min_time_step``, which becomes the native sample period.
+    granularity, rabi_rate_per_amplitude, max_amplitude, coupling_map, max_slew, coupler_rate_per_amplitude:
+        The remaining limits, as for :class:`PulseDeviceLimits`.
+
+    Returns
+    -------
+    PulseDeviceLimits
+        Limits with ``source="provider_metadata"`` bound to ``snapshot``.
+
+    Raises
+    ------
+    ValueError
+        If the snapshot declares no ``min_time_step`` or no pulse control, or a
+        limit is invalid.
+
+    """
+    if snapshot.min_time_step is None:
+        raise ValueError("the provider snapshot declares no min_time_step to use as dt")
+    return PulseDeviceLimits(
+        dt=snapshot.min_time_step,
+        granularity=granularity,
+        rabi_rate_per_amplitude=rabi_rate_per_amplitude,
+        max_amplitude=max_amplitude,
+        n_qubits=snapshot.n_qubits,
+        coupling_map=coupling_map,
+        max_slew=max_slew,
+        source="provider_metadata",
+        coupler_rate_per_amplitude=coupler_rate_per_amplitude,
+        snapshot=snapshot,
+    )
 
 
 @dataclass(frozen=True)
 class DesignPulse:
-    """One pulse in design units: seconds and Rabi rate in rad/s.
+    """One pulse in design units: seconds and rates in rad/s.
 
     Attributes
     ----------
     qubits:
         Logical qubits the pulse drives; one for a drive, two for a coupler.
     start:
-        Start time in seconds.
+        Start time in seconds, at or after zero.
     duration:
         Duration in seconds.
     rabi_rates:
-        Piecewise-constant Rabi rate in rad/s over equal segments of the
-        duration; a single value is a constant pulse.
+        Piecewise-constant rate in rad/s over equal segments of the duration:
+        a Rabi rate on a drive, a coupling rate on a coupler. A single value is
+        a constant pulse.
 
     """
 
@@ -333,11 +420,13 @@ class PulseDesignAssessment:
     feasible:
         Whether no violation was found.
     violations:
-        ``code: detail`` strings with codes ``off_grid``, ``non_positive_duration``,
+        ``code: detail`` strings with codes ``negative_start``, ``off_grid``,
+        ``non_positive_duration``, ``segment_mismatch``, ``duration_over_limit``,
         ``amplitude_over_limit``, ``slew_over_limit``, ``unplaced_qubit``,
-        ``placement_out_of_range``, ``non_injective_placement``,
-        ``disconnected_placement``, ``unsupported_arity``,
-        ``segment_mismatch`` and ``channel_overlap``.
+        ``repeated_qubit``, ``placement_out_of_range``,
+        ``non_injective_placement``, ``disconnected_placement``,
+        ``unsupported_arity``, ``undefined_coupler_conversion``,
+        ``channel_overlap`` and ``too_many_pulses``.
     native:
         Native pulses when feasible, otherwise empty.
     limits:
@@ -360,6 +449,19 @@ class PulseDesignAssessment:
     claim_boundary: str = PULSE_DESIGN_CLAIM_BOUNDARY
 
 
+@dataclass(frozen=True)
+class _ConvertedPulse:
+    """A placed, on-grid pulse and the amplitudes at its edges."""
+
+    index: int
+    native: NativePulse
+
+    @property
+    def end(self) -> int:
+        """Return the first sample after the pulse."""
+        return self.native.t0 + len(self.native.samples)
+
+
 def assess_pulse_design(
     pulses: Sequence[DesignPulse],
     limits: PulseDeviceLimits,
@@ -367,12 +469,18 @@ def assess_pulse_design(
 ) -> PulseDesignAssessment:
     """Check timing grid, amplitude, slew and placement, then convert units.
 
+    Every pulse is checked for everything that does not depend on a failed
+    check: an off-grid pulse is still checked for amplitude, slew between its
+    segments and placement. Slew at pulse edges is checked on each channel's
+    whole waveform, so pulses that meet on a channel are checked across the
+    junction.
+
     Parameters
     ----------
     pulses:
         Design pulses in seconds and rad/s.
     limits:
-        Declared native limits and the design-to-native conversion.
+        Declared native limits and the design-to-native conversions.
     placement:
         Logical-to-physical qubit map.
 
@@ -384,80 +492,47 @@ def assess_pulse_design(
     Raises
     ------
     ValueError
-        If a pulse is not a :class:`DesignPulse` or has non-finite fields.
+        If a pulse is not a :class:`DesignPulse`, has non-finite fields or
+        non-integer qubits, starts or ends beyond ``2**36`` samples, or is
+        longer than ``2**24`` samples.
 
     """
     violations: list[str] = []
-    native: list[NativePulse] = []
     physical_values = list(placement.values())
     if len(set(physical_values)) != len(physical_values):
         violations.append("non_injective_placement: two logical qubits share a physical qubit")
     edges = {frozenset(pair) for pair in limits.coupling_map}
     occupied: dict[str, list[tuple[int, int]]] = {}
+    converted: list[_ConvertedPulse] = []
     for index, pulse in enumerate(pulses):
-        if not isinstance(pulse, DesignPulse):
-            raise ValueError("pulses must be DesignPulse records")
-        values = (pulse.start, pulse.duration, *pulse.rabi_rates)
-        if not pulse.rabi_rates or any(
-            isinstance(value, bool) or not isinstance(value, int | float) or not isfinite(value)
-            for value in values
-        ):
-            raise ValueError(f"pulse {index} needs finite start, duration and rabi_rates")
-        start_samples = _grid_samples(pulse.start, limits)
-        duration_samples = _grid_samples(pulse.duration, limits)
-        if pulse.duration <= 0.0:
-            violations.append(f"non_positive_duration: pulse {index}")
+        _validate_design_pulse(index, pulse, limits)
+        result = _assess_one(index, pulse, limits, placement, edges, violations)
+        if result is None:
             continue
-        if start_samples is None or duration_samples is None:
-            violations.append(
-                f"off_grid: pulse {index} start {pulse.start / limits.dt:.6g} and duration "
-                f"{pulse.duration / limits.dt:.6g} samples are not multiples of "
-                f"{limits.granularity}"
-            )
-            continue
-        if duration_samples % len(pulse.rabi_rates):
-            violations.append(
-                f"segment_mismatch: pulse {index} has {duration_samples} samples for "
-                f"{len(pulse.rabi_rates)} segments"
-            )
-            continue
-        physical = _place(index, pulse.qubits, placement, limits, edges, violations)
-        repeat = duration_samples // len(pulse.rabi_rates)
-        samples = tuple(
-            rate / limits.rabi_rate_per_amplitude
-            for rate in pulse.rabi_rates
-            for _ in range(repeat)
-        )
-        peak = max(abs(sample) for sample in samples)
-        if peak > limits.max_amplitude * (1.0 + _AMPLITUDE_TOLERANCE):
-            violations.append(
-                f"amplitude_over_limit: pulse {index} peak {peak:.12g} exceeds "
-                f"{limits.max_amplitude:.12g}"
-            )
-        if limits.max_slew is not None:
-            edged = (0.0, *samples, 0.0)
-            slew = max(
-                abs(after - before) for before, after in zip(edged[:-1], edged[1:], strict=True)
-            )
-            if slew > limits.max_slew * (1.0 + _AMPLITUDE_TOLERANCE):
-                violations.append(
-                    f"slew_over_limit: pulse {index} step {slew:.12g} exceeds "
-                    f"{limits.max_slew:.12g}"
-                )
-        if physical is None:
-            continue
-        channel = f"d{physical[0]}" if len(physical) == 1 else f"u{min(physical)}_{max(physical)}"
-        window = (start_samples, start_samples + duration_samples)
-        for other in occupied.get(channel, []):
+        window = (result.native.t0, result.end)
+        for other in occupied.get(result.native.channel, []):
             if window[0] < other[1] and other[0] < window[1]:
-                violations.append(f"channel_overlap: pulse {index} overlaps on {channel}")
-        occupied.setdefault(channel, []).append(window)
-        native.append(NativePulse(channel, physical, start_samples, samples))
+                violations.append(
+                    f"channel_overlap: pulse {index} overlaps on {result.native.channel}"
+                )
+        occupied.setdefault(result.native.channel, []).append(window)
+        converted.append(result)
+    if limits.max_slew is not None:
+        _check_channel_edges(converted, limits.max_slew, violations)
+    snapshot = limits.snapshot
+    if (
+        snapshot is not None
+        and snapshot.max_pulses is not None
+        and len(pulses) > snapshot.max_pulses
+    ):
+        violations.append(
+            f"too_many_pulses: {len(pulses)} pulses exceed the provider's {snapshot.max_pulses}"
+        )
     feasible = not violations
     return PulseDesignAssessment(
         feasible=feasible,
         violations=tuple(violations),
-        native=tuple(native) if feasible else (),
+        native=tuple(item.native for item in converted) if feasible else (),
         limits=limits,
     )
 
@@ -473,8 +548,10 @@ def export_native_pulse_program(assessment: PulseDesignAssessment) -> dict[str, 
     Returns
     -------
     dict
-        Native program payload with ``submissions`` equal to zero, no device
-        authority and the design claim boundary.
+        Native program payload with the limits and conversions needed to read
+        its samples in physical units, the provider snapshot identity when the
+        limits were copied, ``submissions`` equal to zero, no device authority
+        and the design claim boundary.
 
     Raises
     ------
@@ -484,10 +561,24 @@ def export_native_pulse_program(assessment: PulseDesignAssessment) -> dict[str, 
     """
     if not assessment.feasible:
         raise ValueError("only a feasible pulse design can be exported")
+    limits = assessment.limits
+    snapshot = limits.snapshot
     return {
         "schema": "native_pulse_design_v1",
-        "dt": assessment.limits.dt,
-        "limits_source": assessment.limits.source,
+        "dt": limits.dt,
+        "limits_source": limits.source,
+        "limits": {
+            "granularity": limits.granularity,
+            "rabi_rate_per_amplitude": limits.rabi_rate_per_amplitude,
+            "coupler_rate_per_amplitude": limits.coupler_rate_per_amplitude,
+            "max_amplitude": limits.max_amplitude,
+            "max_slew": limits.max_slew,
+            "n_qubits": limits.n_qubits,
+            "coupling_map": [list(pair) for pair in limits.coupling_map],
+        },
+        "provider_snapshot": None
+        if snapshot is None
+        else {"provider": snapshot.provider, "backend_name": snapshot.backend_name},
         "pulses": [
             {
                 "channel": pulse.channel,
@@ -504,11 +595,155 @@ def export_native_pulse_program(assessment: PulseDesignAssessment) -> dict[str, 
     }
 
 
+def _validate_design_pulse(index: int, pulse: DesignPulse, limits: PulseDeviceLimits) -> None:
+    """Refuse a record that cannot be checked or would exceed the conversion budget."""
+    if not isinstance(pulse, DesignPulse):
+        raise ValueError("pulses must be DesignPulse records")
+    if not isinstance(pulse.qubits, tuple) or any(
+        isinstance(qubit, bool) or not isinstance(qubit, int) for qubit in pulse.qubits
+    ):
+        raise ValueError(f"pulse {index} qubits must be a tuple of integers")
+    values = (pulse.start, pulse.duration, *pulse.rabi_rates)
+    if not pulse.rabi_rates or any(
+        isinstance(value, bool) or not isinstance(value, int | float) or not isfinite(value)
+        for value in values
+    ):
+        raise ValueError(f"pulse {index} needs finite start, duration and rabi_rates")
+    for name, seconds in (("start", pulse.start), ("end", pulse.start + pulse.duration)):
+        if not abs(seconds / limits.dt) < _MAX_SAMPLE_INDEX:
+            raise ValueError(f"pulse {index} {name} lies beyond {_MAX_SAMPLE_INDEX} samples")
+    if pulse.duration / limits.dt > _MAX_PULSE_SAMPLES:
+        raise ValueError(f"pulse {index} is longer than {_MAX_PULSE_SAMPLES} samples")
+
+
+def _assess_one(
+    index: int,
+    pulse: DesignPulse,
+    limits: PulseDeviceLimits,
+    placement: Mapping[int, int],
+    edges: set[frozenset[int]],
+    violations: list[str],
+) -> _ConvertedPulse | None:
+    """Record one pulse's violations; return it converted when timing and placement hold."""
+    convertible = True
+    if pulse.start < 0.0:
+        violations.append(
+            f"negative_start: pulse {index} starts at sample {pulse.start / limits.dt:.6g}"
+        )
+        convertible = False
+    start_samples = _grid_samples(pulse.start, limits)
+    duration_samples = _grid_samples(pulse.duration, limits)
+    segments = len(pulse.rabi_rates)
+    if pulse.duration <= 0.0:
+        violations.append(f"non_positive_duration: pulse {index}")
+        convertible = False
+    elif start_samples is None or duration_samples is None:
+        violations.append(
+            f"off_grid: pulse {index} start {pulse.start / limits.dt:.6g} and duration "
+            f"{pulse.duration / limits.dt:.6g} samples are not multiples of "
+            f"{limits.granularity}"
+        )
+        convertible = False
+    elif duration_samples % segments:
+        violations.append(
+            f"segment_mismatch: pulse {index} has {duration_samples} samples for "
+            f"{segments} segments"
+        )
+        convertible = False
+    snapshot = limits.snapshot
+    if (
+        snapshot is not None
+        and snapshot.max_pulse_duration is not None
+        and pulse.duration > snapshot.max_pulse_duration * (1.0 + _AMPLITUDE_TOLERANCE)
+    ):
+        violations.append(
+            f"duration_over_limit: pulse {index} lasts {pulse.duration:.12g} s, over the "
+            f"provider's {snapshot.max_pulse_duration:.12g} s"
+        )
+    physical = _place(index, pulse.qubits, placement, limits, edges, violations)
+    scale = _conversion(index, pulse.qubits, limits, violations)
+    if scale is None:
+        return None
+    amplitudes = tuple(rate / scale for rate in pulse.rabi_rates)
+    peak = max(abs(amplitude) for amplitude in amplitudes)
+    if peak > limits.max_amplitude * (1.0 + _AMPLITUDE_TOLERANCE):
+        violations.append(
+            f"amplitude_over_limit: pulse {index} peak {peak:.12g} exceeds "
+            f"{limits.max_amplitude:.12g}"
+        )
+    placed = convertible and physical is not None
+    if limits.max_slew is not None:
+        # Edges of a placed pulse are checked on its channel's whole waveform.
+        steps = amplitudes if placed else (0.0, *amplitudes, 0.0)
+        slew = max(
+            (abs(after - before) for before, after in zip(steps[:-1], steps[1:], strict=True)),
+            default=0.0,
+        )
+        if slew > limits.max_slew * (1.0 + _AMPLITUDE_TOLERANCE):
+            violations.append(
+                f"slew_over_limit: pulse {index} step {slew:.12g} exceeds {limits.max_slew:.12g}"
+            )
+    if not placed or physical is None or start_samples is None or duration_samples is None:
+        return None
+    repeat = duration_samples // segments
+    channel = f"d{physical[0]}" if len(physical) == 1 else f"u{min(physical)}_{max(physical)}"
+    samples = tuple(amplitude for amplitude in amplitudes for _ in range(repeat))
+    return _ConvertedPulse(index, NativePulse(channel, physical, start_samples, samples))
+
+
+def _conversion(
+    index: int, qubits: tuple[int, ...], limits: PulseDeviceLimits, violations: list[str]
+) -> float | None:
+    """Return the rate of native amplitude 1.0 for the pulse's channel kind."""
+    if len(qubits) == 1:
+        return limits.rabi_rate_per_amplitude
+    if len(qubits) != 2:
+        return None
+    if limits.coupler_rate_per_amplitude is None:
+        violations.append(
+            f"undefined_coupler_conversion: pulse {index} drives a coupler but the limits "
+            "declare no coupler_rate_per_amplitude"
+        )
+    return limits.coupler_rate_per_amplitude
+
+
+def _check_channel_edges(
+    converted: list[_ConvertedPulse], max_slew: float, violations: list[str]
+) -> None:
+    """Check each channel's waveform where it leaves or returns to zero, or two pulses meet."""
+    channels: dict[str, list[_ConvertedPulse]] = {}
+    for item in converted:
+        channels.setdefault(item.native.channel, []).append(item)
+    for channel, members in channels.items():
+        ordered = sorted(members, key=lambda item: (item.native.t0, item.index))
+        for position, item in enumerate(ordered):
+            previous = ordered[position - 1] if position else None
+            following = ordered[position + 1] if position + 1 < len(ordered) else None
+            before = (
+                previous.native.samples[-1]
+                if previous is not None and previous.end == item.native.t0
+                else 0.0
+            )
+            checks = [(item.native.t0, abs(item.native.samples[0] - before))]
+            if following is None or following.native.t0 != item.end:
+                checks.append((item.end, abs(item.native.samples[-1])))
+            for sample, step in checks:
+                if step > max_slew * (1.0 + _AMPLITUDE_TOLERANCE):
+                    violations.append(
+                        f"slew_over_limit: {channel} steps {step:.12g} at sample {sample} "
+                        f"(pulse {item.index}), exceeding {max_slew:.12g}"
+                    )
+
+
 def _grid_samples(seconds: float, limits: PulseDeviceLimits) -> int | None:
-    """Return a whole number of samples on the granularity grid, else ``None``."""
+    """Return a whole number of samples on the granularity grid, else ``None``.
+
+    The admitted rounding, ``1e-9 + 1e-12 * |samples|``, stays below a tenth of
+    a sample for every start and end below ``2**36`` samples.
+    """
     samples = seconds / limits.dt
     nearest = round(samples)
-    if abs(samples - nearest) > _GRID_TOLERANCE * max(1.0, abs(samples)):
+    if abs(samples - nearest) > _GRID_TOLERANCE + _GRID_RELATIVE_TOLERANCE * abs(samples):
         return None
     if nearest % limits.granularity:
         return None
@@ -526,6 +761,9 @@ def _place(
     """Map logical qubits to physical ones and record placement violations."""
     if len(qubits) not in (1, 2):
         violations.append(f"unsupported_arity: pulse {index} drives {len(qubits)} qubits")
+        return None
+    if len(set(qubits)) != len(qubits):
+        violations.append(f"repeated_qubit: pulse {index} drives logical {list(qubits)}")
         return None
     missing = [qubit for qubit in qubits if qubit not in placement]
     if missing:

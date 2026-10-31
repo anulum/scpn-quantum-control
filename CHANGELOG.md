@@ -33,6 +33,26 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   threshold silently. They are kept as an explicit dropped block, and the
   programme reports `model_preserved: false`.
 
+  Further checks of the same design path:
+  - a pulse that starts before sample zero is refused (`negative_start`);
+  - slew is checked on each channel's whole waveform, so two pulses that meet
+    on a channel are checked across the junction;
+  - an off-grid or otherwise unconvertible pulse is still checked for
+    amplitude, slew between segments and placement;
+  - coupler pulses convert with their own declared
+    `coupler_rate_per_amplitude` and are refused without one;
+  - `pulse_limits_from_snapshot` binds copied limits to the provider snapshot,
+    whose pulse-duration and pulse-count limits are then checked;
+  - the export carries the limits and conversions needed to read its samples
+    in physical units;
+  - times beyond the conversion budget raise `ValueError` before anything is
+    allocated, and the grid tolerance stays below a tenth of a sample.
+
+  The hybrid split averages the two triangles of a matrix that is symmetric
+  only within tolerance, so that residue is no longer reported as a dropped
+  coupling. A partition built without a dropped block reports
+  `model_preserved: None` instead of claiming that nothing was dropped.
+
 - Bind parameter-shift gradients to the circuit's generator spectra:
   - `plan_quantum_gradient_estimator` derives each parameter's frequencies
     from its gate occurrences, so a parameter shared by several rotations gets

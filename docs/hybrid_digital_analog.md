@@ -70,6 +70,11 @@ block. They are kept in `partition.dropped_K_nm`, so that
 `analog + digital + dropped` equals the validated matrix. Whenever any coupling
 is dropped, the partition payload and the compiled programme's metadata report
 `model_preserved: false`, the number of dropped couplings and their norm.
+A matrix whose triangles differ within the symmetry tolerance is averaged
+first, so that residue never appears as a dropped coupling. A partition built
+by hand without a dropped block reports `model_preserved: None`: it cannot
+state what it dropped.
+
 Eligible
 analog couplings are ranked by descending `abs(K_ij)` and then by `(i, j)`
 for deterministic tie-breaking. `max_analog_couplers` limits how many of
