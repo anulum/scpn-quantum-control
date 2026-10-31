@@ -19,7 +19,7 @@ the committed evidence pages.
 | Evidence surface | Current value | Source |
 |---|---:|---|
 | Public facade groups | 10 | `oscillatools.capabilities()` |
-| Public facade symbols | 414 | `oscillatools.capabilities()` |
+| Public facade symbols | 418 | `oscillatools.capabilities()` |
 | Required dependency floor | NumPy + SciPy | package metadata and docs |
 | Optional tiers | Rust engine, Julia, JAX, PyTorch, matplotlib, scikit-learn | package extras and docs |
 | CI tier-benchmark rows | 140 | [tier benchmark](tier_benchmarks.md) |

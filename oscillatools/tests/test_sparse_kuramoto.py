@@ -316,3 +316,50 @@ def test_sparse_kuramoto_symbols_are_public_facade_capabilities() -> None:
     assert "sparse_networked_kuramoto_force" in capabilities["forces"]
     assert "sparse_kuramoto_euler_trajectory" in capabilities["integrators"]
     assert "sparse_kuramoto_rk4_trajectory" in capabilities["integrators"]
+
+
+def test_edge_list_constructor_follows_the_declared_duplicate_policy() -> None:
+    """Repeated entries are summed by default and refused when declared."""
+    from scipy import sparse as scipy_sparse
+
+    row = np.array([0, 0, 1, 2, 1])
+    col = np.array([1, 1, 0, 2, 2])
+    weight = np.array([0.5, 0.25, -1.0, 3.0, 0.0])
+    summed = sk.sparse_coupling_from_edges(3, row, col, weight)
+    assert (summed.row.tolist(), summed.col.tolist(), summed.weight.tolist()) == (
+        [0, 1],
+        [1, 0],
+        [0.75, -1.0],
+    )
+    with pytest.raises(ValueError, match="duplicates='refuse'"):
+        sk.sparse_coupling_from_edges(3, row, col, weight, duplicates="refuse")
+    assert (
+        sk.sparse_coupling_from_edges(3, [0, 1], [1, 0], [1.0, 2.0], duplicates="refuse").nnz == 2
+    )
+    for policy in ("sum", "refuse"):
+        empty = sk.sparse_coupling_from_edges(2, [], [], [], duplicates=policy)
+        assert empty.nnz == 0
+    with pytest.raises(ValueError, match="'sum' or 'refuse'"):
+        sk.sparse_coupling_from_edges(3, row, col, weight, duplicates=cast(Any, "max"))
+    repeated = scipy_sparse.coo_array((weight, (row, col)), shape=(3, 3))
+    with pytest.raises(ValueError, match="duplicates='refuse'"):
+        sk.sparse_coupling_from_scipy(repeated, duplicates="refuse")
+
+
+def test_storage_and_execution_reports_are_explicit() -> None:
+    """Storage is measured per stored array; placement is CPU float64 only."""
+    ring = sk.ring_sparse_coupling(5, 0.5)
+    report = ring.storage_report()
+    index_bytes = np.dtype(np.intp).itemsize
+    assert report.edges == 10
+    assert report.stored_bytes == 10 * (2 * index_bytes + 8)
+    assert report.bytes_per_edge == 2 * index_bytes + 8
+    assert report.dense_equivalent_bytes == 25 * 8
+    assert sk.ring_sparse_coupling(1).storage_report().bytes_per_edge == 0.0
+    execution = sk.sparse_kuramoto_execution_report()
+    assert (execution.backend, execution.precision, execution.gpu_status) == (
+        "cpu",
+        "float64",
+        "not_implemented",
+    )
+    assert execution.gpu_performance_claim is False
