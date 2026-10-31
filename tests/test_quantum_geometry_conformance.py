@@ -188,19 +188,45 @@ def test_quantum_geometry_conformance_03_metric_is_symmetric_psd_within_its_boun
         np.testing.assert_allclose(
             result.metric_eigenvalues, np.linalg.eigvalsh(result.qfi_matrix), atol=1e-12
         )
-        largest = max(1.0, float(np.max(np.abs(result.metric_eigenvalues))))
+        largest = float(np.max(np.abs(result.metric_eigenvalues)))
         assert result.metric_eigenvalues[0] >= -QFI_PSD_TOLERANCE * largest
     real_eigvalsh: Callable[..., NDArray[np.float64]] = np.linalg.eigvalsh
 
     def shifted(matrix: NDArray[np.float64]) -> NDArray[np.float64]:
         """Return eigenvalues with the smallest pushed below the bound."""
         values = np.asarray(real_eigvalsh(matrix), dtype=np.float64)
-        values[0] = -1e-3 * max(1.0, float(np.max(np.abs(values))))
+        values[0] = -1e-3 * float(np.max(np.abs(values)))
         return values
 
     monkeypatch.setattr(np.linalg, "eigvalsh", shifted)
     with pytest.raises(ValueError, match="not a metric"):
         compute_qfi(_matrix({(0, 1): 1.0}, 2), np.array([0.3, 0.7]))
+
+
+def test_quantum_geometry_conformance_03_decisions_do_not_depend_on_energy_units() -> None:
+    """Scaling ``K`` and ``omega`` by ``s`` keeps the ground state, so rank and refusals are equal.
+
+    The QFI scales as ``1 / s^2`` and the gap as ``s``; no decision may change.
+    """
+    k = np.array(
+        [[0.0, 0.9, 0.4, 0.0], [0.9, 0.0, 0.6, 0.3], [0.4, 0.6, 0.0, 0.8], [0.0, 0.3, 0.8, 0.0]]
+    )
+    omega = np.array([0.2, 0.5, 0.9, 0.35])
+    reference = compute_qfi(k, omega)
+    assert reference.metric_rank == len(reference.coupling_pairs) == 5
+    for scale in (1e-10, 1e5):
+        scaled = compute_qfi(scale * k, scale * omega)
+        assert scaled.coupling_pairs == reference.coupling_pairs
+        assert scaled.metric_rank == reference.metric_rank
+        np.testing.assert_allclose(
+            scaled.qfi_matrix * scale**2, reference.qfi_matrix, rtol=1e-6, atol=1e-9
+        )
+        assert scaled.spectral_gap == pytest.approx(scale * reference.spectral_gap, rel=1e-6)
+        with pytest.raises(ValueError, match="ground state is degenerate"):
+            compute_qfi(scale * _matrix({(0, 1): 1.0}, 2), scale * np.array([1.0, 1.0]))
+    # The default pair selection is relative to the strongest coupling.
+    weak = compute_qfi(1e-12 * k, 1e-12 * omega)
+    assert weak.coupling_pairs == reference.coupling_pairs
 
 
 def test_quantum_geometry_conformance_04_regularisation_changes_the_step_and_is_recorded() -> None:

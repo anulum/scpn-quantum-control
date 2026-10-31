@@ -1297,7 +1297,9 @@ exact natural-gradient component, so a regularised step is not the natural
 gradient of the unregularised metric. A condition-number cap aims slightly
 below the cap, by the relative rounding of the smallest eigenvalue (about
 `64 * eps * cap`), so a genuinely rank-deficient metric is admitted with a
-recorded shift instead of being refused by rounding.
+recorded shift instead of being refused by rounding. At the default cap
+`1e12` the target is about 1.4 % below the cap, which changes the shift by
+about 1.4 %.
 
 `ParameterShiftNaturalGradientResult.metric_evaluations` counts the calls of a
 callable metric, one per visited parameter point, beside the objective
@@ -1314,12 +1316,17 @@ for the non-degenerate ground state of
 `K_ij` per listed pair (`QFI_CONVENTION`). This is four times the
 Fubini-Study metric, the real part of the quantum geometric tensor; the Berry
 curvature is not included, and only pure states are covered. A degenerate
-ground state (gap at most `degeneracy_tolerance * max(1, max |E|)`) is refused,
+ground state (gap at most `degeneracy_tolerance` times the spectral width) is
+refused,
 because the QFI of a ground space depends on which state in it is chosen. The
 result reports `metric_eigenvalues` and `metric_rank`: a rank below the number
 of pairs, for example when the same pair is listed twice, marks directions the
 ground state does not resolve. They are reported rather than regularised; a
-negative eigenvalue beyond `QFI_PSD_TOLERANCE` relative is refused.
+negative eigenvalue beyond `QFI_PSD_TOLERANCE` times the largest is refused.
+Every threshold is relative, with no absolute floor: the gap to the spectral
+width, rank and PSD to the largest metric eigenvalue, and the default pair
+selection to the strongest coupling. Scaling `K` and `omega` together
+therefore changes no decision.
 
 ## Trainability diagnostics and shot dry-runs
 

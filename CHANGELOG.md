@@ -16,7 +16,8 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   - `compute_qfi` states its convention (`QFI_CONVENTION`), refuses a
     degenerate ground state instead of using an arbitrary state of the ground
     space, refuses a non-PSD result and reports the metric eigenvalues and
-    rank; the QFI observable reports rank and smallest eigenvalue;
+    rank, with every threshold relative so that no decision depends on the
+    energy units; the QFI observable reports rank and smallest eigenvalue;
   - the natural-gradient regulariser admits rank-deficient metrics that its
     condition cap previously refused through rounding;
   - natural-gradient descent counts callable-metric evaluations

@@ -43,7 +43,10 @@ QFI_CONVENTION: Final[str] = (
 )
 """The convention and scope of :func:`compute_qfi`."""
 QFI_PSD_TOLERANCE: Final[float] = 1.0e-10
-"""Relative bound on a negative QFI eigenvalue admitted as rounding: ``-tol * max(1, max |eig|)``."""
+"""Relative bound for rounding in the QFI spectrum: eigenvalues within ``tol * max |eig|`` of zero.
+
+It has no absolute floor, so rank and PSD decisions do not depend on energy units.
+"""
 
 
 @dataclass
@@ -89,10 +92,12 @@ def compute_qfi(
 
     K: coupling matrix (symmetric, n×n)
     omega: natural frequencies (n,)
-    pairs: which coupling pairs to compute QFI for (default: all nonzero K_ij)
-    degeneracy_tolerance: a spectral gap at most this times ``max(1, max |E|)``
-    is a degenerate ground state, for which the QFI is not defined (any state
-    in the ground space could be returned) and a ``ValueError`` is raised.
+    pairs: which coupling pairs to compute QFI for (default: every K_ij above
+    1e-10 times max |K|)
+    degeneracy_tolerance: a spectral gap at most this times the spectral width
+    ``max E - min E`` is a degenerate ground state, for which the QFI is not
+    defined (any state in the ground space could be returned) and a
+    ``ValueError`` is raised.
 
     Returns QFIResult with the QFI matrix, coupling pairs, precision bounds,
     metric eigenvalues and rank, under :data:`QFI_CONVENTION`. A metric with a
@@ -105,7 +110,10 @@ def compute_qfi(
         raise ValueError("degeneracy_tolerance must be finite and positive")
     n = len(omega)
     if pairs is None:
-        pairs = [(i, j) for i in range(n) for j in range(i + 1, n) if abs(K[i, j]) > 1e-10]
+        strongest = float(np.max(np.abs(K))) if K.size else 0.0
+        pairs = [
+            (i, j) for i in range(n) for j in range(i + 1, n) if abs(K[i, j]) > 1e-10 * strongest
+        ]
 
     require_dense_allocation(
         n,
@@ -121,8 +129,8 @@ def compute_qfi(
     E0 = eigenvalues[0]
     psi0 = eigenvectors[:, 0]
     gap = float(eigenvalues[1] - eigenvalues[0])
-    scale = max(1.0, float(np.max(np.abs(eigenvalues))))
-    if gap <= degeneracy_tolerance * scale:
+    width = float(eigenvalues[-1] - eigenvalues[0])
+    if gap <= degeneracy_tolerance * width:
         raise ValueError(
             f"the ground state is degenerate (gap {gap:.3e}); the QFI of a ground space is not "
             "defined by one state, so none is returned"
@@ -165,7 +173,7 @@ def compute_qfi(
             qfi[b, a] = qfi[a, b]
 
     spectrum = np.linalg.eigvalsh(qfi) if n_pairs else np.zeros(0, dtype=np.float64)
-    largest = max(1.0, float(np.max(np.abs(spectrum)))) if n_pairs else 1.0
+    largest = float(np.max(np.abs(spectrum))) if n_pairs else 0.0
     if n_pairs and float(spectrum[0]) < -QFI_PSD_TOLERANCE * largest:
         raise ValueError(
             f"the QFI matrix has a negative eigenvalue {float(spectrum[0]):.3e}; it is not a metric"
