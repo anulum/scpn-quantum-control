@@ -1091,6 +1091,8 @@ def test_main_uses_coverage_pytest_by_default(
         "quantum-geometry exact coverage threshold",
         "inverse-problem focused coverage",
         "inverse-problem exact coverage threshold",
+        "learning-generalisation focused coverage",
+        "learning-generalisation exact coverage threshold",
         "Program AD adjoint focused coverage",
         "Program AD adjoint exact coverage threshold",
         "Program AD captured state exact coverage threshold",

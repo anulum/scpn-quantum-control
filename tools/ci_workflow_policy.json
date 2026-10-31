@@ -121,6 +121,7 @@
         "differentiable-sparse-derivatives-quality",
         "quantum-geometry-quality",
         "inverse-problem-quality",
+        "learning-generalisation-quality",
         "native-transform-algebra-quality"
       ]
     },
@@ -493,6 +494,7 @@
     "differentiable-sparse-derivatives-quality",
     "quantum-geometry-quality",
     "inverse-problem-quality",
+    "learning-generalisation-quality",
     "native-transform-algebra-quality",
     "program-ad-adjoint-quality",
     "circuit-preservation-quality",

@@ -4,6 +4,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Keep QSNN training honest about state and data: `QSNNTrainer.checkpoint()`
+  and `restore()` resume training exactly (weights, learning rate, epochs,
+  loss history and training-data custody), training leaves the caller's
+  random state untouched, and `evaluate()` refuses train/test overlap and
+  flags out-of-distribution samples instead of scoring them.
+
 - Evaluate synchronisation control on held-out disturbances:
   `evaluate_control_under_disturbances` runs a fixed open-loop control on
   disturbed plants against their uncontrolled runs, checks the amplitude

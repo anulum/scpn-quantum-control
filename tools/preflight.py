@@ -226,6 +226,9 @@ if TYPE_CHECKING:
     from tools import (
         layout_relaxation_experiment_quality_gates as _layout_relaxation_experiment_quality_gates,
     )
+    from tools import (
+        learning_generalisation_quality_gates as _learning_generalisation_quality_gates,
+    )
     from tools import logging_setup_quality_gates as _logging_setup_quality_gates
     from tools import (
         magnetisation_sectors_quality_gates as _magnetisation_sectors_quality_gates,
@@ -680,6 +683,9 @@ else:
     )
     _quantum_geometry_quality_gates = import_module("tools.quantum_geometry_quality_gates")
     _inverse_problem_quality_gates = import_module("tools.inverse_problem_quality_gates")
+    _learning_generalisation_quality_gates = import_module(
+        "tools.learning_generalisation_quality_gates"
+    )
     _program_ad_adjoint_quality_gates = import_module("tools.program_ad_adjoint_quality_gates")
     _program_ad_alias_analysis_quality_gates = import_module(
         "tools.program_ad_alias_analysis_quality_gates"
@@ -1347,6 +1353,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_differentiable_sparse_derivatives_quality_gates.build_static_quality_gates(_PY),
     *_quantum_geometry_quality_gates.build_static_quality_gates(_PY),
     *_inverse_problem_quality_gates.build_static_quality_gates(_PY),
+    *_learning_generalisation_quality_gates.build_static_quality_gates(_PY),
     *_program_ad_adjoint_quality_gates.build_static_quality_gates(_PY),
     *_qpu_compute_types_quality_gates.build_static_quality_gates(_PY),
     *_hls_cosimulation_evidence_quality_gates.build_static_quality_gates(_PY),
@@ -1913,6 +1920,9 @@ DIFFERENTIABLE_SPARSE_DERIVATIVES_COVERAGE_GATES = (
 )
 QUANTUM_GEOMETRY_COVERAGE_GATES = _quantum_geometry_quality_gates.build_coverage_gates(_PY)
 INVERSE_PROBLEM_COVERAGE_GATES = _inverse_problem_quality_gates.build_coverage_gates(_PY)
+LEARNING_GENERALISATION_COVERAGE_GATES = (
+    _learning_generalisation_quality_gates.build_coverage_gates(_PY)
+)
 PROGRAM_AD_ADJOINT_COVERAGE_GATES = _program_ad_adjoint_quality_gates.build_coverage_gates(_PY)
 QPU_COMPUTE_TYPES_COVERAGE_GATES = _qpu_compute_types_quality_gates.build_coverage_gates(_PY)
 HLS_COSIMULATION_EVIDENCE_COVERAGE_GATES = (
@@ -2429,6 +2439,7 @@ def main() -> int:
             gates.extend(DIFFERENTIABLE_SPARSE_DERIVATIVES_COVERAGE_GATES)
             gates.extend(QUANTUM_GEOMETRY_COVERAGE_GATES)
             gates.extend(INVERSE_PROBLEM_COVERAGE_GATES)
+            gates.extend(LEARNING_GENERALISATION_COVERAGE_GATES)
             gates.extend(PROGRAM_AD_ADJOINT_COVERAGE_GATES)
             gates.extend(QPU_COMPUTE_TYPES_COVERAGE_GATES)
             gates.extend(HLS_COSIMULATION_EVIDENCE_COVERAGE_GATES)

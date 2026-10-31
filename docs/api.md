@@ -1115,6 +1115,9 @@ QSNNTrainer(layer: QuantumDenseLayer, lr: float = 0.01, *, max_dense_gib: float 
     .train(X, y, epochs=10) -> list[float]  # loss history
     .train_with_diagnostics(X, y, epochs=10) -> QSNNTrainingRun
     .train_with_parameter_shift_descent(X, y, backend="statevector", max_steps=100) -> QSNNParameterShiftDescentRun
+    .checkpoint() -> QSNNTrainingCheckpoint
+    .restore(checkpoint) -> None
+    .evaluate(X, y) -> QSNNEvaluation
 ```
 
 Every forward pass simulates the layer densely, so the layer's qubit count
@@ -1141,6 +1144,26 @@ the phase-native `parameter_shift_gradient_descent()` optimizer. The returned
 certificate, backend plan, sample count, parameter count, loss history, and
 best loss. Hardware backends fail closed by default and restore the original
 weights when planning or objective validation fails.
+
+Training reads and writes no random state (`QSNN_RANDOMNESS`): forward passes
+are exact statevectors and the gradients are deterministic, so the caller's
+global NumPy generator is left untouched.
+
+`checkpoint()` returns a `QSNNTrainingCheckpoint`: the exact synapse weights,
+the learning rate (the whole state of the plain-descent optimiser), completed
+epochs, loss history, and the training-data custody, meaning SHA-256 digests
+of every training sample and the training feature box. `to_json()` writes
+floats as `float.hex`. `restore()` on a trainer with the same layer shape
+resumes exactly: two epochs, a checkpoint and two more equal four
+uninterrupted epochs bit for bit.
+
+`evaluate(X, y)` scores held-out data. It refuses any sample that appears in
+the training data ("train/test overlap"), also after a restore, and refuses
+when no training data has been recorded. A sample with any feature outside
+the training box is flagged as out of distribution and left out of
+`in_distribution_loss`, which is `None` when every sample is flagged. The
+claim boundary excludes physical fidelity, domain generalisation and
+advantage.
 
 ## differentiable
 

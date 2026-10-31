@@ -513,6 +513,56 @@ jobs:
           --fail-under=100
           '--include=*/accel/kuramoto_bayesian_inference.py,*/accel/kuramoto_network_control.py'
 
+  learning-generalisation-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check learning-generalisation quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/qsnn/training.py
+          tests/test_learning_rng_and_generalisation.py
+          tools/learning_generalisation_quality_gates.py
+          tests/test_learning_generalisation_quality_gate.py
+      - name: Ruff NumPy docstrings for learning-generalisation quality cohort
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/qsnn/training.py
+          tests/test_learning_rng_and_generalisation.py
+          tools/learning_generalisation_quality_gates.py
+          tests/test_learning_generalisation_quality_gate.py
+      - name: Run learning-generalisation focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-learning-generalisation-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_learning_rng_and_generalisation.py
+          tests/test_qsnn_training.py
+          tests/test_qsnn_training_validation.py
+          tests/test_qsnn_native_parameter_shift.py
+          tests/test_ml_convergence_evidence.py
+          tests/test_dense_allocation_admission.py
+      - name: Enforce learning-generalisation exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-learning-generalisation-quality.coverage
+          --precision=2 --show-missing
+          --fail-under=100
+          --include=*/qsnn/training.py
+
   native-transform-algebra-quality:
     needs: [differentiable-sparse-derivatives-quality]
     runs-on: ubuntu-latest

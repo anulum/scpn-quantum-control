@@ -12,7 +12,10 @@ Uses (f(w+pi/2) - f(w-pi/2)) / 2 per CRy angle on MSE loss.
 
 from __future__ import annotations
 
+import hashlib
+import json
 from dataclasses import dataclass
+from typing import Final
 
 import numpy as np
 from numpy.typing import NDArray
@@ -140,6 +143,146 @@ def _training_diagnostics(loss_history: tuple[float, ...]) -> QSNNTrainingDiagno
     )
 
 
+QSNN_CHECKPOINT_SCHEMA: Final[str] = "qsnn_training_checkpoint.v1"
+QSNN_RANDOMNESS: Final[str] = (
+    "none consumed: forward passes are exact statevectors and parameter-shift gradients are "
+    "deterministic; the trainer reads and writes no global or local random state"
+)
+QSNN_EVALUATION_CLAIM_BOUNDARY: Final[str] = (
+    "held-out loss on the given in-distribution samples only; out-of-distribution samples are "
+    "flagged, not scored; no physical fidelity, domain generalisation or advantage claim"
+)
+
+
+def _row_digest(row: NDArray[np.float64]) -> str:
+    """Return the SHA-256 of one sample's float64 feature bytes."""
+    return hashlib.sha256(np.ascontiguousarray(row, dtype=np.float64).tobytes()).hexdigest()
+
+
+@dataclass(frozen=True)
+class QSNNTrainingCheckpoint:
+    """Everything needed to resume training exactly.
+
+    The optimiser is plain gradient descent, so its whole state is the learning rate;
+    ``randomness`` states that no random state exists to save. Training-row digests and the
+    training feature box travel with the checkpoint so that a resumed trainer still refuses
+    overlapping test data and flags out-of-distribution samples.
+    """
+
+    weights: tuple[float, ...]
+    learning_rate: float
+    completed_epochs: int
+    loss_history: tuple[float, ...]
+    n_neurons: int
+    n_inputs: int
+    training_row_digests: tuple[str, ...]
+    feature_low: tuple[float, ...] | None
+    feature_high: tuple[float, ...] | None
+    randomness: str = QSNN_RANDOMNESS
+    schema: str = QSNN_CHECKPOINT_SCHEMA
+
+    def to_json(self) -> str:
+        """Serialise exactly; floats are written as ``float.hex``.
+
+        Returns
+        -------
+        str
+            JSON text of the checkpoint.
+
+        """
+
+        def hexes(values: tuple[float, ...] | None) -> list[str] | None:
+            return None if values is None else [float(value).hex() for value in values]
+
+        return json.dumps(
+            {
+                "schema": self.schema,
+                "weights": hexes(self.weights),
+                "learning_rate": float(self.learning_rate).hex(),
+                "completed_epochs": self.completed_epochs,
+                "loss_history": hexes(self.loss_history),
+                "n_neurons": self.n_neurons,
+                "n_inputs": self.n_inputs,
+                "training_row_digests": list(self.training_row_digests),
+                "feature_low": hexes(self.feature_low),
+                "feature_high": hexes(self.feature_high),
+                "randomness": self.randomness,
+            },
+            sort_keys=True,
+        )
+
+    @classmethod
+    def from_json(cls, text: str) -> QSNNTrainingCheckpoint:
+        """Parse a checkpoint, refusing another schema or randomness statement.
+
+        Parameters
+        ----------
+        text
+            Output of :meth:`to_json`.
+
+        Returns
+        -------
+        QSNNTrainingCheckpoint
+            The parsed checkpoint.
+
+        Raises
+        ------
+        ValueError
+            If the schema or randomness statement differs.
+
+        """
+        payload = json.loads(text)
+        if payload.get("schema") != QSNN_CHECKPOINT_SCHEMA:
+            raise ValueError("unsupported QSNN checkpoint schema")
+        if payload.get("randomness") != QSNN_RANDOMNESS:
+            raise ValueError("QSNN checkpoint randomness statement differs from this trainer")
+
+        def floats(values: list[str] | None) -> tuple[float, ...] | None:
+            return None if values is None else tuple(float.fromhex(value) for value in values)
+
+        weights = floats(payload["weights"])
+        history = floats(payload["loss_history"])
+        if weights is None or history is None:
+            raise ValueError("QSNN checkpoint must carry weights and a loss history")
+        return cls(
+            weights=weights,
+            learning_rate=float.fromhex(payload["learning_rate"]),
+            completed_epochs=int(payload["completed_epochs"]),
+            loss_history=history,
+            n_neurons=int(payload["n_neurons"]),
+            n_inputs=int(payload["n_inputs"]),
+            training_row_digests=tuple(payload["training_row_digests"]),
+            feature_low=floats(payload["feature_low"]),
+            feature_high=floats(payload["feature_high"]),
+        )
+
+
+@dataclass(frozen=True)
+class QSNNEvaluation:
+    """Held-out evaluation with out-of-distribution samples flagged.
+
+    Attributes
+    ----------
+    n_samples
+        Number of evaluated samples.
+    out_of_distribution
+        Per sample, whether any feature lies outside the training feature box.
+    out_of_distribution_count
+        Number of flagged samples.
+    in_distribution_loss
+        Mean squared error over the unflagged samples, or ``None`` when every sample is flagged.
+    claim_boundary
+        What the numbers may be cited for.
+
+    """
+
+    n_samples: int
+    out_of_distribution: tuple[bool, ...]
+    out_of_distribution_count: int
+    in_distribution_loss: float | None
+    claim_boundary: str = QSNN_EVALUATION_CLAIM_BOUNDARY
+
+
 class QSNNTrainer:
     """Gradient-based trainer for QuantumDenseLayer via parameter-shift rule."""
 
@@ -180,6 +323,125 @@ class QSNNTrainer:
         self._admit_forward()
         self.lr = lr
         self.optimizer = DifferentiableOptimizer(learning_rate=lr)
+        self._completed_epochs = 0
+        self._loss_history: list[float] = []
+        self._training_rows: set[str] = set()
+        self._feature_low: NDArray[np.float64] | None = None
+        self._feature_high: NDArray[np.float64] | None = None
+
+    def _record_training_data(self, X: NDArray[np.float64]) -> None:
+        """Remember which samples and which feature range training has seen."""
+        self._training_rows.update(_row_digest(row) for row in X)
+        low, high = X.min(axis=0), X.max(axis=0)
+        if self._feature_low is None or self._feature_high is None:
+            self._feature_low, self._feature_high = low.copy(), high.copy()
+        else:
+            self._feature_low = np.minimum(self._feature_low, low)
+            self._feature_high = np.maximum(self._feature_high, high)
+
+    def checkpoint(self) -> QSNNTrainingCheckpoint:
+        """Return the exact training state, including the optimiser and data custody.
+
+        Returns
+        -------
+        QSNNTrainingCheckpoint
+            Synapse weights, learning rate, epochs, loss history and training-data custody.
+
+        """
+        return QSNNTrainingCheckpoint(
+            weights=tuple(
+                float(self.layer.synapses[ni][ii].weight)
+                for ni in range(self.layer.n_neurons)
+                for ii in range(self.layer.n_inputs)
+            ),
+            learning_rate=float(self.lr),
+            completed_epochs=self._completed_epochs,
+            loss_history=tuple(self._loss_history),
+            n_neurons=self.layer.n_neurons,
+            n_inputs=self.layer.n_inputs,
+            training_row_digests=tuple(sorted(self._training_rows)),
+            feature_low=None if self._feature_low is None else tuple(self._feature_low.tolist()),
+            feature_high=None
+            if self._feature_high is None
+            else tuple(self._feature_high.tolist()),
+        )
+
+    def restore(self, checkpoint: QSNNTrainingCheckpoint) -> None:
+        """Resume from a checkpoint so that further training matches an uninterrupted run.
+
+        Parameters
+        ----------
+        checkpoint
+            A checkpoint of a trainer with the same layer shape.
+
+        Raises
+        ------
+        ValueError
+            If the layer shape differs.
+
+        """
+        if (checkpoint.n_neurons, checkpoint.n_inputs) != (
+            self.layer.n_neurons,
+            self.layer.n_inputs,
+        ):
+            raise ValueError("checkpoint layer shape differs from this trainer's layer")
+        flat = iter(checkpoint.weights)
+        for ni in range(self.layer.n_neurons):
+            for ii in range(self.layer.n_inputs):
+                self.layer.synapses[ni][ii].update_weight(next(flat))
+        self.lr = checkpoint.learning_rate
+        self.optimizer = DifferentiableOptimizer(learning_rate=checkpoint.learning_rate)
+        self._completed_epochs = checkpoint.completed_epochs
+        self._loss_history = list(checkpoint.loss_history)
+        self._training_rows = set(checkpoint.training_row_digests)
+        self._feature_low = (
+            None if checkpoint.feature_low is None else np.array(checkpoint.feature_low)
+        )
+        self._feature_high = (
+            None if checkpoint.feature_high is None else np.array(checkpoint.feature_high)
+        )
+
+    def evaluate(self, X: NDArray[np.float64], y: NDArray[np.float64]) -> QSNNEvaluation:
+        """Score held-out data, refusing overlap with training and flagging OOD samples.
+
+        Parameters
+        ----------
+        X, y
+            Held-out features and targets with the layer's shapes.
+
+        Returns
+        -------
+        QSNNEvaluation
+            Out-of-distribution flags and the loss over in-distribution samples.
+
+        Raises
+        ------
+        ValueError
+            If the trainer has seen no training data, or any held-out sample also appears in
+            the training data (train/test overlap).
+
+        """
+        X, y = self._validate_dataset(X, y)
+        if self._feature_low is None or self._feature_high is None:
+            raise ValueError("evaluation requires recorded training data")
+        overlap = [index for index, row in enumerate(X) if _row_digest(row) in self._training_rows]
+        if overlap:
+            raise ValueError(
+                f"train/test overlap: held-out samples {overlap} were used in training; "
+                "no held-out score is issued"
+            )
+        flags = np.any((self._feature_low > X) | (self._feature_high < X), axis=1)
+        inside = [
+            float(np.mean((self._forward_probs(row) - target) ** 2))
+            for row, target, flagged in zip(X, y, flags, strict=True)
+            if not flagged
+        ]
+        return QSNNEvaluation(
+            n_samples=int(X.shape[0]),
+            out_of_distribution=tuple(bool(flag) for flag in flags),
+            out_of_distribution_count=int(np.count_nonzero(flags)),
+            in_distribution_loss=float(np.mean(inside)) if inside else None,
+        )
 
     def _admit_forward(self) -> None:
         """Check the current layer and budget before circuit/state construction."""
@@ -366,6 +628,7 @@ class QSNNTrainer:
     def train_epoch(self, X: NDArray[np.float64], y: NDArray[np.float64]) -> float:
         """One epoch over dataset. Returns mean loss."""
         X, y = self._validate_dataset(X, y)
+        self._record_training_data(X)
         total_loss = 0.0
         for xi, yi in zip(X, y, strict=True):
             pred = self._forward_probs(xi)
@@ -405,7 +668,10 @@ class QSNNTrainer:
                     )
                     flat_index += 1
 
-        return total_loss / len(X)
+        mean_loss = total_loss / len(X)
+        self._completed_epochs += 1
+        self._loss_history.append(mean_loss)
+        return mean_loss
 
     def train(
         self, X: NDArray[np.float64], y: NDArray[np.float64], epochs: int = 10
@@ -485,6 +751,7 @@ class QSNNTrainer:
             raise
 
         self._set_theta_values(training.final_params)
+        self._record_training_data(X)
         certificate = validate_parameter_shift_training(
             training,
             gradient_tolerance=gradient_tolerance,

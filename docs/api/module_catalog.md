@@ -5,7 +5,7 @@ module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
 - **856 modules** across **41 package families**
-- **4631 documented public module-level symbols**
+- **4633 documented public module-level symbols**
 - **875 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -5273,9 +5273,9 @@ Quantum neuromorphic bridge for QSNN experiments.
 
 Parameter-shift gradient training for QuantumDenseLayer.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/qsnn/training.py) · Public symbols: **4**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/qsnn/training.py) · Public symbols: **6**
 
-**Classes:** `QSNNTrainingDiagnostics`, `QSNNTrainingRun`, `QSNNParameterShiftDescentRun`, `QSNNTrainer`
+**Classes:** `QSNNTrainingDiagnostics`, `QSNNTrainingRun`, `QSNNParameterShiftDescentRun`, `QSNNTrainingCheckpoint`, `QSNNEvaluation`, `QSNNTrainer`
 
 ## `sensing`
 
