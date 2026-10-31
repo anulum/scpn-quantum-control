@@ -1752,9 +1752,9 @@
       "source": "src/scpn_quantum_control/__init__.py",
       "scope": "__getattr__",
       "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
-      "source_sha256": "6039606dd77cec01765b491d3a01470c599c1d0b4aaff5863616a55c47fe6386",
+      "source_sha256": "32afb01407ac6ca1c7ce9ff805324c361c76a65f119b20e253a9d473fe865987",
       "role": "first-party-lazy",
-      "reason": "Complete literal table retains all 851 existing module/attribute bindings. The unchanged resolver imports only target[0] and caches successful access. Module assignment now defers public-object resolution until the owning module finishes loading, avoiding partial-initialisation re-entry without changing export identity. When the import system publishes a child module under a name that also has an object export, the deferred branch now also drops a stale cached entry, so the next access goes through the same resolver. Actual cold/public API and failure/restoration fixtures qualify this complete source; no new dynamic call or target is admitted.",
+      "reason": "Complete literal table retains all 875 existing module/attribute bindings. The unchanged resolver imports only target[0] and caches successful access. Module assignment now defers public-object resolution until the owning module finishes loading, avoiding partial-initialisation re-entry without changing export identity. When the import system publishes a child module under a name that also has an object export, the deferred branch now also drops a stale cached entry, so the next access goes through the same resolver. Actual cold/public API and failure/restoration fixtures qualify this complete source; no new dynamic call or target is admitted.",
       "count": 1
     },
     {
