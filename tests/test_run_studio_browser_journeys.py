@@ -44,6 +44,8 @@ def test_studio_executes_the_original_browser_scenarios_and_isolated_refusals() 
         "operator_backend_profiles",
         "operator_policy_decisions",
         "operator_review_dossiers",
+        "qec_resource_instrument",
+        "mitigation_inspector",
     ):
         assert "--scenario " + scenario in source
     assert "bash tools/run_ci_test_shards.sh studio-browser 2" in source
@@ -59,8 +61,10 @@ def test_studio_executes_the_original_browser_scenarios_and_isolated_refusals() 
     ):
         assert f"tools/tests/test_{owner}.py" in source
     assert "--concurrency=greenlet" in source
-    assert "tools/tests/test_studio_gradient_debugger_browser.py" in source
-    assert source.count("--fail-under=100") == 6
+    for journey in ("gradient_debugger", "qec_resource", "mitigation"):
+        assert f"tools/tests/test_studio_{journey}_browser.py" in source
+    # One exact coverage report per separately measured journey owner.
+    assert source.count("--fail-under=100") == 8
     assert "trap " in source and 'wait "$preview_pid"' in source and 'wait "$source_pid"' in source
     evidence = next(
         item for item in steps if item.get("name") == "Preserve browser acceptance evidence"

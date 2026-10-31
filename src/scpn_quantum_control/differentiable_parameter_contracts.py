@@ -314,6 +314,17 @@ def _superset_order(frequencies: NDArray[np.float64]) -> int | None:
     return None
 
 
+def _admissible(
+    frequencies: NDArray[np.float64], shifts: NDArray[np.float64], max_condition: float
+) -> bool:
+    """Whether the sine system has a usable smallest singular value and condition."""
+    singular_values = np.linalg.svd(2.0 * np.sin(np.outer(frequencies, shifts)), compute_uv=False)
+    smallest = float(singular_values[-1])
+    return smallest >= _MIN_SINE_SINGULAR_VALUE and (
+        float(singular_values[0]) / smallest <= max_condition
+    )
+
+
 def _default_multi_frequency_shifts(
     frequencies: NDArray[np.float64],
     *,
@@ -348,7 +359,13 @@ def _default_multi_frequency_shifts(
                 f"an equidistant spectrum may have at most {MAX_EQUIDISTANT_SPECTRUM_ORDER} "
                 "frequencies"
             )
-        return frequencies, _equidistant_shifts(order, float(np.min(frequencies)))
+        equidistant = _equidistant_shifts(order, float(np.min(frequencies)))
+        if _admissible(frequencies, equidistant, max_condition):
+            return frequencies, equidistant
+        # Over the caller's condition limit: search the general grids instead,
+        # within their own size bound.
+        if order > MAX_GENERAL_SPECTRUM_FREQUENCIES:
+            raise ValueError("could not construct a well-conditioned multi-frequency shift system")
     count = int(frequencies.size)
     if count > MAX_GENERAL_SPECTRUM_FREQUENCIES:
         raise ValueError(
@@ -385,14 +402,9 @@ def _default_multi_frequency_shifts(
         # phases lose the derivative to rounding in the evaluated objective.
         if float(np.max(solved)) * float(np.max(candidate)) > np.pi * solved.size:
             continue
-        sine_system = 2.0 * np.sin(np.outer(solved, candidate))
-        singular_values = np.linalg.svd(sine_system, compute_uv=False)
-        smallest = float(singular_values[-1])
-        if smallest < _MIN_SINE_SINGULAR_VALUE or float(singular_values[0]) / smallest > (
-            max_condition
-        ):
+        if not _admissible(solved, candidate, max_condition):
             continue
-        coefficients = np.linalg.solve(sine_system, solved)
+        coefficients = np.linalg.solve(2.0 * np.sin(np.outer(solved, candidate)), solved)
         cost = 2.0 * float(np.sum(coefficients**2)) * candidate.size
         if best is None or cost < best[0]:
             best = (cost, solved, candidate)

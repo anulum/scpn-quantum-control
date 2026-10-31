@@ -203,6 +203,9 @@ def test_multi_frequency_parameter_shift_rule_rejects_bad_systems(
         contracts.multi_frequency_parameter_shift_rule([1.0], shifts=[0.0])
     with pytest.raises(ValueError, match="well-conditioned"):
         contracts._default_multi_frequency_shifts(np.array([1.0]), max_condition=0.0)
+    # An equidistant spectrum too large for the general search is refused the same way.
+    with pytest.raises(ValueError, match="well-conditioned"):
+        contracts._default_multi_frequency_shifts(np.arange(1.0, 18.0), max_condition=0.5)
 
     with monkeypatch.context() as patched:
         patched.setattr(np, "sin", lambda values: np.zeros_like(values, dtype=np.float64))
@@ -224,3 +227,20 @@ def test_multi_frequency_parameter_shift_rule_rejects_bad_systems(
         patched.setattr(np.linalg, "solve", nonfinite_solve)
         with pytest.raises(ValueError, match="coefficients"):
             contracts.multi_frequency_parameter_shift_rule([1.0], shifts=[math.pi / 4.0])
+
+
+def test_open_bounds_keep_their_values() -> None:
+    """Non-periodic bounds are stored as given, without the periodic checks."""
+    bounds = contracts.ParameterBounds(lower=-1, upper=2)
+    assert (bounds.lower, bounds.upper, bounds.periodic) == (-1.0, 2.0, False)
+
+
+def test_default_shift_search_refuses_spectra_beyond_its_size_bounds() -> None:
+    """Planning time stays bounded: too many frequencies are refused before any search."""
+    with pytest.raises(ValueError, match="equidistant spectrum may have at most 64"):
+        contracts.multi_frequency_parameter_shift_rule(np.arange(1.0, 66.0))
+    irregular = np.sqrt(np.arange(2.0, 19.0))
+    with pytest.raises(ValueError, match="non-equidistant spectrum may have at most 16"):
+        contracts.multi_frequency_parameter_shift_rule(irregular)
+    largest = contracts.multi_frequency_parameter_shift_rule(np.arange(1.0, 65.0))
+    assert largest.shifts is not None and len(largest.shifts) == 64
