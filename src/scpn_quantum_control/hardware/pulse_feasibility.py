@@ -641,7 +641,8 @@ def _assess_one(
     start_samples = _grid_samples(pulse.start, limits)
     duration_samples = _grid_samples(pulse.duration, limits)
     segments = len(pulse.rabi_rates)
-    if pulse.duration <= 0.0:
+    # A duration within the grid tolerance of zero samples is as empty as a zero one.
+    if pulse.duration <= 0.0 or duration_samples == 0:
         violations.append(f"non_positive_duration: pulse {index}")
         convertible = False
     elif start_samples is None or duration_samples is None:

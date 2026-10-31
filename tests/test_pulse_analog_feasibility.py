@@ -669,3 +669,19 @@ def test_hybrid_partition_of_couplings_near_the_float_limit_stays_finite() -> No
     assert partition.dropped_K_nm is not None
     assert np.all(np.isfinite(partition.analog_K_nm + partition.digital_K_nm))
     assert partition.n_dropped_couplings == 0
+
+
+@pytest.mark.parametrize("max_slew", [None, 0.2], ids=["no-slew-limit", "slew-limit"])
+def test_duration_that_rounds_to_zero_samples_is_refused(max_slew: float | None) -> None:
+    """A positive duration within the grid tolerance of zero has no samples to convert.
+
+    Parameters
+    ----------
+    max_slew
+        Optional slew limit; with it, the empty waveform used to raise IndexError.
+
+    """
+    tiny = DesignPulse((0,), 0.0, 1e-18, (1.0e7,))
+    assessment = assess_pulse_design([tiny], _limits(max_slew=max_slew), _PLACEMENT)
+    assert assessment.violations == ("non_positive_duration: pulse 0",)
+    assert assessment.native == ()
