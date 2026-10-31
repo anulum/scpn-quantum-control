@@ -43,6 +43,9 @@ from tempfile import gettempdir
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from tools import (
+        accelerated_batch_execution_quality_gates as _accelerated_batch_execution_quality_gates,
+    )
     from tools import adaptive_branching_quality_gates as _adaptive_branching_quality_gates
     from tools import advanced_witnesses_quality_gates as _advanced_witnesses_quality_gates
     from tools import (
@@ -634,6 +637,9 @@ else:
     _kyma_v3_quality_gates = import_module("tools.kyma_v3_quality_gates")
     _layout_method_comparison_quality_gates = import_module(
         "tools.layout_method_comparison_quality_gates"
+    )
+    _accelerated_batch_execution_quality_gates = import_module(
+        "tools.accelerated_batch_execution_quality_gates"
     )
     _layout_relaxation_experiment_quality_gates = import_module(
         "tools.layout_relaxation_experiment_quality_gates"
@@ -1363,6 +1369,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_sparse_hamiltonian_quality_gates.build_static_quality_gates(_PY),
     *_result_pack_seal_quality_gates.build_static_quality_gates(_PY),
     *_rust_accel_import_resilience_quality_gates.build_static_quality_gates(_PY),
+    *_accelerated_batch_execution_quality_gates.build_static_quality_gates(_PY),
     *_layout_relaxation_experiment_quality_gates.build_static_quality_gates(_PY),
     *_tn_mps_crossover_admission_quality_gates.build_static_quality_gates(_PY),
     *_xy_compile_recompute_artifact_quality_gates.build_static_quality_gates(_PY),
@@ -1946,6 +1953,9 @@ RESULT_PACK_SEAL_COVERAGE_GATES = _result_pack_seal_quality_gates.build_coverage
 RUST_ACCEL_IMPORT_RESILIENCE_COVERAGE_GATES = (
     _rust_accel_import_resilience_quality_gates.build_coverage_gates(_PY)
 )
+ACCELERATED_BATCH_EXECUTION_COVERAGE_GATES = (
+    _accelerated_batch_execution_quality_gates.build_coverage_gates(_PY)
+)
 LAYOUT_RELAXATION_EXPERIMENT_COVERAGE_GATES = (
     _layout_relaxation_experiment_quality_gates.build_coverage_gates(_PY)
 )
@@ -2438,6 +2448,7 @@ def main() -> int:
             gates.extend(SPARSE_HAMILTONIAN_COVERAGE_GATES)
             gates.extend(RESULT_PACK_SEAL_COVERAGE_GATES)
             gates.extend(RUST_ACCEL_IMPORT_RESILIENCE_COVERAGE_GATES)
+            gates.extend(ACCELERATED_BATCH_EXECUTION_COVERAGE_GATES)
             gates.extend(LAYOUT_RELAXATION_EXPERIMENT_COVERAGE_GATES)
             gates.extend(TN_MPS_CROSSOVER_ADMISSION_COVERAGE_GATES)
             gates.extend(XY_COMPILE_RECOMPUTE_ARTIFACT_COVERAGE_GATES)

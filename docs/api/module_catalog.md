@@ -5,7 +5,7 @@ module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
 - **847 modules** across **41 package families**
-- **4582 documented public module-level symbols**
+- **4591 documented public module-level symbols**
 - **874 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -1143,11 +1143,11 @@ No public module-level class or function is declared.
 
 GPU baseline comparison for quantum simulation.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/benchmarks/gpu_baseline.py) · Public symbols: **8**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/benchmarks/gpu_baseline.py) · Public symbols: **17**
 
-**Classes:** `GPUBaselineResult`
+**Classes:** `GPUBaselineResult`, `BatchEvolutionItem`, `ShardRecord`, `BatchExecutionRecord`, `BatchCheckpoint`, `BatchEvolutionResult`, `AcceleratorUnavailableError`, `BatchExecutionInterruptedError`
 
-**Functions:** `statevector_memory_gb()`, `statevector_flops()`, `estimate_gpu_time()`, `estimate_qpu_time()`, `gate_count_xy_trotter()`, `gpu_baseline_comparison()`, `scaling_comparison()`
+**Functions:** `statevector_memory_gb()`, `statevector_flops()`, `estimate_gpu_time()`, `estimate_qpu_time()`, `gate_count_xy_trotter()`, `gpu_baseline_comparison()`, `scaling_comparison()`, `evolve_shard_on_cpu()`, `run_batched_evolutions()`
 
 ### `scpn_quantum_control.benchmarks.hls_cosimulation_evidence`
 

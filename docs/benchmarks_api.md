@@ -571,6 +571,32 @@ Returns dict with columns: n, gpu_time_s, qpu_time_s, memory_gb, gpu_faster.
 
 ---
 
+#### Batched evolution with placement evidence
+
+`run_batched_evolutions(items, shard_size=8, device="cpu")` runs independent
+small evolutions `exp(-i H t) psi`, each a `BatchEvolutionItem`. Items are
+sorted by label before sharding, so the input order does not change any
+result. Every shard is evolved with stacked Hermitian eigendecompositions
+(`evolve_shard_on_cpu`).
+
+The `BatchExecutionRecord` states:
+- the requested and executed device;
+- whether a fallback happened;
+- the library, the `complex128` precision, the reduction order (none: items
+  are never combined) and the random streams (none);
+- each shard's labels and measured seconds;
+- zero transfer and compile time, because execution is host-only.
+
+If a shard fails, `BatchExecutionInterruptedError` carries a `BatchCheckpoint`
+with every completed shard, bound to a digest of the plan. Passing the
+checkpoint back resumes without recomputing those shards. A checkpoint from a
+different plan is refused.
+
+There is no GPU kernel:
+- `device="gpu"` raises `AcceleratorUnavailableError`;
+- with `allow_cpu_fallback=True` the run is recorded as a CPU fallback;
+- `accelerator_evidence` is always `False`, so no result here is GPU evidence.
+
 ### 4. `mps_baseline` — Tensor Network Comparison
 
 Matrix Product State (MPS) resource estimation for the Kuramoto-XY

@@ -4,6 +4,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Run batched independent evolutions with placement evidence:
+  - label-ordered shards with measured times;
+  - a resumable checkpoint when a shard fails;
+  - an explicit record of device, precision, reduction order and random
+    streams.
+
+  A GPU request refuses, or runs as a recorded CPU fallback; it never yields
+  accelerator evidence.
+
 - Make sparse Kuramoto storage and placement explicit:
   - edge lists use a declared duplicate policy (`sum` or `refuse`);
   - storage reports measure the stored row, column and weight arrays, which

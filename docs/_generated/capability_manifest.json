@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 874,
     "public_documentation_pages": 385,
-    "python_model_classes": 1600,
+    "python_model_classes": 1607,
     "python_model_source_modules": 847,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1605
+    "test_files": 1607
   },
   "documentation": {
     "examples": [
@@ -817,6 +817,10 @@
         "path": "src/scpn_quantum_control/benchmarks/differentiable_evidence.py"
       },
       {
+        "name": "AcceleratorUnavailableError",
+        "path": "src/scpn_quantum_control/benchmarks/gpu_baseline.py"
+      },
+      {
         "name": "ActionHandler",
         "path": "src/scpn_quantum_control/studio/executive.py"
       },
@@ -1207,6 +1211,26 @@
       {
         "name": "BaselineSurfaceRow",
         "path": "src/scpn_quantum_control/neural_operator_baseline_product.py"
+      },
+      {
+        "name": "BatchCheckpoint",
+        "path": "src/scpn_quantum_control/benchmarks/gpu_baseline.py"
+      },
+      {
+        "name": "BatchEvolutionItem",
+        "path": "src/scpn_quantum_control/benchmarks/gpu_baseline.py"
+      },
+      {
+        "name": "BatchEvolutionResult",
+        "path": "src/scpn_quantum_control/benchmarks/gpu_baseline.py"
+      },
+      {
+        "name": "BatchExecutionInterruptedError",
+        "path": "src/scpn_quantum_control/benchmarks/gpu_baseline.py"
+      },
+      {
+        "name": "BatchExecutionRecord",
+        "path": "src/scpn_quantum_control/benchmarks/gpu_baseline.py"
       },
       {
         "name": "BenchmarkActionHandler",
@@ -6333,6 +6357,10 @@
         "path": "src/scpn_quantum_control/experimental/llm_qpu/data/lineage.py"
       },
       {
+        "name": "ShardRecord",
+        "path": "src/scpn_quantum_control/benchmarks/gpu_baseline.py"
+      },
+      {
         "name": "ShardRef",
         "path": "src/scpn_quantum_control/experimental/llm_qpu/data/lineage.py"
       },
@@ -9300,6 +9328,8 @@
       "tests/experimental/llm_qpu/test_measurement_plan_contract.py",
       "tests/experimental/llm_qpu/test_model_descriptor_contract.py",
       "tests/experimental/llm_qpu/test_static_circuit_plan_contract.py",
+      "tests/test_accelerated_batch_execution.py",
+      "tests/test_accelerated_batch_execution_quality_gate.py",
       "tests/test_accelerator_detection_boundaries.py",
       "tests/test_active_queue_status_assertions.py",
       "tests/test_active_sensing_product.py",

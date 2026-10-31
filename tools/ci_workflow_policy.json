@@ -191,6 +191,7 @@
       ],
       "jobs": [
         "nqs-ansatz-quality",
+        "accelerated-batch-execution-quality",
         "layout-relaxation-experiment-quality",
         "tn-mps-crossover-admission-quality",
         "xy-compile-recompute-artifact-quality",
@@ -527,6 +528,7 @@
     "nqs-ansatz-quality",
     "sparse-hamiltonian-quality",
     "result-pack-seal-quality",
+    "accelerated-batch-execution-quality",
     "layout-relaxation-experiment-quality",
     "tn-mps-crossover-admission-quality",
     "xy-compile-recompute-artifact-quality",

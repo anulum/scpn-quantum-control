@@ -230,6 +230,8 @@
         "tests/_phase_torch_bridge_test_helpers.py",
         "tests/_whole_program_trace_array_helpers.py",
         "tests/conftest.py",
+        "tests/test_accelerated_batch_execution.py",
+        "tests/test_accelerated_batch_execution_quality_gate.py",
         "tests/test_adapt_vqe.py",
         "tests/test_adaptive_fim_evidence.py",
         "tests/test_adaptive_fim_feedback.py",

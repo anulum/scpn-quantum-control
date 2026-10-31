@@ -1147,6 +1147,8 @@ def test_main_uses_coverage_pytest_by_default(
         "result-pack-seal exact coverage threshold",
         "rust-accel-import-resilience focused coverage",
         "rust-accel-import-resilience exact coverage threshold",
+        "accelerated-batch-execution focused coverage",
+        "accelerated-batch-execution exact coverage threshold",
         "layout-relaxation-experiment focused coverage",
         "layout-relaxation-experiment exact coverage threshold",
         "TN/MPS-crossover-admission focused coverage",

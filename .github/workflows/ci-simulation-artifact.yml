@@ -88,6 +88,39 @@ jobs:
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 7
+  accelerated-batch-execution-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/benchmarks/gpu_baseline.py
+          tests/test_accelerated_batch_execution.py
+          tools/accelerated_batch_execution_quality_gates.py
+          tests/test_accelerated_batch_execution_quality_gate.py
+      - run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/benchmarks/gpu_baseline.py
+          tests/test_accelerated_batch_execution.py
+          tools/accelerated_batch_execution_quality_gates.py
+          tests/test_accelerated_batch_execution_quality_gate.py
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-accelerated-batch-execution-quality.coverage
+          --branch -m pytest -q tests/test_accelerated_batch_execution.py tests/test_gpu_baseline.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-accelerated-batch-execution-quality.coverage
+          --precision=2 --show-missing --fail-under=100
+          --include=*/benchmarks/gpu_baseline.py
+
   layout-relaxation-experiment-quality:
     runs-on: ubuntu-latest
     env:
