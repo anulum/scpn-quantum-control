@@ -51,7 +51,10 @@ export interface SensingInstrument {
 const entropyBoundary = text(committed.entropy[0]?.claim_boundary, "committed entropy boundary");
 
 function nullable(value: unknown, field: string): string | null {
-  return value === null ? null : text(value, field);
+  if (value === null) return null;
+  const result = text(value, field);
+  if (result.trim().length === 0) throw new Error(`${field} must be nonblank text or null`);
+  return result;
 }
 
 function entropyMetadata(raw: unknown): EntropyMetadata {

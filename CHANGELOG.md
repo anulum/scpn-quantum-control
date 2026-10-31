@@ -10,6 +10,8 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   uncertainty, with separate synthetic and unavailable device provenance.
 - Public entropy metadata exports omit private material; passing statistical
   or signature checks never certify physical randomness.
+- Whitespace-only source, extractor and assumption declarations are refused
+  before rendering or export, matching the source-owner projection.
 
 - Qualify competitive comparisons on a frozen challenge:
   `qualify_competitive_campaign` ranks methods only when every retained run,

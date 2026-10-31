@@ -75,6 +75,16 @@ describe("sensing and entropy provenance", () => {
     expect(document.body.textContent).not.toContain("PRIVATE_");
     expect(JSON.parse(exportText()).payload_sha256).toBe(firstEntropy(committed).payload_sha256);
   });
+  it.each(["source", "extractor", "assumptions"] as const)(
+    "refuses whitespace-only %s provenance before rendering or export",
+    (field) => {
+      const data = copy();
+      firstEntropy(data)[field] = " \t\n ";
+      render(<SensingInspector instrument={parseSensingInstrument(data)} />);
+      expect(screen.getByRole("alert").textContent).toContain(`${field} must be nonblank`);
+      expect(screen.queryByRole("link", { name: "Download public entropy metadata" })).toBeNull();
+    },
+  );
   it("selects the remaining source when refreshed metadata removes a selected record", () => {
     const { rerender } = render(<SensingInspector instrument={sensingInstrument} />);
     fireEvent.change(screen.getByLabelText("Entropy record"), { target: { value: "1" } });
