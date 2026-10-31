@@ -1389,6 +1389,8 @@ capture_whole_program_replay(result) -> WholeProgramReplayRecord
 replay_whole_program(record, objective, *, max_execution_gib=None, deadline_monotonic=None, cancelled=None) -> WholeProgramReplayReport
 WholeProgramReplayRecord.to_json() -> str
 WholeProgramReplayRecord.from_json(text) -> WholeProgramReplayRecord
+plan_quantum_gradient_estimator(occurrences, parameter_count, *, observable, calibration, shots=None, operations=()) -> QuantumGradientEstimatorPlan
+execute_quantum_gradient_estimator(plan, objective, values, *, calibration, shots=None, parameters=None) -> GradientResult
 vmap(function, in_axes=0, out_axes=0) -> callable
 batch_parameter_shift_gradient(objectives, values, parameters=None, rule=None) -> np.ndarray
 batch_value_and_parameter_shift_grad(objectives, values, parameters=None, rule=None) -> tuple[GradientResult, ...]

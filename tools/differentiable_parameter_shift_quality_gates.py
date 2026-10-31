@@ -32,11 +32,13 @@ DIFFERENTIABLE_PARAMETER_SHIFT_COVERAGE_COHORT = [
     "tests/test_phase_gradient_training.py",
     "tests/test_phase_param_shift.py",
     "tests/test_stochastic_gradient_failure_policy.py",
+    "tests/test_quantum_gradient_estimators.py",
 ]
 DIFFERENTIABLE_PARAMETER_SHIFT_TYPING_RATCHET = [
     *DIFFERENTIABLE_PARAMETER_SHIFT_SOURCES,
     "tests/test_phase_param_shift.py",
     "tests/test_stochastic_gradient_failure_policy.py",
+    "tests/test_quantum_gradient_estimators.py",
     "tools/differentiable_parameter_shift_quality_gates.py",
     "tests/test_differentiable_parameter_shift_quality_gate.py",
 ]
@@ -45,6 +47,7 @@ DIFFERENTIABLE_PARAMETER_SHIFT_DOCSTRING_RATCHET = [
     "tests/test_differentiable_parameter_shift.py",
     "tests/test_phase_param_shift.py",
     "tests/test_stochastic_gradient_failure_policy.py",
+    "tests/test_quantum_gradient_estimators.py",
     "tools/differentiable_parameter_shift_quality_gates.py",
     "tests/test_differentiable_parameter_shift_quality_gate.py",
 ]

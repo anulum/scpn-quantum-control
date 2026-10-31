@@ -4,6 +4,20 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Bind parameter-shift gradients to the circuit's generator spectra:
+  - `plan_quantum_gradient_estimator` derives each parameter's frequencies
+    from its gate occurrences, so a parameter shared by several rotations gets
+    the exact multi-frequency rule. The generic two-term rule returned zero
+    for `RY(theta) RY(theta)` instead of `-2*sin(2*theta)`.
+  - Unregistered generators and reset, postselection, measurement or jumps
+    are refused while planning.
+  - `execute_quantum_gradient_estimator` refuses a changed calibration or shot
+    budget before evaluating anything.
+
+  `multi_frequency_parameter_shift_rule` no longer accepts a shift on a zero of
+  the sine for a lone frequency. Previously `w = 3` produced a coefficient near
+  `1e16`.
+
 - Save and replay differentiated whole programs:
   - `capture_whole_program_replay` records the effect-IR digest, a captured-state
     digest that stays stable across processes, the effect history, the transform

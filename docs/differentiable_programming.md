@@ -442,6 +442,60 @@ runtime refuses rather than returning a one-sided derivative:
 Comparisons that involve a frozen (non-trainable) parameter follow the same
 equality rule.
 
+## Spectrum-bound quantum gradient estimators
+
+A parameter-shift rule is exact only for the generator frequencies it was
+built for. The generic `value_and_parameter_shift_grad` treats the objective as
+opaque and applies one rule to every parameter. For a parameter shared by two
+rotations, `RY(theta) RY(theta)|0>` with Z, the expectation is `cos(2*theta)`.
+The standard two-term rule then returns zero instead of `-2*sin(2*theta)`.
+
+`plan_quantum_gradient_estimator(occurrences, parameter_count, observable=...,
+calibration=..., shots=...)` binds the circuit structure before anything runs:
+
+- **Generator spectra:** each `GateOccurrence(gate, parameter, scale)` must name
+  a gate in `GENERATOR_EIGENVALUES`. The Pauli rotations `rx`, `ry` and `rz`
+  have generator eigenvalues `±1/2`. `phase_rotation` and `controlled_phase`
+  have `{0, 1}`. Any other gate refuses with `unsupported_generator`.
+- **Shared parameters:** a parameter's frequencies are all positive
+  differences between sums of the scaled eigenvalues of its occurrences. One
+  rotation gives `{1}` and the standard rule. Two rotations give `{1, 2}`, and
+  `RY(a)` with `RX(2a)` gives `{1, 2, 3}`; both need the exact multi-frequency
+  rule. A parameter with no occurrence has an exact zero gradient and is never
+  shifted.
+- **Non-smooth operations:** reset, postselection, measurement and jumps are
+  not rotations of the expectation, so they refuse with
+  `non_smooth_operation`.
+- **Other refusals:** a spectrum with more than 64 eigenvalue sums refuses with
+  `spectrum_too_large`. A spectrum whose shift system cannot be solved
+  accurately refuses with `ill_conditioned_spectrum`.
+- **Calibration and budget:** the plan stores the canonical digest of the
+  calibration record and the shots per evaluation. Its total shot budget is
+  `shots * evaluations`.
+
+`execute_quantum_gradient_estimator(plan, objective, values, calibration=...,
+shots=...)` refuses with `calibration_changed` or `budget_drift` before it
+evaluates anything. It then shifts each parameter with the rule for its own
+spectrum. All refusals are `QuantumGradientEstimatorRefusal` with a stable
+`reason`.
+
+**Finite shots.** The finite-shot route is `parameter_shift_gradient_with_uncertainty`
+with the planned rule. Its interval assumes independent plus and minus
+samples. Common random numbers between the two would correlate them, and they
+are not supported.
+
+The qualification uses the frozen protocol: seeds 0..199 and 1000 shots per
+shifted expectation on `RY(0.7)|0>`. The nominal 95 % level lies inside the
+Clopper-Pearson interval of the observed coverage, for the same estimand as
+the exact derivative.
+
+**Rule-builder fix.** `multi_frequency_parameter_shift_rule` now also requires
+the sine system's smallest singular value to be at least `1e-6`. The condition
+number is scale-free, so a lone frequency whose default shift landed on a zero
+of the sine was accepted. For `w = 3` that gave a coefficient near `1e16` and a
+wrong derivative. Such a shift is now skipped by the default search and
+refused when it is given explicitly.
+
 ## Evidence Promotion Lane
 
 The differentiable Phase-QNode lane is a promotion candidate until the committed claim

@@ -173,6 +173,7 @@ jobs:
           src/scpn_quantum_control/differentiable_stochastic_policy.py
           tests/test_phase_param_shift.py
           tests/test_stochastic_gradient_failure_policy.py
+          tests/test_quantum_gradient_estimators.py
           tools/differentiable_parameter_shift_quality_gates.py
           tests/test_differentiable_parameter_shift_quality_gate.py
       - name: Ruff NumPy docstrings for differentiable parameter-shift quality cohort
@@ -186,6 +187,7 @@ jobs:
           tests/test_differentiable_parameter_shift.py
           tests/test_phase_param_shift.py
           tests/test_stochastic_gradient_failure_policy.py
+          tests/test_quantum_gradient_estimators.py
           tools/differentiable_parameter_shift_quality_gates.py
           tests/test_differentiable_parameter_shift_quality_gate.py
       - name: Run differentiable parameter-shift focused coverage
@@ -202,6 +204,7 @@ jobs:
           tests/test_phase_gradient_training.py
           tests/test_phase_param_shift.py
           tests/test_stochastic_gradient_failure_policy.py
+          tests/test_quantum_gradient_estimators.py
       - name: Enforce differentiable parameter-shift exact coverage
         run: >-
           python -m coverage report

@@ -736,6 +736,7 @@
         "tests/test_quantum_advantage_crossover_figure.py",
         "tests/test_quantum_advantage_gap_audit.py",
         "tests/test_quantum_costs.py",
+        "tests/test_quantum_gradient_estimators.py",
         "tests/test_quantum_kuramoto_split_audit.py",
         "tests/test_quantum_mpemba.py",
         "tests/test_quantum_neuromorphic_bridge.py",

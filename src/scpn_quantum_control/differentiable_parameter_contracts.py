@@ -229,7 +229,7 @@ def multi_frequency_parameter_shift_rule(
     rank_tolerance = max(sine_system.shape) * np.finfo(np.float64).eps * max(1.0, system_scale)
     singular_values = np.linalg.svd(sine_system, compute_uv=False)
     rank = sum(1 for singular_value in singular_values if singular_value > rank_tolerance)
-    if rank != frequency_values.size:
+    if rank != frequency_values.size or float(singular_values[-1]) < _MIN_SINE_SINGULAR_VALUE:
         raise ValueError("multi-frequency parameter-shift system is singular or ill-conditioned")
     condition = float(np.linalg.cond(sine_system))
     if not np.isfinite(condition) or condition > condition_limit:
@@ -246,6 +246,16 @@ def multi_frequency_parameter_shift_rule(
     )
 
 
+_MIN_SINE_SINGULAR_VALUE = 1.0e-6
+"""Absolute floor on the sine system's smallest singular value.
+
+The condition number is scale-free: a one-term system ``2*sin(w*s)`` always has
+condition one, even when ``w*s`` is a multiple of pi and the coefficient blows
+up. Its entries are bounded by two, so this floor keeps every coefficient
+within ``|w| * 1e6`` of the exact rule.
+"""
+
+
 def _default_multi_frequency_shifts(
     frequencies: NDArray[np.float64],
     *,
@@ -260,7 +270,12 @@ def _default_multi_frequency_shifts(
         candidate = np.arange(1, count + 1, dtype=np.float64) * np.pi / float(denominator)
         sine_system = 2.0 * np.sin(np.outer(frequencies, candidate))
         condition = float(np.linalg.cond(sine_system))
-        if np.isfinite(condition) and condition <= max_condition:
+        smallest = float(np.linalg.svd(sine_system, compute_uv=False)[-1])
+        if (
+            np.isfinite(condition)
+            and condition <= max_condition
+            and smallest >= _MIN_SINE_SINGULAR_VALUE
+        ):
             return candidate
     raise ValueError("could not construct a well-conditioned multi-frequency shift system")
 

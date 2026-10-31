@@ -11,17 +11,20 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass
 from typing import Any, cast
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+from .canonical_encoding import canonical_digest
 from .differentiable_batch_helpers import _as_parameter_shift_sample_tensor
 from .differentiable_parameter_contracts import (
     Parameter,
     ParameterShiftRule,
     _as_parameter_array,
     _as_real_scalar,
+    multi_frequency_parameter_shift_rule,
 )
 from .differentiable_result_contracts import (
     FiniteShotSampleProvenance,
@@ -406,6 +409,364 @@ def parameter_shift_gradient_with_uncertainty(
     )
 
 
+GENERATOR_EIGENVALUES: Mapping[str, tuple[float, ...]] = {
+    "rx": (-0.5, 0.5),
+    "ry": (-0.5, 0.5),
+    "rz": (-0.5, 0.5),
+    "phase_rotation": (0.0, 1.0),
+    "controlled_phase": (0.0, 1.0),
+}
+"""Registered generator eigenvalues for ``exp(-i * theta * G)`` gates.
+
+Pauli rotations use ``G = P / 2``; the phase and controlled-phase gates use the
+projector onto their phased state. Any other gate name is refused.
+"""
+
+NON_SMOOTH_OPERATIONS = frozenset({"reset", "postselect", "measure", "jump"})
+"""Circuit operations whose effect on the expectation is not a smooth rotation."""
+
+QUANTUM_GRADIENT_ESTIMATOR_PLAN_SCHEMA = "quantum_gradient_estimator_plan.v1"
+"""Schema and major version of a spectrum-bound estimator plan."""
+
+_CALIBRATION_SCHEMA = "quantum_gradient_calibration.v1"
+_MAX_SPECTRUM_SUMS = 64
+_FREQUENCY_DECIMALS = 12
+_SPECTRUM_CLAIM_BOUNDARY = (
+    "spectrum-bound parameter shift: exact for expectations whose dependence on each "
+    "parameter is a trigonometric polynomial with the declared generator frequencies; "
+    "the objective must evaluate exactly the declared gate occurrences, observable "
+    "and calibration"
+)
+
+
+class QuantumGradientEstimatorRefusal(ValueError):
+    """An estimator request was refused before any objective evaluation.
+
+    Attributes
+    ----------
+    reason:
+        Stable refusal code, such as ``unsupported_generator`` or
+        ``calibration_changed``.
+
+    """
+
+    def __init__(self, reason: str, detail: str) -> None:
+        """Record the refusal code and a readable explanation.
+
+        Parameters
+        ----------
+        reason:
+            Stable refusal code.
+        detail:
+            Human-readable description.
+
+        """
+        super().__init__(f"quantum gradient estimator refused ({reason}): {detail}")
+        self.reason = reason
+
+
+@dataclass(frozen=True)
+class GateOccurrence:
+    """One appearance of a trainable parameter in a circuit.
+
+    Attributes
+    ----------
+    gate:
+        Registered gate name from :data:`GENERATOR_EIGENVALUES`.
+    parameter:
+        Index of the parameter this gate angle depends on.
+    scale:
+        Nonzero factor in the gate angle ``scale * theta[parameter]``.
+
+    """
+
+    gate: str
+    parameter: int
+    scale: float = 1.0
+
+
+@dataclass(frozen=True)
+class QuantumGradientEstimatorPlan:
+    """Spectrum-bound parameter-shift plan, fixed before execution.
+
+    Attributes
+    ----------
+    parameter_count:
+        Number of circuit parameters.
+    occurrences:
+        Every gate occurrence of every parameter, in circuit order.
+    observable:
+        Name of the measured observable bound to this plan.
+    frequencies:
+        Positive generator frequencies of each parameter; empty when the
+        circuit does not depend on that parameter.
+    rules:
+        Exact parameter-shift rule for each parameter, or ``None`` when the
+        parameter has no occurrence.
+    shots:
+        Shots per objective evaluation, or ``None`` for exact expectations.
+    calibration_sha256:
+        Canonical digest of the calibration the plan was made for.
+    evaluations:
+        Objective evaluations the execution performs, including the value.
+    digest:
+        Canonical digest of the whole plan.
+
+    """
+
+    parameter_count: int
+    occurrences: tuple[GateOccurrence, ...]
+    observable: str
+    frequencies: tuple[tuple[float, ...], ...]
+    rules: tuple[ParameterShiftRule | None, ...]
+    shots: int | None
+    calibration_sha256: str
+    evaluations: int
+    digest: str
+
+    @property
+    def shot_budget(self) -> int | None:
+        """Total shots the execution spends, or ``None`` for exact expectations."""
+        return None if self.shots is None else self.shots * self.evaluations
+
+
+def plan_quantum_gradient_estimator(
+    occurrences: Sequence[GateOccurrence],
+    parameter_count: int,
+    *,
+    observable: str,
+    calibration: Mapping[str, object],
+    shots: int | None = None,
+    operations: Sequence[str] = (),
+) -> QuantumGradientEstimatorPlan:
+    """Derive each parameter's generator frequencies and its exact shift rule.
+
+    A parameter that appears in several gates is shifted as one variable, so
+    its frequencies are all positive differences between sums of the scaled
+    generator eigenvalues of its occurrences. A single Pauli rotation gives
+    the frequency ``1`` and the standard rule; a parameter shared by two
+    rotations gives ``{1, 2}`` and needs the multi-frequency rule.
+
+    Parameters
+    ----------
+    occurrences:
+        Every gate occurrence of every parameter.
+    parameter_count:
+        Number of circuit parameters.
+    observable:
+        Non-empty observable name bound to the plan.
+    calibration:
+        Calibration record the expectations depend on; its canonical digest is
+        bound to the plan.
+    shots:
+        Positive shots per evaluation, or ``None`` for exact expectations.
+    operations:
+        Other circuit operations; reset, postselection, measurement and jumps
+        are refused because they are not smooth rotations.
+
+    Returns
+    -------
+    QuantumGradientEstimatorPlan
+        Frequencies, rules, budget and digest for this circuit.
+
+    Raises
+    ------
+    QuantumGradientEstimatorRefusal
+        With reason ``non_smooth_operation``, ``unsupported_generator``,
+        ``invalid_occurrence``, ``spectrum_too_large`` or
+        ``ill_conditioned_spectrum``.
+    ValueError
+        If the count, observable, shots or calibration are malformed.
+
+    """
+    if type(parameter_count) is not int or parameter_count < 1:
+        raise ValueError("parameter_count must be a positive integer")
+    if type(observable) is not str or not observable:
+        raise ValueError("observable must be a non-empty string")
+    if shots is not None and (type(shots) is not int or shots < 1):
+        raise ValueError("shots must be a positive integer or None")
+    blocked = sorted({str(operation) for operation in operations} & NON_SMOOTH_OPERATIONS)
+    if blocked:
+        raise QuantumGradientEstimatorRefusal(
+            "non_smooth_operation",
+            f"{', '.join(blocked)} is not a smooth rotation of the expectation",
+        )
+    bound = tuple(occurrences)
+    sums: list[set[float]] = [{0.0} for _ in range(parameter_count)]
+    for occurrence in bound:
+        if not isinstance(occurrence, GateOccurrence):
+            raise QuantumGradientEstimatorRefusal(
+                "invalid_occurrence", "occurrences must be GateOccurrence records"
+            )
+        eigenvalues = GENERATOR_EIGENVALUES.get(occurrence.gate)
+        if eigenvalues is None:
+            raise QuantumGradientEstimatorRefusal(
+                "unsupported_generator",
+                f"gate {occurrence.gate!r} has no registered generator spectrum",
+            )
+        index = occurrence.parameter
+        scale = occurrence.scale
+        if type(index) is not int or not 0 <= index < parameter_count:
+            raise QuantumGradientEstimatorRefusal(
+                "invalid_occurrence", f"parameter index {index!r} is out of range"
+            )
+        if (
+            isinstance(scale, bool)
+            or not isinstance(scale, (int, float, np.floating))
+            or not np.isfinite(scale)
+            or scale == 0
+        ):
+            raise QuantumGradientEstimatorRefusal(
+                "invalid_occurrence", "occurrence scale must be finite and nonzero"
+            )
+        sums[index] = {
+            round(total + float(scale) * eigenvalue, _FREQUENCY_DECIMALS)
+            for total in sums[index]
+            for eigenvalue in eigenvalues
+        }
+        if len(sums[index]) > _MAX_SPECTRUM_SUMS:
+            raise QuantumGradientEstimatorRefusal(
+                "spectrum_too_large",
+                f"parameter {index} has more than {_MAX_SPECTRUM_SUMS} eigenvalue sums",
+            )
+    frequencies: list[tuple[float, ...]] = []
+    rules: list[ParameterShiftRule | None] = []
+    used = {occurrence.parameter for occurrence in bound}
+    for index in range(parameter_count):
+        if index not in used:
+            frequencies.append(())
+            rules.append(None)
+            continue
+        totals = sorted(sums[index])
+        spectrum = tuple(
+            sorted(
+                {
+                    round(upper - lower, _FREQUENCY_DECIMALS)
+                    for position, lower in enumerate(totals)
+                    for upper in totals[position + 1 :]
+                }
+            )
+        )
+        frequencies.append(spectrum)
+        if spectrum == (1.0,):
+            rules.append(ParameterShiftRule())
+            continue
+        try:
+            rules.append(multi_frequency_parameter_shift_rule(spectrum))
+        except ValueError as error:
+            raise QuantumGradientEstimatorRefusal(
+                "ill_conditioned_spectrum", f"parameter {index}: {error}"
+            ) from error
+    evaluations = 1 + sum(2 * len(rule.terms) for rule in rules if rule is not None)
+    calibration_sha256 = canonical_digest(_CALIBRATION_SCHEMA, dict(calibration))
+    body: dict[str, object] = {
+        "parameter_count": parameter_count,
+        "occurrences": [
+            [occurrence.gate, occurrence.parameter, float(occurrence.scale)]
+            for occurrence in bound
+        ],
+        "observable": observable,
+        "frequencies": [list(spectrum) for spectrum in frequencies],
+        "rules": [None if rule is None else [list(term) for term in rule.terms] for rule in rules],
+        "shots": shots,
+        "calibration_sha256": calibration_sha256,
+        "evaluations": evaluations,
+    }
+    return QuantumGradientEstimatorPlan(
+        parameter_count=parameter_count,
+        occurrences=bound,
+        observable=observable,
+        frequencies=tuple(frequencies),
+        rules=tuple(rules),
+        shots=shots,
+        calibration_sha256=calibration_sha256,
+        evaluations=evaluations,
+        digest=canonical_digest(QUANTUM_GRADIENT_ESTIMATOR_PLAN_SCHEMA, body),
+    )
+
+
+def execute_quantum_gradient_estimator(
+    plan: QuantumGradientEstimatorPlan,
+    objective: ScalarObjective,
+    values: ArrayLike,
+    *,
+    calibration: Mapping[str, object],
+    shots: int | None = None,
+    parameters: Sequence[Parameter] | None = None,
+) -> GradientResult:
+    """Run a spectrum-bound plan after checking its calibration and budget.
+
+    Parameters
+    ----------
+    plan:
+        Plan from :func:`plan_quantum_gradient_estimator`.
+    objective:
+        Expectation of the planned circuit, observable and calibration.
+    values:
+        Real parameter values of length ``plan.parameter_count``.
+    calibration:
+        Current calibration record; it must match the planned one.
+    shots:
+        Shots per evaluation now in force; they must match the planned ones.
+    parameters:
+        Optional metadata controlling names and trainable masks.
+
+    Returns
+    -------
+    GradientResult
+        Value and gradient; a parameter without occurrences has an exact zero.
+
+    Raises
+    ------
+    QuantumGradientEstimatorRefusal
+        With reason ``calibration_changed`` or ``budget_drift``, before the
+        objective is evaluated.
+    ValueError
+        If the plan or values are malformed.
+
+    """
+    if not isinstance(plan, QuantumGradientEstimatorPlan):
+        raise ValueError("execution requires a QuantumGradientEstimatorPlan")
+    if canonical_digest(_CALIBRATION_SCHEMA, dict(calibration)) != plan.calibration_sha256:
+        raise QuantumGradientEstimatorRefusal(
+            "calibration_changed", "the calibration differs from the planned one"
+        )
+    if shots != plan.shots:
+        raise QuantumGradientEstimatorRefusal(
+            "budget_drift", f"planned {plan.shots!r} shots per evaluation, got {shots!r}"
+        )
+    parameter_values = _as_parameter_array(values)
+    if parameter_values.size != plan.parameter_count:
+        raise ValueError("values length must match the planned parameter count")
+    parameter_meta = _normalise_parameters(parameter_values, parameters)
+    gradient = np.zeros_like(parameter_values)
+    base_value = _as_scalar(objective(parameter_values.copy()))
+    evaluations = 1
+    for index, (parameter, rule) in enumerate(zip(parameter_meta, plan.rules, strict=True)):
+        if rule is None or not parameter.trainable:
+            continue
+        for shift, coefficient in rule.terms:
+            plus = parameter_values.copy()
+            minus = parameter_values.copy()
+            plus[index] += shift
+            minus[index] -= shift
+            gradient[index] += coefficient * (
+                _as_scalar(objective(plus)) - _as_scalar(objective(minus))
+            )
+            evaluations += 2
+    return GradientResult(
+        value=base_value,
+        gradient=gradient,
+        method="spectrum_bound_parameter_shift",
+        shift=None,
+        coefficient=None,
+        evaluations=evaluations,
+        parameter_names=tuple(parameter.name for parameter in parameter_meta),
+        trainable=tuple(parameter.trainable for parameter in parameter_meta),
+        claim_boundary=_SPECTRUM_CLAIM_BOUNDARY,
+    )
+
+
 def _as_sample_provenance(
     sample_provenance: Mapping[str, object] | FiniteShotSampleProvenance | None,
 ) -> FiniteShotSampleProvenance:
@@ -428,10 +789,18 @@ def _as_sample_provenance(
 
 
 __all__ = [
+    "GENERATOR_EIGENVALUES",
+    "NON_SMOOTH_OPERATIONS",
+    "QUANTUM_GRADIENT_ESTIMATOR_PLAN_SCHEMA",
+    "GateOccurrence",
+    "QuantumGradientEstimatorPlan",
+    "QuantumGradientEstimatorRefusal",
     "ScalarObjective",
     "batch_parameter_shift_gradient",
     "batch_value_and_parameter_shift_grad",
+    "execute_quantum_gradient_estimator",
     "parameter_shift_gradient",
     "parameter_shift_gradient_with_uncertainty",
+    "plan_quantum_gradient_estimator",
     "value_and_parameter_shift_grad",
 ]

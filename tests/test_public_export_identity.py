@@ -105,6 +105,29 @@ APPROVED_EXPORT_ADDITIONS: dict[str, tuple[int, tuple[tuple[str, str], ...]]] = 
             ("WholeProgramReplayReport", "scpn_quantum_control.whole_program_ad_api"),
             ("capture_whole_program_replay", "scpn_quantum_control.whole_program_ad_api"),
             ("replay_whole_program", "scpn_quantum_control.whole_program_ad_api"),
+            ("GENERATOR_EIGENVALUES", "scpn_quantum_control.differentiable_parameter_shift"),
+            ("NON_SMOOTH_OPERATIONS", "scpn_quantum_control.differentiable_parameter_shift"),
+            (
+                "QUANTUM_GRADIENT_ESTIMATOR_PLAN_SCHEMA",
+                "scpn_quantum_control.differentiable_parameter_shift",
+            ),
+            ("GateOccurrence", "scpn_quantum_control.differentiable_parameter_shift"),
+            (
+                "QuantumGradientEstimatorPlan",
+                "scpn_quantum_control.differentiable_parameter_shift",
+            ),
+            (
+                "QuantumGradientEstimatorRefusal",
+                "scpn_quantum_control.differentiable_parameter_shift",
+            ),
+            (
+                "execute_quantum_gradient_estimator",
+                "scpn_quantum_control.differentiable_parameter_shift",
+            ),
+            (
+                "plan_quantum_gradient_estimator",
+                "scpn_quantum_control.differentiable_parameter_shift",
+            ),
         ),
     ),
     "scpn_quantum_control.benchmarks": (

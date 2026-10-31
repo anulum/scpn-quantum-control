@@ -5,8 +5,8 @@ module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
 - **847 modules** across **41 package families**
-- **4571 documented public module-level symbols**
-- **866 root-package exports** governed by the stable API surface
+- **4576 documented public module-level symbols**
+- **874 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
 the [API selection guide](../api.md) and [stable facades](../stable_facades_api.md).
@@ -6477,9 +6477,11 @@ Parameter metadata and validation contracts for differentiable objectives.
 
 Parameter-shift transforms for scalar differentiable objectives.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_parameter_shift.py) · Public symbols: **5**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_parameter_shift.py) · Public symbols: **10**
 
-**Functions:** `parameter_shift_gradient()`, `batch_parameter_shift_gradient()`, `batch_value_and_parameter_shift_grad()`, `value_and_parameter_shift_grad()`, `parameter_shift_gradient_with_uncertainty()`
+**Classes:** `QuantumGradientEstimatorRefusal`, `GateOccurrence`, `QuantumGradientEstimatorPlan`
+
+**Functions:** `parameter_shift_gradient()`, `batch_parameter_shift_gradient()`, `batch_value_and_parameter_shift_grad()`, `value_and_parameter_shift_grad()`, `parameter_shift_gradient_with_uncertainty()`, `plan_quantum_gradient_estimator()`, `execute_quantum_gradient_estimator()`
 
 ### `scpn_quantum_control.differentiable_registered_custom`
 

@@ -659,6 +659,16 @@ if TYPE_CHECKING:
         differentiable_module_hardening_registry,
         run_differentiable_module_hardening_audit,
     )
+    from .differentiable_parameter_shift import (
+        GENERATOR_EIGENVALUES,
+        NON_SMOOTH_OPERATIONS,
+        QUANTUM_GRADIENT_ESTIMATOR_PLAN_SCHEMA,
+        GateOccurrence,
+        QuantumGradientEstimatorPlan,
+        QuantumGradientEstimatorRefusal,
+        execute_quantum_gradient_estimator,
+        plan_quantum_gradient_estimator,
+    )
     from .differentiable_rust_python_inventory import (
         DifferentiableRustPythonInventory,
         DifferentiableRustPythonInventoryBenchmarkStatus,
@@ -3536,6 +3546,35 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
         "capture_whole_program_replay",
     ),
     "replay_whole_program": ("scpn_quantum_control.whole_program_ad_api", "replay_whole_program"),
+    "GENERATOR_EIGENVALUES": (
+        "scpn_quantum_control.differentiable_parameter_shift",
+        "GENERATOR_EIGENVALUES",
+    ),
+    "NON_SMOOTH_OPERATIONS": (
+        "scpn_quantum_control.differentiable_parameter_shift",
+        "NON_SMOOTH_OPERATIONS",
+    ),
+    "QUANTUM_GRADIENT_ESTIMATOR_PLAN_SCHEMA": (
+        "scpn_quantum_control.differentiable_parameter_shift",
+        "QUANTUM_GRADIENT_ESTIMATOR_PLAN_SCHEMA",
+    ),
+    "GateOccurrence": ("scpn_quantum_control.differentiable_parameter_shift", "GateOccurrence"),
+    "QuantumGradientEstimatorPlan": (
+        "scpn_quantum_control.differentiable_parameter_shift",
+        "QuantumGradientEstimatorPlan",
+    ),
+    "QuantumGradientEstimatorRefusal": (
+        "scpn_quantum_control.differentiable_parameter_shift",
+        "QuantumGradientEstimatorRefusal",
+    ),
+    "execute_quantum_gradient_estimator": (
+        "scpn_quantum_control.differentiable_parameter_shift",
+        "execute_quantum_gradient_estimator",
+    ),
+    "plan_quantum_gradient_estimator": (
+        "scpn_quantum_control.differentiable_parameter_shift",
+        "plan_quantum_gradient_estimator",
+    ),
 }
 
 
@@ -3640,6 +3679,14 @@ __all__ = [
     "WholeProgramReplayReport",
     "capture_whole_program_replay",
     "replay_whole_program",
+    "GENERATOR_EIGENVALUES",
+    "NON_SMOOTH_OPERATIONS",
+    "QUANTUM_GRADIENT_ESTIMATOR_PLAN_SCHEMA",
+    "GateOccurrence",
+    "QuantumGradientEstimatorPlan",
+    "QuantumGradientEstimatorRefusal",
+    "execute_quantum_gradient_estimator",
+    "plan_quantum_gradient_estimator",
     "Problem",
     "Backend",
     "Experiment",
