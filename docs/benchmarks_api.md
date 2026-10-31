@@ -579,6 +579,9 @@ sorted by label before sharding, so the input order does not change any
 result. Every shard is evolved with stacked Hermitian eigendecompositions
 (`evolve_shard_on_cpu`).
 
+Items are validated and stacked once per batch. Each shard receives read-only
+slices of that stack, so a custom `shard_executor` cannot change the plan.
+
 The `BatchExecutionRecord` states:
 - the requested and executed device;
 - whether a fallback happened;

@@ -403,11 +403,10 @@ def run_batched_evolutions(
     if isinstance(shard_size, bool) or not isinstance(shard_size, int) or shard_size < 1:
         raise ValueError("shard_size must be a positive integer")
     batch = _stacked_batch(items)
-    digest = _plan_digest(batch, shard_size)
     done: dict[str, ComplexArray] = {}
     resumed: tuple[int, ...] = ()
     if checkpoint is not None:
-        if checkpoint.plan_digest != digest:
+        if checkpoint.plan_digest != _plan_digest(batch, shard_size):
             raise ValueError("checkpoint belongs to a different batch plan")
         done = {label: np.array(state) for label, state in checkpoint.states.items()}
         resumed = tuple(checkpoint.completed_shards)
@@ -426,7 +425,8 @@ def run_batched_evolutions(
             )
         except Exception as error:
             raise BatchExecutionInterruptedError(
-                BatchCheckpoint(digest, tuple(completed), dict(done)), index
+                BatchCheckpoint(_plan_digest(batch, shard_size), tuple(completed), dict(done)),
+                index,
             ) from error
         seconds = time.perf_counter() - started
         for label, state in zip(labels, evolved, strict=True):
@@ -496,6 +496,8 @@ def _stacked_batch(items: Sequence[BatchEvolutionItem]) -> _StackedBatch:
         labels,
         "Hamiltonian must be Hermitian",
     )
+    for array in (hamiltonians, states, times):
+        array.setflags(write=False)
     return _StackedBatch(labels, hamiltonians, states, times)
 
 

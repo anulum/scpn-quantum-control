@@ -160,6 +160,30 @@ def test_checkpoint_from_another_plan_is_refused() -> None:
         run_batched_evolutions(items, shard_size=2, checkpoint=checkpoint)
 
 
+def test_shard_executor_cannot_rewrite_the_plan() -> None:
+    """Shard inputs are read-only; a writing executor interrupts with a usable checkpoint."""
+    items = [_item(index) for index in range(4)]
+
+    def writing(
+        hamiltonians: NDArray[np.complex128],
+        states: NDArray[np.complex128],
+        times: NDArray[np.float64],
+    ) -> NDArray[np.complex128]:
+        if times[0] == _item(2).time:
+            states[0] = 0.0
+        return evolve_shard_on_cpu(hamiltonians, states, times)
+
+    with pytest.raises(BatchExecutionInterruptedError) as interruption:
+        run_batched_evolutions(items, shard_size=2, shard_executor=writing)
+    assert isinstance(interruption.value.__cause__, ValueError)
+    assert "read-only" in str(interruption.value.__cause__)
+    np.testing.assert_array_equal(items[2].state, _ZERO)
+    resumed = run_batched_evolutions(items, shard_size=2, checkpoint=interruption.value.checkpoint)
+    assert resumed.resumed_shards == (0,)
+    for index in range(4):
+        assert _within_budget(resumed.states[f"item-{index:02d}"], _analytic(index))
+
+
 def test_checkpoint_digest_separates_label_boundaries() -> None:
     """Labels ``ab, c`` and ``a, bc`` are different plans for a checkpoint."""
 
