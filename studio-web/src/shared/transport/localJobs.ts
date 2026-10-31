@@ -92,15 +92,43 @@ export interface JobEvent {
   readonly at: number;
 }
 
+/** Why the client or the service refused a request. */
+export interface Refusal {
+  /** Stable refusal category, such as ``idempotency_conflict``. */
+  readonly code: string;
+  /** Explanation safe to show. */
+  readonly message: string;
+}
+
+/** A successful service answer. */
+export interface JobAnswer<T> {
+  /** Always true for an answer. */
+  readonly ok: true;
+  /** The parsed answer. */
+  readonly value: T;
+}
+
+/** A refused request. */
+export interface JobRefusal extends Refusal {
+  /** Always false for a refusal. */
+  readonly ok: false;
+}
+
 /** A service answer, or the reason the client or the service refused. */
-export type JobResult<T> =
-  | { readonly ok: true; readonly value: T }
-  | { readonly ok: false; readonly code: string; readonly message: string };
+export type JobResult<T> = JobAnswer<T> | JobRefusal;
+
+/** What ``submit`` returns. */
+export interface Submitted {
+  /** The admitted attempt, new or repeated. */
+  readonly attempt: AttemptView;
+  /** Whether this request created the attempt. */
+  readonly created: boolean;
+}
 
 const IDENTIFIER = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 const STATES: readonly string[] = ["queued", "running", ...TERMINAL_STATES];
 
-function refused(code: string, message: string): { ok: false; code: string; message: string } {
+function refused(code: string, message: string): JobRefusal {
   return { ok: false, code, message };
 }
 
@@ -118,7 +146,7 @@ function optionalText(value: unknown, field: string): string | null {
  * @param request - Candidate request.
  * @returns ``null`` when the request may be sent, else the refusal.
  */
-export function requestRefusal(request: unknown): { code: string; message: string } | null {
+export function requestRefusal(request: unknown): Refusal | null {
   if (typeof request !== "object" || request === null || Array.isArray(request))
     return { code: "invalid_request", message: "a job request must be a JSON object" };
   const fields = Object.keys(request);
@@ -311,9 +339,7 @@ export class LocalJobClient {
    * @param request - Job request.
    * @returns The attempt and whether it was created now, or the refusal.
    */
-  async submit(
-    request: JobRequest,
-  ): Promise<JobResult<{ attempt: AttemptView; created: boolean }>> {
+  async submit(request: JobRequest): Promise<JobResult<Submitted>> {
     const refusal = requestRefusal(request);
     if (refusal !== null) return refused(refusal.code, refusal.message);
     return this.call("POST", "/v1/jobs", request, (raw) => ({
