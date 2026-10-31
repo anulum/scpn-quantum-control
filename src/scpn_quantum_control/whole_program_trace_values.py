@@ -192,6 +192,11 @@ def _required_trace_jvp(rule: CustomDerivativeRule, operation: str) -> CustomJVP
     return rule.jvp_rule
 
 
+_TEXT_REFUSAL = (
+    "whole-program AD {kind} cannot be formatted or converted to text without losing derivatives"
+)
+
+
 class TraceADScalar:
     """Operator-intercepted scalar for exact executed-path whole-program AD.
 
@@ -255,6 +260,29 @@ class TraceADScalar:
 
         """
         raise ValueError("whole-program AD scalar cannot be formatted without losing derivatives")
+
+    def __str__(self) -> NoReturn:
+        """Reject ``str``, ``"%s"`` and print, which would yield untraced text.
+
+        Raises
+        ------
+        ValueError
+            Always; the text would not be the plain program's text, and its
+            length or content could steer the result without a recorded step.
+
+        """
+        raise ValueError(_TEXT_REFUSAL.format(kind="scalar"))
+
+    def __repr__(self) -> NoReturn:
+        """Reject ``repr``, ``"%r"`` and ``!r``, which would yield untraced text.
+
+        Raises
+        ------
+        ValueError
+            Always, for the same reason as :meth:`__str__`.
+
+        """
+        raise ValueError(_TEXT_REFUSAL.format(kind="scalar"))
 
     def __bool__(self) -> bool:
         """Branch on ``value != 0`` as a recorded predicate.
@@ -558,6 +586,44 @@ class TraceADArray:
                 "whole-program AD truth value of an array with other than one element is ambiguous"
             )
         return bool(self._items[0])
+
+    def __format__(self, format_spec: str) -> NoReturn:
+        """Reject formatting, which would turn the array into untraced text.
+
+        Parameters
+        ----------
+        format_spec
+            Requested format; every specification is refused.
+
+        Raises
+        ------
+        ValueError
+            Always, as for a traced scalar.
+
+        """
+        raise ValueError(_TEXT_REFUSAL.format(kind="array"))
+
+    def __str__(self) -> NoReturn:
+        """Reject ``str``, ``"%s"`` and print of a traced array.
+
+        Raises
+        ------
+        ValueError
+            Always, as for a traced scalar.
+
+        """
+        raise ValueError(_TEXT_REFUSAL.format(kind="array"))
+
+    def __repr__(self) -> NoReturn:
+        """Reject ``repr``, ``"%r"`` and ``!r`` of a traced array.
+
+        Raises
+        ------
+        ValueError
+            Always, as for a traced scalar.
+
+        """
+        raise ValueError(_TEXT_REFUSAL.format(kind="array"))
 
     def __iter__(self) -> Iterator[TraceADScalar | TraceADArray]:
         """Iterate over trace scalars or rank-one row views."""

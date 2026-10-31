@@ -359,7 +359,13 @@ def test_truth_values_are_recorded_predicates() -> None:
 
 
 def test_formatting_a_traced_scalar_is_refused() -> None:
-    """``format`` and f-strings would turn a traced value into untraced text."""
+    """``format``, ``str`` and ``repr`` would turn a traced scalar or array into untraced text."""
     values = _trace_array(np.array([1.5, 2.0, 3.0, 4.0], dtype=np.float64))
     with pytest.raises(ValueError, match="cannot be formatted"):
         format(values[0], ".3f")
+    for convert in (str, repr):
+        with pytest.raises(ValueError, match="scalar cannot be formatted or converted to text"):
+            convert(values[0])
+    for convert in (str, repr, format):
+        with pytest.raises(ValueError, match="array cannot be formatted or converted to text"):
+            convert(values)

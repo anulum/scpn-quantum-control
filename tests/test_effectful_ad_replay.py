@@ -820,10 +820,68 @@ def _module_attribute_in_generator(values: TraceADArray) -> object:
     return sum(_NESTED_CONSTANTS.W[i] * values[i] for i in range(2))
 
 
+# The printf-style templates live in constants: the programs must use ``%``
+# itself, which the linter rewrites only when the template is a literal.
+_AS_TEXT = "%s"
+_AS_REPR = "%r"
+
+
+def _percent_s(values: TraceADArray) -> object:
+    """Turn a traced value into text through ``%s``."""
+    y = cast(TraceADScalar, values[0])
+    return y * float(len(_AS_TEXT % y))
+
+
+def _percent_r(values: TraceADArray) -> object:
+    """Turn a traced value into text through ``%r``."""
+    y = cast(TraceADScalar, values[0])
+    return y * float(len(_AS_REPR % (y,)))
+
+
+def _repr_conversion(values: TraceADArray) -> object:
+    """Turn a traced value into text through an f-string ``!r``."""
+    y = cast(TraceADScalar, values[0])
+    return y * float(len(f"{y!r}"))
+
+
+def _array_text(values: TraceADArray) -> object:
+    """Turn the traced array into text through an f-string."""
+    return values[0] * float(len(f"{values}"))
+
+
+def _array_percent_s(values: TraceADArray) -> object:
+    """Turn the traced array into text through ``%s``."""
+    return values[0] * float(len(_AS_TEXT % (values,)))
+
+
 def test_formatting_a_traced_value_is_refused() -> None:
     """An f-string of a traced value would be untraced text."""
     with pytest.raises(ValueError, match="cannot be formatted"):
         whole_program_value_and_grad(_formatted, [1.0], trace=False)
+
+
+@pytest.mark.parametrize(
+    "objective",
+    [_percent_s, _percent_r, _repr_conversion, _array_text, _array_percent_s],
+    ids=["percent-s", "percent-r", "repr-conversion", "array-f-string", "array-percent-s"],
+)
+def test_every_text_conversion_of_a_traced_value_is_refused(
+    objective: Callable[[TraceADArray], object],
+) -> None:
+    """``%s``, ``%r``, ``!r`` and array text would admit a wrong value and derivative.
+
+    Before this was refused, ``y * len("%s" % y)`` at ``y = 1.25`` returned
+    ``110.0`` with derivative ``88.0``, from the length of the object's default
+    representation, while the plain program returns ``5.0``.
+
+    Parameters
+    ----------
+    objective
+        Program converting a traced value to text.
+
+    """
+    with pytest.raises(ValueError, match="cannot be formatted or converted to text"):
+        whole_program_value_and_grad(objective, [1.25], trace=False)
 
 
 @pytest.mark.parametrize(

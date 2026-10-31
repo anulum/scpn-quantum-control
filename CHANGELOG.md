@@ -115,7 +115,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   - the trace values' own fields, their instance dictionary and the generic
     attribute and pickling hooks are refused on parameter-dependent values,
     so `y.__dict__["primal"]` no longer reaches the raw primal;
-  - formatting a traced value (`f"{y}"`, `format(y)`) is refused;
+  - turning a traced value or array into text is refused: `f"{y}"`,
+    `format(y)`, `str`, `repr`, `"%s"`, `"%r"` and `!r`. Before, at
+    `y = 1.25`, `y * len("%s" % y)` returned 110 with derivative 88, from the
+    length of the object's default representation, where the plain program
+    returns 5;
   - module attributes read only inside generator expressions are refused like
     top-level ones, and their members are part of the captured-state digest.
 
