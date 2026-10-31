@@ -17,7 +17,7 @@ claim is made here.
 from __future__ import annotations
 
 import tracemalloc
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pytest
@@ -111,8 +111,11 @@ def test_sparse_kuramoto_scaling_02() -> None:
     with pytest.raises(ValueError, match="duplicates='refuse'"):
         kuramoto.sparse_coupling_from_scipy(repeated, duplicates="refuse")
     for policy in ("max", "last"):
+        undeclared = cast(Any, policy)
         with pytest.raises(ValueError, match="'sum' or 'refuse'"):
-            kuramoto.sparse_coupling_from_edges(3, row, col, weight, duplicates=policy)  # type: ignore[arg-type]
+            kuramoto.sparse_coupling_from_edges(3, row, col, weight, duplicates=undeclared)
+        with pytest.raises(ValueError, match="'sum' or 'refuse'"):
+            kuramoto.sparse_coupling_from_scipy(repeated, duplicates=undeclared)
 
 
 @pytest.mark.parametrize(

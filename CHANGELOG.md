@@ -14,7 +14,9 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   accelerator evidence.
 
 - Make sparse Kuramoto storage and placement explicit:
-  - edge lists use a declared duplicate policy (`sum` or `refuse`);
+  - edge lists use a declared duplicate policy (`sum` or `refuse`); `refuse`
+    detects repeats from the same sorted pass that sums them, instead of a
+    separate row-unique pass that took 20 s for eight million ring edges;
   - storage reports measure the stored row, column and weight arrays, which
     are linear in the number of edges;
   - the sparse kernels report CPU float64 placement and no GPU path.

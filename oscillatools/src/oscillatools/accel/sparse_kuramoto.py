@@ -194,10 +194,13 @@ def sparse_coupling_from_scipy(
     if len(shape) != 2 or shape[0] != shape[1]:
         raise ValueError(f"coupling must be a square sparse matrix, got shape {shape}")
 
+    _validate_duplicate_policy(duplicates)
     coo = sparse.coo_array(raw, dtype=np.float64, copy=True)
-    _check_duplicate_policy(
-        np.asarray(coo.row, dtype=np.intp), np.asarray(coo.col, dtype=np.intp), duplicates
-    )
+    if duplicates == "refuse":
+        order = np.lexsort((coo.col, coo.row))
+        rows = np.asarray(coo.row, dtype=np.intp)[order]
+        cols = np.asarray(coo.col, dtype=np.intp)[order]
+        _refuse_repeated_entries(_entry_run_starts(rows, cols), rows.size)
     coo.sum_duplicates()
     row = np.asarray(coo.row, dtype=np.intp)
     col = np.asarray(coo.col, dtype=np.intp)
@@ -243,14 +246,19 @@ def sparse_coupling_from_edges(
         ``refuse``.
 
     """
-    raw = SparseKuramotoCoupling(n_oscillators=n_oscillators, row=row, col=col, weight=weight)  # type: ignore[arg-type]
-    _check_duplicate_policy(raw.row, raw.col, duplicates)
+    _validate_duplicate_policy(duplicates)
+    raw = SparseKuramotoCoupling(
+        n_oscillators=n_oscillators,
+        row=np.asarray(row),
+        col=np.asarray(col),
+        weight=np.asarray(weight),
+    )
     order = np.lexsort((raw.col, raw.row))
     rows, cols, weights = raw.row[order], raw.col[order], raw.weight[order]
+    starts = _entry_run_starts(rows, cols)
+    if duplicates == "refuse":
+        _refuse_repeated_entries(starts, rows.size)
     if rows.size:
-        starts = np.flatnonzero(
-            np.concatenate(([True], (rows[1:] != rows[:-1]) | (cols[1:] != cols[:-1])))
-        )
         rows, cols = rows[starts], cols[starts]
         weights = np.add.reduceat(weights, starts)
     keep = (rows != cols) & (weights != 0.0)
@@ -259,17 +267,23 @@ def sparse_coupling_from_edges(
     )
 
 
-def _check_duplicate_policy(row: IndexArray, col: IndexArray, policy: DuplicatePolicy) -> None:
-    """Validate the policy and refuse repeated entries when asked to."""
+def _validate_duplicate_policy(policy: DuplicatePolicy) -> None:
+    """Refuse a duplicate policy other than ``sum`` or ``refuse``."""
     if policy not in ("sum", "refuse"):
         raise ValueError("duplicates must be 'sum' or 'refuse'")
-    if policy == "refuse" and row.size:
-        pairs = np.stack((row, col), axis=1)
-        unique = np.unique(pairs, axis=0)
-        if unique.shape[0] != pairs.shape[0]:
-            raise ValueError(
-                "sparse coupling repeats a (row, col) entry under duplicates='refuse'"
-            )
+
+
+def _entry_run_starts(rows: IndexArray, cols: IndexArray) -> IndexArray:
+    """Return the first index of each run of equal ``(row, col)`` in sorted edges."""
+    boundary = np.ones(rows.size, dtype=bool)
+    boundary[1:] = (rows[1:] != rows[:-1]) | (cols[1:] != cols[:-1])
+    return np.flatnonzero(boundary).astype(np.intp, copy=False)
+
+
+def _refuse_repeated_entries(starts: IndexArray, n_entries: int) -> None:
+    """Raise when sorted edges hold fewer distinct entries than stored entries."""
+    if starts.size != n_entries:
+        raise ValueError("sparse coupling repeats a (row, col) entry under duplicates='refuse'")
 
 
 def ring_sparse_coupling(
