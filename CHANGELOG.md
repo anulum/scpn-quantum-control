@@ -46,8 +46,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     `1e-12 * diag(1, 2, 3)` was refused as degenerate;
   - a real loss computed in complex arithmetic is admitted up to an imaginary
     rounding residue;
-  - eigenpair derivatives report `rounding_error_estimate`,
-    `eps * max|lambda| / gap`;
+  - eigenpair derivatives report `rounding_error_estimate`, a bound on the
+    rounding error of `dv` that includes the `1 / gap**2` term of a tangent
+    splitting a near-degenerate pair;
+  - the imaginary residue of a real loss is judged against the loss's own
+    magnitude, and `is_holomorphic` uses a relative tolerance;
   - NumPy integer indices are accepted.
 
 - Close gaps in whole-program AD branch and replay checks:

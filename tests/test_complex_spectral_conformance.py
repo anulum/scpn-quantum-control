@@ -20,6 +20,8 @@ from scpn_quantum_control.wirtinger_calculus import (
     SpectralDegeneracyError,
     framework_complex_gradient,
     hermitian_eigenpair_derivative,
+    holomorphic_gradient,
+    is_holomorphic,
     real_block_gradient,
     real_block_jacobian,
     spectral_projector_derivative,
@@ -326,44 +328,87 @@ def test_real_loss_in_complex_arithmetic_is_admitted() -> None:
         real_block_gradient(lambda v: complex(float(np.sum(np.abs(v) ** 2)), 1e-6), state)
 
 
-@pytest.mark.parametrize("gap", [1e-3, 1e-6])
-def test_near_degenerate_rotated_derivative_meets_its_rounding_estimate(gap: float) -> None:
-    """Against a 50-digit reference, the error stays within the reported estimate.
-
-    The eigenvector derivative depends on the phase of ``v``, so the
-    gauge-invariant ``d(v v^H) = dv v^H + v dv^H`` is compared.
-
-    Parameters
-    ----------
-    gap
-        Distance between the differentiated eigenvalue and its neighbour.
-
-    """
+def _reference_projector_derivative(
+    matrix: NDArray[np.complex128], tangent: NDArray[np.complex128]
+) -> NDArray[np.complex128]:
+    """Return ``d(v v^H)`` of the lowest eigenvector at 50 digits."""
     mpmath: Any = importlib.import_module("mpmath")
-
-    matrix = _hermitian((0.0, gap, 1.0, 2.0), 11)
-    tangent = _direction(4, 12)
-    result = hermitian_eigenpair_derivative(matrix, tangent, 0)
-    vector = result.eigenvector
-    derivative = np.outer(result.eigenvector_derivative, vector.conj()) + np.outer(
-        vector, result.eigenvector_derivative.conj()
-    )
     mpmath.mp.dps = 50
     exact = mpmath.matrix(matrix.tolist())
     direction = mpmath.matrix(tangent.tolist())
     values, vectors = mpmath.eighe(exact)
-    order = sorted(range(4), key=lambda i: values[i])
+    order = sorted(range(matrix.shape[0]), key=lambda i: values[i])
     lowest = vectors[:, order[0]]
-    reference = mpmath.matrix(4, 4)
+    reference = mpmath.matrix(matrix.shape[0], matrix.shape[0])
     for j in order[1:]:
         other = vectors[:, j]
         coupling = (other.H * direction * lowest)[0] / (values[order[0]] - values[j])
         term = other * coupling * lowest.H
         reference += term + term.H
-    expected = np.array(reference.tolist(), dtype=np.complex128)
-    error = float(np.linalg.norm(derivative - expected) / np.linalg.norm(expected))
-    assert result.rounding_error_estimate > 0.0
-    assert error <= 10.0 * result.rounding_error_estimate + 1e-14
+    return np.array(reference.tolist(), dtype=np.complex128)
+
+
+@pytest.mark.parametrize(
+    ("gap", "decoupled"),
+    [(1e-3, False), (1e-6, False), (1e-4, True), (1e-6, True), (1e-8, True)],
+    ids=["generic-1e-3", "generic-1e-6", "split-1e-4", "split-1e-6", "split-1e-8"],
+)
+def test_near_degenerate_derivative_error_stays_within_its_estimate(
+    gap: float, decoupled: bool
+) -> None:
+    """Against a 50-digit reference, the error stays within the reported bound.
+
+    The eigenvector derivative depends on the phase of ``v``, so the
+    gauge-invariant ``d(v v^H) = dv v^H + v dv^H`` is compared; its error is at
+    most twice that of ``dv``. A tangent that splits the near-degenerate pair
+    without mixing it makes the error grow as ``1 / gap**2``; at a gap of
+    ``1e-8`` the derivative is then wrong at order one, and the estimate must
+    say so.
+
+    Parameters
+    ----------
+    gap
+        Distance between the differentiated eigenvalue and its neighbour.
+    decoupled
+        Whether the tangent splits the pair without coupling it.
+
+    """
+    if decoupled:
+        rotation = _unitary(3, 21)
+        matrix = (rotation @ np.diag([0.0, gap, 1.0]) @ rotation.conj().T).astype(np.complex128)
+        split = np.array([[1.0, 0.0, 0.3], [0.0, -1.0, 0.0], [0.3, 0.0, 0.0]])
+        tangent = (rotation @ split @ rotation.conj().T).astype(np.complex128)
+    else:
+        matrix = _hermitian((0.0, gap, 1.0, 2.0), 11)
+        tangent = _direction(4, 12)
+    result = hermitian_eigenpair_derivative(matrix, tangent, 0)
+    vector = result.eigenvector
+    derivative = np.outer(result.eigenvector_derivative, vector.conj()) + np.outer(
+        vector, result.eigenvector_derivative.conj()
+    )
+    error = float(np.linalg.norm(derivative - _reference_projector_derivative(matrix, tangent)))
+    assert error <= 2.0 * result.rounding_error_estimate + 1e-14
+    if decoupled and gap == 1e-8:
+        assert result.rounding_error_estimate > np.linalg.norm(result.eigenvector_derivative)
+
+
+def test_small_complex_losses_are_judged_at_their_own_scale() -> None:
+    """A tiny loss whose imaginary part is comparable to it is refused; zero is real."""
+    z = np.array([0.3 - 0.4j, 0.1 + 0.2j])
+    with pytest.raises(ValueError, match="real-valued"):
+        real_block_gradient(lambda v: complex(1e-15 * float(np.sum(np.abs(v) ** 2)), 1e-13), z)
+    with pytest.raises(ValueError, match="real-valued"):
+        real_block_gradient(lambda v: complex(0.0, 5e-13 * float(np.real(v[0]))), z)
+    assert np.all(real_block_gradient(lambda v: 0.0, z) == 0.0)
+
+
+def test_holomorphy_tolerance_is_relative() -> None:
+    """``z**2`` far out is holomorphic; a tiny ``conj`` is not."""
+    far = np.array([1e8 + 1e8j])
+    assert is_holomorphic(lambda v: v[0] ** 2, far)
+    assert _within_budget(holomorphic_gradient(lambda v: v[0] ** 2, far), 2.0 * far)
+    assert not is_holomorphic(lambda v: 1e-12 * np.conj(v[0]), np.array([0.3 + 0.1j]))
+    assert is_holomorphic(lambda v: 2.0 + 0.0j, np.array([0.3 + 0.1j]))
 
 
 def test_numpy_integer_indices_are_admitted() -> None:

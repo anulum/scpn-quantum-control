@@ -78,7 +78,8 @@ def _as_complex_vector(z: NDArray[np.complex128]) -> NDArray[np.complex128]:
 
 
 _REAL_LOSS_IMAGINARY_TOLERANCE = 1.0e-12
-"""Relative imaginary part of a real loss that is treated as complex rounding."""
+"""Imaginary part of a real loss, relative to the loss's largest magnitude over
+the evaluated points, that is treated as complex rounding."""
 
 
 def _validate_step(step: float) -> float:
@@ -151,10 +152,22 @@ def is_holomorphic(
     tolerance: float = 1e-6,
     step: float = 1e-6,
 ) -> bool:
-    """Test the Cauchy-Riemann condition ``df/dconj_z = 0`` at ``z``."""
+    """Test the Cauchy-Riemann condition ``df/dconj_z = 0`` at ``z``.
+
+    ``tolerance`` is relative: the residual ``max|df/dconj_z|`` must not exceed
+    ``tolerance * max|df/dz|``, so the test does not depend on the size of
+    ``f`` or of ``z``. A function with ``df/dz = 0`` is holomorphic only if its
+    residual is exactly zero.
+    """
     if tolerance < 0.0:
         raise ValueError("tolerance must be non-negative")
-    return wirtinger_partials(f, z, step=step).holomorphic_residual <= tolerance
+    return _cauchy_riemann_holds(wirtinger_partials(f, z, step=step), tolerance)
+
+
+def _cauchy_riemann_holds(derivative: WirtingerDerivative, tolerance: float) -> bool:
+    """Compare the Cauchy-Riemann residual with the size of ``df/dz``."""
+    scale = float(np.max(np.abs(derivative.df_dz))) if derivative.df_dz.size else 0.0
+    return derivative.holomorphic_residual <= tolerance * scale
 
 
 def holomorphic_gradient(
@@ -170,11 +183,11 @@ def holomorphic_gradient(
     the ordinary complex derivative is not defined.
     """
     derivative = wirtinger_partials(f, z, step=step)
-    if derivative.holomorphic_residual > tolerance:
+    if not _cauchy_riemann_holds(derivative, tolerance):
         raise ValueError(
             "f is not holomorphic at z (Cauchy-Riemann residual "
-            f"{derivative.holomorphic_residual:.3e} exceeds tolerance {tolerance:.3e}); "
-            "use wirtinger_partials for the non-holomorphic derivative"
+            f"{derivative.holomorphic_residual:.3e} exceeds relative tolerance "
+            f"{tolerance:.3e}); use wirtinger_partials for the non-holomorphic derivative"
         )
     return derivative.df_dz
 
@@ -289,20 +302,25 @@ def real_block_gradient(
     Raises
     ------
     ValueError
-        If the loss returns an imaginary part above rounding, that is above
-        ``1e-12 * max(1, |Re L|)``. A real loss computed in complex arithmetic,
-        such as ``vdot(v, H @ v)``, carries such rounding and is admitted with
-        its imaginary part dropped.
+        If the loss returns an imaginary part above rounding: above
+        ``1e-12`` times the largest ``|L|`` over every point evaluated. A real
+        loss computed in complex arithmetic, such as ``vdot(v, H @ v)``,
+        carries such rounding and is admitted; only the real part is
+        differentiated. The scale is the loss's own, so a small loss with a
+        comparable imaginary part is refused, whatever its units.
 
     """
+    seen: list[complex] = []
 
-    def _checked(vector: NDArray[np.complex128]) -> complex:
+    def _recorded(vector: NDArray[np.complex128]) -> complex:
         value = complex(loss(vector))
-        if abs(value.imag) > _REAL_LOSS_IMAGINARY_TOLERANCE * max(1.0, abs(value.real)):
-            raise ValueError("loss must be real-valued")
-        return complex(value.real, 0.0)
+        seen.append(value)
+        return value
 
-    gradient: NDArray[np.float64] = real_block_jacobian(_checked, z, step=step)[0]
+    gradient: NDArray[np.float64] = real_block_jacobian(_recorded, z, step=step)[0]
+    scale = max(abs(value) for value in seen)
+    if max(abs(value.imag) for value in seen) > _REAL_LOSS_IMAGINARY_TOLERANCE * scale:
+        raise ValueError("loss must be real-valued")
     return gradient
 
 
@@ -388,8 +406,10 @@ class EigenpairDerivative:
     eigenvector_derivative: NDArray[np.complex128]
     minimum_gap: float
     rounding_error_estimate: float = 0.0
-    """First-order relative rounding error of the eigenvector derivative,
-    ``eps * max|lambda| / minimum_gap``; it grows as the gap closes."""
+    """First-order bound on the Euclidean norm of the error in
+    ``eigenvector_derivative`` from rounding in the eigendecomposition,
+    ``eps * max|lambda| * (|dv| / gap + 2 * |dA|_2 / gap**2)``. The second term
+    dominates when the tangent splits a near-degenerate pair without mixing it."""
 
 
 def hermitian_eigenpair_derivative(
@@ -417,10 +437,12 @@ def hermitian_eigenpair_derivative(
     -------
     EigenpairDerivative
         ``dlambda = v^H dA v`` and ``dv = sum_j v_j (v_j^H dA v) / (lambda - lambda_j)``.
-        Rounding in the eigendecomposition perturbs ``dv`` by about
-        ``eps * max|lambda| / gap`` relative to its size, reported as
-        ``rounding_error_estimate``; just above the default tolerance this
-        exceeds ``1e-8``.
+        Rounding in the eigendecomposition perturbs ``dv`` by up to about
+        ``eps * max|lambda| * (|dv| / gap + 2 * |dA|_2 / gap**2)`` in norm,
+        reported as ``rounding_error_estimate``. The ``1 / gap**2`` term means
+        a tangent that splits a near-degenerate pair can make ``dv`` inaccurate
+        long before the gap reaches the tolerance; compare the estimate with
+        ``|dv|`` before relying on the result.
 
     Raises
     ------
@@ -466,7 +488,9 @@ def hermitian_eigenpair_derivative(
         eigenvector_derivative=derivative.astype(np.complex128),
         minimum_gap=gap,
         rounding_error_estimate=float(
-            np.finfo(np.float64).eps * np.max(np.abs(eigenvalues)) / gap
+            np.finfo(np.float64).eps
+            * np.max(np.abs(eigenvalues))
+            * (np.linalg.norm(derivative) / gap + 2.0 * np.linalg.norm(d, 2) / gap**2)
         ),
     )
 
