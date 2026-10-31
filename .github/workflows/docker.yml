@@ -67,17 +67,11 @@ jobs:
       - name: Run tests in Docker
         env:
           TEST_SHARD: ${{ matrix.shard }}
-        run: |
-          docker run --rm \
-            --env TEST_SHARD --env GITHUB_SHA --env GITHUB_RUN_ID --env GITHUB_RUN_ATTEMPT \
-            scpn-quantum-control:test \
-            sh -c 'python -m tools.ci_test_shards snapshot --source /tmp/cold-timings.json --output /tmp/timings.json \
-              && exec pytest tests/ -p tools.pytest_ci_shard \
-                --ci-suite docker --ci-shard "$TEST_SHARD" --ci-shards 4 \
-                --ci-output "/tmp/docker-shard-$TEST_SHARD" --ci-timings /tmp/timings.json \
-                --ci-source-sha "$GITHUB_SHA" --ci-run-id "$GITHUB_RUN_ID" --ci-attempt "$GITHUB_RUN_ATTEMPT" \
-                -v --tb=short -o cache_dir=/home/sqc/.cache/pytest \
-                -m "not slow and not hardware and not internal_corpus and not performance and not framework_imports"'
+        run: >-
+          docker run --rm
+          --env GITHUB_SHA --env GITHUB_RUN_ID --env GITHUB_RUN_ATTEMPT
+          scpn-quantum-control:test
+          bash tools/run_docker_test_shard.sh "$TEST_SHARD" 4
 
       - name: Verify offline LLM-QPU baseline sandbox
         if: matrix.shard == 1
