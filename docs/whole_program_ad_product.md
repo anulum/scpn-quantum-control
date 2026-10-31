@@ -273,13 +273,17 @@ and a scalar objective, runs through every admitted route with one identity:
   stays `blocked` for that reason.
 
 A composition outside the admitted set is refused where it happens. If library
-code (the standard library or an installed package) fails on traced values,
-for example an array built element by element from traced scalars and handed
-to `np.linalg.solve`, `WholeProgramStageRefusal` (a `ValueError`) names the
-file, the line and the operation and chains the original error. No value or
-derivative is issued. Refusals raised by the package itself keep their own
-type and message, and an exception raised by the user's own code propagates
-unchanged.
+code fails on traced values, for example an array built element by element from
+traced scalars and handed to `np.linalg.solve`, `WholeProgramStageRefusal` (a
+`ValueError`) names the file, the line and the operation and chains the original
+error. No value or derivative is issued. Library code means a module of an
+importable distribution whose source file lies inside that distribution's
+files, wherever it was loaded from; ownership is decided by the imported
+module and real path containment, not by where files sit on disk. Refusals
+raised by the package itself keep their own type and message. Every other
+exception propagates unchanged: one raised by the user's own code (the
+objective's top-level package, or any module that belongs to no distribution,
+wherever it is installed) and a failure with no library frame.
 
 `tests/test_whole_program_backend_journeys.py` holds these journeys. There is
 no claim for arbitrary Python programs, GPU or device gradients, or bit-exact

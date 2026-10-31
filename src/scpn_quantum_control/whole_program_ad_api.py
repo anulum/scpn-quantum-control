@@ -11,12 +11,12 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.metadata
 import json
 import linecache
 import math
 import struct
 import sys
-import sysconfig
 import traceback
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
@@ -62,12 +62,15 @@ from .whole_program_trace_values import (
 class WholeProgramStageRefusal(ValueError):
     """A stage of the user program that failed on traced values, located in its source.
 
-    Raised when library code (the standard library or an installed package,
-    for example a NumPy routine handed an object array of traced scalars)
-    fails while the program runs under whole-program AD. The stage is the
-    deepest line of the user's own source file on the failing call path; no
-    value or derivative is issued. An exception raised by the user's own code
-    propagates unchanged.
+    Raised when library code fails while the program runs under whole-program
+    AD, for example a NumPy routine handed an object array of traced scalars.
+    Library code is a module of an importable distribution whose source file
+    lies inside that distribution's files, wherever it was loaded from. The
+    stage is the deepest line of the user's own source file on the failing call
+    path; no value or derivative is issued. Every other exception propagates
+    unchanged: the user's own (the objective's top-level package and any module
+    that belongs to no distribution, wherever it is installed) and failures with
+    no library frame.
     """
 
     def __init__(
@@ -106,15 +109,52 @@ class WholeProgramStageRefusal(ValueError):
         )
 
 
-_PACKAGE_ROOT = str(Path(__file__).resolve().parent)
-_LIBRARY_ROOTS = tuple(
-    sorted(
-        {
-            str(Path(sysconfig.get_paths()[key]).resolve())
-            for key in ("stdlib", "platstdlib", "purelib", "platlib")
-        }
+_PACKAGE_TOP = __name__.partition(".")[0]
+_DISTRIBUTION_INDEX: dict[tuple[str, ...], dict[str, list[str]]] = {}
+
+
+def _top_level(module_name: str) -> str:
+    """Return the top-level import name of a dotted module name."""
+    return module_name.partition(".")[0]
+
+
+def _distributions_providing(top: str) -> list[str]:
+    """Return the distributions that declare ``top`` on the current import path."""
+    key = tuple(sys.path)
+    index = _DISTRIBUTION_INDEX.get(key)
+    if index is None:
+        index = dict(importlib.metadata.packages_distributions())
+        _DISTRIBUTION_INDEX.clear()
+        _DISTRIBUTION_INDEX[key] = index
+    return list(index.get(top, ()))
+
+
+def _inside(path: Path, root: Path) -> bool:
+    """Return whether ``path`` is ``root``, a module file for it, or a file inside it."""
+    return path == root or path.with_suffix("") == root or path.is_relative_to(root)
+
+
+def _is_library_module(module_name: str, objective_top: str) -> bool:
+    """Decide whether a raising module is library code rather than the user's code.
+
+    Ownership follows the imported module and real path containment, never a
+    textual path prefix. A module of the objective's own top-level package is
+    user code wherever it is installed. Any other module is library code only
+    when its source file lies inside the files of an importable distribution
+    that declares its top-level name, wherever that distribution was loaded
+    from; everything else is the user's code.
+    """
+    top = _top_level(module_name)
+    if top == objective_top:
+        return False
+    module_file = getattr(sys.modules.get(module_name), "__file__", None)
+    source = Path(module_file).resolve() if module_file else None
+    return source is not None and any(
+        _inside(
+            source, Path(str(importlib.metadata.distribution(name).locate_file(top))).resolve()
+        )
+        for name in _distributions_providing(top)
     )
-)
 
 
 def _foreign_failure_stage(
@@ -124,16 +164,19 @@ def _foreign_failure_stage(
 
     Returns ``None`` for failures raised by this package, which are already typed
     refusals, and for exceptions raised by the user's own code, which are the
-    user's to handle. Only a failure whose deepest frame lies in the standard
-    library or an installed package is a composition this frontend cannot run.
-    The frontend admits only Python functions with source, and the failure
+    user's to handle. Only a failure whose deepest frame is library code (see
+    :func:`_is_library_module`) is a composition this frontend cannot run. The
+    frontend admits only Python functions with source, and the failure
     propagated through the objective's own frame, so that frame is on the
     traceback; the deepest frame in the objective's file is the stage.
     """
-    frames = traceback.extract_tb(error.__traceback__)
-    raised_in = str(Path(frames[-1].filename).resolve())
-    if raised_in.startswith(_PACKAGE_ROOT) or not raised_in.startswith(_LIBRARY_ROOTS):
+    raising_frame = list(traceback.walk_tb(error.__traceback__))[-1][0]
+    raising_module = str(raising_frame.f_globals.get("__name__", ""))
+    if _top_level(raising_module) == _PACKAGE_TOP or not _is_library_module(
+        raising_module, _top_level(str(getattr(objective, "__module__", None) or ""))
+    ):
         return None
+    frames = traceback.extract_tb(error.__traceback__)
     source_file = str(cast(Any, objective).__code__.co_filename)
     stage = [frame for frame in frames if frame.filename == source_file][-1]
     line = int(stage.lineno or 0)
