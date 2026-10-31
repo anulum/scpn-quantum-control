@@ -13,7 +13,7 @@
     "python_model_source_modules": 855,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1612
+    "test_files": 1613
   },
   "documentation": {
     "examples": [
@@ -9639,6 +9639,7 @@
       "tests/test_dd.py",
       "tests/test_decisive_advantage_protocol.py",
       "tests/test_decisive_run_harness.py",
+      "tests/test_delayed_stochastic_sensitivities.py",
       "tests/test_dense_allocation_admission.py",
       "tests/test_dense_budget.py",
       "tests/test_dense_budget_container_awareness.py",

@@ -22,6 +22,9 @@ from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from oscillatools.accel import (
+        EXPECTATION_ESTIMAND as EXPECTATION_ESTIMAND,
+    )
+    from oscillatools.accel import (
         AdaptiveGradients as AdaptiveGradients,
     )
     from oscillatools.accel import (
@@ -170,6 +173,9 @@ if TYPE_CHECKING:
     )
     from oscillatools.accel import (
         NeuralLyapunovCertificate as NeuralLyapunovCertificate,
+    )
+    from oscillatools.accel import (
+        NoisyExpectationEstimate as NoisyExpectationEstimate,
     )
     from oscillatools.accel import (
         NoisyGradients as NoisyGradients,
@@ -622,6 +628,9 @@ if TYPE_CHECKING:
         jax_kuramoto_delayed_gradient as jax_kuramoto_delayed_gradient,
     )
     from oscillatools.accel import (
+        jax_kuramoto_delayed_hessian_vector_product as jax_kuramoto_delayed_hessian_vector_product,
+    )
+    from oscillatools.accel import (
         jax_kuramoto_delayed_trajectory as jax_kuramoto_delayed_trajectory,
     )
     from oscillatools.accel import (
@@ -968,6 +977,9 @@ if TYPE_CHECKING:
     )
     from oscillatools.accel import (
         noisy_critical_coupling as noisy_critical_coupling,
+    )
+    from oscillatools.accel import (
+        noisy_expectation_value_and_grad as noisy_expectation_value_and_grad,
     )
     from oscillatools.accel import (
         noisy_kuramoto_step as noisy_kuramoto_step,
@@ -1810,6 +1822,13 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
     "SparseStorageReport": ("oscillatools.accel", "SparseStorageReport"),
     "SparseExecutionReport": ("oscillatools.accel", "SparseExecutionReport"),
     "sparse_kuramoto_execution_report": ("oscillatools.accel", "sparse_kuramoto_execution_report"),
+    "jax_kuramoto_delayed_hessian_vector_product": (
+        "oscillatools.accel",
+        "jax_kuramoto_delayed_hessian_vector_product",
+    ),
+    "EXPECTATION_ESTIMAND": ("oscillatools.accel", "EXPECTATION_ESTIMAND"),
+    "NoisyExpectationEstimate": ("oscillatools.accel", "NoisyExpectationEstimate"),
+    "noisy_expectation_value_and_grad": ("oscillatools.accel", "noisy_expectation_value_and_grad"),
     "sparse_networked_kuramoto_force": ("oscillatools.accel", "sparse_networked_kuramoto_force"),
     "sparse_kuramoto_euler_trajectory": ("oscillatools.accel", "sparse_kuramoto_euler_trajectory"),
     "sparse_kuramoto_rk4_trajectory": ("oscillatools.accel", "sparse_kuramoto_rk4_trajectory"),

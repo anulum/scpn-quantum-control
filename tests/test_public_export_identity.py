@@ -209,6 +209,13 @@ APPROVED_EXPORT_ADDITIONS: dict[str, tuple[int, tuple[tuple[str, str], ...]]] = 
             ("SparseStorageReport", "oscillatools.accel.sparse_kuramoto"),
             ("SparseExecutionReport", "oscillatools.accel.sparse_kuramoto"),
             ("sparse_kuramoto_execution_report", "oscillatools.accel.sparse_kuramoto"),
+            (
+                "jax_kuramoto_delayed_hessian_vector_product",
+                "oscillatools.accel.jax_kuramoto_delayed",
+            ),
+            ("EXPECTATION_ESTIMAND", "oscillatools.accel.diff_kuramoto_noisy"),
+            ("NoisyExpectationEstimate", "oscillatools.accel.diff_kuramoto_noisy"),
+            ("noisy_expectation_value_and_grad", "oscillatools.accel.diff_kuramoto_noisy"),
         ),
     ),
 }

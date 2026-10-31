@@ -94,7 +94,10 @@ from .diff_kuramoto_mpc_kkt import (
     mpc_plan_energy_gradient,
 )
 from .diff_kuramoto_noisy import (
+    EXPECTATION_ESTIMAND,
+    NoisyExpectationEstimate,
     NoisyGradients,
+    noisy_expectation_value_and_grad,
     noisy_phase_sensitivity,
     noisy_terminal_value_and_grad,
 )
@@ -125,6 +128,7 @@ from .jax_kuramoto_delayed import (
     jax_kuramoto_delayed_ensemble,
     jax_kuramoto_delayed_ensemble_gradient,
     jax_kuramoto_delayed_gradient,
+    jax_kuramoto_delayed_hessian_vector_product,
     jax_kuramoto_delayed_trajectory,
 )
 from .jax_kuramoto_integrators import (
@@ -1021,6 +1025,12 @@ __all__ = [
     "SparseStorageReport",
     "SparseExecutionReport",
     "sparse_kuramoto_execution_report",
+    # Public additions after the frozen export order: delayed second order and
+    # replicated noisy expectations.
+    "jax_kuramoto_delayed_hessian_vector_product",
+    "EXPECTATION_ESTIMAND",
+    "NoisyExpectationEstimate",
+    "noisy_expectation_value_and_grad",
     "sparse_networked_kuramoto_force",
     "sparse_kuramoto_euler_trajectory",
     "sparse_kuramoto_rk4_trajectory",

@@ -33,7 +33,7 @@ deterministic limit); the phase, frequency and coupling channels are valid for a
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 
 import numpy as np
@@ -257,10 +257,153 @@ def noisy_terminal_value_and_grad(
     )
 
 
+EXPECTATION_ESTIMAND = (
+    "gradient of the expectation E[L(theta_N)] over the Wiener increments, estimated by the mean "
+    "of pathwise gradients on independent noise paths; it needs L(theta_N) to be differentiable "
+    "along almost every path with a dominating bound, so that differentiation and expectation "
+    "commute; standard errors describe the replicate mean only and are not bounds"
+)
+"""What :func:`noisy_expectation_value_and_grad` estimates, distinct from one path's derivative."""
+
+
+@dataclass(frozen=True)
+class NoisyExpectationEstimate:
+    """Replicate estimate of an expected objective and of its gradient.
+
+    Attributes
+    ----------
+    value : float
+        Mean of ``L(θ_N)`` over the replicates.
+    value_standard_error : float
+        Standard error of that mean.
+    gradients : NoisyGradients
+        Mean pathwise gradients, the estimate of ``∇E[L]``.
+    standard_errors : NoisyGradients
+        Standard error of each mean gradient component.
+    seeds : tuple of int
+        The independent noise seeds, one replicate each.
+    estimand : str
+        :data:`EXPECTATION_ESTIMAND`.
+
+    """
+
+    value: float
+    value_standard_error: float
+    gradients: NoisyGradients
+    standard_errors: NoisyGradients
+    seeds: tuple[int, ...]
+    estimand: str = EXPECTATION_ESTIMAND
+
+
+def noisy_expectation_value_and_grad(
+    phases: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    coupling: NDArray[np.float64],
+    *,
+    diffusion: float,
+    dt: float,
+    n_steps: int,
+    seeds: Sequence[int],
+    objective: NoisyTerminalObjective,
+    objective_grad: NoisyTerminalObjectiveGrad,
+) -> NoisyExpectationEstimate:
+    r"""Estimate ``E[L(θ_N)]`` and ``∇E[L(θ_N)]`` from independent noise replicates.
+
+    Each seed gives one noise path and its pathwise value and gradient from
+    :func:`noisy_terminal_value_and_grad`; the estimate is their mean, with the
+    standard error of the mean per component. One path's gradient and this
+    estimate answer different questions: the first is the derivative for that
+    realisation, this one the derivative of the average over realisations
+    (see :data:`EXPECTATION_ESTIMAND` for when they coincide in expectation).
+
+    Parameters
+    ----------
+    phases, omega, coupling, diffusion, dt, n_steps, objective, objective_grad
+        As in :func:`noisy_terminal_value_and_grad`.
+    seeds : sequence of int
+        At least two distinct non-negative integer seeds, one per independent
+        replicate.
+
+    Returns
+    -------
+    NoisyExpectationEstimate
+        Means, standard errors, the seeds and the estimand.
+
+    Raises
+    ------
+    ValueError
+        If fewer than two seeds are given, a seed repeats or is not a
+        non-negative integer, or any problem argument is invalid.
+
+    """
+    chosen = tuple(seeds)
+    if len(chosen) < 2:
+        raise ValueError("an expectation estimate needs at least two independent seeds")
+    if any(
+        isinstance(seed, bool) or not isinstance(seed, int | np.integer) or seed < 0
+        for seed in chosen
+    ):
+        raise ValueError("seeds must be non-negative integers")
+    if len(set(chosen)) != len(chosen):
+        raise ValueError("seeds must be distinct, so the replicates are independent paths")
+    values: list[float] = []
+    flats: list[NDArray[np.float64]] = []
+    for seed in chosen:
+        value, gradients = noisy_terminal_value_and_grad(
+            phases,
+            omega,
+            coupling,
+            diffusion=diffusion,
+            dt=dt,
+            n_steps=n_steps,
+            seed=int(seed),
+            objective=objective,
+            objective_grad=objective_grad,
+        )
+        values.append(value)
+        flats.append(
+            np.concatenate(
+                [
+                    gradients.initial_phases,
+                    gradients.omega,
+                    gradients.coupling.ravel(),
+                    [gradients.diffusion],
+                ]
+            )
+        )
+    count = len(chosen)
+    stacked = np.vstack(flats)
+    mean = stacked.mean(axis=0)
+    error = stacked.std(axis=0, ddof=1) / np.sqrt(count)
+    sample = np.asarray(values, dtype=np.float64)
+    size = int(np.asarray(omega).size)
+
+    def split(flat: NDArray[np.float64]) -> NoisyGradients:
+        return NoisyGradients(
+            initial_phases=np.ascontiguousarray(flat[:size]),
+            omega=np.ascontiguousarray(flat[size : 2 * size]),
+            coupling=np.ascontiguousarray(
+                flat[2 * size : 2 * size + size * size].reshape(size, size)
+            ),
+            diffusion=float(flat[-1]),
+        )
+
+    return NoisyExpectationEstimate(
+        value=float(sample.mean()),
+        value_standard_error=float(sample.std(ddof=1) / np.sqrt(count)),
+        gradients=split(mean),
+        standard_errors=split(error),
+        seeds=tuple(int(seed) for seed in chosen),
+    )
+
+
 __all__ = [
+    "EXPECTATION_ESTIMAND",
+    "NoisyExpectationEstimate",
     "NoisyGradients",
     "NoisyTerminalObjective",
     "NoisyTerminalObjectiveGrad",
+    "noisy_expectation_value_and_grad",
     "noisy_phase_sensitivity",
     "noisy_terminal_value_and_grad",
 ]

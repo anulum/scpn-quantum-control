@@ -21,6 +21,8 @@ KURAMOTO_SOLVER_SOURCES = [
     "oscillatools/src/oscillatools/accel/kuramoto_delayed.py",
     "oscillatools/src/oscillatools/accel/kuramoto_scipy_interop.py",
     "oscillatools/src/oscillatools/accel/sparse_kuramoto.py",
+    "oscillatools/src/oscillatools/accel/diff_kuramoto_delay_sensitivity.py",
+    "oscillatools/src/oscillatools/accel/diff_kuramoto_noisy.py",
     "tools/kuramoto_solver_quality_gates.py",
 ]
 """Existing numerical owners and the coherent scoped command builder."""
@@ -36,6 +38,10 @@ KURAMOTO_SOLVER_TESTS = [
     "oscillatools/tests/test_sparse_kuramoto.py",
     "tests/test_sparse_kuramoto_scaling.py",
     "tests/test_kuramoto_model_conventions.py",
+    "tests/test_delayed_stochastic_sensitivities.py",
+    "oscillatools/tests/test_diff_kuramoto_delay_sensitivity.py",
+    "oscillatools/tests/test_diff_kuramoto_noisy.py",
+    "oscillatools/tests/test_jax_kuramoto_delayed.py",
 ]
 """Independent equations, real adapters and their original direct tests."""
 KURAMOTO_SOLVER_TYPING = [
@@ -43,12 +49,14 @@ KURAMOTO_SOLVER_TYPING = [
     "tests/test_kuramoto_solver_trajectories.py",
     "tests/test_kuramoto_solver_quality_gate.py",
     "tests/test_sparse_kuramoto_scaling.py",
+    "tests/test_delayed_stochastic_sensitivities.py",
+    "oscillatools/src/oscillatools/accel/jax_kuramoto_delayed.py",
     "examples/kuramoto_solver_outcomes.py",
 ]
 """Every changed Python production owner, new test and runnable example."""
 KURAMOTO_SOLVER_COVERAGE = ".coverage.kuramoto-solvers"
 """Distinct CI database; local execution uses registered task allocations."""
-KURAMOTO_SOLVER_INCLUDE = "*/kuramoto_system.py,*/diff_kuramoto_adaptive.py,*/diff_kuramoto_dopri.py,*/kuramoto_adaptive.py,*/kuramoto_delayed.py,*/kuramoto_scipy_interop.py,*/sparse_kuramoto.py,*/tools/kuramoto_solver_quality_gates.py"
+KURAMOTO_SOLVER_INCLUDE = "*/kuramoto_system.py,*/diff_kuramoto_adaptive.py,*/diff_kuramoto_dopri.py,*/kuramoto_adaptive.py,*/kuramoto_delayed.py,*/kuramoto_scipy_interop.py,*/sparse_kuramoto.py,*/diff_kuramoto_delay_sensitivity.py,*/diff_kuramoto_noisy.py,*/tools/kuramoto_solver_quality_gates.py"
 """Complete mandatory statements/branches; unchanged optional adapters retain native policy."""
 
 

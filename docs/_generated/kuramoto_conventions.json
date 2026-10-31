@@ -600,7 +600,7 @@
   ],
   "definition_path": "src/scpn_quantum_control/kuramoto_model_conventions.py",
   "definition_sha256": "e5edb172fb8b37deffcfc48105141697b6bc936179e29f3f8342eb1cd35f4690",
-  "identity": "b472ef056a64afab18697b1d957f6bea885daab4037f76ddcc4456728122f68d",
+  "identity": "820ab68c9fd23d77b0b600353a8a3527de1661cb4fcefde2475a90fc8c9b3e17",
   "schema": "kuramoto_conventions.v1",
   "source_owners": {
     "oscillatools.accel.daido_mean_field.daido_mean_field_force": {
@@ -757,7 +757,7 @@
       "path": "oscillatools/src/oscillatools/accel/diff_kuramoto_noisy.py",
       "qualified_name": "oscillatools.accel.diff_kuramoto_noisy.noisy_terminal_value_and_grad",
       "signature": "phases: NDArray[np.float64], omega: NDArray[np.float64], coupling: NDArray[np.float64], *, diffusion: float, dt: float, n_steps: int, seed: int, objective: NoisyTerminalObjective, objective_grad: NoisyTerminalObjectiveGrad",
-      "source_sha256": "5160abb4d9375d4e6694479b2ff9fcbfd21d9b014c17f7e32ad9b1844816417f",
+      "source_sha256": "1718fe830859472aa2c42751e9eb9402d59ba3f5485bfef4da51555c6413c1da",
       "summary": "Differentiate a terminal objective through the noisy Kuramoto integrator (fixed noise)."
     },
     "oscillatools.accel.diff_kuramoto_rk4.kuramoto_rk4_vjp": {
@@ -809,12 +809,12 @@
         "oscillatools/tests/test_jax_kuramoto_delayed.py"
       ],
       "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
-      "line": 246,
+      "line": 276,
       "module_declared_dispatch_chains": {},
       "path": "oscillatools/src/oscillatools/accel/jax_kuramoto_delayed.py",
       "qualified_name": "oscillatools.accel.jax_kuramoto_delayed.jax_kuramoto_delayed_gradient",
       "signature": "initial_history: NDArray[np.float64], omega: NDArray[np.float64], coupling: NDArray[np.float64], *, delay: float, dt: float, n_steps: int, cotangent: NDArray[np.float64], delay_tolerance: float=1e-09",
-      "source_sha256": "f537b947b851cdb83a6b6b6c5df9d2d732efbba9cd2e3581ca7977f026ba684b",
+      "source_sha256": "cf69344009c74526ec0077a52ee97541b5ac4c4b2fe120bc7bb043a4a1f44ebc",
       "summary": "Reverse-mode (autodiff) gradient of the delayed solve on the JAX accelerator tier."
     },
     "oscillatools.accel.jax_kuramoto_delayed.jax_kuramoto_delayed_trajectory": {
@@ -823,12 +823,12 @@
         "oscillatools/tests/test_jax_kuramoto_delayed.py"
       ],
       "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
-      "line": 180,
+      "line": 210,
       "module_declared_dispatch_chains": {},
       "path": "oscillatools/src/oscillatools/accel/jax_kuramoto_delayed.py",
       "qualified_name": "oscillatools.accel.jax_kuramoto_delayed.jax_kuramoto_delayed_trajectory",
       "signature": "initial_history: NDArray[np.float64], omega: NDArray[np.float64], coupling: NDArray[np.float64], *, delay: float, dt: float, n_steps: int, delay_tolerance: float=1e-09",
-      "source_sha256": "f537b947b851cdb83a6b6b6c5df9d2d732efbba9cd2e3581ca7977f026ba684b",
+      "source_sha256": "cf69344009c74526ec0077a52ee97541b5ac4c4b2fe120bc7bb043a4a1f44ebc",
       "summary": "Forward delayed networked-Kuramoto method-of-steps trajectory on the JAX accelerator tier."
     },
     "oscillatools.accel.kuramoto_adaptive.adaptive_vector_field": {

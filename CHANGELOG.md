@@ -4,6 +4,18 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Qualify delayed, stochastic and second-order Kuramoto sensitivities:
+  - the continuous-delay sensitivity is checked against re-solving at a
+    perturbed delay and against step refinement; an integer step-count delay
+    stays structural, with no derivative;
+  - `noisy_expectation_value_and_grad` estimates the gradient of the expected
+    objective over independent noise seeds, with standard errors, separately
+    from one path's derivative;
+  - `jax_kuramoto_delayed_hessian_vector_product` gives second-order products
+    through the delayed solve, checked against differences of the
+    hand-derived gradient;
+  - unqualified cases are listed in the architecture guide.
+
 - Inspect pulse and analog feasibility in Studio: Analyse gains a pulse
   feasibility instrument at `#/results/pulses`.
   - Designs in seconds and rad/s are shown on drive and coupler lanes with

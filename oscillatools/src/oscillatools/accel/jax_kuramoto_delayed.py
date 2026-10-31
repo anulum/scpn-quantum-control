@@ -50,6 +50,7 @@ JAX is absent — the exception the multi-language dispatcher treats as "fall th
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
@@ -78,6 +79,7 @@ class _DelayedBackend:
     gradient: Any
     ensemble_trajectory: Any
     ensemble_gradient: Any
+    hessian_vector_product: Any
 
 
 #: Lazily built backend, cached after the first successful load so the JIT-compiled kernels are reused.
@@ -143,6 +145,33 @@ def _load_backend() -> _DelayedBackend:
         _, pullback = jax.vjp(final_state, history, omega, coupling)
         return pullback(cotangent)
 
+    def hessian_vector_product(
+        history: Any,
+        omega: Any,
+        coupling: Any,
+        dt: float,
+        n_steps: int,
+        cotangent: Any,
+        terminal_hessian: Any,
+        direction: tuple[Any, Any, Any],
+    ) -> Any:
+        # For L(θ_N(p)): H·v = Jᵀ (∇²L) J v + Σ_i (∂L/∂θ_N,i) ∇²θ_N,i v.
+        # The first term is a vjp of the terminal Hessian applied to the jvp J v;
+        # the second is the jvp (forward over reverse) of the vjp with the cotangent held fixed.
+        def final_state(initial: Any, frequency: Any, matrix: Any) -> Any:
+            return solve(initial, frequency, matrix, dt, n_steps)[-1]
+
+        def pulled(initial: Any, frequency: Any, matrix: Any) -> Any:
+            _, pullback = jax.vjp(final_state, initial, frequency, matrix)
+            return pullback(cotangent)
+
+        primals = (history, omega, coupling)
+        _, state_tangent = jax.jvp(final_state, primals, direction)
+        _, curvature = jax.jvp(pulled, primals, direction)
+        _, pullback = jax.vjp(final_state, *primals)
+        outer = pullback(terminal_hessian @ state_tangent)
+        return tuple(left + right for left, right in zip(outer, curvature, strict=True))
+
     _BACKEND = _DelayedBackend(
         jax=jax,
         jnp=jnp,
@@ -154,6 +183,7 @@ def _load_backend() -> _DelayedBackend:
         ensemble_gradient=jax.jit(
             jax.vmap(gradient, in_axes=(0, None, None, None, None, 0)), static_argnums=(4,)
         ),
+        hessian_vector_product=jax.jit(hessian_vector_product, static_argnums=(4,)),
     )
     return _BACKEND
 
@@ -482,9 +512,100 @@ def jax_kuramoto_delayed_ensemble_gradient(
     )
 
 
+def jax_kuramoto_delayed_hessian_vector_product(
+    initial_history: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    coupling: NDArray[np.float64],
+    *,
+    delay: float,
+    dt: float,
+    n_steps: int,
+    objective_grad: Callable[[NDArray[np.float64]], NDArray[np.float64]],
+    objective_hessian: Callable[[NDArray[np.float64]], NDArray[np.float64]],
+    direction: tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]],
+    delay_tolerance: float = 1e-9,
+) -> _DelayedVjpResult:
+    r"""Hessian-vector product of a terminal objective through the delayed solve.
+
+    For :math:`L(\theta_N(p))` with :math:`p` the initial history, the natural frequencies and the
+    coupling, returns :math:`\nabla^2_p L\,v` for one direction :math:`v`, by
+    :math:`J^\top(\nabla^2 L)\,J v + \sum_i (\partial L/\partial\theta_{N,i})\,\nabla^2\theta_{N,i}\,v`:
+    a forward-mode derivative of the reverse-mode gradient, with the objective's own gradient and
+    Hessian at :math:`\theta_N` supplied by the caller.
+
+    It differentiates the discrete method-of-steps map twice. The delay :math:`\tau` is a fixed
+    integer number of steps, so there is no second derivative with respect to :math:`\tau`, and no
+    claim about the continuous delay equation's Hessian.
+
+    Parameters
+    ----------
+    initial_history, omega, coupling, delay, dt, n_steps, delay_tolerance
+        As in :func:`jax_kuramoto_delayed_gradient`.
+    objective_grad : callable
+        :math:`\theta_N \mapsto \partial L/\partial\theta_N` (length ``N``).
+    objective_hessian : callable
+        :math:`\theta_N \mapsto \nabla^2 L` (shape ``(N, N)``).
+    direction : tuple of numpy.ndarray
+        :math:`v` as ``(history, omega, coupling)`` directions with the parameters' shapes.
+
+    Returns
+    -------
+    tuple of numpy.ndarray
+        :math:`\nabla^2 L\,v` split as ``(history, omega, coupling)``.
+
+    Raises
+    ------
+    ValueError
+        If a shape is inconsistent, ``τ`` is not an integer multiple of ``dt``, or a supplied
+        gradient, Hessian or direction is not finite or has the wrong shape.
+    ImportError
+        If JAX is not installed.
+
+    """
+    history, frequencies, matrix, count, _ = _prepare_single(
+        initial_history, omega, coupling, delay, dt, n_steps, delay_tolerance
+    )
+    steps = [np.ascontiguousarray(part, dtype=np.float64) for part in direction]
+    for part, target, name in zip(
+        steps, (history, frequencies, matrix), ("history", "omega", "coupling"), strict=True
+    ):
+        if part.shape != target.shape or not np.all(np.isfinite(part)):
+            raise ValueError(f"the {name} direction must be finite with shape {target.shape}")
+    backend = _load_backend()
+    jnp = backend.jnp
+    final = np.asarray(
+        backend.trajectory(
+            jnp.asarray(history), jnp.asarray(frequencies), jnp.asarray(matrix), float(dt), n_steps
+        )[-1],
+        dtype=np.float64,
+    )
+    cotangent = np.ascontiguousarray(objective_grad(final), dtype=np.float64)
+    curvature = np.ascontiguousarray(objective_hessian(final), dtype=np.float64)
+    if cotangent.shape != (count,) or not np.all(np.isfinite(cotangent)):
+        raise ValueError(f"objective_grad must return a finite ({count},) array")
+    if curvature.shape != (count, count) or not np.all(np.isfinite(curvature)):
+        raise ValueError(f"objective_hessian must return a finite ({count}, {count}) array")
+    product = backend.hessian_vector_product(
+        jnp.asarray(history),
+        jnp.asarray(frequencies),
+        jnp.asarray(matrix),
+        float(dt),
+        int(n_steps),
+        jnp.asarray(cotangent),
+        jnp.asarray(curvature),
+        tuple(jnp.asarray(part) for part in steps),
+    )
+    return (
+        np.asarray(product[0], dtype=np.float64),
+        np.asarray(product[1], dtype=np.float64),
+        np.asarray(product[2], dtype=np.float64),
+    )
+
+
 __all__ = [
     "jax_kuramoto_delayed_ensemble",
     "jax_kuramoto_delayed_ensemble_gradient",
     "jax_kuramoto_delayed_gradient",
+    "jax_kuramoto_delayed_hessian_vector_product",
     "jax_kuramoto_delayed_trajectory",
 ]

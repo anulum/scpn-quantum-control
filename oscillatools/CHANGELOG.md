@@ -17,6 +17,13 @@ All notable changes to `oscillatools` are documented here. The format follows
 
 ### Added
 
+- `noisy_expectation_value_and_grad` estimates `E[L]` and `∇E[L]` over
+  independent noise seeds, with the standard error of each mean
+  (`NoisyExpectationEstimate`, `EXPECTATION_ESTIMAND`); one path's gradient
+  remains `noisy_terminal_value_and_grad`.
+- `jax_kuramoto_delayed_hessian_vector_product` returns a Hessian-vector
+  product of a terminal objective through the integer-delay method-of-steps
+  map (JAX extra).
 - `sparse_coupling_from_edges` builds a sparse coupling from an explicit edge
   list. Its declared duplicate policy is `sum` or `refuse`, and
   `sparse_coupling_from_scipy` accepts the same `duplicates` argument.

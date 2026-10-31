@@ -243,6 +243,43 @@ own existing RK4 equations; linear lag interpolation and history derivative jump
 have separate accuracy limits. See [solver outcomes](kuramoto_solver_outcomes.md)
 and the runnable scientific factory example for the exact public contracts.
 
+## Delayed, stochastic and second-order sensitivities
+
+These derivatives answer different questions, and each has its own oracle in
+`tests/test_delayed_stochastic_sensitivities.py`.
+
+- **Continuous delay.** `delayed_delay_sensitivity` differentiates the terminal
+  state with respect to the delay `τ` itself, reading the lagged state from a
+  linear interpolation of the trajectory and a constant history. It equals a
+  re-solve at `τ ± h` with the same history and interpolation, and converges
+  as `dt` is refined. A delay on the half-step grid is refused, because the
+  interpolant has a kink there.
+- **Integer delay.** The method-of-steps integrators take the delay as a whole
+  number of steps. Their sensitivities cover the history, the frequencies and
+  the coupling only; the delay is structural and has no derivative there.
+  Moving it by one step changes the state by about `dt · ∂θ/∂τ`, which a
+  frozen-delay derivative would miss.
+- **One noise path.** `noisy_terminal_value_and_grad` is the derivative of the
+  Euler-Maruyama map for a fixed seed. It equals a difference on the same path
+  (common random numbers).
+- **Expectation over noise.** `noisy_expectation_value_and_grad` averages
+  pathwise gradients over independent seeds and reports the standard error of
+  each mean. It estimates `∇E[L]`, which differs from any one path's
+  derivative; it needs `L` to be differentiable along almost every path so
+  that derivative and expectation commute. With no coupling the expectation is
+  known in closed form, and independent replicate sets each lie within four
+  standard errors of it.
+- **Second order.** `jax_kuramoto_delayed_hessian_vector_product` returns a
+  Hessian-vector product of a terminal objective through the integer-delay
+  map, as a forward derivative of the reverse-mode gradient; it equals a
+  central difference of the hand-derived gradient. It needs the optional JAX
+  extra, which hosted CI does not install, so those checks run where JAX is
+  present.
+
+Not qualified: a second derivative with respect to the delay, a continuous
+delay with a non-constant history, Hessians of noisy objectives, and the
+diffusion channel at `D = 0`, where the pathwise derivative is singular.
+
 ## Chimera and multiscale control composition
 
 `scpn_quantum_control.chimera_control` separates the surface into six

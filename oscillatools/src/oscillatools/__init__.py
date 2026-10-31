@@ -60,6 +60,7 @@ from types import MappingProxyType
 
 from ._version import __version__ as __version__
 from .accel import (
+    EXPECTATION_ESTIMAND,
     AdaptiveGradients,
     AdaptivePhaseForce,
     AdaptiveTrajectory,
@@ -110,6 +111,7 @@ from .accel import (
     MultiplexTrajectory,
     NetworkControlGradients,
     NeuralLyapunovCertificate,
+    NoisyExpectationEstimate,
     NoisyGradients,
     NoisyKuramotoRun,
     Observable,
@@ -260,6 +262,7 @@ from .accel import (
     jax_kuramoto_delayed_ensemble,
     jax_kuramoto_delayed_ensemble_gradient,
     jax_kuramoto_delayed_gradient,
+    jax_kuramoto_delayed_hessian_vector_product,
     jax_kuramoto_delayed_trajectory,
     jax_kuramoto_dopri_trajectory,
     jax_kuramoto_euler_trajectory,
@@ -376,6 +379,7 @@ from .accel import (
     neural_lyapunov_lipschitz_bounds,
     neural_lyapunov_value,
     noisy_critical_coupling,
+    noisy_expectation_value_and_grad,
     noisy_kuramoto_step,
     noisy_phase_sensitivity,
     noisy_stationary_order_parameter,
@@ -568,6 +572,7 @@ _CAPABILITIES: dict[str, tuple[str, ...]] = {
         "jax_kuramoto_delayed_gradient",
         "jax_kuramoto_delayed_ensemble",
         "jax_kuramoto_delayed_ensemble_gradient",
+        "jax_kuramoto_delayed_hessian_vector_product",
         "networked_delayed_trajectory",
         "last_networked_delayed_trajectory_tier_used",
         "integrate_inertial",
@@ -849,6 +854,9 @@ _CAPABILITIES: dict[str, tuple[str, ...]] = {
         "adaptive_terminal_value_and_grad",
         "NoisyGradients",
         "noisy_terminal_value_and_grad",
+        "NoisyExpectationEstimate",
+        "noisy_expectation_value_and_grad",
+        "EXPECTATION_ESTIMAND",
         "DelayedGradients",
         "delayed_terminal_value_and_grad",
         "delayed_delay_gradient",
@@ -965,6 +973,7 @@ def describe(category: str | None = None) -> str:
 
 
 __all__ = [
+    "EXPECTATION_ESTIMAND",
     "CollectiveControlGradients",
     "ForcedCollectiveTrajectory",
     "collective_control_value_and_grad",
@@ -1048,6 +1057,7 @@ __all__ = [
     "jax_kuramoto_delayed_gradient",
     "jax_kuramoto_delayed_ensemble",
     "jax_kuramoto_delayed_ensemble_gradient",
+    "jax_kuramoto_delayed_hessian_vector_product",
     "jax_kuramoto_dopri_trajectory",
     "jax_kuramoto_euler_trajectory",
     "jax_kuramoto_rk4_trajectory",
@@ -1148,6 +1158,7 @@ __all__ = [
     "KuramotoSystem",
     "MeanFieldForce",
     "MultiLangDispatcher",
+    "NoisyExpectationEstimate",
     "NoisyGradients",
     "NoisyKuramotoRun",
     "PhaseForce",
@@ -1328,6 +1339,7 @@ __all__ = [
     "networked_symplectic_inertial_trajectory",
     "noisy_critical_coupling",
     "noisy_kuramoto_step",
+    "noisy_expectation_value_and_grad",
     "noisy_phase_sensitivity",
     "noisy_stationary_order_parameter",
     "noisy_terminal_value_and_grad",

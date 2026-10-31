@@ -302,3 +302,107 @@ def test_ensemble_rejects_bad_shapes() -> None:
             n_steps=_STEPS,
             cotangent_batch=cotangent_batch[:, :-1],
         )
+
+
+def _cosine_objective() -> tuple[object, object, object]:
+    """Return ``L = Σ cos θ`` with its gradient and Hessian."""
+
+    def value(theta: np.ndarray) -> float:
+        return float(np.sum(np.cos(theta)))
+
+    def gradient(theta: np.ndarray) -> np.ndarray:
+        return -np.sin(theta)
+
+    def hessian(theta: np.ndarray) -> np.ndarray:
+        return np.diag(-np.cos(theta))
+
+    return value, gradient, hessian
+
+
+def test_hessian_vector_product_matches_a_difference_of_hand_derived_gradients() -> None:
+    """The second-order product equals a central difference of the hand-written gradient."""
+    history, omega, coupling, delay = _delayed_case(4, 3, seed=11)
+    value, gradient, hessian = _cosine_objective()
+    rng = np.random.default_rng(5)
+    direction = (
+        rng.normal(size=history.shape),
+        rng.normal(size=omega.shape),
+        rng.normal(size=coupling.shape),
+    )
+    product = jkd.jax_kuramoto_delayed_hessian_vector_product(
+        history,
+        omega,
+        coupling,
+        delay=delay,
+        dt=_DT,
+        n_steps=_STEPS,
+        objective_grad=gradient,
+        objective_hessian=hessian,
+        direction=direction,
+    )
+    step = 1e-5
+
+    def hand(sign: float) -> list[np.ndarray]:
+        _, grads = delayed_terminal_value_and_grad(
+            history + sign * step * direction[0],
+            omega + sign * step * direction[1],
+            coupling + sign * step * direction[2],
+            delay=delay,
+            dt=_DT,
+            n_steps=_STEPS,
+            objective=value,
+            objective_grad=gradient,
+        )
+        return [grads.initial_history, grads.omega, grads.coupling]
+
+    for exact, plus, minus in zip(product, hand(1.0), hand(-1.0), strict=True):
+        difference = (plus - minus) / (2.0 * step)
+        np.testing.assert_allclose(exact, difference, rtol=1e-6, atol=1e-8)
+
+
+def test_hessian_vector_product_refuses_malformed_inputs() -> None:
+    """Directions, gradients and Hessians of the wrong shape or non-finite are refused."""
+    history, omega, coupling, delay = _delayed_case(3, 2, seed=2)
+    _, gradient, hessian = _cosine_objective()
+    good = (np.zeros_like(history), np.zeros_like(omega), np.zeros_like(coupling))
+    common = {"delay": delay, "dt": _DT, "n_steps": 5}
+    with pytest.raises(ValueError, match="omega direction"):
+        jkd.jax_kuramoto_delayed_hessian_vector_product(
+            history,
+            omega,
+            coupling,
+            **common,
+            objective_grad=gradient,
+            objective_hessian=hessian,
+            direction=(good[0], np.zeros(2), good[2]),
+        )
+    with pytest.raises(ValueError, match="history direction"):
+        jkd.jax_kuramoto_delayed_hessian_vector_product(
+            history,
+            omega,
+            coupling,
+            **common,
+            objective_grad=gradient,
+            objective_hessian=hessian,
+            direction=(np.full_like(history, np.nan), good[1], good[2]),
+        )
+    with pytest.raises(ValueError, match="objective_grad"):
+        jkd.jax_kuramoto_delayed_hessian_vector_product(
+            history,
+            omega,
+            coupling,
+            **common,
+            objective_grad=lambda theta: np.zeros(2),
+            objective_hessian=hessian,
+            direction=good,
+        )
+    with pytest.raises(ValueError, match="objective_hessian"):
+        jkd.jax_kuramoto_delayed_hessian_vector_product(
+            history,
+            omega,
+            coupling,
+            **common,
+            objective_grad=gradient,
+            objective_hessian=lambda theta: np.full((3, 3), np.inf),
+            direction=good,
+        )

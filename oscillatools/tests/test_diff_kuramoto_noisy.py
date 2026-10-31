@@ -24,7 +24,9 @@ from numpy.typing import NDArray
 
 from oscillatools.accel import order_parameter, order_parameter_gradient
 from oscillatools.accel.diff_kuramoto_noisy import (
+    EXPECTATION_ESTIMAND,
     NoisyGradients,
+    noisy_expectation_value_and_grad,
     noisy_phase_sensitivity,
     noisy_terminal_value_and_grad,
 )
@@ -246,4 +248,85 @@ def test_validation_errors(mutation: dict[str, Any], message: str) -> None:
             dt=call["dt"],
             n_steps=call["n_steps"],
             seed=call["seed"],
+        )
+
+
+def test_expectation_gradient_matches_the_closed_form_without_coupling() -> None:
+    """With ``K = 0`` the phases are Gaussian, so ``∇E[Σ cos θ_N]`` is known exactly.
+
+    ``θ_N = θ_0 + ω T + √(2DT) Z``, hence ``E[cos θ_N] = cos(θ_0 + ω T) e^{-DT}``; the estimate
+    must lie within four standard errors of it for every channel, and a single path's
+    gradient must not be mistaken for it.
+    """
+    phases = np.array([0.3, -0.4])
+    omega = np.array([1.0, 1.4])
+    coupling = np.zeros((2, 2))
+    diffusion, dt, steps = 0.2, 0.01, 100
+    horizon = dt * steps
+    angle = phases + omega * horizon
+    damping = np.exp(-diffusion * horizon)
+    estimate = noisy_expectation_value_and_grad(
+        phases,
+        omega,
+        coupling,
+        diffusion=diffusion,
+        dt=dt,
+        n_steps=steps,
+        seeds=range(400),
+        objective=lambda theta: float(np.sum(np.cos(theta))),
+        objective_grad=lambda theta: -np.sin(theta),
+    )
+    exact = {
+        "value": float(np.sum(np.cos(angle)) * damping),
+        "initial_phases": -np.sin(angle) * damping,
+        "omega": -horizon * np.sin(angle) * damping,
+        "diffusion": -horizon * float(np.sum(np.cos(angle))) * damping,
+    }
+    assert abs(estimate.value - exact["value"]) <= 4 * estimate.value_standard_error
+    for channel in ("initial_phases", "omega", "diffusion"):
+        mean = np.asarray(getattr(estimate.gradients, channel))
+        error = np.asarray(getattr(estimate.standard_errors, channel))
+        assert np.all(np.abs(mean - exact[channel]) <= 4 * error), channel
+    assert estimate.seeds == tuple(range(400))
+    assert estimate.estimand == EXPECTATION_ESTIMAND
+    _, one_path = noisy_terminal_value_and_grad(
+        phases,
+        omega,
+        coupling,
+        diffusion=diffusion,
+        dt=dt,
+        n_steps=steps,
+        seed=7,
+        objective=lambda theta: float(np.sum(np.cos(theta))),
+        objective_grad=lambda theta: -np.sin(theta),
+    )
+    assert np.any(np.abs(one_path.omega - exact["omega"]) > 4 * estimate.standard_errors.omega)
+
+
+@pytest.mark.parametrize(
+    ("seeds", "message"),
+    [
+        ([1], "at least two"),
+        ([1, 1], "distinct"),
+        ([1, -2], "non-negative integers"),
+        ([True, 2], "non-negative integers"),
+        ([1, 2.5], "non-negative integers"),
+    ],
+)
+def test_expectation_estimate_refuses_dependent_or_malformed_seeds(
+    seeds: list[Any], message: str
+) -> None:
+    """Replicates must be at least two distinct non-negative integer seeds."""
+    problem = _problem(n=2)
+    with pytest.raises(ValueError, match=message):
+        noisy_expectation_value_and_grad(
+            problem["phases"],
+            problem["omega"],
+            problem["coupling"],
+            diffusion=0.1,
+            dt=0.01,
+            n_steps=4,
+            seeds=seeds,
+            objective=lambda theta: 0.0,
+            objective_grad=lambda theta: np.zeros_like(theta),
         )
