@@ -31,6 +31,7 @@ def test_whole_native_cohort_keeps_strict_docs_all_original_tests_and_exact_cove
         "tests/test_method_comparison.py",
         "tests/test_method_comparison_contracts.py",
         "tests/test_reproducible_comparison.py",
+        "tests/test_competitive_qualification_campaign.py",
         "tests/test_studio_method_comparison_artifact.py",
         "tools/tests/test_export_method_comparison.py",
     ]:

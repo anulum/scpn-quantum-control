@@ -48,6 +48,7 @@ def build_method_comparison_quality_gates(python: str, *, output_root: Path) -> 
     ]
     tests = [
         "tests/test_reproducible_comparison.py",
+        "tests/test_competitive_qualification_campaign.py",
         "tests/test_method_comparison_contracts.py",
         "tests/test_method_comparison.py",
         "tests/test_analysis_method_comparison.py",
