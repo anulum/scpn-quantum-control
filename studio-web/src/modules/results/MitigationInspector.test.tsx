@@ -225,6 +225,9 @@ describe("mitigation and readout instrument", () => {
   it("refuses every malformed field with its own reason", () => {
     const first = (p: Json) => caseOf(p, "permuted-partial-map");
     const corrected = (p: Json) => first(p)["corrected"] as Json;
+    const matrixRow = (p: Json) =>
+      ((first(p)["calibration"] as Json)["matrix"] as number[][])[0] as number[];
+    const znePoint = (p: Json) => (section(p, "zne")["points"] as Json[])[0] as Json;
     const rows: [string, (payload: Json) => void, string][] = [
       ["not an object", () => undefined, "artefact must be an object"],
       ["label order", (p) => (p["label_order"] = ""), "label_order must be a non-empty string"],
@@ -249,17 +252,17 @@ describe("mitigation and readout instrument", () => {
       [
         "missing label",
         (p) => (first(p)["labels"] = ["00", "01", "10", "10"]),
-        "must list every one of the 4 labels once",
+        "must list the 4 labels in ascending order",
       ],
       [
         "label width",
         (p) => (first(p)["labels"] = ["000", "01", "10", "11"]),
-        "must be binary strings of width 2",
+        "must list the 4 labels in ascending order",
       ],
       [
         "label alphabet",
         (p) => (first(p)["labels"] = ["0x", "01", "10", "11"]),
-        "must be binary strings of width 2",
+        "must list the 4 labels in ascending order",
       ],
       ["count total", (p) => (first(p)["shots"] = 1), "raw_counts must add up to the shots"],
       ["count length", (p) => (first(p)["raw_counts"] = [1, 2]), "raw_counts must have 4 entries"],
@@ -313,6 +316,88 @@ describe("mitigation and readout instrument", () => {
         "flip",
         (p) => (((first(p)["readout"] as Json[])[0] as Json)["zero_to_one"] = null),
         "zero_to_one must be a finite number",
+      ],
+      [
+        "permuted labels",
+        (p) => (first(p)["labels"] = ["01", "00", "10", "11"]),
+        "must list the 4 labels in ascending order",
+      ],
+      [
+        "frequencies",
+        (p) => ((first(p)["raw_frequencies"] as number[])[0] = 0.5),
+        "raw_frequencies[0] is 0.5 but its other fields give",
+      ],
+      ["sum", (p) => (corrected(p)["sum"] = 2), "corrected.sum is 2 but its other fields give"],
+      [
+        "negative error",
+        (p) => ((corrected(p)["sampling_standard_error"] as number[])[0] = -0.01),
+        "sampling must not be negative",
+      ],
+      [
+        "total error",
+        (p) => ((corrected(p)["total_standard_error"] as number[])[0] = 1),
+        "total[0] is 1 but its other fields give",
+      ],
+      [
+        "flip probability",
+        (p) => (((first(p)["readout"] as Json[])[0] as Json)["one_to_zero"] = 1.7),
+        "one_to_zero must lie in [0, 1]",
+      ],
+      [
+        "readout qubits",
+        (p) => (((first(p)["readout"] as Json[])[0] as Json)["qubit"] = 1),
+        "must state the readout of exactly the measured qubits",
+      ],
+      [
+        "unmeasured overlap",
+        (p) => (first(p)["unmeasured_qubits"] = [2]),
+        "must not include a measured qubit",
+      ],
+      ["calibration entry", (p) => (matrixRow(p)[0] = 1.5), "must lie in [0, 1]"],
+      ["calibration column", (p) => (matrixRow(p)[0] = 0.5), "column 0 sum"],
+      [
+        "calibration shots",
+        (p) => (((first(p)["calibration"] as Json)["shots_by_prepared_state"] as number[])[0] = 0),
+        "shots must all be positive",
+      ],
+      [
+        "condition number",
+        (p) => ((first(p)["calibration"] as Json)["condition_number"] = 0.5),
+        "condition_number must lie in [1,",
+      ],
+      [
+        "zero shots",
+        (p) => {
+          first(p)["raw_counts"] = [0, 0, 0, 0];
+          first(p)["shots"] = 0;
+        },
+        "shots must be positive",
+      ],
+      [
+        "zne shots",
+        (p) => (znePoint(p)["shots"] = 1),
+        "zne.points[0].raw_counts must add up to the shots",
+      ],
+      [
+        "zne error",
+        (p) => (znePoint(p)["corrected_standard_error"] = -1),
+        "zne.points[0].error must lie in",
+      ],
+      ["zne scale", (p) => (znePoint(p)["noise_scale"] = 0.5), "noise_scale must lie in [1,"],
+      [
+        "coverage",
+        (p) => (section(section(p, "zne"), "extrapolation")["coverage"] = 7),
+        "coverage must lie strictly between 0 and 1",
+      ],
+      [
+        "fit error",
+        (p) => (section(section(p, "zne"), "extrapolation")["standard_error"] = -1),
+        "standard_error must lie in",
+      ],
+      [
+        "residual",
+        (p) => (section(section(p, "zne"), "extrapolation")["fit_residual"] = -1),
+        "fit_residual must lie in",
       ],
       ["unmeasured", (p) => (first(p)["unmeasured_qubits"] = [true]), "must be a finite number"],
     ];

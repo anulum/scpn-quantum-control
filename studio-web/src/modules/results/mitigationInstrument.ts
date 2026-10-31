@@ -8,7 +8,18 @@
 
 import committedInstrumentJson from "../../../../data/studio/mitigation_instrument_20261031.json";
 import type { Loaded } from "../../shared/browser/data";
-import { count, finite, list, numbers, record, text, texts } from "./jsonFields";
+import {
+  agrees,
+  count,
+  finite,
+  level,
+  list,
+  numbers,
+  record,
+  text,
+  texts,
+  within,
+} from "./jsonFields";
 
 /** Schema of the committed instrument data. */
 export const MITIGATION_INSTRUMENT_SCHEMA = "scpn_qc_studio_mitigation_instrument_v1";
@@ -226,12 +237,35 @@ function counts(value: unknown, field: string, length: number): number[] {
   return sized(value, field, length).map((item, index) => count(item, `${field}[${index}]`));
 }
 
+function positiveCounts(value: unknown, field: string, length: number): number[] {
+  const items = counts(value, field, length);
+  if (items.some((item) => item < 1)) throw new Error(`${field} must all be positive`);
+  return items;
+}
+
+function nonNegative(value: unknown, field: string, length: number): number[] {
+  const items = sized(value, field, length);
+  if (items.some((item) => item < 0)) throw new Error(`${field} must not be negative`);
+  return items;
+}
+
+/** Shots of a count vector, refusing a vector that is empty or does not add up. */
+function totalShots(rawCounts: readonly number[], shots: unknown, field: string): number {
+  const total = count(shots, `${field}.shots`);
+  if (total < 1) throw new Error(`${field}.shots must be positive`);
+  if (rawCounts.reduce((sum, value) => sum + value, 0) !== total)
+    throw new Error(`${field}.raw_counts must add up to the shots`);
+  return total;
+}
+
+/** Labels in canonical ascending order, so no view can silently reorder a permutation. */
 function labelsOf(value: unknown, field: string, width: number): string[] {
   const labels = texts(value, field);
-  if (labels.length !== 2 ** width || new Set(labels).size !== labels.length)
-    throw new Error(`${field} must list every one of the ${2 ** width} labels once`);
-  if (labels.some((label) => label.length !== width || /[^01]/.test(label)))
-    throw new Error(`${field} must be binary strings of width ${width}`);
+  const canonical = Array.from({ length: 2 ** width }, (_, index) =>
+    index.toString(2).padStart(width, "0"),
+  );
+  if (labels.join() !== canonical.join())
+    throw new Error(`${field} must list the ${canonical.length} labels in ascending order`);
   return labels;
 }
 
@@ -247,16 +281,30 @@ function measurementMap(value: unknown, field: string): BitMapping[] {
   return map;
 }
 
+/** A column-stochastic calibration: entries in [0, 1], every column summing to one. */
 function calibration(value: unknown, field: string, size: number): Calibration {
   const row = record(value, field);
   const matrix = list(row["matrix"], `${field}.matrix`).map((item, index) =>
-    sized(item, `${field}.matrix[${index}]`, size),
+    sized(item, `${field}.matrix[${index}]`, size).map((entry, column) =>
+      within(entry, `${field}.matrix[${index}][${column}]`, 0, 1),
+    ),
   );
   if (matrix.length !== size) throw new Error(`${field}.matrix must be ${size} square`);
+  for (let column = 0; column < size; column += 1)
+    agrees(
+      matrix.reduce((sum, entries) => sum + (entries[column] as number), 0),
+      1,
+      `${field}.matrix column ${column} sum`,
+    );
   return {
     matrix,
-    shotsByPreparedState: counts(row["shots_by_prepared_state"], `${field}.shots`, size),
-    conditionNumber: finite(row["condition_number"], `${field}.condition_number`),
+    shotsByPreparedState: positiveCounts(row["shots_by_prepared_state"], `${field}.shots`, size),
+    conditionNumber: within(
+      row["condition_number"],
+      `${field}.condition_number`,
+      1,
+      Number.MAX_VALUE,
+    ),
   };
 }
 
@@ -268,18 +316,50 @@ function corrected(value: unknown, field: string, labels: readonly string[]): Co
   const negative = labels.filter((_, index) => (quasiprobabilities[index] as number) < 0);
   if (negative.join() !== negativeLabels.join())
     throw new Error(`${field}.negative_labels must name exactly the negative values`);
+  const sampling = nonNegative(row["sampling_standard_error"], `${field}.sampling`, size);
+  const fromCalibration = nonNegative(
+    row["calibration_standard_error"],
+    `${field}.calibration`,
+    size,
+  );
+  const total = nonNegative(row["total_standard_error"], `${field}.total`, size);
+  for (const [index, value] of total.entries())
+    agrees(
+      value,
+      Math.hypot(sampling[index] as number, fromCalibration[index] as number),
+      `${field}.total[${index}]`,
+    );
+
+  const sum = finite(row["sum"], `${field}.sum`);
+  agrees(
+    sum,
+    quasiprobabilities.reduce((left, right) => left + right, 0),
+    `${field}.sum`,
+  );
   return {
     quasiprobabilities,
-    samplingStandardError: sized(row["sampling_standard_error"], `${field}.sampling`, size),
-    calibrationStandardError: sized(
-      row["calibration_standard_error"],
-      `${field}.calibration`,
-      size,
-    ),
-    totalStandardError: sized(row["total_standard_error"], `${field}.total`, size),
-    sum: finite(row["sum"], `${field}.sum`),
+    samplingStandardError: sampling,
+    calibrationStandardError: fromCalibration,
+    totalStandardError: total,
+    sum,
     negativeLabels,
   };
+}
+
+function readout(value: unknown, field: string, map: readonly BitMapping[]): QubitReadout[] {
+  const flips = list(value, field).map((item, at) => {
+    const row = record(item, `${field}[${at}]`);
+    return {
+      qubit: count(row["qubit"], `${field}[${at}].qubit`),
+      zeroToOne: within(row["zero_to_one"], `${field}[${at}].zero_to_one`, 0, 1),
+      oneToZero: within(row["one_to_zero"], `${field}[${at}].one_to_zero`, 0, 1),
+    };
+  });
+  const measured = map.map((item) => item.qubit).sort((left, right) => left - right);
+  const stated = flips.map((item) => item.qubit).sort((left, right) => left - right);
+  if (measured.join() !== stated.join())
+    throw new Error(`${field} must state the readout of exactly the measured qubits`);
+  return flips;
 }
 
 function readoutCase(raw: unknown, index: number): ReadoutCase {
@@ -288,27 +368,25 @@ function readoutCase(raw: unknown, index: number): ReadoutCase {
   const map = measurementMap(row["measurement_map"], `${field}.measurement_map`);
   const labels = labelsOf(row["labels"], `${field}.labels`, map.length);
   const rawCounts = counts(row["raw_counts"], `${field}.raw_counts`, labels.length);
-  const shots = count(row["shots"], `${field}.shots`);
-  if (rawCounts.reduce((total, value) => total + value, 0) !== shots)
-    throw new Error(`${field}.raw_counts must add up to the shots`);
+  const shots = totalShots(rawCounts, row["shots"], field);
+  const rawFrequencies = sized(row["raw_frequencies"], `${field}.raw_frequencies`, labels.length);
+  for (const [at, frequency] of rawFrequencies.entries())
+    agrees(frequency, (rawCounts[at] as number) / shots, `${field}.raw_frequencies[${at}]`, 1e-12);
+
+  const unmeasuredQubits = list(row["unmeasured_qubits"], `${field}.unmeasured`).map((item, at) =>
+    count(item, `${field}.unmeasured[${at}]`),
+  );
+  if (unmeasuredQubits.some((qubit) => map.some((item) => item.qubit === qubit)))
+    throw new Error(`${field}.unmeasured_qubits must not include a measured qubit`);
   const base: ReadoutCaseBase = {
     caseId: text(row["case_id"], `${field}.case_id`),
     title: text(row["title"], `${field}.title`),
     labels,
     measurementMap: map,
-    unmeasuredQubits: list(row["unmeasured_qubits"], `${field}.unmeasured`).map((item, at) =>
-      count(item, `${field}.unmeasured[${at}]`),
-    ),
-    readout: list(row["readout"], `${field}.readout`).map((item, at) => {
-      const flips = record(item, `${field}.readout[${at}]`);
-      return {
-        qubit: count(flips["qubit"], `${field}.readout[${at}].qubit`),
-        zeroToOne: finite(flips["zero_to_one"], `${field}.readout[${at}].zero_to_one`),
-        oneToZero: finite(flips["one_to_zero"], `${field}.readout[${at}].one_to_zero`),
-      };
-    }),
+    unmeasuredQubits,
+    readout: readout(row["readout"], `${field}.readout`, map),
     rawCounts,
-    rawFrequencies: sized(row["raw_frequencies"], `${field}.raw_frequencies`, labels.length),
+    rawFrequencies,
     shots,
     calibration: calibration(row["calibration"], `${field}.calibration`, labels.length),
   };
@@ -316,7 +394,11 @@ function readoutCase(raw: unknown, index: number): ReadoutCase {
     return { ...base, status: "refused", reason: text(row["reason"], `${field}.reason`) };
   if (row["status"] !== "corrected")
     throw new Error(`${field}.status must be corrected or refused`);
-  return { ...base, status: "corrected", corrected: corrected(row["corrected"], field, labels) };
+  return {
+    ...base,
+    status: "corrected",
+    corrected: corrected(row["corrected"], `${field}.corrected`, labels),
+  };
 }
 
 function zne(raw: unknown): Zne {
@@ -338,23 +420,39 @@ function zne(raw: unknown): Zne {
     points: list(row["points"], "zne.points").map((item, index) => {
       const field = `zne.points[${index}]`;
       const point = record(item, field);
+      const rawCounts = counts(point["raw_counts"], `${field}.raw_counts`, labels.length);
       return {
-        noiseScale: finite(point["noise_scale"], `${field}.noise_scale`),
-        rawCounts: counts(point["raw_counts"], `${field}.raw_counts`, labels.length),
-        shots: count(point["shots"], `${field}.shots`),
+        noiseScale: within(point["noise_scale"], `${field}.noise_scale`, 1, Number.MAX_VALUE),
+        rawCounts,
+        shots: totalShots(rawCounts, point["shots"], field),
         rawExpectation: finite(point["raw_expectation"], `${field}.raw_expectation`),
         correctedExpectation: finite(point["corrected_expectation"], `${field}.corrected`),
-        correctedStandardError: finite(point["corrected_standard_error"], `${field}.error`),
+        correctedStandardError: within(
+          point["corrected_standard_error"],
+          `${field}.error`,
+          0,
+          Number.MAX_VALUE,
+        ),
       };
     }),
     extrapolation: {
       zeroNoiseEstimate,
-      standardError: finite(fit["standard_error"], "zne.extrapolation.standard_error"),
+      standardError: within(
+        fit["standard_error"],
+        "zne.extrapolation.standard_error",
+        0,
+        Number.MAX_VALUE,
+      ),
       low,
       high,
-      coverage: finite(fit["coverage"], "zne.extrapolation.coverage"),
+      coverage: level(fit["coverage"], "zne.extrapolation.coverage"),
       order: count(fit["order"], "zne.extrapolation.order"),
-      fitResidual: finite(fit["fit_residual"], "zne.extrapolation.fit_residual"),
+      fitResidual: within(
+        fit["fit_residual"],
+        "zne.extrapolation.fit_residual",
+        0,
+        Number.MAX_VALUE,
+      ),
       method: text(fit["method"], "zne.extrapolation.method"),
     },
   };

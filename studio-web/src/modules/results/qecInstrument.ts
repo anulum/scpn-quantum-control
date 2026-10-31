@@ -8,7 +8,18 @@
 
 import committedInstrumentJson from "../../../../data/studio/qec_resource_instrument_20261031.json";
 import type { Loaded } from "../../shared/browser/data";
-import { count, finite, flag, list, record, text, texts } from "./jsonFields";
+import {
+  agrees,
+  count,
+  finite,
+  flag,
+  level,
+  list,
+  record,
+  text,
+  texts,
+  within,
+} from "./jsonFields";
 
 /** Schema of the committed instrument data. */
 export const QEC_INSTRUMENT_SCHEMA = "scpn_qc_studio_qec_resource_instrument_v1";
@@ -189,9 +200,15 @@ export interface QecInstrument {
   readonly resources: Resources;
 }
 
-function interval(row: Record<string, unknown>, field: string) {
+/**
+ * Read failures, trials and their interval, with the rate and bounds they imply.
+ *
+ * Decoder samples name their trials ``shots`` and readiness aggregates name them
+ * ``trials``; each record kind reads only its own field.
+ */
+function interval(row: Record<string, unknown>, field: string, trialsField: "shots" | "trials") {
   const failures = count(row["failures"], `${field}.failures`);
-  const trials = count(row["trials"] ?? row["shots"], `${field}.trials`);
+  const trials = count(row[trialsField], `${field}.${trialsField}`);
   const lower = finite(row["lower"], `${field}.lower`);
   const upper = finite(row["upper"], `${field}.upper`);
   if (trials < 1 || failures > trials) throw new Error(`${field} counts are inconsistent`);
@@ -199,10 +216,13 @@ function interval(row: Record<string, unknown>, field: string) {
     throw new Error(`${field} interval must satisfy 0 <= lower <= upper <= 1`);
   if (failures === 0 && (lower !== 0 || upper === 0))
     throw new Error(`${field} with zero failures needs lower 0 and a positive upper bound`);
+  const rate = finite(row["rate"], `${field}.rate`);
+  agrees(rate, failures / trials, `${field}.rate`, 1e-12);
+  if (rate < lower || rate > upper) throw new Error(`${field}.rate must lie inside its interval`);
   return {
     failures,
     trials,
-    rate: finite(row["rate"], `${field}.rate`),
+    rate,
     lower,
     upper,
     method: text(row["method"], `${field}.method`),
@@ -214,7 +234,7 @@ function decoderSample(raw: unknown, index: number): DecoderSample {
   const row = record(raw, field);
   if (row["measured_logical_error_reduction_claim_allowed"] !== false)
     throw new Error(`${field} must not claim a measured logical-error reduction`);
-  const counts = interval(row, field);
+  const counts = interval(row, field, "shots");
   return {
     distance: count(row["distance"], `${field}.distance`),
     physicalErrorRate: finite(row["physical_error_rate"], `${field}.physical_error_rate`),
@@ -224,7 +244,7 @@ function decoderSample(raw: unknown, index: number): DecoderSample {
     rate: counts.rate,
     lower: counts.lower,
     upper: counts.upper,
-    confidenceLevel: finite(row["confidence_level"], `${field}.confidence_level`),
+    confidenceLevel: level(row["confidence_level"], `${field}.confidence_level`),
     method: counts.method,
   };
 }
@@ -263,7 +283,7 @@ function readiness(raw: unknown): Readiness {
         label: text(aggregate["label"], `${field}.label`),
         decoder: text(aggregate["decoder"], `${field}.decoder`),
         noiseModel: text(aggregate["noise_model"], `${field}.noise_model`),
-        ...interval(aggregate, field),
+        ...interval(aggregate, field, "trials"),
       };
     }),
     hardwareLogicalErrorReduction: "not measured",
@@ -302,11 +322,23 @@ function resourceRow(raw: unknown, index: number): ResourceRow {
     totalTCount: count(row["total_t_count"], `${field}.total_t_count`),
     qecRounds: count(row["qec_rounds"], `${field}.qec_rounds`),
     syndromeTimeFloorSeconds: finite(row["syndrome_time_floor_seconds"], `${field}.syndrome`),
-    logicalFailureUnionBound: finite(row["logical_failure_union_bound"], `${field}.union_bound`),
+    logicalFailureUnionBound: within(
+      row["logical_failure_union_bound"],
+      `${field}.union_bound`,
+      0,
+      1,
+    ),
     scenarios: list(row["scenarios"], `${field}.scenarios`).map((item, at) =>
       scenario(item, `${field}.scenarios[${at}]`),
     ),
   };
+}
+
+function excludedOverheads(raw: unknown): string[] {
+  const excluded = texts(raw, "resources.excluded_from_base_estimate");
+  if (excluded.length === 0)
+    throw new Error("resources must list the overheads the base estimate excludes");
+  return excluded;
 }
 
 function resources(raw: unknown): Resources {
@@ -316,7 +348,7 @@ function resources(raw: unknown): Resources {
     request: Object.fromEntries(
       Object.entries(request).map(([name, value]) => [name, finite(value, `request.${name}`)]),
     ),
-    excluded: texts(row["excluded_from_base_estimate"], "resources.excluded_from_base_estimate"),
+    excluded: excludedOverheads(row["excluded_from_base_estimate"]),
     claimBoundary: text(row["claim_boundary"], "resources.claim_boundary"),
     scenarioClaimBoundary: text(row["scenario_claim_boundary"], "resources.scenario_claim"),
     rows: list(row["rows"], "resources.rows").map(resourceRow),

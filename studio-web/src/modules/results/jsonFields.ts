@@ -112,3 +112,47 @@ export function texts(value: unknown, field: string): string[] {
 export function numbers(value: unknown, field: string): number[] {
   return list(value, field).map((item, index) => finite(item, `${field}[${index}]`));
 }
+
+/**
+ * Read a number within a closed range.
+ *
+ * @param value - Decoded value.
+ * @param field - Location used in the error.
+ * @param low - Smallest admitted value.
+ * @param high - Largest admitted value.
+ * @returns The number.
+ * @throws Error when the value is not a finite number in ``[low, high]``.
+ */
+export function within(value: unknown, field: string, low: number, high: number): number {
+  const number = finite(value, field);
+  if (number < low || number > high) throw new Error(`${field} must lie in [${low}, ${high}]`);
+  return number;
+}
+
+/**
+ * Read a probability strictly between zero and one, such as a coverage level.
+ *
+ * @param value - Decoded value.
+ * @param field - Location used in the error.
+ * @returns The probability.
+ * @throws Error when the value is not a finite number in ``(0, 1)``.
+ */
+export function level(value: unknown, field: string): number {
+  const number = finite(value, field);
+  if (!(number > 0 && number < 1)) throw new Error(`${field} must lie strictly between 0 and 1`);
+  return number;
+}
+
+/**
+ * Require two numbers to agree within a relative and absolute tolerance.
+ *
+ * @param actual - Value read from the artefact.
+ * @param expected - Value the artefact's other fields imply.
+ * @param field - Location used in the error.
+ * @param tolerance - Allowed difference, scaled by ``max(1, |expected|)``.
+ * @throws Error when the two disagree.
+ */
+export function agrees(actual: number, expected: number, field: string, tolerance = 1e-9): void {
+  if (Math.abs(actual - expected) > tolerance * Math.max(1, Math.abs(expected)))
+    throw new Error(`${field} is ${actual} but its other fields give ${expected}`);
+}

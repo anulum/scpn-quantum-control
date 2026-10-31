@@ -260,6 +260,58 @@ describe("QEC and future-resource instrument", () => {
         "request.trotter_steps must be a finite number",
       ],
       [
+        "rate with no failures",
+        (p) => {
+          const row = present(
+            rows(p, "decoder", "experiments").find((item) => item["failures"] === 0),
+          );
+          row["rate"] = 0.5;
+        },
+        "rate is 0.5 but its other fields give 0",
+      ],
+      [
+        "rate outside interval",
+        (p) => {
+          const row = at(rows(p, "readiness", "aggregates"));
+          row["upper"] = row["rate"];
+          row["lower"] = row["rate"];
+          row["rate"] = (row["rate"] as number) + 1e-3;
+        },
+        "rate is",
+      ],
+      [
+        "rate below lower",
+        (p) => {
+          const row = at(rows(p, "readiness", "aggregates"));
+          row["lower"] = row["upper"];
+        },
+        "rate must lie inside its interval",
+      ],
+      [
+        "confidence level",
+        (p) => (at(rows(p, "decoder", "experiments"))["confidence_level"] = 7),
+        "confidence_level must lie strictly between 0 and 1",
+      ],
+      [
+        "trials named shots",
+        (p) => {
+          const row = at(rows(p, "readiness", "aggregates"));
+          row["shots"] = row["trials"];
+          delete row["trials"];
+        },
+        "readiness.aggregates[0].trials must be a finite number",
+      ],
+      [
+        "union bound",
+        (p) => (at(rows(p, "resources", "rows"))["logical_failure_union_bound"] = -0.1),
+        "union_bound must lie in [0, 1]",
+      ],
+      [
+        "no excluded overheads",
+        (p) => (section(p, "resources")["excluded_from_base_estimate"] = []),
+        "must list the overheads the base estimate excludes",
+      ],
+      [
         "scenario",
         (p) => {
           const row = at(rows(p, "resources", "rows"));
