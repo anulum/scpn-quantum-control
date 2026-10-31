@@ -4,6 +4,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Report identifiability and score network inference on held-out data:
+  `infer_network_bayesian` returns per-node parameter covariances, data rank
+  and the unidentified parameter directions instead of hiding a rank-deficient
+  design behind a ridge, and refuses a noise-free series; `fit_with_held_out`
+  fits on a training segment only and scores calibrated 95 % predictive
+  intervals on later calibration and test segments (`evaluate_held_out`).
+
 - Make the quantum Fisher metric's convention, rank and regularisation
   explicit:
   - `compute_qfi` states its convention (`QFI_CONVENTION`), refuses a

@@ -160,8 +160,14 @@ from .kuramoto_basin_stability import (
     synchronisation_basin_stability,
 )
 from .kuramoto_bayesian_inference import (
+    IDENTIFIABILITY_RCOND,
+    NOISE_FREE_RATIO,
     DynamicalBayesianPosterior,
+    HeldOutEvaluation,
+    InverseProblemSplit,
     TimeVaryingCouplingHistory,
+    evaluate_held_out,
+    fit_with_held_out,
     infer_network_bayesian,
     track_time_varying_coupling,
 )
@@ -1025,12 +1031,18 @@ __all__ = [
     "SparseStorageReport",
     "SparseExecutionReport",
     "sparse_kuramoto_execution_report",
-    # Public additions after the frozen export order: delayed second order and
-    # replicated noisy expectations.
+    # Public additions after the frozen export order: delayed second order, replicated noisy
+    # expectations, and identifiability and held-out evaluation of network inference.
     "jax_kuramoto_delayed_hessian_vector_product",
     "EXPECTATION_ESTIMAND",
     "NoisyExpectationEstimate",
     "noisy_expectation_value_and_grad",
+    "IDENTIFIABILITY_RCOND",
+    "NOISE_FREE_RATIO",
+    "HeldOutEvaluation",
+    "InverseProblemSplit",
+    "evaluate_held_out",
+    "fit_with_held_out",
     "sparse_networked_kuramoto_force",
     "sparse_kuramoto_euler_trajectory",
     "sparse_kuramoto_rk4_trajectory",

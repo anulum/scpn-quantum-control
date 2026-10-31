@@ -283,6 +283,41 @@ multiplicative (state-dependent) noise, for which the additive-noise
 pathwise derivative does not apply, and dynamics that are delayed and noisy
 at once.
 
+## Network inference: identifiability and held-out evaluation
+
+`oscillatools.accel.infer_network_bayesian` fits the directed coupling and the
+frequencies of a stochastic phase network by a conjugate Gaussian update of
+the Euler-Maruyama transition likelihood. The observational model is that
+likelihood: one-step increments with per-node white noise `E_i`, estimated
+from the residuals. The prior is an isotropic Gaussian with precision
+`prior_precision` (by default almost flat).
+
+- **Identifiability.** A parameter direction the data do not inform keeps its
+  prior. Such directions are reported per node in `unidentified_directions`,
+  with `data_rank` and `identifiable`, instead of being resolved by a ridge.
+  Two oscillators recorded identically make two design columns equal, so only
+  the sum of their couplings is learned; the difference is reported as
+  unidentified. A series that is noise-free to rounding is refused.
+- **Held-out evaluation.** `fit_with_held_out` splits the series into
+  contiguous training, calibration and test segments, fits on the training
+  segment only, and scores one-step 95 % predictive intervals on the other
+  two with `evaluate_held_out`. The scores are coverage, standardised RMS and
+  log predictive density, with noise and parameter uncertainty both included.
+  Changing the held-out segments cannot change the fit.
+
+`tests/test_inverse_problem_identifiability.py` checks the following against
+synthetic ground truth from the generating model:
+- recovery within the posterior intervals, equal to an ordinary least-squares
+  fit;
+- the exact unidentified direction for duplicated observations;
+- about 95 % interval coverage across independent noise realisations;
+- calibrated held-out intervals, and miscalibrated ones when the held-out
+  data are altered.
+
+Not covered: real recordings, non-Gaussian or correlated noise, and
+time-varying coupling beyond the window propagation of
+`track_time_varying_coupling`.
+
 ## Chimera and multiscale control composition
 
 `scpn_quantum_control.chimera_control` separates the surface into six

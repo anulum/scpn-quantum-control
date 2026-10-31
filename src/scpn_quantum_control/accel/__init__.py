@@ -25,6 +25,12 @@ if TYPE_CHECKING:
         EXPECTATION_ESTIMAND as EXPECTATION_ESTIMAND,
     )
     from oscillatools.accel import (
+        IDENTIFIABILITY_RCOND as IDENTIFIABILITY_RCOND,
+    )
+    from oscillatools.accel import (
+        NOISE_FREE_RATIO as NOISE_FREE_RATIO,
+    )
+    from oscillatools.accel import (
         AdaptiveGradients as AdaptiveGradients,
     )
     from oscillatools.accel import (
@@ -112,6 +118,9 @@ if TYPE_CHECKING:
         GraphLike as GraphLike,
     )
     from oscillatools.accel import (
+        HeldOutEvaluation as HeldOutEvaluation,
+    )
+    from oscillatools.accel import (
         HigherOrderWatanabeStrogatzTrajectory as HigherOrderWatanabeStrogatzTrajectory,
     )
     from oscillatools.accel import (
@@ -128,6 +137,9 @@ if TYPE_CHECKING:
     )
     from oscillatools.accel import (
         InertialTrajectory as InertialTrajectory,
+    )
+    from oscillatools.accel import (
+        InverseProblemSplit as InverseProblemSplit,
     )
     from oscillatools.accel import (
         KuramotoIvpSolution as KuramotoIvpSolution,
@@ -442,6 +454,9 @@ if TYPE_CHECKING:
         estimate_ring_basins as estimate_ring_basins,
     )
     from oscillatools.accel import (
+        evaluate_held_out as evaluate_held_out,
+    )
+    from oscillatools.accel import (
         falsify_neural_lyapunov as falsify_neural_lyapunov,
     )
     from oscillatools.accel import (
@@ -449,6 +464,9 @@ if TYPE_CHECKING:
     )
     from oscillatools.accel import (
         fit_surrogate_step_model as fit_surrogate_step_model,
+    )
+    from oscillatools.accel import (
+        fit_with_held_out as fit_with_held_out,
     )
     from oscillatools.accel import (
         fold_defining_jacobian as fold_defining_jacobian,
@@ -1829,6 +1847,12 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
     "EXPECTATION_ESTIMAND": ("oscillatools.accel", "EXPECTATION_ESTIMAND"),
     "NoisyExpectationEstimate": ("oscillatools.accel", "NoisyExpectationEstimate"),
     "noisy_expectation_value_and_grad": ("oscillatools.accel", "noisy_expectation_value_and_grad"),
+    "IDENTIFIABILITY_RCOND": ("oscillatools.accel", "IDENTIFIABILITY_RCOND"),
+    "NOISE_FREE_RATIO": ("oscillatools.accel", "NOISE_FREE_RATIO"),
+    "HeldOutEvaluation": ("oscillatools.accel", "HeldOutEvaluation"),
+    "InverseProblemSplit": ("oscillatools.accel", "InverseProblemSplit"),
+    "evaluate_held_out": ("oscillatools.accel", "evaluate_held_out"),
+    "fit_with_held_out": ("oscillatools.accel", "fit_with_held_out"),
     "sparse_networked_kuramoto_force": ("oscillatools.accel", "sparse_networked_kuramoto_force"),
     "sparse_kuramoto_euler_trajectory": ("oscillatools.accel", "sparse_kuramoto_euler_trajectory"),
     "sparse_kuramoto_rk4_trajectory": ("oscillatools.accel", "sparse_kuramoto_rk4_trajectory"),

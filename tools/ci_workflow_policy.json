@@ -120,6 +120,7 @@
         "psi-lattice-quality",
         "differentiable-sparse-derivatives-quality",
         "quantum-geometry-quality",
+        "inverse-problem-quality",
         "native-transform-algebra-quality"
       ]
     },
@@ -491,6 +492,7 @@
     "fep-ffi-contract-quality",
     "differentiable-sparse-derivatives-quality",
     "quantum-geometry-quality",
+    "inverse-problem-quality",
     "native-transform-algebra-quality",
     "program-ad-adjoint-quality",
     "circuit-preservation-quality",

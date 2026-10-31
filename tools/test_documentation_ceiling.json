@@ -1,13 +1,13 @@
 {
  "schema": "test_documentation_ceiling_v1",
  "ruff_version": "ruff 0.16.4",
- "measured_commit": "c0f32859c7d3327bf0eece83fde497902b5d0e42",
+ "measured_commit": "a15e6c994916fa49acf7e5b84be6592b977e4f75",
  "scopes": [
   "tests",
   "oscillatools/tests"
  ],
- "total_findings": 7167,
- "total_files": 575,
+ "total_findings": 7163,
+ "total_files": 574,
  "files": {
   "oscillatools/tests/conftest.py": 1,
   "oscillatools/tests/kuramoto_delay_sensitivity_witness.py": 1,
@@ -31,7 +31,6 @@
   "oscillatools/tests/test_jax_kuramoto_mpc.py": 13,
   "oscillatools/tests/test_kuramoto_adaptive.py": 25,
   "oscillatools/tests/test_kuramoto_basin_stability.py": 5,
-  "oscillatools/tests/test_kuramoto_bayesian_inference.py": 4,
   "oscillatools/tests/test_kuramoto_chimera.py": 27,
   "oscillatools/tests/test_kuramoto_chimera_reproduction.py": 9,
   "oscillatools/tests/test_kuramoto_clusters.py": 12,

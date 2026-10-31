@@ -26,6 +26,12 @@ All notable changes to `oscillatools` are documented here. The format follows
 
 ### Added
 
+- `infer_network_bayesian` reports `parameter_covariances`, `data_rank`,
+  `unidentified_directions` and `identifiable`; a rank-deficient design is no
+  longer hidden by a ridge, and a noise-free series is refused.
+- `fit_with_held_out` and `evaluate_held_out` (`InverseProblemSplit`,
+  `HeldOutEvaluation`) fit on a training segment and score one-step
+  predictive intervals on disjoint calibration and test segments.
 - `noisy_expectation_value_and_grad` estimates `E[L]` and `∇E[L]` over
   independent noise seeds, with the standard error of each mean
   (`NoisyExpectationEstimate`, `EXPECTATION_ESTIMAND`); one path's gradient

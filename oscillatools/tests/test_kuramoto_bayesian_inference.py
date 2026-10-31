@@ -24,7 +24,11 @@ from numpy.typing import NDArray
 
 from oscillatools.accel.kuramoto_bayesian_inference import (
     DynamicalBayesianPosterior,
+    HeldOutEvaluation,
+    InverseProblemSplit,
     TimeVaryingCouplingHistory,
+    evaluate_held_out,
+    fit_with_held_out,
     infer_network_bayesian,
     track_time_varying_coupling,
 )
@@ -44,6 +48,7 @@ def _generate(
     coupling: NDArray[np.float64],
     omega: NDArray[np.float64],
 ) -> NDArray[np.float64]:
+    """Simulate the generating Euler-Maruyama network model with the module noise."""
     rng = np.random.default_rng(seed)
     count = omega.size
     phases = np.empty((n_steps + 1, count), dtype=np.float64)
@@ -57,6 +62,7 @@ def _generate(
 
 
 def test_reconstructs_directed_coupling_and_frequencies() -> None:
+    """Directed coupling and frequencies are recovered within a few posterior deviations."""
     posterior = infer_network_bayesian(_generate(40000, 1, _COUPLING, _OMEGA), _DT)
     assert isinstance(posterior, DynamicalBayesianPosterior)
     assert np.max(np.abs(posterior.coupling - _COUPLING)) < 0.15
@@ -75,6 +81,7 @@ def test_reconstructs_directed_coupling_and_frequencies() -> None:
 
 
 def test_estimator_is_consistent() -> None:
+    """The error and the posterior spread shrink as the record lengthens."""
     short = infer_network_bayesian(_generate(40000, 2, _COUPLING, _OMEGA), _DT)
     long = infer_network_bayesian(_generate(160000, 2, _COUPLING, _OMEGA), _DT)
     short_error = np.max(np.abs(short.coupling - _COUPLING))
@@ -85,6 +92,7 @@ def test_estimator_is_consistent() -> None:
 
 
 def test_tracks_time_varying_coupling() -> None:
+    """Window propagation follows a coupling that weakens midway."""
     n_steps = 80000
     rng = np.random.default_rng(3)
     count = _OMEGA.size
@@ -124,6 +132,18 @@ def test_tracks_time_varying_coupling() -> None:
     ],
 )
 def test_validation_errors(call: str, kwargs: dict[str, Any], message: str) -> None:
+    """Each argument outside its documented bound is refused.
+
+    Parameters
+    ----------
+    call
+        ``infer`` or ``track``.
+    kwargs
+        Arguments replaced in an otherwise valid call.
+    message
+        Expected error text.
+
+    """
     series = _generate(200, 0, _COUPLING, _OMEGA)
     with pytest.raises(ValueError, match=message):
         if call == "infer":
@@ -156,3 +176,41 @@ def test_validation_errors(call: str, kwargs: dict[str, Any], message: str) -> N
                 prior_precision=args["prior_precision"],
                 noise_iterations=args["noise_iterations"],
             )
+
+
+def test_identifiability_is_reported_for_a_duplicated_observation() -> None:
+    """A node recorded twice gives a rank-deficient design that is reported, not patched."""
+    phases = _generate(5000, 4, _COUPLING, _OMEGA)
+    full = infer_network_bayesian(phases, _DT)
+    assert full.identifiable and full.data_rank.tolist() == [4, 4, 4, 4]
+    assert len(full.parameter_covariances) == 4
+    phases[:, 3] = phases[:, 2]
+    duplicated = infer_network_bayesian(phases, _DT)
+    assert not duplicated.identifiable
+    assert duplicated.data_rank[0] == 3 and duplicated.unidentified_directions[0].shape == (4, 1)
+
+
+def test_noise_free_series_is_refused() -> None:
+    """A series without noise has a degenerate transition likelihood."""
+    with pytest.raises(ValueError, match="noise is zero to rounding"):
+        infer_network_bayesian(np.cumsum(np.full((40, 2), 0.02), axis=0), _DT)
+
+
+def test_held_out_split_and_evaluation() -> None:
+    """The split fits on the first segment and scores the later ones."""
+    phases = _generate(12000, 5, _COUPLING, _OMEGA)
+    split = fit_with_held_out(phases, _DT, fractions=[0.5, 0.25, 0.25])
+    assert isinstance(split, InverseProblemSplit)
+    assert split.boundaries == (0, 6000, 9000, 12000)
+    assert isinstance(split.test, HeldOutEvaluation) and split.test.samples == 4 * 3000
+    assert 0.9 <= split.calibration.coverage_95 <= 0.99
+    direct = evaluate_held_out(split.posterior, phases[9000:], _DT)
+    assert direct == split.test
+    with pytest.raises(ValueError, match="sum to one"):
+        fit_with_held_out(phases, _DT, fractions=(0.5, 0.5, 0.5))
+    with pytest.raises(ValueError, match="three positive"):
+        fit_with_held_out(phases, _DT, fractions=(1.0,))
+    with pytest.raises(ValueError, match="at least one increment"):
+        fit_with_held_out(phases[:40], _DT, fractions=(0.98, 0.01, 0.01))
+    with pytest.raises(ValueError, match="same N nodes"):
+        evaluate_held_out(split.posterior, phases[:, :3], _DT)

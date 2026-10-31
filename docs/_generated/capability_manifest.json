@@ -13,7 +13,7 @@
     "python_model_source_modules": 856,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1616
+    "test_files": 1618
   },
   "documentation": {
     "examples": [
@@ -9994,6 +9994,8 @@
       "tests/test_integration.py",
       "tests/test_integration_pipeline.py",
       "tests/test_internal_corpus_markers.py",
+      "tests/test_inverse_problem_identifiability.py",
+      "tests/test_inverse_problem_quality_gate.py",
       "tests/test_iqm_backend.py",
       "tests/test_iqm_depth_ordering_protocol.py",
       "tests/test_iqm_lattice_calibration.py",

@@ -216,6 +216,12 @@ APPROVED_EXPORT_ADDITIONS: dict[str, tuple[int, tuple[tuple[str, str], ...]]] = 
             ("EXPECTATION_ESTIMAND", "oscillatools.accel.diff_kuramoto_noisy"),
             ("NoisyExpectationEstimate", "oscillatools.accel.diff_kuramoto_noisy"),
             ("noisy_expectation_value_and_grad", "oscillatools.accel.diff_kuramoto_noisy"),
+            ("IDENTIFIABILITY_RCOND", "oscillatools.accel.kuramoto_bayesian_inference"),
+            ("NOISE_FREE_RATIO", "oscillatools.accel.kuramoto_bayesian_inference"),
+            ("HeldOutEvaluation", "oscillatools.accel.kuramoto_bayesian_inference"),
+            ("InverseProblemSplit", "oscillatools.accel.kuramoto_bayesian_inference"),
+            ("evaluate_held_out", "oscillatools.accel.kuramoto_bayesian_inference"),
+            ("fit_with_held_out", "oscillatools.accel.kuramoto_bayesian_inference"),
         ),
     ),
 }

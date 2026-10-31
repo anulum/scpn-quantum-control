@@ -32,6 +32,18 @@ Time-varying coupling is tracked by the Bayesian window propagation of Stankovsk
 into windows, each window's posterior becomes the next window's prior with its covariance inflated to
 admit parameter drift, so a slowly changing coupling is followed window by window.
 
+Identifiability is reported, not patched. A direction in parameter space that the data do not
+inform — a zero (or relatively negligible) eigenvalue of the node's data precision
+``(h/E) Σ p_n p_nᵀ`` — keeps its prior, however weak; such directions are returned in
+:attr:`DynamicalBayesianPosterior.unidentified_directions` and set ``identifiable`` to ``False``
+(for example, two oscillators with identical phases give two identical design columns, so only
+the sum of their couplings is learned). A series that is noise-free to rounding
+(:data:`NOISE_FREE_RATIO`) is refused, since the transition likelihood is then degenerate.
+
+Held-out evaluation uses contiguous, disjoint segments: :func:`fit_with_held_out` fits on the
+first segment only, then scores one-step predictive intervals on a calibration and a test segment
+that the fit never reads (:func:`evaluate_held_out`).
+
 This complements the coupling-*function* inference (which learns the interaction *shape* ``Γ``) and
 the trajectory-match coupling-*matrix* system identification (which is deterministic and gives no
 uncertainty): here the data are stochastic and the output is a full posterior over the directed
@@ -40,10 +52,17 @@ network. It adds no compute kernel.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import math
+from collections.abc import Sequence
+from dataclasses import dataclass, field
 
 import numpy as np
 from numpy.typing import NDArray
+
+IDENTIFIABILITY_RCOND = 1e-10
+"""Data-precision eigenvalues at most this times the largest mark an unidentified direction."""
+NOISE_FREE_RATIO = 1e-10
+"""A residual RMS at most this times the increment RMS is a noise-free series, which is refused."""
 
 
 @dataclass(frozen=True)
@@ -63,6 +82,15 @@ class DynamicalBayesianPosterior:
         The ``(N, N)`` posterior standard deviations of the coupling entries (diagonal zero).
     noise : numpy.ndarray
         The ``(N,)`` estimated per-node noise intensities ``E_i``.
+    parameter_covariances : tuple of numpy.ndarray
+        Per node, the posterior covariance of ``[ω_i, K_{ij} (j ≠ i, ascending)]``.
+    data_rank : numpy.ndarray
+        Per node, the number of parameter directions the data inform.
+    unidentified_directions : tuple of numpy.ndarray
+        Per node, an ``(N, d_i)`` orthonormal basis (in the same parameter order) of the directions
+        the data do not inform; empty when ``d_i = 0``. Along them the posterior is the prior.
+    identifiable : bool
+        Whether every node's parameters are informed by the data.
 
     """
 
@@ -71,6 +99,57 @@ class DynamicalBayesianPosterior:
     frequency_std: NDArray[np.float64]
     coupling_std: NDArray[np.float64]
     noise: NDArray[np.float64]
+    parameter_covariances: tuple[NDArray[np.float64], ...] = ()
+    data_rank: NDArray[np.int64] = field(default_factory=lambda: np.zeros(0, dtype=np.int64))
+    unidentified_directions: tuple[NDArray[np.float64], ...] = ()
+    identifiable: bool = True
+
+
+@dataclass(frozen=True)
+class HeldOutEvaluation:
+    """One-step predictive scores of a posterior on data the fit did not read.
+
+    Attributes
+    ----------
+    samples : int
+        Number of scored increments (all nodes).
+    coverage_95 : float
+        Fraction of increments inside their central 95 % predictive interval.
+    standardized_rms : float
+        Root mean square of the standardised residuals; about one when the intervals are calibrated.
+    mean_log_predictive_density : float
+        Mean Gaussian log predictive density per increment.
+
+    """
+
+    samples: int
+    coverage_95: float
+    standardized_rms: float
+    mean_log_predictive_density: float
+
+
+@dataclass(frozen=True)
+class InverseProblemSplit:
+    """A fit on a training segment scored on later calibration and test segments.
+
+    Attributes
+    ----------
+    boundaries : tuple of int
+        Sample indices ``(0, a, b, n)``: training ``[0, a]``, calibration ``[a, b]``, test ``[b, n]``.
+        Consecutive segments share only their boundary sample; their increments are disjoint.
+    posterior : DynamicalBayesianPosterior
+        The posterior from the training segment alone.
+    calibration : HeldOutEvaluation
+        Scores on the calibration segment.
+    test : HeldOutEvaluation
+        Scores on the test segment.
+
+    """
+
+    boundaries: tuple[int, int, int, int]
+    posterior: DynamicalBayesianPosterior
+    calibration: HeldOutEvaluation
+    test: HeldOutEvaluation
 
 
 @dataclass(frozen=True)
@@ -121,11 +200,19 @@ def _node_posterior(
     gram = design.T @ design
     cross = design.T @ increments
     prior_term = prior_precision @ prior_mean
-    mean = np.linalg.solve(gram * dt + np.eye(design.shape[1]) * 1e-12, cross)
+    # Minimum-norm least squares for the first noise estimate: no ridge hides a rank deficiency.
+    mean = np.linalg.lstsq(design * dt, increments, rcond=None)[0]
     precision = prior_precision
+    # Residuals at rounding level relative to the increments mean the series is noise-free.
+    floor = (NOISE_FREE_RATIO**2) * float(np.mean(increments**2)) / dt
     for _ in range(noise_iterations):
         residual = increments - dt * (design @ mean)
         noise = float(np.mean(residual**2) / dt)
+        if not noise > floor or not math.isfinite(noise):
+            raise ValueError(
+                "the residual noise is zero to rounding or not finite; the Euler-Maruyama "
+                "likelihood is degenerate and no posterior is issued"
+            )
         precision = prior_precision + (dt / noise) * gram
         mean = np.linalg.solve(precision, prior_term + cross / noise)
     covariance = np.linalg.inv(precision)
@@ -134,6 +221,16 @@ def _node_posterior(
         np.asarray(covariance, dtype=np.float64),
         noise,
     )
+
+
+def _unidentified(design: NDArray[np.float64]) -> NDArray[np.float64]:
+    """Return an orthonormal basis of the parameter directions the design does not inform.
+
+    The design always holds the column of ones, so its Gram matrix has a positive largest eigenvalue.
+    """
+    values, vectors = np.linalg.eigh(design.T @ design)
+    mask = values <= IDENTIFIABILITY_RCOND * float(values[-1])
+    return np.asarray(vectors[:, mask], dtype=np.float64)
 
 
 def _validate(phases: NDArray[np.float64], dt: float) -> int:
@@ -218,7 +315,7 @@ def infer_network_bayesian(
 
     prior_matrix = prior_precision * np.eye(count, dtype=np.float64)
     prior_mean = np.zeros(count, dtype=np.float64)
-    means, covariances, noises = [], [], []
+    means, covariances, noises, unidentified = [], [], [], []
     for node in range(count):
         design = _node_design(series, node)
         increments = series[1:, node] - series[:-1, node]
@@ -228,6 +325,7 @@ def infer_network_bayesian(
         means.append(mean)
         covariances.append(covariance)
         noises.append(noise)
+        unidentified.append(_unidentified(design))
 
     frequencies, coupling, frequency_std, coupling_std, noise_array = _assemble(
         means, covariances, noises, count
@@ -238,6 +336,124 @@ def infer_network_bayesian(
         frequency_std=frequency_std,
         coupling_std=coupling_std,
         noise=noise_array,
+        parameter_covariances=tuple(covariances),
+        data_rank=np.array([count - basis.shape[1] for basis in unidentified], dtype=np.int64),
+        unidentified_directions=tuple(unidentified),
+        identifiable=all(basis.shape[1] == 0 for basis in unidentified),
+    )
+
+
+def evaluate_held_out(
+    posterior: DynamicalBayesianPosterior,
+    phases: NDArray[np.float64],
+    dt: float,
+) -> HeldOutEvaluation:
+    r"""Score one-step predictive intervals of a posterior on a held-out phase series.
+
+    Each increment ``φ_{n+1,i} - φ_{n,i}`` is predicted as ``h\,p_nᵀ \bar c_i`` with variance
+    ``E_i h + h² p_nᵀ Σ_i p_n`` (noise plus parameter uncertainty), from the posterior alone.
+
+    Parameters
+    ----------
+    posterior : DynamicalBayesianPosterior
+        A posterior from :func:`infer_network_bayesian` (it must carry ``parameter_covariances``).
+    phases : numpy.ndarray
+        The ``(n_samples, N)`` held-out series, sampled at ``dt``.
+    dt : float
+        The sampling interval ``> 0``.
+
+    Returns
+    -------
+    HeldOutEvaluation
+        Coverage of the 95 % intervals, the standardised RMS and the mean log predictive density.
+
+    Raises
+    ------
+    ValueError
+        If the series does not match the posterior or the posterior has no covariances.
+
+    """
+    series = np.ascontiguousarray(phases, dtype=np.float64)
+    count = _validate(series, dt)
+    if count != posterior.frequencies.size or len(posterior.parameter_covariances) != count:
+        raise ValueError("the held-out series and the posterior must describe the same N nodes")
+    standardized: list[NDArray[np.float64]] = []
+    log_density = 0.0
+    for node in range(count):
+        design = _node_design(series, node)
+        others = [other for other in range(count) if other != node]
+        mean = np.concatenate(([posterior.frequencies[node]], posterior.coupling[node, others]))
+        covariance = posterior.parameter_covariances[node]
+        increments = series[1:, node] - series[:-1, node]
+        variance = posterior.noise[node] * dt + dt**2 * np.einsum(
+            "ni,ij,nj->n", design, covariance, design
+        )
+        residual = increments - dt * (design @ mean)
+        standardized.append(residual / np.sqrt(variance))
+        log_density += float(
+            np.sum(-0.5 * (np.log(2.0 * np.pi * variance) + residual**2 / variance))
+        )
+    scores = np.concatenate(standardized)
+    return HeldOutEvaluation(
+        samples=int(scores.size),
+        coverage_95=float(np.mean(np.abs(scores) <= 1.959963984540054)),
+        standardized_rms=float(np.sqrt(np.mean(scores**2))),
+        mean_log_predictive_density=log_density / scores.size,
+    )
+
+
+def fit_with_held_out(
+    phases: NDArray[np.float64],
+    dt: float,
+    *,
+    fractions: Sequence[float] = (0.6, 0.2, 0.2),
+    prior_precision: float = 1e-6,
+    noise_iterations: int = 4,
+) -> InverseProblemSplit:
+    """Fit on the first segment only and score the posterior on later, disjoint segments.
+
+    Parameters
+    ----------
+    phases : numpy.ndarray
+        The ``(n_samples, N)`` phase series, in time order.
+    dt : float
+        The sampling interval ``> 0``.
+    fractions : sequence of float, optional
+        Positive training, calibration and test fractions of the increments, summing to one.
+    prior_precision, noise_iterations
+        As for :func:`infer_network_bayesian`, applied to the training segment.
+
+    Returns
+    -------
+    InverseProblemSplit
+        The segment boundaries, the training posterior and the calibration and test scores.
+
+    Raises
+    ------
+    ValueError
+        If the fractions are invalid or a segment would have fewer than two samples.
+
+    """
+    series = np.ascontiguousarray(phases, dtype=np.float64)
+    _validate(series, dt)
+    if len(fractions) != 3 or any(not part > 0.0 for part in fractions):
+        raise ValueError("fractions must be three positive numbers")
+    if abs(sum(fractions) - 1.0) > 1e-12:
+        raise ValueError("fractions must sum to one")
+    steps = series.shape[0] - 1
+    first = round(steps * fractions[0])
+    second = first + round(steps * fractions[1])
+    boundaries = (0, first, second, steps)
+    if min(first, second - first, steps - second) < 1:
+        raise ValueError("every segment needs at least one increment")
+    posterior = infer_network_bayesian(
+        series[: first + 1], dt, prior_precision=prior_precision, noise_iterations=noise_iterations
+    )
+    return InverseProblemSplit(
+        boundaries=boundaries,
+        posterior=posterior,
+        calibration=evaluate_held_out(posterior, series[first : second + 1], dt),
+        test=evaluate_held_out(posterior, series[second:], dt),
     )
 
 
@@ -339,8 +555,14 @@ def track_time_varying_coupling(
 
 
 __all__ = [
+    "IDENTIFIABILITY_RCOND",
+    "NOISE_FREE_RATIO",
     "DynamicalBayesianPosterior",
+    "HeldOutEvaluation",
+    "InverseProblemSplit",
     "TimeVaryingCouplingHistory",
+    "evaluate_held_out",
+    "fit_with_held_out",
     "infer_network_bayesian",
     "track_time_varying_coupling",
 ]
