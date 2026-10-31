@@ -5,6 +5,7 @@ Kuramoto networks:
 
 - `SparseKuramotoCoupling`
 - `sparse_coupling_from_scipy`
+- `sparse_coupling_from_edges`
 - `ring_sparse_coupling`
 - `sparse_networked_kuramoto_force`
 - `sparse_kuramoto_euler_trajectory`
@@ -15,6 +16,24 @@ They are still the small dense-matrix correctness and multi-language dispatch
 surfaces. The sparse route accepts SciPy sparse coupling matrices or canonical
 COO edge records and evaluates
 `F_i = sum_j K_ij sin(theta_j - theta_i)` over stored edges only.
+
+## Duplicates, storage and placement
+
+- **Duplicate entries:** `sparse_coupling_from_edges(n, row, col, weight,
+  duplicates="sum")` and `sparse_coupling_from_scipy(matrix, duplicates="sum")`
+  add repeated `(row, col)` entries. With `duplicates="refuse"` they raise
+  instead. Diagonal and zero entries are dropped, and edges are sorted by
+  `(row, col)`.
+- **Storage:** `coupling.storage_report()` measures the stored row, column and
+  weight arrays. Their total is linear in the number of edges, and the bytes a
+  dense `N x N` matrix would need are reported but never allocated. A
+  200,000-node ring stores 24 bytes per edge on 64-bit platforms. Its force
+  evaluation peaks well below `12 * 8 * (N + E)` bytes and roughly doubles when
+  `N` doubles.
+- **Placement:** `sparse_kuramoto_execution_report()` states that the kernels run
+  on the CPU in float64 through NumPy. Its `gpu_status` is `not_implemented`
+  whatever devices the host has, so this path never stands in for GPU
+  evidence or a GPU performance claim.
 
 ## Example
 

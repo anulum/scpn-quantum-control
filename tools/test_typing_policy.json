@@ -765,6 +765,7 @@
         "tests/test_sc_to_quantum.py",
         "tests/test_snn_adapter.py",
         "tests/test_snn_neurocore_e2e.py",
+        "tests/test_sparse_kuramoto_scaling.py",
         "tests/test_spectral_bridge.py",
         "tests/test_ssgf_16osc.py",
         "tests/test_ssgf_adapter.py",

@@ -232,7 +232,13 @@ if TYPE_CHECKING:
         SparseDynamicsModel as SparseDynamicsModel,
     )
     from oscillatools.accel import (
+        SparseExecutionReport as SparseExecutionReport,
+    )
+    from oscillatools.accel import (
         SparseKuramotoCoupling as SparseKuramotoCoupling,
+    )
+    from oscillatools.accel import (
+        SparseStorageReport as SparseStorageReport,
     )
     from oscillatools.accel import (
         StabilitySpectrum as StabilitySpectrum,
@@ -1129,10 +1135,16 @@ if TYPE_CHECKING:
         solve_kuramoto_ivp as solve_kuramoto_ivp,
     )
     from oscillatools.accel import (
+        sparse_coupling_from_edges as sparse_coupling_from_edges,
+    )
+    from oscillatools.accel import (
         sparse_coupling_from_scipy as sparse_coupling_from_scipy,
     )
     from oscillatools.accel import (
         sparse_kuramoto_euler_trajectory as sparse_kuramoto_euler_trajectory,
+    )
+    from oscillatools.accel import (
+        sparse_kuramoto_execution_report as sparse_kuramoto_execution_report,
     )
     from oscillatools.accel import (
         sparse_kuramoto_rk4_trajectory as sparse_kuramoto_rk4_trajectory,
@@ -1794,6 +1806,10 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
     "SparseKuramotoCoupling": ("oscillatools.accel", "SparseKuramotoCoupling"),
     "ring_sparse_coupling": ("oscillatools.accel", "ring_sparse_coupling"),
     "sparse_coupling_from_scipy": ("oscillatools.accel", "sparse_coupling_from_scipy"),
+    "sparse_coupling_from_edges": ("oscillatools.accel", "sparse_coupling_from_edges"),
+    "SparseStorageReport": ("oscillatools.accel", "SparseStorageReport"),
+    "SparseExecutionReport": ("oscillatools.accel", "SparseExecutionReport"),
+    "sparse_kuramoto_execution_report": ("oscillatools.accel", "sparse_kuramoto_execution_report"),
     "sparse_networked_kuramoto_force": ("oscillatools.accel", "sparse_networked_kuramoto_force"),
     "sparse_kuramoto_euler_trajectory": ("oscillatools.accel", "sparse_kuramoto_euler_trajectory"),
     "sparse_kuramoto_rk4_trajectory": ("oscillatools.accel", "sparse_kuramoto_rk4_trajectory"),

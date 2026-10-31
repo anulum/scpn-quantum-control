@@ -198,6 +198,15 @@ APPROVED_EXPORT_ADDITIONS: dict[str, tuple[int, tuple[tuple[str, str], ...]]] = 
             ),
         ),
     ),
+    "scpn_quantum_control.accel": (
+        385,
+        (
+            ("sparse_coupling_from_edges", "oscillatools.accel.sparse_kuramoto"),
+            ("SparseStorageReport", "oscillatools.accel.sparse_kuramoto"),
+            ("SparseExecutionReport", "oscillatools.accel.sparse_kuramoto"),
+            ("sparse_kuramoto_execution_report", "oscillatools.accel.sparse_kuramoto"),
+        ),
+    ),
 }
 
 

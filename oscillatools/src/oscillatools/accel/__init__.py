@@ -565,10 +565,14 @@ from .sakaguchi_mean_field import (
     sakaguchi_mean_field_jacobian,
 )
 from .sparse_kuramoto import (
+    SparseExecutionReport,
     SparseKuramotoCoupling,
+    SparseStorageReport,
     ring_sparse_coupling,
+    sparse_coupling_from_edges,
     sparse_coupling_from_scipy,
     sparse_kuramoto_euler_trajectory,
+    sparse_kuramoto_execution_report,
     sparse_kuramoto_rk4_trajectory,
     sparse_networked_kuramoto_force,
 )
@@ -1013,6 +1017,10 @@ __all__ = [
     "SparseKuramotoCoupling",
     "ring_sparse_coupling",
     "sparse_coupling_from_scipy",
+    "sparse_coupling_from_edges",
+    "SparseStorageReport",
+    "SparseExecutionReport",
+    "sparse_kuramoto_execution_report",
     "sparse_networked_kuramoto_force",
     "sparse_kuramoto_euler_trajectory",
     "sparse_kuramoto_rk4_trajectory",

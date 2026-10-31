@@ -4,6 +4,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Make sparse Kuramoto storage and placement explicit:
+  - edge lists use a declared duplicate policy (`sum` or `refuse`);
+  - storage reports measure the stored row, column and weight arrays, which
+    are linear in the number of edges;
+  - the sparse kernels report CPU float64 placement and no GPU path.
+
 - Check pulse designs against declared native limits:
   - `assess_pulse_design` converts seconds and Rabi rates to native samples;
   - it refuses off-grid events, amplitude or slew over the limit, and

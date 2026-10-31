@@ -15,6 +15,16 @@ All notable changes to `oscillatools` are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `sparse_coupling_from_edges` builds a sparse coupling from an explicit edge
+  list. Its declared duplicate policy is `sum` or `refuse`, and
+  `sparse_coupling_from_scipy` accepts the same `duplicates` argument.
+- `SparseKuramotoCoupling.storage_report()` measures the edge-linear stored
+  arrays.
+- `sparse_kuramoto_execution_report()` records CPU float64 placement. It reports
+  no GPU path, so the sparse kernels never stand in for GPU evidence.
+
 ## [0.1.1] - 2026-10-29
 
 ### Fixed

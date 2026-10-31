@@ -18,7 +18,7 @@ canonicalises them into COO edge arrays, and evaluates
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, TypeAlias, cast
+from typing import Any, Literal, TypeAlias, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -27,6 +27,78 @@ from scipy import sparse
 FloatArray: TypeAlias = NDArray[np.float64]
 IndexArray: TypeAlias = NDArray[np.intp]
 SparseInput: TypeAlias = "SparseKuramotoCoupling | object"
+DuplicatePolicy: TypeAlias = Literal["sum", "refuse"]
+"""How repeated ``(row, col)`` entries are aggregated: summed, or refused."""
+
+
+@dataclass(frozen=True)
+class SparseStorageReport:
+    """Measured storage of a sparse coupling, by stored component.
+
+    Attributes
+    ----------
+    n_oscillators:
+        Number of oscillators.
+    edges:
+        Number of stored off-diagonal entries.
+    component_bytes:
+        ``(name, nbytes)`` for the row, column and weight arrays.
+    stored_bytes:
+        Sum of the component bytes; linear in ``edges``.
+    dense_equivalent_bytes:
+        Bytes a dense float64 ``N x N`` matrix would need; reported, never
+        allocated.
+
+    """
+
+    n_oscillators: int
+    edges: int
+    component_bytes: tuple[tuple[str, int], ...]
+    stored_bytes: int
+    dense_equivalent_bytes: int
+
+    @property
+    def bytes_per_edge(self) -> float:
+        """Stored bytes per edge, or zero for an edgeless coupling."""
+        return 0.0 if self.edges == 0 else self.stored_bytes / self.edges
+
+
+@dataclass(frozen=True)
+class SparseExecutionReport:
+    """Where and in which precision the sparse Kuramoto kernels run.
+
+    Attributes
+    ----------
+    backend:
+        Execution placement; always ``cpu``.
+    library:
+        Array library performing the edge gathers and reductions.
+    precision:
+        Floating-point type of states, weights and forces.
+    gpu_status:
+        ``not_implemented``: this module has no GPU kernel, whatever devices
+        the host has, so it never stands in for GPU evidence.
+    gpu_performance_claim:
+        Always ``False``.
+
+    """
+
+    backend: str
+    library: str
+    precision: str
+    gpu_status: str
+    gpu_performance_claim: bool
+
+
+def sparse_kuramoto_execution_report() -> SparseExecutionReport:
+    """Return the fixed CPU placement and float64 precision of these kernels."""
+    return SparseExecutionReport(
+        backend="cpu",
+        library=f"numpy {np.__version__}",
+        precision="float64",
+        gpu_status="not_implemented",
+        gpu_performance_claim=False,
+    )
 
 
 @dataclass(frozen=True)
@@ -80,6 +152,21 @@ class SparseKuramotoCoupling:
             return 0.0
         return float(self.nnz / (self.n_oscillators * self.n_oscillators))
 
+    def storage_report(self) -> SparseStorageReport:
+        """Measure the stored row, column and weight arrays."""
+        components = (
+            ("row", int(self.row.nbytes)),
+            ("col", int(self.col.nbytes)),
+            ("weight", int(self.weight.nbytes)),
+        )
+        return SparseStorageReport(
+            n_oscillators=self.n_oscillators,
+            edges=self.nnz,
+            component_bytes=components,
+            stored_bytes=sum(size for _, size in components),
+            dense_equivalent_bytes=self.n_oscillators * self.n_oscillators * 8,
+        )
+
     def to_scipy_csr(self) -> Any:
         """Return the coupling as a SciPy CSR array for interoperability."""
         return sparse.csr_array(
@@ -89,12 +176,15 @@ class SparseKuramotoCoupling:
         )
 
 
-def sparse_coupling_from_scipy(coupling: object) -> SparseKuramotoCoupling:
+def sparse_coupling_from_scipy(
+    coupling: object, *, duplicates: DuplicatePolicy = "sum"
+) -> SparseKuramotoCoupling:
     """Canonicalise a SciPy sparse matrix into sparse Kuramoto COO edges.
 
     Diagonal entries are discarded because ``sin(theta_i - theta_i) == 0`` and
     therefore cannot affect the Kuramoto force or any fixed-step trajectory.
-    Duplicate sparse entries are summed by SciPy before zero entries are dropped.
+    Duplicate sparse entries are summed before zero entries are dropped, or
+    refused when ``duplicates="refuse"``.
     """
     if not sparse.issparse(coupling):
         raise TypeError("coupling must be a SciPy sparse matrix or SparseKuramotoCoupling")
@@ -105,6 +195,9 @@ def sparse_coupling_from_scipy(coupling: object) -> SparseKuramotoCoupling:
         raise ValueError(f"coupling must be a square sparse matrix, got shape {shape}")
 
     coo = sparse.coo_array(raw, dtype=np.float64, copy=True)
+    _check_duplicate_policy(
+        np.asarray(coo.row, dtype=np.intp), np.asarray(coo.col, dtype=np.intp), duplicates
+    )
     coo.sum_duplicates()
     row = np.asarray(coo.row, dtype=np.intp)
     col = np.asarray(coo.col, dtype=np.intp)
@@ -116,6 +209,67 @@ def sparse_coupling_from_scipy(coupling: object) -> SparseKuramotoCoupling:
         col=col[keep],
         weight=weight[keep],
     )
+
+
+def sparse_coupling_from_edges(
+    n_oscillators: int,
+    row: object,
+    col: object,
+    weight: object,
+    *,
+    duplicates: DuplicatePolicy = "sum",
+) -> SparseKuramotoCoupling:
+    """Canonicalise an explicit edge list under a declared duplicate policy.
+
+    Parameters
+    ----------
+    n_oscillators:
+        Number of oscillators.
+    row, col, weight:
+        Edge arrays of equal length; entry ``k`` adds ``weight[k]`` to
+        ``K[row[k], col[k]]``.
+    duplicates:
+        ``sum`` adds repeated ``(row, col)`` entries; ``refuse`` raises.
+
+    Returns
+    -------
+    SparseKuramotoCoupling
+        Edges sorted by ``(row, col)``, without diagonal or zero entries.
+
+    Raises
+    ------
+    ValueError
+        If the arrays are malformed, out of range, or repeat an entry under
+        ``refuse``.
+
+    """
+    raw = SparseKuramotoCoupling(n_oscillators=n_oscillators, row=row, col=col, weight=weight)  # type: ignore[arg-type]
+    _check_duplicate_policy(raw.row, raw.col, duplicates)
+    order = np.lexsort((raw.col, raw.row))
+    rows, cols, weights = raw.row[order], raw.col[order], raw.weight[order]
+    if rows.size:
+        starts = np.flatnonzero(
+            np.concatenate(([True], (rows[1:] != rows[:-1]) | (cols[1:] != cols[:-1])))
+        )
+        rows, cols = rows[starts], cols[starts]
+        weights = np.add.reduceat(weights, starts)
+    keep = (rows != cols) & (weights != 0.0)
+    return SparseKuramotoCoupling(
+        n_oscillators=n_oscillators, row=rows[keep], col=cols[keep], weight=weights[keep]
+    )
+
+
+def _check_duplicate_policy(row: IndexArray, col: IndexArray, policy: DuplicatePolicy) -> None:
+    """Validate the policy and refuse repeated entries when asked to."""
+    if policy not in ("sum", "refuse"):
+        raise ValueError("duplicates must be 'sum' or 'refuse'")
+    if policy == "refuse" and row.size:
+        pairs = np.stack((row, col), axis=1)
+        unique = np.unique(pairs, axis=0)
+        if unique.shape[0] != pairs.shape[0]:
+            raise ValueError(
+                "sparse coupling repeats a (row, col) entry under duplicates='refuse'"
+            )
 
 
 def ring_sparse_coupling(
@@ -249,9 +403,14 @@ def sparse_kuramoto_rk4_trajectory(
 
 
 __all__ = [
+    "DuplicatePolicy",
+    "SparseExecutionReport",
     "SparseKuramotoCoupling",
+    "SparseStorageReport",
     "ring_sparse_coupling",
+    "sparse_coupling_from_edges",
     "sparse_coupling_from_scipy",
+    "sparse_kuramoto_execution_report",
     "sparse_kuramoto_euler_trajectory",
     "sparse_kuramoto_rk4_trajectory",
     "sparse_networked_kuramoto_force",

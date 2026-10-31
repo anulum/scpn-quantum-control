@@ -1761,7 +1761,7 @@
       "source": "src/scpn_quantum_control/accel/__init__.py",
       "scope": "__getattr__",
       "call_sha256": "ea6f197d0a0d00e7c11c83ea774bf1da321e5c3ab551400c4aa004a6fc933a0b",
-      "source_sha256": "b3d6d16a776ea0d32b87e6f7b68b78318fe58797f231fe98615a9aff2e223f39",
+      "source_sha256": "dd3fc7fd47ea90a0dde9071783d7365ef375cae01bd02a3e44b1e1ead6de5201",
       "role": "external",
       "reason": "Literal compatibility table dispatches only to original oscillatools exports; eager target forwarding and legacy warning remain.",
       "count": 1
