@@ -356,3 +356,10 @@ def test_truth_values_are_recorded_predicates() -> None:
         bool(values)
     branches = [node.op for node in values.context.nodes if node.op.startswith("branch:")]
     assert len(branches) == 3 and all(":ne:" in op for op in branches)
+
+
+def test_formatting_a_traced_scalar_is_refused() -> None:
+    """``format`` and f-strings would turn a traced value into untraced text."""
+    values = _trace_array(np.array([1.5, 2.0, 3.0, 4.0], dtype=np.float64))
+    with pytest.raises(ValueError, match="cannot be formatted"):
+        format(values[0], ".3f")

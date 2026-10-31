@@ -55,8 +55,36 @@ from .program_ad_effect_values import (
     _value_signature,
 )
 
-_TRACE_INTERNAL_ATTRIBUTES = frozenset({"primal", "tangent", "context", "name"})
-"""Attributes of a traced value that expose its untraced primal or bookkeeping."""
+_TRACE_INTERNAL_ATTRIBUTES = frozenset(
+    {
+        "primal",
+        "tangent",
+        "context",
+        "name",
+        "_items",
+        "_source_indices",
+        "__dict__",
+        "__getattribute__",
+        "__getattr__",
+        "__getstate__",
+        "__reduce__",
+        "__reduce_ex__",
+    }
+)
+"""Attributes of a traced value that expose its untraced primal or storage.
+
+These are the trace values' own fields (``primal``, ``tangent``, the array's
+``_items`` and ``_source_indices``), the instance dictionary, and the generic
+attribute and pickling hooks that reach the same fields by name. Protocol
+methods such as ``__array_function__`` route through traced semantics and stay
+admitted, as do private names of other objects, such as ``self._cache`` in a
+method.
+"""
+
+
+def _is_trace_internal_attribute(attribute: str) -> bool:
+    """Return whether reading ``attribute`` of a traced value bypasses the trace."""
+    return attribute in _TRACE_INTERNAL_ATTRIBUTES
 
 
 @dataclass(frozen=True, slots=True)
@@ -146,7 +174,7 @@ class _Visitor(ast.NodeVisitor):
     def visit_Attribute(self, node: ast.Attribute) -> None:
         """Refuse captured class reads and reads of a traced value's internals."""
         receiver = self.value(node.value)
-        if receiver.active and node.attr in _TRACE_INTERNAL_ATTRIBUTES:
+        if receiver.active and _is_trace_internal_attribute(node.attr):
             self.add(
                 node,
                 "trace_internal_attribute",

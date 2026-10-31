@@ -857,7 +857,15 @@ def _captured_or_global_names(objective: Callable[..., object]) -> set[str]:
     names = set(code.co_freevars)
     globals_mapping = getattr(objective, "__globals__", {})
     if isinstance(globals_mapping, Mapping):
-        names.update(name for name in code.co_names if name in globals_mapping)
+        # Generator expressions and comprehensions compile to nested code that
+        # reads its own names, so their attribute roots are included too.
+        pending = [code]
+        while pending:
+            current = pending.pop()
+            names.update(name for name in current.co_names if name in globals_mapping)
+            pending.extend(
+                constant for constant in current.co_consts if isinstance(constant, _CodeType)
+            )
     return names
 
 

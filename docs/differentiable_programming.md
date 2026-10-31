@@ -449,7 +449,14 @@ runtime refuses rather than returning a one-sided derivative:
   only a one-element array has a truth value.
 - **Reading `.primal` or `.tangent`** of a parameter-dependent value is refused
   before execution, because a branch on the raw primal would bypass the
-  recorded predicates.
+  recorded predicates. The same holds for the other trace fields
+  (`context`, `name`, an array's `_items`), the instance dictionary
+  (`y.__dict__["primal"]`), and the generic attribute and pickling hooks.
+- **Formatting** a traced value (`f"{y}"`, `format(y)`) is refused, since the
+  text would carry neither the derivative nor a recorded predicate.
+- **Module attributes read inside generator expressions** are refused like
+  top-level ones, and the captured-state digest covers the module members that
+  nested code reads.
 
 Comparisons that involve a frozen (non-trainable) parameter follow the same
 equality rule.

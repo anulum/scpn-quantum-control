@@ -514,7 +514,7 @@ class _Fingerprint:
         self.visit(function.__defaults__, depth + 1, ())
         self.visit(function.__kwdefaults__, depth + 1, ())
         self.visit(function.__dict__, depth + 1, ())
-        names = function.__code__.co_names
+        names = _attribute_names(function.__code__)
         if len(names) > _MAX_NODES:
             raise _UnsupportedState("captured callable exceeds the bounded snapshot")
         self.memory.code(function.__code__, depth)
@@ -587,6 +587,27 @@ def _intrinsic_name(value: object) -> bytes:
     return kind_name.encode()
 
 
+def _nested_code(code: CodeType) -> tuple[CodeType, ...]:
+    """Return code and every code object nested in its constants, outermost first."""
+    found: list[CodeType] = []
+    pending = [code]
+    while pending:
+        current = pending.pop()
+        found.append(current)
+        pending.extend(constant for constant in current.co_consts if type(constant) is CodeType)
+    return tuple(found)
+
+
+def _attribute_names(code: CodeType) -> tuple[str, ...]:
+    """Return every name read by code or its nested code, for module traversal.
+
+    A module attribute read only inside a generator expression must still be
+    part of the digest, so the module's members are selected from the names of
+    the nested code as well.
+    """
+    return tuple(dict.fromkeys(name for nested in _nested_code(code) for name in nested.co_names))
+
+
 def _global_names(code: CodeType) -> tuple[str, ...]:
     """Return the global names read by code and by the code nested in it.
 
@@ -594,17 +615,14 @@ def _global_names(code: CodeType) -> tuple[str, ...]:
     that read globals themselves, so scanning only the outer instructions
     would leave those reads out of the digest.
     """
-    names: list[str] = []
-    pending = [code]
-    while pending:
-        current = pending.pop()
-        names.extend(
+    return tuple(
+        dict.fromkeys(
             instruction.argval
-            for instruction in dis.get_instructions(current)
+            for nested in _nested_code(code)
+            for instruction in dis.get_instructions(nested)
             if instruction.opname in {"LOAD_GLOBAL", "LOAD_NAME"}
         )
-        pending.extend(constant for constant in current.co_consts if type(constant) is CodeType)
-    return tuple(dict.fromkeys(names))
+    )
 
 
 _FRAME_BYTES = sum(

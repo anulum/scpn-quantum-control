@@ -788,6 +788,64 @@ def test_truth_of_a_traced_array_follows_numpy() -> None:
         whole_program_value_and_grad(_array_truthy, [1.0, 2.0], trace=False)
 
 
+def _dict_branch(values: TraceADArray) -> object:
+    """Branch on the primal read through the instance dictionary."""
+    y = cast(TraceADScalar, values[0])
+    return 3.0 * y if y.__dict__["primal"] > 1.0 else y
+
+
+def _getattribute_branch(values: TraceADArray) -> object:
+    """Branch on the primal read through the generic attribute hook."""
+    y = cast(TraceADScalar, values[0])
+    return 3.0 * y if y.__getattribute__("primal") > 1.0 else y
+
+
+def _private_items(values: TraceADArray) -> object:
+    """Read the array's private item storage."""
+    return values._items[0] * 2.0
+
+
+def _formatted(values: TraceADArray) -> object:
+    """Turn a traced value into text."""
+    y = cast(TraceADScalar, values[0])
+    return y * float(len(f"{y}"))
+
+
+_NESTED_CONSTANTS = ModuleType("nested_constants")
+vars(_NESTED_CONSTANTS)["W"] = np.array([1.0, 2.0])
+
+
+def _module_attribute_in_generator(values: TraceADArray) -> object:
+    """Read a module attribute only inside a generator expression."""
+    return sum(_NESTED_CONSTANTS.W[i] * values[i] for i in range(2))
+
+
+def test_formatting_a_traced_value_is_refused() -> None:
+    """An f-string of a traced value would be untraced text."""
+    with pytest.raises(ValueError, match="cannot be formatted"):
+        whole_program_value_and_grad(_formatted, [1.0], trace=False)
+
+
+@pytest.mark.parametrize(
+    "objective",
+    [_dict_branch, _getattribute_branch, _private_items, _module_attribute_in_generator],
+    ids=["instance-dict", "getattribute", "private-items", "module-attribute-in-generator"],
+)
+def test_private_and_nested_attribute_routes_are_refused(
+    objective: Callable[[TraceADArray], object],
+) -> None:
+    """``__dict__``, private storage and nested module reads are refused before execution.
+
+    Parameters
+    ----------
+    objective
+        Objective reaching storage that the recorded trace does not see.
+
+    """
+    with pytest.raises(ValueError, match="frontend execution gate rejected"):
+        whole_program_value_and_grad(objective, [1.0, 1.0], trace=False)
+
+
 @pytest.mark.parametrize("objective", [_primal_branch, _tangent_read], ids=["primal", "tangent"])
 def test_reading_trace_internals_is_refused_before_execution(
     objective: Callable[[TraceADArray], object],

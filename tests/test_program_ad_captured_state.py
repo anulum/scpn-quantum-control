@@ -1373,3 +1373,21 @@ def test_portable_digest_names_library_objects_without_addresses() -> None:
     assert digest is not None
     assert _portable_program_state_digest(first) == digest
     assert _portable_program_state_digest(second) not in (None, digest)
+
+
+def test_module_attributes_read_by_nested_code_are_in_the_digest() -> None:
+    """A module member read only inside a generator expression changes the digest."""
+    from types import ModuleType
+
+    from scpn_quantum_control.program_ad_captured_state import _portable_program_state_digest
+
+    constants = ModuleType("nested_digest_constants")
+    vars(constants)["W"] = np.array([1.0, 2.0])
+
+    def objective(values: NDArray[np.float64]) -> object:
+        return sum(constants.W[i] * values[i] for i in range(2))
+
+    before = _portable_program_state_digest(objective)
+    constants.W[1] = 50.0
+    after = _portable_program_state_digest(objective)
+    assert before is not None and after is not None and before != after

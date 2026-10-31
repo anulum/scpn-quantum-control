@@ -239,6 +239,23 @@ class TraceADScalar:
             "whole-program AD scalar cannot be converted to float without losing derivatives"
         )
 
+    def __format__(self, format_spec: str) -> NoReturn:
+        """Reject formatting, which would turn the value into untraced text.
+
+        Parameters
+        ----------
+        format_spec
+            Requested format; every specification is refused.
+
+        Raises
+        ------
+        ValueError
+            Always; a formatted string carries neither the derivative nor a
+            recorded predicate.
+
+        """
+        raise ValueError("whole-program AD scalar cannot be formatted without losing derivatives")
+
     def __bool__(self) -> bool:
         """Branch on ``value != 0`` as a recorded predicate.
 

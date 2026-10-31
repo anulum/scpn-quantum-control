@@ -96,7 +96,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   - the portable captured-state digest names ufuncs, builtins and types, so
     swapping `np.add` for `np.multiply` or `max` for `min` is refused before
     replay executes anything;
-  - globals read only inside generator expressions are part of both digests.
+  - globals read only inside generator expressions are part of both digests;
+  - the trace values' own fields, their instance dictionary and the generic
+    attribute and pickling hooks are refused on parameter-dependent values,
+    so `y.__dict__["primal"]` no longer reaches the raw primal;
+  - formatting a traced value (`f"{y}"`, `format(y)`) is refused;
+  - module attributes read only inside generator expressions are refused like
+    top-level ones, and their members are part of the captured-state digest.
 
 - Check pulse designs against declared native limits:
   - `assess_pulse_design` converts seconds and Rabi rates to native samples;
