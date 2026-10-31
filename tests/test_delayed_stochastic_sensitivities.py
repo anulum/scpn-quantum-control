@@ -115,7 +115,8 @@ def test_delayed_stochastic_sensitivities_01_frozen_delay_is_caught_by_the_struc
         history, omega, coupling, delay=(delay_steps + 0.25) * dt, dt=dt, n_steps=steps
     )
     assert float(np.max(np.abs(one_step))) > 1e-3
-    np.testing.assert_allclose(one_step, sensitivity, rtol=0.05, atol=1e-3)
+    # The first-order gap is about 0.6 %; 2 % also catches a partly wrong delay derivative.
+    np.testing.assert_allclose(one_step, sensitivity, rtol=0.02, atol=1e-3)
 
 
 def test_delayed_stochastic_sensitivities_02_integer_delay_has_no_continuous_derivative() -> None:

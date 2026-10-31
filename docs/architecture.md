@@ -277,8 +277,11 @@ These derivatives answer different questions, and each has its own oracle in
   present.
 
 Not qualified: a second derivative with respect to the delay, a continuous
-delay with a non-constant history, Hessians of noisy objectives, and the
-diffusion channel at `D = 0`, where the pathwise derivative is singular.
+delay with a non-constant history, Hessians of noisy objectives, the
+diffusion channel at `D = 0`, where the pathwise derivative is singular,
+multiplicative (state-dependent) noise, for which the additive-noise
+pathwise derivative does not apply, and dynamics that are delayed and noisy
+at once.
 
 ## Chimera and multiscale control composition
 
