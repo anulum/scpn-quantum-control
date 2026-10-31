@@ -203,7 +203,7 @@ def test_held_out_split_and_evaluation() -> None:
     assert isinstance(split, InverseProblemSplit)
     assert split.boundaries == (0, 6000, 9000, 12000)
     assert isinstance(split.test, HeldOutEvaluation) and split.test.samples == 4 * 3000
-    assert 0.9 <= split.calibration.coverage_95 <= 0.99
+    assert 0.92 <= split.calibration.coverage_95 <= 0.98
     direct = evaluate_held_out(split.posterior, phases[9000:], _DT)
     assert direct == split.test
     with pytest.raises(ValueError, match="sum to one"):

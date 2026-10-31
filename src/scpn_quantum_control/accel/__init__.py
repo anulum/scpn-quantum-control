@@ -25,7 +25,7 @@ if TYPE_CHECKING:
         EXPECTATION_ESTIMAND as EXPECTATION_ESTIMAND,
     )
     from oscillatools.accel import (
-        IDENTIFIABILITY_RCOND as IDENTIFIABILITY_RCOND,
+        IDENTIFIABILITY_PRIOR_RATIO as IDENTIFIABILITY_PRIOR_RATIO,
     )
     from oscillatools.accel import (
         NOISE_FREE_RATIO as NOISE_FREE_RATIO,
@@ -1847,7 +1847,7 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
     "EXPECTATION_ESTIMAND": ("oscillatools.accel", "EXPECTATION_ESTIMAND"),
     "NoisyExpectationEstimate": ("oscillatools.accel", "NoisyExpectationEstimate"),
     "noisy_expectation_value_and_grad": ("oscillatools.accel", "noisy_expectation_value_and_grad"),
-    "IDENTIFIABILITY_RCOND": ("oscillatools.accel", "IDENTIFIABILITY_RCOND"),
+    "IDENTIFIABILITY_PRIOR_RATIO": ("oscillatools.accel", "IDENTIFIABILITY_PRIOR_RATIO"),
     "NOISE_FREE_RATIO": ("oscillatools.accel", "NOISE_FREE_RATIO"),
     "HeldOutEvaluation": ("oscillatools.accel", "HeldOutEvaluation"),
     "InverseProblemSplit": ("oscillatools.accel", "InverseProblemSplit"),

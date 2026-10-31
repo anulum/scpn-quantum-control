@@ -160,7 +160,7 @@ from .kuramoto_basin_stability import (
     synchronisation_basin_stability,
 )
 from .kuramoto_bayesian_inference import (
-    IDENTIFIABILITY_RCOND,
+    IDENTIFIABILITY_PRIOR_RATIO,
     NOISE_FREE_RATIO,
     DynamicalBayesianPosterior,
     HeldOutEvaluation,
@@ -1037,7 +1037,7 @@ __all__ = [
     "EXPECTATION_ESTIMAND",
     "NoisyExpectationEstimate",
     "noisy_expectation_value_and_grad",
-    "IDENTIFIABILITY_RCOND",
+    "IDENTIFIABILITY_PRIOR_RATIO",
     "NOISE_FREE_RATIO",
     "HeldOutEvaluation",
     "InverseProblemSplit",

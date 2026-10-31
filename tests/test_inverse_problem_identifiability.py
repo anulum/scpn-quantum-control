@@ -121,9 +121,9 @@ def test_inverse_problem_identifiability_03_declared_uncertainty_matches_repeate
                 estimates.append(estimate)
                 declared.append(spread)
     coverage = hits / checks
-    assert 0.90 <= coverage <= 0.99, coverage
+    assert 0.92 <= coverage <= 0.98, coverage
     ratio = np.std(np.array(estimates), axis=0, ddof=1) / np.mean(np.array(declared), axis=0)
-    assert np.all((ratio > 0.7) & (ratio < 1.4)), ratio
+    assert np.all((ratio > 0.8) & (ratio < 1.25)), ratio
 
 
 def test_inverse_problem_identifiability_04_held_out_segments_are_never_read_by_the_fit() -> None:
@@ -152,6 +152,46 @@ def test_inverse_problem_identifiability_04_held_out_segments_are_never_read_by_
         evaluate_held_out(split.posterior, drifted, _DT).mean_log_predictive_density
         < split.test.mean_log_predictive_density
     )
+
+
+def _weak_column_series(steps: int, noise: float, seed: int) -> NDArray[np.float64]:
+    """Two nodes whose node-0 coupling column has energy ``1e-6`` against a prior precision ``1e-6``.
+
+    The phase difference is chosen so that ``sin(φ_1 - φ_0)`` is a mean-zero column with
+    ``Σ c^2 = 1e-6``; node 0 then follows ``ω = 0.2``, ``K = 3`` with white noise ``noise``.
+    """
+    rng = np.random.default_rng(seed)
+    column = rng.standard_normal(steps)
+    column -= column.mean()
+    column *= np.sqrt(1e-6 / float(column @ column))
+    phases = np.zeros((steps + 1, 2))
+    phases[:-1, 1] = np.arcsin(column)
+    phases[-1, 1] = phases[-2, 1]
+    increments = _DT * (0.2 + 3.0 * column) + np.sqrt(noise * _DT) * rng.standard_normal(steps)
+    phases[1:, 0] = np.cumsum(increments)
+    phases[:, 1] += phases[:, 0]
+    return phases
+
+
+def test_identifiability_compares_the_data_with_the_prior() -> None:
+    """A direction is unidentified exactly when its posterior stays at the prior.
+
+    With 100000 steps and noise ``1e-4`` the weak column carries data precision ``1e-4``,
+    a hundred times the prior: it is identified, and its variance is far below the prior's.
+    With 200 steps and noise 1 it carries ``1e-8``: it is unidentified, and its variance is
+    the prior's. A raw relative eigenvalue cut decides both the other way round.
+    """
+    prior = 1e-6
+    for steps, noise, identified in ((100000, 1e-4, True), (200, 1.0, False)):
+        posterior = infer_network_bayesian(_weak_column_series(steps, noise, seed=5), _DT)
+        variance_ratio = float(posterior.parameter_covariances[0][1, 1]) * prior
+        assert bool(posterior.data_rank[0] == 2) is identified
+        if identified:
+            assert variance_ratio < 0.05
+        else:
+            assert variance_ratio > 0.9
+            direction = posterior.unidentified_directions[0][:, 0]
+            assert abs(abs(float(direction[1])) - 1.0) < 1e-3
 
 
 def test_inverse_problem_refusals() -> None:

@@ -292,9 +292,13 @@ likelihood: one-step increments with per-node white noise `E_i`, estimated
 from the residuals. The prior is an isotropic Gaussian with precision
 `prior_precision` (by default almost flat).
 
-- **Identifiability.** A parameter direction the data do not inform keeps its
-  prior. Such directions are reported per node in `unidentified_directions`,
-  with `data_rank` and `identifiable`, instead of being resolved by a ridge.
+- **Identifiability.** A parameter direction whose data precision is at most
+  `IDENTIFIABILITY_PRIOR_RATIO` (0.1) times the prior precision keeps
+  essentially its prior: its posterior variance stays above 91 % of the prior
+  variance. Such directions are reported per node in
+  `unidentified_directions`, with `data_rank` and `identifiable`, instead of
+  being resolved by a ridge. The decision compares data with prior, so
+  rescaling a design column does not change it.
   Two oscillators recorded identically make two design columns equal, so only
   the sum of their couplings is learned; the difference is reported as
   unidentified. A series that is noise-free to rounding is refused.

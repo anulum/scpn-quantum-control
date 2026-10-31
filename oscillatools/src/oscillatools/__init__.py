@@ -61,7 +61,7 @@ from types import MappingProxyType
 from ._version import __version__ as __version__
 from .accel import (
     EXPECTATION_ESTIMAND,
-    IDENTIFIABILITY_RCOND,
+    IDENTIFIABILITY_PRIOR_RATIO,
     NOISE_FREE_RATIO,
     AdaptiveGradients,
     AdaptivePhaseForce,
@@ -832,7 +832,7 @@ _CAPABILITIES: dict[str, tuple[str, ...]] = {
         "TimeVaryingCouplingHistory",
         "infer_network_bayesian",
         "track_time_varying_coupling",
-        "IDENTIFIABILITY_RCOND",
+        "IDENTIFIABILITY_PRIOR_RATIO",
         "NOISE_FREE_RATIO",
         "HeldOutEvaluation",
         "InverseProblemSplit",
@@ -1031,7 +1031,7 @@ __all__ = [
     "TimeVaryingCouplingHistory",
     "infer_network_bayesian",
     "track_time_varying_coupling",
-    "IDENTIFIABILITY_RCOND",
+    "IDENTIFIABILITY_PRIOR_RATIO",
     "NOISE_FREE_RATIO",
     "HeldOutEvaluation",
     "InverseProblemSplit",

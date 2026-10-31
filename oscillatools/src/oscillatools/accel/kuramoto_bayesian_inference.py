@@ -32,9 +32,9 @@ Time-varying coupling is tracked by the Bayesian window propagation of Stankovsk
 into windows, each window's posterior becomes the next window's prior with its covariance inflated to
 admit parameter drift, so a slowly changing coupling is followed window by window.
 
-Identifiability is reported, not patched. A direction in parameter space that the data do not
-inform — a zero (or relatively negligible) eigenvalue of the node's data precision
-``(h/E) Σ p_n p_nᵀ`` — keeps its prior, however weak; such directions are returned in
+Identifiability is reported, not patched. A direction in parameter space whose data precision
+``(h/E) vᵀ(Σ p_n p_nᵀ)v`` is at most :data:`IDENTIFIABILITY_PRIOR_RATIO` times the prior
+precision keeps (essentially) its prior; such directions are returned in
 :attr:`DynamicalBayesianPosterior.unidentified_directions` and set ``identifiable`` to ``False``
 (for example, two oscillators with identical phases give two identical design columns, so only
 the sum of their couplings is learned). A series that is noise-free to rounding
@@ -59,8 +59,13 @@ from dataclasses import dataclass, field
 import numpy as np
 from numpy.typing import NDArray
 
-IDENTIFIABILITY_RCOND = 1e-10
-"""Data-precision eigenvalues at most this times the largest mark an unidentified direction."""
+IDENTIFIABILITY_PRIOR_RATIO = 0.1
+"""A direction is unidentified when its data precision is at most this times the prior precision.
+
+Then its posterior variance stays within ``1 / (1 + ratio)`` (here 91 %) of the prior variance:
+the posterior along it is essentially the prior. The decision compares data with prior, so it does
+not change when a design column is rescaled.
+"""
 NOISE_FREE_RATIO = 1e-10
 """A residual RMS at most this times the increment RMS is a noise-free series, which is refused."""
 
@@ -223,13 +228,16 @@ def _node_posterior(
     )
 
 
-def _unidentified(design: NDArray[np.float64]) -> NDArray[np.float64]:
-    """Return an orthonormal basis of the parameter directions the design does not inform.
+def _unidentified(
+    design: NDArray[np.float64], dt: float, noise: float, prior_precision: float
+) -> NDArray[np.float64]:
+    """Return an orthonormal basis of the directions whose posterior is essentially the prior.
 
-    The design always holds the column of ones, so its Gram matrix has a positive largest eigenvalue.
+    The data precision ``(dt / noise) Pᵀ P`` is compared with the isotropic prior precision along
+    each of its eigenvectors.
     """
-    values, vectors = np.linalg.eigh(design.T @ design)
-    mask = values <= IDENTIFIABILITY_RCOND * float(values[-1])
+    values, vectors = np.linalg.eigh((dt / noise) * (design.T @ design))
+    mask = values <= IDENTIFIABILITY_PRIOR_RATIO * prior_precision
     return np.asarray(vectors[:, mask], dtype=np.float64)
 
 
@@ -325,7 +333,7 @@ def infer_network_bayesian(
         means.append(mean)
         covariances.append(covariance)
         noises.append(noise)
-        unidentified.append(_unidentified(design))
+        unidentified.append(_unidentified(design, dt, noise, prior_precision))
 
     frequencies, coupling, frequency_std, coupling_std, noise_array = _assemble(
         means, covariances, noises, count
@@ -555,7 +563,7 @@ def track_time_varying_coupling(
 
 
 __all__ = [
-    "IDENTIFIABILITY_RCOND",
+    "IDENTIFIABILITY_PRIOR_RATIO",
     "NOISE_FREE_RATIO",
     "DynamicalBayesianPosterior",
     "HeldOutEvaluation",
