@@ -25,8 +25,12 @@ real-valued loss ``L: C^n -> R`` the steepest-descent direction is
 to optimise complex parameters.
 
 Partials are evaluated by central differences in the independent real
-directions ``x`` and ``y``, which is exact (to rounding) for both holomorphic and
-non-holomorphic functions.
+directions ``x`` and ``y``, for holomorphic and non-holomorphic functions
+alike. Coordinate ``k`` moves by ``step * max(1, |z_k|)`` and each difference is
+divided by the step actually realised in floating point, so the relative
+accuracy does not degrade as ``|z|`` grows. The result carries the central
+difference's ``O(h**2)`` truncation error plus rounding of order
+``eps * |f| / h``; it is not exact.
 """
 
 from __future__ import annotations
@@ -41,7 +45,8 @@ from numpy.typing import NDArray
 
 ComplexArray = NDArray[np.complex128]
 ComplexObjective = Callable[[NDArray[np.complex128]], complex]
-RealObjective = Callable[[NDArray[np.complex128]], float]
+RealObjective = Callable[[NDArray[np.complex128]], float | complex]
+"""Real loss; a complex return may carry only an imaginary rounding residue."""
 
 
 @dataclass(frozen=True)
@@ -72,10 +77,35 @@ def _as_complex_vector(z: NDArray[np.complex128]) -> NDArray[np.complex128]:
     return array
 
 
+_REAL_LOSS_IMAGINARY_TOLERANCE = 1.0e-12
+"""Relative imaginary part of a real loss that is treated as complex rounding."""
+
+
 def _validate_step(step: float) -> float:
     if not np.isfinite(step) or step <= 0.0:
         raise ValueError("step must be a positive finite value")
     return float(step)
+
+
+def _displaced(
+    point: NDArray[np.complex128], k: int, direction: complex, step: float
+) -> tuple[NDArray[np.complex128], NDArray[np.complex128], float]:
+    """Return the points either side of ``z_k`` and the step realised between them.
+
+    The step is ``step * max(1, |z_k|)`` along ``direction`` (``1`` or ``1j``),
+    and the realised step is measured after rounding, so dividing by it keeps
+    the difference quotient consistent with the points actually evaluated.
+    """
+    h = step * max(1.0, abs(complex(point[k])))
+    upper = point.copy()
+    lower = point.copy()
+    upper[k] += direction * h
+    lower[k] -= direction * h
+    delta = complex(upper[k] - lower[k])
+    realised = delta.real if direction == 1.0 else delta.imag
+    if not realised > 0.0:
+        raise ValueError("step is below the floating-point resolution at z")
+    return upper, lower, realised
 
 
 def wirtinger_partials(
@@ -89,7 +119,8 @@ def wirtinger_partials(
     Args:
         f: a complex callable taking a length-``n`` complex vector.
         z: the evaluation point (length-``n`` complex vector).
-        step: the central-difference step in the real and imaginary directions.
+        step: the relative central-difference step; coordinate ``k`` moves by
+            ``step * max(1, |z_k|)`` in the real and imaginary directions.
 
     Returns
     -------
@@ -103,12 +134,10 @@ def wirtinger_partials(
     df_dz = np.empty(n, dtype=np.complex128)
     df_dconj_z = np.empty(n, dtype=np.complex128)
     for k in range(n):
-        basis = np.zeros(n, dtype=np.complex128)
-        basis[k] = 1.0
-        df_dx = (complex(f(point + h * basis)) - complex(f(point - h * basis))) / (2.0 * h)
-        df_dy = (complex(f(point + 1j * h * basis)) - complex(f(point - 1j * h * basis))) / (
-            2.0 * h
-        )
+        upper, lower, realised = _displaced(point, k, 1.0, h)
+        df_dx = (complex(f(upper)) - complex(f(lower))) / realised
+        upper, lower, realised = _displaced(point, k, 1.0j, h)
+        df_dy = (complex(f(upper)) - complex(f(lower))) / realised
         df_dz[k] = 0.5 * (df_dx - 1j * df_dy)
         df_dconj_z[k] = 0.5 * (df_dx + 1j * df_dy)
     residual = float(np.max(np.abs(df_dconj_z))) if n else 0.0
@@ -199,7 +228,9 @@ def real_block_jacobian(
     z
         Evaluation point.
     step
-        Central-difference step along every real and imaginary direction.
+        Relative central-difference step: coordinate ``k`` moves by
+        ``step * max(1, |z_k|)`` along its real and imaginary directions, and
+        each difference is divided by the step realised after rounding.
 
     Returns
     -------
@@ -212,8 +243,9 @@ def real_block_jacobian(
     Raises
     ------
     ValueError
-        If ``z``, ``step`` or the returned values are malformed, or the output
-        size changes between evaluations.
+        If ``z``, ``step`` or the returned values are malformed, the step is
+        below the floating-point resolution at ``z``, or the output size
+        changes between evaluations.
 
     """
     point = _as_complex_vector(z)
@@ -222,13 +254,12 @@ def real_block_jacobian(
     columns: list[NDArray[np.float64]] = []
     for direction in (1.0 + 0.0j, 1.0j):
         for k in range(point.size):
-            basis = np.zeros(point.size, dtype=np.complex128)
-            basis[k] = direction * h
-            upper = _complex_output(f(point + basis))
-            lower = _complex_output(f(point - basis))
+            upper_point, lower_point, realised = _displaced(point, k, direction, h)
+            upper = _complex_output(f(upper_point))
+            lower = _complex_output(f(lower_point))
             if upper.size != size or lower.size != size:
                 raise ValueError("f must return the same output size at every point")
-            derivative = (upper - lower) / (2.0 * h)
+            derivative = (upper - lower) / realised
             columns.append(np.concatenate((derivative.real, derivative.imag)))
     return np.stack(columns, axis=1).astype(np.float64)
 
@@ -248,7 +279,7 @@ def real_block_gradient(
     z
         Evaluation point.
     step
-        Central-difference step.
+        Relative central-difference step, as in :func:`real_block_jacobian`.
 
     Returns
     -------
@@ -258,15 +289,18 @@ def real_block_gradient(
     Raises
     ------
     ValueError
-        If the loss returns a value with a non-zero imaginary part.
+        If the loss returns an imaginary part above rounding, that is above
+        ``1e-12 * max(1, |Re L|)``. A real loss computed in complex arithmetic,
+        such as ``vdot(v, H @ v)``, carries such rounding and is admitted with
+        its imaginary part dropped.
 
     """
 
     def _checked(vector: NDArray[np.complex128]) -> complex:
         value = complex(loss(vector))
-        if value.imag != 0.0:
+        if abs(value.imag) > _REAL_LOSS_IMAGINARY_TOLERANCE * max(1.0, abs(value.real)):
             raise ValueError("loss must be real-valued")
-        return value
+        return complex(value.real, 0.0)
 
     gradient: NDArray[np.float64] = real_block_jacobian(_checked, z, step=step)[0]
     return gradient
@@ -324,7 +358,9 @@ def _hermitian_matrix(matrix: MatrixInput, name: str) -> NDArray[np.complex128]:
         raise ValueError(f"{name} must be a non-empty square matrix")
     if not np.all(np.isfinite(array.real)) or not np.all(np.isfinite(array.imag)):
         raise ValueError(f"{name} must be finite")
-    scale = max(1.0, float(np.max(np.abs(array))))
+    # Relative to the matrix's own size, with no unit floor: a matrix in small
+    # physical units, or a small tangent, is judged at its own scale.
+    scale = float(np.max(np.abs(array)))
     if float(np.max(np.abs(array - array.conj().T))) > 1e-12 * scale:
         raise ValueError(f"{name} must be Hermitian")
     return array
@@ -332,7 +368,7 @@ def _hermitian_matrix(matrix: MatrixInput, name: str) -> NDArray[np.complex128]:
 
 def _gap_tolerance(eigenvalues: NDArray[np.float64], gap_tolerance: float | None) -> float:
     if gap_tolerance is None:
-        return 1e-10 * max(1.0, float(np.max(np.abs(eigenvalues))))
+        return 1e-10 * float(np.max(np.abs(eigenvalues)))
     if not np.isfinite(gap_tolerance) or gap_tolerance <= 0.0:
         raise ValueError("gap_tolerance must be a positive finite value")
     return float(gap_tolerance)
@@ -351,6 +387,9 @@ class EigenpairDerivative:
     eigenvector: NDArray[np.complex128]
     eigenvector_derivative: NDArray[np.complex128]
     minimum_gap: float
+    rounding_error_estimate: float = 0.0
+    """First-order relative rounding error of the eigenvector derivative,
+    ``eps * max|lambda| / minimum_gap``; it grows as the gap closes."""
 
 
 def hermitian_eigenpair_derivative(
@@ -372,12 +411,16 @@ def hermitian_eigenpair_derivative(
         Eigenpair index in ascending eigenvalue order.
     gap_tolerance
         Smallest admitted distance to every other eigenvalue; defaults to
-        ``1e-10 * max(1, max|lambda|)``.
+        ``1e-10 * max|lambda|`` over the whole spectrum.
 
     Returns
     -------
     EigenpairDerivative
         ``dlambda = v^H dA v`` and ``dv = sum_j v_j (v_j^H dA v) / (lambda - lambda_j)``.
+        Rounding in the eigendecomposition perturbs ``dv`` by about
+        ``eps * max|lambda| / gap`` relative to its size, reported as
+        ``rounding_error_estimate``; just above the default tolerance this
+        exceeds ``1e-8``.
 
     Raises
     ------
@@ -393,8 +436,13 @@ def hermitian_eigenpair_derivative(
     d = _hermitian_matrix(tangent, "tangent")
     if d.shape != a.shape:
         raise ValueError("tangent must have the shape of matrix")
-    if isinstance(index, bool) or not isinstance(index, int) or not 0 <= index < a.shape[0]:
+    if (
+        isinstance(index, bool | np.bool_)
+        or not isinstance(index, int | np.integer)
+        or not 0 <= int(index) < a.shape[0]
+    ):
         raise ValueError("index must address one eigenpair")
+    index = int(index)
     eigenvalues, eigenvectors = np.linalg.eigh(a)
     others = np.delete(eigenvalues, index)
     gap = float(np.min(np.abs(others - eigenvalues[index]))) if others.size else math.inf
@@ -417,6 +465,9 @@ def hermitian_eigenpair_derivative(
         eigenvector=vector.astype(np.complex128),
         eigenvector_derivative=derivative.astype(np.complex128),
         minimum_gap=gap,
+        rounding_error_estimate=float(
+            np.finfo(np.float64).eps * np.max(np.abs(eigenvalues)) / gap
+        ),
     )
 
 
@@ -476,10 +527,15 @@ def spectral_projector_derivative(
     if (
         not indices
         or len(set(indices)) != len(indices)
-        or any(isinstance(i, bool) or not isinstance(i, int) or not 0 <= i < size for i in indices)
+        or any(
+            isinstance(i, bool | np.bool_)
+            or not isinstance(i, int | np.integer)
+            or not 0 <= int(i) < size
+            for i in indices
+        )
     ):
         raise ValueError("indices must be distinct eigenpair indices")
-    chosen = tuple(sorted(indices))
+    chosen = tuple(sorted(int(i) for i in indices))
     rest = [i for i in range(size) if i not in chosen]
     eigenvalues, eigenvectors = np.linalg.eigh(a)
     gap = (

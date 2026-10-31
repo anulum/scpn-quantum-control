@@ -22,6 +22,19 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     are linear in the number of edges;
   - the sparse kernels report CPU float64 placement and no GPU path.
 
+- Make complex and spectral derivatives scale-aware:
+  - central differences move each coordinate by `step * max(1, |z_k|)` and
+    divide by the realised step. At `|z| = 1e8` the absolute step had given
+    relative errors near `1e-2`;
+  - Hermitian checks and the default gap tolerance are relative to the matrix
+    itself. A small non-Hermitian tangent was differentiated silently, and
+    `1e-12 * diag(1, 2, 3)` was refused as degenerate;
+  - a real loss computed in complex arithmetic is admitted up to an imaginary
+    rounding residue;
+  - eigenpair derivatives report `rounding_error_estimate`,
+    `eps * max|lambda| / gap`;
+  - NumPy integer indices are accepted.
+
 - Check pulse designs against declared native limits:
   - `assess_pulse_design` converts seconds and Rabi rates to native samples;
   - it refuses off-grid events, amplitude or slew over the limit, and

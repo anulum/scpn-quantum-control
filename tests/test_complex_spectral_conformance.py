@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import importlib
 from typing import Any, cast
 
 import numpy as np
@@ -263,3 +264,114 @@ def test_malformed_complex_functions_are_refused() -> None:
         real_block_jacobian(lambda v: np.zeros((2, 2)), z)
     with pytest.raises(ValueError, match="finite values"):
         real_block_jacobian(lambda v: np.inf, z)
+
+
+@pytest.mark.parametrize("magnitude", [1.0e2, 1.0e4, 1.0e6, 1.0e8])
+def test_difference_step_scales_with_the_point(magnitude: float) -> None:
+    """Far from the origin the derivatives keep the frozen relative budget.
+
+    Parameters
+    ----------
+    magnitude
+        Distance of the evaluation point from the origin.
+
+    """
+    z = (magnitude * np.array([0.6 + 0.8j, -0.28 + 0.96j])).astype(np.complex128)
+    gradient = real_block_gradient(lambda v: float(np.sum(np.abs(v) ** 2)), z)
+    assert _within_budget(gradient, np.concatenate((2.0 * z.real, 2.0 * z.imag)), absolute=0.0)
+    jacobian = real_block_jacobian(lambda v: 3.0 * v, z)
+    assert _within_budget(jacobian, 3.0 * np.eye(4), absolute=1e-12)
+    partials = wirtinger_partials(lambda v: v[0] * v[1], z)
+    assert _within_budget(partials.df_dz, np.array([z[1], z[0]]), absolute=0.0)
+
+
+def test_step_below_floating_point_resolution_is_refused() -> None:
+    """A step that rounds away at ``z`` raises instead of dividing by zero."""
+    with pytest.raises(ValueError, match="floating-point resolution"):
+        real_block_jacobian(lambda v: v, np.array([1.0 + 1.0j]), step=1e-20)
+
+
+def test_hermitian_checks_use_the_matrix_own_scale() -> None:
+    """Small physical units are admitted and small non-Hermitian inputs are refused."""
+    small = 1e-12 * np.diag([1.0, 2.0, 3.0])
+    tangent = 1e-12 * np.diag([1.0, 0.0, 0.0])
+    derivative = hermitian_eigenpair_derivative(small, tangent, 0)
+    assert _within_budget(np.array([derivative.eigenvalue_derivative]), np.array([1e-12]), 0.0)
+    unit = np.diag([0.0, 1.0])
+    for triangular in (np.array([[0.0, 1e-13], [0.0, 0.0]]), np.array([[0.0, 0.0], [1e-13, 0.0]])):
+        with pytest.raises(ValueError, match="tangent must be Hermitian"):
+            hermitian_eigenpair_derivative(unit, triangular, 1)
+    with pytest.raises(ValueError, match="matrix must be Hermitian"):
+        hermitian_eigenpair_derivative(
+            1e-20 * np.array([[1.0, 5.0], [0.0, 3.0]]), np.zeros((2, 2)), 0, gap_tolerance=1e-30
+        )
+    zero = hermitian_eigenpair_derivative(np.diag([0.0, 1.0]), np.zeros((2, 2)), 0)
+    assert zero.eigenvalue_derivative == 0.0
+
+
+def test_real_loss_in_complex_arithmetic_is_admitted() -> None:
+    """``vdot(v, H v)`` carries imaginary rounding; a genuinely complex loss refuses."""
+    hamiltonian = _hermitian((-1.0, 0.25, 2.0), 3)
+    state = _unitary(3, 4)[:, 0]
+
+    def expectation(vector: NDArray[np.complex128]) -> complex:
+        return complex(np.vdot(vector, hamiltonian @ vector))
+
+    gradient = real_block_gradient(expectation, state)
+    force = 2.0 * hamiltonian @ state
+    assert _within_budget(gradient, np.concatenate((force.real, force.imag)), absolute=1e-8)
+    torch_style = framework_complex_gradient(expectation, state, convention="torch")
+    assert _within_budget(torch_style, force, absolute=1e-8)
+    with pytest.raises(ValueError, match="real-valued"):
+        real_block_gradient(lambda v: complex(float(np.sum(np.abs(v) ** 2)), 1e-6), state)
+
+
+@pytest.mark.parametrize("gap", [1e-3, 1e-6])
+def test_near_degenerate_rotated_derivative_meets_its_rounding_estimate(gap: float) -> None:
+    """Against a 50-digit reference, the error stays within the reported estimate.
+
+    The eigenvector derivative depends on the phase of ``v``, so the
+    gauge-invariant ``d(v v^H) = dv v^H + v dv^H`` is compared.
+
+    Parameters
+    ----------
+    gap
+        Distance between the differentiated eigenvalue and its neighbour.
+
+    """
+    mpmath: Any = importlib.import_module("mpmath")
+
+    matrix = _hermitian((0.0, gap, 1.0, 2.0), 11)
+    tangent = _direction(4, 12)
+    result = hermitian_eigenpair_derivative(matrix, tangent, 0)
+    vector = result.eigenvector
+    derivative = np.outer(result.eigenvector_derivative, vector.conj()) + np.outer(
+        vector, result.eigenvector_derivative.conj()
+    )
+    mpmath.mp.dps = 50
+    exact = mpmath.matrix(matrix.tolist())
+    direction = mpmath.matrix(tangent.tolist())
+    values, vectors = mpmath.eighe(exact)
+    order = sorted(range(4), key=lambda i: values[i])
+    lowest = vectors[:, order[0]]
+    reference = mpmath.matrix(4, 4)
+    for j in order[1:]:
+        other = vectors[:, j]
+        coupling = (other.H * direction * lowest)[0] / (values[order[0]] - values[j])
+        term = other * coupling * lowest.H
+        reference += term + term.H
+    expected = np.array(reference.tolist(), dtype=np.complex128)
+    error = float(np.linalg.norm(derivative - expected) / np.linalg.norm(expected))
+    assert result.rounding_error_estimate > 0.0
+    assert error <= 10.0 * result.rounding_error_estimate + 1e-14
+
+
+def test_numpy_integer_indices_are_admitted() -> None:
+    """``np.int64`` indices address eigenpairs like Python integers."""
+    matrix = _hermitian((0.0, 1.0, 3.0), 5)
+    tangent = _direction(3, 6)
+    by_numpy = hermitian_eigenpair_derivative(matrix, tangent, cast(int, np.int64(1)))
+    by_python = hermitian_eigenpair_derivative(matrix, tangent, 1)
+    assert by_numpy.eigenvalue_derivative == by_python.eigenvalue_derivative
+    projector = spectral_projector_derivative(matrix, tangent, (cast(int, np.int64(0)),))
+    assert projector.indices == (0,)

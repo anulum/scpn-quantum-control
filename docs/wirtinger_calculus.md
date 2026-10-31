@@ -19,8 +19,13 @@ df/dconj_z = 1/2 (df/dx + i df/dy)
 ```
 
 `wirtinger_partials` evaluates both by central differences in the independent
-real directions `x` and `y`, which is exact (to rounding) for holomorphic and
-non-holomorphic functions alike.
+real directions `x` and `y`, for holomorphic and non-holomorphic functions
+alike. Coordinate `k` moves by `step * max(1, |z_k|)` (default `step=1e-6`),
+and each difference is divided by the step actually realised in floating
+point. The relative accuracy therefore holds far from the origin too. The
+result carries the central difference's `O(h**2)` truncation error and
+rounding of order `eps * |f| / h`, so it is not exact. A step that rounds away
+at `z` is refused.
 
 ```python
 import numpy as np
@@ -83,6 +88,10 @@ It exists for every real-differentiable `f`, holomorphic or not, and
 `real_block_jacobian` returns it. For `conj(z)` it is `diag(1, -1)`. For
 `|z|**2` it is `[[2x, 2y], [0, 0]]`. For a real loss, `real_block_gradient`
 returns the first row, `(dL/dx, dL/dy)`; for `|z|**2` that is `(2x, 2y)`.
+A real loss computed in complex arithmetic, such as `np.vdot(v, H @ v)`,
+carries an imaginary rounding residue. Imaginary parts up to
+`1e-12 * max(1, |Re L|)` are dropped; a larger one is refused as a complex
+loss.
 
 Frameworks report the gradient of a real loss of complex parameters in two
 different complex forms, and the two are conjugates of each other.
@@ -121,10 +130,19 @@ Hermitian (or real symmetric) matrix:
   `<v, dv> = 0`.
 
 When another eigenvalue lies within the gap tolerance, it raises
-`SpectralDegeneracyError`. The tolerance defaults to `1e-10 * max(1, |lambda|)`.
+`SpectralDegeneracyError`. The tolerance defaults to `1e-10 * max|lambda|`
+over the whole spectrum, with no unit floor, so a matrix in small physical
+units is judged at its own scale. The Hermitian checks on the matrix and on
+the tangent are relative to each one's own largest entry in the same way.
 At a repeated eigenvalue the individual eigenvector derivative is undefined, so
 no denominator is clipped or regularised. Just above the tolerance the
 derivative is returned at its true size, which grows as `1 / gap`.
+
+Its accuracy also degrades as the gap closes. Rounding in the
+eigendecomposition perturbs `dv` by about `eps * max|lambda| / gap` relative
+to its size, and the result reports this as `rounding_error_estimate`. At a
+gap of `1e-6` against eigenvalues of order one this is about `2e-10`. Just
+above the default tolerance it exceeds `1e-8`.
 
 For a repeated eigenvalue, use the invariant subspace instead.
 `spectral_projector_derivative(A, dA, indices)` returns the projector `P` onto
