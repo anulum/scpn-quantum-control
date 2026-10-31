@@ -160,6 +160,29 @@ def test_checkpoint_from_another_plan_is_refused() -> None:
         run_batched_evolutions(items, shard_size=2, checkpoint=checkpoint)
 
 
+def test_checkpoint_digest_separates_label_boundaries() -> None:
+    """Labels ``ab, c`` and ``a, bc`` are different plans for a checkpoint."""
+
+    def failing_second_shard(
+        hamiltonians: NDArray[np.complex128],
+        states: NDArray[np.complex128],
+        times: NDArray[np.float64],
+    ) -> NDArray[np.complex128]:
+        if times[0] == _item(1).time:
+            raise RuntimeError("simulated device loss")
+        return evolve_shard_on_cpu(hamiltonians, states, times)
+
+    first = [_with(0, label="ab"), _with(1, label="c")]
+    with pytest.raises(BatchExecutionInterruptedError) as interruption:
+        run_batched_evolutions(first, shard_size=1, shard_executor=failing_second_shard)
+    second = [_with(0, label="a"), _with(1, label="bc")]
+    with pytest.raises(ValueError, match="different batch plan"):
+        run_batched_evolutions(second, shard_size=1, checkpoint=interruption.value.checkpoint)
+    resumed = run_batched_evolutions(first, shard_size=1, checkpoint=interruption.value.checkpoint)
+    assert resumed.resumed_shards == (0,)
+    assert _within_budget(resumed.states["c"], _analytic(1))
+
+
 def test_accelerated_batch_execution_04() -> None:
     """A GPU request never returns CPU results as accelerator evidence."""
     items = [_item(index) for index in range(3)]
@@ -194,6 +217,7 @@ def _with(index: int, **changes: Any) -> BatchEvolutionItem:
         ([_item(0), _with(1, label="item-00")], {}, "unique"),
         ([_with(0, label="")], {}, "non-empty"),
         ([_item(0), _with(1, state=np.ones(3, dtype=np.complex128))], {}, "batch dimension"),
+        ([_with(0, state=np.ones((2, 1), dtype=np.complex128))], {}, "batch dimension"),
         (
             [_with(0, hamiltonian=np.array([[0.0, 1.0], [0.0, 0.0]], dtype=np.complex128))],
             {},
@@ -209,6 +233,7 @@ def _with(index: int, **changes: Any) -> BatchEvolutionItem:
         "duplicate-label",
         "empty-label",
         "dimension",
+        "matrix-state",
         "non-hermitian",
         "nan-state",
         "infinite-time",

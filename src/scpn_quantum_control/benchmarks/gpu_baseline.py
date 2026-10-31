@@ -402,8 +402,8 @@ def run_batched_evolutions(
         )
     if isinstance(shard_size, bool) or not isinstance(shard_size, int) or shard_size < 1:
         raise ValueError("shard_size must be a positive integer")
-    ordered = _validated_items(items)
-    digest = _plan_digest(ordered, shard_size)
+    batch = _stacked_batch(items)
+    digest = _plan_digest(batch, shard_size)
     done: dict[str, ComplexArray] = {}
     resumed: tuple[int, ...] = ()
     if checkpoint is not None:
@@ -411,28 +411,28 @@ def run_batched_evolutions(
             raise ValueError("checkpoint belongs to a different batch plan")
         done = {label: np.array(state) for label, state in checkpoint.states.items()}
         resumed = tuple(checkpoint.completed_shards)
-    shards = [ordered[start : start + shard_size] for start in range(0, len(ordered), shard_size)]
+    skipped = frozenset(resumed)
     records: list[ShardRecord] = []
     completed = list(resumed)
-    for index, shard in enumerate(shards):
-        if index in resumed:
+    for index, start in enumerate(range(0, len(batch.labels), shard_size)):
+        if index in skipped:
             continue
+        stop = start + shard_size
+        labels = batch.labels[start:stop]
         started = time.perf_counter()
         try:
             evolved = shard_executor(
-                np.stack([item.hamiltonian for item in shard]),
-                np.stack([item.state for item in shard]),
-                np.array([item.time for item in shard], dtype=np.float64),
+                batch.hamiltonians[start:stop], batch.states[start:stop], batch.times[start:stop]
             )
         except Exception as error:
             raise BatchExecutionInterruptedError(
                 BatchCheckpoint(digest, tuple(completed), dict(done)), index
             ) from error
         seconds = time.perf_counter() - started
-        for item, state in zip(shard, evolved, strict=True):
-            done[item.label] = np.array(state, dtype=np.complex128)
+        for label, state in zip(labels, evolved, strict=True):
+            done[label] = np.array(state, dtype=np.complex128)
         completed.append(index)
-        records.append(ShardRecord(index, tuple(item.label for item in shard), seconds))
+        records.append(ShardRecord(index, labels, seconds))
     record = BatchExecutionRecord(
         requested_device=device,
         executed_device="cpu",
@@ -448,38 +448,71 @@ def run_batched_evolutions(
     return BatchEvolutionResult(states=done, record=record, resumed_shards=resumed)
 
 
-def _validated_items(items: Sequence[BatchEvolutionItem]) -> list[BatchEvolutionItem]:
-    """Check labels, shapes, Hermiticity and finiteness; return label order."""
+@dataclass(frozen=True)
+class _StackedBatch:
+    """Label-ordered items stacked once into contiguous arrays."""
+
+    labels: tuple[str, ...]
+    hamiltonians: ComplexArray
+    states: ComplexArray
+    times: NDArray[np.float64]
+
+
+def _stacked_batch(items: Sequence[BatchEvolutionItem]) -> _StackedBatch:
+    """Check labels and shapes, stack the items, then check values in one pass.
+
+    Label and shape problems are found before value problems. A value problem
+    names the first offending item in label order.
+    """
     if not items:
         raise ValueError("a batch needs at least one item")
     ordered = sorted(items, key=lambda item: item.label)
-    labels = [item.label for item in ordered]
+    labels = tuple(item.label for item in ordered)
     if any(not isinstance(label, str) or not label for label in labels):
         raise ValueError("item labels must be non-empty strings")
     if len(set(labels)) != len(labels):
         raise ValueError("item labels must be unique")
     dimension = np.shape(ordered[0].state)
     for item in ordered:
-        hamiltonian = np.asarray(item.hamiltonian)
-        state = np.asarray(item.state)
-        if state.ndim != 1 or state.shape != dimension or hamiltonian.shape != 2 * dimension:
+        if (
+            len(dimension) != 1
+            or np.shape(item.state) != dimension
+            or np.shape(item.hamiltonian) != 2 * dimension
+        ):
             raise ValueError(f"item {item.label!r} does not share the batch dimension")
-        if not (np.all(np.isfinite(hamiltonian)) and np.all(np.isfinite(state))):
-            raise ValueError(f"item {item.label!r} must be finite")
-        if not np.isfinite(item.time):
-            raise ValueError(f"item {item.label!r} time must be finite")
-        scale = max(1.0, float(np.max(np.abs(hamiltonian))))
-        if not np.allclose(hamiltonian, hamiltonian.conj().T, rtol=0.0, atol=1e-12 * scale):
-            raise ValueError(f"item {item.label!r} Hamiltonian must be Hermitian")
-    return ordered
+    hamiltonians = np.array([item.hamiltonian for item in ordered], dtype=np.complex128)
+    states = np.array([item.state for item in ordered], dtype=np.complex128)
+    times = np.array([item.time for item in ordered], dtype=np.float64)
+    finite = np.asarray(
+        np.isfinite(hamiltonians).all(axis=(1, 2)) & np.isfinite(states).all(axis=1),
+        dtype=np.bool_,
+    )
+    _refuse_first(~finite, labels, "must be finite")
+    _refuse_first(~np.isfinite(times), labels, "time must be finite")
+    scale = np.maximum(1.0, np.abs(hamiltonians).max(axis=(1, 2), initial=0.0))
+    asymmetry = np.abs(hamiltonians - np.conj(np.swapaxes(hamiltonians, 1, 2)))
+    _refuse_first(
+        asymmetry.max(axis=(1, 2), initial=0.0) > 1e-12 * scale,
+        labels,
+        "Hamiltonian must be Hermitian",
+    )
+    return _StackedBatch(labels, hamiltonians, states, times)
 
 
-def _plan_digest(items: list[BatchEvolutionItem], shard_size: int) -> str:
-    """Hash the label-ordered items and the shard size."""
+def _refuse_first(failing: NDArray[np.bool_], labels: tuple[str, ...], problem: str) -> None:
+    """Raise for the first item flagged in ``failing``, if any."""
+    if failing.any():
+        raise ValueError(f"item {labels[int(np.argmax(failing))]!r} {problem}")
+
+
+def _plan_digest(batch: _StackedBatch, shard_size: int) -> str:
+    """Hash the shard size, the length-prefixed labels and the stacked arrays."""
     digest = hashlib.sha256(str(shard_size).encode())
-    for item in items:
-        digest.update(item.label.encode("utf-8"))
-        digest.update(np.ascontiguousarray(item.hamiltonian, dtype=np.complex128).tobytes())
-        digest.update(np.ascontiguousarray(item.state, dtype=np.complex128).tobytes())
-        digest.update(np.float64(item.time).tobytes())
+    for label in batch.labels:
+        encoded = label.encode("utf-8")
+        digest.update(len(encoded).to_bytes(8, "little"))
+        digest.update(encoded)
+    digest.update(np.asarray(batch.hamiltonians.shape, dtype=np.int64).tobytes())
+    for array in (batch.hamiltonians, batch.states, batch.times):
+        digest.update(array.tobytes())
     return digest.hexdigest()

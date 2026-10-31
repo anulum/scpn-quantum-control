@@ -11,7 +11,8 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     streams.
 
   A GPU request refuses, or runs as a recorded CPU fallback; it never yields
-  accelerator evidence.
+  accelerator evidence. Items are validated and stacked once for the whole
+  batch, and shards are views of that stack.
 
 - Make sparse Kuramoto storage and placement explicit:
   - edge lists use a declared duplicate policy (`sum` or `refuse`); `refuse`
