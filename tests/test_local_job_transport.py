@@ -33,18 +33,17 @@ from typing import Any, cast
 
 import pytest
 
-from scpn_quantum_control.studio_workspace.jobs import (
-    TERMINAL_STATES,
-    JobJournal,
+from scpn_quantum_control.studio_workspace.jobs import service as service_module
+from scpn_quantum_control.studio_workspace.jobs import worker as worker_module
+from scpn_quantum_control.studio_workspace.jobs.journal import TERMINAL_STATES, JobJournal
+from scpn_quantum_control.studio_workspace.jobs.registry import local_verbs
+from scpn_quantum_control.studio_workspace.jobs.service import (
     JobRefused,
     LocalJobPolicy,
     LocalJobServer,
     LocalJobService,
     admit_request,
-    local_verbs,
 )
-from scpn_quantum_control.studio_workspace.jobs import service as service_module
-from scpn_quantum_control.studio_workspace.jobs import worker as worker_module
 
 TOKEN = "t" * 40
 ORIGIN = "http://127.0.0.1:4173"
@@ -707,13 +706,11 @@ def test_journal_enforces_its_own_invariants(tmp_path: Path) -> None:
                 connection.execute(statement)
 
 
-def test_package_exports_resolve_lazily() -> None:
-    """Exports load from their owners; anything else is an attribute error."""
+def test_the_package_imports_nothing_itself() -> None:
+    """A worker starts with no service, journal or numerical module loaded by the package."""
     import scpn_quantum_control.studio_workspace.jobs as jobs
 
-    assert jobs.LocalJobService is LocalJobService
-    with pytest.raises(AttributeError, match="no attribute 'missing'"):
-        _ = jobs.missing
+    assert not hasattr(jobs, "LocalJobService")
 
 
 def test_process_identity_helpers() -> None:
