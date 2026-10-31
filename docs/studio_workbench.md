@@ -59,7 +59,7 @@ Hash addresses work on static hosting without server rewrite rules:
 | --- | --- |
 | Workspace | `#/workspace` (also the empty address) |
 | Model | `#/build` or `#/build/compile-recompute` |
-| Run | `#/experiments` |
+| Run | `#/experiments` or `#/experiments/local-jobs` |
 | Analyse | `#/results`, `#/results/program-ad-replay`, `#/results/gradient-debugger`, `#/results/qec-resources` or `#/results/mitigation` |
 | Compare | `#/compare` |
 | Evidence | `#/evidence` |
@@ -817,6 +817,54 @@ that claims a full confusion matrix refuses the whole instrument.
 - `--check` compares it with a fresh build, numbers within
   `|actual − reference| ≤ 1e-10 + 1e-8·|reference|` and everything else
   exactly.
+
+## Local job service
+
+The optional local job service runs an existing local handler, such as
+`simulate`, as a durable job. Close or reload Studio while it runs, then
+reconnect to the same attempt, its events and its sealed record; nothing is run
+twice.
+
+Start it from the repository environment:
+
+```bash
+python -m scpn_quantum_control.studio_workspace.jobs.service \
+    --root /path/to/job-storage --port 8765 \
+    --allow-origin http://127.0.0.1:4173
+```
+
+It prints its address and a session token (or writes the token, mode 0600, to
+`--token-file`). In Studio, open **Run** or search for **Open local job service**
+(`#/experiments/local-jobs`), enter the address and the token, edit the request
+and choose **Run job**. The panel shows the attempt's state, its numbered events
+and the digest of the sealed record. To reconnect, enter the attempt id and
+choose **Reconnect**: the whole history is replayed from the first event.
+
+What the service guarantees:
+
+- **Local only.** It binds `127.0.0.1`, requires the token on every request,
+  and accepts only its own `Host` and the `--allow-origin` origins. Only verbs
+  whose contract needs no approval and touches no hardware are available;
+  `execute` is refused even with an approval.
+- **No paths or code from the caller.** A request names a project, a revision,
+  an idempotency key, a verb, an action id, parameters and optionally a backend.
+  Any other field, or an identifier that could name a path, is refused before
+  anything is written.
+- **One attempt per idempotency key.** Repeating a request returns the same
+  attempt; reusing a key for a different request is refused.
+- **Owned processes.** Each attempt runs in its own process group with
+  memory, CPU-time and file-size limits. Cancellation, expiry and shutdown end
+  an attempt only after its processes are stopped and reaped.
+- **Restart reconciliation.** After a crash, the next start stops any worker
+  the old service left behind. A complete sealed record proves completion;
+  otherwise the attempt is recorded as *interrupted* and is never run again.
+- **Transactional journal.** Attempts and events live in one SQLite file under
+  `--root`; an attempt's terminal state and its event are written together, and
+  neither changes afterwards.
+
+The bounds (workers, queue, time, memory, request, record and journal size)
+are explicit `LocalJobPolicy` values. The service is not exposed to other
+hosts and does not authenticate users beyond the session token.
 
 ## Immutable revision and run comparison
 

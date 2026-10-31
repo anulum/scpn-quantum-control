@@ -4,7 +4,7 @@
 // © Code 2020–2026 Miroslav Šotek. All rights reserved.
 // ORCID: 0009-0009-3560-0851
 // Contact: www.anulum.li | protoscience@anulum.li
-// SCPN Quantum Control — strict field readers shared by the committed result instruments
+// SCPN Quantum Control — strict field readers shared by the committed-data parsers and transports
 
 /**
  * Read a JSON object.

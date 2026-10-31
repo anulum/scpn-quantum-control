@@ -1,0 +1,643 @@
+{
+  "attempt": {
+    "action_id": "sim-1",
+    "attempt_id": "job-0123456789abcdef0123456789abcdef",
+    "idempotency_key": "key-1",
+    "plan": {
+      "action_id": "sim-1",
+      "backend": "python",
+      "steps": [
+        "validate the 3-node K_nm/omega network"
+      ],
+      "verb": "simulate"
+    },
+    "project": "project-1",
+    "reason": null,
+    "result_digest": "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+    "revision": "rev-1",
+    "state": "succeeded",
+    "terminal": true,
+    "verb": "simulate"
+  },
+  "description": "Requests the local job service accepts or refuses, with the refusal code; side 'both' means the browser client refuses it before sending, 'server' that only the service can decide. The attempt and events show the response shapes.",
+  "events": [
+    {
+      "at": 1793445000.0,
+      "attempt_id": "job-0123456789abcdef0123456789abcdef",
+      "kind": "admitted",
+      "payload": {
+        "plan": {
+          "verb": "simulate"
+        }
+      },
+      "seq": 1
+    },
+    {
+      "at": 1793445000.1,
+      "attempt_id": "job-0123456789abcdef0123456789abcdef",
+      "kind": "started",
+      "payload": {
+        "deadline": 1793445600.0,
+        "pid": 4242
+      },
+      "seq": 2
+    },
+    {
+      "at": 1793445001.3,
+      "attempt_id": "job-0123456789abcdef0123456789abcdef",
+      "kind": "succeeded",
+      "payload": {
+        "result_digest": "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+      },
+      "seq": 3
+    }
+  ],
+  "request_fields": [
+    "action_id",
+    "backend",
+    "idempotency_key",
+    "parameters",
+    "project",
+    "revision",
+    "verb"
+  ],
+  "requests": [
+    {
+      "code": null,
+      "name": "simulate",
+      "request": {
+        "action_id": "sim-1",
+        "idempotency_key": "key-1",
+        "parameters": {
+          "K_nm": [
+            [
+              0.0,
+              0.5,
+              0.5
+            ],
+            [
+              0.5,
+              0.0,
+              0.5
+            ],
+            [
+              0.5,
+              0.5,
+              0.0
+            ]
+          ],
+          "dt": 0.1,
+          "omega": [
+            0.9,
+            1.0,
+            1.1
+          ],
+          "t_max": 1.0,
+          "trotter_order": 1,
+          "trotter_per_step": 1
+        },
+        "project": "project-1",
+        "revision": "rev-1",
+        "verb": "simulate"
+      },
+      "side": "both"
+    },
+    {
+      "code": null,
+      "name": "simulate-with-backend",
+      "request": {
+        "action_id": "sim-1",
+        "backend": "python",
+        "idempotency_key": "key-1",
+        "parameters": {
+          "K_nm": [
+            [
+              0.0,
+              0.5,
+              0.5
+            ],
+            [
+              0.5,
+              0.0,
+              0.5
+            ],
+            [
+              0.5,
+              0.5,
+              0.0
+            ]
+          ],
+          "dt": 0.1,
+          "omega": [
+            0.9,
+            1.0,
+            1.1
+          ],
+          "t_max": 1.0,
+          "trotter_order": 1,
+          "trotter_per_step": 1
+        },
+        "project": "project-1",
+        "revision": "rev-1",
+        "verb": "simulate"
+      },
+      "side": "both"
+    },
+    {
+      "code": "invalid_request",
+      "name": "executable",
+      "request": {
+        "action_id": "sim-1",
+        "executable": "/bin/sh",
+        "idempotency_key": "key-1",
+        "parameters": {
+          "K_nm": [
+            [
+              0.0,
+              0.5,
+              0.5
+            ],
+            [
+              0.5,
+              0.0,
+              0.5
+            ],
+            [
+              0.5,
+              0.5,
+              0.0
+            ]
+          ],
+          "dt": 0.1,
+          "omega": [
+            0.9,
+            1.0,
+            1.1
+          ],
+          "t_max": 1.0,
+          "trotter_order": 1,
+          "trotter_per_step": 1
+        },
+        "project": "project-1",
+        "revision": "rev-1",
+        "verb": "simulate"
+      },
+      "side": "both"
+    },
+    {
+      "code": "invalid_request",
+      "name": "script",
+      "request": {
+        "action_id": "sim-1",
+        "idempotency_key": "key-1",
+        "parameters": {
+          "K_nm": [
+            [
+              0.0,
+              0.5,
+              0.5
+            ],
+            [
+              0.5,
+              0.0,
+              0.5
+            ],
+            [
+              0.5,
+              0.5,
+              0.0
+            ]
+          ],
+          "dt": 0.1,
+          "omega": [
+            0.9,
+            1.0,
+            1.1
+          ],
+          "t_max": 1.0,
+          "trotter_order": 1,
+          "trotter_per_step": 1
+        },
+        "project": "project-1",
+        "revision": "rev-1",
+        "script": "import os",
+        "verb": "simulate"
+      },
+      "side": "both"
+    },
+    {
+      "code": "invalid_request",
+      "name": "working-directory",
+      "request": {
+        "action_id": "sim-1",
+        "cwd": "/tmp",
+        "idempotency_key": "key-1",
+        "parameters": {
+          "K_nm": [
+            [
+              0.0,
+              0.5,
+              0.5
+            ],
+            [
+              0.5,
+              0.0,
+              0.5
+            ],
+            [
+              0.5,
+              0.5,
+              0.0
+            ]
+          ],
+          "dt": 0.1,
+          "omega": [
+            0.9,
+            1.0,
+            1.1
+          ],
+          "t_max": 1.0,
+          "trotter_order": 1,
+          "trotter_per_step": 1
+        },
+        "project": "project-1",
+        "revision": "rev-1",
+        "verb": "simulate"
+      },
+      "side": "both"
+    },
+    {
+      "code": "invalid_request",
+      "name": "approval",
+      "request": {
+        "action_id": "sim-1",
+        "approved": true,
+        "idempotency_key": "key-1",
+        "parameters": {
+          "K_nm": [
+            [
+              0.0,
+              0.5,
+              0.5
+            ],
+            [
+              0.5,
+              0.0,
+              0.5
+            ],
+            [
+              0.5,
+              0.5,
+              0.0
+            ]
+          ],
+          "dt": 0.1,
+          "omega": [
+            0.9,
+            1.0,
+            1.1
+          ],
+          "t_max": 1.0,
+          "trotter_order": 1,
+          "trotter_per_step": 1
+        },
+        "project": "project-1",
+        "revision": "rev-1",
+        "verb": "simulate"
+      },
+      "side": "both"
+    },
+    {
+      "code": "invalid_request",
+      "name": "path-project",
+      "request": {
+        "action_id": "sim-1",
+        "idempotency_key": "key-1",
+        "parameters": {
+          "K_nm": [
+            [
+              0.0,
+              0.5,
+              0.5
+            ],
+            [
+              0.5,
+              0.0,
+              0.5
+            ],
+            [
+              0.5,
+              0.5,
+              0.0
+            ]
+          ],
+          "dt": 0.1,
+          "omega": [
+            0.9,
+            1.0,
+            1.1
+          ],
+          "t_max": 1.0,
+          "trotter_order": 1,
+          "trotter_per_step": 1
+        },
+        "project": "../escape",
+        "revision": "rev-1",
+        "verb": "simulate"
+      },
+      "side": "both"
+    },
+    {
+      "code": "invalid_request",
+      "name": "path-action",
+      "request": {
+        "action_id": "a/b",
+        "idempotency_key": "key-1",
+        "parameters": {
+          "K_nm": [
+            [
+              0.0,
+              0.5,
+              0.5
+            ],
+            [
+              0.5,
+              0.0,
+              0.5
+            ],
+            [
+              0.5,
+              0.5,
+              0.0
+            ]
+          ],
+          "dt": 0.1,
+          "omega": [
+            0.9,
+            1.0,
+            1.1
+          ],
+          "t_max": 1.0,
+          "trotter_order": 1,
+          "trotter_per_step": 1
+        },
+        "project": "project-1",
+        "revision": "rev-1",
+        "verb": "simulate"
+      },
+      "side": "both"
+    },
+    {
+      "code": "invalid_request",
+      "name": "number-revision",
+      "request": {
+        "action_id": "sim-1",
+        "idempotency_key": "key-1",
+        "parameters": {
+          "K_nm": [
+            [
+              0.0,
+              0.5,
+              0.5
+            ],
+            [
+              0.5,
+              0.0,
+              0.5
+            ],
+            [
+              0.5,
+              0.5,
+              0.0
+            ]
+          ],
+          "dt": 0.1,
+          "omega": [
+            0.9,
+            1.0,
+            1.1
+          ],
+          "t_max": 1.0,
+          "trotter_order": 1,
+          "trotter_per_step": 1
+        },
+        "project": "project-1",
+        "revision": 7,
+        "verb": "simulate"
+      },
+      "side": "both"
+    },
+    {
+      "code": "invalid_request",
+      "name": "path-backend",
+      "request": {
+        "action_id": "sim-1",
+        "backend": "/usr/bin/python",
+        "idempotency_key": "key-1",
+        "parameters": {
+          "K_nm": [
+            [
+              0.0,
+              0.5,
+              0.5
+            ],
+            [
+              0.5,
+              0.0,
+              0.5
+            ],
+            [
+              0.5,
+              0.5,
+              0.0
+            ]
+          ],
+          "dt": 0.1,
+          "omega": [
+            0.9,
+            1.0,
+            1.1
+          ],
+          "t_max": 1.0,
+          "trotter_order": 1,
+          "trotter_per_step": 1
+        },
+        "project": "project-1",
+        "revision": "rev-1",
+        "verb": "simulate"
+      },
+      "side": "both"
+    },
+    {
+      "code": "invalid_request",
+      "name": "list-parameters",
+      "request": {
+        "action_id": "sim-1",
+        "idempotency_key": "key-1",
+        "parameters": [
+          "not",
+          "an",
+          "object"
+        ],
+        "project": "project-1",
+        "revision": "rev-1",
+        "verb": "simulate"
+      },
+      "side": "both"
+    },
+    {
+      "code": "verb_not_local",
+      "name": "provider-verb",
+      "request": {
+        "action_id": "sim-1",
+        "idempotency_key": "key-1",
+        "parameters": {
+          "K_nm": [
+            [
+              0.0,
+              0.5,
+              0.5
+            ],
+            [
+              0.5,
+              0.0,
+              0.5
+            ],
+            [
+              0.5,
+              0.5,
+              0.0
+            ]
+          ],
+          "dt": 0.1,
+          "omega": [
+            0.9,
+            1.0,
+            1.1
+          ],
+          "t_max": 1.0,
+          "trotter_order": 1,
+          "trotter_per_step": 1
+        },
+        "project": "project-1",
+        "revision": "rev-1",
+        "verb": "execute"
+      },
+      "side": "server"
+    },
+    {
+      "code": "verb_not_local",
+      "name": "unknown-verb",
+      "request": {
+        "action_id": "sim-1",
+        "idempotency_key": "key-1",
+        "parameters": {
+          "K_nm": [
+            [
+              0.0,
+              0.5,
+              0.5
+            ],
+            [
+              0.5,
+              0.0,
+              0.5
+            ],
+            [
+              0.5,
+              0.5,
+              0.0
+            ]
+          ],
+          "dt": 0.1,
+          "omega": [
+            0.9,
+            1.0,
+            1.1
+          ],
+          "t_max": 1.0,
+          "trotter_order": 1,
+          "trotter_per_step": 1
+        },
+        "project": "project-1",
+        "revision": "rev-1",
+        "verb": "shell"
+      },
+      "side": "server"
+    },
+    {
+      "code": "invalid_parameters",
+      "name": "one-node",
+      "request": {
+        "action_id": "sim-1",
+        "idempotency_key": "key-1",
+        "parameters": {
+          "K_nm": [
+            [
+              0.0
+            ]
+          ],
+          "dt": 0.1,
+          "omega": [
+            1.0
+          ],
+          "t_max": 1.0,
+          "trotter_order": 1,
+          "trotter_per_step": 1
+        },
+        "project": "project-1",
+        "revision": "rev-1",
+        "verb": "simulate"
+      },
+      "side": "server"
+    },
+    {
+      "code": "invalid_request",
+      "name": "missing-action",
+      "request": {
+        "idempotency_key": "key-1",
+        "parameters": {
+          "K_nm": [
+            [
+              0.0,
+              0.5,
+              0.5
+            ],
+            [
+              0.5,
+              0.0,
+              0.5
+            ],
+            [
+              0.5,
+              0.5,
+              0.0
+            ]
+          ],
+          "dt": 0.1,
+          "omega": [
+            0.9,
+            1.0,
+            1.1
+          ],
+          "t_max": 1.0,
+          "trotter_order": 1,
+          "trotter_per_step": 1
+        },
+        "project": "project-1",
+        "revision": "rev-1",
+        "verb": "simulate"
+      },
+      "side": "both"
+    }
+  ],
+  "schema": "scpn_qc_local_job_transport_fixtures_v1",
+  "terminal_states": [
+    "cancelled",
+    "expired",
+    "failed",
+    "interrupted",
+    "succeeded"
+  ],
+  "token_header": "X-Studio-Job-Token"
+}

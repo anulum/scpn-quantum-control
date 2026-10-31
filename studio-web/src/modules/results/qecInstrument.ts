@@ -19,7 +19,7 @@ import {
   text,
   texts,
   within,
-} from "./jsonFields";
+} from "../../shared/browser/jsonFields";
 
 /** Schema of the committed instrument data. */
 export const QEC_INSTRUMENT_SCHEMA = "scpn_qc_studio_qec_resource_instrument_v1";

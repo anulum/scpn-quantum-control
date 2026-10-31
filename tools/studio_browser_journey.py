@@ -427,6 +427,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "gradient_debugger",
             "qec_resource_instrument",
             "mitigation_inspector",
+            "local_job_service",
             "operator_backend_profiles",
             "operator_policy_decisions",
             "operator_review_dossiers",
@@ -583,6 +584,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 from tools.studio_mitigation_browser import run_mitigation_journey
 
                 journey = partial(run_mitigation_journey, evidence=evidence)
+            elif args.scenario == "local_job_service":
+                from tools.studio_local_jobs_browser import run_local_jobs_journey
+
+                journey = partial(run_local_jobs_journey, evidence=evidence)
             elif args.scenario == "compiler_trace_inspector":
                 from tools.studio_compiler_trace_browser import run_compiler_trace_journey
 

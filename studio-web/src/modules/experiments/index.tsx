@@ -22,6 +22,7 @@ type Services = NavigationServices &
   ExperimentServices;
 
 const ExperimentRunner = lazy(() => import("./ExperimentRunner"));
+const LocalJobsPanel = lazy(() => import("./LocalJobsPanel"));
 /** Original experiment runner shares the work area with independently registered workflow controls. */
 export const experimentsModule: StudioModule<Services, WorkspaceViewServices, "experiments"> = {
   id: "experiments",
@@ -32,8 +33,8 @@ export const experimentsModule: StudioModule<Services, WorkspaceViewServices, "e
       id: "experiments" as const,
       label: "Run",
       group: "primary",
-      instruments: [],
-      render: (services: Services) => (
+      instruments: ["local-jobs"],
+      render: (services: Services, instrument: string | null) => (
         <>
           <ExperimentRunner
             workspace={services.workspace}
@@ -42,6 +43,7 @@ export const experimentsModule: StudioModule<Services, WorkspaceViewServices, "e
             workspaceHref={services.workspaceHref}
           />
           {services.renderEditors("experiments")}
+          <LocalJobsPanel focus={instrument === "local-jobs"} />
         </>
       ),
     },
@@ -51,6 +53,11 @@ export const experimentsModule: StudioModule<Services, WorkspaceViewServices, "e
       id: "open-experiments",
       label: "Open Run",
       action: { kind: "navigate", stage: "experiments", instrument: null },
+    },
+    {
+      id: "open-local-jobs",
+      label: "Open local job service",
+      action: { kind: "navigate", stage: "experiments", instrument: "local-jobs" },
     },
     {
       id: "run-experiment",

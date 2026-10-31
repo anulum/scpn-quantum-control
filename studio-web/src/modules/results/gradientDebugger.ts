@@ -8,7 +8,7 @@
 
 import committedUnitsJson from "../../../../data/studio/gradient_debugger_units_20261030.json";
 import type { GradientPlanExplanationRowView, Loaded } from "../../shared/browser/data";
-import { finite, list, numbers, record, text } from "./jsonFields";
+import { finite, list, numbers, record, text } from "../../shared/browser/jsonFields";
 
 /** Schema of the committed gradient-debugger units. */
 export const GRADIENT_UNITS_SCHEMA = "scpn_qc_studio_gradient_debugger_units_v1";

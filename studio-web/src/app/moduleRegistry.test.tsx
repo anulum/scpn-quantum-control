@@ -41,6 +41,7 @@ describe("workbenchRegistry", () => {
       ["/build", "build", null],
       ["/build/compile-recompute", "build", "compile-recompute"],
       ["/experiments", "experiments", null],
+      ["/experiments/local-jobs", "experiments", "local-jobs"],
       ["/results", "results", null],
       ["/results/program-ad-replay", "results", "program-ad-replay"],
       ["/results/gradient-debugger", "results", "gradient-debugger"],

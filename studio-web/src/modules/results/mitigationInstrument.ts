@@ -19,7 +19,7 @@ import {
   text,
   texts,
   within,
-} from "./jsonFields";
+} from "../../shared/browser/jsonFields";
 
 /** Schema of the committed instrument data. */
 export const MITIGATION_INSTRUMENT_SCHEMA = "scpn_qc_studio_mitigation_instrument_v1";

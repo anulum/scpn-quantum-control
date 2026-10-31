@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **850 modules** across **41 package families**
-- **4603 documented public module-level symbols**
+- **854 modules** across **41 package families**
+- **4618 documented public module-level symbols**
 - **875 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -5770,6 +5770,40 @@ Admit complete local reference graphs without fetching or rewriting evidence.
 **Classes:** `RawIdentity`, `RawArtifact`, `WorkspaceAdmission`
 
 **Functions:** `admit_workspace()`
+
+### `scpn_quantum_control.studio_workspace.jobs.journal`
+
+Record local job attempts and their ordered events in one SQLite file.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio_workspace/jobs/journal.py) · Public symbols: **3**
+
+**Classes:** `Attempt`, `Event`, `JobJournal`
+
+### `scpn_quantum_control.studio_workspace.jobs.registry`
+
+Register only the executive handlers a local job may run.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio_workspace/jobs/registry.py) · Public symbols: **2**
+
+**Functions:** `local_verbs()`, `build_local_registry()`
+
+### `scpn_quantum_control.studio_workspace.jobs.service`
+
+Run admitted Studio actions as durable local jobs that outlive their client.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio_workspace/jobs/service.py) · Public symbols: **7**
+
+**Classes:** `JobRefused`, `LocalJobPolicy`, `LocalJobService`, `LocalJobServer`
+
+**Functions:** `admit_request()`, `attempt_view()`, `main()`
+
+### `scpn_quantum_control.studio_workspace.jobs.worker`
+
+Run one admitted attempt in its own process and seal its record.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio_workspace/jobs/worker.py) · Public symbols: **3**
+
+**Functions:** `run_attempt()`, `limit_resources()`, `main()`
 
 ### `scpn_quantum_control.studio_workspace.json_transport`
 

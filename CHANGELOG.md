@@ -4,6 +4,20 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Run local Studio jobs that outlive the browser: an optional loopback job
+  service (`python -m scpn_quantum_control.studio_workspace.jobs.service`)
+  and a **Local job service** panel in Run (`#/experiments/local-jobs`).
+  - Plan, run, follow events from a cursor, retrieve the sealed record and
+    cancel; reloading Studio and entering the attempt id replays the same
+    attempt.
+  - Only local verbs, never `execute`; a request cannot name a path, an
+    executable or code. One attempt per idempotency key.
+  - Each attempt runs in its own limited process group; cancellation and
+    expiry reap it, and a restart stops orphaned workers and records their
+    attempts as interrupted unless a complete record proves completion.
+  - Attempts and events are kept in a transactional SQLite journal whose
+    terminal states and events cannot change.
+
 - Inspect readout correction and zero-noise extrapolation in Studio: Analyse
   gains a mitigation and readout instrument at `#/results/mitigation`.
   - Readout cases keep their raw counts, classical-bit-to-qubit map,
