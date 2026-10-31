@@ -681,7 +681,7 @@ class WholeProgramReplayRecord:
 
     @property
     def digest(self) -> str:
-        """Return the canonical SHA-256 of the whole record under its schema."""
+        """Canonical SHA-256 of the whole record under its schema."""
         return canonical_digest(WHOLE_PROGRAM_REPLAY_SCHEMA, self._body())
 
     def to_json(self) -> str:
