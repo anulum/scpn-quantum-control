@@ -294,11 +294,12 @@ from the residuals. The prior is an isotropic Gaussian with precision
 
 - **Identifiability.** A parameter direction whose data precision is at most
   `IDENTIFIABILITY_PRIOR_RATIO` (0.1) times the prior precision keeps
-  essentially its prior: its posterior variance stays above 91 % of the prior
-  variance. Such directions are reported per node in
+  essentially its prior: its posterior variance is at least 1/1.1 (90.9 %) of
+  the prior variance. Such directions are reported per node in
   `unidentified_directions`, with `data_rank` and `identifiable`, instead of
-  being resolved by a ridge. The decision compares data with prior, so
-  rescaling a design column does not change it.
+  being resolved by a ridge. The decision compares data with the prior in
+  each parameter's own units, so a column's scale enters it: scaling a column
+  by `s` scales its data precision by `s**2` against the same prior.
   Two oscillators recorded identically make two design columns equal, so only
   the sum of their couplings is learned; the difference is reported as
   unidentified. A series that is noise-free to rounding is refused.

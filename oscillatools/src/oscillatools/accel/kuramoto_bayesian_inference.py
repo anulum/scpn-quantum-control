@@ -62,9 +62,10 @@ from numpy.typing import NDArray
 IDENTIFIABILITY_PRIOR_RATIO = 0.1
 """A direction is unidentified when its data precision is at most this times the prior precision.
 
-Then its posterior variance stays within ``1 / (1 + ratio)`` (here 91 %) of the prior variance:
-the posterior along it is essentially the prior. The decision compares data with prior, so it does
-not change when a design column is rescaled.
+Then its posterior variance is at least ``1 / (1 + ratio)`` (here 90.9 %) of the prior variance:
+the posterior along it is essentially the prior. The decision compares data with the prior in each
+parameter's own units, so a column's scale enters it: scaling a column by ``s`` scales its data
+precision by ``s**2`` against the same prior.
 """
 NOISE_FREE_RATIO = 1e-10
 """A residual RMS at most this times the increment RMS is a noise-free series, which is refused."""
