@@ -89,7 +89,14 @@ A proposal is adopted only when all of the following hold:
   `tolerance`.
 
 Each `ConstrainedProposal` records the recomputed objective, every constraint
-value and the domain. Its status is one of `CODESIGN_PROPOSAL_STATUSES`.
+value, the domain, the held-out disturbances checked and the tolerance. The
+tolerance is in the constraints' own units and defaults to 0, so any slack
+(for example for an optimiser that lands on an active constraint to rounding)
+is an explicit caller choice for that constraint's scale. Every case must
+return the nominal number of constraint values. The evaluation budget is
+checked against the count the optimiser port reports. A port that raises
+`NotImplementedError` or `RecursionError` fails the call instead of producing
+an outcome. Its status is one of `CODESIGN_PROPOSAL_STATUSES`.
 `infeasible`, `nonconvergent`, `out_of_domain` and `over_budget` are outcomes,
 not exceptions: the previous accepted plan stays in force. Each proposal is
 first authorised by `ClosedLoopExecutionPolicy` in simulation mode. A proposal

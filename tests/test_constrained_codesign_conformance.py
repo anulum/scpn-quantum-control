@@ -25,6 +25,7 @@ from scipy.optimize import minimize
 from scpn_quantum_control.control.closed_loop_analysis import ClosedLoopExecutionPolicy
 from scpn_quantum_control.control_stack_runtime_adapters import (
     CODESIGN_PROPOSAL_STATUSES,
+    CodesignConstraints,
     ConstrainedCodesignSession,
     ConstrainedOptimiserPort,
     OptimiserOutcome,
@@ -53,6 +54,7 @@ def _session(
     initial_plan: Vector | None = None,
     policy: ClosedLoopExecutionPolicy | None = None,
     budget: int = 10_000,
+    tolerance: float = 0.0,
 ) -> ConstrainedCodesignSession:
     """Build the bounded quadratic problem on the tested domain ``[0, 1]^2``."""
     return ConstrainedCodesignSession(
@@ -64,6 +66,7 @@ def _session(
         held_out_disturbances=held_out,
         initial_plan=initial_plan,
         evaluation_budget=budget,
+        tolerance=tolerance,
     )
 
 
@@ -114,8 +117,11 @@ def test_constrained_codesign_conformance_01_bounded_quadratic_matches_an_exhaus
     None
 ):
     """The accepted plan's objective equals the best feasible point of a 801 x 801 grid."""
-    session = _session()
+    # SLSQP ends on the active constraint to rounding (g about 1e-16); for these unit-scale
+    # constraints the caller admits that slack explicitly.
+    session = _session(tolerance=1e-12)
     proposal = session.propose(_Slsqp())
+    assert proposal.tolerance == 1e-12
     assert proposal.status == "accepted" and proposal.adopted_plan == proposal.plan
     axis = np.linspace(0.0, 1.0, 801)
     x0, x1 = np.meshgrid(axis, axis, indexing="ij")
@@ -207,6 +213,70 @@ def test_constrained_codesign_conformance_04_failures_restore_the_previous_accep
     }
 
 
+def test_review_cases_close_the_acceptance_gaps() -> None:
+    """Empty disturbance rows, unit-scaled violations and unimplemented ports are not accepted.
+
+    An empty constraint row for a held-out disturbance would make that case vacuous; the
+    default tolerance is 0, so a violated constraint written at scale 1e-12 is still refused;
+    an unimplemented port is a programming error, not a non-convergent proposal. The proposal
+    records its tolerance and the disturbances it checked.
+    """
+    vacuous = ConstrainedCodesignSession(
+        _objective,
+        lambda plan, disturbance: (
+            np.array([plan[0] - 0.7]) if disturbance is None else np.zeros(0)
+        ),
+        [0.0, 0.0],
+        [1.0, 1.0],
+        policy=ClosedLoopExecutionPolicy(),
+        held_out_disturbances=[np.array([0.1])],
+    )
+    with pytest.raises(ValueError, match="non-empty"):
+        vacuous.propose(_Fixed(np.array([0.3, 0.3])))
+    shorter = ConstrainedCodesignSession(
+        _objective,
+        lambda plan, disturbance: np.zeros(2) - 1.0 if disturbance is None else np.zeros(1) - 1.0,
+        [0.0, 0.0],
+        [1.0, 1.0],
+        policy=ClosedLoopExecutionPolicy(),
+        held_out_disturbances=[np.array([0.1])],
+    )
+    with pytest.raises(ValueError, match="nominal number of values"):
+        shorter.propose(_Fixed(np.array([0.3, 0.3])))
+
+    def scaled(scale: float) -> CodesignConstraints:
+        """Return ``x0 <= 0.29`` written at a given scale."""
+
+        def constraint(plan: Vector, disturbance: Vector | None) -> Vector:
+            """Return the scaled violation of ``x0 <= 0.29``."""
+            return np.array([scale * (plan[0] - 0.29)])
+
+        return constraint
+
+    for scale in (1.0, 1e-12):
+        tiny = ConstrainedCodesignSession(
+            _objective,
+            scaled(scale),
+            [0.0, 0.0],
+            [1.0, 1.0],
+            policy=ClosedLoopExecutionPolicy(),
+        )
+        proposal = tiny.propose(_Fixed(np.array([0.3, 0.1])))
+        assert proposal.status == "infeasible" and proposal.tolerance == 0.0
+
+    class _Unimplemented:
+        """A port whose optimiser is not implemented."""
+
+        def optimize(self, start: Vector) -> OptimiserOutcome:
+            """Raise as an unimplemented port does."""
+            raise NotImplementedError("port not implemented")
+
+    with pytest.raises(NotImplementedError):
+        _session().propose(_Unimplemented())
+    recorded = _session(held_out=[np.array([0.05, 0.0])]).propose(_Fixed(np.array([0.3, 0.3])))
+    assert recorded.disturbances == ((0.05, 0.0),) and recorded.status == "accepted"
+
+
 def test_session_rejects_malformed_problems() -> None:
     """Bounds, tolerance, budget, an inadmissible initial plan and bad callbacks are refused."""
     with pytest.raises(ValueError, match="lower < upper"):
@@ -242,6 +312,6 @@ def test_session_rejects_malformed_problems() -> None:
         [1.0, 1.0],
         policy=ClosedLoopExecutionPolicy(),
     )
-    with pytest.raises(ValueError, match="one-dimensional"):
+    with pytest.raises(ValueError, match="non-empty one-dimensional"):
         shapeless.propose(_Fixed(np.array([0.2, 0.2])))
     assert _session().domain == ((0.0, 1.0), (0.0, 1.0))

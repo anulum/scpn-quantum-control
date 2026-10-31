@@ -310,9 +310,10 @@ class ConstrainedProposal:
     """One verified proposal and the plan in force after it.
 
     ``constraint_values`` holds ``g(plan, d)`` for the nominal case first and then every held-out
-    disturbance, recomputed by the session rather than taken from the optimiser. Only an
-    ``accepted`` proposal changes ``adopted_plan``; every other status keeps the previous plan.
-    No proposal actuates hardware.
+    disturbance, recomputed by the session rather than taken from the optimiser; ``disturbances``
+    lists the held-out disturbances checked and ``tolerance`` the admitted constraint value.
+    ``evaluations`` is the optimiser port's own report. Only an ``accepted`` proposal changes
+    ``adopted_plan``; every other status keeps the previous plan. No proposal actuates hardware.
     """
 
     status: ProposalStatus
@@ -325,6 +326,8 @@ class ConstrainedProposal:
     evaluations: int
     adopted_plan: tuple[float, ...] | None
     domain: tuple[tuple[float, float], ...]
+    tolerance: float
+    disturbances: tuple[tuple[float, ...], ...]
     hardware_actuation: bool = False
     schema: str = CONTROL_STACK_RUNTIME_ADAPTER_SCHEMA
     claim_boundary: str = CONTROL_STACK_RUNTIME_ADAPTER_CLAIM_BOUNDARY
@@ -355,7 +358,7 @@ class ConstrainedCodesignSession:
         upper: ArrayLike,
         *,
         policy: ClosedLoopExecutionPolicy | None,
-        tolerance: float = 1e-9,
+        tolerance: float = 0.0,
         held_out_disturbances: Sequence[ArrayLike] = (),
         evaluation_budget: int = 10_000,
         initial_plan: ArrayLike | None = None,
@@ -374,11 +377,12 @@ class ConstrainedCodesignSession:
         policy
             Closed-loop execution policy; it must authorise local simulation.
         tolerance
-            Largest admitted constraint value, absolute and non-negative.
+            Largest admitted constraint value, in the constraints' own units; the default ``0``
+            admits no violation. Any slack is the caller's choice for its constraint scale.
         held_out_disturbances
             Disturbances the optimiser does not see; every one must also be feasible.
         evaluation_budget
-            Largest admitted optimiser evaluation count per proposal.
+            Largest admitted optimiser evaluation count per proposal, as the port reports it.
         initial_plan
             An already accepted plan; it is verified like a proposal.
 
@@ -440,17 +444,23 @@ class ConstrainedCodesignSession:
         values: list[tuple[float, ...]] = []
         for disturbance in (None, *self._disturbances):
             row = np.asarray(self._constraints(plan.copy(), disturbance), dtype=np.float64)
-            if row.ndim != 1 or not np.all(np.isfinite(row)):
-                raise ValueError("constraints must return a finite one-dimensional vector")
+            if row.ndim != 1 or row.size == 0 or not np.all(np.isfinite(row)):
+                raise ValueError(
+                    "constraints must return a finite non-empty one-dimensional vector"
+                )
+            if values and row.size != len(values[0]):
+                raise ValueError(
+                    "constraints must return the nominal number of values for every disturbance"
+                )
             values.append(tuple(row.tolist()))
-        violation = max((max(row, default=-math.inf) for row in values), default=-math.inf)
+        violation = max(max(row) for row in values)
         objective = float(self._objective(plan.copy()))
         if not math.isfinite(objective):
             raise ValueError("objective must return a finite value")
         if violation > self._tolerance:
             scope = (
                 "a held-out disturbance"
-                if max(values[0], default=-math.inf) <= self._tolerance
+                if max(values[0]) <= self._tolerance
                 else "the nominal case"
             )
             return (
@@ -510,11 +520,16 @@ class ConstrainedCodesignSession:
                 evaluations=evaluations,
                 adopted_plan=self.current_plan,
                 domain=self.domain,
+                tolerance=self._tolerance,
+                disturbances=tuple(tuple(item.tolist()) for item in self._disturbances),
             )
 
         try:
             result = optimiser.optimize(start.copy())
         except (ArithmeticError, ValueError, RuntimeError) as error:
+            # An unimplemented port or runaway recursion is a programming error, not an outcome.
+            if isinstance(error, NotImplementedError | RecursionError):
+                raise
             return outcome("nonconvergent", f"the optimiser failed: {error}", None)
         plan = np.asarray(result.plan, dtype=np.float64)
         if not result.converged:
@@ -539,6 +554,8 @@ class ConstrainedCodesignSession:
 
 __all__ = [
     "CODESIGN_PROPOSAL_STATUSES",
+    "CodesignConstraints",
+    "CodesignObjective",
     "CONTROL_STACK_RUNTIME_ADAPTER_CLAIM_BOUNDARY",
     "CONTROL_STACK_RUNTIME_ADAPTER_SCHEMA",
     "ConstrainedCodesignSession",
