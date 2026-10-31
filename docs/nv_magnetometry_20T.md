@@ -60,6 +60,31 @@ resonance, `B = (f_upper - D) / gamma_e`). The scan must resolve the linewidth
 (a few samples per FWHM), as a real field-tracking loop does. Measured recovery
 across 0.07–20 T is ~2 µT (benchmark `results/nv_magnetometry_benchmark.json`).
 
+## Evidence provenance
+
+`scpn_quantum_control.sensing.domain_evidence` records what a sensing or
+domain result is evidence of. `nv_field_evidence` wraps a calibration of a
+simulated scan as a `DomainEvidence` with `kind="synthetic"`, the estimand
+(absolute field error in tesla), the source, the identity of the evaluation
+split (`split_digest`, the SHA-256 of the sorted sample identifiers) and the
+error of a null estimator.
+
+- The kind is written as given by `to_json` and checked again by `from_json`:
+  relabelling an export as `empirical` or `clinical` is refused unless it
+  carries a recorded use authority.
+- `compare_evidence` compares two results only when estimand, kind and split
+  agree; identical numbers on different splits are refused.
+- `assess_random_bytes` reports the NIST SP 800-22 frequency and runs outcomes
+  and a caller-supplied signature check. Neither qualifies the entropy of the
+  source: `source_entropy_qualified` is always false, and a constant payload
+  with a valid signature is reported as signed and failing the tests.
+- `acquire_external_dataset` calls the caller's fetch function only when the
+  request records a use authority; otherwise it raises `PermissionError` and
+  fetches nothing.
+
+None of this establishes domain efficacy; synthetic, proxy, empirical and
+clinical evidence stay distinct.
+
 ## Acceleration
 
 The ODMR Lorentzian-dip spectrum dispatches to a Rust kernel that is **bit-true**

@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 883,
     "public_documentation_pages": 385,
-    "python_model_classes": 1634,
-    "python_model_source_modules": 856,
+    "python_model_classes": 1637,
+    "python_model_source_modules": 857,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1624
+    "test_files": 1625
   },
   "documentation": {
     "examples": [
@@ -756,7 +756,7 @@
       {
         "package": "sensing",
         "path": "src/scpn_quantum_control/sensing",
-        "python_modules": 1
+        "python_modules": 2
       },
       {
         "package": "ssgf",
@@ -2321,6 +2321,10 @@
         "path": "src/scpn_quantum_control/applications/honesty_kits.py"
       },
       {
+        "name": "DomainEvidence",
+        "path": "src/scpn_quantum_control/sensing/domain_evidence.py"
+      },
+      {
         "name": "DomainForecastAccuracy",
         "path": "src/scpn_quantum_control/forecasting/multimodal_forecaster.py"
       },
@@ -2403,6 +2407,10 @@
       {
         "name": "EntropyBackend",
         "path": "src/scpn_quantum_control/entropy/quantum_source.py"
+      },
+      {
+        "name": "EntropyEvidence",
+        "path": "src/scpn_quantum_control/sensing/domain_evidence.py"
       },
       {
         "name": "EntropyHealthReport",
@@ -2595,6 +2603,10 @@
       {
         "name": "ExternalComparisonRow",
         "path": "src/scpn_quantum_control/benchmarks/differentiable_external_contracts.py"
+      },
+      {
+        "name": "ExternalDatasetRequest",
+        "path": "src/scpn_quantum_control/sensing/domain_evidence.py"
       },
       {
         "name": "ExternalValidationArtifactBundle",
@@ -8087,6 +8099,7 @@
       "src/scpn_quantum_control/scorecard_acceptance_engine.py",
       "src/scpn_quantum_control/semantic_operations.py",
       "src/scpn_quantum_control/semantic_record.py",
+      "src/scpn_quantum_control/sensing/domain_evidence.py",
       "src/scpn_quantum_control/sensing/nv_magnetometry_20T.py",
       "src/scpn_quantum_control/source_admission.py",
       "src/scpn_quantum_control/ssgf/quantum_costs.py",
@@ -9867,6 +9880,7 @@
       "tests/test_documentation_debt_baseline.py",
       "tests/test_documentation_inventory_consistency.py",
       "tests/test_documentation_surface_audit.py",
+      "tests/test_domain_evidence_provenance.py",
       "tests/test_dynamic_coupling.py",
       "tests/test_dynamical_lie_algebra.py",
       "tests/test_dynamical_lie_algebra_contracts.py",

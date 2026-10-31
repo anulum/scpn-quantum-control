@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **856 modules** across **41 package families**
-- **4640 documented public module-level symbols**
+- **857 modules** across **41 package families**
+- **4648 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -5278,6 +5278,16 @@ Parameter-shift gradient training for QuantumDenseLayer.
 **Classes:** `QSNNTrainingDiagnostics`, `QSNNTrainingRun`, `QSNNParameterShiftDescentRun`, `QSNNTrainingCheckpoint`, `QSNNEvaluation`, `QSNNTrainer`
 
 ## `sensing`
+
+### `scpn_quantum_control.sensing.domain_evidence`
+
+Provenance that domain evidence must carry, and what it does not establish.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/sensing/domain_evidence.py) · Public symbols: **8**
+
+**Classes:** `DomainEvidence`, `EntropyEvidence`, `ExternalDatasetRequest`
+
+**Functions:** `split_digest()`, `compare_evidence()`, `nv_field_evidence()`, `assess_random_bytes()`, `acquire_external_dataset()`
 
 ### `scpn_quantum_control.sensing.nv_magnetometry_20T`
 

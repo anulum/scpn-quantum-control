@@ -4,6 +4,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Keep domain evidence honest about its origin: `DomainEvidence` records the
+  estimand, data kind (synthetic, proxy, empirical or clinical), source, split
+  identity, null baseline and use authority, and keeps the kind through JSON
+  export. Results are compared only on the same estimand, kind and split;
+  tests and signatures on random bytes never qualify source entropy; and an
+  external dataset without a recorded use authority is not fetched.
+
 - Gate actuation on deadline, freshness and veto: `run_gated_actuation_loop`
   hands a tick's proposal to the apply port only when it is on time by the
   monotonic clock, its telemetry is fresh and an independent veto passes;

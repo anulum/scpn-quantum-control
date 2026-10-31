@@ -22,6 +22,10 @@ NV_MAGNETOMETRY_BRANCH_TEST = "tests/test_nv_magnetometry_high_field.py"
 """Focused validation and Python-fallback branch suite."""
 NV_MAGNETOMETRY_RUSTDOC_SOURCE = "scpn_quantum_engine/src/sensing.rs"
 """Documented native Lorentzian kernel owned by global Rust CI."""
+DOMAIN_EVIDENCE_SOURCE = "src/scpn_quantum_control/sensing/domain_evidence.py"
+"""Provenance, comparability, entropy and data-use contract for domain evidence."""
+DOMAIN_EVIDENCE_TEST = "tests/test_domain_evidence_provenance.py"
+"""Synthetic-label, split, entropy and use-authority suite."""
 QUANTUM_SENSING_EXPORTER = "scripts/export_s11_quantum_sensing_readiness.py"
 """Executable JSON and Markdown readiness exporter."""
 QUANTUM_SENSING_TYPING_RATCHET = [
@@ -29,6 +33,8 @@ QUANTUM_SENSING_TYPING_RATCHET = [
     NV_MAGNETOMETRY_SOURCE,
     NV_MAGNETOMETRY_TEST,
     NV_MAGNETOMETRY_BRANCH_TEST,
+    DOMAIN_EVIDENCE_SOURCE,
+    DOMAIN_EVIDENCE_TEST,
     "tests/test_quantum_sensing_readiness.py",
     "tests/test_sensing_branches.py",
     "tests/test_sensing_readiness_contracts.py",
@@ -45,6 +51,8 @@ QUANTUM_SENSING_DOCSTRING_RATCHET = [
     NV_MAGNETOMETRY_SOURCE,
     NV_MAGNETOMETRY_TEST,
     NV_MAGNETOMETRY_BRANCH_TEST,
+    DOMAIN_EVIDENCE_SOURCE,
+    DOMAIN_EVIDENCE_TEST,
     "tests/test_quantum_sensing_readiness.py",
     "tests/test_sensing_branches.py",
     "tests/test_sensing_readiness_contracts.py",
@@ -58,6 +66,7 @@ QUANTUM_SENSING_DOCSTRING_RATCHET = [
 QUANTUM_SENSING_COVERAGE_COHORT = [
     NV_MAGNETOMETRY_TEST,
     NV_MAGNETOMETRY_BRANCH_TEST,
+    DOMAIN_EVIDENCE_TEST,
     "tests/test_quantum_sensing_readiness.py",
     "tests/test_sensing_branches.py",
     "tests/test_sensing_readiness_contracts.py",
@@ -66,7 +75,9 @@ QUANTUM_SENSING_COVERAGE_COHORT = [
 """Public, contract, and executable-export tests that own source coverage."""
 QUANTUM_SENSING_COVERAGE_DATA_FILE = "/tmp/scpn-qc-quantum-sensing-quality.coverage"  # nosec B108
 """Isolated coverage database for the quantum-sensing owner."""
-QUANTUM_SENSING_COVERAGE_INCLUDE = "*/analysis/sensing.py,*/sensing/nv_magnetometry_20T.py"
+QUANTUM_SENSING_COVERAGE_INCLUDE = (
+    "*/analysis/sensing.py,*/sensing/nv_magnetometry_20T.py,*/sensing/domain_evidence.py"
+)
 """Exact production source include for the coverage report."""
 
 
@@ -142,6 +153,8 @@ def build_coverage_gates(python: str) -> list[Gate]:
 
 
 __all__ = [
+    "DOMAIN_EVIDENCE_SOURCE",
+    "DOMAIN_EVIDENCE_TEST",
     "NV_MAGNETOMETRY_BRANCH_TEST",
     "NV_MAGNETOMETRY_RUSTDOC_SOURCE",
     "NV_MAGNETOMETRY_SOURCE",
