@@ -12,11 +12,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+import linecache
 import math
 import struct
 import sys
+import traceback
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from pathlib import Path
 from threading import Event
 from typing import Any, cast
 
@@ -53,6 +56,74 @@ from .whole_program_trace_values import (
     TraceADArray,
     TraceADScalar,
 )
+
+
+class WholeProgramStageRefusal(ValueError):
+    """A stage of the user program that failed on traced values, located in its source.
+
+    Raised when code outside this package (for example a NumPy routine handed
+    an object array of traced scalars) fails while the program runs under
+    whole-program AD. The stage is the deepest line of the user's own source
+    file on the failing call path; no value or derivative is issued.
+    """
+
+    def __init__(
+        self,
+        filename: str,
+        line: int,
+        statement: str,
+        operation: str,
+        *,
+        cause: BaseException,
+    ) -> None:
+        """Store the located stage and the failing operation.
+
+        Parameters
+        ----------
+        filename
+            Source file of the user program.
+        line
+            Line of the failing stage in that file.
+        statement
+            Source text of that line, stripped.
+        operation
+            ``module:function`` of the call that failed.
+        cause
+            The original exception, also chained as ``__cause__``.
+
+        """
+        self.filename = filename
+        self.line = line
+        self.statement = statement
+        self.operation = operation
+        super().__init__(
+            f"whole-program AD refused the stage at {filename}:{line} ({statement!r}): "
+            f"{operation} failed on traced values with {type(cause).__name__}: {cause}; "
+            "this composition is not admitted and no value or derivative is issued"
+        )
+
+
+_PACKAGE_ROOT = str(Path(__file__).resolve().parent)
+
+
+def _foreign_failure_stage(
+    error: BaseException, objective: Callable[[Any], object]
+) -> tuple[str, int, str, str] | None:
+    """Locate a failure raised outside this package inside the user's source file.
+
+    Returns ``None`` for failures raised by this package, which are already typed
+    refusals. The frontend admits only Python functions with source, and the
+    failure propagated through the objective's own frame, so that frame is on
+    the traceback; the deepest frame in the objective's file is the stage.
+    """
+    frames = traceback.extract_tb(error.__traceback__)
+    if str(Path(frames[-1].filename).resolve()).startswith(_PACKAGE_ROOT):
+        return None
+    source_file = str(cast(Any, objective).__code__.co_filename)
+    stage = [frame for frame in frames if frame.filename == source_file][-1]
+    line = int(stage.lineno or 0)
+    statement = linecache.getline(source_file, line).strip()
+    return source_file, line, statement, f"{Path(frames[-1].filename).name}:{frames[-1].name}"
 
 
 def whole_program_value_and_grad(
@@ -159,14 +230,20 @@ def whole_program_value_and_grad(
                 traced_values.append(
                     context.make("parameter", (parameter.name,), float(value), tangent)
                 )
-            raw = objective(
-                TraceADArray(
-                    tuple(traced_values),
-                    (len(traced_values),),
-                    context,
-                    tuple(range(len(traced_values))),
+            try:
+                raw = objective(
+                    TraceADArray(
+                        tuple(traced_values),
+                        (len(traced_values),),
+                        context,
+                        tuple(range(len(traced_values))),
+                    )
                 )
-            )
+            except Exception as error:
+                stage = _foreign_failure_stage(error, objective)
+                if stage is None:
+                    raise
+                raise WholeProgramStageRefusal(*stage, cause=error) from error
             if isinstance(raw, TraceADArray):
                 if raw.shape != ():
                     raise ValueError(
@@ -243,7 +320,11 @@ def whole_program_value_and_grad(
                 polyglot_targets={
                     "python": "operator-intercepted forward AD and supported scalar adjoint replay available",
                     "mlir": "SSA/effect program AD interchange available; executable lowering blocked",
-                    "rust": "blocked: no Rust whole-program AD interpreter/lowering backend",
+                    "rust": (
+                        "blocked: no Rust interpreter or lowering of Python source; bounded "
+                        "effect-IR replay of the captured program is available through "
+                        "program_ad_rust_bridge"
+                    ),
                     "llvm": "blocked: no LLVM/JIT whole-program AD interpreter/lowering backend",
                 },
                 claim_boundary=(
@@ -1028,6 +1109,7 @@ __all__ = [
     "WholeProgramReplayMismatchError",
     "WholeProgramReplayRecord",
     "WholeProgramReplayReport",
+    "WholeProgramStageRefusal",
     "capture_whole_program_replay",
     "replay_whole_program",
     "whole_program_grad",

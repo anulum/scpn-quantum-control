@@ -592,6 +592,7 @@ from .program_ad_trapezoid_primitives import (
     program_ad_reduction_trapezoid_derivative_rule,
 )
 from .whole_program_ad_api import (
+    WholeProgramStageRefusal,
     whole_program_grad,
     whole_program_value_and_grad,
 )
@@ -953,4 +954,5 @@ __all__ = [
     "RootSensitivity",
     "implicit_kkt_sensitivity",
     "implicit_root_sensitivity",
+    "WholeProgramStageRefusal",
 ]

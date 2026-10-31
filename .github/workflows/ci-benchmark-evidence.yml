@@ -31,6 +31,7 @@ jobs:
           tests/test_whole_program_ad_contracts.py
           tests/test_whole_program_ad_runtime.py
           tests/test_effectful_ad_replay.py
+          tests/test_whole_program_backend_journeys.py
           tools/whole_program_ad_product_quality_gates.py
           tests/test_whole_program_ad_product_quality_gate.py
       - run: >-
@@ -43,6 +44,7 @@ jobs:
           tests/test_whole_program_ad_contracts.py
           tests/test_whole_program_ad_runtime.py
           tests/test_effectful_ad_replay.py
+          tests/test_whole_program_backend_journeys.py
           tools/whole_program_ad_product_quality_gates.py
           tests/test_whole_program_ad_product_quality_gate.py
       - run: >-
@@ -54,6 +56,7 @@ jobs:
           tests/test_whole_program_ad_runtime.py
           tests/test_whole_program_frontend.py
           tests/test_effectful_ad_replay.py
+          tests/test_whole_program_backend_journeys.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-whole-program-ad-product-quality.coverage

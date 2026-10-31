@@ -256,6 +256,33 @@ Frontend reports retain nested code provenance without process memory addresses.
 See [Frontend report reproducibility](differentiable_programming.md#frontend-report-reproducibility)
 for how nested code constants contribute to reproducible reports.
 
+## Full-program backend journeys
+
+One user program, made of an elementwise polynomial, a supported linear solve
+and a scalar objective, runs through every admitted route with one identity:
+
+- `whole_program_value_and_grad` gives the value and gradient. It equals the
+  hand-written chain rule `(db/dp)^T A^-T (2x + 3)` to 1e-12.
+- `capture_whole_program_replay` records the SHA-256 of the serialised effect
+  IR. The record survives a JSON round trip, and `replay_whole_program`
+  reproduces it.
+- The bounded Rust effect-IR replay (`program_ad_rust_bridge`) consumes the
+  same serialised program. It supports every effect and returns the same
+  value and gradient to 1e-12. This is a replay of the captured IR, not a
+  Rust interpreter or lowering of Python source: `polyglot_targets["rust"]`
+  stays `blocked` for that reason.
+
+A composition outside the admitted set is refused where it happens. If code
+outside this package fails on traced values, for example an array built
+element by element from traced scalars and handed to `np.linalg.solve`,
+`WholeProgramStageRefusal` (a `ValueError`) names the file, the line and the
+operation and chains the original error. No value or derivative is issued.
+Refusals raised by the package itself keep their own type and message.
+
+`tests/test_whole_program_backend_journeys.py` holds these journeys. There is
+no claim for arbitrary Python programs, GPU or device gradients, or bit-exact
+results across platforms.
+
 ## Bounded product status
 
 Shipped: layered architecture map · public entrypoints catalogue · unsupported
