@@ -93,6 +93,8 @@ class MpcOptimumSensitivity:
         The pullback ``∂L/∂ω`` of the seed control cotangent through ``u*(ω)`` (length ``N``).
     coupling_cotangent : numpy.ndarray
         The pullback ``∂L/∂K`` of the seed control cotangent through ``u*(K)`` (shape ``(N, N)``).
+    residual_tolerance : float
+        The stationarity tolerance the optimum was verified against before the pullback.
 
     """
 
@@ -101,6 +103,7 @@ class MpcOptimumSensitivity:
     phases_cotangent: NDArray[np.float64]
     omega_cotangent: NDArray[np.float64]
     coupling_cotangent: NDArray[np.float64]
+    residual_tolerance: float
 
 
 def _make_implicit_plan(
@@ -194,7 +197,7 @@ def mpc_optimum_parameter_sensitivity(
     n_iterations: int,
     optimiser: str = "gd",
     initial_control: NDArray[np.float64] | None = None,
-    residual_tolerance: float | None = None,
+    residual_tolerance: float = 1e-6,
 ) -> MpcOptimumSensitivity:
     r"""Pull a control cotangent back through the MPC optimum by the implicit function theorem.
 
@@ -232,10 +235,10 @@ def mpc_optimum_parameter_sensitivity(
     initial_control : numpy.ndarray, optional
         The warm-start ``(horizon, N)`` control; defaults to zeros (uncontrolled).
     residual_tolerance : float, optional
-        Largest admitted stationarity residual ``‖∇_u J(u*, θ)‖``. When given, a solve that has
-        not reached it is refused before the pullback, so no gradient is issued at an unconverged
-        point. When omitted the gradient is returned with its residual, and it is the
-        implicit-function formula evaluated at that point, exact only as the residual goes to zero.
+        Largest admitted stationarity residual ``‖∇_u J(u*, θ)‖`` (default ``1e-6``). A solve that
+        has not reached it is refused before the pullback, so no gradient is issued at an
+        unconverged point; the implicit-function formula is exact only at a stationary point. A
+        caller that accepts a looser solve passes a larger tolerance, which the result records.
 
     Returns
     -------
@@ -252,8 +255,10 @@ def mpc_optimum_parameter_sensitivity(
         If JAX is not installed.
 
     """
-    if residual_tolerance is not None and not residual_tolerance > 0.0:
-        raise ValueError(f"residual_tolerance must be positive, got {residual_tolerance}")
+    if not residual_tolerance > 0.0 or not np.isfinite(residual_tolerance):
+        raise ValueError(
+            f"residual_tolerance must be positive and finite, got {residual_tolerance}"
+        )
     state = np.ascontiguousarray(phases, dtype=np.float64)
     frequencies = np.ascontiguousarray(omega, dtype=np.float64)
     matrix = np.ascontiguousarray(coupling, dtype=np.float64)
@@ -301,7 +306,7 @@ def mpc_optimum_parameter_sensitivity(
         float(control_weight),
     )[1]
     residual = float(np.linalg.norm(np.asarray(residual_vector, dtype=np.float64)))
-    if residual_tolerance is not None and not residual <= residual_tolerance:
+    if not residual <= residual_tolerance:
         raise ValueError(
             f"incomplete solve: the stationarity residual {residual:.3e} exceeds "
             f"residual_tolerance {residual_tolerance:.3e}; no implicit gradient is issued"
@@ -313,6 +318,7 @@ def mpc_optimum_parameter_sensitivity(
         phases_cotangent=np.asarray(phases_bar, dtype=np.float64),
         omega_cotangent=np.asarray(omega_bar, dtype=np.float64),
         coupling_cotangent=np.asarray(coupling_bar, dtype=np.float64),
+        residual_tolerance=float(residual_tolerance),
     )
 
 
@@ -329,7 +335,7 @@ def mpc_plan_energy_gradient(
     n_iterations: int,
     optimiser: str = "gd",
     initial_control: NDArray[np.float64] | None = None,
-    residual_tolerance: float | None = None,
+    residual_tolerance: float = 1e-6,
 ) -> MpcOptimumSensitivity:
     r"""Gradient of the optimal plan energy ``½‖u*‖²`` with respect to the dynamics parameters.
 
@@ -358,7 +364,8 @@ def mpc_plan_energy_gradient(
     Raises
     ------
     ValueError
-        If any argument falls outside its documented bound.
+        If any argument falls outside its documented bound, or the solve's stationarity residual
+        exceeds ``residual_tolerance`` (incomplete solve).
     ImportError
         If JAX is not installed.
 

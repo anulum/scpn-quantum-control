@@ -413,3 +413,53 @@ def test_root_rejects_malformed_inputs() -> None:
         _root(1.0, 1.0, residual_tolerance=-1.0)
     with pytest.raises(ValueError, match="rcond"):
         _root(1.0, 1.0, rcond=-1.0)
+
+
+def _scaled_bound(x: float, p: float, g: float, scale: float, lam: float) -> KktSensitivity:
+    """``min ½(x - p)^2`` s.t. ``-scale * x <= 0`` at the given point and multiplier."""
+    return implicit_kkt_sensitivity(
+        [x],
+        [x - p],
+        [[1.0]],
+        [[-1.0]],
+        constraint_values=[g],
+        constraint_jacobian=[[-scale]],
+        constraint_parameter_jacobian=[[0.0]],
+        multipliers=[lam],
+    )
+
+
+def test_activity_does_not_depend_on_how_a_constraint_is_scaled() -> None:
+    """A bound written as ``-1e8 x <= 0`` behaves exactly like ``-x <= 0``.
+
+    The closed form is ``x* = max(p, 0)``, so at ``p = -1`` the derivative is
+    0. Rescaling multiplies ``g`` by ``1e8`` and ``lambda`` by ``1e-8``; the
+    point just off the optimum and the exact optimum must both be treated as
+    active, and neither may return the unconstrained derivative 1.
+    """
+    step = 1e-6
+    central = (max(-1.0 + step, 0.0) - max(-1.0 - step, 0.0)) / (2 * step)
+    assert central == 0.0
+    for x, g, scale, lam in (
+        (0.0, 0.0, 1.0, 1.0),
+        (0.0, 0.0, 1e8, 1e-8),
+        (1.1e-15, -1.1e-7, 1e8, 1e-8),
+    ):
+        result = _scaled_bound(x, -1.0, g, scale, lam)
+        assert result.active == (True,)
+        assert result.sensitivity[0, 0] == pytest.approx(central, abs=1e-12)
+    # On the switching surface p = 0 the scaled bound is weakly active, as the unscaled one is.
+    for scale in (1.0, 1e8):
+        with pytest.raises(ImplicitDerivativeRefusal) as refused:
+            _scaled_bound(0.0, 0.0, 0.0, scale, 0.0)
+        assert refused.value.reason == "active_set_switch"
+
+
+def test_small_but_strict_curvature_is_a_strict_minimum() -> None:
+    """A Hessian ``[[1e-14]]`` is positive definite; its derivative ``-1e14`` is issued."""
+    result = implicit_kkt_sensitivity([0.0], [0.0], [[1e-14]], [[1.0]])
+    assert result.sensitivity[0, 0] == pytest.approx(-1e14)
+    assert result.reduced_hessian_min_eigenvalue == pytest.approx(1e-14)
+    with pytest.raises(ImplicitDerivativeRefusal) as refused:
+        implicit_kkt_sensitivity([0.0, 0.0], [0.0, 0.0], np.diag([1.0, 1e-13]), np.eye(2))
+    assert refused.value.reason == "not_a_strict_minimum"

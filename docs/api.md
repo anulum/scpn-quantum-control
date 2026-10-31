@@ -1854,7 +1854,10 @@ typed `reason` instead of returning a derivative:
   refused here;
 - `active_set_switch`: a constraint is weakly active (on its bound with a
   near-zero multiplier), so a small change of `p` can change the active set
-  and the one-sided derivatives differ;
+  and the one-sided derivatives differ. Activity does not depend on how a
+  constraint is scaled: it uses the distance to the bound `-g_i / |dg_i/dx|`
+  and the multiplier's force `lambda_i |dg_i/dx|`, relative to the largest
+  of `max |df/dx|` and every force;
 - `not_a_strict_minimum`: the Lagrangian Hessian is not positive definite on
   the null space of the active constraint gradients, so the minimiser is not
   unique or not a minimum.
@@ -1868,8 +1871,9 @@ derivative no longer describes the solution. Both results carry
 iterations that produced the solution: an unrolled optimiser's derivative
 depends on the iteration count and only approaches the implicit one as the
 solve converges. `oscillatools.accel.mpc_optimum_parameter_sensitivity()`
-accepts `residual_tolerance` and then refuses an unconverged horizon solve
-before the pullback.
+and `mpc_plan_energy_gradient()` refuse an unconverged horizon solve before the
+pullback: the stationarity residual must not exceed `residual_tolerance`
+(default `1e-6`), and the result records the tolerance it was checked against.
 
 Two different objects come from an ODE solve, and they are kept apart:
 

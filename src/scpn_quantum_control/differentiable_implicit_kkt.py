@@ -358,12 +358,16 @@ def implicit_kkt_sensitivity(
 
     The problem is ``min f(x, p)`` subject to ``g(x, p) <= 0`` and
     ``h(x, p) = 0``, with Lagrangian ``L = f + lambda^T g + mu^T h``. The
-    point is first checked against the KKT conditions; the active set
-    ``{i : g_i >= -active_tolerance}`` must be strictly complementary
-    (``lambda_i > active_tolerance`` on it); the active constraint gradients
-    must be linearly independent and the Lagrangian Hessian positive definite
-    on their null space. Only then is the KKT system of the fixed active set
-    solved for ``dx*/dp`` and the multiplier derivatives.
+    point is first checked against the KKT conditions. Activity is decided
+    without regard to how a constraint is scaled: constraint ``i`` is active
+    when its distance to the bound ``-g_i / |dg_i/dx|`` is at most
+    ``active_tolerance``, and its multiplier counts when its force
+    ``lambda_i |dg_i/dx|`` exceeds ``active_tolerance`` times the largest of
+    ``max |df/dx|`` and every force. Every active constraint must have a
+    multiplier that counts, and no inactive one may; the active constraint
+    gradients must be linearly independent and the Lagrangian Hessian
+    positive definite on their null space. Only then is the KKT system of the
+    fixed active set solved for ``dx*/dp`` and the multiplier derivatives.
 
     Parameters
     ----------
@@ -387,12 +391,14 @@ def implicit_kkt_sensitivity(
         Largest admitted violation of stationarity, primal and dual
         feasibility and complementarity, absolute.
     active_tolerance
-        A constraint with ``g_i >= -active_tolerance`` is active; its
-        multiplier must exceed this value, and an inactive one must not.
+        Largest distance to a bound, in units of ``x``, at which a constraint
+        is active, and the relative floor below which a multiplier's force
+        does not count (see above).
     rcond
         Reciprocal of the largest admitted condition number of the KKT
         matrix; also the relative threshold for independent active gradients
-        and a positive reduced Hessian.
+        and for a positive reduced Hessian, whose smallest eigenvalue must
+        exceed ``rcond`` times the largest ``|eig|`` of the Lagrangian Hessian.
 
     Returns
     -------
@@ -463,9 +469,19 @@ def implicit_kkt_sensitivity(
             "(stationarity, primal, equality, dual, complementarity: "
             f"{', '.join(f'{value:.2e}' for value in violations)}); the point is not a verified optimum",
         )
-    active = g >= -margin
-    weak = np.flatnonzero(active & (lam <= margin))
-    loaded = np.flatnonzero(~active & (lam > margin))
+    # Scale-free activity: rescaling a constraint by s scales g by s and lambda by 1/s, so the
+    # distance -g/|dg/dx| (in x) and the force lambda |dg/dx| (in gradient units) are invariant.
+    norms = np.linalg.norm(g_x, axis=1)
+    norms = np.where(norms > 0.0, norms, 1.0)
+    distance = -g / norms
+    force = lam * norms
+    force_scale = max(
+        float(np.max(np.abs(gradient), initial=0.0)), float(np.max(force, initial=0.0))
+    )
+    active = distance <= margin
+    strong = force > margin * force_scale
+    weak = np.flatnonzero(active & ~strong)
+    loaded = np.flatnonzero(~active & strong)
     if weak.size or loaded.size:
         raise ImplicitDerivativeRefusal(
             "active_set_switch",
@@ -489,7 +505,7 @@ def implicit_kkt_sensitivity(
         basis = np.eye(n)
     if basis.shape[1]:
         reduced = np.linalg.eigvalsh(basis.T @ hessian @ basis)
-        scale = max(1.0, float(np.max(np.abs(np.linalg.eigvalsh(hessian)))))
+        scale = float(np.max(np.abs(np.linalg.eigvalsh(hessian))))
         lowest = float(reduced[0])
         if lowest <= relative * scale:
             raise ImplicitDerivativeRefusal(
