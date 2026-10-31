@@ -58,7 +58,7 @@ from typing import Any, Final
 from urllib.parse import parse_qs, urlsplit
 
 from ...studio.executive import ExecutiveRequest, preview_action
-from .journal import Attempt, JobJournal
+from .journal import Attempt, AttemptState, JobJournal
 from .registry import build_local_registry, local_verbs
 from .worker import RECORD_FILE, REQUEST_FILE
 
@@ -518,14 +518,16 @@ class LocalJobService:
             attempt = self._attempt(attempt_id)
             if not attempt.terminal:
                 worker = self._workers.pop(attempt.attempt_id, None)
-                if worker is not None:
+                if worker is None:
+                    self.journal.finish(
+                        attempt.attempt_id,
+                        "cancelled",
+                        at=self._clock(),
+                        reason="cancelled by request",
+                    )
+                else:
                     self._terminate(worker)
-                self.journal.finish(
-                    attempt.attempt_id,
-                    "cancelled",
-                    at=self._clock(),
-                    reason="cancelled by request",
-                )
+                    self._end_stopped(attempt.attempt_id, "cancelled", "cancelled by request")
             return attempt_view(self.journal.attempt(attempt.attempt_id))
 
     # -- workers ----------------------------------------------------------
@@ -629,6 +631,18 @@ class LocalJobService:
                 result_digest=record["digest"],
             )
 
+    def _end_stopped(self, attempt_id: str, state: AttemptState, reason: str) -> None:
+        """Record why a stopped and reaped worker's attempt ended.
+
+        A worker can seal its record and exit just before it is stopped. A
+        complete record is proof of how the attempt ended, so it decides;
+        only without one does the stop's own state and reason apply.
+        """
+        if self._read_record(attempt_id) is None:
+            self.journal.finish(attempt_id, state, at=self._clock(), reason=reason)
+        else:
+            self._settle(attempt_id, recovered=False)
+
     def pump(self) -> None:
         """Settle finished and expired workers, then start queued attempts."""
         with self._lock:
@@ -643,11 +657,10 @@ class LocalJobService:
                 elif attempt.deadline is not None and now > attempt.deadline:
                     del self._workers[attempt_id]
                     self._terminate(worker)
-                    self.journal.finish(
+                    self._end_stopped(
                         attempt_id,
                         "expired",
-                        at=self._clock(),
-                        reason=f"the attempt exceeded {self.policy.worker_seconds} s",
+                        f"the attempt exceeded {self.policy.worker_seconds} s",
                     )
             for attempt in self.journal.attempts("queued"):
                 if len(self._workers) >= self.policy.max_workers:
@@ -675,9 +688,7 @@ class LocalJobService:
             for attempt_id, worker in list(self._workers.items()):
                 self._terminate(worker)
                 del self._workers[attempt_id]
-                self.journal.finish(
-                    attempt_id, "interrupted", at=self._clock(), reason="the service was stopped"
-                )
+                self._end_stopped(attempt_id, "interrupted", "the service was stopped")
             self.journal.close()
 
 

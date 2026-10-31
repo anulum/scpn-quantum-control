@@ -587,11 +587,6 @@ def test_transport_refuses_malformed_bodies_and_routes(server: LocalJobServer) -
     cases: list[tuple[bytes, dict[str, str], str]] = [
         (b"{", {TOKEN_HEADER: TOKEN, "Content-Type": "application/json"}, "not valid JSON"),
         (b"{}", {TOKEN_HEADER: TOKEN, "Content-Type": "text/plain"}, "application/json"),
-        (
-            b"x" * (server.service.policy.max_request_bytes + 1),
-            {TOKEN_HEADER: TOKEN, "Content-Type": "application/json"},
-            "too large",
-        ),
     ]
     for payload, headers, message in cases:
         connection = http.client.HTTPConnection("127.0.0.1", port, timeout=10)
@@ -599,6 +594,16 @@ def test_transport_refuses_malformed_bodies_and_routes(server: LocalJobServer) -
         response = connection.getresponse()
         assert message in json.loads(response.read())["message"]
         connection.close()
+    # An oversized body is refused from its declared length, before any of it is
+    # read; the client therefore sends only the headers.
+    connection = http.client.HTTPConnection("127.0.0.1", port, timeout=10)
+    connection.putrequest("POST", "/v1/jobs")
+    connection.putheader(TOKEN_HEADER, TOKEN)
+    connection.putheader("Content-Type", "application/json")
+    connection.putheader("Content-Length", str(server.service.policy.max_request_bytes + 1))
+    connection.endheaders()
+    assert "too large" in json.loads(connection.getresponse().read())["message"]
+    connection.close()
     connection = http.client.HTTPConnection("127.0.0.1", port, timeout=10)
     connection.putrequest("POST", "/v1/jobs")
     connection.putheader(TOKEN_HEADER, TOKEN)
@@ -844,3 +849,55 @@ def test_shared_response_shapes_match_the_service(service: LocalJobService) -> N
     assert [event["kind"] for event in events] == [event["kind"] for event in FIXTURES["events"]]
     for live, shared in zip(events, FIXTURES["events"], strict=True):
         assert set(live) == set(shared) and set(live["payload"]) == set(shared["payload"])
+
+
+def _sealed(service: LocalJobService, key: str) -> str:
+    """Submit a quick job and wait until its worker has sealed the record and exited.
+
+    The service is not pumped meanwhile, so it still tracks the worker as running.
+    """
+    attempt_id = cast(str, service.submit(_request(key))["attempt_id"])
+    worker = _pid(service.root, attempt_id)
+    _until(lambda: (service.root / "attempts" / attempt_id / "record.json").exists())
+    _until(lambda: not _alive(worker))
+    return attempt_id
+
+
+def _assert_succeeded(view: dict[str, Any]) -> None:
+    """Check that the attempt kept its sealed success and returns its record."""
+    assert view["state"] == "succeeded" and view["reason"] is None
+    assert view["record"]["digest"] == view["result_digest"]
+
+
+def test_cancel_after_a_sealed_success_keeps_the_success(service: LocalJobService) -> None:
+    """Cancelling an attempt whose worker already sealed success changes nothing."""
+    attempt_id = _sealed(service, "sealed-cancel")
+    assert service.cancel(attempt_id)["state"] == "succeeded"
+    _assert_succeeded(service.retrieve(attempt_id))
+
+
+def test_close_after_a_sealed_success_keeps_the_success(tmp_path: Path) -> None:
+    """Stopping the service does not turn a sealed success into an interruption."""
+    service = LocalJobService(tmp_path / "jobs")
+    attempt_id = _sealed(service, "sealed-close")
+    service.close()
+    reopened = LocalJobService(tmp_path / "jobs")
+    _assert_succeeded(reopened.retrieve(attempt_id))
+    reopened.close()
+
+
+def test_expiry_after_a_sealed_success_keeps_the_success(tmp_path: Path) -> None:
+    """A worker past its deadline that already sealed success is not recorded as expired."""
+    now = [time.time()]
+    service = LocalJobService(tmp_path / "jobs", clock=lambda: now[0])
+    try:
+        attempt_id = cast(str, service.submit(_request("sealed-expiry"))["attempt_id"])
+        worker = _pid(service.root, attempt_id)
+        _until(lambda: (service.root / "attempts" / attempt_id / "record.json").exists())
+        os.kill(worker, signal.SIGSTOP)
+        now[0] += service.policy.worker_seconds + 1.0
+        service.pump()
+        _assert_succeeded(service.retrieve(attempt_id))
+        assert not _alive(worker)
+    finally:
+        service.close()
