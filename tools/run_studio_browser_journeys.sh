@@ -210,3 +210,19 @@ python -m coverage report --rcfile=/dev/null \
     --include="*/tools/studio_operator_dossier_browser.py" --precision=2 --show-missing --fail-under=100
 python -m coverage combine --rcfile=/dev/null --append --keep \
     --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" "$RUNNER_TEMP/studio-dossier-browser.coverage"
+
+python -m coverage run --rcfile=/dev/null --branch --concurrency=greenlet \
+    --data-file="$RUNNER_TEMP/studio-sensing-browser.coverage" \
+    --include="*/tools/studio_sensing_browser.py,*/tools/studio_browser_journey.py" \
+    tools/studio_browser_journey.py --scenario sensing_entropy_instrument \
+    --base-url http://127.0.0.1:4173/ --output "$RUNNER_TEMP/studio-sensing-journey.json"
+STUDIO_PREVIEW_DIR="$RUNNER_TEMP/studio-browser-preview" \
+    python -m coverage run --rcfile=/dev/null --append --branch --concurrency=greenlet \
+    --data-file="$RUNNER_TEMP/studio-sensing-browser.coverage" \
+    --include="*/tools/studio_sensing_browser.py" \
+    -m pytest --noconftest -q tools/tests/test_studio_sensing_browser.py
+python -m coverage report --rcfile=/dev/null \
+    --data-file="$RUNNER_TEMP/studio-sensing-browser.coverage" \
+    --include="*/tools/studio_sensing_browser.py" --precision=2 --show-missing --fail-under=100
+python -m coverage combine --rcfile=/dev/null --append --keep \
+    --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" "$RUNNER_TEMP/studio-sensing-browser.coverage"

@@ -429,6 +429,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "mitigation_inspector",
             "local_job_service",
             "pulse_feasibility",
+            "sensing_entropy_instrument",
             "operator_backend_profiles",
             "operator_policy_decisions",
             "operator_review_dossiers",
@@ -589,6 +590,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 from tools.studio_local_jobs_browser import run_local_jobs_journey
 
                 journey = partial(run_local_jobs_journey, evidence=evidence)
+            elif args.scenario == "sensing_entropy_instrument":
+                from tools.studio_sensing_browser import run_sensing_journey
+
+                journey = partial(run_sensing_journey, evidence=evidence)
             elif args.scenario == "pulse_feasibility":
                 from tools.studio_pulse_browser import run_pulse_journey
 

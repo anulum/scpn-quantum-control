@@ -8,6 +8,8 @@
 
 import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
+import { SensingInspector } from "../../features/science/sensing/SensingInspector";
+import { sensingInstrument } from "../../features/science/sensing/sensingInstrument";
 import { GradientDebugger } from "./GradientDebugger";
 import { gradientUnits } from "./gradientDebugger";
 import { MitigationInspector } from "./MitigationInspector";
@@ -34,6 +36,7 @@ export default function ResultsView({
   focusQecInstrument = false,
   focusMitigationInstrument = false,
   focusPulseInstrument = false,
+  focusSensingInstrument = false,
   plan = null,
   outcome = null,
   editors,
@@ -48,6 +51,8 @@ export default function ResultsView({
   focusMitigationInstrument?: boolean;
   /** Focus the pulse feasibility instrument after this lazy module has mounted. */
   focusPulseInstrument?: boolean;
+  /** Focus sensing and entropy provenance after this module mounts. */
+  focusSensingInstrument?: boolean;
   /** Registered comparison and inspection controls supplied by the shell slot. */
   editors?: ReactNode;
 }) {
@@ -56,6 +61,7 @@ export default function ResultsView({
   const qec = useRef<HTMLDivElement>(null);
   const mitigation = useRef<HTMLDivElement>(null);
   const pulses = useRef<HTMLDivElement>(null);
+  const sensing = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (focusInstrument && target.current !== null) target.current.focus();
   }, [focusInstrument]);
@@ -71,6 +77,9 @@ export default function ResultsView({
   useEffect(() => {
     if (focusPulseInstrument && pulses.current !== null) pulses.current.focus();
   }, [focusPulseInstrument]);
+  useEffect(() => {
+    if (focusSensingInstrument && sensing.current !== null) sensing.current.focus();
+  }, [focusSensingInstrument]);
   return (
     <article className="qsp-panel">
       <h3>Analyse</h3>
@@ -101,6 +110,9 @@ export default function ResultsView({
       </div>
       <div id="/results/pulses" tabIndex={-1} ref={pulses}>
         <PulseInspector instrument={pulseInstrument} />
+      </div>
+      <div id="/results/sensing" tabIndex={-1} ref={sensing}>
+        <SensingInspector instrument={sensingInstrument} />
       </div>
       <EvidenceViewer />
       {supportMatrix.ok ? (

@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **857 modules** across **41 package families**
-- **4651 documented public module-level symbols**
+- **858 modules** across **41 package families**
+- **4654 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -5682,6 +5682,14 @@ Emit the differentiable baseline scorecard as a schema-B evidence bundle.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/scorecard_bundle.py) · Public symbols: **2**
 
 **Functions:** `build_scorecard_bundle()`, `main()`
+
+### `scpn_quantum_control.studio.sensing_instrument_artifact`
+
+Project bounded sensing and entropy evidence without exporting private samples.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/sensing_instrument_artifact.py) · Public symbols: **3**
+
+**Functions:** `project_entropy_metadata()`, `build_sensing_instrument_artifact()`, `main()`
 
 ### `scpn_quantum_control.studio.support_matrix_bundle`
 

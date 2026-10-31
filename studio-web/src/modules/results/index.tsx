@@ -33,6 +33,7 @@ export const resultsModule: StudioModule<Services, WorkspaceViewServices, "resul
         "qec-resources",
         "mitigation",
         "pulses",
+        "sensing",
       ],
       render: (services: Services, instrument: string | null) => (
         <ResultsView
@@ -41,6 +42,7 @@ export const resultsModule: StudioModule<Services, WorkspaceViewServices, "resul
           focusQecInstrument={instrument === "qec-resources"}
           focusMitigationInstrument={instrument === "mitigation"}
           focusPulseInstrument={instrument === "pulses"}
+          focusSensingInstrument={instrument === "sensing"}
           plan={services.experiment.plan}
           outcome={services.experiment.outcome}
           editors={services.renderEditors("results")}
@@ -49,6 +51,11 @@ export const resultsModule: StudioModule<Services, WorkspaceViewServices, "resul
     },
   ],
   commands: [
+    {
+      id: "open-sensing",
+      label: "Open sensing and entropy provenance",
+      action: { kind: "navigate", stage: "results", instrument: "sensing" },
+    },
     {
       id: "open-results",
       label: "Open Analyse",

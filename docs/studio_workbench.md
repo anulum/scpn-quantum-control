@@ -2043,3 +2043,25 @@ ordering and distinguish output sampling from integration accuracy. Their
 local analytic and Python/Rust kernel conformance supplies a numerical
 foundation; it does not add a quantum solver panel or execution authority to
 the Studio workspace.
+
+## Sensing and entropy provenance
+
+Analyse → Sensing and entropy provenance (`#/results/sensing`) shows source-owned
+measurement-design candidates: Gaussian-model inputs, shot counts, expected
+information gain in nats and model posterior variance. These are synthetic
+design scores, not measured advantage or calibrated uncertainty.
+
+Entropy records keep their declared synthetic, device or unknown origin. The
+committed device row has no observations: missing provenance and diagnostics
+remain visible. The synthetic fixture's recorded statistical and signature
+checks do not qualify source entropy. The shared evidence inspector shows
+source identity independently; no signature envelope is included or verified
+in this metadata-only browser view. A signature establishes byte integrity,
+not physical randomness or application efficacy.
+
+Download public entropy metadata exports only the displayed provenance, byte
+digest, recorded diagnostics and claim boundary. Seeds, sample bytes, private
+keys and other unlisted source fields never enter the export. No provider is
+contacted. Regenerate or check the metadata with
+`python -m scpn_quantum_control.studio.sensing_instrument_artifact --write`
+or `--check`.

@@ -4,6 +4,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+### Sensing and entropy provenance
+
+- Analyse now displays source-owned measurement-design scores and model
+  uncertainty, with separate synthetic and unavailable device provenance.
+- Public entropy metadata exports omit private material; passing statistical
+  or signature checks never certify physical randomness.
+
 - Qualify competitive comparisons on a frozen challenge:
   `qualify_competitive_campaign` ranks methods only when every retained run,
   failures included, shares the problem, model, precision, measurement, seed

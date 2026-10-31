@@ -1,0 +1,70 @@
+{
+  "artifact_id": "studio-sensing-instrument-20261031",
+  "candidates": [
+    {
+      "channel": "gradient_observer",
+      "expected_information_gain_nats": 2.0671030478236156,
+      "noise_variance": 0.3,
+      "observable_id": "sync_order",
+      "posterior_variance": 0.006406149903907752,
+      "prior_variance": 0.4,
+      "sensitivity": 1.2,
+      "shots": 32,
+      "signal_to_noise": 61.44
+    },
+    {
+      "channel": "gradient_observer",
+      "expected_information_gain_nats": 1.6989292401983203,
+      "noise_variance": 0.2,
+      "observable_id": "spectral_gap",
+      "posterior_variance": 0.008361204013377928,
+      "prior_variance": 0.25,
+      "sensitivity": 0.85,
+      "shots": 32,
+      "signal_to_noise": 28.899999999999995
+    },
+    {
+      "channel": "gradient_observer",
+      "expected_information_gain_nats": 2.176155854567309,
+      "noise_variance": 0.45,
+      "observable_id": "qfi_peak",
+      "posterior_variance": 0.007082355634407373,
+      "prior_variance": 0.55,
+      "sensitivity": 1.4,
+      "shots": 32,
+      "signal_to_noise": 76.65777777777777
+    }
+  ],
+  "design_boundary": "synthetic local information-gain planning under hardware-safe no-submit shot budgets; candidate-design evidence is analytic/simulator-only; no adaptive QPU loop, sensing advantage, or NV 20 T hardware-calibration claim",
+  "design_model": "Scalar conjugate Gaussian model; posterior variance is model uncertainty, not empirical calibration",
+  "entropy": [
+    {
+      "assumptions": "Pseudorandom fixture only; no physical entropy assumption or qualification",
+      "case_id": "synthetic-signed-fixture",
+      "claim_boundary": "statistical tests describe these bytes and a signature proves their integrity; neither establishes the entropy of the source nor certifies cryptographic randomness",
+      "diagnostics": {
+        "frequency_passed": true,
+        "runs_passed": true,
+        "signature_valid": true
+      },
+      "extractor": "none",
+      "payload_sha256": "5c9a00efad539fe6ec927566ef0e020b52778a3ab5f81332c4a287f5dda2c207",
+      "source": "NumPy deterministic fixture; public test-vector signing identity",
+      "source_entropy_qualified": false,
+      "source_kind": "synthetic"
+    },
+    {
+      "assumptions": null,
+      "case_id": "device-unavailable",
+      "claim_boundary": "statistical tests describe these bytes and a signature proves their integrity; neither establishes the entropy of the source nor certifies cryptographic randomness",
+      "diagnostics": null,
+      "extractor": null,
+      "payload_sha256": null,
+      "source": null,
+      "source_entropy_qualified": false,
+      "source_kind": "device"
+    }
+  ],
+  "generated_by": "python -m scpn_quantum_control.studio.sensing_instrument_artifact --write",
+  "schema": "scpn_qc_studio_sensing_instrument_v1"
+}

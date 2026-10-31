@@ -48,6 +48,7 @@ describe("workbenchRegistry", () => {
       ["/results/qec-resources", "results", "qec-resources"],
       ["/results/mitigation", "results", "mitigation"],
       ["/results/pulses", "results", "pulses"],
+      ["/results/sensing", "results", "sensing"],
       ["/compare", "compare", null],
       ["/evidence", "evidence", null],
       ["/atlas", "atlas", null],

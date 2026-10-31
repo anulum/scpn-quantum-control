@@ -20,22 +20,25 @@ STUDIO_MITIGATION_INSTRUMENT_SOURCE = (
 )
 STUDIO_COMMITTED_DATA_SOURCE = "src/scpn_quantum_control/studio/committed_data.py"
 STUDIO_PULSE_INSTRUMENT_SOURCE = "src/scpn_quantum_control/studio/pulse_instrument_artifact.py"
+STUDIO_SENSING_INSTRUMENT_SOURCE = "src/scpn_quantum_control/studio/sensing_instrument_artifact.py"
 STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_COHORT = [
     "tests/test_studio_readout_mitigation_bundle.py",
     "tests/test_studio_mitigation_instrument_artifact.py",
     "tests/test_studio_committed_data.py",
     "tests/test_studio_pulse_instrument_artifact.py",
+    "tests/test_studio_sensing_instrument_artifact.py",
 ]
 STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_INCLUDE = (
     "--include=*/studio/readout_mitigation_bundle.py,"
     "*/studio/mitigation_instrument_artifact.py,*/studio/committed_data.py,"
-    "*/studio/pulse_instrument_artifact.py"
+    "*/studio/pulse_instrument_artifact.py,*/studio/sensing_instrument_artifact.py"
 )
 STUDIO_READOUT_MITIGATION_BUNDLE_TYPING_RATCHET = [
     STUDIO_READOUT_MITIGATION_BUNDLE_SOURCE,
     STUDIO_MITIGATION_INSTRUMENT_SOURCE,
     STUDIO_COMMITTED_DATA_SOURCE,
     STUDIO_PULSE_INSTRUMENT_SOURCE,
+    STUDIO_SENSING_INSTRUMENT_SOURCE,
     *STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_COHORT,
     "tools/studio_readout_mitigation_bundle_quality_gates.py",
     "tests/test_studio_readout_mitigation_bundle_quality_gate.py",
@@ -121,6 +124,7 @@ __all__ = [
     "STUDIO_COMMITTED_DATA_SOURCE",
     "STUDIO_MITIGATION_INSTRUMENT_SOURCE",
     "STUDIO_PULSE_INSTRUMENT_SOURCE",
+    "STUDIO_SENSING_INSTRUMENT_SOURCE",
     "STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_COHORT",
     "STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_DATA_FILE",
     "STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_INCLUDE",

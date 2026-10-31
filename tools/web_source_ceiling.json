@@ -1,7 +1,7 @@
 {
  "schema": "web_source_ceiling_v1",
  "release": "2.5.15",
- "measured_commit": "08a0546b7f55befc92f9669941b17d9a04c72a70",
+ "measured_commit": "aea8d70394e620d5dd9ffe09741d374b98f30aa3",
  "total_lint_findings": 40,
  "total_lint_files": 9,
  "total_unformatted_files": 34,
