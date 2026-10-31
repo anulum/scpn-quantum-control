@@ -10,8 +10,9 @@
 The program composes an elementwise polynomial, a supported linear solve and a
 scalar objective. Oracles: the analytic chain rule written out here, the Python
 replay record of the same execution, and the bounded Rust effect-IR replay of
-the same serialised program. A composition outside the admitted set is refused
-with the stage located in the user's source.
+the same serialised program. A composition that fails inside library code is
+refused with the stage located in the user's source; an exception the user's
+own code raises propagates unchanged.
 """
 
 from __future__ import annotations
@@ -126,6 +127,28 @@ def test_package_refusals_are_not_relocated() -> None:
     with pytest.raises(ValueError, match="must return a whole-program AD scalar") as raised:
         whole_program_value_and_grad(scalar_output, _POINT)
     assert not isinstance(raised.value, WholeProgramStageRefusal)
+
+
+def test_user_raised_exceptions_propagate_unchanged() -> None:
+    """An exception the user's own code raises keeps its type; only library failures are located."""
+
+    def stop() -> None:
+        """Raise as user code may do deliberately."""
+        raise RuntimeError("stopped by the user", 7)
+
+    def stop_midway(p: Any) -> Any:
+        """Stop after a traced product through the user's own helper."""
+        product = p[0] * p[1]
+        stop()
+        return product
+
+    with pytest.raises(RuntimeError, match="stopped by the user") as raised:
+        whole_program_value_and_grad(stop_midway, _POINT)
+    assert type(raised.value) is RuntimeError and raised.value.args[1] == 7
+    # The admitted program still runs afterwards.
+    assert whole_program_value_and_grad(_journey, _POINT).value == pytest.approx(
+        _analytic(_POINT)[0]
+    )
     record = json.loads(
         capture_whole_program_replay(whole_program_value_and_grad(_journey, _POINT)).to_json()
     )

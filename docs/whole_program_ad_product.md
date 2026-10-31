@@ -272,12 +272,14 @@ and a scalar objective, runs through every admitted route with one identity:
   Rust interpreter or lowering of Python source: `polyglot_targets["rust"]`
   stays `blocked` for that reason.
 
-A composition outside the admitted set is refused where it happens. If code
-outside this package fails on traced values, for example an array built
-element by element from traced scalars and handed to `np.linalg.solve`,
-`WholeProgramStageRefusal` (a `ValueError`) names the file, the line and the
-operation and chains the original error. No value or derivative is issued.
-Refusals raised by the package itself keep their own type and message.
+A composition outside the admitted set is refused where it happens. If library
+code (the standard library or an installed package) fails on traced values,
+for example an array built element by element from traced scalars and handed
+to `np.linalg.solve`, `WholeProgramStageRefusal` (a `ValueError`) names the
+file, the line and the operation and chains the original error. No value or
+derivative is issued. Refusals raised by the package itself keep their own
+type and message, and an exception raised by the user's own code propagates
+unchanged.
 
 `tests/test_whole_program_backend_journeys.py` holds these journeys. There is
 no claim for arbitrary Python programs, GPU or device gradients, or bit-exact

@@ -16,6 +16,7 @@ import linecache
 import math
 import struct
 import sys
+import sysconfig
 import traceback
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
@@ -61,10 +62,12 @@ from .whole_program_trace_values import (
 class WholeProgramStageRefusal(ValueError):
     """A stage of the user program that failed on traced values, located in its source.
 
-    Raised when code outside this package (for example a NumPy routine handed
-    an object array of traced scalars) fails while the program runs under
-    whole-program AD. The stage is the deepest line of the user's own source
-    file on the failing call path; no value or derivative is issued.
+    Raised when library code (the standard library or an installed package,
+    for example a NumPy routine handed an object array of traced scalars)
+    fails while the program runs under whole-program AD. The stage is the
+    deepest line of the user's own source file on the failing call path; no
+    value or derivative is issued. An exception raised by the user's own code
+    propagates unchanged.
     """
 
     def __init__(
@@ -104,20 +107,32 @@ class WholeProgramStageRefusal(ValueError):
 
 
 _PACKAGE_ROOT = str(Path(__file__).resolve().parent)
+_LIBRARY_ROOTS = tuple(
+    sorted(
+        {
+            str(Path(sysconfig.get_paths()[key]).resolve())
+            for key in ("stdlib", "platstdlib", "purelib", "platlib")
+        }
+    )
+)
 
 
 def _foreign_failure_stage(
     error: BaseException, objective: Callable[[Any], object]
 ) -> tuple[str, int, str, str] | None:
-    """Locate a failure raised outside this package inside the user's source file.
+    """Locate a failure raised by library code inside the user's source file.
 
     Returns ``None`` for failures raised by this package, which are already typed
-    refusals. The frontend admits only Python functions with source, and the
-    failure propagated through the objective's own frame, so that frame is on
-    the traceback; the deepest frame in the objective's file is the stage.
+    refusals, and for exceptions raised by the user's own code, which are the
+    user's to handle. Only a failure whose deepest frame lies in the standard
+    library or an installed package is a composition this frontend cannot run.
+    The frontend admits only Python functions with source, and the failure
+    propagated through the objective's own frame, so that frame is on the
+    traceback; the deepest frame in the objective's file is the stage.
     """
     frames = traceback.extract_tb(error.__traceback__)
-    if str(Path(frames[-1].filename).resolve()).startswith(_PACKAGE_ROOT):
+    raised_in = str(Path(frames[-1].filename).resolve())
+    if raised_in.startswith(_PACKAGE_ROOT) or not raised_in.startswith(_LIBRARY_ROOTS):
         return None
     source_file = str(cast(Any, objective).__code__.co_filename)
     stage = [frame for frame in frames if frame.filename == source_file][-1]

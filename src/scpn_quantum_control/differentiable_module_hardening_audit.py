@@ -533,6 +533,14 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_implicit_kkt.py",
+            ("tests/test_implicit_kkt_sensitivities.py",),
+            (
+                "root and KKT solution verification before sensitivities",
+                "scale-free constraint activity and reduced-Hessian floor",
+            ),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_implicit_sensitivity.py",
             ("tests/test_differentiable_implicit_sensitivity.py",),
             ("implicit stationary sensitivity", "fixed-point sensitivity solves"),

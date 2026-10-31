@@ -33,8 +33,9 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - Qualify full-program whole-program AD journeys: a polynomial, linear solve
   and scalar objective agree with the chain rule, and the Python replay record
   and the bounded Rust effect-IR replay reproduce the same program hash, value
-  and gradient. A composition that fails on traced values outside the package
-  raises `WholeProgramStageRefusal` naming the source line and operation.
+  and gradient. A composition that fails on traced values inside library code
+  raises `WholeProgramStageRefusal` naming the source line and operation; an
+  exception raised by the user's own code propagates unchanged.
 
 - Verify constrained co-design proposals before adopting them:
   `ConstrainedCodesignSession` recomputes the objective and every constraint
