@@ -1,15 +1,15 @@
 {
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
-  "content_digest": "0b9231289ac974a7602d0e41cddbbc143c56e36a5ccf47c17d3c7acaba25cb72",
+  "content_digest": "2f80f76653c2ce8c03274ea2c28f98510055c271772f8862b38e98ef162b0bfd",
   "counts": {
     "module_docstring_gaps": 0,
     "notebooks": 109,
     "primary_navigation_pages": 164,
     "public_documentation_pages": 385,
-    "public_module_symbols": 4566,
+    "public_module_symbols": 4571,
     "public_symbol_docstring_gaps": 0,
     "python_modules": 847,
-    "root_package_exports": 859
+    "root_package_exports": 866
   },
   "coverage": {
     "all_notebooks_cataloged": true,

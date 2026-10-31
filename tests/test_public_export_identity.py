@@ -98,6 +98,13 @@ APPROVED_EXPORT_ADDITIONS: dict[str, tuple[int, tuple[tuple[str, str], ...]]] = 
             ("real_block_gradient", "scpn_quantum_control.wirtinger_calculus"),
             ("real_block_jacobian", "scpn_quantum_control.wirtinger_calculus"),
             ("spectral_projector_derivative", "scpn_quantum_control.wirtinger_calculus"),
+            ("WHOLE_PROGRAM_REPLAY_RANDOMNESS", "scpn_quantum_control.whole_program_ad_api"),
+            ("WHOLE_PROGRAM_REPLAY_SCHEMA", "scpn_quantum_control.whole_program_ad_api"),
+            ("WholeProgramReplayMismatchError", "scpn_quantum_control.whole_program_ad_api"),
+            ("WholeProgramReplayRecord", "scpn_quantum_control.whole_program_ad_api"),
+            ("WholeProgramReplayReport", "scpn_quantum_control.whole_program_ad_api"),
+            ("capture_whole_program_replay", "scpn_quantum_control.whole_program_ad_api"),
+            ("replay_whole_program", "scpn_quantum_control.whole_program_ad_api"),
         ),
     ),
     "scpn_quantum_control.benchmarks": (

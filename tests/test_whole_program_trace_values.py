@@ -1833,3 +1833,42 @@ def test_public_trace_layout_refuses_actual_materialized_size_change_and_recover
     assert result.value == value
     np.testing.assert_array_equal(result.gradient, gradient)
     assert active_reserved_bytes() == baseline
+
+
+def _scalar_equality_branch(values: TraceADArray) -> object:
+    return values[0] * 3.0 if values[0] == 1.0 else values[0]
+
+
+def _array_inequality_branch(values: TraceADArray) -> object:
+    trace = cast(Any, values)
+    return cast(TraceADArray, np.where(trace != 1.0, 3.0 * trace, trace)).sum()
+
+
+@pytest.mark.parametrize(
+    "objective", [_scalar_equality_branch, _array_inequality_branch], ids=["scalar-eq", "array-ne"]
+)
+def test_equality_predicate_refuses_its_switching_surface(
+    objective: Callable[[TraceADArray], object],
+) -> None:
+    """Equal primals put ``==``/``!=`` on a surface no branch slope describes.
+
+    Parameters
+    ----------
+    objective
+        Scalar equality branch or elementwise inequality selection.
+
+    """
+    with pytest.raises(ValueError, match="equality predicate is non-differentiable"):
+        whole_program_value_and_grad(objective, [1.0, 2.0], trace=False)
+    off_surface = whole_program_value_and_grad(objective, [1.5, 2.0], trace=False)
+    assert off_surface.gradient[0] in {1.0, 3.0}
+
+
+def test_equality_of_a_value_with_itself_is_admitted() -> None:
+    """A value compared with itself is constant, so its branch keeps the slope."""
+
+    def objective(values: TraceADArray) -> object:
+        first = values[0]
+        return first * 2.0 if first == first else first
+
+    assert whole_program_value_and_grad(objective, [1.0], trace=False).gradient.tolist() == [2.0]

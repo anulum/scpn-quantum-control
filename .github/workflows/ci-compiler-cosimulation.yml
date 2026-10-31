@@ -120,6 +120,7 @@ jobs:
           tests/test_program_ad_effect_values.py
           tests/test_whole_program_trace_scatter.py
           tests/test_effectful_program_semantics.py
+          tests/test_effectful_ad_replay.py
       - name: Ruff NumPy docstrings for Program AD adjoint quality cohort
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
@@ -156,6 +157,7 @@ jobs:
           tests/test_program_ad_effect_values.py
           tests/test_whole_program_trace_scatter.py
           tests/test_effectful_program_semantics.py
+          tests/test_effectful_ad_replay.py
       - name: Run Program AD adjoint focused coverage
         run: >-
           python -m coverage run
@@ -181,6 +183,7 @@ jobs:
           tests/test_program_ad_effect_values.py
           tests/test_whole_program_trace_scatter.py
           tests/test_effectful_program_semantics.py
+          tests/test_effectful_ad_replay.py
           tests/test_program_ad_adjoint_quality_gate.py
       - name: Enforce Program AD adjoint exact coverage
         run: >-

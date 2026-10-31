@@ -7,13 +7,13 @@
     "model_documentation_pages": 14,
     "notebook_files": 109,
     "optional_extras": 43,
-    "public_api_exports": 859,
+    "public_api_exports": 866,
     "public_documentation_pages": 385,
-    "python_model_classes": 1590,
+    "python_model_classes": 1593,
     "python_model_source_modules": 847,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1601
+    "test_files": 1602
   },
   "documentation": {
     "examples": [
@@ -7017,6 +7017,18 @@
         "path": "src/scpn_quantum_control/whole_program_ad_result.py"
       },
       {
+        "name": "WholeProgramReplayMismatchError",
+        "path": "src/scpn_quantum_control/whole_program_ad_api.py"
+      },
+      {
+        "name": "WholeProgramReplayRecord",
+        "path": "src/scpn_quantum_control/whole_program_ad_api.py"
+      },
+      {
+        "name": "WholeProgramReplayReport",
+        "path": "src/scpn_quantum_control/whole_program_ad_api.py"
+      },
+      {
         "name": "WholeProgramSemanticsReport",
         "path": "src/scpn_quantum_control/whole_program_frontend_contracts.py"
       },
@@ -8583,6 +8595,8 @@
     "VQLSGradShafranovResult",
     "VQLS_GradShafranov",
     "VirtualRealtimeClock",
+    "WHOLE_PROGRAM_REPLAY_RANDOMNESS",
+    "WHOLE_PROGRAM_REPLAY_SCHEMA",
     "WeightedGradientResult",
     "WholeProgramADNativeLoweringReport",
     "WholeProgramADResult",
@@ -8590,6 +8604,9 @@
     "WholeProgramBytecodeInstruction",
     "WholeProgramCompilerFrontendReport",
     "WholeProgramIRNode",
+    "WholeProgramReplayMismatchError",
+    "WholeProgramReplayRecord",
+    "WholeProgramReplayReport",
     "WholeProgramSemanticsReport",
     "WholeProgramSourceBytecodeLineMap",
     "WholeProgramSourceIRFeature",
@@ -8666,6 +8683,7 @@
     "built_in_aggregator_provider_routes",
     "built_in_backend_profiles",
     "calibrate_field_from_odmr",
+    "capture_whole_program_replay",
     "check_custom_derivative_consistency",
     "check_parameter_shift_consistency",
     "chsh_from_statevector",
@@ -8981,6 +8999,7 @@
     "render_differentiable_isolated_benchmark_plan_markdown",
     "render_differentiable_rust_python_inventory_markdown",
     "render_enzyme_mlir_compiler_ad_breadth_artifact_markdown",
+    "replay_whole_program",
     "resolve_aggregator_provider_route",
     "reverse_cos",
     "reverse_exp",
@@ -9664,6 +9683,7 @@
       "tests/test_eeg_benchmark_branches.py",
       "tests/test_eeg_classification.py",
       "tests/test_eeg_classification_validation.py",
+      "tests/test_effectful_ad_replay.py",
       "tests/test_effectful_program_semantics.py",
       "tests/test_enaqt.py",
       "tests/test_enaqt_evidence.py",

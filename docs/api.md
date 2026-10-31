@@ -1385,6 +1385,10 @@ value_and_grad(objective, values, parameters=None, method="parameter_shift", rul
 whole_program_value_and_grad(objective, values, parameters=None, trace=True) -> WholeProgramADResult
 compile_whole_program_frontend(objective) -> WholeProgramCompilerFrontendReport
 whole_program_grad(objective, values, parameters=None, trace=True) -> np.ndarray
+capture_whole_program_replay(result) -> WholeProgramReplayRecord
+replay_whole_program(record, objective, *, max_execution_gib=None, deadline_monotonic=None, cancelled=None) -> WholeProgramReplayReport
+WholeProgramReplayRecord.to_json() -> str
+WholeProgramReplayRecord.from_json(text) -> WholeProgramReplayRecord
 vmap(function, in_axes=0, out_axes=0) -> callable
 batch_parameter_shift_gradient(objectives, values, parameters=None, rule=None) -> np.ndarray
 batch_value_and_parameter_shift_grad(objectives, values, parameters=None, rule=None) -> tuple[GradientResult, ...]

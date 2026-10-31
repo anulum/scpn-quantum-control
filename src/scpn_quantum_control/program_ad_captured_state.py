@@ -12,6 +12,12 @@ the current state at derivative access; it does not lock caller-owned containers
 or detect a mutation that was completely reverted between observations.
 The snapshot bounds count actual encoded UTF-8 bytes and refuse an oversized
 payload before copying it into fingerprint storage.
+
+The live binding identifies shared objects and code by their addresses, which
+only mean something inside one process. A portable digest of the same traversal
+numbers shared objects in first-visit order and hashes code by its content,
+without its file path or line table, so a saved program can be checked again in
+a later process running the same interpreter.
 """
 
 from __future__ import annotations
@@ -60,6 +66,16 @@ _NUMPY_CALLABLES = tuple(
 )
 _NUMPY_CALLABLE_IDS = frozenset(id(value) for value in _NUMPY_CALLABLES)
 _NO_BATCHING_TRANSFORM = object()
+
+
+def _portable_ordinal_bytes() -> int:
+    """Measure the first-visit numbering table at its node limit, once at import."""
+    address = (1 << (8 * struct.calcsize("P"))) - 1
+    table = sys.getsizeof(dict.fromkeys(range(_MAX_NODES), 0))
+    return table + _MAX_NODES * (sys.getsizeof(address) + sys.getsizeof(_MAX_NODES))
+
+
+_PORTABLE_ORDINAL_BYTES = _portable_ordinal_bytes()
 
 
 def _batching_transform() -> object:
@@ -141,18 +157,45 @@ def _capture_program_state(
     return _CapturedProgramState(objective, digest, code_references)
 
 
+def _portable_program_state_digest(
+    objective: Callable[..., object], checkpoint: Callable[[], None] | None = None
+) -> bytes | None:
+    """Return the process-independent captured-state digest, or ``None`` if unsupported.
+
+    It covers the same callable, closure, default, global and numeric storage as
+    the live binding. Shared objects are numbered in first-visit order and code
+    is hashed by its instructions, names, flags and constants, so the digest is
+    stable across processes of the same interpreter but changes whenever the
+    captured numeric state, the aliasing between captured objects or the code
+    itself changes.
+    """
+    digest, _ = _snapshot(objective, checkpoint, portable=True)
+    return digest
+
+
 def _snapshot(
-    objective: Callable[..., object], checkpoint: Callable[[], None] | None
+    objective: Callable[..., object],
+    checkpoint: Callable[[], None] | None,
+    *,
+    portable: bool = False,
 ) -> tuple[bytes | None, tuple[CodeType, ...]]:
-    plan = ExecutionMemoryPlan(
-        (
-            ExecutionBuffer(
-                "captured_state_digest", "intermediate", (_CAPTURED_STATE_DIGEST_BYTES,), "uint8"
-            ),
+    buffers = [
+        ExecutionBuffer(
+            "captured_state_digest", "intermediate", (_CAPTURED_STATE_DIGEST_BYTES,), "uint8"
         )
-    )
+    ]
+    if portable:
+        buffers.append(
+            ExecutionBuffer(
+                "captured_state_portable_ordinals",
+                "intermediate",
+                (_PORTABLE_ORDINAL_BYTES,),
+                "uint8",
+            )
+        )
+    plan = ExecutionMemoryPlan(tuple(buffers))
     with reserve_execution_memory(plan) as reservation:
-        fingerprint = _Fingerprint(checkpoint, reservation)
+        fingerprint = _Fingerprint(checkpoint, reservation, portable=portable)
         supported = True
         try:
             fingerprint.visit(objective, 0, ())
@@ -179,12 +222,15 @@ class _Fingerprint:
         "code_references",
         "bytes",
         "nodes",
+        "ordinals",
     )
 
     def __init__(
         self,
         checkpoint: Callable[[], None] | None,
         reservation: ExecutionMemoryReservation,
+        *,
+        portable: bool = False,
     ) -> None:
         self.hash = hashlib.sha256()
         self.checkpoint = checkpoint
@@ -200,6 +246,67 @@ class _Fingerprint:
         self.code_references: list[CodeType] = []
         self.bytes = 0
         self.nodes = 0
+        self.ordinals: dict[int, int] | None = {} if portable else None
+
+    def identity(self, identity: int) -> bytes:
+        """Name a shared object by address, or by first-visit order when portable."""
+        if self.ordinals is None:
+            return str(identity).encode("ascii")
+        ordinal = self.ordinals.setdefault(identity, len(self.ordinals))
+        return b"#" + str(ordinal).encode("ascii")
+
+    def code_identity(self, function: FunctionType) -> None:
+        """Bind library code by address, or by its qualified name when portable."""
+        if self.ordinals is None:
+            self.add(str(id(function.__code__)).encode("ascii"))
+        else:
+            self.add(f"{function.__module__}:{function.__qualname__}".encode())
+
+    def code_content(self, code: CodeType, depth: int) -> None:
+        """Hash code instructions, names, flags and constants, without location.
+
+        Constant nesting was already bounded when ``memory.code`` admitted this
+        code; scalar constants still pass through ``visit`` and its depth limit.
+        """
+        self.add(b"code")
+        self.add(code.co_code)
+        self.add(code.co_exceptiontable)
+        self.add(code.co_qualname.encode("utf-8", errors="surrogatepass"))
+        self.add(
+            struct.pack(
+                "!4Q",
+                code.co_argcount,
+                code.co_posonlyargcount,
+                code.co_kwonlyargcount,
+                code.co_flags,
+            )
+        )
+        for names in (code.co_names, code.co_varnames, code.co_freevars, code.co_cellvars):
+            self.add(str(len(names)).encode("ascii"))
+            for name in names:
+                self.add(name.encode("utf-8", errors="surrogatepass"))
+        self.add(str(len(code.co_consts)).encode("ascii"))
+        for value in code.co_consts:
+            self.constant(value, depth + 1)
+
+    def constant(self, value: object, depth: int) -> None:
+        """Hash one compiler constant; set members are ordered by type and text."""
+        kind = type(value)
+        if kind is CodeType:
+            self.code_content(typing.cast(CodeType, value), depth)
+        elif kind is tuple or kind is frozenset:
+            items = typing.cast(tuple[object, ...] | frozenset[object], value)
+            ordered = (
+                tuple(items)
+                if kind is tuple
+                else tuple(sorted(items, key=lambda item: (type(item).__name__, repr(item))))
+            )
+            self.add(b"const-tuple" if kind is tuple else b"const-frozenset")
+            self.add(str(len(ordered)).encode("ascii"))
+            for item in ordered:
+                self.constant(item, depth + 1)
+        else:
+            self.visit(value, depth, ())
 
     def add(self, value: bytes) -> None:
         """Hash a length-delimited payload within the snapshot byte limit."""
@@ -293,7 +400,7 @@ class _Fingerprint:
     def aggregate(self, value: object, depth: int, module_names: tuple[str, ...]) -> None:
         """Fingerprint supported storage and references at the current depth."""
         identity = id(value)
-        self.add(str(identity).encode("ascii"))
+        self.add(self.identity(identity))
         kind = type(value)
         if kind is ModuleType:
             self.memory.scope(len(self.module_scopes) + 1)
@@ -314,7 +421,7 @@ class _Fingerprint:
                 function = typing.cast(FunctionType, value)
                 self.memory.reference(len(self.code_references) + 1)
                 self.code_references.append(function.__code__)
-                self.add(str(id(function.__code__)).encode("ascii"))
+                self.code_identity(function)
         elif value is _batching_transform():
             # The package's own transform is bound by identity and code, like a
             # native callable; its module state is not captured program state.
@@ -322,7 +429,7 @@ class _Fingerprint:
             self.add(b"batching-transform")
             self.memory.reference(len(self.code_references) + 1)
             self.code_references.append(transform.__code__)
-            self.add(str(id(transform.__code__)).encode("ascii"))
+            self.code_identity(transform)
         elif kind is list or kind is tuple:
             items = typing.cast(list[object] | tuple[object, ...], value)
             if len(items) > _MAX_NODES:
@@ -394,7 +501,9 @@ class _Fingerprint:
         self.memory.reference(len(self.code_references) + 1)
         self.code_references.append(function.__code__)
         self.add(b"function")
-        self.add(str(id(function.__code__)).encode("ascii"))
+        code_owner: FunctionType = function
+        if self.ordinals is None or code_owner is typing.cast:
+            self.code_identity(code_owner)
         if function is typing.cast:
             return
         if len(function.__code__.co_code) > _MAX_NODES * 16:
@@ -406,6 +515,8 @@ class _Fingerprint:
         if len(names) > _MAX_NODES:
             raise _UnsupportedState("captured callable exceeds the bounded snapshot")
         self.memory.code(function.__code__, depth)
+        if self.ordinals is not None:
+            self.code_content(function.__code__, depth + 1)
         for name, cell in zip(
             function.__code__.co_freevars, function.__closure__ or (), strict=True
         ):

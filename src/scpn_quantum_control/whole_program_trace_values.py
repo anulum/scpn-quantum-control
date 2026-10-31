@@ -359,10 +359,19 @@ class TraceADScalar:
 
     def _compare(self, op: str, other: object) -> _TracePredicate:
         rhs = self._coerce(other)
-        if op in {"gt", "ge", "lt", "le"} and self.primal == rhs.primal:
-            raise ValueError(
-                "whole-program AD ordering predicate is non-differentiable at equality"
-            )
+        if self.primal == rhs.primal:
+            if op in {"gt", "ge", "lt", "le"}:
+                raise ValueError(
+                    "whole-program AD ordering predicate is non-differentiable at equality"
+                )
+            # Equal primals put an equality test on its switching surface, where
+            # neither branch-local derivative describes the program. Only a value
+            # compared with itself is constant and stays admitted.
+            if self.name != rhs.name:
+                raise ValueError(
+                    "whole-program AD equality predicate is non-differentiable on its "
+                    "switching surface"
+                )
         comparisons = {
             "gt": self.primal > rhs.primal,
             "ge": self.primal >= rhs.primal,
@@ -391,19 +400,13 @@ class TraceADScalar:
 
     # Equality intentionally returns a traced predicate instead of ``bool``.
     def __eq__(self, other: object) -> _TracePredicate:  # type: ignore[override]
-        """Return the traced equality predicate."""
-        rhs = self._coerce(other)
-        return _TracePredicate(
-            self.primal == rhs.primal, self.context, f"{self.name}:eq:{rhs.name}"
-        )
+        """Return the traced equality predicate away from its switching surface."""
+        return self._compare("eq", other)
 
     # Inequality intentionally returns a traced predicate instead of ``bool``.
     def __ne__(self, other: object) -> _TracePredicate:  # type: ignore[override]
-        """Return the traced inequality predicate."""
-        rhs = self._coerce(other)
-        return _TracePredicate(
-            self.primal != rhs.primal, self.context, f"{self.name}:ne:{rhs.name}"
-        )
+        """Return the traced inequality predicate away from its switching surface."""
+        return self._compare("ne", other)
 
     def __array_ufunc__(
         self, ufunc: np.ufunc, method: str, *inputs: object, **kwargs: object

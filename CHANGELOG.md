@@ -4,6 +4,17 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Save and replay differentiated whole programs:
+  - `capture_whole_program_replay` records the effect-IR digest, a captured-state
+    digest that stays stable across processes, the effect history, the transform
+    plan and exact float64 numbers in a versioned record;
+  - `replay_whole_program` refuses changed closures, globals, defaults, aliasing
+    or code before running the objective, and names every field that disagrees.
+
+  Equality predicates (`==`, `!=`, including `np.where` selections) now refuse
+  on their switching surface instead of returning a one-sided derivative, as
+  ordering predicates already did.
+
 - Keep the derivative of a discretised ODE solver apart from the continuous
   sensitivity:
   - `rk4_forward_sensitivity` differentiates the fixed-step RK4 map exactly;

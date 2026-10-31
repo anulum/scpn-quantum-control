@@ -243,6 +243,15 @@ recovers access. Numerical Rust inputs require typed/wire correspondence; see
 [runtime IR and derivative correspondence](differentiable_programming.md#runtime-ir-and-derivative-correspondence).
 
 
+A runtime result can also be saved as a versioned replay record. The record
+binds the program graph, a process-independent captured-state digest, the
+effect history, the transform plan and the exact numbers. Replaying it refuses
+changed state before execution and names every field that disagrees. See
+[saved-program replay](differentiable_programming.md#saved-program-replay).
+Equality and ordering predicates evaluated on their switching surface refuse
+instead of returning a one-sided derivative; see
+[switching surfaces](differentiable_programming.md#switching-surfaces).
+
 Frontend reports retain nested code provenance without process memory addresses.
 See [Frontend report reproducibility](differentiable_programming.md#frontend-report-reproducibility)
 for how nested code constants contribute to reproducible reports.

@@ -430,6 +430,7 @@
         "tests/test_dynamical_lie_algebra.py",
         "tests/test_dynamical_lie_algebra_contracts.py",
         "tests/test_eeg_benchmark.py",
+        "tests/test_effectful_ad_replay.py",
         "tests/test_effectful_program_semantics.py",
         "tests/test_entanglement_entropy.py",
         "tests/test_entanglement_percolation.py",

@@ -929,6 +929,15 @@ if TYPE_CHECKING:
         spike_trace_correlation_distance,
         validate_topology_hardware_manifest,
     )
+    from .whole_program_ad_api import (
+        WHOLE_PROGRAM_REPLAY_RANDOMNESS,
+        WHOLE_PROGRAM_REPLAY_SCHEMA,
+        WholeProgramReplayMismatchError,
+        WholeProgramReplayRecord,
+        WholeProgramReplayReport,
+        capture_whole_program_replay,
+        replay_whole_program,
+    )
     from .wirtinger_calculus import (
         EigenpairDerivative,
         SpectralDegeneracyError,
@@ -3502,6 +3511,31 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
         "scpn_quantum_control.wirtinger_calculus",
         "spectral_projector_derivative",
     ),
+    "WHOLE_PROGRAM_REPLAY_RANDOMNESS": (
+        "scpn_quantum_control.whole_program_ad_api",
+        "WHOLE_PROGRAM_REPLAY_RANDOMNESS",
+    ),
+    "WHOLE_PROGRAM_REPLAY_SCHEMA": (
+        "scpn_quantum_control.whole_program_ad_api",
+        "WHOLE_PROGRAM_REPLAY_SCHEMA",
+    ),
+    "WholeProgramReplayMismatchError": (
+        "scpn_quantum_control.whole_program_ad_api",
+        "WholeProgramReplayMismatchError",
+    ),
+    "WholeProgramReplayRecord": (
+        "scpn_quantum_control.whole_program_ad_api",
+        "WholeProgramReplayRecord",
+    ),
+    "WholeProgramReplayReport": (
+        "scpn_quantum_control.whole_program_ad_api",
+        "WholeProgramReplayReport",
+    ),
+    "capture_whole_program_replay": (
+        "scpn_quantum_control.whole_program_ad_api",
+        "capture_whole_program_replay",
+    ),
+    "replay_whole_program": ("scpn_quantum_control.whole_program_ad_api", "replay_whole_program"),
 }
 
 
@@ -3599,6 +3633,13 @@ __all__ = [
     "real_block_gradient",
     "real_block_jacobian",
     "spectral_projector_derivative",
+    "WHOLE_PROGRAM_REPLAY_RANDOMNESS",
+    "WHOLE_PROGRAM_REPLAY_SCHEMA",
+    "WholeProgramReplayMismatchError",
+    "WholeProgramReplayRecord",
+    "WholeProgramReplayReport",
+    "capture_whole_program_replay",
+    "replay_whole_program",
     "Problem",
     "Backend",
     "Experiment",

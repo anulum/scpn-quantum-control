@@ -371,6 +371,77 @@ The cap covers declared buffers and inspection storage. General allocator
 overhead and undeclared user or third-party allocations remain outside that
 accounting.
 
+## Saved-program replay
+
+The live binding above only lasts as long as the process. To check the same
+program later, `capture_whole_program_replay(result)` saves a
+`WholeProgramReplayRecord` (schema `whole_program_replay_record.v1`). The
+record binds:
+
+- **Program graph:** the SHA-256 of the `program_ad_effect_ir.v1` serialization.
+  The IR is structural, so it also fixes which branches ran.
+- **Captured state:** a process-independent digest of the callable and
+  everything it captures, namely closures, defaults, the globals it reads, and
+  the numeric storage reached from them. Shared objects are numbered in
+  first-visit order, so aliasing is part of the digest. Code is hashed by its
+  instructions, names, flags and constants, but not by its file path or line
+  numbers.
+- **Effect history:** the ordered `(kind, operation)` pairs of the IR.
+- **Transform plan:** parameter names and order, the trainable mask, the trace
+  flag, and the number of reverse-adjoint steps. The step count is `None` when
+  the program has no supported reverse adjoint and only forward mode applies.
+- **Runtime:** the interpreter cache tag and the NumPy version.
+- **Exact numbers:** parameter values, value and gradient, stored as 16-digit
+  IEEE-754 hex.
+
+Randomness is bound by refusal. Ambient and generator draws inside the
+objective are rejected before execution, and the generator state is left
+untouched. Random values can therefore enter only as parameters or captured
+numeric state, and both are covered by the record.
+
+`to_json()` writes the record together with its canonical digest.
+`WholeProgramReplayRecord.from_json()` refuses an unknown schema version,
+missing or extra keys, a float that is not 16 hex digits, a non-finite value,
+or a digest that no longer matches the content.
+
+`replay_whole_program(record, objective)` checks the runtime and the
+objective's captured-state digest before the objective runs. A changed closure
+value, global, default, aliasing pattern or code raises
+`WholeProgramReplayMismatchError` with `fields == ("captured_state_sha256",)`,
+without executing the objective. If the state matches, the program is
+differentiated again at the saved parameter values. The graph, effects and
+plan must then be identical. The value, the forward gradient and the replayed
+reverse-adjoint step stream must agree with the saved numbers within
+`1e-10 + 1e-8*|saved|`. Every disagreement is named in `fields`.
+`WholeProgramReplayReport` returns the new record and the observed errors.
+
+Limits:
+
+- A record is only comparable within one interpreter version and one NumPy
+  version.
+- A mutation that was reverted before the replay is not detected, because the
+  digest identifies content, not history.
+- The portable digest also hashes code constants. A capture that fits the live
+  snapshot limit can therefore exceed the portable one, and it is refused with
+  "no portable encoding".
+
+## Switching surfaces
+
+Executed-branch derivatives are local to one branch. At a point where a
+predicate changes value, no single branch slope describes the program, so the
+runtime refuses rather than returning a one-sided derivative:
+
+- **Ordering predicates** (`>`, `>=`, `<`, `<=`) refuse at equal operands.
+- **Equality predicates** (`==`, `!=`) refuse at equal operands too, for
+  scalars and for elementwise selections such as `np.where(x == c, …)`.
+  A value compared with itself is constant and stays admitted.
+- **`abs`, `maximum` and `minimum`** refuse at their kinks.
+- **`float()` and `math.*` conversions** of a traced value refuse, because
+  they would drop the derivative.
+
+Comparisons that involve a frozen (non-trainable) parameter follow the same
+equality rule.
+
 ## Evidence Promotion Lane
 
 The differentiable Phase-QNode lane is a promotion candidate until the committed claim

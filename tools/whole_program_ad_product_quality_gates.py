@@ -18,6 +18,7 @@ WHOLE_PROGRAM_AD_PRODUCT_QUALITY_RATCHET = [
     "tests/test_whole_program_ad_product.py",
     "tests/test_whole_program_ad_contracts.py",
     "tests/test_whole_program_ad_runtime.py",
+    "tests/test_effectful_ad_replay.py",
     "tools/whole_program_ad_product_quality_gates.py",
     "tests/test_whole_program_ad_product_quality_gate.py",
 ]
@@ -27,6 +28,7 @@ WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_COHORT = [
     "tests/test_whole_program_ad_contracts.py",
     "tests/test_whole_program_ad_runtime.py",
     "tests/test_whole_program_frontend.py",
+    "tests/test_effectful_ad_replay.py",
 ]
 """Tests that own exact whole-program AD product coverage."""
 WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_DATA_FILE = (

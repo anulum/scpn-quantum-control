@@ -28,6 +28,7 @@ PROGRAM_AD_CAPTURED_SOURCES = [
 ]
 PROGRAM_AD_CAPTURED_TESTS = [
     "tests/test_effectful_program_semantics.py",
+    "tests/test_effectful_ad_replay.py",
     "tests/test_program_ad_captured_state.py",
     "tests/test_program_ad_captured_memory.py",
     "tests/test_program_ad_tape_binding.py",

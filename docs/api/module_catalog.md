@@ -5,8 +5,8 @@ module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
 - **847 modules** across **41 package families**
-- **4566 documented public module-level symbols**
-- **859 root-package exports** governed by the stable API surface
+- **4571 documented public module-level symbols**
+- **866 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
 the [API selection guide](../api.md) and [stable facades](../stable_facades_api.md).
@@ -7659,9 +7659,11 @@ Fail-closed **fixture-driven visualisation dashboard** product.
 
 Public whole-program automatic differentiation entry points.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/whole_program_ad_api.py) · Public symbols: **2**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/whole_program_ad_api.py) · Public symbols: **7**
 
-**Functions:** `whole_program_value_and_grad()`, `whole_program_grad()`
+**Classes:** `WholeProgramReplayMismatchError`, `WholeProgramReplayRecord`, `WholeProgramReplayReport`
+
+**Functions:** `whole_program_value_and_grad()`, `whole_program_grad()`, `capture_whole_program_replay()`, `replay_whole_program()`
 
 ### `scpn_quantum_control.whole_program_ad_product`
 
