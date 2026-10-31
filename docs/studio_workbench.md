@@ -60,7 +60,7 @@ Hash addresses work on static hosting without server rewrite rules:
 | Workspace | `#/workspace` (also the empty address) |
 | Model | `#/build` or `#/build/compile-recompute` |
 | Run | `#/experiments` or `#/experiments/local-jobs` |
-| Analyse | `#/results`, `#/results/program-ad-replay`, `#/results/gradient-debugger`, `#/results/qec-resources` or `#/results/mitigation` |
+| Analyse | `#/results`, `#/results/program-ad-replay`, `#/results/gradient-debugger`, `#/results/qec-resources`, `#/results/mitigation` or `#/results/pulses` |
 | Compare | `#/compare` |
 | Evidence | `#/evidence` |
 | Atlas | `#/atlas` |
@@ -814,6 +814,45 @@ that claims a full confusion matrix refuses the whole instrument.
 
 - Regenerate it with
   `python -m scpn_quantum_control.studio.mitigation_instrument_artifact --write`.
+- `--check` compares it with a fresh build, numbers within
+  `|actual − reference| ≤ 1e-10 + 1e-8·|reference|` and everything else
+  exactly.
+
+## Pulse feasibility
+
+Open **Analyse**, or search for **Open pulse feasibility**, to reach the
+instrument at `#/results/pulses`. Each design is a set of pulses in seconds and
+rad/s, checked by `assess_pulse_design` against declared limits: the sample
+period, the start and duration grid, the conversion from rate to native
+amplitude, the largest amplitude and amplitude step, and the coupling map. The
+browser chooses among source values and computes none of them.
+
+- **Design and placement.** A timeline shows each pulse on its drive or coupler
+  lane, and tables list the pulses (start, duration and rates) and the
+  logical-to-physical placement. The limits are shown in their own units.
+- **Violations at their source.** Every violation keeps the owner's code and
+  text and the pulse or channel it names; that pulse is marked on the timeline.
+  The cases include a start half a grid step off and a segment above the
+  amplitude limit, and a coupler between qubits the coupling map does not join.
+- **Native pulses.** Only a feasible design lists its native pulses: channel,
+  physical qubits, start sample and sample count.
+- **Dated capability snapshots.** Limits can be copied from a provider snapshot
+  with an observation and an expiry time. Validity is decided at the fixed
+  assessment time; an expired snapshot refuses the dossier even for a feasible
+  design.
+- **No-submit dossier.** **Download no-submit dossier** saves the owner's export
+  of a feasible design with a current snapshot. It records zero submissions, no
+  hardware submission and no device authority. Design units never make a
+  schedule executable: there is no submit or run control, and every case says so.
+
+The data lives in `data/studio/pulse_instrument_20261031.json`. A case or
+dossier that submits or claims device authority, a feasibility flag that
+disagrees with the violations, native pulses for an infeasible design, or a
+dossier for an infeasible design or an expired snapshot refuses the whole
+instrument.
+
+- Regenerate it with
+  `python -m scpn_quantum_control.studio.pulse_instrument_artifact --write`.
 - `--check` compares it with a fresh build, numbers within
   `|actual − reference| ≤ 1e-10 + 1e-8·|reference|` and everything else
   exactly.

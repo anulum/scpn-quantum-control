@@ -46,6 +46,7 @@ def test_coverage_gate_is_isolated_public_and_exact() -> None:
         "readout_mitigation_bundle.py",
         "mitigation_instrument_artifact.py",
         "committed_data.py",
+        "pulse_instrument_artifact.py",
     ):
         assert (
             f"*/studio/{source}" in quality_gates.STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_INCLUDE
@@ -76,6 +77,7 @@ def test_ci_runs_and_aggregates_studio_readout_mitigation_gate() -> None:
     assert quality_gates.STUDIO_READOUT_MITIGATION_BUNDLE_SOURCE in block
     assert quality_gates.STUDIO_MITIGATION_INSTRUMENT_SOURCE in block
     assert quality_gates.STUDIO_COMMITTED_DATA_SOURCE in block
+    assert quality_gates.STUDIO_PULSE_INSTRUMENT_SOURCE in block
     for test in quality_gates.STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_COHORT:
         assert test in block
     assert (

@@ -4,6 +4,18 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Inspect pulse and analog feasibility in Studio: Analyse gains a pulse
+  feasibility instrument at `#/results/pulses`.
+  - Designs in seconds and rad/s are shown on drive and coupler lanes with
+    their placement and limits; every violation keeps its code and marks the
+    pulse it names.
+  - Limits copied from a dated provider snapshot are valid only at an
+    assessment time before its expiry; an expired snapshot refuses the dossier.
+  - A feasible design offers a no-submit dossier (zero submissions, no device
+    authority); there is no control that submits or runs a schedule.
+  - Every value comes from `data/studio/pulse_instrument_20261031.json`, built
+    by `python -m scpn_quantum_control.studio.pulse_instrument_artifact`.
+
 - Run local Studio jobs that outlive the browser: an optional loopback job
   service (`python -m scpn_quantum_control.studio_workspace.jobs.service`)
   and a **Local job service** panel in Run (`#/experiments/local-jobs`).

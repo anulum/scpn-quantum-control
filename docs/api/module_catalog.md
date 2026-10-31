@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **854 modules** across **41 package families**
-- **4618 documented public module-level symbols**
+- **855 modules** across **41 package families**
+- **4621 documented public module-level symbols**
 - **875 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -5592,6 +5592,16 @@ Project original durable provider evidence for Studio without a provider call.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/provider_observations.py) · Public symbols: **1**
 
 **Functions:** `export_provider_observation()`
+
+### `scpn_quantum_control.studio.pulse_instrument_artifact`
+
+Build, write and check the data the Studio pulse instrument shows.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/pulse_instrument_artifact.py) · Public symbols: **3**
+
+**Classes:** `PulseCase`
+
+**Functions:** `build_pulse_instrument_artifact()`, `main()`
 
 ### `scpn_quantum_control.studio.qec_readiness_bundle`
 

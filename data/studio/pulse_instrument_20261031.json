@@ -1,0 +1,983 @@
+{
+  "artifact_id": "studio-pulse-instrument-20261031",
+  "assessed_at": "2026-10-31T12:00:00Z",
+  "cases": [
+    {
+      "case_id": "feasible-design",
+      "design": [
+        {
+          "duration_seconds": 6.4e-08,
+          "index": 0,
+          "qubits": [
+            0
+          ],
+          "rates_rad_per_second": [
+            20000000.0,
+            40000000.0,
+            40000000.0,
+            20000000.0
+          ],
+          "start_seconds": 0.0
+        },
+        {
+          "duration_seconds": 4.8e-08,
+          "index": 1,
+          "qubits": [
+            1
+          ],
+          "rates_rad_per_second": [
+            30000000.0
+          ],
+          "start_seconds": 1.6e-08
+        },
+        {
+          "duration_seconds": 3.2e-08,
+          "index": 2,
+          "qubits": [
+            0,
+            1
+          ],
+          "rates_rad_per_second": [
+            10000000.0
+          ],
+          "start_seconds": 9.6e-08
+        }
+      ],
+      "device_authority": false,
+      "dossier": {
+        "claim_boundary": "design feasibility only: timing grid, amplitude, slew and connectivity were checked against the declared limits; this is not a device-executable or calibrated physical-control schedule and confers no submission authority",
+        "device_authority": false,
+        "dt": 2e-09,
+        "hardware_submission": false,
+        "limits": {
+          "coupler_rate_per_amplitude": 20000000.0,
+          "coupling_map": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              2
+            ]
+          ],
+          "granularity": 4,
+          "max_amplitude": 1.0,
+          "max_slew": 0.6,
+          "n_qubits": 3,
+          "rabi_rate_per_amplitude": 100000000.0
+        },
+        "limits_source": "design",
+        "provider_snapshot": null,
+        "pulses": [
+          {
+            "channel": "d0",
+            "physical_qubits": [
+              0
+            ],
+            "samples": [
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.4,
+              0.4,
+              0.4,
+              0.4,
+              0.4,
+              0.4,
+              0.4,
+              0.4,
+              0.4,
+              0.4,
+              0.4,
+              0.4,
+              0.4,
+              0.4,
+              0.4,
+              0.4,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2
+            ],
+            "t0": 0
+          },
+          {
+            "channel": "d1",
+            "physical_qubits": [
+              1
+            ],
+            "samples": [
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3
+            ],
+            "t0": 8
+          },
+          {
+            "channel": "u0_1",
+            "physical_qubits": [
+              0,
+              1
+            ],
+            "samples": [
+              0.5,
+              0.5,
+              0.5,
+              0.5,
+              0.5,
+              0.5,
+              0.5,
+              0.5,
+              0.5,
+              0.5,
+              0.5,
+              0.5,
+              0.5,
+              0.5,
+              0.5,
+              0.5
+            ],
+            "t0": 48
+          }
+        ],
+        "schema": "native_pulse_design_v1",
+        "submissions": 0
+      },
+      "dossier_refusal": null,
+      "feasible": true,
+      "hardware_submission": false,
+      "limits": {
+        "coupler_rate_per_amplitude": 20000000.0,
+        "coupling_map": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "dt_seconds": 2e-09,
+        "granularity_samples": 4,
+        "max_amplitude": 1.0,
+        "max_slew": 0.6,
+        "n_qubits": 3,
+        "rabi_rate_per_amplitude": 100000000.0,
+        "source": "design"
+      },
+      "native": [
+        {
+          "channel": "d0",
+          "physical_qubits": [
+            0
+          ],
+          "samples": [
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2
+          ],
+          "t0": 0
+        },
+        {
+          "channel": "d1",
+          "physical_qubits": [
+            1
+          ],
+          "samples": [
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3
+          ],
+          "t0": 8
+        },
+        {
+          "channel": "u0_1",
+          "physical_qubits": [
+            0,
+            1
+          ],
+          "samples": [
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5
+          ],
+          "t0": 48
+        }
+      ],
+      "placement": [
+        {
+          "logical": 0,
+          "physical": 0
+        },
+        {
+          "logical": 1,
+          "physical": 1
+        }
+      ],
+      "snapshot": null,
+      "title": "Two drives and a coupler on declared design limits export a no-submit dossier",
+      "violations": []
+    },
+    {
+      "case_id": "half-grid-and-over-amplitude",
+      "design": [
+        {
+          "duration_seconds": 6.4e-08,
+          "index": 0,
+          "qubits": [
+            0
+          ],
+          "rates_rad_per_second": [
+            20000000.0
+          ],
+          "start_seconds": 4e-09
+        },
+        {
+          "duration_seconds": 4.8e-08,
+          "index": 1,
+          "qubits": [
+            1
+          ],
+          "rates_rad_per_second": [
+            20000000.0,
+            150000000.0,
+            20000000.0
+          ],
+          "start_seconds": 0.0
+        }
+      ],
+      "device_authority": false,
+      "dossier": null,
+      "dossier_refusal": "the design has violations; only a feasible design is exported",
+      "feasible": false,
+      "hardware_submission": false,
+      "limits": {
+        "coupler_rate_per_amplitude": 20000000.0,
+        "coupling_map": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "dt_seconds": 2e-09,
+        "granularity_samples": 4,
+        "max_amplitude": 1.0,
+        "max_slew": 0.6,
+        "n_qubits": 3,
+        "rabi_rate_per_amplitude": 100000000.0,
+        "source": "design"
+      },
+      "native": [],
+      "placement": [
+        {
+          "logical": 0,
+          "physical": 0
+        },
+        {
+          "logical": 1,
+          "physical": 1
+        }
+      ],
+      "snapshot": null,
+      "title": "A start half a grid step off and a segment above the amplitude limit are marked",
+      "violations": [
+        {
+          "channel": null,
+          "code": "off_grid",
+          "pulse": 0,
+          "text": "off_grid: pulse 0 start 2 and duration 32 samples are not multiples of 4"
+        },
+        {
+          "channel": null,
+          "code": "amplitude_over_limit",
+          "pulse": 1,
+          "text": "amplitude_over_limit: pulse 1 peak 1.5 exceeds 1"
+        },
+        {
+          "channel": null,
+          "code": "slew_over_limit",
+          "pulse": 1,
+          "text": "slew_over_limit: pulse 1 step 1.3 exceeds 0.6"
+        }
+      ]
+    },
+    {
+      "case_id": "disconnected-coupler",
+      "design": [
+        {
+          "duration_seconds": 3.2e-08,
+          "index": 0,
+          "qubits": [
+            0,
+            1
+          ],
+          "rates_rad_per_second": [
+            10000000.0
+          ],
+          "start_seconds": 0.0
+        }
+      ],
+      "device_authority": false,
+      "dossier": null,
+      "dossier_refusal": "the design has violations; only a feasible design is exported",
+      "feasible": false,
+      "hardware_submission": false,
+      "limits": {
+        "coupler_rate_per_amplitude": 20000000.0,
+        "coupling_map": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "dt_seconds": 2e-09,
+        "granularity_samples": 4,
+        "max_amplitude": 1.0,
+        "max_slew": 0.6,
+        "n_qubits": 3,
+        "rabi_rate_per_amplitude": 100000000.0,
+        "source": "design"
+      },
+      "native": [],
+      "placement": [
+        {
+          "logical": 0,
+          "physical": 0
+        },
+        {
+          "logical": 1,
+          "physical": 2
+        }
+      ],
+      "snapshot": null,
+      "title": "A coupler between qubits that the coupling map does not join is refused",
+      "violations": [
+        {
+          "channel": null,
+          "code": "disconnected_placement",
+          "pulse": 0,
+          "text": "disconnected_placement: pulse 0 physical [0, 2] is not coupled"
+        }
+      ]
+    },
+    {
+      "case_id": "current-snapshot",
+      "design": [
+        {
+          "duration_seconds": 6.4e-08,
+          "index": 0,
+          "qubits": [
+            0
+          ],
+          "rates_rad_per_second": [
+            20000000.0,
+            40000000.0,
+            40000000.0,
+            20000000.0
+          ],
+          "start_seconds": 0.0
+        },
+        {
+          "duration_seconds": 4.8e-08,
+          "index": 1,
+          "qubits": [
+            1
+          ],
+          "rates_rad_per_second": [
+            30000000.0
+          ],
+          "start_seconds": 1.6e-08
+        },
+        {
+          "duration_seconds": 3.2e-08,
+          "index": 2,
+          "qubits": [
+            0,
+            1
+          ],
+          "rates_rad_per_second": [
+            10000000.0
+          ],
+          "start_seconds": 9.6e-08
+        }
+      ],
+      "device_authority": false,
+      "dossier": {
+        "claim_boundary": "design feasibility only: timing grid, amplitude, slew and connectivity were checked against the declared limits; this is not a device-executable or calibrated physical-control schedule and confers no submission authority",
+        "device_authority": false,
+        "dt": 2e-09,
+        "hardware_submission": false,
+        "limits": {
+          "coupler_rate_per_amplitude": 20000000.0,
+          "coupling_map": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              2
+            ]
+          ],
+          "granularity": 4,
+          "max_amplitude": 1.0,
+          "max_slew": 0.6,
+          "n_qubits": 3,
+          "rabi_rate_per_amplitude": 100000000.0
+        },
+        "limits_source": "provider_metadata",
+        "provider_snapshot": {
+          "backend_name": "example-pulse-backend",
+          "provider": "example-provider"
+        },
+        "pulses": [
+          {
+            "channel": "d0",
+            "physical_qubits": [
+              0
+            ],
+            "samples": [
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.4,
+              0.4,
+              0.4,
+              0.4,
+              0.4,
+              0.4,
+              0.4,
+              0.4,
+              0.4,
+              0.4,
+              0.4,
+              0.4,
+              0.4,
+              0.4,
+              0.4,
+              0.4,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2
+            ],
+            "t0": 0
+          },
+          {
+            "channel": "d1",
+            "physical_qubits": [
+              1
+            ],
+            "samples": [
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3,
+              0.3
+            ],
+            "t0": 8
+          },
+          {
+            "channel": "u0_1",
+            "physical_qubits": [
+              0,
+              1
+            ],
+            "samples": [
+              0.5,
+              0.5,
+              0.5,
+              0.5,
+              0.5,
+              0.5,
+              0.5,
+              0.5,
+              0.5,
+              0.5,
+              0.5,
+              0.5,
+              0.5,
+              0.5,
+              0.5,
+              0.5
+            ],
+            "t0": 48
+          }
+        ],
+        "schema": "native_pulse_design_v1",
+        "submissions": 0
+      },
+      "dossier_refusal": null,
+      "feasible": true,
+      "hardware_submission": false,
+      "limits": {
+        "coupler_rate_per_amplitude": 20000000.0,
+        "coupling_map": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "dt_seconds": 2e-09,
+        "granularity_samples": 4,
+        "max_amplitude": 1.0,
+        "max_slew": 0.6,
+        "n_qubits": 3,
+        "rabi_rate_per_amplitude": 100000000.0,
+        "source": "provider_metadata"
+      },
+      "native": [
+        {
+          "channel": "d0",
+          "physical_qubits": [
+            0
+          ],
+          "samples": [
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2
+          ],
+          "t0": 0
+        },
+        {
+          "channel": "d1",
+          "physical_qubits": [
+            1
+          ],
+          "samples": [
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3
+          ],
+          "t0": 8
+        },
+        {
+          "channel": "u0_1",
+          "physical_qubits": [
+            0,
+            1
+          ],
+          "samples": [
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5
+          ],
+          "t0": 48
+        }
+      ],
+      "placement": [
+        {
+          "logical": 0,
+          "physical": 0
+        },
+        {
+          "logical": 1,
+          "physical": 1
+        }
+      ],
+      "snapshot": {
+        "backend_name": "example-pulse-backend",
+        "expires_at": "2026-11-30T09:00:00Z",
+        "max_pulse_duration_seconds": 4e-06,
+        "max_pulses": 8,
+        "observed_at": "2026-10-30T09:00:00Z",
+        "provider": "example-provider",
+        "valid_at_assessment": true
+      },
+      "title": "Limits copied from a capability snapshot valid at the assessment time",
+      "violations": []
+    },
+    {
+      "case_id": "expired-snapshot",
+      "design": [
+        {
+          "duration_seconds": 6.4e-08,
+          "index": 0,
+          "qubits": [
+            0
+          ],
+          "rates_rad_per_second": [
+            20000000.0,
+            40000000.0,
+            40000000.0,
+            20000000.0
+          ],
+          "start_seconds": 0.0
+        },
+        {
+          "duration_seconds": 4.8e-08,
+          "index": 1,
+          "qubits": [
+            1
+          ],
+          "rates_rad_per_second": [
+            30000000.0
+          ],
+          "start_seconds": 1.6e-08
+        },
+        {
+          "duration_seconds": 3.2e-08,
+          "index": 2,
+          "qubits": [
+            0,
+            1
+          ],
+          "rates_rad_per_second": [
+            10000000.0
+          ],
+          "start_seconds": 9.6e-08
+        }
+      ],
+      "device_authority": false,
+      "dossier": null,
+      "dossier_refusal": "the capability snapshot expired at 2026-10-30T21:00:00Z, before the assessment at 2026-10-31T12:00:00Z",
+      "feasible": true,
+      "hardware_submission": false,
+      "limits": {
+        "coupler_rate_per_amplitude": 20000000.0,
+        "coupling_map": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "dt_seconds": 2e-09,
+        "granularity_samples": 4,
+        "max_amplitude": 1.0,
+        "max_slew": 0.6,
+        "n_qubits": 3,
+        "rabi_rate_per_amplitude": 100000000.0,
+        "source": "provider_metadata"
+      },
+      "native": [
+        {
+          "channel": "d0",
+          "physical_qubits": [
+            0
+          ],
+          "samples": [
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.4,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2
+          ],
+          "t0": 0
+        },
+        {
+          "channel": "d1",
+          "physical_qubits": [
+            1
+          ],
+          "samples": [
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3,
+            0.3
+          ],
+          "t0": 8
+        },
+        {
+          "channel": "u0_1",
+          "physical_qubits": [
+            0,
+            1
+          ],
+          "samples": [
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5
+          ],
+          "t0": 48
+        }
+      ],
+      "placement": [
+        {
+          "logical": 0,
+          "physical": 0
+        },
+        {
+          "logical": 1,
+          "physical": 1
+        }
+      ],
+      "snapshot": {
+        "backend_name": "example-pulse-backend",
+        "expires_at": "2026-10-30T21:00:00Z",
+        "max_pulse_duration_seconds": 4e-06,
+        "max_pulses": 8,
+        "observed_at": "2026-10-30T09:00:00Z",
+        "provider": "example-provider",
+        "valid_at_assessment": false
+      },
+      "title": "The same design against a snapshot that expired before the assessment",
+      "violations": []
+    }
+  ],
+  "claim_boundary": "Stated designs checked against stated or snapshot-copied limits; a feasible design is a no-submit dossier in design units, not a device-executable or calibrated schedule, and no case contacts or authorises a provider",
+  "design_claim_boundary": "design feasibility only: timing grid, amplitude, slew and connectivity were checked against the declared limits; this is not a device-executable or calibrated physical-control schedule and confers no submission authority",
+  "generated_by": "python -m scpn_quantum_control.studio.pulse_instrument_artifact --write",
+  "schema": "scpn_qc_studio_pulse_instrument_v1"
+}

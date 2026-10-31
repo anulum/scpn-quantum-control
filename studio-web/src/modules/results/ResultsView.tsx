@@ -12,6 +12,8 @@ import { GradientDebugger } from "./GradientDebugger";
 import { gradientUnits } from "./gradientDebugger";
 import { MitigationInspector } from "./MitigationInspector";
 import { mitigationInstrument } from "./mitigationInstrument";
+import { PulseInspector } from "./PulseInspector";
+import { pulseInstrument } from "./pulseInstrument";
 import { QecInspector } from "./QecInspector";
 import { qecInstrument } from "./qecInstrument";
 import { ResultLoader } from "./ResultLoader";
@@ -31,6 +33,7 @@ export default function ResultsView({
   focusGradientDebugger = false,
   focusQecInstrument = false,
   focusMitigationInstrument = false,
+  focusPulseInstrument = false,
   plan = null,
   outcome = null,
   editors,
@@ -43,6 +46,8 @@ export default function ResultsView({
   focusQecInstrument?: boolean;
   /** Focus the mitigation and readout instrument after this lazy module has mounted. */
   focusMitigationInstrument?: boolean;
+  /** Focus the pulse feasibility instrument after this lazy module has mounted. */
+  focusPulseInstrument?: boolean;
   /** Registered comparison and inspection controls supplied by the shell slot. */
   editors?: ReactNode;
 }) {
@@ -50,6 +55,7 @@ export default function ResultsView({
   const debugger_ = useRef<HTMLDivElement>(null);
   const qec = useRef<HTMLDivElement>(null);
   const mitigation = useRef<HTMLDivElement>(null);
+  const pulses = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (focusInstrument && target.current !== null) target.current.focus();
   }, [focusInstrument]);
@@ -62,6 +68,9 @@ export default function ResultsView({
   useEffect(() => {
     if (focusMitigationInstrument && mitigation.current !== null) mitigation.current.focus();
   }, [focusMitigationInstrument]);
+  useEffect(() => {
+    if (focusPulseInstrument && pulses.current !== null) pulses.current.focus();
+  }, [focusPulseInstrument]);
   return (
     <article className="qsp-panel">
       <h3>Analyse</h3>
@@ -89,6 +98,9 @@ export default function ResultsView({
       </div>
       <div id="/results/mitigation" tabIndex={-1} ref={mitigation}>
         <MitigationInspector instrument={mitigationInstrument} />
+      </div>
+      <div id="/results/pulses" tabIndex={-1} ref={pulses}>
+        <PulseInspector instrument={pulseInstrument} />
       </div>
       <EvidenceViewer />
       {supportMatrix.ok ? (

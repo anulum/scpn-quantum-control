@@ -27,13 +27,20 @@ export const resultsModule: StudioModule<Services, WorkspaceViewServices, "resul
       id: "results" as const,
       label: "Analyse",
       group: "primary",
-      instruments: ["program-ad-replay", "gradient-debugger", "qec-resources", "mitigation"],
+      instruments: [
+        "program-ad-replay",
+        "gradient-debugger",
+        "qec-resources",
+        "mitigation",
+        "pulses",
+      ],
       render: (services: Services, instrument: string | null) => (
         <ResultsView
           focusInstrument={instrument === "program-ad-replay"}
           focusGradientDebugger={instrument === "gradient-debugger"}
           focusQecInstrument={instrument === "qec-resources"}
           focusMitigationInstrument={instrument === "mitigation"}
+          focusPulseInstrument={instrument === "pulses"}
           plan={services.experiment.plan}
           outcome={services.experiment.outcome}
           editors={services.renderEditors("results")}
@@ -61,6 +68,11 @@ export const resultsModule: StudioModule<Services, WorkspaceViewServices, "resul
       id: "open-mitigation",
       label: "Open mitigation and readout",
       action: { kind: "navigate", stage: "results", instrument: "mitigation" },
+    },
+    {
+      id: "open-pulses",
+      label: "Open pulse feasibility",
+      action: { kind: "navigate", stage: "results", instrument: "pulses" },
     },
   ],
 };

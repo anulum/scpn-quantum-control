@@ -47,6 +47,7 @@ describe("workbenchRegistry", () => {
       ["/results/gradient-debugger", "results", "gradient-debugger"],
       ["/results/qec-resources", "results", "qec-resources"],
       ["/results/mitigation", "results", "mitigation"],
+      ["/results/pulses", "results", "pulses"],
       ["/compare", "compare", null],
       ["/evidence", "evidence", null],
       ["/atlas", "atlas", null],
