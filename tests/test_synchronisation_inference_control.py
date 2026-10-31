@@ -9,8 +9,11 @@
 
 Oracles: synthetic two-oscillator ground truth, a phase-locked observation whose
 unidentified direction follows from the design, an RK4 integration written here,
-and held-out plant disturbances the control was never designed for. Nothing here
-supports a biological or plant efficacy claim.
+and held-out plant disturbances the control was never designed for. The control
+is a fixed detuning, not an optimiser output: gradient descent on this
+non-convex objective takes different paths on numerically equivalent kernels, so
+its result is not a stable oracle. Nothing here supports a biological or plant
+efficacy claim.
 """
 
 from __future__ import annotations
@@ -23,7 +26,6 @@ from oscillatools.accel.kuramoto_bayesian_inference import infer_network_bayesia
 from oscillatools.accel.kuramoto_network_control import (
     ControlDisturbance,
     evaluate_control_under_disturbances,
-    optimise_network_control,
 )
 
 _DT = 0.01
@@ -117,21 +119,13 @@ _STEP = 0.05
 _PHASES = np.array([0.0, 0.4, 0.9, 1.3])
 _OMEGA = np.array([0.1, -0.05, 0.02, -0.08])
 _COUPLING = np.full((4, 4), 0.5) - 0.5 * np.eye(4)
+# Constant frequency offsets of spread 3 against pair coupling 0.5 push the phases apart.
+_DETUNING = np.tile(np.array([1.5, 0.5, -0.5, -1.5]), (80, 1))
 
 
 def test_synchronisation_inference_control_03_held_out_disturbances_report_losing_cases() -> None:
     """A desynchronising control keeps its amplitude bound on every plant and names its losses."""
-    control, history = optimise_network_control(
-        _PHASES,
-        _OMEGA,
-        _COUPLING,
-        _STEP,
-        80,
-        control_weight=0.01,
-        learning_rate=5.0,
-        n_iterations=400,
-    )
-    assert history[-1] < 0.5 * history[0]
+    control = _DETUNING
     rng = np.random.default_rng(3)
     off = 1.0 - np.eye(4)
     disturbances = [
@@ -151,8 +145,9 @@ def test_synchronisation_inference_control_03_held_out_disturbances_report_losin
         amplitude_bound=8.0,
         target_order=0.5,
     )
-    assert report.constraint_satisfied and report.max_amplitude <= 8.0
-    assert report.nominal.succeeded
+    assert report.constraint_satisfied and report.max_amplitude == 1.5
+    assert report.nominal.succeeded and report.nominal.final_order < 0.2
+    assert report.nominal.mean_order_squared < 0.6 * report.nominal.uncontrolled_mean_order_squared
     assert len(report.held_out) == len(disturbances)
     # Every outcome is recomputed with an independent RK4; losing cases are exactly the failures.
     expected_losses = []
