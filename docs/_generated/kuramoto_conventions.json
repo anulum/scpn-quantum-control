@@ -600,7 +600,7 @@
   ],
   "definition_path": "src/scpn_quantum_control/kuramoto_model_conventions.py",
   "definition_sha256": "e5edb172fb8b37deffcfc48105141697b6bc936179e29f3f8342eb1cd35f4690",
-  "identity": "3624d653598802c71513abc6c538a985b341cfdbecf570e88b7e67d5bec9c5fb",
+  "identity": "717525a8941af6ff55df4e19e1d078c14edf01158ecdef0d9a58fbd843b97ae8",
   "schema": "kuramoto_conventions.v1",
   "source_owners": {
     "oscillatools.accel.daido_mean_field.daido_mean_field_force": {
@@ -1600,12 +1600,12 @@
         "oscillatools/tests/test_sparse_kuramoto.py"
       ],
       "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
-      "line": 202,
+      "line": 356,
       "module_declared_dispatch_chains": {},
       "path": "oscillatools/src/oscillatools/accel/sparse_kuramoto.py",
       "qualified_name": "oscillatools.accel.sparse_kuramoto.sparse_kuramoto_euler_trajectory",
       "signature": "theta0: object, omega: object, coupling: SparseInput, dt: float, n_steps: int",
-      "source_sha256": "88e78bb78bcfed188485ea764068ae084f73844cf84453dc3b259fea6dec79e1",
+      "source_sha256": "aaf2079a55aaf7e6e5494b016004126f1fd374ea64b6c87411c809ab4034e51c",
       "summary": "Integrate sparse networked Kuramoto dynamics with explicit Euler steps."
     },
     "oscillatools.accel.sparse_kuramoto.sparse_kuramoto_rk4_trajectory": {
@@ -1614,12 +1614,12 @@
         "oscillatools/tests/test_sparse_kuramoto.py"
       ],
       "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
-      "line": 224,
+      "line": 378,
       "module_declared_dispatch_chains": {},
       "path": "oscillatools/src/oscillatools/accel/sparse_kuramoto.py",
       "qualified_name": "oscillatools.accel.sparse_kuramoto.sparse_kuramoto_rk4_trajectory",
       "signature": "theta0: object, omega: object, coupling: SparseInput, dt: float, n_steps: int",
-      "source_sha256": "88e78bb78bcfed188485ea764068ae084f73844cf84453dc3b259fea6dec79e1",
+      "source_sha256": "aaf2079a55aaf7e6e5494b016004126f1fd374ea64b6c87411c809ab4034e51c",
       "summary": "Integrate sparse networked Kuramoto dynamics with fourth-order RK4 steps."
     },
     "oscillatools.accel.sparse_kuramoto.sparse_networked_kuramoto_force": {
@@ -1628,12 +1628,12 @@
         "oscillatools/tests/test_sparse_kuramoto.py"
       ],
       "dispatch_claim": "source declarations only; availability, selected tier and parity are not measured here",
-      "line": 172,
+      "line": 326,
       "module_declared_dispatch_chains": {},
       "path": "oscillatools/src/oscillatools/accel/sparse_kuramoto.py",
       "qualified_name": "oscillatools.accel.sparse_kuramoto.sparse_networked_kuramoto_force",
       "signature": "theta: object, coupling: SparseInput",
-      "source_sha256": "88e78bb78bcfed188485ea764068ae084f73844cf84453dc3b259fea6dec79e1",
+      "source_sha256": "aaf2079a55aaf7e6e5494b016004126f1fd374ea64b6c87411c809ab4034e51c",
       "summary": "Evaluate the networked Kuramoto force from sparse coupling edges."
     },
     "oscillatools.accel.triadic_mean_field.triadic_mean_field_force": {
