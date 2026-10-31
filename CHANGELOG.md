@@ -22,6 +22,21 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     are linear in the number of edges;
   - the sparse kernels report CPU float64 placement and no GPU path.
 
+- Choose quantum gradient rules by exactness and shot cost, and bind the
+  finite-shot route to the plan:
+  - equidistant spectra get the closed-form equidistant rule, and other
+    spectra the least-variance shift grid at unit scale. A gate scale of
+    `2.9999995` had produced coefficients near `3e6`; `{0.1, ..., 0.6}` and
+    ten shared rotations were refused; `{3, 6, 9}` cost 734 instead of 28.5;
+  - `plan.shot_variance_factors` reports each parameter's shot cost;
+  - `execute_quantum_gradient_estimator_with_uncertainty` samples through the
+    plan's own checks with each parameter's rule. Signed coefficients no
+    longer crash the stochastic result;
+  - an edited plan is refused as `plan_changed`;
+  - large non-equidistant spectra are refused before any search;
+  - non-smooth operations are matched by word in any case;
+  - NumPy integer parameter indices are accepted.
+
 - Make complex and spectral derivatives scale-aware:
   - central differences move each coordinate by `step * max(1, |z_k|)` and
     divide by the realised step. At `|z| = 1e8` the absolute step had given

@@ -477,29 +477,70 @@ calibration=..., shots=...)` binds the circuit structure before anything runs:
   shifted.
 - **Non-smooth operations:** reset, postselection, measurement and jumps are
   not rotations of the expectation, so they refuse with
-  `non_smooth_operation`.
-- **Other refusals:** a spectrum with more than 64 eigenvalue sums refuses with
-  `spectrum_too_large`. A spectrum whose shift system cannot be solved
+  `non_smooth_operation`. An operation is refused when its name contains one
+  of these words in any case, such as `MEASURE` or `mid_circuit_measure`.
+- **Rules:** an equidistant spectrum `{W, 2W, ..., RW}` gets the equidistant
+  rule, shifts `(2m - 1) pi / (2 R W)` for `m = 1..R`. Its coefficients
+  alternate in sign. A single frequency `w` is `R = 1`: shift `pi / (2w)` and
+  coefficient `w / 2`, however close `w` is to an integer. Any other spectrum
+  is rescaled to a largest frequency of one, and the admissible shift grid
+  with the smallest `sum c**2` is chosen. Units therefore never decide a
+  refusal: `{0.1, ..., 0.6}` is planned like `{1, ..., 6}`.
+- **Shot cost:** `plan.shot_variance_factors` gives each parameter's
+  `2 * sum c**2`. With `n` shots per evaluation and single-shot variance
+  `s**2`, that gradient component has variance `factor * s**2 / n`. For
+  `{3, 6, 9}` the factor is 28.5; the earlier first-admissible search gave 734.
+- **Other refusals:** a parameter with more than 64 eigenvalue sums, more than
+  64 equidistant frequencies, or more than 16 non-equidistant frequencies
+  refuses with `spectrum_too_large`. This happens before any shift search, so
+  planning time stays bounded. A spectrum whose shift system cannot be solved
   accurately refuses with `ill_conditioned_spectrum`.
 - **Calibration and budget:** the plan stores the canonical digest of the
-  calibration record and the shots per evaluation. Its total shot budget is
-  `shots * evaluations`.
+  calibration record and the shots per evaluation. Its shot budget,
+  `shots * evaluations`, counts every parameter as trainable; frozen
+  parameters are not evaluated and spend less.
 
 `execute_quantum_gradient_estimator(plan, objective, values, calibration=...,
-shots=...)` refuses with `calibration_changed` or `budget_drift` before it
-evaluates anything. It then shifts each parameter with the rule for its own
-spectrum. All refusals are `QuantumGradientEstimatorRefusal` with a stable
-`reason`.
+shots=...)` refuses before it evaluates anything:
+- `plan_changed` if any planned field no longer matches the plan's digest;
+- `calibration_changed`;
+- `budget_drift`.
 
-**Finite shots.** The finite-shot route is `parameter_shift_gradient_with_uncertainty`
-with the planned rule. Its interval assumes independent plus and minus
-samples. Common random numbers between the two would correlate them, and they
-are not supported.
+It then shifts each parameter with the rule for its own spectrum. All
+refusals are `QuantumGradientEstimatorRefusal` with a stable `reason`.
+
+**Finite shots.** `execute_quantum_gradient_estimator_with_uncertainty(plan,
+sampler, values, calibration=..., shots=..., sample_provenance=...)` is the
+plan-bound route. It makes the same checks, then calls
+`sampler(values) -> (mean, single-shot variance)` at every shifted point. Each
+parameter is differentiated with its own planned rule, whatever its term
+count or coefficient signs. The variance is
+`sum c**2 * (s_plus**2 + s_minus**2) / shots`. It returns a
+`StochasticGradientResult` with one record per term.
+
+`parameter_shift_gradient_with_uncertainty` remains for tensors that a caller
+has already sampled with one rule for all parameters. Both routes assume
+independent plus and minus samples. Common random numbers between the two
+would correlate them, and they are not supported.
+
+The interval is a normal approximation built from the sampled variances.
+Where a shifted expectation lies near `+-1`, few outcomes differ, the sampled
+variance collapses towards zero, and the interval under-covers. At a total
+angle of 1.6 for the `{1, 2}` rule it covered 112 of 200 replicates. Noise or
+measurement channels that depend on a parameter break the
+trigonometric-polynomial assumption and are outside the claim.
 
 The qualification uses the frozen protocol: seeds 0..199 and 1000 shots per
-shifted expectation on `RY(0.7)|0>`. The nominal 95 % level lies inside the
-Clopper-Pearson interval of the observed coverage, for the same estimand as
-the exact derivative.
+shifted expectation. It runs on two cases:
+- `RY(0.7)|0>` with the single-term rule;
+- a parameter shared by two rotations (spectrum `{1, 2}`) at a total angle of
+  `pi/4`, through the plan-bound route.
+
+For both, the nominal 95 % level lies inside the Clopper-Pearson interval of
+the observed coverage. With 200 replicates the accepted counts are 184..196.
+The study therefore detects coverage shortfalls of about 0.05 or more: a true
+coverage of 0.90 passes with probability about 0.21. Smaller shortfalls go
+undetected.
 
 **Rule-builder fix.** `multi_frequency_parameter_shift_rule` now also requires
 the sine system's smallest singular value to be at least `1e-6`. The condition

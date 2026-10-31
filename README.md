@@ -154,7 +154,7 @@ claims only when the evidence exists.
 | Surface | Current inventory |
 |---|---:|
 | Package version | 1.3.0 |
-| Public API exports | 874 |
+| Public API exports | 875 |
 | Python source modules | 847 |
 | Public Python classes | 1607 |
 | Domain package families | 40 |

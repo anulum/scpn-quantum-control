@@ -667,6 +667,7 @@ if TYPE_CHECKING:
         QuantumGradientEstimatorPlan,
         QuantumGradientEstimatorRefusal,
         execute_quantum_gradient_estimator,
+        execute_quantum_gradient_estimator_with_uncertainty,
         plan_quantum_gradient_estimator,
     )
     from .differentiable_rust_python_inventory import (
@@ -3571,6 +3572,10 @@ _PUBLIC_EXPORTS: dict[str, tuple[str, str | None]] = {
         "scpn_quantum_control.differentiable_parameter_shift",
         "execute_quantum_gradient_estimator",
     ),
+    "execute_quantum_gradient_estimator_with_uncertainty": (
+        "scpn_quantum_control.differentiable_parameter_shift",
+        "execute_quantum_gradient_estimator_with_uncertainty",
+    ),
     "plan_quantum_gradient_estimator": (
         "scpn_quantum_control.differentiable_parameter_shift",
         "plan_quantum_gradient_estimator",
@@ -3686,6 +3691,7 @@ __all__ = [
     "QuantumGradientEstimatorPlan",
     "QuantumGradientEstimatorRefusal",
     "execute_quantum_gradient_estimator",
+    "execute_quantum_gradient_estimator_with_uncertainty",
     "plan_quantum_gradient_estimator",
     "Problem",
     "Backend",

@@ -186,6 +186,17 @@ class ParameterShiftRule:
         """Whether this rule is the legacy two-evaluation rule."""
         return len(self.terms) == 1
 
+    @property
+    def shot_variance_factor(self) -> float:
+        """Variance of the estimate per unit single-evaluation variance, ``2 * sum c**2``.
+
+        With ``n`` shots per evaluation and single-shot variance ``s**2`` the
+        estimator's variance is ``shot_variance_factor * s**2 / n``, so this is
+        the shot cost of the rule relative to one exact evaluation pair.
+        """
+        coefficients = cast(tuple[float, ...], self.coefficients)
+        return 2.0 * float(sum(coefficient * coefficient for coefficient in coefficients))
+
 
 def multi_frequency_parameter_shift_rule(
     frequencies: ArrayLike,
@@ -255,32 +266,86 @@ up. Its entries are bounded by two, so this floor keeps every coefficient
 within ``|w| * 1e6`` of the exact rule.
 """
 
+MAX_GENERAL_SPECTRUM_FREQUENCIES = 16
+"""Most frequencies a non-equidistant spectrum may have; larger ones are refused
+before any shift search, so planning time stays bounded."""
+
+MAX_EQUIDISTANT_SPECTRUM_ORDER = 64
+"""Most frequencies of an equidistant spectrum; its rule takes two evaluations each."""
+
+_EQUIDISTANT_TOLERANCE = 1.0e-9
+"""Relative distance from an integer multiple accepted as an equidistant spectrum."""
+
+
+def _equidistant_order(frequencies: NDArray[np.float64]) -> int | None:
+    """Return ``R`` when the frequencies are ``{1, ..., R}`` times their smallest."""
+    ordered = np.sort(frequencies)
+    multiples = ordered / ordered[0]
+    expected = np.arange(1, ordered.size + 1, dtype=np.float64)
+    if np.all(np.abs(multiples - expected) <= _EQUIDISTANT_TOLERANCE * expected):
+        return int(ordered.size)
+    return None
+
 
 def _default_multi_frequency_shifts(
     frequencies: NDArray[np.float64],
     *,
     max_condition: float,
 ) -> NDArray[np.float64]:
-    """Return a deterministic well-conditioned shift grid for generator frequencies."""
+    """Return deterministic shifts with the smallest shot variance for these frequencies.
+
+    An equidistant spectrum ``{W, 2W, ..., RW}`` gets the equidistant rule,
+    shifts ``(2m - 1) * pi / (2 R W)`` for ``m = 1..R``, which is exact and
+    whose coefficients are ``W (-1)**(m-1) / (4 R sin**2((2m - 1) pi / (4R)))``.
+    A single frequency ``w`` is the case ``R = 1``: shift ``pi / (2w)`` and
+    coefficient ``w / 2``, however close ``w`` is to an integer.
+
+    Any other spectrum is rescaled to a largest frequency of one, so the search
+    does not depend on its units, and the admissible shift grid with the
+    smallest ``sum c**2`` is chosen, not merely the first admissible one.
+    """
+    order = _equidistant_order(frequencies)
+    if order is not None:
+        if order > MAX_EQUIDISTANT_SPECTRUM_ORDER:
+            raise ValueError(
+                f"an equidistant spectrum may have at most {MAX_EQUIDISTANT_SPECTRUM_ORDER} "
+                "frequencies"
+            )
+        base = float(np.min(frequencies))
+        return (
+            (2.0 * np.arange(1, order + 1, dtype=np.float64) - 1.0) * np.pi / (2.0 * order * base)
+        )
     count = int(frequencies.size)
-    max_frequency = float(np.max(frequencies))
+    if count > MAX_GENERAL_SPECTRUM_FREQUENCIES:
+        raise ValueError(
+            f"a non-equidistant spectrum may have at most {MAX_GENERAL_SPECTRUM_FREQUENCIES} "
+            "frequencies"
+        )
+    top = float(np.max(frequencies))
+    normalised = frequencies / top
     start = 2 * count + 1
-    stop = max(start + 64, int(np.ceil(4.0 * max_frequency * count)) + 65)
-    for denominator in range(start, stop):
+    best: tuple[float, NDArray[np.float64]] | None = None
+    for denominator in range(start, start + 64):
         candidate = np.arange(1, count + 1, dtype=np.float64) * np.pi / float(denominator)
-        sine_system = 2.0 * np.sin(np.outer(frequencies, candidate))
-        condition = float(np.linalg.cond(sine_system))
-        smallest = float(np.linalg.svd(sine_system, compute_uv=False)[-1])
-        if (
-            np.isfinite(condition)
-            and condition <= max_condition
-            and smallest >= _MIN_SINE_SINGULAR_VALUE
-        ):
-            return candidate
-    raise ValueError("could not construct a well-conditioned multi-frequency shift system")
+        sine_system = 2.0 * np.sin(np.outer(normalised, candidate))
+        singular_values = np.linalg.svd(sine_system, compute_uv=False)
+        smallest = float(singular_values[-1])
+        if smallest < _MIN_SINE_SINGULAR_VALUE:
+            continue
+        condition = float(singular_values[0]) / smallest
+        if condition > max_condition:
+            continue
+        cost = float(np.sum(np.linalg.solve(sine_system, normalised) ** 2))
+        if best is None or cost < best[0]:
+            best = (cost, candidate)
+    if best is None:
+        raise ValueError("could not construct a well-conditioned multi-frequency shift system")
+    return best[1] / top
 
 
 __all__ = [
+    "MAX_EQUIDISTANT_SPECTRUM_ORDER",
+    "MAX_GENERAL_SPECTRUM_FREQUENCIES",
     "Parameter",
     "ParameterBounds",
     "ParameterShiftRule",

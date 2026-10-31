@@ -125,6 +125,10 @@ APPROVED_EXPORT_ADDITIONS: dict[str, tuple[int, tuple[tuple[str, str], ...]]] = 
                 "scpn_quantum_control.differentiable_parameter_shift",
             ),
             (
+                "execute_quantum_gradient_estimator_with_uncertainty",
+                "scpn_quantum_control.differentiable_parameter_shift",
+            ),
+            (
                 "plan_quantum_gradient_estimator",
                 "scpn_quantum_control.differentiable_parameter_shift",
             ),

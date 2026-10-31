@@ -17,7 +17,9 @@ of the observed coverage.
 
 from __future__ import annotations
 
+import dataclasses
 import math
+import time
 from collections.abc import Callable
 from typing import Any, cast
 
@@ -31,6 +33,7 @@ from scpn_quantum_control import (
     Parameter,
     QuantumGradientEstimatorRefusal,
     execute_quantum_gradient_estimator,
+    execute_quantum_gradient_estimator_with_uncertainty,
     multi_frequency_parameter_shift_rule,
     parameter_shift_gradient_with_uncertainty,
     plan_quantum_gradient_estimator,
@@ -502,3 +505,334 @@ def test_explicit_shift_on_a_sine_zero_is_refused() -> None:
     """An explicit shift that zeroes the one-term sine system refuses."""
     with pytest.raises(ValueError, match="singular or ill-conditioned"):
         multi_frequency_parameter_shift_rule([3.0], shifts=[math.pi / 3.0])
+
+
+def _trig_polynomial_derivative_error(frequencies: list[float], seed: int) -> float:
+    """Return the planned rule's error on a random trigonometric polynomial."""
+    rule = multi_frequency_parameter_shift_rule(frequencies)
+    generator = np.random.default_rng(seed)
+    weights = generator.normal(size=(2, len(frequencies)))
+    spectrum = np.asarray(frequencies, dtype=np.float64)
+
+    def polynomial(angle: float) -> float:
+        return float(weights[0] @ np.cos(spectrum * angle) + weights[1] @ np.sin(spectrum * angle))
+
+    theta = 0.37
+    estimate = sum(
+        coefficient * (polynomial(theta + shift) - polynomial(theta - shift))
+        for shift, coefficient in rule.terms
+    )
+    exact = float(
+        spectrum @ (-weights[0] * np.sin(spectrum * theta) + weights[1] * np.cos(spectrum * theta))
+    )
+    return abs(estimate - exact)
+
+
+@pytest.mark.parametrize(
+    ("frequencies", "largest_factor"),
+    [
+        ([2.9999995], 4.6),
+        ([3.0000005], 4.6),
+        ([1.0, 2.0, 3.0], 3.2),
+        ([3.0, 6.0, 9.0], 28.6),
+        ([0.1, 0.2, 0.3, 0.4, 0.5, 0.6], 0.2),
+        ([float(order) for order in range(1, 11)], 34.0),
+        ([1.0, 3.0], 22.0),
+        ([0.5, 1.5, 2.5], 37.0),
+    ],
+    ids=[
+        "just-below-three",
+        "just-above-three",
+        "one-two-three",
+        "three-six-nine",
+        "tenths",
+        "one-to-ten",
+        "one-three",
+        "odd-halves",
+    ],
+)
+def test_planned_rules_are_exact_and_cheap(
+    frequencies: list[float], largest_factor: float
+) -> None:
+    """Equidistant spectra get the closed-form rule; others the least-variance grid.
+
+    A frequency a hair from an integer multiple of pi's denominators used to
+    pick a shift on a sine zero, with coefficients near ``3e6``.
+
+    Parameters
+    ----------
+    frequencies
+        Generator frequency set.
+    largest_factor
+        Upper bound on ``2 * sum c**2``.
+
+    """
+    rule = multi_frequency_parameter_shift_rule(frequencies)
+    assert rule.shot_variance_factor <= largest_factor
+    assert _trig_polynomial_derivative_error(frequencies, 7) <= 1e-12
+    if len(frequencies) == 1:
+        ((shift, coefficient),) = rule.terms
+        assert _within_budget(
+            [shift, coefficient], [math.pi / (2 * frequencies[0]), frequencies[0] / 2]
+        )
+
+
+def test_scaled_and_long_equidistant_spectra_are_planned_quickly() -> None:
+    """Units do not decide refusal, and planning time stays bounded."""
+    tenths = _plan(
+        [GateOccurrence("rz", 0, 0.1), GateOccurrence("rx", 0, 0.2), GateOccurrence("ry", 0, 0.3)],
+        1,
+    )
+    assert tenths.frequencies[0] == (0.1, 0.2, 0.3, 0.4, 0.5, 0.6)
+    ten = _plan([GateOccurrence("ry", 0)] * 10, 1)
+    assert ten.frequencies[0] == tuple(float(order) for order in range(1, 11))
+    started = time.perf_counter()
+    irrational = [
+        GateOccurrence("ry", 0, scale) for scale in (1.0, 2**0.5, 3**0.5, 5**0.5, 7**0.5)
+    ]
+    with pytest.raises(QuantumGradientEstimatorRefusal) as refusal:
+        _plan(irrational, 1)
+    assert refusal.value.reason == "spectrum_too_large"
+    powers = [GateOccurrence("ry", 0, float(2**power)) for power in range(5)]
+    assert len(_plan(powers, 1).frequencies[0]) == 31
+    assert time.perf_counter() - started < 5.0
+
+
+@pytest.mark.parametrize("operation", ["MEASURE", "Reset", "measurement", "mid_circuit_measure"])
+def test_non_smooth_operations_are_refused_in_any_spelling(operation: str) -> None:
+    """The deny-list matches words in any case, not exact names only.
+
+    Parameters
+    ----------
+    operation
+        Variant spelling of a non-smooth operation.
+
+    """
+    with pytest.raises(QuantumGradientEstimatorRefusal) as refusal:
+        _plan([GateOccurrence("ry", 0)], 1, operations=[operation])
+    assert refusal.value.reason == "non_smooth_operation"
+
+
+def test_numpy_parameter_index_and_variance_factors() -> None:
+    """``np.int64`` indices plan like ints, and each rule reports its shot cost."""
+    plan = _plan([GateOccurrence("ry", cast(int, np.int64(0))), GateOccurrence("ry", 0)], 2)
+    assert plan.frequencies == ((1.0, 2.0), ())
+    factors = plan.shot_variance_factors
+    assert factors[1] is None and factors[0] is not None
+    assert _within_budget(factors[0], 1.5)
+
+
+@pytest.mark.parametrize("field", ["rules", "shots", "evaluations"])
+def test_a_changed_plan_is_refused_before_evaluation(field: str) -> None:
+    """Editing a plan after planning breaks its digest, and nothing is evaluated.
+
+    Parameters
+    ----------
+    field
+        Planned field that is replaced.
+
+    """
+    plan = _plan([GateOccurrence("ry", 0)], 1, shots=100)
+    replacement: dict[str, object] = {
+        "rules": (multi_frequency_parameter_shift_rule([1.0], shifts=[0.3]),),
+        "shots": 10,
+        "evaluations": 1,
+    }
+    changed = dataclasses.replace(plan, **{field: replacement[field]})
+    calls: list[object] = []
+
+    def objective(values: NDArray[np.float64]) -> float:
+        calls.append(values)
+        return 0.0
+
+    with pytest.raises(QuantumGradientEstimatorRefusal) as refusal:
+        execute_quantum_gradient_estimator(
+            changed, objective, [0.4], calibration=_CALIBRATION, shots=changed.shots
+        )
+    assert refusal.value.reason == "plan_changed"
+    assert calls == []
+
+
+def _shared_sampler(shots: int, seed: int) -> Callable[[NDArray[np.float64]], tuple[float, float]]:
+    """Sample Z after ``RY(a) RY(a) RY(b)|0>`` with a fresh stream per call."""
+    streams = iter(np.random.SeedSequence(seed).spawn(64))
+
+    def sampler(values: NDArray[np.float64]) -> tuple[float, float]:
+        angle = 2.0 * float(values[0]) + float(values[1])
+        return _binomial_expectation(angle, shots, np.random.default_rng(next(streams)))
+
+    return sampler
+
+
+def test_finite_shot_execution_uses_each_parameter_rule() -> None:
+    """A shared and a single parameter use their own rules, signs included."""
+    plan = _plan(
+        [GateOccurrence("ry", 0), GateOccurrence("ry", 0), GateOccurrence("ry", 1)], 2, shots=1000
+    )
+    shared, single = plan.rules
+    assert shared is not None and single is not None
+    assert len(shared.terms) == 2 and min(c for _, c in shared.terms) < 0.0
+    values = [0.4, 0.3]
+
+    def exact(points: NDArray[np.float64]) -> tuple[float, float]:
+        return math.cos(2.0 * float(points[0]) + float(points[1])), 0.0
+
+    result = execute_quantum_gradient_estimator_with_uncertainty(
+        plan,
+        exact,
+        values,
+        calibration=_CALIBRATION,
+        shots=1000,
+        sample_provenance={
+            "sample_seed": 0,
+            "shot_batch_id": "exact",
+            "source_class": "synthetic_fixture",
+        },
+    )
+    angle = 2.0 * values[0] + values[1]
+    assert _within_budget(result.gradient, [-2.0 * math.sin(angle), -math.sin(angle)])
+    assert result.evaluations == plan.evaluations
+    assert {record.parameter_index for record in result.records} == {0, 1}
+    frozen = execute_quantum_gradient_estimator_with_uncertainty(
+        plan,
+        exact,
+        values,
+        calibration=_CALIBRATION,
+        shots=1000,
+        sample_provenance={
+            "sample_seed": 0,
+            "shot_batch_id": "frozen",
+            "source_class": "synthetic_fixture",
+        },
+        parameters=[Parameter("a"), Parameter("b", trainable=False)],
+    )
+    assert frozen.gradient[1] == 0.0 and frozen.evaluations == plan.evaluations - 2
+
+
+def test_finite_shot_execution_refuses_before_sampling() -> None:
+    """Calibration, budget, exact plans and bad samples refuse; nothing is sampled first."""
+    plan = _plan([GateOccurrence("ry", 0)], 1, shots=100)
+    calls: list[object] = []
+
+    def sampler(values: NDArray[np.float64]) -> tuple[float, float]:
+        calls.append(values)
+        return 0.0, -1.0
+
+    provenance = {"sample_seed": 1, "shot_batch_id": "refusal", "source_class": "local_simulator"}
+    for calibration, shots, reason in (
+        ({"device": "other"}, 100, "calibration_changed"),
+        (_CALIBRATION, 50, "budget_drift"),
+    ):
+        with pytest.raises(QuantumGradientEstimatorRefusal) as refusal:
+            execute_quantum_gradient_estimator_with_uncertainty(
+                plan,
+                sampler,
+                [0.2],
+                calibration=calibration,
+                shots=shots,
+                sample_provenance=provenance,
+            )
+        assert refusal.value.reason == reason
+    assert calls == []
+    exact_plan = _plan([GateOccurrence("ry", 0)], 1)
+    with pytest.raises(ValueError, match="exact plan"):
+        execute_quantum_gradient_estimator_with_uncertainty(
+            exact_plan,
+            sampler,
+            [0.2],
+            calibration=_CALIBRATION,
+            shots=cast(int, None),
+            sample_provenance=provenance,
+        )
+    with pytest.raises(ValueError, match="non-negative"):
+        execute_quantum_gradient_estimator_with_uncertainty(
+            plan, sampler, [0.2], calibration=_CALIBRATION, shots=100, sample_provenance=provenance
+        )
+    with pytest.raises(ValueError, match="values length"):
+        execute_quantum_gradient_estimator_with_uncertainty(
+            plan,
+            sampler,
+            [0.2, 0.1],
+            calibration=_CALIBRATION,
+            shots=100,
+            sample_provenance=provenance,
+        )
+    for level, z_value, message in ((1.0, 1.96, "confidence_level"), (0.95, -1.0, "confidence_z")):
+        with pytest.raises(ValueError, match=message):
+            execute_quantum_gradient_estimator_with_uncertainty(
+                plan,
+                sampler,
+                [0.2],
+                calibration=_CALIBRATION,
+                shots=100,
+                sample_provenance=provenance,
+                confidence_level=level,
+                confidence_z=z_value,
+            )
+
+
+def test_multi_frequency_finite_shot_intervals_cover_at_the_nominal_rate() -> None:
+    """The two-term rule of a shared parameter covers the exact derivative.
+
+    Same frozen protocol as row 04: seeds 0..199, 1000 shots per evaluation,
+    every replicate retained, nominal 0.95 inside the Clopper-Pearson interval
+    of the observed coverage. With 200 replicates the accepted counts are
+    184..196, so a true coverage of 0.93 is accepted with probability about
+    0.76 and 0.90 with about 0.21: the study detects shortfalls of about 0.05
+    or more, not small ones.
+
+    The point puts the total angle at ``pi/4``, so every shifted expectation is
+    ``+-1/sqrt(2)``. Where a shifted expectation sits near ``+-1`` the sampled
+    variance collapses towards zero and the normal-approximation interval
+    under-covers (112 of 200 at a total angle of 1.6); that limit is
+    documented with the estimator, not hidden by this choice.
+    """
+    plan = _plan(
+        [GateOccurrence("ry", 0), GateOccurrence("ry", 0), GateOccurrence("ry", 1)], 2, shots=1000
+    )
+    values = [0.3, math.pi / 4.0 - 0.6]
+    exact = -2.0 * math.sin(2.0 * values[0] + values[1])
+    covered = 0
+    for seed in range(200):
+        result = execute_quantum_gradient_estimator_with_uncertainty(
+            plan,
+            _shared_sampler(1000, seed),
+            values,
+            calibration=_CALIBRATION,
+            shots=1000,
+            sample_provenance={
+                "sample_seed": seed,
+                "shot_batch_id": f"multi-{seed}",
+                "source_class": "local_simulator",
+            },
+            parameters=[Parameter("a"), Parameter("b", trainable=False)],
+        )
+        interval = result.confidence_interval
+        assert interval is not None
+        covered += bool(float(interval.lower[0]) <= exact <= float(interval.upper[0]))
+    low = float(beta.ppf(0.025, covered, 200 - covered + 1))
+    high = float(beta.ppf(0.975, covered + 1, 200 - covered))
+    assert low <= 0.95 <= high, (covered, low, high)
+
+
+def test_signed_rule_runs_through_the_sample_route() -> None:
+    """A planned rule with a negative coefficient no longer crashes the sample route."""
+    rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
+    assert min(coefficient for _, coefficient in rule.terms) < 0.0
+    single = multi_frequency_parameter_shift_rule([2.0], shifts=[3.0 * math.pi / 4.0])
+    ((_shift, coefficient),) = single.terms
+    assert coefficient < 0.0
+    estimate = parameter_shift_gradient_with_uncertainty(
+        [[0.1]],
+        [[0.3]],
+        [[0.5]],
+        [[0.5]],
+        [[100]],
+        sample_provenance={
+            "sample_seed": 0,
+            "shot_batch_id": "signed",
+            "source_class": "synthetic_fixture",
+        },
+        rule=single,
+    )
+    assert _within_budget(estimate.gradient, [coefficient * (0.1 - 0.3)])

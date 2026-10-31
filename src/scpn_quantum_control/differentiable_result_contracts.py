@@ -551,8 +551,10 @@ class StochasticGradientResult:
             raise ValueError("confidence_level must be between zero and one")
         if shift is not None and shift <= 0.0:
             raise ValueError("stochastic gradient shift must be finite and positive")
-        if coefficient is not None and coefficient <= 0.0:
-            raise ValueError("stochastic gradient coefficient must be finite and positive")
+        # Exact shift rules have signed coefficients (the equidistant rule
+        # alternates sign), so only a zero coefficient is malformed.
+        if coefficient is not None and coefficient == 0.0:
+            raise ValueError("stochastic gradient coefficient must be finite and nonzero")
         _require_method("stochastic gradient", self.method)
         _require_count("stochastic gradient evaluations", self.evaluations)
         if len(self.parameter_names) != gradient.size:
