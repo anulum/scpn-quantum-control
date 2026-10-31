@@ -51,10 +51,12 @@ is not holomorphic at the point. Their `tolerance` (default `1e-6`) is
 relative: the residual may be at most `tolerance * max|df/dz|`. `z**2` at
 `1e8(1 + i)` therefore counts as holomorphic and `1e-12 * conj(z)` does not.
 The test applies per coordinate, `|df/dconj_z_k| <= tolerance * |df/dz_k| +
-noise_k`, so `1e8 * z0 + conj(z1)` is not holomorphic. Here `noise_k`,
-`4 eps max|f| / h_k`, is the rounding floor of that coordinate's differences,
-reported as `difference_noise`. At a critical point such as `z**2 - 2z` at
-`z = 1`, rounding noise is therefore not mistaken for a conjugate
+noise_k`, so `1e8 * z0 + conj(z1)` is not holomorphic. Here `noise_k` is the
+error floor of that coordinate's differences, reported as `difference_noise`.
+It is the rounding floor `4 eps max|f| / h_k` plus twice the Richardson
+estimate of the `O(h**2)` truncation, taken from a second difference at
+`2 h_k`. At critical points such as `z**2 - 2z` at `z = 1` or `z**3` at
+`z = 0`, difference error is therefore not mistaken for a conjugate
 dependence.
 
 ```python

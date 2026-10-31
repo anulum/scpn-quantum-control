@@ -59,8 +59,10 @@ class WirtingerDerivative:
     difference_noise: NDArray[np.float64] = field(
         default_factory=lambda: np.zeros(0, dtype=np.float64)
     )
-    """Per-coordinate rounding floor of the partials, ``4 eps max|f| / h_k``;
-    a residual below it is indistinguishable from zero."""
+    """Per-coordinate error floor of ``df/dconj_z``: the rounding floor
+    ``4 eps max|f| / h_k`` plus twice the Richardson estimate of the ``O(h**2)``
+    truncation from a second difference at ``2 h_k``. A residual below it is
+    indistinguishable from zero."""
 
 
 @dataclass(frozen=True)
@@ -114,6 +116,27 @@ def _displaced(
     return upper, lower, realised
 
 
+def _wirtinger_pair(
+    f: ComplexObjective,
+    point: NDArray[np.complex128],
+    k: int,
+    step: float,
+    values: list[complex],
+) -> tuple[complex, complex, float]:
+    """Return ``df/dz_k``, ``df/dconj_z_k`` and the smaller realised step.
+
+    Every evaluated value is appended to ``values`` for the rounding floor.
+    """
+    upper, lower, realised_x = _displaced(point, k, 1.0, step)
+    plus_x, minus_x = complex(f(upper)), complex(f(lower))
+    upper, lower, realised_y = _displaced(point, k, 1.0j, step)
+    plus_y, minus_y = complex(f(upper)), complex(f(lower))
+    values.extend((plus_x, minus_x, plus_y, minus_y))
+    df_dx = (plus_x - minus_x) / realised_x
+    df_dy = (plus_y - minus_y) / realised_y
+    return 0.5 * (df_dx - 1j * df_dy), 0.5 * (df_dx + 1j * df_dy), min(realised_x, realised_y)
+
+
 def wirtinger_partials(
     f: ComplexObjective,
     z: NDArray[np.complex128],
@@ -143,15 +166,13 @@ def wirtinger_partials(
     eps = float(np.finfo(np.float64).eps)
     for k in range(n):
         values: list[complex] = []
-        upper, lower, realised_x = _displaced(point, k, 1.0, h)
-        values += [complex(f(upper)), complex(f(lower))]
-        df_dx = (values[0] - values[1]) / realised_x
-        upper, lower, realised_y = _displaced(point, k, 1.0j, h)
-        values += [complex(f(upper)), complex(f(lower))]
-        df_dy = (values[2] - values[3]) / realised_y
-        df_dz[k] = 0.5 * (df_dx - 1j * df_dy)
-        df_dconj_z[k] = 0.5 * (df_dx + 1j * df_dy)
-        noise[k] = 4.0 * eps * max(abs(value) for value in values) / min(realised_x, realised_y)
+        df_dz[k], df_dconj_z[k], realised = _wirtinger_pair(f, point, k, h, values)
+        _, coarse_conj, _ = _wirtinger_pair(f, point, k, 2.0 * h, values)
+        # Rounding floor of the differences, plus the Richardson estimate of the
+        # O(h**2) truncation in df/dconj_z_k (twice it, for safety).
+        rounding = 4.0 * eps * max(abs(value) for value in values) / realised
+        truncation = 2.0 * abs(coarse_conj - df_dconj_z[k]) / 3.0
+        noise[k] = rounding + truncation
     residual = float(np.max(np.abs(df_dconj_z))) if n else 0.0
     return WirtingerDerivative(
         df_dz=df_dz,

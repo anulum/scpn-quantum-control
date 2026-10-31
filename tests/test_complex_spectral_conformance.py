@@ -387,7 +387,7 @@ def test_near_degenerate_derivative_error_stays_within_its_estimate(
         vector, result.eigenvector_derivative.conj()
     )
     error = float(np.linalg.norm(derivative - _reference_projector_derivative(matrix, tangent)))
-    assert error <= 2.0 * result.rounding_error_estimate + 1e-14
+    assert error <= result.rounding_error_estimate + 1e-14
     if decoupled and gap == 1e-8:
         assert result.rounding_error_estimate > np.linalg.norm(result.eigenvector_derivative)
 
@@ -450,7 +450,7 @@ def test_offset_spectrum_error_stays_within_the_estimate() -> None:
         vector, result.eigenvector_derivative.conj()
     )
     error = float(np.linalg.norm(derivative - _reference_projector_derivative(matrix, tangent)))
-    assert error <= 2.0 * result.rounding_error_estimate
+    assert error <= result.rounding_error_estimate
 
 
 def test_real_loss_passing_near_zero_needs_its_term_scale() -> None:
@@ -477,3 +477,8 @@ def test_holomorphy_is_judged_per_coordinate_with_a_noise_floor() -> None:
     critical = np.array([1.0 + 0.0j])
     assert is_holomorphic(lambda v: v[0] ** 2 - 2.0 * v[0], critical)
     assert np.all(np.abs(holomorphic_gradient(lambda v: v[0] ** 2 - 2.0 * v[0], critical)) < 1e-8)
+    # Non-quadratic critical points carry O(h**2) truncation in df/dconj_z.
+    for point in (np.array([0.0 + 0.0j]), np.array([1e-4 + 0.0j])):
+        assert is_holomorphic(lambda v: v[0] ** 3, point)
+    assert is_holomorphic(lambda v: np.exp(v[0]) - v[0], np.array([0.0 + 0.0j]))
+    assert not is_holomorphic(lambda v: v[0] ** 3 + 1e-6 * np.conj(v[0]), np.array([0.0 + 0.0j]))

@@ -52,7 +52,7 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   - the imaginary residue of a real loss is judged against the loss's own
     magnitude, or against an explicit `scale` for losses that pass near zero;
   - `is_holomorphic` compares each coordinate's residual with its own
-    `|df/dz_k|` plus the rounding floor of its differences;
+    `|df/dz_k|` plus the rounding and truncation floor of its differences;
   - NumPy integer indices are accepted.
 
 - Close gaps in whole-program AD branch and replay checks:
