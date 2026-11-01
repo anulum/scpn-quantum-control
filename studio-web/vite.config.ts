@@ -34,7 +34,9 @@ export default defineConfig({
     includeSource: ["quality/wholeProgramReplay.ts"],
     coverage: {
       provider: process.env["STUDIO_WORKSPACE_COVERAGE"] ? "custom" : "v8",
-      ...(process.env["STUDIO_WORKSPACE_COVERAGE"] ? { customProviderModule: "./quality/workspaceProvider.ts" } : {}),
+      ...(process.env["STUDIO_WORKSPACE_COVERAGE"]
+        ? { customProviderModule: "./quality/workspaceProvider.ts" }
+        : {}),
       include: ["src/**/*.{ts,tsx}"],
       exclude: ["src/main.tsx", "src/**/*.test.{ts,tsx}"],
       thresholds: {

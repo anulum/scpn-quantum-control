@@ -308,12 +308,56 @@ Python value/gradient. The browser test passes those exact bytes through
 `instantiateProgramAd`, then compares against a separate closed-form inverse
 and analytic chain rule using `1e-12 + 1e-12*abs(reference)` per scalar.
 
+The qualification covers the three input bindings printed by the example:
+`[0.7, -0.4]`, `[-1.3, 0.25]` and `[2.0, 1.5]`, with dimensionless float64
+parameters and the fixed matrix above.
+
+| Route | Complete-program evidence | Boundary |
+|---|---|---|
+| Python capture and replay | Public value/gradient evaluation and portable replay records agree with the analytic chain rule. | Source must be available and admitted by the whole-program frontend. |
+| Executable captured replay | `compile_whole_program_ad_trace_to_executable` replays the same capture and returns matching value/gradient results. | Portable replay with MLIR provenance; native execution has a separate compiler API. |
+| Native LLVM/JIT | `compile_whole_program_ad_trace_to_native_llvm_jit` compiles the admitted trace and executes matching primal/gradient kernels at the three bindings. | A supported lowering report, stable branch signature and finite supported primitive domains are required. |
+| Native Rust effect-IR replay | The captured IR and the same parameter order reach the Rust engine through its Python bridge. | Bounded captured IR; Python-source interpretation and compiler lowering remain unavailable. |
+| Public browser WASM host | `instantiateProgramAd` consumes the same packed IR and float64 bindings; primal and gradient use the stated numerical tolerance. | This supported polynomial and 2x2-solve composition; the rational replay card retains its separate bit-exact certificate. |
+| MLIR interchange | Deterministic provenance for the captured trace. | Interchange metadata alone is not an MLIR-runtime or native-execution certificate. |
+| Julia whole-program AD | Unsupported. | The existing Julia Kuramoto acceleration has a separate contract. |
+
+The Python capture's status fields describe that capture, while the native
+compiler returns its own kernel, lowering report and execution verification.
+The integration test also rejects shape drift and nonfinite compiler inputs,
+then verifies that both compiler kernels still produce correct results.
+
 This qualifies that well-conditioned float64 composition, not arbitrary Python,
 Julia Program-AD, hardware execution or bit-exact cross-platform linear algebra.
 Unknown IR versions, unsupported stages, malformed envelopes and nonfinite
 bindings refuse; a valid replay on the same WASM instance must still succeed
 afterward. The committed rational replay card keeps its separate, narrower
 bit-exact contract and does not accept this example as a replacement artefact.
+
+To reproduce the native and WASM checks, use the locked project environment
+including its native-compiler dependencies, the current Rust Python extension,
+installed Studio dependencies and the
+`wasm32-unknown-unknown` Rust target. From the repository root:
+
+```bash
+PYTHONPATH=src:oscillatools/src .venv/bin/python -m pytest -q \
+  tests/test_whole_program_backend_journeys.py
+cargo build --release --locked --target wasm32-unknown-unknown \
+  --manifest-path scpn_quantum_engine/studio_program_ad_wasm/Cargo.toml
+replay_root="$PWD"
+(
+  cd studio-web
+  PATH="$replay_root/.venv/bin:$PATH" \
+  PYTHONPATH="$replay_root/src:$replay_root/oscillatools/src" \
+  node_modules/.bin/vitest run src/shared/browser/programAd.test.ts \
+    quality/wholeProgramReplay.ts --maxWorkers=1
+)
+```
+
+The integration test obtains fresh captures from the executable example and
+invokes the real WASM kernel through the public host. It also exercises refusal
+and recovery using the same initialized instance. Other framework bridges and
+device-gradient routes keep their separately declared support contracts.
 
 
 ## Unified façade

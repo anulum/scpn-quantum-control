@@ -20,6 +20,13 @@ the standalone WASM kernel compiles the same pure Rust replay crate used by the
 native authority. This is not a claim about arbitrary programmes,
 transcendentals, general linear algebra, performance, or live edge execution.
 
+The matrix above describes this registry and its rational certificate. The
+separate [complete polynomial and linear-solve example](differentiable_api.md#replay-a-complete-polynomial-and-linear-solve-program)
+qualifies three float64 bindings through the lower-level public WASM host with
+an analytic value/gradient reference and a numerical tolerance. Its captured
+programme and reproduction commands are documented there; the rational replay
+card and certificate retain their existing contract.
+
 ## Public API
 
 ```python

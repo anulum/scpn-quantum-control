@@ -138,6 +138,38 @@ def test_example_captures_the_same_complete_program_for_every_binding(
             np.testing.assert_allclose(actual, gradient, rtol=1e-12, atol=1e-12)
 
 
+def test_whole_program_backend_journeys_04_compiler_routes_replay_the_complete_program() -> None:
+    """Compile the same programme to verified native code and executable captured replay."""
+    from scpn_quantum_control.compiler import (
+        compile_whole_program_ad_trace_to_executable,
+        compile_whole_program_ad_trace_to_native_llvm_jit,
+    )
+
+    captured = whole_program_value_and_grad(_journey, _POINT)
+    native = compile_whole_program_ad_trace_to_native_llvm_jit(_journey, _POINT)
+    executable = compile_whole_program_ad_trace_to_executable(_journey, _POINT)
+    assert native.backend == "native_llvm_jit" and native.verification.passed
+    assert native.lowering_report.supported and not native.lowering_report.unsupported_ops
+    assert native.llvm_ir.strip()
+    for kernel in (native, executable):
+        assert kernel.source_result.program_ir == captured.program_ir
+        for point in (_POINT, np.array([-1.3, 0.25]), np.array([2.0, 1.5])):
+            value, gradient = kernel.value_and_grad(point)
+            expected_value, expected_gradient = _analytic(point)
+            assert value == pytest.approx(expected_value, rel=1e-12, abs=1e-12)
+            np.testing.assert_allclose(gradient, expected_gradient, rtol=1e-12, atol=1e-12)
+        with pytest.raises(ValueError, match="shape"):
+            kernel.value_and_grad(np.array([0.7]))
+        with pytest.raises(ValueError, match="finite"):
+            kernel.value_and_grad(np.array([np.nan, -0.4]))
+        recovered_value, recovered_gradient = kernel.value_and_grad(_POINT)
+        expected_value, expected_gradient = _analytic(_POINT)
+        assert recovered_value == pytest.approx(expected_value, rel=1e-12, abs=1e-12)
+        np.testing.assert_allclose(recovered_gradient, expected_gradient, rtol=1e-12, atol=1e-12)
+    assert "compile_whole_program_ad_trace_to_native_llvm_jit" in captured.polyglot_targets["llvm"]
+    assert captured.polyglot_targets["llvm"].startswith("blocked")
+
+
 def test_whole_program_backend_journeys_03_unsupported_mixed_composition_is_located() -> None:
     """An array built from traced scalars refuses at the solve line, naming the operation."""
     p, q = _POINT

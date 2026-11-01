@@ -380,13 +380,20 @@ def whole_program_value_and_grad(
                 numpy_observed=semantics_report.numpy_observed,
                 polyglot_targets={
                     "python": "operator-intercepted forward AD and supported scalar adjoint replay available",
-                    "mlir": "SSA/effect program AD interchange available; executable lowering blocked",
+                    "mlir": (
+                        "SSA/effect program AD interchange available; this capture does not "
+                        "certify executable lowering"
+                    ),
                     "rust": (
                         "blocked: no Rust interpreter or lowering of Python source; bounded "
                         "effect-IR replay of the captured program is available through "
                         "program_ad_rust_bridge"
                     ),
-                    "llvm": "blocked: no LLVM/JIT whole-program AD interpreter/lowering backend",
+                    "llvm": (
+                        "blocked: this captured Python AD result does not certify native execution; "
+                        "bounded scalar trace compilation is qualified separately through "
+                        "compile_whole_program_ad_trace_to_native_llvm_jit"
+                    ),
                 },
                 claim_boundary=(
                     "whole-program operator-intercepted AD for executed Python scalar arithmetic, "

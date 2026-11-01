@@ -1,10 +1,10 @@
 {
  "schema": "web_source_ceiling_v1",
  "release": "2.5.15",
- "measured_commit": "aea8d70394e620d5dd9ffe09741d374b98f30aa3",
+ "measured_commit": "c2e88669e7c2d678a195638cae5d7a079d451f46",
  "total_lint_findings": 40,
  "total_lint_files": 9,
- "total_unformatted_files": 34,
+ "total_unformatted_files": 33,
  "lint": {
   "docs/js/goatcounter.js": 3,
   "studio-web/browser-tests/workspaceFormatting.native.ts": 1,
@@ -49,8 +49,7 @@
   "studio-web/src/shared/resources/index.ts",
   "studio-web/src/shared/resources/labResources.test.ts",
   "studio-web/src/shared/storage/workspaceStore.test.ts",
-  "studio-web/test-support/kernelWorker.ts",
-  "studio-web/vite.config.ts"
+  "studio-web/test-support/kernelWorker.ts"
  ],
  "history": []
 }
