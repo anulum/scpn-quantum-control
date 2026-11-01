@@ -9,7 +9,7 @@
 
 from tools import preflight
 from tools import whole_program_ad_product_quality_gates as quality_gates
-from tools.ci_workflow_inventory import read_ci_workflow_source
+from tools.ci_workflow_inventory import load_ci_workflow_policy, read_ci_workflow_source
 
 
 def test_static_gate_is_strict_and_numpy_documented() -> None:
@@ -57,3 +57,17 @@ def test_ci_runs_and_aggregates_gate() -> None:
     assert all(path in block for path in quality_gates.WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_COHORT)
     assert "--include=*/whole_program_ad_product.py,*/whole_program_ad_api.py" in block
     assert "whole-program-ad-product-quality" in workflow[workflow.index("  ci-gate:") :]
+    download = block.index("name: Download the Python 3.12 Rust engine wheel")
+    install = block.index("name: Install the current Rust engine wheel")
+    execution = block.index("python -m coverage run")
+    assert download < install < execution
+    assert "name: scpn-quantum-engine-3.12" in block
+    assert (
+        "python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl" in block
+    )
+    category = next(
+        item
+        for item in load_ci_workflow_policy()["categories"]
+        if item["id"] == "benchmark-evidence"
+    )
+    assert "native-build" in category["caller_needs"]

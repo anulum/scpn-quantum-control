@@ -4,6 +4,9 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Require the current Rust engine in whole-program backend qualification instead
+  of skipping replay when the dependency is unavailable.
+
 - Keyboard acceptance inventories commands revealed by focus; CLI cancellation
   is exercised at the original atomic checkpoint before a reserved action runs.
 

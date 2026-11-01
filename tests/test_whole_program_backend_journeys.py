@@ -89,8 +89,6 @@ def test_whole_program_backend_journeys_02_frozen_program_replays_across_admitte
     report = replay_whole_program(restored, _journey)
     assert report.record.program_ir_sha256 == record.program_ir_sha256
     # The Rust route consumes the same serialised program.
-    engine = pytest.importorskip("scpn_quantum_engine")
-    assert engine is not None
     from scpn_quantum_control.program_ad_rust_bridge import (
         value_and_grad_program_ad_effect_ir_with_rust,
     )

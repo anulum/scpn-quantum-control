@@ -267,7 +267,8 @@
       "id": "benchmark-evidence",
       "workflow": ".github/workflows/ci-benchmark-evidence.yml",
       "caller_needs": [
-        "static-analysis"
+        "static-analysis",
+        "native-build"
       ],
       "jobs": [
         "whole-program-ad-product-quality",
