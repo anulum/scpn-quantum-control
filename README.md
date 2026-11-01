@@ -162,7 +162,7 @@ claims only when the evidence exists.
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 53 |
 | Notebook files | 109 |
-| Example files | 42 |
+| Example files | 43 |
 | Optional extras | 43 |
 | Python test files | 1627 |
 | Public documentation pages | 385 |

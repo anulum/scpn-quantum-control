@@ -13,6 +13,7 @@ from os import devnull
 
 Gate = tuple[str, list[str]]
 WHOLE_PROGRAM_AD_PRODUCT_QUALITY_RATCHET = [
+    "examples/whole_program_replay.py",
     "src/scpn_quantum_control/whole_program_ad_product.py",
     "src/scpn_quantum_control/whole_program_ad_api.py",
     "tests/test_whole_program_ad_product.py",
@@ -31,6 +32,7 @@ WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_COHORT = [
     "tests/test_whole_program_frontend.py",
     "tests/test_effectful_ad_replay.py",
     "tests/test_whole_program_backend_journeys.py",
+    "tests/test_whole_program_ad_product_quality_gate.py",
 ]
 """Tests that own exact whole-program AD product coverage."""
 WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_DATA_FILE = (
@@ -102,7 +104,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/whole_program_ad_product.py,*/whole_program_ad_api.py",
+                "--include=*/whole_program_ad_product.py,*/whole_program_ad_api.py,*/examples/whole_program_replay.py,*/tests/test_whole_program_backend_journeys.py,*/tools/whole_program_ad_product_quality_gates.py,*/tests/test_whole_program_ad_product_quality_gate.py",
             ],
         ),
     ]

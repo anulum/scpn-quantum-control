@@ -32,6 +32,7 @@ jobs:
         run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
       - run: >-
           python -m mypy --strict --explicit-package-bases
+          examples/whole_program_replay.py
           src/scpn_quantum_control/whole_program_ad_product.py
           src/scpn_quantum_control/whole_program_ad_api.py
           tests/test_whole_program_ad_product.py
@@ -45,6 +46,7 @@ jobs:
           python -m ruff check --isolated --preview --select D,D413,D417,D420
           --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
+          examples/whole_program_replay.py
           src/scpn_quantum_control/whole_program_ad_product.py
           src/scpn_quantum_control/whole_program_ad_api.py
           tests/test_whole_program_ad_product.py
@@ -64,11 +66,12 @@ jobs:
           tests/test_whole_program_frontend.py
           tests/test_effectful_ad_replay.py
           tests/test_whole_program_backend_journeys.py
+          tests/test_whole_program_ad_product_quality_gate.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-whole-program-ad-product-quality.coverage
           --precision=2 --show-missing --fail-under=100
-          --include=*/whole_program_ad_product.py,*/whole_program_ad_api.py
+          --include=*/whole_program_ad_product.py,*/whole_program_ad_api.py,*/examples/whole_program_replay.py,*/tests/test_whole_program_backend_journeys.py,*/tools/whole_program_ad_product_quality_gates.py,*/tests/test_whole_program_ad_product_quality_gate.py
       - name: mypy-strict-differentiable-programming-contracts-quality
         run: >-
           python -m mypy --strict --explicit-package-bases

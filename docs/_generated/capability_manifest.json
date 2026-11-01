@@ -2,7 +2,7 @@
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
     "domain_package_families": 40,
-    "example_files": 42,
+    "example_files": 43,
     "github_workflows": 45,
     "model_documentation_pages": 14,
     "notebook_files": 109,
@@ -58,7 +58,8 @@
       "examples/method_comparison.py",
       "examples/native_transform_algebra.py",
       "examples/studio_workflow.py",
-      "examples/variational_baseline_qualification.py"
+      "examples/variational_baseline_qualification.py",
+      "examples/whole_program_replay.py"
     ],
     "notebooks": [
       "notebooks/01_kuramoto_xy_dynamics.ipynb",

@@ -1,3 +1,10 @@
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<!-- Commercial license available -->
+<!-- © Concepts 1996–2026 Miroslav Šotek. All rights reserved. -->
+<!-- © Code 2020–2026 Miroslav Šotek. All rights reserved. -->
+<!-- ORCID: 0009-0009-3560-0851 -->
+<!-- Contact: www.anulum.li | protoscience@anulum.li -->
+<!-- SCPN Quantum Control — differentiable API guide -->
 # Differentiable API
 
 > **New here?** Start with [Choosing a Gradient Path](choosing_a_gradient_path.md) —
@@ -277,6 +284,30 @@ and attached adjoint to the captured computation. Mismatched content refuses
 construction or derivative access; ordinary copies preserve it and restoration
 recovers access. Numerical Rust inputs require typed/wire correspondence; see
 [runtime IR and derivative correspondence](differentiable_programming.md#runtime-ir-and-derivative-correspondence).
+
+### Replay a complete polynomial and linear-solve program
+
+The executable example captures the same user program used by the Python,
+Rust effect-IR and browser WASM integration tests:
+
+```bash
+PYTHONPATH=src:oscillatools/src python examples/whole_program_replay.py > replay.json
+```
+
+For two dimensionless parameters, it composes
+`b = p*p + 2*p + [0.5, -1]`, solves `[[3, 1], [1, 2]] @ x = b`, and evaluates
+`sum(x*x) + 3*sum(x)`. Each of the three input captures contains its actual
+effect-IR, SHA-256, little-endian WASM input bytes, portable replay record and
+Python value/gradient. The browser test passes those exact bytes through
+`instantiateProgramAd`, then compares against a separate closed-form inverse
+and analytic chain rule using `1e-12 + 1e-12*abs(reference)` per scalar.
+
+This qualifies that well-conditioned float64 composition, not arbitrary Python,
+Julia Program-AD, hardware execution or bit-exact cross-platform linear algebra.
+Unknown IR versions, unsupported stages, malformed envelopes and nonfinite
+bindings refuse; a valid replay on the same WASM instance must still succeed
+afterward. The committed rational replay card keeps its separate, narrower
+bit-exact contract and does not accept this example as a replacement artefact.
 
 
 ## Unified façade

@@ -35,7 +35,10 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/whole_program_ad_product.py,*/whole_program_ad_api.py" in report
+    assert (
+        "--include=*/whole_program_ad_product.py,*/whole_program_ad_api.py,*/examples/whole_program_replay.py,*/tests/test_whole_program_backend_journeys.py,*/tools/whole_program_ad_product_quality_gates.py,*/tests/test_whole_program_ad_product_quality_gate.py"
+        in report
+    )
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -55,7 +58,10 @@ def test_ci_runs_and_aggregates_gate() -> None:
     block = workflow[start:end]
     assert all(path in block for path in quality_gates.WHOLE_PROGRAM_AD_PRODUCT_QUALITY_RATCHET)
     assert all(path in block for path in quality_gates.WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_COHORT)
-    assert "--include=*/whole_program_ad_product.py,*/whole_program_ad_api.py" in block
+    assert (
+        "--include=*/whole_program_ad_product.py,*/whole_program_ad_api.py,*/examples/whole_program_replay.py,*/tests/test_whole_program_backend_journeys.py,*/tools/whole_program_ad_product_quality_gates.py,*/tests/test_whole_program_ad_product_quality_gate.py"
+        in block
+    )
     assert "whole-program-ad-product-quality" in workflow[workflow.index("  ci-gate:") :]
     download = block.index("name: Download the Python 3.12 Rust engine wheel")
     install = block.index("name: Install the current Rust engine wheel")

@@ -31,6 +31,7 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     include: ["src/**/*.test.{ts,tsx}", "quality/**/*.test.ts"],
+    includeSource: ["quality/wholeProgramReplay.ts"],
     coverage: {
       provider: process.env["STUDIO_WORKSPACE_COVERAGE"] ? "custom" : "v8",
       ...(process.env["STUDIO_WORKSPACE_COVERAGE"] ? { customProviderModule: "./quality/workspaceProvider.ts" } : {}),

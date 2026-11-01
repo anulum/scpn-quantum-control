@@ -727,12 +727,14 @@ jobs:
       - name: Enforce Program-AD browser owner exact coverage
         run: >-
           pnpm exec vitest run
-          src/shared/browser/programAd.test.ts src/shared/browser/nativeProgramExecution.test.ts
+          src/shared/browser/programAd.test.ts quality/wholeProgramReplay.ts
+          src/shared/browser/nativeProgramExecution.test.ts
           src/shared/browser/ProgramADReplayCard.test.tsx
           src/shared/browser/useUnitBoundRun.test.tsx
           --coverage
           --coverage.reporter=text
           --coverage.include=src/shared/browser/programAd.ts --coverage.include=src/shared/wasmAssets.ts
+          --coverage.include=quality/wholeProgramReplay.ts
           --coverage.include=src/shared/browser/ProgramADReplayCard.tsx
           --coverage.include=src/shared/browser/useUnitBoundRun.ts
           --coverage.thresholds.statements=100

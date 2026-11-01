@@ -29,6 +29,7 @@ import numpy as np
 import pytest
 from numpy.typing import NDArray
 
+from examples.whole_program_replay import polynomial_solve_objective as _journey
 from scpn_quantum_control.differentiable import (
     WholeProgramStageRefusal,
     whole_program_value_and_grad,
@@ -42,13 +43,6 @@ from scpn_quantum_control.whole_program_ad_api import (
 _A = np.array([[3.0, 1.0], [1.0, 2.0]])
 _C = np.array([0.5, -1.0])
 _POINT = np.array([0.7, -0.4])
-
-
-def _journey(p: Any) -> Any:
-    """Polynomial, then a linear solve, then a scalar objective."""
-    b = p * p + 2.0 * p + _C
-    x = np.linalg.solve(_A, b)
-    return np.sum(x * x) + 3.0 * np.sum(x)
 
 
 def _mixed(p: Any) -> Any:
@@ -103,8 +97,53 @@ def test_whole_program_backend_journeys_02_frozen_program_replays_across_admitte
     )
 
 
+def test_example_captures_the_same_complete_program_for_every_binding(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Every example capture carries the exact public codec and real Rust replay."""
+    import runpy
+
+    from scpn_quantum_control.program_ad_rust_bridge import (
+        value_and_grad_program_ad_effect_ir_with_rust,
+    )
+    from scpn_quantum_control.studio.program_ad_replay_artifact import encode_replay_input
+
+    path = Path(__file__).resolve().parents[1] / "examples" / "whole_program_replay.py"
+    runpy.run_path(str(path), run_name="__main__")
+    captured = json.loads(capsys.readouterr().out)
+    assert captured["schema"] == "whole_program_replay_example.v1"
+    assert [item["inputs"] for item in captured["cases"]] == [
+        [0.7, -0.4],
+        [-1.3, 0.25],
+        [2.0, 1.5],
+    ]
+    for item in captured["cases"]:
+        point = np.array(item["inputs"])
+        value, gradient = _analytic(point)
+        ir = item["effect_ir"]
+        record = WholeProgramReplayRecord.from_json(json.dumps(item["record"]))
+        assert record.parameter_values == tuple(point)
+        assert record.program_ir_sha256 == item["effect_ir_sha256"]
+        assert hashlib.sha256(ir.encode()).hexdigest() == item["effect_ir_sha256"]
+        packed = bytes.fromhex(item["input_hex"])
+        assert packed == encode_replay_input(ir, item["inputs"])
+        assert hashlib.sha256(packed).hexdigest() == item["input_sha256"]
+        rust = value_and_grad_program_ad_effect_ir_with_rust(ir, point)
+        assert rust.supported and not rust.blocked_reasons
+        assert rust.supported_effect_count == rust.effect_count == len(json.loads(ir)["effects"])
+        assert record.value == pytest.approx(value, rel=1e-12, abs=1e-12)
+        assert item["value"] == pytest.approx(value, rel=1e-12, abs=1e-12)
+        assert rust.value == pytest.approx(value, rel=1e-12, abs=1e-12)
+        for actual in (record.gradient, item["gradient"], rust.gradient):
+            np.testing.assert_allclose(actual, gradient, rtol=1e-12, atol=1e-12)
+
+
 def test_whole_program_backend_journeys_03_unsupported_mixed_composition_is_located() -> None:
     """An array built from traced scalars refuses at the solve line, naming the operation."""
+    p, q = _POINT
+    b0, b1 = p * p + q, p * q - 1.0
+    x0, x1 = (2.0 * b0 - b1) / 5.0, (3.0 * b1 - b0) / 5.0
+    assert _mixed(_POINT) == pytest.approx(x0 * x0 + 3.0 * x1, rel=1e-12, abs=1e-12)
     with pytest.raises(WholeProgramStageRefusal) as refused:
         whole_program_value_and_grad(_mixed, _POINT)
     stage = refused.value
@@ -144,9 +183,8 @@ def test_user_raised_exceptions_propagate_unchanged() -> None:
 
     def stop_midway(p: Any) -> Any:
         """Stop after a traced product through the user's own helper."""
-        product = p[0] * p[1]
-        stop()
-        return product
+        _product = p[0] * p[1]
+        return stop()
 
     with pytest.raises(RuntimeError, match="stopped by the user") as raised:
         whole_program_value_and_grad(stop_midway, _POINT)
