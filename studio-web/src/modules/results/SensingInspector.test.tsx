@@ -8,7 +8,7 @@
 
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import committed from "../../../../../data/studio/sensing_instrument_20261031.json";
+import committed from "../../../../data/studio/sensing_instrument_20261031.json";
 import { SensingInspector } from "./SensingInspector";
 import { parseSensingInstrument, sensingInstrument } from "./sensingInstrument";
 

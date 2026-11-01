@@ -15,6 +15,8 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   or signature checks never certify physical randomness.
 - Whitespace-only source, extractor and assumption declarations are refused
   before rendering or export, matching the source-owner projection.
+- Sensing inspectors belong to the Results module, preserving its import
+  boundary and inclusion in the existing exact-coverage checks.
 
 - Qualify competitive comparisons on a frozen challenge:
   `qualify_competitive_campaign` ranks methods only when every retained run,

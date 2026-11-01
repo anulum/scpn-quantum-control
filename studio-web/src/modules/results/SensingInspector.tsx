@@ -7,9 +7,9 @@
 // SCPN Quantum Control — source-owned sensing and entropy provenance instrument
 
 import { useId, useState } from "react";
-import type { Loaded } from "../../../shared/browser/data";
-import { Unverifiable } from "../../../shared/browser/Unverifiable";
-import { EvidenceInspector } from "../../../shared/evidence/EvidenceInspector";
+import type { Loaded } from "../../shared/browser/data";
+import { Unverifiable } from "../../shared/browser/Unverifiable";
+import { EvidenceInspector } from "../../shared/evidence/EvidenceInspector";
 import { entropyEvidenceView, exportEntropyMetadata } from "./sensingInstrument";
 import type { EntropyMetadata, SensingInstrument } from "./sensingInstrument";
 

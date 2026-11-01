@@ -8,8 +8,8 @@
 
 import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
-import { SensingInspector } from "../../features/science/sensing/SensingInspector";
-import { sensingInstrument } from "../../features/science/sensing/sensingInstrument";
+import { SensingInspector } from "./SensingInspector";
+import { sensingInstrument } from "./sensingInstrument";
 import { GradientDebugger } from "./GradientDebugger";
 import { gradientUnits } from "./gradientDebugger";
 import { MitigationInspector } from "./MitigationInspector";

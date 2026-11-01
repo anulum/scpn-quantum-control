@@ -6,10 +6,10 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // SCPN Quantum Control — sensing and entropy metadata projection
 
-import committed from "../../../../../data/studio/sensing_instrument_20261031.json";
-import type { Loaded } from "../../../shared/browser/data";
-import { count, finite, flag, list, record, text } from "../../../shared/browser/jsonFields";
-import type { EvidenceView } from "../../../shared/evidence/evidence";
+import committed from "../../../../data/studio/sensing_instrument_20261031.json";
+import type { Loaded } from "../../shared/browser/data";
+import { count, finite, flag, list, record, text } from "../../shared/browser/jsonFields";
+import type { EvidenceView } from "../../shared/evidence/evidence";
 
 /** A source-owned Gaussian observation design; the browser runs no solver. */
 export interface SensingCandidate {
