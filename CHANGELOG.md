@@ -1264,7 +1264,7 @@ Scientific and hardware claim boundaries remain tied to their recorded evidence.
   isolated-core re-measurement.
 - Place readout counts at the position their label occupies in the supplied
   label order. A permuted or partial order previously resolved each outcome by
-  its numeric bitstring value, silently mis-placing probabilities and raising an
+  its numeric bitstring value, silently misplacing probabilities and raising an
   index error for a label subset. Repeated and empty label orders are now
   refused as ambiguous, and `bitstring_index` resolves against the supplied
   labels. The canonical big-endian order, which every internal caller uses, is

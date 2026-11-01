@@ -9,6 +9,7 @@
 # Domain-specific allowlist
 aer = "aer"           # Qiskit Aer simulator
 Aer = "Aer"           # Qiskit Aer simulator
+Braket = "Braket"     # Amazon Braket provider
 knm = "knm"           # K_nm coupling matrix
 ket = "ket"           # Dirac ket notation
 bra = "bra"           # Dirac bra notation
@@ -23,6 +24,9 @@ upde = "upde"         # Unified Phase Dynamics Equation
 ssgf = "ssgf"         # Stochastic Synthesis of Geometric Fields
 Mena = "Mena"         # Gonzalo Mena, Gumbel-Sinkhorn author (arXiv:1802.08665)
 Teh = "Teh"           # Yee Whye Teh, Concrete-distribution author (arXiv:1611.00712)
+
+[default.extend-identifiers]
+NDArray = "NDArray"   # NumPy array type
 
 [files]
 extend-exclude = [
