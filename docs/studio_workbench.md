@@ -887,6 +887,11 @@ What the service guarantees:
   and accepts only its own `Host` and the `--allow-origin` origins. Only verbs
   whose contract needs no approval and touches no hardware are available;
   `execute` is refused even with an approval.
+- **Explicit browser origins.** Each `--allow-origin` value must be an ASCII
+  HTTP or HTTPS origin with a host and optional port, without credentials, a
+  path, query, fragment, whitespace or control characters. Invalid values
+  stop startup before a socket is bound. Normal and preflight responses use
+  the matching configured origin; malformed or unlisted origins are refused.
 - **No paths or code from the caller.** A request names a project, a revision,
   an idempotency key, a verb, an action id, parameters and optionally a backend.
   Any other field, or an identifier that could name a path, is refused before

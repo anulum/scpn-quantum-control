@@ -636,6 +636,114 @@ def test_server_binds_loopback_with_a_long_token(service: LocalJobService) -> No
 
 
 @pytest.mark.parametrize(
+    "origin",
+    [
+        "",
+        "null",
+        "localhost:4173",
+        "ftp://localhost",
+        "http://",
+        "http://user@localhost",
+        "http://localhost/",
+        "http://localhost?",
+        "http://localhost#fragment",
+        "http://localhost:",
+        "http://localhost:invalid",
+        "http://localhost:65536",
+        "http://[::1",
+        ORIGIN + "\r",
+        ORIGIN + "\n",
+        ORIGIN + "\x00",
+        ORIGIN + "\t",
+        ORIGIN + " ",
+        ORIGIN + "\x7f",
+        ORIGIN + "\x85",
+    ],
+)
+def test_origin_configuration_is_refused_before_binding(
+    service: LocalJobService, origin: str
+) -> None:
+    """Invalid browser origins refuse before the server attempts to bind a socket.
+
+    Parameters
+    ----------
+    service
+        Isolated service whose journal must remain unchanged.
+    origin
+        Invalid origin configuration.
+
+    """
+    before = _counts(service.root)
+    with socket.socket() as occupied:
+        occupied.bind(("127.0.0.1", 0))
+        with pytest.raises(ValueError, match="origin"):
+            LocalJobServer(
+                service, port=occupied.getsockname()[1], token=TOKEN, allowed_origins=[origin]
+            )
+    assert _counts(service.root) == before
+
+
+@pytest.mark.parametrize(
+    "origins",
+    [[], [ORIGIN], ["http://localhost", "https://example.test:8443", "http://[::1]:4173"]],
+)
+def test_origin_configuration_accepts_http_origins(
+    service: LocalJobService, origins: list[str]
+) -> None:
+    """Empty and valid origin configurations retain their exact stored values.
+
+    Parameters
+    ----------
+    service
+        Isolated service.
+    origins
+        Exact configured HTTP or HTTPS origins.
+
+    """
+    instance = LocalJobServer(service, token=TOKEN, allowed_origins=origins)
+    try:
+        assert instance.allowed_origins == frozenset(origins)
+    finally:
+        instance.server_close()
+
+
+@pytest.mark.parametrize("method", ["GET", "OPTIONS"])
+@pytest.mark.parametrize("suffix", ["\x00", "\r\n\t", " extra"])
+def test_origin_controls_are_refused_on_both_response_paths(
+    server: LocalJobServer, method: str, suffix: str
+) -> None:
+    """Unsafe origin values refuse even if the live allow-list is corrupted.
+
+    Parameters
+    ----------
+    server
+        Real loopback HTTP server.
+    method
+        Normal response or browser preflight path.
+    suffix
+        Invalid suffix retained in a fault-injected configuration value.
+
+    """
+    origin = ORIGIN + suffix
+    server.allowed_origins = frozenset([origin])
+    before = _counts(server.service.root)
+    connection = http.client.HTTPConnection("127.0.0.1", server.server_address[1], timeout=10)
+    try:
+        connection.request(
+            method, "/v1/jobs/missing", headers={TOKEN_HEADER: TOKEN, "Origin": origin}
+        )
+        response = connection.getresponse()
+        payload = response.read()
+        assert response.status == 403
+        body = json.loads(payload)
+        assert body["error"] == "origin_refused"
+        assert response.getheader("Access-Control-Allow-Origin") is None
+    finally:
+        connection.close()
+    assert _counts(server.service.root) == before
+
+
+@pytest.mark.parametrize(
     ("field", "value"),
     [
         ("max_workers", 0),

@@ -695,6 +695,31 @@ class LocalJobService:
 # -- loopback HTTP transport ------------------------------------------------
 
 
+def _origin_text_is_safe(origin: str) -> bool:
+    return all("!" <= character <= "~" for character in origin)
+
+
+def _validated_origin(origin: str) -> str:
+    if not _origin_text_is_safe(origin):
+        raise ValueError("an allowed origin must contain visible ASCII characters only")
+    try:
+        target = urlsplit(origin)
+        port = target.port
+    except ValueError as exc:
+        raise ValueError("an allowed origin must have a valid HTTP host and port") from exc
+    if (
+        target.scheme not in {"http", "https"}
+        or not target.hostname
+        or target.username is not None
+        or target.path
+        or "?" in origin
+        or "#" in origin
+        or (port is None and target.netloc.endswith(":"))
+    ):
+        raise ValueError("an allowed origin must be an HTTP or HTTPS origin without a path")
+    return origin
+
+
 class _Handler(BaseHTTPRequestHandler):
     """Route the five operations; every refusal is JSON with a stable code."""
 
@@ -704,11 +729,19 @@ class _Handler(BaseHTTPRequestHandler):
     def log_message(self, format: str, *args: object) -> None:  # noqa: A002
         """Keep request lines out of the service's output."""
 
+    def _configured_origin(self) -> str | None:
+        requested = self.headers.get("Origin")
+        if requested is not None and _origin_text_is_safe(requested):
+            for configured in self.server.allowed_origins:
+                if requested == configured:
+                    return configured
+        return None
+
     def _send(self, status: int, body: object) -> None:
+        origin = self._configured_origin()
         payload = json.dumps(body, sort_keys=True).encode("utf-8")
         self.send_response(status)
-        origin = self.headers.get("Origin")
-        if origin is not None and origin in self.server.allowed_origins:
+        if origin is not None:
             self.send_header("Access-Control-Allow-Origin", origin)
             self.send_header("Vary", "Origin")
         self.send_header("Content-Type", "application/json")
@@ -729,7 +762,7 @@ class _Handler(BaseHTTPRequestHandler):
             self._refuse(421, "host_refused", "requests must address the loopback service")
             return False
         origin = self.headers.get("Origin")
-        if origin is not None and origin not in self.server.allowed_origins:
+        if origin is not None and self._configured_origin() is None:
             self._refuse(403, "origin_refused", "this origin may not use the local job service")
             return False
         token = self.headers.get(TOKEN_HEADER, "")
@@ -801,14 +834,12 @@ class _Handler(BaseHTTPRequestHandler):
 
     def do_OPTIONS(self) -> None:  # noqa: N802 - http.server naming
         """Answer a browser preflight for an allowed origin only."""
-        origin = self.headers.get("Origin")
-        if self.headers.get("Host", "") not in self.server.allowed_hosts or (
-            origin not in self.server.allowed_origins
-        ):
+        origin = self._configured_origin()
+        if self.headers.get("Host", "") not in self.server.allowed_hosts or origin is None:
             self._refuse(403, "origin_refused", "this origin may not use the local job service")
             return
         self.send_response(204)
-        self.send_header("Access-Control-Allow-Origin", str(origin))
+        self.send_header("Access-Control-Allow-Origin", origin)
         self.send_header("Access-Control-Allow-Methods", "GET, POST")
         self.send_header("Access-Control-Allow-Headers", f"Content-Type, {TOKEN_HEADER}")
         self.send_header("Access-Control-Max-Age", "600")
@@ -831,13 +862,14 @@ class LocalJobServer(ThreadingHTTPServer):
     token
         Session token every request must carry.
     allowed_origins
-        Browser origins that may call the service.
+        ASCII HTTP or HTTPS origins that may call the service, with an optional
+        port and no credentials, path, query, fragment, whitespace or controls.
 
     Raises
     ------
     ValueError
-        ``host`` is not ``127.0.0.1`` or the token is shorter than 32
-        characters.
+        ``host`` is not ``127.0.0.1``, the token is shorter than 32 characters,
+        or a configured origin is invalid. Validation precedes socket binding.
 
     """
 
@@ -856,10 +888,11 @@ class LocalJobServer(ThreadingHTTPServer):
             raise ValueError("the local job service binds 127.0.0.1 only")
         if len(token) < 32:
             raise ValueError("the session token must have at least 32 characters")
+        origins = frozenset(_validated_origin(origin) for origin in allowed_origins)
         super().__init__((host, port), _Handler)
         self.service = service
         self.token = token
-        self.allowed_origins = frozenset(allowed_origins)
+        self.allowed_origins = origins
         bound = self.server_address[1]
         self.allowed_hosts = frozenset({f"127.0.0.1:{bound}", f"localhost:{bound}"})
         self._stop = threading.Event()

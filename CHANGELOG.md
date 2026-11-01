@@ -4,6 +4,9 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Validate local job-service browser origins before binding and use the
+  configured value in normal and preflight response headers.
+
 - Require the current Rust engine in whole-program backend qualification instead
   of skipping replay when the dependency is unavailable.
 
