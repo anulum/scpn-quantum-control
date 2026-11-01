@@ -244,6 +244,7 @@
     "program_ad_array_indexing",
     "program_ad_assembly_primitives",
     "program_ad_broadcast_assembly",
+    "program_ad_builtin_contracts",
     "program_ad_captured_memory",
     "program_ad_captured_state",
     "program_ad_cumulative_primitives",
