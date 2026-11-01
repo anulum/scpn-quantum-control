@@ -4,6 +4,9 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Keyboard acceptance inventories commands revealed by focus; CLI cancellation
+  is exercised at the original atomic checkpoint before a reserved action runs.
+
 ### Sensing and entropy provenance
 
 - Analyse now displays source-owned measurement-design scores and model

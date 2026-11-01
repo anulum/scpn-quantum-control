@@ -12,7 +12,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import expect, sync_playwright
 
 from tools.studio_accessibility_checks import audit_page, keyboard_route, read_auditor
 from tools.tests.test_studio_accessibility_browser_runtime import axe_source as axe_source
@@ -97,5 +97,38 @@ def test_native_keyboard_refuses_a_real_focus_trap(program_bundle: Path) -> None
                 }""")
                 with pytest.raises(AssertionError, match="expected"):
                     keyboard_route(page)
+        finally:
+            browser.close()
+
+
+def test_native_keyboard_includes_focus_revealed_commands_on_the_atlas_route(
+    program_bundle: Path,
+) -> None:
+    """Traverse CSS-revealed commands and the final native link after Analyse.
+
+    Parameters
+    ----------
+    program_bundle
+        Original built Studio and its actual navigation and WASM assets.
+
+    """
+    with owned_fault_host(program_bundle) as preview, sync_playwright() as runtime:
+        browser = runtime.chromium.launch()
+        try:
+            with browser.new_context(service_workers="block") as context:
+                page = context.new_page()
+                page.goto(preview + "#/results", wait_until="networkidle")
+                expect(
+                    page.get_by_role("region", name="Sensing and entropy provenance", exact=True)
+                ).to_be_visible()
+                atlas = page.get_by_role("link", name="Atlas", exact=True)
+                atlas.focus()
+                page.keyboard.press("Enter")
+                expect(
+                    page.get_by_role("region", name="Workbench view", exact=True)
+                ).to_be_focused()
+                observed = keyboard_route(page)
+                assert observed["enabled_controls"] == observed["tab_reached"]
+                assert observed["native_modal_trap_and_origin"] is True
         finally:
             browser.close()

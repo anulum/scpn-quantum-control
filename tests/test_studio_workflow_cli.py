@@ -548,3 +548,71 @@ def test_resume_keeps_original_checkpoint_when_atomic_wire_exceeds_byte_bound(
     assert refused.out == ""
     assert refused.err == "scpn-studio-workflow: source, checkpoint or original runtime refused\n"
     assert not list(tmp_path.glob("*.partial"))
+
+
+def test_module_cli_cancels_at_atomic_checkpoint_before_running_the_reserved_action(
+    tmp_path: Path,
+) -> None:
+    """Deliver actual SIGINT at the original atomic save without a signalling race.
+
+    Parameters
+    ----------
+    tmp_path
+        Owned original workflow, checkpoint and isolated child-process allocation.
+
+    """
+    source = source_file(tmp_path)
+    before = source.read_bytes()
+    target = tmp_path / "journal.json"
+    script = """
+import os
+import runpy
+import signal
+import sys
+
+source, target = sys.argv[1:]
+class InterruptAtCheckpoint:
+    '''Deliver one real SIGINT at the original checkpoint replacement.'''
+
+    # CPython traces audit callbacks only with this explicit opt-in:
+    # https://docs.python.org/3.12/library/sys.html#sys.addaudithook
+    __cantrace__: bool = True
+    delivered: bool = False
+
+    def __call__(self, event: str, arguments: tuple[object, ...]) -> None:
+        '''Observe the native event and signal this child once.'''
+
+        if event == "os.rename" and arguments[1] == target and not self.delivered:
+            self.delivered = True
+            os.kill(os.getpid(), signal.SIGINT)
+
+interrupt = InterruptAtCheckpoint()
+signal.signal(signal.SIGINT, signal.SIG_IGN)
+sys.addaudithook(interrupt)
+sys.argv = ["scpn-studio-workflow", source, "--journal", target]
+try:
+    runpy.run_module("scpn_quantum_control.studio.workflow_cli", run_name="__main__")
+except SystemExit:
+    assert interrupt.delivered
+    assert signal.getsignal(signal.SIGINT) is signal.SIG_IGN
+    raise
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", script, str(source), str(target)],
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+    assert result.returncode == 130, result.stderr
+    assert result.stderr == ""
+    document = cast(dict[str, object], read_json(result.stdout))
+    body = cast(dict[str, object], document["body"])
+    assert body["state"] == "cancelled" and body["evaluations"] == 1
+    entries = cast(list[dict[str, object]], body["entries"])
+    assert len(entries) == 1
+    assert entries[0]["status"] == "cancelled" and entries[0]["output"] is None
+    assert canonical_bytes("atomic-cancel.v1", read_json(target.read_text())) == (
+        canonical_bytes("atomic-cancel.v1", document)
+    )
+    assert source.read_bytes() == before and not list(tmp_path.glob("*.partial"))

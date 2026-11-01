@@ -95,6 +95,8 @@ def keyboard_route(page: Page) -> dict[str, object]:
     """
     from playwright.sync_api import expect
 
+    # CSS reveals command results only while their navigation has focus.
+    page.get_by_label("Search commands", exact=True).focus()
     count = cast(
         int,
         page.evaluate("""() => {

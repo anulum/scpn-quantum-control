@@ -124,7 +124,9 @@ The accessibility journey audits every delivered view in both themes, including
 loading, empty filters, compiler refusals, malformed routes/evidence, offline
 kernel transport, altered source digests and delayed old verification. It uses
 the locked axe-core source with its default rules, retains complete reports,
-and refuses serious or critical findings. A recorded walkthrough with an actual
+and refuses serious or critical findings. Keyboard traversal inventories command
+results with their search field focused, so focus-revealed actions are included
+in the native Tab checks. A recorded walkthrough with an actual
 screen reader supplies the separate assistive-technology evidence.
 
 Run it against the actual built bundle and a separately owned source host:
