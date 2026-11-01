@@ -4,7 +4,7 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **858 modules** across **41 package families**
+- **859 modules** across **41 package families**
 - **4654 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
@@ -7296,6 +7296,14 @@ Static broadcast assembly derivative rules for Program AD.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/program_ad_broadcast_assembly.py) · Public symbols: **2**
 
 **Functions:** `program_ad_assembly_broadcast_to_derivative_rule()`, `program_ad_assembly_broadcast_arrays_derivative_rule()`
+
+### `scpn_quantum_control.program_ad_builtin_contracts`
+
+Initialize builtin primitive families without importing a public facade.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/program_ad_builtin_contracts.py) · Public symbols: **0**
+
+No public module-level class or function is declared.
 
 ### `scpn_quantum_control.program_ad_captured_memory`
 

@@ -35,6 +35,9 @@ jobs:
           examples/whole_program_replay.py
           src/scpn_quantum_control/whole_program_ad_product.py
           src/scpn_quantum_control/whole_program_ad_api.py
+          src/scpn_quantum_control/differentiable.py
+          src/scpn_quantum_control/program_ad_builtin_contracts.py
+          tests/test_program_ad_builtin_contracts.py
           tests/test_whole_program_ad_product.py
           tests/test_whole_program_ad_contracts.py
           tests/test_whole_program_ad_runtime.py
@@ -49,6 +52,9 @@ jobs:
           examples/whole_program_replay.py
           src/scpn_quantum_control/whole_program_ad_product.py
           src/scpn_quantum_control/whole_program_ad_api.py
+          src/scpn_quantum_control/differentiable.py
+          src/scpn_quantum_control/program_ad_builtin_contracts.py
+          tests/test_program_ad_builtin_contracts.py
           tests/test_whole_program_ad_product.py
           tests/test_whole_program_ad_contracts.py
           tests/test_whole_program_ad_runtime.py
@@ -60,6 +66,7 @@ jobs:
           python -m coverage run --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-whole-program-ad-product-quality.coverage --branch
           -m pytest -q
+          tests/test_program_ad_builtin_contracts.py
           tests/test_whole_program_ad_product.py
           tests/test_whole_program_ad_contracts.py
           tests/test_whole_program_ad_runtime.py
@@ -71,7 +78,7 @@ jobs:
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-whole-program-ad-product-quality.coverage
           --precision=2 --show-missing --fail-under=100
-          --include=*/whole_program_ad_product.py,*/whole_program_ad_api.py,*/examples/whole_program_replay.py,*/tests/test_whole_program_backend_journeys.py,*/tools/whole_program_ad_product_quality_gates.py,*/tests/test_whole_program_ad_product_quality_gate.py
+          --include=*/whole_program_ad_product.py,*/whole_program_ad_api.py,*/differentiable.py,*/program_ad_builtin_contracts.py,*/tests/test_program_ad_builtin_contracts.py,*/examples/whole_program_replay.py,*/tests/test_whole_program_backend_journeys.py,*/tools/whole_program_ad_product_quality_gates.py,*/tests/test_whole_program_ad_product_quality_gate.py
       - name: mypy-strict-differentiable-programming-contracts-quality
         run: >-
           python -m mypy --strict --explicit-package-bases

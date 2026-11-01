@@ -36,7 +36,7 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
     assert (
-        "--include=*/whole_program_ad_product.py,*/whole_program_ad_api.py,*/examples/whole_program_replay.py,*/tests/test_whole_program_backend_journeys.py,*/tools/whole_program_ad_product_quality_gates.py,*/tests/test_whole_program_ad_product_quality_gate.py"
+        "--include=*/whole_program_ad_product.py,*/whole_program_ad_api.py,*/differentiable.py,*/program_ad_builtin_contracts.py,*/tests/test_program_ad_builtin_contracts.py,*/examples/whole_program_replay.py,*/tests/test_whole_program_backend_journeys.py,*/tools/whole_program_ad_product_quality_gates.py,*/tests/test_whole_program_ad_product_quality_gate.py"
         in report
     )
 
@@ -59,7 +59,7 @@ def test_ci_runs_and_aggregates_gate() -> None:
     assert all(path in block for path in quality_gates.WHOLE_PROGRAM_AD_PRODUCT_QUALITY_RATCHET)
     assert all(path in block for path in quality_gates.WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_COHORT)
     assert (
-        "--include=*/whole_program_ad_product.py,*/whole_program_ad_api.py,*/examples/whole_program_replay.py,*/tests/test_whole_program_backend_journeys.py,*/tools/whole_program_ad_product_quality_gates.py,*/tests/test_whole_program_ad_product_quality_gate.py"
+        "--include=*/whole_program_ad_product.py,*/whole_program_ad_api.py,*/differentiable.py,*/program_ad_builtin_contracts.py,*/tests/test_program_ad_builtin_contracts.py,*/examples/whole_program_replay.py,*/tests/test_whole_program_backend_journeys.py,*/tools/whole_program_ad_product_quality_gates.py,*/tests/test_whole_program_ad_product_quality_gate.py"
         in block
     )
     assert "whole-program-ad-product-quality" in workflow[workflow.index("  ci-gate:") :]

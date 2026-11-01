@@ -290,6 +290,12 @@ recovers access. Numerical Rust inputs require typed/wire correspondence; see
 The executable example captures the same user program used by the Python,
 Rust effect-IR and browser WASM integration tests:
 
+`whole_program_value_and_grad` is available from the package root,
+`scpn_quantum_control.differentiable`, and its defining module
+`scpn_quantum_control.whole_program_ad_api`. Each route initializes builtin
+primitive contracts on import, including in a fresh interpreter. Reimporting
+the facade or defining module preserves existing user-registered transforms.
+
 ```bash
 PYTHONPATH=src:oscillatools/src python examples/whole_program_replay.py > replay.json
 ```

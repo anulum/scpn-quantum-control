@@ -34,6 +34,7 @@ from .differentiable_transform_helpers import _normalise_parameters
 from .execution_memory import ExecutionBuffer, ExecutionMemoryPlan, dataclass_storage_bytes
 from .execution_reservations import ExecutionMemoryReservation, reserve_execution_memory
 from .program_ad_adjoint_generation import _program_adjoint_result_from_nodes
+from .program_ad_builtin_contracts import _register_program_ad_builtin_contracts
 from .program_ad_captured_state import _capture_program_state, _portable_program_state_digest
 from .program_ad_tape_binding import (
     _TAPE_DIGEST_BYTES,
@@ -57,6 +58,8 @@ from .whole_program_trace_values import (
     TraceADArray,
     TraceADScalar,
 )
+
+_register_program_ad_builtin_contracts()
 
 
 class WholeProgramStageRefusal(ValueError):

@@ -16,6 +16,9 @@ WHOLE_PROGRAM_AD_PRODUCT_QUALITY_RATCHET = [
     "examples/whole_program_replay.py",
     "src/scpn_quantum_control/whole_program_ad_product.py",
     "src/scpn_quantum_control/whole_program_ad_api.py",
+    "src/scpn_quantum_control/differentiable.py",
+    "src/scpn_quantum_control/program_ad_builtin_contracts.py",
+    "tests/test_program_ad_builtin_contracts.py",
     "tests/test_whole_program_ad_product.py",
     "tests/test_whole_program_ad_contracts.py",
     "tests/test_whole_program_ad_runtime.py",
@@ -26,6 +29,7 @@ WHOLE_PROGRAM_AD_PRODUCT_QUALITY_RATCHET = [
 ]
 """Ordered strict-typing and NumPy-docstring cohort."""
 WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_COHORT = [
+    "tests/test_program_ad_builtin_contracts.py",
     "tests/test_whole_program_ad_product.py",
     "tests/test_whole_program_ad_contracts.py",
     "tests/test_whole_program_ad_runtime.py",
@@ -104,7 +108,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/whole_program_ad_product.py,*/whole_program_ad_api.py,*/examples/whole_program_replay.py,*/tests/test_whole_program_backend_journeys.py,*/tools/whole_program_ad_product_quality_gates.py,*/tests/test_whole_program_ad_product_quality_gate.py",
+                "--include=*/whole_program_ad_product.py,*/whole_program_ad_api.py,*/differentiable.py,*/program_ad_builtin_contracts.py,*/tests/test_program_ad_builtin_contracts.py,*/examples/whole_program_replay.py,*/tests/test_whole_program_backend_journeys.py,*/tools/whole_program_ad_product_quality_gates.py,*/tests/test_whole_program_ad_product_quality_gate.py",
             ],
         ),
     ]

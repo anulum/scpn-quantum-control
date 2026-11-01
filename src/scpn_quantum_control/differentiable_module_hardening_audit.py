@@ -218,6 +218,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("elementwise direct rules", "elementwise registry dispatch boundaries"),
         ),
         _record(
+            "src/scpn_quantum_control/program_ad_builtin_contracts.py",
+            ("tests/test_program_ad_builtin_contracts.py",),
+            ("cold public imports", "user transform preservation on public reload"),
+        ),
+        _record(
             "src/scpn_quantum_control/program_ad_array_indexing.py",
             ("tests/test_program_ad_array_indexing_registry.py",),
             ("static gather direct rules", "scatter-add VJP boundaries"),
