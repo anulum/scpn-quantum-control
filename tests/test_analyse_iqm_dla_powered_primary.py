@@ -57,6 +57,7 @@ def test_command_surface_reproduces_committed_primary_analysis(
 def test_incomplete_matrix_stays_non_promotional(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """Keep an incomplete count matrix from supporting the primary claim."""
     partial_counts = tmp_path / "partial-counts.json"
     output = tmp_path / "incomplete.json"
     payload = json.loads(_COUNTS[0].read_text(encoding="utf-8"))
@@ -78,6 +79,7 @@ def test_incomplete_matrix_stays_non_promotional(
 
 
 def test_layout_mismatch_and_degenerate_statistics_fail_closed(tmp_path: Path) -> None:
+    """Reject incompatible layouts, empty samples and zero pooled variance."""
     first = tmp_path / "first.json"
     second = tmp_path / "second.json"
     first.write_text(json.dumps({"counts": {}, "layout": [1]}), encoding="utf-8")

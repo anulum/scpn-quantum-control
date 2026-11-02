@@ -1,13 +1,13 @@
 {
  "schema": "test_documentation_ceiling_v1",
  "ruff_version": "ruff 0.16.4",
- "measured_commit": "b630d80f6520c19a36f77a6d1eb18514e0879eba",
+ "measured_commit": "e2c17dbe495e874b04871a8c65b159e0fb208e08",
  "scopes": [
   "tests",
   "oscillatools/tests"
  ],
- "total_findings": 7158,
- "total_files": 573,
+ "total_findings": 7155,
+ "total_files": 572,
  "files": {
   "oscillatools/tests/conftest.py": 1,
   "oscillatools/tests/kuramoto_delay_sensitivity_witness.py": 1,
@@ -125,7 +125,6 @@
   "tests/test_analyse_iqm_dla_d10_retest.py": 5,
   "tests/test_analyse_iqm_dla_depth_profile.py": 4,
   "tests/test_analyse_iqm_dla_parity.py": 2,
-  "tests/test_analyse_iqm_dla_powered_primary.py": 3,
   "tests/test_analyse_iqm_layout_campaign.py": 1,
   "tests/test_analyse_iqm_layout_pinned_repeat.py": 2,
   "tests/test_analyse_s1_dynamic_circuit_constraints.py": 3,
