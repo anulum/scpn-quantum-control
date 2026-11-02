@@ -32,6 +32,11 @@ _PROGRAM_AD_FACADE_IMPORT_COUNT = 201
 _PROGRAM_AD_FACADE_IMPORT_DIGEST = (
     "a9601aada785d477cee64787a2e729028bca2727f98701632c0f54c6dc78d222"
 )
+_PROGRAM_AD_BUILTIN_INITIALIZER_IMPORT = (
+    "program_ad_builtin_contracts",
+    "_register_program_ad_builtin_contracts",
+    "_register_program_ad_builtin_contracts",
+)
 
 
 def _program_ad_facade_imports() -> tuple[tuple[str, str, str], ...]:
@@ -92,8 +97,12 @@ def test_short_namespace_reexports_canonical_surface() -> None:
 def test_program_ad_facade_reexports_exact_leaf_objects() -> None:
     """Every frozen Program AD facade import must retain exact leaf identity."""
     imports = _program_ad_facade_imports()
-    payload = json.dumps(imports, separators=(",", ":"), ensure_ascii=True).encode()
-    assert len(imports) == _PROGRAM_AD_FACADE_IMPORT_COUNT
+    assert imports.count(_PROGRAM_AD_BUILTIN_INITIALIZER_IMPORT) == 1
+    frozen_imports = tuple(
+        item for item in imports if item != _PROGRAM_AD_BUILTIN_INITIALIZER_IMPORT
+    )
+    payload = json.dumps(frozen_imports, separators=(",", ":"), ensure_ascii=True).encode()
+    assert len(frozen_imports) == _PROGRAM_AD_FACADE_IMPORT_COUNT
     assert hashlib.sha256(payload).hexdigest() == _PROGRAM_AD_FACADE_IMPORT_DIGEST
 
     facade_exports = vars(differentiable_facade)
