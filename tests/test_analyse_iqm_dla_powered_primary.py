@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import json
+import math
 import runpy
 import sys
 from pathlib import Path
@@ -31,6 +32,7 @@ _COMMITTED = _DATA / "iqm_dla_powered_primary_analysis_2026-07-21.json"
 def test_command_surface_reproduces_committed_primary_analysis(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """Reproduce every report field, allowing one ULP only for libm tail probabilities."""
     output = tmp_path / "analysis.json"
     monkeypatch.setattr(
         sys,
@@ -42,9 +44,11 @@ def test_command_surface_reproduces_committed_primary_analysis(
         runpy.run_path(str(_SCRIPT), run_name="__main__")
 
     assert exc_info.value.code == 0
-    assert json.loads(output.read_text(encoding="utf-8")) == json.loads(
-        _COMMITTED.read_text(encoding="utf-8")
-    )
+    committed = json.loads(_COMMITTED.read_text(encoding="utf-8"))
+    for row in [committed["primary_pooled"], *committed["per_depth"].values()]:
+        probability = row["one_sided_p"]
+        row["one_sided_p"] = pytest.approx(probability, rel=0.0, abs=math.ulp(probability))
+    assert json.loads(output.read_text(encoding="utf-8")) == committed
     stdout = capsys.readouterr().out
     assert "PRIMARY REJECTS H0 (backend-universal direction): True" in stdout
     assert "d10:" in stdout

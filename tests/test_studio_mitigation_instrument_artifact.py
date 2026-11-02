@@ -13,6 +13,7 @@ import json
 import runpy
 import shutil
 import sys
+from decimal import Decimal, localcontext
 from pathlib import Path
 from typing import Any, cast
 
@@ -170,7 +171,12 @@ def test_every_case_keeps_its_raw_counts_and_shot_accounting(payload: dict[str, 
                 corrected["total_standard_error"],
                 strict=True,
             ):
-                assert total == pytest.approx(np.hypot(sampling, calibration), abs=1e-15)
+                with localcontext() as context:
+                    context.prec = 80
+                    left = Decimal.from_float(sampling)
+                    right = Decimal.from_float(calibration)
+                    expected = (left * left + right * right).sqrt()
+                assert total == float(expected)
 
 
 def test_zne_matches_an_independent_generalised_least_squares(payload: dict[str, Any]) -> None:

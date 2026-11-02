@@ -581,14 +581,15 @@ def test_replay_and_capture_refuse_malformed_inputs(tmp_path: Path) -> None:
 def test_capture_refuses_state_beyond_the_portable_snapshot(tmp_path: Path) -> None:
     """Live binding fits, but the portable digest also hashes code constants.
 
-    An 8.08 MB captured array leaves the live snapshot under its 8 MiB limit;
-    a 400 kB string constant in the code pushes the portable snapshot over it.
+    An 8.384 MB captured array leaves the live snapshot under its 8 MiB limit;
+    an 8 KiB code constant pushes the portable snapshot over it. The short
+    source also keeps frontend and tape inspection inside a 64 MiB budget.
     """
     source = (
         "import numpy as np\n\n"
-        "WEIGHTS = np.zeros(1_010_000)\n\n\n"
+        "WEIGHTS = np.zeros(1_048_000)\n\n\n"
         "def objective(values):\n"
-        f'    label = "{"x" * 400_000}"\n'
+        f'    label = "{"x" * 8192}"\n'
         "    return values[0] * 2.0 + WEIGHTS[0]\n"
     )
     path = tmp_path / "replay_large_fixture.py"
@@ -597,7 +598,10 @@ def test_capture_refuses_state_beyond_the_portable_snapshot(tmp_path: Path) -> N
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    result = whole_program_value_and_grad(module.objective, [1.0], trace=False)
+    result = whole_program_value_and_grad(
+        module.objective, [1.0], trace=False, max_execution_gib=0.0625
+    )
+    assert result.value == 2.0
     assert result.gradient.tolist() == [2.0]
     with pytest.raises(ValueError, match="no portable encoding"):
         capture_whole_program_replay(result)
