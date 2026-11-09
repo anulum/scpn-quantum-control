@@ -2121,7 +2121,7 @@
       "source": "src/scpn_quantum_control/ml_examples/qnn_convergence.py",
       "scope": "run_qnn_framework_rows",
       "call_sha256": "82fe3b3559c3036efe9fd828d3cdf007bafdcc777acf815740025bc60d0ca5ff",
-      "source_sha256": "c2c9a884ac71f25d2d357a1bd4b3388ec6bba5b3e30fdc6c82eb23add9ca18fc",
+      "source_sha256": "c30ff2a4a4ccb4deda2adbb4cedc436082d2e7237194d86d7ecbd4aa0c50495b",
       "role": "external",
       "reason": "Validated framework names select literal dependency strings jax, torch or tensorflow from the framework-runner table.",
       "count": 1
