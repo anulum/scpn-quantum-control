@@ -15,7 +15,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass
-from typing import Final
+from typing import Final, Literal
 
 import numpy as np
 from numpy.typing import NDArray
@@ -120,12 +120,96 @@ class QSNNParameterShiftDescentRun:
         }
 
 
-def _training_diagnostics(loss_history: tuple[float, ...]) -> QSNNTrainingDiagnostics:
+def _validated_loss_history(loss_history: tuple[float, ...]) -> NDArray[np.float64]:
+    """Validate recorded epoch losses and return their float64 vector.
+
+    Parameters
+    ----------
+    loss_history
+        Recorded mean squared losses, in epoch order.
+
+    Returns
+    -------
+    NDArray[np.float64]
+        Nonempty, finite, nonnegative, one-dimensional loss history.
+
+    Raises
+    ------
+    ValueError
+        If the history is empty, non-flat, non-finite or negative.
+
+    """
     if not loss_history:
         raise ValueError("loss_history must contain at least one epoch")
-    losses = np.asarray(loss_history, dtype=float)
+    losses = np.asarray(loss_history, dtype=np.float64)
+    if losses.shape != (len(loss_history),):
+        raise ValueError("loss_history must be a flat vector")
     if not np.all(np.isfinite(losses)):
         raise ValueError("loss_history must contain only finite losses")
+    if np.any(losses < 0):
+        raise ValueError("loss_history must contain nonnegative losses")
+    return losses
+
+
+def _validated_synapse_vector(
+    values: NDArray[np.float64],
+    expected: int,
+    *,
+    name: str,
+    value_kind: Literal["values", "angles"] = "values",
+) -> NDArray[np.float64]:
+    """Validate flat finite synapse parameters while retaining their numeric units.
+
+    Parameters
+    ----------
+    values
+        Synapse weights or CRy angles, in the caller's units.
+    expected
+        Required number of synapse parameters.
+    name
+        Vector description used in validation errors.
+    value_kind
+        Plural description of the elements used in finiteness errors.
+
+    Returns
+    -------
+    NDArray[np.float64]
+        Float64 vector of shape ``(expected,)`` with its original numeric values.
+
+    Raises
+    ------
+    ValueError
+        If the vector shape differs or a value is non-finite.
+
+    """
+    vector = np.asarray(values, dtype=np.float64)
+    if vector.shape != (expected,):
+        raise ValueError(f"{name} must have shape ({expected},)")
+    if not np.all(np.isfinite(vector)):
+        raise ValueError(f"{name} must contain only finite {value_kind}")
+    return vector
+
+
+def _training_diagnostics(loss_history: tuple[float, ...]) -> QSNNTrainingDiagnostics:
+    """Summarise convergence from recorded nonnegative epoch losses.
+
+    Parameters
+    ----------
+    loss_history
+        Mean squared losses in epoch order.
+
+    Returns
+    -------
+    QSNNTrainingDiagnostics
+        Initial, final and best losses, loss decrease and monotonicity checks.
+
+    Raises
+    ------
+    ValueError
+        If the history is empty, non-flat, non-finite or negative.
+
+    """
+    losses = _validated_loss_history(loss_history)
     deltas = np.diff(losses)
     max_increase = float(np.max(deltas)) if deltas.size else 0.0
     max_increase = max(0.0, max_increase)
@@ -369,6 +453,10 @@ class QSNNTrainer:
     def restore(self, checkpoint: QSNNTrainingCheckpoint) -> None:
         """Resume from a checkpoint so that further training matches an uninterrupted run.
 
+        Identity, layer dimensions, weight bounds, epoch history, data custody
+        and the optimiser are checked before any synapse or trainer state is
+        changed. Refusing a malformed checkpoint preserves the previous state.
+
         Parameters
         ----------
         checkpoint
@@ -377,29 +465,77 @@ class QSNNTrainer:
         Raises
         ------
         ValueError
-            If the layer shape differs.
+            If the checkpoint identity, layer shape, weight bounds, epoch history,
+            training-data custody, feature bounds or learning rate are invalid.
 
         """
+        if checkpoint.schema != QSNN_CHECKPOINT_SCHEMA:
+            raise ValueError("unsupported QSNN checkpoint schema")
+        if checkpoint.randomness != QSNN_RANDOMNESS:
+            raise ValueError("QSNN checkpoint randomness statement differs from this trainer")
         if (checkpoint.n_neurons, checkpoint.n_inputs) != (
             self.layer.n_neurons,
             self.layer.n_inputs,
         ):
             raise ValueError("checkpoint layer shape differs from this trainer's layer")
-        flat = iter(checkpoint.weights)
-        for ni in range(self.layer.n_neurons):
-            for ii in range(self.layer.n_inputs):
-                self.layer.synapses[ni][ii].update_weight(next(flat))
+        if len(checkpoint.weights) != self.layer.n_neurons * self.layer.n_inputs:
+            raise ValueError("checkpoint weight count differs from this trainer's layer")
+        weights = _validated_synapse_vector(
+            np.asarray(checkpoint.weights, dtype=np.float64),
+            self.layer.n_neurons * self.layer.n_inputs,
+            name="checkpoint weights",
+        )
+        synapses = [
+            self.layer.synapses[ni][ii]
+            for ni in range(self.layer.n_neurons)
+            for ii in range(self.layer.n_inputs)
+        ]
+        if any(
+            weight < synapse.w_min or weight > synapse.w_max
+            for weight, synapse in zip(weights, synapses, strict=True)
+        ):
+            raise ValueError("checkpoint weights outside synapse bounds")
+        low = (
+            None
+            if checkpoint.feature_low is None
+            else np.array(checkpoint.feature_low, dtype=np.float64)
+        )
+        high = (
+            None
+            if checkpoint.feature_high is None
+            else np.array(checkpoint.feature_high, dtype=np.float64)
+        )
+        if (low is None) != (high is None):
+            raise ValueError("checkpoint feature bounds must be present together")
+        if low is not None and high is not None:
+            if low.shape != (self.layer.n_inputs,) or high.shape != (self.layer.n_inputs,):
+                raise ValueError("checkpoint feature bounds must match the input count")
+            if not np.all(np.isfinite(low)) or not np.all(np.isfinite(high)) or np.any(low > high):
+                raise ValueError("checkpoint feature bounds must be finite and ordered")
+        optimizer = DifferentiableOptimizer(learning_rate=checkpoint.learning_rate)
+        history = list(checkpoint.loss_history)
+        if checkpoint.completed_epochs < 0:
+            raise ValueError("checkpoint completed_epochs must be nonnegative")
+        if checkpoint.completed_epochs:
+            _validated_loss_history(checkpoint.loss_history)
+        if len(history) != checkpoint.completed_epochs:
+            raise ValueError("checkpoint loss_history length must match completed_epochs")
+        training_rows = set(checkpoint.training_row_digests)
+        if bool(training_rows) != (low is not None):
+            raise ValueError(
+                "checkpoint training rows and feature bounds must be present together"
+            )
+        if checkpoint.completed_epochs and not training_rows:
+            raise ValueError("checkpoint completed epochs require training data custody")
+        for synapse, weight in zip(synapses, weights, strict=True):
+            synapse.update_weight(float(weight))
         self.lr = checkpoint.learning_rate
-        self.optimizer = DifferentiableOptimizer(learning_rate=checkpoint.learning_rate)
+        self.optimizer = optimizer
         self._completed_epochs = checkpoint.completed_epochs
-        self._loss_history = list(checkpoint.loss_history)
-        self._training_rows = set(checkpoint.training_row_digests)
-        self._feature_low = (
-            None if checkpoint.feature_low is None else np.array(checkpoint.feature_low)
-        )
-        self._feature_high = (
-            None if checkpoint.feature_high is None else np.array(checkpoint.feature_high)
-        )
+        self._loss_history = history
+        self._training_rows = training_rows
+        self._feature_low = low
+        self._feature_high = high
 
     def evaluate(self, X: NDArray[np.float64], y: NDArray[np.float64]) -> QSNNEvaluation:
         """Score held-out data, refusing overlap with training and flagging OOD samples.
@@ -550,13 +686,23 @@ class QSNNTrainer:
         )
 
     def _set_theta_values(self, values: NDArray[np.float64]) -> None:
-        """Set all synapse CRy angles from a flat parameter vector."""
-        angles = np.asarray(values, dtype=float)
+        """Set synapse CRy angles through the existing bounded weight conversion.
+
+        Parameters
+        ----------
+        values
+            Finite CRy angles in radians, with shape ``(n_neurons * n_inputs,)``.
+            The synapses retain their existing weight-clamping behaviour.
+
+        Raises
+        ------
+        ValueError
+            If the vector has the wrong shape or contains a non-finite angle,
+            before changing any synapse.
+
+        """
         expected = self.layer.n_neurons * self.layer.n_inputs
-        if angles.shape != (expected,):
-            raise ValueError(f"values must have shape ({expected},)")
-        if not np.all(np.isfinite(angles)):
-            raise ValueError("values must contain only finite angles")
+        angles = _validated_synapse_vector(values, expected, name="values", value_kind="angles")
         flat_index = 0
         for ni in range(self.layer.n_neurons):
             for ii in range(self.layer.n_inputs):

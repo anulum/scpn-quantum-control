@@ -1877,6 +1877,25 @@ This route is full-batch local-simulator training. Hardware backends remain
 disabled by default through the same fail-closed backend planner used by phase
 gradients.
 
+`QSNNTrainer.checkpoint()` retains the exact weights, learning rate, epoch and
+loss history, training-row digests and feature bounds. Round-trip its JSON with
+`QSNNTrainingCheckpoint.from_json(...)` and pass the record to `trainer.restore(...)`
+to resume a trainer with the same layer dimensions. Restoration requires a flat,
+finite weight vector containing exactly one weight per synapse. Feature bounds
+must either both be absent or both be finite, ordered vectors with one entry per
+input. Invalid dimensions, weights, feature bounds or learning rate raise `ValueError`
+before any weights, optimiser or training-data custody are replaced. A valid
+initial checkpoint clears the previous training history and feature bounds.
+The saved epoch count must be nonnegative and equal the length of the flat,
+finite, nonnegative MSE loss history. Weights must lie within the destination
+synapses' bounds; restoration refuses rather than clipping an invalid weight.
+Direct records enforce the same schema and randomness identity as JSON loading.
+Saved training-row digests and feature bounds must be present together, and
+completed epochs require that data custody so that overlap refusal survives a
+resume. Full-batch descent can retain data custody with zero SGD epochs and an
+empty SGD history. A failed run can still be serialised for inspection; a
+checkpoint containing non-finite losses cannot resume training.
+
 ## Reviewer-facing gradient audit report
 
 ```python
