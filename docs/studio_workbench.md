@@ -2072,3 +2072,37 @@ keys and other unlisted source fields never enter the export. No provider is
 contacted. Regenerate or check the metadata with
 `python -m scpn_quantum_control.studio.sensing_instrument_artifact --write`
 or `--check`.
+
+## Control proposals and co-design
+
+Analyse → Control proposals and co-design (`#/results/control`) shows what the
+existing control owners propose, under the closed-loop execution policy in
+local simulation. The browser computes nothing; it displays source values and
+refuses data that would show a proposal as applied.
+
+Tracking targets list the QAOA-MPC cost of each binary action, read from the
+controller's own cost Hamiltonian. The target keeps its sign and direction: a
+target of `-1` with actuation `1` costs `1` for action 0 and `4` for action 1,
+so the controller proposes action 0; flipping the target's sign moves the
+proposal to action 1. Every proposed action is marked "Proposed, not applied".
+
+The co-design view runs the constrained session on a three-edge coupling graph.
+Select a proposal to see its status, reason, proposed plan and the plan in
+force. The graph marks each edge as within its cap, binding (at its cap in some
+checked case, including a held-out disturbance) or violated. Only an accepted
+proposal changes the plan in force. An infeasible, out-of-domain or vetoed
+proposal keeps the previous plan; a hardware-mode request is vetoed by the
+policy before any optimiser runs. No proposal is applied: applied status needs
+explicit runtime actuation evidence, and this instrument has none.
+
+Latency verdicts judge declared replay samples against the closed-loop latency
+budget. They are not measurements of this host. A series over budget lists its
+blockers and refuses any latency or stability claim.
+
+The simulated trace comes from the quantum/classical partition integrator. Its
+timestamps are the integrator's own sample times (sample `s` at `s * dt`, kept
+as exact binary values), not a grid regenerated for display. Observed hardware
+telemetry is shown as unavailable; data claiming it is refused. Regenerate or
+check the data with
+`python -m scpn_quantum_control.studio.control_proposal_instrument_artifact --write`
+or `--check`.

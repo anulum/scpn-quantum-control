@@ -49,6 +49,7 @@ describe("workbenchRegistry", () => {
       ["/results/mitigation", "results", "mitigation"],
       ["/results/pulses", "results", "pulses"],
       ["/results/sensing", "results", "sensing"],
+      ["/results/control", "results", "control"],
       ["/compare", "compare", null],
       ["/evidence", "evidence", null],
       ["/atlas", "atlas", null],

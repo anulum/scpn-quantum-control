@@ -4,6 +4,16 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+### Control proposals and co-design
+
+- Analyse shows source-owned control proposals: QAOA-MPC action costs that keep
+  the target's sign and direction, constrained co-design proposals with binding
+  and violated coupling caps, replayed latency verdicts and a simulated trace
+  with the integrator's own timestamps.
+- No proposal is shown as applied, vetoed and out-of-domain proposals keep the
+  plan in force, an over-budget latency series refuses its claim, and observed
+  hardware telemetry is never fabricated.
+
 - QSNN held-out evaluation refuses samples that encode to the same circuit as a
   training sample (equal after the clip to `[0, 1]`, signed zeros merged), not
   only byte-identical rows. Checkpoints move to `qsnn_training_checkpoint.v2`;

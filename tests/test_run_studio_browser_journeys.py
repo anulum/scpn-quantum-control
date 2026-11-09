@@ -49,6 +49,7 @@ def test_studio_executes_the_original_browser_scenarios_and_isolated_refusals() 
         "local_job_service",
         "pulse_feasibility",
         "sensing_entropy_instrument",
+        "control_proposal_instrument",
     ):
         assert "--scenario " + scenario in source
     assert "bash tools/run_ci_test_shards.sh studio-browser 2" in source
@@ -71,10 +72,11 @@ def test_studio_executes_the_original_browser_scenarios_and_isolated_refusals() 
         "local_jobs",
         "pulse",
         "sensing",
+        "control",
     ):
         assert f"tools/tests/test_studio_{journey}_browser.py" in source
     # One exact coverage report per separately measured journey owner.
-    assert source.count("--fail-under=100") == 11
+    assert source.count("--fail-under=100") == 12
     assert "trap " in source and 'wait "$preview_pid"' in source and 'wait "$source_pid"' in source
     evidence = next(
         item for item in steps if item.get("name") == "Preserve browser acceptance evidence"

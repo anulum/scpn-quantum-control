@@ -34,6 +34,7 @@ export const resultsModule: StudioModule<Services, WorkspaceViewServices, "resul
         "mitigation",
         "pulses",
         "sensing",
+        "control",
       ],
       render: (services: Services, instrument: string | null) => (
         <ResultsView
@@ -43,6 +44,7 @@ export const resultsModule: StudioModule<Services, WorkspaceViewServices, "resul
           focusMitigationInstrument={instrument === "mitigation"}
           focusPulseInstrument={instrument === "pulses"}
           focusSensingInstrument={instrument === "sensing"}
+          focusControlInstrument={instrument === "control"}
           plan={services.experiment.plan}
           outcome={services.experiment.outcome}
           editors={services.renderEditors("results")}
@@ -55,6 +57,11 @@ export const resultsModule: StudioModule<Services, WorkspaceViewServices, "resul
       id: "open-sensing",
       label: "Open sensing and entropy provenance",
       action: { kind: "navigate", stage: "results", instrument: "sensing" },
+    },
+    {
+      id: "open-control",
+      label: "Open control proposals and co-design",
+      action: { kind: "navigate", stage: "results", instrument: "control" },
     },
     {
       id: "open-results",

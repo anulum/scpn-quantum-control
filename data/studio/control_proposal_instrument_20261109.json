@@ -1,0 +1,346 @@
+{
+  "applied_status_rule": "A proposal counts as applied only with explicit runtime actuation evidence; this local-simulation instrument has none, so every proposal is unapplied",
+  "artifact_id": "studio-control-proposal-instrument-20261109",
+  "claim_boundary": "local simulator adapters over existing control/* and cosimulation modules; ClosedLoopExecutionPolicy is mandatory; no hardware submission, PCS claim, realtime_runtime rewrite, or pulse execution",
+  "codesign": {
+    "constraint_rows": [
+      "edge 0-1 cap",
+      "edge 0-2 cap",
+      "edge 1-2 cap",
+      "total coupling budget"
+    ],
+    "desired": [
+      0.9,
+      0.3,
+      0.2
+    ],
+    "disturbances": [
+      [
+        0.95,
+        1.0,
+        1.0
+      ]
+    ],
+    "domain": [
+      [
+        0.0,
+        1.0
+      ],
+      [
+        0.0,
+        1.0
+      ],
+      [
+        0.0,
+        1.0
+      ]
+    ],
+    "edge_caps": [
+      0.6,
+      0.5,
+      0.4
+    ],
+    "graph": {
+      "edges": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "nodes": 3
+    },
+    "objective": "sum over edges of (weight - desired)^2",
+    "plan_meaning": "coupling weight of each graph edge, in edge order",
+    "proposals": [
+      {
+        "adopted_plan": [
+          0.57,
+          0.3,
+          0.2
+        ],
+        "applied": false,
+        "binding_edges": [
+          0
+        ],
+        "constraint_values": [
+          [
+            -0.030000000000000027,
+            -0.2,
+            -0.2,
+            -0.13000000000000012
+          ],
+          [
+            0.0,
+            -0.2,
+            -0.2,
+            -0.13000000000000012
+          ]
+        ],
+        "decision": {
+          "authorised": true,
+          "mode": "simulation",
+          "reason": "hardware not requested; simulation-in-the-loop fallback"
+        },
+        "evaluations": 1,
+        "hardware_actuation": false,
+        "label": "capped plan",
+        "max_violation": 0.0,
+        "objective": 0.10890000000000005,
+        "plan": [
+          0.57,
+          0.3,
+          0.2
+        ],
+        "reason": "every constraint holds in every checked case",
+        "status": "accepted",
+        "violated_edges": []
+      },
+      {
+        "adopted_plan": [
+          0.57,
+          0.3,
+          0.2
+        ],
+        "applied": false,
+        "binding_edges": [
+          0
+        ],
+        "constraint_values": [
+          [
+            0.30000000000000004,
+            -0.2,
+            -0.2,
+            0.19999999999999996
+          ],
+          [
+            0.33000000000000007,
+            -0.2,
+            -0.2,
+            0.19999999999999996
+          ]
+        ],
+        "decision": {
+          "authorised": true,
+          "mode": "simulation",
+          "reason": "hardware not requested; simulation-in-the-loop fallback"
+        },
+        "evaluations": 1,
+        "hardware_actuation": false,
+        "label": "desired plan, edge 0-1 over its cap",
+        "max_violation": 0.33000000000000007,
+        "objective": 0.0,
+        "plan": [
+          0.9,
+          0.3,
+          0.2
+        ],
+        "reason": "constraint violation 3.300e-01 exceeds 0.000e+00 in the nominal case",
+        "status": "infeasible",
+        "violated_edges": [
+          0
+        ]
+      },
+      {
+        "adopted_plan": [
+          0.57,
+          0.3,
+          0.2
+        ],
+        "applied": false,
+        "binding_edges": [],
+        "constraint_values": [],
+        "decision": {
+          "authorised": true,
+          "mode": "simulation",
+          "reason": "hardware not requested; simulation-in-the-loop fallback"
+        },
+        "evaluations": 1,
+        "hardware_actuation": false,
+        "label": "plan outside the tested domain",
+        "max_violation": null,
+        "objective": null,
+        "plan": [
+          0.5,
+          -0.1,
+          0.2
+        ],
+        "reason": "the plan leaves the tested domain",
+        "status": "out_of_domain",
+        "violated_edges": []
+      },
+      {
+        "adopted_plan": null,
+        "applied": false,
+        "binding_edges": [],
+        "constraint_values": [],
+        "decision": null,
+        "evaluations": 0,
+        "hardware_actuation": false,
+        "label": "hardware-mode request",
+        "max_violation": null,
+        "objective": null,
+        "plan": null,
+        "reason": "execution policy refused adapter: hardware backend is not on the policy allow-list",
+        "status": "vetoed",
+        "violated_edges": []
+      }
+    ],
+    "tolerance": 0.0,
+    "total_budget": 1.2
+  },
+  "generated_by": "python -m scpn_quantum_control.studio.control_proposal_instrument_artifact --write",
+  "latency": [
+    {
+      "blockers": [],
+      "budget": {
+        "max_round_latency_s": 0.01,
+        "max_total_latency_s": null,
+        "p95_round_latency_s": 0.008,
+        "p99_round_latency_s": null
+      },
+      "case_id": "within-budget replay",
+      "claim_boundary": "software-in-the-loop closed-loop latency measurement; measures local controller/simulator wall-clock time only; not provider-prepared dynamic-circuit evidence and not live closed-loop QPU evidence",
+      "clock_source": "replayed_observed_round_latencies_s",
+      "max_round_latency_s": 0.004,
+      "p95_round_latency_s": 0.0038499999999999997,
+      "passes": true,
+      "round_latencies_s": [
+        0.002,
+        0.003,
+        0.004,
+        0.003
+      ]
+    },
+    {
+      "blockers": [
+        "max round latency 0.015000000s exceeds 0.010000000s",
+        "p95 round latency 0.014550000s exceeds 0.008000000s"
+      ],
+      "budget": {
+        "max_round_latency_s": 0.01,
+        "max_total_latency_s": null,
+        "p95_round_latency_s": 0.008,
+        "p99_round_latency_s": null
+      },
+      "case_id": "over-budget replay",
+      "claim_boundary": "software-in-the-loop closed-loop latency measurement; measures local controller/simulator wall-clock time only; not provider-prepared dynamic-circuit evidence and not live closed-loop QPU evidence",
+      "clock_source": "replayed_observed_round_latencies_s",
+      "max_round_latency_s": 0.015,
+      "p95_round_latency_s": 0.014549999999999999,
+      "passes": false,
+      "round_latencies_s": [
+        0.004,
+        0.012,
+        0.009,
+        0.015
+      ]
+    }
+  ],
+  "mpc_targets": [
+    {
+      "action_costs": [
+        1.0,
+        4.0
+      ],
+      "applied": false,
+      "b_matrix": [
+        [
+          1.0
+        ]
+      ],
+      "case_id": "signed target",
+      "objective_source": "QAOA_MPC.build_cost_hamiltonian diagonal, horizon 1",
+      "proposed_action": 0,
+      "target": [
+        -1.0
+      ]
+    },
+    {
+      "action_costs": [
+        1.0,
+        0.0
+      ],
+      "applied": false,
+      "b_matrix": [
+        [
+          1.0
+        ]
+      ],
+      "case_id": "sign-flipped target",
+      "objective_source": "QAOA_MPC.build_cost_hamiltonian diagonal, horizon 1",
+      "proposed_action": 1,
+      "target": [
+        1.0
+      ]
+    },
+    {
+      "action_costs": [
+        2.0,
+        4.0
+      ],
+      "applied": false,
+      "b_matrix": [
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0
+        ]
+      ],
+      "case_id": "rotated target",
+      "objective_source": "QAOA_MPC.build_cost_hamiltonian diagonal, horizon 1",
+      "proposed_action": 0,
+      "target": [
+        -1.0,
+        1.0
+      ]
+    }
+  ],
+  "schema": "scpn_qc_studio_control_proposal_instrument_v1",
+  "trace": {
+    "claim_boundary": "mean-field embedding; baseline_global is the all-classical reference, deviation measures the quantum-core effect plus the decoupling error, not a certified error bound; not exact, not hardware",
+    "classical_order": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "dt": 0.3,
+    "global_order": [
+      0.41704858468343087,
+      0.721401448383014,
+      0.7938128038352082,
+      0.5967262538306765,
+      0.23524730451571632
+    ],
+    "n_steps": 4,
+    "observed_hardware_telemetry": null,
+    "quantum_order": [
+      1.0,
+      0.9238000969889699,
+      0.7107401533316261,
+      0.47963556080805186,
+      0.30103280517294206
+    ],
+    "simulated": true,
+    "source": "run_cosimulation_partition_adapter (local mean-field partition)",
+    "times": [
+      0.0,
+      0.3,
+      0.6,
+      0.8999999999999999,
+      1.2
+    ]
+  }
+}

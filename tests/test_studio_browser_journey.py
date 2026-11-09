@@ -160,6 +160,7 @@ def test_public_dispatch_records_url_refusal_before_browser_import(
         "local_job_service",
         "pulse_feasibility",
         "sensing_entropy_instrument",
+        "control_proposal_instrument",
         "operator_backend_profiles",
         "operator_policy_decisions",
         "operator_review_dossiers",

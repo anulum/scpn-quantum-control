@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **861 modules** across **41 package families**
-- **4655 documented public module-level symbols**
+- **862 modules** across **41 package families**
+- **4661 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -5376,6 +5376,14 @@ Project actual native pass evidence without replacing its numerical authority.
 **Classes:** `CompilerTrace`
 
 **Functions:** `compiler_backend_snapshot()`, `project_compiler_passes()`, `build_compiler_trace()`
+
+### `scpn_quantum_control.studio.control_proposal_instrument_artifact`
+
+Project control proposals, constraints and simulated traces for read-only inspection.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/control_proposal_instrument_artifact.py) · Public symbols: **6**
+
+**Functions:** `mpc_action_costs()`, `build_codesign_section()`, `build_latency_section()`, `build_trace_section()`, `build_control_proposal_instrument()`, `main()`
 
 ### `scpn_quantum_control.studio.coupling_invariant`
 
