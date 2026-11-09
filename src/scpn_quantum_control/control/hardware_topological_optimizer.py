@@ -24,7 +24,29 @@ from scpn_quantum_control.hardware.runner import HardwareRunner
 
 
 class HardwareTopologicalOptimizer(TopologicalCouplingOptimizer):
-    """Hardware-in-the-loop optimizer for coupling graphs."""
+    """Hardware-in-the-loop optimizer for coupling graphs.
+
+    Parameters
+    ----------
+    runner
+        Hardware or simulator runner that executes the measurement circuits.
+    n_qubits
+        Number of oscillators, one qubit each.
+    initial_K
+        Initial ``(n_qubits, n_qubits)`` coupling matrix.
+    omega
+        Natural frequencies, shape ``(n_qubits,)``.
+    learning_rate
+        Step size applied to the finite-difference gradient.
+    dt
+        Evolution time per measurement, in the model's time units.
+    rng
+        Generator owned by this optimizer for the random perturbation
+        directions; the caller's global NumPy random state is never used.
+        Measurement shots come from ``runner``. ``None`` creates a fresh
+        unseeded generator.
+
+    """
 
     def __init__(
         self,
@@ -34,8 +56,10 @@ class HardwareTopologicalOptimizer(TopologicalCouplingOptimizer):
         omega: NDArray[np.float64],
         learning_rate: float = 0.05,
         dt: float = 1.0,
+        *,
+        rng: np.random.Generator | None = None,
     ):
-        super().__init__(n_qubits, initial_K, omega, learning_rate, dt)
+        super().__init__(n_qubits, initial_K, omega, learning_rate, dt, rng=rng)
         self.runner = runner
 
     def _simulate_measurement_counts(

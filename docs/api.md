@@ -2282,15 +2282,19 @@ theory and a worked Phase 1 example.
 ### `topological_optimizer.TopologicalCouplingOptimizer`
 
 ```python
-TopologicalCouplingOptimizer(n_qubits, initial_K, omega, learning_rate=0.05, dt=1.0)
+TopologicalCouplingOptimizer(n_qubits, initial_K, omega, learning_rate=0.05, dt=1.0, *, rng=None)
     .step(n_samples=5) -> dict  # K_updated, p_h1_current, gradient_norm
     .optimize(steps=10, n_samples=3) -> list[dict]
 ```
 Rewires graph topology to minimise topological defects ($p_{h1}$)  in the quantum state.
+The optimizer owns its random generator (`rng`, a `numpy.random.Generator`). It draws
+the perturbation directions and seeds the simulated measurement shots, so a seeded
+generator makes a run reproducible. The global NumPy random state is never used.
 
 ### `hardware_topological_optimizer.HardwareTopologicalOptimizer`
 
 Hardware-in-the-loop variant using real IBM QPU measurement counts for topological optimization.
+It accepts the same keyword-only `rng` for its perturbation directions; shots come from the runner.
 
 ### `qaoa_mpc.QAOA_MPC`
 

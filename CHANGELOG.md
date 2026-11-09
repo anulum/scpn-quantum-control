@@ -4,6 +4,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- `TopologicalCouplingOptimizer` and `HardwareTopologicalOptimizer` take a
+  keyword-only `rng` generator for their perturbation directions and simulated
+  measurement shots; they no longer draw from or advance the global NumPy
+  random state, and a seeded generator reproduces a run.
+
 - Validate local job-service browser origins before binding and use the
   configured value in normal and preflight response headers.
 

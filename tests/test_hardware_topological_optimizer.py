@@ -98,7 +98,9 @@ class TestHardwareTopologicalOptimizer:
         monkeypatch.setattr(topology, "_RIPSER_AVAILABLE", True)
         observed_couplings: list[np.ndarray] = []
         initial_K = np.array([[0.0, 0.2], [0.2, 0.0]], dtype=float)
-        delta = np.array([[0.0, 0.05], [0.05, 0.0]], dtype=float)
+        raw = np.random.default_rng(7).normal(0.0, 0.05, size=(2, 2))
+        delta = (raw + raw.T) / 2.0
+        np.fill_diagonal(delta, 0.0)
 
         def fake_fast_sparse_evolution(
             K: object, omega: object, *, t_total: object, n_steps: object
@@ -128,7 +130,6 @@ class TestHardwareTopologicalOptimizer:
         monkeypatch.setattr(topology, "fast_sparse_evolution", fake_fast_sparse_evolution)
         monkeypatch.setattr(hardware_topology, "_build_evo_base", fake_build_evo_base)
         monkeypatch.setattr(hardware_topology, "_build_xyz_circuits", fake_build_xyz_circuits)
-        monkeypatch.setattr(np.random, "normal", lambda *args, **kwargs: delta)
         monkeypatch.setattr(
             topology,
             "quantum_persistent_homology",
@@ -140,6 +141,7 @@ class TestHardwareTopologicalOptimizer:
             n_qubits=2,
             initial_K=initial_K,
             omega=np.array([5.0, 10.0]),
+            rng=np.random.default_rng(7),
         )
 
         opt.step(n_samples=1)

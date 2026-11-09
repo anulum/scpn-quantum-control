@@ -34,7 +34,29 @@ from scpn_quantum_control.hardware.fast_classical import fast_sparse_evolution
 
 
 class TopologicalCouplingOptimizer:
-    """Optimizes a coupling graph to minimise quantum persistent homology."""
+    """Optimizes a coupling graph to minimise quantum persistent homology.
+
+    Parameters
+    ----------
+    n_qubits
+        Number of oscillators, one qubit each.
+    initial_K
+        Initial ``(n_qubits, n_qubits)`` coupling matrix; it is symmetrised and
+        its diagonal set to zero.
+    omega
+        Natural frequencies, shape ``(n_qubits,)``.
+    learning_rate
+        Step size applied to the finite-difference gradient.
+    dt
+        Evolution time per measurement, in the model's time units.
+    rng
+        Generator owned by this optimizer. It draws the random perturbation
+        directions and seeds the simulated measurement sampling, so a seeded
+        generator makes the whole run reproducible. The caller's global NumPy
+        random state is never read or advanced. ``None`` creates a fresh
+        unseeded generator.
+
+    """
 
     def __init__(
         self,
@@ -43,12 +65,15 @@ class TopologicalCouplingOptimizer:
         omega: NDArray[np.float64],
         learning_rate: float = 0.05,
         dt: float = 1.0,
+        *,
+        rng: np.random.Generator | None = None,
     ):
         self.n = n_qubits
         self.K = np.array(initial_K, dtype=float)
         self.omega = np.array(omega, dtype=float)
         self.lr = learning_rate
         self.dt = dt
+        self.rng = rng if rng is not None else np.random.default_rng()
 
         self.K = (self.K + self.K.T) / 2.0
         np.fill_diagonal(self.K, 0.0)
@@ -65,6 +90,7 @@ class TopologicalCouplingOptimizer:
         from qiskit.quantum_info import Statevector
 
         sv = Statevector(psi)
+        sv.seed(self.rng)
 
         # Measure in X basis (apply H to all)
         sv_x = sv.copy()
@@ -100,7 +126,7 @@ class TopologicalCouplingOptimizer:
 
         # We sample a few random symmetric perturbation matrices
         for _ in range(n_samples):
-            delta_K = np.random.normal(0, perturbation_scale, size=(self.n, self.n))
+            delta_K = self.rng.normal(0, perturbation_scale, size=(self.n, self.n))
             delta_K = (delta_K + delta_K.T) / 2.0
             np.fill_diagonal(delta_K, 0.0)
 

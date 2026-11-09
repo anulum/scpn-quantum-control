@@ -23,6 +23,78 @@ if TYPE_CHECKING:
     from numpy.typing import NDArray
 
 
+def _expected_perturbation(seed: int, n: int) -> NDArray[np.float64]:
+    """Re-derive the symmetric zero-diagonal perturbation for a seeded first draw.
+
+    Parameters
+    ----------
+    seed
+        Seed of the optimizer's own generator.
+    n
+        Number of oscillators.
+
+    Returns
+    -------
+    numpy.ndarray
+        ``(raw + raw.T) / 2`` with a zero diagonal, where ``raw`` is the first
+        ``normal(0, 0.05, (n, n))`` draw of ``default_rng(seed)``.
+
+    """
+    raw = np.random.default_rng(seed).normal(0.0, 0.05, size=(n, n))
+    delta = (raw + raw.T) / 2.0
+    np.fill_diagonal(delta, 0.0)
+    return delta
+
+
+def _install_score_fakes(
+    monkeypatch: pytest.MonkeyPatch, observed_couplings: list[NDArray[np.float64]]
+) -> None:
+    """Replace evolution, sampling and homology with a deterministic coupling score.
+
+    Parameters
+    ----------
+    monkeypatch
+        Pytest fixture that restores every replaced attribute.
+    observed_couplings
+        Receives each measured candidate coupling matrix, in call order.
+
+    """
+    monkeypatch.setattr(topology, "_RIPSER_AVAILABLE", True)
+
+    def fake_fast_sparse_evolution(
+        K: NDArray[np.float64],
+        omega: NDArray[np.float64],
+        *,
+        t_total: float,
+        n_steps: int,
+    ) -> dict[str, NDArray[np.complex128]]:
+        return {"final_state": np.array([1.0, 0.0, 0.0, 0.0], dtype=complex)}
+
+    def fake_measurement(
+        self: TopologicalCouplingOptimizer,
+        psi: NDArray[np.complex128],
+        shots: int = 5000,
+        *,
+        K_candidate: NDArray[np.float64] | None = None,
+    ) -> tuple[dict[str, float], dict[str, float]]:
+        assert K_candidate is not None
+        observed_couplings.append(np.array(K_candidate, dtype=float).copy())
+        score = float(np.sum(K_candidate))
+        return {"score": score}, {"score": score}
+
+    monkeypatch.setattr(topology, "fast_sparse_evolution", fake_fast_sparse_evolution)
+    monkeypatch.setattr(
+        TopologicalCouplingOptimizer, "_simulate_measurement_counts", fake_measurement
+    )
+    monkeypatch.setattr(
+        topology,
+        "quantum_persistent_homology",
+        lambda x_counts, y_counts, n, persistence_threshold: SimpleNamespace(
+            p_h1=x_counts["score"]
+        ),
+    )
+
+
 class TestTopologicalOptimizer:
     def test_topological_optimizer_step(self) -> None:
         """Verify one cycle of topological gradient descent on p_h1."""
@@ -145,56 +217,86 @@ class TestTopologicalOptimizer:
     def test_finite_difference_measures_candidate_couplings(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        monkeypatch.setattr(topology, "_RIPSER_AVAILABLE", True)
+        """Each sample measures K, then K plus and minus one seeded direction."""
+        observed_couplings: list[NDArray[np.float64]] = []
+        _install_score_fakes(monkeypatch, observed_couplings)
         initial_K = np.array([[0.0, 0.2], [0.2, 0.0]], dtype=float)
-        delta = np.array([[0.0, 0.05], [0.05, 0.0]], dtype=float)
-        observed_couplings: list[np.ndarray] = []
-
-        def fake_fast_sparse_evolution(
-            K: NDArray[np.float64],
-            omega: NDArray[np.float64],
-            *,
-            t_total: float,
-            n_steps: int,
-        ) -> dict[str, NDArray[np.complex128]]:
-            return {"final_state": np.array([1.0, 0.0, 0.0, 0.0], dtype=complex)}
-
-        def fake_measurement(
-            self: TopologicalCouplingOptimizer,
-            psi: NDArray[np.complex128],
-            shots: int = 5000,
-            *,
-            K_candidate: NDArray[np.float64] | None = None,
-        ) -> tuple[dict[str, float], dict[str, float]]:
-            assert K_candidate is not None
-            observed_couplings.append(np.array(K_candidate, dtype=float).copy())
-            score = float(np.sum(K_candidate))
-            return {"score": score}, {"score": score}
-
-        monkeypatch.setattr(topology, "fast_sparse_evolution", fake_fast_sparse_evolution)
-        monkeypatch.setattr(
-            TopologicalCouplingOptimizer, "_simulate_measurement_counts", fake_measurement
-        )
-        monkeypatch.setattr(np.random, "normal", lambda *args, **kwargs: delta)
-        monkeypatch.setattr(
-            topology,
-            "quantum_persistent_homology",
-            lambda x_counts, y_counts, n, persistence_threshold: SimpleNamespace(
-                p_h1=x_counts["score"]
-            ),
-        )
+        delta = _expected_perturbation(7, 2)
 
         opt = TopologicalCouplingOptimizer(
             n_qubits=2,
             initial_K=initial_K,
             omega=np.array([5.0, 10.0]),
             learning_rate=0.1,
+            rng=np.random.default_rng(7),
         )
 
         result = opt.step(n_samples=1)
 
+        assert len(observed_couplings) == 3
         np.testing.assert_allclose(observed_couplings[0], initial_K)
-        assert any(np.allclose(K, initial_K + delta) for K in observed_couplings[1:])
-        assert any(np.allclose(K, initial_K - delta) for K in observed_couplings[1:])
+        np.testing.assert_allclose(observed_couplings[1], np.maximum(initial_K + delta, 0.0))
+        np.testing.assert_allclose(observed_couplings[2], np.maximum(initial_K - delta, 0.0))
         np.testing.assert_allclose(result["K_updated"], result["K_updated"].T)
         np.testing.assert_allclose(np.diag(result["K_updated"]), 0.0)
+
+    def test_step_leaves_the_global_numpy_random_state_untouched(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Perturbations come from the optimizer's own generator only."""
+        _install_score_fakes(monkeypatch, [])
+        np.random.seed(1234)
+        before = np.random.get_state(legacy=False)
+        opt = TopologicalCouplingOptimizer(
+            n_qubits=2,
+            initial_K=np.array([[0.0, 0.2], [0.2, 0.0]]),
+            omega=np.array([5.0, 10.0]),
+            rng=np.random.default_rng(3),
+        )
+        opt.optimize(steps=2, n_samples=2)
+        np.testing.assert_equal(np.random.get_state(legacy=False), before)
+
+    def test_seeded_runs_reproduce_and_seeds_differ(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """The same seed gives the same updated couplings; another seed does not."""
+        _install_score_fakes(monkeypatch, [])
+
+        def run(seed: int) -> NDArray[np.float64]:
+            opt = TopologicalCouplingOptimizer(
+                n_qubits=3,
+                initial_K=np.full((3, 3), 0.2),
+                omega=np.array([5.0, 10.0, 15.0]),
+                rng=np.random.default_rng(seed),
+            )
+            history = opt.optimize(steps=2, n_samples=2)
+            return np.asarray(history[-1]["K_updated"], dtype=float)
+
+        np.testing.assert_array_equal(run(11), run(11))
+        assert not np.array_equal(run(11), run(12))
+
+    def test_simulated_measurement_sampling_uses_the_optimizer_generator(self) -> None:
+        """Seeded optimizers draw identical shots without touching the global state."""
+        psi = np.full(4, 0.5, dtype=np.complex128)
+        np.random.seed(99)
+        before = np.random.get_state(legacy=False)
+
+        def counts(seed: int) -> tuple[dict[str, int], dict[str, int]]:
+            opt = TopologicalCouplingOptimizer(
+                n_qubits=2,
+                initial_K=np.zeros((2, 2)),
+                omega=np.array([1.0, 2.0]),
+                rng=np.random.default_rng(seed),
+            )
+            return opt._simulate_measurement_counts(psi, shots=64)
+
+        first = counts(5)
+        assert first == counts(5)
+        assert sum(first[0].values()) == 64
+        assert sum(first[1].values()) == 64
+        np.testing.assert_equal(np.random.get_state(legacy=False), before)
+
+    def test_default_generator_is_private_to_each_optimizer(self) -> None:
+        """Without ``rng`` each optimizer gets its own new generator."""
+        first = TopologicalCouplingOptimizer(2, np.zeros((2, 2)), np.array([1.0, 2.0]))
+        second = TopologicalCouplingOptimizer(2, np.zeros((2, 2)), np.array([1.0, 2.0]))
+        assert isinstance(first.rng, np.random.Generator)
+        assert first.rng is not second.rng
