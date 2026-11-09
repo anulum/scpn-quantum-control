@@ -550,9 +550,23 @@ Conservative sequential gate execution:
 
 For XY Trotter circuit: `n_gates = reps × (n(n-1)/2 CZ + 2n RZ)`
 
-#### `gpu_baseline_comparison(n, trotter_reps=10)`
+#### GPU profiles
 
-Returns `GPUBaselineResult` with GPU time, QPU time, and crossover.
+Estimates are made for an explicit `GPUProfile(name, peak_flops, memory_gb)`;
+nothing in the estimator is tied to one device. `A100_PROFILE` is the named
+reference profile with the figures above and is the default. Pass another
+profile to estimate for any other GPU; its name is recorded in each result.
+
+```python
+from scpn_quantum_control.benchmarks.gpu_baseline import GPUProfile, gpu_baseline_comparison
+
+device = GPUProfile("my GPU", peak_flops=50e12, memory_gb=48.0)
+result = gpu_baseline_comparison(n=20, profile=device)
+```
+
+#### `gpu_baseline_comparison(n, trotter_reps=10, *, profile=A100_PROFILE)`
+
+Returns `GPUBaselineResult` with GPU time, QPU time, crossover and the profile name.
 
 ```python
 from scpn_quantum_control.benchmarks.gpu_baseline import gpu_baseline_comparison
@@ -564,7 +578,7 @@ print(f"GPU faster: {result.gpu_faster}")
 print(f"Crossover: n={result.crossover_n}")
 ```
 
-#### `scaling_comparison(n_values=None)`
+#### `scaling_comparison(n_values=None, *, profile=A100_PROFILE)`
 
 Batch comparison across system sizes. Default: `[4, 8, 16, 24, 32, 40]`.
 Returns dict with columns: n, gpu_time_s, qpu_time_s, memory_gb, gpu_faster.
@@ -587,10 +601,11 @@ Returns dict with columns: n, gpu_time_s, qpu_time_s, memory_gb, gpu_faster.
 | `n_gates` | int | Total gate count |
 | `statevector_memory_gb` | float | GPU memory requirement |
 | `statevector_flops` | float | Computation cost |
-| `estimated_gpu_time_s` | float | A100 wall time |
+| `estimated_gpu_time_s` | float | Estimated wall time on the profile's GPU |
 | `qpu_time_s` | float | QPU wall time |
 | `gpu_faster` | bool | True if GPU is faster |
 | `crossover_n` | int | n where QPU wins |
+| `gpu_profile` | str | Name of the GPU profile the estimates used |
 
 ---
 

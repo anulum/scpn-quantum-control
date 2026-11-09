@@ -9,7 +9,7 @@
     "optional_extras": 43,
     "public_api_exports": 883,
     "public_documentation_pages": 385,
-    "python_model_classes": 1639,
+    "python_model_classes": 1640,
     "python_model_source_modules": 862,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
@@ -2855,6 +2855,10 @@
       },
       {
         "name": "GPUBaselineResult",
+        "path": "src/scpn_quantum_control/benchmarks/gpu_baseline.py"
+      },
+      {
+        "name": "GPUProfile",
         "path": "src/scpn_quantum_control/benchmarks/gpu_baseline.py"
       },
       {

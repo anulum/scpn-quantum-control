@@ -4,6 +4,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- The GPU baseline estimator takes an explicit `GPUProfile` (name, peak
+  throughput, memory) for its time estimate and crossover search, with the A100
+  as the named default reference; each result records the profile used.
+
 ### Control proposals and co-design
 
 - Analyse shows source-owned control proposals: QAOA-MPC action costs that keep

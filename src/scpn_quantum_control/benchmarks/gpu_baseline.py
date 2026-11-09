@@ -57,11 +57,55 @@ class GPUBaselineResult:
     qpu_time_s: float  # estimated QPU execution
     gpu_faster: bool
     crossover_n: int  # estimated n where QPU wins
+    gpu_profile: str = "NVIDIA A100 80 GB"
+    """Name of the device profile the GPU estimates were made for."""
 
 
 # A100 GPU: 312 TFLOPS FP64, 80 GB HBM
 A100_TFLOPS = 312e12
 A100_MEMORY_GB = 80.0
+
+
+@dataclass(frozen=True)
+class GPUProfile:
+    """Throughput and memory of the GPU an estimate is made for.
+
+    Estimates are functions of this profile; no device is fixed in the
+    estimator. ``A100_PROFILE`` is the named reference profile used when none
+    is given.
+
+    Parameters
+    ----------
+    name
+        Human-readable device name, recorded in every result.
+    peak_flops
+        Peak throughput in FLOP/s that the time estimate divides by.
+    memory_gb
+        Device memory in GB (10^9 bytes); a statevector that does not fit
+        ends the crossover search.
+
+    Raises
+    ------
+    ValueError
+        If the name is blank or a figure is not finite and positive.
+
+    """
+
+    name: str
+    peak_flops: float
+    memory_gb: float
+
+    def __post_init__(self) -> None:
+        """Reject blank names and non-positive or non-finite figures."""
+        if not self.name.strip():
+            raise ValueError("GPU profile name must be nonblank")
+        for label, value in (("peak_flops", self.peak_flops), ("memory_gb", self.memory_gb)):
+            if not np.isfinite(value) or value <= 0.0:
+                raise ValueError(f"GPU profile {label} must be finite and positive")
+
+
+A100_PROFILE = GPUProfile("NVIDIA A100 80 GB", A100_TFLOPS, A100_MEMORY_GB)
+"""Reference profile with the module's historical A100 figures."""
 
 
 def statevector_memory_gb(n: int) -> float:
@@ -98,12 +142,30 @@ def gate_count_xy_trotter(n: int, reps: int = 10) -> int:
 def gpu_baseline_comparison(
     n: int,
     trotter_reps: int = 10,
+    *,
+    profile: GPUProfile = A100_PROFILE,
 ) -> GPUBaselineResult:
-    """Compare GPU vs QPU for given system size."""
+    """Compare GPU vs QPU for given system size on one GPU profile.
+
+    Parameters
+    ----------
+    n
+        Number of qubits.
+    trotter_reps
+        Trotter repetitions of the XY circuit.
+    profile
+        GPU the estimate is made for; the reference A100 profile by default.
+
+    Returns
+    -------
+    GPUBaselineResult
+        Analytic estimates and the crossover size, naming the profile used.
+
+    """
     n_gates = gate_count_xy_trotter(n, trotter_reps)
     mem = statevector_memory_gb(n)
     flops = statevector_flops(n, n_gates)
-    gpu_time = estimate_gpu_time(n, n_gates)
+    gpu_time = estimate_gpu_time(n, n_gates, profile.peak_flops)
     qpu_time = estimate_qpu_time(n, n_gates)
 
     gpu_faster = gpu_time < qpu_time
@@ -112,10 +174,12 @@ def gpu_baseline_comparison(
     crossover = n
     for test_n in range(n, 100):
         test_gates = gate_count_xy_trotter(test_n, trotter_reps)
-        if estimate_gpu_time(test_n, test_gates) > estimate_qpu_time(test_n, test_gates):
+        if estimate_gpu_time(test_n, test_gates, profile.peak_flops) > estimate_qpu_time(
+            test_n, test_gates
+        ):
             crossover = test_n
             break
-        if statevector_memory_gb(test_n) > A100_MEMORY_GB:
+        if statevector_memory_gb(test_n) > profile.memory_gb:
             crossover = test_n
             break
 
@@ -128,13 +192,31 @@ def gpu_baseline_comparison(
         qpu_time_s=qpu_time,
         gpu_faster=gpu_faster,
         crossover_n=crossover,
+        gpu_profile=profile.name,
     )
 
 
 def scaling_comparison(
     n_values: list[int] | None = None,
+    *,
+    profile: GPUProfile = A100_PROFILE,
 ) -> dict[str, list[float]]:
-    """Compare GPU vs QPU across system sizes."""
+    """Compare GPU vs QPU across system sizes on one GPU profile.
+
+    Parameters
+    ----------
+    n_values
+        Qubit counts to compare; ``[4, 8, 16, 24, 32, 40]`` when omitted.
+    profile
+        GPU the estimates are made for; the reference A100 profile by default.
+
+    Returns
+    -------
+    dict[str, list[float]]
+        Columns ``n``, ``gpu_time_s``, ``qpu_time_s``, ``memory_gb`` and
+        ``gpu_faster``, one entry per size.
+
+    """
     if n_values is None:
         n_values = [4, 8, 16, 24, 32, 40]
 
@@ -146,7 +228,7 @@ def scaling_comparison(
         "gpu_faster": [],
     }
     for n in n_values:
-        r = gpu_baseline_comparison(n)
+        r = gpu_baseline_comparison(n, profile=profile)
         results["n"].append(n)
         results["gpu_time_s"].append(r.estimated_gpu_time_s)
         results["qpu_time_s"].append(r.qpu_time_s)
