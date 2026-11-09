@@ -11,9 +11,15 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import replace
+from typing import cast
 
 import pytest
 
+from scpn_quantum_control.ml_examples import (
+    qsnn_framework_rows,
+    run_ml_convergence_suite,
+    run_qsnn_convergence_example,
+)
 from scpn_quantum_control.ml_examples.contracts import (
     ML_CONVERGENCE_CLAIM_BOUNDARY,
     ML_CONVERGENCE_SCHEMA,
@@ -239,3 +245,133 @@ def test_suite_requires_complete_family_rows_and_pointers() -> None:
         replace(suite, claim_boundary="expanded")
     with pytest.raises(ValueError, match="provider"):
         replace(suite, provider_execution=True)
+
+
+def test_real_training_evidence_refuses_a_textual_replay_flag() -> None:
+    """A truthy string cannot replace an observed Boolean on real training evidence."""
+    result = run_qsnn_convergence_example(protocol="legacy_16_step")
+    with pytest.raises(ValueError, match="deterministic_replay.*boolean"):
+        replace(result, deterministic_replay=cast(bool, "false"))
+
+
+@pytest.fixture(scope="module")
+def observed_certificate() -> ConvergenceCertificate:
+    """Train the real retained QSNN reference for corruption checks.
+
+    Returns
+    -------
+    ConvergenceCertificate
+        Actual sixteen-step simulator result, including its failed loss gate.
+
+    """
+    return run_qsnn_convergence_example(protocol="legacy_16_step")
+
+
+@pytest.mark.parametrize(
+    ("field", "mutate"),
+    [
+        ("target_reached", lambda c, v: replace(c, target_reached=v)),
+        ("loss_drop_reached", lambda c, v: replace(c, loss_drop_reached=v)),
+        ("deterministic_replay", lambda c, v: replace(c, deterministic_replay=v)),
+    ],
+)
+@pytest.mark.parametrize("value", ["false", 0, 1, None])
+def test_observed_certificate_refuses_non_boolean_verdicts(
+    observed_certificate: ConvergenceCertificate,
+    field: str,
+    mutate: Callable[[ConvergenceCertificate, bool], ConvergenceCertificate],
+    value: object,
+) -> None:
+    """Reject truth-value coercion on a real training certificate.
+
+    Parameters
+    ----------
+    observed_certificate
+        Real public-trainer result before evidence corruption.
+    field
+        Acceptance flag being corrupted.
+    mutate
+        Typed constructor call for the flag under test.
+    value
+        Non-Boolean representation supplied by a caller.
+
+    """
+    with pytest.raises(ValueError, match=field + ".*boolean"):
+        mutate(observed_certificate, cast(bool, value))
+
+
+@pytest.mark.parametrize("value", ["false", 0, 1, None])
+def test_observed_spec_refuses_non_boolean_hardware(
+    observed_certificate: ConvergenceCertificate, value: object
+) -> None:
+    """Keep the real simulator task's hardware marker strictly Boolean.
+
+    Parameters
+    ----------
+    observed_certificate
+        Real public-trainer result supplying the frozen task.
+    value
+        Non-Boolean execution marker.
+
+    """
+    with pytest.raises(ValueError, match="hardware.*boolean"):
+        replace(observed_certificate.spec, hardware=cast(bool, value))
+
+
+@pytest.mark.parametrize(
+    ("field", "mutate"),
+    [
+        ("required", lambda r, v: replace(r, required=v)),
+        ("executed", lambda r, v: replace(r, executed=v)),
+        ("passed", lambda r, v: replace(r, passed=v)),
+    ],
+)
+@pytest.mark.parametrize("value", ["false", 0, 1])
+def test_observed_framework_row_refuses_non_boolean_flags(
+    observed_certificate: ConvergenceCertificate,
+    field: str,
+    mutate: Callable[[FrameworkEvidenceRow, bool], FrameworkEvidenceRow],
+    value: object,
+) -> None:
+    """Reject coerced framework verdicts derived from actual failed training.
+
+    Parameters
+    ----------
+    observed_certificate
+        Actual failed predecessor used by the public framework matrix.
+    field
+        Framework execution or acceptance flag being corrupted.
+    mutate
+        Typed constructor call for the flag under test.
+    value
+        Non-Boolean representation supplied by a caller.
+
+    """
+    row = qsnn_framework_rows(certificate=observed_certificate)[0]
+    assert row.status is FrameworkStatus.FAILED
+    assert row.passed is False
+    with pytest.raises(ValueError, match=field + ".*boolean"):
+        mutate(row, cast(bool, value))
+
+
+def test_observed_evidence_refuses_untyped_family_and_status() -> None:
+    """Reject string enum substitutes before accepting real evidence records."""
+    certificate = run_qsnn_convergence_example(protocol="legacy_16_step")
+    row = qsnn_framework_rows(certificate=certificate)[0]
+    with pytest.raises(ValueError, match="family.*ModelFamily"):
+        replace(certificate.spec, family=cast(ModelFamily, "qsnn"))
+    with pytest.raises(ValueError, match="family.*ModelFamily"):
+        replace(row, family=cast(ModelFamily, "qsnn"))
+    with pytest.raises(ValueError, match="status.*FrameworkStatus"):
+        replace(row, status=cast(FrameworkStatus, "failed"))
+
+
+def test_observed_suite_refuses_non_boolean_execution_flags() -> None:
+    """Reject coerced provider and hardware markers on the real public suite."""
+    suite = run_ml_convergence_suite()
+    assert suite.passed
+    for value in ("false", 0, 1, None):
+        with pytest.raises(ValueError, match="provider_execution.*boolean"):
+            replace(suite, provider_execution=cast(bool, value))
+        with pytest.raises(ValueError, match="hardware_execution.*boolean"):
+            replace(suite, hardware_execution=cast(bool, value))

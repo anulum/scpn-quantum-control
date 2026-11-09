@@ -111,7 +111,16 @@ def test_fidelity_thresholds_reject_invalid_values(
     kwargs: dict[str, float],
     message: str,
 ) -> None:
-    """Value-fidelity thresholds must remain finite and meaningful."""
+    """Value-fidelity thresholds must remain finite and meaningful.
+
+    Parameters
+    ----------
+    kwargs
+        Invalid public threshold fields.
+    message
+        Expected validation error.
+
+    """
     with pytest.raises(ValueError, match=message):
         SurrogateFidelityThresholds(**kwargs)
 

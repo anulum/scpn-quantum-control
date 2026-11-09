@@ -81,11 +81,19 @@ def _domain_features(batch: MultimodalObservationBatch) -> FloatArray:
 
 @dataclass(frozen=True, slots=True)
 class MultimodalPointForecast:
-    """Point forecasts bound to model and sample custody."""
+    """Point forecasts bound to model, predicted samples and training identities.
+
+    ``training_sample_ids`` is populated by the fitted model's ``predict``
+    method. Manually constructed forecasts may omit it for diagnostics, but
+    cannot receive held-out accuracy certificates without training custody.
+    These identities describe the supplied data; they do not authenticate
+    caller-created records or independently renamed copies of trajectories.
+    """
 
     values: FloatArray
     sample_ids: tuple[str, ...]
     model_digest: str
+    training_sample_ids: tuple[str, ...] | None = None
 
     def __post_init__(self) -> None:
         """Validate and freeze forecast values and identifiers."""
@@ -96,6 +104,11 @@ class MultimodalPointForecast:
             raise ValueError("forecast sample_ids must be unique")
         if not self.model_digest.strip():
             raise ValueError("model_digest must be non-empty")
+        if self.training_sample_ids is not None:
+            training_ids = tuple(self.training_sample_ids)
+            if not training_ids or len(set(training_ids)) != len(training_ids):
+                raise ValueError("training_sample_ids must be non-empty and unique")
+            object.__setattr__(self, "training_sample_ids", training_ids)
         object.__setattr__(self, "values", values)
 
 
@@ -111,7 +124,14 @@ class DomainForecastAccuracy:
     lower_mse_than_persistence: bool
 
     def to_dict(self) -> dict[str, object]:
-        """Return a JSON-ready domain accuracy row."""
+        """Return a JSON-ready domain accuracy row.
+
+        Returns
+        -------
+        dict[str, object]
+            Measured errors and the simulation-only domain tag.
+
+        """
         return asdict(self) | {"domain_tag": self.domain_tag.value}
 
 
@@ -130,7 +150,14 @@ class ForecastAccuracyCertificate:
     batch_digest: str
 
     def to_dict(self) -> dict[str, object]:
-        """Return a JSON-ready held-out accuracy certificate."""
+        """Return a JSON-ready held-out accuracy certificate.
+
+        Returns
+        -------
+        dict[str, object]
+            Aggregate and per-domain errors with model and batch identities.
+
+        """
         payload = asdict(self)
         payload["domains"] = [row.to_dict() for row in self.domains]
         return payload
@@ -207,7 +234,24 @@ class MultimodalRidgeForecaster:
             raise ValueError("batch dt is incompatible with the fitted forecaster")
 
     def design_matrix(self, batch: MultimodalObservationBatch) -> FloatArray:
-        """Build a finite inference design matrix from frozen training statistics."""
+        """Build a finite inference matrix from frozen training statistics.
+
+        Parameters
+        ----------
+        batch
+            Shape- and time-compatible multimodal observations.
+
+        Returns
+        -------
+        FloatArray
+            Imputed and standardised features, masks, domain tags and intercept.
+
+        Raises
+        ------
+        ValueError
+            If batch shape or time-step metadata differs from the fitted model.
+
+        """
         self._validate_batch(batch)
         raw, mask = _raw_features(batch)
         imputed = np.where(mask, raw, self.feature_means[None, :])
@@ -223,13 +267,33 @@ class MultimodalRidgeForecaster:
         )
 
     def predict(self, batch: MultimodalObservationBatch) -> MultimodalPointForecast:
-        """Forecast one compatible batch without changing model state."""
+        """Forecast a compatible batch while preserving training sample custody.
+
+        Parameters
+        ----------
+        batch
+            Training, calibration or test observations to predict.
+
+        Returns
+        -------
+        MultimodalPointForecast
+            Phase predictions with immutable model and sample identities.
+            Training predictions remain available for diagnostics.
+
+        Raises
+        ------
+        ValueError
+            If batch metadata is incompatible or a history anchor is absent.
+
+        """
         design = self.design_matrix(batch)
         increments = (design @ self.coefficients).reshape(
             batch.n_samples, self.horizon_steps, self.n_nodes
         )
         values = _last_observed(batch)[:, None, :] + increments
-        return MultimodalPointForecast(values, batch.sample_ids, self.model_digest)
+        return MultimodalPointForecast(
+            values, batch.sample_ids, self.model_digest, self.training_sample_ids
+        )
 
 
 def fit_multimodal_ridge_forecaster(
@@ -238,7 +302,31 @@ def fit_multimodal_ridge_forecaster(
     ridge: float = 1.0e-3,
     max_dense_gib: float = 0.25,
 ) -> MultimodalRidgeForecaster:
-    """Fit the classical forecasting reference model from train-only custody."""
+    """Fit the classical forecasting reference model from train-only custody.
+
+    Parameters
+    ----------
+    train
+        Training batch with observed features and at least two observed values
+        for every target coordinate.
+    ridge
+        Positive ridge penalty; the intercept remains unpenalised.
+    max_dense_gib
+        Positive upper bound for the admitted dense solve allocation in GiB.
+
+    Returns
+    -------
+    MultimodalRidgeForecaster
+        Immutable training statistics, coefficients and training identities.
+
+    Raises
+    ------
+    ValueError
+        If the split, hyperparameters or observed-data counts are invalid.
+    MemoryError
+        If the dense allocation exceeds the declared budget.
+
+    """
     if train.split != "train":
         raise ValueError("forecaster fitting requires a train batch")
     if not np.isfinite(ridge) or ridge <= 0.0:
@@ -326,11 +414,38 @@ def evaluate_point_forecast(
     forecast: MultimodalPointForecast,
     batch: MultimodalObservationBatch,
 ) -> ForecastAccuracyCertificate:
-    """Evaluate held-out wrapped phase errors against persistence."""
+    """Evaluate disjoint calibration or test errors against phase persistence.
+
+    Parameters
+    ----------
+    forecast
+        Point forecast carrying the fitted model's training sample identities.
+    batch
+        Matching calibration or test batch with IDs disjoint from training.
+
+    Returns
+    -------
+    ForecastAccuracyCertificate
+        Measured wrapped phase errors and persistence comparisons. This is
+        simulation evidence, not physical fidelity or domain generalisation.
+
+    Raises
+    ------
+    ValueError
+        If custody or shapes differ, training provenance is absent, the batch
+        is a training split, or its sample IDs overlap the training identities.
+
+    """
     if forecast.sample_ids != batch.sample_ids:
         raise ValueError("forecast and batch sample custody must match exactly")
     if forecast.values.shape != batch.targets.shape:
         raise ValueError("forecast and target shapes must match")
+    if batch.split == "train":
+        raise ValueError("held-out accuracy requires a calibration or test batch")
+    if forecast.training_sample_ids is None:
+        raise ValueError("held-out accuracy requires forecast training custody")
+    if set(forecast.training_sample_ids).intersection(batch.sample_ids):
+        raise ValueError("training and held-out sample IDs must be disjoint")
     mask = batch.target_mask
     errors = _wrapped_errors(forecast.values, batch.targets)
     persistence_errors = _wrapped_errors(_persistence(batch), batch.targets)

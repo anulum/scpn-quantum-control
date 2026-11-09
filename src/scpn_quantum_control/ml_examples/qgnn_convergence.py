@@ -112,18 +112,40 @@ def run_qgnn_convergence_example() -> ConvergenceCertificate:
     )
 
 
-def qgnn_framework_rows() -> tuple[FrameworkEvidenceRow, ...]:
-    """Return a complete QGNN matrix without inventing framework adapters."""
+def qgnn_framework_rows(
+    *, certificate: ConvergenceCertificate | None = None
+) -> tuple[FrameworkEvidenceRow, ...]:
+    """Bind native QGNN convergence to an executed frozen-task certificate.
+
+    Parameters
+    ----------
+    certificate
+        Completed canonical run; execute the frozen task when omitted.
+
+    Returns
+    -------
+    tuple[FrameworkEvidenceRow, ...]
+        Observed native result and explicit absence of framework-native adapters.
+
+    Raises
+    ------
+    ValueError
+        If the certificate belongs to a different family or frozen task.
+
+    """
+    observed = run_qgnn_convergence_example() if certificate is None else certificate
+    if observed.spec != qgnn_example_spec():
+        raise ValueError("QGNN certificate must match the frozen convergence task")
+    passed = observed.passed
     rows = [
         FrameworkEvidenceRow(
             family=ModelFamily.QGNN,
             framework="scpn_message_passing_phase_qnode",
-            status=FrameworkStatus.RAN,
+            status=FrameworkStatus.RAN if passed else FrameworkStatus.FAILED,
             required=True,
             executed=True,
-            passed=True,
-            reason="existing bounded QGNN trainer executed its exact chained gradient",
-            max_abs_error=0.0,
+            passed=passed,
+            reason=f"executed QGNN protocol {observed.spec.example_id}; convergence passed={passed}",
         )
     ]
     for framework in ("jax", "pytorch", "tensorflow"):

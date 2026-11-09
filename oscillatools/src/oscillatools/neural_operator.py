@@ -29,6 +29,7 @@ installation hint when the framework is absent.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from typing import Any
 
@@ -126,7 +127,7 @@ class TrainedKuramotoOperator:
 def _require_torch() -> Any:
     try:
         import torch
-    except ImportError as error:  # pragma: no cover - exercised only without the optional extra
+    except ImportError as error:
         raise ImportError(
             "the Kuramoto neural operator requires PyTorch; install oscillatools[torch]"
         ) from error
@@ -230,22 +231,34 @@ def _rk4_step(
     return np.asarray(state + (dt / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4), dtype=np.float64)
 
 
-def _build_deeponet(n_oscillators: int, latent_dim: int, hidden_dim: int) -> Any:
-    torch = _require_torch()
-    channels = 2 * n_oscillators
+def _build_deeponet(n_oscillators: int, latent_dim: int, hidden_dim: int, seed: int) -> Any:
+    import torch
+    from torch.nn import Module
 
-    class _DeepONet(torch.nn.Module):  # type: ignore[misc, name-defined]
+    channels = 2 * n_oscillators
+    generator = torch.Generator(device=torch.get_default_device()).manual_seed(seed)
+
+    def linear(inputs: int, outputs: int) -> Any:
+        layer = torch.nn.Linear(inputs, outputs, device="meta")
+        layer.to_empty(device=generator.device)
+        # nn.Linear uses a=sqrt(5), followed by a separate uniform bias draw.
+        torch.nn.init.kaiming_uniform_(layer.weight, a=math.sqrt(5), generator=generator)
+        bound = 1 / math.sqrt(inputs)
+        torch.nn.init.uniform_(layer.bias, -bound, bound, generator=generator)
+        return layer
+
+    class _DeepONet(Module):
         def __init__(self) -> None:
             super().__init__()
             self.branch = torch.nn.Sequential(
-                torch.nn.Linear(channels, hidden_dim),
+                linear(channels, hidden_dim),
                 torch.nn.Tanh(),
-                torch.nn.Linear(hidden_dim, channels * latent_dim),
+                linear(hidden_dim, channels * latent_dim),
             )
             self.trunk = torch.nn.Sequential(
-                torch.nn.Linear(1, hidden_dim),
+                linear(1, hidden_dim),
                 torch.nn.Tanh(),
-                torch.nn.Linear(hidden_dim, latent_dim),
+                linear(hidden_dim, latent_dim),
             )
             self.bias = torch.nn.Parameter(torch.zeros(channels))
 
@@ -281,7 +294,8 @@ def train_kuramoto_neural_operator(
     learning_rate : float
         The Adam learning rate (``> 0``).
     seed : int
-        The PyTorch manual seed.
+        The seed for the model-local PyTorch generator. Training does not consume
+        the caller's CPU random stream, including during concurrent calls.
 
     Returns
     -------
@@ -303,8 +317,7 @@ def train_kuramoto_neural_operator(
     if learning_rate <= 0.0:
         raise ValueError(f"learning_rate must be positive, got {learning_rate}")
     torch = _require_torch()
-    torch.manual_seed(seed)
-    model = _build_deeponet(dataset.n_oscillators, latent_dim, hidden_dim)
+    model = _build_deeponet(dataset.n_oscillators, latent_dim, hidden_dim, seed)
     branch = torch.tensor(dataset.branch_inputs, dtype=torch.float32)
     trunk = torch.tensor(dataset.trunk_inputs, dtype=torch.float32)
     targets = torch.tensor(dataset.targets, dtype=torch.float32)

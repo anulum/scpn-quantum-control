@@ -15,7 +15,9 @@ overlap, and samples outside the training feature range.
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import replace
+from itertools import product
 from typing import cast
 
 import numpy as np
@@ -544,3 +546,112 @@ def test_descent_only_checkpoint_preserves_overlap_refusal_without_epoch_history
     assert target.checkpoint() == saved
     with pytest.raises(ValueError, match="train/test overlap"):
         target.evaluate(features, targets)
+
+
+@pytest.mark.parametrize("weight", [0.0, 0.25, 0.75, 1.0])
+@pytest.mark.parametrize("feature,target", [(1.0, 0.0), (0.3, 0.6)])
+def test_qsnn_public_gradient_matches_the_analytic_cry_mse_derivative(
+    weight: float, feature: float, target: float
+) -> None:
+    """Differentiate the actual one-synapse circuit without clipping shifted angles.
+
+    Parameters
+    ----------
+    weight
+        Physical synapse weight, including both closed interval endpoints.
+    feature
+        Input whose independently encoded excitation probability multiplies the readout.
+    target
+        MSE target used by the actual public trainer.
+
+    """
+    layer = QuantumDenseLayer(1, 1, weights=np.array([[weight]]), seed=42)
+    trainer = QSNNTrainer(layer)
+    before = trainer.checkpoint()
+    actual = trainer.parameter_shift_gradient(np.array([feature]), np.array([target]))
+    theta = math.pi * weight
+    input_probability = math.sin(math.pi * feature / 2.0) ** 2
+    probability = input_probability * math.sin(theta / 2.0) ** 2
+    expected = (probability - target) * input_probability * math.sin(theta)
+    np.testing.assert_allclose(actual, [[expected]], rtol=1e-12, atol=1e-14)
+    assert trainer.checkpoint() == before
+
+
+@pytest.mark.parametrize("learning_rate,target", [(0.4, 0.0), (10.0, 1.0)])
+def test_qsnn_fullbatch_reports_the_actual_bounded_angles_and_exact_gradient(
+    learning_rate: float, target: float
+) -> None:
+    """Keep full-batch evidence aligned with the trained physical synapse.
+
+    Parameters
+    ----------
+    learning_rate
+        Interior step or a step large enough to reach the synapse bound.
+    target
+        Requested output probability in the actual one-sample training call.
+
+    """
+    layer = QuantumDenseLayer(1, 1, weights=np.array([[0.25]]), seed=42)
+    trainer = QSNNTrainer(layer, lr=learning_rate)
+    result = trainer.train_with_parameter_shift_descent(
+        np.array([[1.0]]), np.array([[target]]), max_steps=1, gradient_tolerance=0.0
+    )
+    theta = math.pi * trainer.checkpoint().weights[0]
+    probability = math.sin(theta / 2.0) ** 2
+    np.testing.assert_allclose(result.training.final_params, [theta], rtol=1e-12, atol=1e-14)
+    np.testing.assert_allclose(
+        result.training.final_gradient,
+        [(probability - target) * math.sin(theta)],
+        rtol=1e-12,
+        atol=1e-14,
+    )
+    assert result.training.final_value == pytest.approx((probability - target) ** 2, abs=1e-14)
+
+
+def test_qsnn_entangled_gradient_matches_an_independent_input_mixture_oracle() -> None:
+    """Differentiate three entangled readouts using a classical conditional-input sum."""
+    weights = np.array([[0.0, 0.2], [0.7, 1.0], [0.35, 0.6]])
+    features = np.array([0.25, 0.75])
+    targets = np.array([0.7, 0.2, 0.9])
+    trainer = QSNNTrainer(QuantumDenseLayer(3, 2, weights=weights, seed=42))
+    before = trainer.checkpoint()
+    actual = trainer.parameter_shift_gradient(features, targets)
+    excitation = np.sin(np.pi * features / 2.0) ** 2
+    theta = np.pi * weights
+    probabilities = np.zeros(3)
+    jacobian = np.zeros((3, 3, 2))
+    for bits in product((0, 1), repeat=2):
+        mass = math.prod(
+            float(excitation[i] if bit else 1.0 - excitation[i]) for i, bit in enumerate(bits)
+        )
+        angles = theta @ np.array(bits)
+        # Sequential CNOT readout k is the parity of conditional neurons 0..k.
+        for readout in range(3):
+            probabilities[readout] += (
+                mass * (1.0 - math.prod(math.cos(float(a)) for a in angles[: readout + 1])) / 2.0
+            )
+            for neuron in range(readout + 1):
+                other_cosines = math.prod(
+                    math.cos(float(angles[k])) for k in range(readout + 1) if k != neuron
+                )
+                for input_index, bit in enumerate(bits):
+                    jacobian[readout, neuron, input_index] += (
+                        mass * bit * math.sin(float(angles[neuron])) * other_cosines / 2.0
+                    )
+    expected = 2.0 * np.einsum("k,kni->ni", probabilities - targets, jacobian) / 3.0
+    np.testing.assert_allclose(actual, expected, rtol=1e-12, atol=1e-14)
+    assert trainer.checkpoint() == before
+
+
+def test_refused_descent_certificate_preserves_weights_and_training_custody() -> None:
+    """A rejected certificate cannot commit otherwise successful numerical training."""
+    trainer = QSNNTrainer(QuantumDenseLayer(1, 1, weights=np.array([[0.25]]), seed=42))
+    before = trainer.checkpoint()
+    with pytest.raises(ValueError, match="target_value_tolerance"):
+        trainer.train_with_parameter_shift_descent(
+            np.array([[1.0]]),
+            np.array([[0.0]]),
+            max_steps=1,
+            target_loss_tolerance=-1.0,
+        )
+    assert trainer.checkpoint() == before

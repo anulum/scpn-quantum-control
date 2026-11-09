@@ -161,3 +161,62 @@ def test_standalone_cli_help_uses_repository_script() -> None:
 
     assert "--json-output" in result.stdout
     assert "--require-qnn-framework" in result.stdout
+
+
+def test_markdown_renderer_exposes_the_failed_original_protocol(
+    valid_payload: dict[str, object],
+) -> None:
+    """Render actual failed training without treating it as promotable evidence.
+
+    Parameters
+    ----------
+    valid_payload
+        Current real-suite result before selecting the retained original run.
+
+    """
+    from dataclasses import replace
+
+    from scpn_quantum_control.ml_examples import qsnn_framework_rows, run_qsnn_convergence_example
+    from scpn_quantum_control.ml_examples.decoding import decode_convergence_evidence
+
+    suite = decode_convergence_evidence(valid_payload)
+    predecessor = run_qsnn_convergence_example(protocol="legacy_16_step")
+    diagnostic = replace(
+        suite,
+        certificates=tuple(
+            predecessor if c.spec.family is ModelFamily.QSNN else c for c in suite.certificates
+        ),
+        framework_rows=tuple(
+            row for row in suite.framework_rows if row.family is not ModelFamily.QSNN
+        )
+        + qsnn_framework_rows(certificate=predecessor),
+    )
+    payload = evidence_payload(diagnostic)
+    rendered = render_evidence_markdown(payload)
+
+    assert not diagnostic.passed
+    assert validate_ml_convergence_evidence(payload)
+    assert "Passed: `false`" in rendered
+    assert "qsnn_single_synapse_silencing" in rendered
+    assert "Retained predecessor diagnostics" not in rendered
+    assert "| failed |" in rendered
+
+
+def test_markdown_renderer_refuses_a_malformed_predecessor(
+    valid_payload: dict[str, object],
+) -> None:
+    """Refuse a non-certificate predecessor instead of displaying a false result.
+
+    Parameters
+    ----------
+    valid_payload
+        Actual public-suite result before corrupting its diagnostic type.
+
+    """
+    payload = deepcopy(valid_payload)
+    certificates = cast(list[dict[str, object]], payload["certificates"])
+    details = cast(dict[str, object], certificates[2]["details"])
+    details["predecessor"] = []
+
+    with pytest.raises(ValueError, match="predecessor must be a certificate object"):
+        render_evidence_markdown(payload)

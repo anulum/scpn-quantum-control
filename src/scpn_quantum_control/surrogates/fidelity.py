@@ -9,28 +9,16 @@
 
 from __future__ import annotations
 
-import hashlib
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
 
 import numpy as np
 from numpy.typing import NDArray
 
+from ._identity import _array_digest, input_row_digests
 from .models import CLASSICAL_SURROGATE_CLAIM_BOUNDARY, GaussianRBFSurrogate
-from .train import input_row_digests
 
 FloatArray = NDArray[np.float64]
-_NUMERIC_CUSTODY_DECIMALS = 6
-
-
-def _array_digest(values: FloatArray) -> str:
-    """Return a shape-bound, cross-runtime SHA-256 identity for one float array."""
-    rounded = np.round(np.asarray(values, dtype=np.float64), _NUMERIC_CUSTODY_DECIMALS)
-    array = np.ascontiguousarray(np.where(rounded == 0.0, 0.0, rounded), dtype="<f8")
-    digest = hashlib.sha256()
-    digest.update(str(array.shape).encode("ascii"))
-    digest.update(array.tobytes(order="C"))
-    return digest.hexdigest()
 
 
 def _positive_finite(value: float, *, name: str) -> float:
@@ -207,6 +195,31 @@ def certify_surrogate_gradient(
     The reference derivative evaluates the caller-supplied exact local
     objective at symmetric perturbations. It is not a hardware gradient or an
     exact analytic quantum derivative.
+
+    Parameters
+    ----------
+    model
+        Fitted surrogate carrying identities bound to its actual training centres.
+    validation_inputs
+        Finite matrix of held-out parameter vectors disjoint from training rows.
+    exact_objective
+        Exact local reference that returns a finite scalar for each perturbed point.
+    finite_difference_step
+        Finite positive step for the symmetric reference evaluations.
+    max_absolute_error
+        Finite positive bound frozen before comparing gradient errors.
+
+    Returns
+    -------
+    SurrogateGradientCertificate
+        Reference and surrogate gradient errors, digests and the unchanged gate verdict.
+
+    Raises
+    ------
+    ValueError
+        If inputs or controls are invalid, training rows overlap, or reference
+        evaluations are non-finite.
+
     """
     points = np.asarray(validation_inputs, dtype=np.float64)
     if points.ndim != 2 or points.shape[0] == 0 or points.shape[1] != model.n_parameters:

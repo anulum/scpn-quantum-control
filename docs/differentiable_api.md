@@ -207,6 +207,17 @@ rules retain their registered identities; this does not freeze callback state.
 | `scpn_quantum_control.phase.tensorflow_bridge` / `scpn_quantum_control.phase.tensorflow_maintenance` | Shallow loader and signature-compatibility facade over the TensorFlow contract, gradient, and compatibility leaves. TensorFlow is explicitly maintained as compatibility-only evidence for bounded routes; broad Graph/XLA parity, arbitrary Phase-QNode lowering, provider callbacks, hardware gradients, and performance promotion stay blocked. |
 | `scpn_quantum_control.compiler.mlir` | Compiler/program AD lowering, native executable kernel helpers, Phase-QNode MLIR-runtime execution adapters, support-profile reports, and the Enzyme/MLIR maturity audit that records executable SCPN MLIR-runtime correctness, native LLVM/JIT support metadata, local toolchain versions, typed native Enzyme execution evidence, typed MLIR/LLVM correctness evidence, and hard gaps until successful native Enzyme plus isolated benchmark artefacts exist. Native LLVM/JIT promotion is separately guarded by `LLVMJITClaimGate`, `build_llvm_jit_claim_gate`, `llvm_jit_claim_gate_from_dict`, and `render_llvm_jit_claim_gate_markdown`, which require executable lowering, correctness tests, crash-safety tests, isolated benchmark artifact IDs, rollback policy, and fallback policy before any JIT promotion. |
 
+Surrogate construction binds each declared training-row identity to its actual
+centre in row order. Fitting and certification share the same shape-bound,
+six-decimal identity rule and signed-zero normalisation; rows that collide
+under this rule cannot count as independent training or validation samples.
+Equivalent uppercase hexadecimal row identities are normalised before binding.
+Inconsistent identities and nonhexadecimal target digests raise `ValueError`
+before a model can issue a held-out certificate. These consistency checks do
+not authenticate manually supplied target provenance or turn a surrogate
+prediction into validated physics. Genuine held-out value and gradient
+certificates still require the separate exact reference and frozen thresholds.
+
 The MLIR facade delegates to four sub-1,000-line implementation leaves. Its
 custom-rule executable captures the available JVP/VJP callbacks at compile
 time, and its Phase-QNode dialect records preserve canonical structured
@@ -1877,6 +1888,23 @@ This route is full-batch local-simulator training. Hardware backends remain
 disabled by default through the same fail-closed backend planner used by phase
 gradients.
 
+QSNN gradients differentiate the MSE as a function of raw CRy angles. A CRy
+expectation can contain frequencies `0.5` and `1`; its squared residual can also
+contain `1.5` and `2`. The native four-term symmetric shift rule covers that
+complete spectrum, using one base evaluation plus eight shifted evaluations per
+synapse. Shift probes do not clamp weights or change the trainer's saved state.
+`parameter_shift_gradient(inputs, target)` returns derivatives with respect to
+angles in radians, including at the physical weight bounds.
+
+Full-batch descent projects accepted candidate angles into `[0, pi]`, preserving
+the synapse's physical weight interval. It evaluates shift probes outside that
+interval on the original circuit objective. Returned final angles therefore
+match the stored synapses. The training payload records its box `bounds` and
+the multi-frequency method. `projected_gradient_tolerance` denotes constrained
+stationarity; `final_gradient` remains the raw objective derivative and need
+not vanish at an active bound. These are local deterministic training results,
+not evidence of domain generalisation, hardware fidelity or quantum advantage.
+
 `QSNNTrainer.checkpoint()` retains the exact weights, learning rate, epoch and
 loss history, training-row digests and feature bounds. Round-trip its JSON with
 `QSNNTrainingCheckpoint.from_json(...)` and pass the record to `trainer.restore(...)`
@@ -1895,6 +1923,28 @@ completed epochs require that data custody so that overlap refusal survives a
 resume. Full-batch descent can retain data custody with zero SGD epochs and an
 empty SGD history. A failed run can still be serialised for inspection; a
 checkpoint containing non-finite losses cannot resume training.
+
+## Classical neural-operator training randomness
+
+`oscillatools.neural_operator.train_kuramoto_neural_operator(...)` uses an
+independent PyTorch generator for each model. The supplied seed controls model
+initialisation without consuming the caller's CPU random stream. This remains
+true for concurrent training and failed loss evaluation. Repeated training with
+the same seed retains the same model and loss history regardless of intervening
+caller draws. This also applies through the deprecated forecasting re-export.
+It does not qualify GPU reproducibility, domain generalisation or physical fidelity.
+
+## Multimodal held-out accuracy custody
+
+The multimodal ridge forecaster retains its training sample identities in each
+point prediction. Training predictions remain available for diagnostics;
+`evaluate_point_forecast(...)` issues accuracy certificates for calibration or
+test batches only, with sample IDs disjoint from those retained training IDs.
+Changing a training batch's split label does not remove that overlap. A manually
+constructed point forecast without training custody cannot receive a held-out
+certificate. The identities describe supplied rows, without authenticating
+fabricated records or recognising separately renamed copies of trajectories.
+See [multimodal forecasting](multimodal_forecasting.md).
 
 ## Reviewer-facing gradient audit report
 

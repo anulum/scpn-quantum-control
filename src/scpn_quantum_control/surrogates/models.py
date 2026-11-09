@@ -10,9 +10,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from string import hexdigits
 
 import numpy as np
 from numpy.typing import NDArray
+
+from ._identity import input_row_digests
 
 FloatArray = NDArray[np.float64]
 
@@ -64,8 +67,8 @@ class GaussianRBFSurrogate:
     intercept:
         Constant target offset fitted with the radial-basis weights.
     training_input_digests:
-        SHA-256 identities of every training row, used to reject validation
-        leakage.
+        SHA-256 identities matching every centre in row order under the shared
+        six-decimal numeric custody rule, used to reject validation leakage.
     training_target_digest:
         SHA-256 identity of the fitted target vector.
 
@@ -97,7 +100,12 @@ class GaussianRBFSurrogate:
             raise ValueError("training_input_digests must be unique.")
         if not all(len(digest) == 64 for digest in self.training_input_digests):
             raise ValueError("training input digests must be SHA-256 hex strings.")
-        if len(self.training_target_digest) != 64:
+        expected_digests = input_row_digests(centres)
+        if tuple(digest.lower() for digest in self.training_input_digests) != expected_digests:
+            raise ValueError("training_input_digests must match centres in row order.")
+        if len(self.training_target_digest) != 64 or any(
+            character not in hexdigits for character in self.training_target_digest
+        ):
             raise ValueError("training_target_digest must be a SHA-256 hex string.")
         if not self.claim_boundary.strip():
             raise ValueError("claim_boundary must be non-empty.")
@@ -105,6 +113,7 @@ class GaussianRBFSurrogate:
         object.__setattr__(self, "weights", weights)
         object.__setattr__(self, "length_scale", length_scale)
         object.__setattr__(self, "intercept", intercept)
+        object.__setattr__(self, "training_input_digests", expected_digests)
 
     @property
     def n_parameters(self) -> int:
@@ -135,14 +144,48 @@ class GaussianRBFSurrogate:
         return result
 
     def value(self, parameters: FloatArray) -> float:
-        """Predict one scalar objective value."""
+        """Predict one scalar objective value.
+
+        Parameters
+        ----------
+        parameters
+            Finite vector with one value per input parameter.
+
+        Returns
+        -------
+        float
+            Surrogate prediction at the supplied point.
+
+        Raises
+        ------
+        ValueError
+            If the vector is empty, non-finite or has the wrong shape.
+
+        """
         point = _finite_vector(parameters, name="parameters")
         if point.shape != (self.n_parameters,):
             raise ValueError("parameters must match the surrogate parameter dimension.")
         return float(self.predict(point[None, :])[0])
 
     def gradient(self, parameters: FloatArray) -> FloatArray:
-        """Return the analytic gradient with respect to one input point."""
+        """Return the analytic gradient with respect to one input point.
+
+        Parameters
+        ----------
+        parameters
+            Finite vector with one value per input parameter.
+
+        Returns
+        -------
+        numpy.ndarray
+            One analytic surrogate derivative per input parameter.
+
+        Raises
+        ------
+        ValueError
+            If the vector is empty, non-finite or has the wrong shape.
+
+        """
         point = _finite_vector(parameters, name="parameters")
         if point.shape != (self.n_parameters,):
             raise ValueError("parameters must match the surrogate parameter dimension.")

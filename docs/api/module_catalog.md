@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **859 modules** across **41 package families**
-- **4654 documented public module-level symbols**
+- **861 modules** across **41 package families**
+- **4655 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -3853,6 +3853,14 @@ Immutable contracts for bounded QNN/QGNN/QSNN convergence examples.
 
 **Classes:** `ModelFamily`, `FrameworkStatus`, `ConvergenceExampleSpec`, `ConvergenceCertificate`, `FrameworkEvidenceRow`, `ConvergenceSuiteEvidence`
 
+### `scpn_quantum_control.ml_examples.decoding`
+
+Read serialized ML evidence through the existing immutable domain contracts.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/ml_examples/decoding.py) · Public symbols: **1**
+
+**Functions:** `decode_convergence_evidence()`
+
 ### `scpn_quantum_control.ml_examples.evidence`
 
 Digest-bound JSON and Markdown evidence for the convergence-example convergence suite.
@@ -5871,6 +5879,14 @@ Carry requested settings without importing policy authority or changing saved st
 
 ## `surrogates`
 
+### `scpn_quantum_control.surrogates._identity`
+
+Bind surrogate training and validation data to one numeric custody rule.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/surrogates/_identity.py) · Public symbols: **1**
+
+**Functions:** `input_row_digests()`
+
 ### `scpn_quantum_control.surrogates.fidelity`
 
 Held-out value and gradient fidelity gates for classical surrogates.
@@ -5913,11 +5929,11 @@ Deterministic JSON and Markdown evidence for the quantum-reservoir product.
 
 Deterministic fitting for differentiable Gaussian-RBF surrogates.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/surrogates/train.py) · Public symbols: **3**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/surrogates/train.py) · Public symbols: **2**
 
 **Classes:** `SurrogateFitConfig`
 
-**Functions:** `input_row_digests()`, `fit_gaussian_rbf_surrogate()`
+**Functions:** `fit_gaussian_rbf_surrogate()`
 
 ## `tcbo`
 

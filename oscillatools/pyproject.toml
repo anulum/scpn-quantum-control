@@ -165,6 +165,10 @@ ignore_missing_imports = true
 follow_imports = "skip"
 
 [[tool.mypy.overrides]]
+module = ["torch.nn", "torch.nn.modules", "torch.nn.modules.module"]
+follow_imports = "normal"
+
+[[tool.mypy.overrides]]
 module = "sklearn.*"
 ignore_missing_imports = true
 follow_imports = "skip"
@@ -201,9 +205,6 @@ omit = [
     "*/oscillatools/accel/neural_lyapunov_certificate.py",
     "*/oscillatools/accel/formal_neural_lyapunov.py",
     "*/oscillatools/accel/surrogate_kuramoto_mpc.py",
-    # The neural-operator dataset/surrogate surface needs the [torch] extra;
-    # the host-independent cost model stays covered on the floor.
-    "*/oscillatools/neural_operator.py",
     # The optional Rust engine ([rust] extra, not on the numpy+scipy CI floor)
     # is imported through this shim; the absent-engine fallthrough is covered by
     # the dispatcher probe, the engine-present path via the [rust] extra locally.
@@ -221,7 +222,6 @@ omit = [
     "*/oscillatools/accel/neural_lyapunov_certificate.py",
     "*/oscillatools/accel/formal_neural_lyapunov.py",
     "*/oscillatools/accel/surrogate_kuramoto_mpc.py",
-    "*/oscillatools/neural_operator.py",
     "*/oscillatools/accel/rust_import.py",
 ]
 exclude_lines = [

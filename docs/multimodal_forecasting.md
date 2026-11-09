@@ -83,6 +83,16 @@ All batches and fitted arrays are copied and made read-only. Missing inputs are
 normalised to `NaN` behind explicit masks. Split identifiers and SHA-256 content
 digests make train/calibration/test leakage checks executable.
 
+`model.predict(...)` retains the fitted model's training sample IDs in each
+point forecast. Predictions on a training batch remain available for diagnostics.
+`evaluate_point_forecast(...)` accepts calibration or test batches only and
+refuses IDs that overlap those training identities, including a training batch
+whose split label has been changed. A manually constructed point forecast may
+omit `training_sample_ids` for diagnostics, but cannot receive a held-out
+accuracy certificate without that custody. The three original constructor
+arguments remain supported. Supplied identities do not authenticate manually
+fabricated records or detect trajectories independently assigned new IDs.
+
 ## Frozen evidence
 
 The committed evidence uses 64 training, 24 calibration, and 32 test

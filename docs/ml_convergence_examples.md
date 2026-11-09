@@ -1,3 +1,10 @@
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<!-- Commercial license available -->
+<!-- © Concepts 1996–2026 Miroslav Šotek. All rights reserved. -->
+<!-- © Code 2020–2026 Miroslav Šotek. All rights reserved. -->
+<!-- ORCID: 0009-0009-3560-0851 -->
+<!-- Contact: www.anulum.li | protoscience@anulum.li -->
+<!-- SCPN Quantum Control — ML convergence protocols and evidence -->
 # QNN, QGNN, and QSNN convergence examples
 
 `scpn_quantum_control.ml_examples` provides one deterministic, simulator-only
@@ -11,11 +18,22 @@ Each task fixes its data, seed, step budget, target loss, minimum loss drop,
 and optional task metric before execution. A certificate passes only when the
 target, loss-drop, deterministic-replay, and metric gates all pass.
 
-| Family | Existing training route | Frozen task | Steps | Initial loss | Best loss | Gate |
-|---|---|---|---:|---:|---:|---|
-| QNN | Multi-frequency parameter-shift phase-QNN classifier | Separate phase features `0` and `pi` into labels `0` and `1` | 80 | 0.0229967050 | 0.0000710821 | loss <= `1e-4`, drop >= `0.02`, accuracy = `1.0` |
-| QGNN | Exact message passing followed by a Phase-QNode readout gradient | Fit four seeded three-node `K_nm` graphs to synthetic Kuramoto targets | 60 | 0.508950006 | 0.003414575 | loss <= `0.005`, drop >= `0.45` |
-| QSNN | Statevector `QuantumDenseLayer` with parameter-shift descent | Silence the firing probability of one quantum synapse for a unit input | 16 | 0.772880023 | 0.000000562 | loss <= `1e-5`, drop >= `0.7`, final spike = `0` |
+| Family | Existing training route | Frozen task | Step budget | Gates |
+|---|---|---|---:|---|
+| QNN | Multi-frequency parameter-shift phase-QNN classifier | Separate phase features `0` and `pi` into labels `0` and `1` | 80 | loss <= `1e-4`, drop >= `0.02`, accuracy = `1.0` |
+| QGNN | Exact message passing followed by a Phase-QNode readout gradient | Fit four seeded three-node `K_nm` graphs to synthetic Kuramoto targets | 60 | loss <= `0.005`, drop >= `0.45` |
+| QSNN, `exact_mse_v2` | Statevector `QuantumDenseLayer` with exact MSE parameter-shift descent | Silence one quantum synapse for a unit input | 1024 | loss <= `1e-5`, drop >= `0.7`, final spike = `0` |
+| QSNN, `legacy_16_step` | The same current trainer, retained predecessor protocol | The original unit-input silencing task | 16 | The same original loss, drop and spike gates |
+
+The default QSNN example has the explicit versioned identifier
+`qsnn_single_synapse_silencing_v2`. Its budget was selected after a recorded
+budget study and qualified as a new protocol. Correct MSE derivatives do not
+reach the original loss target in sixteen steps. The suite retains that failed
+predecessor certificate under `details.predecessor`, with its original
+`qsnn_single_synapse_silencing` identifier, budget and acceptance gates.
+A passing current protocol does not turn the predecessor into a passing run.
+Measured losses, curves and evaluation costs live in the generated evidence;
+the table above specifies the protocols rather than duplicating results.
 
 These are small, synthetic convergence witnesses. They do not establish
 generalisation, architecture-independent trainability, state-of-the-art
@@ -37,6 +55,12 @@ for certificate in evidence.certificates:
     )
 ```
 
+For the retained QSNN diagnostic, call
+`run_qsnn_convergence_example(protocol="legacy_16_step")`. Its failed target
+remains visible in the returned certificate and the native framework row.
+Acceptance and execution flags must be actual Boolean values; strings such as
+`"false"` and integer substitutes are rejected by the evidence contracts.
+
 Use `required_qnn_frameworks=("jax", "pytorch")` when an environment must
 execute specific QNN framework adapters. An unknown framework is rejected. A
 missing required dependency or a failing installed adapter makes the suite
@@ -44,20 +68,24 @@ fail closed; evidence files are not written.
 
 ## Framework matrix
 
-The committed 2026-07-28 local evidence records every matrix cell explicitly.
-`not_applicable` means the bounded model family has no registered native
-adapter; `unsupported` means the route lies outside this suite.
+Every framework row records an explicit outcome. `not_applicable` means the
+bounded model family has no registered native adapter; `unsupported` means the
+route lies outside this suite. Required unavailable adapters fail the gate.
 
 | Family | SCPN native route | JAX | PyTorch | TensorFlow | Hardware |
 |---|---|---|---|---|---|
-| QNN | ran, required | ran, agreement passed | ran, agreement passed | unavailable in the evidence environment | provider gradient unsupported |
-| QGNN | ran, required | not applicable | not applicable | not applicable | outside the suite |
-| QSNN | ran, required | not applicable | not applicable | not applicable | neuromorphic hardware unsupported |
+| QNN | Actual convergence certificate, required | Execute when installed | Execute when installed | Execute when installed | Provider gradient unsupported |
+| QGNN | Actual convergence certificate, required | Not applicable | Not applicable | Not applicable | Outside the suite |
+| QSNN | Actual convergence certificate, required | Not applicable | Not applicable | Not applicable | Neuromorphic hardware unsupported |
 
-The QNN JAX and PyTorch rows execute the same bounded classifier loss and agree
-with its parameter-shift reference. The evidence records maximum absolute
-gradient errors of about `1.11e-9` and `1.39e-17`, respectively. It does not
-claim arbitrary framework parity.
+Native rows report `ran` only when their actual training certificate passes;
+a failed run produces `failed`. Standalone row factories execute the canonical
+training task when no certificate is supplied. The unified suite passes its
+already executed certificates to those factories. A native convergence row
+has no invented gradient-error measurement. QNN framework rows separately
+execute the bounded classifier gradient and record their measured agreement
+with its parameter-shift reference. Installed adapter failures remain visible;
+no arbitrary framework parity is implied.
 
 ## Evidence CLI
 
@@ -74,6 +102,17 @@ pointers, and claim boundary with a canonical SHA-256 content digest. The
 and [machine-readable evidence](https://github.com/anulum/scpn-quantum-control/blob/main/data/ml_convergence_examples/convergence_evidence.json)
 are committed together. The CLI performs no provider, QPU, or neuromorphic
 hardware execution.
+
+The evidence reader requires each task specification to match its registered
+protocol, including the retained QSNN predecessor. Changing a seed, step budget,
+target, minimum loss drop, task identifier or backend is rejected even if the
+digest is recomputed. Contract checks and the digest establish consistency;
+the producer run and its source and runtime provenance establish how the
+evidence was obtained.
+The reader also requires the complete registered framework matrix without
+duplicate rows. Native outcomes must match their training certificates;
+unregistered adapters and hardware routes cannot claim execution, and gradient
+errors belong only to executed framework comparisons.
 
 ## Learning pointers
 

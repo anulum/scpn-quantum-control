@@ -45,6 +45,21 @@ def test_fit_gaussian_rbf_surrogate_honours_explicit_configuration() -> None:
     assert first.training_target_digest == second.training_target_digest
 
 
+def test_fit_gaussian_rbf_surrogate_preserves_caller_rng_and_replays() -> None:
+    """Real fitting preserves caller-global randomness and reproduces the model."""
+    inputs = np.linspace(-1.0, 1.0, 7, dtype=np.float64)[:, None]
+    targets = np.sin(inputs[:, 0])
+    before = np.random.get_state(legacy=False)
+    first = fit_gaussian_rbf_surrogate(inputs, targets)
+    replay = fit_gaussian_rbf_surrogate(inputs, targets)
+    after = np.random.get_state(legacy=False)
+
+    np.testing.assert_equal(before, after)
+    np.testing.assert_array_equal(first.weights, replay.weights)
+    np.testing.assert_array_equal(first.predict(inputs), replay.predict(inputs))
+    assert first.to_dict() == replay.to_dict()
+
+
 def test_input_row_digests_bind_values_shape_and_order() -> None:
     """Row identities are stable and sensitive to content changes."""
     inputs = np.array([[0.0, 1.0], [1.0, 0.0]], dtype=np.float64)
@@ -77,7 +92,16 @@ def test_surrogate_fit_config_rejects_invalid_values(
     kwargs: dict[str, float],
     message: str,
 ) -> None:
-    """Fit configuration requires finite positive hyperparameters."""
+    """Fit configuration requires finite positive hyperparameters.
+
+    Parameters
+    ----------
+    kwargs
+        Invalid public fit configuration fields.
+    message
+        Expected validation error.
+
+    """
     with pytest.raises(ValueError, match=message):
         SurrogateFitConfig(**kwargs)
 
@@ -98,7 +122,18 @@ def test_fit_gaussian_rbf_surrogate_rejects_malformed_training_data(
     targets: NDArray[np.float64],
     message: str,
 ) -> None:
-    """Training rejects malformed, non-finite, and duplicate samples."""
+    """Training rejects malformed, non-finite, and duplicate samples.
+
+    Parameters
+    ----------
+    inputs
+        Training features supplied to the public fitting function.
+    targets
+        Corresponding target values.
+    message
+        Expected validation error.
+
+    """
     with pytest.raises(ValueError, match=message):
         fit_gaussian_rbf_surrogate(inputs, targets)
 
@@ -108,6 +143,13 @@ def test_fit_gaussian_rbf_surrogate_rejects_malformed_training_data(
     [np.array([0.0, 1.0]), np.empty((0, 1)), np.empty((2, 0)), np.array([[np.inf]])],
 )
 def test_input_row_digests_reject_malformed_arrays(inputs: NDArray[np.float64]) -> None:
-    """Provenance row hashing accepts only finite non-empty matrices."""
+    """Provenance row hashing accepts only finite non-empty matrices.
+
+    Parameters
+    ----------
+    inputs
+        Malformed public row-identity input.
+
+    """
     with pytest.raises(ValueError):
         input_row_digests(inputs)

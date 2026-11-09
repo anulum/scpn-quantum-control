@@ -1,13 +1,13 @@
 {
  "schema": "test_documentation_ceiling_v1",
  "ruff_version": "ruff 0.16.4",
- "measured_commit": "e2c17dbe495e874b04871a8c65b159e0fb208e08",
+ "measured_commit": "b9a061a54e78f362510c7fbf15b32bf3391cee6c",
  "scopes": [
   "tests",
   "oscillatools/tests"
  ],
- "total_findings": 7155,
- "total_files": 572,
+ "total_findings": 7129,
+ "total_files": 569,
  "files": {
   "oscillatools/tests/conftest.py": 1,
   "oscillatools/tests/kuramoto_delay_sensitivity_witness.py": 1,
@@ -322,7 +322,6 @@
   "tests/test_module_size_policy.py": 14,
   "tests/test_monte_carlo_xy.py": 16,
   "tests/test_multimodal_bridge.py": 6,
-  "tests/test_multimodal_forecaster.py": 7,
   "tests/test_multiplatform_export_workflow.py": 1,
   "tests/test_multiscale_qec.py": 4,
   "tests/test_native_decomposition_readiness.py": 4,
@@ -364,7 +363,6 @@
   "tests/test_phase3_state_layout_dla_ibm.py": 3,
   "tests/test_phase_domain_benchmark_datasets.py": 6,
   "tests/test_phase_dynamics_contracts.py": 41,
-  "tests/test_phase_gradient_descent.py": 5,
   "tests/test_phase_gradient_support_matrix.py": 7,
   "tests/test_phase_gradient_training.py": 3,
   "tests/test_phase_hardware_gradient_policy.py": 8,
@@ -464,7 +462,6 @@
   "tests/test_qpy_artifact_io.py": 4,
   "tests/test_qrc_phase_detector.py": 17,
   "tests/test_qsnn_native_parameter_shift.py": 2,
-  "tests/test_qsnn_training.py": 14,
   "tests/test_qsnn_validation.py": 19,
   "tests/test_qstdp.py": 5,
   "tests/test_qsvt_evolution.py": 30,

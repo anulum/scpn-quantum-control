@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import replace
 
 import numpy as np
@@ -17,7 +18,6 @@ import pytest
 from scpn_quantum_control.forecasting.multimodal_forecaster import (
     MultimodalPointForecast,
     MultimodalRidgeForecaster,
-    _canonical_digest_array_bytes,
     evaluate_point_forecast,
     fit_multimodal_ridge_forecaster,
 )
@@ -29,14 +29,39 @@ from scpn_quantum_control.forecasting.synthetic_multimodal import (
 )
 
 
-def test_model_digest_numeric_custody_ignores_subprecision_and_signed_zero() -> None:
-    """Digest bytes are stable across insignificant BLAS/runtime drift."""
-    left = np.asarray([0.12345678901231, -0.0, 1.0e-14], dtype=np.float64)
-    right = np.asarray([0.12345678901229, 0.0, -1.0e-14], dtype=np.float64)
-    assert _canonical_digest_array_bytes(left) == _canonical_digest_array_bytes(right)
+def test_model_digest_binds_canonical_public_fitted_parameters() -> None:
+    """Verify the public fitted identity against an independent byte oracle."""
+    train = _dataset().train
+    train = replace(train, events=-np.zeros_like(train.events))
+    model = fit_multimodal_ridge_forecaster(train, ridge=10.0)
+    expected = hashlib.sha256(b"scpn.multimodal_ridge_forecaster.v1\0")
+    expected.update(train.content_digest().encode("ascii"))
+    for values in (
+        np.asarray([model.ridge]),
+        model.feature_means,
+        model.feature_scales,
+        model.coefficients,
+    ):
+        rounded = np.round(values, decimals=12)
+        canonical = np.where(rounded == 0.0, 0.0, rounded).astype("<f8")
+        expected.update(canonical.tobytes(order="C"))
+    assert model.model_digest == expected.hexdigest()
 
 
 def _dataset(*, history_steps: int = 8) -> SyntheticMultimodalDataset:
+    """Generate the frozen small train/calibration/test regression dataset.
+
+    Parameters
+    ----------
+    history_steps
+        Number of observed history steps in each generated trajectory.
+
+    Returns
+    -------
+    SyntheticMultimodalDataset
+        Independently generated simulation-only splits with fixed seed 3702.
+
+    """
     return generate_synthetic_multimodal_dataset(
         SyntheticMultimodalConfig(
             train_samples=32,
@@ -77,7 +102,9 @@ def _model_record(
 
 
 def test_fit_predict_and_evaluate_are_deterministic_and_immutable() -> None:
+    """Exercise fitted custody, deterministic predictions and disjoint metrics."""
     dataset = _dataset()
+    random_state = np.random.get_state(legacy=False)
     first = fit_multimodal_ridge_forecaster(dataset.train, ridge=10.0)
     second = fit_multimodal_ridge_forecaster(dataset.train, ridge=10.0)
     forecast = first.predict(dataset.test)
@@ -88,16 +115,22 @@ def test_fit_predict_and_evaluate_are_deterministic_and_immutable() -> None:
     assert first.training_sample_ids == dataset.train.sample_ids
     np.testing.assert_allclose(forecast.values, second.predict(dataset.test).values)
     assert forecast.sample_ids == dataset.test.sample_ids
-    assert not forecast.values.flags.writeable
+    assert not forecast.values.flags["W"]
+    assert forecast.training_sample_ids == dataset.train.sample_ids
     assert certificate.samples == dataset.test.n_samples
     assert certificate.wrapped_mse >= 0.0
     assert certificate.wrapped_mae >= 0.0
     assert certificate.persistence_wrapped_mse >= 0.0
     assert len(certificate.domains) == 4
     assert certificate.domains[0].to_dict()["domain_tag"] == "synthetic"
+    assert certificate.to_dict()["model_digest"] == first.model_digest
+    calibration = evaluate_point_forecast(first.predict(dataset.calibration), dataset.calibration)
+    assert calibration.samples == dataset.calibration.n_samples
+    np.testing.assert_equal(np.random.get_state(legacy=False), random_state)
 
 
 def test_design_matrix_preserves_masks_and_domain_tags() -> None:
+    """Keep missingness, domain encoding and the intercept explicit at inference."""
     dataset = _dataset()
     model = fit_multimodal_ridge_forecaster(dataset.train, ridge=10.0)
     design = model.design_matrix(dataset.test)
@@ -111,6 +144,7 @@ def test_design_matrix_preserves_masks_and_domain_tags() -> None:
 
 
 def test_fit_refuses_wrong_custody_hyperparameters_and_dense_budget() -> None:
+    """Refuse non-training splits, invalid penalties and oversized dense solves."""
     dataset = _dataset()
     with pytest.raises(ValueError, match="requires a train batch"):
         fit_multimodal_ridge_forecaster(replace(dataset.train, split="calibration"))
@@ -123,6 +157,7 @@ def test_fit_refuses_wrong_custody_hyperparameters_and_dense_budget() -> None:
 
 
 def test_fit_refuses_unobserved_features_and_underobserved_targets() -> None:
+    """Require training observations for every feature and target coordinate."""
     dataset = _dataset()
     graph_mask = dataset.train.graph_mask.copy()
     graph_mask[:, 0, 1] = False
@@ -137,6 +172,7 @@ def test_fit_refuses_unobserved_features_and_underobserved_targets() -> None:
 
 
 def test_predict_refuses_incompatible_shape_time_and_feature_width() -> None:
+    """Reject shape, time-step and frozen feature-width drift before prediction."""
     dataset = _dataset()
     model = fit_multimodal_ridge_forecaster(dataset.train, ridge=10.0)
     incompatible = _dataset(history_steps=9)
@@ -153,6 +189,7 @@ def test_predict_refuses_incompatible_shape_time_and_feature_width() -> None:
 
 
 def test_point_forecast_and_evaluation_refuse_custody_drift() -> None:
+    """Refuse malformed point records and mismatched evaluation IDs or shapes."""
     dataset = _dataset()
     model = fit_multimodal_ridge_forecaster(dataset.train, ridge=10.0)
     forecast = model.predict(dataset.test)
@@ -183,6 +220,7 @@ def test_point_forecast_and_evaluation_refuse_custody_drift() -> None:
 
 
 def test_prediction_refuses_sample_node_without_history_anchor() -> None:
+    """Require an observed phase anchor for each predicted sample and node."""
     dataset = _dataset()
     model = fit_multimodal_ridge_forecaster(dataset.train, ridge=10.0)
     mask = dataset.test.series_mask.copy()
@@ -252,3 +290,53 @@ def test_evaluation_skips_domain_tags_absent_from_batch() -> None:
     certificate = evaluate_point_forecast(model.predict(single_tag), single_tag)
 
     assert [row.domain_tag for row in certificate.domains] == [SyntheticDomainTag.SYNTHETIC]
+
+
+def test_evaluation_refuses_training_split() -> None:
+    """Keep training predictions available without issuing a held-out certificate."""
+    dataset = _dataset()
+    model = fit_multimodal_ridge_forecaster(dataset.train, ridge=10.0)
+    forecast = model.predict(dataset.train)
+    with pytest.raises(ValueError, match="held-out"):
+        evaluate_point_forecast(forecast, dataset.train)
+
+
+def test_evaluation_refuses_training_rows_relabelled_as_test() -> None:
+    """Preserve training custody when the caller relabels the evaluation split."""
+    dataset = _dataset()
+    model = fit_multimodal_ridge_forecaster(dataset.train, ridge=10.0)
+    forecast = model.predict(dataset.train)
+    with pytest.raises(ValueError, match="disjoint"):
+        evaluate_point_forecast(forecast, replace(dataset.train, split="test"))
+
+
+def test_evaluation_refuses_forecast_without_training_custody() -> None:
+    """Refuse held-out claims from an unattributed point forecast."""
+    dataset = _dataset()
+    model = fit_multimodal_ridge_forecaster(dataset.train, ridge=10.0)
+    forecast = model.predict(dataset.test)
+    unattributed = MultimodalPointForecast(
+        forecast.values, forecast.sample_ids, forecast.model_digest
+    )
+    with pytest.raises(ValueError, match="training custody"):
+        evaluate_point_forecast(unattributed, dataset.test)
+
+
+def test_forecast_training_custody_is_validated_and_copied() -> None:
+    """Preserve fitted custody and copied values while refusing malformed IDs."""
+    dataset = _dataset()
+    model = fit_multimodal_ridge_forecaster(dataset.train, ridge=10.0)
+    forecast = model.predict(dataset.test)
+    values = forecast.values.copy()
+    copied = replace(forecast, values=values)
+    values[:] = np.nan
+    assert copied.training_sample_ids == dataset.train.sample_ids
+    assert copied.sample_ids == dataset.test.sample_ids
+    np.testing.assert_array_equal(copied.values, forecast.values)
+    assert evaluate_point_forecast(copied, dataset.test).to_dict() == (
+        evaluate_point_forecast(forecast, dataset.test).to_dict()
+    )
+    with pytest.raises(ValueError, match="training_sample_ids must be non-empty and unique"):
+        replace(forecast, training_sample_ids=())
+    with pytest.raises(ValueError, match="training_sample_ids must be non-empty and unique"):
+        replace(forecast, training_sample_ids=(dataset.train.sample_ids[0],) * 2)

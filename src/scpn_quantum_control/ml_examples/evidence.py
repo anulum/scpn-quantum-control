@@ -22,23 +22,74 @@ from .contracts import (
     ConvergenceSuiteEvidence,
     ModelFamily,
 )
+from .decoding import decode_convergence_evidence
 from .suite import run_ml_convergence_suite
 
 
 def canonical_json(value: object) -> str:
-    """Return canonical JSON text used by the evidence digest."""
+    """Return canonical JSON text used by the evidence digest.
+
+    Parameters
+    ----------
+    value
+        JSON-compatible evidence without non-finite numbers.
+
+    Returns
+    -------
+    str
+        Sorted compact JSON with no representation-dependent whitespace.
+
+    Raises
+    ------
+    TypeError
+        If a value cannot be serialized as JSON.
+    ValueError
+        If a number is non-finite or the object contains a cycle.
+
+    """
     return json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False)
 
 
 def evidence_payload(suite: ConvergenceSuiteEvidence) -> dict[str, object]:
-    """Return suite payload plus a SHA-256 integrity digest."""
+    """Return suite payload plus a SHA-256 integrity digest.
+
+    Parameters
+    ----------
+    suite
+        Actual training certificates and observed framework rows.
+
+    Returns
+    -------
+    dict[str, object]
+        Serialized suite and the digest of its canonical unsigned bytes.
+
+    """
     payload = suite.to_payload()
     digest = hashlib.sha256(canonical_json(payload).encode("utf-8")).hexdigest()
     return payload | {"content_digest": digest}
 
 
 def render_evidence_markdown(payload: Mapping[str, object]) -> str:
-    """Render a compact human-readable view of validated suite evidence."""
+    """Render a human-readable view of previously validated suite evidence.
+
+    Parameters
+    ----------
+    payload
+        Validated evidence including its digest and retained diagnostics.
+
+    Returns
+    -------
+    str
+        Certificate, predecessor and framework tables with the claim boundary.
+
+    Raises
+    ------
+    ValueError
+        If a numeric cell or predecessor certificate has an invalid type.
+    KeyError
+        If a required serialized field is absent.
+
+    """
     certificates = cast(list[dict[str, object]], payload["certificates"])
     rows = cast(list[dict[str, object]], payload["framework_rows"])
     lines = [
@@ -51,16 +102,17 @@ def render_evidence_markdown(payload: Mapping[str, object]) -> str:
         "",
         "## Convergence certificates",
         "",
-        "| Family | Example | Initial loss | Best loss | Target | Loss drop | Replay | Passed |",
-        "|---|---|---:|---:|---:|---:|---|---|",
+        "| Family | Example | Step budget | Initial loss | Best loss | Target | Loss drop | Replay | Passed |",
+        "|---|---|---:|---:|---:|---:|---:|---|---|",
     ]
     for certificate in certificates:
         spec = cast(dict[str, object], certificate["spec"])
         lines.append(
-            "| {family} | {example} | {initial:.9g} | {best:.9g} | {target:.9g} | "
+            "| {family} | {example} | {budget} | {initial:.9g} | {best:.9g} | {target:.9g} | "
             "{drop:.9g} | {replay} | {passed} |".format(
                 family=spec["family"],
                 example=spec["example_id"],
+                budget=spec["max_steps"],
                 initial=_as_float(certificate["initial_loss"], "initial_loss"),
                 best=_as_float(certificate["best_loss"], "best_loss"),
                 target=_as_float(spec["target_loss"], "target_loss"),
@@ -69,6 +121,38 @@ def render_evidence_markdown(payload: Mapping[str, object]) -> str:
                 passed=certificate["passed"],
             )
         )
+    predecessors: list[dict[str, object]] = []
+    for certificate in certificates:
+        details = cast(dict[str, object], certificate["details"])
+        if "predecessor" in details:
+            predecessor = details["predecessor"]
+            if not isinstance(predecessor, dict):
+                raise ValueError("predecessor must be a certificate object")
+            predecessors.append(cast(dict[str, object], predecessor))
+    if predecessors:
+        lines.extend(
+            [
+                "",
+                "## Retained predecessor diagnostics",
+                "",
+                "The predecessor budget is replayed with the current gradients and its original loss gates.",
+                "",
+                "| Example | Step budget | Target | Best loss | Replay | Passed |",
+                "|---|---:|---:|---:|---|---|",
+            ]
+        )
+        for predecessor in predecessors:
+            spec = cast(dict[str, object], predecessor["spec"])
+            lines.append(
+                "| {example} | {budget} | {target:.9g} | {best:.9g} | {replay} | {passed} |".format(
+                    example=spec["example_id"],
+                    budget=spec["max_steps"],
+                    target=_as_float(spec["target_loss"], "target_loss"),
+                    best=_as_float(predecessor["best_loss"], "best_loss"),
+                    replay=predecessor["deterministic_replay"],
+                    passed=predecessor["passed"],
+                )
+            )
     lines.extend(
         [
             "",
@@ -102,7 +186,36 @@ def write_ml_convergence_evidence(
     *,
     required_qnn_frameworks: tuple[str, ...] = (),
 ) -> dict[str, object]:
-    """Run the suite and atomically replace its JSON and Markdown evidence."""
+    """Run the suite and atomically replace each validated evidence file.
+
+    Parameters
+    ----------
+    json_path
+        Destination for the digest-bound machine-readable result.
+    markdown_path
+        Destination for its human-readable tables.
+    required_qnn_frameworks
+        QNN adapters whose absence must fail the evidence gate.
+
+    Returns
+    -------
+    dict[str, object]
+        The validated payload written to the requested JSON path.
+
+    Raises
+    ------
+    RuntimeError
+        If the actual suite fails validation, before either file is written.
+    ValueError
+        If an unknown required QNN framework is requested.
+    OSError
+        If a destination cannot be written or atomically replaced.
+
+    Notes
+    -----
+    Replacement is atomic per file, not a transaction spanning both paths.
+
+    """
     suite = run_ml_convergence_suite(required_qnn_frameworks=required_qnn_frameworks)
     payload = evidence_payload(suite)
     findings = validate_ml_convergence_evidence(payload)
@@ -116,7 +229,26 @@ def write_ml_convergence_evidence(
 
 
 def validate_ml_convergence_evidence(payload: object) -> tuple[str, ...]:
-    """Return fail-closed findings for one committed ML convergence payload."""
+    """Return fail-closed findings for one serialized ML convergence payload.
+
+    Parameters
+    ----------
+    payload
+        Decoded JSON object with certificates, framework rows and a digest.
+
+    Returns
+    -------
+    tuple[str, ...]
+        Empty only when structure, domain contracts, derived verdicts,
+        simulator-only boundaries and the canonical digest all agree.
+
+    Notes
+    -----
+    Contract consistency and an integrity digest do not authenticate the
+    originating computation. Qualification also requires the actual producer
+    run and its source/runtime provenance.
+
+    """
     if not isinstance(payload, dict):
         return ("payload must be a JSON object",)
     data = cast(dict[str, object], payload)
@@ -129,16 +261,18 @@ def validate_ml_convergence_evidence(payload: object) -> tuple[str, ...]:
         "hardware_execution": False,
     }
     for key, value in expected.items():
-        if data.get(key) != value:
+        if data.get(key) != value or type(data.get(key)) is not type(value):
             findings.append(f"{key} must equal {value!r}")
     certificates = data.get("certificates")
     if not isinstance(certificates, list):
         findings.append("certificates must be an array")
     else:
         families = {
-            cast(dict[str, object], certificate.get("spec", {})).get("family")
+            family
             for certificate in certificates
             if isinstance(certificate, dict)
+            if isinstance(spec := certificate.get("spec"), dict)
+            if isinstance(family := spec.get("family"), str)
         }
         if families != {family.value for family in ModelFamily} or len(certificates) != 3:
             findings.append("certificates must cover qnn, qgnn, and qsnn exactly once")
@@ -160,11 +294,19 @@ def validate_ml_convergence_evidence(payload: object) -> tuple[str, ...]:
         for row in framework_rows
     ):
         findings.append("framework rows must be complete and pass their declared gates")
+    try:
+        decode_convergence_evidence(data)
+    except (KeyError, TypeError, ValueError, OverflowError) as error:
+        findings.append(f"evidence contracts: {error}")
     digest = data.get("content_digest")
     unsigned = {key: value for key, value in data.items() if key != "content_digest"}
-    expected_digest = hashlib.sha256(canonical_json(unsigned).encode("utf-8")).hexdigest()
-    if digest != expected_digest:
-        findings.append("content_digest does not match canonical payload bytes")
+    try:
+        expected_digest = hashlib.sha256(canonical_json(unsigned).encode("utf-8")).hexdigest()
+    except (TypeError, ValueError, OverflowError) as error:
+        findings.append(f"content_digest cannot be computed: {error}")
+    else:
+        if digest != expected_digest:
+            findings.append("content_digest does not match canonical payload bytes")
     return tuple(findings)
 
 
@@ -181,7 +323,24 @@ def _as_float(value: object, name: str) -> float:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Run the unified evidence CLI."""
+    """Run the unified evidence CLI.
+
+    Parameters
+    ----------
+    argv
+        Command arguments, or the current process arguments when omitted.
+
+    Returns
+    -------
+    int
+        Zero after the actual suite passes and both evidence files are written.
+
+    Raises
+    ------
+    RuntimeError
+        If the actual suite cannot produce valid evidence.
+
+    """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--json-output",

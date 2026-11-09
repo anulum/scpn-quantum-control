@@ -19,16 +19,35 @@ def run_ml_convergence_suite(
     *,
     required_qnn_frameworks: tuple[str, ...] = (),
 ) -> ConvergenceSuiteEvidence:
-    """Run deterministic QNN, QGNN, and QSNN examples through public APIs."""
+    """Run deterministic QNN, QGNN, and QSNN examples through public APIs.
+
+    Parameters
+    ----------
+    required_qnn_frameworks
+        Framework adapters whose absence fails their declared evidence gate.
+
+    Returns
+    -------
+    ConvergenceSuiteEvidence
+        Actual training certificates, observed framework outcomes and learning
+        pointers. Failed runs remain failed in their native matrix rows.
+
+    Raises
+    ------
+    ValueError
+        If a required QNN framework is not registered.
+
+    """
     certificates = (
         run_qnn_convergence_example(),
         run_qgnn_convergence_example(),
         run_qsnn_convergence_example(),
     )
+    qnn, qgnn, qsnn = certificates
     framework_rows = (
-        *run_qnn_framework_rows(required_frameworks=required_qnn_frameworks),
-        *qgnn_framework_rows(),
-        *qsnn_framework_rows(),
+        *run_qnn_framework_rows(required_frameworks=required_qnn_frameworks, certificate=qnn),
+        *qgnn_framework_rows(certificate=qgnn),
+        *qsnn_framework_rows(certificate=qsnn),
     )
     return ConvergenceSuiteEvidence(
         certificates=certificates,

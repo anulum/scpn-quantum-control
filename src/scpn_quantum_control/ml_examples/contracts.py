@@ -56,6 +56,9 @@ class ConvergenceExampleSpec:
 
     def __post_init__(self) -> None:
         """Validate the bounded local task specification."""
+        if not isinstance(self.family, ModelFamily):
+            raise ValueError("family must be a ModelFamily")
+        _require_bool("hardware", self.hardware)
         if not self.example_id.strip() or not self.task.strip() or not self.backend.strip():
             raise ValueError("example_id, task, and backend must be non-empty")
         if isinstance(self.seed, bool) or not isinstance(self.seed, int) or self.seed < 0:
@@ -96,6 +99,9 @@ class ConvergenceCertificate:
 
     def __post_init__(self) -> None:
         """Validate exact curve arithmetic and frozen acceptance booleans."""
+        _require_bool("target_reached", self.target_reached)
+        _require_bool("loss_drop_reached", self.loss_drop_reached)
+        _require_bool("deterministic_replay", self.deterministic_replay)
         if not self.loss_history or not self.stop_reason.strip():
             raise ValueError("loss_history and stop_reason must be non-empty")
         if not all(math.isfinite(value) and value >= 0.0 for value in self.loss_history):
@@ -183,6 +189,14 @@ class FrameworkEvidenceRow:
 
     def __post_init__(self) -> None:
         """Validate row completeness and status semantics."""
+        if not isinstance(self.family, ModelFamily):
+            raise ValueError("family must be a ModelFamily")
+        if not isinstance(self.status, FrameworkStatus):
+            raise ValueError("status must be a FrameworkStatus")
+        _require_bool("required", self.required)
+        _require_bool("executed", self.executed)
+        if self.passed is not None:
+            _require_bool("passed", self.passed)
         if not self.framework.strip() or not self.reason.strip():
             raise ValueError("framework and reason must be non-empty")
         if self.status in {FrameworkStatus.RAN, FrameworkStatus.FAILED}:
@@ -233,6 +247,8 @@ class ConvergenceSuiteEvidence:
 
     def __post_init__(self) -> None:
         """Require complete, unique QNN/QGNN/QSNN evidence without blank cells."""
+        _require_bool("provider_execution", self.provider_execution)
+        _require_bool("hardware_execution", self.hardware_execution)
         families = {certificate.spec.family for certificate in self.certificates}
         if len(self.certificates) != len(families):
             raise ValueError("suite certificates must not repeat a model family")
@@ -277,6 +293,26 @@ class ConvergenceSuiteEvidence:
                 {"family": family.value, "path": path} for family, path in self.notebook_pointers
             ],
         }
+
+
+def _require_bool(name: str, value: object) -> None:
+    """Reject coercion of evidence flags from strings, numbers or null values.
+
+    Parameters
+    ----------
+    name
+        Evidence field used in the diagnostic.
+    value
+        Caller-supplied flag before truth-value interpretation.
+
+    Raises
+    ------
+    ValueError
+        If the value is not a Boolean.
+
+    """
+    if not isinstance(value, bool):
+        raise ValueError(f"{name} must be a boolean")
 
 
 def _finite(name: str, value: float | None) -> float:

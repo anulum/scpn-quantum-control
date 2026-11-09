@@ -19,6 +19,7 @@ from scpn_quantum_control.qsnn.training import (
 
 
 def test_trainer_init() -> None:
+    """Retain the supplied layer and learning rate."""
     layer = QuantumDenseLayer(2, 3, seed=42)
     trainer = QSNNTrainer(layer, lr=0.01)
     assert trainer.lr == 0.01
@@ -26,6 +27,7 @@ def test_trainer_init() -> None:
 
 
 def test_forward_probs_shape() -> None:
+    """Return one bounded probability for each neuron."""
     layer = QuantumDenseLayer(2, 2, seed=0)
     trainer = QSNNTrainer(layer)
     probs = trainer._forward_probs(np.array([0.5, 0.5]))
@@ -35,6 +37,7 @@ def test_forward_probs_shape() -> None:
 
 
 def test_gradient_shape() -> None:
+    """Return one gradient component for each physical synapse."""
     layer = QuantumDenseLayer(2, 2, seed=0)
     trainer = QSNNTrainer(layer)
     grad = trainer.parameter_shift_gradient(np.array([0.5, 0.5]), np.array([1.0, 0.0]))
@@ -42,6 +45,7 @@ def test_gradient_shape() -> None:
 
 
 def test_gradient_finite() -> None:
+    """Keep a two-input, two-neuron gradient finite."""
     layer = QuantumDenseLayer(2, 2, seed=0)
     trainer = QSNNTrainer(layer)
     grad = trainer.parameter_shift_gradient(np.array([0.3, 0.7]), np.array([0.5, 0.5]))
@@ -49,6 +53,7 @@ def test_gradient_finite() -> None:
 
 
 def test_train_epoch_returns_loss() -> None:
+    """Return a finite scalar MSE after a real training epoch."""
     layer = QuantumDenseLayer(2, 2, seed=0)
     trainer = QSNNTrainer(layer, lr=0.1)
     X = np.array([[0.3, 0.7], [0.8, 0.2]])
@@ -59,6 +64,7 @@ def test_train_epoch_returns_loss() -> None:
 
 
 def test_train_returns_history() -> None:
+    """Record a finite loss for each requested epoch."""
     layer = QuantumDenseLayer(2, 2, seed=0)
     trainer = QSNNTrainer(layer, lr=0.1)
     X = np.array([[0.5, 0.5]])
@@ -69,6 +75,7 @@ def test_train_returns_history() -> None:
 
 
 def test_train_with_diagnostics_returns_convergence_certificate() -> None:
+    """Report the full multi-frequency probe budget and observed loss decrease."""
     layer = QuantumDenseLayer(1, 2, seed=42)
     trainer = QSNNTrainer(layer, lr=0.2)
     X = np.array([[0.8, 0.2], [0.2, 0.8]])
@@ -80,7 +87,7 @@ def test_train_with_diagnostics_returns_convergence_certificate() -> None:
     assert result.epochs == 4
     assert len(result.loss_history) == 4
     assert result.n_samples == 2
-    assert result.parameter_shift_evaluations == 4 * 2 * 5
+    assert result.parameter_shift_evaluations == 4 * 2 * (1 + 8 * 2)
     assert result.diagnostics.best_improved
     assert result.diagnostics.best_loss <= result.diagnostics.initial_loss
     assert result.diagnostics.final_loss >= 0.0
@@ -88,6 +95,7 @@ def test_train_with_diagnostics_returns_convergence_certificate() -> None:
 
 
 def test_train_with_parameter_shift_descent_improves_full_batch_loss() -> None:
+    """Reduce the actual full-batch loss and retain the descent certificate."""
     layer = QuantumDenseLayer(1, 1, seed=42)
     trainer = QSNNTrainer(layer, lr=0.4)
     X = np.array([[1.0]])
@@ -114,6 +122,7 @@ def test_train_with_parameter_shift_descent_improves_full_batch_loss() -> None:
 
 
 def test_train_with_parameter_shift_descent_fails_closed_for_hardware() -> None:
+    """Refuse hardware training without changing the layer weights."""
     layer = QuantumDenseLayer(1, 1, seed=42)
     trainer = QSNNTrainer(layer, lr=0.4)
     X = np.array([[1.0]])
@@ -132,6 +141,7 @@ def test_train_with_parameter_shift_descent_fails_closed_for_hardware() -> None:
 
 
 def test_qsnn_trainer_rejects_mismatched_or_empty_dataset() -> None:
+    """Reject mismatched sample counts and empty training data."""
     layer = QuantumDenseLayer(1, 2, seed=42)
     trainer = QSNNTrainer(layer, lr=0.2)
 
@@ -149,6 +159,7 @@ def test_qsnn_trainer_rejects_mismatched_or_empty_dataset() -> None:
 
 
 def test_train_loss_trend() -> None:
+    """Keep the final loss within the declared bounded training tolerance."""
     layer = QuantumDenseLayer(1, 2, seed=42)
     trainer = QSNNTrainer(layer, lr=0.5)
     X = np.array([[0.8, 0.2], [0.2, 0.8]])
@@ -159,10 +170,16 @@ def test_train_loss_trend() -> None:
 
 
 def test_forward_with_angle_shift() -> None:
-    layer = QuantumDenseLayer(1, 2, seed=0)
-    trainer = QSNNTrainer(layer)
-    base = trainer._forward_probs(np.array([0.5, 0.5]))
-    shifted = trainer._forward_probs(np.array([0.5, 0.5]), angle_override=(0, 0, np.pi / 2))
+    """Observe a CRy angle perturbation through the public zero-rate MSE readout."""
+    weights = np.array([[0.25, 0.3]])
+    shifted_weights = weights.copy()
+    shifted_weights[0, 0] += 0.5  # The weight-to-angle map makes this a pi/2 rotation.
+    features = np.array([[0.5, 0.5]])
+    targets = np.array([[0.0]])
+    trainer = QSNNTrainer(QuantumDenseLayer(1, 2, weights=weights, seed=0), lr=0.0)
+    shifted_trainer = QSNNTrainer(QuantumDenseLayer(1, 2, weights=shifted_weights, seed=0), lr=0.0)
+    base = trainer.train_epoch(features, targets)
+    shifted = shifted_trainer.train_epoch(features, targets)
     assert not np.allclose(base, shifted)
 
 
@@ -172,8 +189,7 @@ def test_forward_with_angle_shift() -> None:
 
 
 def test_gradient_antisymmetric_shift() -> None:
-    """Parameter-shift: g = (L(+pi/2) - L(-pi/2)) / 2 implies
-    gradients flip sign if target flips (loss landscape symmetry)."""
+    """Opposite targets induce opposite descent directions at this seeded state."""
     layer = QuantumDenseLayer(1, 2, seed=42)
     trainer = QSNNTrainer(layer)
     x = np.array([0.5, 0.5])

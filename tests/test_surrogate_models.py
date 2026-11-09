@@ -9,12 +9,19 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Any, cast
 
 import numpy as np
 import pytest
 
-from scpn_quantum_control.surrogates import GaussianRBFSurrogate, input_row_digests
+from scpn_quantum_control.surrogates import (
+    GaussianRBFSurrogate,
+    SurrogateFidelityThresholds,
+    certify_surrogate_fidelity,
+    fit_gaussian_rbf_surrogate,
+    input_row_digests,
+)
 
 
 def _model() -> GaussianRBFSurrogate:
@@ -41,9 +48,63 @@ def test_gaussian_rbf_predict_value_and_gradient_are_consistent() -> None:
     assert model.predict(np.array([[0.35], [0.55]])).shape == (2,)
     assert model.value(point) == pytest.approx(model.predict(point[None, :])[0])
     assert model.gradient(point)[0] == pytest.approx(finite_difference, abs=1.0e-8)
-    assert not model.centres.flags.writeable
-    assert not model.weights.flags.writeable
+    assert not model.centres.flags["W"]
+    assert not model.weights.flags["W"]
     assert model.to_dict()["model"] == "gaussian_rbf"
+
+
+@pytest.mark.parametrize("identity_source", ["foreign_rows", "reordered_rows"])
+def test_gaussian_rbf_refuses_inconsistent_training_identity(identity_source: str) -> None:
+    """Refuse inconsistent centre identities before a held-out score is possible.
+
+    Parameters
+    ----------
+    identity_source
+        Foreign or differently ordered rows whose identities do not bind the centres.
+
+    """
+    inputs = np.linspace(-1.0, 1.0, 9, dtype=np.float64)[:, None]
+    targets = np.sin(inputs[:, 0])
+    model = fit_gaussian_rbf_surrogate(inputs, targets)
+    before = model.to_dict()
+    predictions = model.predict(inputs)
+    with pytest.raises(ValueError, match="overlap"):
+        certify_surrogate_fidelity(
+            model,
+            inputs,
+            targets,
+            thresholds=SurrogateFidelityThresholds(0.01, 0.02, 0.99),
+        )
+    rows = inputs + 3.0 if identity_source == "foreign_rows" else inputs[::-1]
+    with pytest.raises(ValueError, match="match.*centres"):
+        replace(model, training_input_digests=input_row_digests(rows))
+    assert model.to_dict() == before
+    np.testing.assert_array_equal(model.predict(inputs), predictions)
+
+
+def test_gaussian_rbf_refuses_nonhex_target_identity() -> None:
+    """A length-correct nonhex target identity cannot label a fitted model."""
+    model = _model()
+    with pytest.raises(ValueError, match="SHA-256"):
+        replace(model, training_target_digest="g" * 64)
+
+
+def test_gaussian_rbf_normalises_matching_hexadecimal_row_identities() -> None:
+    """Equivalent uppercase row identities retain the overlap refusal."""
+    model = _model()
+    uppercase = replace(
+        model,
+        training_input_digests=tuple(digest.upper() for digest in model.training_input_digests),
+        training_target_digest=model.training_target_digest.upper(),
+    )
+    assert uppercase.training_input_digests == model.training_input_digests
+    with pytest.raises(ValueError, match="overlap"):
+        certify_surrogate_fidelity(
+            uppercase,
+            model.centres,
+            model.predict(model.centres),
+            thresholds=SurrogateFidelityThresholds(0.01, 0.02, 0.99),
+        )
 
 
 @pytest.mark.parametrize(
@@ -69,13 +130,24 @@ def test_gaussian_rbf_rejects_invalid_model_contracts(
     value: object,
     message: str,
 ) -> None:
-    """Model construction fails closed for malformed dimensions or provenance."""
+    """Model construction fails closed for malformed dimensions or provenance.
+
+    Parameters
+    ----------
+    field
+        Public model field whose contract is violated.
+    value
+        Malformed replacement for that field.
+    message
+        Expected public validation error.
+
+    """
     values: dict[str, object] = {
         "centres": np.array([[0.0], [1.0]], dtype=np.float64),
         "weights": np.array([0.1, 0.2], dtype=np.float64),
         "length_scale": 0.5,
         "intercept": 0.0,
-        "training_input_digests": ("a" * 64, "b" * 64),
+        "training_input_digests": input_row_digests(np.array([[0.0], [1.0]])),
         "training_target_digest": "c" * 64,
     }
     values[field] = value
@@ -101,6 +173,17 @@ def test_gaussian_rbf_rejects_invalid_evaluation_inputs(
     values: np.ndarray[tuple[int, ...], np.dtype[np.float64]],
     message: str,
 ) -> None:
-    """Every public evaluation route validates rank, finiteness, and width."""
+    """Every public evaluation route validates rank, finiteness, and width.
+
+    Parameters
+    ----------
+    method
+        Public evaluation method.
+    values
+        Malformed parameter vector or input matrix.
+    message
+        Expected public validation error.
+
+    """
     with pytest.raises(ValueError, match=message):
         getattr(_model(), method)(values)

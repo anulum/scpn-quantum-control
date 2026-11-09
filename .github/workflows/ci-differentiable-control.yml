@@ -525,11 +525,47 @@ jobs:
           cache: 'pip'
       - name: Install dependencies
         run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Install real CPU framework qualification overlay
+        run: |
+          python -m pip install --no-deps -e .
+          export SCPN_FRAMEWORK_OVERLAY="$RUNNER_TEMP/scpn-qc-learning-framework-site-py312"
+          install-differentiable-framework-overlay --overlay-path "$SCPN_FRAMEWORK_OVERLAY" --install
+          echo "PYTHONPATH=$SCPN_FRAMEWORK_OVERLAY:$PYTHONPATH" >> "$GITHUB_ENV"
+          install-differentiable-framework-overlay --overlay-path "$SCPN_FRAMEWORK_OVERLAY" --verify
       - name: Type-check learning-generalisation quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/qsnn/training.py
+          src/scpn_quantum_control/phase/gradient_descent.py
+          src/scpn_quantum_control/ml_examples/contracts.py
+          src/scpn_quantum_control/ml_examples/qsnn_convergence.py
+          src/scpn_quantum_control/ml_examples/qnn_convergence.py
+          src/scpn_quantum_control/ml_examples/qgnn_convergence.py
+          src/scpn_quantum_control/ml_examples/suite.py
+          src/scpn_quantum_control/ml_examples/evidence.py
+          src/scpn_quantum_control/ml_examples/decoding.py
+          oscillatools/src/oscillatools/neural_operator.py
+          src/scpn_quantum_control/surrogates/_identity.py
+          src/scpn_quantum_control/surrogates/models.py
+          src/scpn_quantum_control/surrogates/train.py
+          src/scpn_quantum_control/surrogates/fidelity.py
+          src/scpn_quantum_control/forecasting/multimodal_forecaster.py
           tests/test_learning_rng_and_generalisation.py
+          tests/test_phase_gradient_descent.py
+          tests/test_qsnn_training.py
+          tests/test_ml_convergence_evidence.py
+          tests/test_ml_convergence_contracts.py
+          tests/test_ml_convergence_decoding.py
+          tests/test_ml_convergence_qsnn.py
+          tests/test_ml_convergence_qnn.py
+          tests/ml_convergence_qnn_absence.py
+          tests/neural_operator_rng_custody.py
+          tests/test_ml_convergence_qgnn.py
+          tests/test_surrogate_identity.py
+          tests/test_surrogate_models.py
+          tests/test_surrogate_train.py
+          tests/test_surrogate_fidelity.py
+          tests/test_multimodal_forecaster.py
           tools/learning_generalisation_quality_gates.py
           tests/test_learning_generalisation_quality_gate.py
       - name: Ruff NumPy docstrings for learning-generalisation quality cohort
@@ -538,7 +574,36 @@ jobs:
           --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/qsnn/training.py
+          src/scpn_quantum_control/phase/gradient_descent.py
+          src/scpn_quantum_control/ml_examples/contracts.py
+          src/scpn_quantum_control/ml_examples/qsnn_convergence.py
+          src/scpn_quantum_control/ml_examples/qnn_convergence.py
+          src/scpn_quantum_control/ml_examples/qgnn_convergence.py
+          src/scpn_quantum_control/ml_examples/suite.py
+          src/scpn_quantum_control/ml_examples/evidence.py
+          src/scpn_quantum_control/ml_examples/decoding.py
+          oscillatools/src/oscillatools/neural_operator.py
+          src/scpn_quantum_control/surrogates/_identity.py
+          src/scpn_quantum_control/surrogates/models.py
+          src/scpn_quantum_control/surrogates/train.py
+          src/scpn_quantum_control/surrogates/fidelity.py
+          src/scpn_quantum_control/forecasting/multimodal_forecaster.py
           tests/test_learning_rng_and_generalisation.py
+          tests/test_phase_gradient_descent.py
+          tests/test_qsnn_training.py
+          tests/test_ml_convergence_evidence.py
+          tests/test_ml_convergence_contracts.py
+          tests/test_ml_convergence_decoding.py
+          tests/test_ml_convergence_qsnn.py
+          tests/test_ml_convergence_qnn.py
+          tests/ml_convergence_qnn_absence.py
+          tests/neural_operator_rng_custody.py
+          tests/test_ml_convergence_qgnn.py
+          tests/test_surrogate_identity.py
+          tests/test_surrogate_models.py
+          tests/test_surrogate_train.py
+          tests/test_surrogate_fidelity.py
+          tests/test_multimodal_forecaster.py
           tools/learning_generalisation_quality_gates.py
           tests/test_learning_generalisation_quality_gate.py
       - name: Run learning-generalisation focused coverage
@@ -550,10 +615,32 @@ jobs:
           -m pytest -q
           tests/test_learning_rng_and_generalisation.py
           tests/test_qsnn_training.py
+          tests/test_phase_gradient_descent.py
+          tests/test_phase_optimizer_audit.py
           tests/test_qsnn_training_validation.py
           tests/test_qsnn_native_parameter_shift.py
           tests/test_ml_convergence_evidence.py
+          tests/test_ml_convergence_contracts.py
+          tests/test_ml_convergence_decoding.py
+          tests/test_ml_convergence_qsnn.py
+          tests/test_ml_convergence_qnn.py
+          tests/test_ml_convergence_qgnn.py
+          tests/test_surrogate_identity.py
+          tests/test_surrogate_models.py
+          tests/test_surrogate_train.py
+          tests/test_surrogate_fidelity.py
+          tests/test_multimodal_forecaster.py
+          oscillatools/tests/test_kuramoto_neural_operator.py
+          tests/test_surrogate_hybrid.py
+          tests/test_surrogate_report.py
+          tests/neural_operator_rng_custody.py
           tests/test_dense_allocation_admission.py
+          tests/test_learning_generalisation_quality_gate.py
+      - name: Append real SDK-absent QNN coverage with the same Python
+        run: >-
+          python -c
+          "import sys; from tools.learning_generalisation_quality_gates import run_sdk_absent_coverage; raise SystemExit(run_sdk_absent_coverage(sys.argv[1]))"
+          /tmp/scpn-qc-learning-generalisation-quality.coverage
       - name: Enforce learning-generalisation exact coverage
         run: >-
           python -m coverage report
@@ -561,7 +648,7 @@ jobs:
           --data-file=/tmp/scpn-qc-learning-generalisation-quality.coverage
           --precision=2 --show-missing
           --fail-under=100
-          --include=*/qsnn/training.py
+          --include=*/src/scpn_quantum_control/qsnn/training.py,*/src/scpn_quantum_control/phase/gradient_descent.py,*/src/scpn_quantum_control/ml_examples/contracts.py,*/src/scpn_quantum_control/ml_examples/qsnn_convergence.py,*/src/scpn_quantum_control/ml_examples/qnn_convergence.py,*/src/scpn_quantum_control/ml_examples/qgnn_convergence.py,*/src/scpn_quantum_control/ml_examples/suite.py,*/src/scpn_quantum_control/ml_examples/evidence.py,*/src/scpn_quantum_control/ml_examples/decoding.py,*/oscillatools/src/oscillatools/neural_operator.py,*/src/scpn_quantum_control/surrogates/_identity.py,*/src/scpn_quantum_control/surrogates/models.py,*/src/scpn_quantum_control/surrogates/train.py,*/src/scpn_quantum_control/surrogates/fidelity.py,*/src/scpn_quantum_control/forecasting/multimodal_forecaster.py,*/tests/test_learning_rng_and_generalisation.py,*/tests/test_phase_gradient_descent.py,*/tests/test_qsnn_training.py,*/tests/test_ml_convergence_evidence.py,*/tests/test_ml_convergence_contracts.py,*/tests/test_ml_convergence_decoding.py,*/tests/test_ml_convergence_qsnn.py,*/tests/test_ml_convergence_qnn.py,*/tests/ml_convergence_qnn_absence.py,*/tests/neural_operator_rng_custody.py,*/tests/test_ml_convergence_qgnn.py,*/tests/test_surrogate_identity.py,*/tests/test_surrogate_models.py,*/tests/test_surrogate_train.py,*/tests/test_surrogate_fidelity.py,*/tests/test_multimodal_forecaster.py,*/tools/learning_generalisation_quality_gates.py,*/tests/test_learning_generalisation_quality_gate.py
 
   native-transform-algebra-quality:
     needs: [differentiable-sparse-derivatives-quality]

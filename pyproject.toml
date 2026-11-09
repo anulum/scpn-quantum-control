@@ -374,6 +374,10 @@ ignore_missing_imports = true
 follow_imports = "skip"
 
 [[tool.mypy.overrides]]
+module = ["torch.nn", "torch.nn.modules", "torch.nn.modules.module"]
+follow_imports = "normal"
+
+[[tool.mypy.overrides]]
 module = "tensorflow.*"
 ignore_missing_imports = true
 follow_imports = "skip"

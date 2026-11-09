@@ -16,8 +16,9 @@ from typing import TypeAlias
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
-from ..differentiable import GradientResult, Parameter, ParameterShiftRule
+from ..differentiable import GradientResult, Parameter, ParameterBounds, ParameterShiftRule
 from ..differentiable import value_and_parameter_shift_grad as _value_and_grad
+from ..differentiable_transform_helpers import _normalise_bounds, _project_bounds
 from .gradient_backend import QuantumGradientPlan, plan_quantum_gradient_backend
 
 FloatArray: TypeAlias = NDArray[np.float64]
@@ -57,7 +58,13 @@ class ParameterShiftTrainingStep:
 
 @dataclass(frozen=True)
 class ParameterShiftTrainingResult:
-    """Auditable parameter-shift gradient-descent result."""
+    """Auditable parameter-shift gradient-descent result.
+
+    ``final_gradient`` and its norm are derivatives of the original objective.
+    With box bounds, ``projected_gradient_tolerance`` instead reports a small
+    projected-gradient mapping; it does not assert that the raw gradient is zero.
+    ``bounds`` retains the admitted nonperiodic intervals, or ``None``.
+    """
 
     initial_value: float
     final_value: float
@@ -76,6 +83,7 @@ class ParameterShiftTrainingResult:
     shift_terms: int
     converged: bool
     reason: str
+    bounds: tuple[ParameterBounds, ...] | None = None
 
     @property
     def value_history(self) -> tuple[float, ...]:
@@ -111,6 +119,9 @@ class ParameterShiftTrainingResult:
             "shift_terms": self.shift_terms,
             "converged": self.converged,
             "reason": self.reason,
+            "bounds": None
+            if self.bounds is None
+            else [{"lower": bound.lower, "upper": bound.upper} for bound in self.bounds],
         }
 
 
@@ -218,11 +229,16 @@ def _value_and_parameter_shift_grad(
         parameters=parameters,
         rule=rule,
     )
-    if result.gradient.shape != params.shape:
-        raise ValueError("gradient shape must match parameter shape")
-    if not np.all(np.isfinite(result.gradient)):
-        raise ValueError("gradient must contain only finite values")
+    _validate_gradient(result.gradient, params)
     return result
+
+
+def _validate_gradient(gradient: FloatArray, params: FloatArray) -> None:
+    """Require a finite derivative vector aligned with its parameter vector."""
+    if gradient.shape != params.shape:
+        raise ValueError("gradient shape must match parameter shape")
+    if not np.all(np.isfinite(gradient)):
+        raise ValueError("gradient must contain only finite values")
 
 
 def parameter_shift_gradient_descent(
@@ -231,6 +247,7 @@ def parameter_shift_gradient_descent(
     *,
     parameters: Sequence[Parameter] | None = None,
     rule: ParameterShiftRule | None = None,
+    bounds: Sequence[ParameterBounds] | None = None,
     backend: str = "statevector",
     learning_rate: float = 0.1,
     max_steps: int = 100,
@@ -247,8 +264,63 @@ def parameter_shift_gradient_descent(
     deterministic parameter-shift execution with Armijo backtracking and records
     enough metadata to audit convergence, shifted-evaluation cost, and
     multi-frequency rule provenance.
+
+    Parameters
+    ----------
+    objective
+        Deterministic finite scalar objective defined at both iterates and
+        unprojected shifts. A different final value at identical parameters
+        refuses the run rather than promoting a changing loss as convergence.
+    initial_params
+        Finite flat parameter vector, already feasible when bounds are supplied.
+    parameters
+        Optional parameter names and trainable masks.
+    rule
+        Shift rule matching the objective's declared frequency spectrum.
+    bounds
+        Optional nonperiodic box interval per parameter. Only iterates project;
+        shift probes remain unprojected so that clipping cannot bias derivatives.
+    backend
+        Backend requested from the existing fail-closed gradient planner.
+    learning_rate
+        Positive initial line-search step size.
+    max_steps
+        Positive maximum number of optimisation steps.
+    gradient_tolerance
+        Nonnegative gradient tolerance, also used for the unit-step projected
+        gradient mapping when bounds are present.
+    value_tolerance
+        Optional nonnegative accepted objective-change tolerance.
+    sufficient_decrease
+        Positive Armijo factor. Bounded steps use the gradient dotted with the
+        actual feasible displacement instead of an unprojected norm estimate.
+    backtracking_factor
+        Positive factor smaller than one for shrinking rejected steps.
+    max_backtracks
+        Positive number of permitted line-search reductions.
+    allow_hardware
+        Hardware-planning opt-in; unsupported execution remains refused.
+
+    Returns
+    -------
+    ParameterShiftTrainingResult
+        Feasible final/best iterates, original objective derivatives, recorded
+        bounds, accepted/rejected steps and actual objective evaluation counts.
+
+    Raises
+    ------
+    ValueError
+        If controls, values, parameter metadata or bounds are invalid, an initial
+        point is infeasible, periodic bounds are requested, or the backend is
+        unsupported. Non-finite objective values or derivatives also refuse.
+
     """
     params = _as_parameter_vector("initial_params", initial_params)
+    bounds_meta = _normalise_bounds(params, bounds)
+    if any(bound.periodic for bound in bounds_meta):
+        raise ValueError("parameter-shift descent supports box bounds, not periodic bounds")
+    if not np.array_equal(params, _project_bounds(params, bounds_meta)):
+        raise ValueError("initial_params must lie within the box bounds")
     rate = _positive_float("learning_rate", learning_rate)
     steps_limit = _positive_int("max_steps", max_steps)
     grad_tol = _non_negative_float("gradient_tolerance", gradient_tolerance)
@@ -308,6 +380,14 @@ def parameter_shift_gradient_descent(
             reason = "gradient_tolerance"
             converged = True
             break
+        if (
+            bounds is not None
+            and np.linalg.norm(current - _project_bounds(current - gradient, bounds_meta))
+            <= grad_tol
+        ):
+            reason = "projected_gradient_tolerance"
+            converged = True
+            break
 
         step_size = rate
         accepted = False
@@ -318,9 +398,13 @@ def parameter_shift_gradient_descent(
         directional_decrease = decrease * gradient_norm * gradient_norm
         for trial_index in range(backtrack_limit + 1):
             trial = current - step_size * gradient
+            required_decrease = step_size * directional_decrease
+            if bounds is not None:
+                trial = _project_bounds(trial, bounds_meta)
+                required_decrease = decrease * float(np.dot(gradient, current - trial))
             trial_value = _as_objective_value(objective(trial.copy()))
             trial_evaluations += 1
-            if trial_value <= base_value - step_size * directional_decrease:
+            if trial_value <= base_value - required_decrease:
                 candidate = trial
                 candidate_value = trial_value
                 accepted = True
@@ -382,11 +466,19 @@ def parameter_shift_gradient_descent(
     final_value = _as_objective_value(final_result.value)
     final_gradient = final_result.gradient.astype(np.float64, copy=True)
     final_gradient_norm = float(np.linalg.norm(final_gradient))
-    if final_value < best_value:
-        best_value = final_value
-        best_params = current.copy()
+    recorded_final_value = step_records[-1].value if step_records else initial_value
+    if final_value != recorded_final_value:
+        raise ValueError("objective changed at final parameters; deterministic training required")
     if not converged and final_gradient_norm <= grad_tol:
         reason = "gradient_tolerance"
+        converged = True
+    if (
+        not converged
+        and bounds is not None
+        and np.linalg.norm(current - _project_bounds(current - final_gradient, bounds_meta))
+        <= grad_tol
+    ):
+        reason = "projected_gradient_tolerance"
         converged = True
 
     return ParameterShiftTrainingResult(
@@ -407,6 +499,7 @@ def parameter_shift_gradient_descent(
         shift_terms=term_count,
         converged=converged,
         reason=reason,
+        bounds=None if bounds is None else bounds_meta,
     )
 
 
@@ -418,7 +511,47 @@ def validate_parameter_shift_training(
     target_value_tolerance: float = 1e-8,
     min_decrease: float | None = None,
 ) -> ParameterShiftTrainingCertificate:
-    """Return a machine-checkable certificate for a training trace."""
+    """Return a machine-checkable certificate for a training trace.
+
+    Non-finite objective records, malformed derivatives and inconsistent final
+    gradient norms refuse certification. Convergence at an active box bound
+    remains separate from the original objective's raw gradient tolerance.
+
+    Parameters
+    ----------
+    result
+        Completed training trace with finite, shape-consistent final derivatives.
+    gradient_tolerance
+        Optional nonnegative tolerance on the original objective gradient norm.
+    target_value
+        Optional objective target for comparing the best observed value.
+    target_value_tolerance
+        Nonnegative additive tolerance around the objective target.
+    min_decrease
+        Optional nonnegative required reduction from initial to best value.
+
+    Returns
+    -------
+    ParameterShiftTrainingCertificate
+        Separate raw-gradient, target, decrease and monotonicity checks; projected
+        convergence does not turn a nonzero raw derivative into a zero derivative.
+
+    Raises
+    ------
+    ValueError
+        If the trace's scalars, final parameters, gradient or norm are invalid,
+        or a certification tolerance is negative or non-finite.
+
+    """
+    final_params = _as_parameter_vector("final_params", result.final_params)
+    _validate_gradient(result.final_gradient, final_params)
+    actual_norm = _non_negative_float(
+        "gradient norm", float(np.linalg.norm(result.final_gradient))
+    )
+    if result.final_gradient_norm != actual_norm:
+        raise ValueError("recorded gradient norm differs from the final gradient")
+    for value in (result.initial_value, result.final_value, result.best_value):
+        _as_objective_value(value)
     grad_tol = None
     if gradient_tolerance is not None:
         grad_tol = _non_negative_float("gradient_tolerance", gradient_tolerance)

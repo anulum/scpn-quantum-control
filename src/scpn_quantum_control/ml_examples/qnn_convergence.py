@@ -12,15 +12,18 @@ from __future__ import annotations
 import importlib.util
 from collections.abc import Callable
 from importlib import import_module
-from typing import Protocol, TypeAlias
+from typing import TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
 
+from ..phase.jax_bridge_contracts import PhaseJAXNativeQNNGradientResult
 from ..phase.qnn_training import (
     ParameterShiftQNNTrainingResult,
     train_parameter_shift_qnn_classifier,
 )
+from ..phase.tensorflow_bridge_contracts import PhaseTensorFlowQNNGradientResult
+from ..phase.torch_bridge_contracts import PhaseTorchAutogradQNNGradientResult
 from ..phase_qnn_framework_gradients import (
     native_jax_qnn_value_and_grad,
     native_tensorflow_bounded_qnn_value_and_grad,
@@ -37,16 +40,11 @@ from .contracts import (
 _FRAMEWORKS = ("jax", "pytorch", "tensorflow")
 
 
-class _FrameworkAgreementResult(Protocol):
-    @property
-    def passed(self) -> bool:
-        """Whether framework agreement passed."""
-        ...
-
-    @property
-    def max_abs_error(self) -> float:
-        """The maximum absolute gradient error."""
-        ...
+_FrameworkAgreementResult: TypeAlias = (
+    PhaseJAXNativeQNNGradientResult
+    | PhaseTorchAutogradQNNGradientResult
+    | PhaseTensorFlowQNNGradientResult
+)
 
 
 def qnn_example_spec() -> ConvergenceExampleSpec:
@@ -159,22 +157,48 @@ _FRAMEWORK_RUNNERS: dict[
 def run_qnn_framework_rows(
     *,
     required_frameworks: tuple[str, ...] = (),
+    certificate: ConvergenceCertificate | None = None,
 ) -> tuple[FrameworkEvidenceRow, ...]:
-    """Execute installed QNN adapters and record missing dependencies explicitly."""
+    """Bind native convergence to its run and execute installed QNN adapters.
+
+    Parameters
+    ----------
+    required_frameworks
+        Installed adapters whose absence must fail the suite's declared gate.
+    certificate
+        Completed frozen QNN run; execute the canonical run when omitted.
+
+    Returns
+    -------
+    tuple[FrameworkEvidenceRow, ...]
+        Observed native convergence and actual installed-adapter gradient agreement.
+
+    Raises
+    ------
+    ValueError
+        If a required framework is unknown or a certificate has a different task.
+
+    """
     unknown = set(required_frameworks) - set(_FRAMEWORKS)
     if unknown:
         raise ValueError(f"unknown required QNN frameworks: {sorted(unknown)}")
+    observed = run_qnn_convergence_example() if certificate is None else certificate
+    if observed.spec != qnn_example_spec():
+        raise ValueError("QNN certificate must match the frozen convergence task")
+    native_passed = observed.passed
     features, labels, params = _qnn_task()
     rows: list[FrameworkEvidenceRow] = [
         FrameworkEvidenceRow(
             family=ModelFamily.QNN,
             framework="scpn_parameter_shift",
-            status=FrameworkStatus.RAN,
+            status=FrameworkStatus.RAN if native_passed else FrameworkStatus.FAILED,
             required=True,
             executed=True,
-            passed=True,
-            reason="canonical bounded phase-QNN trainer executed",
-            max_abs_error=0.0,
+            passed=native_passed,
+            reason=(
+                f"executed QNN protocol {observed.spec.example_id}; "
+                f"convergence passed={native_passed}"
+            ),
         )
     ]
     for framework in _FRAMEWORKS:

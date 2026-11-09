@@ -7,7 +7,9 @@
 # SCPN Quantum Control — Training
 """Parameter-shift gradient training for QuantumDenseLayer.
 
-Uses (f(w+pi/2) - f(w-pi/2)) / 2 per CRy angle on MSE loss.
+Differentiate the unprojected CRy MSE objective; project only training iterates.
+One CRy expectation has frequencies 1/2 and 1; squaring its residual adds
+3/2 and 2. Shift probes evaluate this spectrum without weight clipping.
 """
 
 from __future__ import annotations
@@ -27,6 +29,8 @@ from ..differentiable import (
     DifferentiableOptimizer,
     GradientResult,
     Parameter,
+    ParameterBounds,
+    multi_frequency_parameter_shift_rule,
     value_and_parameter_shift_grad,
 )
 from ..phase.gradient_descent import (
@@ -37,6 +41,8 @@ from ..phase.gradient_descent import (
 )
 from .qlayer import QuantumDenseLayer
 from .qsynapse import QuantumSynapse
+
+_MSE_SHIFT_RULE = multi_frequency_parameter_shift_rule((0.5, 1.0, 1.5, 2.0))
 
 
 @dataclass(frozen=True)
@@ -593,9 +599,10 @@ class QSNNTrainer:
     def _build_circuit(
         self,
         inputs: NDArray[np.float64],
-        angle_override: tuple[int, int, float] | None = None,
+        *,
+        values: NDArray[np.float64] | None = None,
     ) -> QuantumCircuit:
-        """Build layer circuit with optional angle shift on one synapse."""
+        """Build the layer circuit from stored or explicitly supplied CRy angles."""
         qc = QuantumCircuit(self.layer.n_qubits)
 
         for i, val in enumerate(inputs):
@@ -605,8 +612,8 @@ class QSNNTrainer:
             nq = self.layer.n_inputs + n
             for i in range(self.layer.n_inputs):
                 angle = self.layer.synapses[n][i].theta
-                if angle_override and angle_override[0] == n and angle_override[1] == i:
-                    angle += angle_override[2]
+                if values is not None:
+                    angle = float(values[n * self.layer.n_inputs + i])
                 qc.cry(angle, i, nq)
 
         for n in range(self.layer.n_neurons - 1):
@@ -617,11 +624,12 @@ class QSNNTrainer:
     def _forward_probs(
         self,
         inputs: NDArray[np.float64],
-        angle_override: tuple[int, int, float] | None = None,
+        *,
+        values: NDArray[np.float64] | None = None,
     ) -> NDArray[np.float64]:
         """Forward pass returning neuron P(|1>) (continuous, not thresholded)."""
         self._admit_forward()
-        qc = self._build_circuit(inputs, angle_override)
+        qc = self._build_circuit(inputs, values=values)
         sv = Statevector.from_instruction(qc)
         probs: NDArray[np.float64] = np.array(
             [
@@ -716,10 +724,15 @@ class QSNNTrainer:
         self, X: NDArray[np.float64], y: NDArray[np.float64], values: NDArray[np.float64]
     ) -> float:
         """Return full-batch MSE loss for a flat synapse-angle vector."""
-        self._set_theta_values(values)
+        angles = _validated_synapse_vector(
+            values,
+            self.layer.n_neurons * self.layer.n_inputs,
+            name="values",
+            value_kind="angles",
+        )
         total_loss = 0.0
         for xi, yi in zip(X, y, strict=True):
-            prediction = self._forward_probs(xi)
+            prediction = self._forward_probs(xi, values=angles)
             total_loss += float(np.mean((prediction - yi) ** 2))
         return total_loss / float(X.shape[0])
 
@@ -728,10 +741,31 @@ class QSNNTrainer:
         inputs: NDArray[np.float64],
         target: NDArray[np.float64],
     ) -> NDArray[np.float64]:
-        """Compute gradient of MSE loss w.r.t. all synapse angles.
+        """Differentiate the MSE with respect to every physical CRy angle.
 
-        Returns (n_neurons, n_inputs) gradient array.
+        Parameters
+        ----------
+        inputs
+            Finite input vector with shape ``(n_inputs,)``; encoding clips
+            features into ``[0, 1]`` as in the ordinary layer circuit.
+        target
+            Finite MSE target vector with shape ``(n_neurons,)``.
+
+        Returns
+        -------
+        numpy.ndarray
+            Exact local-statevector derivative in radians, with shape
+            ``(n_neurons, n_inputs)``. The MSE shift rule uses four symmetric
+            terms, requiring one base plus eight probes per parameter.
+            Probes never change synapse weights, optimiser or saved custody.
+
+        Raises
+        ------
+        ValueError
+            If inputs or targets have incompatible shapes or non-finite values.
+
         """
+        X, y = self._validate_dataset(np.expand_dims(inputs, 0), np.expand_dims(target, 0))
         shape = (self.layer.n_neurons, self.layer.n_inputs)
         values = self._theta_values()
         parameters = [
@@ -741,33 +775,14 @@ class QSNNTrainer:
         ]
 
         def objective(flat_values: NDArray[np.float64]) -> float:
-            flat_index = 0
-            for ni in range(self.layer.n_neurons):
-                for ii in range(self.layer.n_inputs):
-                    self._set_synapse_theta(
-                        self.layer.synapses[ni][ii],
-                        float(flat_values[flat_index]),
-                    )
-                    flat_index += 1
-            prediction = self._forward_probs(inputs)
-            return float(np.mean((prediction - target) ** 2))
+            return self._batch_loss(X, y, flat_values)
 
-        original = values.copy()
-        try:
-            result = value_and_parameter_shift_grad(
-                objective,
-                values,
-                parameters=parameters,
-            )
-        finally:
-            flat_index = 0
-            for ni in range(self.layer.n_neurons):
-                for ii in range(self.layer.n_inputs):
-                    self._set_synapse_theta(
-                        self.layer.synapses[ni][ii],
-                        float(original[flat_index]),
-                    )
-                    flat_index += 1
+        result = value_and_parameter_shift_grad(
+            objective,
+            values,
+            parameters=parameters,
+            rule=_MSE_SHIFT_RULE,
+        )
 
         return result.gradient.reshape(shape)
 
@@ -797,10 +812,10 @@ class QSNNTrainer:
             gradient_payload = GradientResult(
                 value=float(np.mean((pred - yi) ** 2)),
                 gradient=grad.reshape(-1),
-                method="parameter_shift",
-                shift=np.pi / 2,
-                coefficient=0.5,
-                evaluations=1 + 2 * grad.size,
+                method="multi_frequency_parameter_shift",
+                shift=None,
+                coefficient=None,
+                evaluations=1 + 2 * len(_MSE_SHIFT_RULE.terms) * grad.size,
                 parameter_names=parameter_names,
                 trainable=tuple(True for _ in parameter_names),
             )
@@ -846,7 +861,9 @@ class QSNNTrainer:
             epochs=epoch_count,
             n_samples=int(X.shape[0]),
             learning_rate=float(self.lr),
-            parameter_shift_evaluations=epoch_count * int(X.shape[0]) * (1 + 2 * n_parameters),
+            parameter_shift_evaluations=epoch_count
+            * int(X.shape[0])
+            * (1 + 2 * len(_MSE_SHIFT_RULE.terms) * n_parameters),
         )
 
     def train_with_parameter_shift_descent(
@@ -868,9 +885,48 @@ class QSNNTrainer:
         This route uses the same auditable optimizer as phase objectives, so
         QSNN training records backend planning, every accepted/rejected line
         search step, total objective evaluations, and a convergence certificate.
+
+        Parameters
+        ----------
+        X, y
+            Finite feature and target matrices with the layer's input/output widths.
+        backend
+            Requested local gradient backend; unsupported execution refuses.
+        max_steps
+            Positive maximum number of full-batch optimisation steps.
+        gradient_tolerance
+            Nonnegative tolerance for the raw or unit-step projected gradient.
+        value_tolerance
+            Optional nonnegative tolerance for accepted objective changes.
+        target_loss
+            Optional finite target used only by convergence certification.
+        target_loss_tolerance
+            Nonnegative tolerance around the requested target loss.
+        min_loss_decrease
+            Optional nonnegative minimum observed decrease required by the certificate.
+        allow_hardware
+            Hardware-planning opt-in, preserving the backend's fail-closed boundary.
+
+        Returns
+        -------
+        QSNNParameterShiftDescentRun
+            Bounded final angles, raw objective derivatives, shift evaluation
+            counts and certificate. Shift probes are unprojected and read-only;
+            only a successful result updates synapses and training-data custody.
+
+        Raises
+        ------
+        ValueError
+            If data, angles or controls are invalid, or the backend is unsupported.
+
         """
         X, y = self._validate_dataset(X, y)
-        original = self._theta_values()
+        original = _validated_synapse_vector(
+            self._theta_values(),
+            self.layer.n_neurons * self.layer.n_inputs,
+            name="values",
+            value_kind="angles",
+        )
         parameters = [
             Parameter(f"synapse_{ni}_{ii}")
             for ni in range(self.layer.n_neurons)
@@ -880,24 +936,20 @@ class QSNNTrainer:
         def objective(values: NDArray[np.float64]) -> float:
             return self._batch_loss(X, y, values)
 
-        try:
-            training = parameter_shift_gradient_descent(
-                objective,
-                original,
-                parameters=parameters,
-                backend=backend,
-                learning_rate=self.lr,
-                max_steps=max_steps,
-                gradient_tolerance=gradient_tolerance,
-                value_tolerance=value_tolerance,
-                allow_hardware=allow_hardware,
-            )
-        except Exception:
-            self._set_theta_values(original)
-            raise
+        training = parameter_shift_gradient_descent(
+            objective,
+            original,
+            parameters=parameters,
+            rule=_MSE_SHIFT_RULE,
+            bounds=[ParameterBounds(lower=0.0, upper=float(np.pi)) for _ in parameters],
+            backend=backend,
+            learning_rate=self.lr,
+            max_steps=max_steps,
+            gradient_tolerance=gradient_tolerance,
+            value_tolerance=value_tolerance,
+            allow_hardware=allow_hardware,
+        )
 
-        self._set_theta_values(training.final_params)
-        self._record_training_data(X)
         certificate = validate_parameter_shift_training(
             training,
             gradient_tolerance=gradient_tolerance,
@@ -905,6 +957,8 @@ class QSNNTrainer:
             target_value_tolerance=target_loss_tolerance,
             min_decrease=min_loss_decrease,
         )
+        self._set_theta_values(training.final_params)
+        self._record_training_data(X)
         return QSNNParameterShiftDescentRun(
             training=training,
             certificate=certificate,
