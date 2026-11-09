@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+import pickle
+
 import numpy as np
 import pytest
 
@@ -58,3 +60,13 @@ def test_numeric_custody_refuses_near_duplicate_fit_and_validation_rows() -> Non
     repeated = np.array([[0.25], [0.25 + 1.0e-8]])
     with pytest.raises(ValueError, match="duplicate"):
         fit_gaussian_rbf_surrogate(repeated, np.sin(repeated[:, 0]))
+
+
+def test_input_row_digests_keeps_its_public_home() -> None:
+    """The shared body still reports, imports and pickles as ``surrogates.train``."""
+    from scpn_quantum_control.surrogates import train
+
+    assert input_row_digests.__module__ == "scpn_quantum_control.surrogates.train"
+    assert input_row_digests.__qualname__ == "input_row_digests"
+    assert train.input_row_digests is input_row_digests
+    assert pickle.loads(pickle.dumps(input_row_digests)) is input_row_digests  # noqa: S301

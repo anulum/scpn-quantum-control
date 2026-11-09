@@ -54,3 +54,9 @@ def input_row_digests(inputs: FloatArray) -> tuple[str, ...]:
     if not np.all(np.isfinite(values)):
         raise ValueError("inputs must contain only finite values.")
     return tuple(_array_digest(values[index]) for index in range(values.shape[0]))
+
+
+# The public home of this function stays ``surrogates.train``, where it has
+# always been importable: pickles, introspection and the recorded public export
+# identity keep naming that module while fitting and validation share this body.
+input_row_digests.__module__ = "scpn_quantum_control.surrogates.train"
