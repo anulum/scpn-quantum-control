@@ -111,6 +111,27 @@ def test_training_is_deterministic() -> None:
     assert first.loss_history == pytest.approx(second.loss_history)
 
 
+def test_training_needs_no_api_newer_than_the_declared_torch_floor(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Without ``torch.get_default_device`` (PyTorch 2.2) training is unchanged.
+
+    The extra declares ``torch>=2.2``; that release lacks the function, so the
+    model-local generator must find the default device another way and give
+    the same seeded result.
+    """
+    import torch
+
+    network = _network(4)
+    dataset = simulate_operator_dataset(
+        network["omega"], network["coupling"], n_trajectories=30, dt=_DT, n_steps=_STEPS, seed=5
+    )
+    reference = train_kuramoto_neural_operator(dataset, epochs=5, seed=7)
+    monkeypatch.delattr(torch, "get_default_device", raising=False)
+    floor = train_kuramoto_neural_operator(dataset, epochs=5, seed=7)
+    np.testing.assert_array_equal(floor.loss_history, reference.loss_history)
+
+
 @pytest.mark.parametrize(
     ("call", "kwargs", "message"),
     [

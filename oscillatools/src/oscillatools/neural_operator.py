@@ -236,7 +236,12 @@ def _build_deeponet(n_oscillators: int, latent_dim: int, hidden_dim: int, seed: 
     from torch.nn import Module
 
     channels = 2 * n_oscillators
-    generator = torch.Generator(device=torch.get_default_device()).manual_seed(seed)
+    # The device an argument-free tensor lands on is the active default device
+    # (``torch.set_default_device`` or a ``torch.device`` context), the same one
+    # ``nn.Linear`` would use. ``torch.get_default_device`` only exists from
+    # PyTorch 2.3, above the declared ``torch>=2.2`` floor.
+    default_device = torch.empty(()).device
+    generator = torch.Generator(device=default_device).manual_seed(seed)
 
     def linear(inputs: int, outputs: int) -> Any:
         layer = torch.nn.Linear(inputs, outputs, device="meta")

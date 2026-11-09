@@ -15,6 +15,13 @@ All notable changes to `oscillatools` are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- `train_kuramoto_neural_operator` initialises its layers from a model-local
+  `torch.Generator` seeded by `seed`, on the active default device, with the
+  same draw order as `nn.Linear`. Training no longer draws from or advances the
+  global PyTorch random state, and it runs on the declared `torch>=2.2` floor.
+
 ### Changed
 
 - `mpc_optimum_parameter_sensitivity` and `mpc_plan_energy_gradient` refuse a
