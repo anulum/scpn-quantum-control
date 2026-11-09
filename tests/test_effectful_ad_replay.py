@@ -25,10 +25,11 @@ from collections.abc import Callable
 from dataclasses import replace
 from pathlib import Path
 from types import ModuleType
-from typing import Any, cast
+from typing import Any, Protocol, cast
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control import (
     Parameter,
@@ -299,6 +300,13 @@ def test_effectful_ad_replay_03(case: str) -> None:
             program_adjoint_replay_gradient(result)
         with pytest.raises(ValueError, match="captured program state changed"):
             capture_whole_program_replay(result)
+    else:
+        # The refused replacement is itself a valid program: f = 4a gives
+        # value 4 and gradient (4, 0) at (1, 2), and its own record replays.
+        fresh = whole_program_value_and_grad(replacement, [1.0, 2.0], trace=False)
+        assert (fresh.value, fresh.gradient.tolist()) == (4.0, [4.0, 0.0])
+        fresh_record = capture_whole_program_replay(fresh)
+        assert replay_whole_program(fresh_record, replacement).record == fresh_record
 
 
 def test_effectful_ad_replay_03_restored_state_replays_again() -> None:
@@ -461,10 +469,10 @@ def test_effectful_ad_replay_04_external_effects_refuse_without_side_effects() -
         calls.append("called")
         return 7.0
 
-    def callback_objective(values: TraceADArray) -> object:
+    def callback_objective(values: TraceADArray | NDArray[np.float64]) -> object:
         return values[0] ** 2 + external_callback()
 
-    def generator_objective(values: TraceADArray) -> object:
+    def generator_objective(values: TraceADArray | NDArray[np.float64]) -> object:
         return values[0] * generator.normal()
 
     for objective in (callback_objective, generator_objective):
@@ -472,6 +480,14 @@ def test_effectful_ad_replay_04_external_effects_refuse_without_side_effects() -
             whole_program_value_and_grad(objective, [1.0])
     assert calls == []
     assert generator.bit_generator.state == before
+
+    # Plain NumPy reference, outside differentiation: both refused programs
+    # really act, so the empty call list and unchanged state above are not vacuous.
+    assert callback_objective(np.array([1.0])) == 8.0
+    assert calls == ["called"]
+    first_draw = np.random.default_rng(3).normal()
+    assert generator_objective(np.array([1.0])) == first_draw
+    assert generator.bit_generator.state != before
 
 
 def _sample_record() -> tuple[WholeProgramReplayRecord, Callable[[TraceADArray], object]]:
@@ -571,11 +587,13 @@ def test_replay_and_capture_refuse_malformed_inputs(tmp_path: Path) -> None:
 
     unsupported = {1, 2}
 
-    def opaque(values: TraceADArray) -> object:
+    def opaque(values: TraceADArray | NDArray[np.float64]) -> object:
         return values[0] * len(unsupported)
 
     with pytest.raises(ValueError, match="no portable encoding"):
         replay_whole_program(record, opaque)
+    # The refused program is ordinary arithmetic over its two-member set.
+    assert opaque(np.array([2.0])) == 4.0
 
 
 def test_capture_refuses_state_beyond_the_portable_snapshot(tmp_path: Path) -> None:
@@ -615,14 +633,22 @@ def test_portable_digest_binds_library_references_by_name() -> None:
     """
     record, _ = _sample_record()
 
-    def library_objective(values: TraceADArray) -> object:
-        if "alpha" in {"alpha", "beta"}:
+    def library_objective(
+        values: TraceADArray | NDArray[np.float64], selector: str = "alpha"
+    ) -> object:
+        if selector in {"alpha", "beta"}:
             return cast(Any, values[0]) * np.sum(np.array([1.0, 2.0])) + (lambda z: z)(1.0)
         return vmap, np.identity
 
     with pytest.raises(WholeProgramReplayMismatchError) as refusal:
         replay_whole_program(record, library_objective)
     assert refusal.value.fields == ("captured_state_sha256",)
+    # Plain reference of both bound branches: 2*(1 + 2) + 1, and the named library objects.
+    assert library_objective(np.array([2.0])) == 7.0
+    library_tail = library_objective(np.array([2.0]), "gamma")
+    assert isinstance(library_tail, tuple)
+    assert library_tail[0] is vmap
+    assert library_tail[1] is np.identity
 
 
 def _wire(record: WholeProgramReplayRecord) -> dict[str, Any]:
@@ -732,6 +758,122 @@ _SWAPPABLE_BUILTIN: Any = max
 _GENERATOR_WEIGHTS = np.array([1.0, 2.0])
 
 
+class _ScalarInternals(Protocol):
+    """Traced-scalar storage that the refused internal-read probes reach."""
+
+    primal: float
+    tangent: NDArray[np.float64]
+
+    def __mul__(self, other: float, /) -> object:
+        """Scale the value by a plain number."""
+
+    def __rmul__(self, other: float, /) -> object:
+        """Scale the value by a plain number from the left."""
+
+
+class _ArrayInternals(Protocol):
+    """Traced-array storage that the refused internal-read probes reach."""
+
+    _items: tuple[_ScalarInternals, ...]
+
+    def __getitem__(self, index: int, /) -> _ScalarInternals:
+        """Return one element."""
+
+
+class _ScalarInternalsReference:
+    """Plain reference scalar exposing the storage of a traced scalar.
+
+    Every attribute lookup is appended to the shared ``reads`` log, so a probe
+    run on it outside differentiation shows which storage the probe really
+    reaches. The arithmetic itself reads the primal without logging.
+
+    Parameters
+    ----------
+    primal
+        Plain value of the scalar.
+    tangent
+        First tangent entry, stored as a one-element float64 array.
+    reads
+        Shared chronological log of attribute lookups.
+
+    """
+
+    def __init__(self, primal: float, tangent: float, reads: list[str]) -> None:
+        self._log = reads
+        self.primal = primal
+        self.tangent: NDArray[np.float64] = np.array([tangent], dtype=np.float64)
+
+    def __getattribute__(self, name: str) -> Any:
+        """Log ``name`` and return the attribute."""
+        object.__getattribute__(self, "_log").append(name)
+        return object.__getattribute__(self, name)
+
+    def _value(self) -> float:
+        """Return the primal without logging the lookup."""
+        return cast(float, object.__getattribute__(self, "primal"))
+
+    def __mul__(self, other: float, /) -> object:
+        """Return ``primal * other``."""
+        return object.__getattribute__(self, "_value")() * other
+
+    def __rmul__(self, other: float, /) -> object:
+        """Return ``other * primal``."""
+        return other * object.__getattribute__(self, "_value")()
+
+
+class _ArrayInternalsReference:
+    """Plain reference array holding one reference scalar in private storage.
+
+    Parameters
+    ----------
+    item
+        The single stored element.
+    reads
+        Shared chronological log of attribute lookups.
+
+    """
+
+    def __init__(self, item: _ScalarInternalsReference, reads: list[str]) -> None:
+        self._log = reads
+        self._items: tuple[_ScalarInternals, ...] = (item,)
+
+    def __getattribute__(self, name: str) -> Any:
+        """Log ``name`` and return the attribute."""
+        object.__getattribute__(self, "_log").append(name)
+        return object.__getattribute__(self, name)
+
+    def __getitem__(self, index: int, /) -> _ScalarInternalsReference:
+        """Return the stored element without logging the lookup."""
+        items = cast(
+            tuple[_ScalarInternalsReference, ...], object.__getattribute__(self, "_items")
+        )
+        return items[index]
+
+
+def _run_on_internals_reference(
+    objective: Callable[[_ArrayInternals], object], primal: float
+) -> tuple[object, list[str], _ScalarInternalsReference]:
+    """Run a refused probe on plain reference storage, outside differentiation.
+
+    Parameters
+    ----------
+    objective
+        Probe that the whole-program frontend refuses before execution.
+    primal
+        Plain value of the single reference element; its tangent is ``3.0``.
+
+    Returns
+    -------
+    tuple
+        The probe's return value, the chronological attribute lookups and the
+        reference element itself.
+
+    """
+    reads: list[str] = []
+    item = _ScalarInternalsReference(primal, 3.0, reads)
+    return objective(_ArrayInternalsReference(item, reads)), reads, item
+
+
 def _truthy(values: TraceADArray) -> object:
     """Branch on the truth of a parameter, as plain-number code would."""
     y = cast(TraceADScalar, values[0])
@@ -743,15 +885,15 @@ def _array_truthy(values: TraceADArray) -> object:
     return values[0] * 2.0 if values else values[0] * 7.0
 
 
-def _primal_branch(values: TraceADArray) -> object:
+def _primal_branch(values: _ArrayInternals) -> object:
     """Branch on the untraced primal of a parameter."""
-    y = cast(TraceADScalar, values[0])
+    y = values[0]
     return 3.0 * y if y.primal > 1.0 else y
 
 
-def _tangent_read(values: TraceADArray) -> object:
+def _tangent_read(values: _ArrayInternals) -> object:
     """Read the tangent of a parameter as a number."""
-    y = cast(TraceADScalar, values[0])
+    y = values[0]
     return y * float(y.tangent[0])
 
 
@@ -792,19 +934,19 @@ def test_truth_of_a_traced_array_follows_numpy() -> None:
         whole_program_value_and_grad(_array_truthy, [1.0, 2.0], trace=False)
 
 
-def _dict_branch(values: TraceADArray) -> object:
+def _dict_branch(values: _ArrayInternals) -> object:
     """Branch on the primal read through the instance dictionary."""
-    y = cast(TraceADScalar, values[0])
+    y = values[0]
     return 3.0 * y if y.__dict__["primal"] > 1.0 else y
 
 
-def _getattribute_branch(values: TraceADArray) -> object:
+def _getattribute_branch(values: _ArrayInternals) -> object:
     """Branch on the primal read through the generic attribute hook."""
-    y = cast(TraceADScalar, values[0])
+    y = values[0]
     return 3.0 * y if y.__getattribute__("primal") > 1.0 else y
 
 
-def _private_items(values: TraceADArray) -> object:
+def _private_items(values: _ArrayInternals) -> object:
     """Read the array's private item storage."""
     return values._items[0] * 2.0
 
@@ -819,7 +961,7 @@ _NESTED_CONSTANTS = ModuleType("nested_constants")
 vars(_NESTED_CONSTANTS)["W"] = np.array([1.0, 2.0])
 
 
-def _module_attribute_in_generator(values: TraceADArray) -> object:
+def _module_attribute_in_generator(values: TraceADArray | NDArray[np.float64]) -> object:
     """Read a module attribute only inside a generator expression."""
     return sum(_NESTED_CONSTANTS.W[i] * values[i] for i in range(2))
 
@@ -889,39 +1031,103 @@ def test_every_text_conversion_of_a_traced_value_is_refused(
 
 
 @pytest.mark.parametrize(
-    "objective",
-    [_dict_branch, _getattribute_branch, _private_items, _module_attribute_in_generator],
-    ids=["instance-dict", "getattribute", "private-items", "module-attribute-in-generator"],
+    ("objective", "expected", "reads"),
+    [
+        (_dict_branch, 6.0, ["__dict__"]),
+        (_getattribute_branch, 6.0, ["__getattribute__", "primal"]),
+        (_private_items, 4.0, ["_items"]),
+    ],
+    ids=["instance-dict", "getattribute", "private-items"],
 )
-def test_private_and_nested_attribute_routes_are_refused(
-    objective: Callable[[TraceADArray], object],
+def test_private_attribute_routes_are_refused(
+    objective: Callable[[_ArrayInternals], object], expected: float, reads: list[str]
 ) -> None:
-    """``__dict__``, private storage and nested module reads are refused before execution.
+    """``__dict__``, the attribute hook and private storage are refused before execution.
+
+    The paired plain reference afterwards shows that each probe really reaches
+    that storage, so the refusal is not vacuous.
 
     Parameters
     ----------
     objective
         Objective reaching storage that the recorded trace does not see.
+    expected
+        Value of the probe on reference storage with primal ``2.0``.
+    reads
+        Attribute lookups the probe performs on that reference storage.
 
     """
     with pytest.raises(ValueError, match="frontend execution gate rejected"):
         whole_program_value_and_grad(objective, [1.0, 1.0], trace=False)
+    value, observed, _ = _run_on_internals_reference(objective, 2.0)
+    assert (value, observed) == (expected, reads)
 
 
-@pytest.mark.parametrize("objective", [_primal_branch, _tangent_read], ids=["primal", "tangent"])
+def test_nested_module_attribute_read_is_refused() -> None:
+    """A module attribute read only inside a generator is refused before execution.
+
+    The paired plain NumPy reference afterwards evaluates the same program:
+    ``1*2 + 2*3 = 8`` from the module weights ``(1, 2)``.
+    """
+    with pytest.raises(ValueError, match="frontend execution gate rejected"):
+        whole_program_value_and_grad(_module_attribute_in_generator, [1.0, 1.0], trace=False)
+    assert _module_attribute_in_generator(np.array([2.0, 3.0])) == 8.0
+
+
+@pytest.mark.parametrize(
+    ("objective", "expected", "reads"),
+    [(_primal_branch, 6.0, ["primal"]), (_tangent_read, 6.0, ["tangent"])],
+    ids=["primal", "tangent"],
+)
 def test_reading_trace_internals_is_refused_before_execution(
-    objective: Callable[[TraceADArray], object],
+    objective: Callable[[_ArrayInternals], object], expected: float, reads: list[str]
 ) -> None:
     """Branching on ``.primal`` would take a silent one-sided derivative.
+
+    The paired plain reference afterwards shows that each probe really reads
+    that storage, so the refusal is not vacuous.
 
     Parameters
     ----------
     objective
         Objective that reads a traced value's primal or tangent.
+    expected
+        Value of the probe on reference storage with primal ``2.0`` and tangent ``3.0``.
+    reads
+        Attribute lookups the probe performs on that reference storage.
 
     """
     with pytest.raises(ValueError, match="semantic=trace_internal_attribute"):
         whole_program_value_and_grad(objective, [1.0], trace=False)
+    value, observed, _ = _run_on_internals_reference(objective, 2.0)
+    assert (value, observed) == (expected, reads)
+
+
+@pytest.mark.parametrize(
+    ("objective", "reads"),
+    [
+        (_primal_branch, ["primal"]),
+        (_dict_branch, ["__dict__"]),
+        (_getattribute_branch, ["__getattribute__", "primal"]),
+    ],
+    ids=["primal", "instance-dict", "getattribute"],
+)
+def test_internal_read_probes_take_their_other_branch_at_small_primal(
+    objective: Callable[[_ArrayInternals], object], reads: list[str]
+) -> None:
+    """Below the threshold each branching probe returns its element unchanged.
+
+    Parameters
+    ----------
+    objective
+        Probe branching on the primal of its first element.
+    reads
+        Attribute lookups the probe performs on the reference storage.
+
+    """
+    value, observed, item = _run_on_internals_reference(objective, 0.5)
+    assert value is item
+    assert observed == reads
 
 
 @pytest.mark.parametrize(
