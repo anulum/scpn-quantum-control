@@ -1,13 +1,13 @@
 {
  "schema": "test_documentation_ceiling_v1",
  "ruff_version": "ruff 0.16.4",
- "measured_commit": "f428430ae97bed90b1b17f16fe73a1f347f3baea",
+ "measured_commit": "7413d80f778fef4067b4cbe1c7499263b723cf72",
  "scopes": [
   "tests",
   "oscillatools/tests"
  ],
- "total_findings": 7128,
- "total_files": 569,
+ "total_findings": 7119,
+ "total_files": 566,
  "files": {
   "oscillatools/tests/conftest.py": 1,
   "oscillatools/tests/kuramoto_delay_sensitivity_witness.py": 1,
@@ -56,7 +56,6 @@
   "oscillatools/tests/test_kuramoto_lyapunov.py": 15,
   "oscillatools/tests/test_kuramoto_mean_field.py": 22,
   "oscillatools/tests/test_kuramoto_networkx_interop.py": 18,
-  "oscillatools/tests/test_kuramoto_neural_operator.py": 4,
   "oscillatools/tests/test_kuramoto_noisy.py": 17,
   "oscillatools/tests/test_kuramoto_noisy_mean_field.py": 18,
   "oscillatools/tests/test_kuramoto_ott_antonsen.py": 17,
@@ -275,7 +274,6 @@
   "tests/test_hardware_result_pack_evidence.py": 2,
   "tests/test_hardware_runner_calibration.py": 12,
   "tests/test_hardware_runner_contracts.py": 80,
-  "tests/test_hardware_topological_optimizer.py": 1,
   "tests/test_hybrid_digital_analog.py": 9,
   "tests/test_hypothesis_properties.py": 24,
   "tests/test_ibm_latency_probe.py": 5,
@@ -553,7 +551,6 @@
   "tests/test_tier_benchmark_regression_gate.py": 28,
   "tests/test_tn_baseline_flagship_workloads.py": 22,
   "tests/test_topological_coupling_guard.py": 1,
-  "tests/test_topological_optimizer.py": 4,
   "tests/test_topology_auth_edge.py": 26,
   "tests/test_topology_complexes.py": 1,
   "tests/test_topology_kernel_product_e2e.py": 1,

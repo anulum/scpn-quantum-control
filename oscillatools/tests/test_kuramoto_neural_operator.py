@@ -65,6 +65,7 @@ def _angle_error(predicted: np.ndarray[Any, Any], truth: np.ndarray[Any, Any]) -
 
 
 def test_dataset_shapes_and_initial_sample() -> None:
+    """Datasets have the declared shapes and start from their sampled initial phases."""
     network = _network()
     dataset = simulate_operator_dataset(
         network["omega"], network["coupling"], n_trajectories=4, dt=_DT, n_steps=_STEPS, seed=1
@@ -81,6 +82,7 @@ def test_dataset_shapes_and_initial_sample() -> None:
 
 
 def test_training_learns_and_forecast_beats_persistence() -> None:
+    """Training lowers the loss and the forecast beats a constant-phase baseline."""
     network = _network(2)
     dataset = simulate_operator_dataset(
         network["omega"], network["coupling"], n_trajectories=120, dt=_DT, n_steps=_STEPS, seed=3
@@ -102,6 +104,7 @@ def test_training_learns_and_forecast_beats_persistence() -> None:
 
 
 def test_training_is_deterministic() -> None:
+    """The same seed gives the same loss history."""
     network = _network(4)
     dataset = simulate_operator_dataset(
         network["omega"], network["coupling"], n_trajectories=30, dt=_DT, n_steps=_STEPS, seed=5
@@ -149,6 +152,18 @@ def test_training_needs_no_api_newer_than_the_declared_torch_floor(
     ],
 )
 def test_validation_errors(call: str, kwargs: dict[str, Any], message: str) -> None:
+    """Malformed dataset, training and forecast inputs raise explicit errors.
+
+    Parameters
+    ----------
+    call
+        Public entry point under test: ``dataset``, ``train`` or ``forecast``.
+    kwargs
+        Malformed keyword arguments passed to that entry point.
+    message
+        Expected refusal text.
+
+    """
     network = _network()
     with pytest.raises(ValueError, match=message):
         if call == "dataset":

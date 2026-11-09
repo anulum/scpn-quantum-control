@@ -27,6 +27,8 @@ from scpn_quantum_control.hardware.runner import HardwareRunner
 
 
 class TestHardwareTopologicalOptimizer:
+    """Hardware-in-the-loop topological optimiser through a runner port."""
+
     def test_hardware_optimizer_step(self) -> None:
         """Verify one cycle of hardware-in-the-loop topological gradient descent."""
         if not _RIPSER_AVAILABLE:

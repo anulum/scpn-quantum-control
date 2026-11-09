@@ -96,6 +96,8 @@ def _install_score_fakes(
 
 
 class TestTopologicalOptimizer:
+    """Topological coupling optimiser steps, constraints and randomness custody."""
+
     def test_topological_optimizer_step(self) -> None:
         """Verify one cycle of topological gradient descent on p_h1."""
         if not _RIPSER_AVAILABLE:
@@ -121,6 +123,7 @@ class TestTopologicalOptimizer:
         np.testing.assert_allclose(res["K_updated"], res["K_updated"].T)
 
     def test_optimize_loop(self) -> None:
+        """``optimize`` returns one record per requested step."""
         if not _RIPSER_AVAILABLE:
             pytest.skip("ripser not available")
 
@@ -192,6 +195,7 @@ class TestTopologicalOptimizer:
         assert res["gradient_norm"] >= 0
 
     def test_initialiser_enforces_physical_coupling_constraints(self) -> None:
+        """The initial couplings are symmetrised with a zero diagonal."""
         K0 = np.array([[1.0, 0.1, 0.4], [0.5, 2.0, 0.3], [0.2, 0.9, 3.0]])
         omega = np.array([5.0, 7.0, 9.0])
 
@@ -204,6 +208,14 @@ class TestTopologicalOptimizer:
     def test_step_requires_persistent_homology_backend(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """A step refuses clearly when the persistent-homology backend is missing.
+
+        Parameters
+        ----------
+        monkeypatch
+            Pytest fixture that hides the backend for this test only.
+
+        """
         monkeypatch.setattr(topology, "_RIPSER_AVAILABLE", False)
         opt = TopologicalCouplingOptimizer(
             n_qubits=2,
