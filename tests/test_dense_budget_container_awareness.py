@@ -487,10 +487,13 @@ class TestBudgetHonoursTheAllowance:
         assert budget == int(256 * MIB * DEFAULT_DENSE_RAM_FRACTION)
         assert budget < int(DEFAULT_DENSE_BUDGET_CAP_GIB * GIB)
 
-    def test_the_cap_still_applies_on_a_large_allowance(
+    def test_a_large_allowance_scales_the_budget(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        """Container awareness lowers the budget; it never raises it.
+        """A large process allowance raises the budget with it; no fixed ceiling applies.
+
+        The container's 256 GiB limit, not the 512 GiB the host reports, is the
+        allowance, and the default budget is its fixed fraction.
 
         Parameters
         ----------
@@ -505,7 +508,10 @@ class TestBudgetHonoursTheAllowance:
         monkeypatch.setattr(dense_budget, "host_available_memory_bytes", lambda: 512 * GIB)
         _write_v2(tmp_path, limit=str(256 * GIB), current="0")
 
-        assert dense_budget_bytes() == int(DEFAULT_DENSE_BUDGET_CAP_GIB * GIB)
+        budget = dense_budget_bytes()
+
+        assert budget == int(256 * GIB * DEFAULT_DENSE_RAM_FRACTION)
+        assert budget > int(DEFAULT_DENSE_BUDGET_CAP_GIB * GIB)
 
     def test_the_explicit_argument_still_wins(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch

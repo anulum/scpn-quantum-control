@@ -15,6 +15,7 @@ import scpn_quantum_control.compile_budget as compile_budget_mod
 from scpn_quantum_control.compile_budget import (
     DEFAULT_PAULI_BUDGET_CAP_GIB,
     DEFAULT_PAULI_BUDGET_ENV,
+    DEFAULT_PAULI_RAM_FRACTION,
     PAULI_TERM_OVERHEAD_BYTES,
     PauliOperatorBudgetError,
     estimate_pauli_operator,
@@ -118,6 +119,22 @@ def test_budget_bytes_uses_memory_fraction_when_available(
     monkeypatch.delenv(DEFAULT_PAULI_BUDGET_ENV, raising=False)
     monkeypatch.setattr(compile_budget_mod, "available_memory_bytes", lambda: GIB)
     assert pauli_budget_bytes() < int(DEFAULT_PAULI_BUDGET_CAP_GIB * GIB)
+
+
+def test_budget_bytes_scales_with_a_large_host(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A large host admits a proportionally large budget; no fixed ceiling applies.
+
+    Parameters
+    ----------
+    monkeypatch
+        Installs a 512 GiB memory observation and clears the override.
+
+    """
+    monkeypatch.delenv(DEFAULT_PAULI_BUDGET_ENV, raising=False)
+    monkeypatch.setattr(compile_budget_mod, "available_memory_bytes", lambda: 512 * GIB)
+    budget = pauli_budget_bytes()
+    assert budget == int(512 * GIB * DEFAULT_PAULI_RAM_FRACTION)
+    assert budget > int(DEFAULT_PAULI_BUDGET_CAP_GIB * GIB)
 
 
 def test_require_allows_small_operator() -> None:

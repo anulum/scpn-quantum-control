@@ -137,6 +137,16 @@ def test_snapshot_policy_does_not_override_visible_process_ceiling() -> None:
     assert not check_execution_memory(plan, MemoryCapacity(1000, 0)).allowed
 
 
+def test_default_budget_scales_with_a_large_host_without_a_fixed_ceiling() -> None:
+    """Without a requested cap, thirty percent of a large allowance is admitted."""
+    plan = ExecutionMemoryPlan((ExecutionBuffer("state", "forward", (31,), "uint8"),))
+    large = 512 * 1024**3
+    decision = check_execution_memory(plan, MemoryCapacity(large))
+    assert decision.allowed and decision.budget_bytes == large * 3 // 10
+    capped = check_execution_memory(plan, MemoryCapacity(large), max_bytes=1024)
+    assert capped.budget_bytes == 1024
+
+
 def test_live_small_plan_uses_real_host_and_cgroup_snapshot() -> None:
     """Exercise the public runtime admission on actual host metadata without allocating."""
     plan = ExecutionMemoryPlan((ExecutionBuffer("state", "forward", (2,), "float64"),))

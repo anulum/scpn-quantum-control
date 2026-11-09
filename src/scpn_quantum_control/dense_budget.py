@@ -23,6 +23,13 @@ from ._cgroup_paths import memory_cgroup_paths
 DEFAULT_DENSE_BUDGET_ENV: Final = "SCPN_MAX_DENSE_GIB"
 DEFAULT_DENSE_RAM_FRACTION: Final = 0.30
 DEFAULT_DENSE_BUDGET_CAP_GIB: Final = 8.0
+"""Fallback budget in GiB, used only when the host cannot report its available memory.
+
+When the executing host reports its memory, the default budget is
+:data:`DEFAULT_DENSE_RAM_FRACTION` of it, with no fixed ceiling, so larger hosts
+admit larger dense objects. The resource-budget catalogue keeps this value as
+its deterministic reference row.
+"""
 DEFAULT_DENSE_EIGENSOLVER_OBJECTS: Final = 4
 GIB: Final = 1024**3
 
@@ -275,7 +282,29 @@ def _budget_bytes(value: object, name: str) -> int:
 
 
 def dense_budget_bytes(max_gib: float | None = None) -> int:
-    """Return the dense-allocation budget in bytes."""
+    """Return the dense-allocation budget in bytes.
+
+    An explicit ``max_gib`` wins, then the ``SCPN_MAX_DENSE_GIB`` override. By
+    default the budget is :data:`DEFAULT_DENSE_RAM_FRACTION` of the memory the
+    executing process may use (host or container), with no fixed ceiling; only
+    when that memory is unknown does :data:`DEFAULT_DENSE_BUDGET_CAP_GIB` apply.
+
+    Parameters
+    ----------
+    max_gib
+        Optional explicit budget in GiB.
+
+    Returns
+    -------
+    int
+        Budget in bytes.
+
+    Raises
+    ------
+    ValueError
+        If an explicit or environment budget is not a positive number.
+
+    """
     if max_gib is not None:
         return _budget_bytes(max_gib, "max_gib")
 
@@ -290,7 +319,7 @@ def dense_budget_bytes(max_gib: float | None = None) -> int:
     available = available_memory_bytes()
     if available is None:
         return int(DEFAULT_DENSE_BUDGET_CAP_GIB * GIB)
-    return int(min(DEFAULT_DENSE_BUDGET_CAP_GIB * GIB, available * DEFAULT_DENSE_RAM_FRACTION))
+    return int(available * DEFAULT_DENSE_RAM_FRACTION)
 
 
 def estimate_dense_allocation(

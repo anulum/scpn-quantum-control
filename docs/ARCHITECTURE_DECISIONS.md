@@ -199,8 +199,9 @@ statevector simulation stores `2^n` amplitudes.
 
 **Decision.** Each path that can blow up estimates its resource demand and fails
 closed with a clear, typed error before allocating, against a configurable budget
-(host-memory fraction with a cap, overridable by environment variable or call
-argument). The dense path uses `dense_budget` (`require_dense_allocation`,
+(a fixed fraction of the memory the executing process may use, with no fixed
+ceiling, overridable by environment variable or call argument; a fixed fallback
+applies only when that memory cannot be read). The dense path uses `dense_budget` (`require_dense_allocation`,
 `SCPN_MAX_DENSE_GIB`). Its default is container-aware: the effective allowance
 is the smaller of free host memory and the remaining cgroup headroom, read from
 `memory.max`/`memory.current` under cgroup v2 or

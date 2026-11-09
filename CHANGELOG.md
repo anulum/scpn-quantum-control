@@ -4,6 +4,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Default dense and Pauli-operator memory budgets are 30 % of the memory the
+  executing host or container may use, with no fixed ceiling; the former 8 GiB
+  and 2 GiB caps apply only when that memory cannot be read. Explicit
+  `max_gib`, `SCPN_MAX_DENSE_GIB` and `SCPN_MAX_PAULI_GIB` still take precedence.
+
 - The GPU baseline estimator takes an explicit `GPUProfile` (name, peak
   throughput, memory) for its time estimate and crossover search, with the A100
   as the named default reference; each result records the profile used.

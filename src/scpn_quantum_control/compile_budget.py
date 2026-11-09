@@ -38,6 +38,7 @@ from .dense_budget import GIB, available_memory_bytes
 DEFAULT_PAULI_BUDGET_ENV: Final = "SCPN_MAX_PAULI_GIB"
 DEFAULT_PAULI_RAM_FRACTION: Final = 0.30
 DEFAULT_PAULI_BUDGET_CAP_GIB: Final = 2.0
+"""Fallback budget in GiB, used only when the host cannot report its available memory."""
 # Conservative per-term memory floor in addition to the ``n``-character label:
 # the CPython ``str`` header, the coefficient, and the enclosing tuple/list slot
 # built transiently while assembling the Pauli list.
@@ -100,8 +101,9 @@ def pauli_budget_bytes(max_gib: float | None = None) -> int:
     """Return the sparse Pauli-operator construction budget in bytes.
 
     An explicit ``max_gib`` wins; otherwise the ``SCPN_MAX_PAULI_GIB``
-    environment override applies, then a host-memory fraction capped at
-    :data:`DEFAULT_PAULI_BUDGET_CAP_GIB`.
+    environment override applies, then :data:`DEFAULT_PAULI_RAM_FRACTION` of the
+    memory the executing process may use, with no fixed ceiling. Only when that
+    memory is unknown does :data:`DEFAULT_PAULI_BUDGET_CAP_GIB` apply.
     """
     if max_gib is not None:
         if max_gib <= 0:
@@ -121,7 +123,7 @@ def pauli_budget_bytes(max_gib: float | None = None) -> int:
     available = available_memory_bytes()
     if available is None:
         return int(DEFAULT_PAULI_BUDGET_CAP_GIB * GIB)
-    return int(min(DEFAULT_PAULI_BUDGET_CAP_GIB * GIB, available * DEFAULT_PAULI_RAM_FRACTION))
+    return int(available * DEFAULT_PAULI_RAM_FRACTION)
 
 
 def estimate_pauli_operator(

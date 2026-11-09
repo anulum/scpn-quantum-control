@@ -25,8 +25,6 @@ import numpy as np
 
 from ._rust_accel import optional_rust_engine
 from .dense_budget import (
-    DEFAULT_DENSE_BUDGET_CAP_GIB,
-    GIB,
     DenseAllocationError,
     cgroup_headroom_bytes,
     dense_budget_bytes,
@@ -289,8 +287,8 @@ def check_execution_memory(
     if require_device:
         observations.append(capacity.device_available_bytes)
     available = min((value for value in observations if value is not None), default=0)
-    cap = int(DEFAULT_DENSE_BUDGET_CAP_GIB * GIB) if max_bytes is None else max_bytes
-    budget = min(cap, available * 3 // 10)
+    host_share = available * 3 // 10
+    budget = host_share if max_bytes is None else min(max_bytes, host_share)
     required = plan.bytes_required
     if required > budget:
         blockers.append("declared_buffers_exceed_budget")

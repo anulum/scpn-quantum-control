@@ -103,7 +103,11 @@ over-budget request. It exposes `budget_id`, `n_qubits`, `bytes_required`, and
 The catalogue currently contains default and tight variants for both families.
 Default caps come from `compile_budget.DEFAULT_PAULI_BUDGET_CAP_GIB` and
 `dense_budget.DEFAULT_DENSE_BUDGET_CAP_GIB`; tight rows use `0.001` GiB for
-deterministic refusal testing.
+deterministic refusal testing. These catalogue rows are fixed reference values
+for reproducible product checks. Runtime allocation does not use them as a
+ceiling: its default budget is a fraction of the executing host's or
+container's available memory, and the constants apply there only when that
+memory cannot be read.
 
 ### Estimation
 
