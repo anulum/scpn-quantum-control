@@ -26,6 +26,7 @@ from numpy.typing import NDArray
 
 from scpn_quantum_control.qsnn.qlayer import QuantumDenseLayer
 from scpn_quantum_control.qsnn.training import (
+    QSNN_CHECKPOINT_SCHEMA,
     QSNN_EVALUATION_CLAIM_BOUNDARY,
     QSNN_RANDOMNESS,
     QSNNTrainer,
@@ -136,6 +137,112 @@ def test_learning_rng_and_generalisation_04_out_of_distribution_data_stays_flagg
     )
 
 
+def test_overlap_identity_follows_the_circuit_encoding() -> None:
+    """Rows equal after the encoder's clip to ``[0, 1]`` are training samples.
+
+    ``ry(pi * clip(x, 0, 1))`` maps 1.4 and 1.2 to the same angle, and -0.0 and
+    0.0 likewise, so both held-out rows below drive circuits identical to
+    training rows 0 and 2 and must be refused, also after a JSON resume.
+    """
+    X = np.array([[1.4, 0.5], [0.2, 0.3], [0.0, 0.7]])
+    y = np.array([[1.0], [0.0], [0.0]])
+    trainer = _trainer()
+    trainer.train(X, y, epochs=1)
+    encoded_twins = np.array([[1.2, 0.5], [-0.0, 0.7]])
+    assert np.array_equal(np.clip(encoded_twins, 0.0, 1.0), np.clip(X[[0, 2]], 0.0, 1.0))
+    with pytest.raises(ValueError, match=r"train/test overlap: held-out samples \[0, 1\]"):
+        trainer.evaluate(encoded_twins, np.zeros((2, 1)))
+    resumed = QSNNTrainer(QuantumDenseLayer(1, 2, seed=5), lr=0.2)
+    resumed.restore(QSNNTrainingCheckpoint.from_json(trainer.checkpoint().to_json()))
+    with pytest.raises(ValueError, match=r"held-out samples \[0, 1\]"):
+        resumed.evaluate(encoded_twins, np.zeros((2, 1)))
+
+
+def test_rows_that_differ_after_clipping_stay_distinct_and_raw_range_flags_ood() -> None:
+    """A row that differs after clipping is new; the raw training box still flags range."""
+    X = np.array([[1.4, 0.5], [0.2, 0.3], [0.0, 0.7]])
+    y = np.array([[1.0], [0.0], [0.0]])
+    trainer = _trainer()
+    trainer.train(X, y, epochs=1)
+    # 0.99 clips to 0.99, not 1.0, so it is a new in-range sample.
+    # 1.6 clips to 1.0, but with 0.4 the row matches no training row, and the raw
+    # value lies above the raw training maximum 1.4, so it is flagged.
+    report = trainer.evaluate(np.array([[0.99, 0.5], [1.6, 0.4]]), np.zeros((2, 1)))
+    assert report.out_of_distribution == (False, True)
+    assert report.in_distribution_loss is not None
+
+
+def test_version_one_checkpoints_with_raw_digests_are_refused() -> None:
+    """Raw-byte ``v1`` digests cannot be converted, so ``v1`` text is refused."""
+    X, y = _data(2, 4)
+    trainer = _trainer()
+    trainer.train(X, y, epochs=1)
+    text = trainer.checkpoint().to_json()
+    assert QSNN_CHECKPOINT_SCHEMA == "qsnn_training_checkpoint.v2"
+    with pytest.raises(ValueError, match="unsupported QSNN checkpoint schema"):
+        QSNNTrainingCheckpoint.from_json(
+            text.replace(QSNN_CHECKPOINT_SCHEMA, "qsnn_training_checkpoint.v1")
+        )
+
+
+@pytest.mark.parametrize(
+    ("change", "message"),
+    [
+        pytest.param(
+            {"completed_epochs": 1.5}, "completed_epochs must be a JSON integer", id="epochs-float"
+        ),
+        pytest.param(
+            {"completed_epochs": True}, "completed_epochs must be a JSON integer", id="epochs-bool"
+        ),
+        pytest.param(
+            {"completed_epochs": "1"}, "completed_epochs must be a JSON integer", id="epochs-text"
+        ),
+        pytest.param({"n_neurons": 1.0}, "n_neurons must be a JSON integer", id="neurons-float"),
+        pytest.param({"n_inputs": None}, "n_inputs must be a JSON integer", id="inputs-null"),
+        pytest.param({"weights": "0x1p-2"}, "weights must be a list", id="weights-text"),
+        pytest.param({"weights": [0.25, 0.25]}, "weights must be a list", id="weights-numbers"),
+        pytest.param({"feature_low": [0.2, 0.3]}, "feature_low must be a list", id="low-numbers"),
+        pytest.param({"learning_rate": 0.2}, "learning_rate must be a float.hex", id="lr-number"),
+        pytest.param({"learning_rate": "fast"}, "invalid hexadecimal", id="lr-not-hex"),
+        pytest.param({"training_row_digests": "ab"}, "list of strings", id="digests-text"),
+        pytest.param({"training_row_digests": [1]}, "list of strings", id="digests-numbers"),
+        pytest.param({"extra": 1}, "exactly its fields", id="extra-field"),
+    ],
+)
+def test_checkpoint_json_refuses_wrong_json_types(change: dict[str, object], message: str) -> None:
+    """Every field keeps its JSON type; nothing is truncated or coerced.
+
+    Parameters
+    ----------
+    change
+        Fields replaced in, or added to, a valid checkpoint JSON object.
+    message
+        Expected refusal text.
+
+    """
+    X, y = _data(2, 4)
+    trainer = _trainer()
+    trainer.train(X, y, epochs=1)
+    payload = json.loads(trainer.checkpoint().to_json())
+    payload.update(change)
+    with pytest.raises(ValueError, match=message):
+        QSNNTrainingCheckpoint.from_json(json.dumps(payload))
+
+
+@pytest.mark.parametrize("text", ["[]", "3", "{}"], ids=["array", "number", "empty-object"])
+def test_checkpoint_json_must_be_the_exact_object(text: str) -> None:
+    """Non-objects and objects missing fields are refused with ``ValueError``.
+
+    Parameters
+    ----------
+    text
+        JSON text that is not a complete checkpoint object.
+
+    """
+    with pytest.raises(ValueError, match="exactly its fields"):
+        QSNNTrainingCheckpoint.from_json(text)
+
+
 def test_checkpoint_and_evaluation_refusals() -> None:
     """Unknown schemas, foreign randomness, mismatched shapes and untrained evaluation fail."""
     trainer = _trainer()
@@ -143,7 +250,7 @@ def test_checkpoint_and_evaluation_refusals() -> None:
         trainer.evaluate(*_data(8, 2))
     text = trainer.checkpoint().to_json()
     with pytest.raises(ValueError, match="schema"):
-        QSNNTrainingCheckpoint.from_json(text.replace("qsnn_training_checkpoint.v1", "v0"))
+        QSNNTrainingCheckpoint.from_json(text.replace(QSNN_CHECKPOINT_SCHEMA, "v0"))
     with pytest.raises(ValueError, match="randomness"):
         QSNNTrainingCheckpoint.from_json(text.replace("none consumed", "seeded"))
     with pytest.raises(ValueError, match="layer shape"):

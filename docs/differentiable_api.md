@@ -1918,7 +1918,13 @@ The saved epoch count must be nonnegative and equal the length of the flat,
 finite, nonnegative MSE loss history. Weights must lie within the destination
 synapses' bounds; restoration refuses rather than clipping an invalid weight.
 Direct records enforce the same schema and randomness identity as JSON loading.
-Saved training-row digests and feature bounds must be present together, and
+JSON loading also requires exactly the checkpoint fields with their JSON types:
+integers stay integers, floats are `float.hex` strings, and nothing is coerced.
+Training-row digests identify each sample as the circuit encodes it, after the
+clip to `[0, 1]` with signed zeros merged, so held-out rows that encode like a
+training row are refused as overlap; schema `v2` replaces the raw-byte `v1`
+digests, which are refused. Saved training-row digests and feature bounds must
+be present together, and
 completed epochs require that data custody so that overlap refusal survives a
 resume. Full-batch descent can retain data custody with zero SGD epochs and an
 empty SGD history. A failed run can still be serialised for inspection; a

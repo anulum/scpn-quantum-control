@@ -1152,13 +1152,18 @@ global NumPy generator is left untouched.
 `checkpoint()` returns a `QSNNTrainingCheckpoint`: the exact synapse weights,
 the learning rate (the whole state of the plain-descent optimiser), completed
 epochs, loss history, and the training-data custody, meaning SHA-256 digests
-of every training sample and the training feature box. `to_json()` writes
-floats as `float.hex`. `restore()` on a trainer with the same layer shape
+of every training sample as the circuit encodes it and the raw training feature
+box. A sample is digested after the encoder's clip to `[0, 1]`, with both signed
+zeros merged, so rows the model cannot tell apart share one digest. `to_json()`
+writes floats as `float.hex` under schema `qsnn_training_checkpoint.v2`;
+`from_json()` refuses the earlier `v1` raw-byte digests, which cannot be
+converted, and refuses any field with the wrong JSON type instead of coercing it. `restore()` on a trainer with the same layer shape
 resumes exactly: two epochs, a checkpoint and two more equal four
 uninterrupted epochs bit for bit.
 
-`evaluate(X, y)` scores held-out data. It refuses any sample that appears in
-the training data ("train/test overlap"), also after a restore, and refuses
+`evaluate(X, y)` scores held-out data. It refuses any sample that encodes to
+the same circuit as a training sample ("train/test overlap"), for example `1.2`
+against a training `1.4`, also after a restore, and refuses
 when no training data has been recorded. A sample with any feature outside
 the training box is flagged as out of distribution and left out of
 `in_distribution_loss`, which is `None` when every sample is flagged. The

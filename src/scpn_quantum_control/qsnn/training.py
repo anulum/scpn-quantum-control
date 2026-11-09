@@ -233,7 +233,7 @@ def _training_diagnostics(loss_history: tuple[float, ...]) -> QSNNTrainingDiagno
     )
 
 
-QSNN_CHECKPOINT_SCHEMA: Final[str] = "qsnn_training_checkpoint.v1"
+QSNN_CHECKPOINT_SCHEMA: Final[str] = "qsnn_training_checkpoint.v2"
 QSNN_RANDOMNESS: Final[str] = (
     "none consumed: forward passes are exact statevectors and parameter-shift gradients are "
     "deterministic; the trainer reads and writes no global or local random state"
@@ -244,9 +244,57 @@ QSNN_EVALUATION_CLAIM_BOUNDARY: Final[str] = (
 )
 
 
+_CHECKPOINT_FIELDS: Final[frozenset[str]] = frozenset(
+    {
+        "schema",
+        "weights",
+        "learning_rate",
+        "completed_epochs",
+        "loss_history",
+        "n_neurons",
+        "n_inputs",
+        "training_row_digests",
+        "feature_low",
+        "feature_high",
+        "randomness",
+    }
+)
+
+
 def _row_digest(row: NDArray[np.float64]) -> str:
-    """Return the SHA-256 of one sample's float64 feature bytes."""
-    return hashlib.sha256(np.ascontiguousarray(row, dtype=np.float64).tobytes()).hexdigest()
+    """Return the SHA-256 identity of one sample as the circuit encodes it.
+
+    The encoder applies ``ry(pi * clip(x, 0, 1))`` to every feature, so two rows
+    that agree after clipping, including both signed zeros, drive the identical
+    circuit. They share one identity, which makes the train/test overlap check
+    refuse every held-out sample the model cannot tell apart from a training one.
+    The identity binds the row shape and the little-endian float64 bytes of the
+    clipped values; it does not merge rows that differ after clipping.
+    """
+    encoded = np.clip(np.asarray(row, dtype=np.float64), 0.0, 1.0)
+    encoded = np.where(encoded == 0.0, 0.0, encoded)
+    digest = hashlib.sha256()
+    digest.update(str(encoded.shape).encode("ascii"))
+    digest.update(np.ascontiguousarray(encoded, dtype="<f8").tobytes())
+    return digest.hexdigest()
+
+
+def _checkpoint_floats(payload: dict[str, object], name: str) -> tuple[float, ...] | None:
+    """Decode one optional list of ``float.hex`` strings from checkpoint JSON."""
+    values = payload[name]
+    if values is None:
+        return None
+    if not isinstance(values, list) or not all(isinstance(value, str) for value in values):
+        raise ValueError(f"QSNN checkpoint {name} must be a list of float.hex strings or null")
+    return tuple(float.fromhex(value) for value in values)
+
+
+def _checkpoint_integer(payload: dict[str, object], name: str) -> int:
+    """Decode one JSON integer from checkpoint JSON, refusing booleans and floats."""
+    value = payload[name]
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValueError(f"QSNN checkpoint {name} must be a JSON integer")
+    return value
 
 
 @dataclass(frozen=True)
@@ -256,7 +304,9 @@ class QSNNTrainingCheckpoint:
     The optimiser is plain gradient descent, so its whole state is the learning rate;
     ``randomness`` states that no random state exists to save. Training-row digests and the
     training feature box travel with the checkpoint so that a resumed trainer still refuses
-    overlapping test data and flags out-of-distribution samples.
+    overlapping test data and flags out-of-distribution samples. Schema ``v2`` digests each
+    row as the circuit encodes it (clipped to ``[0, 1]``, signed zeros merged); ``v1``
+    digested raw feature bytes and is refused, because its digests cannot be converted.
     """
 
     weights: tuple[float, ...]
@@ -318,32 +368,39 @@ class QSNNTrainingCheckpoint:
         Raises
         ------
         ValueError
-            If the schema or randomness statement differs.
+            If the text is not a JSON object with exactly the checkpoint fields, the
+            schema or randomness statement differs, or any field has the wrong JSON
+            type: integers must be JSON integers, floats ``float.hex`` strings and
+            row digests strings.
 
         """
         payload = json.loads(text)
-        if payload.get("schema") != QSNN_CHECKPOINT_SCHEMA:
+        if not isinstance(payload, dict) or set(payload) != _CHECKPOINT_FIELDS:
+            raise ValueError("QSNN checkpoint must be a JSON object with exactly its fields")
+        if payload["schema"] != QSNN_CHECKPOINT_SCHEMA:
             raise ValueError("unsupported QSNN checkpoint schema")
-        if payload.get("randomness") != QSNN_RANDOMNESS:
+        if payload["randomness"] != QSNN_RANDOMNESS:
             raise ValueError("QSNN checkpoint randomness statement differs from this trainer")
-
-        def floats(values: list[str] | None) -> tuple[float, ...] | None:
-            return None if values is None else tuple(float.fromhex(value) for value in values)
-
-        weights = floats(payload["weights"])
-        history = floats(payload["loss_history"])
+        weights = _checkpoint_floats(payload, "weights")
+        history = _checkpoint_floats(payload, "loss_history")
         if weights is None or history is None:
             raise ValueError("QSNN checkpoint must carry weights and a loss history")
+        learning_rate = payload["learning_rate"]
+        if not isinstance(learning_rate, str):
+            raise ValueError("QSNN checkpoint learning_rate must be a float.hex string")
+        digests = payload["training_row_digests"]
+        if not isinstance(digests, list) or not all(isinstance(item, str) for item in digests):
+            raise ValueError("QSNN checkpoint training_row_digests must be a list of strings")
         return cls(
             weights=weights,
-            learning_rate=float.fromhex(payload["learning_rate"]),
-            completed_epochs=int(payload["completed_epochs"]),
+            learning_rate=float.fromhex(learning_rate),
+            completed_epochs=_checkpoint_integer(payload, "completed_epochs"),
             loss_history=history,
-            n_neurons=int(payload["n_neurons"]),
-            n_inputs=int(payload["n_inputs"]),
-            training_row_digests=tuple(payload["training_row_digests"]),
-            feature_low=floats(payload["feature_low"]),
-            feature_high=floats(payload["feature_high"]),
+            n_neurons=_checkpoint_integer(payload, "n_neurons"),
+            n_inputs=_checkpoint_integer(payload, "n_inputs"),
+            training_row_digests=tuple(digests),
+            feature_low=_checkpoint_floats(payload, "feature_low"),
+            feature_high=_checkpoint_floats(payload, "feature_high"),
         )
 
 
@@ -559,8 +616,11 @@ class QSNNTrainer:
         Raises
         ------
         ValueError
-            If the trainer has seen no training data, or any held-out sample also appears in
-            the training data (train/test overlap).
+            If the trainer has seen no training data, or any held-out sample encodes to
+            the same circuit as a training sample (train/test overlap). Rows that agree
+            after clipping to ``[0, 1]`` are the same sample to the model. The
+            out-of-distribution box stays on the raw features, so a held-out value beyond
+            the training range is flagged even where clipping would hide it.
 
         """
         X, y = self._validate_dataset(X, y)

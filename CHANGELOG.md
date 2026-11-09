@@ -4,6 +4,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- QSNN held-out evaluation refuses samples that encode to the same circuit as a
+  training sample (equal after the clip to `[0, 1]`, signed zeros merged), not
+  only byte-identical rows. Checkpoints move to `qsnn_training_checkpoint.v2`;
+  `v1` checkpoints with raw-byte digests are refused, and JSON loading refuses
+  wrongly typed fields instead of coercing them.
+
 - `TopologicalCouplingOptimizer` and `HardwareTopologicalOptimizer` take a
   keyword-only `rng` generator for their perturbation directions and simulated
   measurement shots; they no longer draw from or advance the global NumPy
