@@ -4,6 +4,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Whole-program AD accepts the local container classes that CPython 3.14 and
+  3.15 build. A class body with annotations now stores a compiler-generated
+  `__annotate__` function and, once read, an `__annotations_cache__` dict.
+  Both are admitted only in that exact compiler shape. CPython 3.15 also
+  gives every plain class one shared `__dict__`/`__weakref__` descriptor
+  owned by `object`; that interpreter-wide descriptor is admitted, and a
+  descriptor owned by any other type is still refused. Before this change,
+  every objective that built such a class was refused on 3.14 and 3.15.
+
 - Whole-program AD admits the constant slices that CPython 3.14 and later
   fold into code objects (`values[:2]` becomes a `slice` code constant). The
   bytecode frontend, the source-match signature, captured-code memory

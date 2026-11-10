@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import gc
 import sys
 import weakref
@@ -333,6 +334,9 @@ def test_corrupted_result_binding_refuses_derivative_access_and_recovers(
         "static_attribute_item",
         "inherited_container",
         "foreign_dictionary_descriptor",
+        "annotation_cache_storage",
+        "annotate_storage",
+        "annotate_function",
     ],
 )
 def test_local_container_protocols_refuse_before_object_creation(protocol: str) -> None:
@@ -341,7 +345,8 @@ def test_local_container_protocols_refuse_before_object_creation(protocol: str) 
     Parameters
     ----------
     protocol
-        Constructor, descriptor, inheritance or malformed passive metadata.
+        Constructor, descriptor, inheritance or malformed passive metadata,
+        including the CPython 3.14+ lazy-annotation fields.
 
     """
     calls: list[str] = []
@@ -366,8 +371,14 @@ def test_local_container_protocols_refuse_before_object_creation(protocol: str) 
     elif protocol == "static_attribute_item":
         namespace["__static_attributes__"] = ("value", 1)
     elif protocol == "foreign_dictionary_descriptor":
-        Other = type("Other", (object,), {})
-        namespace["__dict__"] = vars(Other)["__dict__"]
+        # The metaclass's descriptor is foreign on every interpreter.
+        namespace["__dict__"] = vars(type)["__dict__"]
+    elif protocol == "annotation_cache_storage":
+        namespace["__annotations_cache__"] = []
+    elif protocol == "annotate_storage":
+        namespace["__annotate_func__"] = {"value": float}
+    elif protocol == "annotate_function":
+        namespace["__annotate_func__"] = callback
     bases = (list,) if protocol == "inherited_container" else (object,)
     Scratch = type("Scratch", bases, namespace)
 
@@ -378,6 +389,61 @@ def test_local_container_protocols_refuse_before_object_creation(protocol: str) 
     with pytest.raises(ValueError, match="external callback"):
         whole_program_value_and_grad(objective, [3.0], trace=False)
     assert calls == []
+
+
+def test_other_plain_class_dictionary_descriptor_follows_the_interpreter() -> None:
+    """Another class's own descriptor is refused; the interpreter's shared one is not.
+
+    CPython 3.15 gives every plain class the same ``__dict__`` descriptor, owned
+    by ``object``; earlier versions give each class its own.
+    """
+    descriptor = vars(type("Other", (object,), {}))["__dict__"]
+    shared = descriptor is vars(type("Probe", (object,), {}))["__dict__"]
+    Scratch = type("Scratch", (object,), {"__dict__": descriptor})
+
+    def objective(values: TraceADArray) -> object:
+        scratch = Scratch()
+        scratch.value = cast(float, values[0])
+        return scratch.value * 2.0
+
+    expectation = (
+        contextlib.nullcontext()
+        if shared
+        else pytest.raises(ValueError, match="external callback")
+    )
+    with expectation:
+        assert whole_program_value_and_grad(objective, [3.0], trace=False).value == 6.0
+
+
+def test_lazy_annotation_fields_preserve_local_numeric_storage() -> None:
+    """The CPython 3.14+ ``__annotate__`` function and annotation cache are passive."""
+
+    def __annotate__(format: int, /) -> dict[str, object]:
+        del format
+        return {"value": float}
+
+    __annotate__.__qualname__ = "Scratch.__annotate__"
+    Scratch = type(
+        "Scratch",
+        (object,),
+        {
+            "__annotate_func__": __annotate__,
+            "__annotations_cache__": {"value": float},
+            "__module__": __annotate__.__module__,
+        },
+    )
+
+    def objective(values: TraceADArray) -> object:
+        scratch = Scratch()
+        scratch.value = cast(float, values[0])
+        return scratch.value * 2.0
+
+    baseline = active_reserved_bytes()
+    result = whole_program_value_and_grad(objective, [3.0], trace=False)
+    assert result.value == 6.0
+    np.testing.assert_array_equal(result.gradient, [2.0])
+    np.testing.assert_array_equal(program_adjoint_replay_gradient(result), [2.0])
+    assert active_reserved_bytes() == baseline
 
 
 @pytest.mark.parametrize("metadata", ["first_line", "static_attributes", "both"])

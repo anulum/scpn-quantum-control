@@ -94,8 +94,63 @@ _PASSIVE_CLASS_FIELDS = frozenset(
         "__annotations__",
         "__firstlineno__",
         "__static_attributes__",
+        # CPython 3.14+ (PEP 649/749): lazily evaluated class annotations.
+        "__annotate_func__",
+        "__annotations_cache__",
     }
 )
+
+
+class _PlainProbe:
+    """Plain class whose instance-dictionary descriptors this interpreter shares."""
+
+
+# CPython 3.15 shares one ``__dict__``/``__weakref__`` descriptor (owned by
+# ``object``) across plain classes; earlier versions create one per class.
+_SHARED_PLAIN_DESCRIPTORS = {
+    name: descriptor
+    for name in ("__dict__", "__weakref__")
+    if type(descriptor := vars(_PlainProbe)[name]) is GetSetDescriptorType
+    and descriptor.__objclass__ is object
+}
+
+
+def _is_compiler_class_annotate(constructor: type, item: object) -> bool:
+    """Admit only the ``__annotate__`` function CPython 3.14+ compiles for a class body.
+
+    Parameters
+    ----------
+    constructor
+        Local class whose namespace holds the function.
+    item
+        Namespace value stored under ``__annotate_func__``.
+
+    Returns
+    -------
+    bool
+        Whether ``item`` is that compiler-generated annotation function: named
+        ``<class qualname>.__annotate__`` in the class's module, taking only a
+        positional-only ``format``, closing over nothing but ``__classdict__``,
+        and carrying no defaults or attributes of its own.
+
+    """
+    if type(item) is not FunctionType:
+        return False
+    code = item.__code__
+    return (
+        item.__name__ == "__annotate__"
+        and item.__qualname__
+        == f"{type.__getattribute__(constructor, '__qualname__')}.__annotate__"
+        and item.__module__ == type.__getattribute__(constructor, "__module__")
+        and code.co_argcount == 1
+        and code.co_posonlyargcount == 1
+        and code.co_kwonlyargcount == 0
+        and code.co_varnames[:1] == ("format",)
+        and set(code.co_freevars) <= {"__classdict__"}
+        and item.__defaults__ is None
+        and item.__kwdefaults__ is None
+        and not item.__dict__
+    )
 
 
 def _is_passive_local_class(value: object) -> bool:
@@ -110,10 +165,16 @@ def _is_passive_local_class(value: object) -> bool:
         if name not in _PASSIVE_CLASS_FIELDS:
             return False
         if name in {"__dict__", "__weakref__"}:
-            if type(item) is not GetSetDescriptorType or item.__objclass__ is not constructor:
+            if type(item) is not GetSetDescriptorType or (
+                item.__objclass__ is not constructor
+                and item is not _SHARED_PLAIN_DESCRIPTORS.get(name)
+            ):
                 return False
-        elif name == "__annotations__":
+        elif name in {"__annotations__", "__annotations_cache__"}:
             if type(item) is not dict:
+                return False
+        elif name == "__annotate_func__":
+            if not _is_compiler_class_annotate(constructor, item):
                 return False
         elif name == "__firstlineno__":
             if type(item) is not int:
