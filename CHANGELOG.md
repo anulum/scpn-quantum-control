@@ -46,9 +46,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     Torch and JAX/TensorFlow layers (`requirements-ci-torch-cpu-py313-linux.txt`,
     `requirements-ci-native-ad-py313-linux.txt`: jax 0.12.0.1, TensorFlow
     2.21.0); the 3.12 layers, which no job installs any more, are removed.
-    Jobs that still need a 3.12-only lock stay on 3.12 for now: mutation
-    testing (`pony` requires Python below 3.15), and the Julia-tier and
-    Studio-browser jobs, whose locks are still compiled for 3.12.
+    The jobs that build the full framework overlay (learning generalisation,
+    differentiable parity, migration guides) also run on 3.13. The Julia-tier
+    and Studio-browser locks are recompiled for 3.15, and the jobs that use
+    them (lint, Julia lint, Studio web, Kuramoto tier benchmark) run on 3.15.
+    Mutation testing stays on 3.12, because its `pony` dependency requires
+    Python below 3.15.
     Every cohort lock takes qiskit-aer 0.18.2; the D-Wave lock takes dimod
     0.12.23 and minorminer 0.2.23, which have 3.15 wheels. New minimal-install
     locks for 3.13 and 3.15 share the 3.12 input pins.
