@@ -71,6 +71,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   - The same hour-24 refusal now holds for operator review timestamps and
     backend-profile calibration timestamps, whose browser counterparts
     already refuse it.
+- Studio tooling: Node 26 LTS in the Studio, docs and remote-release jobs;
+  pnpm 11.9.0 → 12.17.0; TypeScript 5.9.3 → 6.0.3, the newest release TypeDoc
+  0.28.20 supports; vitest and its V8 coverage 4.1.12 → 5.1.0; vite 8.3.5,
+  @vitejs/plugin-react 6.2.1, jsdom 30.1.3, @module-federation/vite 1.23.9,
+  @testing-library/react 16.3.3, axe-core 4.14.0 and @types/node 26.6.6. Every
+  chosen release is at least seven days old. React stays at 19.3.0 because the
+  module-federation contract shares it as a singleton with the Hub, and Biome
+  stays at 2.5.15 because 2.6 reports eight findings above the measured web
+  source ceiling.
 
 - Rust toolchain 1.99.0 → 1.99.1 (`rust-toolchain.toml`, and the Docker
   WASM builder pinned to the `rust:1.99.1-slim-bookworm` index digest). With

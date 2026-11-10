@@ -94,11 +94,11 @@ maturin build --release --features extension-module --out dist \
 python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
 
 # the pnpm the Studio jobs pin, project-scoped rather than global
-corepack prepare pnpm@11.9.0
+corepack prepare pnpm@12.17.0
 
 # the Julia tier, in its own environment as CI keeps it
-python -m venv .venv-julia
-.venv-julia/bin/python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+python3.15 -m venv .venv-julia
+.venv-julia/bin/python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
 .venv-julia/bin/python -m pip install --no-deps --require-hashes -r requirements-ci-julia-tier.txt
 
 # the shell linter, in the project environment as the CI job installs it
