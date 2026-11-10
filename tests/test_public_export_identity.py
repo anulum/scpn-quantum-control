@@ -15,6 +15,7 @@ import importlib
 import inspect
 import json
 import pickle
+import sys
 import typing
 from pathlib import Path
 from types import ModuleType
@@ -27,6 +28,9 @@ pytestmark = pytest.mark.framework_imports
 
 ROOT = Path(__file__).resolve().parents[1]
 SNAPSHOT_PATH = ROOT / "tests/fixtures/public_export_identity_snapshot.json"
+# From CPython 3.13 ``ast.dump`` omits empty fields unless asked; the snapshot
+# was recorded in the full form, which every supported interpreter can produce.
+AST_DUMP_OPTIONS: dict[str, bool] = {"show_empty": True} if sys.version_info >= (3, 13) else {}
 
 
 class ExportMetadata(TypedDict):
@@ -345,10 +349,22 @@ def test_every_public_binding_is_the_original_object(package: PackageSnapshot) -
             assert actual.__spec__.name == actual.__name__, context
         else:
             metadata = binding["metadata"]
-            assert getattr(actual, "__module__", None) == metadata["module"], context
             assert getattr(actual, "__qualname__", None) == metadata["qualname"], context
-            assert type(actual).__module__ == binding["type_module"], context
             assert type(actual).__qualname__ == binding["type_name"], context
+            exporter_name = metadata["module"]
+            if metadata["qualname"] is None and exporter_name is not None:
+                # An instance reports its type's module, and CPython 3.13 moved
+                # pathlib's classes to the private pathlib._local while pathlib
+                # still exports them; compare the type object itself.
+                public_type = getattr(
+                    importlib.import_module(binding["type_module"]), binding["type_name"]
+                )
+                assert type(actual) is public_type, context
+                exporter = importlib.import_module(exporter_name)
+                assert getattr(exporter, type(actual).__name__) is public_type, context
+            else:
+                assert getattr(actual, "__module__", None) == exporter_name, context
+                assert type(actual).__module__ == binding["type_module"], context
 
 
 @pytest.mark.parametrize("package", PACKAGES, ids=[p["module"] for p in PACKAGES])
@@ -417,7 +433,8 @@ def test_inline_definitions_keep_metadata_annotations_and_pickle_identity(
         for node in tree.body
         if isinstance(node, ast.FunctionDef | ast.ClassDef) and node.name == binding["name"]
     )
-    digest = hashlib.sha256(ast.dump(node, include_attributes=False).encode()).hexdigest()
+    dump = ast.dump(node, include_attributes=False, **AST_DUMP_OPTIONS)
+    digest = hashlib.sha256(dump.encode()).hexdigest()
     assert digest == binding["local_definition_ast_sha256"]
     metadata = binding["metadata"]
     assert {name: repr(value) for name, value in typing.get_type_hints(actual).items()} == (
