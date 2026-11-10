@@ -28,12 +28,12 @@
       "size_bytes": 1594
     },
     {
-      "line_count": 374,
+      "line_count": 383,
       "path": "requirements-ci-cross-platform-smoke.txt",
       "pinned_package_count": 17,
       "role": "Cross-platform smoke CI lockfile",
-      "sha256": "73411b493d920d4e3bcba6fdf9bd881b1fa79d4b72c7080df3e76c6a58aeca9a",
-      "size_bytes": 29139
+      "sha256": "e81114467e033f179cd6f655c83f1f9ee1231324b0b716d2f68409696aa52864",
+      "size_bytes": 29904
     },
     {
       "line_count": 3034,

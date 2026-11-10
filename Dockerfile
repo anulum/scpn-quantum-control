@@ -67,7 +67,7 @@ COPY .pre-commit-config.yaml pyproject.toml mkdocs.yml requirements.txt requirem
 # root documents.
 COPY CHANGELOG.md VALIDATION.md RESULTS_SUMMARY.md CAPABILITIES_AND_USECASES.md REUSE.toml ./
 COPY ARCHITECTURE.md CONTRIBUTING.md DEPRECATIONS.md CONTRIBUTORS.md GOVERNANCE.md NOTICE.md SUPPORT.md ./
-COPY requirements-ci-cross-platform-smoke.txt requirements-ci-py311-linux.txt requirements-ci-py312-linux.txt requirements-ci-py313-linux.txt requirements-ci-studio-platform.txt ./
+COPY requirements-ci-cross-platform-smoke.txt requirements-ci-py312-linux.txt requirements-ci-py313-linux.txt requirements-ci-py315-linux.txt requirements-ci-studio-platform.txt ./
 # Workflow audits inspect the browser lock without installing Chromium here.
 COPY requirements-ci-studio-browser.txt ./
 # Supply-chain contract tests validate the human-reviewed inputs that generate
