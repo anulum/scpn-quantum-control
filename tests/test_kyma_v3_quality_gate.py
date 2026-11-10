@@ -56,7 +56,7 @@ def test_ci_runs_and_aggregates_gate() -> None:
     start = workflow.index("  kyma-v3-quality:")
     end = workflow.find("\n\n  ", start)
     block = workflow[start : len(workflow) if end == -1 else end]
-    assert "requirements-ci-jax-py312-linux.txt" in block
+    assert "requirements-ci-jax-py315-linux.txt" in block
     assert all(path in block for path in quality_gates.KYMA_V3_QUALITY_RATCHET)
     assert all(path in block for path in quality_gates.KYMA_V3_COVERAGE_COHORT)
     assert f"--include={quality_gates.KYMA_V3_COVERAGE_INCLUDE}" in block

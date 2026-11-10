@@ -4,14 +4,14 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# Hash-locked CPU JAX surface for Python 3.12 quality jobs.
+# Hash-locked CPU JAX surface for Python 3.15 quality jobs.
 
 # Required by the real JAX export serialization/deserialization coverage.
 flatbuffers==25.12.19 \
     --hash=sha256:7634f50c427838bb021c2d66a3d1168e9d199b0607e6329399f04846d42e20b4
-jax==0.10.1 \
-    --hash=sha256:47f3192c76e9e3358de1b106a8af5e943fccb10510903f25d96ea53652729134
-jaxlib==0.10.1 \
-    --hash=sha256:f3cdf5b7f48470ab5455ab79aab746419694ccb6b52651cc2ce5fb27def03588
+jax==0.12.0.1 \
+    --hash=sha256:e9dfd256ba090259b10f97f0755d4fc92535b8cb38c0a40df6488a8c8a7dd8ae
+jaxlib==0.12.0.1 \
+    --hash=sha256:44d3d534664fe762f32c5b831d556384bd96f9afad2e40aa207050f0b6e2c9f6
 ml-dtypes==0.6.0 \
-    --hash=sha256:3b4a480aa8fd54a1805b8ac10f3f91763926a74f73c0c364c10f9231854f4170
+    --hash=sha256:d4f1b9329a251e4affe3bb58f4d3e2db22a714396fd7ffb40d0b5db423c24d17

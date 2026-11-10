@@ -183,7 +183,7 @@ def test_global_coverage_retains_required_exact_commit_sdk_measurements(
     download = next(
         step
         for step in consumer_steps
-        if step.get("name") == f"Download exact-commit {title} coverage (3.12 only)"
+        if step.get("name") == f"Download exact-commit {title} coverage (3.15 only)"
     )
     assert upload["uses"].startswith("actions/upload-artifact@")
     assert upload["with"]["name"] == download["with"]["name"]
@@ -192,7 +192,7 @@ def test_global_coverage_retains_required_exact_commit_sdk_measurements(
     assert upload.get("continue-on-error", False) is False
     assert "if" not in upload
     assert download["uses"].startswith("actions/download-artifact@")
-    assert download["if"] == "matrix.python-version == '3.12'"
+    assert download["if"] == "matrix.python-version == '3.15'"
     assert download.get("continue-on-error", False) is False
     owner_gate = next(step for step in producer_steps if step.get("name") == owner_gate_name)
     owner_command = shlex.split(owner_gate["run"])
@@ -204,7 +204,7 @@ def test_global_coverage_retains_required_exact_commit_sdk_measurements(
     coverage_step = next(
         step
         for step in consumer_steps
-        if step.get("name") == "Admit complete test coverage (3.12 only)"
+        if step.get("name") == "Admit complete test coverage (3.15 only)"
     )
     destination = download["with"]["path"].replace("${{ runner.temp }}", "$RUNNER_TEMP")
     combine = (
@@ -276,17 +276,17 @@ def test_global_coverage_combines_exact_native_model_and_qnode_evidence(
     download = next(
         step
         for step in csteps
-        if step.get("name") == f"Download exact-commit {download_title} coverage (3.12 only)"
+        if step.get("name") == f"Download exact-commit {download_title} coverage (3.15 only)"
     )
     assert upload["with"]["name"] == download["with"]["name"]
     assert upload["with"]["name"].endswith("-${{ github.sha }}")
     assert upload["with"]["include-hidden-files"] is True
     assert upload["with"]["if-no-files-found"] == "error"
     assert psteps.index(gate) < psteps.index(upload)
-    assert download["if"] == "matrix.python-version == '3.12'"
+    assert download["if"] == "matrix.python-version == '3.15'"
     assert not download.get("continue-on-error", False)
     coverage_step = next(
-        step for step in csteps if step.get("name") == "Admit complete test coverage (3.12 only)"
+        step for step in csteps if step.get("name") == "Admit complete test coverage (3.15 only)"
     )
     destination = download["with"]["path"].replace("${{ runner.temp }}", "$RUNNER_TEMP")
     combine = f'python -m coverage combine --append --keep "{destination}/{data_file}"'

@@ -61,6 +61,6 @@ def test_ci_runs_and_aggregates_gate() -> None:
     )
     for path in quality_gates.WIRTINGER_IMPLICIT_PRODUCT_COVERAGE_COHORT:
         assert path in block
-    assert "requirements-ci-torch-cpu-py312-linux.txt" in block
-    assert "requirements-ci-jax-py312-linux.txt" in block
+    assert "requirements-ci-torch-cpu-py315-linux.txt" in block
+    assert "requirements-ci-jax-py315-linux.txt" in block
     assert "wirtinger-implicit-product-quality" in workflow[workflow.index("  ci-gate:") :]

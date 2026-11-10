@@ -88,8 +88,8 @@ def test_ci_provisions_the_native_reference_wheel_before_execution() -> None:
 
     source = workflow_path_for_job("phase-results-quality").read_text(encoding="utf-8")
     job = read_ci_job_blocks(source)["phase-results-quality"]
-    assert 'python-version: "3.12"' in job
-    assert "name: scpn-quantum-engine-3.12" in job
+    assert 'python-version: "3.15"' in job
+    assert "name: scpn-quantum-engine-3.15" in job
     download = job.index("actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333")
     install = job.index(
         "python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl"

@@ -24,10 +24,10 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - name: mypy-strict-kuramoto-model
         run: >-
           python
@@ -113,10 +113,10 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - name: mypy-strict-kuramoto-solvers
         run: >-
           python
@@ -218,10 +218,10 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - name: Type-check stable-core product quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -261,10 +261,10 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - name: Type-check open-system completeness quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -314,10 +314,10 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - name: Type-check thermo-readiness product quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -371,10 +371,10 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - name: Type-check adaptive-branching quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -427,10 +427,10 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - name: Type-check quantum-sensing quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -499,10 +499,10 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - name: Type-check phase coupling-learning quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -547,10 +547,10 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - name: Type-check phase-objectives quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -595,10 +595,10 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - name: Type-check provider-gradient audit quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -663,10 +663,10 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - name: Type-check entropy and randomness quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -719,10 +719,10 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - name: Type-check persistent-H1 topology-control quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -775,10 +775,10 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - name: Type-check quantum-sync oracle quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -818,10 +818,10 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - name: Type-check custom-derivatives product quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases

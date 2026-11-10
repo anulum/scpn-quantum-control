@@ -21,10 +21,10 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
+        with: {python-version: "3.15", cache: 'pip'}
       - name: Install pinned CI surface and the package
         run: |
-          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
           python -m pip install --no-deps -e .
       - name: Type-check Program AD alias-analysis quality cohort
         run: >-
@@ -60,10 +60,10 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
+        with: {python-version: "3.15", cache: 'pip'}
       - name: Install pinned CI surface and the package
         run: |
-          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
           python -m pip install --no-deps -e .
       - name: Type-check general-unitary quality cohort
         run: >-
@@ -94,11 +94,11 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
+        with: {python-version: "3.15", cache: 'pip'}
       - name: Install pinned CI surface and the package
         run: |
-          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
-          python -m pip install --require-hashes -r requirements-ci-torch-cpu-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-torch-cpu-py315-linux.txt
           python -m pip install --no-deps -e .
       - name: Type-check GPU-batch VQE quality cohort
         run: >-
@@ -129,10 +129,10 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
+        with: {python-version: "3.15", cache: 'pip'}
       - name: Install pinned CI surface and the package
         run: |
-          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
           python -m pip install --no-deps -e .
       - name: Type-check AVQDS quality cohort
         run: >-
@@ -168,10 +168,10 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
+        with: {python-version: "3.15", cache: 'pip'}
       - name: Install pinned CI surface and the package
         run: |
-          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
           python -m pip install --no-deps -e .
       - name: Type-check ansatz-benchmark quality cohort
         run: >-
@@ -211,10 +211,10 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
+        with: {python-version: "3.15", cache: 'pip'}
       - name: Install pinned CI surface and the package
         run: |
-          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
           python -m pip install --no-deps -e .
       - name: Type-check symmetry-verification quality cohort
         run: >-
@@ -251,11 +251,11 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
       - name: Install pinned CI surface and the package
         run: |
-          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
           python -m pip install --no-deps -e .
       - name: Type-check experiment-helper quality cohort
         run: >-
@@ -293,11 +293,11 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
       - name: Install pinned CI surface and the package
         run: |
-          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
           python -m pip install --no-deps -e .
       - name: Type-check predictive-coding quality cohort
         run: >-
@@ -335,11 +335,11 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
       - name: Install pinned CI surface and the package
         run: |
-          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
           python -m pip install --no-deps -e .
       - name: Type-check hierarchical-key quality cohort
         run: >-
@@ -386,10 +386,10 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: python -m pip install --no-deps -e .
       - run: >-
           python -m pip install --no-deps --require-hashes
@@ -449,11 +449,11 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
       - name: Install dependencies
         run: |
-          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
           python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt
       - name: Type-check coupling-invariant quality cohort
         run: >-
@@ -495,10 +495,10 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - name: Type-check experiment-dynamics quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -537,9 +537,9 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
+        with: {python-version: "3.15", cache: 'pip'}
       - run: |
-          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/bridge/phase_artifact.py

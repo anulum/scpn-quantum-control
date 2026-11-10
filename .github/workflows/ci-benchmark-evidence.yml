@@ -21,12 +21,12 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
-      - name: Download the Python 3.12 Rust engine wheel
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
+      - name: Download the Python 3.15 Rust engine wheel
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
         with:
-          name: scpn-quantum-engine-3.12
+          name: scpn-quantum-engine-3.15
           path: dist
       - name: Install the current Rust engine wheel
         run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
@@ -101,8 +101,8 @@ jobs:
           tests/test_differentiable_programming_contracts_quality_gate.py
       - name: Install real CPU quantum gradient runtimes
         run: |
-          python -m pip install --require-hashes -r requirements-ci-jax-py312-linux.txt
-          python -m pip install --require-hashes -r requirements-ci-torch-cpu-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-jax-py315-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-torch-cpu-py315-linux.txt
           python -c "import jax, jax.export, flatbuffers, torch; print(jax.__version__, jax.devices(), torch.__version__)"
       - name: differentiable-programming-contracts focused coverage
         run: >-
@@ -123,8 +123,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/forecasting/neural_operator_cost_model.py
@@ -153,10 +153,10 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
+        with: {python-version: "3.15", cache: 'pip'}
       - run: |
-          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
-          python -m pip install --require-hashes -r requirements-ci-torch-cpu-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-torch-cpu-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/neural_operator_baseline_product.py
@@ -191,8 +191,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/analysis/entanglement_sync_evidence.py
@@ -243,8 +243,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/bench_cli.py
@@ -285,8 +285,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/identity/binding_spec.py
@@ -317,8 +317,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/identity/coherence_budget.py
@@ -347,8 +347,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/identity/robustness.py
@@ -377,8 +377,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/phase/backend_selector.py
@@ -407,8 +407,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/logging_setup.py
@@ -437,8 +437,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/ssgf_geometry_gradient_product.py
@@ -495,8 +495,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/codesign/components.py
@@ -541,8 +541,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/analysis/enaqt_evidence.py
@@ -573,8 +573,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/diff.py
@@ -611,8 +611,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/phase/coupling_time_series_recovery.py
@@ -649,8 +649,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/governed_route_matrix.py
@@ -679,8 +679,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/attested_result_pack.py
@@ -709,8 +709,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/benchmarks/open_system_objective_evidence.py
@@ -747,8 +747,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/differentiable_external_validation.py
@@ -780,8 +780,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/phase/gradient_tape.py
@@ -816,8 +816,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/fault_tolerant_resource_product.py

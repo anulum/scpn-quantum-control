@@ -63,11 +63,11 @@ def test_ci_runs_and_aggregates_gate() -> None:
         in block
     )
     assert "whole-program-ad-product-quality" in workflow[workflow.index("  ci-gate:") :]
-    download = block.index("name: Download the Python 3.12 Rust engine wheel")
+    download = block.index("name: Download the Python 3.15 Rust engine wheel")
     install = block.index("name: Install the current Rust engine wheel")
     execution = block.index("python -m coverage run")
     assert download < install < execution
-    assert "name: scpn-quantum-engine-3.12" in block
+    assert "name: scpn-quantum-engine-3.15" in block
     assert (
         "python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl" in block
     )

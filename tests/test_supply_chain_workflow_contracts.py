@@ -56,14 +56,14 @@ def test_ci_lock_inputs_cover_the_new_security_and_typing_surfaces() -> None:
     minimal_input = Path("requirements-ci-minimal-install-py312-linux.in").read_text(
         encoding="utf-8"
     )
-    quimb_input = Path("requirements-ci-quimb-py312-linux.in").read_text(encoding="utf-8")
+    quimb_input = Path("requirements-ci-quimb-py315-linux.in").read_text(encoding="utf-8")
     assert "pytest==9.1.1" in minimal_input
     assert "hypothesis==6.165.10" in minimal_input
     assert "quimb==1.13.0" in quimb_input
 
     for path in (
         "requirements-ci-minimal-install-py312-linux.txt",
-        "requirements-ci-quimb-py312-linux.txt",
+        "requirements-ci-quimb-py315-linux.txt",
     ):
         lock = Path(path).read_text(encoding="utf-8")
         assert "--hash=sha256:" in lock

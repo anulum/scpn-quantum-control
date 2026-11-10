@@ -30,6 +30,22 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     stays on 3.12 until pyquil 5 is final, and oqc because every
     oqc-qcaas-client release requires Python below 3.13. The CI matrix names
     each blocker.
+  - Python 3.15 is now the CI quality and coverage lane. 209 quality, evidence
+    and product jobs that ran on 3.12 move to 3.15 with the 3.15 base lock
+    and the 3.15 Rust engine wheel. The authoritative coverage producer
+    (test shards, combine, policy and gap audits, upload) and the
+    oscillatools coverage run move with them. The 3.12 and 3.13 test
+    shards remain as compatibility profiles. New 3.15 layers:
+    `requirements-ci-jax-py315-linux.txt` (jax and jaxlib 0.12.0.1),
+    `requirements-ci-torch-cpu-py315-linux.txt` (torch 2.15.0+cpu) and the
+    Quimb closure `requirements-ci-quimb-py315-linux.txt`; the 3.12 JAX and
+    Quimb locks, which no job installs any more, are removed. The
+    differentiable-framework parity workflow runs its sparse profile on 3.15
+    and its full profile on 3.13, because `tensorflow-cpu` has no 3.15 wheel.
+    Jobs that still need a 3.12-only lock stay on 3.12 for now: the
+    TensorFlow native-transform job, mutation testing (`pony` requires
+    Python below 3.15), and the Julia-tier and Studio-browser jobs, whose locks
+    are still compiled for 3.12.
     Every cohort lock takes qiskit-aer 0.18.2; the D-Wave lock takes dimod
     0.12.23 and minorminer 0.2.23, which have 3.15 wheels. New minimal-install
     locks for 3.13 and 3.15 share the 3.12 input pins.

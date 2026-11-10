@@ -33,16 +33,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # The sparse profile runs on the primary Python. The full profile adds
+        # tensorflow-cpu, which has no Python 3.15 wheel, so it runs on 3.13.
         include:
-          - python-version: "3.12"
+          - python-version: "3.15"
             profile: sparse
-            requirements-file: requirements-ci-py312-linux.txt
-          - python-version: "3.12"
-            profile: full
-            requirements-file: requirements-ci-py312-linux.txt
-          - python-version: "3.13"
-            profile: sparse
-            requirements-file: requirements-ci-py313-linux.txt
+            requirements-file: requirements-ci-py315-linux.txt
           - python-version: "3.13"
             profile: full
             requirements-file: requirements-ci-py313-linux.txt
@@ -102,11 +98,11 @@ jobs:
 
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
 
       - name: Install dependencies
         run: |
-          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
           python -m pip install --no-deps -e oscillatools/
           python -m pip install --no-deps -e .
 
@@ -161,11 +157,11 @@ jobs:
 
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
 
       - name: Install benchmark dependencies
         run: |
-          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
           python -m pip install --no-deps -e oscillatools/
           python -m pip install --no-deps -e .
 

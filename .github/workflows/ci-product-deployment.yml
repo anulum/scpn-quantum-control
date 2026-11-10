@@ -22,10 +22,10 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - name: Type-check error-mitigation product quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -108,10 +108,10 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - name: Type-check cloud-native deployment quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -159,10 +159,10 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - name: Type-check control-stack compose quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -218,10 +218,10 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - name: Type-check public API stability quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -261,10 +261,10 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - name: Type-check polyglot parity certificate quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -304,10 +304,10 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - name: Type-check Program AD fuzz assurance quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -346,8 +346,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/multi_hal_federation_product.py
@@ -376,8 +376,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/hermetic_reproduction_kit.py
@@ -406,8 +406,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/hardware_safe_execution.py
@@ -481,8 +481,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/qpu_compute_product.py
@@ -511,8 +511,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/wirtinger_implicit_product.py
@@ -533,8 +533,8 @@ jobs:
           tests/test_wirtinger_implicit_product_quality_gate.py
       - name: Install the framework runtimes whose complex conventions are checked
         run: |
-          python -m pip install --require-hashes -r requirements-ci-jax-py312-linux.txt
-          python -m pip install --require-hashes -r requirements-ci-torch-cpu-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-jax-py315-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-torch-cpu-py315-linux.txt
           python -c "import jax, torch; print(jax.__version__, torch.__version__)"
       - run: >-
           python -m coverage run --rcfile=/dev/null
@@ -554,10 +554,10 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
+        with: {python-version: "3.15", cache: 'pip'}
       - name: Install pinned CI dependency surface
         run: |
-          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
           python -m pip install --no-deps -e .
       - run: >-
           python -m mypy --strict --explicit-package-bases
@@ -599,8 +599,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/visualisation_dashboard_product.py
@@ -629,8 +629,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/stochastic_estimators_product.py
@@ -665,8 +665,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/differentiable_notebook_curriculum.py
@@ -695,8 +695,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        with: {python-version: "3.15", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py315-linux.txt
       - name: Install Studio recompute dependency
         run: >-
           python -m pip install --no-deps --require-hashes

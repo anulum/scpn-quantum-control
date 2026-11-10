@@ -285,10 +285,8 @@ Historical targets below do not authorise publication, provider execution or spe
   both are computable, and rename the capability to say entanglement-truncated
   rather than DLA-truncated; or (b) retire the route and keep the
   exact-diagonalisation ceiling stated honestly. Option (a) additionally needs
-  the pinned `requirements-ci-quimb-py312-linux.txt` tier, which upgrades scipy
-  from 1.17.1 to 1.18.1 and therefore belongs in its own environment as the
-  Julia tier already does. Do not invent a truncation criterion to make the
-  name true.
+  the pinned `requirements-ci-quimb-py315-linux.txt` tier. Do not invent a
+  truncation criterion to make the name true.
 - [x] **Retire the Braket-constrained setuptools waiver.** The three Python
   hash locks use simulator 1.39.7 and schemas 1.32.1; the transitive setuptools
   dependency is absent. The complete dependency scan runs without advisory

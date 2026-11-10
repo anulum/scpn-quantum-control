@@ -806,9 +806,9 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
-      - run: pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: pip install --require-hashes -r requirements-ci-py315-linux.txt
       - name: Validate split dependency contracts
         env:
           COVERAGE_FILE: .coverage.split-boundary
@@ -841,9 +841,9 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
-      - run: pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: pip install --require-hashes -r requirements-ci-py315-linux.txt
       - name: Hold the test documentation ceiling
         env:
           COVERAGE_FILE: .coverage.test-documentation-ceiling
@@ -877,9 +877,9 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
-      - run: pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: pip install --require-hashes -r requirements-ci-py315-linux.txt
       - name: Keep inherited Git locations out of the test session
         env:
           COVERAGE_FILE: .coverage.git-location-isolation
@@ -903,9 +903,9 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
-      - run: pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: pip install --require-hashes -r requirements-ci-py315-linux.txt
       - name: Hold the source surface inventory
         env:
           COVERAGE_FILE: .coverage.source-surface-inventory
@@ -938,9 +938,9 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
           cache: 'pip'
-      - run: pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: pip install --require-hashes -r requirements-ci-py315-linux.txt
       - name: Install the pinned shell linter
         run: python -m pip install --no-deps --require-hashes -r requirements-ci-shell-lint.txt
       - name: Lint every tracked shell script

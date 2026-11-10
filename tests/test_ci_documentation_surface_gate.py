@@ -663,7 +663,7 @@ def test_ci_optional_runtime_locks_and_preview_rules_are_explicit() -> None:
     # different lengths on purpose, so truncation is the intended behaviour.
     jobs = dict(zip(sections[1::2], sections[2::2], strict=False))
     expected_owners = {
-        "requirements-ci-jax-py312-linux.txt": {
+        "requirements-ci-jax-py315-linux.txt": {
             "kyma-v2-dynamics-quality",
             "kyma-dynamics-quality",
             "kyma-v2-coupling-quality",
@@ -672,7 +672,7 @@ def test_ci_optional_runtime_locks_and_preview_rules_are_explicit() -> None:
             "whole-program-ad-product-quality",
             "wirtinger-implicit-product-quality",
         },
-        "requirements-ci-torch-cpu-py312-linux.txt": {
+        "requirements-ci-torch-cpu-py315-linux.txt": {
             "gpu-batch-vqe-quality",
             "whole-program-ad-product-quality",
             "neural-operator-baseline-product-quality",

@@ -15,7 +15,12 @@ import yaml
 
 WORKFLOW = Path(".github/workflows/differentiable-frameworks.yml")
 """Scheduled multi-version framework verification owner."""
-PYTHON_VERSIONS = ("3.12", "3.13")
+PROFILE_LANES = {("3.15", "sparse"), ("3.13", "full")}
+"""Python lane of each CPU profile: sparse on the primary Python, full on 3.13.
+
+The full profile installs tensorflow-cpu, which has no Python 3.15 wheel.
+"""
+PYTHON_VERSIONS = tuple(sorted({version for version, _ in PROFILE_LANES}))
 """Python versions admitted by the workflow matrix."""
 
 
@@ -42,17 +47,15 @@ def test_differentiable_framework_workflow_declares_sparse_and_full_matrices() -
     assert "--install" in text
 
 
-def test_differentiable_framework_workflow_runs_sparse_and_full_for_each_python() -> None:
-    """Bind every version/profile pair to its version-specific lock file."""
+def test_differentiable_framework_workflow_runs_each_profile_on_its_lane() -> None:
+    """Bind every profile to its Python lane and that version's lock file."""
     text = WORKFLOW.read_text(encoding="utf-8")
     rows = _matrix_rows(text)
 
-    expected = {
-        (version, profile) for version in PYTHON_VERSIONS for profile in ("sparse", "full")
-    }
+    expected = PROFILE_LANES
     observed = {(row["python-version"], row["profile"]) for row in rows}
 
-    assert expected <= observed
+    assert observed == expected
     for version, profile in expected:
         row = next(
             item

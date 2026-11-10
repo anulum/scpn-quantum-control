@@ -197,7 +197,7 @@ class TestTheThreeRecordedGaps:
             Trigger event under test.
 
         """
-        assert _runs(event, "requirements-ci-py312-linux.txt")
+        assert _runs(event, "requirements-ci-py315-linux.txt")
         assert _runs(event, "pyproject.toml")
 
     @pytest.mark.parametrize("event", ["push", "pull_request"])
@@ -247,7 +247,7 @@ class TestTriggerContract:
 
     @pytest.mark.parametrize(
         "installed",
-        ["oscillatools/", "requirements-ci-py312-linux.txt"],
+        ["oscillatools/", "requirements-ci-py315-linux.txt"],
     )
     def test_every_environment_input_the_job_installs_is_a_trigger(self, installed: str) -> None:
         """What the job installs and what triggers it must not diverge again.

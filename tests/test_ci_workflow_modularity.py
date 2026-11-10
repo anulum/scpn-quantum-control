@@ -88,20 +88,20 @@ def test_parallel_profile_and_authoritative_coverage_contracts() -> None:
     ]
     steps = job["steps"]
     union = next(
-        item for item in steps if item.get("name") == "Admit complete test coverage (3.12 only)"
+        item for item in steps if item.get("name") == "Admit complete test coverage (3.15 only)"
     )
     assert "--shards 4 --coverage-output .coverage" in union["run"]
     assert union["run"].count("coverage combine --append --keep") == 9
     assert "tools/audit_coverage_policy.py" in union["run"]
     authoritative = next(
-        item for item in steps if item.get("name") == "Upload coverage policy evidence (3.12 only)"
+        item for item in steps if item.get("name") == "Upload coverage policy evidence (3.15 only)"
     )
     assert "always()" not in authoritative["if"]
     assert steps.index(authoritative) > steps.index(
         next(
             item
             for item in steps
-            if item.get("name") == "Smoke-test DLA-parity validation CLI (3.12 only)"
+            if item.get("name") == "Smoke-test DLA-parity validation CLI (3.15 only)"
         )
     )
 

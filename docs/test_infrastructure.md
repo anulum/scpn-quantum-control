@@ -620,7 +620,7 @@ CI skips slow tests: `pytest -m "not slow"`.
 ```
 
 Test matrix: Python 3.12, 3.13, 3.15.
-Coverage target: 99.05% line coverage on the Python 3.12 lane, enforced by
+Coverage target: 99.05% line coverage on the primary Python 3.15 lane, enforced by
 `tools/audit_coverage_policy.py` from branch-enabled `coverage.xml`. Branch data
 is mandatory but observational until the policy records an evidence-backed
 branch threshold. The recorded remote baseline is 117,560 / 118,676 executable

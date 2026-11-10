@@ -73,13 +73,14 @@ COPY requirements-ci-studio-browser.txt ./
 # Supply-chain contract tests validate the human-reviewed inputs that generate
 # the minimal-install and Quimb hash closures; the provider SDK lane test
 # compares the minimal-install inputs of every SDK Python.
-COPY requirements-ci-minimal-install-py312-linux.in requirements-ci-minimal-install-py313-linux.in requirements-ci-minimal-install-py315-linux.in requirements-ci-quimb-py312-linux.in ./
-COPY requirements-ci-minimal-install-py312-linux.txt requirements-ci-minimal-install-py313-linux.txt requirements-ci-minimal-install-py315-linux.txt requirements-ci-quimb-py312-linux.txt ./
+COPY requirements-ci-minimal-install-py312-linux.in requirements-ci-minimal-install-py313-linux.in requirements-ci-minimal-install-py315-linux.in requirements-ci-quimb-py315-linux.in ./
+COPY requirements-ci-minimal-install-py312-linux.txt requirements-ci-minimal-install-py313-linux.txt requirements-ci-minimal-install-py315-linux.txt requirements-ci-quimb-py315-linux.txt ./
 # The SDK cohort completeness guard inspects all reference inputs and locks.
 COPY requirements-ci-sdk-*.in requirements-ci-sdk-*.txt ./
 # Optional-runtime contract tests inspect these locks without installing the
 # heavyweight runtimes in the reproduction image.
-COPY requirements-ci-jax-py312-linux.txt requirements-ci-torch-cpu-py312-linux.txt ./
+COPY requirements-ci-torch-cpu-py312-linux.txt ./
+COPY requirements-ci-jax-py315-linux.txt requirements-ci-torch-cpu-py315-linux.txt ./
 COPY requirements-ci-native-ad-py312-linux.txt ./
 # Reproduction audits inspect these workflow inputs without installing them.
 COPY requirements-ci-julia-tier.txt requirements-integration-sc-neurocore.txt requirements-publish.txt rust-toolchain.toml ./

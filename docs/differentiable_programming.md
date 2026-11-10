@@ -862,9 +862,10 @@ the existing bounded Rust replay or LLVM lowering surfaces, and it does not
 create a new benchmark or performance claim.
 
 Differentiable CI reproducibility is split into explicit sparse, full, optional
-GPU-contract, scheduled metadata, and isolated-runner lanes. The sparse and full
-CPU profiles run across Python 3.12 and 3.13 using the pinned
-per-version Linux requirement locks. Full profiles build the CPU-only framework
+GPU-contract, scheduled metadata, and isolated-runner lanes. The sparse CPU
+profile runs on the primary Python 3.15 and the full CPU profile on Python 3.13,
+because `tensorflow-cpu` has no Python 3.15 wheel; each uses the pinned
+per-version Linux requirement lock. Full profiles build the CPU-only framework
 overlay for `jax[cpu]`, `torch`, `tensorflow-cpu`, and `pennylane`; sparse
 profiles keep the baseline dependency surface. The same workflow runs the
 module-specific test-quality audit after the differentiable parity tests, so
