@@ -1234,6 +1234,7 @@ _PROGRAM_AD_ELEMENTWISE_UNARY_NAMES = (
     "square",
     "abs",
     "negative",
+    "real",
 )
 _PROGRAM_AD_ELEMENTWISE_DISCONTINUOUS_NAMES = (
     "sign",

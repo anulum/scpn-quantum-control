@@ -127,7 +127,7 @@ def test_registry_metadata_mirror_is_shared_by_module_and_facade(
         payload = json.loads(snapshot)
         assert isinstance(payload, dict)
         assert payload["supported"] is True
-        assert payload["covered_primitives"] == payload["total_primitives"] == 118
+        assert payload["covered_primitives"] == payload["total_primitives"] == 119
         assert payload["family_counts"] == {
             "array": 6,
             "shape": 17,
@@ -136,29 +136,29 @@ def test_registry_metadata_mirror_is_shared_by_module_and_facade(
             "interpolation": 1,
             "assembly": 21,
             "signal": 2,
-            "elementwise": 24,
+            "elementwise": 25,
             "selection": 11,
             "product": 7,
             "cumulative": 3,
             "linalg": 14,
         }
-        assert len(cast(list[object], payload["rows"])) == 118
+        assert len(cast(list[object], payload["rows"])) == 119
         calls.append(payload)
         return json.dumps(
             {
                 "supported": True,
-                "primitive_count": 118,
-                "covered_primitives": 118,
+                "primitive_count": 119,
+                "covered_primitives": 119,
                 "family_counts": payload["family_counts"],
                 "facet_counts": {
-                    "derivative_rule": 118,
-                    "batching_rule": 118,
-                    "lowering_metadata": 118,
-                    "shape_rule": 118,
-                    "dtype_rule": 118,
-                    "static_argument_rule": 118,
-                    "nondifferentiable_policy": 118,
-                    "effect": 118,
+                    "derivative_rule": 119,
+                    "batching_rule": 119,
+                    "lowering_metadata": 119,
+                    "shape_rule": 119,
+                    "dtype_rule": 119,
+                    "static_argument_rule": 119,
+                    "nondifferentiable_policy": 119,
+                    "effect": 119,
                 },
                 "executable_operation_count": 4,
                 "executable_operations": ["det", "sin", "sqrt", "tanh"],
@@ -178,9 +178,9 @@ def test_registry_metadata_mirror_is_shared_by_module_and_facade(
     assert isinstance(facade, RustProgramADRegistryMetadataMirrorResult)
     assert len(calls) == 2
     assert direct.supported is True
-    assert direct.primitive_count == 118
-    assert direct.family_counts["elementwise"] == 24
-    assert direct.facet_counts["lowering_metadata"] == 118
+    assert direct.primitive_count == 119
+    assert direct.family_counts["elementwise"] == 25
+    assert direct.facet_counts["lowering_metadata"] == 119
     assert direct.executable_operations == ("det", "sin", "sqrt", "tanh")
     assert direct.as_dict() == facade.as_dict()
 
@@ -223,12 +223,12 @@ def test_rust_program_ad_registry_metadata_mirror_validates_python_registry() ->
     mirror = mirror_program_ad_registry_metadata_with_rust()
 
     assert mirror.supported is True, mirror.blocked_reasons
-    assert mirror.primitive_count == 118
-    assert mirror.covered_primitives == 118
-    assert mirror.family_counts["elementwise"] == 24
+    assert mirror.primitive_count == 119
+    assert mirror.covered_primitives == 119
+    assert mirror.family_counts["elementwise"] == 25
     assert mirror.family_counts["linalg"] == 14
-    assert mirror.facet_counts["derivative_rule"] == 118
-    assert mirror.facet_counts["lowering_metadata"] == 118
+    assert mirror.facet_counts["derivative_rule"] == 119
+    assert mirror.facet_counts["lowering_metadata"] == 119
     assert {
         "sin",
         "sqrt",

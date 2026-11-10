@@ -286,6 +286,10 @@ def _program_ad_elementwise_unary_value(
         return _program_ad_float64_vector_result(np.abs(vector))
     if name == "negative":
         return _program_ad_float64_vector_result(np.negative(vector))
+    if name == "real":
+        # Real-valued traces are their own real part (NumPy 2.5 returns complex
+        # spectra from ``eig``/``eigvals``; objectives take ``np.real`` explicitly).
+        return _program_ad_float64_vector_result(np.real(vector))
     raise ValueError(f"unsupported program AD elementwise primitive {name}")
 
 
@@ -326,6 +330,8 @@ def _program_ad_elementwise_unary_jvp(
         return _program_ad_float64_vector_result(np.sign(vector) * tangent_vector)
     if name == "negative":
         return _program_ad_float64_vector_result(np.negative(tangent_vector))
+    if name == "real":
+        return _program_ad_float64_vector_result(np.real(tangent_vector))
     raise ValueError(f"unsupported program AD elementwise primitive {name}")
 
 

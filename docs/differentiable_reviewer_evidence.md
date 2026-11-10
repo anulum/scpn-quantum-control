@@ -24,7 +24,7 @@ supplies the current registry and planner summary:
 
 | Generated surface | Current result |
 |---|---:|
-| Program AD registry | `118/118` complete |
+| Program AD registry | `119/119` complete |
 | Quantum-gradient planner audit | `5` supported / `5` fail-closed |
 
 ## Reviewer criticisms

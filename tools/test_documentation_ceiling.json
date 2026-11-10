@@ -1,13 +1,13 @@
 {
  "schema": "test_documentation_ceiling_v1",
  "ruff_version": "ruff 0.16.4",
- "measured_commit": "f5f7646c30d79798ec43061d611e9a271e201910",
+ "measured_commit": "29f107ca5f1525385e9b672ab2db66b387242240",
  "scopes": [
   "tests",
   "oscillatools/tests"
  ],
- "total_findings": 7103,
- "total_files": 565,
+ "total_findings": 7089,
+ "total_files": 564,
  "files": {
   "oscillatools/tests/conftest.py": 1,
   "oscillatools/tests/kuramoto_delay_sensitivity_witness.py": 1,
@@ -411,7 +411,6 @@
   "tests/test_probe_s1_ibm_metadata.py": 1,
   "tests/test_program_ad_binary_elementwise_registry.py": 7,
   "tests/test_program_ad_broadcast_assembly.py": 11,
-  "tests/test_program_ad_elementwise_registry.py": 14,
   "tests/test_program_ad_fail_closed_boundaries.py": 5,
   "tests/test_program_ad_finite_difference_gradient_check.py": 44,
   "tests/test_program_ad_finite_difference_stencils.py": 10,

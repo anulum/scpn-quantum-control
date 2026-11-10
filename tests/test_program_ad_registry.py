@@ -450,7 +450,7 @@ def test_program_ad_registry_dispatch_report_uses_extracted_default_registry() -
 
     assert isinstance(report, ProgramADRegistryDispatchCoverageReport)
     assert report.supported is True
-    assert report.total_primitives == 118
+    assert report.total_primitives == 119
     assert report.covered_primitives == report.total_primitives
     assert report.blocked_identities == ()
     assert report.family_counts == facade_report.family_counts

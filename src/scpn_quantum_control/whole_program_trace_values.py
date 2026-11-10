@@ -480,6 +480,14 @@ class TraceADScalar:
         """Return the traced inequality predicate away from its switching surface."""
         return self._compare("ne", other)
 
+    @property
+    def real(self) -> TraceADScalar:
+        """Return this real trace scalar, which is its own real part (``np.real``)."""
+        _require_program_ad_elementwise_contract(
+            "real", (TraceADArray((self,), (), self.context),)
+        )
+        return self
+
     def __array_ufunc__(
         self, ufunc: np.ufunc, method: str, *inputs: object, **kwargs: object
     ) -> TraceADScalar:
@@ -1244,6 +1252,13 @@ class TraceADArray:
                 for item in args
             )
             return transformed[0] if len(transformed) == 1 else list(transformed)
+        if func is np.real:
+            # NumPy's dispatcher admits exactly one operand, positional or ``val=``.
+            operand = _coerce_trace_array(args[0] if args else kwargs["val"], self.context)
+            _require_program_ad_elementwise_contract("real", (operand,))
+            # A real trace is its own real part; return it so NumPy's view
+            # semantics (``np.real(x) is x`` storage) are preserved.
+            return operand
         if func is np.squeeze:
             if len(args) != 1 or kwargs.keys() - {"axis"}:
                 raise ValueError("program AD np.squeeze supports one array and optional axis")

@@ -4,6 +4,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Whole-program and Program AD support `np.real` as a registered elementwise
+  primitive (`scpn.program_ad.elementwise:real@1`; the registry now has 119
+  complete primitives). From NumPy 2.5, `np.linalg.eig` and `eigvals` return
+  complex128 even for a real spectrum, so an objective that uses them takes
+  `np.real(...)` explicitly. On a real trace, `np.real` returns the same
+  trace storage, as NumPy's view does, and the derivative is the identity.
+  Positional and `val=` forms and trace scalars are supported. The pinned
+  refusal of complex objective results is unchanged.
+
 - Whole-program AD accepts the local container classes that CPython 3.14 and
   3.15 build. A class body with annotations now stores a compiler-generated
   `__annotate__` function and, once read, an `__annotations_cache__` dict.

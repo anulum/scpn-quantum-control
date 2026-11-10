@@ -59,7 +59,7 @@ def test_bridge_fails_closed_when_native_extension_or_export_is_missing(
     monkeypatch.setitem(sys.modules, "scpn_quantum_engine", None)
     missing_mirror_extension = mirror_program_ad_registry_metadata_with_rust()
     assert missing_mirror_extension.supported is False
-    assert missing_mirror_extension.primitive_count == 118
+    assert missing_mirror_extension.primitive_count == 119
     assert missing_mirror_extension.blocked_reasons == (
         "scpn_quantum_engine native extension is not built",
     )

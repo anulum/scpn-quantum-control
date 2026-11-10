@@ -361,3 +361,35 @@ def test_norm_scalar_axis_and_invalid_public_options() -> None:
     empty = _empty_trace_array()
     with pytest.raises(ValueError, match="requires at least one element"):
         _dispatch(empty, np.linalg.norm, (empty,))
+
+
+def test_real_part_of_a_spectrum_differentiates_under_every_numpy() -> None:
+    """``np.real`` keeps ``eig``/``eigvals`` objectives real when NumPy returns complex spectra.
+
+    NumPy 2.5 returns complex128 eigenvalues even for a real spectrum, so the
+    plain-NumPy trace pass needs the explicit real part; the traced derivative
+    is the same under NumPy 2.4 and 2.5.
+    """
+
+    def objective(values: FloatArray) -> object:
+        eigenvalues, _ = np.linalg.eig(np.diag(values[:2]))
+        weighted = np.sum(np.real(eigenvalues) * np.array([0.25, -0.5]))
+        return weighted + np.sum(np.real(val=np.linalg.eigvals(np.diag(values[2:4]))))
+
+    result = whole_program_value_and_grad(objective, [1.5, 2.0, -0.75, 0.5])
+    assert result.value == pytest.approx(1.5 * 0.25 - 2.0 * 0.5 - 0.75 + 0.5)
+    np.testing.assert_allclose(result.gradient, [0.25, -0.5, 1.0, 1.0])
+
+
+def test_real_returns_the_trace_storage_it_was_given() -> None:
+    """``np.real`` of a real trace is that same storage, as NumPy's view; scalars stay scalars."""
+
+    def objective(values: FloatArray) -> object:
+        local = values * 1.0
+        view = np.real(local)
+        view[0] = view[0] * 3.0
+        return np.real(np.sum(local))
+
+    result = whole_program_value_and_grad(objective, [2.0, 5.0])
+    assert result.value == 11.0
+    np.testing.assert_allclose(result.gradient, [3.0, 1.0])

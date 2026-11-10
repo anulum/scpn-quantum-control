@@ -212,7 +212,7 @@ refusal/retry cases. This input boundary does not yet qualify internal primitive
 workspaces, parser container peaks, in-kernel cancellation or returned JSON
 retention; pure Rust/WASM callers retain their independent replay contract.
 
-The registry mirror is metadata-only. It validates the 118-primitive Python
+The registry mirror is metadata-only. It validates the 119-primitive Python
 registry snapshot shape and reports overlap with the already bounded Rust
 scalar/static-linalg plus compact interpolation, compact signal, compact stencil, compact cumulative, and
 elementwise/static-structural replay; it does not

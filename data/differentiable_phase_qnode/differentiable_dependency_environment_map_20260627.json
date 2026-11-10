@@ -454,7 +454,7 @@
         "data/differentiable_phase_qnode/ml350_full_framework_catalyst_baseline_20260705/phase_qnode_affinity_validation_isolated_required.json"
       ],
       "evidence_sha256": [
-        "b902db9103dedcb8ae9a35f04577cf0c5199c66bd317a858e2f74f73b6961c75",
+        "10bdd636859a11f34728601489857b7acfea7ae4fa8215ed68a2bc0ddc1638ed",
         "5f7e7a344dd6a1bf2cabb4775d645c2c3603ead0c3afa862031011ec67314072"
       ],
       "evidence_status": "hard_gap",

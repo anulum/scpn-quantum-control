@@ -34,13 +34,11 @@ def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
 ) -> None:
     """Assert NumPy closeness across dynamically typed Program AD payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
 def _transform_rule_from_contract(contract: PrimitiveContract) -> PrimitiveTransformRule:
     """Return a mutable registry transform that exactly mirrors a contract."""
-
     return PrimitiveTransformRule(
         identity=contract.identity,
         derivative_rule=contract.derivative_rule,
@@ -57,7 +55,6 @@ def _transform_rule_from_contract(contract: PrimitiveContract) -> PrimitiveTrans
 
 def test_program_ad_elementwise_registry_uses_extracted_contract_module() -> None:
     """The compatibility facade should expose the extracted elementwise contracts."""
-
     contract = primitive_contract_for("scpn.program_ad.elementwise:sin")
 
     assert contract.shape_rule is elementwise_primitives._program_ad_elementwise_shape
@@ -113,7 +110,6 @@ def test_program_ad_elementwise_extracted_helpers_cover_fail_closed_boundaries()
 
 def test_program_ad_elementwise_extracted_unary_direct_rules_cover_all_branches() -> None:
     """Unary direct factories should cover every extracted direct-rule branch."""
-
     base_values = {
         "sin": np.array([0.2, 0.4]),
         "cos": np.array([0.2, 0.4]),
@@ -130,6 +126,7 @@ def test_program_ad_elementwise_extracted_unary_direct_rules_cover_all_branches(
         "square": np.array([0.2, 0.4]),
         "abs": np.array([0.2, 0.4]),
         "negative": np.array([0.2, 0.4]),
+        "real": np.array([0.2, -0.4]),
     }
     tangent = np.array([0.5, -0.25], dtype=np.float64)
     expected_values: dict[str, Callable[[NDArray[np.float64]], NDArray[np.float64]]] = {
@@ -148,6 +145,7 @@ def test_program_ad_elementwise_extracted_unary_direct_rules_cover_all_branches(
         "square": np.square,
         "abs": np.abs,
         "negative": np.negative,
+        "real": np.real,
     }
     expected_jvps: dict[str, Callable[[NDArray[np.float64]], NDArray[np.float64]]] = {
         "sin": lambda value: np.cos(value) * tangent,
@@ -165,6 +163,7 @@ def test_program_ad_elementwise_extracted_unary_direct_rules_cover_all_branches(
         "square": lambda value: 2.0 * value * tangent,
         "abs": lambda value: np.sign(value) * tangent,
         "negative": lambda _value: np.negative(tangent),
+        "real": lambda _value: tangent,
     }
 
     for name, values in base_values.items():
@@ -226,7 +225,6 @@ def test_program_ad_elementwise_extracted_unary_singular_tan_branch(
 
 def test_program_ad_elementwise_extracted_binary_direct_rules_cover_all_branches() -> None:
     """Binary direct factories should cover flat direct value, JVP, and VJP branches."""
-
     left = np.array([3.0, 4.0], dtype=np.float64)
     right = np.array([1.5, 2.0], dtype=np.float64)
     values = np.concatenate((left, right))
@@ -300,7 +298,6 @@ def test_program_ad_elementwise_extracted_binary_direct_rules_cover_all_branches
 
 def test_program_ad_elementwise_extracted_static_binary_factories_cover_boundaries() -> None:
     """Static binary factories should cover broadcast and malformed-static branches."""
-
     left = np.array([[3.0, 4.0], [5.0, 6.0]], dtype=np.float64)
     right = np.array([[1.5, 2.0], [2.5, 3.0]], dtype=np.float64)
     tangent_left = np.full((2, 2), 0.5, dtype=np.float64)
@@ -373,7 +370,6 @@ def test_program_ad_elementwise_extracted_static_binary_factories_cover_boundari
 
 def test_program_ad_elementwise_extracted_contract_rules_cover_validation_branches() -> None:
     """Elementwise registry helpers should cover shape, dtype, static, and require branches."""
-
     assert elementwise_primitives._program_ad_elementwise_name(np.absolute) == "abs"
     assert elementwise_primitives._program_ad_elementwise_name(np.sin) == "sin"
     assert elementwise_primitives._program_ad_elementwise_shape((np.ones((2, 1)),)) == (2, 1)
@@ -478,7 +474,6 @@ def test_program_ad_elementwise_extracted_batching_rule_covers_branch_contracts(
 
 def test_program_ad_elementwise_extracted_require_contract_validates_registry_drift() -> None:
     """Runtime contract validation should reject missing and drifted elementwise contracts."""
-
     identity = PrimitiveIdentity("scpn.program_ad.elementwise", "sin", "1")
     original_contract = primitive_contract_for(identity)
     original_transform = _transform_rule_from_contract(original_contract)
@@ -645,7 +640,6 @@ def test_program_ad_elementwise_extracted_require_contract_validates_registry_dr
 
 def test_program_ad_elementwise_primitives_are_registry_policy_gated() -> None:
     """Unary elementwise math should expose primitive registry contracts."""
-
     vector = np.array([0.25, 0.5, 0.75], dtype=np.float64)
     for name in (
         "sin",
@@ -663,6 +657,7 @@ def test_program_ad_elementwise_primitives_are_registry_policy_gated() -> None:
         "square",
         "abs",
         "negative",
+        "real",
     ):
         contract = primitive_contract_for(f"scpn.program_ad.elementwise:{name}")
         assert contract.identity == PrimitiveIdentity("scpn.program_ad.elementwise", name, "1")
@@ -683,7 +678,6 @@ def test_program_ad_elementwise_primitives_are_registry_policy_gated() -> None:
 
 def test_program_ad_unary_elementwise_primitives_expose_direct_value_jvp_kernels() -> None:
     """Unary elementwise primitive contracts should expose exact direct value/JVP rules."""
-
     regular_values = np.array([0.25, 0.5, 0.75], dtype=np.float64)
     tangent = np.array([1.5, -0.25, 0.75], dtype=np.float64)
     positive_values = np.array([1.25, 2.0, 3.5], dtype=np.float64)
@@ -725,6 +719,7 @@ def test_program_ad_unary_elementwise_primitives_expose_direct_value_jvp_kernels
         "square": (regular_values, np.square(regular_values), 2.0 * regular_values * tangent),
         "abs": (positive_values, np.abs(positive_values), np.sign(positive_values) * tangent),
         "negative": (regular_values, np.negative(regular_values), -tangent),
+        "real": (regular_values, regular_values, tangent),
     }
 
     for name, (values, expected_value, expected_jvp) in cases.items():
@@ -748,7 +743,6 @@ def test_program_ad_unary_elementwise_primitives_expose_direct_value_jvp_kernels
 
 def test_program_ad_elementwise_boundary_metadata_is_explicit() -> None:
     """Elementwise contracts should expose fail-closed mathematical boundaries."""
-
     expected_boundaries = {
         "log": "positive_domain",
         "log1p": "greater_than_minus_one_domain",
@@ -772,7 +766,6 @@ def test_program_ad_elementwise_boundary_metadata_is_explicit() -> None:
 
 def test_program_ad_discontinuous_elementwise_primitives_fail_closed_by_policy() -> None:
     """Discontinuous elementwise primitives should expose explicit fail-closed policies."""
-
     expected_boundaries = {
         "sign": "sign_step_derivative_losing_boundary",
         "heaviside": "heaviside_step_derivative_losing_boundary",
@@ -801,7 +794,6 @@ def test_program_ad_discontinuous_elementwise_primitives_fail_closed_by_policy()
 
 def test_program_ad_elementwise_primitives_validate_registry_rules_at_dispatch() -> None:
     """Supported unary elementwise primitives must execute through registry validation rules."""
-
     originals = {
         name: primitive_contract_for(f"scpn.program_ad.elementwise:{name}")
         for name in ("sin", "log1p", "sqrt", "reciprocal", "negative")
@@ -896,7 +888,6 @@ def test_program_ad_elementwise_primitives_validate_registry_rules_at_dispatch()
 
 def test_program_ad_elementwise_runtime_dispatch_rejects_boundary_metadata_drift() -> None:
     """Runtime dispatch should enforce the same boundary metadata as coverage."""
-
     original = primitive_contract_for("scpn.program_ad.elementwise:sin")
     lowering_metadata = {
         key: value
