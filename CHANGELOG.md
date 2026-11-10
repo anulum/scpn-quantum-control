@@ -80,6 +80,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   module-federation contract shares it as a singleton with the Hub, and Biome
   stays at 2.5.15 because 2.6 reports eight findings above the measured web
   source ceiling.
+- Engine release: the Rust engine is not abi3, and its release workflow built
+  CPython 3.12 wheels only. It now builds wheels for 3.12, 3.13 and 3.15 on Linux
+  (x86_64, aarch64), Windows and macOS (x86_64, arm64). The build fails if any of
+  these interpreters yields no wheel.
 
 - Rust toolchain 1.99.0 → 1.99.1 (`rust-toolchain.toml`, and the Docker
   WASM builder pinned to the `rust:1.99.1-slim-bookworm` index digest). With

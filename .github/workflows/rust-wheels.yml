@@ -22,16 +22,15 @@ jobs:
       # One platform's failure must not cancel the others' wheels.
       fail-fast: false
       matrix:
+        # Every supported CPython gets its own wheel: the engine is not abi3.
+        # Linux builds run inside the manylinux container where the host
+        # setup-python interpreter is invisible, so the container's CPythons
+        # are named; Windows and macOS use the interpreters setup-python installs.
         include:
-          # Linux builds run inside the manylinux container where the host
-          # setup-python interpreter is invisible — name the container's
-          # CPython explicitly or maturin finds no interpreter at all.
           - os: ubuntu-latest
             target: x86_64
-            interpreter-args: "-i python3.12"
           - os: ubuntu-latest
             target: aarch64
-            interpreter-args: "-i python3.12"
           - os: windows-latest
             target: x64
           - os: macos-latest
@@ -45,13 +44,16 @@ jobs:
 
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: |
+            3.12
+            3.13
+            3.15
 
       - name: Build wheels
         uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b  # v1.51.0
         with:
           target: ${{ matrix.target }}
-          args: --release --out dist ${{ matrix.interpreter-args }} -m scpn_quantum_engine/Cargo.toml
+          args: --release --out dist -i python3.12 python3.13 python3.15 -m scpn_quantum_engine/Cargo.toml
           manylinux: auto
 
       - name: Audit built wheel contents
@@ -61,6 +63,13 @@ jobs:
           --package scpn_quantum_engine
           --extension scpn_quantum_engine.scpn_quantum_engine
           'dist/*.whl'
+
+      - name: Require one wheel per supported CPython
+        shell: bash
+        run: |
+          for tag in cp312 cp313 cp315; do
+            compgen -G "dist/*-${tag}-${tag}-*.whl" > /dev/null || { echo "no ${tag} wheel was built"; exit 1; }
+          done
 
       - name: Upload wheels
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2

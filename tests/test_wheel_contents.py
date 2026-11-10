@@ -24,6 +24,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
+import yaml
 
 import tools.check_wheel_contents as wheel_tool
 from tools.check_wheel_contents import (
@@ -971,6 +972,33 @@ def test_all_publish_workflows_block_on_the_wheel_audit() -> None:
     assert 'tags: ["v*"]' in publish
     assert 'tags: ["oscillatools-v*"]' in oscillatools
     assert 'tags: ["engine-v*"]' in rust
+
+
+def test_engine_release_builds_and_requires_every_supported_cpython() -> None:
+    """The non-abi3 engine ships one wheel per supported CPython on every platform."""
+    rust = yaml.safe_load(
+        (_REPO_ROOT / ".github/workflows/rust-wheels.yml").read_text(encoding="utf-8")
+    )
+    job = rust["jobs"]["build-wheels"]
+    platforms = {(row["os"], row["target"]) for row in job["strategy"]["matrix"]["include"]}
+    assert platforms == {
+        ("ubuntu-latest", "x86_64"),
+        ("ubuntu-latest", "aarch64"),
+        ("windows-latest", "x64"),
+        ("macos-latest", "x86_64"),
+        ("macos-latest", "aarch64"),
+    }
+    steps = {step.get("name", step.get("uses", "")): step for step in job["steps"]}
+    setup = next(step for step in job["steps"] if "actions/setup-python@" in step.get("uses", ""))
+    assert setup["with"]["python-version"].split() == ["3.12", "3.13", "3.15"]
+    build = steps["Build wheels"]["with"]["args"]
+    assert "-i python3.12 python3.13 python3.15" in build
+    requirement = steps["Require one wheel per supported CPython"]["run"]
+    assert "for tag in cp312 cp313 cp315; do" in requirement
+    assert "exit 1" in requirement
+    names = [step.get("name") for step in job["steps"]]
+    assert names.index("Build wheels") < names.index("Require one wheel per supported CPython")
+    assert names.index("Require one wheel per supported CPython") < names.index("Upload wheels")
 
 
 def test_ci_and_strict_typing_policy_own_the_wheel_gate() -> None:
