@@ -4,6 +4,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Rust toolchain 1.99.0 → 1.99.1 (`rust-toolchain.toml`, and the Docker
+  WASM builder pinned to the `rust:1.99.1-slim-bookworm` index digest). With
+  PyO3 0.30.1, unchanged, the engine builds for CPython 3.15 (a `cp315`
+  wheel) as well as 3.12. Its native suites pass on both (472 tests), given
+  llvmlite 0.50 for the native LLVM JIT route on 3.15.
+
 - Dev tooling: ruff 0.16.4 → 0.17.4 (requirements-dev, the three dev CI
   locks, the Studio browser lock and the pre-commit hook); in every lock the
   ruff entry is the only change. The format hook keeps its earlier Python,

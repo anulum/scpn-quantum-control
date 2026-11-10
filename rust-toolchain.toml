@@ -30,6 +30,6 @@
 # target for the Studio kernels, which `ci-studio.yml` and
 # `studio-remote-release.yml` currently add by hand.
 [toolchain]
-channel = "1.99.0"
+channel = "1.99.1"
 components = ["rustfmt", "clippy"]
 targets = ["wasm32-unknown-unknown"]
