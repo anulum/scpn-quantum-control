@@ -5,8 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 - Dev tooling: ruff 0.16.4 → 0.17.4 (requirements-dev, the three dev CI
-  locks, the Studio browser lock and the pre-commit hook). The only
-  ruff-only edit in the other locks is the ruff entry. Three nested `if`
+  locks, the Studio browser lock and the pre-commit hook); in every lock the
+  ruff entry is the only change. The format hook keeps its earlier Python,
+  stub and notebook scope, because 0.17 would also format Markdown. Three
+  nested `if`
   statements that 0.17's widened SIM102 reports are merged. Each was the last
   branch of its chain, so behaviour is unchanged. The test documentation
   ceiling is re-measured under 0.17.4 with identical counts (7062).
