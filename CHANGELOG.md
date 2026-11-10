@@ -4,6 +4,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- The differentiable programming benchmark's linalg objectives (the Program
+  AD case and its JAX reference counterpart) take `np.real` of `eig`
+  eigenvalues and eigenvectors and of `eigvals`. With NumPy 2.5 they run;
+  before, the complex spectra NumPy 2.5 returns made the objective complex,
+  and it was refused. Values and gradients are unchanged under NumPy 2.4.
+
 - Whole-program and Program AD support `np.real` as a registered elementwise
   primitive (`scpn.program_ad.elementwise:real@1`; the registry now has 119
   complete primitives). From NumPy 2.5, `np.linalg.eig` and `eigvals` return

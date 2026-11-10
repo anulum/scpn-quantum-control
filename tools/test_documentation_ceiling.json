@@ -1,13 +1,13 @@
 {
  "schema": "test_documentation_ceiling_v1",
  "ruff_version": "ruff 0.16.4",
- "measured_commit": "29f107ca5f1525385e9b672ab2db66b387242240",
+ "measured_commit": "6e15a70449c03476358723a16144e22b15749545",
  "scopes": [
   "tests",
   "oscillatools/tests"
  ],
- "total_findings": 7089,
- "total_files": 564,
+ "total_findings": 7062,
+ "total_files": 561,
  "files": {
   "oscillatools/tests/conftest.py": 1,
   "oscillatools/tests/kuramoto_delay_sensitivity_witness.py": 1,
@@ -419,16 +419,13 @@
   "tests/test_program_ad_linalg_core.py": 8,
   "tests/test_program_ad_linalg_direct_rules.py": 4,
   "tests/test_program_ad_linalg_matrix_ops.py": 7,
-  "tests/test_program_ad_linalg_registry.py": 8,
   "tests/test_program_ad_runtime_registry_dispatch.py": 11,
   "tests/test_program_ad_rust_cumulative_bridge.py": 3,
   "tests/test_program_ad_rust_interpolation_bridge.py": 3,
   "tests/test_program_ad_rust_linalg_array_bridge.py": 9,
   "tests/test_program_ad_rust_linalg_diag_bridge.py": 5,
   "tests/test_program_ad_rust_linalg_diagflat_bridge.py": 7,
-  "tests/test_program_ad_rust_linalg_eig_bridge.py": 3,
   "tests/test_program_ad_rust_linalg_matrix_power_bridge.py": 2,
-  "tests/test_program_ad_rust_linalg_spectral_bridge.py": 16,
   "tests/test_program_ad_rust_linalg_svd_bridge.py": 5,
   "tests/test_program_ad_rust_signal_bridge.py": 3,
   "tests/test_program_ad_selection_folds.py": 11,

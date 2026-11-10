@@ -45,21 +45,18 @@ _PINV_ROW_WEIGHTS = np.array([[0.4], [-0.6], [0.15]], dtype=np.float64)
 
 def _weighted_eigvalsh_objective(values: Any) -> Any:
     """Return a scalar weighted spectrum for a 2x2 symmetric matrix."""
-
     matrix = np.reshape(values, (2, 2))
     return np.sum(np.linalg.eigvalsh(matrix) * _EIGVALSH_WEIGHTS)
 
 
 def _weighted_eigvals_objective(values: Any) -> Any:
     """Return a scalar weighted spectrum for a real-simple 2x2 matrix."""
-
     matrix = np.reshape(values, (2, 2))
-    return np.sum(np.linalg.eigvals(matrix) * _EIGVALS_WEIGHTS)
+    return np.sum(np.real(np.linalg.eigvals(matrix)) * _EIGVALS_WEIGHTS)
 
 
 def _weighted_eigh_objective(values: Any) -> Any:
     """Return a scalar weighted eigensystem for a 2x2 symmetric matrix."""
-
     raw = np.reshape(values, (2, 2))
     matrix = 0.5 * (raw + raw.T)
     eigenvalues, eigenvectors = np.linalg.eigh(matrix)
@@ -70,49 +67,42 @@ def _weighted_eigh_objective(values: Any) -> Any:
 
 def _weighted_svdvals_objective(values: Any) -> Any:
     """Return a scalar weighted singular-value spectrum for a 2x2 matrix."""
-
     matrix = np.reshape(values, (2, 2))
     return np.sum(np.linalg.svd(matrix, compute_uv=False) * _SVDVALS_WEIGHTS)
 
 
 def _weighted_pinv_objective(values: Any) -> Any:
     """Return a scalar weighted pseudoinverse for a full-rank 3x2 matrix."""
-
     matrix = np.reshape(values, (3, 2))
     return np.sum(np.linalg.pinv(matrix, rcond=0.0) * _PINV_WEIGHTS)
 
 
 def _weighted_tall_pinv_objective(values: Any) -> Any:
     """Return a scalar weighted pseudoinverse for a full-rank 4x2 matrix."""
-
     matrix = np.reshape(values, (4, 2))
     return np.sum(np.linalg.pinv(matrix, rcond=0.0) * _PINV_TALL_WEIGHTS)
 
 
 def _weighted_wide_pinv_objective(values: Any) -> Any:
     """Return a scalar weighted pseudoinverse for a full-rank 2x4 matrix."""
-
     matrix = np.reshape(values, (2, 4))
     return np.sum(np.linalg.pinv(matrix, rcond=0.0) * _PINV_WIDE_WEIGHTS)
 
 
 def _weighted_column_pinv_objective(values: Any) -> Any:
     """Return a scalar weighted pseudoinverse for a full-rank 3x1 matrix."""
-
     matrix = np.reshape(values, (3, 1))
     return np.sum(np.linalg.pinv(matrix, rcond=0.0) * _PINV_COLUMN_WEIGHTS)
 
 
 def _weighted_row_pinv_objective(values: Any) -> Any:
     """Return a scalar weighted pseudoinverse for a full-rank 1x3 matrix."""
-
     matrix = np.reshape(values, (1, 3))
     return np.sum(np.linalg.pinv(matrix, rcond=0.0) * _PINV_ROW_WEIGHTS)
 
 
 def test_rust_bridge_replays_program_ad_2x2_eigvalsh_value_and_gradient() -> None:
     """Rust Program AD replay should match Python spectral adjoints for eigvalsh."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
     values = np.array([2.0, 0.35, 0.35, 3.0], dtype=np.float64)
@@ -137,7 +127,6 @@ def test_rust_bridge_replays_program_ad_2x2_eigvalsh_value_and_gradient() -> Non
 
 def test_rust_bridge_replays_program_ad_2x2_eigh_value_and_gradient() -> None:
     """Rust Program AD replay should match Python eigensystem adjoints for eigh."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
     values = np.array([2.0, 0.35, -0.2, 3.0], dtype=np.float64)
@@ -167,7 +156,6 @@ def test_rust_bridge_replays_program_ad_2x2_eigh_value_and_gradient() -> None:
 
 def test_rust_bridge_replays_program_ad_2x2_svdvals_value_and_gradient() -> None:
     """Rust Program AD replay should match Python singular-value adjoints."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
     values = np.array([2.0, 0.3, -0.2, 1.1], dtype=np.float64)
@@ -192,7 +180,6 @@ def test_rust_bridge_replays_program_ad_2x2_svdvals_value_and_gradient() -> None
 
 def test_rust_bridge_replays_program_ad_3x2_pinv_value_and_gradient() -> None:
     """Rust Program AD replay should match Python full-rank pinv adjoints."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
     values = np.array([2.0, 0.2, 0.3, 1.4, 0.5, -0.7], dtype=np.float64)
@@ -260,7 +247,6 @@ def test_rust_bridge_replays_program_ad_rank2_pinv_breadth_value_and_gradient(
     expected_operations: set[str],
 ) -> None:
     """Rust Program AD replay should match Python rank-2 pinv adjoints."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
 
@@ -310,7 +296,6 @@ def test_rust_bridge_replays_program_ad_rank1_pinv_value_and_gradient(
     expected_operations: set[str],
 ) -> None:
     """Rust Program AD replay should match Python rank-1 pinv adjoints."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
 
@@ -343,7 +328,6 @@ def test_rust_bridge_replays_program_ad_2x2_eigvals_value_and_gradient(
     values: NDArray[np.float64],
 ) -> None:
     """Rust Program AD replay should match Python spectral adjoints for eigvals."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
 

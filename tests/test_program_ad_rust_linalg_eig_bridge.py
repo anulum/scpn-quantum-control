@@ -25,23 +25,22 @@ from scpn_quantum_control.program_ad_rust_bridge import (
 
 def _eig_sample() -> NDArray[np.float64]:
     """Return a real-simple non-symmetric 2x2 matrix sample."""
-
     return np.array([2.0, 0.3, 0.1, 3.0], dtype=np.float64)
 
 
 def _eig_weighted_objective(values: Any) -> Any:
     """Return a scalar objective over real-simple eig outputs."""
-
     matrix = np.reshape(values, (2, 2))
     eigenvalues, eigenvectors = np.linalg.eig(matrix)
     eigenvalue_weights = np.array([0.75, -1.25], dtype=np.float64)
     eigenvector_weights = np.array([[0.2, -0.4], [0.6, 0.1]], dtype=np.float64)
-    return np.sum(eigenvalues * eigenvalue_weights) + np.sum(eigenvectors * eigenvector_weights)
+    return np.sum(np.real(eigenvalues) * eigenvalue_weights) + np.sum(
+        np.real(eigenvectors) * eigenvector_weights
+    )
 
 
 def test_rust_bridge_replays_program_ad_real_simple_eig_nodes() -> None:
     """The PyO3 bridge should replay real-simple eig nodes end to end."""
-
     pytest.importorskip("scpn_quantum_engine")
 
     sample = _eig_sample()

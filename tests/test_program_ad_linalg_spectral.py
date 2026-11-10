@@ -497,7 +497,7 @@ def test_program_ad_linalg_eigvals_gradient_and_adjoint_for_real_simple_spectrum
 
     def objective(trace_values: Any) -> object:
         matrix = np.reshape(trace_values, (2, 2))
-        return np.sum(np.linalg.eigvals(matrix) * weights)
+        return np.sum(np.real(np.linalg.eigvals(matrix)) * weights)
 
     result = whole_program_value_and_grad(objective, values)
     matrix = values.reshape(2, 2)
@@ -614,7 +614,7 @@ def test_program_ad_linalg_eig_matches_real_simple_eigensystem_differential() ->
 
     def objective(flat_values: Any) -> object:
         eig_values, eig_vectors = np.linalg.eig(np.reshape(flat_values, (2, 2)))
-        return value_weights @ eig_values + np.sum(weights * eig_vectors)
+        return value_weights @ np.real(eig_values) + np.sum(weights * np.real(eig_vectors))
 
     result = whole_program_value_and_grad(objective, values)
     expected_gradient = expected.reshape(-1)

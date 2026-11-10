@@ -30,13 +30,11 @@ def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
 ) -> None:
     """Assert NumPy closeness across dynamically typed Program AD payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
 def test_program_ad_linalg_primitives_are_registry_policy_gated() -> None:
     """Supported Program AD linalg primitives should expose registry contracts."""
-
     for name in (
         "det",
         "inv",
@@ -92,7 +90,6 @@ def test_program_ad_linalg_primitives_are_registry_policy_gated() -> None:
 
 def test_program_ad_linalg_nondifferentiable_boundary_metadata_is_explicit() -> None:
     """Linalg contracts should expose singular-boundary fail-closed semantics."""
-
     expected_boundaries = {
         "det": "singular_matrix_rank_drop",
         "inv": "singular_matrix_inverse",
@@ -109,7 +106,6 @@ def test_program_ad_linalg_nondifferentiable_boundary_metadata_is_explicit() -> 
 
 def test_program_ad_linalg_primitive_shape_dtype_rules_are_specialized() -> None:
     """Supported linalg primitive contracts should expose concrete shape and dtype rules."""
-
     matrix = np.array([[2.0, -0.5], [0.75, 1.5]], dtype=np.float64)
     rhs_vector = np.array([1.0, -0.25], dtype=np.float64)
     rhs_matrix = np.array([[1.0, -0.25], [0.5, 1.5]], dtype=np.float64)
@@ -150,7 +146,6 @@ def test_program_ad_linalg_primitive_shape_dtype_rules_are_specialized() -> None
 
 def test_program_ad_linalg_static_argument_rules_are_specialized() -> None:
     """Supported linalg primitive contracts should expose static-argument policies."""
-
     matrix = np.array([[2.0, -0.5], [0.75, 1.5]], dtype=np.float64)
     vector = np.array([1.0, -0.25], dtype=np.float64)
     right = np.array([[0.25, 1.0, -0.5], [1.5, -0.25, 0.75]], dtype=np.float64)
@@ -205,7 +200,6 @@ def test_program_ad_linalg_static_argument_rules_are_specialized() -> None:
 
 def test_program_ad_linalg_primitive_batching_rules_vectorize_outputs() -> None:
     """Registered linalg batching rules should vectorize pure NumPy primitive calls."""
-
     det_contract = primitive_contract_for(PrimitiveIdentity("scpn.program_ad.linalg", "det", "1"))
     solve_contract = primitive_contract_for(
         PrimitiveIdentity("scpn.program_ad.linalg", "solve", "1")
@@ -238,7 +232,6 @@ def test_program_ad_linalg_primitive_batching_rules_vectorize_outputs() -> None:
 
 def _transform_rule_from_contract(contract: Any) -> PrimitiveTransformRule:
     """Return a transform rule snapshot for restoring registry mutations."""
-
     return PrimitiveTransformRule(
         identity=contract.identity,
         derivative_rule=contract.derivative_rule,
@@ -255,7 +248,6 @@ def _transform_rule_from_contract(contract: Any) -> PrimitiveTransformRule:
 
 def test_program_ad_linalg_primitives_validate_registry_rules_at_dispatch() -> None:
     """Supported linalg primitives must execute through registry validation rules."""
-
     originals = {
         name: primitive_contract_for(f"scpn.program_ad.linalg:{name}")
         for name in (
@@ -329,9 +321,9 @@ def test_program_ad_linalg_primitives_validate_registry_rules_at_dispatch() -> N
             + np.sum(np.diagflat(rhs))
             + np.sum(np.linalg.matrix_power(matrix, 2))
             + np.linalg.multi_dot((rhs, matrix, values[2:]))
-            + np.sum(eig_values)
+            + np.sum(np.real(eig_values))
             + np.sum(eigh_values)
-            + np.sum(np.linalg.eigvals(matrix))
+            + np.sum(np.real(np.linalg.eigvals(matrix)))
             + np.sum(np.linalg.eigvalsh(matrix))
             + np.sum(np.linalg.svd(matrix, compute_uv=False))
             + np.sum(np.linalg.pinv(matrix, rcond=1.0e-12))
