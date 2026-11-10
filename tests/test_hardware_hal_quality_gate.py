@@ -247,8 +247,8 @@ def test_provider_sdk_locks_have_complete_blocking_advisory_audits() -> None:
         "CVE-2026-85394",
         "CVE-2024-23342",
     ]
-    assert audit.count("Review-by 2026-11-05.") == 3
-    assert 'if ! [[ "$(date -u +%F)" < "2026-11-05" ]]; then' in audit
+    assert audit.count("Review-by 2026-11-24.") == 3
+    assert 'if ! [[ "$(date -u +%F)" < "2026-11-24" ]]; then' in audit
     assert "exit 1" in audit
     assert "|| true" not in audit
     assert "--ignore-vuln" not in audit[audit.index("esac") :]
@@ -308,7 +308,7 @@ def test_provider_advisory_disposition_expires_before_audit_execution(cohort: st
         if step.get("name") == "Audit the complete provider SDK lock"
     )
     script = script.replace("${{ matrix.cohort }}", cohort)
-    script = script.replace("$(date -u +%F)", "2026-11-05")
+    script = script.replace("$(date -u +%F)", "2026-11-24")
     syntax = subprocess.run(
         ["bash", "-n"], input=script, capture_output=True, text=True, timeout=10, check=False
     )

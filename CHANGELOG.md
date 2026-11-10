@@ -4,6 +4,14 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- The three narrowly scoped provider advisory exceptions (D-Wave `diskcache`
+  CVE-2025-69872; Strangeworks `python-jose` CVE-2026-85394 and `ecdsa`
+  CVE-2024-23342) were reviewed again on 10 November 2026, with the same
+  cohort scope: still no fixed upstream release, and the codec tree imports
+  none of them. They are valid through 23 November 2026, and the audit
+  refuses them from 24 November. This is a renewal, not a repair; every
+  other finding still blocks.
+
 - The CPU framework overlay installer pins every package the base environment
   already has (`base_environment_constraints`, written next to the overlay as
   `base_environment_constraints.txt`) and passes the file to both pip calls.
