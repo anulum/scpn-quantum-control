@@ -153,13 +153,22 @@ from native semantics capture alone.
 ## Provider SDK reference environments
 
 Provider SDK compatibility is checked separately from import availability and
-physical-device evidence. Each Python 3.12 reference environment has an input
-file and a complete hash-pinned dependency lock named
-`requirements-ci-sdk-<family>-py312-linux.in` and `.txt`. The reference families
-are `ibm`, `braket`, `azure`, `qbraid`, `strangeworks`, `cirq`, `dwave`, `iqm`,
-`oqc`, `pasqal`, `quandela`, `quantinuum`, `quera`, `rigetti` and `pennylane`.
-These locks describe CI reference environments; the supported installation
-ranges remain in `pyproject.toml`.
+physical-device evidence. Each reference environment has an input file and a
+complete hash-pinned dependency lock named
+`requirements-ci-sdk-<family>-py<version>-linux.in` and `.txt`, for the
+Python it runs on:
+
+| Python | Families | Reason |
+| --- | --- | --- |
+| 3.15 | `ibm`, `braket`, `azure`, `strangeworks`, `cirq`, `dwave`, `oqc`, `pasqal`, `quantinuum`, `pennylane` | primary lane |
+| 3.13 | `qbraid`, `iqm`, `quandela`, `quera` | the SDK does not yet serve 3.15: pyqasm is a prerelease, iqm-client caps pydantic-core, exqalibur is a closed binary, and the ldpc sdist does not build |
+| 3.12 | `rigetti` | `pyquil<5` needs `quil` 0.18, built for 3.12 at most; pyquil 5 is a release candidate |
+
+A gated family moves to 3.15 when its vendor ships support. Each cohort
+installs the common minimal-install lock for the same Python first
+(`requirements-ci-minimal-install-py<version>-linux.txt`). These locks
+describe CI reference environments; the supported installation ranges remain
+in `pyproject.toml`.
 
 The required native codec matrix exercises vendor serialisation and decoding
 through the public workload builders. Gate-model fixtures retain original
@@ -174,11 +183,11 @@ duration and shot records. D-Wave's native result decoder sorts variable
 labels; the fixture checks that sample columns move with their labels.
 
 For example, run the IBM reference codec check from the source checkout in a
-dedicated environment:
+dedicated Python 3.15 environment:
 
 ```bash
-python -m pip install --require-hashes -r requirements-ci-minimal-install-py312-linux.txt
-python -m pip install --require-hashes -r requirements-ci-sdk-ibm-py312-linux.txt
+python -m pip install --require-hashes -r requirements-ci-minimal-install-py315-linux.txt
+python -m pip install --require-hashes -r requirements-ci-sdk-ibm-py315-linux.txt
 python -m pip check
 SCPN_PROVIDER_SDK_COHORT=ibm PYTHONPATH=src:oscillatools/src \
   python -m pytest -q tests/test_provider_sdk_conformance.py::test_native_sdk_cohort_roundtrip

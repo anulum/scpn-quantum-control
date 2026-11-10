@@ -207,40 +207,65 @@ def test_provider_sdk_locks_have_complete_blocking_advisory_audits() -> None:
     """Every SDK lock keeps a blocking audit with only named, expiring vendor dispositions."""
     workflow = yaml.safe_load(Path(".github/workflows/ci-control-provider.yml").read_text())
     job = workflow["jobs"]["provider-sdk-lock-audit"]
-    cohorts = job["strategy"]["matrix"]["cohort"]
+    lanes = job["strategy"]["matrix"]["include"]
+    cohorts = [lane["cohort"] for lane in lanes]
+    upstream_gated = {"qbraid": "3.13", "iqm": "3.13", "quandela": "3.13", "quera": "3.13"}
     expected = {
-        "ibm",
-        "braket",
-        "azure",
-        "qbraid",
-        "strangeworks",
-        "cirq",
-        "dwave",
-        "iqm",
-        "oqc",
-        "pasqal",
-        "quandela",
-        "quantinuum",
-        "quera",
-        "rigetti",
-        "pennylane",
+        name: upstream_gated.get(name, "3.15")
+        for name in (
+            "ibm",
+            "braket",
+            "azure",
+            "qbraid",
+            "strangeworks",
+            "cirq",
+            "dwave",
+            "iqm",
+            "oqc",
+            "pasqal",
+            "quandela",
+            "quantinuum",
+            "quera",
+            "pennylane",
+        )
     }
+    expected["rigetti"] = "3.12"
     assert len(cohorts) == len(expected)
-    assert set(cohorts) == expected
-    assert {f"requirements-ci-sdk-{name}-py312-linux.txt" for name in cohorts} == {
-        path.name for path in Path(".").glob("requirements-ci-sdk-*-py312-linux.txt")
+    assert {lane["cohort"]: lane["python"] for lane in lanes} == expected
+    assert all(lane["lock"] == "py" + lane["python"].replace(".", "") for lane in lanes)
+    assert all(
+        lane["minimal_lock"] == f"requirements-ci-minimal-install-{lane['lock']}-linux.txt"
+        for lane in lanes
+    )
+    for suffix in ("in", "txt"):
+        assert {
+            f"requirements-ci-sdk-{lane['cohort']}-{lane['lock']}-linux.{suffix}" for lane in lanes
+        } == {path.name for path in Path(".").glob(f"requirements-ci-sdk-*-linux.{suffix}")}
+    minimal_inputs = {
+        lock: Path(f"requirements-ci-minimal-install-{lock}-linux.in").read_text(encoding="utf-8")
+        for lock in {lane["lock"] for lane in lanes}
     }
+    pins = {
+        lock: [line for line in text.splitlines() if line and not line.startswith("#")]
+        for lock, text in minimal_inputs.items()
+    }
+    assert len({tuple(lines) for lines in pins.values()}) == 1
+    for lock in pins:
+        lock_text = Path(f"requirements-ci-minimal-install-{lock}-linux.txt").read_text(
+            encoding="utf-8"
+        )
+        assert f"--python-version 3.{lock[3:]} " in lock_text
     assert not job.get("continue-on-error", False)
     assert all(not step.get("continue-on-error", False) for step in job["steps"])
     steps = {step.get("name"): step.get("run", "") for step in job["steps"]}
     assert steps["Install the pinned audit tool"] == (
-        "python -m pip install --require-hashes -r requirements-ci-py312-linux.txt"
+        "python -m pip install --require-hashes -r requirements-ci-${{ matrix.lock }}-linux.txt"
     )
     audit = steps["Audit the complete provider SDK lock"]
     command = audit[audit.index("pip-audit --strict") :].replace("\\\n", " ")
     assert " ".join(command.split()) == (
         'pip-audit --strict --no-deps --disable-pip --desc on "${advisory_args[@]}" '
-        "-r requirements-ci-sdk-${{ matrix.cohort }}-py312-linux.txt"
+        "-r requirements-ci-sdk-${{ matrix.cohort }}-${{ matrix.lock }}-linux.txt"
     )
     assert re.findall(r"advisory_args\+=\(--ignore-vuln (CVE-[0-9-]+)\)", audit) == [
         "CVE-2025-69872",
@@ -253,12 +278,15 @@ def test_provider_sdk_locks_have_complete_blocking_advisory_audits() -> None:
     assert "|| true" not in audit
     assert "--ignore-vuln" not in audit[audit.index("esac") :]
     native = workflow["jobs"]["provider-sdk-conformance"]
-    assert native["strategy"]["matrix"]["cohort"] == cohorts
+    assert native["strategy"]["matrix"]["include"] == lanes
     assert native["env"]["SCPN_PROVIDER_SDK_COHORT"] == "${{ matrix.cohort }}"
     native_steps = {step.get("name"): step.get("run", "") for step in native["steps"]}
+    assert " ".join(native_steps["Install the locked common codec test environment"].split()) == (
+        "python -m pip install --require-hashes -r ${{ matrix.minimal_lock }}"
+    )
     assert " ".join(native_steps["Install the complete isolated SDK cohort"].split()) == (
         "python -m pip install --require-hashes "
-        "-r requirements-ci-sdk-${{ matrix.cohort }}-py312-linux.txt"
+        "-r requirements-ci-sdk-${{ matrix.cohort }}-${{ matrix.lock }}-linux.txt"
     )
     assert native_steps["Check installed dependency compatibility"] == "python -m pip check"
     runtime = next(
@@ -307,7 +335,7 @@ def test_provider_advisory_disposition_expires_before_audit_execution(cohort: st
         for step in job["steps"]
         if step.get("name") == "Audit the complete provider SDK lock"
     )
-    script = script.replace("${{ matrix.cohort }}", cohort)
+    script = script.replace("${{ matrix.cohort }}", cohort).replace("${{ matrix.lock }}", "py315")
     script = script.replace("$(date -u +%F)", "2026-11-24")
     syntax = subprocess.run(
         ["bash", "-n"], input=script, capture_output=True, text=True, timeout=10, check=False

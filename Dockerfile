@@ -71,9 +71,10 @@ COPY requirements-ci-cross-platform-smoke.txt requirements-ci-py312-linux.txt re
 # Workflow audits inspect the browser lock without installing Chromium here.
 COPY requirements-ci-studio-browser.txt ./
 # Supply-chain contract tests validate the human-reviewed inputs that generate
-# the minimal-install and Quimb hash closures.
-COPY requirements-ci-minimal-install-py312-linux.in requirements-ci-quimb-py312-linux.in ./
-COPY requirements-ci-minimal-install-py312-linux.txt requirements-ci-quimb-py312-linux.txt ./
+# the minimal-install and Quimb hash closures; the provider SDK lane test
+# compares the minimal-install inputs of every SDK Python.
+COPY requirements-ci-minimal-install-py312-linux.in requirements-ci-minimal-install-py313-linux.in requirements-ci-minimal-install-py315-linux.in requirements-ci-quimb-py312-linux.in ./
+COPY requirements-ci-minimal-install-py312-linux.txt requirements-ci-minimal-install-py313-linux.txt requirements-ci-minimal-install-py315-linux.txt requirements-ci-quimb-py312-linux.txt ./
 # The SDK cohort completeness guard inspects all reference inputs and locks.
 COPY requirements-ci-sdk-*.in requirements-ci-sdk-*.txt ./
 # Optional-runtime contract tests inspect these locks without installing the

@@ -762,30 +762,38 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cohort:
-          - ibm
-          - braket
-          - azure
-          - qbraid
-          - strangeworks
-          - cirq
-          - dwave
-          - iqm
-          - oqc
-          - pasqal
-          - quandela
-          - quantinuum
-          - quera
-          - rigetti
-          - pennylane
+        # Python 3.15 is the primary lane. An upstream-gated cohort runs on the
+        # newest Python its SDK serves, with the blocker named; it moves to 3.15
+        # when the vendor ships support.
+        include:
+          - {cohort: ibm, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}
+          - {cohort: braket, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}
+          - {cohort: azure, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}
+          # qbraid: pyqasm has only a prerelease for Python 3.15.
+          - {cohort: qbraid, python: "3.13", lock: py313, minimal_lock: requirements-ci-minimal-install-py313-linux.txt}
+          - {cohort: strangeworks, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}
+          - {cohort: cirq, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}
+          - {cohort: dwave, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}
+          # iqm: iqm-client caps pydantic-core at a PyO3 release without Python 3.15.
+          - {cohort: iqm, python: "3.13", lock: py313, minimal_lock: requirements-ci-minimal-install-py313-linux.txt}
+          - {cohort: oqc, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}
+          - {cohort: pasqal, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}
+          # quandela: exqalibur ships closed binaries without Python 3.15.
+          - {cohort: quandela, python: "3.13", lock: py313, minimal_lock: requirements-ci-minimal-install-py313-linux.txt}
+          - {cohort: quantinuum, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}
+          # quera: the ldpc sdist cannot build for Python 3.15.
+          - {cohort: quera, python: "3.13", lock: py313, minimal_lock: requirements-ci-minimal-install-py313-linux.txt}
+          # rigetti: pyquil<5 needs quil 0.18, built for Python 3.12 at most; pyquil 5 is a release candidate.
+          - {cohort: rigetti, python: "3.12", lock: py312, minimal_lock: requirements-ci-minimal-install-py312-linux.txt}
+          - {cohort: pennylane, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python }}
           cache: 'pip'
       - name: Install the pinned audit tool
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: python -m pip install --require-hashes -r requirements-ci-${{ matrix.lock }}-linux.txt
       - name: Audit the complete provider SDK lock
         shell: bash
         run: |
@@ -810,7 +818,7 @@ jobs:
           fi
           pip-audit --strict --no-deps --disable-pip --desc on \
             "${advisory_args[@]}" \
-            -r requirements-ci-sdk-${{ matrix.cohort }}-py312-linux.txt
+            -r requirements-ci-sdk-${{ matrix.cohort }}-${{ matrix.lock }}-linux.txt
 
   provider-sdk-conformance:
     runs-on: ubuntu-24.04
@@ -818,22 +826,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cohort:
-          - ibm
-          - braket
-          - azure
-          - qbraid
-          - strangeworks
-          - cirq
-          - dwave
-          - iqm
-          - oqc
-          - pasqal
-          - quandela
-          - quantinuum
-          - quera
-          - rigetti
-          - pennylane
+        # The same lanes as provider-sdk-lock-audit, which names each blocker.
+        include:
+          - {cohort: ibm, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}
+          - {cohort: braket, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}
+          - {cohort: azure, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}
+          - {cohort: qbraid, python: "3.13", lock: py313, minimal_lock: requirements-ci-minimal-install-py313-linux.txt}
+          - {cohort: strangeworks, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}
+          - {cohort: cirq, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}
+          - {cohort: dwave, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}
+          - {cohort: iqm, python: "3.13", lock: py313, minimal_lock: requirements-ci-minimal-install-py313-linux.txt}
+          - {cohort: oqc, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}
+          - {cohort: pasqal, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}
+          - {cohort: quandela, python: "3.13", lock: py313, minimal_lock: requirements-ci-minimal-install-py313-linux.txt}
+          - {cohort: quantinuum, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}
+          - {cohort: quera, python: "3.13", lock: py313, minimal_lock: requirements-ci-minimal-install-py313-linux.txt}
+          - {cohort: rigetti, python: "3.12", lock: py312, minimal_lock: requirements-ci-minimal-install-py312-linux.txt}
+          - {cohort: pennylane, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}
     env:
       SCPN_PROVIDER_SDK_COHORT: ${{ matrix.cohort }}
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src
@@ -843,16 +852,16 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python }}
           cache: 'pip'
       - name: Install the locked common codec test environment
         run: >-
           python -m pip install --require-hashes
-          -r requirements-ci-minimal-install-py312-linux.txt
+          -r ${{ matrix.minimal_lock }}
       - name: Install the complete isolated SDK cohort
         run: >-
           python -m pip install --require-hashes
-          -r requirements-ci-sdk-${{ matrix.cohort }}-py312-linux.txt
+          -r requirements-ci-sdk-${{ matrix.cohort }}-${{ matrix.lock }}-linux.txt
       - name: Check installed dependency compatibility
         run: python -m pip check
       - name: Execute the required native SDK codec and public workload path
