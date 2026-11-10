@@ -236,6 +236,11 @@ def test_reader_refuses_framework_admission_drift(
     payload = deepcopy(observed_payload)
     rows = cast(list[dict[str, object]], payload["framework_rows"])
     row = next(row for row in rows if row["family"] == family and row["framework"] == framework)
+    if all(row.get(key) == value for key, value in changes.items()):
+        pytest.skip(
+            f"{family}/{framework} already has {changes} here (its SDK is absent), "
+            "so this drift needs an environment where the comparison executes"
+        )
     row.update(changes)
 
     with pytest.raises(ValueError, match="framework"):
