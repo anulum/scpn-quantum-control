@@ -13,6 +13,7 @@ import pickle
 
 import numpy as np
 import pytest
+from _pickle_identity import IdentityUnpickler
 
 from scpn_quantum_control.surrogates import (
     SurrogateFidelityThresholds,
@@ -69,4 +70,6 @@ def test_input_row_digests_keeps_its_public_home() -> None:
     assert input_row_digests.__module__ == "scpn_quantum_control.surrogates.train"
     assert input_row_digests.__qualname__ == "input_row_digests"
     assert train.input_row_digests is input_row_digests
-    assert pickle.loads(pickle.dumps(input_row_digests)) is input_row_digests  # noqa: S301
+    expected = {("scpn_quantum_control.surrogates.train", "input_row_digests"): input_row_digests}
+    restored = IdentityUnpickler(pickle.dumps(input_row_digests), expected).load()
+    assert restored is input_row_digests
