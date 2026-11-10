@@ -585,9 +585,9 @@ def test_program_ad_linalg_eig_matches_real_simple_eigensystem_differential() ->
     value_weights = np.array([1.25, -0.5], dtype=np.float64)
     values = matrix.reshape(-1)
 
-    eigenvalues, right_eigenvectors = np.linalg.eig(matrix)
-    eigenvalues = np.real(eigenvalues)
-    right_eigenvectors = np.real(right_eigenvectors)
+    raw_eigenvalues, raw_right_eigenvectors = np.linalg.eig(matrix)
+    eigenvalues = np.real(raw_eigenvalues)
+    right_eigenvectors = np.real(raw_right_eigenvectors)
     left_eigenvector_rows = np.linalg.inv(right_eigenvectors)
     expected = np.zeros_like(matrix)
     for index, value_weight in enumerate(value_weights):

@@ -229,8 +229,9 @@ def test_network_inputs_fail_closed(
 
 def test_complex_and_nonfinite_frequency_inputs_fail_closed() -> None:
     """Refuse lossy complex-to-real conversion and non-finite site energies."""
+    unchecked_scan = cast(Callable[..., ENAQTResult], enaqt_scan)
     with pytest.raises(ValueError, match="real-valued"):
-        enaqt_scan(
+        unchecked_scan(
             np.asarray([[0.0, 1j], [-1j, 0.0]]),
             _array([0.0, 0.0]),
         )
