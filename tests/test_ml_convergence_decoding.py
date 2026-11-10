@@ -205,7 +205,11 @@ def test_evidence_rejects_frozen_protocol_drift(
         ("qsnn", "tensorflow", {"required": True, "gate_passed": False}),
         ("qgnn", "tensorflow", {"max_abs_error": 0.0}),
         ("qnn", "jax", {"status": "not_applicable", "executed": False, "passed": None}),
-        ("qnn", "pytorch", {"max_abs_error": None}),
+        (
+            "qnn",
+            "pytorch",
+            {"status": "ran", "executed": True, "passed": True, "max_abs_error": None},
+        ),
         (
             "qnn",
             "tensorflow",
@@ -236,11 +240,6 @@ def test_reader_refuses_framework_admission_drift(
     payload = deepcopy(observed_payload)
     rows = cast(list[dict[str, object]], payload["framework_rows"])
     row = next(row for row in rows if row["family"] == family and row["framework"] == framework)
-    if all(row.get(key) == value for key, value in changes.items()):
-        pytest.skip(
-            f"{family}/{framework} already has {changes} here (its SDK is absent), "
-            "so this drift needs an environment where the comparison executes"
-        )
     row.update(changes)
 
     with pytest.raises(ValueError, match="framework"):
