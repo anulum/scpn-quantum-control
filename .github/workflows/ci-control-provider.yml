@@ -776,7 +776,8 @@ jobs:
           - {cohort: dwave, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}
           # iqm: iqm-client caps pydantic-core at a PyO3 release without Python 3.15.
           - {cohort: iqm, python: "3.13", lock: py313, minimal_lock: requirements-ci-minimal-install-py313-linux.txt}
-          - {cohort: oqc, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}
+          # oqc: every oqc-qcaas-client release requires Python below 3.13.
+          - {cohort: oqc, python: "3.12", lock: py312, minimal_lock: requirements-ci-minimal-install-py312-linux.txt}
           - {cohort: pasqal, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}
           # quandela: exqalibur ships closed binaries without Python 3.15.
           - {cohort: quandela, python: "3.13", lock: py313, minimal_lock: requirements-ci-minimal-install-py313-linux.txt}
@@ -836,7 +837,7 @@ jobs:
           - {cohort: cirq, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}
           - {cohort: dwave, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}
           - {cohort: iqm, python: "3.13", lock: py313, minimal_lock: requirements-ci-minimal-install-py313-linux.txt}
-          - {cohort: oqc, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}
+          - {cohort: oqc, python: "3.12", lock: py312, minimal_lock: requirements-ci-minimal-install-py312-linux.txt}
           - {cohort: pasqal, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}
           - {cohort: quandela, python: "3.13", lock: py313, minimal_lock: requirements-ci-minimal-install-py313-linux.txt}
           - {cohort: quantinuum, python: "3.15", lock: py315, minimal_lock: requirements-ci-minimal-install-py315-linux.txt}

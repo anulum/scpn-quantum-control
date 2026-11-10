@@ -230,6 +230,7 @@ def test_provider_sdk_locks_have_complete_blocking_advisory_audits() -> None:
         )
     }
     expected["rigetti"] = "3.12"
+    expected["oqc"] = "3.12"
     assert len(cohorts) == len(expected)
     assert {lane["cohort"]: lane["python"] for lane in lanes} == expected
     assert all(lane["lock"] == "py" + lane["python"].replace(".", "") for lane in lanes)

@@ -160,9 +160,9 @@ Python it runs on:
 
 | Python | Families | Reason |
 | --- | --- | --- |
-| 3.15 | `ibm`, `braket`, `azure`, `strangeworks`, `cirq`, `dwave`, `oqc`, `pasqal`, `quantinuum`, `pennylane` | primary lane |
+| 3.15 | `ibm`, `braket`, `azure`, `strangeworks`, `cirq`, `dwave`, `pasqal`, `quantinuum`, `pennylane` | primary lane |
 | 3.13 | `qbraid`, `iqm`, `quandela`, `quera` | the SDK does not yet serve 3.15: pyqasm is a prerelease, iqm-client caps pydantic-core, exqalibur is a closed binary, and the ldpc sdist does not build |
-| 3.12 | `rigetti` | `pyquil<5` needs `quil` 0.18, built for 3.12 at most; pyquil 5 is a release candidate |
+| 3.12 | `rigetti`, `oqc` | `pyquil<5` needs `quil` 0.18, built for 3.12 at most, and pyquil 5 is a release candidate; every `oqc-qcaas-client` release requires Python below 3.13 |
 
 A gated family moves to 3.15 when its vendor ships support. Each cohort
 installs the common minimal-install lock for the same Python first

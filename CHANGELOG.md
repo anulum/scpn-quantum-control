@@ -24,10 +24,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     its own recorded generator. The reproduction image copies the 3.15
     lock in place of the removed 3.11 lock.
   - The fifteen provider SDK reference cohorts move to their own Python:
-    ten run on 3.15; qbraid, iqm, quandela and quera run on 3.13 until their
+    nine run on 3.15; qbraid, iqm, quandela and quera run on 3.13 until their
     SDKs serve 3.15 (a pyqasm prerelease, iqm-client's pydantic-core cap,
     exqalibur's closed binaries, an ldpc sdist that does not build); rigetti
-    stays on 3.12 until pyquil 5 is final. The CI matrix names each blocker.
+    stays on 3.12 until pyquil 5 is final, and oqc because every
+    oqc-qcaas-client release requires Python below 3.13. The CI matrix names
+    each blocker.
     Every cohort lock takes qiskit-aer 0.18.2; the D-Wave lock takes dimod
     0.12.23 and minorminer 0.2.23, which have 3.15 wheels. New minimal-install
     locks for 3.13 and 3.15 share the 3.12 input pins.
