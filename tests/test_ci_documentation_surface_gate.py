@@ -530,10 +530,11 @@ def test_docker_reproduction_image_builds_credential_free_git_index() -> None:
     assert "credential-free synthetic Git index" in dockerfile
     assert "COPY scpn_quantum_engine/Cargo.lock scpn_quantum_engine/Cargo.lock" in dockerfile
     assert "AS native-builder" in dockerfile
-    assert "maturin:v1.10.2@sha256:" in dockerfile
+    assert "maturin:v1.16.0@sha256:" in dockerfile
     assert "maturin build" in dockerfile
     assert "--locked" in dockerfile
-    assert "--interpreter python3.12" in dockerfile
+    assert "--interpreter /opt/python/cp315-cp315/bin/python3.15" in dockerfile
+    assert "FROM python:3.15-slim@sha256:" in dockerfile
     assert "COPY --from=native-builder /wheels/" in dockerfile
     assert "hasattr(engine, 'MlDsaSigningKey')" in dockerfile
     assert "compiled scpn_quantum_engine extension is not installed" not in dockerfile

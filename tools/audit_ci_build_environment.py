@@ -56,7 +56,7 @@ AUDIT_COMMAND = "python tools/audit_ci_build_environment.py"
 MATRIX_LOCK_SELECTION = "-r ${{ matrix.requirements-file }}"
 LOCK_INSTALL_COMMAND = f"python -m pip install --require-hashes {MATRIX_LOCK_SELECTION}"
 DOCKER_INSTALL_COMMAND = (
-    "pip install --no-cache-dir --require-hashes -r requirements-ci-py312-linux.txt"
+    "pip install --no-cache-dir --require-hashes -r requirements-ci-py315-linux.txt"
 )
 DOCKER_CONTEXT_COPIES = (
     "COPY Dockerfile Dockerfile",
@@ -442,7 +442,7 @@ def audit_consumers(
     if security_source.count(SECURITY_JOB_ENVIRONMENT) != 1:
         errors.append("CI security job must expose both source trees through PYTHONPATH")
     if DOCKER_INSTALL_COMMAND not in dockerfile_text:
-        errors.append("Docker must install the Python 3.12 CI lock with --require-hashes")
+        errors.append("Docker must install the Python 3.15 CI lock with --require-hashes")
     for copy_command in DOCKER_CONTEXT_COPIES:
         if docker_lines.count(copy_command) != 1:
             copied_path = copy_command.removeprefix("COPY ").split(maxsplit=1)[0]

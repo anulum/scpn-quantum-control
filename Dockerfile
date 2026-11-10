@@ -20,16 +20,18 @@
 # the published wheel (`pip install scpn-quantum-control`) into your own
 # base image instead of reusing this one.
 
-FROM ghcr.io/pyo3/maturin:v1.10.2@sha256:4ac83047776d1facc6c7073d9b0dc03e349cac2ff8540499e82be3990ef26258 AS native-builder
+FROM ghcr.io/pyo3/maturin:v1.16.0@sha256:50bf2ff99eeff7b09332bad9baf4a5e925e2502304ae2f88f48ce8c06fd9957c AS native-builder
 
 WORKDIR /build
 COPY scpn_quantum_engine/ scpn_quantum_engine/
+# The image puts only CPython 3.9-3.13 on PATH; its manylinux base also ships
+# 3.15 under /opt/python, which the runtime stage below uses.
 RUN maturin build \
     --release \
     --locked \
     --manifest-path scpn_quantum_engine/Cargo.toml \
     --features extension-module \
-    --interpreter python3.12 \
+    --interpreter /opt/python/cp315-cp315/bin/python3.15 \
     --out /wheels
 
 FROM rust:1.99.1-slim-bookworm@sha256:f2c004e3d2d8b547e8cf7ffbc29205385f4e71d23e53e4e383065db5e9f822cd AS wasm-builder
@@ -41,7 +43,7 @@ RUN rustup component add rustfmt clippy \
     && rustup target add wasm32-unknown-unknown \
     && cargo build --release --locked --target wasm32-unknown-unknown
 
-FROM python:3.12-slim@sha256:3d5ed973e45820f5ba5e46bd065bd88b3a504ff0724d85980dcd05eab361fcf4
+FROM python:3.15-slim@sha256:65a65fc7b30b06cb6df4930fd4650697cb23f4c2698ab81fc87e4b031bc36928
 
 LABEL org.opencontainers.image.title="scpn-quantum-control"
 LABEL org.opencontainers.image.description="NISQ quantum simulation of coupled Kuramoto oscillator networks"
@@ -51,8 +53,9 @@ LABEL org.opencontainers.image.licenses="AGPL-3.0-or-later"
 RUN useradd --create-home sqc
 WORKDIR /app
 
+# QuTiP and PyYAML ship no CPython 3.15 wheels yet; their sources need C and C++.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends git gcc libc6-dev \
+    && apt-get install -y --no-install-recommends git gcc g++ libc6-dev \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=wasm-builder /usr/local/rustup /opt/rustup
@@ -120,7 +123,7 @@ ENV MPLCONFIGDIR=/home/sqc/.config/matplotlib
 # cache locators can fail in copied container layers, so Docker CI disables JIT.
 ENV NUMBA_DISABLE_JIT=1
 
-RUN pip install --no-cache-dir --require-hashes -r requirements-ci-py312-linux.txt \
+RUN pip install --no-cache-dir --require-hashes -r requirements-ci-py315-linux.txt \
     && pip install --no-cache-dir --no-deps --require-hashes -r requirements-ci-studio-platform.txt
 
 COPY --from=native-builder /wheels/ dist/

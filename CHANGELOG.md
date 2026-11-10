@@ -84,6 +84,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   CPython 3.12 wheels only. It now builds wheels for 3.12, 3.13 and 3.15 on Linux
   (x86_64, aarch64), Windows and macOS (x86_64, arm64). The build fails if any of
   these interpreters yields no wheel.
+- The Docker reproduction image runs on Python 3.15 (`python:3.15-slim`) with the
+  3.15 CI lock. Its engine wheel is built by maturin 1.16.0 for the image's
+  CPython 3.15, and the image adds `g++`, because QuTiP has no 3.15 wheel and
+  builds from source.
 
 - Rust toolchain 1.99.0 → 1.99.1 (`rust-toolchain.toml`, and the Docker
   WASM builder pinned to the `rust:1.99.1-slim-bookworm` index digest). With
