@@ -4,6 +4,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Dev tooling: ruff 0.16.4 → 0.17.4 (requirements-dev, the three dev CI
+  locks, the Studio browser lock and the pre-commit hook). The only
+  ruff-only edit in the other locks is the ruff entry. Three nested `if`
+  statements that 0.17's widened SIM102 reports are merged. Each was the last
+  branch of its chain, so behaviour is unchanged. The test documentation
+  ceiling is re-measured under 0.17.4 with identical counts (7062).
+
 - The differentiable programming benchmark's linalg objectives (the Program
   AD case and its JAX reference counterpart) take `np.real` of `eig`
   eigenvalues and eigenvectors and of `eigvals`. With NumPy 2.5 they run;

@@ -139,9 +139,12 @@ def _update_count(updates: object, count: int, destination: TraceADArray) -> Non
     elif (type(updates) is list or type(updates) is tuple) and isinstance(updates, list | tuple):
         if len(updates) == count:
             return
-    elif type(updates) is np.ndarray:
-        if updates.dtype.kind in {"i", "u", "f"} and updates.shape in ((), (count,)):
-            return
+    elif (
+        type(updates) is np.ndarray
+        and updates.dtype.kind in {"i", "u", "f"}
+        and updates.shape in ((), (count,))
+    ):
+        return
     raise ValueError(
         "whole-program AD scatter updates require real scalar or matching rank-one storage"
     )

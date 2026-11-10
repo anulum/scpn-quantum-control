@@ -1534,9 +1534,9 @@ def test_public_compact_cumsum_refuses_live_cap_before_actual_callback_and_recov
         elif (
             frame.f_back is not None
             and frame.f_back.f_code.co_name == "_evaluate_trace_compact_rule"
+            and frame.f_code.co_name == "value_fn"
         ):
-            if frame.f_code.co_name == "value_fn":
-                callback_entered = True
+            callback_entered = True
 
     with monkeypatch.context() as environment:
         environment.setenv("SCPN_MAX_DENSE_GIB", ".01")

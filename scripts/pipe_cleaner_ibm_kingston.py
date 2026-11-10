@@ -249,9 +249,8 @@ def main() -> int:
                 elif "API Key" in line and "`" in line:
                     # Extract from "**API Key:** `token`"
                     api_key = line.split("`")[1]
-                elif "CRN" in line or "Instance" in line:
-                    if "`" in line:
-                        instance = line.split("`")[1]
+                elif ("CRN" in line or "Instance" in line) and "`" in line:
+                    instance = line.split("`")[1]
 
     if not api_key or not instance:
         print("ERROR: Failed to parse API key or instance from vault", file=sys.stderr)

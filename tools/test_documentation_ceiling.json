@@ -1,7 +1,7 @@
 {
  "schema": "test_documentation_ceiling_v1",
- "ruff_version": "ruff 0.16.4",
- "measured_commit": "6e15a70449c03476358723a16144e22b15749545",
+ "ruff_version": "ruff 0.17.4",
+ "measured_commit": "f151eb4e6d45aa7f1c8a301e216be6f4bb25506a",
  "scopes": [
   "tests",
   "oscillatools/tests"
@@ -571,5 +571,12 @@
   "tests/test_zenodo_metadata.py": 1,
   "tests/test_zne.py": 5
  },
- "history": []
+ "history": [
+  {
+   "ruff_version": "ruff 0.16.4",
+   "measured_commit": "6e15a70449c03476358723a16144e22b15749545",
+   "total_findings": 7062,
+   "total_files": 561
+  }
+ ]
 }
