@@ -252,7 +252,8 @@ def _program_ad_assembly_triangular_derivative_rule(
 
     def masked_array(values: NDArray[np.float64], role: str) -> NDArray[np.float64]:
         vector = _program_ad_array_vector(name, role, values, expected_size=source_size)
-        return numpy_fn(vector.reshape(shape), k=k_value)
+        masked: NDArray[np.float64] = numpy_fn(vector.reshape(shape), k=k_value)
+        return masked
 
     def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
         return _program_ad_float64_vector_result(masked_array(values, "values"))

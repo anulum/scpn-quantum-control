@@ -407,7 +407,8 @@ def _pt_symmetric_numpy(
 
 def _pairwise_velocity(theta: FloatArray, omega: FloatArray, K_nm: FloatArray) -> FloatArray:
     phase_delta = theta[None, :] - theta[:, None]
-    return omega + np.sum(K_nm * np.sin(phase_delta), axis=1)
+    velocity: FloatArray = omega + np.sum(K_nm * np.sin(phase_delta), axis=1)
+    return velocity
 
 
 def _order_parameter(theta: FloatArray) -> float:

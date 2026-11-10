@@ -212,7 +212,8 @@ def sinkhorn_normalise(logits: FloatArray, n_iterations: int) -> FloatArray:
 def _logsumexp_rows(matrix: FloatArray) -> FloatArray:
     """Return the row-wise log-sum-exp of ``matrix`` (stable)."""
     row_max = np.max(matrix, axis=1)
-    return row_max + np.log(np.sum(np.exp(matrix - row_max[:, None]), axis=1))
+    log_sum: FloatArray = row_max + np.log(np.sum(np.exp(matrix - row_max[:, None]), axis=1))
+    return log_sum
 
 
 def coupling_graph_distances(coupling_map: Any, physical_qubits: tuple[int, ...]) -> FloatArray:
