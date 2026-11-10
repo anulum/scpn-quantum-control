@@ -117,6 +117,10 @@ def utc_second(value: str) -> datetime:
         "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z", value
     ):
         raise ValueError("operator timestamp must be exact ASCII UTC seconds")
+    # CPython 3.15 reads hour 24 as the next midnight; 3.12 and the browser
+    # admission refuse it, so the hour is bounded before parsing.
+    if int(value[11:13]) > 23:
+        raise ValueError("operator timestamp hour must be 00 to 23")
     return datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(UTC)
 
 

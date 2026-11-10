@@ -229,6 +229,10 @@ def _observation(
             is None
         ):
             raise ValueError("profile calibration requires an exact UTC timestamp")
+        # CPython 3.15 reads hour 24 as the next midnight; 3.12 and the browser
+        # model refuse it, so the hour is bounded before parsing.
+        if int(timestamp[11:13]) > 23:
+            raise ValueError("profile calibration hour must be 00 to 23")
         datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
         calibration_ref = canonical_digest(
             "studio.calibration-reference.v1",

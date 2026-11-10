@@ -139,6 +139,7 @@ def test_invalid_request_input_refusal(field: str, value: object) -> None:
     "timestamp",
     [
         "2026-02-30T00:00:00Z",
+        "2026-01-01T24:00:00Z",
         "2026-01-01",
         "2026-01-01T00:00:00+00:00",
         "2026-01-01T00:00:00.1Z",

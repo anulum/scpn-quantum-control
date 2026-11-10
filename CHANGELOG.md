@@ -68,6 +68,9 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   - Studio workspace documents refuse hour 24 in their UTC timestamps on
     every interpreter. CPython 3.15 reads `T24:00:00` as the next midnight,
     while 3.12 and the browser parser refuse it.
+  - The same hour-24 refusal now holds for operator review timestamps and
+    backend-profile calibration timestamps, whose browser counterparts
+    already refuse it.
 
 - Rust toolchain 1.99.0 → 1.99.1 (`rust-toolchain.toml`, and the Docker
   WASM builder pinned to the `rust:1.99.1-slim-bookworm` index digest). With

@@ -212,6 +212,7 @@ def test_native_projection_refuses_invalid_observed_types_and_route_aliases() ->
         {"n_qubits": 2**64},
         {"calibration_timestamp": "2026-10-03T01:00:00+00:00"},
         {"calibration_timestamp": "2026-02-29T01:00:00Z"},
+        {"calibration_timestamp": "2026-10-02T24:00:00Z"},
         {"basis_gates": ("rz", "rz")},
         {"native_features": tuple(f"feature-{index}" for index in range(257))},
     ):
