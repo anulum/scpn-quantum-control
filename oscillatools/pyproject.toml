@@ -199,6 +199,10 @@ omit = [
     # [jax] extra, not the pinned numpy+scipy CI floor.
     "*/oscillatools/accel/jax_kuramoto.py",
     "*/oscillatools/accel/jax_kuramoto_delayed.py",
+    # The neural-operator surrogate needs the optional [torch] extra, which this
+    # numpy+scipy floor does not install. It is measured at exact 100 % with the
+    # real extra by the repository's learning-generalisation coverage gate.
+    "*/oscillatools/neural_operator.py",
     "*/oscillatools/accel/jax_kuramoto_integrators.py",
     "*/oscillatools/accel/jax_kuramoto_mpc.py",
     "*/oscillatools/accel/diff_kuramoto_mpc_kkt.py",
@@ -216,6 +220,7 @@ omit = [
     "*/oscillatools/accel/julia/*",
     "*/oscillatools/accel/jax_kuramoto.py",
     "*/oscillatools/accel/jax_kuramoto_delayed.py",
+    "*/oscillatools/neural_operator.py",
     "*/oscillatools/accel/jax_kuramoto_integrators.py",
     "*/oscillatools/accel/jax_kuramoto_mpc.py",
     "*/oscillatools/accel/diff_kuramoto_mpc_kkt.py",

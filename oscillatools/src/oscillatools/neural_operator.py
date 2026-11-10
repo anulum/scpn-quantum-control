@@ -118,7 +118,7 @@ class TrainedKuramotoOperator:
         )
         trunk = torch.tensor((query / self.horizon)[:, None], dtype=torch.float32)
         with torch.no_grad():
-            predicted = self.model(branch, trunk).cpu().numpy()
+            predicted = _deeponet_forward(self.model, branch, trunk).cpu().numpy()
         cosines = predicted[:, : self.n_oscillators]
         sines = predicted[:, self.n_oscillators :]
         return np.asarray(np.arctan2(sines, cosines), dtype=np.float64)
@@ -233,7 +233,6 @@ def _rk4_step(
 
 def _build_deeponet(n_oscillators: int, latent_dim: int, hidden_dim: int, seed: int) -> Any:
     import torch
-    from torch.nn import Module
 
     channels = 2 * n_oscillators
     # The device an argument-free tensor lands on is the active default device
@@ -252,27 +251,38 @@ def _build_deeponet(n_oscillators: int, latent_dim: int, hidden_dim: int, seed: 
         torch.nn.init.uniform_(layer.bias, -bound, bound, generator=generator)
         return layer
 
-    class _DeepONet(Module):
-        def __init__(self) -> None:
-            super().__init__()
-            self.branch = torch.nn.Sequential(
+    # Composed from library modules rather than subclassing torch.nn.Module, so
+    # the surface type-checks identically with or without the optional [torch]
+    # extra; _deeponet_forward is the forward pass.
+    model = torch.nn.ModuleDict(
+        {
+            "branch": torch.nn.Sequential(
                 linear(channels, hidden_dim),
                 torch.nn.Tanh(),
                 linear(hidden_dim, channels * latent_dim),
-            )
-            self.trunk = torch.nn.Sequential(
+            ),
+            "trunk": torch.nn.Sequential(
                 linear(1, hidden_dim),
                 torch.nn.Tanh(),
                 linear(hidden_dim, latent_dim),
-            )
-            self.bias = torch.nn.Parameter(torch.zeros(channels))
+            ),
+        }
+    )
+    model.register_parameter("bias", torch.nn.Parameter(torch.zeros(channels)))
+    return model
 
-        def forward(self, branch_input: Any, trunk_input: Any) -> Any:
-            basis = self.branch(branch_input).view(-1, channels, latent_dim)
-            weights = self.trunk(trunk_input)
-            return torch.einsum("bcp,bp->bc", basis, weights) + self.bias
 
-    return _DeepONet()
+def _deeponet_forward(model: Any, branch_input: Any, trunk_input: Any) -> Any:
+    """Evaluate the DeepONet built by ``_build_deeponet``.
+
+    The branch output is the ``(batch, channels, latent)`` basis, contracted with
+    the trunk's latent weights, plus the per-channel bias.
+    """
+    torch = _require_torch()
+    channels = model.bias.shape[0]
+    basis = model["branch"](branch_input).view(branch_input.shape[0], channels, -1)
+    weights = model["trunk"](trunk_input)
+    return torch.einsum("bcp,bp->bc", basis, weights) + model.bias
 
 
 def train_kuramoto_neural_operator(
@@ -331,7 +341,7 @@ def train_kuramoto_neural_operator(
     history = np.empty(epochs, dtype=np.float64)
     for epoch in range(epochs):
         optimiser.zero_grad()
-        loss = loss_function(model(branch, trunk), targets)
+        loss = loss_function(_deeponet_forward(model, branch, trunk), targets)
         loss.backward()
         optimiser.step()
         history[epoch] = float(loss.item())
