@@ -525,8 +525,9 @@ with QPU execution time.
 
 #### GPU Model
 
-NVIDIA A100 80 GB:
-- 312 TFLOPS FP64
+NVIDIA A100 80 GB (NVIDIA product specification, read 2026-11-10):
+- 9.7 TFLOPS FP64 (19.5 TFLOPS with FP64 Tensor Cores; complex128
+  statevector kernels use the FP64 pipeline, so the estimate uses 9.7)
 - 80 GB HBM2e
 
 Statevector simulation:
@@ -534,13 +535,16 @@ Statevector simulation:
 - FLOPs: `n_gates × 2^n × 10` (matrix-vector with constant factor)
 - Time: FLOPs / TFLOPS
 
-| n | Memory | GPU Time (A100) |
+| n | Memory | GPU Time (A100, 10 Trotter reps) |
 |---|--------|----------------|
-| 16 | 1 MB | 0.003 ms |
-| 24 | 256 MB | 0.8 ms |
-| 30 | 16 GB | 50 s |
-| 33 | 128 GB | OOM |
-| 40 | 16 TB | Infeasible |
+| 16 | 1 MB | 0.1 ms |
+| 24 | 268 MB | 56 ms |
+| 30 | 17 GB | 5.5 s |
+| 33 | 137 GB | OOM (exceeds 80 GB) |
+| 40 | 18 TB | Infeasible |
+
+The times are the module's analytic estimate, `gate_count_xy_trotter(n, 10)`
+FLOP-weighted gates divided by peak FP64 throughput, not measurements.
 
 #### QPU Model
 

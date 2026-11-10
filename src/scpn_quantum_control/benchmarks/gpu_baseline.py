@@ -53,7 +53,7 @@ class GPUBaselineResult:
     n_gates: int
     statevector_memory_gb: float
     statevector_flops: float
-    estimated_gpu_time_s: float  # on A100 (312 TFLOPS FP64)
+    estimated_gpu_time_s: float  # on the profile's GPU, from its peak FP64 throughput
     qpu_time_s: float  # estimated QPU execution
     gpu_faster: bool
     crossover_n: int  # estimated n where QPU wins
@@ -61,8 +61,11 @@ class GPUBaselineResult:
     """Name of the device profile the GPU estimates were made for."""
 
 
-# A100 GPU: 312 TFLOPS FP64, 80 GB HBM
-A100_TFLOPS = 312e12
+# A100 80 GB: 9.7 TFLOPS FP64 (19.5 with FP64 Tensor Cores), 80 GB HBM2e, from the
+# NVIDIA A100 product specification (nvidia.com/en-us/data-center/a100, read
+# 2026-11-10). Complex128 statevector kernels run on the FP64 pipeline; the
+# 312 TFLOPS figure is the dense FP16/BF16 Tensor Core rate and does not apply.
+A100_TFLOPS = 9.7e12
 A100_MEMORY_GB = 80.0
 
 

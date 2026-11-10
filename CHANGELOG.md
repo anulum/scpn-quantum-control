@@ -4,6 +4,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- The A100 reference profile uses the vendor's 9.7 TFLOPS FP64 rate instead of
+  the 312 TFLOPS FP16/BF16 Tensor Core figure. GPU statevector time estimates
+  rise by about 32x, and the default GPU/QPU crossover moves from 24 to 19
+  qubits for a 16-qubit start.
+
 - Default dense and Pauli-operator memory budgets are 30 % of the memory the
   executing host or container may use, with no fixed ceiling; the former 8 GiB
   and 2 GiB caps apply only when that memory cannot be read. Explicit

@@ -74,8 +74,10 @@ For honest comparison, we provide three classical baselines:
 1. **Exact diagonalisation:** O(2^n) memory, O(2^{2n}) time. Practical for n ≤ 16.
 2. **MPS tensor network:** bond dimension χ determines accuracy. At BKT criticality,
    S(n/2) ~ (c/3) log(n) with c=1, requiring χ ~ n^{1/3}.
-3. **GPU statevector:** NVIDIA A100 (312 TFLOPS FP64, 80 GB HBM). Faster than QPU
-   until n ≈ 33 (memory-limited) or n ≈ 25 (MPS at criticality).
+3. **GPU statevector:** NVIDIA A100 reference profile (9.7 TFLOPS FP64, 80 GB HBM2e,
+   vendor specification). The analytic estimate of `gpu_baseline_comparison` puts the
+   GPU/QPU crossover at n = 19 for 10 Trotter repetitions; memory alone limits a
+   complex128 statevector to n ≤ 32. These are estimates, not measurements.
 
 ### F. BKT Analysis
 

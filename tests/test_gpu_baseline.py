@@ -64,6 +64,15 @@ class TestGPUProfile:
         assert GPUProfile("NVIDIA A100 80 GB", A100_TFLOPS, A100_MEMORY_GB) == A100_PROFILE
         assert gpu_baseline_comparison(16).gpu_profile == "NVIDIA A100 80 GB"
 
+    def test_reference_profile_uses_the_vendor_fp64_rate(self) -> None:
+        """The A100 reference divides by its 9.7 TFLOPS FP64 rate, not a tensor-core figure."""
+        assert A100_PROFILE.peak_flops == 9.7e12
+        assert A100_PROFILE.memory_gb == 80.0
+        result = gpu_baseline_comparison(30)
+        assert result.estimated_gpu_time_s == pytest.approx(
+            statevector_flops(30, result.n_gates) / 9.7e12
+        )
+
     @pytest.mark.parametrize(
         ("name", "flops", "memory", "message"),
         [
