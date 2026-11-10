@@ -25,12 +25,14 @@ def test_owning_workflow_uses_canonical_gates_and_required_framework_profile() -
     """Keep hosted execution on the canonical commands and require actual dependencies."""
     workflow = Path(".github/workflows/ci-differentiable-control.yml").read_text()
     native_job = workflow.split("  native-transform-algebra-quality:", 1)[1]
-    assert "requirements-ci-native-ad-py312-linux.txt" in native_job
-    assert "requirements-ci-torch-cpu-py312-linux.txt" in native_job
+    assert 'python-version: "3.13"' in native_job
+    assert "requirements-ci-py313-linux.txt" in native_job
+    assert "requirements-ci-native-ad-py313-linux.txt" in native_job
+    assert "requirements-ci-torch-cpu-py313-linux.txt" in native_job
     assert "--require-hashes" in native_job
     assert "pip check" in native_job
     assert 'echo "TMPDIR=$RUNNER_TEMP" >> "$GITHUB_ENV"' in native_job
-    assert "python -m pip_audit -r requirements-ci-native-ad-py312-linux.txt" in native_job
+    assert "python -m pip_audit -r requirements-ci-native-ad-py313-linux.txt" in native_job
     assert "--no-deps --disable-pip --strict --desc on" in native_job
     assert "continue-on-error" not in native_job
     assert "|| true" not in native_job

@@ -667,19 +667,20 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
-          python-version: "3.12"
+          # TensorFlow has no Python 3.15 wheel; this profile runs on the 3.13 lane.
+          python-version: "3.13"
           cache: pip
       - name: Install required CPU native transform profile
         run: |
           echo "TMPDIR=$RUNNER_TEMP" >> "$GITHUB_ENV"
-          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-py313-linux.txt
           python -m pip install --no-deps -e oscillatools/ -e .
-          python -m pip install --require-hashes --no-deps -r requirements-ci-torch-cpu-py312-linux.txt
-          python -m pip install --require-hashes --no-deps -r requirements-ci-native-ad-py312-linux.txt
+          python -m pip install --require-hashes --no-deps -r requirements-ci-torch-cpu-py313-linux.txt
+          python -m pip install --require-hashes --no-deps -r requirements-ci-native-ad-py313-linux.txt
           python -m pip check
       - name: Audit the committed native CPU dependency additions
         run: >-
-          python -m pip_audit -r requirements-ci-native-ad-py312-linux.txt
+          python -m pip_audit -r requirements-ci-native-ad-py313-linux.txt
           --no-deps --disable-pip --strict --desc on
       - name: Enforce native transform types and NumPy documentation
         run: |

@@ -42,10 +42,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     Quimb locks, which no job installs any more, are removed. The
     differentiable-framework parity workflow runs its sparse profile on 3.15
     and its full profile on 3.13, because `tensorflow-cpu` has no 3.15 wheel.
-    Jobs that still need a 3.12-only lock stay on 3.12 for now: the
-    TensorFlow native-transform job, mutation testing (`pony` requires
-    Python below 3.15), and the Julia-tier and Studio-browser jobs, whose locks
-    are still compiled for 3.12.
+    The TensorFlow native-transform job runs on the 3.13 lane with new 3.13
+    Torch and JAX/TensorFlow layers (`requirements-ci-torch-cpu-py313-linux.txt`,
+    `requirements-ci-native-ad-py313-linux.txt`: jax 0.12.0.1, TensorFlow
+    2.21.0); the 3.12 layers, which no job installs any more, are removed.
+    Jobs that still need a 3.12-only lock stay on 3.12 for now: mutation
+    testing (`pony` requires Python below 3.15), and the Julia-tier and
+    Studio-browser jobs, whose locks are still compiled for 3.12.
     Every cohort lock takes qiskit-aer 0.18.2; the D-Wave lock takes dimod
     0.12.23 and minorminer 0.2.23, which have 3.15 wheels. New minimal-install
     locks for 3.13 and 3.15 share the 3.12 input pins.
