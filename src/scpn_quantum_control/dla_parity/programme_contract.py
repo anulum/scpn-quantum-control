@@ -32,6 +32,10 @@ OUTPUT_SCHEMA: Final = "scpn_quantum_control.dla_parity.programme_output.v1"
 MAX_REQUEST_BYTES: Final = 64 * 1024
 MAX_INPUT_BYTES: Final = 16 * 1024 * 1024
 MAX_CIRCUITS: Final = 100_000
+#: Deepest container nesting a document may use. The JSON reader of each
+#: CPython build gives up at a depth set by its own stack, so the reader
+#: enforces this fixed bound to refuse the same documents everywhere.
+MAX_NESTING_DEPTH: Final = 512
 RAW_RUN_FILES: Final = 4
 
 REFUSAL_CATEGORIES: Final = (
@@ -164,6 +168,27 @@ def _no_constant(name: str) -> Any:
     raise ValueError(f"{name} is not a JSON value")
 
 
+def _nesting_depth(value: object) -> int:
+    """Return the deepest container nesting of a decoded JSON value.
+
+    A scalar has depth 0 and each enclosing array or object adds one. The
+    walk keeps its own stack, so it needs no interpreter recursion.
+    """
+    deepest = 0
+    pending: list[tuple[object, int]] = [(value, 0)]
+    while pending:
+        item, depth = pending.pop()
+        if isinstance(item, dict):
+            children: list[object] = list(item.values())
+        elif isinstance(item, list):
+            children = list(item)
+        else:
+            continue
+        deepest = max(deepest, depth + 1)
+        pending.extend((child, depth + 1) for child in children)
+    return deepest
+
+
 def parse_json_object(content: bytes) -> dict[str, Any]:
     """Read bytes as one unambiguous JSON object.
 
@@ -180,9 +205,10 @@ def parse_json_object(content: bytes) -> dict[str, Any]:
     Raises
     ------
     ValueError
-        The bytes are not UTF-8, not JSON, nested beyond what the reader can
-        follow, hold ``NaN`` or an infinity, repeat a member name in any
-        object, or the document is not an object.
+        The bytes are not UTF-8, not JSON, nested deeper than
+        ``MAX_NESTING_DEPTH`` containers (or beyond what the interpreter's
+        reader can follow), hold ``NaN`` or an infinity, repeat a member name
+        in any object, or the document is not an object.
 
     """
     try:
@@ -195,6 +221,8 @@ def parse_json_object(content: bytes) -> dict[str, Any]:
         raise ValueError("the document is not UTF-8") from exc
     except RecursionError as exc:
         raise ValueError("the document is nested too deeply") from exc
+    if _nesting_depth(loaded) > MAX_NESTING_DEPTH:
+        raise ValueError("the document is nested too deeply")
     if not isinstance(loaded, dict):
         raise ValueError("the document is not a JSON object")
     return loaded

@@ -31,6 +31,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     Every cohort lock takes qiskit-aer 0.18.2; the D-Wave lock takes dimod
     0.12.23 and minorminer 0.2.23, which have 3.15 wheels. New minimal-install
     locks for 3.13 and 3.15 share the 3.12 input pins.
+  - The DLA parity programme reader refuses documents nested deeper than
+    `MAX_NESTING_DEPTH` (512) containers. Before, the refusal depended on
+    where each CPython build's JSON reader ran out of stack; Python 3.15
+    builds parse far deeper than 3.12, so the same document was refused on
+    one interpreter and accepted on another.
 
 - Rust toolchain 1.99.0 → 1.99.1 (`rust-toolchain.toml`, and the Docker
   WASM builder pinned to the `rust:1.99.1-slim-bookworm` index digest). With

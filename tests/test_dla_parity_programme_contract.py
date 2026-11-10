@@ -392,13 +392,46 @@ def test_numbers_and_counts_of_the_protocol(value: object, number: bool, count: 
         (b"[1, 2]", "is not a JSON object"),
         (b"\xff\xfe", "is not UTF-8"),
         (b"{not json", "Expecting property name"),
-        pytest.param(b"[" * 100_000 + b"]" * 100_000, "nested too deeply", id="deep-nesting"),
+        pytest.param(b"[" * 4_000_000 + b"]" * 4_000_000, "nested too deeply", id="deep-nesting"),
+        pytest.param(
+            b'{"a":' * (programme_contract.MAX_NESTING_DEPTH + 1)
+            + b"1"
+            + b"}" * (programme_contract.MAX_NESTING_DEPTH + 1),
+            "nested too deeply",
+            id="over-the-bound",
+        ),
+        pytest.param(
+            b"[" * (programme_contract.MAX_NESTING_DEPTH + 1)
+            + b"]" * (programme_contract.MAX_NESTING_DEPTH + 1),
+            "nested too deeply",
+            id="array-over-the-bound",
+        ),
     ],
 )
 def test_the_reader_accepts_one_unambiguous_object_only(content: bytes, message: str) -> None:
-    """Require a repeated member, a non-finite literal and a non-object to be refused."""
+    """Require a repeated member, a non-finite literal, a non-object and deep nesting to be refused.
+
+    Parameters
+    ----------
+    content : bytes
+        Document bytes handed to the reader.
+    message : str
+        Pattern the refusal must carry.
+
+    """
     with pytest.raises(ValueError, match=message):
         programme_contract.parse_json_object(content)
+
+
+def test_the_reader_accepts_an_object_at_the_nesting_bound() -> None:
+    """Accept the deepest permitted object with the same result on every interpreter."""
+    depth = programme_contract.MAX_NESTING_DEPTH
+    document = programme_contract.parse_json_object(b'{"a":' * depth + b"1" + b"}" * depth)
+    level: object = document
+    for _ in range(depth - 1):
+        assert isinstance(level, dict)
+        level = level["a"]
+    assert level == {"a": 1}
 
 
 def test_the_reader_and_the_serialiser_round_trip_a_document() -> None:
