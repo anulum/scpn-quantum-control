@@ -353,6 +353,60 @@ _BUILTIN_KITS = (
         ),
         forecasting_tags=("plasma_like_sim",),
     ),
+    DomainApplicationHonestyKit(
+        kit_id="eeg_alpha_plv_curated_benchmark",
+        domain_tag="eeg_curated_benchmark",
+        title="Curated EEG alpha-band PLV benchmark kit",
+        support_status=ApplicationSupportStatus.BOUNDED_RESEARCH,
+        data_origin=ApplicationDataOrigin.CURATED_PUBLIC,
+        synthetic_only=False,
+        dataset_ids=("eeg_alpha_plv_8ch",),
+        source_modules=(
+            "scpn_quantum_control.applications.eeg_benchmark",
+            "scpn_quantum_control.applications.app_plugins",
+        ),
+        allowed_uses=(
+            "compare a curated public-literature alpha-band PLV matrix with a Kuramoto topology",
+            "exercise topology-similarity and artifact-custody software contracts",
+        ),
+        caveats=(
+            "the packaged matrix is a curated literature benchmark, not a participant recording",
+            "topology similarity is a structural proxy, not neural-dynamics or clinical evidence",
+        ),
+        claims_forbidden=(
+            "clinical validation",
+            "diagnostic or therapeutic use",
+            "neural-dynamics reproduction",
+            "human-subject generalisation",
+        ),
+    ),
+    DomainApplicationHonestyKit(
+        kit_id="iter_mhd_curated_benchmark",
+        domain_tag="plasma_curated_benchmark",
+        title="Curated ITER-scale MHD mode-coupling benchmark kit",
+        support_status=ApplicationSupportStatus.BOUNDED_RESEARCH,
+        data_origin=ApplicationDataOrigin.CURATED_PUBLIC,
+        synthetic_only=False,
+        dataset_ids=("iter_mhd_8mode",),
+        source_modules=(
+            "scpn_quantum_control.applications.iter_benchmark",
+            "scpn_quantum_control.applications.app_plugins",
+        ),
+        allowed_uses=(
+            "compare a curated public-literature MHD mode-coupling matrix with a Kuramoto topology",
+            "exercise topology-similarity, mode-locking-risk and artifact-custody contracts",
+        ),
+        caveats=(
+            "the packaged matrix is a curated literature benchmark, not an ITER discharge trace",
+            "the mode-locking risk is a structural proxy, not a disruption forecast",
+        ),
+        claims_forbidden=(
+            "real plant control",
+            "ITER disruption prediction",
+            "facility validation",
+            "plasma-operation guidance",
+        ),
+    ),
 )
 
 

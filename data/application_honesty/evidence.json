@@ -1,6 +1,6 @@
 {
   "claim_boundary": "software-contract and synthetic-or-curated benchmark evidence only; not domain validation, operational control, clinical use, facility prediction, hardware performance, or quantum advantage",
-  "content_digest": "8f49455d3578b219b5220767491946fcdc2da7b833cd03a5837fb041805d8a37",
+  "content_digest": "eb55c857353b82acd5e27aa18d34a05d4eaf86cad1f3ff669233ae594e42018b",
   "dataset_privacy": [
     {
       "artifact_hashes": {
@@ -56,7 +56,7 @@
     }
   ],
   "dataset_privacy_count": 4,
-  "kit_count": 4,
+  "kit_count": 6,
   "kits": [
     {
       "allowed_uses": [
@@ -180,6 +180,68 @@
       "support_status": "simulation_only",
       "synthetic_only": true,
       "title": "ITER-inspired disruption simulation kit"
+    },
+    {
+      "allowed_uses": [
+        "compare a curated public-literature alpha-band PLV matrix with a Kuramoto topology",
+        "exercise topology-similarity and artifact-custody software contracts"
+      ],
+      "caveats": [
+        "the packaged matrix is a curated literature benchmark, not a participant recording",
+        "topology similarity is a structural proxy, not neural-dynamics or clinical evidence"
+      ],
+      "claims_forbidden": [
+        "clinical validation",
+        "diagnostic or therapeutic use",
+        "neural-dynamics reproduction",
+        "human-subject generalisation"
+      ],
+      "data_origin": "curated_public",
+      "dataset_ids": [
+        "eeg_alpha_plv_8ch"
+      ],
+      "domain_tag": "eeg_curated_benchmark",
+      "forecasting_tags": [],
+      "kit_id": "eeg_alpha_plv_curated_benchmark",
+      "publication_safe": false,
+      "source_modules": [
+        "scpn_quantum_control.applications.eeg_benchmark",
+        "scpn_quantum_control.applications.app_plugins"
+      ],
+      "support_status": "bounded_research",
+      "synthetic_only": false,
+      "title": "Curated EEG alpha-band PLV benchmark kit"
+    },
+    {
+      "allowed_uses": [
+        "compare a curated public-literature MHD mode-coupling matrix with a Kuramoto topology",
+        "exercise topology-similarity, mode-locking-risk and artifact-custody contracts"
+      ],
+      "caveats": [
+        "the packaged matrix is a curated literature benchmark, not an ITER discharge trace",
+        "the mode-locking risk is a structural proxy, not a disruption forecast"
+      ],
+      "claims_forbidden": [
+        "real plant control",
+        "ITER disruption prediction",
+        "facility validation",
+        "plasma-operation guidance"
+      ],
+      "data_origin": "curated_public",
+      "dataset_ids": [
+        "iter_mhd_8mode"
+      ],
+      "domain_tag": "plasma_curated_benchmark",
+      "forecasting_tags": [],
+      "kit_id": "iter_mhd_curated_benchmark",
+      "publication_safe": false,
+      "source_modules": [
+        "scpn_quantum_control.applications.iter_benchmark",
+        "scpn_quantum_control.applications.app_plugins"
+      ],
+      "support_status": "bounded_research",
+      "synthetic_only": false,
+      "title": "Curated ITER-scale MHD mode-coupling benchmark kit"
     }
   ],
   "passed": true,

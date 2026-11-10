@@ -170,6 +170,18 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   throughput, memory) for its time estimate and crossover search, with the A100
   as the named default reference; each result records the profile used.
 
+- Two honesty kits now govern the packaged curated EEG and plasma benchmark
+  matrices. Before, no kit covered them; only the dataset privacy audit did.
+  - `eeg_alpha_plv_curated_benchmark` covers `eeg_alpha_plv_8ch`. It forbids
+    clinical validation, diagnostic or therapeutic use, neural-dynamics
+    reproduction and human-subject generalisation.
+  - `iter_mhd_curated_benchmark` covers `iter_mhd_8mode`. It forbids real
+    plant control, ITER disruption prediction, facility validation and
+    plasma-operation guidance.
+  - Each of the three curated domain proxies (EEG, plasma and power grid) now
+    resolves to exactly one kit with concrete forbidden claims.
+  - The committed honesty evidence is regenerated with six kits.
+
 ### Control proposals and co-design
 
 - Analyse shows source-owned control proposals: QAOA-MPC action costs that keep

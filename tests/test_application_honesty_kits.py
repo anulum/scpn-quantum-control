@@ -71,6 +71,8 @@ def test_builtin_kits_cover_required_domains_and_claim_boundaries() -> None:
         "josephson_illustrative_simulation",
         "eeg_like_synthetic",
         "iter_disruption_inspired_simulation",
+        "eeg_alpha_plv_curated_benchmark",
+        "iter_mhd_curated_benchmark",
     ]
     assert all(not kit.publication_safe for kit in kits)
     assert all(kit.caveats and kit.claims_forbidden for kit in kits)
@@ -85,6 +87,38 @@ def test_power_grid_dataset_resolves_to_unique_kit() -> None:
     kit = get_domain_application_honesty_kit_for_dataset("ieee5bus_power_grid")
     assert kit.data_origin is ApplicationDataOrigin.CURATED_PUBLIC
     assert kit.synthetic_only is False
+
+
+@pytest.mark.parametrize(
+    ("dataset_id", "kit_id", "forbidden"),
+    [
+        ("eeg_alpha_plv_8ch", "eeg_alpha_plv_curated_benchmark", "clinical validation"),
+        ("iter_mhd_8mode", "iter_mhd_curated_benchmark", "real plant control"),
+        ("ieee5bus_power_grid", "power_grid_public_benchmark", "live-grid control"),
+    ],
+)
+def test_curated_domain_proxy_datasets_resolve_to_concrete_forbidden_claims(
+    dataset_id: str, kit_id: str, forbidden: str
+) -> None:
+    """Each packaged EEG, plasma and grid proxy has one curated kit, not a silent default.
+
+    Parameters
+    ----------
+    dataset_id
+        Packaged curated benchmark artifact.
+    kit_id
+        The single kit expected to govern it.
+    forbidden
+        A concrete claim the kit must never authorise.
+
+    """
+    kit = get_domain_application_honesty_kit_for_dataset(dataset_id)
+    assert kit.kit_id == kit_id
+    assert kit.data_origin is ApplicationDataOrigin.CURATED_PUBLIC
+    assert kit.support_status is ApplicationSupportStatus.BOUNDED_RESEARCH
+    assert kit.synthetic_only is False and kit.publication_safe is False
+    assert forbidden in kit.claims_forbidden
+    assert "scpn_quantum_control.applications.app_plugins" in kit.source_modules
 
 
 def test_unknown_kit_and_dataset_fail_closed() -> None:

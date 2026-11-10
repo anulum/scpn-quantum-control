@@ -2,7 +2,7 @@
 
 - Schema: `scpn.application-honesty.v1`
 - Result: `PASS`
-- Content digest: `8f49455d3578b219b5220767491946fcdc2da7b833cd03a5837fb041805d8a37`
+- Content digest: `eb55c857353b82acd5e27aa18d34a05d4eaf86cad1f3ff669233ae594e42018b`
 - Claim boundary: software-contract and synthetic-or-curated benchmark evidence only; not domain validation, operational control, clinical use, facility prediction, hardware performance, or quantum advantage.
 
 ## Honesty kits
@@ -13,6 +13,8 @@
 | `josephson_illustrative_simulation` | `simulation_only` | `synthetic` | `true` | `none` |
 | `eeg_like_synthetic` | `simulation_only` | `synthetic` | `true` | `eeg_like_sim` |
 | `iter_disruption_inspired_simulation` | `simulation_only` | `synthetic` | `true` | `plasma_like_sim` |
+| `eeg_alpha_plv_curated_benchmark` | `bounded_research` | `curated_public` | `false` | `none` |
+| `iter_mhd_curated_benchmark` | `bounded_research` | `curated_public` | `false` | `none` |
 
 ## Packaged dataset privacy audit
 

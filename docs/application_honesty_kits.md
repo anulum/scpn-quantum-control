@@ -82,8 +82,8 @@ does not mean clinical classification, neural-dynamics reproduction, diagnosis,
 therapy, or human-subject generalisation.
 
 The separately packaged `eeg_alpha_plv_8ch` artifact remains a small curated
-public-literature benchmark matrix. It is audited by the dataset privacy API,
-but it is not silently relabelled as synthetic or promoted by this kit.
+public-literature benchmark matrix. It is never relabelled as synthetic or
+promoted by this kit; its own curated kit is described below.
 
 ### ITER-inspired disruption simulation
 
@@ -94,6 +94,28 @@ real-time controller admission, or plasma-operation guidance.
 
 Measured fusion archives remain outside this kit and require their own custody,
 licence, validation, and downstream control-admission gates.
+
+### Curated EEG alpha-band PLV benchmark
+
+`eeg_alpha_plv_curated_benchmark` governs the packaged `eeg_alpha_plv_8ch`
+matrix, which is curated from published functional-connectivity patterns. The
+EEG plugin compares it with a Kuramoto topology and reports a topology-similarity
+proxy, a frequency correlation and a coupling ratio. These numbers are
+structural proxies. The kit forbids clinical validation, diagnostic or
+therapeutic use, neural-dynamics reproduction and human-subject generalisation.
+It names no forecasting tag, because `eeg_like_sim` denotes generated data only.
+
+### Curated ITER-scale MHD mode-coupling benchmark
+
+`iter_mhd_curated_benchmark` governs the packaged `iter_mhd_8mode` matrix,
+which is curated from public MHD literature. The plasma plugin reports a
+topology-similarity proxy, a frequency correlation, a coupling ratio and a
+mode-locking risk. The risk is a structural proxy, not a disruption forecast.
+The kit forbids real plant control, ITER disruption prediction, facility
+validation and plasma-operation guidance. It names no forecasting tag.
+
+The packaged FEP workflow benchmark is not a domain proxy and has no kit. The
+privacy audit below still covers it.
 
 ## Dataset privacy audit
 
