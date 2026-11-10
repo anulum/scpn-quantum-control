@@ -42,12 +42,19 @@ afterEach(() => {
 it("renders the actual original instrument owners with their committed inputs", async () => {
   window.history.replaceState(null, "", "#/build/compile-recompute");
   render(<Workbench>{(_context, editors) => editors}</Workbench>);
-  await screen.findByRole("heading", { name: "Model" });
+  // Both headings arrive through lazy module boundaries; under a loaded runner the
+  // default one-second wait is shorter than the first chunk load.
+  await screen.findByRole("heading", { name: "Model" }, { timeout: 5000 });
   expect(screen.getByRole("heading", { name: "Model" })).toBeTruthy();
   // The lazy program editor loads inside its own contribution boundary, after the stage.
-  expect(await screen.findByRole("heading", { name: "Program editor" })).toBeTruthy();
+  expect(
+    await screen.findByRole("heading", { name: "Program editor" }, { timeout: 5000 }),
+  ).toBeTruthy();
   expect(screen.getByRole("button", { name: "Compile source" })).toBeTruthy();
-  expect(screen.getByRole("region", { name: "Compiler trace inspector" })).toBeTruthy();
+  // The trace inspector is a further lazy contribution behind the program editor.
+  expect(
+    await screen.findByRole("region", { name: "Compiler trace inspector" }, { timeout: 5000 }),
+  ).toBeTruthy();
   expect(screen.getByRole("button", { name: "Recompute in browser" })).toBeTruthy();
   expect(screen.getByText(/A requested workspace revision is not substituted/)).toBeTruthy();
   // jsdom serves no WASM kernel, so only the kernel fetch may be reported; no instrument
