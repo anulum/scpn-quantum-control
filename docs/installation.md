@@ -71,7 +71,7 @@ scpn-provider-smoke --format json --sdk-package qiskit-ibm-runtime --require-all
 pip install -e ".[dwave]"   # D-Wave Leap; requires click >=8.2 via dwave-cloud-client
 pip install -e ".[iqm]"     # IQM direct client; Qiskit bridge remains isolated
 pip install -e ".[quera]"   # QuEra Bloqade; current Bloqade meta-package resolves separately
-pip install -e ".[strangeworks]"  # Strangeworks Compute; Python >=3.11 SDK lane
+pip install -e ".[strangeworks]"  # Strangeworks Compute SDK lane
 
 # Generate the deterministic isolated-lane plan.
 scpn-provider-smoke --plan-isolated --format table
@@ -138,7 +138,7 @@ benchmark results.
 
 ## Requirements
 
-- Python 3.11+
+- Python 3.12+ (3.15 is the primary CI interpreter)
 - Qiskit 2.2+
 - qiskit-aer 0.15+
 - NumPy 1.24+

@@ -130,7 +130,7 @@ def _internal_half_propagator(
         hamiltonian = _xy_hamiltonian_dense_python(K_q, omega_q)
     evals, evecs = np.linalg.eigh(hamiltonian)
     phase = np.exp(-0.5j * dt * evals)
-    propagator: NDArray[np.complex128] = (evecs * phase) @ evecs.conj().T
+    propagator = np.asarray((evecs * phase) @ evecs.conj().T, dtype=np.complex128)
     return propagator
 
 

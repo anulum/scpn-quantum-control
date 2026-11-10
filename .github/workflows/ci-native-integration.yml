@@ -640,12 +640,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - python-version: "3.11"
-            requirements-file: requirements-ci-py311-linux.txt
           - python-version: "3.12"
             requirements-file: requirements-ci-py312-linux.txt
           - python-version: "3.13"
             requirements-file: requirements-ci-py313-linux.txt
+          - python-version: "3.15"
+            requirements-file: requirements-ci-py315-linux.txt
     steps:
       - name: Require every mandatory producer and test worker
         env:

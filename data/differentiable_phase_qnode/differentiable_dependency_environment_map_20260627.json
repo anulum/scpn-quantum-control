@@ -45,18 +45,18 @@
     {
       "profile_id": "ci_python_matrix",
       "title": "CI Python matrix",
-      "role": "Cross-platform smoke and Linux Python 3.11/3.12/3.13 CI locks.",
+      "role": "Cross-platform smoke and Linux Python 3.12/3.13/3.15 CI locks.",
       "lockfile_paths": [
         "requirements-ci-cross-platform-smoke.txt",
-        "requirements-ci-py311-linux.txt",
         "requirements-ci-py312-linux.txt",
-        "requirements-ci-py313-linux.txt"
+        "requirements-ci-py313-linux.txt",
+        "requirements-ci-py315-linux.txt"
       ],
       "evidence_paths": [
         "requirements-ci-cross-platform-smoke.txt",
-        "requirements-ci-py311-linux.txt",
         "requirements-ci-py312-linux.txt",
-        "requirements-ci-py313-linux.txt"
+        "requirements-ci-py313-linux.txt",
+        "requirements-ci-py315-linux.txt"
       ],
       "pinned_package_count": 488,
       "checksum_count": 4,
@@ -109,24 +109,24 @@
       "category": "toolchain",
       "classification": "locked_versions",
       "version_pins": [
-        "python==3.11",
         "python==3.12",
         "python==3.13",
+        "python==3.15",
         "enzyme-runner-python==3.9"
       ],
       "evidence_paths": [
         "pyproject.toml",
-        "requirements-ci-py311-linux.txt",
         "requirements-ci-py312-linux.txt",
         "requirements-ci-py313-linux.txt",
+        "requirements-ci-py315-linux.txt",
         "data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.json"
       ],
       "evidence_sha256": [
-        "81b334d29f8d27a5107714cb9675169fcd62541b2813be1b1703eef6093a3675",
-        "831512105d9dc18aef0b281b8017d38bad3bdf251347a11558ce4ca3e1810ea4",
-        "0b7b81182dd0f59aa351716698d635f7ad772136b052c6325acd26df3851287c",
-        "2c615a8c476fcf067dcb2934f4c0eabafd032edde80b86548758dfdf88bb97e6",
-        "efe17c35f0e072f9ce16ad3871471f978f081d059d24eb09db4d3b24df969e4d"
+        "59c87002be4109b71619ee52ae4f8b706fc45bf083fecfd3c2c48cb0401df002",
+        "f678b0ed3c5807a6e3ebb2b344eea5f625e5199ac28d07351ebd2263af01e9cb",
+        "85054f036589847b45b850d709aaf0c3f792cebc07c027bae41f4c4938163f05",
+        "7bebac844ffe2e793cf8fcb06e9217e466a2640a7279473fbc863d0c515833b7",
+        "d9223f047ba87699671e2a54d4cd765541d79dc8e3ff2882ce2dba9fc90d093b"
       ],
       "evidence_status": "locked",
       "blockers": [],
@@ -252,7 +252,7 @@
       "classification": "locked_versions",
       "version_pins": [
         "qiskit==2.5.1",
-        "qiskit-aer==0.17.2",
+        "qiskit-aer==0.18.2",
         "qiskit-qasm3-import==0.6.0",
         "qiskit-ibm-runtime==0.47.0"
       ],
@@ -261,8 +261,8 @@
         "requirements-dev.txt"
       ],
       "evidence_sha256": [
-        "fa33d0f2d273e0fbcc7878b899637c543a67cca4cd2d639989a4c26ee317f6eb",
-        "240e62914bf062ea6c26b671a1f17950b9a2abca3ff61c7fd41eee5628717f69"
+        "9010e7a298032aee39afc563b211c84270f883a2fed032be361294aba87aa245",
+        "8db72efec1fb0058a2732cb22d82e09e99c047cd42e252cabc343afba31f72dc"
       ],
       "evidence_status": "locked",
       "blockers": [],
@@ -329,7 +329,7 @@
         "src/scpn_quantum_control/phase/torch_maturity.py"
       ],
       "evidence_sha256": [
-        "81b334d29f8d27a5107714cb9675169fcd62541b2813be1b1703eef6093a3675",
+        "59c87002be4109b71619ee52ae4f8b706fc45bf083fecfd3c2c48cb0401df002",
         "bbc9d36825b9965fabaac9fe152c67549fc305507037d05fb0094dc767a55b2e",
         "b103d89b86a5a8bd9ebe2946622be84165d40b2cc6603a4d5241bb7eb1845136"
       ],

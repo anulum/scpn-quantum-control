@@ -34,12 +34,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - python-version: "3.11"
-            profile: sparse
-            requirements-file: requirements-ci-py311-linux.txt
-          - python-version: "3.11"
-            profile: full
-            requirements-file: requirements-ci-py311-linux.txt
           - python-version: "3.12"
             profile: sparse
             requirements-file: requirements-ci-py312-linux.txt

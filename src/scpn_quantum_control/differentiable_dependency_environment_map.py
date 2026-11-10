@@ -669,12 +669,12 @@ def _default_dependency_profiles(
         _profile(
             profile_id="ci_python_matrix",
             title="CI Python matrix",
-            role="Cross-platform smoke and Linux Python 3.11/3.12/3.13 CI locks.",
+            role="Cross-platform smoke and Linux Python 3.12/3.13/3.15 CI locks.",
             paths=(
                 "requirements-ci-cross-platform-smoke.txt",
-                "requirements-ci-py311-linux.txt",
                 "requirements-ci-py312-linux.txt",
                 "requirements-ci-py313-linux.txt",
+                "requirements-ci-py315-linux.txt",
             ),
             lockfiles=lockfiles,
             status="locked",

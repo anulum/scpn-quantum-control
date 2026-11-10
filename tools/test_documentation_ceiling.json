@@ -1,13 +1,13 @@
 {
  "schema": "test_documentation_ceiling_v1",
  "ruff_version": "ruff 0.17.4",
- "measured_commit": "f151eb4e6d45aa7f1c8a301e216be6f4bb25506a",
+ "measured_commit": "6ffe4b8f142d559f75283f5ecf931f894e232024",
  "scopes": [
   "tests",
   "oscillatools/tests"
  ],
- "total_findings": 7062,
- "total_files": 561,
+ "total_findings": 7059,
+ "total_files": 560,
  "files": {
   "oscillatools/tests/conftest.py": 1,
   "oscillatools/tests/kuramoto_delay_sensitivity_witness.py": 1,
@@ -212,7 +212,6 @@
   "tests/test_differentiable_benchmark_report.py": 7,
   "tests/test_differentiable_claim_ledger.py": 11,
   "tests/test_differentiable_dashboard.py": 2,
-  "tests/test_differentiable_dependency_environment_map.py": 3,
   "tests/test_differentiable_external_contracts.py": 1,
   "tests/test_differentiable_fisher_gauss_newton.py": 6,
   "tests/test_differentiable_optimizer_convergence.py": 6,

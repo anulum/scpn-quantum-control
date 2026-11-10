@@ -210,12 +210,12 @@ def build_differentiable_dependency_environment_evidence(
             "Python versions",
             "toolchain",
             "locked_versions",
-            ("python==3.11", "python==3.12", "python==3.13", "enzyme-runner-python==3.9"),
+            ("python==3.12", "python==3.13", "python==3.15", "enzyme-runner-python==3.9"),
             (
                 "pyproject.toml",
-                "requirements-ci-py311-linux.txt",
                 "requirements-ci-py312-linux.txt",
                 "requirements-ci-py313-linux.txt",
+                "requirements-ci-py315-linux.txt",
                 "data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.json",
             ),
             "locked",
@@ -295,7 +295,7 @@ def build_differentiable_dependency_environment_evidence(
             "locked_versions",
             (
                 "qiskit==2.5.1",
-                "qiskit-aer==0.17.2",
+                "qiskit-aer==0.18.2",
                 "qiskit-qasm3-import==0.6.0",
                 "qiskit-ibm-runtime==0.47.0",
             ),

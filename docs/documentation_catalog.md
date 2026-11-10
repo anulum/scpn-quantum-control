@@ -445,7 +445,7 @@ are still built, link-checked, searchable, and public.
 
 | Page | Surface | Purpose |
 |---|---|---|
-| [scpn-quantum-control — scpn-quantum-control](index.md) | primary nav | ![CI](https://github.com/anulum/scpn-quantum-control/actions/workflows/ci.yml) ![License: AGPL-3.0](https://github.com/anulum/scpn-quantum-control/blob/main/LICENSE) ![Python 3.11+](https://python.org) ![Qiskit 2.2+](https://qiskit.org) ![O |
+| [scpn-quantum-control — scpn-quantum-control](index.md) | primary nav | ![CI](https://github.com/anulum/scpn-quantum-control/actions/workflows/ci.yml) ![License: AGPL-3.0](https://github.com/anulum/scpn-quantum-control/blob/main/LICENSE) ![Python 3.12+](https://python.org) ![Qiskit 2.2+](https://qiskit.org) ![O |
 | [Installation](installation.md) | primary nav | This page defines how to install the project with explicit capability boundaries. The same repository supports local simulation, source-level debugging, and provider-aware integration, but each use case has different dependency and reproduc |
 | [Onboarding](onboarding.md) | primary nav | This page is the shortest route to understanding what scpn-quantum-control is, what it is useful for, and where the claim boundaries sit. |
 | [Quickstart](quickstart.md) | primary nav | All examples run on the local AerSimulator — no IBM credentials needed. |

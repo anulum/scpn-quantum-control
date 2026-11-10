@@ -53,7 +53,7 @@ published commit proves the hosted container behaviour.
 
 ## Setup
 
-Use Python 3.11 or newer.
+Use Python 3.12 or newer; 3.15 is the primary CI interpreter.
 
 ```bash
 python -m pip install -e ".[dev]"

@@ -774,7 +774,7 @@ with a reviewer summary at
 `data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.md`.
 `build_external_validation_environment_lock()` records SHA-256 digests, byte
 sizes, line counts, and pinned-package counts for the runtime, development,
-Python 3.11-3.13 CI, CPU framework overlay, and Python 3.9 Enzyme runner
+Python 3.12, 3.13 and 3.15 CI, CPU framework overlay, and Python 3.9 Enzyme runner
 lockfiles. `validate_external_validation_environment_lock()` rechecks those
 digests against the current checkout. This is reproducibility evidence only:
 the artefact remains `functional_non_isolated` and does not promote hardware,
@@ -783,7 +783,7 @@ claims.
 `run_differentiable_dependency_environment_map()` groups that lock evidence into
 runtime, development, CI Python matrix, CPU framework overlay, and Enzyme runner
 profiles. Its version-2 evidence inventory additionally binds Python 3.9 and
-3.11-3.13 declarations, the Rust crate lock, JAX, PyTorch, TensorFlow,
+3.12, 3.13 and 3.15 declarations, the Rust crate lock, JAX, PyTorch, TensorFlow,
 PennyLane, Qiskit, Catalyst, Enzyme, LLVM, and MLIR versions to exact source
 SHA-256 digests. The optional GPU overlay is intentionally
 `declared_unlocked`: its package constraints exist, but no exact GPU lock or
@@ -863,7 +863,7 @@ create a new benchmark or performance claim.
 
 Differentiable CI reproducibility is split into explicit sparse, full, optional
 GPU-contract, scheduled metadata, and isolated-runner lanes. The sparse and full
-CPU profiles run across Python 3.11, 3.12, and 3.13 using the pinned
+CPU profiles run across Python 3.12 and 3.13 using the pinned
 per-version Linux requirement locks. Full profiles build the CPU-only framework
 overlay for `jax[cpu]`, `torch`, `tensorflow-cpu`, and `pennylane`; sparse
 profiles keep the baseline dependency surface. The same workflow runs the

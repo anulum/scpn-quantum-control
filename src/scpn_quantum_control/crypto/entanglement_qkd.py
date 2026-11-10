@@ -66,8 +66,8 @@ def scpn_qkd_protocol(
     sv = key_state["statevector"]
 
     # Random basis choices
-    alice_bases = rng.choice(["Z", "X"], size=len(alice_qubits))
-    bob_bases = rng.choice(["Z", "X"], size=len(bob_qubits))
+    alice_bases = np.asarray(rng.choice(["Z", "X"], size=len(alice_qubits)), dtype=np.str_)
+    bob_bases = np.asarray(rng.choice(["Z", "X"], size=len(bob_qubits)), dtype=np.str_)
 
     # Measure in chosen bases
     alice_bits = _measure_in_basis(sv, alice_qubits, alice_bases, n, shots, rng)

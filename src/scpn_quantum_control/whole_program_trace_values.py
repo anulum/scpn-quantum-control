@@ -1241,7 +1241,7 @@ class TraceADArray:
             if len(args) != 1 or kwargs:
                 raise ValueError("whole-program AD np.ravel supports one array")
             return _coerce_trace_array(args[0], self.context).ravel()
-        if func in {np.atleast_1d, np.atleast_2d, np.atleast_3d}:
+        if func in (np.atleast_1d, np.atleast_2d, np.atleast_3d):
             if not args or kwargs:
                 raise ValueError("program AD atleast transforms support positional arrays only")
             target_rank: Literal[1, 2, 3] = (

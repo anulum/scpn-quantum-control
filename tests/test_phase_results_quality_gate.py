@@ -98,6 +98,6 @@ def test_ci_provisions_the_native_reference_wheel_before_execution() -> None:
     assert "tests/test_quantum_reference_evolution.py" in job
 
     producer = workflow_path_for_job("native-wheels").read_text(encoding="utf-8")
-    assert 'python-version: ["3.11", "3.12", "3.13"]' in producer
+    assert 'python-version: ["3.12", "3.13", "3.15"]' in producer
     assert "name: scpn-quantum-engine-${{ matrix.python-version }}" in producer
     assert "path: dist/scpn_quantum_engine-*.whl" in producer

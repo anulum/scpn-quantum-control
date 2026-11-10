@@ -69,9 +69,9 @@ def test_ci_lock_inputs_cover_the_new_security_and_typing_surfaces() -> None:
         assert "--hash=sha256:" in lock
 
     for path in (
-        "requirements-ci-py311-linux.txt",
         "requirements-ci-py312-linux.txt",
         "requirements-ci-py313-linux.txt",
+        "requirements-ci-py315-linux.txt",
     ):
         lock = Path(path).read_text(encoding="utf-8")
         assert "types-pyyaml==6.0.12.20260815" in lock

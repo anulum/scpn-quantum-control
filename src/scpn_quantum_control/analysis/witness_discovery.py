@@ -600,7 +600,7 @@ def _normalise_against(
     lower = np.min(reference, axis=0)
     upper = np.max(reference, axis=0)
     span = np.where(upper > lower, upper - lower, 1.0)
-    return cast(FloatArray, (values - lower) / span), lower, span
+    return (values - lower) / span, lower, span
 
 
 def _rbf_kernel(X_a: FloatArray, X_b: FloatArray, length_scale: float) -> FloatArray:

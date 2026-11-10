@@ -45,9 +45,9 @@ BUILD_BACKEND = "hatchling.build"
 DEVELOPMENT_INPUT = "requirements-dev.txt"
 PROJECT_PATHS = ("pyproject.toml", "oscillatools/pyproject.toml")
 LOCKS_BY_PYTHON = (
-    ("3.11", "requirements-ci-py311-linux.txt"),
     ("3.12", "requirements-ci-py312-linux.txt"),
     ("3.13", "requirements-ci-py313-linux.txt"),
+    ("3.15", "requirements-ci-py315-linux.txt"),
 )
 CI_WORKFLOW_PATH = load_ci_workflow_policy()["coordinator"]
 DOCKERFILE_PATH = "Dockerfile"
@@ -511,7 +511,7 @@ def format_result(result: BuildEnvironmentAuditResult) -> str:
         return (
             "CI build-environment audit: PASS\n"
             f"Hatchling {HATCHLING_VERSION} is installed and locked for Python "
-            "3.11, 3.12, and 3.13 wheel builds."
+            "3.12, 3.13, and 3.15 wheel builds."
         )
     return "\n".join(("CI build-environment audit: FAIL", *(f"- {e}" for e in result.errors)))
 

@@ -15,7 +15,7 @@ version = "0.1.1"
 description = "Differentiable, control-oriented toolkit for coupled-phase-oscillator (Kuramoto) dynamics"
 readme = "README.md"
 license = "AGPL-3.0-or-later"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 authors = [
     { name = "Miroslav Šotek", email = "protoscience@anulum.li" },
 ]
@@ -24,9 +24,9 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.15",
     "Topic :: Scientific/Engineering :: Physics",
     "Topic :: Scientific/Engineering :: Mathematics",
 ]

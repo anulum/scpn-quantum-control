@@ -47,6 +47,7 @@ def _valid_profile() -> DifferentiableDependencyEnvironmentProfile:
     -------
     DifferentiableDependencyEnvironmentProfile
         Locked profile with one checksummed dependency path.
+
     """
     return _profile_record()
 
@@ -84,6 +85,8 @@ def _profile_record(
         Checksum count to validate.
     evidence_status : DifferentiableDependencyEnvironmentStatus, optional
         Evidence classification to validate.
+    blockers : tuple[str, ...], optional
+        Blocker reasons to validate.
     claim_boundary : str, optional
         Claim boundary to validate.
 
@@ -91,6 +94,7 @@ def _profile_record(
     -------
     DifferentiableDependencyEnvironmentProfile
         Profile created by the production dataclass constructor.
+
     """
     return DifferentiableDependencyEnvironmentProfile(
         profile_id=cast(str, profile_id),
@@ -231,9 +235,9 @@ def test_dependency_environment_profiles_are_lockfile_backed() -> None:
 
     ci_matrix = profiles["ci_python_matrix"]
     assert {
-        "requirements-ci-py311-linux.txt",
         "requirements-ci-py312-linux.txt",
         "requirements-ci-py313-linux.txt",
+        "requirements-ci-py315-linux.txt",
     } <= set(ci_matrix.lockfile_paths)
     assert ci_matrix.evidence_status == "locked"
 

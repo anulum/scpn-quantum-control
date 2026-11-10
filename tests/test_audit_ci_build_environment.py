@@ -336,12 +336,12 @@ def test_consumer_audit_rejects_matrix_install_gate_docker_and_fixture_drift() -
         "Docker reproduction context must copy Dockerfile exactly once",
     )
 
-    broken_ci = _ci().replace('python-version: "3.11"', 'python-version: "3.10"')
+    broken_ci = _ci().replace('python-version: "3.12"', 'python-version: "3.10"')
     broken_ci = broken_ci.replace(build_audit.LOCK_INSTALL_COMMAND, "pip install unpinned")
     broken_ci = broken_ci.replace(build_audit.AUDIT_COMMAND, "true")
     broken_ci = broken_ci.replace(build_audit.SECURITY_JOB_ENVIRONMENT, "  security:\n")
     errors = build_audit.audit_consumers(broken_ci, "FROM scratch\n", "args = []\n")
-    assert any("Python 3.11" in error for error in errors)
+    assert any("Python 3.12" in error for error in errors)
     assert any("selected lock" in error for error in errors)
     assert any("execute the build-environment audit" in error for error in errors)
     assert any("security job" in error for error in errors)

@@ -354,9 +354,9 @@ def diagnose_program_ad_linalg_conditioning(
         singular_values = np.linalg.svd(eigenvectors.real, compute_uv=False).astype(np.float64)
     elif name in {"eigh", "eigvalsh"}:
         _program_ad_linalg_require_symmetric(name, matrix)
-        eigenvalues = np.asarray(np.linalg.eigvalsh(matrix), dtype=np.float64)
-        minimum_gap = _program_ad_linalg_minimum_gap(eigenvalues)
-        singular_values = np.abs(eigenvalues).astype(np.float64)
+        spectrum = np.asarray(np.linalg.eigvalsh(matrix), dtype=np.float64)
+        minimum_gap = _program_ad_linalg_minimum_gap(spectrum)
+        singular_values = np.abs(spectrum).astype(np.float64)
     elif name == "svd":
         minimum_gap = _program_ad_linalg_minimum_gap(singular_values)
 

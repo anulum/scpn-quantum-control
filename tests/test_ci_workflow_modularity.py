@@ -69,7 +69,7 @@ def test_parallel_profile_and_authoritative_coverage_contracts() -> None:
     rows = workers["strategy"]["matrix"]["include"]
     assert set(workers["strategy"]["matrix"]) == {"include"}
     assert [(row["python-version"], row["shard"]) for row in rows] == [
-        (version, shard) for version in ("3.11", "3.12", "3.13") for shard in (1, 2, 3, 4)
+        (version, shard) for version in ("3.12", "3.13", "3.15") for shard in (1, 2, 3, 4)
     ]
     assert all(
         row["requirements-file"]
@@ -82,9 +82,9 @@ def test_parallel_profile_and_authoritative_coverage_contracts() -> None:
     assert "if" not in workers["steps"][-1]
     job = yaml.safe_load(inventory.workflow_path_for_job("test").read_text())["jobs"]["test"]
     assert [row["python-version"] for row in job["strategy"]["matrix"]["include"]] == [
-        "3.11",
         "3.12",
         "3.13",
+        "3.15",
     ]
     steps = job["steps"]
     union = next(

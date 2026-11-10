@@ -15,7 +15,7 @@ import yaml
 
 WORKFLOW = Path(".github/workflows/differentiable-frameworks.yml")
 """Scheduled multi-version framework verification owner."""
-PYTHON_VERSIONS = ("3.11", "3.12", "3.13")
+PYTHON_VERSIONS = ("3.12", "3.13")
 """Python versions admitted by the workflow matrix."""
 
 

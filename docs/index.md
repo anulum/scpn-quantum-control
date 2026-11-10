@@ -8,7 +8,7 @@
 
 [![CI](https://github.com/anulum/scpn-quantum-control/actions/workflows/ci.yml/badge.svg)](https://github.com/anulum/scpn-quantum-control/actions/workflows/ci.yml)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](https://github.com/anulum/scpn-quantum-control/blob/main/LICENSE)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://python.org)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://python.org)
 [![Qiskit 2.2+](https://img.shields.io/badge/qiskit-2.2%2B-6929C4.svg)](https://qiskit.org)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12290/badge)](https://www.bestpractices.dev/projects/12290)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/anulum/scpn-quantum-control/badge)](https://securityscorecards.dev/viewer/?uri=github.com/anulum/scpn-quantum-control)
@@ -89,7 +89,7 @@ when the central question is whether a result can be promoted as hardware eviden
 
 | Area | Public status |
 |---|---|
-| Package line | Version `1.2.0`, Python `>=3.11`, Qiskit `>=2.2,<3.0`. |
+| Package line | Version `1.2.0`, Python `>=3.12`, Qiskit `>=2.2,<3.0`. |
 | Generic compiler surface | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` inputs and compiles Hamiltonians, dense matrices, Trotter circuits, order-parameter measurements, and Kuramoto variant trajectories. |
 | Stable integration surfaces | QRNG streaming, ML-DSA/PQC trigger signing, UltraScale+ HLS pulse emission, realtime telemetry, NV magnetometry, FRC pulsed-shot QAOA scheduling, and Studio federation manifest/evidence-bundle emission are documented from API, tutorial, and example routes. |
 | Hardware evidence | Promoted raw-count campaigns: `ibm_kingston` DLA parity Phase 1, selected Phase 2 A+G/B-C/popcount controls, and the SCPN/FIM negative/falsification result for the tested digital circuit family. Legacy `ibm_fez` rows require artefact-level citation. |

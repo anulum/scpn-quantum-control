@@ -14,7 +14,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
 from types import MappingProxyType
-from typing import Any, TypeAlias, cast
+from typing import Any, TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
@@ -407,7 +407,7 @@ def _pt_symmetric_numpy(
 
 def _pairwise_velocity(theta: FloatArray, omega: FloatArray, K_nm: FloatArray) -> FloatArray:
     phase_delta = theta[None, :] - theta[:, None]
-    return cast(FloatArray, omega + np.sum(K_nm * np.sin(phase_delta), axis=1))
+    return omega + np.sum(K_nm * np.sin(phase_delta), axis=1)
 
 
 def _order_parameter(theta: FloatArray) -> float:

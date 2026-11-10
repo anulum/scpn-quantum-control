@@ -48,9 +48,9 @@ DEFAULT_ENVIRONMENT_LOCK_INPUTS: tuple[tuple[str, str], ...] = (
     ("requirements.txt", "Runtime dependency lock input"),
     ("requirements-dev.txt", "Developer verification dependency lock input"),
     ("requirements-ci-cross-platform-smoke.txt", "Cross-platform smoke CI lockfile"),
-    ("requirements-ci-py311-linux.txt", "Python 3.11 Linux CI lockfile"),
     ("requirements-ci-py312-linux.txt", "Python 3.12 Linux CI lockfile"),
     ("requirements-ci-py313-linux.txt", "Python 3.13 Linux CI lockfile"),
+    ("requirements-ci-py315-linux.txt", "Python 3.15 Linux CI lockfile"),
     (
         "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/"
         "framework_overlay_freeze.txt",

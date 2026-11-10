@@ -184,7 +184,7 @@ class TopologyConstraintLedger:
             return matrix
         scaled = matrix.copy()
         scaled[adjustable_mask] *= target_adjustable / adjustable_sum
-        return cast(FloatArray, np.clip(scaled, self.bounds.lower, self.bounds.upper))
+        return np.clip(scaled, self.bounds.lower, self.bounds.upper)
 
     def violations(self, matrix: NDArray[np.float64]) -> ConstraintViolation:
         """Return violation magnitudes without mutating the candidate matrix."""

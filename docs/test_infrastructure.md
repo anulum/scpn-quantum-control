@@ -619,7 +619,7 @@ CI skips slow tests: `pytest -m "not slow"`.
   run: pytest tests/ -v --tb=short -x -m "not slow" --ignore=tests/test_hardware_runner.py
 ```
 
-Test matrix: Python 3.11, 3.12, 3.13.
+Test matrix: Python 3.12, 3.13, 3.15.
 Coverage target: 99.05% line coverage on the Python 3.12 lane, enforced by
 `tools/audit_coverage_policy.py` from branch-enabled `coverage.xml`. Branch data
 is mandatory but observational until the policy records an evidence-backed
@@ -701,18 +701,19 @@ not an unpinned backend downloaded into a temporary isolation environment.
 
 `requirements-dev.txt` is the authoritative input for that environment. It
 pins the build frontend (`build==1.5.1`) and backend (`hatchling==1.31.0`), and
-all Python 3.11, 3.12, and 3.13 CI locks carry those exact releases, their two
+all Python 3.12, 3.13, and 3.15 CI locks carry those exact releases, their two
 PyPI-published SHA-256 hashes, and the direct `requirements-dev.txt` ownership
 record. Regenerate each lock with its matching interpreter and the repository's
-current generator version, pip-tools 7.5.3:
+current generator version, pip-tools 7.6.2. pip-tools 7.5.3 with pip 25.2
+resolves identical pins and hashes but writes `--no-index` into the header.
 
 ```bash
-python3.11 -m piptools compile --allow-unsafe --generate-hashes \
-  --output-file=requirements-ci-py311-linux.txt requirements-dev.txt
 python3.12 -m piptools compile --allow-unsafe --generate-hashes \
   --output-file=requirements-ci-py312-linux.txt requirements-dev.txt
 python3.13 -m piptools compile --allow-unsafe --generate-hashes \
   --output-file=requirements-ci-py313-linux.txt requirements-dev.txt
+python3.15 -m piptools compile --allow-unsafe --generate-hashes \
+  --output-file=requirements-ci-py315-linux.txt requirements-dev.txt
 ```
 
 `tools/audit_ci_build_environment.py` fails closed on project metadata, root
@@ -880,7 +881,7 @@ machine, exclude the heavy lane with `-m 'not slow'`, or run in shards by path
 
 ### Complete CI partitions
 
-CI runs four workers for each Python 3.11, 3.12 and 3.13 profile. Each worker
+CI runs four workers for each Python 3.12, 3.13 and 3.15 profile. Each worker
 installs its original hash-locked dependencies and the same-run Rust wheel for
 its interpreter ABI. Normal pytest collection and marker filtering finish
 before `tools/pytest_ci_shard.py` partitions the admitted item identities.

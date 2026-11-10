@@ -61,7 +61,7 @@ or deployment path. Reproduce with
 ## Test Suite
 
 Unit, integration, property-based, regression, claim-guard, and workflow-contract
-tests run as one CI-gated suite on Python 3.11–3.13 with Qiskit 2.2+ on every
+tests run as one CI-gated suite on Python 3.12, 3.13 and 3.15 with Qiskit 2.2+ on every
 push. Current file/module counts are volatile and live only in the generated
 inventory: `docs/_generated/capability_snapshot.md` and the README capability
 snapshot.
