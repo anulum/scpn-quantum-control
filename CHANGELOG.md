@@ -88,6 +88,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   3.15 CI lock. Its engine wheel is built by maturin 1.16.0 for the image's
   CPython 3.15, and the image adds `g++`, because QuTiP has no 3.15 wheel and
   builds from source.
+- The installation guide lists the Python versions each optional extra supports:
+  most run on 3.12 to 3.15, eight upstream-gated extras on 3.12 and 3.13, and
+  `rigetti`, `oqc` and the `providers` and `all` aggregates on 3.12. It names each
+  blocker and the dependencies that build from source on 3.15.
 
 - Rust toolchain 1.99.0 → 1.99.1 (`rust-toolchain.toml`, and the Docker
   WASM builder pinned to the `rust:1.99.1-slim-bookworm` index digest). With

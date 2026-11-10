@@ -126,6 +126,28 @@ pip install -e ".[all]"
 pip install -e ".[accelerated]"
 ```
 
+## Python versions for optional extras
+
+The package supports Python 3.12 and newer. Some optional extras depend on
+vendor SDKs that do not yet support the newest Python releases. Each row below
+lists the Python versions on which the extras were installed from hash-locked
+dependencies and exercised with their tests:
+
+| Python | Extras | Reason when not 3.15 |
+| --- | --- | --- |
+| 3.12 to 3.15 | `studio`, `viz`, `config`, `logging`, `julia`, `ionq`, `app-eeg`, `app-fep`, `ibm`, `braket`, `azure`, `cirq`, `dwave`, `pasqal`, `quantinuum`, `strangeworks`, `pennylane`, `tensor`, `opensys`, `dla-parity` | — |
+| 3.12 and 3.13 | `tensorflow`, `mitigation`, `app-power-grid`, `gpu`, `qbraid`, `quandela`, `iqm`, `quera` | TensorFlow and CuPy have no 3.15 wheels; Mitiq and pandapower cap NumPy or SciPy below their 3.15 releases; qBraid needs a pyqasm prerelease; Quandela's exqalibur is a closed binary; IQM's client caps pydantic-core; QuEra's ldpc source does not build |
+| 3.12 | `rigetti`, `oqc`, and the aggregates `providers` and `all` that include them | `pyquil<5` needs `quil` 0.18, built for 3.12 at most; every `oqc-qcaas-client` release requires Python below 3.13 |
+
+On 3.15 a few dependencies build from source because they have no 3.15 wheel
+yet: QuTiP (`opensys`, `dla-parity`), PyYAML (`strangeworks`) and
+dwave-preprocessing (`dwave`). A C and C++ compiler is then required. The
+`xvalidate`, `topology`, `biology`, `app-plasma`, `jax` and `accelerated`
+extras are declared for 3.12 and newer but have not yet been exercised on 3.15.
+Pick the Python from this table when you install an extra. On a newer Python
+the install either fails to resolve or falls back to source builds of older
+releases, which is not supported.
+
 ## Rust Acceleration
 
 The optional `scpn-quantum-engine` package provides 177 Rust-accelerated PyO3 bindings
