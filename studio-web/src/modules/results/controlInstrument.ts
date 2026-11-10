@@ -52,6 +52,13 @@ export interface LatencyVerdict {
   /** Declared replay samples in seconds, not measurements of this host. */ readonly samples: readonly number[];
   /** Provenance of the samples. */ readonly clock: string;
 }
+/** A simulated closed-loop trace exactly as the source integrator produced it. */
+export interface ControlTrace {
+  /** Integrator sample times, strictly increasing and never regenerated here. */ readonly times: readonly number[];
+  /** Global order parameter at each sample time. */ readonly order: readonly number[];
+  /** Source adapter that produced the trace. */ readonly source: string;
+  /** Source claim boundary of the simulation. */ readonly boundary: string;
+}
 /** Source-owned control data parsed at the browser boundary. */
 export interface ControlInstrument {
   /** Source artefact identity. */ readonly id: string;
@@ -65,12 +72,7 @@ export interface ControlInstrument {
   /** Constraint row names, edges first. */ readonly constraintRows: readonly string[];
   /** Co-design proposals in source order. */ readonly proposals: readonly CodesignProposal[];
   /** Latency verdicts in source order. */ readonly latency: readonly LatencyVerdict[];
-  /** Simulated trace with the integrator's own timestamps. */ readonly trace: {
-    readonly times: readonly number[];
-    readonly order: readonly number[];
-    readonly source: string;
-    readonly boundary: string;
-  };
+  /** Simulated trace with the integrator's own timestamps. */ readonly trace: ControlTrace;
 }
 
 const statuses: readonly ProposalStatus[] = [
