@@ -493,7 +493,18 @@ class TestMitiqCoverage:
         assert importlib.reload(mitiq_module)._MITIQ_AVAILABLE is True
 
         monkeypatch.delitem(sys.modules, "mitiq")
-        assert importlib.reload(mitiq_module)._MITIQ_AVAILABLE is False
+        real_import = builtins.__import__
+
+        def blocked_import(name: str, *args: Any, **kwargs: Any) -> Any:
+            if name == "mitiq" or name.startswith("mitiq."):
+                raise ImportError("blocked for capability test")
+            return real_import(name, *args, **kwargs)
+
+        # Block the import so the failure path holds whether or not Mitiq is installed.
+        with monkeypatch.context() as import_patch:
+            import_patch.setattr(builtins, "__import__", blocked_import)
+            assert importlib.reload(mitiq_module)._MITIQ_AVAILABLE is False
+        importlib.reload(mitiq_module)
 
     def test_module_import_without_qiskit(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Exercise the Qiskit optional-import failure path."""
