@@ -4,6 +4,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- Whole-program AD admits the constant slices that CPython 3.14 and later
+  fold into code objects (`values[:2]` becomes a `slice` code constant). The
+  bytecode frontend, the source-match signature, captured-code memory
+  bounding and the portable captured-state digest each accept a slice whose
+  start, stop and step are themselves admitted constants. A slice with a
+  foreign bound is still refused before any of its protocols run. Before
+  this change every objective with a constant slice lost its bytecode IR on
+  3.14 and later and was refused.
+
 - The three narrowly scoped provider advisory exceptions (D-Wave `diskcache`
   CVE-2025-69872; Strangeworks `python-jose` CVE-2026-85394 and `ecdsa`
   CVE-2024-23342) were reviewed again on 10 November 2026, with the same

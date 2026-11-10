@@ -62,6 +62,12 @@ def _constant_representation_bytes(
             _constant_representation_bytes(item, memory, function_depth, depth + 1) + 2
             for item in items
         )
+    if kind is slice:
+        bounds = cast(slice, value)
+        return 24 + sum(
+            _constant_representation_bytes(item, memory, function_depth, depth + 1) + 2
+            for item in (bounds.start, bounds.stop, bounds.step)
+        )
     if kind is CodeType:
         code = cast(CodeType, value)
         for item in code.co_consts:

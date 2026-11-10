@@ -923,14 +923,17 @@ def test_helper_code_matching_preserves_docstrings_and_folded_sets(mode: str) ->
     np.testing.assert_array_equal(program_adjoint_replay_gradient(result), [coefficient])
 
 
-@pytest.mark.parametrize("payload", ["foreign", "depth", "cardinality"])
+@pytest.mark.parametrize(
+    "payload", ["foreign", "foreign_slice", "native_slice", "depth", "cardinality"]
+)
 def test_loaded_helper_code_constants_refuse_before_protocols_or_execution(payload: str) -> None:
     """Unsupported loaded constants are refused without calling equality or representation.
 
     Parameters
     ----------
     payload
-        Foreign object, excessive nesting or excessive constant cardinality.
+        Foreign object (bare or as a slice bound), a native slice absent from the
+        source, excessive nesting or excessive constant cardinality.
 
     """
     calls: list[str] = []
@@ -951,6 +954,10 @@ def test_loaded_helper_code_constants_refuse_before_protocols_or_execution(paylo
 
     if payload == "foreign":
         incoming: object = ForeignConstant()
+    elif payload == "foreign_slice":
+        incoming = slice(None, ForeignConstant())
+    elif payload == "native_slice":
+        incoming = slice(None, 2)
     elif payload == "depth":
         incoming = 3.0
         for _ in range(68):

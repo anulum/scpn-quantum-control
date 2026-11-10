@@ -1145,14 +1145,14 @@ def test_public_frontend_filename_admission_preserves_callable_forms(form: str) 
         assert active_reserved_bytes() == baseline
 
 
-@pytest.mark.parametrize("constant_kind", ["object", "tuple", "frozenset", "nested_code"])
+@pytest.mark.parametrize("constant_kind", ["object", "tuple", "frozenset", "slice", "nested_code"])
 def test_public_frontend_refuses_foreign_constants_without_protocols(constant_kind: str) -> None:
     """Keep a located source refusal before disassembly can represent a foreign value.
 
     Parameters
     ----------
     constant_kind
-        Direct, container-nested or nested-code foreign constant.
+        Direct, container-nested, slice-bounded or nested-code foreign constant.
 
     """
     calls: list[str] = []
@@ -1186,6 +1186,8 @@ def test_public_frontend_refuses_foreign_constants_without_protocols(constant_ki
         constant = (constant,)
     elif constant_kind == "frozenset":
         constant = frozenset([constant])
+    elif constant_kind == "slice":
+        constant = slice(None, constant)
     elif constant_kind == "nested_code":
         constant = original_code.replace(co_consts=(None, constant))
     function.__code__ = original_code.replace(co_consts=(None, 0, constant))
@@ -1491,7 +1493,7 @@ def test_public_frontend_keeps_outside_margin_expression_continuations(tmp_path:
 
 
 @pytest.mark.parametrize(
-    "code_shape", ["co_name", "co_qualname", "wide", "deep", "tuple_subclass"]
+    "code_shape", ["co_name", "co_qualname", "wide", "deep", "tuple_subclass", "slice_subclass"]
 )
 def test_public_frontend_refuses_non_native_or_unbounded_code_metadata(code_shape: str) -> None:
     """Refuse real loaded metadata before protocols, then recover ordinary execution.
@@ -1499,7 +1501,8 @@ def test_public_frontend_refuses_non_native_or_unbounded_code_metadata(code_shap
     Parameters
     ----------
     code_shape
-        CPython-admitted foreign name, container subclass or oversized constant graph.
+        CPython-admitted foreign name, container subclass (bare or as a slice bound)
+        or oversized constant graph.
 
     """
     calls: list[str] = []
@@ -1548,6 +1551,8 @@ def test_public_frontend_refuses_non_native_or_unbounded_code_metadata(code_shap
                 constant = (constant,)
         elif code_shape == "tuple_subclass":
             constant = ForeignTuple((3.0,))
+        elif code_shape == "slice_subclass":
+            constant = slice(None, ForeignTuple((3.0,)))
         changed_code = original_code.replace(co_consts=(None, 0, constant))
     function.__code__ = changed_code
     calls.clear()
@@ -1567,6 +1572,30 @@ def test_public_frontend_refuses_non_native_or_unbounded_code_metadata(code_shap
     np.testing.assert_array_equal(result.gradient, [3.0])
     np.testing.assert_array_equal(program_adjoint_replay_gradient(result), [3.0])
     assert calls == []
+    assert active_reserved_bytes() == baseline
+
+
+def test_public_frontend_differentiates_an_objective_with_constant_slices() -> None:
+    """Constant slices compile and differentiate on every supported interpreter.
+
+    CPython 3.14 and later fold ``values[:2]`` into a ``slice`` code constant;
+    earlier versions keep its integer bounds. Both forms must reach the same
+    bytecode frontend, derivative and adjoint replay.
+    """
+
+    def objective(values: NDArray[np.float64]) -> object:
+        left = values[:2]
+        right = values[2:4]
+        return left[0] * right[0] + left[1] * right[1]
+
+    baseline = active_reserved_bytes()
+    report = facade_compile_whole_program_frontend(objective)
+    assert report.frontend_ready
+    assert report.bytecode_instructions
+    result = whole_program_value_and_grad(objective, [1.0, 2.0, 3.0, 4.0], trace=False)
+    assert result.value == 11.0
+    np.testing.assert_array_equal(result.gradient, [3.0, 4.0, 1.0, 2.0])
+    np.testing.assert_array_equal(program_adjoint_replay_gradient(result), [3.0, 4.0, 1.0, 2.0])
     assert active_reserved_bytes() == baseline
 
 

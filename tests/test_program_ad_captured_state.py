@@ -24,7 +24,12 @@ import numpy as np
 import pytest
 from numpy.typing import NDArray
 
-from scpn_quantum_control import TraceADArray, WholeProgramADResult, whole_program_value_and_grad
+from scpn_quantum_control import (
+    TraceADArray,
+    WholeProgramADResult,
+    capture_whole_program_replay,
+    whole_program_value_and_grad,
+)
 from scpn_quantum_control.dense_budget import GIB, DenseAllocationError
 from scpn_quantum_control.differentiable import (
     program_adjoint_gradient,
@@ -1356,6 +1361,31 @@ def test_absent_dependency_global_retains_binding_when_the_namespace_changes() -
         program_adjoint_result(result)
     del mapping["coefficient"]
     np.testing.assert_array_equal(program_adjoint_replay_gradient(result), [2.0])
+    assert active_reserved_bytes() == baseline
+
+
+def test_portable_digest_binds_the_bounds_of_a_slice_code_constant() -> None:
+    """Slice constants, which CPython 3.14+ folds into code, are hashed by their bounds."""
+
+    def dependency() -> float:
+        return 2.0
+
+    original = dependency.__code__
+
+    def objective(values: TraceADArray) -> object:
+        return values[0] * (2.0 if dependency is not None else 5.0)
+
+    def digest(bounds: slice) -> str:
+        dependency.__code__ = original.replace(co_consts=(None, bounds))
+        result = whole_program_value_and_grad(objective, [3.0], trace=False)
+        return capture_whole_program_replay(result).captured_state_sha256
+
+    baseline = active_reserved_bytes()
+    first = digest(slice(None, 2))
+    assert digest(slice(None, 2)) == first
+    assert digest(slice(None, 3)) != first
+    assert digest(slice(None, 2, 1)) != first
+    dependency.__code__ = original
     assert active_reserved_bytes() == baseline
 
 

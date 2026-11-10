@@ -104,9 +104,48 @@ def test_opaque_code_constant_refuses_without_invoking_its_representation() -> N
     assert active_reserved_bytes() == baseline
 
 
+def test_opaque_slice_bound_refuses_without_invoking_its_representation() -> None:
+    """A slice constant is admitted only through bounds that are native constants."""
+    calls: list[str] = []
+
+    class Opaque:
+        def __repr__(self) -> str:
+            """Record the forbidden implicit callback."""
+            calls.append("repr")
+            return "opaque"
+
+    def dependency() -> float:
+        return 2.0
+
+    dependency.__code__ = dependency.__code__.replace(co_consts=(None, slice(None, Opaque())))
+
+    def objective(values: TraceADArray) -> object:
+        return values[0] * (2.0 if dependency is not None else 5.0)
+
+    baseline = active_reserved_bytes()
+    with pytest.raises(ValueError, match="unsupported storage"):
+        whole_program_value_and_grad(objective, [3.0], trace=False)
+    assert calls == []
+    assert active_reserved_bytes() == baseline
+
+
 @pytest.mark.parametrize(
     "constant",
-    [None, Ellipsis, True, 17, -17, 1.25, 2.0 + 3.0j, "é", b"\x00", (1, "x"), frozenset({1, 2})],
+    [
+        None,
+        Ellipsis,
+        True,
+        17,
+        -17,
+        1.25,
+        2.0 + 3.0j,
+        "é",
+        b"\x00",
+        (1, "x"),
+        frozenset({1, 2}),
+        slice(None, 2),
+        slice(1, 4, 2),
+    ],
 )
 def test_compiler_native_constants_preserve_the_live_numeric_derivative(constant: object) -> None:
     """Immutable code constants stay supported without executing a dependency.
@@ -114,7 +153,8 @@ def test_compiler_native_constants_preserve_the_live_numeric_derivative(constant
     Parameters
     ----------
     constant
-        A compiler-native immutable value stored in a captured callable's code.
+        A compiler-native immutable value stored in a captured callable's code,
+        including the constant slices CPython 3.14+ folds into ``co_consts``.
 
     """
 

@@ -109,6 +109,10 @@ def _code_signature(code: CodeType) -> object:
                     return _UNKNOWN
                 items.append(incoming)
             return frozenset(items) if type(value) is frozenset else tuple(items)
+        if type(value) is slice:
+            # CPython 3.14+ folds constant slices into co_consts; compare their bounds.
+            parts = [project(item, depth + 1) for item in (value.start, value.stop, value.step)]
+            return _UNKNOWN if any(part is _UNKNOWN for part in parts) else ("slice", *parts)
         return value if _is_static_mapping_key(value) or value is Ellipsis else _UNKNOWN
 
     return project(code, 0)

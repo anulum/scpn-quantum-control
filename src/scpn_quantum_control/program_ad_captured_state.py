@@ -305,6 +305,11 @@ class _Fingerprint:
             self.add(str(len(ordered)).encode("ascii"))
             for item in ordered:
                 self.constant(item, depth + 1)
+        elif kind is slice:
+            bounds = typing.cast(slice, value)
+            self.add(b"const-slice")
+            for item in (bounds.start, bounds.stop, bounds.step):
+                self.constant(item, depth + 1)
         else:
             self.visit(value, depth, ())
 

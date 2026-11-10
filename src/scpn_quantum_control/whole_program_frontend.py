@@ -249,7 +249,8 @@ def _bytecode_constants_are_native(code: _CodeType) -> bool:
     -------
     bool
         Whether the graph contains only native code metadata and immutable
-        compiler constants, within the existing 4096-node and 64-depth bounds
+        compiler constants (including the constant slices CPython 3.14+
+        folds into ``co_consts``), within the existing 4096-node and 64-depth bounds
         used by source-effect admission.
 
     """
@@ -273,6 +274,9 @@ def _bytecode_constants_are_native(code: _CodeType) -> bool:
             if type(value) not in (tuple, frozenset) or len(value) > remaining:
                 return False
             pending.extend((item, depth + 1) for item in value)
+        elif type(value) is slice:
+            # CPython 3.14+ folds constant slices such as ``v[:2]`` into co_consts.
+            pending.extend((item, depth + 1) for item in (value.start, value.stop, value.step))
         elif type(value) not in (
             type(None),
             type(Ellipsis),
