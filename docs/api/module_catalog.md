@@ -5,7 +5,7 @@ module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
 - **862 modules** across **41 package families**
-- **4662 documented public module-level symbols**
+- **4663 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -6455,11 +6455,11 @@ Empirical-Fisher matrix-free solves for residual-map derivatives.
 
 Reproducible CPU-only overlay profile for optional AD frameworks.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_framework_overlay.py) · Public symbols: **9**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_framework_overlay.py) · Public symbols: **10**
 
 **Classes:** `FrameworkOverlayManifest`, `FrameworkOverlayVerification`
 
-**Functions:** `default_framework_overlay_path()`, `build_framework_overlay_manifest()`, `install_framework_overlay()`, `verify_framework_overlay_manifest()`, `verify_framework_overlay_path()`, `framework_overlay_pythonpath()`, `main()`
+**Functions:** `default_framework_overlay_path()`, `build_framework_overlay_manifest()`, `base_environment_constraints()`, `install_framework_overlay()`, `verify_framework_overlay_manifest()`, `verify_framework_overlay_path()`, `framework_overlay_pythonpath()`, `main()`
 
 ### `scpn_quantum_control.differentiable_gradient_descent`
 

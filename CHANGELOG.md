@@ -4,6 +4,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+- The CPU framework overlay installer pins every package the base environment
+  already has (`base_environment_constraints`, written next to the overlay as
+  `base_environment_constraints.txt`) and passes the file to both pip calls.
+  The overlay sits first on `PYTHONPATH`, so an unpinned install had placed a
+  newer NumPy, SciPy and networkx ahead of the locked versions for every later
+  check; it now adds only the frameworks and the packages the base lacks.
+
 - The A100 reference profile uses the vendor's 9.7 TFLOPS FP64 rate instead of
   the 312 TFLOPS FP16/BF16 Tensor Core figure. GPU statevector time estimates
   rise by about 32x, and the default GPU/QPU crossover moves from 24 to 19

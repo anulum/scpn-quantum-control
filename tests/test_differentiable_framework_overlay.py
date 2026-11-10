@@ -16,12 +16,15 @@ from dataclasses import replace
 from pathlib import Path
 from typing import cast
 
+import numpy as np
 import pytest
 
 import scpn_quantum_control.differentiable_framework_overlay as overlay_module
 from scpn_quantum_control.differentiable_framework_overlay import (
+    BASE_ENVIRONMENT_CONSTRAINTS_NAME,
     CPU_FRAMEWORK_WHEELS,
     FrameworkOverlayManifest,
+    base_environment_constraints,
     build_framework_overlay_manifest,
     default_framework_overlay_path,
     framework_overlay_pythonpath,
@@ -172,6 +175,76 @@ def test_framework_overlay_install_records_versions_without_hidden_state(
         "tensorflow": "1.2.3",
         "pennylane": "1.2.3",
     }
+
+
+def test_framework_overlay_install_pins_the_base_environment(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Both pip calls are constrained to the base versions, so NumPy is never shadowed.
+
+    Parameters
+    ----------
+    tmp_path
+        Owned overlay root.
+    monkeypatch
+        Replaces the pip subprocess.
+
+    """
+    overlay = tmp_path / "overlay"
+    calls: list[tuple[str, ...]] = []
+
+    def fake_run(command: tuple[str, ...], *, check: bool) -> None:
+        assert check
+        calls.append(command)
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+    manifest = install_framework_overlay(overlay)
+
+    constraints = overlay / BASE_ENVIRONMENT_CONSTRAINTS_NAME
+    pins = constraints.read_text(encoding="utf-8").splitlines()
+    assert f"numpy=={np.__version__}" in pins
+    assert f"pytest=={pytest.__version__}" in pins
+    assert len(calls) == 2
+    for command in calls:
+        at = command.index("--constraint")
+        assert command[at + 1] == str(constraints)
+    at = manifest.install_command.index("--constraint")
+    assert manifest.install_command[at + 1] == str(constraints)
+
+
+def test_base_environment_constraints_skip_packages_inside_the_overlay(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A framework already in the overlay is not frozen; nameless metadata is skipped.
+
+    Parameters
+    ----------
+    tmp_path
+        Owned overlay root.
+    monkeypatch
+        Puts the overlay on the import path.
+
+    """
+    overlay = tmp_path / "overlay"
+    dist = overlay / "overlay_only_framework-9.9.dist-info"
+    dist.mkdir(parents=True)
+    (dist / "METADATA").write_text(
+        "Metadata-Version: 2.1\nName: overlay-only-framework\nVersion: 9.9\n",
+        encoding="utf-8",
+    )
+    nameless = tmp_path / "broken" / "nameless-0.dist-info"
+    nameless.mkdir(parents=True)
+    (nameless / "METADATA").write_text("Metadata-Version: 2.1\nVersion: 0\n", encoding="utf-8")
+    monkeypatch.syspath_prepend(str(overlay))
+    monkeypatch.syspath_prepend(str(nameless.parent))
+    outside = tmp_path / "elsewhere"
+    assert "overlay-only-framework==9.9" in base_environment_constraints(outside)
+    assert not any(line.startswith("None==") for line in base_environment_constraints(outside))
+
+    pins = base_environment_constraints(overlay)
+    assert not any(line.startswith("overlay-only-framework==") for line in pins)
+    assert f"numpy=={np.__version__}" in pins
+    assert pins == tuple(sorted(pins, key=str.lower))
 
 
 def test_framework_overlay_install_rejects_relative_path_before_subprocess(

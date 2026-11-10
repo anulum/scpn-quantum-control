@@ -10,9 +10,11 @@
 from __future__ import annotations
 
 import argparse
+import importlib.metadata
 import json
 import os
 import platform
+import re
 import subprocess  # nosec B404
 import sys
 from dataclasses import dataclass
@@ -35,6 +37,7 @@ FRAMEWORK_OVERLAY_CLAIM_BOUNDARY = (
 )
 
 DEFAULT_OVERLAY_BASENAME = "scpn-qc-framework-site-py312"
+BASE_ENVIRONMENT_CONSTRAINTS_NAME = "base_environment_constraints.txt"
 
 
 @dataclass(frozen=True)
@@ -182,6 +185,8 @@ def build_framework_overlay_manifest(
         "--target",
         str(target),
         "--upgrade",
+        "--constraint",
+        str(target / BASE_ENVIRONMENT_CONSTRAINTS_NAME),
         *CPU_FRAMEWORK_WHEELS,
     )
     return FrameworkOverlayManifest(
@@ -216,18 +221,58 @@ def _validated_overlay_install_path(overlay_path: Path) -> Path:
     return target
 
 
+def base_environment_constraints(overlay_path: Path) -> tuple[str, ...]:
+    """Pin every distribution the running interpreter already has, outside the overlay.
+
+    The overlay sits first on ``PYTHONPATH``, so a newer copy of a shared
+    dependency such as NumPy would shadow the locked base environment for every
+    later check. Pinning the base versions lets the overlay add only the
+    frameworks and the packages the base environment lacks.
+
+    Parameters
+    ----------
+    overlay_path
+        Overlay target; distributions installed there are not base packages.
+
+    Returns
+    -------
+    tuple[str, ...]
+        Sorted ``name==version`` lines, one per canonical distribution name.
+
+    """
+    target = overlay_path.expanduser().resolve()
+    pins: dict[str, str] = {}
+    for dist in importlib.metadata.distributions():
+        names = dist.metadata.get_all("Name") or []
+        name = names[0] if names else ""
+        if not name or not dist.version:
+            continue
+        location = Path(str(dist.locate_file(""))).resolve()
+        if location == target or target in location.parents:
+            continue
+        pins.setdefault(re.sub(r"[-_.]+", "-", name).lower(), f"{name}=={dist.version}")
+    return tuple(sorted(pins.values(), key=str.lower))
+
+
 def install_framework_overlay(overlay_path: Path) -> FrameworkOverlayManifest:
-    """Install the CPU-only optional-framework overlay and return its manifest."""
+    """Install the CPU-only optional-framework overlay and return its manifest.
+
+    The base environment's installed versions are written next to the overlay
+    and passed to pip as constraints, so the overlay never replaces them.
+    """
     target = _validated_overlay_install_path(overlay_path)
     target.mkdir(parents=True, exist_ok=True)
+    constraints = target / BASE_ENVIRONMENT_CONSTRAINTS_NAME
+    constraints.write_text(
+        "".join(f"{line}\n" for line in base_environment_constraints(target)), encoding="utf-8"
+    )
+    pinned = ("--target", str(target), "--upgrade", "--constraint", str(constraints))
     base_command = (
         sys.executable,
         "-m",
         "pip",
         "install",
-        "--target",
-        str(target),
-        "--upgrade",
+        *pinned,
         "jax[cpu]",
         "tensorflow-cpu",
         "pennylane",
@@ -237,9 +282,7 @@ def install_framework_overlay(overlay_path: Path) -> FrameworkOverlayManifest:
         "-m",
         "pip",
         "install",
-        "--target",
-        str(target),
-        "--upgrade",
+        *pinned,
         "--index-url",
         PYTORCH_CPU_INDEX_URL,
         "torch",
@@ -403,6 +446,7 @@ def main(argv: list[str] | None = None) -> int:
 
 
 __all__ = [
+    "BASE_ENVIRONMENT_CONSTRAINTS_NAME",
     "CPU_FRAMEWORK_WHEELS",
     "DEFAULT_OVERLAY_BASENAME",
     "FRAMEWORK_OVERLAY_ARTIFACT_ID",
@@ -411,6 +455,7 @@ __all__ = [
     "FrameworkOverlayManifest",
     "FrameworkOverlayVerification",
     "PYTORCH_CPU_INDEX_URL",
+    "base_environment_constraints",
     "build_framework_overlay_manifest",
     "default_framework_overlay_path",
     "framework_overlay_pythonpath",
