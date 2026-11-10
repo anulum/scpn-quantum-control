@@ -41,6 +41,9 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     where each CPython build's JSON reader ran out of stack; Python 3.15
     builds parse far deeper than 3.12, so the same document was refused on
     one interpreter and accepted on another.
+  - Studio workspace documents refuse hour 24 in their UTC timestamps on
+    every interpreter. CPython 3.15 reads `T24:00:00` as the next midnight,
+    while 3.12 and the browser parser refuse it.
 
 - Rust toolchain 1.99.0 → 1.99.1 (`rust-toolchain.toml`, and the Docker
   WASM builder pinned to the `rust:1.99.1-slim-bookworm` index digest). With

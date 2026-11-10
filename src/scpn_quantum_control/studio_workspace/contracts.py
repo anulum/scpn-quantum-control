@@ -241,6 +241,10 @@ def _timestamp(value: object, path: str) -> str:
         r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]{1,9})?Z", text
     ):
         raise ValueError(f"{path}: UTC timestamp required")
+    # CPython 3.15 reads hour 24 as the next midnight while 3.12 and the
+    # browser parser refuse it; refuse it here so every reader agrees.
+    if int(text[11:13]) > 23:
+        raise ValueError(f"{path}: invalid calendar timestamp")
     try:
         datetime.fromisoformat(text.replace("Z", "+00:00"))
     except ValueError as error:
