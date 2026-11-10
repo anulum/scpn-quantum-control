@@ -44,9 +44,9 @@ def _data(seed: int, count: int) -> tuple[NDArray[np.float64], NDArray[np.float6
 
 def _global_state() -> tuple[str, bytes, int, int, float]:
     """Return the legacy global NumPy random state as comparable values."""
-    name, key, position, has_gauss, gauss = cast(
-        tuple[str, NDArray[np.uint32], int, int, float], np.random.get_state()
-    )
+    state = np.random.get_state(legacy=True)
+    assert isinstance(state, tuple)
+    name, key, position, has_gauss, gauss = state
     return name, key.tobytes(), position, has_gauss, gauss
 
 

@@ -65,7 +65,9 @@ def _fisher_case(
         assert isinstance(expected_uncertainty, list)
         actual_array = np.asarray(actual_uncertainty, dtype=float)
         expected_array = np.asarray(expected_uncertainty, dtype=float)
-        assert actual_array.shape == expected_array.shape == (1, 1)
+        assert actual_array.shape == expected_array.shape
+        assert actual_array.ndim == 2
+        assert actual_array.size == 1
         np.testing.assert_allclose(actual_array, expected_array, rtol=1e-12, atol=0.0)
     assert actual == expected
     retained = capture_native_source(owner)

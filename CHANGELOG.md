@@ -31,6 +31,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     Every cohort lock takes qiskit-aer 0.18.2; the D-Wave lock takes dimod
     0.12.23 and minorminer 0.2.23, which have 3.15 wheels. New minimal-install
     locks for 3.13 and 3.15 share the 3.12 input pins.
+  - NumPy 2.5 changed the random stream of `Generator.multinomial`. The
+    Studio method-comparison interval artefact is regenerated through its
+    public producer: 49 of the 200 bootstrap rows change their standard
+    error, four of them a percentile bound, and the fixed-cohort result is
+    unchanged (182/200 covered at nominal 95%, the same negative finding).
   - The DLA parity programme reader refuses documents nested deeper than
     `MAX_NESTING_DEPTH` (512) containers. Before, the refusal depended on
     where each CPython build's JSON reader ran out of stack; Python 3.15

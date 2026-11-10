@@ -301,7 +301,9 @@ def test_source_reader_refuses_expanding_registered_codec_and_recovers(tmp_path:
         return bytes(data).decode("ascii", errors) * 2, len(data)
 
     def lookup(name: str) -> codecs.CodecInfo | None:
-        if name == "scpn_expanding":
+        # CPython 3.12 hands search functions the cookie name with an
+        # underscore; 3.15 keeps its hyphen.
+        if name.replace("-", "_") == "scpn_expanding":
             return codecs.CodecInfo(
                 name=name,
                 encode=codecs.getencoder("ascii"),
