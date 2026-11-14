@@ -191,6 +191,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     extra field, a changed digest or an inconsistent derived field raises
     `ValueError`.
 
+- The compiler trace's source-operation buttons now carry their visible label
+  in their accessible name (for example "Select source operation 1. ry (6:1)"),
+  as WCAG 2.5.3 requires and axe-core 4.14 checks.
+
 - The differentiate Studio action, when the compiled `scpn_quantum_engine`
   extension is missing, fails with a message that names the extension instead
   of a bare "No module named"; it has no Python fallback.
