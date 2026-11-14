@@ -16,6 +16,7 @@ permissions:
 jobs:
   kyma-mechanism-product-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -59,6 +60,7 @@ jobs:
           --include=*/kyma_mechanism_benchmark_product.py
   campaign-harness-product-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -102,6 +104,7 @@ jobs:
           --include=*/campaign_harness_product.py
   geometric-control-product-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -145,6 +148,7 @@ jobs:
           --include=*/geometric_control_product.py
   chimera-control-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -211,6 +215,7 @@ jobs:
           --include='*/chimera_control/*.py'
   whole-program-frontend-contracts-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -265,6 +270,7 @@ jobs:
           --include=*/whole_program_frontend_contracts.py,*/whole_program_frontend.py,*/source_admission.py
   variational-metric-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -307,6 +313,7 @@ jobs:
           --include=*/phase/variational_metric.py
   qnode-circuit-contracts-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -358,6 +365,7 @@ jobs:
           --include=*/phase/qnode_circuit_contracts.py
   topology-kernel-schema-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -405,6 +413,7 @@ jobs:
           --include=*/topology_kernel_product/schema.py,*/topology_kernel_product/synthetic.py
   feedback-loop-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -461,6 +470,7 @@ jobs:
           --include=*/hardware/feedback_loop.py,*/bridge/orchestrator_feedback.py,*/control/realtime_feedback.py
   analog-platform-catalogue-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -515,6 +525,7 @@ jobs:
   hardware-hal-quality:
     needs: analog-platform-catalogue-quality
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:

@@ -15,6 +15,7 @@ permissions:
 jobs:
   studio-replay-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -59,6 +60,7 @@ jobs:
           --include=*/hardware_result_packs.py,*/studio/executive_replay.py,*/studio/executive_cli.py
   studio-simulation-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -98,6 +100,7 @@ jobs:
           --include=*/studio/executive_simulate.py,*/studio/executive_cli.py
   p-h1-open-guard-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -152,6 +155,7 @@ jobs:
           --include=*/analysis/p_h1_open_guard.py,*/scripts/check_p_h1_open_claim_guard.py,*/analysis/persistent_homology.py,*/analysis/quantum_persistent_homology.py,*/analysis/tcbo_weighted_complex.py
   studio-qec-readiness-bundle-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -193,6 +197,7 @@ jobs:
           --include=*/studio/qec_readiness_bundle.py,*/studio/qec_resource_instrument_artifact.py
   studio-readout-mitigation-bundle-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -267,6 +272,7 @@ jobs:
           --include=*/studio/readout_mitigation_bundle.py,*/studio/mitigation_instrument_artifact.py,*/studio/committed_data.py,*/studio/pulse_instrument_artifact.py,*/studio/sensing_instrument_artifact.py,*/studio/control_proposal_instrument_artifact.py,*/studio/learning_instrument_artifact.py,*/studio/learning_instrument_templates.py,*/studio/topology_instrument_artifact.py,*/studio/topology_instrument_templates.py
   studio-scorecard-bundle-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -303,6 +309,7 @@ jobs:
           --include=*/studio/scorecard_bundle.py
   studio-web:
     runs-on: ubuntu-latest
+    timeout-minutes: 110
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     defaults:

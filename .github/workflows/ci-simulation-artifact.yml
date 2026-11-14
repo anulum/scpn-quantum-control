@@ -16,6 +16,7 @@ permissions:
 jobs:
   nqs-ansatz-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       OPENBLAS_NUM_THREADS: "1"
       OMP_NUM_THREADS: "1"
@@ -90,6 +91,7 @@ jobs:
           retention-days: 7
   accelerated-batch-execution-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -123,6 +125,7 @@ jobs:
 
   layout-relaxation-experiment-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -157,6 +160,7 @@ jobs:
           --include=*/benchmarks/layout_relaxation_experiment.py
   tn-mps-crossover-admission-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -212,6 +216,7 @@ jobs:
           tests/test_tensor_network_truncation.py
   xy-compile-recompute-artifact-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -257,6 +262,7 @@ jobs:
           --include=*/studio/xy_compile_recompute_artifact.py,*/studio/executive_compile.py,*/studio/executive_cli.py
   control-structured-ansatz-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -298,6 +304,7 @@ jobs:
           --include=*/control/structured_ansatz.py,*/phase/structured_ansatz.py
   dla-parity-witness-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -330,6 +337,7 @@ jobs:
           --include=*/analysis/dla_parity_witness.py
   hamiltonian-learning-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -362,6 +370,7 @@ jobs:
           --include=*/analysis/hamiltonian_learning.py
   phase-results-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -436,6 +445,7 @@ jobs:
 
   gradient-backend-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -488,6 +498,7 @@ jobs:
           --include=*/phase/gradient_backend.py,*/phase/provider_gradient.py,*/phase/qiskit_runtime.py,*/phase/qiskit_bridge_contracts.py
   differentiable-exact-modes-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -519,6 +530,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100 --include=*/differentiable_exact_modes.py
   mlir-whole-program-native-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -564,6 +576,7 @@ jobs:
           --include=*/compiler/mlir_whole_program_native.py,*/compiler/mlir_native_execution_evidence.py
   closed-loop-publication-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -607,6 +620,7 @@ jobs:
           --include=*/benchmarks/closed_loop_publication_run.py,*/control/closed_loop_analysis.py
   kuramoto-layout-optimiser-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -639,6 +653,7 @@ jobs:
           --include=*/hardware/kuramoto_layout_optimiser.py
   multimodal-schema-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -681,6 +696,7 @@ jobs:
   qrc-baseline-quality:
     needs: multimodal-schema-quality
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -731,6 +747,7 @@ jobs:
           --include=*/applications/qrc_baseline.py,*/applications/quantum_reservoir.py,*/surrogates/models.py,*/surrogates/train.py,*/surrogates/fidelity.py
   josephson-magnitude-study-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -763,6 +780,7 @@ jobs:
           --include=*/applications/josephson_magnitude_study.py
   dynq-layout-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -799,6 +817,7 @@ jobs:
           --include=*/hardware/qubit_mapper.py,*/hardware/dynq_layout_pass.py
   topology-kernel-classifier-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -844,6 +863,7 @@ jobs:
           --include=*/applications/quantum_kernel.py,*/topology_kernel_product/kernels.py,*/topology_kernel_product/classifier.py
   tn-mps-baseline-design-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:

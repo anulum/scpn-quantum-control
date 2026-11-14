@@ -99,6 +99,7 @@ jobs:
   ci-gate:
     needs: [static-analysis, native-build, core-science, control-provider, topology-evidence, differentiable-control, compiler-cosimulation, analysis-model, algorithm-experiment, simulation-artifact, product-deployment, assurance-policy, benchmark-evidence, application-domain, whole-program-trace, runtime-package, framework-parity, security, studio, python-tests, native-integration]
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     if: always()
     steps:
       - name: Check all CI categories passed

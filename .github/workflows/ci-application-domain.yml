@@ -16,6 +16,7 @@ permissions:
 jobs:
   phase-qnode-product-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -56,6 +57,7 @@ jobs:
           --include=*/phase_qnode_product.py,*/phase/torch_autograd_function.py
   rust-accel-import-resilience-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -98,6 +100,7 @@ jobs:
   studio-executive-benchmark-quality:
     needs: rust-accel-import-resilience-quality
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -137,6 +140,7 @@ jobs:
           --include=*/studio/executive_benchmark.py,*/studio/benchmark_databank_bundle.py
   synchronisation-witness-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -188,6 +192,7 @@ jobs:
           --include=*/phase/synchronisation_witness.py,*/benchmarks/sync_witness_evidence.py,*/studio/executive_analyse.py,*/studio/executive_cli.py
   experiment-mitigation-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -218,6 +223,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100 --include=*/hardware/experiment_mitigation.py
   research-lane-registry-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -275,6 +281,7 @@ jobs:
           --include=*/analysis/research_lane_registry.py,*/analysis/rl_discovery_agent.py,*/analysis/rl_pulse_optimizer.py,*/analysis/rl_research_governance.py,*/analysis/witness_discovery.py
   theory-hook-promotion-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -314,6 +321,7 @@ jobs:
           --include=*/analysis/theory_hook_promotion.py,*/analysis/magic_nonstabilizerness.py
   scorecard-acceptance-engine-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -344,6 +352,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100 --include=*/scorecard_acceptance_engine.py
   unsuitable-scenario-registry-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -374,6 +383,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100 --include=*/unsuitable_scenario_registry.py
   kuramoto-layout-cost-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -404,6 +414,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100 --include=*/hardware/kuramoto_layout_cost.py
   kuramoto-layout-relaxation-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -434,6 +445,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100 --include=*/hardware/kuramoto_layout_relaxation.py
   application-honesty-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -491,6 +503,7 @@ jobs:
           --include=*/applications/honesty_kits.py,*/applications/dataset_catalog.py,*/applications/eeg_classification.py,*/applications/quantum_evs.py
   layout-method-comparison-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -526,6 +539,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100 --include=*/benchmarks/layout_method_comparison.py
   phase-trainability-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -591,6 +605,7 @@ jobs:
           '--include=*/phase_qnn_model_numerics.py,*/phase_qnn_numpy_model.py,*/phase_qnn_model_quality_gates.py'
   decisive-advantage-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -637,6 +652,7 @@ jobs:
           --include=*/decisive_advantage_protocol.py,*/decisive_run_harness.py
   mlir-leaf-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -684,6 +700,7 @@ jobs:
           --include=*/mlir_enzyme_audit.py,*/mlir_enzyme_evidence.py,*/mlir_executable_kernel.py,*/mlir_matrix_2x2_native_compilation.py,*/mlir_matrix_native_compilation.py,*/mlir_phase_qnode_runtime.py,*/mlir_transform_plan_assembly.py,*/mlir_vector_native_compilation.py,*/mlir_workload_compilation.py
   phase-qnode-affinity-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -713,6 +730,7 @@ jobs:
           --include=*/qnode_affinity_benchmark.py
   phase-qnode-vector-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -741,6 +759,7 @@ jobs:
           --include=*/qnode_vector_transforms.py
   studio-program-ad-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
       SCPN_PROGRAM_AD_REQUIRE_NATIVE: "1"

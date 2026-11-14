@@ -38,6 +38,7 @@ jobs:
           - os: macos-latest
             target: aarch64
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: ./.github/actions/pinned-rust-toolchain
@@ -79,6 +80,7 @@ jobs:
 
   build-sdist:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: ./.github/actions/pinned-rust-toolchain
@@ -98,6 +100,7 @@ jobs:
   publish:
     needs: [build-wheels, build-sdist]
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     if: startsWith(github.ref, 'refs/tags/engine-v')
     environment: pypi
     steps:

@@ -16,6 +16,7 @@ permissions:
 jobs:
   dla-topology-parity-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -106,6 +107,7 @@ jobs:
           --include=*/dla_topology_control/parity.py,*/dla_topology_control/evidence.py,*/analysis/dla_parity_exact_baseline.py,*/analysis/dla_parity_theorem.py,*/analysis/two_colour_schedule.py,*/dla_parity/__init__.py,*/dla_parity/baselines.py,*/dla_parity/dataset.py,*/dla_parity/reproduce.py,*/scripts/run_dla_parity_exact_baseline.py
   topology-kernel-evidence-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -148,6 +150,7 @@ jobs:
           --include=*/topology_kernel_product/evidence.py
   kyma-v2-dynamics-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -220,6 +223,7 @@ jobs:
           --include=*/benchmarks/kyma_v2/dynamics.py,*/benchmarks/kyma_v2/task.py,*/benchmarks/kyma_v2/probe.py
   kyma-dynamics-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -277,6 +281,7 @@ jobs:
           --include=*/benchmarks/kyma/dynamics.py,*/benchmarks/kyma/task.py,*/benchmarks/kyma/probe.py
   kyma-v2-coupling-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -311,6 +316,7 @@ jobs:
           --include=*/benchmarks/kyma_v2/coupling.py
   kyma-v3-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -373,6 +379,7 @@ jobs:
           --include=*/benchmarks/kyma_v3/*.py,*/scripts/run_kyma_v3_probe.py,*/scripts/run_kyma_v3_ablation.py
   differentiable-audit-contracts-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -422,6 +429,7 @@ jobs:
           --include=*/phase/differentiable_audit_contracts.py,*/phase/differentiable_audit.py
   dla-topology-optimizer-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -464,6 +472,7 @@ jobs:
           --include=*/dla_topology_control/optimizer.py
   dla-topology-schema-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -506,6 +515,7 @@ jobs:
           --include=*/dla_topology_control/schema.py
   fusion-core-frc-bridge-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -558,6 +568,7 @@ jobs:
           --include=*/bridge/fusion_core_frc.py,*/control/qaoa_pulsed_cost.py
   hardware-experiment-vqe-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -604,6 +615,7 @@ jobs:
           --include=*/hardware/experiment_vqe.py
   transform-support-matrix-artifact-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -657,6 +669,7 @@ jobs:
           --include=*/differentiable_transform_support_matrix_artifact.py,*/studio/support_matrix_bundle.py
   gradient-plan-explanation-artifact-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:

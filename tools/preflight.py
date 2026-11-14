@@ -975,6 +975,10 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
         [_PY, "tools/audit_workflow_environment_contracts.py"],
     ),
     (
+        "workflow job timeouts",
+        [_PY, "tools/audit_workflow_job_timeouts.py"],
+    ),
+    (
         "ruff check",
         [
             _PY,

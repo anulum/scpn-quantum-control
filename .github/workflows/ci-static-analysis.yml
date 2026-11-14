@@ -16,6 +16,7 @@ permissions:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     env:
       # The differentiable promotion-language audit imports scpn_quantum_control, which
       # now imports the standalone oscillatools distribution; expose its source tree.
@@ -135,6 +136,13 @@ jobs:
         run: python tools/audit_workflow_environment_contracts.py
       - name: Verify the workflow environment gate itself
         run: python -m pytest -q tests/test_audit_workflow_environment_contracts.py
+      - name: Hold every workflow job to a bounded timeout
+        # Without timeout-minutes a hung job holds a runner for GitHub's
+        # 360-minute default and ends cancelled instead of failing near its
+        # measured duration.
+        run: python tools/audit_workflow_job_timeouts.py
+      - name: Verify the workflow timeout gate itself
+        run: python -m pytest -q tests/test_audit_workflow_job_timeouts.py
       - name: Enforce the published-record freeze (read-only preprints)
         run: |
           python -m mypy --strict --explicit-package-bases \
@@ -737,6 +745,7 @@ jobs:
     # repository ran cargo build, test and doc without ever running clippy, and
     # `cargo doc` emits a page for an undocumented item without complaint.
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: ./.github/actions/pinned-rust-toolchain
@@ -767,6 +776,7 @@ jobs:
     # never turns it into one. This job runs Julia's own parser, and the tool
     # raises rather than reporting a clean surface when Julia is absent.
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       # The verify step imports the package through tests/conftest.py, and this
       # job neither installs the project nor sets a path without this.
@@ -800,6 +810,7 @@ jobs:
 
   split-boundary-guard:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: src:oscillatools/src
     steps:
@@ -835,6 +846,7 @@ jobs:
 
   test-documentation-ceiling:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: src:oscillatools/src
     steps:
@@ -871,6 +883,7 @@ jobs:
 
   git-location-isolation:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: src:oscillatools/src
     steps:
@@ -897,6 +910,7 @@ jobs:
 
   source-surface-inventory:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: src:oscillatools/src
     steps:
@@ -932,6 +946,7 @@ jobs:
 
   shell-script-lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: src:oscillatools/src
     steps:
@@ -960,6 +975,7 @@ jobs:
 
   licence-information-lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0

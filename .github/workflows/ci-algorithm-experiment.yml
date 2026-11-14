@@ -16,6 +16,7 @@ permissions:
 jobs:
   program-ad-alias-analysis-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -55,6 +56,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100 --include=*/program_ad_alias_analysis.py
   general-unitary-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -89,6 +91,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100 --include=*/phase/general_unitary.py
   gpu-batch-vqe-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -124,6 +127,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100 --include=*/phase/gpu_batch_vqe.py
   avqds-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -163,6 +167,7 @@ jobs:
           --include=*/phase/avqds.py
   ansatz-benchmark-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -206,6 +211,7 @@ jobs:
           --include=*/phase/ansatz_bench.py,*/benchmarks/appqsim_protocol.py
   symmetry-verification-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -245,6 +251,7 @@ jobs:
           --include=*/mitigation/symmetry_verification.py
   experiment-helpers-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -287,6 +294,7 @@ jobs:
           --include=*/hardware/_experiment_helpers.py
   predictive-coding-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -329,6 +337,7 @@ jobs:
           --include=*/fep/predictive_coding.py
   hierarchical-keys-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -380,6 +389,7 @@ jobs:
           --include=*/crypto/hierarchical_keys.py,*/crypto/topology_auth.py
   sync-uncertainty-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -443,6 +453,7 @@ jobs:
           --include=*/analysis/sync_uncertainty.py,*/mitigation/zne_uncertainty.py,*/studio/executive_mitigate.py,*/studio/executive_cli.py
   coupling-invariant-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -489,6 +500,7 @@ jobs:
           --include=*/studio/coupling_invariant.py
   experiment-dynamics-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -532,6 +544,7 @@ jobs:
           --include=*/hardware/experiment_dynamics.py
   phase-artifact-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:

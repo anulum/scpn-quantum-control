@@ -16,6 +16,7 @@ permissions:
 jobs:
   whole-program-ad-product-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -118,6 +119,7 @@ jobs:
           --include=*/benchmarks/differentiable_programming_contracts.py,*/benchmarks/differentiable_programming_quantum.py
   neural-operator-cost-model-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -148,6 +150,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100 --include=*/neural_operator_cost_model.py
   neural-operator-baseline-product-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -186,6 +189,7 @@ jobs:
           --include=*/neural_operator_baseline_product.py,*/forecasting/neural_operator_advantage.py
   entanglement-sync-evidence-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -238,6 +242,7 @@ jobs:
           --include=*/entanglement_sync_evidence.py,*/entanglement_enhanced_sync.py,*/sync_entanglement_witness.py
   bench-cli-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -280,6 +285,7 @@ jobs:
           --include=*/bench_cli.py,*/benchmarks/s3_design_protocol.py
   identity-binding-spec-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -312,6 +318,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100 --include=*/identity/binding_spec.py
   identity-coherence-budget-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -342,6 +349,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100 --include=*/identity/coherence_budget.py
   identity-robustness-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -372,6 +380,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100 --include=*/identity/robustness.py
   backend-selector-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -402,6 +411,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100 --include=*/phase/backend_selector.py
   logging-setup-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -432,6 +442,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100 --include=*/logging_setup.py
   ssgf-geometry-gradient-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -490,6 +501,7 @@ jobs:
           --include=*/ssgf_geometry_gradient_product.py,*/ssgf/quantum_gradient.py,*/ssgf/quantum_outer_cycle.py,*/ssgf/quantum_spectral.py,*/bridge/ssgf_w_adapter.py
   codesign-components-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -536,6 +548,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100 --include=*/codesign/components.py,*/codesign/loop.py,*/codesign/__init__.py,*/codesign/algorithm_design.py,*/codesign/algorithm_design_contracts.py,*/tools/codesign_components_quality_gates.py
   enaqt-evidence-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -568,6 +581,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100 --include=*/analysis/enaqt_evidence.py
   diff-contract-audit-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -606,6 +620,7 @@ jobs:
           --include=*/scpn_quantum_control/diff.py,*/scpn_quantum_control/diff_contract_audit.py,*/scpn/diff.py,*/scpn/__init__.py
   coupling-recovery-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -644,6 +659,7 @@ jobs:
           --include=*/phase/coupling_time_series_recovery.py,*/benchmarks/coupling_recovery_evidence.py
   governed-route-matrix-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -674,6 +690,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100 --include=*/governed_route_matrix.py
   attested-result-pack-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -704,6 +721,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100 --include=*/attested_result_pack.py
   open-system-objective-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -742,6 +760,7 @@ jobs:
           --include=*/benchmarks/open_system_objective_evidence.py,*/phase/open_system_objectives.py
   external-validation-manifest-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -775,6 +794,7 @@ jobs:
           --include=*/differentiable_external_validation.py
   gradient-tape-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -811,6 +831,7 @@ jobs:
           --include=*/phase/gradient_tape.py,*/phase/qnode_tape.py
   fault-tolerant-resource-product-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:

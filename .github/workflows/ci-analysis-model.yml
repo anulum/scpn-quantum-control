@@ -16,6 +16,7 @@ permissions:
 jobs:
   koopman-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -62,6 +63,7 @@ jobs:
           --include=*/analysis/koopman.py
   quantum-phi-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -120,6 +122,7 @@ jobs:
           --include=*/analysis/quantum_phi.py,*/analysis/integrated_information_phi.py,*/analysis/sync_order_parameter.py
   qpu-result-pack-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -185,6 +188,7 @@ jobs:
           --include=*/studio/qpu_result_pack.py,*/studio/executive_execute.py,*/studio/executive_cli.py
   error-aware-chain-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -225,6 +229,7 @@ jobs:
   kuramoto-variants-quality:
     needs: error-aware-chain-quality
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -285,6 +290,7 @@ jobs:
   kuramoto-core-quality:
     needs: kuramoto-variants-quality
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -342,6 +348,7 @@ jobs:
           --include=*/kuramoto_core.py
   mps-evolution-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -422,6 +429,7 @@ jobs:
           --include=*/phase/mps_evolution.py,*/phase/mps_diagnostics.py,*/phase/contraction_optimiser.py,*/benchmarks/mps_baseline.py
   knm-key-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -470,6 +478,7 @@ jobs:
           --include=*/crypto/knm_key.py,*/crypto/noise_analysis.py
   differentiable-implicit-sensitivity-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -517,6 +526,7 @@ jobs:
           '--include=*/differentiable_implicit_sensitivity.py,*/differentiable_implicit_kkt.py'
   differentiable-residual-weights-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -555,6 +565,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100 --include=*/differentiable_residual_weights.py
   differentiable-consistency-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -593,6 +604,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100 --include=*/differentiable_consistency.py
   differentiable-jax-adapter-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:

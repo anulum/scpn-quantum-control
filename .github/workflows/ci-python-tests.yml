@@ -16,6 +16,7 @@ permissions:
 jobs:
   python-test-timings:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
@@ -60,6 +61,7 @@ jobs:
   python-test-shards:
     needs: python-test-timings
     runs-on: ubuntu-latest
+    timeout-minutes: 55
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     strategy:
@@ -151,6 +153,7 @@ jobs:
 
   program-ad-replay:
     runs-on: ubuntu-latest
+    timeout-minutes: 35
     env:
       CARGO_TARGET_DIR: ${{ github.workspace }}/scpn_quantum_engine/target
     steps:
@@ -186,6 +189,7 @@ jobs:
 
   python-sharding-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}
     steps:

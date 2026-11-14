@@ -16,6 +16,7 @@ permissions:
 jobs:
   kuramoto-model-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
       OPENBLAS_NUM_THREADS: "1"
@@ -218,6 +219,7 @@ jobs:
           '--include=*/kuramoto_system.py,*/diff_kuramoto_adaptive.py,*/diff_kuramoto_dopri.py,*/kuramoto_adaptive.py,*/kuramoto_delayed.py,*/kuramoto_scipy_interop.py,*/sparse_kuramoto.py,*/diff_kuramoto_delay_sensitivity.py,*/diff_kuramoto_noisy.py,*/tools/kuramoto_solver_quality_gates.py'
   stable-core-product-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -261,6 +263,7 @@ jobs:
           --include=*/stable_core_product.py
   open-system-completeness-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -314,6 +317,7 @@ jobs:
           --include=*/open_system_mcwf_product.py,*/phase/tensor_jump.py,*/phase/mcwf_evidence.py
   thermo-readiness-product-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -371,6 +375,7 @@ jobs:
           --include=*/thermo_readiness_product.py,*/thermodynamics/readiness.py
   adaptive-branching-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -427,6 +432,7 @@ jobs:
           --include=*/control/adaptive_branching.py
   quantum-sensing-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -499,6 +505,7 @@ jobs:
           --include=*/analysis/sensing.py,*/sensing/nv_magnetometry_20T.py,*/sensing/domain_evidence.py
   phase-coupling-learning-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -547,6 +554,7 @@ jobs:
           --include=*/phase/coupling_learning.py
   phase-objectives-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -595,6 +603,7 @@ jobs:
           --include=*/phase/objectives.py
   provider-gradient-audit-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -663,6 +672,7 @@ jobs:
           --include=*/phase/provider_gradient_audit.py,*/phase/provider_hardware_gradient_audit.py,*/phase/provider_hardware_safety_audit.py,*/phase/hardware_gradient_campaign.py,*/phase/hardware_gradient_publication.py
   entropy-randomness-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -719,6 +729,7 @@ jobs:
           --include=*/entropy/nist_sp800_22.py,*/entropy/qrng_stream.py
   topology-control-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -775,6 +786,7 @@ jobs:
           --include=*/topology_control/constraints.py,*/topology_control/objectives.py
   quantum-sync-oracle-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -818,6 +830,7 @@ jobs:
           --include=*/quantum_sync_challenge_oracle_product.py
   custom-derivatives-product-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:

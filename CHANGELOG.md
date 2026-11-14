@@ -76,6 +76,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   changes only in the Qiskit entry. The compiler trace examples record the
   new compiler version and were regenerated through their native
   producers; the compiled passes themselves are unchanged.
+- Every workflow job that runs steps has a `timeout-minutes` bound, set from
+  measured hosted durations (twice the 95th percentile, at least 1.25 times the
+  longest successful run and at least 10 minutes, rounded up to 5) instead of
+  GitHub's 360-minute default. `tools/audit_workflow_job_timeouts.py` fails CI
+  and preflight when a job lacks one.
 - Studio tooling: Node 26 LTS in the Studio, docs and remote-release jobs;
   pnpm 11.9.0 → 12.17.0; TypeScript 5.9.3 → 6.0.3, the newest release TypeDoc
   0.28.20 supports; vitest and its V8 coverage 4.1.12 → 5.1.0; vite 8.3.5,

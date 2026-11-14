@@ -53,6 +53,7 @@ permissions:
 jobs:
   criterion:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     continue-on-error: true
     defaults:
       run:

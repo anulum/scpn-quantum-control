@@ -16,6 +16,7 @@ permissions:
 jobs:
   security:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src
     steps:
@@ -31,6 +32,7 @@ jobs:
       - run: pip-audit -r requirements-ci-py315-linux.txt --no-deps --desc on
   rust-audit:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     defaults:
       run:
         working-directory: scpn_quantum_engine

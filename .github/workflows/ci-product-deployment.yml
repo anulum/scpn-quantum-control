@@ -16,6 +16,7 @@ permissions:
 jobs:
   error-mitigation-product-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -102,6 +103,7 @@ jobs:
           if-no-files-found: error
   cloud-native-deployment-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -153,6 +155,7 @@ jobs:
           --include=*/cloud_native_deployment_product.py,*/deployment/cloud_native.py
   control-stack-compose-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -212,6 +215,7 @@ jobs:
           --include=*/control_stack_compose_product.py,*/control_stack_runtime_adapters.py,*/control/qaoa_mpc.py
   public-api-stability-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -255,6 +259,7 @@ jobs:
           --include=*/public_api_stability.py
   polyglot-parity-certificate-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -298,6 +303,7 @@ jobs:
           --include=*/polyglot_parity_certificate.py
   program-ad-fuzz-assurance-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -341,6 +347,7 @@ jobs:
           --include=*/program_ad_fuzz_assurance.py
   multi-hal-federation-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -371,6 +378,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100 --include=*/multi_hal_federation_product.py
   hermetic-reproduction-kit-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -401,6 +409,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100 --include=*/hermetic_reproduction_kit.py
   hardware-safe-execution-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -476,6 +485,7 @@ jobs:
           --include=*/hardware_safe_execution.py,*/active_sensing_product.py,*/hardware/feedback_capability_probe.py,*/hardware/feedback_dryrun.py,*/hardware/feedback_hardware_scheduler.py,*/hardware/feedback_submission.py,*/hardware/job_dossier.py,*/hardware/pulse_feasibility.py,*/hardware/s1_feedback_ibm.py
   qpu-compute-product-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -506,6 +516,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100 --include=*/qpu_compute_product.py
   wirtinger-implicit-product-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -549,6 +560,7 @@ jobs:
           --include=*/wirtinger_implicit_product.py,*/wirtinger_calculus.py
   migration-guides-product-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -596,6 +608,7 @@ jobs:
           --include=*/migration_guides_product.py,*/phase/pennylane_import.py
   visualisation-dashboard-product-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -626,6 +639,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100 --include=*/visualisation_dashboard_product.py
   stochastic-estimators-product-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -662,6 +676,7 @@ jobs:
           --include=*/stochastic_estimators_product.py,*/differentiable_stochastic_estimators.py
   differentiable-notebook-curriculum-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -692,6 +707,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100 --include=*/differentiable_notebook_curriculum.py
   studio-executive-product-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:

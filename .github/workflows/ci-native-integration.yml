@@ -20,6 +20,7 @@ permissions:
 jobs:
   ml-dsa-seal-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -77,6 +78,7 @@ jobs:
           --include=*/crypto/ml_dsa_seal.py
   studio-executive-differentiate-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -150,6 +152,7 @@ jobs:
           --include=*/studio/executive_differentiate.py
   pulse-shaping-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -201,6 +204,7 @@ jobs:
           --include=*/phase/pulse_shaping.py
   openpulse-control-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -250,6 +254,7 @@ jobs:
           --include=*/hardware/openpulse_control.py
   dla-protected-memory-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -321,6 +326,7 @@ jobs:
           -k dla_protected_memory_metrics
   fep-ffi-contract-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -395,6 +401,7 @@ jobs:
           --precision=2 --show-missing --fail-under=100
   hls-cosimulation-evidence-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -453,6 +460,7 @@ jobs:
           --include=*/hls_cosimulation_evidence.py,*/codegen/ultrascale_hls.py
   magnetisation-sectors-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -534,6 +542,7 @@ jobs:
           --include=*/analysis/magnetisation_sectors.py,*/analysis/spectral_form_factor.py,*/analysis/symmetry_sectors.py,*/analysis/translation_symmetry.py
   sparse-hamiltonian-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -592,6 +601,7 @@ jobs:
           --include=*/bridge/sparse_hamiltonian.py,*/bridge/knm_hamiltonian.py
   result-pack-seal-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -634,6 +644,7 @@ jobs:
   test:
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     strategy:
@@ -809,6 +820,7 @@ jobs:
   hardware-smoke:
     needs: test
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     if: github.ref == 'refs/heads/main'
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
@@ -824,6 +836,7 @@ jobs:
   integration-optional:
     needs: test
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     if: github.ref == 'refs/heads/main'
     continue-on-error: true
     env:
@@ -841,6 +854,7 @@ jobs:
         run: pytest tests/test_snn_neurocore_e2e.py tests/test_cross_repo_wiring.py -v --tb=short
   studio-conformance:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:

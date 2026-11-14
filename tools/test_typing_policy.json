@@ -948,6 +948,7 @@
         "tests/test_audit_local_environment_parity.py",
         "tests/test_audit_test_quality.py",
         "tests/test_audit_workflow_environment_contracts.py",
+        "tests/test_audit_workflow_job_timeouts.py",
         "tests/test_avqds.py",
         "tests/test_avqds_quality_gate.py",
         "tests/test_backend_dispatch_branches.py",

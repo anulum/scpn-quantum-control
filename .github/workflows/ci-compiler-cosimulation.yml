@@ -16,6 +16,7 @@ permissions:
 jobs:
   circuit-preservation-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
       OPENBLAS_NUM_THREADS: "1"
@@ -72,6 +73,7 @@ jobs:
           --include=*/compiler/circuit_pass_records.py,*/compiler/circuit_source.py,*/compiler/circuit_pass_qualification.py,*/tools/circuit_preservation_quality_gates.py
   program-ad-adjoint-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -216,6 +218,7 @@ jobs:
           python -m pytest --noconftest --no-cov -q tests/test_native_program_execution.py
   scientific-problem-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
       OPENBLAS_NUM_THREADS: "1"
@@ -270,6 +273,7 @@ jobs:
           --include=*/kuramoto_core.py,*/scientific_design.py,*/scientific_problem_parameters.py,*/tools/scientific_problem_quality_gates.py
   qpu-compute-types-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -326,6 +330,7 @@ jobs:
           --include=*/qpu_compute_types.py,*/bridge/qpu_data_artifact.py
   cosimulation-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -368,6 +373,7 @@ jobs:
           --include=*/cosimulation/knm_partition.py,*/cosimulation/quantum_classical.py
   dla-topology-objectives-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -412,6 +418,7 @@ jobs:
           --include=*/dla_topology_control/objectives.py
   dla-topology-projection-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
@@ -455,6 +462,7 @@ jobs:
           --include=*/dla_topology_control/projection.py
   quantum-neuromorphic-bridge-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
     steps:
