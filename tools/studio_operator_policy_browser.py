@@ -15,6 +15,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Final
 
 from tools.studio_preview_custody import run_custodied_journey
+from tools.studio_workbench_steps import (
+    check_recompute_and_draft,
+    open_operations_panel,
+    storage_writes,
+)
 
 if TYPE_CHECKING:
     from playwright.sync_api import Locator, Page
@@ -31,16 +36,6 @@ CASES: Final = {
     "over_time": "time_limit_ms_ceiling",
 }
 DRAFT: Final = '{"unsaved":"operator retained α draft"}'
-WRITE_PROBE: Final = """() => {
-    window.operatorWriteObservations = [];
-    for (const name of ['put','add','delete','clear']) {
-        const native = IDBObjectStore.prototype[name];
-        IDBObjectStore.prototype[name] = function(...args) {
-            window.operatorWriteObservations.push(name);
-            return native.apply(this,args);
-        };
-    }
-}"""
 
 
 def _open_policy(page: Page, url: str, observations: list[str]) -> Locator:
@@ -63,14 +58,9 @@ def _open_policy(page: Page, url: str, observations: list[str]) -> Locator:
     """
     from playwright.sync_api import expect
 
-    page.goto(url, wait_until="networkidle")
-    page.get_by_label("Workspace archive JSON").fill(DRAFT)
-    page.evaluate(WRITE_PROBE)
-    destination = page.get_by_role("navigation", name="Workbench context destinations")
-    destination.get_by_role("link", name="Devices & Operations").focus()
-    page.keyboard.press("Enter")
-    panel = page.get_by_role("region", name="Operator policy inspector", exact=True)
-    expect(panel).to_be_visible()
+    panel = open_operations_panel(
+        page, url, DRAFT, "operatorWriteObservations", "Operator policy inspector"
+    )
     expect(panel.get_by_role("button", name="Export admitted policy")).to_be_disabled()
     panel.get_by_role("button", name="Open policy example").click()
     expect(panel.get_by_label("Estimated cost", exact=True)).to_have_text("unknown")
@@ -163,32 +153,6 @@ def _check_source_and_export(page: Page, panel: Locator, observations: list[str]
     observations.append("exact-native-policy-export")
 
 
-def _check_recompute_and_draft(page: Page, observations: list[str]) -> None:
-    """Recompute the built WASM claim in Model and find the draft kept in Workspace.
-
-    Parameters
-    ----------
-    page
-        Owned page bound to the preview.
-    observations
-        Caller-owned list that records each contract once it holds.
-
-    """
-    from playwright.sync_api import expect
-
-    views = page.get_by_role("navigation", name="Workbench views")
-    views.get_by_role("link", name="Model", exact=True).click()
-    recompute = page.locator('[id="/build/compile-recompute"]')
-    recompute.get_by_role("button", name="Recompute in browser").click()
-    expect(recompute.get_by_role("status")).to_have_text(
-        "recomputed digest matches the signed claim"
-    )
-    observations.append("original-built-wasm-recompute")
-    views.get_by_role("link", name="Workspace", exact=True).click()
-    expect(page.get_by_label("Workspace archive JSON")).to_have_value(DRAFT)
-    observations.append("original-workspace-draft-preserved")
-
-
 def _walk(
     page: Page,
     url: str,
@@ -225,11 +189,11 @@ def _walk(
     records.extend(_check_case(panel, case, reason) for case, reason in CASES.items())
     observations.append("all-eight-native-verdicts-exact-integers-and-provenance")
     _check_source_and_export(page, panel, observations)
-    writes = page.evaluate("window.operatorWriteObservations")
+    writes = storage_writes(page, "operatorWriteObservations")
     assert writes == [], writes
     evidence["policy_storage_write_observations"] = writes
     observations.append("actual-policy-storage-write-custody")
-    _check_recompute_and_draft(page, observations)
+    check_recompute_and_draft(page, DRAFT, observations)
     assert kernels, "Actual built WASM was not requested"
     return {}
 

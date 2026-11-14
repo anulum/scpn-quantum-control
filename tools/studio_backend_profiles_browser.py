@@ -13,12 +13,16 @@ import json
 from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Final
 
 from tools.studio_preview_custody import run_custodied_journey
+from tools.studio_workbench_steps import check_recompute_and_draft
 
 if TYPE_CHECKING:
     from playwright.sync_api import Locator, Page
+
+
+DRAFT: Final = '{"unsaved":"exact retained α draft"}'
 
 
 @dataclass(frozen=True)
@@ -92,7 +96,7 @@ def _open_profiles(page: Page, url: str) -> Locator:
     from playwright.sync_api import expect
 
     page.goto(url, wait_until="networkidle")
-    page.get_by_label("Workspace archive JSON").fill('{"unsaved":"exact retained α draft"}')
+    page.get_by_label("Workspace archive JSON").fill(DRAFT)
     destination = page.get_by_role("navigation", name="Workbench context destinations")
     destination.get_by_role("link", name="Devices & Operations").focus()
     page.keyboard.press("Enter")
@@ -232,25 +236,11 @@ def _walk(
         Workspace writes and the offline envelope digest.
 
     """
-    from playwright.sync_api import expect
-
     panel = _open_profiles(page, url)
     _check_declared(panel, observations)
     _check_import(panel, fx, observations)
     _check_switch_and_export(page, panel, fx, observations)
-    views = page.get_by_role("navigation", name="Workbench views")
-    views.get_by_role("link", name="Model", exact=True).click()
-    recompute = page.locator('[id="/build/compile-recompute"]')
-    recompute.get_by_role("button", name="Recompute in browser").click()
-    expect(recompute.get_by_role("status")).to_have_text(
-        "recomputed digest matches the signed claim"
-    )
-    observations.append("original-built-wasm-recompute")
-    views.get_by_role("link", name="Workspace", exact=True).click()
-    expect(page.get_by_label("Workspace archive JSON")).to_have_value(
-        '{"unsaved":"exact retained α draft"}'
-    )
-    observations.append("original-workspace-draft-preserved")
+    check_recompute_and_draft(page, DRAFT, observations)
     assert kernels, "Actual built WASM was not requested"
     return {"workspace_writes": 0, "profile_envelope_sha256": fx.envelope}
 

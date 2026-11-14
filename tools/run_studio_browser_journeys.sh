@@ -284,3 +284,12 @@ STUDIO_PREVIEW_DIR="$RUNNER_TEMP/studio-browser-preview" \
 python -m coverage report --rcfile=/dev/null \
     --data-file="$RUNNER_TEMP/studio-preview-custody.coverage" \
     --include="*/tools/studio_preview_custody.py" --precision=2 --show-missing --fail-under=100
+
+STUDIO_PREVIEW_DIR="$RUNNER_TEMP/studio-browser-preview" \
+    python -m coverage run --rcfile=/dev/null --branch --concurrency=greenlet \
+    --data-file="$RUNNER_TEMP/studio-workbench-steps.coverage" \
+    --include="*/tools/studio_workbench_steps.py" \
+    -m pytest --noconftest -q tools/tests/test_studio_operator_policy_browser.py
+python -m coverage report --rcfile=/dev/null \
+    --data-file="$RUNNER_TEMP/studio-workbench-steps.coverage" \
+    --include="*/tools/studio_workbench_steps.py" --precision=2 --show-missing --fail-under=100

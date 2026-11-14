@@ -11,12 +11,231 @@ from __future__ import annotations
 
 import hashlib
 import json
-from importlib.metadata import version
+from functools import partial
 from pathlib import Path
-from typing import cast
-from urllib.parse import urlsplit
+from typing import TYPE_CHECKING, Final, cast
 
-from tools.studio_preview_custody import preview_route_guard
+from tools.studio_preview_custody import run_custodied_journey
+from tools.studio_workbench_steps import (
+    check_recompute_and_draft,
+    open_operations_panel,
+    storage_writes,
+)
+
+if TYPE_CHECKING:
+    from playwright.sync_api import Locator, Page
+
+
+DRAFT: Final = '{"unsaved":"original job inspection draft α"}'
+RECORD: Final = "providerJobWriteObservations"
+FIXTURE: Final = (
+    Path(__file__).resolve().parents[1] / "data/studio/provider_observation_cases.json"
+)
+
+
+def _admit(
+    panel: Locator,
+    cases: dict[str, str],
+    records: list[dict[str, object]],
+    case: str,
+    refresh: bool = False,
+) -> None:
+    """Read an original native capture and compare exact source identity and state.
+
+    Parameters
+    ----------
+    panel
+        The provider job journal.
+    cases
+        Original native captures by case name.
+    records
+        Record of each admitted observation.
+    case
+        Capture to admit.
+    refresh
+        Whether the capture refreshes the retained job instead of importing it.
+
+    """
+    from playwright.sync_api import expect
+
+    raw = cases[case]
+    unit = json.loads(raw)
+    body = unit["body"]
+    panel.get_by_label("Provider observation JSON", exact=True).fill(raw)
+    action = "Refresh existing job observation" if refresh else "Import existing job observation"
+    button = panel.get_by_role("button", name=action, exact=True)
+    button.click()
+    expect(button).to_be_enabled()
+    expect(panel.get_by_label("Provider observation digest")).to_have_text(unit["sha256"])
+    expect(panel.get_by_label("Provider attempt identity")).to_have_text(body["attempt_id"])
+    expect(panel.get_by_label("Provider payload digest")).to_have_text(body["payload_sha256"])
+    expect(panel.get_by_label("Local job state")).to_have_text(body["local_state"])
+    records.append({"case": case, "sha256": unit["sha256"], "attempt_id": body["attempt_id"]})
+
+
+def _refresh_twice(panel: Locator, raw: str, state: str | None, digest: str) -> None:
+    """Refresh the same capture twice and require the retained digest and state.
+
+    Parameters
+    ----------
+    panel
+        The provider job journal.
+    raw
+        Capture text to refresh with.
+    state
+        Local job state to require, or None to skip that check.
+    digest
+        Observation digest that must stay unchanged.
+
+    """
+    from playwright.sync_api import expect
+
+    for _ in range(2):
+        panel.get_by_label("Provider observation JSON", exact=True).fill(raw)
+        button = panel.get_by_role("button", name="Refresh existing job observation")
+        button.click()
+        expect(button).to_be_enabled()
+        if state is not None:
+            expect(panel.get_by_label("Local job state")).to_have_text(state)
+        expect(panel.get_by_label("Provider observation digest")).to_have_text(digest)
+
+
+def _check_history(
+    panel: Locator,
+    cases: dict[str, str],
+    records: list[dict[str, object]],
+    observations: list[str],
+) -> str:
+    """Follow unknown dispatch, submission, cancellation intent, completion and a late partial.
+
+    Parameters
+    ----------
+    panel
+        The provider job journal.
+    cases
+        Original native captures by case name.
+    records
+        Record of each admitted observation.
+    observations
+        Caller-owned list that records each contract once it holds.
+
+    Returns
+    -------
+    str
+        Digest of the retained late-partial observation.
+
+    """
+    from playwright.sync_api import expect
+
+    digest = panel.get_by_label("Provider observation digest")
+    _admit(panel, cases, records, "submission_unknown")
+    _refresh_twice(panel, cases["submission_unknown"], "submission_unknown", digest.inner_text())
+    expect(panel.get_by_label("Provider job identity")).to_contain_text("unknown")
+    observations.append("unknown-dispatch-refresh-never-invents-handle-or-retries")
+    _admit(panel, cases, records, "submitted")
+    _admit(panel, cases, records, "cancellation_requested", refresh=True)
+    expect(panel.get_by_label("Provider job state")).to_have_text("DONE")
+    _admit(panel, cases, records, "completed", refresh=True)
+    history = panel.get_by_label("Original provider observation history")
+    expect(history).to_contain_text("cancellation_requested")
+    expect(history).to_contain_text('"counts":{"1":16}')
+    observations.append("native-completion-after-cancellation-intent-preserves-history")
+    _admit(panel, cases, records, "late_partial", refresh=True)
+    expect(history).to_contain_text('"partial_results":[]')
+    expect(history).to_contain_text('"counts":{"1":16}')
+    original_digest = digest.inner_text()
+    observations.append("late-partial-retains-original-native-counts-and-request")
+    _refresh_twice(panel, cases["late_partial"], None, original_digest)
+    observations.append("two-repeated-result-refreshes-with-zero-submit")
+    return original_digest
+
+
+def _check_refusals_and_export(
+    page: Page, panel: Locator, cases: dict[str, str], digest: str, observations: list[str]
+) -> None:
+    """Refuse a stale refresh and a malformed import, then download the exact capture.
+
+    Parameters
+    ----------
+    page
+        Owned page bound to the preview.
+    panel
+        The provider job journal.
+    cases
+        Original native captures by case name.
+    digest
+        Digest of the retained observation.
+    observations
+        Caller-owned list that records each contract once it holds.
+
+    """
+    from playwright.sync_api import expect
+
+    field = panel.get_by_label("Provider observation JSON", exact=True)
+    field.fill(cases["completed"])
+    panel.get_by_role("button", name="Refresh existing job observation").click()
+    expect(panel.get_by_role("alert")).to_contain_text("retained history differs")
+    field.fill("{}")
+    panel.get_by_role("button", name="Import existing job observation").click()
+    expect(panel.get_by_role("alert")).to_contain_text("observation refused")
+    expect(panel.get_by_label("Provider observation digest")).to_have_text(digest)
+    with page.expect_download() as exported:
+        panel.get_by_role("button", name="Export admitted job observation").click()
+    download = exported.value
+    saved = download.path()
+    assert download.suggested_filename == "provider-observation.json"
+    assert saved is not None and Path(saved).read_text() == cases["late_partial"]
+    observations.append("exact-native-download-after-stale-and-malformed-refusals")
+
+
+def _walk(
+    page: Page,
+    url: str,
+    observations: list[str],
+    *,
+    evidence: dict[str, object],
+    cases: dict[str, str],
+    records: list[dict[str, object]],
+    kernels: list[str],
+) -> dict[str, object]:
+    """Inspect original captures, refuse stale and malformed input, export, keep the draft.
+
+    Parameters
+    ----------
+    page
+        Owned page bound to the preview.
+    url
+        Owned literal-loopback preview.
+    observations
+        Caller-owned list that records each contract once it holds.
+    evidence
+        Journey evidence; receives the storage write observations.
+    cases
+        Original native captures by case name.
+    records
+        Record of each admitted observation.
+    kernels
+        Record of loaded ``.wasm`` paths.
+
+    Returns
+    -------
+    dict
+        No further evidence fields.
+
+    """
+    from playwright.sync_api import expect
+
+    panel = open_operations_panel(page, url, DRAFT, RECORD, "Existing provider job journal")
+    export = panel.get_by_role("button", name="Export admitted job observation")
+    expect(export).to_be_disabled()
+    digest = _check_history(panel, cases, records, observations)
+    _check_refusals_and_export(page, panel, cases, digest, observations)
+    writes = storage_writes(page, RECORD)
+    assert writes == [], writes
+    evidence["job_storage_write_observations"] = writes
+    check_recompute_and_draft(page, DRAFT, observations)
+    assert kernels, "Actual built WASM was not requested"
+    return {}
 
 
 def run_provider_observation_journey(
@@ -46,172 +265,18 @@ def run_provider_observation_journey(
         If identity, append-only refresh, runtime or evidence custody disagrees.
 
     """
-    from tools.studio_browser_journey import loopback_url
-
-    url = loopback_url(base_url)
-    from playwright.sync_api import expect, sync_playwright
-
-    fixture = (
-        Path(__file__).resolve().parents[1] / "data/studio/provider_observation_cases.json"
-    ).read_bytes()
+    fixture = FIXTURE.read_bytes()
     corpus = json.loads(fixture)
-    cases = cast(dict[str, str], corpus["cases"])
-    observed = {} if evidence is None else evidence
-    observations: list[str] = []
-    errors: list[str] = []
-    external: list[str] = []
-    submissions: list[str] = []
-    kernels: list[str] = []
+    observed: dict[str, object] = {} if evidence is None else evidence
     records: list[dict[str, object]] = []
+    kernels: list[str] = []
     observed.update(
-        scenario="provider_observation_journal",
-        playwright=version("playwright"),
-        observations=observations,
-        page_errors=errors,
-        external_requests=external,
-        submission_requests=submissions,
-        wasm_requests=kernels,
         native_observations=records,
         recorded_capture_sha256=hashlib.sha256(fixture).hexdigest(),
         recorded_capture_origin=corpus["origin"],
     )
-    with sync_playwright() as runtime:
-        browser = runtime.chromium.launch()
-        context = browser.new_context(service_workers="block", accept_downloads=True)
-        context.set_default_timeout(15000)
-        try:
-            origin = urlsplit(url).netloc
-            context.route("**/*", preview_route_guard(origin, external, submissions, kernels))
-            page = context.new_page()
-            page.on("pageerror", lambda error: errors.append(str(error)))
-            page.goto(url, wait_until="networkidle")
-            workspace = page.get_by_label("Workspace archive JSON")
-            draft = '{"unsaved":"original job inspection draft α"}'
-            workspace.fill(draft)
-            page.evaluate("""() => {
-                window.providerJobWriteObservations = [];
-                for (const name of ['put','add','delete','clear']) {
-                    const native = IDBObjectStore.prototype[name];
-                    IDBObjectStore.prototype[name] = function(...args) {
-                        window.providerJobWriteObservations.push(name);
-                        return native.apply(this,args);
-                    };
-                }
-            }""")
-            destination = page.get_by_role(
-                "navigation", name="Workbench context destinations"
-            ).get_by_role("link", name="Devices & Operations")
-            destination.focus()
-            page.keyboard.press("Enter")
-            panel = page.get_by_role("region", name="Existing provider job journal", exact=True)
-            expect(panel).to_be_visible()
-            expect(
-                panel.get_by_role("button", name="Export admitted job observation")
-            ).to_be_disabled()
-            field = panel.get_by_label("Provider observation JSON", exact=True)
-
-            def admit(case: str, refresh: bool = False) -> None:
-                """Read an original native capture and compare exact source identity and state."""
-                raw = cases[case]
-                unit = json.loads(raw)
-                body = unit["body"]
-                field.fill(raw)
-                button = panel.get_by_role(
-                    "button",
-                    name="Refresh existing job observation"
-                    if refresh
-                    else "Import existing job observation",
-                    exact=True,
-                )
-                button.click()
-                expect(button).to_be_enabled()
-                expect(panel.get_by_label("Provider observation digest")).to_have_text(
-                    unit["sha256"]
-                )
-                expect(panel.get_by_label("Provider attempt identity")).to_have_text(
-                    body["attempt_id"]
-                )
-                expect(panel.get_by_label("Provider payload digest")).to_have_text(
-                    body["payload_sha256"]
-                )
-                expect(panel.get_by_label("Local job state")).to_have_text(body["local_state"])
-                records.append(
-                    {"case": case, "sha256": unit["sha256"], "attempt_id": body["attempt_id"]}
-                )
-
-            admit("submission_unknown")
-            unknown_digest = panel.get_by_label("Provider observation digest").inner_text()
-            for _ in range(2):
-                field.fill(cases["submission_unknown"])
-                button = panel.get_by_role("button", name="Refresh existing job observation")
-                button.click()
-                expect(button).to_be_enabled()
-                expect(panel.get_by_label("Local job state")).to_have_text("submission_unknown")
-                expect(panel.get_by_label("Provider observation digest")).to_have_text(
-                    unknown_digest
-                )
-            expect(panel.get_by_label("Provider job identity")).to_contain_text("unknown")
-            observations.append("unknown-dispatch-refresh-never-invents-handle-or-retries")
-            admit("submitted")
-            admit("cancellation_requested", refresh=True)
-            expect(panel.get_by_label("Provider job state")).to_have_text("DONE")
-            admit("completed", refresh=True)
-            history = panel.get_by_label("Original provider observation history")
-            expect(history).to_contain_text("cancellation_requested")
-            expect(history).to_contain_text('"counts":{"1":16}')
-            observations.append("native-completion-after-cancellation-intent-preserves-history")
-            admit("late_partial", refresh=True)
-            expect(history).to_contain_text('"partial_results":[]')
-            expect(history).to_contain_text('"counts":{"1":16}')
-            original_digest = panel.get_by_label("Provider observation digest").inner_text()
-            observations.append("late-partial-retains-original-native-counts-and-request")
-            for _ in range(2):
-                field.fill(cases["late_partial"])
-                button = panel.get_by_role("button", name="Refresh existing job observation")
-                button.click()
-                expect(button).to_be_enabled()
-                expect(panel.get_by_label("Provider observation digest")).to_have_text(
-                    original_digest
-                )
-            observations.append("two-repeated-result-refreshes-with-zero-submit")
-            field.fill(cases["completed"])
-            panel.get_by_role("button", name="Refresh existing job observation").click()
-            expect(panel.get_by_role("alert")).to_contain_text("retained history differs")
-            field.fill("{}")
-            panel.get_by_role("button", name="Import existing job observation").click()
-            expect(panel.get_by_role("alert")).to_contain_text("observation refused")
-            expect(panel.get_by_label("Provider observation digest")).to_have_text(original_digest)
-            with page.expect_download() as exported:
-                panel.get_by_role("button", name="Export admitted job observation").click()
-            download = exported.value
-            saved = download.path()
-            assert download.suggested_filename == "provider-observation.json"
-            assert saved is not None and Path(saved).read_text() == cases["late_partial"]
-            observations.append("exact-native-download-after-stale-and-malformed-refusals")
-            writes = page.evaluate("window.providerJobWriteObservations")
-            assert writes == [], writes
-            observed["job_storage_write_observations"] = writes
-            page.get_by_role("navigation", name="Workbench views").get_by_role(
-                "link", name="Model", exact=True
-            ).click()
-            recompute = page.locator('[id="/build/compile-recompute"]')
-            recompute.get_by_role("button", name="Recompute in browser").click()
-            expect(recompute.get_by_role("status")).to_have_text(
-                "recomputed digest matches the signed claim"
-            )
-            observations.append("original-built-wasm-recompute")
-            page.get_by_role("navigation", name="Workbench views").get_by_role(
-                "link", name="Workspace", exact=True
-            ).click()
-            expect(workspace).to_have_value(draft)
-            observations.append("original-workspace-draft-preserved")
-            assert kernels, "Actual built WASM was not requested"
-            assert not errors, errors
-            assert not external, external
-            assert not submissions, submissions
-            assert not page.workers, "Job observation must not retain workers"
-            observed.update(browser=browser.version, workers=len(page.workers), no_submit=True)
-            return observed
-        finally:
-            context.close()
-            browser.close()
+    cases = cast(dict[str, str], corpus["cases"])
+    walk = partial(_walk, evidence=observed, cases=cases, records=records, kernels=kernels)
+    return run_custodied_journey(
+        base_url, observed, "provider_observation_journal", walk, kernels=kernels, downloads=True
+    )
