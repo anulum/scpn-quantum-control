@@ -23,4 +23,4 @@ bloqade==0.35.0
 filelock==4.2.4
 
 # Patched transitive dependency required by the complete lock audit.
-tornado==6.6
+tornado==6.6.1
