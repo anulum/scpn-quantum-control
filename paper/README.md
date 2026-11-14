@@ -9,8 +9,7 @@
 
 Each manuscript or venue package has its own numbered subdirectory. Keep
 publication submissions under `paper/submissions/` and JOSS drafts under
-`paper/submissions_joss/`. The JOSS paper prepared for submission lives in
-`paper/joss/`, because the JOSS review bot uses the first `paper.md` it finds
+`paper/submissions_joss/`. The JOSS paper lives in `paper/joss/`, because the JOSS review bot uses the first `paper.md` it finds
 in a sorted walk of the repository, and `paper/joss/` comes before the frozen
 drafts.
 
@@ -24,15 +23,15 @@ gitignored: only published work appears in this repository.
 
 | Directory | Contents | Status |
 |---|---|---|
-| `joss/` | JOSS paper for `scpn-quantum-control` 1.3.0 (`paper.md`, `paper.bib`). | Prepared for JOSS submission (13 Nov 2026); not yet submitted. |
+| `joss/` | JOSS paper for `scpn-quantum-control` 1.3.0 (`paper.md`, `paper.bib`). | Submitted to JOSS on 14 Nov 2026; under editorial review. Changed only for review requests. |
 | `publication_planning/` | Cross-paper planning notes, preprint outlines, programme overview, and publication-framing guidance. | Planning material, not a submission source package. |
 | `submissions/submission_001_ibm_fez_synchronisation/` | February 2026 `ibm_fez` synchronisation overview in `main.tex`, with local `figures/publication/`. | Contextual overview; compiles locally. |
-| `submissions/submission_002_phase1_dla_parity/` | April 2026 `ibm_kingston` DLA-parity manuscript, short-paper draft, and local `figures/phase1/` + `figures/phase2/`. | Submitted to Physical Review A on 13 Nov 2026 (see [Journal submissions](#journal-submissions)); source package with claim boundaries. |
+| `submissions/submission_002_phase1_dla_parity/` | April 2026 `ibm_kingston` DLA-parity manuscript, short-paper draft, and local `figures/phase1/` + `figures/phase2/`. | Submitted to Physical Review A on 13 Nov 2026 and declined without review the same day (see [Journal submissions](#journal-submissions)); source package with claim boundaries. |
 | `submissions/submission_003_rust_vqe_methods/` | Rust/VQE methodology manuscript and local PDF. | Methods preprint candidate. |
 | `submissions/submission_004_scpn_fim_hamiltonian/` | SCPN/FIM Hamiltonian manuscript and bibliography material. | Negative hardware-validation paper candidate. |
 | `submissions/submission_005_phase3_reduced_pauli_entanglement/` | Reduced-Pauli entanglement REVTeX manuscript, bibliography, PDF, and local `figures/phase3/`. | Completed multi-backend IBM run; venue-style source package. |
 | `submissions/submission_006_s1_feedback_control/` | Monitored feedback versus open-loop dynamic-circuit manuscript, bibliography, PDF, and local `figures/s1_feedback_control/`. | Multi-backend dynamic-circuit control-boundary paper. Submitted to Physical Review Applied on 13 Nov 2026 (see [Journal submissions](#journal-submissions)). |
-| `submissions/submission_007_iqm_garnet_preregistered_campaigns/` | IQM Garnet manuscript on five preregistered campaigns (parity-sector leakage, its variability between calibration epochs, twelve-epoch depth ordering, layout transfer), with inline reference list and local `figures/` drawn by `scripts/generate_iqm_garnet_paper_assets.py`. | Preprint on Zenodo, DOI [10.5281/zenodo.23298119](https://doi.org/10.5281/zenodo.23298119). Submitted to Physical Review A on 13 Nov 2026 (see [Journal submissions](#journal-submissions)). |
+| `submissions/submission_007_iqm_garnet_preregistered_campaigns/` | IQM Garnet manuscript on five preregistered campaigns (parity-sector leakage, its variability between calibration epochs, twelve-epoch depth ordering, layout transfer), with inline reference list and local `figures/` drawn by `scripts/generate_iqm_garnet_paper_assets.py`. | Preprint on Zenodo, DOI [10.5281/zenodo.23298119](https://doi.org/10.5281/zenodo.23298119). Submitted to Physical Review A on 13 Nov 2026 and declined without review the same day (see [Journal submissions](#journal-submissions)). |
 | `submissions_joss/submission_joss_001_software_framework_note/` | May 2026 JOSS software-framework note and preview files. | Frozen: source of the Zenodo preprint [10.5281/zenodo.20382333](https://doi.org/10.5281/zenodo.20382333). Superseded for JOSS by `joss/`. |
 | `submissions_joss/submission_joss_002_kuramoto_toolkit/` | July 2026 JOSS draft for the standalone `oscillatools` toolkit. | Draft; not submitted. |
 
@@ -42,18 +41,19 @@ Each manuscript was submitted from its frozen source here. Only the front
 matter changed for submission: affiliation, ORCID placement and date. The
 `.tex` files in this repository are not edited.
 
-| Paper | Journal and article type | Accession code | Submitted |
-|---|---|---|---|
-| `submission_002_phase1_dla_parity` | Physical Review A, Regular Article (quantum information science) | AY12834 | 13 Nov 2026 |
-| `submission_006_s1_feedback_control` | Physical Review Applied, Research Article | NY10630 | 13 Nov 2026 |
-| `submission_007_iqm_garnet_preregistered_campaigns` | Physical Review A, Regular Article (quantum information science) | AY12835 | 13 Nov 2026 |
+| Paper | Journal and article type | Accession code | Submitted | Decision |
+|---|---|---|---|---|
+| `submission_002_phase1_dla_parity` | Physical Review A, Regular Article (quantum information science) | AY12834 | 13 Nov 2026 | Declined without review, 13 Nov 2026 |
+| `submission_006_s1_feedback_control` | Physical Review Applied, Research Article | NY10630 | 13 Nov 2026 | No decision as of 14 Nov 2026 |
+| `submission_007_iqm_garnet_preregistered_campaigns` | Physical Review A, Regular Article (quantum information science) | AY12835 | 13 Nov 2026 | Declined without review, 13 Nov 2026 |
 
 Notes:
 
 - All three use standard publication, without open-access fees.
 - The 006 manuscript carries its AI-use disclosure in the Acknowledgments.
 - For 002 and 007, the disclosure was sent to the journal on 13 Nov 2026.
-  It is added to the Acknowledgments at revision.
+  Both were declined before review, so it goes into the Acknowledgments at
+  the next venue.
 
 ## Build commands
 
