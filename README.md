@@ -22,6 +22,8 @@
 ![Hardware: ibm_kingston](https://img.shields.io/badge/hardware-ibm__kingston%20Heron%20r2-blueviolet.svg)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/anulum/scpn-quantum-control/blob/main/notebooks/01_kuramoto_xy_dynamics.ipynb)
 
+> This repository is a public mirror of ANULUM's canonical source; development history predating publication is held privately.
+
 > **Active Development** — scpn-quantum-control is under intensive development.
 > The public status wording is anchored to the
 > [Hardware Status Ledger](docs/hardware_status_ledger.md),
