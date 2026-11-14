@@ -13,6 +13,56 @@ import { ResultScrollArea } from "./ResultScrollArea";
 
 const yesNo = (value: boolean) => (value ? "yes" : "no");
 
+function SplitTable({ forecast }: { readonly forecast: ForecastTemplate }) {
+  return (
+    <ResultScrollArea title="Forecasting splits">
+      <table aria-label="Forecasting splits">
+        <thead>
+          <tr>
+            <th scope="col">Split</th>
+            <th scope="col">Trajectories</th>
+            <th scope="col">Missing fraction</th>
+          </tr>
+        </thead>
+        <tbody>
+          {forecast.splits.map((split) => (
+            <tr key={split.split}>
+              <th scope="row">{split.split}</th>
+              <td>{split.samples}</td>
+              <td>{split.missing}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </ResultScrollArea>
+  );
+}
+
+function DescentTable({ qsnn }: { readonly qsnn: QsnnTemplate }) {
+  return (
+    <ResultScrollArea title="QSNN descent">
+      <table aria-label="Loss and gradient per step">
+        <thead>
+          <tr>
+            <th scope="col">Step</th>
+            <th scope="col">Loss</th>
+            <th scope="col">Gradient norm</th>
+          </tr>
+        </thead>
+        <tbody>
+          {qsnn.steps.map((step) => (
+            <tr key={step.index}>
+              <th scope="row">{step.index}</th>
+              <td>{step.loss}</td>
+              <td>{step.gradientNorm}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </ResultScrollArea>
+  );
+}
+
 /**
  * Show forecasting data custody, the classical reference and held-out scores.
  * @param props - Component inputs.
@@ -31,26 +81,7 @@ export function ForecastPanel({ forecast }: { readonly forecast: ForecastTemplat
         <dt>Generator seed</dt>
         <dd>{forecast.seed}</dd>
       </dl>
-      <ResultScrollArea title="Forecasting splits">
-        <table aria-label="Forecasting splits">
-          <thead>
-            <tr>
-              <th scope="col">Split</th>
-              <th scope="col">Trajectories</th>
-              <th scope="col">Missing fraction</th>
-            </tr>
-          </thead>
-          <tbody>
-            {forecast.splits.map((split) => (
-              <tr key={split.split}>
-                <th scope="row">{split.split}</th>
-                <td>{split.samples}</td>
-                <td>{split.missing}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </ResultScrollArea>
+      <SplitTable forecast={forecast} />
       <dl aria-label="Held-out custody">
         <dt>Training trajectories</dt>
         <dd>{forecast.training}</dd>
@@ -105,26 +136,7 @@ export function QsnnPanel({ qsnn }: { readonly qsnn: QsnnTemplate }) {
           {qsnn.method}, learning rate {qsnn.learningRate}
         </dd>
       </dl>
-      <ResultScrollArea title="QSNN descent">
-        <table aria-label="Loss and gradient per step">
-          <thead>
-            <tr>
-              <th scope="col">Step</th>
-              <th scope="col">Loss</th>
-              <th scope="col">Gradient norm</th>
-            </tr>
-          </thead>
-          <tbody>
-            {qsnn.steps.map((step) => (
-              <tr key={step.index}>
-                <th scope="row">{step.index}</th>
-                <td>{step.loss}</td>
-                <td>{step.gradientNorm}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </ResultScrollArea>
+      <DescentTable qsnn={qsnn} />
       <dl aria-label="Checkpoint identity">
         <dt>Checkpoint schema</dt>
         <dd>{qsnn.checkpointSchema}</dd>

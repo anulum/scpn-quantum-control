@@ -15,6 +15,16 @@ import type { LearningInstrument } from "./learningInstrument";
 import { ForecastPanel, FreeEnergyPanel, NqsPanel, QsnnPanel } from "./LearningPanels";
 import { ProxyMetricsPlot } from "./LearningPlots";
 
+function KitList({ label, items }: { readonly label: string; readonly items: readonly string[] }) {
+  return (
+    <ul aria-label={label}>
+      {items.map((item) => (
+        <li key={item}>{item}</li>
+      ))}
+    </ul>
+  );
+}
+
 function DomainPanel({ domains }: { readonly domains: readonly DomainProxy[] }) {
   const [index, setIndex] = useState(0);
   const selectId = useId();
@@ -47,21 +57,9 @@ function DomainPanel({ domains }: { readonly domains: readonly DomainProxy[] }) 
         <dt>Reference</dt>
         <dd>{row.reference}</dd>
       </dl>
-      <ul aria-label="Allowed uses">
-        {row.allowedUses.map((use) => (
-          <li key={use}>{use}</li>
-        ))}
-      </ul>
-      <ul aria-label="Caveats">
-        {row.caveats.map((caveat) => (
-          <li key={caveat}>{caveat}</li>
-        ))}
-      </ul>
-      <ul aria-label="Claims this benchmark never supports">
-        {row.forbidden.map((claim) => (
-          <li key={claim}>{claim}</li>
-        ))}
-      </ul>
+      <KitList label="Allowed uses" items={row.allowedUses} />
+      <KitList label="Caveats" items={row.caveats} />
+      <KitList label="Claims this benchmark never supports" items={row.forbidden} />
       <a
         href={`data:application/json;charset=utf-8,${encodeURIComponent(exportDomainProxy(row))}`}
         download={`domain-proxy-${row.datasetId}.json`}
