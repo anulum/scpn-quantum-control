@@ -10,6 +10,8 @@ import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import { ControlInspector } from "./ControlInspector";
 import { controlInstrument } from "./controlInstrument";
+import { LearningInspector } from "./LearningInspector";
+import { learningInstrument } from "./learningInstrument";
 import { SensingInspector } from "./SensingInspector";
 import { sensingInstrument } from "./sensingInstrument";
 import { GradientDebugger } from "./GradientDebugger";
@@ -40,6 +42,7 @@ export default function ResultsView({
   focusPulseInstrument = false,
   focusSensingInstrument = false,
   focusControlInstrument = false,
+  focusLearningInstrument = false,
   plan = null,
   outcome = null,
   editors,
@@ -58,6 +61,8 @@ export default function ResultsView({
   focusSensingInstrument?: boolean;
   /** Focus control proposals and co-design after this module mounts. */
   focusControlInstrument?: boolean;
+  /** Focus learning, forecasting and domain benchmarks after this module mounts. */
+  focusLearningInstrument?: boolean;
   /** Registered comparison and inspection controls supplied by the shell slot. */
   editors?: ReactNode;
 }) {
@@ -68,6 +73,7 @@ export default function ResultsView({
   const pulses = useRef<HTMLDivElement>(null);
   const sensing = useRef<HTMLDivElement>(null);
   const control = useRef<HTMLDivElement>(null);
+  const learning = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (focusInstrument && target.current !== null) target.current.focus();
   }, [focusInstrument]);
@@ -89,6 +95,9 @@ export default function ResultsView({
   useEffect(() => {
     if (focusControlInstrument && control.current !== null) control.current.focus();
   }, [focusControlInstrument]);
+  useEffect(() => {
+    if (focusLearningInstrument && learning.current !== null) learning.current.focus();
+  }, [focusLearningInstrument]);
   return (
     <article className="qsp-panel">
       <h3>Analyse</h3>
@@ -125,6 +134,9 @@ export default function ResultsView({
       </div>
       <div id="/results/control" tabIndex={-1} ref={control}>
         <ControlInspector instrument={controlInstrument} />
+      </div>
+      <div id="/results/learning" tabIndex={-1} ref={learning}>
+        <LearningInspector instrument={learningInstrument} />
       </div>
       <EvidenceViewer />
       {supportMatrix.ok ? (

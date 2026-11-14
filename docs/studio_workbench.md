@@ -2106,3 +2106,53 @@ telemetry is shown as unavailable; data claiming it is refused. Regenerate or
 check the data with
 `python -m scpn_quantum_control.studio.control_proposal_instrument_artifact --write`
 or `--check`.
+
+## Learning, forecasting and domain benchmarks
+
+Analyse → Learning, forecasting and domain benchmarks (`#/results/learning`)
+shows what the existing learning owners produce on synthetic and curated
+inputs. The browser computes nothing; it displays source values and refuses
+data that contradicts them.
+
+Multimodal forecasting uses the repository's own seeded synthetic Kuramoto
+trajectories (seed 3701; train 64, calibration 24 and test 32 trajectories,
+a requested missing fraction of 0.20 for phase inputs). The view lists each
+split's size and its realised missing fraction, then the held-out custody: no
+held-out trajectory is in the
+training batch, the reference model was fitted on the training split, and the
+owner's refusal to fit a held-out batch is shown verbatim. The classical
+reference is the missingness-aware ridge model scored on the test split
+against persistence, with its split-residual interval coverage. These are
+synthetic simulation results, not real EEG, grid or plasma data.
+
+QSNN parameter-shift training shows a seeded one-layer run (layer seed 11,
+learning rate 0.2) on generated two-feature data: loss and gradient norm per
+step, the optimiser method, its shift terms and the statevector backend. A
+checkpoint saved after two epochs and resumed for one more reproduces the
+uninterrupted three-epoch run exactly; data in which a resumed checkpoint
+diverges, or whose learning rate differs from the optimiser's, is refused.
+The held-out evaluation scores four separate samples, and the owner's refusal
+to score samples that were used in training is shown.
+
+The JAX NQS baseline reads the committed evidence file
+`data/jax_nqs_baseline/jax_nqs_baseline_evidence.json` (two spins, four hidden
+units, 200 iterations, seed 7) and checks its SHA-256 digest. The plot shows
+the variational energy per iteration against the exact ground energy. Without
+committed evidence the panel states that the baseline is unavailable and shows
+nothing in its place.
+
+Domain benchmark proxies cover the curated EEG alpha, IEEE 5-bus power-grid
+and ITER MHD datasets. Each plot label and the downloaded metadata mark every
+value as a proxy metric: no measured physical outcome is in custody, and no
+benchmark is marked publication-safe. The panel lists each benchmark's allowed
+uses, caveats and the claims it never supports, such as clinical validation,
+live-grid control or real plant control.
+
+The free-energy workflow shows the owner's metrics on the curated six-node
+benchmark and the owner's refusals of a negative covariance and of a
+covariance of the wrong shape.
+
+Building the data leaves the caller's global NumPy random state unchanged;
+the build refuses a template that changes it. Regenerate or check the data
+with `python -m scpn_quantum_control.studio.learning_instrument_artifact --write`
+or `--check`.

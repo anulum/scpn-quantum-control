@@ -7,7 +7,7 @@
 |---|---:|
 | Package version | 1.3.0 |
 | Public API exports | 883 |
-| Python source modules | 862 |
+| Python source modules | 864 |
 | Public Python classes | 1640 |
 | Domain package families | 40 |
 | API documentation pages | 14 |
@@ -16,7 +16,7 @@
 | Notebook files | 109 |
 | Example files | 43 |
 | Optional extras | 43 |
-| Python test files | 1633 |
+| Python test files | 1634 |
 | Public documentation pages | 385 |
 | GitHub Actions workflows | 45 |
 

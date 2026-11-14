@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **862 modules** across **41 package families**
-- **4664 documented public module-level symbols**
+- **864 modules** across **41 package families**
+- **4671 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -5542,6 +5542,22 @@ Committed-artefact emission for the WASM Kuramoto Play panel's ground truth.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/kuramoto_scenario_artifact.py) · Public symbols: **3**
 
 **Functions:** `build_kuramoto_scenario_artifact()`, `validate_kuramoto_scenario_artifact()`, `main()`
+
+### `scpn_quantum_control.studio.learning_instrument_artifact`
+
+Project learning, forecasting and domain-benchmark evidence for the Studio.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/learning_instrument_artifact.py) · Public symbols: **2**
+
+**Functions:** `build_learning_instrument_artifact()`, `main()`
+
+### `scpn_quantum_control.studio.learning_instrument_templates`
+
+Build one bounded template per learning, forecasting and domain-proxy owner.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/learning_instrument_templates.py) · Public symbols: **5**
+
+**Functions:** `forecasting_template()`, `qsnn_template()`, `nqs_template()`, `domain_proxy_templates()`, `fep_template()`
 
 ### `scpn_quantum_control.studio.manifest`
 

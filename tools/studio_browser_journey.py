@@ -431,6 +431,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "pulse_feasibility",
             "sensing_entropy_instrument",
             "control_proposal_instrument",
+            "learning_domain_instrument",
             "operator_backend_profiles",
             "operator_policy_decisions",
             "operator_review_dossiers",
@@ -599,6 +600,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 from tools.studio_control_browser import run_control_journey
 
                 journey = partial(run_control_journey, evidence=evidence)
+            elif args.scenario == "learning_domain_instrument":
+                from tools.studio_learning_browser import run_learning_journey
+
+                journey = partial(run_learning_journey, evidence=evidence)
             elif args.scenario == "pulse_feasibility":
                 from tools.studio_pulse_browser import run_pulse_journey
 

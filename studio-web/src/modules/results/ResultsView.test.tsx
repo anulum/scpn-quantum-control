@@ -83,6 +83,7 @@ it.each([
   ["/results/pulses", "Pulse feasibility"],
   ["/results/sensing", "Sensing and entropy provenance"],
   ["/results/control", "Control proposals and co-design"],
+  ["/results/learning", "Learning, forecasting and domain benchmarks"],
 ])("focuses %s when its deep link opens Analyse", async (path, region) => {
   window.history.replaceState(null, "", `#${path}`);
   render(<Workbench>{(_context, editors) => editors}</Workbench>);

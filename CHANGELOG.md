@@ -195,6 +195,21 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   extension is missing, fails with a message that names the extension instead
   of a bare "No module named"; it has no Python fallback.
 
+### Learning, forecasting and domain benchmarks
+
+- Analyse shows source-owned learning evidence: multimodal forecasting splits
+  with held-out custody and a classical reference scored on the test split,
+  seeded QSNN parameter-shift descent with an exact checkpoint resume and a
+  held-out evaluation, the committed JAX NQS baseline with its energy history,
+  curated domain-benchmark proxy metrics, and the free-energy workflow with the
+  owner's covariance refusals.
+- Held-out records cannot enter training, a resumed checkpoint must reproduce
+  the uninterrupted run, every domain value stays labelled as a proxy in the
+  plot and in the downloaded metadata, and building the data leaves the
+  caller's global NumPy random state unchanged.
+- Committed JAX NQS baseline evidence for the documented two-spin example is
+  added under `data/jax_nqs_baseline/`.
+
 ### Control proposals and co-design
 
 - Analyse shows source-owned control proposals: QAOA-MPC action costs that keep
