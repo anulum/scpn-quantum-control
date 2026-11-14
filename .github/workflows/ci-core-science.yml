@@ -105,10 +105,16 @@ jobs:
           '--include=*/kuramoto_core.py,*/kuramoto_model_conventions.py,*/tools/build_kuramoto_conventions.py,*/tools/kuramoto_model_quality_gates.py'
   kuramoto-solver-quality:
     runs-on: ubuntu-latest
+    # The full cohort with the C tracer took 37 minutes on one core (measured 2026-11-14).
+    timeout-minutes: 60
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
       OPENBLAS_NUM_THREADS: "1"
       OMP_NUM_THREADS: "1"
+      # On Python 3.15, coverage's default sys.monitoring core grows memory about tenfold on
+      # this cohort (1.31 GB against 130 MB for one delayed-Kuramoto test) and the runner is
+      # killed. The C tracer measures the same statements and branches at the same threshold.
+      COVERAGE_CORE: ctrace
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0

@@ -170,8 +170,8 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   throughput, memory) for its time estimate and crossover search, with the A100
   as the named default reference; each result records the profile used.
 
-- Two honesty kits now govern the packaged curated EEG and plasma benchmark
-  matrices. Before, no kit covered them; only the dataset privacy audit did.
+- Two honesty kits govern the packaged curated EEG and plasma benchmark
+  matrices.
   - `eeg_alpha_plv_curated_benchmark` covers `eeg_alpha_plv_8ch`. It forbids
     clinical validation, diagnostic or therapeutic use, neural-dynamics
     reproduction and human-subject generalisation.
@@ -181,6 +181,23 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   - Each of the three curated domain proxies (EEG, plasma and power grid) now
     resolves to exactly one kit with concrete forbidden claims.
   - The committed honesty evidence is regenerated with six kits.
+
+- `load_jax_nqs_baseline_evidence(path)` reads committed JAX NQS baseline
+  evidence and returns the verified record without needing JAX.
+  - The record is rebuilt from its request, environment and comparison, and the
+    product's own checks run again: schema, claim boundary, posture,
+    no-advantage certificate and the SHA-256 digest.
+  - The rebuilt record must reproduce the file exactly. A wrong field type, an
+    extra field, a changed digest or an inconsistent derived field raises
+    `ValueError`.
+
+- The compiler trace's source-operation buttons now carry their visible label
+  in their accessible name (for example "Select source operation 1. ry (6:1)"),
+  as WCAG 2.5.3 requires and axe-core 4.14 checks.
+
+- The differentiate Studio action, when the compiled `scpn_quantum_engine`
+  extension is missing, fails with a message that names the extension instead
+  of a bare "No module named"; it has no Python fallback.
 
 ### Control proposals and co-design
 

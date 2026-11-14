@@ -61,6 +61,8 @@ def test_solver_ci_and_preflight_keep_whole_owner_coverage() -> None:
         assert path in block
     assert gates.KURAMOTO_SOLVER_INCLUDE in block
     assert "--fail-under=100" in block and "--branch" in block
+    # The sys.monitoring core exhausts the hosted runner's memory on this cohort under 3.15.
+    assert "COVERAGE_CORE: ctrace" in block
     for name, command in gates.build_static_quality_gates(preflight._PY):
         assert dict(preflight.STATIC_GATES)[name] == command
     assert gates.build_coverage_gates(preflight._PY) == preflight.KURAMOTO_SOLVER_COVERAGE_GATES

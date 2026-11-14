@@ -51,6 +51,27 @@ write_jax_nqs_baseline_evidence(product, "evidence.json", "evidence.md")
 JAX is optional. If it is absent, `run_jax_nqs_baseline` raises `ImportError`;
 it does not silently substitute the NumPy finite-difference implementation.
 
+## Loading committed evidence
+
+`load_jax_nqs_baseline_evidence(path)` reads a JSON record written by
+`write_jax_nqs_baseline_evidence` and returns the verified
+`JAXNQSBaselineProduct`. JAX is not needed, because nothing is recomputed.
+
+- The record is rebuilt from its request, environment and comparison.
+  Construction runs every product check again: the schema, the claim boundary,
+  the bounded posture, the canonical no-advantage certificate and the SHA-256
+  digest of the canonical payload.
+- The rebuilt record must reproduce the file exactly. A wrong field type, an
+  extra field, a changed digest or a derived field that disagrees with its
+  source raises `ValueError`.
+
+```python
+from scpn_quantum_control.jax_nqs_baseline_product import load_jax_nqs_baseline_evidence
+
+product = load_jax_nqs_baseline_evidence("evidence.json")
+print(product.comparison.relative_error)
+```
+
 ## Contracts
 
 `JAXNQSBaselineSpec` copies array inputs into immutable tuples and rejects:

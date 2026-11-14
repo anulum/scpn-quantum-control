@@ -20,4 +20,4 @@ symengine==0.14.1
 qbraid==0.13.0
 
 # Patched transitive dependency required by the complete lock audit.
-tornado==6.6
+tornado==6.6.1
