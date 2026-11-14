@@ -43,7 +43,12 @@ runs:
         temporary = Path(os.environ["RUNNER_TEMP"])
         finish_native_qualification(Path.cwd(), temporary / "studio-native-qualification", temporary / "studio-workspace-browser.coverage")
         PY_SEAL_NATIVE
+        # On Python 3.15, coverage's default sys.monitoring core stops recording lines of a
+        # file once a nested Coverage in the same process has measured that file, so the
+        # gate's refusal lines run after its nested measurements but go unrecorded. The C
+        # tracer records them, as on Python 3.12, at the same 100 % threshold.
         STUDIO_NATIVE_GATE_RECEIPT="$RUNNER_TEMP/studio-native-qualification/native-coverage-receipt.json" \
+        COVERAGE_CORE=ctrace \
           python -m coverage run --rcfile=/dev/null --branch \
             --data-file="$RUNNER_TEMP/studio-native-gate.coverage" \
             --include="*/tools/studio_native_coverage_gate.py" \
