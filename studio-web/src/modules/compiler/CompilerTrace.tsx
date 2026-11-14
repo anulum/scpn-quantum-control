@@ -220,7 +220,9 @@ export function CompilerTrace() {
     const identity = writeJson(operation);
     const occurrence = operationOccurrences.get(identity) ?? 0;
     operationOccurrences.set(identity, occurrence + 1);
-    return { operation, position, identity: `${identity}:${occurrence}` };
+    const { line, column } = operation.source_span;
+    const label = `${position + 1}. ${operation.name} (${line}:${column})`;
+    return { operation, position, identity: `${identity}:${occurrence}`, label };
   });
   const selectedOperation = selected === null ? undefined : operations[selected];
   const selection =
@@ -323,11 +325,11 @@ export function CompilerTrace() {
             />
           </label>
           <div>
-            {operationControls.map(({ operation, position, identity }) => (
+            {operationControls.map(({ operation, position, identity, label }) => (
               <button
                 type="button"
                 key={identity}
-                aria-label={`Select source operation ${position + 1}`}
+                aria-label={`Select source operation ${label}`}
                 disabled={field === null}
                 onClick={
                   field === null
@@ -346,8 +348,7 @@ export function CompilerTrace() {
                       }
                 }
               >
-                {position + 1}. {operation.name} ({operation.source_span.line}:
-                {operation.source_span.column})
+                {label}
               </button>
             ))}
           </div>

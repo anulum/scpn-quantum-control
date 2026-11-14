@@ -94,7 +94,7 @@ it("test_compiler_trace_inspector_02: missing artifacts stay explicit and malfor
 it("test_compiler_trace_inspector_03: pinned Unicode source selection survives every pass navigation", async () => {
   render(<CompilerTrace />);
   await example();
-  fireEvent.click(screen.getByRole("button", { name: "Select source operation 1" }));
+  fireEvent.click(screen.getByRole("button", { name: "Select source operation 1. ry (6:1)" }));
   const field = screen.getByLabelText("Original compiler source") as HTMLTextAreaElement;
   const start = field.selectionStart,
     end = field.selectionEnd;
@@ -145,7 +145,7 @@ it("renders actual native lowering deltas and explicit empty/readout-only effect
   expect(
     screen.getByRole("table", { name: "Gate changes" }).querySelectorAll("tbody tr"),
   ).toHaveLength(0);
-  expect(screen.queryByRole("button", { name: "Select source operation 1" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Select source operation 1. ry (6:1)" })).toBeNull();
   expect(screen.getByText(/global phase refused/)).toBeTruthy();
   importText(writeJson(cases["readout"]));
   await screen.findByRole("heading", { name: "readout" });
@@ -216,7 +216,7 @@ it("selects native Unicode scalar spans in a CRLF source through the actual text
   render(<CompilerTrace />);
   importText(writeJson(cases["crlf"]));
   await screen.findByRole("heading", { name: "crlf" });
-  fireEvent.click(screen.getByRole("button", { name: "Select source operation 1" }));
+  fireEvent.click(screen.getByRole("button", { name: "Select source operation 1. h (5:1)" }));
   const field = screen.getByLabelText("Original compiler source") as HTMLTextAreaElement;
   expect(field.value.slice(field.selectionStart, field.selectionEnd)).toBe("h q[0];");
   expect(screen.getByLabelText("Selected original source").textContent).toBe("h q[0];");

@@ -130,7 +130,7 @@ def run_compiler_trace_journey(
                 pinned = inspector.get_by_label("Original compiler source", exact=True)
                 expect(pinned).to_have_value(json.loads(original)["body"]["source"])
                 inspector.get_by_role(
-                    "button", name="Select source operation 1", exact=True
+                    "button", name="Select source operation 1. ry (6:1)", exact=True
                 ).click()
                 selection = pinned.evaluate(
                     "(field) => [field.selectionStart,field.selectionEnd,field.value.slice(field.selectionStart,field.selectionEnd)]"
@@ -187,7 +187,7 @@ def run_compiler_trace_journey(
                 inspector.get_by_role("button", name="Inspect trace", exact=True).click()
                 expect(inspector.get_by_role("heading", name="crlf", exact=True)).to_be_visible()
                 inspector.get_by_role(
-                    "button", name="Select source operation 1", exact=True
+                    "button", name="Select source operation 1. h (5:1)", exact=True
                 ).click()
                 assert (
                     pinned.evaluate(
