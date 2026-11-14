@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Callable
 from dataclasses import replace
 from pathlib import Path
 from typing import Any, cast
@@ -30,6 +31,7 @@ from scpn_quantum_control.jax_nqs_baseline_product import (
     JAXNQSBaselineSpec,
     JAXNQSComparison,
     JAXNQSEnvironment,
+    load_jax_nqs_baseline_evidence,
     render_jax_nqs_baseline_markdown,
     run_jax_nqs_baseline,
     write_jax_nqs_baseline_evidence,
@@ -291,3 +293,133 @@ def test_product_rejects_promoted_or_malformed_posture() -> None:
         )
     with pytest.raises(ValueError, match="SHA-256"):
         replace(product, evidence_sha256="short")
+
+
+def _offline_product(max_dense_gib: float | None = None) -> JAXNQSBaselineProduct:
+    """Return a digest-bound product built without running JAX.
+
+    Parameters
+    ----------
+    max_dense_gib
+        Optional dense budget recorded in the request.
+
+    Returns
+    -------
+    JAXNQSBaselineProduct
+        A record whose digest covers its canonical payload.
+
+    """
+    spec = _spec(max_dense_gib=max_dense_gib)
+    environment = JAXNQSEnvironment("0.10.1", "cpu", ("cpu",), False)
+    no_advantage = issue_no_advantage_certificate(context="JAX NQS exact-reference baseline")
+    payload = {
+        "schema": JAX_NQS_BASELINE_PRODUCT_SCHEMA,
+        "request": spec.to_dict(),
+        "environment": environment.to_dict(),
+        "comparison": _comparison().to_dict(),
+        "no_advantage": no_advantage.to_dict(),
+        "claim_boundary": JAX_NQS_BASELINE_CLAIM_BOUNDARY,
+        "support_posture": "research",
+        "execution_mode": "exact_enumeration_autodiff",
+        "hardware_execution": False,
+        "performance_advantage_claimed": False,
+        "scalable_many_body_claimed": False,
+    }
+    digest = hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    return JAXNQSBaselineProduct(
+        JAX_NQS_BASELINE_PRODUCT_SCHEMA, spec, environment, _comparison(), no_advantage, digest
+    )
+
+
+@pytest.mark.parametrize("max_dense_gib", [None, 0.5])
+def test_written_evidence_loads_back_as_the_same_verified_product(
+    tmp_path: Path, max_dense_gib: float | None
+) -> None:
+    """Rebuild the exact record from its written JSON without running JAX.
+
+    Parameters
+    ----------
+    tmp_path
+        Owned directory for the written evidence.
+    max_dense_gib
+        Recorded dense budget, absent or explicit.
+
+    """
+    product = _offline_product(max_dense_gib)
+    json_path, _ = write_jax_nqs_baseline_evidence(
+        product, tmp_path / "evidence.json", tmp_path / "evidence.md"
+    )
+    loaded = load_jax_nqs_baseline_evidence(json_path)
+    assert loaded == product
+    assert loaded.to_dict() == json.loads(json_path.read_text(encoding="utf-8"))
+
+
+def _set(path: tuple[str, ...], value: object) -> Callable[[dict[str, Any]], object]:
+    """Return a mutation that sets one nested evidence field.
+
+    Parameters
+    ----------
+    path
+        Field names from the top level down.
+    value
+        Replacement value.
+
+    Returns
+    -------
+    Callable
+        Mutation applied to the decoded evidence.
+
+    """
+
+    def mutate(payload: dict[str, Any]) -> object:
+        target = payload
+        for name in path[:-1]:
+            target = target[name]
+        target[path[-1]] = value
+        return payload
+
+    return mutate
+
+
+@pytest.mark.parametrize(
+    ("mutate", "message"),
+    [
+        (lambda payload: [payload], "must be a JSON object"),
+        (_set(("request",), []), "'request' must be a JSON object"),
+        (_set(("request", "seed"), True), "'seed' must be an integer"),
+        (_set(("request", "learning_rate"), "0.03"), "'learning_rate' must be a number"),
+        (_set(("request", "max_dense_gib"), "large"), "'max_dense_gib' must be a number"),
+        (_set(("request", "coupling"), [0.0, 1.0]), "'coupling' must be a list of rows"),
+        (_set(("request", "omega"), "flat"), "'omega' must be a list"),
+        (_set(("environment", "jax_version"), 10), "'jax_version' must be text"),
+        (_set(("environment", "x64_enabled"), "no"), "'x64_enabled' must be a boolean"),
+        (_set(("comparison", "energy_history"), [-1.0, "x"]), "'energy_history' must be"),
+        (_set(("evidence_sha256",), "0" * 64), "does not match the canonical payload"),
+        (_set(("environment", "numeric_posture"), "float64_enabled"), "canonical written"),
+        (_set(("extra",), 1), "canonical written form"),
+    ],
+)
+def test_loader_refuses_malformed_or_tampered_evidence(
+    tmp_path: Path, mutate: Callable[[dict[str, Any]], object], message: str
+) -> None:
+    """Refuse every wrong type, a changed digest and any non-canonical field.
+
+    Parameters
+    ----------
+    tmp_path
+        Owned directory for the altered evidence.
+    mutate
+        Alteration of the decoded written evidence.
+    message
+        Expected refusal text.
+
+    """
+    json_path, _ = write_jax_nqs_baseline_evidence(
+        _offline_product(), tmp_path / "evidence.json", tmp_path / "evidence.md"
+    )
+    altered = mutate(json.loads(json_path.read_text(encoding="utf-8")))
+    json_path.write_text(json.dumps(altered), encoding="utf-8")
+    with pytest.raises(ValueError, match=message):
+        load_jax_nqs_baseline_evidence(json_path)

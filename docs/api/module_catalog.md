@@ -5,7 +5,7 @@ module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
 - **862 modules** across **41 package families**
-- **4663 documented public module-level symbols**
+- **4664 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -6963,11 +6963,11 @@ Fail-closed control observers over the existing identity metrics.
 
 Build claim-bounded JAX NQS evidence against exact diagonalisation.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/jax_nqs_baseline_product.py) · Public symbols: **8**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/jax_nqs_baseline_product.py) · Public symbols: **9**
 
 **Classes:** `JAXNQSBaselineSpec`, `JAXNQSEnvironment`, `JAXNQSComparison`, `JAXNQSBaselineProduct`
 
-**Functions:** `run_jax_nqs_baseline()`, `qualify_jax_nqs_baseline()`, `render_jax_nqs_baseline_markdown()`, `write_jax_nqs_baseline_evidence()`
+**Functions:** `run_jax_nqs_baseline()`, `qualify_jax_nqs_baseline()`, `render_jax_nqs_baseline_markdown()`, `write_jax_nqs_baseline_evidence()`, `load_jax_nqs_baseline_evidence()`
 
 ### `scpn_quantum_control.kuramoto`
 

@@ -182,6 +182,20 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     resolves to exactly one kit with concrete forbidden claims.
   - The committed honesty evidence is regenerated with six kits.
 
+- `load_jax_nqs_baseline_evidence(path)` reads committed JAX NQS baseline
+  evidence and returns the verified record without needing JAX.
+  - It rebuilds the record from its request, environment and comparison, so the
+    product's own checks run again: schema, claim boundary, posture,
+    no-advantage certificate and the SHA-256 digest.
+  - The rebuilt record must reproduce the file exactly. A wrong field type, an
+    extra field, a changed digest or an inconsistent derived field raises
+    `ValueError`.
+
+- The differentiate Studio action, when the compiled `scpn_quantum_engine`
+  extension is missing, now fails with a message that names the extension
+  instead of a bare "No module named". There is still no Python fallback,
+  because the record states that the compiled engine produced the gradient.
+
 ### Control proposals and co-design
 
 - Analyse shows source-owned control proposals: QAOA-MPC action costs that keep

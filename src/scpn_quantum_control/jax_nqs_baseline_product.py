@@ -569,6 +569,155 @@ def write_jax_nqs_baseline_evidence(
     return json_output, markdown_output
 
 
+def _evidence_section(payload: Mapping[str, object], name: str) -> Mapping[str, object]:
+    section = payload.get(name)
+    if not isinstance(section, Mapping):
+        raise ValueError(f"JAX NQS evidence field {name!r} must be a JSON object")
+    return section
+
+
+def _evidence_number(section: Mapping[str, object], name: str) -> float:
+    value = section.get(name)
+    if isinstance(value, bool) or not isinstance(value, int | float):
+        raise ValueError(f"JAX NQS evidence field {name!r} must be a number")
+    return float(value)
+
+
+def _evidence_integer(section: Mapping[str, object], name: str) -> int:
+    value = section.get(name)
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValueError(f"JAX NQS evidence field {name!r} must be an integer")
+    return value
+
+
+def _evidence_text(section: Mapping[str, object], name: str) -> str:
+    value = section.get(name)
+    if not isinstance(value, str):
+        raise ValueError(f"JAX NQS evidence field {name!r} must be text")
+    return value
+
+
+def _evidence_flag(section: Mapping[str, object], name: str) -> bool:
+    value = section.get(name)
+    if not isinstance(value, bool):
+        raise ValueError(f"JAX NQS evidence field {name!r} must be a boolean")
+    return value
+
+
+def _evidence_list(section: Mapping[str, object], name: str) -> list[object]:
+    value = section.get(name)
+    if not isinstance(value, list):
+        raise ValueError(f"JAX NQS evidence field {name!r} must be a list")
+    return value
+
+
+def _evidence_numbers(values: list[object], name: str) -> tuple[float, ...]:
+    return tuple(_evidence_number({name: value}, name) for value in values)
+
+
+def _evidence_matrix(section: Mapping[str, object], name: str) -> list[tuple[float, ...]]:
+    rows = _evidence_list(section, name)
+    if not all(isinstance(row, list) for row in rows):
+        raise ValueError(f"JAX NQS evidence field {name!r} must be a list of rows")
+    return [_evidence_numbers(_evidence_list({name: row}, name), name) for row in rows]
+
+
+def _rebuild_request(request: Mapping[str, object]) -> JAXNQSBaselineSpec:
+    coupling = _evidence_matrix(request, "coupling")
+    max_dense_gib = request.get("max_dense_gib")
+    return JAXNQSBaselineSpec.from_arrays(
+        np.asarray(coupling, dtype=np.float64),
+        np.asarray(_evidence_numbers(_evidence_list(request, "omega"), "omega")),
+        n_hidden=_evidence_integer(request, "n_hidden"),
+        learning_rate=_evidence_number(request, "learning_rate"),
+        n_iterations=_evidence_integer(request, "n_iterations"),
+        seed=_evidence_integer(request, "seed"),
+        relative_error_tolerance=_evidence_number(request, "relative_error_tolerance"),
+        variational_slack=_evidence_number(request, "variational_slack"),
+        max_dense_gib=None
+        if max_dense_gib is None
+        else _evidence_number(request, "max_dense_gib"),
+    )
+
+
+def _rebuild_environment(environment: Mapping[str, object]) -> JAXNQSEnvironment:
+    return JAXNQSEnvironment(
+        jax_version=_evidence_text(environment, "jax_version"),
+        backend=_evidence_text(environment, "backend"),
+        device_kinds=tuple(
+            _evidence_text({"device_kinds": kind}, "device_kinds")
+            for kind in _evidence_list(environment, "device_kinds")
+        ),
+        x64_enabled=_evidence_flag(environment, "x64_enabled"),
+    )
+
+
+def _rebuild_comparison(comparison: Mapping[str, object]) -> JAXNQSComparison:
+    return JAXNQSComparison(
+        exact_ground_energy=_evidence_number(comparison, "exact_ground_energy"),
+        variational_energy=_evidence_number(comparison, "variational_energy"),
+        absolute_gap=_evidence_number(comparison, "absolute_gap"),
+        relative_error=_evidence_number(comparison, "relative_error"),
+        variational_upper_bound_respected=_evidence_flag(
+            comparison, "variational_upper_bound_respected"
+        ),
+        within_declared_tolerance=_evidence_flag(comparison, "within_declared_tolerance"),
+        initial_energy=_evidence_number(comparison, "initial_energy"),
+        energy_decreased=_evidence_flag(comparison, "energy_decreased"),
+        n_parameters=_evidence_integer(comparison, "n_parameters"),
+        exact_configuration_count=_evidence_integer(comparison, "exact_configuration_count"),
+        energy_history=_evidence_numbers(
+            _evidence_list(comparison, "energy_history"), "energy_history"
+        ),
+    )
+
+
+def load_jax_nqs_baseline_evidence(json_path: str | Path) -> JAXNQSBaselineProduct:
+    """Load committed JSON evidence and verify it through the product's own checks.
+
+    The record is rebuilt from its request, environment and comparison, so every
+    construction check runs again: schema, claim boundary, bounded posture, the
+    canonical no-advantage certificate and the SHA-256 digest of the canonical
+    payload. The rebuilt record must then reproduce the file exactly. JAX is not
+    needed, because nothing is recomputed.
+
+    Parameters
+    ----------
+    json_path : str or pathlib.Path
+        JSON written by :func:`write_jax_nqs_baseline_evidence`.
+
+    Returns
+    -------
+    JAXNQSBaselineProduct
+        The verified evidence record.
+
+    Raises
+    ------
+    OSError
+        If the file cannot be read.
+    ValueError
+        If the file is not one JSON object, a field has the wrong type, any
+        product check fails, or a field differs from its canonical written form.
+
+    """
+    payload = json.loads(Path(json_path).read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError("JAX NQS evidence must be a JSON object")
+    product = JAXNQSBaselineProduct(
+        schema=_evidence_text(payload, "schema"),
+        request=_rebuild_request(_evidence_section(payload, "request")),
+        environment=_rebuild_environment(_evidence_section(payload, "environment")),
+        comparison=_rebuild_comparison(_evidence_section(payload, "comparison")),
+        no_advantage=issue_no_advantage_certificate(
+            context=_JAX_NQS_BASELINE_NO_ADVANTAGE_CONTEXT
+        ),
+        evidence_sha256=_evidence_text(payload, "evidence_sha256"),
+    )
+    if product.to_dict() != payload:
+        raise ValueError("JAX NQS evidence differs from its canonical written form")
+    return product
+
+
 __all__ = [
     "JAX_NQS_BASELINE_CLAIM_BOUNDARY",
     "JAX_NQS_BASELINE_MAX_ITERATIONS",
@@ -579,6 +728,7 @@ __all__ = [
     "JAXNQSBaselineSpec",
     "JAXNQSComparison",
     "JAXNQSEnvironment",
+    "load_jax_nqs_baseline_evidence",
     "render_jax_nqs_baseline_markdown",
     "qualify_jax_nqs_baseline",
     "run_jax_nqs_baseline",
