@@ -71,6 +71,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   - The same hour-24 refusal now holds for operator review timestamps and
     backend-profile calibration timestamps, whose browser counterparts
     already refuse it.
+- Qiskit 2.5.1 → 2.6.2 in the runtime pins, every CI and SDK cohort lock and
+  every lock input; its runtime requirements are unchanged, so each lock
+  changes only in the Qiskit entry. The compiler trace examples record the
+  new compiler version and were regenerated through their native
+  producers; the compiled passes themselves are unchanged.
 - Studio tooling: Node 26 LTS in the Studio, docs and remote-release jobs;
   pnpm 11.9.0 → 12.17.0; TypeScript 5.9.3 → 6.0.3, the newest release TypeDoc
   0.28.20 supports; vitest and its V8 coverage 4.1.12 → 5.1.0; vite 8.3.5,

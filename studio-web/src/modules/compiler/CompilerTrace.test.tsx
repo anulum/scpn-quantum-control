@@ -54,7 +54,7 @@ it("test_compiler_trace_inspector_01: displays the actual qualified physical swa
     "q[0] / c[1] → q[1] / c[1]",
   );
   expect(screen.getByText(/Import binds metadata/)).toBeTruthy();
-  expect(screen.getByText("2.5.1")).toBeTruthy();
+  expect(screen.getByText("2.6.2")).toBeTruthy();
   expect(screen.getByRole("table", { name: "Gate changes" }).textContent).toContain("ry");
   for (const name of ["Qubit mapping table scrolling", "Gate changes table scrolling"]) {
     const scrolling = screen.getByRole("region", { name });
@@ -127,7 +127,7 @@ it("test_compiler_trace_inspector_04: exports the exact admitted backend snapsho
   });
   expect(text).toBe(nativeTrace);
   expect((readJson(text) as Record<string, unknown>)["sha256"]).toBe(
-    "20aa768ffd8c536e3e5e6c05b222dee3d0ecc91b4e65fbdc0cd3b2e9beaebaa6",
+    "1ba7279df52a5b4c693d53c41de6720cb97d139a51a7f9d28cd8446cfadb8cec",
   );
   await waitFor(() => expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:compiler-trace"));
 });

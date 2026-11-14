@@ -123,10 +123,10 @@
       ],
       "evidence_sha256": [
         "59c87002be4109b71619ee52ae4f8b706fc45bf083fecfd3c2c48cb0401df002",
-        "f678b0ed3c5807a6e3ebb2b344eea5f625e5199ac28d07351ebd2263af01e9cb",
-        "85054f036589847b45b850d709aaf0c3f792cebc07c027bae41f4c4938163f05",
-        "7bebac844ffe2e793cf8fcb06e9217e466a2640a7279473fbc863d0c515833b7",
-        "c2d609e38410f822f032df9a4a0b3374f8b424c3e3c611c220582c1a844af5e3"
+        "bd7ea2ce1d116d71569b3b8d0f04bca041786776dfab7447fc823fde951b4899",
+        "6b979f573695b2905170204dbb6aea88664ba5a6a9a1c5bd37a3770a3549eb75",
+        "e8d56ec80b3e809a4f1dbd8f17a36be5a189a2ca2c9f85625185bdd3a568d4bf",
+        "2f0c935803cb270cbd3af2c242c7383ee2c00fe8ada5ef561644f05384103e15"
       ],
       "evidence_status": "locked",
       "blockers": [],
@@ -251,7 +251,7 @@
       "category": "toolchain",
       "classification": "locked_versions",
       "version_pins": [
-        "qiskit==2.5.1",
+        "qiskit==2.6.2",
         "qiskit-aer==0.18.2",
         "qiskit-qasm3-import==0.6.0",
         "qiskit-ibm-runtime==0.47.0"
@@ -261,7 +261,7 @@
         "requirements-dev.txt"
       ],
       "evidence_sha256": [
-        "9010e7a298032aee39afc563b211c84270f883a2fed032be361294aba87aa245",
+        "ebf8fed298a3c59d7d1123c9e1f9d561ba16f6e3790d06344f5f3dd74977a7fe",
         "8db72efec1fb0058a2732cb22d82e09e99c047cd42e252cabc343afba31f72dc"
       ],
       "evidence_status": "locked",

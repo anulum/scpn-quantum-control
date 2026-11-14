@@ -294,7 +294,7 @@ def build_differentiable_dependency_environment_evidence(
             "toolchain",
             "locked_versions",
             (
-                "qiskit==2.5.1",
+                "qiskit==2.6.2",
                 "qiskit-aer==0.18.2",
                 "qiskit-qasm3-import==0.6.0",
                 "qiskit-ibm-runtime==0.47.0",
