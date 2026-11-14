@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — local job service through the built Studio and a real service
+# SCPN Quantum Control — local job service browser journey
 """Run, disconnect from and reconnect to a real local job in a real browser."""
 
 from __future__ import annotations
@@ -14,9 +14,236 @@ import signal
 import subprocess  # nosec B404 - fixed module of this repository, no shell
 import sys
 import tempfile
-from importlib.metadata import version
+from dataclasses import dataclass
+from functools import partial
 from pathlib import Path
+from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
+
+from tools.studio_preview_custody import run_custodied_journey
+
+if TYPE_CHECKING:
+    from playwright.sync_api import Locator, Page, Route
+
+_PROVIDER_REQUEST = json.dumps(
+    {
+        "project": "p",
+        "revision": "r",
+        "idempotency_key": "provider",
+        "verb": "execute",
+        "action_id": "a",
+        "parameters": {},
+    }
+)
+
+
+@dataclass(frozen=True)
+class _Service:
+    """Address and session token of the started local job service."""
+
+    url: str
+    token: str
+
+    def connect(self, panel: Locator) -> None:
+        """Enter the service address and session token in the panel.
+
+        Parameters
+        ----------
+        panel
+            The local job service region.
+
+        """
+        panel.get_by_label("Service address").fill(self.url)
+        panel.get_by_label("Session token").fill(self.token)
+
+
+def _start_service(scratch: Path, origin: str) -> subprocess.Popen[str]:
+    """Start the repository's local job service on a free loopback port.
+
+    Parameters
+    ----------
+    scratch
+        Owned temporary directory for the job root and the token file.
+    origin
+        Preview origin the service admits.
+
+    Returns
+    -------
+    subprocess.Popen
+        The running service, announcing its address on standard output.
+
+    """
+    return subprocess.Popen(  # nosec B603 - fixed interpreter and module
+        [
+            sys.executable,
+            "-m",
+            "scpn_quantum_control.studio_workspace.jobs.service",
+            "--root",
+            str(scratch / "jobs"),
+            "--port",
+            "0",
+            "--token-file",
+            str(scratch / "token"),
+            "--allow-origin",
+            origin,
+        ],
+        stdout=subprocess.PIPE,
+        text=True,
+    )
+
+
+def _run_job(page: Page, url: str, service: _Service, observations: list[str]) -> str:
+    """Run a job from the deep-linked panel to its sealed record.
+
+    Parameters
+    ----------
+    page
+        Owned page bound to the preview.
+    url
+        Owned literal-loopback preview.
+    service
+        The started local job service.
+    observations
+        Caller-owned list that records each contract once it holds.
+
+    Returns
+    -------
+    str
+        The attempt the job ran as.
+
+    """
+    from playwright.sync_api import expect
+
+    page.goto(url + "#/experiments/local-jobs", wait_until="networkidle")
+    panel = page.get_by_role("region", name="Local job service", exact=True)
+    expect(panel).to_be_focused()
+    observations.append("deep-link-focuses-the-panel")
+    service.connect(panel)
+    panel.get_by_role("button", name="Run job").click()
+    expect(panel.get_by_role("status", name="Local job")).to_contain_text("succeeded")
+    attempt_id = panel.get_by_label("Attempt").input_value()
+    expect(panel.get_by_role("note", name="Sealed record")).to_contain_text("sha256:")
+    observations.append("real-handler-runs-to-a-sealed-record")
+    return attempt_id
+
+
+def _reconnect_and_refuse(
+    page: Page, service: _Service, attempt_id: str, observations: list[str]
+) -> None:
+    """Reload, replay the same attempt, then have the service refuse a provider verb.
+
+    Parameters
+    ----------
+    page
+        Owned page bound to the preview.
+    service
+        The started local job service.
+    attempt_id
+        The attempt the job ran as.
+    observations
+        Caller-owned list that records each contract once it holds.
+
+    """
+    from playwright.sync_api import expect
+
+    page.reload(wait_until="networkidle")
+    panel = page.get_by_role("region", name="Local job service", exact=True)
+    service.connect(panel)
+    panel.get_by_label("Attempt").fill(attempt_id)
+    panel.get_by_role("button", name="Reconnect").click()
+    expect(panel.get_by_role("status", name="Local job")).to_contain_text("succeeded")
+    rows = panel.get_by_role("table", name="Local job events").get_by_role("row")
+    expect(rows).to_have_count(4)
+    observations.append("reconnect-replays-the-same-attempt")
+    panel.get_by_label("Job request").fill(_PROVIDER_REQUEST)
+    panel.get_by_role("button", name="Run job").click()
+    refused = panel.get_by_role("alert", name="Local job refused")
+    expect(refused).to_contain_text("verb_not_local")
+    observations.append("provider-verb-refused-by-the-service")
+
+
+def _use_service(
+    page: Page,
+    url: str,
+    observations: list[str],
+    announced: str,
+    token: str,
+    service_requests: list[str],
+) -> str:
+    """Admit the service's own requests, then run, reconnect and refuse through it.
+
+    Parameters
+    ----------
+    page
+        Owned page bound to the preview.
+    url
+        Owned literal-loopback preview.
+    observations
+        Caller-owned list that records each contract once it holds.
+    announced
+        First line the service printed, carrying its address.
+    token
+        Session token the service wrote.
+    service_requests
+        Caller-owned record of each request sent to the service.
+
+    Returns
+    -------
+    str
+        The attempt the job ran as.
+
+    """
+    service = _Service(json.loads(announced)["url"], token)
+    target = urlsplit(service.url).netloc
+
+    def to_service(route: Route) -> None:
+        service_requests.append(f"{route.request.method} {urlsplit(route.request.url).path}")
+        route.continue_()
+
+    page.route(lambda address: urlsplit(address)[:2] == ("http", target), to_service)
+    page.set_default_timeout(30000)
+    attempt_id = _run_job(page, url, service, observations)
+    _reconnect_and_refuse(page, service, attempt_id, observations)
+    assert any(item.startswith("POST /v1/jobs") for item in service_requests)
+    return attempt_id
+
+
+def _walk(
+    page: Page, url: str, observations: list[str], *, service_requests: list[str]
+) -> dict[str, object]:
+    """Start the local job service, use it from the Run stage and stop it.
+
+    Parameters
+    ----------
+    page
+        Owned page bound to the preview.
+    url
+        Owned literal-loopback preview.
+    observations
+        Caller-owned list that records each contract once it holds.
+    service_requests
+        Caller-owned record of each request sent to the service.
+
+    Returns
+    -------
+    dict
+        The attempt the job ran as and the service exit status.
+
+    """
+    origin = urlsplit(url)
+    with tempfile.TemporaryDirectory(prefix="studio-local-jobs-") as scratch:
+        process = _start_service(Path(scratch), f"{origin.scheme}://{origin.netloc}")
+        stdout = process.stdout
+        assert stdout is not None
+        try:
+            announced = stdout.readline()
+            token = (Path(scratch) / "token").read_text(encoding="utf-8")
+            attempt_id = _use_service(page, url, observations, announced, token, service_requests)
+        finally:
+            process.send_signal(signal.SIGTERM)
+            process.wait(timeout=30)
+            stdout.close()
+    return {"attempt_id": attempt_id, "service_exit": process.returncode}
 
 
 def run_local_jobs_journey(
@@ -35,7 +262,7 @@ def run_local_jobs_journey(
     -------
     dict
         Browser/runtime identity, observed contracts, the service requests and
-        the absence of outside requests and page errors.
+        the absence of outside requests, submissions and page errors.
 
     Raises
     ------
@@ -45,128 +272,12 @@ def run_local_jobs_journey(
         A real UI, network, service or runtime contract fails.
 
     """
-    from tools.studio_browser_journey import loopback_url
-
-    url = loopback_url(base_url)
-    from playwright.sync_api import Route, expect, sync_playwright
-
-    observed = {} if evidence is None else evidence
-    observations: list[str] = []
-    errors: list[str] = []
-    external: list[str] = []
     service_requests: list[str] = []
-    observed.update(
-        scenario="local_job_service",
-        playwright=version("playwright"),
-        observations=observations,
-        page_errors=errors,
-        external_requests=external,
-        service_requests=service_requests,
+    observed = {} if evidence is None else evidence
+    observed["service_requests"] = service_requests
+    return run_custodied_journey(
+        base_url,
+        observed,
+        "local_job_service",
+        partial(_walk, service_requests=service_requests),
     )
-    origin = urlsplit(url)
-    with tempfile.TemporaryDirectory(prefix="studio-local-jobs-") as scratch:
-        token_file = Path(scratch) / "token"
-        service = subprocess.Popen(  # nosec B603 - fixed interpreter and module
-            [
-                sys.executable,
-                "-m",
-                "scpn_quantum_control.studio_workspace.jobs.service",
-                "--root",
-                str(Path(scratch) / "jobs"),
-                "--port",
-                "0",
-                "--token-file",
-                str(token_file),
-                "--allow-origin",
-                f"{origin.scheme}://{origin.netloc}",
-            ],
-            stdout=subprocess.PIPE,
-            text=True,
-        )
-        stdout = service.stdout
-        assert stdout is not None
-        try:
-            service_url = json.loads(stdout.readline())["url"]
-            token = token_file.read_text(encoding="utf-8")
-            service_netloc = urlsplit(service_url).netloc
-            with sync_playwright() as runtime:
-                browser = runtime.chromium.launch()
-                context = browser.new_context(service_workers="block")
-                context.set_default_timeout(30000)
-                try:
-
-                    def bound(route: Route) -> None:
-                        target = urlsplit(route.request.url)
-                        if target.scheme == "http" and target.netloc == service_netloc:
-                            service_requests.append(f"{route.request.method} {target.path}")
-                            route.continue_()
-                        elif target.scheme != "http" or target.netloc != origin.netloc:
-                            external.append("outside-preview")
-                            route.abort()
-                        elif route.request.method != "GET":
-                            external.append(route.request.method)
-                            route.abort()
-                        else:
-                            route.continue_()
-
-                    context.route("**/*", bound)
-                    page = context.new_page()
-                    page.on("pageerror", lambda error: errors.append(str(error)))
-                    page.goto(url + "#/experiments/local-jobs", wait_until="networkidle")
-                    panel = page.get_by_role("region", name="Local job service", exact=True)
-                    expect(panel).to_be_focused()
-                    observations.append("deep-link-focuses-the-panel")
-                    panel.get_by_label("Service address").fill(service_url)
-                    panel.get_by_label("Session token").fill(token)
-                    panel.get_by_role("button", name="Run job").click()
-                    status = panel.get_by_role("status", name="Local job")
-                    expect(status).to_contain_text("succeeded")
-                    attempt_id = panel.get_by_label("Attempt").input_value()
-                    expect(panel.get_by_role("note", name="Sealed record")).to_contain_text(
-                        "sha256:"
-                    )
-                    observations.append("real-handler-runs-to-a-sealed-record")
-
-                    page.reload(wait_until="networkidle")
-                    panel = page.get_by_role("region", name="Local job service", exact=True)
-                    panel.get_by_label("Service address").fill(service_url)
-                    panel.get_by_label("Session token").fill(token)
-                    panel.get_by_label("Attempt").fill(attempt_id)
-                    panel.get_by_role("button", name="Reconnect").click()
-                    expect(panel.get_by_role("status", name="Local job")).to_contain_text(
-                        "succeeded"
-                    )
-                    rows = panel.get_by_role("table", name="Local job events").get_by_role("row")
-                    expect(rows).to_have_count(4)
-                    observations.append("reconnect-replays-the-same-attempt")
-
-                    panel.get_by_label("Job request").fill(
-                        json.dumps(
-                            {
-                                "project": "p",
-                                "revision": "r",
-                                "idempotency_key": "provider",
-                                "verb": "execute",
-                                "action_id": "a",
-                                "parameters": {},
-                            }
-                        )
-                    )
-                    panel.get_by_role("button", name="Run job").click()
-                    expect(panel.get_by_role("alert", name="Local job refused")).to_contain_text(
-                        "verb_not_local"
-                    )
-                    observations.append("provider-verb-refused-by-the-service")
-                    assert not errors, errors
-                    assert not external, external
-                    assert any(item.startswith("POST /v1/jobs") for item in service_requests)
-                    observed.update(browser=browser.version, attempt_id=attempt_id)
-                finally:
-                    context.close()
-                    browser.close()
-        finally:
-            service.send_signal(signal.SIGTERM)
-            service.wait(timeout=30)
-            stdout.close()
-    observed.update(service_exit=service.returncode)
-    return observed

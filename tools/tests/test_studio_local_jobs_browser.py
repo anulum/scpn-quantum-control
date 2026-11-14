@@ -114,4 +114,5 @@ def test_local_jobs_refuses_an_actual_same_origin_submission(
     evidence: dict[str, object] = {}
     with owned_fault_host(preview_dir) as preview, pytest.raises(AssertionError):
         run_local_jobs_journey(preview, evidence)
-    assert "POST" in cast(list[str], evidence["external_requests"])
+    assert "POST" in cast(list[str], evidence["submission_requests"])
+    assert evidence["external_requests"] == []
