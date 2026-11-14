@@ -10,11 +10,249 @@
 from __future__ import annotations
 
 import json
-from importlib.metadata import version
+from dataclasses import dataclass
+from functools import partial
 from pathlib import Path
-from urllib.parse import urlsplit
+from typing import TYPE_CHECKING, Any
 
-from tools.studio_preview_custody import preview_route_guard
+from tools.studio_preview_custody import run_custodied_journey
+
+if TYPE_CHECKING:
+    from playwright.sync_api import Locator, Page
+
+
+@dataclass(frozen=True)
+class _Fixtures:
+    """Committed backend-profile sources used by the journey.
+
+    Attributes
+    ----------
+    original
+        Committed declared-profile source text.
+    offline
+        Compact offline envelope text.
+    envelope
+        Offline envelope digest.
+    binding
+        Offline binding references.
+    current
+        Profile row bound by the offline envelope.
+    other
+        Second profile row for the same device.
+
+    """
+
+    original: str
+    offline: str
+    envelope: str
+    binding: dict[str, Any]
+    current: dict[str, Any]
+    other: dict[str, Any]
+
+
+def _load_fixtures() -> _Fixtures:
+    """Read the committed profile sources and pick the bound and the other row.
+
+    Returns
+    -------
+    _Fixtures
+        The sources the journey imports and compares.
+
+    """
+    repo = Path(__file__).resolve().parents[1]
+    cases = json.loads((repo / "data/studio/backend_profiles_cases.json").read_text())
+    binding = cases["offline"]["body"]["binding"]
+    rows = cases["offline"]["body"]["profiles"]
+    return _Fixtures(
+        original=(repo / "data/studio/backend_profiles.json").read_text(),
+        offline=json.dumps(cases["offline"], ensure_ascii=False),
+        envelope=cases["offline"]["sha256"],
+        binding=binding,
+        current=next(row for row in rows if row["sha256"] == binding["profile_sha256"]),
+        other=next(row for row in rows if row["sha256"] != binding["profile_sha256"]),
+    )
+
+
+def _open_profiles(page: Page, url: str) -> Locator:
+    """Open the declared profiles from the context destinations by keyboard.
+
+    Parameters
+    ----------
+    page
+        Owned page bound to the preview.
+    url
+        Owned literal-loopback preview.
+
+    Returns
+    -------
+    Locator
+        The backend profiles panel.
+
+    """
+    from playwright.sync_api import expect
+
+    page.goto(url, wait_until="networkidle")
+    page.get_by_label("Workspace archive JSON").fill('{"unsaved":"exact retained α draft"}')
+    destination = page.get_by_role("navigation", name="Workbench context destinations")
+    destination.get_by_role("link", name="Devices & Operations").focus()
+    page.keyboard.press("Enter")
+    panel = page.get_by_role("region", name="Backend profiles", exact=True)
+    expect(panel).to_be_visible()
+    panel.get_by_role("button", name="Open declared profiles").click()
+    return panel
+
+
+def _check_declared(panel: Locator, observations: list[str]) -> None:
+    """Show the offline declared profile with its age and unknown observations.
+
+    Parameters
+    ----------
+    panel
+        The backend profiles panel.
+    observations
+        Caller-owned list that records each contract once it holds.
+
+    """
+    from playwright.sync_api import expect
+
+    select = panel.get_by_label("Backend profile", exact=True)
+    expect(select).to_have_value("")
+    select.select_option("direct/iqm")
+    expect(panel.get_by_label("Online observation")).to_have_text("unknown")
+    expect(panel.get_by_label("Observed shot ceiling")).to_have_text("unknown")
+    expect(panel.get_by_role("button", name="Pulse options")).to_be_disabled()
+    expect(panel.get_by_role("button", name="Analog options")).to_be_disabled()
+    expect(panel.get_by_text("Snapshot date:", exact=False)).to_contain_text("Snapshot age:")
+    observations.append("offline-declared-age-and-unknown")
+
+
+def _check_import(panel: Locator, fx: _Fixtures, observations: list[str]) -> None:
+    """Import the offline envelope, then refuse a malformed one without losing it.
+
+    Parameters
+    ----------
+    panel
+        The backend profiles panel.
+    fx
+        Committed sources.
+    observations
+        Caller-owned list that records each contract once it holds.
+
+    """
+    from playwright.sync_api import expect
+
+    field = panel.get_by_label("Backend profiles JSON")
+    field.fill(fx.offline)
+    panel.get_by_role("button", name="Inspect profiles", exact=True).click()
+    expect(panel.get_by_label("Plan reference")).to_have_text(fx.binding["plan_ref"])
+    expect(panel.get_by_label("Bound calibration reference")).to_have_text(
+        fx.binding["calibration_ref"]
+    )
+    expect(panel.get_by_label("Review reference")).to_have_text(fx.binding["approval_ref"])
+    expect(panel.get_by_label("Backend profile", exact=True)).to_have_value(
+        fx.current["body"]["route_id"]
+    )
+    expect(panel.get_by_label("Observed shot ceiling")).to_have_text("18446744073709551615")
+    expect(panel.get_by_label("Online observation")).to_have_text("offline (supplied observation)")
+    assert fx.current["body"]["device"] == fx.other["body"]["device"]
+    assert fx.current["sha256"] != fx.other["sha256"]
+    observations.append("two-brokers-same-device-exact-integer")
+    field.fill('{"api_key":"refused-unknown-field"}')
+    panel.get_by_role("button", name="Inspect profiles", exact=True).click()
+    expect(panel.get_by_role("alert")).to_contain_text("metadata refused")
+    expect(panel.get_by_label("Plan reference")).to_have_text(fx.binding["plan_ref"])
+    observations.append("malformed-import-preserves-prior-binding")
+
+
+def _check_switch_and_export(
+    page: Page, panel: Locator, fx: _Fixtures, observations: list[str]
+) -> None:
+    """Invalidate references on a switch, export exactly, then recover a valid source.
+
+    Parameters
+    ----------
+    page
+        Owned page bound to the preview.
+    panel
+        The backend profiles panel.
+    fx
+        Committed sources.
+    observations
+        Caller-owned list that records each contract once it holds.
+
+    """
+    from playwright.sync_api import expect
+
+    panel.get_by_label("Backend profile", exact=True).select_option(fx.other["body"]["route_id"])
+    for label in ("Plan reference", "Bound calibration reference", "Review reference"):
+        expect(panel.get_by_label(label)).to_have_text("none")
+    expect(panel.get_by_role("region", name="Selected backend profile")).to_contain_text(
+        fx.other["sha256"]
+    )
+    observations.append("switch-invalidates-all-dependent-references")
+    with page.expect_download() as exported:
+        panel.get_by_role("button", name="Export admitted profiles").click()
+    download = exported.value
+    assert download.suggested_filename == "backend-profiles.json"
+    saved = download.path()
+    assert saved is not None and Path(saved).read_text() == fx.offline
+    observations.append("exact-admitted-export")
+    # Compact transport retains native values and digests; pretty multiline
+    # keyboard insertion timed out in Chromium before admission started.
+    panel.get_by_label("Backend profiles JSON").fill(
+        json.dumps(json.loads(fx.original), ensure_ascii=False)
+    )
+    panel.get_by_role("button", name="Inspect profiles", exact=True).click()
+    expect(panel.get_by_role("alert")).to_have_count(0)
+    expect(panel.get_by_label("Plan reference")).to_have_text("none")
+    observations.append("valid-source-recovery")
+
+
+def _walk(
+    page: Page, url: str, observations: list[str], *, fx: _Fixtures, kernels: list[str]
+) -> dict[str, object]:
+    """Inspect, import, export and recover profiles, recompute WASM, keep the draft.
+
+    Parameters
+    ----------
+    page
+        Owned page bound to the preview.
+    url
+        Owned literal-loopback preview.
+    observations
+        Caller-owned list that records each contract once it holds.
+    fx
+        Committed sources.
+    kernels
+        Record of loaded ``.wasm`` paths.
+
+    Returns
+    -------
+    dict
+        Workspace writes and the offline envelope digest.
+
+    """
+    from playwright.sync_api import expect
+
+    panel = _open_profiles(page, url)
+    _check_declared(panel, observations)
+    _check_import(panel, fx, observations)
+    _check_switch_and_export(page, panel, fx, observations)
+    views = page.get_by_role("navigation", name="Workbench views")
+    views.get_by_role("link", name="Model", exact=True).click()
+    recompute = page.locator('[id="/build/compile-recompute"]')
+    recompute.get_by_role("button", name="Recompute in browser").click()
+    expect(recompute.get_by_role("status")).to_have_text(
+        "recomputed digest matches the signed claim"
+    )
+    observations.append("original-built-wasm-recompute")
+    views.get_by_role("link", name="Workspace", exact=True).click()
+    expect(page.get_by_label("Workspace archive JSON")).to_have_value(
+        '{"unsaved":"exact retained α draft"}'
+    )
+    observations.append("original-workspace-draft-preserved")
+    assert kernels, "Actual built WASM was not requested"
+    return {"workspace_writes": 0, "profile_envelope_sha256": fx.envelope}
 
 
 def run_backend_profiles_journey(
@@ -43,137 +281,8 @@ def run_backend_profiles_journey(
         A real UI, metadata, export, network or runtime contract fails.
 
     """
-    from tools.studio_browser_journey import loopback_url
-
-    url = loopback_url(base_url)
-    from playwright.sync_api import expect, sync_playwright
-
-    repo = Path(__file__).resolve().parents[1]
-    original = (repo / "data/studio/backend_profiles.json").read_text()
-    cases = json.loads((repo / "data/studio/backend_profiles_cases.json").read_text())
-    offline = json.dumps(cases["offline"], ensure_ascii=False)
-    binding = cases["offline"]["body"]["binding"]
-    rows = cases["offline"]["body"]["profiles"]
-    current = next(row for row in rows if row["sha256"] == binding["profile_sha256"])
-    other = next(row for row in rows if row["sha256"] != binding["profile_sha256"])
-    observed = {} if evidence is None else evidence
-    observations: list[str] = []
-    errors: list[str] = []
-    external: list[str] = []
-    submissions: list[str] = []
     kernels: list[str] = []
-    observed.update(
-        scenario="operator_backend_profiles",
-        playwright=version("playwright"),
-        observations=observations,
-        page_errors=errors,
-        external_requests=external,
-        submission_requests=submissions,
-        wasm_requests=kernels,
+    walk = partial(_walk, fx=_load_fixtures(), kernels=kernels)
+    return run_custodied_journey(
+        base_url, evidence, "operator_backend_profiles", walk, kernels=kernels, downloads=True
     )
-    with sync_playwright() as runtime:
-        browser = runtime.chromium.launch()
-        context = browser.new_context(service_workers="block", accept_downloads=True)
-        context.set_default_timeout(15000)
-        try:
-            context.route(
-                "**/*", preview_route_guard(urlsplit(url).netloc, external, submissions, kernels)
-            )
-            page = context.new_page()
-            page.on("pageerror", lambda error: errors.append(str(error)))
-            page.goto(url, wait_until="networkidle")
-            workspace = page.get_by_label("Workspace archive JSON")
-            workspace.fill('{"unsaved":"exact retained α draft"}')
-            destination = page.get_by_role(
-                "navigation", name="Workbench context destinations"
-            ).get_by_role("link", name="Devices & Operations")
-            destination.focus()
-            page.keyboard.press("Enter")
-            panel = page.get_by_role("region", name="Backend profiles", exact=True)
-            expect(panel).to_be_visible()
-            panel.get_by_role("button", name="Open declared profiles").click()
-            select = panel.get_by_label("Backend profile", exact=True)
-            expect(select).to_have_value("")
-            select.select_option("direct/iqm")
-            expect(panel.get_by_label("Online observation")).to_have_text("unknown")
-            expect(panel.get_by_label("Observed shot ceiling")).to_have_text("unknown")
-            expect(panel.get_by_role("button", name="Pulse options")).to_be_disabled()
-            expect(panel.get_by_role("button", name="Analog options")).to_be_disabled()
-            expect(panel.get_by_text("Snapshot date:", exact=False)).to_contain_text(
-                "Snapshot age:"
-            )
-            observations.append("offline-declared-age-and-unknown")
-            field = panel.get_by_label("Backend profiles JSON")
-            field.fill(offline)
-            panel.get_by_role("button", name="Inspect profiles", exact=True).click()
-            expect(panel.get_by_label("Plan reference")).to_have_text(binding["plan_ref"])
-            expect(panel.get_by_label("Bound calibration reference")).to_have_text(
-                binding["calibration_ref"]
-            )
-            expect(panel.get_by_label("Review reference")).to_have_text(binding["approval_ref"])
-            expect(select).to_have_value(current["body"]["route_id"])
-            expect(panel.get_by_label("Observed shot ceiling")).to_have_text(
-                "18446744073709551615"
-            )
-            expect(panel.get_by_label("Online observation")).to_have_text(
-                "offline (supplied observation)"
-            )
-            assert current["body"]["device"] == other["body"]["device"]
-            assert current["sha256"] != other["sha256"]
-            observations.append("two-brokers-same-device-exact-integer")
-            field.fill('{"api_key":"refused-unknown-field"}')
-            panel.get_by_role("button", name="Inspect profiles", exact=True).click()
-            expect(panel.get_by_role("alert")).to_contain_text("metadata refused")
-            expect(panel.get_by_label("Plan reference")).to_have_text(binding["plan_ref"])
-            observations.append("malformed-import-preserves-prior-binding")
-            select.select_option(other["body"]["route_id"])
-            for label in ("Plan reference", "Bound calibration reference", "Review reference"):
-                expect(panel.get_by_label(label)).to_have_text("none")
-            expect(panel.get_by_role("region", name="Selected backend profile")).to_contain_text(
-                other["sha256"]
-            )
-            observations.append("switch-invalidates-all-dependent-references")
-            with page.expect_download() as exported:
-                panel.get_by_role("button", name="Export admitted profiles").click()
-            download = exported.value
-            assert download.suggested_filename == "backend-profiles.json"
-            saved = download.path()
-            assert saved is not None and Path(saved).read_text() == offline
-            observations.append("exact-admitted-export")
-            # Compact transport retains native values and digests; pretty multiline
-            # keyboard insertion timed out in Chromium before admission started.
-            field.fill(json.dumps(json.loads(original), ensure_ascii=False))
-            panel.get_by_role("button", name="Inspect profiles", exact=True).click()
-            expect(panel.get_by_role("alert")).to_have_count(0)
-            expect(panel.get_by_label("Plan reference")).to_have_text("none")
-            observations.append("valid-source-recovery")
-            page.get_by_role("navigation", name="Workbench views").get_by_role(
-                "link", name="Model", exact=True
-            ).click()
-            recompute = page.locator('[id="/build/compile-recompute"]')
-            recompute.get_by_role("button", name="Recompute in browser").click()
-            expect(recompute.get_by_role("status")).to_have_text(
-                "recomputed digest matches the signed claim"
-            )
-            observations.append("original-built-wasm-recompute")
-            page.get_by_role("navigation", name="Workbench views").get_by_role(
-                "link", name="Workspace", exact=True
-            ).click()
-            expect(workspace).to_have_value('{"unsaved":"exact retained α draft"}')
-            observations.append("original-workspace-draft-preserved")
-            assert kernels, "Actual built WASM was not requested"
-            assert not errors, errors
-            assert not external, external
-            assert not submissions, submissions
-            assert not page.workers, "Profile inspection must not retain workers"
-            observed.update(
-                browser=browser.version,
-                workers=len(page.workers),
-                workspace_writes=0,
-                profile_envelope_sha256=cases["offline"]["sha256"],
-                no_submit=True,
-            )
-            return observed
-        finally:
-            context.close()
-            browser.close()
