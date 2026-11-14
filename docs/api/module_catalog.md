@@ -4,8 +4,8 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **864 modules** across **41 package families**
-- **4671 documented public module-level symbols**
+- **866 modules** across **41 package families**
+- **4678 documented public module-level symbols**
 - **883 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -5730,6 +5730,22 @@ Emit the transform-algebra support matrix as a schema-B evidence bundle.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/support_matrix_bundle.py) · Public symbols: **2**
 
 **Functions:** `build_support_matrix_bundle()`, `main()`
+
+### `scpn_quantum_control.studio.topology_instrument_artifact`
+
+Build, write and check the source data of the symmetry, chimera and topology lenses.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/topology_instrument_artifact.py) · Public symbols: **2**
+
+**Functions:** `build_topology_instrument_artifact()`, `main()`
+
+### `scpn_quantum_control.studio.topology_instrument_templates`
+
+Build one bounded template per symmetry, chimera and topology owner.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/topology_instrument_templates.py) · Public symbols: **5**
+
+**Functions:** `relabelling_template()`, `sector_template()`, `chimera_template()`, `persistence_template()`, `sensitivity_template()`
 
 ### `scpn_quantum_control.studio.verbs`
 

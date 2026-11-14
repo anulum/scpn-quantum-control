@@ -30,6 +30,12 @@ STUDIO_LEARNING_INSTRUMENT_SOURCE = (
 STUDIO_LEARNING_TEMPLATES_SOURCE = (
     "src/scpn_quantum_control/studio/learning_instrument_templates.py"
 )
+STUDIO_TOPOLOGY_INSTRUMENT_SOURCE = (
+    "src/scpn_quantum_control/studio/topology_instrument_artifact.py"
+)
+STUDIO_TOPOLOGY_TEMPLATES_SOURCE = (
+    "src/scpn_quantum_control/studio/topology_instrument_templates.py"
+)
 STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_COHORT = [
     "tests/test_studio_readout_mitigation_bundle.py",
     "tests/test_studio_mitigation_instrument_artifact.py",
@@ -38,13 +44,15 @@ STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_COHORT = [
     "tests/test_studio_sensing_instrument_artifact.py",
     "tests/test_studio_control_proposal_instrument_artifact.py",
     "tests/test_studio_learning_instrument_artifact.py",
+    "tests/test_studio_topology_instrument_artifact.py",
 ]
 STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_INCLUDE = (
     "--include=*/studio/readout_mitigation_bundle.py,"
     "*/studio/mitigation_instrument_artifact.py,*/studio/committed_data.py,"
     "*/studio/pulse_instrument_artifact.py,*/studio/sensing_instrument_artifact.py,"
     "*/studio/control_proposal_instrument_artifact.py,"
-    "*/studio/learning_instrument_artifact.py,*/studio/learning_instrument_templates.py"
+    "*/studio/learning_instrument_artifact.py,*/studio/learning_instrument_templates.py,"
+    "*/studio/topology_instrument_artifact.py,*/studio/topology_instrument_templates.py"
 )
 STUDIO_READOUT_MITIGATION_BUNDLE_TYPING_RATCHET = [
     STUDIO_READOUT_MITIGATION_BUNDLE_SOURCE,
@@ -55,6 +63,8 @@ STUDIO_READOUT_MITIGATION_BUNDLE_TYPING_RATCHET = [
     STUDIO_CONTROL_INSTRUMENT_SOURCE,
     STUDIO_LEARNING_INSTRUMENT_SOURCE,
     STUDIO_LEARNING_TEMPLATES_SOURCE,
+    STUDIO_TOPOLOGY_INSTRUMENT_SOURCE,
+    STUDIO_TOPOLOGY_TEMPLATES_SOURCE,
     *STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_COHORT,
     "tools/studio_readout_mitigation_bundle_quality_gates.py",
     "tests/test_studio_readout_mitigation_bundle_quality_gate.py",
@@ -144,6 +154,8 @@ __all__ = [
     "STUDIO_CONTROL_INSTRUMENT_SOURCE",
     "STUDIO_LEARNING_INSTRUMENT_SOURCE",
     "STUDIO_LEARNING_TEMPLATES_SOURCE",
+    "STUDIO_TOPOLOGY_INSTRUMENT_SOURCE",
+    "STUDIO_TOPOLOGY_TEMPLATES_SOURCE",
     "STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_COHORT",
     "STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_DATA_FILE",
     "STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_INCLUDE",

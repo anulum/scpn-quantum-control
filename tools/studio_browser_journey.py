@@ -432,6 +432,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "sensing_entropy_instrument",
             "control_proposal_instrument",
             "learning_domain_instrument",
+            "topology_symmetry_instrument",
             "operator_backend_profiles",
             "operator_policy_decisions",
             "operator_review_dossiers",
@@ -604,6 +605,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 from tools.studio_learning_browser import run_learning_journey
 
                 journey = partial(run_learning_journey, evidence=evidence)
+            elif args.scenario == "topology_symmetry_instrument":
+                from tools.studio_topology_browser import run_topology_journey
+
+                journey = partial(run_topology_journey, evidence=evidence)
             elif args.scenario == "pulse_feasibility":
                 from tools.studio_pulse_browser import run_pulse_journey
 

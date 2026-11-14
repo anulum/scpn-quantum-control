@@ -2156,3 +2156,47 @@ Building the data leaves the caller's global NumPy random state unchanged;
 the build refuses a template that changes it. Regenerate or check the data
 with `python -m scpn_quantum_control.studio.learning_instrument_artifact --write`
 or `--check`.
+
+## Symmetry, chimera and topology lenses
+
+Analyse → Symmetry, chimera and topology lenses (`#/results/topology`) shows
+what the existing symmetry, chimera and topology owners report on small finite
+examples. The browser computes nothing; it displays source values and refuses
+data that contradicts them.
+
+Order parameter under relabelling: a four-node coupling with distinct weights
+and frequencies is evolved exactly (the matrix exponential of the compiled XY
+Hamiltonian, not Trotter steps, whose term order depends on the labels). The
+order parameter R and phase ψ are measured for the original labels and again
+after a consistent permutation of the coupling, frequencies and initial angles.
+The view lists the node moves and both readings; data whose relabelled R
+differs beyond the recorded tolerance is refused.
+
+Symmetry sectors: on a uniform four-node ring, the parity and magnetisation
+sector spectra are compared with the dense spectrum, and the largest deviation
+must stay within the recorded tolerance. Parity weights and the leakage out of
+the even sector are shown for an even basis state and a mixed product state,
+before and after the same exact evolution; parity is conserved, so data whose
+weights move is refused.
+
+Chimera clusters: the finite synthetic two-population chimera shows each
+population's time-mean order parameter, the global one, the chimera and
+metastability indices and the configuration. A rotatable 3D view places the
+nodes on a sphere by index for display only: the positions carry no physical
+meaning, and rotating the view changes no value.
+
+Persistence summaries are exact Vietoris–Rips persistence of geodesic phase
+distances: an evenly spaced example whose H0 deaths equal the analytic spacing,
+and the chimera's final phases. They are finite summaries of sampled phases,
+not statements about the continuous dynamics, and are not differentiated.
+
+Fixed-active-set sensitivity: the topology projection's derivative support is
+shown at an interior point, where the local JVP exists, and at a coupling on
+the clipping bound, a removed edge and an algebraic-connectivity threshold,
+where the owner refuses a derivative. No derivative is ever shown at a kink or
+a discrete change.
+
+Building the data leaves the caller's global NumPy random state unchanged.
+Regenerate or check it with
+`python -m scpn_quantum_control.studio.topology_instrument_artifact --write`
+or `--check`.

@@ -36,6 +36,7 @@ export const resultsModule: StudioModule<Services, WorkspaceViewServices, "resul
         "sensing",
         "control",
         "learning",
+        "topology",
       ],
       render: (services: Services, instrument: string | null) => (
         <ResultsView
@@ -47,6 +48,7 @@ export const resultsModule: StudioModule<Services, WorkspaceViewServices, "resul
           focusSensingInstrument={instrument === "sensing"}
           focusControlInstrument={instrument === "control"}
           focusLearningInstrument={instrument === "learning"}
+          focusTopologyInstrument={instrument === "topology"}
           plan={services.experiment.plan}
           outcome={services.experiment.outcome}
           editors={services.renderEditors("results")}
@@ -69,6 +71,11 @@ export const resultsModule: StudioModule<Services, WorkspaceViewServices, "resul
       id: "open-learning",
       label: "Open learning, forecasting and domain benchmarks",
       action: { kind: "navigate", stage: "results", instrument: "learning" },
+    },
+    {
+      id: "open-topology",
+      label: "Open symmetry, chimera and topology lenses",
+      action: { kind: "navigate", stage: "results", instrument: "topology" },
     },
     {
       id: "open-results",

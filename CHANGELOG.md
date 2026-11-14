@@ -195,6 +195,19 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   extension is missing, fails with a message that names the extension instead
   of a bare "No module named"; it has no Python fallback.
 
+### Symmetry, chimera and topology lenses
+
+- Analyse shows source-owned symmetry and topology evidence on small finite
+  examples: the order parameter before and after a node relabelling under exact
+  evolution, parity and magnetisation sector spectra against the dense
+  spectrum with conserved parity weights, the synthetic chimera's population
+  order parameters, exact Vietoris–Rips persistence of sampled phases, and the
+  topology projection's derivative support.
+- No derivative is shown at a clipping kink, a removed edge or a connectivity
+  threshold; the owner's refusal is shown instead. The 3D node view is a
+  display projection: rotating it changes no value. Building the data leaves
+  the caller's global NumPy random state unchanged.
+
 ### Learning, forecasting and domain benchmarks
 
 - Analyse shows source-owned learning evidence: multimodal forecasting splits

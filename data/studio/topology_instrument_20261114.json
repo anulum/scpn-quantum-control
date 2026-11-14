@@ -1,0 +1,741 @@
+{
+  "artifact_id": "studio-topology-instrument-20261114",
+  "generated_by": "python -m scpn_quantum_control.studio.topology_instrument_artifact --write",
+  "global_random_state_unchanged": true,
+  "layout_boundary": "node positions in the 3D view are a display projection computed in the browser; they carry no physical meaning and change no value",
+  "schema": "scpn_qc_studio_topology_instrument_v1",
+  "templates": {
+    "chimera": {
+      "chimera_index": 0.004794965971873806,
+      "claim_boundary": "deterministic finite-N synthetic Kuramoto-Sakaguchi analysis and unapplied control proposals; no thermodynamic-limit, stability, controllability, biological, EEG, clinical, hardware, or deployment claim",
+      "clusters": [
+        {
+          "mean_order_parameter": 0.999953372668834,
+          "nodes": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "mean_order_parameter": 0.8870382507741678,
+          "nodes": [
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      ],
+      "config": {
+        "dt": 0.05,
+        "population_size": 8,
+        "regime": "chimera_transient",
+        "seed": 20260702,
+        "settle_steps": 100,
+        "steps": 400
+      },
+      "final_phases": [
+        2.265361159953681,
+        2.2671124973640175,
+        2.278250684665686,
+        2.266988952927342,
+        2.269524771363436,
+        2.2685136021162116,
+        2.263364079696583,
+        2.2705519130034837,
+        2.440735082589253,
+        3.5180786262352086,
+        2.210026285564931,
+        2.4218434563368945,
+        2.36273410464643,
+        2.443834156965309,
+        2.4446919556721163,
+        2.4214834501375258
+      ],
+      "global_order_parameter_mean": 0.9343666910029897,
+      "metastability": 0.0032160787611432325,
+      "owner": "scpn_quantum_control.chimera_control",
+      "source": "Abrams-Mirollo-Strogatz-Wiley two-population Kuramoto-Sakaguchi finite-N synthetic configuration"
+    },
+    "persistence": {
+      "boundary": "finite summaries of sampled phases; not a statement about the continuous dynamics, and not differentiated",
+      "chimera_final_phases": {
+        "H0": {
+          "essential": 1,
+          "finite_deaths": [
+            0.00012354443667561554,
+            0.00036000619936871203,
+            0.0008577987068072447,
+            0.0010111692472243305,
+            0.0010271416400478017,
+            0.0014011047521940156,
+            0.001627792973661002,
+            0.001997080257098105,
+            0.0030990743760561656,
+            0.00769877166220212,
+            0.01889162625235841,
+            0.05333779413165196,
+            0.058749345491095895,
+            0.08448341998074405,
+            1.0733866705630923
+          ],
+          "longest_finite_lifetime": 1.0733866705630923,
+          "pairs": 16,
+          "persistent_finite": 15
+        },
+        "H1": {
+          "essential": 0,
+          "finite_deaths": [
+            0.0015246491888696312,
+            0.0017513374103366175,
+            0.002038310887272132,
+            0.002412273999418346,
+            0.0025358184360939617,
+            0.0031524421625306336,
+            0.0034394156394661475,
+            0.0035629600761417635,
+            0.003624873230759107,
+            0.003748417667434722,
+            0.00395687308286341,
+            0.004163611409754964,
+            0.005149522419628738,
+            0.005190753049802765,
+            0.006160691666853068,
+            0.007187833306900871,
+            0.008725913302249923,
+            0.009737082549474252,
+            0.011138187301668268,
+            0.011261731738343883,
+            0.012889524712004885,
+            0.01488660496910299,
+            0.01925163245172712,
+            0.021990700628414572,
+            0.022350706827783284,
+            0.022848499335221817,
+            0.02320850553459053,
+            0.05533487438875006,
+            0.05696266736241107,
+            0.057086211799086684,
+            0.0584873165512807,
+            0.05910935169046461,
+            0.05949848579850503,
+            0.06052562743855284,
+            0.06822439910075495,
+            0.07800097794282301,
+            0.08110005231887918,
+            0.08195785102568641,
+            0.09218219164294617,
+            0.09320933328299397,
+            0.09422050253021831,
+            0.09562160728241231,
+            0.09574515171908791,
+            0.09737294469274893,
+            0.09937002494984704,
+            0.14323276547183994,
+            0.14359277167120865,
+            0.15093153713404206,
+            0.15129154333341074,
+            0.15195867877408983,
+            0.15231868497345857,
+            0.152707819081499,
+            0.1529698480213142,
+            0.1533298542206829,
+            0.1543709527735082,
+            0.15449449721018382,
+            0.15473095897287692,
+            0.15485450340955254,
+            0.1561222901838448,
+            0.15648229638321354,
+            0.15811937044094293,
+            0.15847937664031164,
+            0.16248439792356706,
+            0.16558347229962322,
+            0.16644127100643047,
+            0.17018316958576918,
+            0.17121031122581698,
+            0.1722214804730413,
+            0.17328224396182534,
+            0.17362258522523533,
+            0.17374612966191094,
+            0.17414004266863256,
+            0.17430938560187315,
+            0.17516718430868036,
+            0.17532055484909748,
+            0.17537392263557197,
+            0.17617835355590472,
+            0.1767216596012915,
+            0.1768452040379671,
+            0.17737100289267005,
+            0.17757945830809874,
+            0.17770300274477435,
+            0.1784729970116281,
+            0.17933079571843538,
+            0.18047007726872621,
+            0.18132787597553346,
+            0.21145716457259492,
+            0.2118171707719636,
+            0.230708797024322,
+            0.23380787140037818,
+            0.23466567010718542,
+            1.0742444692698996,
+            1.0773435436459557,
+            1.0962351698983142,
+            1.0965951760976829,
+            1.1553445215887788,
+            1.2398279415695228,
+            1.247526713231725,
+            1.2485538548717727,
+            1.249565024118997,
+            1.250966128871191,
+            1.2510896733078667,
+            1.2527174662815277,
+            1.2547145465386258,
+            1.3080523406702778
+          ],
+          "longest_finite_lifetime": 0.0,
+          "pairs": 105,
+          "persistent_finite": 0
+        }
+      },
+      "exact_example": {
+        "analytic_spacing": 1.0471975511965976,
+        "phases": [
+          0.0,
+          1.0471975511965976,
+          2.0943951023931953,
+          3.141592653589793,
+          4.1887902047863905,
+          5.235987755982989
+        ],
+        "summary": {
+          "H0": {
+            "essential": 1,
+            "finite_deaths": [
+              1.0471975511965974,
+              1.0471975511965976,
+              1.0471975511965976,
+              1.0471975511965976,
+              1.0471975511965979
+            ],
+            "longest_finite_lifetime": 1.0471975511965979,
+            "pairs": 6,
+            "persistent_finite": 5
+          },
+          "H1": {
+            "essential": 0,
+            "finite_deaths": [
+              2.094395102393195,
+              2.0943951023931953,
+              2.0943951023931953,
+              2.0943951023931957,
+              2.0943951023931957,
+              2.0943951023931957,
+              2.0943951023931957,
+              3.141592653589793,
+              3.141592653589793,
+              3.141592653589793
+            ],
+            "longest_finite_lifetime": 1.0471975511965974,
+            "pairs": 10,
+            "persistent_finite": 1
+          }
+        }
+      },
+      "lifetime_threshold": 1e-09,
+      "method": "exact GF(2) Vietoris-Rips persistence of geodesic phase distances",
+      "owner": "scpn_quantum_control.phase.synchronisation_witness"
+    },
+    "relabelling": {
+      "coupling": [
+        [
+          0.0,
+          0.8,
+          0.0,
+          0.3
+        ],
+        [
+          0.8,
+          0.0,
+          0.5,
+          0.0
+        ],
+        [
+          0.0,
+          0.5,
+          0.0,
+          0.9
+        ],
+        [
+          0.3,
+          0.0,
+          0.9,
+          0.0
+        ]
+      ],
+      "evolution": {
+        "method": "exact dense matrix exponential of the compiled XY Hamiltonian",
+        "time": 0.7
+      },
+      "initial_angles": [
+        0.3,
+        1.1,
+        1.9,
+        2.4
+      ],
+      "magnitude_difference": 2.7755575615628914e-17,
+      "omega": [
+        -0.4,
+        0.1,
+        0.25,
+        0.6
+      ],
+      "original": {
+        "magnitude": 0.10579900843339496,
+        "phase": 0.011087585688568146
+      },
+      "owner": "scpn_quantum_control.kuramoto_core",
+      "permutation": [
+        2,
+        0,
+        3,
+        1
+      ],
+      "phase_difference": 3.903127820947816e-16,
+      "relabelled": {
+        "magnitude": 0.10579900843339499,
+        "phase": 0.011087585688568536
+      },
+      "tolerance": 1e-12
+    },
+    "sectors": {
+      "claim_boundary": "finite synthetic parity-sector and fixed-active-set topology derivatives only; no full-DLA, controllability, persistent-homology derivative, hardware-protection, error-correction, provider, QPU, or deployment claim",
+      "coupling": [
+        [
+          0.0,
+          1.0,
+          0.0,
+          1.0
+        ],
+        [
+          1.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          1.0
+        ],
+        [
+          1.0,
+          0.0,
+          1.0,
+          0.0
+        ]
+      ],
+      "evolution": {
+        "method": "exact dense matrix exponential of the compiled XY Hamiltonian",
+        "time": 0.7
+      },
+      "omega": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "owners": [
+        "scpn_quantum_control.analysis.symmetry_sectors",
+        "scpn_quantum_control.analysis.magnetisation_sectors",
+        "scpn_quantum_control.dla_topology_control"
+      ],
+      "spectra": {
+        "dense_eigenvalues": [
+          -5.656854249492383,
+          -4.0,
+          -4.0,
+          -4.355116745306372e-16,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.3877787807814457e-17,
+          2.863890297342076e-16,
+          4.528046991817714e-16,
+          4.0,
+          4.0,
+          5.6568542494923815
+        ],
+        "ground_energy": -5.65685424949238,
+        "ground_parity": "even",
+        "magnetisation_dimensions": {
+          "-2": 4,
+          "-4": 1,
+          "0": 6,
+          "2": 4,
+          "4": 1
+        },
+        "magnetisation_max_deviation": 4.440892098500626e-15,
+        "parity_dimensions": {
+          "even": 8,
+          "odd": 8
+        },
+        "parity_max_deviation": 4.440892098500626e-15
+      },
+      "tolerance": 1e-10,
+      "weights": {
+        "even_basis_state": {
+          "after": {
+            "even": 1.0000000000000002,
+            "leakage_from_even": 0.0,
+            "odd": 0.0
+          },
+          "before": {
+            "even": 1.0,
+            "leakage_from_even": 0.0,
+            "odd": 0.0
+          }
+        },
+        "mixed_product_state": {
+          "after": {
+            "even": 0.5516519621418192,
+            "leakage_from_even": 0.448348037858181,
+            "odd": 0.448348037858181
+          },
+          "before": {
+            "even": 0.5516519621418191,
+            "leakage_from_even": 0.4483480378581808,
+            "odd": 0.4483480378581808
+          }
+        }
+      }
+    },
+    "sensitivity": {
+      "cases": [
+        {
+          "case": "interior point",
+          "derivative_supported": true,
+          "matrix": [
+            [
+              0.0,
+              0.4,
+              0.6
+            ],
+            [
+              0.4,
+              0.0,
+              0.3
+            ],
+            [
+              0.6,
+              0.3,
+              0.0
+            ]
+          ],
+          "projected_tangent": [
+            [
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0,
+              -1.0
+            ],
+            [
+              0.0,
+              -1.0,
+              0.0
+            ]
+          ],
+          "refusal": null,
+          "rows": [
+            {
+              "capability": "symmetry_and_zero_diagonal",
+              "differentiability": "linear",
+              "evidence": "JVP and VJP use the self-adjoint symmetrisation/diagonal-removal map",
+              "status": "supported"
+            },
+            {
+              "capability": "sign_policy",
+              "differentiability": "piecewise_smooth",
+              "evidence": "nonnegative maximum has a fixed positive/negative active branch",
+              "status": "supported"
+            },
+            {
+              "capability": "uniform_bounds",
+              "differentiability": "piecewise_smooth",
+              "evidence": "clip has a fixed interior/lower/upper active branch",
+              "status": "supported"
+            },
+            {
+              "capability": "hardware_edge_mask",
+              "differentiability": "linear",
+              "evidence": "the fixed hardware mask is an elementwise linear projector",
+              "status": "supported"
+            },
+            {
+              "capability": "frozen_edges",
+              "differentiability": "affine",
+              "evidence": "frozen entries have zero tangent and fixed primal values",
+              "status": "supported"
+            },
+            {
+              "capability": "total_weight",
+              "differentiability": "linear",
+              "evidence": "no total-weight rescaling branch is configured",
+              "status": "supported"
+            },
+            {
+              "capability": "algebraic_connectivity_threshold",
+              "differentiability": "not_applicable",
+              "evidence": "no connectivity threshold participates in this projection",
+              "status": "supported"
+            }
+          ]
+        },
+        {
+          "case": "coupling at the clipping bound",
+          "derivative_supported": false,
+          "matrix": [
+            [
+              0.0,
+              0.4,
+              1.0
+            ],
+            [
+              0.4,
+              0.0,
+              0.3
+            ],
+            [
+              1.0,
+              0.3,
+              0.0
+            ]
+          ],
+          "projected_tangent": null,
+          "refusal": "projection derivative is unsupported for: uniform_bounds",
+          "rows": [
+            {
+              "capability": "symmetry_and_zero_diagonal",
+              "differentiability": "linear",
+              "evidence": "JVP and VJP use the self-adjoint symmetrisation/diagonal-removal map",
+              "status": "supported"
+            },
+            {
+              "capability": "sign_policy",
+              "differentiability": "piecewise_smooth",
+              "evidence": "nonnegative maximum has a fixed positive/negative active branch",
+              "status": "supported"
+            },
+            {
+              "capability": "uniform_bounds",
+              "differentiability": "non_smooth",
+              "evidence": "clip is at a lower/upper-bound kink",
+              "status": "unsupported"
+            },
+            {
+              "capability": "hardware_edge_mask",
+              "differentiability": "linear",
+              "evidence": "the fixed hardware mask is an elementwise linear projector",
+              "status": "supported"
+            },
+            {
+              "capability": "frozen_edges",
+              "differentiability": "affine",
+              "evidence": "frozen entries have zero tangent and fixed primal values",
+              "status": "supported"
+            },
+            {
+              "capability": "total_weight",
+              "differentiability": "linear",
+              "evidence": "no total-weight rescaling branch is configured",
+              "status": "supported"
+            },
+            {
+              "capability": "algebraic_connectivity_threshold",
+              "differentiability": "not_applicable",
+              "evidence": "no connectivity threshold participates in this projection",
+              "status": "supported"
+            }
+          ]
+        },
+        {
+          "case": "edge removed",
+          "derivative_supported": false,
+          "matrix": [
+            [
+              0.0,
+              0.4,
+              0.0
+            ],
+            [
+              0.4,
+              0.0,
+              0.3
+            ],
+            [
+              0.0,
+              0.3,
+              0.0
+            ]
+          ],
+          "projected_tangent": null,
+          "refusal": "projection derivative is unsupported for: sign_policy, uniform_bounds",
+          "rows": [
+            {
+              "capability": "symmetry_and_zero_diagonal",
+              "differentiability": "linear",
+              "evidence": "JVP and VJP use the self-adjoint symmetrisation/diagonal-removal map",
+              "status": "supported"
+            },
+            {
+              "capability": "sign_policy",
+              "differentiability": "non_smooth",
+              "evidence": "nonnegative maximum is at a zero-valued kink",
+              "status": "unsupported"
+            },
+            {
+              "capability": "uniform_bounds",
+              "differentiability": "non_smooth",
+              "evidence": "clip is at a lower/upper-bound kink",
+              "status": "unsupported"
+            },
+            {
+              "capability": "hardware_edge_mask",
+              "differentiability": "linear",
+              "evidence": "the fixed hardware mask is an elementwise linear projector",
+              "status": "supported"
+            },
+            {
+              "capability": "frozen_edges",
+              "differentiability": "affine",
+              "evidence": "frozen entries have zero tangent and fixed primal values",
+              "status": "supported"
+            },
+            {
+              "capability": "total_weight",
+              "differentiability": "linear",
+              "evidence": "no total-weight rescaling branch is configured",
+              "status": "supported"
+            },
+            {
+              "capability": "algebraic_connectivity_threshold",
+              "differentiability": "not_applicable",
+              "evidence": "no connectivity threshold participates in this projection",
+              "status": "supported"
+            }
+          ]
+        },
+        {
+          "case": "connectivity threshold",
+          "derivative_supported": false,
+          "matrix": [
+            [
+              0.0,
+              0.4,
+              0.6
+            ],
+            [
+              0.4,
+              0.0,
+              0.3
+            ],
+            [
+              0.6,
+              0.3,
+              0.0
+            ]
+          ],
+          "projected_tangent": null,
+          "refusal": "projection derivative is unsupported for: algebraic_connectivity_threshold",
+          "rows": [
+            {
+              "capability": "symmetry_and_zero_diagonal",
+              "differentiability": "linear",
+              "evidence": "JVP and VJP use the self-adjoint symmetrisation/diagonal-removal map",
+              "status": "supported"
+            },
+            {
+              "capability": "sign_policy",
+              "differentiability": "piecewise_smooth",
+              "evidence": "nonnegative maximum has a fixed positive/negative active branch",
+              "status": "supported"
+            },
+            {
+              "capability": "uniform_bounds",
+              "differentiability": "piecewise_smooth",
+              "evidence": "clip has a fixed interior/lower/upper active branch",
+              "status": "supported"
+            },
+            {
+              "capability": "hardware_edge_mask",
+              "differentiability": "linear",
+              "evidence": "the fixed hardware mask is an elementwise linear projector",
+              "status": "supported"
+            },
+            {
+              "capability": "frozen_edges",
+              "differentiability": "affine",
+              "evidence": "frozen entries have zero tangent and fixed primal values",
+              "status": "supported"
+            },
+            {
+              "capability": "total_weight",
+              "differentiability": "linear",
+              "evidence": "no total-weight rescaling branch is configured",
+              "status": "supported"
+            },
+            {
+              "capability": "algebraic_connectivity_threshold",
+              "differentiability": "non_smooth",
+              "evidence": "positive connectivity threshold is a violation check, not a projected smooth map",
+              "status": "unsupported"
+            }
+          ]
+        }
+      ],
+      "claim_boundary": "finite synthetic parity-sector and fixed-active-set topology derivatives only; no full-DLA, controllability, persistent-homology derivative, hardware-protection, error-correction, provider, QPU, or deployment claim",
+      "ledger": {
+        "bounds": [
+          0.0,
+          1.0
+        ],
+        "sign_policy": "nonnegative"
+      },
+      "owner": "scpn_quantum_control.dla_topology_control.projection",
+      "tangent": [
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          1.0,
+          0.0,
+          -1.0
+        ],
+        [
+          0.0,
+          -1.0,
+          0.0
+        ]
+      ]
+    }
+  }
+}

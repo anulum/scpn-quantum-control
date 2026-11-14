@@ -12,6 +12,8 @@ import { ControlInspector } from "./ControlInspector";
 import { controlInstrument } from "./controlInstrument";
 import { LearningInspector } from "./LearningInspector";
 import { learningInstrument } from "./learningInstrument";
+import { TopologyInspector } from "./TopologyInspector";
+import { topologyInstrument } from "./topologyInstrument";
 import { SensingInspector } from "./SensingInspector";
 import { sensingInstrument } from "./sensingInstrument";
 import { GradientDebugger } from "./GradientDebugger";
@@ -43,6 +45,7 @@ export default function ResultsView({
   focusSensingInstrument = false,
   focusControlInstrument = false,
   focusLearningInstrument = false,
+  focusTopologyInstrument = false,
   plan = null,
   outcome = null,
   editors,
@@ -63,6 +66,8 @@ export default function ResultsView({
   focusControlInstrument?: boolean;
   /** Focus learning, forecasting and domain benchmarks after this module mounts. */
   focusLearningInstrument?: boolean;
+  /** Focus symmetry, chimera and topology lenses after this module mounts. */
+  focusTopologyInstrument?: boolean;
   /** Registered comparison and inspection controls supplied by the shell slot. */
   editors?: ReactNode;
 }) {
@@ -74,6 +79,7 @@ export default function ResultsView({
   const sensing = useRef<HTMLDivElement>(null);
   const control = useRef<HTMLDivElement>(null);
   const learning = useRef<HTMLDivElement>(null);
+  const topology = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (focusInstrument && target.current !== null) target.current.focus();
   }, [focusInstrument]);
@@ -98,6 +104,9 @@ export default function ResultsView({
   useEffect(() => {
     if (focusLearningInstrument && learning.current !== null) learning.current.focus();
   }, [focusLearningInstrument]);
+  useEffect(() => {
+    if (focusTopologyInstrument && topology.current !== null) topology.current.focus();
+  }, [focusTopologyInstrument]);
   return (
     <article className="qsp-panel">
       <h3>Analyse</h3>
@@ -137,6 +146,9 @@ export default function ResultsView({
       </div>
       <div id="/results/learning" tabIndex={-1} ref={learning}>
         <LearningInspector instrument={learningInstrument} />
+      </div>
+      <div id="/results/topology" tabIndex={-1} ref={topology}>
+        <TopologyInspector instrument={topologyInstrument} />
       </div>
       <EvidenceViewer />
       {supportMatrix.ok ? (

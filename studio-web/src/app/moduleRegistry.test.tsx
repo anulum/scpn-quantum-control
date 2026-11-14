@@ -51,6 +51,7 @@ describe("workbenchRegistry", () => {
       ["/results/sensing", "results", "sensing"],
       ["/results/control", "results", "control"],
       ["/results/learning", "results", "learning"],
+      ["/results/topology", "results", "topology"],
       ["/compare", "compare", null],
       ["/evidence", "evidence", null],
       ["/atlas", "atlas", null],
