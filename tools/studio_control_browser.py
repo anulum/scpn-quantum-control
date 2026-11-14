@@ -13,6 +13,8 @@ from importlib.metadata import version
 from pathlib import Path
 from urllib.parse import urlsplit
 
+from tools.studio_preview_custody import preview_route_guard
+
 
 def run_control_journey(
     base_url: str, evidence: dict[str, object] | None = None
@@ -43,7 +45,7 @@ def run_control_journey(
     from tools.studio_browser_journey import loopback_url
 
     url = loopback_url(base_url)
-    from playwright.sync_api import Route, expect, sync_playwright
+    from playwright.sync_api import expect, sync_playwright
 
     observed = {} if evidence is None else evidence
     observations: list[str] = []
@@ -63,20 +65,7 @@ def run_control_journey(
         context = browser.new_context(service_workers="block")
         context.set_default_timeout(15000)
         try:
-            origin = urlsplit(url).netloc
-
-            def bound(route: Route) -> None:
-                target = urlsplit(route.request.url)
-                if target.scheme != "http" or target.netloc != origin:
-                    external.append("outside-preview")
-                    route.abort()
-                elif route.request.method != "GET":
-                    submissions.append(route.request.method)
-                    route.abort()
-                else:
-                    route.continue_()
-
-            context.route("**/*", bound)
+            context.route("**/*", preview_route_guard(urlsplit(url).netloc, external, submissions))
             page = context.new_page()
             page.on("pageerror", lambda error: errors.append(str(error)))
             page.goto(url, wait_until="networkidle")

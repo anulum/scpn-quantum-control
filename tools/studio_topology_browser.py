@@ -14,10 +14,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
 
-if TYPE_CHECKING:
-    from collections.abc import Callable
+from tools.studio_preview_custody import preview_route_guard
 
-    from playwright.sync_api import Locator, Page, Route
+if TYPE_CHECKING:
+    from playwright.sync_api import Locator, Page
 
 INSTRUMENT = "Symmetry, chimera and topology lenses"
 PHYSICS = (
@@ -170,41 +170,6 @@ def _walk(page: Page, url: str, observations: list[str]) -> list[dict[str, objec
     return accessibility
 
 
-def _preview_bound(
-    origin: str, external: list[str], submissions: list[str]
-) -> Callable[[Route], None]:
-    """Build the route handler that keeps the page on the owned preview.
-
-    Parameters
-    ----------
-    origin
-        Host and port of the owned literal-loopback preview.
-    external
-        Caller-owned record of requests outside the preview.
-    submissions
-        Caller-owned record of request methods other than GET.
-
-    Returns
-    -------
-    Callable
-        Handler that aborts outside requests and submissions and lets the rest through.
-
-    """
-
-    def bound(route: Route) -> None:
-        target = urlsplit(route.request.url)
-        if target.scheme != "http" or target.netloc != origin:
-            external.append("outside-preview")
-            route.abort()
-        elif route.request.method != "GET":
-            submissions.append(route.request.method)
-            route.abort()
-        else:
-            route.continue_()
-
-    return bound
-
-
 def _start_evidence(observed: dict[str, object]) -> tuple[list[str], ...]:
     """Record the scenario identity and the lists the journey fills.
 
@@ -269,7 +234,7 @@ def run_topology_journey(
         context = browser.new_context(service_workers="block")
         context.set_default_timeout(15000)
         try:
-            context.route("**/*", _preview_bound(urlsplit(url).netloc, external, submissions))
+            context.route("**/*", preview_route_guard(urlsplit(url).netloc, external, submissions))
             page = context.new_page()
             page.on("pageerror", lambda error: errors.append(str(error)))
             observed["accessibility"] = _walk(page, url, observations)

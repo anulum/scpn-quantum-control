@@ -16,6 +16,8 @@ from pathlib import Path
 from typing import cast
 from urllib.parse import urlsplit
 
+from tools.studio_preview_custody import preview_route_guard
+
 
 def run_provider_observation_journey(
     base_url: str, evidence: dict[str, object] | None = None
@@ -47,7 +49,7 @@ def run_provider_observation_journey(
     from tools.studio_browser_journey import loopback_url
 
     url = loopback_url(base_url)
-    from playwright.sync_api import Route, expect, sync_playwright
+    from playwright.sync_api import expect, sync_playwright
 
     fixture = (
         Path(__file__).resolve().parents[1] / "data/studio/provider_observation_cases.json"
@@ -79,22 +81,7 @@ def run_provider_observation_journey(
         context.set_default_timeout(15000)
         try:
             origin = urlsplit(url).netloc
-
-            def bound(route: Route) -> None:
-                """Retain actual attempted requests while permitting only owned preview reads."""
-                target = urlsplit(route.request.url)
-                if target.scheme != "http" or target.netloc != origin:
-                    external.append("outside-preview")
-                    route.abort()
-                elif route.request.method != "GET":
-                    submissions.append(route.request.method)
-                    route.abort()
-                else:
-                    if target.path.endswith(".wasm"):
-                        kernels.append(target.path)
-                    route.continue_()
-
-            context.route("**/*", bound)
+            context.route("**/*", preview_route_guard(origin, external, submissions, kernels))
             page = context.new_page()
             page.on("pageerror", lambda error: errors.append(str(error)))
             page.goto(url, wait_until="networkidle")

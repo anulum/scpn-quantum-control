@@ -79,8 +79,9 @@ def test_studio_executes_the_original_browser_scenarios_and_isolated_refusals() 
         "topology",
     ):
         assert f"tools/tests/test_studio_{journey}_browser.py" in source
+    assert "tools/tests/test_studio_preview_custody.py" in source
     # One exact coverage report per separately measured journey owner.
-    assert source.count("--fail-under=100") == 14
+    assert source.count("--fail-under=100") == 15
     assert "trap " in source and 'wait "$preview_pid"' in source and 'wait "$source_pid"' in source
     evidence = next(
         item for item in steps if item.get("name") == "Preserve browser acceptance evidence"
