@@ -65,6 +65,9 @@ paper/**/*.blg
 !paper/submissions/submission_005_phase3_reduced_pauli_entanglement/Reduced-Pauli entanglement checks for DLA-sector leakage mechanisms on IBM Heron hardware.pdf
 !paper/submissions/submission_006_s1_feedback_control/Monitored feedback versus open-loop control for Kuramoto-XY synchronisation on IBM dynamic circuits.pdf
 !paper/submissions/submission_007_iqm_garnet_preregistered_campaigns/The calibration epoch as the unit of evidence - preregistered parity-leakage and layout-transfer experiments on IQM Garnet.pdf
+# The JOSS paper's bibliography is a source file that the JOSS review bot reads
+# beside paper.md (owner 2026-11-13).
+!paper/joss/paper.bib
 # Work-in-progress manuscripts are private; only published submissions are public.
 paper/drafts/
 
