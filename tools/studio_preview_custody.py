@@ -25,7 +25,7 @@ from urllib.parse import urlsplit
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from playwright.sync_api import Page, Route
+    from playwright.sync_api import Page, Playwright, Route
 
     Walk = Callable[[Page, str, list[str]], dict[str, object]]
 
@@ -73,8 +73,8 @@ def preview_route_guard(
 
 
 def _start_evidence(
-    evidence: dict[str, object] | None, scenario: str
-) -> tuple[dict[str, object], list[str], list[str], list[str], list[str]]:
+    evidence: dict[str, object] | None, scenario: str, kernels: list[str] | None
+) -> tuple[dict[str, object], tuple[list[str], list[str], list[str], list[str]]]:
     """Record the scenario identity and the lists the journey fills.
 
     Parameters
@@ -83,6 +83,8 @@ def _start_evidence(
         Caller-owned evidence mapping, or None for a fresh one.
     scenario
         Scenario name recorded in the evidence.
+    kernels
+        Optional kernel record, kept as ``wasm_requests``.
 
     Returns
     -------
@@ -101,7 +103,9 @@ def _start_evidence(
         external_requests=lists[2],
         submission_requests=lists[3],
     )
-    return (observed, *lists)
+    if kernels is not None:
+        observed["wasm_requests"] = kernels
+    return observed, lists
 
 
 def _require_custody(
@@ -137,8 +141,42 @@ def _require_custody(
     return observed
 
 
+def _drive(
+    runtime: Playwright,
+    url: str,
+    walk: Walk,
+    observed: dict[str, object],
+    lists: tuple[list[str], list[str], list[str], list[str]],
+    kernels: list[str] | None,
+    downloads: bool,
+) -> dict[str, object]:
+    """Open the custodied page, run the walk on it and check its custody."""
+    observations, errors, external, submissions = lists
+    browser = runtime.chromium.launch()
+    context = browser.new_context(
+        service_workers="block", accept_downloads=True if downloads else None
+    )
+    context.set_default_timeout(15000)
+    try:
+        guard = preview_route_guard(urlsplit(url).netloc, external, submissions, kernels)
+        context.route("**/*", guard)
+        page = context.new_page()
+        page.on("pageerror", lambda error: errors.append(str(error)))
+        observed.update(walk(page, url, observations))
+        return _require_custody(page, browser.version, observed, errors, external, submissions)
+    finally:
+        context.close()
+        browser.close()
+
+
 def run_custodied_journey(
-    base_url: str, evidence: dict[str, object] | None, scenario: str, walk: Walk
+    base_url: str,
+    evidence: dict[str, object] | None,
+    scenario: str,
+    walk: Walk,
+    *,
+    kernels: list[str] | None = None,
+    downloads: bool = False,
 ) -> dict[str, object]:
     """Run one instrument journey on the owned preview and check its custody.
 
@@ -152,6 +190,10 @@ def run_custodied_journey(
         Scenario name recorded in the evidence.
     walk
         Journey steps: page, preview URL and observations in, extra evidence out.
+    kernels
+        Optional record of loaded ``.wasm`` paths, kept as ``wasm_requests``.
+    downloads
+        Whether the browser context accepts downloads.
 
     Returns
     -------
@@ -171,17 +213,6 @@ def run_custodied_journey(
     url = loopback_url(base_url)
     from playwright.sync_api import sync_playwright
 
-    observed, observations, errors, external, submissions = _start_evidence(evidence, scenario)
+    observed, lists = _start_evidence(evidence, scenario, kernels)
     with sync_playwright() as runtime:
-        browser = runtime.chromium.launch()
-        context = browser.new_context(service_workers="block")
-        context.set_default_timeout(15000)
-        try:
-            context.route("**/*", preview_route_guard(urlsplit(url).netloc, external, submissions))
-            page = context.new_page()
-            page.on("pageerror", lambda error: errors.append(str(error)))
-            observed.update(walk(page, url, observations))
-            return _require_custody(page, browser.version, observed, errors, external, submissions)
-        finally:
-            context.close()
-            browser.close()
+        return _drive(runtime, url, walk, observed, lists, kernels, downloads)
