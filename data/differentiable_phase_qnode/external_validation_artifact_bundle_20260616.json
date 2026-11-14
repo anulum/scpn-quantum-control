@@ -228,8 +228,8 @@
     {
       "path": "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/README.md",
       "role": "Local benchmark evidence README and hardware boundary",
-      "sha256": "0c4a49a6d525f7aed8c808d44e6a47003202e641c8d57c7947da4420c9bfde97",
-      "size_bytes": 6072
+      "sha256": "23391c05d89635fbee798a3e381eddfe031d520fe05f6a59638cbab52b969b0b",
+      "size_bytes": 6121
     },
     {
       "path": "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-ci-evidence-schema-v1.json",
