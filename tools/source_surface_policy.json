@@ -479,6 +479,7 @@
   }
  ],
  "outside": {
+  ".bib": "bibliography",
   ".bin": "recorded binary input",
   ".cff": "citation metadata",
   ".coveragerc": "configuration",
