@@ -30,7 +30,7 @@ def test_locked_auditor_refuses_substituted_engine_before_execution(tmp_path: Pa
 
     """
     source = tmp_path / "axe.min.js"
-    source.write_text("window.axe={version:'4.13.0',run:async()=>({violations:[]})};")
+    source.write_text("window.axe={version:'4.14.0',run:async()=>({violations:[]})};")
     with pytest.raises(ValueError, match="locked axe-core source"):
         read_auditor(source)
 

@@ -77,7 +77,7 @@ def test_accessibility_cannot_accept_an_altered_auditor(tmp_path: Path) -> None:
 
     """
     altered = tmp_path / "axe.min.js"
-    altered.write_text("window.axe = {version:'4.13.0',run:async()=>({violations:[]})};")
+    altered.write_text("window.axe = {version:'4.14.0',run:async()=>({violations:[]})};")
     with pytest.raises(ValueError, match="locked axe-core source"):
         read_auditor(altered)
     output = tmp_path / "auditor-refused.json"
