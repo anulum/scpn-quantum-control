@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import math
+import sys
 from typing import Any
 
 import pytest
@@ -291,3 +292,24 @@ def test_execute_fails_closed_on_unsupported_engine_result(
     record = run_action(_request(_BILINEAR), registry=default_registry())
     assert record.result.status == "failed"
     assert "not a supported bounded rational replay" in (record.result.error or "")
+
+
+def test_execute_fails_closed_and_names_the_missing_compiled_engine(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Without the compiled engine, the action fails closed with no value or script.
+
+    Parameters
+    ----------
+    monkeypatch
+        Makes the engine import fail for this test only.
+
+    """
+    monkeypatch.setitem(sys.modules, "scpn_quantum_engine", None)
+    record = run_action(_request(_BILINEAR), registry=default_registry())
+    assert record.result.status == "failed"
+    assert record.result.outputs == {}
+    assert record.result.error == (
+        "RuntimeError: the differentiate verb requires the compiled scpn_quantum_engine extension"
+    )
+    assert record.script is None

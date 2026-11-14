@@ -217,7 +217,14 @@ def build_effect_ir(program: _NormalisedProgram) -> tuple[str, tuple[str, ...], 
 
 
 def _engine_value_and_gradient(ir: str, values: Sequence[float]) -> dict[str, Any]:
-    import scpn_quantum_engine as engine
+    # No Python fallback: the record states that the compiled engine produced
+    # the value and gradient, so a missing engine fails the action closed.
+    try:
+        import scpn_quantum_engine as engine
+    except ImportError as exc:
+        raise RuntimeError(
+            "the differentiate verb requires the compiled scpn_quantum_engine extension"
+        ) from exc
 
     raw = engine.program_ad_effect_ir_interpret_value_and_gradient(ir, list(values))
     result: dict[str, Any] = json.loads(raw)
