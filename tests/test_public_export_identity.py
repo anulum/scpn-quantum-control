@@ -15,6 +15,7 @@ import importlib
 import inspect
 import json
 import pickle
+import re
 import sys
 import typing
 from pathlib import Path
@@ -31,6 +32,35 @@ SNAPSHOT_PATH = ROOT / "tests/fixtures/public_export_identity_snapshot.json"
 # From CPython 3.13 ``ast.dump`` omits empty fields unless asked; the snapshot
 # was recorded in the full form, which every supported interpreter can produce.
 AST_DUMP_OPTIONS: dict[str, bool] = {"show_empty": True} if sys.version_info >= (3, 13) else {}
+# CPython 3.13 defines the pathlib classes in ``pathlib._local``; 3.12 and 3.14+
+# define them in ``pathlib``. The snapshot records the public ``pathlib`` path.
+PATHLIB_DEFINING_MODULE = Path.__module__
+
+
+def public_annotation_repr(value: object) -> str:
+    """Return an annotation's repr with each pathlib class at its public module path.
+
+    Parameters
+    ----------
+    value
+        Resolved annotation object.
+
+    Returns
+    -------
+    str
+        ``repr(value)``. A pathlib class named through its private defining
+        module is renamed to ``pathlib`` only when ``pathlib`` exports that same
+        class object.
+
+    """
+    text = repr(value)
+    if PATHLIB_DEFINING_MODULE == "pathlib":
+        return text
+    defining = sys.modules[PATHLIB_DEFINING_MODULE]
+    public = sys.modules["pathlib"]
+    for name in re.findall(rf"{re.escape(PATHLIB_DEFINING_MODULE)}\.(\w+)", text):
+        assert getattr(public, name) is getattr(defining, name), name
+    return text.replace(f"{PATHLIB_DEFINING_MODULE}.", "pathlib.")
 
 
 class ExportMetadata(TypedDict):
@@ -437,7 +467,8 @@ def test_inline_definitions_keep_metadata_annotations_and_pickle_identity(
     digest = hashlib.sha256(dump.encode()).hexdigest()
     assert digest == binding["local_definition_ast_sha256"]
     metadata = binding["metadata"]
-    assert {name: repr(value) for name, value in typing.get_type_hints(actual).items()} == (
+    hints = typing.get_type_hints(actual)
+    assert {name: public_annotation_repr(value) for name, value in hints.items()} == (
         metadata["annotations"]
     )
     if "signature" in metadata:
