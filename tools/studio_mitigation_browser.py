@@ -9,12 +9,90 @@
 
 from __future__ import annotations
 
-from importlib.metadata import version
-from urllib.parse import unquote, urlsplit
+from typing import TYPE_CHECKING
+from urllib.parse import unquote
 
-from tools.studio_preview_custody import preview_route_guard
+from tools.studio_preview_custody import run_custodied_journey
+
+if TYPE_CHECKING:
+    from playwright.sync_api import Page
 
 _CSV_PREFIX = "data:text/csv;charset=utf-8,"
+
+
+def _check_instrument(page: Page, observations: list[str]) -> None:
+    """Check every instrument contract on the Analyse stage.
+
+    Parameters
+    ----------
+    page
+        Owned page showing the Analyse stage.
+    observations
+        Caller-owned list that records each contract once it holds.
+
+    """
+    from playwright.sync_api import expect
+
+    instrument = page.get_by_role("region", name="Mitigation and readout", exact=True)
+    expect(instrument).to_be_visible()
+    readout = instrument.get_by_role("region", name="Readout correction")
+    readout.get_by_label("Readout case").select_option(label="permuted-partial-map")
+    expect(readout.get_by_label("Measurement map")).to_have_text("c0←q2, c1←q0")
+    csv = unquote(
+        (
+            readout.get_by_role("link", name="Download CSV").get_attribute("href") or ""
+        ).removeprefix(_CSV_PREFIX)
+    )
+    assert '# measurement map,"c0←q2, c1←q0"' in csv, csv
+    observations.append("permuted-map-kept-in-view-and-csv")
+    readout.get_by_label("Readout case").select_option(label="negative-quasi-probabilities")
+    expect(readout.get_by_role("status", name="Signed values")).to_contain_text(
+        "Negative at 01, 10"
+    )
+    observations.append("negative-values-stay-signed")
+    readout.get_by_label("Readout case").select_option(label="singular-calibration")
+    expect(readout.get_by_role("alert", name="Correction refused")).to_contain_text("condition")
+    observations.append("refused-calibration-keeps-raw-counts")
+
+    instrument.get_by_role("tab", name="Zero-noise extrapolation").click()
+    expect(instrument.get_by_label("Extrapolation", exact=True)).to_contain_text("gls-delta")
+    observations.append("extrapolation-shows-raw-and-corrected")
+    instrument.get_by_role("tab", name="Hardware pairs").click()
+    expect(instrument.get_by_role("note", name="Correction caveat")).to_contain_text(
+        "not all computational basis states"
+    )
+    observations.append("hardware-caveat-shown")
+
+
+def _walk(page: Page, url: str, observations: list[str]) -> dict[str, object]:
+    """Walk the instrument on the owned page and check each contract.
+
+    Parameters
+    ----------
+    page
+        Owned page bound to the preview.
+    url
+        Owned literal-loopback preview.
+    observations
+        Caller-owned list that records each contract once it holds.
+
+    Returns
+    -------
+    dict
+        Extra evidence fields for the journey record.
+
+    """
+    from playwright.sync_api import expect
+
+    page.goto(url, wait_until="networkidle")
+    page.get_by_role("navigation", name="Workbench views").get_by_role(
+        "link", name="Analyse", exact=True
+    ).click()
+    _check_instrument(page, observations)
+    page.goto(url + "#/results/mitigation", wait_until="networkidle")
+    expect(page.locator('[id="/results/mitigation"]')).to_be_focused()
+    observations.append("deep-link-focuses-the-instrument")
+    return {}
 
 
 def run_mitigation_journey(
@@ -43,81 +121,4 @@ def run_mitigation_journey(
         A real UI, network or runtime contract fails.
 
     """
-    from tools.studio_browser_journey import loopback_url
-
-    url = loopback_url(base_url)
-    from playwright.sync_api import expect, sync_playwright
-
-    observed = {} if evidence is None else evidence
-    observations: list[str] = []
-    errors: list[str] = []
-    external: list[str] = []
-    submissions: list[str] = []
-    observed.update(
-        scenario="mitigation_inspector",
-        playwright=version("playwright"),
-        observations=observations,
-        page_errors=errors,
-        external_requests=external,
-        submission_requests=submissions,
-    )
-    with sync_playwright() as runtime:
-        browser = runtime.chromium.launch()
-        context = browser.new_context(service_workers="block")
-        context.set_default_timeout(15000)
-        try:
-            context.route("**/*", preview_route_guard(urlsplit(url).netloc, external, submissions))
-            page = context.new_page()
-            page.on("pageerror", lambda error: errors.append(str(error)))
-            page.goto(url, wait_until="networkidle")
-            page.get_by_role("navigation", name="Workbench views").get_by_role(
-                "link", name="Analyse", exact=True
-            ).click()
-            instrument = page.get_by_role("region", name="Mitigation and readout", exact=True)
-            expect(instrument).to_be_visible()
-            readout = instrument.get_by_role("region", name="Readout correction")
-            readout.get_by_label("Readout case").select_option(label="permuted-partial-map")
-            expect(readout.get_by_label("Measurement map")).to_have_text("c0←q2, c1←q0")
-            csv = unquote(
-                (
-                    readout.get_by_role("link", name="Download CSV").get_attribute("href") or ""
-                ).removeprefix(_CSV_PREFIX)
-            )
-            assert '# measurement map,"c0←q2, c1←q0"' in csv, csv
-            observations.append("permuted-map-kept-in-view-and-csv")
-            readout.get_by_label("Readout case").select_option(
-                label="negative-quasi-probabilities"
-            )
-            expect(readout.get_by_role("status", name="Signed values")).to_contain_text(
-                "Negative at 01, 10"
-            )
-            observations.append("negative-values-stay-signed")
-            readout.get_by_label("Readout case").select_option(label="singular-calibration")
-            expect(readout.get_by_role("alert", name="Correction refused")).to_contain_text(
-                "condition"
-            )
-            observations.append("refused-calibration-keeps-raw-counts")
-
-            instrument.get_by_role("tab", name="Zero-noise extrapolation").click()
-            expect(instrument.get_by_label("Extrapolation", exact=True)).to_contain_text(
-                "gls-delta"
-            )
-            observations.append("extrapolation-shows-raw-and-corrected")
-            instrument.get_by_role("tab", name="Hardware pairs").click()
-            expect(instrument.get_by_role("note", name="Correction caveat")).to_contain_text(
-                "not all computational basis states"
-            )
-            observations.append("hardware-caveat-shown")
-
-            page.goto(url + "#/results/mitigation", wait_until="networkidle")
-            expect(page.locator('[id="/results/mitigation"]')).to_be_focused()
-            observations.append("deep-link-focuses-the-instrument")
-            assert not errors, errors
-            assert not external, external
-            assert not submissions, submissions
-            assert not page.workers, "The instrument must not retain workers"
-            observed.update(browser=browser.version, workers=len(page.workers), no_submit=True)
-            return observed
-        finally:
-            context.close()
-            browser.close()
+    return run_custodied_journey(base_url, evidence, "mitigation_inspector", _walk)

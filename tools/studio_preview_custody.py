@@ -11,18 +11,23 @@ Every instrument journey routes all page requests through one guard: a request
 outside the owned literal-loopback preview is recorded and aborted, a request
 with any method other than GET is recorded and aborted, and every other
 request continues. Journeys that qualify the WebAssembly kernels also record
-each ``.wasm`` path they load.
+each ``.wasm`` path they load. ``run_custodied_journey`` runs one instrument
+journey inside that custody and refuses it after any page error, outside
+request, submission or retained worker.
 """
 
 from __future__ import annotations
 
+from importlib.metadata import version
 from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from playwright.sync_api import Route
+    from playwright.sync_api import Page, Route
+
+    Walk = Callable[[Page, str, list[str]], dict[str, object]]
 
 
 def preview_route_guard(
@@ -65,3 +70,118 @@ def preview_route_guard(
             route.continue_()
 
     return bound
+
+
+def _start_evidence(
+    evidence: dict[str, object] | None, scenario: str
+) -> tuple[dict[str, object], list[str], list[str], list[str], list[str]]:
+    """Record the scenario identity and the lists the journey fills.
+
+    Parameters
+    ----------
+    evidence
+        Caller-owned evidence mapping, or None for a fresh one.
+    scenario
+        Scenario name recorded in the evidence.
+
+    Returns
+    -------
+    tuple
+        The evidence mapping, then the observation, page-error, outside-request
+        and submission lists.
+
+    """
+    observed = {} if evidence is None else evidence
+    lists: tuple[list[str], list[str], list[str], list[str]] = ([], [], [], [])
+    observed.update(
+        scenario=scenario,
+        playwright=version("playwright"),
+        observations=lists[0],
+        page_errors=lists[1],
+        external_requests=lists[2],
+        submission_requests=lists[3],
+    )
+    return (observed, *lists)
+
+
+def _require_custody(
+    page: Page, browser_version: str, observed: dict[str, object], *refusals: list[str]
+) -> dict[str, object]:
+    """Refuse a journey after any custody breach, then record the browser identity.
+
+    Parameters
+    ----------
+    page
+        Page whose retained workers are checked.
+    browser_version
+        Version string of the launched browser.
+    observed
+        Evidence mapping completed in place.
+    *refusals
+        Page errors, outside requests and submissions; each must be empty.
+
+    Returns
+    -------
+    dict
+        The completed evidence mapping.
+
+    Raises
+    ------
+    AssertionError
+        A list holds a breach or the page retained a worker.
+
+    """
+    for refused in (*refusals, page.workers):
+        assert not refused, refused
+    observed.update(browser=browser_version, workers=len(page.workers), no_submit=True)
+    return observed
+
+
+def run_custodied_journey(
+    base_url: str, evidence: dict[str, object] | None, scenario: str, walk: Walk
+) -> dict[str, object]:
+    """Run one instrument journey on the owned preview and check its custody.
+
+    Parameters
+    ----------
+    base_url
+        Owned literal-loopback preview carrying the actual built Studio.
+    evidence
+        Caller-owned partial evidence retained on a later runtime refusal.
+    scenario
+        Scenario name recorded in the evidence.
+    walk
+        Journey steps: page, preview URL and observations in, extra evidence out.
+
+    Returns
+    -------
+    dict
+        Browser identity, observations, walk evidence and the custody record.
+
+    Raises
+    ------
+    ValueError
+        The preview violates the shared loopback ownership contract.
+    AssertionError
+        A real UI, network or runtime contract fails.
+
+    """
+    from tools.studio_browser_journey import loopback_url
+
+    url = loopback_url(base_url)
+    from playwright.sync_api import sync_playwright
+
+    observed, observations, errors, external, submissions = _start_evidence(evidence, scenario)
+    with sync_playwright() as runtime:
+        browser = runtime.chromium.launch()
+        context = browser.new_context(service_workers="block")
+        context.set_default_timeout(15000)
+        try:
+            context.route("**/*", preview_route_guard(urlsplit(url).netloc, external, submissions))
+            page = context.new_page()
+            page.on("pageerror", lambda error: errors.append(str(error)))
+            observed.update(walk(page, url, observations))
+            return _require_custody(page, browser.version, observed, errors, external, submissions)
+        finally:
+            context.close()
+            browser.close()

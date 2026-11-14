@@ -9,11 +9,108 @@
 
 from __future__ import annotations
 
-from importlib.metadata import version
 from pathlib import Path
-from urllib.parse import urlsplit
+from typing import TYPE_CHECKING
 
-from tools.studio_preview_custody import preview_route_guard
+from tools.studio_preview_custody import run_custodied_journey
+
+if TYPE_CHECKING:
+    from playwright.sync_api import Page
+
+
+def _check_instrument(page: Page, observations: list[str]) -> None:
+    """Check every instrument contract on the Analyse stage.
+
+    Parameters
+    ----------
+    page
+        Owned page showing the Analyse stage.
+    observations
+        Caller-owned list that records each contract once it holds.
+
+    """
+    from playwright.sync_api import expect
+
+    instrument = page.get_by_role("region", name="Control proposals and co-design", exact=True)
+    expect(instrument).to_be_visible()
+    targets = instrument.get_by_role("table", name="Tracking targets")
+    expect(targets.get_by_role("row", name="signed target")).to_contain_text(
+        "Proposed, not applied"
+    )
+    expect(instrument.get_by_role("note")).to_contain_text(
+        "only with explicit runtime actuation evidence"
+    )
+    observations.append("signed-target-objective-proposed-not-applied")
+    graph = instrument.get_by_role("img", name="Coupling graph constraints")
+    edge = graph.locator('line[data-edge="0-1"]')
+    expect(edge).to_have_attribute("data-state", "binding")
+    selector = instrument.get_by_label("Co-design proposal", exact=True)
+    selector.select_option(label="desired plan, edge 0-1 over its cap")
+    expect(edge).to_have_attribute("data-state", "violated")
+    observations.append("graph-highlights-binding-and-violated-caps")
+    outcome = instrument.get_by_label("Proposal outcome", exact=True)
+    for label in ("plan outside the tested domain", "hardware-mode request"):
+        selector.select_option(label=label)
+        expect(outcome).to_contain_text("No, no runtime actuation evidence")
+    expect(outcome).to_contain_text("vetoed")
+    observations.append("vetoed-and-out-of-domain-never-applied")
+    trace = instrument.get_by_role("table", name="Simulated closed-loop trace")
+    expect(trace).to_contain_text("0.8999999999999999")
+    expect(instrument.get_by_role("status")).to_contain_text(
+        "Observed hardware telemetry: unavailable"
+    )
+    expect(instrument.get_by_role("table", name="Latency budget verdicts")).to_contain_text(
+        "latency claim refused"
+    )
+    observations.append("integrator-timestamps-and-refused-latency-claim")
+
+
+def _walk(page: Page, url: str, observations: list[str]) -> dict[str, object]:
+    """Walk the instrument on the owned page and check each contract.
+
+    Parameters
+    ----------
+    page
+        Owned page bound to the preview.
+    url
+        Owned literal-loopback preview.
+    observations
+        Caller-owned list that records each contract once it holds.
+
+    Returns
+    -------
+    dict
+        Extra evidence fields for the journey record.
+
+    """
+    from playwright.sync_api import expect
+
+    extra: dict[str, object] = {}
+    page.goto(url, wait_until="networkidle")
+    page.get_by_role("navigation", name="Workbench views").get_by_role(
+        "link", name="Analyse", exact=True
+    ).click()
+    _check_instrument(page, observations)
+    page.goto(url + "#/results/control", wait_until="networkidle")
+    expect(page.locator('[id="/results/control"]')).to_be_focused()
+    observations.append("deep-link-focuses-the-instrument")
+    axe_source = (
+        Path(__file__).resolve().parents[1] / "studio-web/node_modules/axe-core/axe.min.js"
+    )
+    page.add_script_tag(path=str(axe_source))
+    accessibility: list[dict[str, object]] = []
+    for width in (1280, 390):
+        page.set_viewport_size({"width": width, "height": 900})
+        violations = page.evaluate("""async () => {
+            const root = document.querySelector('[aria-label="Control proposals and co-design"]');
+            const result = await axe.run(root);
+            return result.violations.map(item => ({id: item.id, nodes: item.nodes.length}));
+        }""")
+        assert not violations, violations
+        accessibility.append({"width": width, "violations": violations})
+    extra["accessibility"] = accessibility
+    observations.append("accessible-at-desktop-and-mobile")
+    return extra
 
 
 def run_control_journey(
@@ -42,95 +139,4 @@ def run_control_journey(
         A real UI, network or runtime contract fails.
 
     """
-    from tools.studio_browser_journey import loopback_url
-
-    url = loopback_url(base_url)
-    from playwright.sync_api import expect, sync_playwright
-
-    observed = {} if evidence is None else evidence
-    observations: list[str] = []
-    errors: list[str] = []
-    external: list[str] = []
-    submissions: list[str] = []
-    observed.update(
-        scenario="control_proposal_instrument",
-        playwright=version("playwright"),
-        observations=observations,
-        page_errors=errors,
-        external_requests=external,
-        submission_requests=submissions,
-    )
-    with sync_playwright() as runtime:
-        browser = runtime.chromium.launch()
-        context = browser.new_context(service_workers="block")
-        context.set_default_timeout(15000)
-        try:
-            context.route("**/*", preview_route_guard(urlsplit(url).netloc, external, submissions))
-            page = context.new_page()
-            page.on("pageerror", lambda error: errors.append(str(error)))
-            page.goto(url, wait_until="networkidle")
-            page.get_by_role("navigation", name="Workbench views").get_by_role(
-                "link", name="Analyse", exact=True
-            ).click()
-            instrument = page.get_by_role(
-                "region", name="Control proposals and co-design", exact=True
-            )
-            expect(instrument).to_be_visible()
-            targets = instrument.get_by_role("table", name="Tracking targets")
-            expect(targets.get_by_role("row", name="signed target")).to_contain_text(
-                "Proposed, not applied"
-            )
-            expect(instrument.get_by_role("note")).to_contain_text(
-                "only with explicit runtime actuation evidence"
-            )
-            observations.append("signed-target-objective-proposed-not-applied")
-            graph = instrument.get_by_role("img", name="Coupling graph constraints")
-            edge = graph.locator('line[data-edge="0-1"]')
-            expect(edge).to_have_attribute("data-state", "binding")
-            selector = instrument.get_by_label("Co-design proposal", exact=True)
-            selector.select_option(label="desired plan, edge 0-1 over its cap")
-            expect(edge).to_have_attribute("data-state", "violated")
-            observations.append("graph-highlights-binding-and-violated-caps")
-            outcome = instrument.get_by_label("Proposal outcome", exact=True)
-            for label in ("plan outside the tested domain", "hardware-mode request"):
-                selector.select_option(label=label)
-                expect(outcome).to_contain_text("No, no runtime actuation evidence")
-            expect(outcome).to_contain_text("vetoed")
-            observations.append("vetoed-and-out-of-domain-never-applied")
-            trace = instrument.get_by_role("table", name="Simulated closed-loop trace")
-            expect(trace).to_contain_text("0.8999999999999999")
-            expect(instrument.get_by_role("status")).to_contain_text(
-                "Observed hardware telemetry: unavailable"
-            )
-            expect(
-                instrument.get_by_role("table", name="Latency budget verdicts")
-            ).to_contain_text("latency claim refused")
-            observations.append("integrator-timestamps-and-refused-latency-claim")
-            page.goto(url + "#/results/control", wait_until="networkidle")
-            expect(page.locator('[id="/results/control"]')).to_be_focused()
-            observations.append("deep-link-focuses-the-instrument")
-            axe_source = (
-                Path(__file__).resolve().parents[1] / "studio-web/node_modules/axe-core/axe.min.js"
-            )
-            page.add_script_tag(path=str(axe_source))
-            accessibility: list[dict[str, object]] = []
-            for width in (1280, 390):
-                page.set_viewport_size({"width": width, "height": 900})
-                violations = page.evaluate("""async () => {
-                    const root = document.querySelector('[aria-label="Control proposals and co-design"]');
-                    const result = await axe.run(root);
-                    return result.violations.map(item => ({id: item.id, nodes: item.nodes.length}));
-                }""")
-                assert not violations, violations
-                accessibility.append({"width": width, "violations": violations})
-            observed["accessibility"] = accessibility
-            observations.append("accessible-at-desktop-and-mobile")
-            assert not errors, errors
-            assert not external, external
-            assert not submissions, submissions
-            assert not page.workers, "The instrument must not retain workers"
-            observed.update(browser=browser.version, workers=len(page.workers), no_submit=True)
-            return observed
-        finally:
-            context.close()
-            browser.close()
+    return run_custodied_journey(base_url, evidence, "control_proposal_instrument", _walk)

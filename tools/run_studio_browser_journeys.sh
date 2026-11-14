@@ -275,10 +275,12 @@ python -m coverage report --rcfile=/dev/null \
 python -m coverage combine --rcfile=/dev/null --append --keep \
     --data-file="$RUNNER_TEMP/studio-workspace-browser.coverage" "$RUNNER_TEMP/studio-topology-browser.coverage"
 
-python -m coverage run --rcfile=/dev/null --branch \
+STUDIO_PREVIEW_DIR="$RUNNER_TEMP/studio-browser-preview" \
+    python -m coverage run --rcfile=/dev/null --branch --concurrency=greenlet \
     --data-file="$RUNNER_TEMP/studio-preview-custody.coverage" \
     --include="*/tools/studio_preview_custody.py" \
-    -m pytest --noconftest -q tools/tests/test_studio_preview_custody.py
+    -m pytest --noconftest -q tools/tests/test_studio_preview_custody.py \
+    tools/tests/test_studio_pulse_browser.py
 python -m coverage report --rcfile=/dev/null \
     --data-file="$RUNNER_TEMP/studio-preview-custody.coverage" \
     --include="*/tools/studio_preview_custody.py" --precision=2 --show-missing --fail-under=100

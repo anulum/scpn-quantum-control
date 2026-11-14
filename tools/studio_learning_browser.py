@@ -10,12 +10,11 @@
 from __future__ import annotations
 
 import json
-from importlib.metadata import version
 from pathlib import Path
 from typing import TYPE_CHECKING
-from urllib.parse import unquote, urlsplit
+from urllib.parse import unquote
 
-from tools.studio_preview_custody import preview_route_guard
+from tools.studio_preview_custody import run_custodied_journey
 
 if TYPE_CHECKING:
     from playwright.sync_api import Page
@@ -95,7 +94,7 @@ def _accessibility(page: Page) -> list[dict[str, object]]:
     return accessibility
 
 
-def _walk(page: Page, url: str, observations: list[str]) -> list[dict[str, object]]:
+def _walk(page: Page, url: str, observations: list[str]) -> dict[str, object]:
     """Open Analyse, check the instrument, its deep link and its accessibility.
 
     Parameters
@@ -109,7 +108,7 @@ def _walk(page: Page, url: str, observations: list[str]) -> list[dict[str, objec
 
     Returns
     -------
-    list of dict
+    dict
         Accessibility results per viewport width.
 
     """
@@ -125,33 +124,7 @@ def _walk(page: Page, url: str, observations: list[str]) -> list[dict[str, objec
     observations.append("deep-link-focuses-the-instrument")
     accessibility = _accessibility(page)
     observations.append("accessible-at-desktop-and-mobile")
-    return accessibility
-
-
-def _start_evidence(observed: dict[str, object]) -> tuple[list[str], ...]:
-    """Record the scenario identity and the lists the journey fills.
-
-    Parameters
-    ----------
-    observed
-        Caller-owned evidence mapping.
-
-    Returns
-    -------
-    tuple of list
-        Observations, page errors, outside requests and submissions, in that order.
-
-    """
-    lists: tuple[list[str], ...] = ([], [], [], [])
-    observed.update(
-        scenario="learning_domain_instrument",
-        playwright=version("playwright"),
-        observations=lists[0],
-        page_errors=lists[1],
-        external_requests=lists[2],
-        submission_requests=lists[3],
-    )
-    return lists
+    return {"accessibility": accessibility}
 
 
 def run_learning_journey(
@@ -180,26 +153,4 @@ def run_learning_journey(
         A real UI, network or runtime contract fails.
 
     """
-    from tools.studio_browser_journey import loopback_url
-
-    url = loopback_url(base_url)
-    from playwright.sync_api import sync_playwright
-
-    observed = {} if evidence is None else evidence
-    observations, errors, external, submissions = _start_evidence(observed)
-    with sync_playwright() as runtime:
-        browser = runtime.chromium.launch()
-        context = browser.new_context(service_workers="block")
-        context.set_default_timeout(15000)
-        try:
-            context.route("**/*", preview_route_guard(urlsplit(url).netloc, external, submissions))
-            page = context.new_page()
-            page.on("pageerror", lambda error: errors.append(str(error)))
-            observed["accessibility"] = _walk(page, url, observations)
-            for refused in (errors, external, submissions, page.workers):
-                assert not refused, refused
-            observed.update(browser=browser.version, workers=len(page.workers), no_submit=True)
-            return observed
-        finally:
-            context.close()
-            browser.close()
+    return run_custodied_journey(base_url, evidence, "learning_domain_instrument", _walk)

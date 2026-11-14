@@ -10,12 +10,65 @@
 from __future__ import annotations
 
 import json
-from importlib.metadata import version
-from urllib.parse import unquote, urlsplit
+from typing import TYPE_CHECKING
+from urllib.parse import unquote
 
-from tools.studio_preview_custody import preview_route_guard
+from tools.studio_preview_custody import run_custodied_journey
+
+if TYPE_CHECKING:
+    from playwright.sync_api import Page
 
 _DOSSIER_PREFIX = "data:application/json;charset=utf-8,"
+
+
+def _walk(page: Page, url: str, observations: list[str]) -> dict[str, object]:
+    """Walk the instrument on the owned page and check each contract.
+
+    Parameters
+    ----------
+    page
+        Owned page bound to the preview.
+    url
+        Owned literal-loopback preview.
+    observations
+        Caller-owned list that records each contract once it holds.
+
+    Returns
+    -------
+    dict
+        Extra evidence fields for the journey record.
+
+    """
+    from playwright.sync_api import expect
+
+    page.goto(url, wait_until="networkidle")
+    page.get_by_role("navigation", name="Workbench views").get_by_role(
+        "link", name="Analyse", exact=True
+    ).click()
+    instrument = page.get_by_role("region", name="Pulse feasibility", exact=True)
+    expect(instrument).to_be_visible()
+    link = instrument.get_by_role("link", name="Download no-submit dossier")
+    dossier = json.loads(unquote((link.get_attribute("href") or "").removeprefix(_DOSSIER_PREFIX)))
+    assert dossier["submissions"] == 0 and dossier["hardware_submission"] is False
+    observations.append("feasible-design-exports-a-no-submit-dossier")
+    instrument.get_by_label("Design", exact=True).select_option(
+        label="half-grid-and-over-amplitude"
+    )
+    expect(instrument.locator("rect[data-violated='true']")).to_have_count(2)
+    expect(instrument.get_by_role("alert", name="Dossier refused")).to_be_visible()
+    observations.append("violations-marked-and-export-refused")
+    instrument.get_by_label("Design", exact=True).select_option(label="expired-snapshot")
+    expect(instrument.get_by_role("note", name="Capability snapshot")).to_contain_text(
+        "expired before the assessment"
+    )
+    expect(link).to_have_count(0)
+    observations.append("expired-snapshot-refuses-the-dossier")
+    assert instrument.get_by_role("button", name="Submit").count() == 0
+
+    page.goto(url + "#/results/pulses", wait_until="networkidle")
+    expect(page.locator('[id="/results/pulses"]')).to_be_focused()
+    observations.append("deep-link-focuses-the-instrument")
+    return {}
 
 
 def run_pulse_journey(
@@ -44,67 +97,4 @@ def run_pulse_journey(
         A real UI, network or runtime contract fails.
 
     """
-    from tools.studio_browser_journey import loopback_url
-
-    url = loopback_url(base_url)
-    from playwright.sync_api import expect, sync_playwright
-
-    observed = {} if evidence is None else evidence
-    observations: list[str] = []
-    errors: list[str] = []
-    external: list[str] = []
-    submissions: list[str] = []
-    observed.update(
-        scenario="pulse_feasibility",
-        playwright=version("playwright"),
-        observations=observations,
-        page_errors=errors,
-        external_requests=external,
-        submission_requests=submissions,
-    )
-    with sync_playwright() as runtime:
-        browser = runtime.chromium.launch()
-        context = browser.new_context(service_workers="block")
-        context.set_default_timeout(15000)
-        try:
-            context.route("**/*", preview_route_guard(urlsplit(url).netloc, external, submissions))
-            page = context.new_page()
-            page.on("pageerror", lambda error: errors.append(str(error)))
-            page.goto(url, wait_until="networkidle")
-            page.get_by_role("navigation", name="Workbench views").get_by_role(
-                "link", name="Analyse", exact=True
-            ).click()
-            instrument = page.get_by_role("region", name="Pulse feasibility", exact=True)
-            expect(instrument).to_be_visible()
-            link = instrument.get_by_role("link", name="Download no-submit dossier")
-            dossier = json.loads(
-                unquote((link.get_attribute("href") or "").removeprefix(_DOSSIER_PREFIX))
-            )
-            assert dossier["submissions"] == 0 and dossier["hardware_submission"] is False
-            observations.append("feasible-design-exports-a-no-submit-dossier")
-            instrument.get_by_label("Design", exact=True).select_option(
-                label="half-grid-and-over-amplitude"
-            )
-            expect(instrument.locator("rect[data-violated='true']")).to_have_count(2)
-            expect(instrument.get_by_role("alert", name="Dossier refused")).to_be_visible()
-            observations.append("violations-marked-and-export-refused")
-            instrument.get_by_label("Design", exact=True).select_option(label="expired-snapshot")
-            expect(instrument.get_by_role("note", name="Capability snapshot")).to_contain_text(
-                "expired before the assessment"
-            )
-            expect(link).to_have_count(0)
-            observations.append("expired-snapshot-refuses-the-dossier")
-            assert instrument.get_by_role("button", name="Submit").count() == 0
-
-            page.goto(url + "#/results/pulses", wait_until="networkidle")
-            expect(page.locator('[id="/results/pulses"]')).to_be_focused()
-            observations.append("deep-link-focuses-the-instrument")
-            assert not errors, errors
-            assert not external, external
-            assert not submissions, submissions
-            assert not page.workers, "The instrument must not retain workers"
-            observed.update(browser=browser.version, workers=len(page.workers), no_submit=True)
-            return observed
-        finally:
-            context.close()
-            browser.close()
+    return run_custodied_journey(base_url, evidence, "pulse_feasibility", _walk)

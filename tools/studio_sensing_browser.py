@@ -10,13 +10,133 @@
 from __future__ import annotations
 
 import json
-from importlib.metadata import version
 from pathlib import Path
-from urllib.parse import unquote, urlsplit
+from typing import TYPE_CHECKING
+from urllib.parse import unquote
 
-from tools.studio_preview_custody import preview_route_guard
+from tools.studio_preview_custody import run_custodied_journey
+
+if TYPE_CHECKING:
+    from playwright.sync_api import Locator, Page
 
 _METADATA_PREFIX = "data:application/json;charset=utf-8,"
+
+
+def _exported_metadata(link: Locator) -> dict[str, object]:
+    """Decode the public entropy metadata the download link carries.
+
+    Parameters
+    ----------
+    link
+        The instrument's metadata download link.
+
+    Returns
+    -------
+    dict
+        Decoded metadata fields.
+
+    """
+    href = link.get_attribute("href") or ""
+    decoded: dict[str, object] = json.loads(unquote(href.removeprefix(_METADATA_PREFIX)))
+    return decoded
+
+
+def _check_instrument(page: Page, observations: list[str]) -> None:
+    """Check every instrument contract on the Analyse stage.
+
+    Parameters
+    ----------
+    page
+        Owned page showing the Analyse stage.
+    observations
+        Caller-owned list that records each contract once it holds.
+
+    """
+    from playwright.sync_api import expect
+
+    instrument = page.get_by_role("region", name="Sensing and entropy provenance", exact=True)
+    expect(instrument).to_be_visible()
+    expect(instrument.get_by_role("table", name="Measurement-design candidates")).to_contain_text(
+        "sync_order"
+    )
+    expect(instrument.get_by_label("Entropy provenance", exact=True)).to_contain_text("synthetic")
+    expect(instrument.get_by_role("note")).to_contain_text("Source entropy: unqualified")
+    expect(instrument.get_by_label("Recorded diagnostic outcomes")).to_contain_text(
+        "not independently verified"
+    )
+    link = instrument.get_by_role("link", name="Download public entropy metadata")
+    metadata = _exported_metadata(link)
+    assert metadata["source_kind"] == "synthetic"
+    assert metadata["source_entropy_qualified"] is False
+    assert set(metadata) == {
+        "case_id",
+        "source_kind",
+        "source",
+        "extractor",
+        "assumptions",
+        "payload_sha256",
+        "diagnostics",
+        "source_entropy_qualified",
+        "claim_boundary",
+    }
+    observations.append("synthetic-scores-and-noncertifying-metadata")
+    instrument.get_by_label("Entropy record", exact=True).select_option(label="device-unavailable")
+    expect(instrument.get_by_role("status")).to_contain_text("device evidence unavailable")
+    expect(instrument.get_by_role("list", name="Evidence limitations")).to_contain_text(
+        "Missing source provenance"
+    )
+    metadata = _exported_metadata(link)
+    assert metadata["source_kind"] == "device" and metadata["source"] is None
+    assert metadata["diagnostics"] is None and metadata["source_entropy_qualified"] is False
+    observations.append("device-provenance-missing-without-fabricated-samples")
+
+
+def _walk(page: Page, url: str, observations: list[str]) -> dict[str, object]:
+    """Walk the instrument on the owned page and check each contract.
+
+    Parameters
+    ----------
+    page
+        Owned page bound to the preview.
+    url
+        Owned literal-loopback preview.
+    observations
+        Caller-owned list that records each contract once it holds.
+
+    Returns
+    -------
+    dict
+        Extra evidence fields for the journey record.
+
+    """
+    from playwright.sync_api import expect
+
+    extra: dict[str, object] = {}
+    page.goto(url, wait_until="networkidle")
+    page.get_by_role("navigation", name="Workbench views").get_by_role(
+        "link", name="Analyse", exact=True
+    ).click()
+    _check_instrument(page, observations)
+    page.goto(url + "#/results/sensing", wait_until="networkidle")
+    expect(page.locator('[id="/results/sensing"]')).to_be_focused()
+    observations.append("deep-link-focuses-the-instrument")
+    axe_source = (
+        Path(__file__).resolve().parents[1] / "studio-web/node_modules/axe-core/axe.min.js"
+    )
+    page.add_script_tag(path=str(axe_source))
+    accessibility: list[dict[str, object]] = []
+    for width in (1280, 390):
+        page.set_viewport_size({"width": width, "height": 900})
+        violations = page.evaluate("""async () => {
+            const root = document.querySelector('[aria-label="Sensing and entropy provenance"]');
+            const result = await axe.run(root);
+            return result.violations.map(item => ({id: item.id, nodes: item.nodes.length}));
+        }""")
+        assert not violations, violations
+        accessibility.append({"width": width, "violations": violations})
+    extra["accessibility"] = accessibility
+    observations.append("accessible-at-desktop-and-mobile")
+    return extra
 
 
 def run_sensing_journey(
@@ -45,108 +165,4 @@ def run_sensing_journey(
         A real UI, network or runtime contract fails.
 
     """
-    from tools.studio_browser_journey import loopback_url
-
-    url = loopback_url(base_url)
-    from playwright.sync_api import expect, sync_playwright
-
-    observed = {} if evidence is None else evidence
-    observations: list[str] = []
-    errors: list[str] = []
-    external: list[str] = []
-    submissions: list[str] = []
-    observed.update(
-        scenario="sensing_entropy_instrument",
-        playwright=version("playwright"),
-        observations=observations,
-        page_errors=errors,
-        external_requests=external,
-        submission_requests=submissions,
-    )
-    with sync_playwright() as runtime:
-        browser = runtime.chromium.launch()
-        context = browser.new_context(service_workers="block")
-        context.set_default_timeout(15000)
-        try:
-            context.route("**/*", preview_route_guard(urlsplit(url).netloc, external, submissions))
-            page = context.new_page()
-            page.on("pageerror", lambda error: errors.append(str(error)))
-            page.goto(url, wait_until="networkidle")
-            page.get_by_role("navigation", name="Workbench views").get_by_role(
-                "link", name="Analyse", exact=True
-            ).click()
-            instrument = page.get_by_role(
-                "region", name="Sensing and entropy provenance", exact=True
-            )
-            expect(instrument).to_be_visible()
-            expect(
-                instrument.get_by_role("table", name="Measurement-design candidates")
-            ).to_contain_text("sync_order")
-            expect(instrument.get_by_label("Entropy provenance", exact=True)).to_contain_text(
-                "synthetic"
-            )
-            expect(instrument.get_by_role("note")).to_contain_text("Source entropy: unqualified")
-            expect(instrument.get_by_label("Recorded diagnostic outcomes")).to_contain_text(
-                "not independently verified"
-            )
-            link = instrument.get_by_role("link", name="Download public entropy metadata")
-            metadata = json.loads(
-                unquote((link.get_attribute("href") or "").removeprefix(_METADATA_PREFIX))
-            )
-            assert metadata["source_kind"] == "synthetic"
-            assert metadata["source_entropy_qualified"] is False
-            assert set(metadata) == {
-                "case_id",
-                "source_kind",
-                "source",
-                "extractor",
-                "assumptions",
-                "payload_sha256",
-                "diagnostics",
-                "source_entropy_qualified",
-                "claim_boundary",
-            }
-            observations.append("synthetic-scores-and-noncertifying-metadata")
-            instrument.get_by_label("Entropy record", exact=True).select_option(
-                label="device-unavailable"
-            )
-            expect(instrument.get_by_role("status")).to_contain_text("device evidence unavailable")
-            expect(instrument.get_by_role("list", name="Evidence limitations")).to_contain_text(
-                "Missing source provenance"
-            )
-            metadata = json.loads(
-                unquote((link.get_attribute("href") or "").removeprefix(_METADATA_PREFIX))
-            )
-            assert metadata["source_kind"] == "device" and metadata["source"] is None
-            assert (
-                metadata["diagnostics"] is None and metadata["source_entropy_qualified"] is False
-            )
-            observations.append("device-provenance-missing-without-fabricated-samples")
-            page.goto(url + "#/results/sensing", wait_until="networkidle")
-            expect(page.locator('[id="/results/sensing"]')).to_be_focused()
-            observations.append("deep-link-focuses-the-instrument")
-            axe_source = (
-                Path(__file__).resolve().parents[1] / "studio-web/node_modules/axe-core/axe.min.js"
-            )
-            page.add_script_tag(path=str(axe_source))
-            accessibility: list[dict[str, object]] = []
-            for width in (1280, 390):
-                page.set_viewport_size({"width": width, "height": 900})
-                violations = page.evaluate("""async () => {
-                    const root = document.querySelector('[aria-label="Sensing and entropy provenance"]');
-                    const result = await axe.run(root);
-                    return result.violations.map(item => ({id: item.id, nodes: item.nodes.length}));
-                }""")
-                assert not violations, violations
-                accessibility.append({"width": width, "violations": violations})
-            observed["accessibility"] = accessibility
-            observations.append("accessible-at-desktop-and-mobile")
-            assert not errors, errors
-            assert not external, external
-            assert not submissions, submissions
-            assert not page.workers, "The instrument must not retain workers"
-            observed.update(browser=browser.version, workers=len(page.workers), no_submit=True)
-            return observed
-        finally:
-            context.close()
-            browser.close()
+    return run_custodied_journey(base_url, evidence, "sensing_entropy_instrument", _walk)

@@ -9,10 +9,87 @@
 
 from __future__ import annotations
 
-from importlib.metadata import version
-from urllib.parse import urlsplit
+from typing import TYPE_CHECKING
 
-from tools.studio_preview_custody import preview_route_guard
+from tools.studio_preview_custody import run_custodied_journey
+
+if TYPE_CHECKING:
+    from playwright.sync_api import Page
+
+
+def _check_instrument(page: Page, observations: list[str]) -> None:
+    """Check every instrument contract on the Analyse stage.
+
+    Parameters
+    ----------
+    page
+        Owned page showing the Analyse stage.
+    observations
+        Caller-owned list that records each contract once it holds.
+
+    """
+    from playwright.sync_api import expect
+
+    instrument = page.get_by_role("region", name="QEC and future resources", exact=True)
+    expect(instrument).to_be_visible()
+    decoder = instrument.get_by_role("region", name="Decoder simulation")
+    facts = decoder.get_by_label("Selected decoder sample")
+    decoder.get_by_label("Code distance").select_option("5")
+    decoder.get_by_label("Physical error rate").select_option("0.003")
+    expect(facts).to_contain_text("0 of 2000")
+    expect(facts).to_contain_text("not zero")
+    observations.append("zero-failure-interval-states-its-trials")
+    decoder.get_by_label("Physical error rate").select_option("0.1")
+    expect(facts).not_to_contain_text("0 of 2000")
+    observations.append("switching-noise-changes-the-source-sample")
+
+    instrument.get_by_role("tab", name="Offline readiness").click()
+    expect(instrument.get_by_role("status", name="Hardware logical-error reduction")).to_have_text(
+        "Hardware logical-error reduction: not measured"
+    )
+    observations.append("hardware-reduction-stays-unmeasured")
+
+    instrument.get_by_role("tab", name="Future resources").click()
+    excluded = instrument.get_by_role("list", name="Excluded overheads")
+    expect(excluded).to_contain_text("magic-state factory")
+    expect(excluded).to_contain_text("routing")
+    rates = instrument.get_by_label("Assumed physical error rate")
+    rates.select_option(label="0.01")
+    expect(instrument.get_by_role("alert", name="Resource estimate refused")).to_contain_text(
+        "threshold"
+    )
+    observations.append("excluded-overheads-and-threshold-refusal-shown")
+
+
+def _walk(page: Page, url: str, observations: list[str]) -> dict[str, object]:
+    """Walk the instrument on the owned page and check each contract.
+
+    Parameters
+    ----------
+    page
+        Owned page bound to the preview.
+    url
+        Owned literal-loopback preview.
+    observations
+        Caller-owned list that records each contract once it holds.
+
+    Returns
+    -------
+    dict
+        Extra evidence fields for the journey record.
+
+    """
+    from playwright.sync_api import expect
+
+    page.goto(url, wait_until="networkidle")
+    page.get_by_role("navigation", name="Workbench views").get_by_role(
+        "link", name="Analyse", exact=True
+    ).click()
+    _check_instrument(page, observations)
+    page.goto(url + "#/results/qec-resources", wait_until="networkidle")
+    expect(page.locator('[id="/results/qec-resources"]')).to_be_focused()
+    observations.append("deep-link-focuses-the-instrument")
+    return {}
 
 
 def run_qec_resource_journey(
@@ -41,75 +118,4 @@ def run_qec_resource_journey(
         A real UI, network or runtime contract fails.
 
     """
-    from tools.studio_browser_journey import loopback_url
-
-    url = loopback_url(base_url)
-    from playwright.sync_api import expect, sync_playwright
-
-    observed = {} if evidence is None else evidence
-    observations: list[str] = []
-    errors: list[str] = []
-    external: list[str] = []
-    submissions: list[str] = []
-    observed.update(
-        scenario="qec_resource_instrument",
-        playwright=version("playwright"),
-        observations=observations,
-        page_errors=errors,
-        external_requests=external,
-        submission_requests=submissions,
-    )
-    with sync_playwright() as runtime:
-        browser = runtime.chromium.launch()
-        context = browser.new_context(service_workers="block")
-        context.set_default_timeout(15000)
-        try:
-            context.route("**/*", preview_route_guard(urlsplit(url).netloc, external, submissions))
-            page = context.new_page()
-            page.on("pageerror", lambda error: errors.append(str(error)))
-            page.goto(url, wait_until="networkidle")
-            page.get_by_role("navigation", name="Workbench views").get_by_role(
-                "link", name="Analyse", exact=True
-            ).click()
-            instrument = page.get_by_role("region", name="QEC and future resources", exact=True)
-            expect(instrument).to_be_visible()
-            decoder = instrument.get_by_role("region", name="Decoder simulation")
-            facts = decoder.get_by_label("Selected decoder sample")
-            decoder.get_by_label("Code distance").select_option("5")
-            decoder.get_by_label("Physical error rate").select_option("0.003")
-            expect(facts).to_contain_text("0 of 2000")
-            expect(facts).to_contain_text("not zero")
-            observations.append("zero-failure-interval-states-its-trials")
-            decoder.get_by_label("Physical error rate").select_option("0.1")
-            expect(facts).not_to_contain_text("0 of 2000")
-            observations.append("switching-noise-changes-the-source-sample")
-
-            instrument.get_by_role("tab", name="Offline readiness").click()
-            expect(
-                instrument.get_by_role("status", name="Hardware logical-error reduction")
-            ).to_have_text("Hardware logical-error reduction: not measured")
-            observations.append("hardware-reduction-stays-unmeasured")
-
-            instrument.get_by_role("tab", name="Future resources").click()
-            excluded = instrument.get_by_role("list", name="Excluded overheads")
-            expect(excluded).to_contain_text("magic-state factory")
-            expect(excluded).to_contain_text("routing")
-            rates = instrument.get_by_label("Assumed physical error rate")
-            rates.select_option(label="0.01")
-            expect(
-                instrument.get_by_role("alert", name="Resource estimate refused")
-            ).to_contain_text("threshold")
-            observations.append("excluded-overheads-and-threshold-refusal-shown")
-
-            page.goto(url + "#/results/qec-resources", wait_until="networkidle")
-            expect(page.locator('[id="/results/qec-resources"]')).to_be_focused()
-            observations.append("deep-link-focuses-the-instrument")
-            assert not errors, errors
-            assert not external, external
-            assert not submissions, submissions
-            assert not page.workers, "The instrument must not retain workers"
-            observed.update(browser=browser.version, workers=len(page.workers), no_submit=True)
-            return observed
-        finally:
-            context.close()
-            browser.close()
+    return run_custodied_journey(base_url, evidence, "qec_resource_instrument", _walk)
