@@ -33,7 +33,9 @@ _WRITE_PROBE = """() => {
 }"""
 
 
-def open_operations_panel(page: Page, url: str, draft: str, record: str, panel: str) -> Locator:
+def open_operations_panel(
+    page: Page, url: str, draft: str, record: str, panel: str, probe: str | None = None
+) -> Locator:
     """Keep a draft, probe storage writes and open an operations panel by keyboard.
 
     Parameters
@@ -48,6 +50,9 @@ def open_operations_panel(page: Page, url: str, draft: str, record: str, panel: 
         Window property that collects the attempted IndexedDB writes.
     panel
         Accessible name of the operations panel.
+    probe
+        Optional probe script that fills ``record``; by default every attempted
+        IndexedDB write is recorded by name.
 
     Returns
     -------
@@ -59,7 +64,7 @@ def open_operations_panel(page: Page, url: str, draft: str, record: str, panel: 
 
     page.goto(url, wait_until="networkidle")
     page.get_by_label("Workspace archive JSON").fill(draft)
-    page.evaluate(_WRITE_PROBE % (record, record))
+    page.evaluate(_WRITE_PROBE % (record, record) if probe is None else probe)
     destination = page.get_by_role("navigation", name="Workbench context destinations")
     destination.get_by_role("link", name="Devices & Operations").focus()
     page.keyboard.press("Enter")
@@ -87,7 +92,12 @@ def storage_writes(page: Page, record: str) -> object:
     return page.evaluate(f"window.{record}")
 
 
-def check_recompute_and_draft(page: Page, draft: str, observations: list[str]) -> None:
+def check_recompute_and_draft(
+    page: Page,
+    draft: str,
+    observations: list[str],
+    draft_label: str = "original-workspace-draft-preserved",
+) -> None:
     """Recompute the built WASM claim in Model and find the draft kept in Workspace.
 
     Parameters
@@ -98,6 +108,8 @@ def check_recompute_and_draft(page: Page, draft: str, observations: list[str]) -
         Workspace text kept since the start of the journey.
     observations
         Caller-owned list that records each contract once it holds.
+    draft_label
+        Observation recorded once the draft is found unchanged.
 
     """
     from playwright.sync_api import expect
@@ -112,4 +124,4 @@ def check_recompute_and_draft(page: Page, draft: str, observations: list[str]) -
     observations.append("original-built-wasm-recompute")
     views.get_by_role("link", name="Workspace", exact=True).click()
     expect(page.get_by_label("Workspace archive JSON")).to_have_value(draft)
-    observations.append("original-workspace-draft-preserved")
+    observations.append(draft_label)
