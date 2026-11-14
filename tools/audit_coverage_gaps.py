@@ -45,14 +45,18 @@ class CoverageFileAudit:
 
 
 def _source_files(source_root: Path) -> tuple[Path, ...]:
-    """Return deterministic package source files included in coverage scope."""
+    """Return deterministic package source files included in coverage scope.
+
+    Hidden and cache directories are skipped only inside ``source_root``; a
+    checkout or temporary directory below a dot-directory keeps its sources.
+    """
     return tuple(
         sorted(
             path
             for path in source_root.rglob("*.py")
             if path.is_file()
-            and "__pycache__" not in path.parts
-            and not any(part.startswith(".") for part in path.parts)
+            and "__pycache__" not in path.relative_to(source_root).parts
+            and not any(part.startswith(".") for part in path.relative_to(source_root).parts)
         )
     )
 
