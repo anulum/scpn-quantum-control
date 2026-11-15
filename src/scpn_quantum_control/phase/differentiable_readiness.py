@@ -314,7 +314,7 @@ def _extract_hardware_execution_count(payload: Mapping[str, Any]) -> int:
     records = payload.get("records")
     if not isinstance(records, list):
         return 0
-    return sum(1 for record in records if _nested_bool(record, ("hardware_execution",)))
+    return sum(1 for record in records if _nested_bool(record, "hardware_execution"))
 
 
 def _extract_hardware_gradient_available_count(payload: Mapping[str, Any]) -> int:
@@ -327,7 +327,7 @@ def _extract_hardware_gradient_available_count(payload: Mapping[str, Any]) -> in
     records = payload.get("records")
     if not isinstance(records, list):
         return 0
-    return sum(1 for record in records if _nested_bool(record, ("gradient_available",)))
+    return sum(1 for record in records if _nested_bool(record, "gradient_available"))
 
 
 def _extract_claim_boundary(raw_result: object, payload: Mapping[str, Any]) -> str:
@@ -366,20 +366,17 @@ def _record_bool(record: object, key: str) -> bool:
     return bool(value) if isinstance(value, bool) else False
 
 
-def _nested_bool(record: object, path: tuple[str, ...]) -> bool:
+def _nested_bool(record: object, key: str) -> bool:
+    """Return a boolean flag from the record, or else from its nested ``result``."""
     if not isinstance(record, Mapping):
         return False
-    current: object = record
-    for key in path:
-        if not isinstance(current, Mapping):
-            return False
-        current = current.get(key)
-    if isinstance(current, bool):
-        return current
+    value = record.get(key)
+    if isinstance(value, bool):
+        return value
     result = record.get("result")
     if isinstance(result, Mapping):
-        value = result.get(path[-1])
-        return bool(value) if isinstance(value, bool) else False
+        nested = result.get(key)
+        return bool(nested) if isinstance(nested, bool) else False
     return False
 
 

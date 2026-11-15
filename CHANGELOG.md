@@ -497,6 +497,21 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The differentiable readiness ledger (`phase/differentiable_readiness.py`)
+  now has tests for every way it reads a readiness result, through
+  `run_differentiable_readiness_audit` with custom surfaces:
+  - per-record supported, approved, blocked, fail-closed, hardware and
+    gradient flags, nested results included; only boolean flags count;
+  - attribute record lists;
+  - direct hardware counts, which win over record flags;
+  - a result without a payload, or with a payload that is not a mapping;
+  - unserialisable payload values, which become text.
+
+  Surfaces refuse a blank name or description and report their runner. The
+  nested flag reader takes a single key, because every caller passed a
+  one-key path; its unreachable loop branch is gone. Coverage rises from
+  90.31% to 100%.
+
 - The Program AD Rust bridge (`program_ad_rust_bridge.py`) now tests every
   refusal of its registry metadata mirror, through a fake native engine as
   the sibling tests do. A mirror result refuses a non-boolean flag, negative
