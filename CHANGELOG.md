@@ -497,6 +497,22 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- **Fixed: the QNN loss landscape could lose its center point.**
+  `run_parameter_shift_qnn_loss_landscape_suite` built each axis as the
+  center plus `numpy.linspace(-grid_radius, grid_radius, points_per_axis)`.
+  For many valid controls, such as a radius of 1.7 with 11 points, the middle
+  linspace sample is a rounding error away from 0.0, so the grid skipped the
+  declared center: `center_loss` and `to_dict()` then raised `RuntimeError`.
+  The middle offset is now exactly 0.0 (the point count is always odd), so the
+  center is always sampled. The gradients guide states the grid rule.
+  - The same unit tests the default suite (both cases, in order), lookup of
+    the second and of an unknown case, negative, NaN and infinite span
+    thresholds beside an accepted zero, the feature cap on the two-feature
+    case beside a cap of one that admits the one-feature case, and a result
+    assembled without its center. Coverage of `phase/qnn_loss_landscape.py`
+    rises from 94.12% to 100% over its test files. Four older tests gain
+    docstrings.
+
 - **Fixed: the Qiskit local gradients leaked a Qiskit error for a parameter
   the circuit does not use.** `generate_qiskit_parameter_shift_circuits`,
   `execute_qiskit_statevector_parameter_shift` and

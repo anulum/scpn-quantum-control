@@ -400,7 +400,10 @@ print(case.min_loss, case.max_loss, case.max_gradient_norm)
 
 The landscape evidence records grid axes, every sampled parameter vector,
 losses, analytic parameter-shift gradients, gradient norms, sampled argmin,
-loss span, and pass/fail thresholds. It is a local diagnostic for bounded
+loss span, and pass/fail thresholds. Each axis holds `points_per_axis` (odd,
+at least 3) evenly spaced values from the center minus `grid_radius` to the
+center plus `grid_radius`; the middle value is the center itself, so
+`center_loss` is always a sampled point. It is a local diagnostic for bounded
 training surfaces, not hardware execution, finite-shot evidence, isolated
 benchmark evidence, or a claim about arbitrary QNN/QGNN/QSNN landscapes.
 
