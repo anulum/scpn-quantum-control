@@ -497,6 +497,18 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The TensorFlow maintenance ledger (`phase/tensorflow_maintenance.py`) now
+  tests every refusal of a route record, edited from a shipped blocked
+  route:
+  - an empty name, an unknown decision, and missing or blank evidence;
+  - blank blockers or promotion requirements;
+  - a blocked route without blockers, or a maintained route with them;
+  - an empty claim boundary.
+
+  A maintained route without blockers is valid and not fail-closed. The
+  report refuses another strategy, no routes and an empty claim boundary.
+  Coverage rises from 80.18% to 100%.
+
 - The hardware-gradient policy (`phase/hardware_gradient_policy.py`) now tests
   that each out-of-bounds request is named as a blocker: non-positive or
   excessive parameter counts, shift terms and shots. It also tests that the

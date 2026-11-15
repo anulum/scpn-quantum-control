@@ -9,6 +9,9 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+from typing import Any
+
 import pytest
 
 import scpn_quantum_control.phase as phase
@@ -86,3 +89,55 @@ def test_tensorflow_maintenance_route_fails_closed_on_unknown_route() -> None:
 
     with pytest.raises(KeyError, match="unknown TensorFlow maintenance route"):
         report.route("missing")
+
+
+def _route(decision: str) -> PhaseTensorFlowMaintenanceRoute:
+    """Return a shipped route with the given decision."""
+    report = run_tensorflow_maintenance_decision()
+    return next(route for route in report.routes if route.decision == decision)
+
+
+@pytest.mark.parametrize(
+    ("decision", "changes", "message"),
+    [
+        ("blocked", {"name": ""}, "route name must be non-empty"),
+        ("blocked", {"decision": "promoted"}, "unknown TensorFlow maintenance decision"),
+        ("blocked", {"evidence": ()}, "route evidence must be non-empty"),
+        ("blocked", {"evidence": ("",)}, "route evidence must be non-empty"),
+        ("blocked", {"blocked_reasons": ("",)}, "route blockers must be non-empty"),
+        ("blocked", {"required_before_promotion": ("",)}, "promotion requirements must be"),
+        ("blocked", {"blocked_reasons": ()}, "blocked TensorFlow maintenance routes require"),
+        ("blocked", {"decision": "maintained"}, "maintained TensorFlow maintenance routes cannot"),
+        ("blocked", {"claim_boundary": ""}, "route claim boundary must be non-empty"),
+    ],
+)
+def test_tensorflow_maintenance_route_refuses_incomplete_or_contradictory_records(
+    decision: str, changes: dict[str, Any], message: str
+) -> None:
+    """A route needs a name, a known decision, evidence and blockers that fit its decision."""
+    with pytest.raises(ValueError, match=message):
+        replace(_route(decision), **changes)
+
+
+def test_tensorflow_maintenance_route_accepts_a_maintained_route_without_blockers() -> None:
+    """A maintained route without blockers is valid and not fail-closed."""
+    route = replace(_route("blocked"), decision="maintained", blocked_reasons=())
+
+    assert route.fail_closed is False
+    assert route.to_dict()["decision"] == "maintained"
+
+
+@pytest.mark.parametrize(
+    ("changes", "message"),
+    [
+        ({"strategy": "parity"}, "strategy must be compatibility_only"),
+        ({"routes": ()}, "report requires routes"),
+        ({"claim_boundary": ""}, "report claim boundary must be non-empty"),
+    ],
+)
+def test_tensorflow_maintenance_report_refuses_another_strategy_no_routes_or_no_boundary(
+    changes: dict[str, Any], message: str
+) -> None:
+    """The report stays compatibility-only, lists routes and states its claim boundary."""
+    with pytest.raises(ValueError, match=message):
+        replace(run_tensorflow_maintenance_decision(), **changes)
