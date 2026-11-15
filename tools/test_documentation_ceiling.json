@@ -1,13 +1,13 @@
 {
  "schema": "test_documentation_ceiling_v1",
  "ruff_version": "ruff 0.17.4",
- "measured_commit": "151e93e135ad76184924d86f1493fc50b7db135a",
+ "measured_commit": "6ad1465603e02a6365dfdef95aee63eb4f692826",
  "scopes": [
   "tests",
   "oscillatools/tests"
  ],
- "total_findings": 6991,
- "total_files": 550,
+ "total_findings": 6988,
+ "total_files": 549,
  "files": {
   "oscillatools/tests/conftest.py": 1,
   "oscillatools/tests/kuramoto_delay_sensitivity_witness.py": 1,
@@ -381,7 +381,6 @@
   "tests/test_phase_qnode_provider_transforms.py": 6,
   "tests/test_phase_qnode_transforms.py": 10,
   "tests/test_phase_synchronisation_objectives.py": 6,
-  "tests/test_phase_tensorflow_compatibility.py": 3,
   "tests/test_phase_torch_bridge_runtime_boundaries.py": 33,
   "tests/test_phase_torch_bridge_validation_edges.py": 11,
   "tests/test_phase_torch_maturity_integration.py": 2,

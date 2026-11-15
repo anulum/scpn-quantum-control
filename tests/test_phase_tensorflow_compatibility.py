@@ -376,9 +376,7 @@ def _objective(values: FloatArray) -> float:
 def test_tensorflow_gradient_tape_compatibility_audit_checks_native_gradient_tape(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Verify that TensorFlow gradient tape compatibility audit checks native gradient
-    tape.
-    """
+    """The GradientTape audit matches the native tape gradient to the parameter-shift one."""
     fake_tf = _FakeTensorFlow()
     monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
     features = np.array([[0.0], [np.pi]], dtype=float)
@@ -416,9 +414,7 @@ def test_tensorflow_gradient_tape_compatibility_audit_checks_native_gradient_tap
 def test_tensorflow_gradient_tape_compatibility_fails_closed_without_gradient_tape(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Verify that TensorFlow gradient tape compatibility fails closed without gradient
-    tape.
-    """
+    """The GradientTape audit fails closed when TensorFlow exposes no GradientTape."""
     fake_tf = _FakeTensorFlow()
     fake_tf.GradientTape = None  # type: ignore[assignment]
     monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
@@ -676,9 +672,7 @@ def test_tensorflow_maturity_audit_records_bounded_passes_and_provider_gaps(
 
 
 def test_tensorflow_phase_qnode_lowering_matrix_fails_closed_for_arbitrary_qnodes() -> None:
-    """Verify that TensorFlow phase QNode lowering matrix fails closed for arbitrary
-    qnodes.
-    """
+    """The TensorFlow Phase-QNode lowering matrix fails closed for arbitrary QNodes."""
     result = run_tensorflow_phase_qnode_lowering_matrix()
 
     assert isinstance(result, PhaseTensorFlowPhaseQNodeLoweringMatrixResult)
@@ -876,3 +870,226 @@ def test_tensorflow_facade_does_not_redefine_compatibility_helpers() -> None:
             "_tensorflow_bounded_qnn_loss_tensor",
         }
     )
+
+
+_AUDITS = ("gradient_tape", "function", "xla", "keras_layer")
+_FEATURES = np.array([[0.0], [np.pi]], dtype=float)
+_LABELS = np.array([0.0, 1.0], dtype=float)
+
+
+def _run_audit(audit: str, params: object) -> Any:
+    """Run one bounded TensorFlow audit through the facade with the shared data."""
+    if audit == "keras_layer":
+        return tensorflow_bridge.run_tensorflow_keras_layer_wrapper_audit(
+            features=_FEATURES, labels=_LABELS, initial_params=params
+        )
+    runner = {
+        "gradient_tape": tensorflow_bridge.run_tensorflow_gradient_tape_compatibility_audit,
+        "function": tensorflow_bridge.run_tensorflow_function_compatibility_audit,
+        "xla": tensorflow_bridge.run_tensorflow_xla_compatibility_audit,
+    }[audit]
+    return runner(features=_FEATURES, labels=_LABELS, params=params)
+
+
+class _RestrictedGradientTape:
+    """Gradient tape double that lacks watch or gradient, or loses the gradient."""
+
+    def __init__(self, module: _FakeTensorFlow, mode: str) -> None:
+        """Wrap a working fake tape and record which part to withhold."""
+        self._tape = _FakeTensorFlowGradientTape(module)
+        self._mode = mode
+
+    def __enter__(self) -> _RestrictedGradientTape:
+        """Enter the wrapped fake tape."""
+        self._tape.__enter__()
+        return self
+
+    def __exit__(self, exc_type: object, exc: object, tb: object) -> None:
+        """Leave the wrapped fake tape."""
+        self._tape.__exit__(exc_type, exc, tb)
+
+    def __getattr__(self, name: str) -> Any:
+        """Expose the wrapped tape's methods except the withheld one."""
+        if (self._mode, name) in {("no_watch", "watch"), ("no_gradient", "gradient")}:
+            raise AttributeError(name)
+        if (self._mode, name) == ("lost_gradient", "gradient"):
+            return lambda loss, params: None
+        return getattr(self._tape, name)
+
+
+def _restricted_tensorflow(monkeypatch: pytest.MonkeyPatch, mode: str) -> _FakeTensorFlow:
+    """Install a fake TensorFlow whose tapes use the restricted wrapper."""
+    fake_tf = _FakeTensorFlow()
+    monkeypatch.setattr(fake_tf, "GradientTape", lambda: _RestrictedGradientTape(fake_tf, mode))
+    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
+    return fake_tf
+
+
+def _final_mean_replaced(
+    monkeypatch: pytest.MonkeyPatch,
+    replace_loss: Callable[[_FakeTensorFlowTensor], object],
+) -> None:
+    """Install a fake TensorFlow whose final loss mean is passed through a replacement."""
+    fake_tf = _FakeTensorFlow()
+    original = fake_tf.reduce_mean
+
+    def reduce_mean(values: object, *, axis: int | None = None) -> object:
+        """Average as the fake does, replacing only the final scalar loss."""
+        result = original(values, axis=axis)
+        return result if axis is not None else replace_loss(result)
+
+    monkeypatch.setattr(fake_tf, "reduce_mean", reduce_mean)
+    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
+
+
+@pytest.mark.parametrize("audit", _AUDITS)
+def test_tensorflow_audits_refuse_parameters_wider_than_the_features(
+    monkeypatch: pytest.MonkeyPatch, audit: str
+) -> None:
+    """Each audit refuses a parameter vector whose width differs from the feature width."""
+    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", _FakeTensorFlow)
+    with pytest.raises(ValueError, match="params width must match feature width: 2 != 1$"):
+        _run_audit(audit, np.array([0.45, 0.1], dtype=float))
+
+
+@pytest.mark.parametrize("audit", _AUDITS)
+def test_tensorflow_audits_run_with_a_tape_that_has_no_watch(
+    monkeypatch: pytest.MonkeyPatch, audit: str
+) -> None:
+    """A tape without watch still records the trainable variable, so the audit passes."""
+    fake_tf = _restricted_tensorflow(monkeypatch, "no_watch")
+    result = _run_audit(audit, np.array([0.45], dtype=float))
+    assert result.passed
+    assert fake_tf.gradient_calls == 1
+
+
+@pytest.mark.parametrize("audit", _AUDITS)
+@pytest.mark.parametrize(
+    ("mode", "message"),
+    [
+        ("no_gradient", "^TensorFlow GradientTape does not expose gradient$"),
+        ("lost_gradient", "^TensorFlow GradientTape returned no gradient$"),
+    ],
+)
+def test_tensorflow_audits_fail_closed_on_a_tape_without_a_gradient(
+    monkeypatch: pytest.MonkeyPatch, audit: str, mode: str, message: str
+) -> None:
+    """Each audit refuses a tape that has no gradient method or returns no gradient."""
+    _restricted_tensorflow(monkeypatch, mode)
+    with pytest.raises(RuntimeError, match=message):
+        _run_audit(audit, np.array([0.45], dtype=float))
+
+
+@pytest.mark.parametrize("audit", _AUDITS[:3])
+def test_tensorflow_audits_refuse_a_loss_that_disagrees_with_parameter_shift(
+    monkeypatch: pytest.MonkeyPatch, audit: str
+) -> None:
+    """A framework loss one unit away from the parameter-shift loss is refused."""
+    _final_mean_replaced(monkeypatch, lambda loss: loss + 1.0)
+    with pytest.raises(RuntimeError, match="loss disagrees with SCPN parameter-shift loss"):
+        _run_audit(audit, np.array([0.45], dtype=float))
+
+
+class _HostLoss:
+    """Loss double already on the host: derivative rows and an array view, no numpy()."""
+
+    def __init__(self, tensor: _FakeTensorFlowTensor) -> None:
+        """Hold the fake loss tensor whose values and derivative are exposed."""
+        self._tensor = tensor
+
+    def derivative(self) -> FloatArray | None:
+        """Return the fake loss tensor's derivative rows."""
+        return self._tensor.derivative()
+
+    def __array__(self, dtype: object = None, copy: object = None) -> FloatArray:
+        """Return the loss values as a NumPy array."""
+        del dtype, copy
+        return self._tensor.numpy()
+
+
+def test_tensorflow_scalar_loss_conversion_accepts_host_values_and_refuses_bad_shapes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A host or one-element loss is read; a vector or an infinite loss is refused."""
+    params = np.array([0.45], dtype=float)
+    _final_mean_replaced(monkeypatch, _HostLoss)
+    result = _run_audit("gradient_tape", params)
+    assert result.passed
+    assert result.loss == pytest.approx(
+        parameter_shift_qnn_classifier_loss(_FEATURES, _LABELS, params)
+    )
+
+    def as_vector(loss: _FakeTensorFlowTensor) -> object:
+        """Repeat the scalar loss while keeping its derivative rows."""
+        return _FakeTensorFlowTensor(np.repeat(loss.numpy(), 2), derivative=loss.derivative())
+
+    def as_one_element(loss: _FakeTensorFlowTensor) -> object:
+        """Reshape the scalar loss to one element while keeping its derivative rows."""
+        return _FakeTensorFlowTensor(loss.numpy().reshape(1), derivative=loss.derivative())
+
+    _final_mean_replaced(monkeypatch, as_one_element)
+    assert _run_audit("gradient_tape", params).passed
+    _final_mean_replaced(monkeypatch, as_vector)
+    with pytest.raises(
+        ValueError, match=r"^TensorFlow scalar value must be scalar-like, got \(2,\)$"
+    ):
+        _run_audit("gradient_tape", params)
+    _final_mean_replaced(monkeypatch, lambda loss: loss + np.inf)
+    with pytest.raises(ValueError, match="^TensorFlow scalar value must be finite$"):
+        _run_audit("gradient_tape", params)
+
+
+def test_tensorflow_module_parts_fail_closed_or_fall_back(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Missing Variable, Constant or math fail closed; a missing float64 drops the dtype."""
+    params = np.array([0.45], dtype=float)
+    cases: tuple[tuple[str, str, str], ...] = (
+        ("Variable", "gradient_tape", "^TensorFlow module does not expose Variable$"),
+        ("cos", "gradient_tape", "^TensorFlow module does not expose cos and reduce_mean$"),
+        ("reduce_mean", "function", "^TensorFlow module does not expose cos and reduce_mean$"),
+        (
+            "Constant",
+            "keras_layer",
+            r"^TensorFlow module does not expose tf\.keras\.initializers\.Constant$",
+        ),
+    )
+    for name, audit, message in cases:
+        fake_tf = _FakeTensorFlow()
+        owner: object = fake_tf.keras.initializers if name == "Constant" else fake_tf
+        monkeypatch.setattr(owner, name, None)
+        monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda fake=fake_tf: fake)
+        with pytest.raises(RuntimeError, match=message):
+            _run_audit(audit, params)
+    fake_tf = _FakeTensorFlow()
+    variable_keywords: list[dict[str, object]] = []
+
+    def variable(values: object, **keywords: object) -> _FakeTensorFlowVariable:
+        """Create the fake variable and record the keywords it was given."""
+        variable_keywords.append(keywords)
+        return _FakeTensorFlowVariable(values)
+
+    monkeypatch.setattr(fake_tf, "float64", None)
+    monkeypatch.setattr(fake_tf, "Variable", variable)
+    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
+    assert _run_audit("gradient_tape", params).passed
+    assert variable_keywords == [{}]
+
+
+class _KerasLayerWithKernel(_FakeTensorFlowKerasLayer):
+    """Keras layer base that also owns a matrix kernel."""
+
+    def __init__(self) -> None:
+        """Start with a 2x2 trainable kernel before the wrapper adds its parameters."""
+        super().__init__()
+        self.trainable_variables.append(cast(Any, _FakeTensorFlowTensor(np.ones((2, 2)))))
+
+
+def test_tensorflow_keras_audit_counts_only_parameter_vectors(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A trainable variable that is not a parameter vector is left out of the count."""
+    fake_tf = _FakeTensorFlow()
+    monkeypatch.setattr(fake_tf.keras.layers, "Layer", _KerasLayerWithKernel)
+    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
+    result = _run_audit("keras_layer", np.array([0.45], dtype=float))
+    assert len(result.tensorflow_layer.trainable_variables) == 2
+    assert result.trainable_parameters == 1

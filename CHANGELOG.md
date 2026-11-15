@@ -441,6 +441,21 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   stays attachable. The writer is also checked for an artifact ID without the
   evidence prefix. Coverage rises from 76.00% to 100%.
 
+- The TensorFlow compatibility leaf (`phase/tensorflow_compatibility.py`) now
+  has tests for its fail-closed paths, using the existing fake TensorFlow
+  module through the facade's loader. All four audits (GradientTape,
+  `tf.function`, XLA, Keras layer) are checked against a parameter vector
+  wider than the features, a tape without a gradient method, and a tape that
+  returns no gradient. Each audit also passes with a tape that has no `watch`.
+  The three loss-checking audits refuse a loss that disagrees with
+  parameter shift. Loss reading accepts a host value and a one-element value
+  and refuses a vector or an infinite loss. A module without `Variable`,
+  `cos`, `reduce_mean` or the Keras `Constant` initialiser fails closed. A
+  module without `float64` creates its variable with no dtype. The Keras
+  audit counts only parameter vectors among the trainable variables. Coverage
+  rises from 84.19% to 100%. Three older docstrings are fixed, so the test
+  documentation ceiling falls to 6988 findings in 549 files.
+
 ### One connection to the local job service
 
 - The address and session token of the optional local job service now belong
