@@ -289,6 +289,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   - A contextual row of length two is still refused by both, with the same
     reason.
 
+- The compressed latent batch contract (`experimental/llm_qpu/contracts/compressed.py`)
+  has full line and branch coverage; the union had it at 82.96%.
+  - New tests cover the refusals of each construction, header and wire rule.
+    They also cover validation against a batch that does not bind: source
+    latent, compressor, output shape, data origin, and an angle outside the
+    open radian interval.
+  - The contextual-length check that the step bound already made unreachable
+    is removed.
+
 ### One connection to the local job service
 
 - The address and session token of the optional local job service now belong

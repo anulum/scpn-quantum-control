@@ -89,8 +89,6 @@ class CompressedLatentBatch:
         for index, length in enumerate(self.lengths):
             if type(length) is not int or not 0 < length <= steps:
                 raise ValueError("compressed length exceeds steps")
-            if self.layout == "contextual" and length != 1:
-                raise ValueError("contextual compressed length must be one")
             for step in range(steps):
                 active = self.mask[index][step]
                 selected = self.token_positions[index][step]

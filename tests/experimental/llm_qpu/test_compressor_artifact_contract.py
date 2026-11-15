@@ -16,6 +16,7 @@ import math
 import struct
 import subprocess
 import sys
+from dataclasses import fields as dataclass_fields
 from dataclasses import replace
 from pathlib import Path
 from typing import Any
@@ -44,12 +45,14 @@ _REVISION = "0883d1e5204ffe4594bb2f5b6e7b6a5d0a915209"
 
 
 def _digest(value: object) -> str:
+    """Return the SHA-256 of a value's canonical wire bytes."""
     return hashlib.sha256(canonical_bytes(value)).hexdigest()
 
 
 def _header(
     kind: str, content: dict[str, object], parents: tuple[str, ...], origin: str
 ) -> ArtifactHeader:
+    """Return a design-only header bound to the given content and parents."""
     return ArtifactHeader(
         object_kind=kind,
         content_digest=_digest(content),
@@ -63,6 +66,7 @@ def _header(
 
 
 def _array(values: tuple[float, ...], shape: tuple[int, ...]) -> tuple[ArrayDescriptor, bytes]:
+    """Return a float32 descriptor of the given shape and its exact payload."""
     payload = struct.pack(f"<{len(values)}f", *values)
     return (
         ArrayDescriptor("<f4", shape, len(payload), hashlib.sha256(payload).hexdigest()),
@@ -71,6 +75,7 @@ def _array(values: tuple[float, ...], shape: tuple[int, ...]) -> tuple[ArrayDesc
 
 
 def _records() -> tuple[TaskSpec, SplitManifest, ModelDescriptor, LatentBatch, bytes]:
+    """Return frozen task, split and model records and a two-row contextual latent batch."""
     task_fields: dict[str, Any] = {
         "task_id": "synthetic-compression-task",
         "objective": "Predict a label from a prefix",
@@ -212,6 +217,7 @@ def _records() -> tuple[TaskSpec, SplitManifest, ModelDescriptor, LatentBatch, b
 def _compressor(
     split: SplitManifest, model: ModelDescriptor, *, scales: tuple[float, ...] = (10.0,) * 4
 ) -> tuple[CompressorArtifact, bytes, bytes, bytes]:
+    """Return an identity-projection compressor fitted on the train groups and its payloads."""
     center, center_payload = _array((0.0,) * 4, (4,))
     projection, projection_payload = _array(
         (1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0),
@@ -269,6 +275,7 @@ def _compressed(
     *,
     extra_pi: bool = False,
 ) -> tuple[CompressedLatentBatch, bytes]:
+    """Return the batch compressed by the frozen map, optionally with an extra factor of pi."""
     values = struct.unpack(f"<{len(source_payload) // 4}f", source_payload)
     angles: list[float] = []
     steps = 1 if latent.layout == "contextual" else latent.tensor.shape[1]
@@ -338,6 +345,7 @@ def _request(
     compressed: CompressedLatentBatch,
     payloads: tuple[bytes, bytes, bytes, bytes, bytes],
 ) -> dict[str, object]:
+    """Return the worker request that round-trips one compression."""
     latent_payload, center_payload, projection_payload, scales_payload, angles_payload = payloads
     return {
         "op": "roundtrip_compression",
@@ -356,6 +364,7 @@ def _request(
 
 
 def _worker(request: dict[str, object], tmp_path: Path) -> subprocess.CompletedProcess[bytes]:
+    """Run the standalone protocol worker on one request with poisoned provider tokens."""
     return subprocess.run(
         [sys.executable, "-S", str(_WORKER)],
         input=json.dumps(request).encode(),
@@ -602,3 +611,147 @@ def test_compressed_sequence_retains_zero_padding(tmp_path: Path) -> None:
             scales,
             bytes(corrupted),
         )
+
+
+def _wire_value(value: object) -> object:
+    """Return the wire form of one batch field value."""
+    if isinstance(value, ArrayDescriptor):
+        return value.to_wire()
+    if isinstance(value, tuple):
+        return [_wire_value(item) for item in value]
+    return value
+
+
+def _rebind_compressed(
+    compressed: CompressedLatentBatch, *, origin: str = "synthetic_classical", **changes: Any
+) -> CompressedLatentBatch:
+    """Return the batch with changed fields and a header bound to the changed content."""
+    fields = {item.name: getattr(compressed, item.name) for item in dataclass_fields(compressed)}
+    fields.update(changes)
+    content = {name: value for name, value in compressed.to_wire().items() if name != "header"} | {
+        name: _wire_value(value) for name, value in changes.items()
+    }
+    tensor: ArrayDescriptor = fields["tensor"]
+    parents = (fields["latent_digest"], fields["compressor_digest"], tensor.sha256)
+    fields["header"] = _header("compressed_latent_batch", content, parents, origin)
+    return CompressedLatentBatch(**fields)
+
+
+def _compression() -> tuple[
+    tuple[TaskSpec, SplitManifest, ModelDescriptor, LatentBatch, CompressorArtifact],
+    CompressedLatentBatch,
+    tuple[bytes, bytes, bytes, bytes, bytes],
+]:
+    """Return the frozen records, a valid compressed batch, and every payload in validation order."""
+    task, split, model, latent, latent_payload = _records()
+    compressor, center, projection, scales = _compressor(split, model)
+    compressed, angles = _compressed(latent, compressor, latent_payload)
+    return (
+        (task, split, model, latent, compressor),
+        compressed,
+        (latent_payload, center, projection, scales, angles),
+    )
+
+
+_SEQUENCE = ArrayDescriptor("<f4", (2, 2, 4), 64, "0" * 64)
+
+
+@pytest.mark.parametrize(
+    ("changes", "message"),
+    [
+        ({"split_name": "validation"}, "unknown compressed split"),
+        ({"layout": "flat"}, "unknown compressed layout"),
+        ({"angle_unit": "degree"}, "compressed angles must be radians"),
+        ({"comparison_tolerance_hex": (1e-4).hex()}, "angle tolerance"),
+        ({"tensor": ArrayDescriptor("<f8", (2, 4), 64, "0" * 64)}, "compressed tensor must be"),
+        ({"tensor": "descriptor"}, "compressed tensor must be little-endian float32"),
+        ({"layout": "chunk_isolated"}, "compressed tensor rank differs from layout"),
+        ({"sample_ids": ("sample-a",)}, "compressed row identity length mismatch"),
+        ({"lengths": [1, 1]}, "compressed row identity length mismatch"),
+        ({"sample_ids": ("same", "same")}, "duplicate compressed sample ID"),
+        ({"mask": ((True, True), (True,))}, "compressed step identity length mismatch"),
+        ({"answer_start_positions": [(1,), (1,)]}, "compressed step identity length mismatch"),
+        ({"lengths": (2, 1)}, "compressed length exceeds steps"),
+        ({"lengths": (0, 1)}, "compressed length exceeds steps"),
+        ({"lengths": (True, 1)}, "compressed length exceeds steps"),
+        ({"mask": ((True,), (1,))}, "compressed mask and length disagree"),
+        ({"token_positions": ((1,), (0,))}, "compressed token position reaches answer"),
+        ({"token_positions": ((None,), (0,))}, "compressed token position reaches answer"),
+        (
+            {
+                "layout": "chunk_isolated",
+                "tensor": _SEQUENCE,
+                "lengths": (1, 1),
+                "mask": ((True, False), (True, False)),
+                "token_positions": ((0, 0), (0, None)),
+                "answer_start_positions": ((1, None), (1, None)),
+            },
+            "compressed padding carries token positions",
+        ),
+    ],
+)
+def test_compressed_batch_refuses_malformed_rows(changes: dict[str, Any], message: str) -> None:
+    """A batch refuses bad splits, layouts, units, tolerances, tensors, row identities and steps."""
+    _, compressed, _ = _compression()
+    with pytest.raises(ValueError, match=f"^{message}"):
+        replace(compressed, **changes)
+
+
+def test_compressed_batch_refuses_a_header_of_another_kind() -> None:
+    """A batch accepts only its own compressed-batch header."""
+    (_, _, _, latent, _), compressed, _ = _compression()
+    header_wire: Any = compressed.header.to_wire()
+    for header in (latent.header, header_wire):
+        with pytest.raises(ValueError, match="^CompressedLatentBatch requires exact header$"):
+            replace(compressed, header=header)
+
+
+def test_compressed_batch_wire_refusals_through_the_decoder() -> None:
+    """The decoder refuses an edited compressed wire field by field."""
+    _, compressed, _ = _compression()
+    encoded = compressed.to_wire()
+    cases: list[tuple[dict[str, object], str]] = [
+        ({**encoded, "extra": 1}, "CompressedLatentBatch fields mismatch"),
+        ({**encoded, "object_kind": "latent_batch"}, "unknown CompressedLatentBatch schema"),
+        ({**encoded, "lengths": 1}, "compressed rows and steps must be lists on wire"),
+        ({**encoded, "mask": [{"step": True}, [True]]}, "compressed rows and steps must be lists"),
+    ]
+    for value, message in cases:
+        with pytest.raises(ValueError, match=f"^{message}"):
+            decode_contract(canonical_bytes(value))
+
+
+def test_compressed_validation_refuses_batches_that_do_not_bind() -> None:
+    """Validation needs the frozen batch bound to its latent, compressor, shape, origin and angles."""
+    records, compressed, payloads = _compression()
+    loose: Any = compressed.to_wire()
+    with pytest.raises(ValueError, match="^compressed validation requires frozen contract$"):
+        validate_compressed_latent_batch(*records, loose, *payloads)
+    angles = struct.unpack("<8f", payloads[4])
+    outside, outside_payload = _array((1.6, *angles[1:]), (2, 4))
+    cases: list[tuple[CompressedLatentBatch, bytes, str]] = [
+        (
+            _rebind_compressed(compressed, latent_digest="9" * 64),
+            payloads[4],
+            "source latent digest",
+        ),
+        (
+            _rebind_compressed(compressed, compressor_digest="9" * 64),
+            payloads[4],
+            "compressor digest",
+        ),
+        (
+            _rebind_compressed(compressed, tensor=ArrayDescriptor("<f4", (2, 3), 24, "0" * 64)),
+            payloads[4],
+            "output shape mismatch",
+        ),
+        (
+            _rebind_compressed(compressed, origin="owner_dataset"),
+            payloads[4],
+            "data origin mismatch",
+        ),
+        (_rebind_compressed(compressed, tensor=outside), outside_payload, "open radian interval"),
+    ]
+    for candidate, angle_payload, message in cases:
+        with pytest.raises(ValueError, match=message):
+            validate_compressed_latent_batch(*records, candidate, *payloads[:4], angle_payload)
