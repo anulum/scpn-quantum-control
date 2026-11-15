@@ -497,6 +497,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The TensorFlow bridge contract records
+  (`phase/tensorflow_bridge_contracts.py`) now test that the Phase-QNode
+  lowering matrix returns a named route's status and raises `KeyError` for
+  an unknown route, and that a maturity audit record serialises caller
+  evidence without `to_dict` (text and numbers) unchanged beside nested
+  records. Coverage rises from 97.55% to 100%. No production change.
+
 - The bounded QNN framework bridge matrix
   (`phase/qnn_framework_bridge_matrix.py`) now tests that capability lookup
   folds case and padding (`"  JAX "` finds `jax`), that an unknown name

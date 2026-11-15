@@ -77,6 +77,30 @@ def test_tensorflow_bridge_defines_no_duplicate_contract_symbols() -> None:
     assert "FloatArray" not in bridge_definitions
 
 
+def test_tensorflow_contract_records_pass_plain_evidence_and_refuse_unknown_routes() -> None:
+    """Plain evidence values serialise unchanged and unknown lowering routes are refused."""
+    matrix = tensorflow_bridge.run_tensorflow_phase_qnode_lowering_matrix()
+    last = matrix.routes[-1]
+
+    assert matrix.route_status(last.name) == last.status
+    with pytest.raises(
+        KeyError, match="^'unknown TensorFlow Phase-QNode lowering route: missing'$"
+    ):
+        matrix.route_status("missing")
+    audit = contracts.PhaseTensorFlowMaturityAuditResult(
+        bounded_model_ready=False,
+        ready_for_provider_exceedance=False,
+        evidence={"lowering": matrix, "operator_note": "captured offline", "count": 3},
+        required_capabilities={"xla": "blocked"},
+        open_gaps=("xla",),
+    )
+    assert audit.to_dict()["evidence"] == {
+        "lowering": matrix.to_dict(),
+        "operator_note": "captured offline",
+        "count": 3,
+    }
+
+
 class _BrokenTensorFlowFinder(importlib.abc.MetaPathFinder):
     """Fail the TensorFlow import the way a broken binary install does."""
 
