@@ -218,7 +218,7 @@ class TestRipserPHBackend:
     """Ripser-backed Vietoris-Rips persistent-H1 backend."""
 
     def test_rejects_maxdim_below_one(self) -> None:
-        """maxdim must be at least one to reach H1."""
+        """The maximum homology dimension must be at least one to reach H1."""
         with pytest.raises(ValueError, match="maxdim"):
             RipserPHBackend(maxdim=0)
 
@@ -242,6 +242,38 @@ class TestRipserPHBackend:
         assert summary.n_h1_total >= 1
         assert summary.max_h1 == max_h1_for_vertices(4)
         assert summary.distance_matrix.shape == (4, 4)
+
+    def test_compute_summarises_the_ripser_h1_diagram(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """The backend counts finite H1 bars strictly above the threshold and calls ripser as documented.
+
+        ripser is an optional extra with no CI lane yet, so this stands in for it with the
+        documented ``{"dgms": [H0, H1]}`` result, as the analysis topology tests do.
+        """
+        calls: list[tuple[tuple[int, ...], int, bool]] = []
+
+        def fake_ripser(
+            distance: np.ndarray, *, maxdim: int, distance_matrix: bool
+        ) -> dict[str, list[np.ndarray]]:
+            """Record the call and return a long bar, a bar at the threshold and an infinite bar."""
+            calls.append((distance.shape, maxdim, distance_matrix))
+            h0 = np.array([[0.0, np.inf]])
+            h1 = np.array([[0.25, 0.75], [0.2, np.inf], [0.5, 0.75]])
+            return {"dgms": [h0, h1]}
+
+        monkeypatch.setattr(complexes_mod, "RIPSER_AVAILABLE", True)
+        monkeypatch.setattr(complexes_mod, "ripser", fake_ripser, raising=False)
+        ring = 1.0 - np.eye(4, dtype=np.float64)
+
+        summary = RipserPHBackend(maxdim=1).compute(ring, persistence_threshold=0.25)
+
+        assert calls == [((4, 4), 1, True)]
+        assert summary.n_h1_total == 2
+        assert summary.n_h1_persistent == 1
+        assert summary.lifetimes == [0.5]
+        assert summary.p_h1 == pytest.approx(1.0 / max_h1_for_vertices(4))
+        assert summary.backend == "ripser"
 
     def test_compute_without_ripser_is_fail_closed(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """With the optional extra absent, compute raises a clear ImportError."""

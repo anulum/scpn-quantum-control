@@ -1,13 +1,13 @@
 {
  "schema": "test_documentation_ceiling_v1",
  "ruff_version": "ruff 0.17.4",
- "measured_commit": "c7692c88e5947d3ea971b572c9e9611342de838a",
+ "measured_commit": "abc8a9122f734e171b38f19cbbc9ea7a8085240b",
  "scopes": [
   "tests",
   "oscillatools/tests"
  ],
- "total_findings": 6899,
- "total_files": 537,
+ "total_findings": 6898,
+ "total_files": 536,
  "files": {
   "oscillatools/tests/conftest.py": 1,
   "oscillatools/tests/kuramoto_delay_sensitivity_witness.py": 1,
@@ -523,7 +523,6 @@
   "tests/test_tn_baseline_flagship_workloads.py": 22,
   "tests/test_topological_coupling_guard.py": 1,
   "tests/test_topology_auth_edge.py": 26,
-  "tests/test_topology_complexes.py": 1,
   "tests/test_topology_kernel_product_e2e.py": 1,
   "tests/test_transform_algebra.py": 3,
   "tests/test_trapped_ion.py": 9,

@@ -497,6 +497,16 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The ripser persistent-H1 backend (`topology_control/complexes.py`) now has
+  a test of its summary contract: only finite H1 bars count, a bar counts
+  only when it lasts strictly longer than the threshold, the H1 fraction uses
+  the persistent bars, and ripser is called on the distance matrix with the
+  requested dimension. ripser is an optional extra with no CI lane, so the
+  test uses its documented result shape, as the analysis topology tests do;
+  the real-ripser test still runs where the extra is installed. A follow-up
+  records the missing CI lane. One older docstring is fixed, so the test
+  documentation ceiling falls to 6898 findings in 536 files.
+
 - The QNN convergence suites (`phase/qnn_convergence.py`) now test the
   gradient-evaluation total and its payload, the unsuitable-scenario count, and
   lookups that find the second of two cases and refuse unknown names, in
