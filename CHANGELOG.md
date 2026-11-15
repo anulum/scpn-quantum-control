@@ -497,6 +497,16 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The hardware result-pack evidence runner (`hardware_result_pack_evidence.py`)
+  now tests that its JSON command runner refuses an empty command, a missing
+  absolute path, names with a null byte, a directory and a non-executable
+  file. Each is refused with an empty output file. The module is also tested
+  as a script that reaches its argument parser. A guard around building a
+  `Path` from the command name is removed, because that never fails; an
+  invalid name now fails where it always did, when the path is resolved.
+  Coverage rises from 94.35% to 100%. Two older docstring-spacing findings are
+  fixed, so the test documentation ceiling falls to 6855 findings in 533 files.
+
 - The IQM per-size layout-transfer analysis
   (`benchmarks/iqm_layout_transfer_per_size.py`) now tests that the
   analysis refuses another campaign, a single bootstrap resample, a negative

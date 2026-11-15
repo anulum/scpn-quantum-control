@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import json
+import runpy
 import sys
 from pathlib import Path
 from typing import Any
@@ -22,7 +23,6 @@ from scpn_quantum_control import hardware_result_pack_evidence as evidence
 
 def test_generate_non_citing_packet(tmp_path: Path) -> None:
     """The generator can emit a valid non-citing release packet."""
-
     exit_code = evidence.main(
         [
             "--non-citing",
@@ -48,7 +48,6 @@ def test_generate_citing_packet_orchestrates_commands(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """The citing path writes verifier/export summaries, logs, and log digests."""
-
     output_dir = tmp_path / "release"
     export_dir = tmp_path / "exports"
     monkeypatch.setattr(evidence, "REPO_ROOT", tmp_path)
@@ -242,3 +241,58 @@ def test_main_raises_when_pack_lacks_reproduce_command(
     monkeypatch.setattr(evidence, "run_json_command", stub_run_json)
     with pytest.raises(RuntimeError, match="does not declare reproduce_command"):
         evidence.main(["--pack-id", "pack_x", "--output-dir", str(tmp_path / "release")])
+
+
+def _non_executable_file(tmp_path: Path) -> Path:
+    """Return a regular file without execute permission."""
+    path = tmp_path / "not-a-tool.txt"
+    path.write_text("plain text\n", encoding="utf-8")
+    path.chmod(0o644)
+    return path
+
+
+@pytest.mark.parametrize(
+    ("command", "message"),
+    [
+        pytest.param([], "executable not found: empty command", id="empty"),
+        pytest.param(
+            ["/nonexistent/scpn-tool"],
+            "executable not found: /nonexistent/scpn-tool",
+            id="missing",
+        ),
+        pytest.param(["bad\x00name"], "executable not found: bad", id="null-byte-name"),
+        pytest.param(["/bad\x00name"], "executable not found: /bad", id="null-byte-path"),
+    ],
+)
+def test_run_json_command_refuses_commands_it_cannot_admit(
+    tmp_path: Path, command: list[str], message: str
+) -> None:
+    """An empty command, a missing absolute path and names with a null byte are not admitted."""
+    output = tmp_path / "out.json"
+
+    with pytest.raises(RuntimeError, match=message):
+        evidence.run_json_command(command, cwd=tmp_path, output_path=output)
+
+    assert output.read_text(encoding="utf-8") == ""
+
+
+def test_run_json_command_refuses_a_directory_or_a_non_executable_file(tmp_path: Path) -> None:
+    """Only an existing executable regular file is admitted as the command."""
+    for target in (tmp_path, _non_executable_file(tmp_path)):
+        with pytest.raises(RuntimeError, match=f"^executable not found: {target}$"):
+            evidence.run_json_command([str(target)], cwd=tmp_path, output_path=tmp_path / "o.json")
+
+
+def test_module_runs_as_a_script_and_prints_its_usage(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Running the module as a script reaches its argument parser."""
+    monkeypatch.setattr(sys, "argv", ["hardware_result_pack_evidence", "--help"])
+    # Run a fresh copy, as python -m does, rather than over the already imported module.
+    monkeypatch.delitem(sys.modules, "scpn_quantum_control.hardware_result_pack_evidence")
+
+    with pytest.raises(SystemExit) as exit_info:
+        runpy.run_module("scpn_quantum_control.hardware_result_pack_evidence", run_name="__main__")
+
+    assert exit_info.value.code == 0
+    assert "usage" in capsys.readouterr().out.lower()

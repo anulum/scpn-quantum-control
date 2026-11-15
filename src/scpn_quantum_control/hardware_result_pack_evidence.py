@@ -38,11 +38,8 @@ _Command = tuple[str, ...]
 
 def _resolve_executable(command: str) -> str | None:
     """Resolve a command name or absolute path to an executable file."""
-    try:
-        command_path = Path(command)
-    except (OSError, ValueError):
-        return None
-    located = command if command_path.is_absolute() else shutil.which(command)
+    # Building a Path from a string never fails; an invalid name fails in resolve below.
+    located = command if Path(command).is_absolute() else shutil.which(command)
     if located is None:
         return None
     try:
