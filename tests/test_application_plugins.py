@@ -37,6 +37,7 @@ from scpn_quantum_control.kuramoto_core import compile_dense_hamiltonian
 
 
 def test_packaged_application_artifacts_validate_and_compile() -> None:
+    """Every packaged artefact is publication-safe, hashed and compiles to a finite Hamiltonian."""
     descriptors = list_application_benchmark_descriptors()
     assert {item.domain for item in descriptors} == {"eeg", "plasma", "power-grid", "fep"}
 
@@ -54,6 +55,7 @@ def test_packaged_application_artifacts_validate_and_compile() -> None:
 
 
 def test_compile_dense_hamiltonian_propagates_dense_budget() -> None:
+    """A dense compile over the allocation budget raises the dense-budget error."""
     artifact = load_application_benchmark_artifact("ieee5bus_power_grid")
     problem = artifact_to_kuramoto_problem(artifact)
 
@@ -62,6 +64,7 @@ def test_compile_dense_hamiltonian_propagates_dense_budget() -> None:
 
 
 def test_builtin_application_benchmark_suite_runs_all_domains() -> None:
+    """The built-in suite covers all four domains with finite metrics and their install extras."""
     results = run_application_benchmark_suite()
     assert {result.domain for result in results} == {"eeg", "plasma", "power-grid", "fep"}
     assert {result.required_extra for result in results} == {
@@ -82,6 +85,7 @@ def test_builtin_application_benchmark_suite_runs_all_domains() -> None:
 
 
 def test_domain_plugins_emit_expected_metrics() -> None:
+    """Each domain plugin reports its own metrics and its curated, publication-safe reference."""
     eeg = get_application_plugin("eeg_alpha").benchmark_dataset()
     plasma = get_application_plugin("plasma_iter_mhd").benchmark_dataset()
     grid = get_application_plugin("power_grid_ieee5").benchmark_dataset()
@@ -101,7 +105,21 @@ def test_domain_plugins_emit_expected_metrics() -> None:
     assert fep.metrics["belief_update_norm"] > 0.0
 
 
+def test_fep_plugin_returns_the_owners_covariance_refusals() -> None:
+    """The plugin reports the free-energy owner's own messages for invalid covariances."""
+    plugin = FEPApplicationPlugin()
+    assert plugin.covariance_refusal(np.array([[-1.0]])) == "sigma_q must be positive definite"
+    assert plugin.covariance_refusal(np.eye(2)) == "sigma_q must have shape (1, 1), got (2, 2)"
+
+
+def test_fep_plugin_refuses_to_report_an_accepted_covariance() -> None:
+    """A covariance the owner accepts is an error, not a refusal message."""
+    with pytest.raises(ValueError, match="accepted the covariance"):
+        FEPApplicationPlugin().covariance_refusal(np.array([[0.5]]))
+
+
 def test_compile_application_problem_uses_plugin_loader() -> None:
+    """Compiling an application problem loads the dataset through its plugin."""
     problem = compile_application_problem("power_grid_ieee5")
     assert problem.n_oscillators == 5
     assert problem.metadata["domain"] == "power-grid"
@@ -109,6 +127,8 @@ def test_compile_application_problem_uses_plugin_loader() -> None:
 
 
 def test_application_registry_discovers_entry_points() -> None:
+    """Entry-point discovery registers a plugin factory that the registry then instantiates."""
+
     class _EntryPoint:
         name = "eeg_alpha"
         value = "<test:eeg_alpha>"
@@ -124,6 +144,8 @@ def test_application_registry_discovers_entry_points() -> None:
 
 
 def test_application_registry_skips_broken_entry_points() -> None:
+    """Discovery skips entry points that fail to load or are not callable and keeps the good one."""
+
     class _BrokenEntryPoint:
         name = "broken"
         value = "<test:broken>"
@@ -156,6 +178,7 @@ def test_application_registry_skips_broken_entry_points() -> None:
 
 
 def test_application_registry_rejects_duplicate_factory_rebinding() -> None:
+    """A second factory under a registered name is refused and the cached plugin is kept."""
     registry = ApplicationPluginRegistry()
     registry.register("eeg_alpha", EEGApplicationPlugin)
     original = registry.get("eeg_alpha")
@@ -196,6 +219,7 @@ def test_application_registry_rejects_malformed_dataset_contract(
 
 
 def test_application_registry_rejects_empty_name_and_non_callable_factory() -> None:
+    """Registration refuses a blank name and a factory that cannot be called."""
     registry = ApplicationPluginRegistry()
 
     with pytest.raises(ValueError, match="non-empty"):
@@ -206,6 +230,7 @@ def test_application_registry_rejects_empty_name_and_non_callable_factory() -> N
 
 
 def test_application_registry_unregisters_and_clears_cached_plugins() -> None:
+    """Unregistering and clearing drop the factory and its cached plugin."""
     registry = ApplicationPluginRegistry()
     registry.register("eeg_alpha", EEGApplicationPlugin)
     first = registry.get("eeg_alpha")
@@ -223,6 +248,7 @@ def test_application_registry_unregisters_and_clears_cached_plugins() -> None:
 
 
 def test_application_registry_rejects_factory_returning_wrong_plugin_name() -> None:
+    """A factory whose plugin carries another name is refused on first use."""
     registry = ApplicationPluginRegistry()
     registry.register("expected_name", EEGApplicationPlugin)
 
@@ -231,6 +257,8 @@ def test_application_registry_rejects_factory_returning_wrong_plugin_name() -> N
 
 
 def test_application_registry_rejects_plugin_without_dataset_ids() -> None:
+    """A plugin that declares no dataset is refused on first use."""
+
     class _NoDatasetPlugin:
         name = "empty"
         domain = "empty"
@@ -251,6 +279,7 @@ def test_application_registry_rejects_plugin_without_dataset_ids() -> None:
 
 
 def test_application_registry_datasets_instantiates_and_validates_plugins() -> None:
+    """Listing datasets instantiates each registered plugin and reports its dataset identities."""
     registry = ApplicationPluginRegistry()
     registry.register("eeg_alpha", EEGApplicationPlugin)
 
@@ -259,11 +288,13 @@ def test_application_registry_datasets_instantiates_and_validates_plugins() -> N
 
 
 def test_select_dataset_requires_explicit_id_for_multi_dataset_plugin() -> None:
+    """A plugin with several datasets needs an explicit dataset identity."""
     with pytest.raises(ValueError, match="dataset_id is required"):
         _select_dataset_id(("alpha", "beta"), None)
 
 
 def test_registry_rejects_unknown_dataset_for_plugin() -> None:
+    """A plugin refuses a dataset identity it does not own."""
     plugin = get_application_plugin_registry().get("eeg_alpha")
     with pytest.raises(KeyError, match="unknown dataset"):
         plugin.load_dataset("ieee5bus_power_grid")

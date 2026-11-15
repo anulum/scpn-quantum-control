@@ -14,7 +14,7 @@ import logging
 import math
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Protocol, TypeAlias, runtime_checkable
+from typing import TYPE_CHECKING, Any, Protocol, TypeAlias, runtime_checkable
 
 import numpy as np
 from numpy.typing import NDArray
@@ -29,6 +29,9 @@ from .dataset_catalog import (
 from .eeg_benchmark import eeg_benchmark
 from .iter_benchmark import iter_benchmark
 from .power_grid import power_grid_benchmark
+
+if TYPE_CHECKING:
+    from scpn_quantum_control.fep.variational_free_energy import FreeEnergyResult
 
 LOGGER = logging.getLogger(__name__)
 ENTRY_POINT_GROUP = "scpn_quantum_control.application_plugins"
@@ -328,6 +331,20 @@ class PowerGridApplicationPlugin(_PackagedDatasetPlugin):
         )
 
 
+def _variational_free_energy() -> Callable[..., FreeEnergyResult]:
+    """Return the free-energy owner's evaluator, imported only when a FEP check runs.
+
+    Returns
+    -------
+    Callable
+        The owner's variational free-energy function.
+
+    """
+    from scpn_quantum_control.fep.variational_free_energy import variational_free_energy
+
+    return variational_free_energy
+
+
 class FEPApplicationPlugin(_PackagedDatasetPlugin):
     """Friston-style predictive-coding workflow plugin."""
 
@@ -339,8 +356,8 @@ class FEPApplicationPlugin(_PackagedDatasetPlugin):
     def benchmark_dataset(self, dataset_id: str | None = None) -> ApplicationPluginBenchmark:
         """Run variational-free-energy and predictive-coding checks."""
         from scpn_quantum_control.fep.predictive_coding import predictive_coding_step
-        from scpn_quantum_control.fep.variational_free_energy import variational_free_energy
 
+        variational_free_energy = _variational_free_energy()
         artifact = self.load_dataset(dataset_id)
         beliefs = _metadata_array(artifact, "beliefs")
         observations = _metadata_array(artifact, "observations")
@@ -385,6 +402,32 @@ class FEPApplicationPlugin(_PackagedDatasetPlugin):
             ),
             metadata={"nodes": list(artifact.layer_assignments)},
         )
+
+    def covariance_refusal(self, sigma: NDArray[np.float64]) -> str:
+        """Return the free-energy owner's refusal of a belief covariance for one belief.
+
+        Parameters
+        ----------
+        sigma
+            Belief covariance offered with a one-dimensional belief, observation and
+            identity precision.
+
+        Returns
+        -------
+        str
+            The owner's own refusal message.
+
+        Raises
+        ------
+        ValueError
+            If the owner accepts the covariance.
+
+        """
+        try:
+            _variational_free_energy()(np.zeros(1), sigma, np.zeros(1), np.eye(1))
+        except ValueError as refusal:
+            return str(refusal)
+        raise ValueError("the free-energy owner accepted the covariance")
 
 
 def eeg_application_plugin_factory() -> ApplicationPlugin:

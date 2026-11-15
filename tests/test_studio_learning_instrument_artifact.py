@@ -19,6 +19,10 @@ import numpy as np
 import pytest
 from numpy.typing import NDArray
 
+from scpn_quantum_control.applications.app_plugins import (
+    FEPApplicationPlugin,
+    get_application_plugin,
+)
 from scpn_quantum_control.applications.honesty_kits import (
     get_domain_application_honesty_kit_for_dataset,
 )
@@ -85,6 +89,8 @@ def test_every_template_names_its_data_provenance_and_licence(built: dict[str, A
     )
     assert templates_["qsnn"]["dataset"]["licence"].startswith("AGPL-3.0-or-later")
     assert templates_["free_energy"]["licence_note"].endswith("not human-subject data")
+    assert templates_["free_energy"]["owner"] == "friston_fep application plugin"
+    assert templates_["free_energy"]["backend"] == "numpy+scpn_quantum_control.fep"
     assert all(
         row["licence_note"] and row["public_reference"] for row in templates_["domain_proxies"]
     )
@@ -214,6 +220,42 @@ def test_nqs_template_reads_committed_evidence_or_says_it_is_absent(tmp_path: Pa
     }
 
 
+def _accepting_covariance_refusal(_plugin: FEPApplicationPlugin, _sigma: object) -> str:
+    """Stand in for a free-energy owner that accepts every covariance.
+
+    Parameters
+    ----------
+    _plugin
+        Plugin whose method is replaced.
+    _sigma
+        Offered covariance, accepted.
+
+    Raises
+    ------
+    ValueError
+        Always, as the plugin reports an accepted covariance.
+
+    """
+    raise ValueError("the free-energy owner accepted the covariance")
+
+
+def test_free_energy_template_requires_the_packaged_workflow_plugin(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Refuse a registry entry that is not the packaged free-energy workflow.
+
+    Parameters
+    ----------
+    monkeypatch
+        Makes the registry return another application's plugin under the FEP name.
+
+    """
+    eeg = get_application_plugin("eeg_alpha")
+    monkeypatch.setattr(templates, "get_application_plugin", lambda name: eeg)
+    with pytest.raises(TypeError, match="packaged free-energy workflow plugin"):
+        templates.fep_template()
+
+
 def _altered_evidence(tmp_path: Path, path: tuple[str, ...], value: object) -> Path:
     """Copy the committed forecasting evidence with one nested field replaced.
 
@@ -303,7 +345,7 @@ def test_owners_that_accept_invalid_requests_are_refused(monkeypatch: pytest.Mon
     monkeypatch.setattr(templates, "fit_multimodal_ridge_forecaster", lambda batch: batch)
     with pytest.raises(ValueError, match="accepted a held-out batch"):
         templates.forecasting_template()
-    monkeypatch.setattr(templates, "variational_free_energy", lambda *args: args)
+    monkeypatch.setattr(FEPApplicationPlugin, "covariance_refusal", _accepting_covariance_refusal)
     with pytest.raises(ValueError, match="accepted the negative covariance"):
         templates.fep_template()
 

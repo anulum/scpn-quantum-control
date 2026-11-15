@@ -179,6 +179,7 @@
       }
     },
     "free_energy": {
+      "backend": "numpy+scpn_quantum_control.fep",
       "claim_boundary": "software-contract and synthetic-or-curated benchmark evidence only; not domain validation, operational control, clinical use, facility prediction, hardware performance, or quantum advantage",
       "dataset_id": "friston_fep_6node",
       "licence_note": "small curated workflow benchmark; not human-subject data",
@@ -191,7 +192,7 @@
         "post_step_free_energy": 6.611246570269681,
         "prediction_error_norm": 0.16271284522126703
       },
-      "owner": "scpn_quantum_control.fep",
+      "owner": "friston_fep application plugin",
       "public_reference": "Friston, Nature Reviews Neuroscience 11, 127 (2010); Buckley et al., Entropy 19, 318 (2017)",
       "refusals": [
         {

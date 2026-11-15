@@ -23,12 +23,15 @@ from typing import Final
 import numpy as np
 from numpy.typing import NDArray
 
-from ..applications.app_plugins import get_application_plugin, load_application_dataset
+from ..applications.app_plugins import (
+    FEPApplicationPlugin,
+    get_application_plugin,
+    load_application_dataset,
+)
 from ..applications.honesty_kits import (
     APPLICATION_HONESTY_CLAIM_BOUNDARY,
     get_domain_application_honesty_kit_for_dataset,
 )
-from ..fep.variational_free_energy import variational_free_energy
 from ..forecasting.multimodal_forecaster import fit_multimodal_ridge_forecaster
 from ..forecasting.synthetic_multimodal import (
     SyntheticMultimodalConfig,
@@ -369,12 +372,14 @@ def domain_proxy_templates() -> list[dict[str, object]]:
     return rows
 
 
-def _fep_refusal(case: str, sigma: NDArray[np.float64]) -> dict[str, str]:
+def _fep_refusal(
+    plugin: FEPApplicationPlugin, case: str, sigma: NDArray[np.float64]
+) -> dict[str, str]:
     try:
-        variational_free_energy(np.zeros(1), sigma, np.zeros(1), np.eye(1))
-    except ValueError as refusal:
-        return {"case": case, "message": str(refusal)}
-    raise ValueError(f"the free-energy owner accepted the {case}")
+        message = plugin.covariance_refusal(sigma)
+    except ValueError as accepted:
+        raise ValueError(f"the free-energy owner accepted the {case}") from accepted
+    return {"case": case, "message": message}
 
 
 def fep_template() -> dict[str, object]:
@@ -389,23 +394,29 @@ def fep_template() -> dict[str, object]:
 
     Raises
     ------
+    TypeError
+        If the registered ``friston_fep`` plugin is not the packaged workflow.
     ValueError
         If the owner accepts either invalid covariance.
 
     """
     dataset_id = "friston_fep_6node"
-    result = get_application_plugin("friston_fep").benchmark_dataset(dataset_id)
+    plugin = get_application_plugin("friston_fep")
+    if not isinstance(plugin, FEPApplicationPlugin):
+        raise TypeError("friston_fep must be the packaged free-energy workflow plugin")
+    result = plugin.benchmark_dataset(dataset_id)
     metadata = load_application_dataset("friston_fep", dataset_id).metadata
     return {
-        "owner": "scpn_quantum_control.fep",
+        "owner": f"{plugin.name} application plugin",
+        "backend": result.backend,
         "dataset_id": dataset_id,
         "licence_note": metadata["licence_note"],
         "public_reference": metadata["public_reference"],
         "metrics": dict(result.metrics),
         "claim_boundary": APPLICATION_HONESTY_CLAIM_BOUNDARY,
         "refusals": [
-            _fep_refusal("negative covariance", np.array([[-1.0]])),
-            _fep_refusal("covariance of the wrong shape", np.eye(2)),
+            _fep_refusal(plugin, "negative covariance", np.array([[-1.0]])),
+            _fep_refusal(plugin, "covariance of the wrong shape", np.eye(2)),
         ],
     }
 
