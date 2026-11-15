@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pytest
 
@@ -20,6 +22,7 @@ from scpn_quantum_control.phase import (
 
 
 def test_qnn_optimizer_benchmark_records_non_isolated_functional_evidence() -> None:
+    """The default suite records functional, non-isolated evidence for every baseline."""
     suite = run_parameter_shift_qnn_optimizer_benchmark_suite()
 
     assert isinstance(suite, ParameterShiftQNNOptimizerBenchmarkSuiteResult)
@@ -77,6 +80,7 @@ def test_qnn_optimizer_benchmark_records_non_isolated_functional_evidence() -> N
 
 
 def test_qnn_optimizer_benchmark_supports_external_case_selection() -> None:
+    """A caller can select one case, which then passes and is found by name."""
     suite = run_parameter_shift_qnn_optimizer_benchmark_suite(
         case_names=("phase_separable_single_feature",)
     )
@@ -89,11 +93,13 @@ def test_qnn_optimizer_benchmark_supports_external_case_selection() -> None:
 
 
 def test_qnn_optimizer_benchmark_rejects_unknown_case_names() -> None:
+    """An unknown case name is refused."""
     with pytest.raises(ValueError, match="unknown QNN optimizer benchmark case"):
         run_parameter_shift_qnn_optimizer_benchmark_suite(case_names=("missing",))
 
 
 def test_qnn_optimizer_benchmark_rejects_invalid_controls() -> None:
+    """Non-positive rates, steps and perturbations, a negative tolerance and seed are refused."""
     with pytest.raises(ValueError, match="learning_rate"):
         run_parameter_shift_qnn_optimizer_benchmark_suite(learning_rate=0.0)
 
@@ -111,6 +117,7 @@ def test_qnn_optimizer_benchmark_rejects_invalid_controls() -> None:
 
 
 def test_qnn_optimizer_benchmark_derivative_free_baseline_uses_declared_candidates() -> None:
+    """Declared derivative-free candidates are scanned, and parameter shift beats them here."""
     candidates = (np.array([0.8], dtype=float), np.array([0.9], dtype=float))
     suite = run_parameter_shift_qnn_optimizer_benchmark_suite(
         case_names=("phase_separable_single_feature",),
@@ -120,3 +127,75 @@ def test_qnn_optimizer_benchmark_derivative_free_baseline_uses_declared_candidat
     case = suite.cases[0]
     assert case.derivative_free_evaluations == len(candidates)
     assert case.parameter_shift_best_loss < case.derivative_free_best_loss
+
+
+def test_qnn_optimizer_benchmark_stops_a_diverging_optimizer_instead_of_failing() -> None:
+    """An Adam step that overflows stops that optimizer; the suite still reports every baseline.
+
+    Regression: the divergence guard tested the loss, but the loss refuses non-finite
+    parameters first, so an overflow aborted the whole suite with a misleading error.
+    """
+    with np.errstate(over="ignore"):
+        suite = run_parameter_shift_qnn_optimizer_benchmark_suite(
+            learning_rate=1e308, max_steps=5, case_names=("two_feature_mixed_phase",)
+        )
+
+    case = suite.case_by_name("two_feature_mixed_phase")
+    adam = case.optimizer_by_name("adam")
+    assert adam.steps < 5
+    assert np.isfinite(adam.best_loss)
+    assert all(np.isfinite(result.best_loss) for result in case.optimizer_results)
+
+
+def test_qnn_optimizer_benchmark_lookups_refuse_unknown_names_and_empty_suites_list_none() -> None:
+    """Unknown case and optimizer names raise KeyError; a suite without cases lists no optimizers."""
+    suite = run_parameter_shift_qnn_optimizer_benchmark_suite(
+        case_names=("phase_separable_single_feature",), max_steps=2
+    )
+    case = suite.cases[0]
+
+    assert suite.case_by_name("phase_separable_single_feature") is case
+    assert case.optimizer_by_name("sgd").name == "sgd"
+    with pytest.raises(KeyError, match="unknown QNN optimizer benchmark case: missing"):
+        suite.case_by_name("missing")
+    with pytest.raises(KeyError, match="unknown QNN optimizer baseline: missing"):
+        case.optimizer_by_name("missing")
+    empty = run_parameter_shift_qnn_optimizer_benchmark_suite(case_names=())
+    assert empty.optimizer_names == ()
+    assert empty.optimizer_count == 0
+
+
+@pytest.mark.parametrize(
+    ("controls", "message"),
+    [
+        ({"max_steps": True}, "^max_steps must be a positive integer$"),
+        ({"spsa_seed": True}, "^spsa_seed must be a non-negative integer$"),
+        ({"spsa_seed": -1}, "^spsa_seed must be a non-negative integer$"),
+    ],
+)
+def test_qnn_optimizer_benchmark_refuses_boolean_or_negative_integer_controls(
+    controls: dict[str, Any], message: str
+) -> None:
+    """Integer controls refuse booleans, and the SPSA seed refuses negatives."""
+    with pytest.raises(ValueError, match=message):
+        run_parameter_shift_qnn_optimizer_benchmark_suite(**controls)
+
+
+@pytest.mark.parametrize(
+    ("candidates", "message"),
+    [
+        ([np.array([0.1, 0.2])], r"must have shape \(1,\)$"),
+        ([np.array([np.nan])], "must contain only finite values$"),
+        ([], "must be non-empty$"),
+    ],
+)
+def test_qnn_optimizer_benchmark_refuses_malformed_derivative_free_candidates(
+    candidates: list[np.ndarray], message: str
+) -> None:
+    """Declared derivative-free candidates must match the case width, be finite and exist."""
+    with pytest.raises(ValueError, match=message):
+        run_parameter_shift_qnn_optimizer_benchmark_suite(
+            case_names=("phase_separable_single_feature",),
+            max_steps=1,
+            derivative_free_candidates={"phase_separable_single_feature": candidates},
+        )

@@ -497,6 +497,24 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- **Fixed: a diverging optimizer aborted the QNN optimizer benchmark.** Each
+  baseline in `run_parameter_shift_qnn_optimizer_benchmark_suite` was meant to
+  stop when its step left the finite range. The guard tested the loss after
+  the step, but the loss refuses non-finite parameters before it returns. An
+  overflowing step therefore raised "initial_params must contain only finite
+  values" and lost every other baseline's result. With `learning_rate=1e308`,
+  Adam's normalised step overflows within two steps. The guards now test the
+  candidate parameters before the loss is evaluated, so the diverging
+  optimizer stops and the suite reports every baseline. Results for finite
+  steps are unchanged. The SGD, natural-gradient, SPSA and finite-difference
+  loops keep the same guard, but cannot reach it: at about 1e308 the
+  parameter shift is lost to rounding and their gradient is zero.
+  - New tests cover that divergence, lookups by case and optimizer name with
+    unknown names refused, an empty suite, boolean or negative integer
+    controls, and malformed derivative-free candidates. Five older tests gain
+    docstrings, so the test documentation ceiling falls to 6944 findings in
+    543 files. Coverage rises from 93.19% to 98.24%.
+
 - The optimizer comparison audit (`phase/optimizer_audit.py`) now tests:
   - non-finite starts, a non-integer or zero step count, and a target
     tolerance without a target;
