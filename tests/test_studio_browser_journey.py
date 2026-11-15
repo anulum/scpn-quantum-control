@@ -142,6 +142,19 @@ def test_public_dispatch_records_url_refusal_before_browser_import(
     assert "ValueError" in evidence["error"]
 
 
+_SOURCE_SCENARIOS = {
+    "workspace_recovery",
+    "workbench_navigation",
+    "parameter_graph_editor",
+    "workbench_accessibility",
+    "local_experiment_journey",
+    "result_value_inspector",
+    "immutable_run_comparison",
+    "method_comparison_instrument",
+    "experiment_workflow_runner",
+}
+
+
 @pytest.mark.parametrize(
     "scenario",
     [
@@ -207,17 +220,7 @@ def test_public_dispatch_retains_actual_missing_browser_refusal(
         "--output",
         str(output),
     ]
-    if scenario in {
-        "workspace_recovery",
-        "workbench_navigation",
-        "parameter_graph_editor",
-        "workbench_accessibility",
-        "local_experiment_journey",
-        "result_value_inspector",
-        "immutable_run_comparison",
-        "method_comparison_instrument",
-        "experiment_workflow_runner",
-    }:
+    if scenario in _SOURCE_SCENARIOS:
         argv.extend(["--workspace-source-url", "http://127.0.0.1:4174/"])
     assert main(argv) == 1
     evidence = json.loads(output.read_text())

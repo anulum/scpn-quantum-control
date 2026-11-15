@@ -15,6 +15,56 @@ import yaml
 
 from tools.ci_workflow_inventory import workflow_path_for_job
 
+_SCENARIOS = (
+    "capability_catalogue",
+    "evidence_inspector",
+    "resource_plan_projection",
+    "owned_kernel_worker",
+    "workspace_recovery",
+    "workbench_navigation",
+    "parameter_graph_editor",
+    "result_value_inspector",
+    "immutable_run_comparison",
+    "experiment_workflow_runner",
+    "local_experiment_journey",
+    "workbench_accessibility",
+    "program_authoring",
+    "gradient_debugger",
+    "compiler_trace_inspector",
+    "operator_backend_profiles",
+    "operator_policy_decisions",
+    "operator_review_dossiers",
+    "qec_resource_instrument",
+    "mitigation_inspector",
+    "local_job_service",
+    "pulse_feasibility",
+    "sensing_entropy_instrument",
+    "control_proposal_instrument",
+    "learning_domain_instrument",
+    "topology_symmetry_instrument",
+)
+_SHARD_OWNERS = (
+    "studio_browser_runtime_refusal",
+    "studio_owned_worker_browser_runtime",
+    "studio_workbench_browser_journey",
+    "studio_parameter_browser_journey",
+    "studio_local_experiment_browser_runtime",
+    "studio_result_browser_runtime",
+    "studio_comparison_browser_runtime",
+    "studio_workflow_browser_runtime",
+)
+_MEASURED_JOURNEYS = (
+    "gradient_debugger",
+    "qec_resource",
+    "mitigation",
+    "local_jobs",
+    "pulse",
+    "sensing",
+    "control",
+    "learning",
+    "topology",
+)
+
 
 def test_studio_executes_the_original_browser_scenarios_and_isolated_refusals() -> None:
     """Keep real scientific/UI journeys wired through the executing shell owner."""
@@ -25,59 +75,13 @@ def test_studio_executes_the_original_browser_scenarios_and_isolated_refusals() 
     )
     assert step["run"].strip() == "bash tools/run_studio_browser_journeys.sh"
     source = Path("tools/run_studio_browser_journeys.sh").read_text()
-    for scenario in (
-        "capability_catalogue",
-        "evidence_inspector",
-        "resource_plan_projection",
-        "owned_kernel_worker",
-        "workspace_recovery",
-        "workbench_navigation",
-        "parameter_graph_editor",
-        "result_value_inspector",
-        "immutable_run_comparison",
-        "experiment_workflow_runner",
-        "local_experiment_journey",
-        "workbench_accessibility",
-        "program_authoring",
-        "gradient_debugger",
-        "compiler_trace_inspector",
-        "operator_backend_profiles",
-        "operator_policy_decisions",
-        "operator_review_dossiers",
-        "qec_resource_instrument",
-        "mitigation_inspector",
-        "local_job_service",
-        "pulse_feasibility",
-        "sensing_entropy_instrument",
-        "control_proposal_instrument",
-        "learning_domain_instrument",
-        "topology_symmetry_instrument",
-    ):
+    for scenario in _SCENARIOS:
         assert "--scenario " + scenario in source
     assert "bash tools/run_ci_test_shards.sh studio-browser 2" in source
-    for owner in (
-        "studio_browser_runtime_refusal",
-        "studio_owned_worker_browser_runtime",
-        "studio_workbench_browser_journey",
-        "studio_parameter_browser_journey",
-        "studio_local_experiment_browser_runtime",
-        "studio_result_browser_runtime",
-        "studio_comparison_browser_runtime",
-        "studio_workflow_browser_runtime",
-    ):
+    for owner in _SHARD_OWNERS:
         assert f"tools/tests/test_{owner}.py" in source
     assert "--concurrency=greenlet" in source
-    for journey in (
-        "gradient_debugger",
-        "qec_resource",
-        "mitigation",
-        "local_jobs",
-        "pulse",
-        "sensing",
-        "control",
-        "learning",
-        "topology",
-    ):
+    for journey in _MEASURED_JOURNEYS:
         assert f"tools/tests/test_studio_{journey}_browser.py" in source
     assert "tools/tests/test_studio_preview_custody.py" in source
     assert '--include="*/tools/studio_workbench_steps.py"' in source
