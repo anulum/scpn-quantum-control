@@ -9,14 +9,17 @@
 
 from __future__ import annotations
 
+import hashlib
 import re
 from dataclasses import replace
+from typing import Any
 
 import pytest
 
 from scpn_quantum_control.experimental.llm_qpu.contracts import (
     SplitManifest,
     TaskSpec,
+    canonical_bytes,
     validate_task_split,
 )
 from scpn_quantum_control.experimental.llm_qpu.data.tasks import build_memory_task
@@ -59,6 +62,7 @@ def _oracle(prompt: str, variant_id: int) -> str:
 
 
 def _split(records: tuple[TemporalRecord, ...]) -> tuple[TaskSpec, SplitManifest]:
+    """Return the temporal task and its six-group split of the records."""
     task = build_temporal_task(base_repo_commit=_BASE, implementation_revision=_REVISION)
     split = build_temporal_split(
         task,
@@ -76,6 +80,7 @@ def _split(records: tuple[TemporalRecord, ...]) -> tuple[TaskSpec, SplitManifest
 
 
 def test_independent_oracle_and_counterfactual_suffix() -> None:
+    """An independent oracle reproduces every label, and each paired history differs in one early line only."""
     records = generate_temporal_records(seed=73, source_count=6)
     assert len(records) == 24
     assert records == generate_temporal_records(seed=73, source_count=6)
@@ -105,6 +110,7 @@ def test_independent_oracle_and_counterfactual_suffix() -> None:
 
 
 def test_group_safe_split_and_answer_free_paired_pilot() -> None:
+    """The split covers six groups, and the pilot returns answer-free paired dev histories in group order."""
     records = generate_temporal_records(seed=73, source_count=6)
     task, split = _split(records)
     assert len(set(split.train_groups + split.dev_groups + split.test_groups)) == 6
@@ -118,6 +124,7 @@ def test_group_safe_split_and_answer_free_paired_pilot() -> None:
 
 
 def test_label_and_source_leakage_refuse_split() -> None:
+    """A changed label, a source in two groups and a prompt copied across groups each refuse the split."""
     records = generate_temporal_records(seed=73, source_count=6)
     replacement = "blue" if records[0].target_text != "blue" else "amber"
     with pytest.raises(ValueError, match="differ from the independent"):
@@ -139,6 +146,7 @@ def test_label_and_source_leakage_refuse_split() -> None:
 
 
 def test_temporal_record_refuses_qpu_label_and_answer_suffix() -> None:
+    """A record refuses a QPU-made label, an answer inside its prefix, a third scene and a third phrasing."""
     record = generate_temporal_records(seed=73, source_count=3)[0]
     with pytest.raises(ValueError, match="classical generator"):
         replace(record, target_origin="qpu_output")
@@ -151,6 +159,7 @@ def test_temporal_record_refuses_qpu_label_and_answer_suffix() -> None:
 
 
 def test_pilot_refuses_rebound_prompt_and_non_dev_selection() -> None:
+    """The pilot refuses an edited prompt and more groups than the dev split holds."""
     records = generate_temporal_records(seed=73, source_count=6)
     task, split = _split(records)
     changed = replace(
@@ -163,6 +172,7 @@ def test_pilot_refuses_rebound_prompt_and_non_dev_selection() -> None:
 
 
 def test_generator_refuses_ambiguous_seed_and_too_few_groups() -> None:
+    """The generator refuses a bool seed and fewer than three sources."""
     with pytest.raises(ValueError, match="seed"):
         generate_temporal_records(seed=True)
     with pytest.raises(ValueError, match="source count"):
@@ -170,6 +180,7 @@ def test_generator_refuses_ambiguous_seed_and_too_few_groups() -> None:
 
 
 def test_old_four_card_task_cannot_authorize_temporal_split() -> None:
+    """The earlier four-card task cannot authorise a temporal split."""
     records = generate_temporal_records(seed=73, source_count=6)
     old_task = build_memory_task(base_repo_commit=_BASE, implementation_revision=_REVISION)
     with pytest.raises(ValueError, match="exact task"):
@@ -187,6 +198,7 @@ def test_old_four_card_task_cannot_authorize_temporal_split() -> None:
 
 
 def test_streamed_dataset_identity_above_canonical_wire_limit() -> None:
+    """A 512-source dataset above the canonical wire limit still splits and pilots through its streamed identity."""
     records = generate_temporal_records(seed=73, source_count=512)
     task = build_temporal_task(base_repo_commit=_BASE, implementation_revision=_REVISION)
     split = build_temporal_split(
@@ -203,3 +215,63 @@ def test_streamed_dataset_identity_above_canonical_wire_limit() -> None:
     validate_task_split(task, split)
     assert len(split.train_groups + split.dev_groups + split.test_groups) == 512
     assert temporal_pilot_inputs(task, records, split, group_count=8)
+
+
+def _build(records: Any, **changes: Any) -> SplitManifest:
+    """Build the six-group temporal split of the records, with changed arguments."""
+    arguments: dict[str, Any] = {
+        "seed": 31,
+        "generation_seed": 73,
+        "train_count": 2,
+        "dev_count": 2,
+        "test_count": 2,
+        "base_repo_commit": _BASE,
+        "implementation_revision": _REVISION,
+    }
+    arguments.update(changes)
+    task = build_temporal_task(base_repo_commit=_BASE, implementation_revision=_REVISION)
+    return build_temporal_split(task, records, **arguments)
+
+
+def test_temporal_split_refuses_bad_seeds_counts_and_inventories() -> None:
+    """The builder refuses bad seeds and counts, and inventories that are empty or not unique."""
+    records = generate_temporal_records(seed=73, source_count=6)
+    flag: Any = True
+    for changes, message in (
+        ({"seed": -1}, "split seed must be a nonnegative signed 64-bit integer"),
+        ({"seed": 2**63}, "split seed must be a nonnegative signed 64-bit integer"),
+        ({"seed": flag}, "split seed must be a nonnegative signed 64-bit integer"),
+        ({"dev_count": 0}, "every split needs a positive source count"),
+        ({"test_count": flag}, "every split needs a positive source count"),
+        ({"test_count": 1}, "split counts must cover every source group exactly"),
+    ):
+        with pytest.raises(ValueError, match=f"^{message}$"):
+            _build(records, **changes)
+    for inventory, message in (
+        ((), "temporal inventory out of bounds"),
+        ((records[0].public_wire(), *records[1:]), "temporal inventory contains an unvalidated"),
+        ((records[0], records[0], *records[1:]), "duplicate temporal sample ID"),
+    ):
+        with pytest.raises(ValueError, match=f"^{message}"):
+            _build(inventory)
+
+
+def test_temporal_pilot_refuses_unsynthetic_splits_and_missing_pairs() -> None:
+    """The pilot needs a synthetic frozen split and both scenes of every selected dev group."""
+    records = generate_temporal_records(seed=73, source_count=6)
+    task, split = _split(records)
+    loose: Any = split.to_wire()
+    owner = replace(split, header=replace(split.header, data_origin="owner_dataset"))
+    for candidate in (loose, owner):
+        with pytest.raises(ValueError, match="^temporal pilot requires a synthetic group split$"):
+            temporal_pilot_inputs(task, records, candidate, group_count=2)
+    foreign_dev = tuple(sorted(("aaa-foreign-group", *split.dev_groups[1:])))
+    content = {name: value for name, value in split.to_wire().items() if name != "header"} | {
+        "dev_groups": list(foreign_dev)
+    }
+    header = replace(
+        split.header, content_digest=hashlib.sha256(canonical_bytes(content)).hexdigest()
+    )
+    foreign = replace(split, dev_groups=foreign_dev, header=header)
+    with pytest.raises(ValueError, match="^paired temporal history is missing$"):
+        temporal_pilot_inputs(task, records, foreign, group_count=2)

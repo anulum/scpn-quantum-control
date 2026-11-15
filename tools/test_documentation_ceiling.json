@@ -1,13 +1,13 @@
 {
  "schema": "test_documentation_ceiling_v1",
  "ruff_version": "ruff 0.17.4",
- "measured_commit": "1cc7962af8c6420cbba100aff53ef2257c1cf15a",
+ "measured_commit": "61efed153580b4cfffcfcd8c25dca58a1d8dd1cc",
  "scopes": [
   "tests",
   "oscillatools/tests"
  ],
- "total_findings": 7010,
- "total_files": 553,
+ "total_findings": 6999,
+ "total_files": 551,
  "files": {
   "oscillatools/tests/conftest.py": 1,
   "oscillatools/tests/kuramoto_delay_sensitivity_witness.py": 1,
@@ -107,8 +107,6 @@
   "oscillatools/tests/test_why_oscillatools_renderer.py": 11,
   "oscillatools/tests/test_winfree.py": 7,
   "tests/_differentiable_programming_benchmark_edge_helpers.py": 6,
-  "tests/experimental/llm_qpu/memory_task/test_temporal_memory_task.py": 8,
-  "tests/experimental/llm_qpu/memory_task/test_temporal_transfer_task.py": 3,
   "tests/test_accelerator_detection_boundaries.py": 4,
   "tests/test_adapt_vqe.py": 24,
   "tests/test_adaptive_fim_evidence.py": 16,

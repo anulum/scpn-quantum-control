@@ -373,6 +373,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   also cover unreviewed stores and keys, public objects, a key rebound to
   other content, an absent source and a damaged index digest.
 
+- The temporal and transfer split builders
+  (`experimental/llm_qpu/data/temporal_splits.py`) have full line and branch
+  coverage; the union had them at 88.57%.
+  - New tests cover the refusals of bad seeds and counts, and of empty,
+    unvalidated or repeated inventories.
+  - They also cover pilots over a non-synthetic split, a dev group without
+    its paired histories, and a task other than the transfer task.
+  - Every helper and test in both test files now has a docstring.
+
 ### One connection to the local job service
 
 - The address and session token of the optional local job service now belong

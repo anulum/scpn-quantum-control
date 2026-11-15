@@ -11,10 +11,14 @@ from __future__ import annotations
 
 import re
 from dataclasses import replace
+from typing import Any
 
 import pytest
 
-from scpn_quantum_control.experimental.llm_qpu.contracts import validate_task_split
+from scpn_quantum_control.experimental.llm_qpu.contracts import (
+    SplitManifest,
+    validate_task_split,
+)
 from scpn_quantum_control.experimental.llm_qpu.data.temporal_splits import (
     build_transfer_split,
     transfer_pilot_inputs,
@@ -68,6 +72,7 @@ def _oracle(prompt: str, variant_id: int) -> str:
 
 
 def test_transfer_oracle_and_counterfactual_history() -> None:
+    """An independent oracle reproduces every transfer label, and each paired history differs at line 16 only."""
     records = generate_transfer_records(seed=83, source_count=8)
     assert records == generate_transfer_records(seed=83, source_count=8)
     assert len(records) == 32
@@ -95,6 +100,7 @@ def test_transfer_oracle_and_counterfactual_history() -> None:
 
 
 def test_transfer_split_and_pilot_are_group_bound() -> None:
+    """The transfer split covers eight groups, its pilot is answer-free and paired, and edited labels or prompts are refused."""
     records = generate_transfer_records(seed=83, source_count=8)
     task = build_transfer_task(base_repo_commit=_BASE, implementation_revision=_REVISION)
     split = build_transfer_split(
@@ -138,6 +144,7 @@ def test_transfer_split_and_pilot_are_group_bound() -> None:
 
 
 def test_other_task_and_invalid_seed_cannot_authorise_transfer() -> None:
+    """Another task, a bool seed and too few sources cannot authorise a transfer split."""
     records = generate_transfer_records(seed=83, source_count=8)
     old_task = build_temporal_task(base_repo_commit=_BASE, implementation_revision=_REVISION)
     with pytest.raises(ValueError, match="exact task"):
@@ -156,3 +163,44 @@ def test_other_task_and_invalid_seed_cannot_authorise_transfer() -> None:
         generate_transfer_records(seed=True)
     with pytest.raises(ValueError, match="source count"):
         generate_transfer_records(seed=83, source_count=2)
+
+
+def _transfer(records: Any, **changes: Any) -> SplitManifest:
+    """Build the eight-group transfer split of the records, with changed arguments."""
+    arguments: dict[str, Any] = {
+        "seed": 29,
+        "generation_seed": 83,
+        "train_count": 4,
+        "dev_count": 2,
+        "test_count": 2,
+        "base_repo_commit": _BASE,
+        "implementation_revision": _REVISION,
+    }
+    arguments.update(changes)
+    task = build_transfer_task(base_repo_commit=_BASE, implementation_revision=_REVISION)
+    return build_transfer_split(task, records, **arguments)
+
+
+def test_transfer_split_refuses_bad_seeds_and_counts() -> None:
+    """The transfer builder refuses bad seeds and counts that do not cover every group."""
+    records = generate_transfer_records(seed=83, source_count=8)
+    flag: Any = True
+    for changes, message in (
+        ({"seed": -1}, "split seed must be a nonnegative signed 64-bit integer"),
+        ({"seed": flag}, "split seed must be a nonnegative signed 64-bit integer"),
+        ({"train_count": 0}, "every split needs a positive source count"),
+        ({"train_count": 3}, "split counts must cover every source group exactly"),
+    ):
+        with pytest.raises(ValueError, match=f"^{message}$"):
+            _transfer(records, **changes)
+
+
+def test_transfer_pilot_refuses_another_task() -> None:
+    """Only the exact transfer task can select transfer pilot prompts."""
+    records = generate_transfer_records(seed=83, source_count=8)
+    split = _transfer(records)
+    temporal = build_temporal_task(base_repo_commit=_BASE, implementation_revision=_REVISION)
+    loose: Any = temporal.to_wire()
+    for task in (temporal, loose):
+        with pytest.raises(ValueError, match="^transfer pilot requires its exact task$"):
+            transfer_pilot_inputs(task, records, split, group_count=2)
