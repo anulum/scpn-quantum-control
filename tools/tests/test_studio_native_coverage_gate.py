@@ -189,6 +189,48 @@ def test_provider_observation_inputs_are_bound_before_execution(
     assert not (output / "native-coverage-receipt.json").exists()
 
 
+def _damaged_report(report_path: Path, damage: str, tmp_path: Path) -> Path:
+    """Copy the genuine report with one declared owner or totals damage.
+
+    Parameters
+    ----------
+    report_path : Path
+        Genuine native report.
+    damage : str
+        Owner, duplicate, extra owner, totals, summary or missing-list damage.
+    tmp_path : Path
+        Directory for the damaged copy.
+
+    Returns
+    -------
+    Path
+        The damaged report copy.
+
+    """
+    report = json.loads(report_path.read_text())
+    name = next(iter(report["files"]))
+    owner = report["files"][name]
+    if damage == "owner":
+        report["files"] = {}
+    elif damage == "duplicate":
+        report["files"]["duplicate/" + name] = owner
+    elif damage == "extra_owner":
+        report["files"]["unrelated.py"] = owner
+    elif damage == "totals":
+        report["totals"]["num_statements"] = 0
+    elif damage in {"statements", "branches"}:
+        owner["summary"]["num_" + damage] = 0
+    elif damage in {"missing_lines", "missing_branches"}:
+        owner["summary"][damage] = 1
+    elif damage == "line_list":
+        owner["missing_lines"] = [1]
+    else:
+        owner["missing_branches"] = [[1, 2]]
+    copied = tmp_path / "damaged-report.json"
+    copied.write_text(json.dumps(report))
+    return copied
+
+
 @pytest.mark.parametrize(
     "damage",
     [
@@ -233,33 +275,86 @@ def test_damaged_qualification_cannot_authorize_push(
         copied.write_bytes(Path(value[damage]).read_bytes() + b"declared corruption")
         value[damage] = str(copied)
     else:
-        report = json.loads(Path(value["report"]).read_text())
-        name = next(iter(report["files"]))
-        owner = report["files"][name]
-        if damage == "owner":
-            report["files"] = {}
-        elif damage == "duplicate":
-            report["files"]["duplicate/" + name] = owner
-        elif damage == "extra_owner":
-            report["files"]["unrelated.py"] = owner
-        elif damage == "totals":
-            report["totals"]["num_statements"] = 0
-        elif damage in {"statements", "branches"}:
-            owner["summary"]["num_" + damage] = 0
-        elif damage in {"missing_lines", "missing_branches"}:
-            owner["summary"][damage] = 1
-        elif damage == "line_list":
-            owner["missing_lines"] = [1]
-        else:
-            owner["missing_branches"] = [[1, 2]]
-        copied = tmp_path / "damaged-report.json"
-        copied.write_text(json.dumps(report))
+        copied = _damaged_report(Path(value["report"]), damage, tmp_path)
         value["report"] = str(copied)
         value["report_sha256"] = hashlib.sha256(copied.read_bytes()).hexdigest()
     damaged = tmp_path / "damaged-receipt.json"
     damaged.write_text(json.dumps(value))
     with pytest.raises(ValueError):
         check_native_coverage(root, damaged)
+
+
+def _write_cohort_snapshot(root: Path, snapshot: Path) -> None:
+    """Write the declared browser cohorts read by the TypeScript owner.
+
+    Parameters
+    ----------
+    root : Path
+        Repository root.
+    snapshot : Path
+        Destination JSON file.
+
+    """
+    result = subprocess.run(
+        [
+            "node",
+            "--experimental-strip-types",
+            "--input-type=module",
+            "-e",
+            'import {readBrowserCohorts} from "./quality/browserCohorts.ts"; '
+            "process.stdout.write(JSON.stringify(await readBrowserCohorts(process.cwd())));",
+        ],
+        cwd=root / "studio-web",
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=30,
+        env=os.environ | {"NODE_OPTIONS": "--max-old-space-size=768"},
+    )
+    snapshot.write_text(result.stdout, encoding="utf-8")
+
+
+def _independent_recording(root: Path, tmp_path: Path, mode: str) -> Path:
+    """Record an actual measurement of other owners, mixed owners or statements only.
+
+    Parameters
+    ----------
+    root : Path
+        Repository root.
+    tmp_path : Path
+        Owned directory for the cohort snapshot and the recording.
+    mode : str
+        Other-owner, mixed-owner, statement-only or partial native measurement.
+
+    Returns
+    -------
+    Path
+        The recorded coverage data file.
+
+    """
+    snapshot = tmp_path / "cohorts.json"
+    if mode != "foreign":
+        _write_cohort_snapshot(root, snapshot)
+    owners = []
+    if mode in {"foreign", "mixed"}:
+        owners.append(str(root / "tools/studio_native_coverage_gate.py"))
+    if mode != "foreign":
+        owners.append(str(root / "tools/studio_workspace_browser_coverage.py"))
+    data = tmp_path / "independent.coverage"
+    measured = coverage.Coverage(
+        data_file=str(data), config_file=False, branch=mode != "lines", include=owners
+    )
+    measured.start()
+    try:
+        if mode in {"foreign", "mixed"}:
+            begin_native_qualification(root, tmp_path / "independent-source-binding")
+        if mode != "foreign":
+            artifact = Path(os.environ["STUDIO_NATIVE_COVERAGE_ARTIFACT"])
+            verify_native_coverage(artifact, snapshot, root / "studio-web")
+    finally:
+        measured.stop()
+        measured.save()
+    return data
 
 
 @pytest.mark.parametrize("mode", ["foreign", "mixed", "lines", "partial"])
@@ -282,47 +377,7 @@ def test_original_report_refuses_unrelated_or_incomplete_recorded_data(
     original = receipt.read_bytes()
     value = json.loads(original)
     check_native_coverage(root, receipt)
-    snapshot = tmp_path / "cohorts.json"
-    if mode != "foreign":
-        result = subprocess.run(
-            [
-                "node",
-                "--experimental-strip-types",
-                "--input-type=module",
-                "-e",
-                'import {readBrowserCohorts} from "./quality/browserCohorts.ts"; '
-                "process.stdout.write(JSON.stringify(await readBrowserCohorts(process.cwd())));",
-            ],
-            cwd=root / "studio-web",
-            capture_output=True,
-            text=True,
-            check=True,
-            timeout=30,
-            env=os.environ | {"NODE_OPTIONS": "--max-old-space-size=768"},
-        )
-        snapshot.write_text(result.stdout, encoding="utf-8")
-    owners = []
-    if mode in {"foreign", "mixed"}:
-        owners.append(str(root / "tools/studio_native_coverage_gate.py"))
-    if mode != "foreign":
-        owners.append(str(root / "tools/studio_workspace_browser_coverage.py"))
-    data = tmp_path / "independent.coverage"
-    measured = coverage.Coverage(
-        data_file=str(data), config_file=False, branch=mode != "lines", include=owners
-    )
-    measured.start()
-    try:
-        if mode in {"foreign", "mixed"}:
-            begin_native_qualification(root, tmp_path / "independent-source-binding")
-        if mode != "foreign":
-            verify_native_coverage(
-                Path(os.environ["STUDIO_NATIVE_COVERAGE_ARTIFACT"]),
-                snapshot,
-                root / "studio-web",
-            )
-    finally:
-        measured.stop()
-        measured.save()
+    data = _independent_recording(root, tmp_path, mode)
     value["data"] = str(data)
     value["data_sha256"] = hashlib.sha256(data.read_bytes()).hexdigest()
     substituted = tmp_path / "substituted-receipt.json"
@@ -359,6 +414,66 @@ def test_original_recording_remains_valid_for_an_identical_source_checkout(
     check_native_coverage(relocated, receipt)
 
 
+def _other_owner_recording(root: Path, path: Path) -> Path:
+    """Record a genuine measurement of another browser owner.
+
+    Parameters
+    ----------
+    root : Path
+        Repository root.
+    path : Path
+        Destination data file.
+
+    Returns
+    -------
+    Path
+        The recorded data file.
+
+    """
+    measured = coverage.Coverage(
+        data_file=str(path),
+        config_file=False,
+        branch=True,
+        include=[str(root / "tools/studio_browser_journey.py")],
+    )
+    measured.start()
+    try:
+        assert loopback_url("http://127.0.0.1:4198/") == "http://127.0.0.1:4198/"
+    finally:
+        measured.stop()
+        measured.save()
+    return path
+
+
+def _combined(
+    combined_path: Path, paths: tuple[Path, Path]
+) -> tuple[coverage.CoverageData, list[coverage.CoverageData]]:
+    """Combine two recordings into one data file, as the CI browser job does.
+
+    Parameters
+    ----------
+    combined_path : Path
+        Destination of the combined data.
+    paths : tuple[Path, Path]
+        The native recording and the other-owner recording.
+
+    Returns
+    -------
+    tuple[coverage.CoverageData, list[coverage.CoverageData]]
+        The combined data and the two read recordings.
+
+    """
+    combined = coverage.CoverageData(basename=str(combined_path))
+    recordings: list[coverage.CoverageData] = []
+    for path in paths:
+        raw = coverage.CoverageData(basename=str(path))
+        raw.read()
+        recordings.append(raw)
+        combined.update(raw)
+    combined.write()
+    return combined, recordings
+
+
 def test_complete_native_recording_in_combined_browser_data_is_accepted(
     qualified_proof: tuple[Path, Path], tmp_path: Path
 ) -> None:
@@ -376,28 +491,9 @@ def test_complete_native_recording_in_combined_browser_data_is_accepted(
     value = json.loads(receipt.read_text(encoding="utf-8"))
     original_data = Path(value["data"])
     original_digest = hashlib.sha256(original_data.read_bytes()).hexdigest()
-    foreign_path = tmp_path / "other-browser-owner.coverage"
-    measured = coverage.Coverage(
-        data_file=str(foreign_path),
-        config_file=False,
-        branch=True,
-        include=[str(root / "tools/studio_browser_journey.py")],
-    )
-    measured.start()
-    try:
-        assert loopback_url("http://127.0.0.1:4198/") == "http://127.0.0.1:4198/"
-    finally:
-        measured.stop()
-        measured.save()
+    foreign_path = _other_owner_recording(root, tmp_path / "other-browser-owner.coverage")
     combined_path = tmp_path / "combined-browser.coverage"
-    combined = coverage.CoverageData(basename=str(combined_path))
-    recordings: list[coverage.CoverageData] = []
-    for path in (original_data, foreign_path):
-        raw = coverage.CoverageData(basename=str(path))
-        raw.read()
-        recordings.append(raw)
-        combined.update(raw)
-    combined.write()
+    combined, recordings = _combined(combined_path, (original_data, foreign_path))
     assert recordings[1].measured_files() == {str(root / "tools/studio_browser_journey.py")}
     assert combined.measured_files() == (
         recordings[0].measured_files() | recordings[1].measured_files()
