@@ -119,6 +119,28 @@ def _case(
     }
 
 
+_TAMPERED_CASE_TEXT: Final[tuple[tuple[str, str, str], ...]] = (
+    (
+        "changed-value",
+        "Value changed after sealing",
+        "content.A_even.mean 0.9185 -> 0.9285, digest kept",
+    ),
+    (
+        "rebound-axes",
+        "Claim axes replaced",
+        "claim_axes.backend_class -> hardware_verified, digest kept",
+    ),
+    ("stripped-axes", "Honesty axes removed", "claim_axes.honesty_axes emptied"),
+    ("missing-digest", "Digest removed", "content_digest emptied"),
+    (
+        "unverified-signature",
+        "Signature without a keyring",
+        "signature field set to an opaque token",
+    ),
+)
+"""Identifier, label and change text of each single-field tampering case, in display order."""
+
+
 def build_cases(content: dict[str, object]) -> list[dict[str, object]]:
     """Seal the summary once and derive every refusal from that envelope.
 
@@ -134,40 +156,9 @@ def build_cases(content: dict[str, object]) -> list[dict[str, object]]:
 
     """
     sealed = build_unsigned_envelope(claim_id=CLAIM_ID, claim_axes=CLAIM_AXES, content=content)
-    rebound = {**CLAIM_AXES, "backend_class": "hardware_verified"}
-    stripped = {**CLAIM_AXES, "honesty_axes": []}
     return [
         _case("intact", "Sealed summary", "none", sealed),
-        _case(
-            "changed-value",
-            "Value changed after sealing",
-            "content.A_even.mean 0.9185 -> 0.9285, digest kept",
-            replace(sealed, content=_changed_mean(content)),
-        ),
-        _case(
-            "rebound-axes",
-            "Claim axes replaced",
-            "claim_axes.backend_class -> hardware_verified, digest kept",
-            replace(sealed, claim_axes=rebound),
-        ),
-        _case(
-            "stripped-axes",
-            "Honesty axes removed",
-            "claim_axes.honesty_axes emptied",
-            replace(sealed, claim_axes=stripped),
-        ),
-        _case(
-            "missing-digest",
-            "Digest removed",
-            "content_digest emptied",
-            replace(sealed, content_digest=""),
-        ),
-        _case(
-            "unverified-signature",
-            "Signature without a keyring",
-            "signature field set to an opaque token",
-            replace(sealed, signature="opaque-token-without-keyring"),
-        ),
+        *_tampered_cases(sealed, content),
         _case(
             "signature-required",
             "Signature required",
@@ -175,6 +166,38 @@ def build_cases(content: dict[str, object]) -> list[dict[str, object]]:
             sealed,
             require_signature=True,
         ),
+    ]
+
+
+def _tampered_cases(
+    sealed: AttestedEnvelope, content: dict[str, object]
+) -> list[dict[str, object]]:
+    """Derive the five refusals that alter one field of the sealed envelope.
+
+    Parameters
+    ----------
+    sealed
+        The envelope sealed over the pinned summary.
+    content
+        The pinned QPU summary the envelope was sealed over.
+
+    Returns
+    -------
+    list[dict[str, object]]
+        The changed-value, rebound-axes, stripped-axes, missing-digest and
+        unverified-signature cases, in display order.
+
+    """
+    envelopes = (
+        replace(sealed, content=_changed_mean(content)),
+        replace(sealed, claim_axes={**CLAIM_AXES, "backend_class": "hardware_verified"}),
+        replace(sealed, claim_axes={**CLAIM_AXES, "honesty_axes": []}),
+        replace(sealed, content_digest=""),
+        replace(sealed, signature="opaque-token-without-keyring"),
+    )
+    return [
+        _case(*text, envelope)
+        for text, envelope in zip(_TAMPERED_CASE_TEXT, envelopes, strict=True)
     ]
 
 
