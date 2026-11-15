@@ -1,13 +1,13 @@
 {
  "schema": "test_documentation_ceiling_v1",
  "ruff_version": "ruff 0.17.4",
- "measured_commit": "05b660a5dbdea6bf6a1d61693de903f66acf1ed8",
+ "measured_commit": "d521c6b80b5dabcb29cfe14d721a88e113118562",
  "scopes": [
   "tests",
   "oscillatools/tests"
  ],
- "total_findings": 6863,
- "total_files": 535,
+ "total_findings": 6857,
+ "total_files": 534,
  "files": {
   "oscillatools/tests/conftest.py": 1,
   "oscillatools/tests/kuramoto_delay_sensitivity_witness.py": 1,
@@ -278,7 +278,6 @@
   "tests/test_iqm_lattice_calibration.py": 28,
   "tests/test_iqm_layout_pinned_dla.py": 4,
   "tests/test_iqm_layout_transfer_benchmark.py": 39,
-  "tests/test_iqm_layout_transfer_per_size.py": 6,
   "tests/test_iqm_layout_transfer_per_size_fake_garnet.py": 4,
   "tests/test_iqm_layout_transfer_resonance.py": 18,
   "tests/test_isolated_host_readiness.py": 10,

@@ -497,6 +497,16 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The IQM per-size layout-transfer analysis
+  (`benchmarks/iqm_layout_transfer_per_size.py`) now tests that the
+  analysis refuses another campaign, a single bootstrap resample, a negative
+  count, a repetition with no shots, and an arm whose repetitions recorded
+  nothing (empty or zero-valued). It also tests that Cochran's Q is withheld
+  as unanalysable when every arm is deterministic, which makes the bootstrap
+  variance zero. Coverage rises from 93.72% to 100%. Six older tests and two
+  fixtures gain docstrings, so the test documentation ceiling falls to 6857
+  findings in 534 files.
+
 - The topological synchronisation witness (`analysis/sync_witness.py`) now
   tests its persistent-H1 path with ripser's documented result shape:
   - only bars that outlive the median lifetime count;
