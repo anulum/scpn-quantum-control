@@ -497,6 +497,23 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The finite-shot QNN evidence (`phase/qnn_finite_shot.py`) now has tests for
+  every data refusal:
+  - one-dimensional, empty or non-finite features;
+  - a feature matrix without features;
+  - short, non-finite or out-of-range labels;
+  - parameters of the wrong width or non-finite.
+
+  They also show that a single-column label matrix gives the same gradient,
+  seed for seed. The suite refuses a negative or NaN loss-drop threshold,
+  finds cases by name, refuses unknown names, and serialises its cases and
+  unsuitable scenarios. A block in the convergence runner that predicted
+  labels and then set `best_loss = min(best_loss, final_loss)` is removed.
+  `best_loss` is already that minimum, so the block never changed a result.
+  Coverage rises from 89.94% to 100% of lines. One loop-exit branch stays:
+  a default case that never reaches its tolerance, which the shipped cases
+  do not do.
+
 - The analog-mapping contracts (`analog_mapping/contracts.py`) now have tests
   for every refusal of a platform capability row, edited from the shipped
   internal compiler profile and the Pulser sketch:

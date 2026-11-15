@@ -23,6 +23,7 @@ from scpn_quantum_control.phase import (
 
 
 def test_qnn_finite_shot_gradient_records_seeded_uncertainty() -> None:
+    """A seeded finite-shot gradient records its probes and stays within its confidence radius."""
     features = np.array([[0.0], [np.pi]], dtype=float)
     labels = np.array([0.0, 1.0], dtype=float)
     params = np.array([0.45], dtype=float)
@@ -53,6 +54,7 @@ def test_qnn_finite_shot_gradient_records_seeded_uncertainty() -> None:
 
 
 def test_qnn_finite_shot_gradient_replays_with_same_seed() -> None:
+    """The same seed replays the same finite-shot gradient and probe records."""
     features = np.array([[0.0], [np.pi]], dtype=float)
     labels = np.array([0.0, 1.0], dtype=float)
     params = np.array([0.45], dtype=float)
@@ -77,6 +79,7 @@ def test_qnn_finite_shot_gradient_replays_with_same_seed() -> None:
 
 
 def test_qnn_finite_shot_convergence_suite_records_seeded_noisy_training() -> None:
+    """The default suite trains both seeded cases to tolerance without hardware claims."""
     suite = run_parameter_shift_qnn_finite_shot_convergence_suite()
 
     assert isinstance(suite, ParameterShiftQNNFiniteShotConvergenceSuiteResult)
@@ -105,6 +108,7 @@ def test_qnn_finite_shot_convergence_suite_records_seeded_noisy_training() -> No
 
 
 def test_qnn_finite_shot_convergence_records_threshold_failures() -> None:
+    """An unreachable required loss drop is recorded as a failed case."""
     suite = run_parameter_shift_qnn_finite_shot_convergence_suite(
         case_names=("single_feature_finite_shot_phase_flip",),
         min_loss_drop=1.0,
@@ -117,6 +121,7 @@ def test_qnn_finite_shot_convergence_records_threshold_failures() -> None:
 
 
 def test_qnn_finite_shot_fails_closed_on_invalid_controls() -> None:
+    """Zero shots, a zero z multiplier and an unknown case name are refused."""
     features = np.array([[0.0], [np.pi]], dtype=float)
     labels = np.array([0.0, 1.0], dtype=float)
     params = np.array([0.45], dtype=float)
@@ -142,6 +147,7 @@ def test_qnn_finite_shot_fails_closed_on_invalid_controls() -> None:
 
 
 def test_qnn_finite_shot_unsuitable_scenarios_are_documented() -> None:
+    """Every unsupported scenario is named, staged and has a mitigation."""
     scenarios = summarize_parameter_shift_qnn_finite_shot_unsuitable_scenarios()
 
     assert len(scenarios) >= 4
@@ -153,3 +159,100 @@ def test_qnn_finite_shot_unsuitable_scenarios_are_documented() -> None:
     }
     assert all(scenario.status == "fail_closed_or_staged" for scenario in scenarios)
     assert all(scenario.mitigation for scenario in scenarios)
+
+
+_FEATURES = np.array([[0.0], [np.pi]], dtype=float)
+_LABELS = np.array([0.0, 1.0], dtype=float)
+_PARAMS = np.array([0.45], dtype=float)
+
+
+@pytest.mark.parametrize(
+    ("features", "labels", "params", "message"),
+    [
+        pytest.param(
+            np.array([0.0, np.pi]), _LABELS, _PARAMS, "two-dimensional", id="1d-features"
+        ),
+        pytest.param(
+            np.empty((0, 1)), _LABELS[:0], _PARAMS, "at least one sample", id="no-samples"
+        ),
+        pytest.param(np.empty((2, 0)), _LABELS, _PARAMS[:0], "and one feature", id="no-features"),
+        pytest.param(
+            np.array([[0.0], [np.inf]]),
+            _LABELS,
+            _PARAMS,
+            "features must contain only finite",
+            id="inf",
+        ),
+        pytest.param(
+            _FEATURES, np.array([0.0]), _PARAMS, "labels must be a one-dimensional", id="short"
+        ),
+        pytest.param(
+            _FEATURES,
+            np.array([0.0, np.nan]),
+            _PARAMS,
+            "labels must contain only finite",
+            id="nan",
+        ),
+        pytest.param(
+            _FEATURES, np.array([0.0, 1.5]), _PARAMS, r"labels must lie in \[0, 1\]", id="range"
+        ),
+        pytest.param(
+            _FEATURES, _LABELS, np.array([0.1, 0.2]), "params must be a one-dimensional", id="wide"
+        ),
+        pytest.param(
+            _FEATURES,
+            _LABELS,
+            np.array([np.nan]),
+            "params must contain only finite",
+            id="nan-params",
+        ),
+    ],
+)
+def test_qnn_finite_shot_gradient_refuses_malformed_data(
+    features: np.ndarray, labels: np.ndarray, params: np.ndarray, message: str
+) -> None:
+    """Features, labels and parameters must be finite, shaped alike and labels within [0, 1]."""
+    with pytest.raises(ValueError, match=message):
+        estimate_parameter_shift_qnn_finite_shot_gradient(features, labels, params)
+
+
+def test_qnn_finite_shot_gradient_accepts_a_label_column() -> None:
+    """A single-column label matrix is the same as the label vector, seed for seed."""
+    column = estimate_parameter_shift_qnn_finite_shot_gradient(
+        _FEATURES, _LABELS[:, None], _PARAMS
+    )
+    vector = estimate_parameter_shift_qnn_finite_shot_gradient(_FEATURES, _LABELS, _PARAMS)
+
+    np.testing.assert_array_equal(column.finite_shot_gradient, vector.finite_shot_gradient)
+
+
+@pytest.mark.parametrize("min_loss_drop", [-0.1, float("nan")])
+def test_qnn_finite_shot_suite_refuses_an_invalid_loss_drop(min_loss_drop: float) -> None:
+    """The required loss drop must be finite and non-negative."""
+    with pytest.raises(ValueError, match="min_loss_drop must be finite and non-negative"):
+        run_parameter_shift_qnn_finite_shot_convergence_suite(min_loss_drop=min_loss_drop)
+
+
+def test_qnn_finite_shot_suite_looks_up_cases_and_serialises_its_evidence() -> None:
+    """A suite finds its cases by name, refuses unknown names and serialises every part."""
+    suite = run_parameter_shift_qnn_finite_shot_convergence_suite(
+        case_names=("single_feature_finite_shot_phase_flip",)
+    )
+
+    case = suite.case_by_name("single_feature_finite_shot_phase_flip")
+    assert case is suite.cases[0]
+    with pytest.raises(KeyError, match="unknown QNN finite-shot convergence case: missing"):
+        suite.case_by_name("missing")
+    payload = suite.to_dict()
+    assert payload["case_count"] == 1
+    assert payload["passed"] is suite.passed
+    assert payload["total_shots"] == case.total_shots
+    assert payload["cases"] == [case.to_dict()]
+    scenarios = summarize_parameter_shift_qnn_finite_shot_unsuitable_scenarios()
+    assert payload["unsuitable_scenarios"] == [scenario.to_dict() for scenario in scenarios]
+    assert scenarios[0].to_dict() == {
+        "name": "hardware_provider_jobs",
+        "status": "fail_closed_or_staged",
+        "reason": scenarios[0].reason,
+        "mitigation": scenarios[0].mitigation,
+    }

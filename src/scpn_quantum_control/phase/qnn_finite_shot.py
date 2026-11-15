@@ -20,7 +20,6 @@ from .param_shift import multi_frequency_parameter_shift_rule
 from .qnn_training import (
     parameter_shift_qnn_classifier_gradient,
     parameter_shift_qnn_classifier_loss,
-    predict_parameter_shift_qnn_classifier,
 )
 
 FloatArray: TypeAlias = NDArray[np.float64]
@@ -563,9 +562,6 @@ def _run_convergence_case(
         accepted_steps += 1
         if best_loss <= case.target_loss_tolerance:
             break
-    prediction = predict_parameter_shift_qnn_classifier(case.features, params, labels=case.labels)
-    if prediction.accuracy is None or prediction.accuracy < 1.0:
-        best_loss = min(best_loss, final_loss)
     return ParameterShiftQNNFiniteShotConvergenceCaseResult(
         name=case.name,
         initial_loss=initial_loss,
