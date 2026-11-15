@@ -245,6 +245,14 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     the binding limit: one million elements of at most 8 bytes stay inside the
     16 MiB array ceiling. A test pins that invariant. Behaviour is unchanged.
 
+- The experimental QPU attempt journal (`experimental/llm_qpu/runtime/attempt_journal.py`)
+  has full line and branch coverage; the union had it at 81.44%. New tests
+  cover the refusals of malformed job plans, non-canonical attempt IDs, a
+  shared journal directory or database (group-only and other-only bits),
+  a database symlink, invalid inventories, unknown attempts and jobs, and
+  every out-of-order transition. They also cover the recovery path, which
+  binds an ambiguous submission only to proof of the prepared payload.
+
 ### One connection to the local job service
 
 - The address and session token of the optional local job service now belong
