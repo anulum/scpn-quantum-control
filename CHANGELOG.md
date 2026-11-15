@@ -298,6 +298,16 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   - The contextual-length check that the step bound already made unreachable
     is removed.
 
+- The private shard lineage (`experimental/llm_qpu/data/lineage.py`) has full
+  line and branch coverage; the union had it at 81.82%.
+  - New tests cover the refusals of shard references and manifests,
+    including mixed shards and a compressed batch without its compressor,
+    and their wire forms. They also cover publication of unreviewed inputs
+    or mislabelled shards.
+  - They also cover loading against an unadmitted manifest and a damaged
+    index: a non-manifest record, a missing shard row, or a relabelled
+    shard.
+
 ### One connection to the local job service
 
 - The address and session token of the optional local job service now belong
