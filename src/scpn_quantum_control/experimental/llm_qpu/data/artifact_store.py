@@ -231,14 +231,12 @@ class ArtifactStore:
                 if type(used) is not int or used + len(payload) > self.max_total_bytes:
                     raise ValueError("artifact store capacity exceeded")
             if target.exists():
+                # A verified digest equal to the payload's digest means equal bytes.
                 try:
-                    current = self._checked_bytes(target, digest, maximum=self.max_object_bytes)
+                    self._checked_bytes(target, digest, maximum=self.max_object_bytes)
                 except CorruptArtifactError:
                     self._quarantine_corrupt(target, digest)
                     raise
-                if current != payload:
-                    self._quarantine_corrupt(target, digest)
-                    raise CorruptArtifactError("existing content ID has different bytes")
             else:
                 temporary = target.parent / f".{digest}.{uuid.uuid4().hex}.tmp"
                 try:
@@ -261,10 +259,10 @@ class ArtifactStore:
                     os.link(temporary, target, follow_symlinks=False)
                     _sync_directory(target.parent)
                 except FileExistsError:
-                    if (
+                    # Another writer published first; admit it only if its bytes verify.
+                    try:
                         self._checked_bytes(target, digest, maximum=self.max_object_bytes)
-                        != payload
-                    ):
+                    except CorruptArtifactError:
                         self._quarantine_corrupt(target, digest)
                         raise CorruptArtifactError("concurrent content ID collision") from None
                 finally:

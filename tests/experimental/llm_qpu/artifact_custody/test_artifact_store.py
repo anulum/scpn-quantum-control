@@ -26,6 +26,7 @@ from scpn_quantum_control.experimental.llm_qpu.data.artifact_store import (
 
 
 def _array(values: tuple[float, ...]) -> tuple[ArrayDescriptor, bytes]:
+    """Return a one-column float32 descriptor and its exact payload."""
     payload = struct.pack(f"<{len(values)}f", *values)
     return (
         ArrayDescriptor(
@@ -110,3 +111,44 @@ def test_private_repo_root_and_index_permissions(tmp_path: Path) -> None:
     store.root.chmod(0o755)
     with pytest.raises(ValueError, match="owned and private"):
         open_repository_store(tmp_path)
+
+
+def _concurrent_writer(monkeypatch: pytest.MonkeyPatch, published: bytes) -> None:
+    """Make the publish step meet a target that another writer created first."""
+
+    def link_after_other_writer(source: str, target: str, *, follow_symlinks: bool) -> None:
+        Path(target).write_bytes(published)
+        raise FileExistsError(target)
+
+    monkeypatch.setattr(os, "link", link_after_other_writer)
+
+
+def test_concurrent_conflicting_publish_is_quarantined_and_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Bytes another writer placed at the same content address are quarantined, never indexed."""
+    store = ArtifactStore(tmp_path / "private")
+    payload = b"payload bytes"
+    digest = hashlib.sha256(payload).hexdigest()
+    _concurrent_writer(monkeypatch, b"other writer bytes")
+    with pytest.raises(CorruptArtifactError, match="^concurrent content ID collision$"):
+        store.put(payload, kind="evidence", retention="pinned", egress="private_derived")
+    monkeypatch.undo()
+    assert not (store.objects / digest[:2] / digest).exists()
+    assert [path.read_bytes() for path in store.quarantine.iterdir()] == [b"other writer bytes"]
+    assert not list(store.objects.rglob("*.tmp"))
+    assert not store.has(digest)
+
+
+def test_concurrent_identical_publish_is_admitted_once(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """An identical concurrent publish is verified and indexed like a fresh one."""
+    store = ArtifactStore(tmp_path / "private")
+    payload = b"payload bytes"
+    _concurrent_writer(monkeypatch, payload)
+    record = store.put(payload, kind="evidence", retention="cache", egress="value_free")
+    monkeypatch.undo()
+    assert store.get(record.sha256) == (record, payload)
+    assert not list(store.quarantine.iterdir())
+    assert not list(store.objects.rglob("*.tmp"))

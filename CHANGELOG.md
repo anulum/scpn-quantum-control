@@ -263,6 +263,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   edited wire field, and every unreviewed builder input. An n8 recipe now
   round-trips through the decoder.
 
+- The experimental LLM-QPU artifact store now quarantines conflicting bytes
+  that another writer published first at the same content address. Before,
+  `put` refused them with "stored artifact digest mismatch" but left them in
+  place; it now moves them to quarantine and raises "concurrent content ID
+  collision", as it already did for conflicting bytes that existed before
+  the publish. An identical concurrent publish is verified and indexed. The
+  two byte comparisons after a verified digest, which only a SHA-256
+  collision could reach, are removed.
+
 ### One connection to the local job service
 
 - The address and session token of the optional local job service now belong
