@@ -60,6 +60,97 @@ def configure_chromium_sandbox(executable: Path, temporary: Path, github_env: Pa
     return profile
 
 
+def _isolate_sources(original: Path, isolated: Path) -> Path:
+    """Copy the Studio sources beside links to the shared inputs and the built kernels.
+
+    Parameters
+    ----------
+    original : Path
+        Original repository with its completed Studio build.
+    isolated : Path
+        New directory that receives the isolated source host.
+
+    Returns
+    -------
+    Path
+        The isolated ``studio-web`` directory.
+
+    """
+    isolated.mkdir()
+    for name in ("docs", "data", "tests"):
+        (isolated / name).symlink_to(original / name, target_is_directory=True)
+    web = isolated / "studio-web"
+    web.mkdir()
+    for name in ("src", "public", "browser-tests", "test-support"):
+        shutil.copytree(original / "studio-web" / name, web / name)
+    for source in (original / "studio-web").iterdir():
+        if source.is_file() and source.suffix in {".ts", ".json", ".html"}:
+            shutil.copy2(source, web / source.name)
+    (web / "node_modules").symlink_to(
+        original / "studio-web/node_modules", target_is_directory=True
+    )
+    shutil.copytree(original / "studio-web/dist/wasm", web / "src/wasm")
+    return web
+
+
+def _source_hashes(original: Path, web: Path) -> dict[str, str]:
+    """Require every source and public file copied exactly and hash it.
+
+    Parameters
+    ----------
+    original : Path
+        Original repository.
+    web : Path
+        Isolated ``studio-web`` directory.
+
+    Returns
+    -------
+    dict[str, str]
+        SHA-256 of each copied file by its path under ``studio-web``.
+
+    """
+    source_hashes = {}
+    for name in ("src", "public"):
+        for source in (original / "studio-web" / name).rglob("*"):
+            if source.is_file():
+                relative = source.relative_to(original / "studio-web")
+                assert source.read_bytes() == (web / relative).read_bytes()
+                source_hashes[str(relative)] = hashlib.sha256(source.read_bytes()).hexdigest()
+    return source_hashes
+
+
+def _kernel_hashes(original: Path, web: Path) -> dict[str, str]:
+    """Require both built kernels copied exactly and hash them.
+
+    Parameters
+    ----------
+    original : Path
+        Original repository with its completed Studio build.
+    web : Path
+        Isolated ``studio-web`` directory.
+
+    Returns
+    -------
+    dict[str, str]
+        SHA-256 of each kernel by file name.
+
+    Raises
+    ------
+    AssertionError
+        A kernel differs or the original two-kernel cohort is incomplete.
+
+    """
+    kernels = {}
+    for source in (original / "studio-web/dist/wasm").glob("*.wasm"):
+        assert source.read_bytes() == (web / "src/wasm" / source.name).read_bytes()
+        kernels[source.name] = hashlib.sha256(source.read_bytes()).hexdigest()
+    assert set(kernels) == {
+        "scpn_quantum_studio_wasm_kernel.wasm",
+        "scpn_quantum_studio_program_ad_wasm.wasm",
+    }
+    return kernels
+
+
 def prepare_source_workbench(original: Path, temporary: Path) -> dict[str, dict[str, str]]:
     """Copy the original preview, sources, public assets and both kernels with hashes.
 
@@ -87,37 +178,11 @@ def prepare_source_workbench(original: Path, temporary: Path) -> dict[str, dict[
     preview = temporary / "studio-browser-preview"
     shutil.copytree(original / "studio-web/dist", preview)
     shutil.copytree(temporary / "studio-federation-host", preview / "acceptance-host")
-    isolated = temporary / "studio-workbench-source"
-    isolated.mkdir()
-    for name in ("docs", "data", "tests"):
-        (isolated / name).symlink_to(original / name, target_is_directory=True)
-    web = isolated / "studio-web"
-    web.mkdir()
-    for name in ("src", "public", "browser-tests", "test-support"):
-        shutil.copytree(original / "studio-web" / name, web / name)
-    for source in (original / "studio-web").iterdir():
-        if source.is_file() and source.suffix in {".ts", ".json", ".html"}:
-            shutil.copy2(source, web / source.name)
-    (web / "node_modules").symlink_to(
-        original / "studio-web/node_modules", target_is_directory=True
-    )
-    shutil.copytree(original / "studio-web/dist/wasm", web / "src/wasm")
-    source_hashes = {}
-    for name in ("src", "public"):
-        for source in (original / "studio-web" / name).rglob("*"):
-            if source.is_file():
-                relative = source.relative_to(original / "studio-web")
-                assert source.read_bytes() == (web / relative).read_bytes()
-                source_hashes[str(relative)] = hashlib.sha256(source.read_bytes()).hexdigest()
-    kernels = {}
-    for source in (original / "studio-web/dist/wasm").glob("*.wasm"):
-        assert source.read_bytes() == (web / "src/wasm" / source.name).read_bytes()
-        kernels[source.name] = hashlib.sha256(source.read_bytes()).hexdigest()
-    assert set(kernels) == {
-        "scpn_quantum_studio_wasm_kernel.wasm",
-        "scpn_quantum_studio_program_ad_wasm.wasm",
+    web = _isolate_sources(original, temporary / "studio-workbench-source")
+    qualification = {
+        "original_source_sha256": _source_hashes(original, web),
+        "kernel_sha256": _kernel_hashes(original, web),
     }
-    qualification = {"original_source_sha256": source_hashes, "kernel_sha256": kernels}
     (temporary / "studio-workbench-source-qualification.json").write_text(
         json.dumps(qualification, indent=2) + "\n"
     )
