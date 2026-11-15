@@ -255,6 +255,14 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   every out-of-order transition. They also cover the recovery path, which
   binds an ambiguous submission only to proof of the prepared payload.
 
+- The experimental static XY circuit plan (`experimental/llm_qpu/contracts/static.py`)
+  has full line and branch coverage; the union had it at 80.00%. New tests,
+  all through the public recipe, plan, decoder, builder and validator, cover
+  the refusals of each recipe count, hex value and convention. They also
+  cover each gate-inventory, gate, wire and angle rule of a plan, every
+  edited wire field, and every unreviewed builder input. An n8 recipe now
+  round-trips through the decoder.
+
 ### One connection to the local job service
 
 - The address and session token of the optional local job service now belong
