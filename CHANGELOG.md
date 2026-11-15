@@ -497,6 +497,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
     unknown-gate refusal of the derivative table, because every registered
     parametric gate has a derivative and every other gate gets zero first.
 
+- The bounded QNN conformance suite (`phase/qnn_conformance.py`) now tests
+  that external gradients for unknown cases are refused with every unknown
+  name listed in sorted order, and that an unknown case lookup raises
+  `KeyError` while a known one returns its case. Four older tests gain
+  docstrings, so the test documentation ceiling falls to 6798 findings in
+  526 files. Coverage rises from 96.30% to 100%. No production change.
+
 - The PennyLane provider evidence bundle (`phase/pennylane_provider_plugin.py`)
   now tests that hardware evidence citing the bundle's provider, circuit and
   shots is kept, that a non-ISO capture time is refused, and that a validity

@@ -21,6 +21,7 @@ from scpn_quantum_control.phase import (
 
 
 def test_qnn_conformance_suite_records_training_and_gradient_evidence() -> None:
+    """The default suite passes three gradient cases and its one training case."""
     suite = run_parameter_shift_qnn_conformance_suite()
 
     assert isinstance(suite, ParameterShiftQNNConformanceSuiteResult)
@@ -58,6 +59,7 @@ def test_qnn_conformance_suite_records_training_and_gradient_evidence() -> None:
 
 
 def test_qnn_conformance_suite_records_named_external_gradient_agreements() -> None:
+    """Named caller gradients are recorded as non-native external agreements."""
     features = np.array(
         [[0.2, -0.4], [1.1, 0.7], [-0.8, 0.3]],
         dtype=float,
@@ -101,6 +103,7 @@ def test_qnn_conformance_suite_records_named_external_gradient_agreements() -> N
 
 
 def test_qnn_conformance_suite_fails_closed_on_bad_external_gradient() -> None:
+    """An external gradient of the wrong width is refused."""
     with pytest.raises(ValueError, match="external gradient"):
         run_parameter_shift_qnn_conformance_suite(
             external_gradients={
@@ -111,7 +114,27 @@ def test_qnn_conformance_suite_fails_closed_on_bad_external_gradient() -> None:
         )
 
 
+def test_qnn_conformance_suite_refuses_unknown_case_names() -> None:
+    """External gradients for unknown cases and an unknown case lookup are refused."""
+    gradient = {"reference": lambda values: np.zeros_like(values)}
+
+    unknown_names = ("epsilon", "delta", "gamma", "beta", "alpha")
+    external = {name: gradient for name in unknown_names}
+    external["phase_separable_single_feature"] = gradient
+
+    # Five names in a hash-ordered set come out sorted by chance once in 120 runs.
+    with pytest.raises(
+        ValueError, match="^external gradient case not found: alpha, beta, delta, epsilon, gamma$"
+    ):
+        run_parameter_shift_qnn_conformance_suite(external_gradients=external)
+    suite = run_parameter_shift_qnn_conformance_suite()
+    assert suite.case_by_name("balanced_threshold_two_feature") is suite.cases[2]
+    with pytest.raises(KeyError, match="^'unknown QNN conformance case: missing'$"):
+        suite.case_by_name("missing")
+
+
 def test_qnn_conformance_unsuitable_scenarios_are_explicit() -> None:
+    """Every unsuitable scenario is fail-closed or staged with its required evidence."""
     scenarios = summarize_parameter_shift_qnn_unsuitable_scenarios()
     scenario_by_name = {scenario.name: scenario for scenario in scenarios}
 
